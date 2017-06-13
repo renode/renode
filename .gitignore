@@ -1,0 +1,17 @@
+output
+obj
+bin
+.emul8root
+
+*.pyc
+*.swp
+.vscode
+
+# robot test result files
+output.xml
+report.html
+log.html
+
+#resources
+.renode_libs_fetched
+resources/

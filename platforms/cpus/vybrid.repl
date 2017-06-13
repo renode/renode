@@ -1,0 +1,95 @@
+uart0: UART.ImxUart @ sysbus 0x40027000
+    IRQ -> mscm@53
+
+uart1: UART.ImxUart @ sysbus 0x40028000
+    IRQ -> mscm@54
+
+uart2: UART.ImxUart @ sysbus 0x40029000
+    IRQ -> mscm@55
+
+eDma0: DMA.VybridDma @ sysbus <0x40018000, +0x2000> { -> mscm@0 }
+eDma1: DMA.VybridDma @ sysbus <0x40098000, +0x2000> { -> mscm@2 }
+fb: Video.VybridDCU @ sysbus <0x40058000, +0x2000>
+
+usbehci0: USB.EHCIHostController @ sysbus <0x40034000, +0x2000>
+    IRQ -> mscm@67
+
+usbehci1: USB.EHCIHostController @ sysbus <0x400B4000, +0x2000>
+    IRQ -> mscm@68
+
+i2c0: I2C.VybridI2C @ sysbus 0x40066000 { -> mscm@63 }
+i2c1: I2C.VybridI2C @ sysbus 0x40067000
+timers: Timers.PeriodicInterruptTimer @ sysbus <0x40037000, +0x1000> { -> mscm@31 }
+
+bootRom: Memory.MappedMemory @ sysbus 0
+    size: 0x80000
+
+ocRam: Memory.MappedMemory @ { sysbus 0x3F000000; sysbus 0x1F000000 }
+    size: 0x80000
+
+tcml: Memory.MappedMemory @ sysbus 0x1F800000
+    size: 0x8000
+
+tcmu: Memory.MappedMemory @ sysbus 0x3F800000
+    size: 0x8000
+
+memory: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x10000000
+
+gic: IRQControllers.GIC @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40003000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40002100; size: 0x100; region: "cpuInterface" }
+    }
+    0 -> cpuA5@0
+    itLinesNumber: 4
+    numberOfCPUs: 1
+
+cpuA5: CPU.Arm @ sysbus
+    cpuType: "cortex-a9"
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 24000000
+    IRQ -> cpuM4@0
+
+cpuM4: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4"
+    nvic: nvic
+
+gpio0: GPIOPort.VybridGPIOPort @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x400FF000; size: 0x40; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40049000; size: 0xD0; region: "port" }
+    }
+    -> gic@0x6B
+
+gpio1: GPIOPort.VybridGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF040; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004a000; size: 0xD0; region: "port" }}
+
+gpio2: GPIOPort.VybridGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF080; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004b000; size: 0xD0; region: "port" }}
+
+gpio3: GPIOPort.VybridGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF0c0; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004c000; size: 0xD0; region: "port" }}
+
+gpio4: GPIOPort.VybridGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF100; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004D000; size: 0xD0; region: "port" }}
+
+mscm: IRQControllers.MSCM @ sysbus 0x40001000
+    [0-111, 224-227] -> gic@[8-119, 0-3]
+    [112-223, 228-231] -> nvic@[8-119, 0-3]
+
+globalTimer: Timers.CortexAGlobalTimer @ sysbus 0x40002200
+    -> gic#0@27
+    frequency: 528000000
+
+sema4: Miscellaneous.SEMA4 @ sysbus 0x4001D000
+    CPU0 -> gic@4
+    CPU1 -> nvic@4
+
+nand: MTD.FSLNAND @ sysbus 0x400E0000 { -> mscm@75 }
+
+/*userLed: Miscellaneous.LED @ gpio 22
+    invert: true*/

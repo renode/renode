@@ -1,0 +1,383 @@
+﻿﻿//
+// Copyright (c) Antmicro
+//
+// This file is part of the Renode project.
+// Full license details are defined in the 'LICENSE' file.
+//
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Sprache;
+
+// all elements of parse tree has to be located in this namespace
+// because SyntaxTreeHelper only visits objects of types located there
+namespace Antmicro.Renode.PlatformDescription.Syntax
+{
+    public static class Grammar
+    {
+        // note that all fields here are created in the file order, i.e. as written
+        // due to that, depending on a field that is below can lead to a unexpected NullReferenceException
+        // in such case use Parsers.Ref <-- see Sprache's xml docs
+
+        public static readonly HashSet<string> Keywords = new HashSet<string>();
+
+        public static readonly Parser<char> Separator = Parse.Char(';').Token();
+
+        public static readonly Parser<char> AtSign = Parse.Char('@').Token();
+
+        public static readonly Parser<char> Colon = Parse.Char(':').Token().Named("colon");
+
+        public static readonly Parser<char> Comma = Parse.Char(',').Token();
+
+        public static readonly Parser<char> PlusSign = Parse.Char('+').Token();
+
+        public static readonly Parser<char> OpeningChevron = Parse.Char('<').Token();
+
+        public static readonly Parser<char> ClosingChevron = Parse.Char('>').Token();
+
+        public static readonly Parser<char> OpeningBrace = Parse.Char('{').Token();
+
+        public static readonly Parser<char> ClosingBrace = Parse.Char('}').Token();
+
+        public static readonly Parser<char> OpeningSquareBracket = Parse.Char('[').Token();
+
+        public static readonly Parser<char> ClosingSquareBracket = Parse.Char(']').Token();
+
+        public static readonly Parser<char> Minus = Parse.Char('-').Token();
+
+        public static readonly Parser<string> RightArrow = Parse.String("->").Text().Token().Named("arrow");
+
+        public static readonly Parser<string> HexadecimalPrefix = Parse.String("0x").Text();
+
+        public static readonly Parser<long> DecimalLong = Parse.Number.Select(x => long.Parse(x)).Token().Named("decimal number");
+
+        public static readonly Parser<char> HexadecimalDigit = Parse.Chars("0123456789ABCDEFabcdef");
+
+        public static readonly Parser<long> HexadecimalLong =
+            HexadecimalPrefix.Then(x => HexadecimalDigit.AtLeastOnce().Text().Select(y => long.Parse(y, System.Globalization.NumberStyles.HexNumber))).Token().Named("hexadecimal number");
+
+        public static readonly Parser<int> HexadecimalInt = HexadecimalLong.Select(x => (int)x);
+
+        public static readonly Parser<int> DecimalInt = DecimalLong.Select(x => (int)x);
+
+        public static readonly Parser<string> HexadecimalNumberWithSign =
+            (from sign in Minus.Optional()
+             from prefix in HexadecimalPrefix
+             from digits in HexadecimalDigit.AtLeastOnce().Text()
+             select sign.IsDefined ? "-" : "" + prefix + digits).Token().Named("hexadecimal number");
+
+        public static readonly Parser<string> DecimalNumberWithSign =
+            (from sign in Minus.Optional()
+             from integerPart in Parse.Number
+             from fractionalPart in (Parse.Char('.').Then(x => Parse.Number.Select(y => x + y))).Optional()
+             select sign.IsDefined ? "-" : "" + integerPart + fractionalPart.GetOrElse("")).Token().Named("decimal number");
+
+        public static readonly Parser<string> Number = HexadecimalNumberWithSign.Or(DecimalNumberWithSign);
+
+        public static readonly Parser<string> GeneralIdentifier =
+            (from startingLetter in Parse.Letter.Once().Text()
+             from rest in Parse.LetterOrDigit.Or(Parse.Char('_')).Many().Text()
+             select startingLetter + rest).Token();
+
+        public static readonly Parser<string> UsingKeyword = MakeKeyword("using");
+
+        public static readonly Parser<string> NewKeyword = MakeKeyword("new");
+
+        public static readonly Parser<string> AsKeyword = MakeKeyword("as");
+
+        public static readonly Parser<string> InitKeyword = MakeKeyword("init");
+
+        public static readonly Parser<string> LocalKeyword = MakeKeyword("local");
+
+        public static readonly Parser<string> PrefixedKeyword = MakeKeyword("prefixed");
+
+        public static readonly Parser<string> TrueKeyword = MakeKeyword("true");
+
+        public static readonly Parser<string> FalseKeyword = MakeKeyword("false");
+
+        public static readonly Parser<string> NoneKeyword = MakeKeyword("none");
+
+        public static readonly Parser<string> Identifier = GeneralIdentifier.Named("identifier").Where(x => !Keywords.Contains(x));
+
+        public static readonly Parser<StringWithPosition> TypeName =
+            (from first in Identifier
+             from rest in Parse.Char('.').Then(x => Identifier).XMany()
+             select new StringWithPosition(rest.Aggregate(first, (x, y) => x + '.' + y))).Positioned();
+
+        public static readonly Parser<char> QuotedStringElement = Parse.Char('\\').Then(x => Parse.Char('"')).XOr(Parse.CharExcept('"'));
+
+        public static readonly Parser<string> QuotedString =
+            (from openingQuote in Parse.Char('"')
+             from content in QuotedStringElement.Many().Text()
+             from closingQuote in Parse.Char('"')
+             select content).Token().Named("quoted string");
+
+        public static readonly Parser<UsingEntry> Using =
+            (from usingKeyword in UsingKeyword
+             from filePath in QuotedString.Select(x => new StringWithPosition(x)).Positioned()
+             from prefixedKeyword in PrefixedKeyword.Then(x => QuotedString).Named("using prefix").Optional()
+             select new UsingEntry(filePath, prefixedKeyword.GetOrDefault())).Token().Positioned().Named("using entry");
+
+        public static readonly Parser<IEnumerable<UsingEntry>> Usings =
+            (from firstUsing in Using
+             from rest in Separator.Then(x => Using).Many()
+             select new[] { firstUsing }.Concat(rest));
+
+        public static readonly Parser<RangeValue> Range =
+            (from opening in OpeningChevron
+             from begin in HexadecimalLong.Or(DecimalLong)
+             from comma in Comma
+             from plus in PlusSign.Optional()
+             from end in HexadecimalLong.Or(DecimalLong).Select(x => plus.IsEmpty ? x : begin + x).Where(x => begin <= x).Named("end of range that defines positive range")
+             from closing in ClosingChevron
+             select new RangeValue(begin, end)).Named("range");
+
+        public static readonly Parser<EnumValue> Enum =
+            (from firstElement in Identifier
+             from rest in Parse.Char('.').Then(x => Identifier).XAtLeastOnce()
+             select new EnumValue(new[] { firstElement }.Concat(rest))).Named("enum");
+
+        public static readonly Parser<ObjectValue> ObjectValue =
+            (from newKeyword in NewKeyword
+             from typeName in TypeName.Named("type name")
+             from attributes in Parse.Ref(() => Attributes).XOptional()
+             select new ObjectValue(typeName, attributes.GetOrElse(new Attribute[0]))).Named("inline object");
+
+        public static readonly Parser<ReferenceValue> ReferenceValue = Identifier.Select(x => new ReferenceValue(x)).Named("reference");
+
+        public static readonly Parser<BoolValue> BoolValue =
+            TrueKeyword.Select(x => true).Or(FalseKeyword.Select(x => false)).Select(x => new BoolValue(x)).Named("bool");
+
+        public static readonly Parser<Value> Value = QuotedString.Select(x => new StringValue(x))
+                                                                 .XOr<Value>(Range)
+                                                                 .XOr(Number.Select(x => new NumericalValue(x)))
+                                                                 .XOr(ObjectValue)
+                                                                 .Or(Enum)
+                                                                 .Or(BoolValue)
+                                                                 .Or(ReferenceValue)
+                                                                 .Positioned();
+
+
+        public static readonly Parser<RegistrationInfo> RegistrationInfoInner =
+            (from register in ReferenceValue.Named("register reference").Positioned()
+             from registrationPoint in Value.XOptional().Named("registration point")
+             select new RegistrationInfo(register, registrationPoint.GetOrDefault())).Named("registration info");
+
+        public static readonly Parser<RegistrationInfo> RegistrationInfo = AtSign.Then(x => RegistrationInfoInner);
+
+        public static readonly Parser<RegistrationInfo> NoneRegistrationInfo =
+            (from atSign in AtSign
+             from noneKeyword in NoneKeyword
+             select new RegistrationInfo(null, null)).Named("none registration info");
+
+        public static readonly Parser<IEnumerable<RegistrationInfo>> RegistrationInfos =
+            (from atSign in AtSign
+             from brace in OpeningBrace.Named("registration infos list")
+             from first in RegistrationInfoInner
+             from rest in Separator.Then(x => RegistrationInfoInner).XMany()
+             from closingBrace in ClosingBrace.Named("registration infos list end")
+             select new[] { first }.Concat(rest));
+
+        public static readonly Parser<ConstructorOrPropertyAttribute> ConstructorOrPropertyAttribute =
+            (from identifier in Identifier.Named("constructor or property name")
+             from colon in Colon
+             from value in Value.Named("constructor or property value").Or(NoneKeyword.Select(x => (Value)null))
+             select new ConstructorOrPropertyAttribute(identifier, value)).Named("constructor or property name and value");
+
+        public static readonly Parser<string> MonitorStatement = Parse.AnyChar.Except(Separator.Or(OpeningBrace).Or(ClosingBrace)).Many().Text().Token().Named("monitor statement");
+
+        public static readonly Parser<IEnumerable<string>> InitValue =
+            (from openingBrace in OpeningBrace.Named("init statement list")
+             from firstLine in MonitorStatement
+             from rest in Separator.Then(x => MonitorStatement).XMany()
+             from closingBrace in ClosingBrace.Named("init statement list end")
+             select new[] { firstLine }.Concat(rest));
+
+        public static readonly Parser<InitAttribute> InitAttribute =
+            (from initKeyword in InitKeyword
+             from addSuffix in Identifier.Where(x => x == "add").Optional()
+             from colon in Colon
+             from initValue in InitValue
+             select new InitAttribute(initValue, !addSuffix.IsEmpty)).Named("init section");
+
+        public static readonly Parser<IEnumerable<int>> IrqRange =
+            (from leftSide in HexadecimalInt.Or(DecimalInt)
+             from dash in Minus
+             from rightSide in HexadecimalInt.Or(DecimalInt).Where(x => x != leftSide).Named(string.Format("number other than {0}", leftSide))
+             select MakeSimpleRange(leftSide, rightSide));
+
+        public static Parser<SingleOrMultiIrqEnd> GetIrqEnd(bool source)
+        {
+            var result = IrqRange.Select(x => new SingleOrMultiIrqEnd(x.Select(y => new IrqEnd(null, y))))
+                                 .Or(HexadecimalInt.Or(DecimalInt).Select(x => new SingleOrMultiIrqEnd(new[] { new IrqEnd(null, x) })));
+            if(source)
+            {
+                result = result.Or(Identifier.Select(x => new SingleOrMultiIrqEnd(new[] { new IrqEnd(x, 0) })));
+            }
+            return result.Positioned();
+        }
+
+        public static Parser<IEnumerable<SingleOrMultiIrqEnd>> GetIrqEnds(bool source)
+        {
+            return
+                (from openingBracket in OpeningSquareBracket
+                 from first in GetIrqEnd(source)
+                 from rest in Comma.Then(x => GetIrqEnd(source)).XMany()
+                 from closingBracket in ClosingSquareBracket
+                 select new[] { first }.Concat(rest));
+        }
+
+        public static Parser<IrqDestination> IrqDestination =
+            (from destinationName in ReferenceValue.Named("destination peripheral reference")
+             from localIndex in Parse.Char('#').Then(x => Parse.Number.Select(y => (int?)int.Parse(y))).Named("local index").XOptional()
+             select new IrqDestination(destinationName, localIndex.GetOrDefault())).Positioned();
+
+        public static readonly Parser<IrqAttribute> SimpleIrqAttribute =
+            (from source in GetIrqEnd(true).Select(x => new[] { x }).Optional()
+             from arrow in RightArrow
+             from destinationIdentifier in IrqDestination
+             from at in AtSign
+             from destination in GetIrqEnd(false)
+             select new IrqAttribute(source.GetOrDefault(), destinationIdentifier, new[] { destination }));
+
+        public static readonly Parser<IrqAttribute> MultiIrqAttribute =
+            (from sources in GetIrqEnds(true)
+             from arrow in RightArrow
+             from destinationIdentifier in IrqDestination
+             from at in AtSign
+             from destinations in GetIrqEnds(false)
+             select new IrqAttribute(sources, destinationIdentifier, destinations));
+
+        public static readonly Parser<IrqAttribute> NoneIrqAttribute =
+            (from source in GetIrqEnd(true).Select(x => new[] { x }).Optional()
+             from arrow in RightArrow
+             from noneKeyword in NoneKeyword
+             select new IrqAttribute(source.GetOrDefault(), null, null));
+
+        public static readonly Parser<Attribute> Attribute = InitAttribute
+            .Or<Attribute>(ConstructorOrPropertyAttribute)
+            .Or(NoneIrqAttribute)
+            .Or(SimpleIrqAttribute)
+            .Or(MultiIrqAttribute)
+            .Positioned().Named("attribute");
+
+        public static readonly Parser<IEnumerable<Attribute>> AttributesInner =
+            (from firstAttribute in Attribute
+             from rest in Separator.Then(x => Attribute).XMany()
+             select new[] { firstAttribute }.Concat(rest));
+
+        public static readonly Parser<IEnumerable<Attribute>> Attributes =
+            (from openingBrace in OpeningBrace.Named("attribute list")
+             from attributes in AttributesInner.XOptional()
+             from closingBrace in ClosingBrace.Named("attribute list end")
+             select attributes.GetOrElse(new Attribute[0]));
+
+        public static readonly Parser<Entry> Entry =
+            (from localKeyword in LocalKeyword.Optional()
+             from variableName in Identifier.Named("variable name")
+             from colon in Colon
+             from type in TypeName.XOptional().Named("type name")
+             from registationInfo in RegistrationInfo.Or(NoneRegistrationInfo).Select(x => new[] { x }).Or(RegistrationInfos).XOptional()
+             from alias in AsKeyword.Then(x => QuotedString.Select(y => new StringWithPosition(y)).Named("alias").Positioned()).XOptional()
+             from attributes in Attributes.XOptional()
+             select new Entry(variableName, type.GetOrDefault(), registationInfo.GetOrDefault(), attributes.GetOrElse(new Attribute[0]), localKeyword.IsDefined, alias.GetOrDefault()))
+                .Positioned().Token().Named("entry");
+
+        public static readonly Parser<IEnumerable<Entry>> Entries =
+            (from firstEntry in Entry
+             from rest in Separator.Then(x => Entry).XMany()
+             select new[] { firstEntry }.Concat(rest));
+
+        public static readonly Parser<Description> Description =
+            (from whitespace in Parse.WhiteSpace.Many() // we have to consume all whitespaces before deciding, because X decides on first char
+             from usings in Usings.XOptional()
+             from separator in Separator.Optional() // leftover separator from the last using before first entry; user cannot insert it, because it is not added by prelexer
+             from entries in Entries.XOptional()
+             select new Description(usings.GetOrElse(new UsingEntry[0]), entries.GetOrElse(new Entry[0]))).End();
+
+        public static Parser<IOption<T>> XOptional<T>(this Parser<T> parser)
+        {
+            if(parser == null) throw new ArgumentNullException(nameof(parser));
+
+            return i =>
+            {
+                var pr = parser(i);
+
+                if(pr.WasSuccessful)
+                    return Result.Success(new Some<T>(pr.Value), pr.Remainder);
+
+                if(!pr.Remainder.Equals(i))
+                {
+                    return Result.Failure<IOption<T>>(pr.Remainder, pr.Message, pr.Expectations);
+                }
+
+                return Result.Success(new None<T>(), i);
+            };
+        }
+
+        internal abstract class AbstractOption<T> : IOption<T>
+        {
+            public abstract bool IsEmpty { get; }
+
+            public bool IsDefined
+            {
+                get { return !IsEmpty; }
+            }
+
+            public T GetOrDefault()
+            {
+                return IsEmpty ? default(T) : Get();
+            }
+
+            public abstract T Get();
+        }
+
+        internal sealed class Some<T> : AbstractOption<T>
+        {
+            private readonly T _value;
+
+            public Some(T value)
+            {
+                _value = value;
+            }
+
+            public override bool IsEmpty
+            {
+                get { return false; }
+            }
+
+            public override T Get()
+            {
+                return _value;
+            }
+        }
+
+        internal sealed class None<T> : AbstractOption<T>
+        {
+            public override bool IsEmpty
+            {
+                get { return true; }
+            }
+
+            public override T Get()
+            {
+                throw new InvalidOperationException("Cannot get value from None.");
+            }
+        }
+
+        public static Parser<string> MakeKeyword(string keyword)
+        {
+            Keywords.Add(keyword);
+            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword");
+        }
+
+        public static IEnumerable<int> MakeSimpleRange(int begin, int end)
+        {
+            if(end >= begin)
+            {
+                return Enumerable.Range(begin, end - begin + 1);
+            }
+            return Enumerable.Range(end, begin - end + 1).Reverse();
+        }
+    }
+}

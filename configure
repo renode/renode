@@ -1,0 +1,58 @@
+#!/bin/bash
+set -e
+set -u
+
+UPDATE_SUBMODULES=true
+INTERACTIVE=false
+while getopts ":ki" opt
+do
+    case "$opt" in
+        k)
+            UPDATE_SUBMODULES=false
+            ;;
+        i)
+            INTERACTIVE=true
+            ;;
+        \?)
+            echo "Usage: $0 [-k] [-i]"
+            echo ""
+            echo "-k   keep submodules"
+            echo "-i   interactive mode"
+            exit 1
+    esac
+done
+
+if $UPDATE_SUBMODULES
+then
+    git submodule update --init --recursive
+fi
+
+ROOT_PATH="`dirname \`realpath $0\``"
+source $ROOT_PATH/src/Emul8/Tools/common.sh
+$ROOT_PATH/tools/fetch_libraries.sh
+
+PARAMS=(\
+    -o "$ROOT_PATH/output"\
+    -b "$ROOT_PATH/output/bin"\
+    -S "Renode"\
+    -s "$ROOT_PATH/src/Renode/Renode.csproj"\
+    -e "CLI.csproj")
+
+if ! $INTERACTIVE
+then
+    PARAMS+=(-a)
+fi
+
+if ! $UPDATE_SUBMODULES
+then
+    PARAMS+=(-k)
+fi
+
+cat <<EOF > $ROOT_PATH/.emul8root
+5344ec2a-1539-4017-9ae5-a27c279bd454
+./src/Emul8
+EOF
+
+$ROOT_PATH/src/Emul8/bootstrap.sh ${PARAMS[@]}
+
+add_property $ROOT_PATH/output/properties.csproj LogoLocation $ROOT_PATH/resources/images/Renode-logo.png

@@ -1,0 +1,3 @@
+[submodule "src/Emul8"]
+	path = src/Emul8
+	url = https://github.com/antmicro/emul8.git

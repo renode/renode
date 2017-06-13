@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A7EF2B0-889A-488A-B296-97AF33791772}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <StartupObject>Antmicro.Renode.Program</StartupObject>
+    <RootNamespace>Antmicro.Renode</RootNamespace>
+    <AssemblyName>Renode</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <PropertiesLocation>$(SolutionDir)\properties.csproj</PropertiesLocation>
+    <OutputPathPrefix>bin</OutputPathPrefix>
+  </PropertyGroup>
+  <Import Project="$(PropertiesLocation)" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(OutputPathPrefix)\Debug</OutputPath>
+    <!-- This is a hack to allow debugging in MonoDevelop -->
+    <OutputPath Condition="'$(BuildingFromBuildScript)' == ''">bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(OutputPathPrefix)\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Mono.Posix" />
+    <Reference Include="Sprache">
+      <HintPath>..\..\resources\libraries\Sprache.dll</HintPath>
+    </Reference>
+    <Reference Include="CookComputing.XmlRpcV2">
+      <HintPath>..\..\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="PlatformDescription\ConversionResult.cs" />
+    <Compile Include="PlatformDescription\ConversionResultType.cs" />
+    <Compile Include="PlatformDescription\CreationDriver.cs" />
+    <Compile Include="PlatformDescription\DeclarationPlace.cs" />
+    <Compile Include="PlatformDescription\FakeInitHandler.cs" />
+    <Compile Include="PlatformDescription\IInitHandler.cs" />
+    <Compile Include="PlatformDescription\IUsingResolver.cs" />
+    <Compile Include="PlatformDescription\ParsingError.cs" />
+    <Compile Include="PlatformDescription\ParsingException.cs" />
+    <Compile Include="PlatformDescription\PreLexer.cs" />
+    <Compile Include="PlatformDescription\SerializationProvider.cs" />
+    <Compile Include="PlatformDescription\Variable.cs" />
+    <Compile Include="PlatformDescription\VariableStore.cs" />
+    <Compile Include="PlatformDescription\Syntax\Attribute.cs" />
+    <Compile Include="PlatformDescription\Syntax\BoolValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\ConstructorOrPropertyAttribute.cs" />
+    <Compile Include="PlatformDescription\Syntax\Description.cs" />
+    <Compile Include="PlatformDescription\Syntax\Entry.cs" />
+    <Compile Include="PlatformDescription\Syntax\EnumValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\Grammar.cs" />
+    <Compile Include="PlatformDescription\Syntax\IInitable.cs" />
+    <Compile Include="PlatformDescription\Syntax\InitAttribute.cs" />
+    <Compile Include="PlatformDescription\Syntax\IPrefixable.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqDestination.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqEnd.cs" />
+    <Compile Include="PlatformDescription\Syntax\ISimplestValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\IVisitable.cs" />
+    <Compile Include="PlatformDescription\Syntax\IWithPosition.cs" />
+    <Compile Include="PlatformDescription\Syntax\NumericalValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\ObjectValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\RangeValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\ReferenceValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\RegistrationInfo.cs" />
+    <Compile Include="PlatformDescription\Syntax\SingleOrMultiIrqEnd.cs" />
+    <Compile Include="PlatformDescription\Syntax\StringValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\StringWithPosition.cs" />
+    <Compile Include="PlatformDescription\Syntax\SyntaxTreeHelpers.cs" />
+    <Compile Include="PlatformDescription\Syntax\UsingEntry.cs" />
+    <Compile Include="PlatformDescription\Syntax\Value.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="RobotFrameworkEngine\RobotFrontend.cs" />
+    <Compile Include="RobotFrameworkEngine\RobotFrameworkEngine.cs" />
+    <Compile Include="RobotFrameworkEngine\HotSpotAction.cs" />
+    <Compile Include="RobotFrameworkEngine\HttpServer.cs" />
+    <Compile Include="RobotFrameworkEngine\IRobotFrameworkKeywordProvider.cs" />
+    <Compile Include="RobotFrameworkEngine\Keyword.cs" />
+    <Compile Include="RobotFrameworkEngine\KeywordException.cs" />
+    <Compile Include="RobotFrameworkEngine\KeywordManager.cs" />
+    <Compile Include="RobotFrameworkEngine\Recorder.cs" />
+    <Compile Include="RobotFrameworkEngine\RenodeKeywords.cs" />
+    <Compile Include="RobotFrameworkEngine\RobotFrameworkKeywordAttribute.cs" />
+    <Compile Include="RobotFrameworkEngine\UartKeywords.cs" />
+    <Compile Include="RobotFrameworkEngine\XmlRpcServer.cs" />
+    <Compile Include="Network\RangeLossMediumFunction.cs" />
+    <Compile Include="Network\RangeMediumFunction.cs" />
+    <Compile Include="Backends\Terminals\UartPtyTerminal.cs" />
+    <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
+    <Compile Include="PlatformDescription\UserInterface\PlatformDescriptionMachineExtensions.cs" />
+    <Compile Include="Connectors\GPIOConnector.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <Emul8>
+      <ProjectInfo Type="UI">
+        <Mode>Renode</Mode>
+      </ProjectInfo>
+    </Emul8>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy FileWidth="120" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <DotNetNamingPolicy DirectoryNamespaceAssociation="PrefixedHierarchical" ResourceNamePolicy="FileName" />
+          <CSharpFormattingPolicy NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceAfterControlFlowStatementKeyword="False" SpaceBeforeOpenSquareBracket="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <TextStylePolicy FileWidth="120" NoTabsAfterNonTabs="True" EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+          <TextStylePolicy FileWidth="120" NoTabsAfterNonTabs="True" EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="application/t4-template" />
+          <StandardHeader Text="&#xA;Copyright (c) Antmicro&#xA;&#xA;This file is part of the Renode project.&#xA;Full license details are defined in the 'LICENSE' file.&#xA;" IncludeInNewFiles="True" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+    <Emul8>
+      <ProjectInfo Type="Extension" />
+    </Emul8>
+  </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\Emul8\CLI\CLI.csproj">
+      <Project>{AEFE490F-85AC-42AF-9CAE-2B7FC7167E0E}</Project>
+      <Name>CLI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\Emulator\Main\Emulator.csproj">
+      <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
+      <Name>Emulator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\External\AntShell\AntShell\AntShell.csproj">
+      <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
+      <Name>AntShell</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\External\Migrant\Migrant\Migrant.csproj">
+      <Project>{5F87C357-09FB-4F53-BE37-41FE5BD88957}</Project>
+      <Name>Migrant</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\Emulator\Extensions\Extensions.csproj">
+      <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\External\options-parser\OptionsParser.csproj">
+      <Project>{C56AABEF-C01E-493F-A65F-09A572FE9B2E}</Project>
+      <Name>OptionsParser</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="PlatformDescription\" />
+    <Folder Include="PlatformDescription\Syntax\" />
+    <Folder Include="Network\" />
+    <Folder Include="Backends\" />
+    <Folder Include="Backends\Terminals\" />
+    <Folder Include="PlatformDescription\UserInterface\" />
+    <Folder Include="Connectors\" />
+  </ItemGroup>
+</Project>
