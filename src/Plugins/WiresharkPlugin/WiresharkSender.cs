@@ -1,6 +1,6 @@
 ﻿/**************************************************************************
 *                           MIT License
-* 
+*
 * Copyright (C) 2015 Frederic Chaxel <fchaxel@free.fr>
 *
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -63,8 +63,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             get { return isConnected; }
         }
 
-        public void OpenWireshark()
+        public bool TryOpenWireshark()
         {
+            if(IsConnected)
+            {
+                return false;
+            }
+
             PipeCreate();
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
@@ -87,6 +92,8 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             wiresharkPipe.WaitForConnection();
             isConnected = true;
             WiresharkGlobalHeader();
+
+            return true;
         }
 
         public void CloseWireshark()
@@ -174,7 +181,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 wiresharkPipe.Write(buffer, offset, lenght);
 
             }
-            catch(System.IO.IOException)
+            catch(IOException)
             {
                 return false;
             }
