@@ -167,4 +167,8 @@
     <Folder Include="PlatformDescription\UserInterface\" />
     <Folder Include="Connectors\" />
   </ItemGroup>
+  <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
+    <Exec Command="cd Properties; ../../Emul8/Tools/scripts/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
+    <Exec Command="cd Properties; powershell -File ../../createAssemblyVersionInfo.ps1 -ExecutionPolicy unrestricted" Condition="$(CurrentPlatform) == 'Windows'" />
+  </Target>
 </Project>
