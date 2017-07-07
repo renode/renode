@@ -1,6 +1,6 @@
 using "platforms/cpus/vybrid.repl"
 
-usbHub: USB.UsbHub @ usbehci1 1
+usbHub: USB.UsbHub @ usbEhci1 1
     nrPorts: 8
 
 mouse: USB.USBMouse @ usbHub 5

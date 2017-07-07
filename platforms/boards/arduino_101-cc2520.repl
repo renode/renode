@@ -1,0 +1,22 @@
+using "platforms/cpus/quark-c1000.repl"
+
+led: Miscellaneous.LED @ pwm 0x00000000
+
+pwm:
+    0 -> led@0
+
+button: Miscellaneous.Button @ gpio 0x00000000
+    -> gpio@7
+
+radio: Wireless.CC2520 @ spi1
+    1 -> gpio@19
+    2 -> gpio@17
+    3 -> gpio@18
+    4 -> gpio@15
+
+gpio:
+    16 -> radio@0
+    20 -> radio@1
+
+lm74: Sensors.TI_LM74 @ spi0
+

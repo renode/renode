@@ -1,0 +1,61 @@
+BIOS_ROM: Memory.MappedMemory @ {
+    sysbus 0xffffe000;
+    sysbus 0xe000}
+    size: 0x2000
+
+FLASH: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x2F000
+
+lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
+    IRQ -> cpu@0
+
+ioapic: IRQControllers.IOAPIC @ sysbus 0xFEC00000
+    [16-255] -> lapic@[16-255]
+
+spi0: SPI.Quark_SPI @ sysbus 0xB0001000
+    IRQ -> ioapic@2
+
+spi1: SPI.Quark_SPI @ sysbus 0xB0001400
+    IRQ -> ioapic@3
+
+FLASH2: Memory.MappedMemory @ sysbus 0x40030000
+    size: 0x2F000
+
+OTP_Data: Memory.MappedMemory @ sysbus 0x4002F000
+    size: 0x1000
+
+SRAM: Memory.MappedMemory @ sysbus 0xA8000000
+    size: 0x14000
+
+uart_a: UART.NS16550 @ sysbus 0xB0002000
+    wideRegisters: true
+
+uart_b: UART.NS16550 @ sysbus 0xB0002400
+    wideRegisters: true
+    IRQ -> ioapic@6
+
+cpu: CPU.X86 @ sysbus
+    cpuType: "x86"
+    lapic: lapic
+
+gpio: X86.Quark_GPIOController @ sysbus 0xB0000C00
+    IRQ -> ioapic@8
+
+PWM: X86.Quark_PWM @ sysbus 0xB0000800
+    IRQ -> ioapic@9
+
+sysbus:
+    init:
+        Tag <0xB0800000 0x4000> "SCSS"
+        Tag <0xB0100000 0x400> "FLASH_CONFIGURATION_1"
+        Tag <0xB0200000 0x400> "FLASH_CONFIGURATION_2"
+        Tag <0xB0000C00 0x400> "GPIO"
+        Tag <0xB0700000 0x1000> "DMA"
+        Tag <0xB0400000 0x400> "ISRAM_CONFIG"
+        Tag <0xB0002800 0x400> "I2C_0"
+        Tag <0xB0001800 0x400> "SPI_S"
+        Tag <0xB0001000 0x400> "SPI_M0"
+        Tag <0xB0000800 0x400> "APB_TIMER"
+        Tag <0xB0000400 0x400> "RTC"
+        Tag <0xB0000000 0x400> "WATCHDOG_TIMER"
+        

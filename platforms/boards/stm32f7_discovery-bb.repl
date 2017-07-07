@@ -1,0 +1,26 @@
+using "platforms/cpus/stm32f746.repl"
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    id1: 0x0007
+    id2: 0xC0F1
+    autoNegotiationAdvertisement: 0x00A1
+    autoNegotiationLinkPartnerAbility: 0x001
+
+phy1: Network.EthernetPhysicalLayer @ ethernet 1
+    id1: 0x0007
+    id2: 0xC0F1
+    autoNegotiationAdvertisement: 0x00A1
+    autoNegotiationLinkPartnerAbility: 0x001
+
+touchscreen: Input.FT5336 @ i2c3 0x38
+    isRotated: true
+    MaxX: 480
+    MaxY: 272
+    -> gpioPortI@13
+
+machine:
+    init:
+        PyDevFromFile @scripts/pydev/flipflop.py 0x40023800 0x4 True
+        PyDevFromFile @scripts/pydev/flipflop.py 0x40007004 0x4 True
+        PyDevFromFile @scripts/pydev/flipflop.py 0x40012C34 0x4 True
+

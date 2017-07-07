@@ -1,0 +1,17 @@
+phy: Network.EthernetPhysicalLayer @ gem0 3
+    id1: 0x0022
+    id2: 0x1611
+    autoNegotiationAdvertisement: 0x00f1
+    autoNegotiationLinkPartnerAbility: 0x00f1
+    gigabitControl: 0x300
+    gigabitStatus: 0x0000
+
+usbHub: USB.UsbHub @ usbEhci 1
+    nrPorts: 8
+
+usbMouse: USB.USBMouse @ usbHub 2
+
+usbKeyboard: USB.USBKeyboard @ usbHub 1
+
+flash: MTD.DummySPIFlash @ qspi
+

@@ -1,0 +1,5 @@
+led66: Miscellaneous.LED @ gpioPort 66
+
+nodeNumberMemory: Memory.ArrayMemory @ sysbus 0x99000000
+    size: 4
+

@@ -1,0 +1,122 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 168000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m3"
+    nvic: nvic
+
+SystemMemory: Memory.MappedMemory @ sysbus 0x1FF00000
+    size: 0x10000
+
+SPI1: SPI.STM32SPI @ sysbus 0x40013000
+
+SPI2: SPI.STM32SPI @ sysbus 0x40003800
+
+SPI3: SPI.STM32SPI @ sysbus 0x40003C00
+
+EXTI: IRQControllers.EXTI @ sysbus 0x40010400
+    [0-6,11] -> nvic@[6-10,23,40,3] 
+
+SRAM: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0xC000
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size:0x60000
+
+uart1: UART.STM32_UART @ sysbus <0x40013800, +0x100>
+    -> nvic@37
+
+uart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
+    -> nvic@38
+
+uart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
+    -> nvic@39
+
+gpioPortA: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020000, +0x400>
+    modeResetValue: 0xA8000000
+    pullUpPullDownResetValue: 0x64000000
+
+gpioPortB: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020400, +0x400>
+    modeResetValue: 0x00000280
+    outputSpeedResetValue: 0x000000C0
+    pullUpPullDownResetValue: 0x00000100
+    [0-15] -> EXTI@[0-15]
+
+gpioPortC: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020800, +0x400>
+    11 -> EXTI@11
+
+gpioPortD: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020C00, +0x400>
+
+gpioPortE: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021000, +0x400>
+
+gpioPortF: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021800, +0x400>
+
+gpioPortG: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021C00, +0x400>
+
+gpioPortH: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021400, +0x400>
+
+DMA1: DMA.STM32LDMA @ sysbus 0x40026000
+    [0-7] -> nvic@[11-17,47]
+
+I2C1: I2C.STM32F4_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+
+RTC: STM32L_RTC @ sysbus <0x40002800, +0x400>
+    -> EXTI@20
+
+BITBANDPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000
+
+BitBandSRAM: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
+    peripheralBase: 0x20000000
+
+Timer10: Timers.STM32L_Timer @ sysbus <0x40010C00, +0x1000>
+
+/* set rcc_cfgr """
+if request.isInit:
+    lastVal = 10
+    usePll = False
+elif request.isWrite:
+    usePll = ((request.value & 0x3) == 0x3)
+elif request.isRead:
+    lastVal = lastVal - 1
+    request.value = ((lastVal < 0) << 2) | 0x18
+    if usePll:
+        request.value |= 0x3
+"""
+
+set rcc_cr """
+if request.isInit:
+    lastVal = 10
+    pllOn = False
+elif request.isWrite:
+        pllOn = ((request.value & (1 << 24)) != 0)
+elif request.isRead:
+    lastVal = lastVal - 1
+    request.value = ((lastVal < 0 or lastVal > 5) << 25) | 0x08020083
+    if pllOn:
+        request.value |= (1 << 24)
+        request.value |= (1 << 25)
+"""
+*/
+
+sysbus:
+    init:
+        //ApplySVD @http://emul8.org/emul8_files/svd/STM32L1xx.svd.gz 
+        Tag <0x4000280C, 0x40002810> "RTC_ISR" 0x60
+        SilenceRange <0x40003000 4>
+        Tag <0xE0042000 4> "MCU_ID" 0x10000416
+        Tag <0x40012400 4> "ADC_SR" 0xFFFFFFFF
+        Tag <0x40023C18 4> "FLASH_SR"  0xE
+        Tag <0x40007000 4> "PWR_CONTROL" 0x1000
+        Tag <0x40007004 4> "PWR_STATUS"  0x8
+
+machine:
+    init:
+        SetClockSource cpu
+        PyDevFromString $rcc_cr                    0x40023800 0x4 true  "RCC_CR"
+        PyDevFromString $rcc_cfgr                  0x40023808 0x4 true  "RCC_CFGR"
+        PyDevFromString "request.value=0xB000"     0x40023804 0x4 false "RCC_ICSCR"
+        PyDevFromFile   @scripts/pydev/flipflop.py 0x40023834 0x4 true  "RCC_CSR"

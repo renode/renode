@@ -1,0 +1,41 @@
+uart: UART.STM32W_UART @ {
+    sysbus <0x4000C800, +0x100>;
+    sysbus new Bus.BusMultiRegistration { address: 0x4000A808; size: 0x4; region: "irq" }}
+    -> nvic@5
+
+Radio: Wireless.EmberRadio @ {
+    sysbus  <0x40001000, +0x2000>;
+    sysbus new Bus.BusMultiRegistration { address: 0x4000A000; size: 0x100; region: "irq" };
+    sysbus new Bus.BusMultiRegistration { address: 0x40003000; size: 0x1000; region: "encryptor" }}
+    Tx -> nvic@9
+    Rx -> nvic@10
+    Tim -> nvic@11
+
+TIM2: Timers.STM32_Timer @ sysbus <0x40000000, +0x1000>
+    -> nvic@44
+
+Flash: Memory.MappedMemory @ {
+    sysbus 0x80000000;
+    sysbus 0x0 }
+    size: 0x40000
+
+FIB: Memory.MappedMemory @ sysbus 0x8040000
+    size: 0x1000
+
+Internal_SRAM: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x100000
+
+External_RAM: Memory.MappedMemory @ sysbus 0x68000000
+    size: 0x1000000
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m3"
+    nvic: nvic
+
+//sysbus:
+    //init:
+        //ApplySVD @http://emul8.org/emul8_files/svd/STM32W108.svd
+

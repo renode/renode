@@ -1,0 +1,8 @@
+pressure_sensor: I2C.BMP180 @ sysbus.I2C1 0xEE
+
+humidity_sensor: I2C.SHT21 @ sysbus.I2C1 0x80
+
+compass: I2C.BMC050 @ { sysbus.I2C1 0x18; sysbus.I2C1 0x10 }
+
+accelerometer: I2C.BMA180 @ sysbus.I2C1 0x82
+

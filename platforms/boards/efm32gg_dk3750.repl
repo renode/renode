@@ -1,0 +1,3 @@
+ebi: Memory.MappedMemory @ sysbus 0x88000000
+    size: 0x400000
+

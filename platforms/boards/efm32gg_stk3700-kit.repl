@@ -1,0 +1,3 @@
+using "platforms/cpus/efm32gg.repl"
+using "platforms/boards/efm32gg_stk3700.repl"
+

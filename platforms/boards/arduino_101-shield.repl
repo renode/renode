@@ -1,0 +1,15 @@
+using "platforms/cpus/quark-c1000.repl"
+
+led: Miscellaneous.LED @ pwm 0x00000000
+
+pwm:
+    0 -> led@0
+
+button: Miscellaneous.Button @ gpio 0x00000000
+    -> gpio@7
+
+ethernet: Network.ENC28J60 @ spi1
+    -> gpio@19
+
+lm74: Sensors.TI_LM74 @ spi0
+

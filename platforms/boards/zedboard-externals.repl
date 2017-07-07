@@ -1,0 +1,26 @@
+phy: Network.EthernetPhysicalLayer @ gem0 0
+    id1: 0x0141
+    id2: 0x0e40
+    autoNegotiationAdvertisement: 0x1e1
+    autoNegotiationLinkPartnerAbility: 0x1e1
+    gigabitControl: 0x300
+    gigabitStatus: 0x3000
+
+flash: MTD.DummySPIFlash @ qspi
+
+led0: Miscellaneous.LED @ gpio 61
+
+led1: Miscellaneous.LED @ gpio 62
+
+led2: Miscellaneous.LED @ gpio 63
+
+led3: Miscellaneous.LED @ gpio 64
+
+led4: Miscellaneous.LED @ gpio 65
+
+led5: Miscellaneous.LED @ gpio 66
+
+led6: Miscellaneous.LED @ gpio 67
+
+led7: Miscellaneous.LED @ gpio 68
+

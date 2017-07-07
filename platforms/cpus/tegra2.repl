@@ -1,0 +1,141 @@
+uart0: UART.NS16550 @ sysbus <0x70006000, +0x100>
+    wideRegisters: true
+    -> gic@36
+
+uart3: UART.NS16550 @ sysbus <0x70006300, +0x100>
+    -> gic@39
+
+DMA_HOST1X_A: DMA.TegraDmaHost1X @ sysbus 0x50010000
+
+DMA_HOST1X_B: DMA.TegraDmaHost1X @ sysbus 0x50004000
+
+Memory: Memory.MappedMemory @ {
+    sysbus 0;
+    sysbus 0x80000000}
+    size: 0x20000000
+
+Memory_IRAM: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x100000
+
+privateTimer: Timers.CortexAPrivateTimer @ sysbus <0x50040600, +0x200>
+    -> gic#0@29
+
+gic: IRQControllers.GIC @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x50041000; size: 0x1000; region: "distributor" };
+    sysbus new Bus.BusMultiRegistration { address: 0x50040100; size: 0x100; region: "cpuInterface" }}
+    0 -> cpu@0
+    numberOfCPUs: 1
+
+TMR1: Timers.TegraTimer @ sysbus 0x60005000
+    -> gic@0
+
+TMR2: Timers.TegraTimer @ sysbus 0x60005008
+    -> gic@1
+
+TMRUS: Timers.TegraUsecTimer @ sysbus 0x60005010
+
+TMR3: Timers.TegraTimer @ sysbus 0x60005050
+    -> gic@41
+
+TMR4: Timers.TegraTimer @ sysbus 0x60005058
+    -> gic@42
+
+pl310: Cache.PL310 @ sysbus <0x50043000, +0x1000>
+
+scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
+
+cpu: CPU.Arm @ sysbus
+    cpuType: "cortex-a9"
+
+usbehci1: USB.EHCIHostController @ sysbus <0xC5000000, +0x1000>
+    -> gic@20
+
+usbehci2: USB.EHCIHostController @ sysbus <0xC5004000, +0x1000>
+    -> gic@21
+
+usbehci3: USB.EHCIHostController @ sysbus <0xC5008000, +0x1000>
+    -> gic@23
+
+APB_DMA: DMA.TegraDma @ sysbus 0x6000A000
+    [0-15] -> gic@[104-119]
+
+I2C1: I2C.TegraI2CController @ sysbus <0x7000C000, +0x100>
+    -> gic@38
+
+I2C2: I2C.TegraI2CController @ sysbus <0x7000C400, +0x100>
+    -> gic@84
+
+I2C3: I2C.TegraI2CController @ sysbus <0x7000C500, +0x100>
+    -> gic@92
+
+fb1: Video.TegraDisplay @ sysbus 0x54240000
+
+SYNCPTS: Video.TegraSyncpts @ sysbus 0x50000000
+
+DVC: I2C.TegraDVC @ sysbus <0x7000D000, +0x200>
+    -> gic@53
+
+machine:
+    init:
+        PyDevFromString "request.value = 0x60000" 0x7000F410 0x4 True "Memory_controller_memsize"
+        PyDevFromString "request.value = 0x0" 0x70008000 0x4 True "NAND_HACK1"
+        PyDevFromString "request.value = 0x1 | (1<<8)" 0x70008004 0x4 True "NAND_HACK_NAND_STATUS"
+        PyDevFromString "request.value = 0xFFFFFFFF" 0x70008008 0x4 True "NAND_HACK_ISR"              
+        PyDevFromString "request.value = 732" 0x6000605C 0x4 True "OSC_FREQ_DET_STATUS"              
+        PyDevFromString "request.value = ((1<<30) | (50 << 8) | 0xEC)" 0x60006080 0x4 True "pll_c"
+        PyDevFromString "request.value = ((1<<30) | (333 << 8) | 0xEC)" 0x60006090 0x4 True "pll_m"
+        PyDevFromString "request.value = ((1<<28) |(1<<22)| (216 << 8) | 0xEC)" 0x600060a0 0x4 True "pll_p"
+        PyDevFromString "request.value = (1<<30)" 0x60006104 0x90 True "CLK_SRC_"
+        PyDevFromString "request.value = 0x2000" 0x70000804 0x4 False "APB_MISC_GP_HIDREV_0"
+        PyDevFromString "request.value = 0x20000000" 0x60006020 0x4 True "CLOCK_HACK"
+        PyDevFromString "request.value = 0x20000000" 0x60006028 0x4 True "CLK_RST_CONTROLLER_SCLK_BURST_POLICY_0"
+        PyDevFromString "request.value = (0x4 << 16)" 0x7000F800 0x4 True "KFUSE_HACK"
+        PyDevFromFile "scripts/pydev/flipflop.py" 0x7000E438 0x4 True "PWR_GATE_STATUS"
+
+sysbus:
+    init:
+        SilenceRange <0x6000411C,0x6000411f>
+        SilenceRange <0x6000401C,0x6000401f>
+        SilenceRange <0x60004124,0x6000412b>
+        SilenceRange <0xC4000010,0xc4000013>
+        SilenceRange <0x7000F028,0x7000f02b>              
+        Tag <0x60004000,0x60004fff> "TEGRA_PRIMARY_ICTLR_BASE"
+        Tag <0x60006000,0x60006fff> "CLOCK_AND_RESET"
+        Tag <0x6000d000,0x6000DFFF> "tegra-gpio"
+        Tag <0x7000F000,0x7000F3FF> "memory-controller"
+        Tag <0x70000000,0x70000fff> "MISC"
+        Tag <0x6000C000,0x6000CFFF> "CACHE_CTLR"
+        Tag <0x7000E000,0x7000E0FF> "RTC"
+        Tag <0x60005000,0x600050ff> "tegra_timer"
+        Tag <0x6000A000,0x6000AFFF> "tegra-apbdma"
+        Tag <0x50000000,0x50023fff> "NVRM_GRAPHICS_HOST"
+        Tag <0x7000E400,0x7000E4FF> "PMC"
+        Tag <0x7000F800,0x7000FBFF> "KFUSE"
+        Tag <0x6000F000,0x6000ffff> "Exception_vectors"
+        Tag <0x50040000,0x50041fff> "ARM_PERIPHBASE"
+        Tag <0x54200000,0x5420ffff> "DISPLAYA"
+        Tag <0x54240000,0x5424ffff> "DISPLAYB"
+        Tag <0x54280000,0x5428ffff> "HDMI"
+        Tag <0x54080000,0x5408ffff> "VI_CSI"
+        Tag <0x7000e4a0,0x7000e4a3> "APBDEV_PMC_SCRATCH20_0" 0x10000000
+       
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

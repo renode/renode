@@ -1,0 +1,3 @@
+using "platforms/boards/stm32f4_discovery.repl"
+using "platforms/boards/stm32f4_discovery-additional_gpios.repl"
+using "platforms/boards/stm32f4_discovery-bb.repl"
