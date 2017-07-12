@@ -27,9 +27,9 @@ then
     git submodule update --init --recursive
 fi
 
-ROOT_PATH="`dirname \`realpath $0\``"
-source $ROOT_PATH/src/Emul8/Tools/common.sh
-$ROOT_PATH/tools/fetch_libraries.sh
+ROOT_PATH="`dirname \"\`realpath $0\`\"`"
+source "$ROOT_PATH/src/Emul8/Tools/common.sh"
+"$ROOT_PATH"/tools/fetch_libraries.sh
 
 PARAMS=(\
     -o "$ROOT_PATH/output"\
@@ -48,11 +48,11 @@ then
     PARAMS+=(-k)
 fi
 
-cat <<EOF > $ROOT_PATH/.emul8root
+cat <<EOF > "$ROOT_PATH"/.emul8root
 5344ec2a-1539-4017-9ae5-a27c279bd454
 ./src/Emul8
 EOF
 
-$ROOT_PATH/src/Emul8/bootstrap.sh ${PARAMS[@]}
+"$ROOT_PATH"/src/Emul8/bootstrap.sh "${PARAMS[@]}"
 
-add_property $ROOT_PATH/output/properties.csproj LogoLocation $ROOT_PATH/resources/images/Renode-logo.png
+add_property "$ROOT_PATH"/output/properties.csproj LogoLocation "$ROOT_PATH"/resources/images/Renode-logo.png
