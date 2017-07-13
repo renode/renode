@@ -32,12 +32,14 @@
     <Reference Include="System" />
     <Reference Include="nunit.framework">
       <HintPath>..\..\..\..\src\Emul8\External\Tools\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\..\..\src\Emul8\External\Lib\Moq.dll</HintPath>
+      <Package>nunit</Package>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Sprache">
-        <HintPath>..\..\..\..\resources\libraries\Sprache.dll</HintPath>
+      <HintPath>..\..\..\resources\libraries\Sprache.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq">
+      <HintPath>..\..\..\src\Emul8\External\Lib\Moq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -50,15 +52,15 @@
     <Compile Include="PlatformDescription\VerificationTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Renode\Renode.csproj">
+    <ProjectReference Include="..\..\..\src\Renode\Renode.csproj">
       <Project>{5A7EF2B0-889A-488A-B296-97AF33791772}</Project>
       <Name>Renode</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\src\Emul8\Emulator\Main\Emulator.csproj">
+    <ProjectReference Include="..\..\..\src\Emul8\Emulator\Main\Emulator.csproj">
       <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
       <Name>Emulator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\src\Emul8\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
+    <ProjectReference Include="..\..\..\src\Emul8\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
       <Project>{E0E61E22-8E42-4ED8-8C1F-D683D7EC9FF6}</Project>
       <Name>UnitTests</Name>
     </ProjectReference>
