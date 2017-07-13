@@ -187,7 +187,18 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from value in Value.Named("constructor or property value").Or(NoneKeyword.Select(x => (Value)null))
              select new ConstructorOrPropertyAttribute(identifier, value)).Named("constructor or property name and value");
 
-        public static readonly Parser<string> MonitorStatement = Parse.AnyChar.Except(Separator.Or(OpeningBrace).Or(ClosingBrace)).Many().Text().Token().Named("monitor statement");
+        public static readonly Parser<string> StringWithQuotes =
+            (from openingQuote in QuotationMark
+             from content in QuotedStringElement.Many().Text()
+             from closingQuote in QuotationMark
+             select openingQuote + content + closingQuote).Named("string with quotes");
+
+        public static readonly Parser<string> MonitorStatementElement = Parse.AnyChar.Except(Separator.Or(OpeningBrace).Or(ClosingBrace).Or(QuotationMark)).XMany()
+                                                                             .Or(StringWithQuotes).Text().Named("monitor statement element");
+
+        public static readonly Parser<string> MonitorStatement =
+            (from elements in MonitorStatementElement.Many()
+             select elements.Aggregate((x, y) => x + y)).Token();
 
         public static readonly Parser<IEnumerable<string>> InitValue =
             (from openingBrace in OpeningBrace.Named("init statement list")
