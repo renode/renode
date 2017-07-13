@@ -45,6 +45,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<char> Minus = Parse.Char('-').Token();
 
+        //not set as a token, as it may be used inside strings where we want to preserve spaces
+        public static readonly Parser<char> QuotationMark = Parse.Char('"');
+
         public static readonly Parser<string> RightArrow = Parse.String("->").Text().Token().Named("arrow");
 
         public static readonly Parser<string> HexadecimalPrefix = Parse.String("0x").Text();
@@ -104,12 +107,12 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from rest in Parse.Char('.').Then(x => Identifier).XMany()
              select new StringWithPosition(rest.Aggregate(first, (x, y) => x + '.' + y))).Positioned();
 
-        public static readonly Parser<char> QuotedStringElement = Parse.Char('\\').Then(x => Parse.Char('"')).XOr(Parse.CharExcept('"'));
+        public static readonly Parser<char> QuotedStringElement = Parse.Char('\\').Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
 
         public static readonly Parser<string> QuotedString =
-            (from openingQuote in Parse.Char('"')
+            (from openingQuote in QuotationMark
              from content in QuotedStringElement.Many().Text()
-             from closingQuote in Parse.Char('"')
+             from closingQuote in QuotationMark
              select content).Token().Named("quoted string");
 
         public static readonly Parser<UsingEntry> Using =
