@@ -1,7 +1,7 @@
-nk1: Memory.MappedMemory @ sysbus 0xC0000000 
+fsmcBank1: Memory.MappedMemory @ sysbus 0xC0000000
     size: 0x10000000
 
-SRAM: Memory.MappedMemory @ sysbus 0x20000000
+sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x60000
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
@@ -65,49 +65,48 @@ gpioPortK: GPIOPort.STM32F4GPIOPort @ sysbus <0x40022800, +0x400>
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
     -> nvic@61
 
-Memory_ROM: Memory.MappedMemory @ sysbus 0x1FFF0000
+rom: Memory.MappedMemory @ sysbus 0x1FFF0000
     size: 0x10000
 
-SPI1: SPI.STM32SPI @ sysbus 0x40013000
+spi1: SPI.STM32SPI @ sysbus 0x40013000
 
-SPI2: SPI.STM32SPI @ sysbus 0x40003800
+spi2: SPI.STM32SPI @ sysbus 0x40003800
 
-SPI3: SPI.STM32SPI @ sysbus 0x40003C00
+spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
-DMA1: DMA.STM32DMA @ sysbus 0x40026000
+dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-DMA2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40023400
     [0-7] -> nvic@[56-60,68-70]
 
-LTDC: Video.STM32LTDC @ sysbus 0x40016800
+ltdc: Video.STM32LTDC @ sysbus 0x40016800
     -> nvic@88
 
-DMA2D: DMA.STM32DMA2D @ sysbus 0x4002B000
+dma2d: DMA.STM32DMA2D @ sysbus 0x4002B000
     -> nvic@90
 
-I2C1: I2C.STM32F7_I2C @ sysbus 0x40005400
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
     EventInterrupt -> nvic@31
     ErrorInterrupt -> nvic@32
 
-I2C2: I2C.STM32F7_I2C @ sysbus 0x40005800
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
     EventInterrupt -> nvic@33
     ErrorInterrupt -> nvic@34
 
-I2C3: I2C.STM32F7_I2C @ sysbus 0x40005C00
+i2c3: I2C.STM32F7_I2C @ sysbus 0x40005C00
     EventInterrupt -> nvic@72
     ErrorInterrupt -> nvic@73
 
-I2C4: I2C.STM32F7_I2C @ sysbus 0x40006000
+i2c4: I2C.STM32F7_I2C @ sysbus 0x40006000
     EventInterrupt -> nvic@95
     ErrorInterrupt -> nvic@96
 
-SYSCFG: Miscellaneous.STM32_SYSCFG @ sysbus 0x40013800
+syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x40013800
     [0-15] -> exti@[0-15]
 
 sysbus:
     init:
-       // ApplySVD @http://emul8.org/emul8_files/svd/STM32F7x6.svd.gz
         Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 
 machine:

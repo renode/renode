@@ -1,33 +1,28 @@
-uart0: UART.Atmel91DebugUnit @ sysbus <0xFFFFF200, 0xFFFFF400>
-    -> AIC@1
+uart0: UART.Atmel91DebugUnit @ sysbus <0xFFFFF200, +0x200>
+    -> aic@1
 
-Internal_Memory: Memory.MappedMemory @ sysbus 0x0
+internalMemory: Memory.MappedMemory @ sysbus 0x0
     size: 0x30000
 
-Memory: Memory.MappedMemory @ {
-    sysbus 0x20000000;
-    sysbus 0xC0000000 }
+memory: Memory.MappedMemory @ {
+        sysbus 0x20000000;
+        sysbus 0xC0000000
+    }
     size: 0x10000000
 
-AIC: IRQControllers.AIC @ sysbus 0xFFFFF000
+aic: IRQControllers.AIC @ sysbus 0xFFFFF000
     IRQ -> cpu@0
     FIQ -> cpu@1
 
 
-/*SysCtl: Miscellaneous.ArmSysCtl @ sysbus <0x10000000, +0x1000>
-
-Timer1: Timers.SP804 @ sysbus <0xFFFA0000, +0x4000>
-    -> AIC@4*/
-
-
-ST: Timers.Atmel91SystemTimer @ sysbus 0xFFFFFD00
-    -> AIC@1
+systemTimer: Timers.Atmel91SystemTimer @ sysbus 0xFFFFFD00
+    -> aic@1
 
 cpu: CPU.Arm @ sysbus
     cpuType: "arm926"
     init:
         ID 0x41009200
-          
+
 machine:
     init:
         PyDevFromString "request.value = 0x01013F00" 0xFFFFFC28 0x4 False "CKGR_PLLAR"
@@ -41,10 +36,8 @@ sysbus:
         Tag <0xFFFFF800,0xFFFFF9FF> "PIOC"
         Tag <0xFFFFFA00,0xFFFFFBFF> "PIOD"
         Tag <0xFFFFFC00,0xFFFFFCFF> "PMC"
-        Tag <0xFFFFFD00,0xFFFFFDFF> "ST"
         Tag <0xFFFFFE00,0xFFFFFEFF> "RTC"
         Tag <0xFFFFFF00,0x0ffffffff> "MC"
-        Tag <0xFFFFF000,0xFFFFF1FF> "AIC"       
         Tag <0xFFFC0000,0xFFFC3FFF> "USART0"
         Tag <0xFFFC4000,0xFFFC7FFF> "USART1"
         Tag <0xFFFC8000,0xFFFCBFFF> "USART2"
@@ -54,5 +47,4 @@ sysbus:
         Tag <0xFFFDC000,0xFFFDFFFF> "SSC2"
         Tag <0xFFFE0000,0xFFFE3FFF> "SPI"
         Tag <0xFFFA0000,0xFFFA3FFF> "TC012"
-
 

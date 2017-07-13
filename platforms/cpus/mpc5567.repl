@@ -1,13 +1,13 @@
 cpu: CPU.PowerPc @ sysbus
     cpuType: "e200z6"
 
-Flash: Memory.MappedMemory @ sysbus 0x0
+flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x200000
 
-ExternalMemory: Memory.MappedMemory @ sysbus 0x20000000
+externalMemory: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x20000000
 
-InternalSRAM: Memory.MappedMemory @ sysbus 0x40000000
+internalSram: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x14000
 
 uart: UART.MPC5567_UART @ sysbus 0xFFFB0000

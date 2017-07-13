@@ -1,7 +1,7 @@
-usbehci2: USB.EHCIHostController @ sysbus <0xe0003000, +0x1000>
+usbEhci2: USB.EHCIHostController @ sysbus <0xE0003000, +0x1000>
     -> gic@44
 
-usbehci: USB.EHCIHostController @ sysbus <0xe0002000, +0x1000>
+usbEhci: USB.EHCIHostController @ sysbus <0xE0002000, +0x1000>
     -> gic@21
 
 pl310: Cache.PL310 @ sysbus <0xF8F02000, +0x1000>
@@ -26,24 +26,25 @@ sdhci0: SD.SDHCI @ sysbus <0xE0100000, +0x1000>
 
 sdhci1: SD.SDHCI @ sysbus <0xE0101000, +0x1000>
 
-Memory: Memory.MappedMemory @ sysbus 0x0
+memory: Memory.MappedMemory @ sysbus 0x0
     size: 0x40000000
 
-ONCHIP_Memory: Memory.MappedMemory @ sysbus 0xFFFC0000
+onChipMemory: Memory.MappedMemory @ sysbus 0xFFFC0000
     size:0x40000
 
-TTC0: Timers.CadenceTTC @ sysbus <0xF8001000, +0x1000>
+ttc0: Timers.CadenceTTC @ sysbus <0xF8001000, +0x1000>
     [0-2] -> gic@[10-12]
 
-TTC1: Timers.CadenceTTC @ sysbus <0xF8002000, +0x1000>
+ttc1: Timers.CadenceTTC @ sysbus <0xF8002000, +0x1000>
     [0-2] -> gic@[69-71]
 
 privateTimer: Timers.CortexAPrivateTimer @ sysbus <0xF8F00600, +0x200>
     -> gic#0@29
 
 gic: IRQControllers.GIC @ {
-    sysbus new Bus.BusMultiRegistration { address: 0xF8F01000; size: 0x1000; region: "distributor" };
-    sysbus new Bus.BusMultiRegistration { address: 0xF8F00100; size: 0x100; region: "cpuInterface" }}
+        sysbus new Bus.BusMultiRegistration { address: 0xF8F01000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xF8F00100; size: 0x100; region: "cpuInterface" }
+    }
     0 -> cpu@0
     numberOfCPUs: 1
 
@@ -52,16 +53,16 @@ scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
 cpu: CPU.Arm @ sysbus
     cpuType: "cortex-a9"
 
-QSPI: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
+qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
     -> gic@19
 
-GPIO: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
+gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
 
 machine:
     init:
         PyDevFromString "request.value = 0x0001A008" 0xF8000100 0x4 False "ARM_PLL_CTRL"
         PyDevFromString "request.value = 0x0001A008" 0xF8000104 0x4 False "DDR_PLL_CTRL"
-        PyDevFromString "request.value = 0x0001A008" 0xF8000108 0x4 False "IO_PLL_CTRL"              
+        PyDevFromString "request.value = 0x0001A008" 0xF8000108 0x4 False "IO_PLL_CTRL"
         PyDevFromString "request.value = 0x0000003F" 0xF800010C 0x4 False "PLL_STATUS"
         PyDevFromString "request.value = 0x1F000400" 0xF8000120 0x4 False "ARM_CLK_CTRL"
         PyDevFromString "request.value = 0x18400003" 0xF8000124 0x4 False "DDR_CLK_CTRL"
@@ -71,24 +72,10 @@ machine:
         PyDevFromString "request.value = 1" 0xF80001C4 0x4 False "CLK_621_TRUE"
         PyDevFromString "request.value = 0xFFFFFFFF" 0xE000E000 0x4 False "NAND"
         PyDevFromString "request.value = 0xFFFFFFFF" 0xF800710C 0x4 False "XADC_HACK"
-       
+
 sysbus:
     init:
         Tag <0xF8000000,0xF8000FFF> "XSLCR"
         Tag <0xF8007000,0xF8007FFF> "devcfg"
         Tag <0xF8003000,0xF8003FFF> "pl330_dma"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

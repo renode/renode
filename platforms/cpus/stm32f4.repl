@@ -1,7 +1,7 @@
-FSCM_Bank1: Memory.MappedMemory @ sysbus 0x60000000 
+fscmBank1: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x10000000
 
-SRAM: Memory.MappedMemory @ sysbus 0x20000000
+sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x00040000
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
@@ -11,10 +11,8 @@ uart1: UART.STM32_UART @ sysbus <0x40011000, +0x100>
     -> nvic@37
 
 uart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
-    //-> nvic@38
 
 uart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
-   //-> nvic@39
 
 uart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
     -> nvic@52
@@ -62,24 +60,23 @@ gpioPortF: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021400, +0x400>
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
     -> nvic@61
 
-Memory_ROM: Memory.MappedMemory @ sysbus 0x1FFF0000
+rom: Memory.MappedMemory @ sysbus 0x1FFF0000
     size: 0x10000
 
-SPI1: SPI.STM32SPI @ sysbus 0x40013000
+spi1: SPI.STM32SPI @ sysbus 0x40013000
 
-SPI2: SPI.STM32SPI @ sysbus 0x40003800
+spi2: SPI.STM32SPI @ sysbus 0x40003800
 
-SPI3: SPI.STM32SPI @ sysbus 0x40003C00
+spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
-DMA1: DMA.STM32DMA @ sysbus 0x40026000
+dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-DMA2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40023400
     [0-7] -> nvic@[56-60,68-70]
 
 sysbus:
     init:
-       // ApplySVD @http://emul8.org/emul8_files/svd/STM32F40x.svd
         Tag <0x40021000, 0x40021003> "GPIOE_MODER" 0xFFFFFFFF
         Tag <0x40021004, 0x40021007> "GPIOE_OTYPER" 0x00000008
         Tag <0x40023800, 0x40023803> "RCC_CR" 0x0A020083
@@ -90,32 +87,3 @@ machine:
     init:
         SetClockSource sysbus.cpu
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    

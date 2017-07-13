@@ -1,25 +1,25 @@
-uDMA: DMA.UDMA @ sysbus 0x400FF000
+uDma: DMA.UDMA @ sysbus 0x400FF000
     -> nvic@46
 
 uart0: UART.PL011 @ sysbus 0x4000C000
     -> nvic@5
     size: 0x1000
 
-Watchdog: Timers.CC2538Watchdog @ sysbus 0x400d5000
+watchdog: Timers.CC2538Watchdog @ sysbus 0x400D5000
     periodInMs: 500
 
-SleepTimer: Timers.CC2538SleepTimer @ sysbus 0x400d5040
+sleepTimer: Timers.CC2538SleepTimer @ sysbus 0x400D5040
 
 uart1: UART.PL011 @ sysbus 0x4000D000
     -> nvic@6
 
-RAM: Memory.MappedMemory @ sysbus 0x20000000
+ram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x40000
 
-ROM: Memory.MappedMemory @ sysbus 0x0
+rom: Memory.MappedMemory @ sysbus 0x0
     size: 0x20000
 
-Flash: Memory.MappedMemory @ sysbus 0x200000
+flash: Memory.MappedMemory @ sysbus 0x200000
     size: 0x100000
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
@@ -29,10 +29,10 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
     cpuType: "cortex-m3"
 
-Radio: Wireless.CC2538RF @ sysbus 0x40088000
+radio: Wireless.CC2538RF @ sysbus 0x40088000
     -> nvic@141
 
-BITBAND: Miscellaneous.BitBanding @ sysbus <0x22000000, + 0x200000>
+bitband: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
     peripheralBase: 0x20000000
 
 crypto: Miscellaneous.CC2538_Cryptoprocessor @ sysbus 0x4008B000
@@ -40,22 +40,22 @@ crypto: Miscellaneous.CC2538_Cryptoprocessor @ sysbus 0x4008B000
 
 sysbus:
     init:
-        Tag <0x400D2000,0x400D2FFF> "SYS_CTRL_CLOCK_CTRL" 1 
-        Tag <0x40088664,0x40088667> "RFCORE_XREG_RSSISTAT" 1
-        Tag <0x400D2004,0x400D2007> "CLOCK_STATUS" 0x10004b0
-        Tag <0x4000C000,0x4000cfff> "UART0"
-        Tag <0x4000D000,0x4000dfff> "UART1"
-        Tag <0x40008000,0x40008fff> "SSI0"
-        Tag <0x40009000,0x40009fff> "SSI1"
-        Tag <0x400D7000,0x400D70FF> "ADC"
-        Tag <0x400d9000,0x400d9fff> "GPIO_A_BASE"
-        Tag <0x400da000,0x400dafff> "GPIO_B_BASE"
-        Tag <0x400db000,0x400dbfff> "GPIO_C_BASE"
-        Tag <0x400dc000,0x400ddfff> "GPIO_D_BASE"
-        Tag <0x40030000,0x40030fff> "GPTIMER0"
-        Tag <0x40031000,0x40031fff> "GPTIMER1"
-        Tag <0x40032000,0x40032fff> "GPTIMER2"
-        Tag <0x40033000,0x40033fff> "GPTIMER3"
-        Tag <0x400d5000,0x400d50ff> "STIMER_WTDG"
+        Tag <0x400D2000, 0x400D2FFF> "SYS_CTRL_CLOCK_CTRL" 1
+        Tag <0x40088664, 0x40088667> "RFCORE_XREG_RSSISTAT" 1
+        Tag <0x400D2004, 0x400D2007> "CLOCK_STATUS" 0x10004B0
+        Tag <0x4000C000, 0x4000CFFF> "UART0"
+        Tag <0x4000D000, 0x4000DFFF> "UART1"
+        Tag <0x40008000, 0x40008FFF> "SSI0"
+        Tag <0x40009000, 0x40009FFF> "SSI1"
+        Tag <0x400D7000, 0x400D70FF> "ADC"
+        Tag <0x400D9000, 0x400D9FFF> "GPIO_A_BASE"
+        Tag <0x400DA000, 0x400DAFFF> "GPIO_B_BASE"
+        Tag <0x400DB000, 0x400DBFFF> "GPIO_C_BASE"
+        Tag <0x400DC000, 0x400DDFFF> "GPIO_D_BASE"
+        Tag <0x40030000, 0x40030FFF> "GPTIMER0"
+        Tag <0x40031000, 0x40031FFF> "GPTIMER1"
+        Tag <0x40032000, 0x40032FFF> "GPTIMER2"
+        Tag <0x40033000, 0x40033FFF> "GPTIMER3"
+        Tag <0x400D5000, 0x400D50FF> "STIMER_WTDG"
 
 

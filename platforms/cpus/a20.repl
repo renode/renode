@@ -1,10 +1,10 @@
-Memory_BROM: Memory.MappedMemory @ sysbus 0xFFFF0000
+memoryBrom: Memory.MappedMemory @ sysbus 0xFFFF0000
     size: 0x10000
 
-Memory_SRAM: Memory.MappedMemory @ sysbus 0x0000
+memorySram: Memory.MappedMemory @ sysbus 0x0
     size: 0x40000
 
-Memory_RAM: Memory.MappedMemory @ sysbus 0x40000000
+memoryRam: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x80000000
 
 uart0: UART.NS16550 @ sysbus 0x1C28000
@@ -39,21 +39,22 @@ uart7: UART.NS16550 @ sysbus 0x1C29c00
     wideRegisters: true
     -> gic@0x14
 
-usbehci1: USB.EHCIHostController @ sysbus <0x1C14000, +0x1000>
+usbEhci1: USB.EHCIHostController @ sysbus <0x1C14000, +0x1000>
     -> gic@0x27
     ehciBaseAddress: 0x0
     capabilityRegistersLength: 0x10
 
-usbhub: USB.UsbHub @ usbehci1 1
+usbHub: USB.UsbHub @ usbEhci1 1
 
-usbehci2: USB.EHCIHostController @ sysbus <0x1C1C000, +0x1000>
+usbEhci2: USB.EHCIHostController @ sysbus <0x1C1C000, +0x1000>
     -> gic@0x28
     ehciBaseAddress: 0x0
     capabilityRegistersLength: 0x10
 
 gic: IRQControllers.GIC @ {
-    sysbus new Bus.BusMultiRegistration { address: 0x1c81000; size: 0x1000; region: "distributor" };
-    sysbus new Bus.BusMultiRegistration { address: 0x1c82000; size: 0x100; region: "cpuInterface" }}
+        sysbus new Bus.BusMultiRegistration { address: 0x1C81000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0x1C82000; size: 0x100; region: "cpuInterface" }
+    }
     0 -> cpu@0
     numberOfCPUs: 1
 
@@ -61,56 +62,35 @@ cpu: CPU.CortexA7 @ sysbus
     genericTimerCompareValue: 2000000
     gic: gic
 
-uart_semihosting: UART.SemihostingUart @ cpu
+uartSemihosting: UART.SemihostingUart @ cpu
 
-sunxi_mmc0: SD.SunxiMMC @ sysbus 0x1C0f000
+sunxiMmc0: SD.SunxiMMC @ sysbus 0x1C0F000
     -> gic@32
 
-sunxi_mmc1: SD.SunxiMMC @ sysbus 0x1C10000
+sunxiMmc1: SD.SunxiMMC @ sysbus 0x1C10000
     -> gic@33
 
-sunxi_mmc3: SD.SunxiMMC @ sysbus 0x1C12000
+sunxiMmc3: SD.SunxiMMC @ sysbus 0x1C12000
     -> gic@35
 
-sunxi_hstimer: Timers.SunxiHighSpeedTimer @ sysbus 0x1C60000
-    frequency: 100000000 
+sunxiHstimer: Timers.SunxiHighSpeedTimer @ sysbus 0x1C60000
+    frequency: 100000000
     [0-3] -> gic@[81-84]
 
-sunxi_timer: Timers.SunxiTimer @ sysbus 0x1C20C00
+sunxiTimer: Timers.SunxiTimer @ sysbus 0x1C20C00
     Timer0Irq -> gic@22
     Timer1Irq -> gic@23
 
 sysbus:
     init:
-        Tag <0x1c00000, 0x1c00fff> "SRAM_CONTROLLER"
-        Tag <0x1c01000, 0x1c01fff> "DRAM_CONTROLLER"
-        Tag <0x1C00024,0x1C00027> "FEL_GPIO" 0xFFFFFFFF
+        Tag <0x1C00000, 0x1C00FFF> "SRAM_CONTROLLER"
+        Tag <0x1C01000, 0x1C01FFF> "DRAM_CONTROLLER"
+        Tag <0x1C00024, 0x1C00027> "FEL_GPIO" 0xFFFFFFFF
         Tag <0x1C0F000, 0x1C0FFFF> "SDC0"
         Tag <0x1C20000, 0x1C203FF> "CCU"
         Tag <0x1C03000, 0x1C03FFF> "NANDFLASHC"
         Tag <0x1C02000, 0x1C02FFF> "DMAC"
-        Tag <0x1c11000, 0x1c11fff> "SDC2"
-        Tag <0x1c05000, 0x1c05fff> "SPI0"
-        Tag <0x1c13000, 0x1c13fff> "USB0"
-
-/*
- set CCU_PYDEV """
-if request.isRead:
-  if request.offset == 0x20:
-    request.value = 0x11049280
-  elif request.offset == 0x24:
-    request.value = 0x14888000
-  elif request.offset == 0x28:
-    request.value = 0x21009911
-  else:
-    request.value = 0x0
-"""
-
-machine:
-    init:
-        PyDevFromString $CCU_PYDEV 0x1C20000 0x200 True "CCU_PyDev" 0
-*/
-
-
-
+        Tag <0x1C11000, 0x1C11FFF> "SDC2"
+        Tag <0x1C05000, 0x1C05FFF> "SPI0"
+        Tag <0x1C13000, 0x1C13FFF> "USB0"
 

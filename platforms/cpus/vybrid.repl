@@ -11,10 +11,10 @@ eDma0: DMA.VybridDma @ sysbus <0x40018000, +0x2000> { -> mscm@0 }
 eDma1: DMA.VybridDma @ sysbus <0x40098000, +0x2000> { -> mscm@2 }
 fb: Video.VybridDCU @ sysbus <0x40058000, +0x2000>
 
-usbehci0: USB.EHCIHostController @ sysbus <0x40034000, +0x2000>
+usbEhci0: USB.EHCIHostController @ sysbus <0x40034000, +0x2000>
     IRQ -> mscm@67
 
-usbehci1: USB.EHCIHostController @ sysbus <0x400B4000, +0x2000>
+usbEhci1: USB.EHCIHostController @ sysbus <0x400B4000, +0x2000>
     IRQ -> mscm@68
 
 i2c0: I2C.VybridI2C @ sysbus 0x40066000 { -> mscm@63 }
@@ -63,15 +63,15 @@ gpio0: GPIOPort.VybridGPIOPort @ {
 
 gpio1: GPIOPort.VybridGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF040; size: 0x40; region: "gpio" };
-    sysbus new Bus.BusMultiRegistration { address: 0x4004a000; size: 0xD0; region: "port" }}
+    sysbus new Bus.BusMultiRegistration { address: 0x4004A000; size: 0xD0; region: "port" }}
 
 gpio2: GPIOPort.VybridGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF080; size: 0x40; region: "gpio" };
-    sysbus new Bus.BusMultiRegistration { address: 0x4004b000; size: 0xD0; region: "port" }}
+    sysbus new Bus.BusMultiRegistration { address: 0x4004B000; size: 0xD0; region: "port" }}
 
 gpio3: GPIOPort.VybridGPIOPort @ {
-    sysbus new Bus.BusMultiRegistration { address: 0x400FF0c0; size: 0x40; region: "gpio" };
-    sysbus new Bus.BusMultiRegistration { address: 0x4004c000; size: 0xD0; region: "port" }}
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF0C0; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004C000; size: 0xD0; region: "port" }}
 
 gpio4: GPIOPort.VybridGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF100; size: 0x40; region: "gpio" };
@@ -90,6 +90,3 @@ sema4: Miscellaneous.SEMA4 @ sysbus 0x4001D000
     CPU1 -> nvic@4
 
 nand: MTD.FSLNAND @ sysbus 0x400E0000 { -> mscm@75 }
-
-/*userLed: Miscellaneous.LED @ gpio 22
-    invert: true*/

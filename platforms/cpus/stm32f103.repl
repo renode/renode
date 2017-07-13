@@ -1,14 +1,13 @@
-FSMC_Bank1: Memory.MappedMemory @ sysbus 0x60000000
+fsmcBank1: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x10000000
 
-SRAM: Memory.MappedMemory @ sysbus 0x20000000
+sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x10000000
 
 flash: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x20000000
 
 uart4: UART.STM32_UART @ sysbus <0x40013800, +0x100>
-    //-> nvic@53
 
 uart3: UART.STM32_UART @ sysbus <0x40005000, +0x100>
     -> nvic@53

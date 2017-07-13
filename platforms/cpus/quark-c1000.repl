@@ -1,9 +1,10 @@
-BIOS_ROM: Memory.MappedMemory @ {
-    sysbus 0xffffe000;
-    sysbus 0xe000}
+biosRom: Memory.MappedMemory @ {
+        sysbus 0xFFFFE000;
+        sysbus 0xE000
+    }
     size: 0x2000
 
-FLASH: Memory.MappedMemory @ sysbus 0x40000000
+flash: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x2F000
 
 lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
@@ -18,19 +19,19 @@ spi0: SPI.Quark_SPI @ sysbus 0xB0001000
 spi1: SPI.Quark_SPI @ sysbus 0xB0001400
     IRQ -> ioapic@3
 
-FLASH2: Memory.MappedMemory @ sysbus 0x40030000
+flash2: Memory.MappedMemory @ sysbus 0x40030000
     size: 0x2F000
 
-OTP_Data: Memory.MappedMemory @ sysbus 0x4002F000
+otpData: Memory.MappedMemory @ sysbus 0x4002F000
     size: 0x1000
 
-SRAM: Memory.MappedMemory @ sysbus 0xA8000000
+sram: Memory.MappedMemory @ sysbus 0xA8000000
     size: 0x14000
 
-uart_a: UART.NS16550 @ sysbus 0xB0002000
+uartA: UART.NS16550 @ sysbus 0xB0002000
     wideRegisters: true
 
-uart_b: UART.NS16550 @ sysbus 0xB0002400
+uartB: UART.NS16550 @ sysbus 0xB0002400
     wideRegisters: true
     IRQ -> ioapic@6
 
@@ -41,7 +42,7 @@ cpu: CPU.X86 @ sysbus
 gpio: X86.Quark_GPIOController @ sysbus 0xB0000C00
     IRQ -> ioapic@8
 
-PWM: X86.Quark_PWM @ sysbus 0xB0000800
+pwm: X86.Quark_PWM @ sysbus 0xB0000800
     IRQ -> ioapic@9
 
 sysbus:
@@ -58,4 +59,4 @@ sysbus:
         Tag <0xB0000800 0x400> "APB_TIMER"
         Tag <0xB0000400 0x400> "RTC"
         Tag <0xB0000000 0x400> "WATCHDOG_TIMER"
-        
+

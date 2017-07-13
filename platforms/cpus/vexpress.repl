@@ -1,53 +1,55 @@
 uart0: UART.PL011 @ sysbus 0x10009000
-    -> GIC@5
+    -> gic@5
     size: 0x1000
 
-uart1: UART.PL011 @ sysbus 0x1000a000
-    -> GIC@6
+uart1: UART.PL011 @ sysbus 0x1000A000
+    -> gic@6
     size: 0x1000
 
-uart2: UART.PL011 @ sysbus 0x1000b000
-    -> GIC@7
+uart2: UART.PL011 @ sysbus 0x1000B000
+    -> gic@7
     size: 0x1000
 
-uart3: UART.PL011 @ sysbus 0x1000c000
-    -> GIC@8
+uart3: UART.PL011 @ sysbus 0x1000C000
+    -> gic@8
     size: 0x1000
 
-Memory: Memory.MappedMemory @ {
-    sysbus 0x80000000;
-    sysbus 0xA0000000}
+memory: Memory.MappedMemory @ {
+        sysbus 0x80000000;
+        sysbus 0xA0000000
+    }
     size: 0x20000000
 
 sram: Memory.MappedMemory @ sysbus 0x48000000
     size: 0x02000000
 
-Timer1: Timers.SP804 @ sysbus 0x10011000
-    -> GIC@2
+timer1: Timers.SP804 @ sysbus 0x10011000
+    -> gic@2
 
-Timer2: Timers.SP804 @ sysbus 0x10012000
-    -> GIC@3
+timer2: Timers.SP804 @ sysbus 0x10012000
+    -> gic@3
 
-SysCtl: Miscellaneous.ArmSysCtl @ sysbus <0x10000000, +0x1000>
-    procId: 0x0c000191
+sysCtl: Miscellaneous.ArmSysCtl @ sysbus <0x10000000, +0x1000>
+    procId: 0x0C000191
 
-pl310: Cache.PL310 @ sysbus <0x1e00a000, +0x10000>
+pl310: Cache.PL310 @ sysbus <0x1E00A000, +0x10000>
 
-PL031: Timers.PL031 @ sysbus <0x10017000, +0x1000>
-    -> GIC@4
+pl031: Timers.PL031 @ sysbus <0x10017000, +0x1000>
+    -> gic@4
 
-usbehci: USB.ISP1761 @ sysbus <0x4f000000, +0xFFFF>
-    -> GIC@16
+usbEhci: USB.ISP1761 @ sysbus <0x4F000000, +0xFFFF>
+    -> gic@16
 
-KMI0: Input.PL050 @ sysbus <0x10006000, +0x1000>
-    -> GIC@12
+kmi0: Input.PL050 @ sysbus <0x10006000, +0x1000>
+    -> gic@12
 
-KMI1: Input.PL050 @ sysbus <0x10007000, +0x1000>
-    -> GIC@13
+kmi1: Input.PL050 @ sysbus <0x10007000, +0x1000>
+    -> gic@13
 
-GIC: IRQControllers.GIC @ {
-    sysbus new Bus.BusMultiRegistration { address: 0x1e001000; size: 0x1000; region: "distributor"};
-    sysbus new Bus.BusMultiRegistration { address: 0x1e000100; size: 0x100; region: "cpuInterface"}}
+gic: IRQControllers.GIC @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x1E001000; size: 0x1000; region: "distributor"};
+        sysbus new Bus.BusMultiRegistration { address: 0x1E000100; size: 0x100; region: "cpuInterface"}
+    }
     0 -> cpu@0
     itLinesNumber: 2
     numberOfCPUs: 1
@@ -57,38 +59,12 @@ cpu: CPU.Arm @ sysbus
 
 sysbus:
     init:
-        Tag <0x10017000,0x10026FFF> "PL031"
-        Tag <0x4f000000,0x4F00FFFF> "usbehci"
-        Tag <0x10009000,0x10009FFF> "UART0"
-        Tag <0x1c0A0000,0x1C0A0FFF> "UART1"
-        Tag <0x1c0B0000,0x1C0B0FFF> "UART2"
-        Tag <0x1c0C0000,0x1C0C0FFF> "UART3"
-        Tag <0x40000000,0x43ffffff> "flash0"
-        Tag <0x44000000,0x47ffffff> "flash1"
-        Tag <0x1e000000,0x1E000FFF> "SCU_BASE"
-        Tag <0x10011000,0x10011fff> "Timer1"
-        Tag <0x10012000,0x10012fff> "Timer2"       
+        Tag <0x1C0A0000,0x1C0A0FFF> "UART1"
+        Tag <0x1C0B0000,0x1C0B0FFF> "UART2"
+        Tag <0x1C0C0000,0x1C0C0FFF> "UART3"
+        Tag <0x40000000,0x43FFFFFF> "flash0"
+        Tag <0x44000000,0x47FFFFFF> "flash1"
+        Tag <0x1E000000,0x1E000FFF> "SCU_BASE"
         Tag <0x10001000,0x10002FFF> "SP810_sysctl"
         Tag <0x10004000,0x10004FFF> "PL041_audio"
-       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

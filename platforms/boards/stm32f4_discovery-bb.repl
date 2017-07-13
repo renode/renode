@@ -6,7 +6,7 @@ phy: Network.EthernetPhysicalLayer @ ethernet 0
 
 phy1: Network.EthernetPhysicalLayer @ ethernet 1
     id1: 0x0007
-    id2:0xC0F1
+    id2: 0xC0F1
     autoNegotiationAdvertisement: 0x00A1
     autoNegotiationLinkPartnerAbility: 0x0001
 

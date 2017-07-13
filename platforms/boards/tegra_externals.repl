@@ -1,11 +1,6 @@
 usbHub: USB.UsbHub @ usbEhci2 1
     nrPorts: 8
 
-/*pendrive: USB.MassStorage @ usbhub 1
-    underlyingFile: usb_rootfs
-    blockSize: 512
-    numberOfBlocks: 2097152*/
-
 usbMouse: USB.USBMouse @ usbHub 2
 
 usbKeyboard: USB.USBKeyboard @ usbHub 1

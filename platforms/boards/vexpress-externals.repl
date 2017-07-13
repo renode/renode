@@ -5,8 +5,6 @@ mouse: Input.PS2Mouse @ kmi1
 usbHub: USB.UsbHub @ usbEhci 1
     nrPorts: 8
 
-//network: USB.SMSC9500 @ usbHUB 5
-
 usbMouse: USB.USBMouse @ usbHub 2
 
 usbKeyboard: USB.USBKeyboard @ usbHub 1
