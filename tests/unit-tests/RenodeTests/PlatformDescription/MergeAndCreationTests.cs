@@ -8,9 +8,8 @@ using System;
 using System.Linq;
 using Emul8.Core;
 using Emul8.Peripherals.CPU;
-using Emul8.PlatformDescription;
-using Emul8.PlatformDescription.Syntax;
-using Emul8.UnitTests.Mocks;
+using Antmicro.Renode.PlatformDescription;
+using Antmicro.Renode.PlatformDescription.Syntax;
 using Emul8.Utilities;
 using Moq;
 using NUnit.Framework;
@@ -229,7 +228,7 @@ sender:
 peripheral: UnitTests.Mocks.MockCPU";
 
             var peripheral = new EmptyPeripheral();
-            machine.SystemBus.Register(peripheral, new Peripherals.Bus.BusRangeRegistration(0.To(1)));
+            machine.SystemBus.Register(peripheral, new Emul8.Peripherals.Bus.BusRangeRegistration(0.To(1)));
             machine.SetLocalName(peripheral, "peripheral");
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));

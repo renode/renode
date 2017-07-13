@@ -7,8 +7,8 @@
 using System;
 using System.Linq;
 using Emul8.Core;
-using Emul8.PlatformDescription;
-using Emul8.PlatformDescription.Syntax;
+using Antmicro.Renode.PlatformDescription;
+using Antmicro.Renode.PlatformDescription.Syntax;
 using NUnit.Framework;
 using Sprache;
 
@@ -124,6 +124,20 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
             Assert.AreEqual(5, flattenedIrqSources[3].Number);
             Assert.AreEqual(6, flattenedIrqSources[4].Number);
             Assert.AreEqual("IRQ", flattenedIrqSources[5].PropertyName);
+        }
+
+        [Test]
+        public void ShouldParseQuotedString()
+        {
+            var source = new Input("\"some text\"");
+            var result = Grammar.QuotedString(source);
+        }
+
+        [Test]
+        public void ShouldParseQuotedStringWithASemicolon()
+        {
+            var source = new Input ("\"some;text\"");
+            var result = Grammar.QuotedString(source);
         }
     }
 }

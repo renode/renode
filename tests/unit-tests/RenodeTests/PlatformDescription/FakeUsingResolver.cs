@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Emul8.PlatformDescription;
+using Antmicro.Renode.PlatformDescription;
 using Emul8.Utilities;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription

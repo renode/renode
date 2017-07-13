@@ -7,8 +7,8 @@
 using System;
 using System.Linq;
 using Emul8.Core;
-using Emul8.PlatformDescription;
-using Emul8.PlatformDescription.Syntax;
+using Antmicro.Renode.PlatformDescription;
+using Antmicro.Renode.PlatformDescription.Syntax;
 using NUnit.Framework;
 using Sprache;
 
@@ -97,6 +97,22 @@ uart: @ sysbus ""something""";
             Assert.IsNull(entry.Type);
             Assert.AreEqual("sysbus", entry.RegistrationInfos.Single().Register.Value);
             Assert.AreEqual("something", ((StringValue)entry.RegistrationInfos.Single().RegistrationPoint).Value);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithStringRegistrationPointWithSemicolon()
+        {
+            var source = @"
+uart: @ sysbus ""string ; with semicolon""
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            Assert.AreEqual("uart", entry.VariableName);
+            Assert.IsNull(entry.Type);
+            Assert.AreEqual("sysbus", entry.RegistrationInfos.Single().Register.Value);
+            Assert.AreEqual("string ; with semicolon", ((StringValue)entry.RegistrationInfos.Single().RegistrationPoint).Value);
         }
 
         [Test]
@@ -275,6 +291,21 @@ uart:
             Assert.AreEqual("Method1 a b", lines[0]);
             Assert.AreEqual("Method2 true", lines[1]);
             Assert.AreEqual("Method3", lines[2]);
+        }
+
+        [Test]
+        public void ShouldParseInitAttributeWithSemicolonInQuotes()
+        {
+            var source = @"
+uart:
+    init:
+        CallMethod ""string ; with semicolon""
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var lines = ((InitAttribute)result.Value.Entries.Single().Attributes.Single()).Lines.ToArray();
+            Assert.AreEqual("CallMethod \"string ; with semicolon\"", lines[0]);
         }
 
         [Test]

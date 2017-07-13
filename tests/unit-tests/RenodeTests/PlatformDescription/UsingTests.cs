@@ -7,7 +7,7 @@
 using System;
 using System.Linq;
 using Emul8.Core;
-using Emul8.PlatformDescription;
+using Antmicro.Renode.PlatformDescription;
 using NUnit.Framework;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription

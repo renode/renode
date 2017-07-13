@@ -7,7 +7,7 @@
 using System;
 using Emul8.Core;
 using Emul8.Exceptions;
-using Emul8.PlatformDescription;
+using Antmicro.Renode.PlatformDescription;
 using Emul8.Utilities;
 using NUnit.Framework;
 
