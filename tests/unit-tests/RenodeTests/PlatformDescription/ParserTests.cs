@@ -100,22 +100,6 @@ uart: @ sysbus ""something""";
         }
 
         [Test]
-        public void ShouldParseEntryWithStringRegistrationPointWithSemicolon()
-        {
-            var source = @"
-uart: @ sysbus ""string ; with semicolon""
-";
-            var result = Grammar.Description(GetInputFromString(source));
-            Assert.IsTrue(result.WasSuccessful, result.ToString());
-
-            var entry = result.Value.Entries.Single();
-            Assert.AreEqual("uart", entry.VariableName);
-            Assert.IsNull(entry.Type);
-            Assert.AreEqual("sysbus", entry.RegistrationInfos.Single().Register.Value);
-            Assert.AreEqual("string ; with semicolon", ((StringValue)entry.RegistrationInfos.Single().RegistrationPoint).Value);
-        }
-
-        [Test]
         public void ShouldParseEntryWithManyRegistrationPoints()
         {
             var source = @"
@@ -305,7 +289,7 @@ uart:
             Assert.IsTrue(result.WasSuccessful, result.ToString());
 
             var lines = ((InitAttribute)result.Value.Entries.Single().Attributes.Single()).Lines.ToArray();
-            Assert.AreEqual("CallMethod \"string ; with semicolon\"", lines[0]);
+            Assert.AreEqual("CallMethod \"string ; with semicolon\"", lines.Single());
         }
 
         [Test]

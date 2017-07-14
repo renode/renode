@@ -131,6 +131,9 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         {
             var source = new Input("\"some text\"");
             var result = Grammar.QuotedString(source);
+            Assert.IsTrue(result.WasSuccessful, result.Message);
+
+            Assert.AreEqual("some text", result.Value);
         }
 
         [Test]
@@ -138,6 +141,9 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         {
             var source = new Input ("\"some;text\"");
             var result = Grammar.QuotedString(source);
+            Assert.IsTrue(result.WasSuccessful, result.Message);
+
+            Assert.AreEqual("some;text", result.Value);
         }
     }
 }
