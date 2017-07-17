@@ -85,9 +85,14 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             var wirelessResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(WirelessLogName, out wirelessWiresharkFound);
             var ethernetResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(EthernetLogName, out ethernetWiresharkFound);
 
-            if((wirelessWiresharkFound && external is WirelessMedium) || (ethernetWiresharkFound && external is Switch))
+            if(wirelessWiresharkFound && external is WirelessMedium)
             {
-                wirelessResult.LogToWireshark((INetworkLog<INetworkInterface>)external);
+                wirelessResult.LogToWireshark((WirelessMedium)external);
+            }
+
+            if(ethernetWiresharkFound && external is Switch)
+            {
+                ethernetResult.LogToWireshark((Switch)external);
             }
         }
 
