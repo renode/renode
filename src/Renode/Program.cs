@@ -23,21 +23,25 @@ namespace Antmicro.Renode
             {
                 var options = new Options();
                 var optionsParser = new OptionsParser.OptionsParser();
-                if(!optionsParser.Parse(options, args))
+                try
                 {
-                    return;
-                }
-
-                Emul8.CLI.CommandLineInterface.Run(options, (context) =>
-                {
-                    if(options.RobotFrameworkRemoteServerPort >= 0)
+                    if(optionsParser.Parse(options, args))
                     {
-                        var rf = new RobotFrameworkEngine();
-                        context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
-                        rf.Start(options.RobotFrameworkRemoteServerPort);
+                        Emul8.CLI.CommandLineInterface.Run(options, (context) =>
+                        {
+                            if(options.RobotFrameworkRemoteServerPort >= 0)
+                            {
+                                var rf = new RobotFrameworkEngine();
+                                context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
+                                rf.Start(options.RobotFrameworkRemoteServerPort);
+                            }
+                        });
                     }
-                });
-                Emulator.FinishExecutionAsMainThread();
+                }
+                finally
+                {
+                    Emulator.FinishExecutionAsMainThread();
+                }
             });
             thread.Start();
             Emulator.ExecuteAsMainThread();
