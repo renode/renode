@@ -170,7 +170,7 @@ finish:
                         }
                         break;
                     case FindResult.MultilineCommentStart:
-                        var nextIndex = line.IndexOf("*/", currentIndex + 2, StringComparison.InvariantCulture) + 2;
+                        var nextIndex = line.IndexOf("*/", currentIndex + 1, StringComparison.InvariantCulture) + 2;
                         if(nextIndex == 1) // means that IndexOf returned -1
                         {
                             inMultilineComment = true;
