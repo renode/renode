@@ -33,11 +33,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
     public class WiresharkSender
     {
-        public WiresharkSender(string pipe_name, UInt32 pcap_netid, Wireshark wireshark)
+        public WiresharkSender(string pipe_name, UInt32 pcap_netid)
         {
             this.pipe_name = pipe_name;
             this.pcap_netid = pcap_netid;
-            this.parent = wireshark;
         }
 
         private void PipeCreate()
@@ -202,7 +201,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private UInt32 pcap_netid;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
-        private Wireshark parent;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct PcapPacketHeader

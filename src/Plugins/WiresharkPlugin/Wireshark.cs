@@ -24,7 +24,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             EmulationManager.Instance.EmulationChanged += ClearLog;
             currentEmulation.MachineRemoved += OnMachineRemoved;
             wiresharkSinkName = sinkName;
-            wiresharkSender = new WiresharkSender(wiresharkSinkName, (uint)layer, this);
+            wiresharkSender = new WiresharkSender(wiresharkSinkName, (uint)layer);
             this.layer = layer;
         }
 
