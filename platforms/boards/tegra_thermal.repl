@@ -1,2 +1,0 @@
-thermal: I2C.LM95245 @ sysbus.DVC 0x4C
-
