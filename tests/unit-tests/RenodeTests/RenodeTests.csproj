@@ -31,7 +31,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\..\src\Emul8\External\Tools\nunit.framework.dll</HintPath>
+      <HintPath>..\..\..\src\Emul8\External\Tools\nunit.framework.dll</HintPath>
       <Package>nunit</Package>
       <Private>True</Private>
     </Reference>
