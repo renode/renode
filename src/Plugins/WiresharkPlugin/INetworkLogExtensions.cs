@@ -140,13 +140,12 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private static Wireshark CreateWireshark(this Emulation emulation, string name, LinkLayer layer)
         {
-            Wireshark result;
-
 #if EMUL8_PLATFORM_WINDOWS
             throw new RecoverableException("Wireshark is not available on Windows");
 #elif EMUL8_PLATFORM_OSX
             throw new RecoverableException("Wireshark is not available on OS X.");
 #else
+            Wireshark result;
             if(File.Exists(ConfigurationManager.Instance.Get("wireshark", "wireshark-path", "/usr/bin/wireshark")))
             {
                 result = new Wireshark(name, layer);
@@ -155,9 +154,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             {
                 throw new RecoverableException("Wireshark is not installed or is not available in the default path. Please adjust the path in Renode configuration.");
             }
-#endif
+
             emulation.HostMachine.AddHostMachineElement(result, name);
             return result;
+#endif
         }
 
         private static string GetName(IEmulationElement element, IEmulationElement nextElement = null)
