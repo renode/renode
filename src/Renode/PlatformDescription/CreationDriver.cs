@@ -1,4 +1,4 @@
-﻿﻿﻿﻿//
+﻿﻿﻿﻿﻿﻿//
 // Copyright (c) Antmicro
 //
 // This file is part of the Renode project.
@@ -76,10 +76,11 @@ namespace Antmicro.Renode.PlatformDescription
                 }
                 UpdatePropertiesAndInterruptsOnUpdateQueue();
 
-                foreach(var entry in sortedEntries.Where(x => x.RegistrationInfos != null))
+                var entriesToRegister = sortedEntries.Where(x => x.RegistrationInfos != null);
+                do
                 {
-                    RegisterFromEntry(entry);
-                }
+                    entriesToRegister = RegisterFromEntries(entriesToRegister);
+                } while(entriesToRegister.Any());
 
                 while(objectValueInitQueue.Count > 0)
                 {
@@ -763,18 +764,58 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private void RegisterFromEntry(Entry entry)
+        private List<Entry> RegisterFromEntries(IEnumerable<Entry> sortedEntries)
         {
+            var result = new List<Entry>();
+            foreach(var entry in sortedEntries)
+            {
+                if(!TryRegisterFromEntry(entry))
+                {
+                    result.Add(entry);
+                }
+            }
+            return result;
+        }
+
+        private bool AreAllParentsRegistered(Entry entry)
+        {
+            foreach(var registrationInfo in entry.RegistrationInfos)
+            {
+                if(registrationInfo.Register == null)
+                {
+                    return true;
+                }
+                var register = variableStore.GetVariableFromReference(registrationInfo.Register).Value;
+                var registerAsPeripheral = register as IPeripheral;
+                if(registerAsPeripheral == null)
+                {
+                    HandleError(ParsingError.CastException, registrationInfo.Register,
+                                string.Format("Exception was thrown during registration of '{0} in '{1}':{2}'{1}' does not implement IPeripheral.",
+                                              entry.VariableName, registrationInfo.Register.Value, Environment.NewLine), false);
+                }
+                if(!machine.IsRegistered((IPeripheral)register))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool TryRegisterFromEntry(Entry entry)
+        {
+            if(!AreAllParentsRegistered(entry))
+            {
+                return false;
+            }
             foreach(var registrationInfo in entry.RegistrationInfos)
             {
                 if(registrationInfo.Register == null)
                 {
                     // registration canceling entry (i.e. @none)
                     // it may not coexist with other entries, so we return
-                    return;
+                    return true;
                 }
                 var register = variableStore.GetVariableFromReference(registrationInfo.Register).Value;
-
                 IRegistrationPoint registrationPoint;
                 if(registrationInfo.Constructor != null)
                 {
@@ -831,7 +872,7 @@ namespace Antmicro.Renode.PlatformDescription
                         throw;
                     }
                     HandleError(ParsingError.RegistrationException, registrationInfo.Register,
-                                string.Format("Exception was thrown during registration of '{0} in '{1}':{2}{3}", 
+                                string.Format("Exception was thrown during registration of '{0} in '{1}':{2}{3}",
                                               entry.VariableName, registrationInfo.Register.Value, Environment.NewLine, recoverableException.Message), false);
                 }
             }
@@ -841,11 +882,11 @@ namespace Antmicro.Renode.PlatformDescription
             }
             catch(RecoverableException exception)
             {
-                HandleError(ParsingError.NameSettingException, (IWithPosition)entry.Alias ?? entry.RegistrationInfos.First().Register, 
+                HandleError(ParsingError.NameSettingException, (IWithPosition)entry.Alias ?? entry.RegistrationInfos.First().Register,
                             string.Format("Exception was thrown during setting a name: {0}{1}", Environment.NewLine, exception.Message), false);
             }
+            return true;
         }
-
 
         private void ValidateAttributePreMerge(Type objectType, Syntax.Attribute attribute)
         {

@@ -50,6 +50,7 @@ namespace Antmicro.Renode.PlatformDescription
         ConstructionException = 38,
         RegistrationException = 39,
         PropertySettingException = 40,
-        NameSettingException = 41
+        NameSettingException = 41,
+        CastException = 42
     }
 }
