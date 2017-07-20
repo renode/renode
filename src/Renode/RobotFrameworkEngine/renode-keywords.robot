@@ -23,7 +23,7 @@ Setup
     ...    Debug
     ...    ${CONFIGURATION}
 
-    @{PARAMS}=           Create List  --robot-framework-remote-server-port  ${PORT_NUMBER}
+    @{PARAMS}=           Create List  --robot-server-port  ${PORT_NUMBER}
     Run Keyword If        ${DISABLE_XWT}
     ...    Insert Into List  ${PARAMS}  0  --disable-xwt
 

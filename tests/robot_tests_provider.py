@@ -45,7 +45,7 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to bootstrap and build?".format(remote_server_binary))
             sys.exit(1)
 
-        args = ['mono', remote_server_binary, '--hide-monitor', '--hide-log', '--robot-framework-remote-server-port', str(options.remote_server_port)]
+        args = ['mono', remote_server_binary, '--hide-monitor', '--hide-log', '--robot-server-port', str(options.remote_server_port)]
         if options.port is not None:
             if options.suspend:
                 print('Waiting for a debugger at port: {}'.format(options.port))

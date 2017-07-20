@@ -10,7 +10,7 @@ namespace Antmicro.Renode
 {
     internal class Options : Emul8.CLI.Options
     {
-        [Name("robot-framework-remote-server-port"), DefaultValue(-1), Description("Start robot framework remote server on the specified port.")]
+        [Name("robot-server-port"), DefaultValue(-1), Description("Start robot framework remote server on the specified port.")]
         public int RobotFrameworkRemoteServerPort { get; set; }
     }
 }
