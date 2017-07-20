@@ -10,6 +10,7 @@ using Emul8.Exceptions;
 using Antmicro.Renode.PlatformDescription;
 using Emul8.Utilities;
 using NUnit.Framework;
+using Emul8.Peripherals.CPU;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -534,6 +535,17 @@ peripheral: UnitTests.Mocks.EmptyPeripheral @ register 2.0";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AmbiguousRegistree, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnNonPeripheralRegister()
+        {
+            var source = @"
+emptyIterestingType: Emul8.UnitTests.Mocks.EmptyInterestingType
+cpu: UnitTests.Mocks.MockCPU @ emptyIterestingType
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.CastException, exception.Error);
         }
 
         [TestFixtureSetUp]

@@ -49,6 +49,19 @@ cpu: @none";
         }
 
         [Test]
+        public void ShouldHandleRegistrationInReverseOrder()
+        {
+            var source = @"
+cpu: UnitTests.Mocks.MockCPU @ register
+register: Emul8.UnitTests.Mocks.NullRegister @ sysbus <0, 100>
+";
+
+            ProcessSource(source);
+            ICPU peripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.register.cpu", out peripheral));
+        }
+
+        [Test]
         public void ShouldHandleAlias()
         {
             var source = @"
@@ -499,6 +512,24 @@ p2: UnitTests.Mocks.EmptyPeripheral @ sysbus <0x200, +0x50> as ""p1""
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.NameSettingException, exception.Error);
+        }
+
+        [Test]
+        public void ShouldProcessRepeatedRegistration()
+        {
+            var source = @"
+mockRegister1: Emul8.UnitTests.Mocks.MockRegister @ sysbus 0x0
+cpu: UnitTests.Mocks.MockCPU @ {
+    mockRegister1;
+    mockRegister2
+}
+mockRegister2: Emul8.UnitTests.Mocks.MockRegister @ sysbus 0x100
+";
+            ProcessSource(source);
+
+            ICPU peripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockRegister1.cpu", out peripheral));
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockRegister2.cpu", out peripheral));
         }
 
         [TestFixtureSetUp]
