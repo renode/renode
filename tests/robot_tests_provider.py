@@ -15,6 +15,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-name", dest="remote_server_name", action="store", default="Renode.exe", help="Name of robot framework remote server binary.")
     parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
     parser.add_argument("--disable-xwt", dest="disable_xwt", action="store_true", default=False, help="Disables support for XWT.")
+    parser.add_argument("--exclude", default="", help="Do not run tests marked with a tag.")
 
 def verify_cli_arguments(options):
     if options.port == str(options.remote_server_port):
@@ -147,4 +148,4 @@ class RobotTestSuite(object):
         metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
         log_file = os.path.join(options.results_directory, '{0}{1}.xml'.format(file_name, '_' + hotspot if hotspot else ''))
         RobotTestSuite.log_files.append(log_file)
-        return robot.run(self.path, runemptysuite=True, output=log_file, log=None, report=None, metadata=metadata, name=suite_name, variable=variables, noncritical='non-critical', test=[t[1] for t in test_cases]) == 0
+        return robot.run(self.path, runemptysuite=True, output=log_file, log=None, report=None, metadata=metadata, name=suite_name, variable=variables, noncritical='non-critical', exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
