@@ -141,7 +141,23 @@ line1 {
         }
 
         [Test]
-        public void ShouldHandleLineComments()
+        public void ShouldHandleCorrectLineComments()
+        {
+            var source = @"
+line1 { // something
+    line2 }";
+
+            var result = PreLexer.Process(SplitUsingNewline(source));
+
+            var expectedResult = SplitUsingNewline(@"
+line1 { 
+    line2 }");
+
+            CollectionAssert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void ShouldHandleUncorrectLineComments()
         {
             var source = @"
 line1 {// something
@@ -150,6 +166,24 @@ line1 {// something
             var result = PreLexer.Process(SplitUsingNewline(source));
 
             var expectedResult = SplitUsingNewline(@"
+line1 {// something
+    line2 }");
+
+            CollectionAssert.AreEqual(expectedResult, result);
+        }
+
+        [Test]
+        public void ShouldHandleBeginningLineComment()
+        {
+            var source = @"
+// something
+line1 {
+    line2 }";
+
+            var result = PreLexer.Process(SplitUsingNewline(source));
+
+            var expectedResult = SplitUsingNewline(@"
+
 line1 {
     line2 }");
 
