@@ -216,12 +216,16 @@ finish:
                     {
                         currentIndex++;
                         var nextChar = line[currentIndex];
-                        switch(nextChar)
+                        if(nextChar == '*')
                         {
-                        case '*':
                             return FindResult.MultilineCommentStart;
-                        case '/':
-                            return FindResult.SingleLineCommentStart;
+                        }
+                        else if(nextChar == '/')
+                        {
+                            if(currentIndex == 1 || (currentIndex >= 2 && line[currentIndex - 2] == ' '))
+                            {
+                                return FindResult.SingleLineCommentStart;
+                            }
                         }
                     }
                     break;
@@ -229,7 +233,6 @@ finish:
             }
             return FindResult.Nothing;
         }
-
 
         private static string DecorateLineIfNecessary(string line, int oldIndentLevel, int newIndentLevel, bool doNotInsertSemicolon)
         {
