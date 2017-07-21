@@ -140,7 +140,7 @@ Should Talk Over Network Using Ethernet
 
 Should Serve Webpage Using Tap
     [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.
-    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap
+    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  skip-osx
     Set Test Variable         ${TAP_INTERFACE}     tap0
     Set Test Variable         ${TAP_INTERFACE_IP}  192.0.2.1
     Set Test Variable         ${SERVER_IP}         192.0.2.2
