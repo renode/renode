@@ -22,9 +22,10 @@ fec: Network.FastEthernetController @ sysbus 0xFFF4C000
 emios: GPIOPort.Emios @ sysbus 0xC3FA0000
     24 -> intc@46
 
-machine:
-    init:
-        PyDevFromString "request.value = 0x8" 0xC3F80004 0x4 False "FMPLL_SYNSR Synthesizer Status Register"
+fmpllSynsr: Python.PythonPeripheral @ sysbus 0xC3F80004
+    size: 0x4
+    initable: false
+    script: "request.value = 0x8"
 
 sysbus:
     init:

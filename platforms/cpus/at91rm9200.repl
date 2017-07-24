@@ -23,11 +23,20 @@ cpu: CPU.Arm @ sysbus
     init:
         ID 0x41009200
 
-machine:
-    init:
-        PyDevFromString "request.value = 0x01013F00" 0xFFFFFC28 0x4 False "CKGR_PLLAR"
-        PyDevFromString "request.value = 0x01013F00" 0xFFFFFC2C 0x4 False "CKGR_PLLBR"
-        PyDevFromString "request.value = 0x2" 0xFFFFFC30 0x4 False "PMC_MCKR" #PLL_A
+ckgrPllar: Python.PythonPeripheral @ sysbus 0xFFFFFC28
+    size: 0x4
+    initable: false
+    script: "request.value = 0x01013F00"
+
+ckgrPllbr: Python.PythonPeripheral @ sysbus 0xFFFFFC2C
+    size: 0x4
+    initable: false
+    script: "request.value = 0x01013F00"
+
+pmcMkcr: Python.PythonPeripheral @ sysbus 0xFFFFFC30
+    size: 0x4
+    initable: false
+    script: "request.value = 0x2"
 
 sysbus:
     init:

@@ -85,8 +85,17 @@ sysbus:
         Tag <0x40007000 4> "PWR_CONTROL" 0x1000
         Tag <0x40007004 4> "PWR_STATUS"  0x8
 
+rccCsr: Python.PythonPeripheral @ sysbus 0x40023834
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+rccIcscr: Python.PythonPeripheral @ sysbus 0x40023804
+    size: 0x4
+    initable: false
+    script: "request.value=0xB000"
+
 machine:
     init:
         SetClockSource sysbus.cpu
-        PyDevFromString "request.value=0xB000"     0x40023804 0x4 false "RCC_ICSCR"
-        PyDevFromFile   @scripts/pydev/flipflop.py 0x40023834 0x4 true  "RCC_CSR"
+

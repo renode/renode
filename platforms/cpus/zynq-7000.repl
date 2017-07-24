@@ -58,20 +58,65 @@ qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
 
 gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
 
-machine:
-    init:
-        PyDevFromString "request.value = 0x0001A008" 0xF8000100 0x4 False "ARM_PLL_CTRL"
-        PyDevFromString "request.value = 0x0001A008" 0xF8000104 0x4 False "DDR_PLL_CTRL"
-        PyDevFromString "request.value = 0x0001A008" 0xF8000108 0x4 False "IO_PLL_CTRL"
-        PyDevFromString "request.value = 0x0000003F" 0xF800010C 0x4 False "PLL_STATUS"
-        PyDevFromString "request.value = 0x1F000400" 0xF8000120 0x4 False "ARM_CLK_CTRL"
-        PyDevFromString "request.value = 0x18400003" 0xF8000124 0x4 False "DDR_CLK_CTRL"
-        PyDevFromString "request.value = 0x01FFCCCD" 0xF800012C 0x4 False "APER_CLK_CTRL"
-        PyDevFromString "request.value = 0x00001E03" 0xF8000150 0x4 False "SDIO_CLK_CTRL"
-        PyDevFromString "request.value = 0x00003C01" 0xF8000140 0x4 False "GEM0_CLK_CTRL"
-        PyDevFromString "request.value = 1" 0xF80001C4 0x4 False "CLK_621_TRUE"
-        PyDevFromString "request.value = 0xFFFFFFFF" 0xE000E000 0x4 False "NAND"
-        PyDevFromString "request.value = 0xFFFFFFFF" 0xF800710C 0x4 False "XADC_HACK"
+armPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000100
+    size: 0x4
+    initable: false
+    script: "request.value = 0x0001A008"
+
+ddrPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000104
+    size: 0x4
+    initable: false
+    script: "request.value = 0x0001A008"
+
+ioPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000108
+    size: 0x4
+    initable: false
+    script: "request.value = 0x0001A008"
+
+pllStatus: Python.PythonPeripheral @ sysbus 0xF800010C
+    size: 0x4
+    initable: false
+    script: "request.value = 0x0000003F"
+
+armClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000120
+    size: 0x4
+    initable: false
+    script: "request.value = 0x1F000400"
+
+ddrClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000124
+    size: 0x4
+    initable: false
+    script: "request.value = 0x18400003"
+
+aperClkCtrl: Python.PythonPeripheral @ sysbus 0xF800012C
+    size: 0x4
+    initable: false
+    script: "request.value = 0x01FFCCCD"
+
+sdioClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000150
+    size: 0x4
+    initable: false
+    script: "request.value = 0x00001E03"
+
+gem0ClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000140
+    size: 0x4
+    initable: false
+    script: "request.value = 0x00003C01"
+
+clk261True: Python.PythonPeripheral @ sysbus 0xF80001C4
+    size: 0x4
+    initable: false
+    script: "request.value = 1"
+
+nand: Python.PythonPeripheral @ sysbus 0xE000E000
+    size: 0x4
+    initable: false
+    script: "request.value = 0xFFFFFFFF"
+
+xadcHack: Python.PythonPeripheral @ sysbus 0xF800710C
+    size: 0x4
+    initable: false
+    script: "request.value = 0xFFFFFFFF"
 
 sysbus:
     init:
