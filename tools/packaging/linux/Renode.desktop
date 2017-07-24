@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=Renode
+Type=Application
+#desktop entry specification version
+Comment=The Renode Framework
+Exec=renode
+Icon=renode
+GenericName=Embedded systems emulator
+Terminal=true
+Categories=Development
