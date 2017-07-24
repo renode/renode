@@ -76,6 +76,7 @@ timer10: Timers.STM32L_Timer @ sysbus <0x40010C00, +0x1000>
 
 sysbus:
     init:
+        ApplySVD @http://antmicro.com/projects/renode/svd/STM32L1xx.svd.gz
         Tag <0x4000280C, 0x40002810> "RTC_ISR" 0x60
         SilenceRange <0x40003000 4>
         Tag <0xE0042000 4> "MCU_ID" 0x10000416

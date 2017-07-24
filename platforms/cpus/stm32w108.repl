@@ -38,3 +38,7 @@ cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m3"
     nvic: nvic
 
+sysbus:
+    init:
+        ApplySVD @http://antmicro.com/projects/renode/svd/STM32W108.svd.gz
+

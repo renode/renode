@@ -77,6 +77,7 @@ dma2: DMA.STM32DMA @ sysbus 0x40023400
 
 sysbus:
     init:
+        ApplySVD @http://antmicro.com/projects/renode/svd/STM32F40x.svd.gz
         Tag <0x40021000, 0x40021003> "GPIOE_MODER" 0xFFFFFFFF
         Tag <0x40021004, 0x40021007> "GPIOE_OTYPER" 0x00000008
         Tag <0x40023800, 0x40023803> "RCC_CR" 0x0A020083
