@@ -65,7 +65,7 @@ Downloading the source code
 
 Renode’s source code is available from GitHub::
 
-   git clone https://github.com/renodeio/renode.git
+   git clone https://github.com/renode/renode.git
 
 Submodules will be automatically initialised and downloaded during the build process, so you do not need to do it at this point.
 
