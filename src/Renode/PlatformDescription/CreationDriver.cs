@@ -152,7 +152,7 @@ namespace Antmicro.Renode.PlatformDescription
         private void PrepareVariables()
         {
             // machine is always there and is not a peripheral 
-            variableStore.AddBuiltinOrAlreadyRegisteredVariable("machine", machine);
+            variableStore.AddBuiltinOrAlreadyRegisteredVariable(Machine.MachineKeyword, machine);
             var peripherals = machine.GetRegisteredPeripherals().Where(x => !string.IsNullOrEmpty(x.Name)).Select(x => Tuple.Create(x.Peripheral, x.Name)).Distinct().ToDictionary(x => x.Item1, x => x.Item2);
             foreach(var peripheral in peripherals)
             {

@@ -28,7 +28,7 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
             string name;
             if(entry.Variable.Value is Machine)
             {
-                name = "machine";
+                name = Machine.MachineKeyword;
             }
             else if(!machine.TryGetAnyName((IPeripheral)entry.Variable.Value, out name))
             {
