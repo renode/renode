@@ -38,7 +38,7 @@ Linux
 
 The following instructions have been tested on Ubuntu 16.04, however there should not be any major issues preventing you from using other (especially Debian-based) distributions as well.
 
-Renode requires Mono >= 4.6 and several other packages.
+Renode requires Mono >= 5.0 and several other packages.
 To install them, use::
 
    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
