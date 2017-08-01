@@ -43,11 +43,13 @@ namespace Antmicro.Renode.Connectors
             });
         }
 
+        //This method should not be executed on a runnning emulation, as IGPIO.Connect call
+        //may lead to nondeterminism.
         public void SelectSourcePin(INumberedGPIOOutput source, int pinNumber)
         {
             VerifyPeripheralOrThrow(source);
             IGPIO tempPin;
-            if(!source.Connections.TryGetValue(pinNumber, out tempPin)) 
+            if(!source.Connections.TryGetValue(pinNumber, out tempPin))
             {
                 throw new RecoverableException("Peripheral {0} has no GPIO with number: {1}".FormatWith(source, pinNumber));
             }
@@ -67,6 +69,8 @@ namespace Antmicro.Renode.Connectors
             sourcePin.Connect(this, 0);
         }
 
+        //This method should not be executed on a runnning emulation, as IGPIO.Connect call
+        //may lead to nondeterminism.
         public void SelectDestinationPin(IGPIOReceiver receiver, int pinNumber)
         {
             VerifyPeripheralOrThrow(receiver);
