@@ -4,9 +4,9 @@ set -e
 set -u
 
 REMOTE=https://github.com/renode/renode-resources.git
-ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
-DIR="$ROOT_PATH/../resources"
-GUARD=`realpath --relative-to="$PWD" "$ROOT_PATH/../.renode_libs_fetched"`
+CURRENT_PATH="`dirname \"\`realpath "$0"\`\"`"
+DIR="$CURRENT_PATH/../resources"
+GUARD=`realpath --relative-to="$ROOT_PATH" "$CURRENT_PATH/../.renode_libs_fetched"`
 
 if [ -e "$GUARD" ]
 then

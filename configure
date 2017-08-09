@@ -4,7 +4,8 @@ set -u
 
 UPDATE_SUBMODULES=true
 INTERACTIVE=false
-while getopts ":ki" opt
+VERBOSE=false
+while getopts ":kiv" opt
 do
     case "$opt" in
         k)
@@ -12,6 +13,9 @@ do
             ;;
         i)
             INTERACTIVE=true
+            ;;
+        v)
+            VERBOSE=true
             ;;
         \?)
             echo "Usage: $0 [-k] [-i]"
@@ -27,15 +31,20 @@ then
     git submodule update --init --recursive
 fi
 
-ROOT_PATH="`dirname \"\`realpath $0\`\"`"
-source "$ROOT_PATH/src/Emul8/Tools/common.sh"
-"$ROOT_PATH"/tools/fetch_libraries.sh
+CURRENT_PATH="`dirname \"\`realpath $0\`\"`"
+
+if [ -z "$ROOT_PATH" ]; then
+    export ROOT_PATH="$CURRENT_PATH"
+fi
+
+source "$CURRENT_PATH/src/Emul8/Tools/common.sh"
+"$CURRENT_PATH"/tools/fetch_libraries.sh
 
 PARAMS=(\
-    -o "$ROOT_PATH/output"\
-    -b "$ROOT_PATH/output/bin"\
+    -o "$CURRENT_PATH/output"\
+    -b "$CURRENT_PATH/output/bin"\
     -S "Renode"\
-    -s "$ROOT_PATH/src/Renode/Renode.csproj"\
+    -s "$CURRENT_PATH/src/Renode/Renode.csproj"\
     -e "CLI.csproj")
 
 if ! $INTERACTIVE
@@ -48,11 +57,16 @@ then
     PARAMS+=(-k)
 fi
 
-cat <<EOF > "$ROOT_PATH"/.emul8root
+if $VERBOSE
+then
+    PARAMS+=(-v)
+fi
+
+cat <<EOF > "$CURRENT_PATH"/.emul8root
 5344ec2a-1539-4017-9ae5-a27c279bd454
 ./src/Emul8
 EOF
 
-"$ROOT_PATH"/src/Emul8/bootstrap.sh "${PARAMS[@]}"
+"$CURRENT_PATH"/src/Emul8/bootstrap.sh "${PARAMS[@]}"
 
-add_property "$ROOT_PATH"/output/properties.csproj LogoLocation "$ROOT_PATH"/resources/images/Renode-logo.png
+add_property "$CURRENT_PATH"/output/properties.csproj LogoLocation "$CURRENT_PATH"/resources/images/Renode-logo.png
