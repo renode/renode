@@ -41,6 +41,10 @@ ttc1: Timers.CadenceTTC @ sysbus <0xF8002000, +0x1000>
 privateTimer: Timers.CortexAPrivateTimer @ sysbus <0xF8F00600, +0x200>
     -> gic#0@29
 
+globalTimer: Timers.CortexAGlobalTimer @ sysbus 0xF8F00200
+    -> gic#0@27
+    frequency: 433333333
+
 gic: IRQControllers.GIC @ {
         sysbus new Bus.BusMultiRegistration { address: 0xF8F01000; size: 0x1000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xF8F00100; size: 0x100; region: "cpuInterface" }
