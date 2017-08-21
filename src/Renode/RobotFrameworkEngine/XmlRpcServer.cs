@@ -51,7 +51,7 @@ namespace Antmicro.Renode.RobotFramework
                     var keywordResult = keyword.Execute(parsedArguments);
                     if(keywordResult != null)
                     {
-                        result.Add(KeywordResultValue, keywordResult.ToString());
+                        result.Add(KeywordResultValue, keywordResult);
                     }
                     result.Add(KeywordResultStatus, KeywordResultPass);
                 }
