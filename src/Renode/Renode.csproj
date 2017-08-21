@@ -110,6 +110,11 @@
     <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
     <Compile Include="PlatformDescription\UserInterface\PlatformDescriptionMachineExtensions.cs" />
     <Compile Include="Connectors\GPIOConnector.cs" />
+    <Compile Include="UI\TerminalWidget.cs" />
+    <Compile Include="UI\LogoRow.cs" />
+    <Compile Include="UI\TerminalIOSource.cs" />
+    <Compile Include="UI\TerminalActions.cs" />
+    <Compile Include="UI\TermsharpProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -159,6 +164,18 @@
       <Project>{C56AABEF-C01E-493F-A65F-09A572FE9B2E}</Project>
       <Name>OptionsParser</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emul8\External\xwt\Xwt\Xwt.csproj">
+      <Project>{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}</Project>
+      <Name>Xwt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emul8\External\xwt\Xwt.Gtk\Xwt.Gtk.csproj">
+      <Project>{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}</Project>
+      <Name>Xwt.Gtk</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\External\termsharp\TermSharp.csproj">
+      <Project>{25FAECC1-55F0-4608-88BD-4207A7F993B0}</Project>
+      <Name>TermSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlatformDescription\" />
@@ -168,6 +185,17 @@
     <Folder Include="Backends\Terminals\" />
     <Folder Include="PlatformDescription\UserInterface\" />
     <Folder Include="Connectors\" />
+    <Folder Include="UI\" />
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\resources\images\Renode-logo.png">
+      <Link>Resources\logo.png</Link>
+      <LogicalName>logo.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\RobotoMono-Regular.ttf">
+      <LogicalName>RobotoMono-Regular.ttf</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
     <Exec Command="cd Properties; ../../Emul8/Tools/scripts/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />

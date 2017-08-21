@@ -38,6 +38,14 @@ export ROOT_PATH="${ROOT_PATH:-$CURRENT_PATH}"
 source "$CURRENT_PATH/src/Emul8/Tools/common.sh"
 "$CURRENT_PATH"/tools/fetch_libraries.sh
 
+# Update references to Xwt
+TERMSHARP_PROJECT="${CURRENT_PATH:=.}/src/External/termsharp/TermSharp.csproj"
+if [ -e "$TERMSHARP_PROJECT" ]
+then
+    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\..\\Emul8\\External\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT"
+    rm "$TERMSHARP_PROJECT.bak"
+fi
+
 PARAMS=(\
     -o "$CURRENT_PATH/output"\
     -b "$CURRENT_PATH/output/bin"\
