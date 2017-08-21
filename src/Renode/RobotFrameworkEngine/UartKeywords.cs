@@ -6,10 +6,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Emul8.Core;
 using Emul8.Peripherals.UART;
 using Emul8.Testing;
-using Emul8.Core;
-using System.Linq;
 
 namespace Antmicro.Renode.RobotFramework
 {
