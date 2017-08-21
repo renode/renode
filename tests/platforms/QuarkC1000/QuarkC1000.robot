@@ -39,9 +39,8 @@ Should Run Hello World With Sleep
     ${MAX_SLEEP_TIME}=  Evaluate  ${SLEEP_TIME} + ${SLEEP_TOLERANCE}
 
     :FOR  ${i}  IN RANGE  0  ${REPEATS}
-    \              Wait For Line On Uart     Hello World! x86
-    \     ${t}=    Get Virtual Timestamp Of Last Event
-    \              Append To List            ${l}  ${t}
+    \     ${r}        Wait For Line On Uart     Hello World! x86
+    \              Append To List            ${l}  ${r.timestamp}
 
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
     \     ${i1}=  Get From List   ${l}                       ${i - 1}
@@ -123,20 +122,32 @@ Should Talk Over Network Using Ethernet
     Execute Script            ${SCRIPT}
     Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
-    Create Terminal Tester    ${UART}  machine=machine-1
+    ${mach0_tester}=  Create Terminal Tester    ${UART}  machine=machine-0
+    ${mach1_tester}=  Create Terminal Tester    ${UART}  machine=machine-1
 
     Start Emulation
 
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
+
     \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
     \    RepeatKeyword  ${r}  
-    \    ...  Wait For Next Line On Uart
+    \    ...  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
-    \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent
-    \    ${n}=  Wait For Next Line On Uart
+    \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
+    \    ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
-    \    ${m}=  Get Regexp Matches  ${p}  \\d+
-    \    Should Contain  ${n}  Compared ${m[1]} bytes, all ok
+    \    Should Contain  ${n.line}  pkt_sent: Sent ${p.groups[0]} bytes
+
+    :FOR  ${i}  IN RANGE  1  ${REPEATS}
+
+    \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
+    \    RepeatKeyword  ${r}  
+    \    ...  Wait For Next Line On Uart  testerId=${mach1_tester}
+    \
+    \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
+    \    ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
+    \
+    \    Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
 
 Should Serve Webpage Using Tap
     [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.

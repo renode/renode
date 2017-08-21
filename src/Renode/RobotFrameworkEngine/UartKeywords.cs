@@ -18,7 +18,8 @@ namespace Antmicro.Renode.RobotFramework
     {
         public UartKeywords()
         {
-            testers = new Dictionary<string, TerminalTester>();
+            testers = new Dictionary<int, TerminalTester>();
+            uartsWithTesters = new HashSet<IUART>();
             EmulationManager.Instance.EmulationChanged += () =>
             {
                 lock(testers)
@@ -33,15 +34,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void CreateTerminalTester(string uart, string prompt = null, int timeout = 30, string machine = null)
+        public int CreateTerminalTester(string uart, string prompt = null, int timeout = 30, string machine = null)
         {
             lock(testers)
             {
-                if(testers.ContainsKey(uart))
-                {
-                    throw new KeywordException("Terminal tester for peripheral {0} already exists", uart);
-                }
-
                 Machine machineObject;
                 if(machine == null)
                 {
@@ -54,7 +50,8 @@ namespace Antmicro.Renode.RobotFramework
                         : null;
                     if(machineObject == null)
                     {
-                        throw new KeywordException("No machine name provided. Don't know which one to choose.");
+                        throw new KeywordException("No machine name provided. Don't know which one to choose. Available machines: [{0}]",
+                            string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
                     }
                 }
                 else if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out machineObject))
@@ -63,85 +60,121 @@ namespace Antmicro.Renode.RobotFramework
                             string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
                 }
 
-                IUART uartObject;
-                if(!machineObject.TryGetByName(uart, out uartObject))
+                if(!machineObject.TryGetByName(uart, out IUART uartObject))
                 {
-                    throw new KeywordException("Peripheral not found or of wrong type: {0}", uart);
+                    throw new KeywordException("Peripheral for machine {0} not found or of wrong type: {1}", machine, uart);
+                }
+                if(uartsWithTesters.Contains(uartObject))
+                {
+                    throw new KeywordException("Terminal tester for peripheral {0} in machine {1} already exists", uart, machine);
                 }
 
                 var tester = new TerminalTester(TimeSpan.FromSeconds(timeout), prompt);
                 tester.Terminal.AttachTo(uartObject);
-                testers.Add(uart, tester);
+                uartsWithTesters.Add(uartObject);
+                testers.Add(uartsWithTesters.Count, tester);
             }
+            return uartsWithTesters.Count;
         }
 
         [RobotFrameworkKeyword]
-        public void SetNewPromptForUart(string prompt, string uart = null)
+        public void SetNewPromptForUart(string prompt, int? testerId = null)
         {
-            GetTesterOrThrowException(uart).NowPromptIs(prompt);
+            GetTesterOrThrowException(testerId).NowPromptIs(prompt);
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForLineOnUart(string content, int? timeout = null, string uart = null)
+        public TerminalTesterResult WaitForLineOnUart(string content, int? timeout = null, int? testerId = null, bool treatAsRegex = false)
         {
-            string lineContent = null;
-            GetTesterOrThrowException(uart).WaitUntilLine(x => x.Contains(content), out lineContent, timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value));
-            return lineContent;
+            var groups = new string[0];
+            GetTesterOrThrowException(testerId).WaitUntilLineFunc(
+                x =>
+                {
+                    if(!treatAsRegex)
+                    {
+                        return x.Contains(content);
+                    }
+                    var match = Regex.Match(x, content);
+                    groups = match.Success ? match.Groups.Cast<Group>().Skip(1).Select(y => y.Value).ToArray() : new string[0];
+                    return match.Success;
+                }, 
+                out string line, 
+                out TimeSpan time,
+                timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)
+            );
+            return new TerminalTesterResult(line, time.TotalMilliseconds, groups);
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForNextLineOnUart(int? timeout = null, string uart = null)
+        public TerminalTesterResult WaitForNextLineOnUart(int? timeout = null, int? testerId = null)
         {
-            string lineContent = null;
-            GetTesterOrThrowException(uart).WaitUntilLine(x => true, out lineContent, timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value));
-            return lineContent;
+            GetTesterOrThrowException(testerId).WaitUntilLineExpr(
+                x => true, 
+                out string line, 
+                out TimeSpan time,
+                timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)
+            );
+            return new TerminalTesterResult(line, time.TotalMilliseconds);
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForPromptOnUart(string uart = null, int? timeout = null)
+        public TerminalTesterResult WaitForPromptOnUart(int? testerId = null, int? timeout = null)
         {
-            return GetTesterOrThrowException(uart).ReadToPrompt(timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value));
+            return new TerminalTesterResult(
+                GetTesterOrThrowException(testerId).ReadToPrompt(out TimeSpan time, timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)),
+                time.TotalMilliseconds
+            );
         }
 
         [RobotFrameworkKeyword]
-        public void WriteLineToUart(string content, string uart = null)
+        public TerminalTesterResult WriteLineToUart(string content, int? testerId = null)
         {
-            GetTesterOrThrowException(uart).WriteLine(content);
+            GetTesterOrThrowException(testerId).WriteLine(out TimeSpan time, content);
+            return new TerminalTesterResult(content, time.TotalMilliseconds);
         }
 
         [RobotFrameworkKeyword]
-        public double GetVirtualTimestampOfLastEvent(string uart = null)
+        public void TestIfUartIsIdle(int timeInSeconds, int? testerId = null)
         {
-            return GetTesterOrThrowException(uart).LastEventVirtualTimestamp.TotalMilliseconds;
+            GetTesterOrThrowException(testerId).CheckIfUartIsIdle(TimeSpan.FromSeconds(timeInSeconds));
         }
 
-        [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(int timeInSeconds, string uart = null)
-        {
-            GetTesterOrThrowException(uart).CheckIfUartIsIdle(TimeSpan.FromSeconds(timeInSeconds));
-        }
-
-        private TerminalTester GetTesterOrThrowException(string peripheralName)
+        private TerminalTester GetTesterOrThrowException(int? testerId)
         {
             lock(testers)
             {
                 TerminalTester tester;
-                if(peripheralName == null)
+                if(testerId == null)
                 {
                     if(testers.Count != 1)
                     {
-                        throw new KeywordException("There are more than one terminal tester available - please specify the uart name.");
+                        throw new KeywordException("There are more than one terminal tester available - please specify ID of the desired tester.");
                     }
                     tester = testers.Single().Value;
                 }
-                else if(!testers.TryGetValue(peripheralName, out tester))
+                else if(!testers.TryGetValue(testerId.Value, out tester))
                 {
-                    throw new KeywordException("Terminal tester for peripheral {0} not found. Did you forget to call `Create Terminal Tester`?", peripheralName);
+                    throw new KeywordException("Terminal tester for given ID={0} was not found. Did you forget to call `Create Terminal Tester`?", testerId);
                 }
                 return tester;
             }
-         }
+        }
 
-        private readonly Dictionary<string, TerminalTester> testers;
+        public struct TerminalTesterResult
+        {
+            public TerminalTesterResult(string line, double timestamp, string[] groups = null)
+            {
+                this.line = line ?? string.Empty;
+                this.timestamp = timestamp;
+                this.groups = groups ?? new string[0];
+            }
+
+            public string line;
+            public string[] groups;
+            public double timestamp;
+        }
+
+        private readonly HashSet<IUART> uartsWithTesters;
+        private readonly Dictionary<int, TerminalTester> testers;
     }
 }
