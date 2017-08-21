@@ -29,7 +29,7 @@ namespace Antmicro.Renode.Backends.Terminals
         {
             var ptyUnixStream = new PtyUnixStream();
 
-            io = new IOProvider(new StreamIOSource(ptyUnixStream));
+            io = new IOProvider { Backend = new StreamIOSource(ptyUnixStream) };
             io.ByteRead += b => CallCharReceived((byte)b);
 
             if(File.Exists(linkName))
