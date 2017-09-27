@@ -18,13 +18,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
     public class Wireshark : IHostMachineElement, IExternal
     {
-        public Wireshark(string sinkName, LinkLayer layer)
+        public Wireshark(string sinkName, LinkLayer layer, string wiresharkPath)
         {
             currentEmulation = EmulationManager.Instance.CurrentEmulation;
             EmulationManager.Instance.EmulationChanged += ClearLog;
             currentEmulation.MachineRemoved += OnMachineRemoved;
             wiresharkSinkName = sinkName;
-            wiresharkSender = new WiresharkSender(wiresharkSinkName, (uint)layer);
+            wiresharkSender = new WiresharkSender(wiresharkSinkName, (uint)layer, wiresharkPath);
             this.layer = layer;
         }
 

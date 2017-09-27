@@ -33,10 +33,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
     public class WiresharkSender
     {
-        public WiresharkSender(string pipe_name, UInt32 pcap_netid)
+        public WiresharkSender(string pipeName, UInt32 pcapNetId, string wiresharkPath)
         {
             this.pipe_name = pipe_name;
             this.pcap_netid = pcap_netid;
+            this.wiresharkPath = wiresharkPath;
         }
 
         private void PipeCreate()
@@ -74,7 +75,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             wiresharkProces.EnableRaisingEvents = true;
 
             var arguments = string.Format("-ni /var/tmp/{0} -k", pipe_name);
-            wiresharkProces.StartInfo = new ProcessStartInfo("wireshark", arguments)
+            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, arguments)
             {
                 UseShellExecute = false,
                 RedirectStandardError = true,
@@ -199,6 +200,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private bool isConnected = false;
         private string pipe_name;
         private UInt32 pcap_netid;
+        private string wiresharkPath;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
 
