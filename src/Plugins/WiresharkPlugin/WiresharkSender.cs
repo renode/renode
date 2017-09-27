@@ -35,29 +35,31 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
     {
         public WiresharkSender(string pipeName, UInt32 pcapNetId, string wiresharkPath)
         {
-            this.pipe_name = pipe_name;
-            this.pcap_netid = pcap_netid;
+            this.pipeName = pipeName;
+            this.pcapNetId = pcapNetId;
             this.wiresharkPath = wiresharkPath;
         }
 
         private void PipeCreate()
         {
-            wiresharkPipe = new NamedPipeServerStream(pipe_name, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.None);
+            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             lastReportedFrame = null;
         }
 
         public void WiresharkGlobalHeader()
         {
-            var p = new PcapGlobalHeader(65535, pcap_netid);
+            var p = new PcapGlobalHeader(65535, pcapNetId);
             var bh = p.ToByteArray();
             wiresharkPipe.Write(bh, 0, bh.Length);
         }
 
         public void ClearPipe()
         {
-            File.Delete(string.Format("/var/tmp/{0}", pipe_name));
+            wiresharkPipe.Close();
+#if !EMUL8_PLATFORM_WINDOWS
+            File.Delete($"{NamedPipePrefix}{pipeName}");
+#endif
         }
-
         public bool IsConnected
         {
             get { return isConnected; }
@@ -74,7 +76,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
 
-            var arguments = string.Format("-ni /var/tmp/{0} -k", pipe_name);
+            var arguments = $"-ni {NamedPipePrefix}{pipeName} -k";
             wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, arguments)
             {
                 UseShellExecute = false,
@@ -198,8 +200,8 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private NamedPipeServerStream wiresharkPipe;
         private Process wiresharkProces;
         private bool isConnected = false;
-        private string pipe_name;
-        private UInt32 pcap_netid;
+        private string pipeName;
+        private UInt32 pcapNetId;
         private string wiresharkPath;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
@@ -280,5 +282,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 return rawdatas;
             }
         }
+
+#if !EMUL8_PLATFORM_WINDOWS
+        private const string NamedPipePrefix = "/var/tmp/";
+#else
+        private const string NamedPipePrefix = @"\\.\pipe\";
+#endif
     }
 }
