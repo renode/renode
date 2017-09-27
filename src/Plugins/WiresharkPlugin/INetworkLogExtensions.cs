@@ -74,7 +74,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             //to reset, as it is a static class.
             emulation.ExternalsManager.ExternalsChanged -= AddExternal;
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
-
         }
 
         private static void AddExternal(ExternalsManager.ExternalsChangedEventArgs reporter)
@@ -145,7 +144,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 #else
             Wireshark result;
             var wiresharkPath = ConfigurationManager.Instance.Get("wireshark", "wireshark-path", WiresharkPath);
-            if (File.Exists(wiresharkPath))
+            if(File.Exists(wiresharkPath))
             {
                 result = new Wireshark(name, layer, wiresharkPath);
             }

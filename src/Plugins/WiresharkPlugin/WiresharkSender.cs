@@ -2,6 +2,8 @@
 *                           MIT License
 *
 * Copyright (C) 2015 Frederic Chaxel <fchaxel@free.fr>
+* 
+* Copyright (c) Antmicro
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
@@ -33,24 +35,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
     public class WiresharkSender
     {
-        public WiresharkSender(string pipeName, UInt32 pcapNetId, string wiresharkPath)
+        public WiresharkSender(string pipeName, uint pcapNetId, string wiresharkPath)
         {
             this.pipeName = pipeName;
             this.pcapNetId = pcapNetId;
             this.wiresharkPath = wiresharkPath;
-        }
-
-        private void PipeCreate()
-        {
-            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
-            lastReportedFrame = null;
-        }
-
-        public void WiresharkGlobalHeader()
-        {
-            var p = new PcapGlobalHeader(65535, pcapNetId);
-            var bh = p.ToByteArray();
-            wiresharkPipe.Write(bh, 0, bh.Length);
         }
 
         public void ClearPipe()
@@ -61,24 +50,21 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             File.Delete($"{NamedPipePrefix}{pipeName}");
 #endif
         }
-        public bool IsConnected
-        {
-            get { return isConnected; }
-        }
 
         public bool TryOpenWireshark()
         {
-            if(IsConnected)
+            if(isConnected)
             {
                 return false;
             }
+            lastReportedFrame = null;
 
-            PipeCreate();
+            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
+
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
 
-            var arguments = $"-ni {NamedPipePrefix}{pipeName} -k";
-            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, arguments)
+            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, $"-ni {NamedPipePrefix}{pipeName} -k")
             {
                 UseShellExecute = false,
                 RedirectStandardError = true,
@@ -94,7 +80,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             wiresharkProces.Start();
             wiresharkPipe.WaitForConnection();
             isConnected = true;
-            WiresharkGlobalHeader();
+            SendWiresharkGlobalHeader();
 
             return true;
         }
@@ -142,9 +128,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
         }
 
-        private UInt32 DateTimeToUnixTimestamp(DateTime dateTime)
+        private void SendWiresharkGlobalHeader()
         {
-            return (UInt32)(dateTime - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
+            var p = new PcapGlobalHeader(pcapNetId);
+            var bh = p.ToByteArray();
+            wiresharkPipe.Write(bh, 0, bh.Length);
         }
 
         private bool SendToWireshark(byte[] buffer, int offset, int lenght)
@@ -154,135 +142,59 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private bool SendToWireshark(byte[] buffer, int offset, int lenght, DateTime date)
         {
-            UInt32 date_sec, date_usec;
-
             // Suppress all values for ms, us and ns
-            var d2 = new DateTime((date.Ticks / (long)10000000) * (long)10000000);
+            var roundedDate = new DateTime((date.Ticks / (long)10000000) * (long)10000000);
 
-            date_sec = DateTimeToUnixTimestamp(date);
-            date_usec = (UInt32)((date.Ticks - d2.Ticks) / 10);
+            var seconds = DateTimeToUnixTimestamp(date);
+            var microseconds = (UInt32)((date.Ticks - roundedDate.Ticks) / 10);
 
-            return SendToWireshark(buffer, offset, lenght, date_sec, date_usec);
+            return SendToWireshark(buffer, offset, lenght, seconds, microseconds);
         }
 
-        private bool SendToWireshark(byte[] buffer, int offset, int lenght, UInt32 date_sec, UInt32 date_usec)
+        private bool SendToWireshark(byte[] buffer, int offset, int lenght, uint seconds, uint microseconds)
         {
             if(!isConnected)
             {
                 return false;
             }
 
-            var pHdr = new PcapPacketHeader((UInt32)lenght, date_sec, date_usec);
-            var b = pHdr.ToByteArray();
+            var header = new PcapPacketHeader((uint)lenght, seconds, microseconds);
+            var headerBytes = header.ToByteArray();
 
             try
             {
                 // Wireshark Header
-                wiresharkPipe.Write(b, 0, b.Length);
+                wiresharkPipe.Write(headerBytes, 0, headerBytes.Length);
 
                 // Bacnet packet
                 wiresharkPipe.Write(buffer, offset, lenght);
 
             }
-            catch(IOException)
-            {
-                return false;
-            }
             catch(Exception)
             {
-                // Unknow error, not due to the pipe
-                // No need to restart it
+                // We should probably handle IOException to somehow restart the pipe.
+                // It is difficult to test, though, and Wireshark may not survive it.
                 return false;
             }
 
             return true;
         }
 
+        private static uint DateTimeToUnixTimestamp(DateTime dateTime)
+        {
+            return (uint)(dateTime - localEpoch).TotalSeconds;
+        }
+
         private NamedPipeServerStream wiresharkPipe;
         private Process wiresharkProces;
-        private bool isConnected = false;
         private string pipeName;
-        private UInt32 pcapNetId;
+        private uint pcapNetId;
         private string wiresharkPath;
+        private bool isConnected;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct PcapPacketHeader
-        {
-            UInt32 ts_sec;
-            /* timestamp seconds */
-            UInt32 ts_usec;
-            /* timestamp microseconds */
-            UInt32 incl_len;
-            /* number of octets of packet saved in file */
-            UInt32 orig_len;
-            /* actual length of packet */
-
-            public PcapPacketHeader(UInt32 lenght, UInt32 datetime, UInt32 microsecond)
-            {
-                incl_len = orig_len = lenght;
-                ts_sec = datetime;
-                ts_usec = microsecond;
-            }
-
-            // struct Marshaling
-            // Maybe a 'manual' byte by byte serialise could be required on some system
-            public byte[] ToByteArray()
-            {
-                var rawsize = Marshal.SizeOf(this);
-                var rawdatas = new byte[rawsize];
-                var handle = GCHandle.Alloc(rawdatas, GCHandleType.Pinned);
-                var buffer = handle.AddrOfPinnedObject();
-                Marshal.StructureToPtr(this, buffer, false);
-                handle.Free();
-                return rawdatas;
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct PcapGlobalHeader
-        {
-            UInt32 magic_number;
-            /* magic number */
-            UInt16 version_major;
-            /* major version number */
-            UInt16 version_minor;
-            /* minor version number */
-            Int32 thiszone;
-            /* GMT to local correction */
-            UInt32 sigfigs;
-            /* accuracy of timestamps */
-            UInt32 snaplen;
-            /* max length of captured packets, in octets */
-            UInt32 network;
-            /* data link type */
-
-            public PcapGlobalHeader(UInt32 snaplen, UInt32 network)
-            {
-                magic_number = 0xa1b2c3d4;
-                version_major = 2;
-                version_minor = 4;
-                thiszone = 0;
-                sigfigs = 0;
-                this.snaplen = snaplen;
-                this.network = network;
-            }
-
-            // struct Marshaling
-            // Maybe a 'manual' byte by byte serialization could be required on some systems
-            // work well on Win32, Win64 .NET 3.0 to 4.5
-            public byte[] ToByteArray()
-            {
-                var rawsize = Marshal.SizeOf(this);
-                var rawdatas = new byte[rawsize];
-                var handle = GCHandle.Alloc(rawdatas, GCHandleType.Pinned);
-                var buffer = handle.AddrOfPinnedObject();
-                Marshal.StructureToPtr(this, buffer, false);
-                handle.Free();
-                return rawdatas;
-            }
-        }
+        private static readonly DateTime localEpoch = new DateTime(1970, 1, 1).ToLocalTime();
 
 #if !EMUL8_PLATFORM_WINDOWS
         private const string NamedPipePrefix = "/var/tmp/";
@@ -291,5 +203,77 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private const string NamedPipePrefix = @"\\.\pipe\";
         private const PipeOptions NamedPipeOptions = PipeOptions.Asynchronous;
 #endif
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct PcapPacketHeader
+        {
+            public PcapPacketHeader(uint lenght, uint seconds, uint microseconds)
+            {
+                savedBytesLength = packetLength = lenght;
+                timestampSeconds = seconds;
+                timestampMicroseconds = microseconds;
+            }
+
+            public byte[] ToByteArray()
+            {
+                var rawsize = Marshal.SizeOf(this);
+                var rawdatas = new byte[rawsize];
+                var handle = GCHandle.Alloc(rawdatas, GCHandleType.Pinned);
+                var buffer = handle.AddrOfPinnedObject();
+                Marshal.StructureToPtr(this, buffer, false);
+                handle.Free();
+                return rawdatas;
+            }
+
+            /* timestamp seconds */
+            private uint timestampSeconds;
+            /* timestamp microseconds */
+            private uint timestampMicroseconds;
+            /* number of octets of packet saved in file */
+            private uint savedBytesLength;
+            /* actual length of packet */
+            private uint packetLength;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct PcapGlobalHeader
+        {
+            public PcapGlobalHeader(uint network)
+            {
+                magicNumber = 0xa1b2c3d4;
+                majorVersion = 2;
+                minorVersion = 4;
+                timezoneCorrection = 0;
+                sigfigs = 0;
+                maximumPacketLength = 65535;
+                networkType = network;
+            }
+
+            public byte[] ToByteArray()
+            {
+                var rawsize = Marshal.SizeOf(this);
+                var rawdata = new byte[rawsize];
+                var handle = GCHandle.Alloc(rawdata, GCHandleType.Pinned);
+                var buffer = handle.AddrOfPinnedObject();
+                Marshal.StructureToPtr(this, buffer, false);
+                handle.Free();
+                return rawdata;
+            }
+
+            /* magic number */
+            private uint magicNumber;
+            /* major version number */
+            private ushort majorVersion;
+            /* minor version number */
+            private ushort minorVersion;
+            /* GMT to local correction */
+            private int timezoneCorrection;
+            /* accuracy of timestamps */
+            private uint sigfigs;
+            /* max length of captured packets, in octets */
+            private uint maximumPacketLength;
+            /* data link type */
+            private uint networkType;
+        }
     }
 }
