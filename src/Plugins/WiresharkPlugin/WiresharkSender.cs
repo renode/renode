@@ -42,7 +42,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private void PipeCreate()
         {
-            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
             lastReportedFrame = null;
         }
 
@@ -57,6 +57,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         {
             wiresharkPipe.Close();
 #if !EMUL8_PLATFORM_WINDOWS
+            //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
             File.Delete($"{NamedPipePrefix}{pipeName}");
 #endif
         }
@@ -285,8 +286,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
 #if !EMUL8_PLATFORM_WINDOWS
         private const string NamedPipePrefix = "/var/tmp/";
+        private const PipeOptions NamedPipeOptions = PipeOptions.None;
 #else
         private const string NamedPipePrefix = @"\\.\pipe\";
+        private const PipeOptions NamedPipeOptions = PipeOptions.Asynchronous;
 #endif
     }
 }
