@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿//
+﻿﻿﻿﻿﻿﻿﻿//
 // Copyright (c) Antmicro
 //
 // This file is part of the Renode project.
@@ -132,7 +132,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         private Description ParseDescription(string description, string fileName)
         {
-            var output = PreLexer.Process(description.Split(new[] { Environment.NewLine }, StringSplitOptions.None), fileName).Aggregate((x, y) => x + Environment.NewLine + y);
+            var output = PreLexer.Process(description, fileName).Aggregate((x, y) => x + Environment.NewLine + y);
             var input = new Input(output);
             var result = Grammar.Description(input);
             if(!result.WasSuccessful)
@@ -1429,7 +1429,7 @@ namespace Antmicro.Renode.PlatformDescription
             messageBuilder.AppendLine(message);
             messageBuilder.AppendFormat("At {2}{0}:{1}:", lineNumber, columnNumber, fileName == "" ? "" : fileName + ':');
             messageBuilder.AppendLine();
-            var sourceInLines = source.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var sourceInLines = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
             var problematicLine = sourceInLines[lineNumber - 1];
             messageBuilder.AppendLine(problematicLine);
             messageBuilder.Append(' ', columnNumber - 1);

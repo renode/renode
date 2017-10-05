@@ -444,7 +444,11 @@ device: Something @ somewhere
 
         private static IInput GetInputFromString(string source)
         {
-            var result = PreLexer.Process(source.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
+            var result = PreLexer.Process(source);
+            if(!result.Any())
+            {
+                return new Input(string.Empty);
+            }
             var output = result.Aggregate((x, y) => x + Environment.NewLine + y);
             return new Input(output);
         }
