@@ -139,7 +139,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private static Wireshark CreateWireshark(this Emulation emulation, string name, LinkLayer layer)
         {
-#if EMUL8_PLATFORM_OSX
+#if PLATFORM_OSX
             throw new RecoverableException("Wireshark is not available on OS X.");
 #else
             Wireshark result;
@@ -178,7 +178,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private const string WiresharkExternalPrefix = "wireshark";
         private const string WirelessLogName = WiresharkExternalPrefix + "-" + "allWirelessTraffic";
         private const string EthernetLogName = WiresharkExternalPrefix + "-" + "allEthernetTraffic";
-#if EMUL8_PLATFORM_WINDOWS
+#if PLATFORM_WINDOWS
         private const string WiresharkPath = @"c:\Program Files\Wireshark\Wireshark.exe";
 #else
         private const string WiresharkPath = "/usr/bin/wireshark";

@@ -45,7 +45,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         public void ClearPipe()
         {
             wiresharkPipe.Close();
-#if !EMUL8_PLATFORM_WINDOWS
+#if !PLATFORM_WINDOWS
             //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
             File.Delete($"{NamedPipePrefix}{pipeName}");
 #endif
@@ -196,7 +196,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private static readonly DateTime localEpoch = new DateTime(1970, 1, 1).ToLocalTime();
 
-#if !EMUL8_PLATFORM_WINDOWS
+#if !PLATFORM_WINDOWS
         private const string NamedPipePrefix = "/var/tmp/";
         private const PipeOptions NamedPipeOptions = PipeOptions.None;
 #else
