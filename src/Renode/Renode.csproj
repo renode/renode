@@ -171,6 +171,7 @@
   </ItemGroup>
   <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
     <Exec Command="cd Properties; ../../Emul8/Tools/scripts/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
-    <Exec Command="cd Properties; powershell -File ../../createAssemblyVersionInfo.ps1 -ExecutionPolicy unrestricted" Condition="$(CurrentPlatform) == 'Windows'" />
+    <!--The '&' character instead of ';' is required for Windows.-->
+    <Exec Command="cd Properties &amp; powershell -File ../../Emul8/Tools/scripts/createAssemblyInfo.ps1 -ExecutionPolicy unrestricted" Condition="$(CurrentPlatform) == 'Windows'" />
   </Target>
 </Project>
