@@ -1,0 +1,55 @@
+leUart0: UART.LEUART @ sysbus <0x4004A000, +0x400>
+    -> nvic@21
+
+bitBand: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000
+
+i2c0: I2C.EFR32_I2CController @ sysbus <0x4000C000, +0x400>
+    -> nvic@16
+
+usart0: UART.EFR32_USART @ sysbus <0x40010000, +0x400>
+    ReceiveIRQ -> nvic@11
+    TransmitIRQ -> nvic@12
+
+usart1: UART.EFR32_USART @ sysbus <0x40010400, +0x400>
+    ReceiveIRQ -> nvic@19
+    TransmitIRQ -> nvic@20
+
+timer0: Timers.Efm32Timer @ sysbus <0x40018000, +0x400>
+    -> nvic@10
+
+timer1: Timers.Efm32Timer @ sysbus <0x40018400, +0x400>
+    -> nvic@18
+
+ramCode: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x7C00
+
+ramHCode: Memory.MappedMemory @ sysbus 0x1003FC00
+    size: 0x400
+
+ramData: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x8000
+
+sramBitband: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x400000>
+    peripheralBase: 0x20000000
+
+flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+gpioPort: GPIOPort.EFR32_GPIOPort @ sysbus 0x4000A000
+    EvenIRQ -> nvic@9
+    OddIRQ -> nvic@17
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu@0
+    systickFrequency: 38400000
+
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m3"
+
+deviceInformation: EFM32DeviceInformation @ sysbus 0x0FE081B0
+    deviceFamily: Family.Gecko // EFR32MG1P
+    deviceNumber: 1
+    flashSize: 256
+    sramSize: 64
