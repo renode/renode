@@ -63,27 +63,31 @@ To install the remaining prerequisites of Renode, use::
 Windows
 ~~~~~~~
 
-Renode requires MSBuild and several other applications:
-* MSBuild 15.0
-* .NET versions 4.0, 4.5, 4.7
-* Cygwin (with module: openssh)
-* MinGW (with module: pthreads)
-* Python 2.7.14 (with modules: robotframework, netifaces, requests)
-* Gtk# 2.12.30
-* Git
-
-Building Renode will be done with Cygwin, therefore after installation of all prerequisites, additional configuration is needed:
-* the Cygwin console used for developing purposes must have in its PATH valid paths to: 
-  -Python
-  -MinGW
-  -Gtk#
-* git configuration (can be configured through Git Bash)::
+Prior to repository clone, git has to be configured appropriately::
 
    git config --global core.autocrlf false
    git config --global core.symlinks true
 
-It is recommended to use Python installed as a system-wide program, not as a Cygwin module. If there are multiple Python versions installed on the machine used for
-developing Renode, Cygwin will use the first python in its PATH. Same goes for using Git in Cygwin.
+The prerequisites for Renode on Windows are as follows:
+
+* MSBuild 15.0
+* .NET versions 4.0, 4.5, 4.7
+* Cygwin (with module: openssh)
+* MinGW (with module: pthreads)
+* Python 2.7 (with modules: robotframework, netifaces, requests)
+* Gtk# 2.12.30 (this precise version is required, downloadable from `Xamarin website <http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.30.msi>`_
+* Git (either natively on Windows or as a Cygwin module)
+
+The building process described further on in this document may be only executed in Cygwin shell.
+To be able to use all of the prerequisites, the user has to configure Cygwin's PATH variable to include the following directories:
+
+* Python
+* MinGW
+* Gtk#
+* Git (if installed as a Windows application)
+
+It is required to use Python installed as a native Windows application, not as a Cygwin module.
+If there are multiple Python versions installed on the machine used for developing Renode, Cygwin will use the first instance found in its PATH.
 
 Downloading the source code
 +++++++++++++++++++++++++++
@@ -138,7 +142,7 @@ The script allows several optional flags, most useful of which are presented bel
    -P PORT       listen on a port for monitor commands instead of opening a window
    -h            help & usage
 
-On Windows systems Renode can be run by clicking Renode.exe in the renode/output directory.
+On Windows systems Renode can be run by starting Renode.exe with a similar set of optional flags.
 
 Documentation
 -------------
