@@ -77,9 +77,6 @@ The prerequisites for Renode on Windows are as follows:
 * Python 2.7 (with modules: robotframework, netifaces, requests)
 * Gtk# 2.12.30 (this precise version is required, downloadable from `Xamarin website <http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.30.msi>`_
 * Git (either natively on Windows or as a Cygwin module)
-* Run in Powershell::
-
-  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 The building process described further on in this document may be only executed in Cygwin shell.
 To be able to use all of the prerequisites, the user has to configure Cygwin's PATH variable to include the following directories:
