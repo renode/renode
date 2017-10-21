@@ -10,9 +10,11 @@ using TermSharp;
 using TermSharp.Vt100;
 using Emul8.Logging;
 using Emul8.CLI;
+using Antmicro.Migrant;
 
 namespace Antmicro.Renode.UI
 {
+    [Transient]
     internal class TerminalIOSource : IActiveIOSource, IDisposable
     {
         public TerminalIOSource(Terminal terminal)
