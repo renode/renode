@@ -65,6 +65,9 @@ namespace Antmicro.Renode
             Emulator.UserDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".renode");
             ConfigurationManager.Initialize(configFile ?? Path.Combine(Emulator.UserDirectoryPath, "config"));
             TemporaryFilesManager.Initialize(Path.GetTempPath(), "renode-");
+
+            // set Termsharp as a default terminal if there is none already
+            ConfigurationManager.Instance.Get("general", "terminal", "Termsharp");
         }
     }
 }
