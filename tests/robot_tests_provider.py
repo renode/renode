@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
+from sys import platform
 import os
 import sys
 import fnmatch
@@ -46,7 +47,10 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to bootstrap and build?".format(remote_server_binary))
             sys.exit(1)
 
-        args = ['mono', remote_server_binary, '--hide-monitor', '--hide-log', '--robot-server-port', str(options.remote_server_port)]
+        args = [remote_server_binary, '--hide-monitor', '--hide-log', '--robot-server-port', str(options.remote_server_port)]
+        if platform.startswith("linux") or platform == "darwin":
+            args.insert(0, 'mono')
+
         if options.port is not None:
             if options.suspend:
                 print('Waiting for a debugger at port: {}'.format(options.port))

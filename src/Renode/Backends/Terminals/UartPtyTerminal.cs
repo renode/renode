@@ -4,14 +4,16 @@
 // This file is part of the Renode project.
 // Full license details are defined in the 'LICENSE' file.
 //
-using System;
 using Emul8.Core;
+using Emul8.Exceptions;
+#if !PLATFORM_WINDOWS
+using System;
 using Emul8.Utilities;
 using AntShell.Terminal;
 using Mono.Unix;
 using System.IO;
-using Emul8.Exceptions;
 using Emul8.Backends.Terminals;
+#endif
 
 namespace Antmicro.Renode.Backends.Terminals
 {
@@ -19,10 +21,15 @@ namespace Antmicro.Renode.Backends.Terminals
     {
         public static void CreateUartPtyTerminal(this Emulation emulation, string name, string fileName, bool forceCreate = false)
         {
+#if !PLATFORM_WINDOWS
             emulation.ExternalsManager.AddExternal(new UartPtyTerminal(fileName, forceCreate), name);
+#else
+            throw new RecoverableException("Creating UartPtyTerminal is not supported on Windows.");
+#endif
         }
     }
 
+#if !PLATFORM_WINDOWS
     public class UartPtyTerminal : BackendTerminal, IDisposable
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
@@ -80,5 +87,6 @@ namespace Antmicro.Renode.Backends.Terminals
         private readonly IOProvider io;
         private readonly UnixSymbolicLinkInfo symlink;
     }
+#endif
 }
 

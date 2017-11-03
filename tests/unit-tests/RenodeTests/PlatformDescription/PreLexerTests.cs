@@ -17,8 +17,8 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         [Test]
         public void ShouldProcessEmptyFile()
         {
-            var result = PreLexer.Process(new string[0]);
-            CollectionAssert.AreEquivalent(new string[0], result);
+            var result = PreLexer.Process(string.Empty);
+            CollectionAssert.AreEquivalent(string.Empty, result.First());
         }
 
         [Test]
@@ -29,7 +29,7 @@ second line
     first indented
     second indented
 third line";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"first line;
 second line{
@@ -49,7 +49,7 @@ second line
     second indented
 
 third line";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"first line;
 second line{
@@ -67,7 +67,7 @@ third line");
             var source = @"first line
 second line
     first indented";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"first line;
 second line{
@@ -82,7 +82,7 @@ second line{
             var source = @"
 line1
 line2";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1;
@@ -97,7 +97,7 @@ line2");
 line1
 
 line2";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+           var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1;
@@ -114,7 +114,7 @@ line1
 line2
 
 ";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1;
@@ -131,7 +131,7 @@ var source = @"
 line1 { 
     line2 }";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 { 
@@ -147,7 +147,7 @@ line1 {
 line1 { // something
     line2 }";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 { 
@@ -163,7 +163,7 @@ line1 {
 line1 {// something
     line2 }";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 {// something
@@ -180,7 +180,7 @@ line1 {// something
 line1 {
     line2 }";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 
@@ -197,7 +197,7 @@ line1 {
 line1 ""something with //"" ""another // pseudo comment"" { // and here goes real comment
     line2 }";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 ""something with //"" ""another // pseudo comment"" { 
@@ -212,7 +212,7 @@ line1 ""something with //"" ""another // pseudo comment"" {
             var source = @"
 line1 ""i'm unterminated";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
             var exception = Assert.Throws<ParsingException>(() => result.ToArray());
             Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
         }
@@ -224,7 +224,7 @@ line1 ""i'm unterminated";
 line1 used as a ruler1234            123456789                1234
 line 2/* first comment*/ ""string with /*"" /* second comment */ something";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 used as a ruler1234            123456789                1234;
@@ -244,7 +244,7 @@ more
     here we finish*/
 line2";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1;
@@ -266,7 +266,7 @@ line1 { /* here we begin
 here the comment ends*/ x: 5 }
 line2";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 { 
@@ -286,7 +286,7 @@ line1 /* here we begin
 here the comment ends*/ x: 5
 line2";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
             var exception = Assert.Throws<ParsingException>(() => result.ToArray());
             Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
         }
@@ -298,7 +298,7 @@ line2";
 line1 ""{ \"" {""
 line2";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1 ""{ \"" {"";
@@ -312,7 +312,7 @@ line2");
         {
             var source = @"onlyLine";
 
-            var result = PreLexer.Process(SplitUsingNewline(source)).ToArray();
+            var result = PreLexer.Process(source).ToArray();
 
             var expectedResult = SplitUsingNewline(@"onlyLine");
 
@@ -328,7 +328,7 @@ line2");
         first indented
         second indented
     third line";
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var exception = Assert.Throws<ParsingException>(() => result.ToArray());
             Assert.AreEqual(ParsingError.WrongIndent, exception.Error);
@@ -341,7 +341,7 @@ line2");
 first line
     /*something*/ second line";
 
-            var result = PreLexer.Process(SplitUsingNewline(source));
+            var result = PreLexer.Process(source);
 
             var exception = Assert.Throws<ParsingException>(() => result.ToArray());
             Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
@@ -349,7 +349,7 @@ first line
 
         private static string[] SplitUsingNewline(string source)
         {
-            return source.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            return source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
         }
     }
 }

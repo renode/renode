@@ -199,6 +199,7 @@
   </ItemGroup>
   <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
     <Exec Command="cd Properties; ../../Emul8/Tools/scripts/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
-    <Exec Command="cd Properties; powershell -File ../../createAssemblyVersionInfo.ps1 -ExecutionPolicy unrestricted" Condition="$(CurrentPlatform) == 'Windows'" />
+    <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
+    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../Emul8/Tools/scripts/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(CurrentPlatform) == 'Windows'" />
   </Target>
 </Project>

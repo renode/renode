@@ -11,6 +11,7 @@ using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using NUnit.Framework;
 using Sprache;
+using System.Text;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -442,9 +443,28 @@ device: Something @ somewhere
             Assert.AreEqual(false, values[1].Value);
         }
 
+        [Test]
+        public void ShouldParseWithMixedLineEndings()
+        {
+            var source = new StringBuilder();
+            source.Append("peripheral: SomeHub");
+            source.Append("\n");
+            source.Append("local first_other: Other");
+            source.Append("\r\n");
+            source.Append("local second_other: Other");
+            source.Append("\r\n");
+
+            var result = Grammar.Description(GetInputFromString(source.ToString()));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
         private static IInput GetInputFromString(string source)
         {
-            var result = PreLexer.Process(source.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
+            var result = PreLexer.Process(source);
+            if(!result.Any())
+            {
+                return new Input(string.Empty);
+            }
             var output = result.Aggregate((x, y) => x + Environment.NewLine + y);
             return new Input(output);
         }

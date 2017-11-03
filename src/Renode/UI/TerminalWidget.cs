@@ -55,7 +55,7 @@ namespace Antmicro.Renode.UI
 
             // We set the default font as a fall-back option.
             terminal.CurrentFont = Xwt.Drawing.Font.SystemMonospaceFont;
-#if EMUL8_PLATFORM_LINUX
+#if PLATFORM_LINUX
             // Here we try to load the robot font; unfortunately it doesn't work on OSX and Windows. Moreover, on some versions of
             // OSX it passes with no error (and no effect), on the others - it hangs. That's why we try to set the font and then
             // we check if we succeeded.
@@ -215,7 +215,7 @@ namespace Antmicro.Renode.UI
         private TerminalIOSource terminalInputOutputSource;
         private const int MinimalBottomMargin = 2;
 
-#if EMUL8_PLATFORM_OSX
+#if PLATFORM_OSX
         // Default font size on OSX is slightly larger than on generic Linux system.
         private const double PredefinedFontSize = 12.0;
 #else

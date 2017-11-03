@@ -13,8 +13,10 @@ namespace Antmicro.Renode.PlatformDescription
 {
     public static class PreLexer
     {
-        public static IEnumerable<string> Process(IEnumerable<string> lineSource, string path = "")
+        public static IEnumerable<string> Process(string source, string path = "")
         {
+            // We remove '\r' so that we don't have to worry about line endings.
+            var lineSource = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
             var inputBraceLevel = 0;
             var outputBraceLevel = 0;
 

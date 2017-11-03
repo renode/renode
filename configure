@@ -75,4 +75,6 @@ EOF
 
 "$CURRENT_PATH"/src/Emul8/bootstrap.sh "${PARAMS[@]}"
 
-add_property "$CURRENT_PATH"/output/properties.csproj LogoLocation "$CURRENT_PATH"/resources/images/Renode-logo.png
+LOGOPATH="$CURRENT_PATH/resources/images/Renode-logo.png"
+PROPPATH="$CURRENT_PATH/output/properties.csproj"
+add_path_property "$PROPPATH" LogoLocation "$LOGOPATH"
