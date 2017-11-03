@@ -23,11 +23,13 @@ flash: Memory.MappedMemory @ sysbus 0x200000
     size: 0x100000
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 1000000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
     nvic: nvic
     cpuType: "cortex-m3"
+    PerformanceInMips: 24
 
 radio: Wireless.CC2538RF @ sysbus 0x40088000
     -> nvic@141
