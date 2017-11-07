@@ -27,7 +27,7 @@ namespace Antmicro.Renode.UI
             var textAsBytes = Encoding.UTF8.GetBytes(text);
             foreach(var b in textAsBytes)
             {
-                terminalInputOutputSource.HandleInput(b);
+                IOSource.HandleInput(b);
             }
         }
 

@@ -21,7 +21,7 @@ namespace Antmicro.Renode.UI
             {
                 terminalWidget = new TerminalWidget(() => window.HasFocus);
             });
-            ioSource = terminalWidget.IO.Backend;
+            ioSource = terminalWidget.IOSource;
 
             var mre = new ManualResetEventSlim();
             ApplicationExtensions.InvokeInUIThread(() =>

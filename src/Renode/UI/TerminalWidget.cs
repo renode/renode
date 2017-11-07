@@ -1,4 +1,4 @@
-﻿﻿//
+﻿﻿﻿﻿﻿//
 // Copyright (c) Antmicro
 //
 // This file is part of the Renode project.
@@ -37,15 +37,14 @@ namespace Antmicro.Renode.UI
 
             modifyLineEndings = ConfigurationManager.Instance.Get("termsharp", "append-CR-to-LF", false);
             terminal = new Terminal(focusProvider);
-            terminalInputOutputSource = new TerminalIOSource(terminal);
-            IO = new IOProvider { Backend = terminalInputOutputSource };
-            IO.BeforeWrite += b =>
+            IOSource = new TerminalIOSource(terminal);
+            IOSource.BeforeWrite += b =>
             {
                 // we do not check if previous byte was '\r', because it should not cause any problem to
                 // send it twice
                 if(modifyLineEndings && b == '\n')
                 {
-                    IO.Write((byte)'\r');
+                    IOSource.Write((byte)'\r');
                 }
             };
 
@@ -88,7 +87,7 @@ namespace Antmicro.Renode.UI
             {
                 terminal.ClearSelection();
                 terminal.MoveScrollbarToEnd();
-                terminalInputOutputSource.HandleInput(x);
+                IOSource.HandleInput(x);
             });
 
             terminal.KeyPressed += (s, a) =>
@@ -117,17 +116,16 @@ namespace Antmicro.Renode.UI
             Content = terminal;
         }
 
-        public TerminalWidget(UARTBackend backend, Func<bool> focusProvider) : this(focusProvider)
-        {
-            backend.BindAnalyzer(IO);
-        }
-
         public void Clear()
         {
             terminal.Clear();
         }
 
-        public IOProvider IO { get; private set; }
+        public TerminalIOSource IOSource
+        {
+            get;
+            set;
+        }
 
         public event Action Initialized
         {
@@ -145,10 +143,10 @@ namespace Antmicro.Renode.UI
         {
             base.Dispose(disposing);
 
-            if(IO != null)
+            if(IOSource != null)
             {
-                IO.Dispose();
-                IO = null;
+                IOSource.Dispose();
+                IOSource = null;
             }
         }
 
@@ -212,7 +210,6 @@ namespace Antmicro.Renode.UI
         private static bool FirstWindowAlreadyShown;
         private double defaultFontSize;
         private Terminal terminal;
-        private TerminalIOSource terminalInputOutputSource;
         private const int MinimalBottomMargin = 2;
 
 #if PLATFORM_OSX

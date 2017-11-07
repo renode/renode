@@ -1,4 +1,4 @@
-﻿﻿//
+﻿﻿﻿//
 // Copyright (c) Antmicro
 //
 // This file is part of the Renode project.
@@ -15,7 +15,7 @@ using Antmicro.Migrant;
 namespace Antmicro.Renode.UI
 {
     [Transient]
-    internal class TerminalIOSource : IActiveIOSource, IDisposable
+    public class TerminalIOSource : IActiveIOSource, IDisposable
     {
         public TerminalIOSource(Terminal terminal)
         {
@@ -35,6 +35,7 @@ namespace Antmicro.Renode.UI
 
         public void Write(byte b)
         {
+            BeforeWrite?.Invoke(b);
             ApplicationExtensions.InvokeInUIThread(() => utfDecoder.Feed(b));
         }
 
@@ -50,6 +51,7 @@ namespace Antmicro.Renode.UI
         public bool IsAnythingAttached { get { return ByteRead != null; } }
 
         public event Action<int> ByteRead;
+        public event Action<byte> BeforeWrite;
 
         private readonly TermSharp.Vt100.Decoder vt100decoder;
         private readonly ByteUtf8Decoder utfDecoder;
