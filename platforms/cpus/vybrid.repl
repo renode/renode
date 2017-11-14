@@ -54,6 +54,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 cpuM4: CPU.CortexM @ sysbus
     cpuType: "cortex-m4"
     nvic: nvic
+    IsHalted: true
 
 gpio0: GPIOPort.VybridGPIOPort @ {
         sysbus new Bus.BusMultiRegistration { address: 0x400FF000; size: 0x40; region: "gpio" };
@@ -90,3 +91,23 @@ sema4: Miscellaneous.SEMA4 @ sysbus 0x4001D000
     CPU1 -> nvic@4
 
 nand: MTD.FSLNAND @ sysbus 0x400E0000 { -> mscm@75 }
+
+sysbus:
+    init:
+        // DDR settings (u-boot checks for ram size this way
+        // CR001
+        Tag <0x400AE004, 0x400AE007> "DDRMC_CR001" 0x00020B10
+        // CR073
+        Tag <0x400AE124, 0x400AE127> "DDRMC_CR073" 0x0a010300
+        // CR078
+        Tag <0x400AE138, 0x400AE13B> "DDRMC_CR078" 0x0000000c
+        
+        Tag <0x40050080, 0x40050083> "ANADIG_PLL4_NUM" 0xFFFFFFFF
+        Tag <0x40050090, 0x40050093> "ANADIG_PLL4_DENOM" 0xFFFFFFFF
+        
+        Tag <0x40050010, 0x40050013> "ANADIG_PLL3_CTRL" 0xFFFFFFFF
+        Tag <0x40050020, 0x40050023> "ANADIG_PLL7_CTRL" 0xFFFFFFFF
+        Tag <0x400500E0, 0x400500E3> "ANADIG_PLL5_CTRL" 0xFFFFFFFF
+        Tag <0x40050070, 0x40050073> "ANADIG_PLL4_CTRL" 0xFFFFFFFF
+        Tag <0x40044304, 0x40044307> "QuadSPI0_LCKCR" 0xFFFFFFFF
+        Tag <0x40050830, 0x40050833> "USBPHY0_CTRL" 0xFFFFFFFF
