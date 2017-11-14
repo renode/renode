@@ -11,7 +11,7 @@ cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 find $BASE/src/Infrastructure/src/Emulator $BASE/lib  $BASE/tools/packaging/macos -iname "*-license" -exec cp {} $DIR/licenses \;
 
 #others will need a parent directory name.
-find $BASE/{src/Infrastructure,resources} -iname "license" -print0 |\
+find $BASE/{src/Infrastructure,lib/resources} -iname "license" -print0 |\
     while IFS= read -r -d $'\0' file
 do
     full_dirname=${file%/*}
