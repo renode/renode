@@ -157,7 +157,7 @@ On Windows systems Renode can be run by starting Renode.exe with a similar set o
 Documentation
 -------------
 
-Documentation will be available soon.
+Documentation is under development, available on `Read the Docs <http://renode.readthedocs.io>`_.
 
 License & contributions
 -----------------------
@@ -173,7 +173,7 @@ Commercial support
 
 Commercial support for Renode is provided by `Antmicro <http://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
 
-Antmicro created and maintain the Renode framework and related tooling, and are happy to provide services such as adding new platforms, integrations, plugins and tools.
+Antmicro created and maintains the Renode framework and related tooling, and is happy to provide services such as adding new platforms, integrations, plugins and tools.
 
 To inquire about our services, contact us at support@renode.io.
 
