@@ -1,6 +1,30 @@
-[submodule "src/Emul8"]
-	path = src/Emul8
-	url = https://github.com/antmicro/emul8.git
-[submodule "src/External/termsharp"]
-	path = src/External/termsharp
+[submodule "src/Infrastructure"]
+	path = src/Infrastructure
+	url = https://github.com/renode/renode-infrastructure.git
+[submodule "lib/termsharp"]
+	path = lib/termsharp
 	url = https://github.com/antmicro/termsharp.git
+[submodule "lib/FdtSharp"]
+	path = lib/FdtSharp
+	url = https://github.com/antmicro/FdtSharp.git
+[submodule "lib/Packet.Net"]
+	path = lib/Packet.Net
+	url = https://github.com/antmicro/Packet.Net.git
+[submodule "lib/AntShell"]
+	path = lib/AntShell
+	url = https://github.com/antmicro/AntShell.git
+[submodule "lib/xwt"]
+	path = lib/xwt
+	url = https://github.com/antmicro/xwt.git
+[submodule "lib/ELFSharp"]
+	path = lib/ELFSharp
+	url = https://github.com/antmicro/elfsharp.git
+[submodule "lib/Migrant"]
+	path = lib/Migrant
+	url = https://github.com/antmicro/Migrant.git
+[submodule "lib/cctask"]
+	path = lib/cctask
+	url = https://github.com/antmicro/cctask.git
+[submodule "lib/options-parser"]
+	path = lib/options-parser
+	url = https://github.com/antmicro/options-parser

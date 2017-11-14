@@ -11,8 +11,7 @@
     <RootNamespace>Antmicro.Renode</RootNamespace>
     <AssemblyName>Renode</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <PropertiesLocation>$(SolutionDir)\properties.csproj</PropertiesLocation>
-    <OutputPathPrefix>bin</OutputPathPrefix>
+    <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
   </PropertyGroup>
   <Import Project="$(PropertiesLocation)" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,9 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(OutputPathPrefix)\Debug</OutputPath>
-    <!-- This is a hack to allow debugging in MonoDevelop -->
-    <OutputPath Condition="'$(BuildingFromBuildScript)' == ''">bin\Debug</OutputPath>
+    <OutputPath>..\..\output\bin\Debug</OutputPath>
     <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +29,7 @@
     <LangVersion>7</LangVersion>
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(OutputPathPrefix)\Release</OutputPath>
+    <OutputPath>..\..\output\bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -41,10 +38,10 @@
     <Reference Include="System" />
     <Reference Include="Mono.Posix" />
     <Reference Include="Sprache">
-      <HintPath>..\..\resources\libraries\Sprache.dll</HintPath>
+      <HintPath>..\..\lib\resources\libraries\Sprache.dll</HintPath>
     </Reference>
     <Reference Include="CookComputing.XmlRpcV2">
-      <HintPath>..\..\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
+      <HintPath>..\..\lib\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -91,7 +88,6 @@
     <Compile Include="PlatformDescription\Syntax\UsingEntry.cs" />
     <Compile Include="PlatformDescription\Syntax\Value.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="RobotFrameworkEngine\RobotFrontend.cs" />
     <Compile Include="RobotFrameworkEngine\RobotFrameworkEngine.cs" />
     <Compile Include="RobotFrameworkEngine\HotSpotAction.cs" />
     <Compile Include="RobotFrameworkEngine\HttpServer.cs" />
@@ -118,63 +114,99 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
-    <Emul8>
-      <ProjectInfo Type="UI">
-        <Mode>Renode</Mode>
-      </ProjectInfo>
-    </Emul8>
     <MonoDevelop>
       <Properties>
         <Policies>
-          <TextStylePolicy FileWidth="120" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <TextStylePolicy FileWidth="120" TabWidth="4" IndentWidth="4" RemoveTrailingWhitespace="True" TabsToSpaces="True" NoTabsAfterNonTabs="True" EolMarker="Unix" scope="text/x-csharp" />
           <DotNetNamingPolicy DirectoryNamespaceAssociation="PrefixedHierarchical" ResourceNamePolicy="FileName" />
-          <CSharpFormattingPolicy NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceAfterControlFlowStatementKeyword="False" SpaceBeforeOpenSquareBracket="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchSection="True" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInTypes="True" NewLinesForBracesInMethods="True" NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceAfterMethodCallName="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBeforeOpenSquareBracket="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" SpaceAfterControlFlowStatementKeyword="False" scope="text/x-csharp" />
           <TextStylePolicy FileWidth="120" NoTabsAfterNonTabs="True" EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
           <TextStylePolicy FileWidth="120" NoTabsAfterNonTabs="True" EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="application/t4-template" />
-          <StandardHeader Text="&#xA;Copyright (c) Antmicro&#xA;&#xA;This file is part of the Renode project.&#xA;Full license details are defined in the 'LICENSE' file.&#xA;" IncludeInNewFiles="True" />
+          <StandardHeader IncludeInNewFiles="True" Text="&#xA;Copyright (c) 2010-${Year} Antmicro&#xA;&#xA; This file is licensed under the MIT License.&#xA; Full license text is available in 'licenses/MIT.txt'.&#xA;" />
         </Policies>
       </Properties>
     </MonoDevelop>
-    <Emul8>
-      <ProjectInfo Type="Extension" />
-    </Emul8>
   </ProjectExtensions>
   <ItemGroup>
-    <ProjectReference Include="..\Emul8\CLI\CLI.csproj">
+    <ProjectReference Include="..\Infrastructure\src\UI\UI.csproj">
       <Project>{AEFE490F-85AC-42AF-9CAE-2B7FC7167E0E}</Project>
-      <Name>CLI</Name>
+      <Name>UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\Emulator\Main\Emulator.csproj">
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Main\Emulator.csproj">
       <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
       <Name>Emulator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\External\AntShell\AntShell\AntShell.csproj">
+    <ProjectReference Include="..\..\lib\AntShell\AntShell\AntShell.csproj">
       <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
       <Name>AntShell</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\External\Migrant\Migrant\Migrant.csproj">
+    <ProjectReference Include="..\..\lib\Migrant\Migrant\Migrant.csproj">
       <Project>{5F87C357-09FB-4F53-BE37-41FE5BD88957}</Project>
       <Name>Migrant</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\Emulator\Extensions\Extensions.csproj">
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Extensions\Extensions.csproj">
       <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
       <Name>Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\External\options-parser\OptionsParser.csproj">
+    <ProjectReference Include="..\..\lib\options-parser\OptionsParser.csproj">
       <Project>{C56AABEF-C01E-493F-A65F-09A572FE9B2E}</Project>
       <Name>OptionsParser</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\External\xwt\Xwt\Xwt.csproj">
+    <ProjectReference Include="..\..\lib\xwt\Xwt\Xwt.csproj">
       <Project>{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}</Project>
       <Name>Xwt</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Emul8\External\xwt\Xwt.Gtk\Xwt.Gtk.csproj">
+    <ProjectReference Include="..\..\lib\xwt\Xwt.Gtk\Xwt.Gtk.csproj">
       <Project>{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}</Project>
       <Name>Xwt.Gtk</Name>
     </ProjectReference>
-    <ProjectReference Include="..\External\termsharp\TermSharp.csproj">
+    <ProjectReference Include="..\..\lib\termsharp\TermSharp.csproj">
       <Project>{25FAECC1-55F0-4608-88BD-4207A7F993B0}</Project>
       <Name>TermSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm.csproj">
+      <Project>{13222124-707C-5EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-arm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m.csproj">
+      <Project>{43222114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-arm-m</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386.csproj">
+      <Project>{53222114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-i386</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc.csproj">
+      <Project>{23222114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-ppc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc.csproj">
+      <Project>{13222114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-sparc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Peripherals\Peripherals.csproj">
+      <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
+      <Name>Peripherals</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin.csproj">
+      <Project>{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0}</Project>
+      <Name>AdvancedLoggerViewerPlugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\LLVMDisassembler\LLVMDisassembler.csproj">
+      <Project>{5B9F2FDE-8223-4211-899E-306FE25EAA5C}</Project>
+      <Name>LLVMDisassembler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin.csproj">
+      <Project>{66A5675A-13AE-4454-88A6-29EB2D6F5988}</Project>
+      <Name>SampleCommandPlugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\TracePlugin\TracePlugin.csproj">
+      <Project>{887C6088-F483-466A-A671-06EEC42B8DC1}</Project>
+      <Name>TracePlugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Plugins\WiresharkPlugin\WiresharkPlugin.csproj">
+      <Project>{66A9995A-13AE-4454-88A6-29EB2D6F5988}</Project>
+      <Name>WiresharkPlugin</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -189,7 +221,7 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\..\resources\images\Renode-logo.png">
+    <EmbeddedResource Include="..\..\lib\resources\images\Renode-logo.png">
       <Link>Resources\logo.png</Link>
       <LogicalName>logo.png</LogicalName>
     </EmbeddedResource>
@@ -198,8 +230,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
-    <Exec Command="cd Properties; ../../Emul8/Tools/scripts/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
+    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
     <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
-    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../Emul8/Tools/scripts/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(CurrentPlatform) == 'Windows'" />
+    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(CurrentPlatform) == 'Windows'" />
   </Target>
 </Project>

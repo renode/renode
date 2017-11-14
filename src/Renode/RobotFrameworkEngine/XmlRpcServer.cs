@@ -1,15 +1,15 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CookComputing.XmlRpc;
-using Emul8.Core;
+using Antmicro.Renode.Core;
 
 namespace Antmicro.Renode.RobotFramework
 {

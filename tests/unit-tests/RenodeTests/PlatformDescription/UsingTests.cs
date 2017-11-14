@@ -1,12 +1,12 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using System.Linq;
-using Emul8.Core;
+using Antmicro.Renode.Core;
 using Antmicro.Renode.PlatformDescription;
 using NUnit.Framework;
 
@@ -19,11 +19,11 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         public void ShouldFindVariableFromUsing()
         {
             var a = @"
-cpu1: UnitTests.Mocks.MockCPU";
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             var source = @"
 using ""A""
-cpu2: UnitTests.Mocks.MockCPU
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu1";
 
             ProcessSource(source, a);
@@ -33,11 +33,11 @@ cpu2: UnitTests.Mocks.MockCPU
         public void ShouldNotFindLocalVariableFromUsing()
         {
             var a = @"
-local cpu1: UnitTests.Mocks.MockCPU";
+local cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             var source = @"
 using ""A""
-cpu2: UnitTests.Mocks.MockCPU
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu1";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
@@ -49,16 +49,16 @@ cpu2: UnitTests.Mocks.MockCPU
         {
             var source = @"
 using ""A""
-cpu3: UnitTests.Mocks.MockCPU
+cpu3: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu2";
 
             var a = @"
 using ""B""
-cpu2: UnitTests.Mocks.MockCPU
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu1";
 
             var b = @"
-cpu1: UnitTests.Mocks.MockCPU";
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             ProcessSource(source, a, b);
         }
@@ -68,10 +68,10 @@ cpu1: UnitTests.Mocks.MockCPU";
         {
             var source = @"
 using ""A""
-otherCpu: UnitTests.Mocks.MockCPU";
+otherCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             var a = @"
-cpu: UnitTests.Mocks.MockCPU
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: otherCpu";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
@@ -83,11 +83,11 @@ cpu: UnitTests.Mocks.MockCPU
         {
             var source = @"
 using ""A"" prefixed ""a_""
-cpu: UnitTests.Mocks.MockCPU
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: a_cpu";
 
             var a = @"
-cpu: UnitTests.Mocks.MockCPU";
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             ProcessSource(source, a);
         }
@@ -98,17 +98,17 @@ cpu: UnitTests.Mocks.MockCPU";
             var source = @"
 using ""A"" prefixed ""a_""
 using ""B""
-someCpu: UnitTests.Mocks.MockCPU
+someCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: a_b_cpu
 
-oneMoreCpu: UnitTests.Mocks.MockCPU { OtherCpu: cpu }
+oneMoreCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU { OtherCpu: cpu }
 ";
 
             var a = @"
 using ""B"" prefixed ""b_""";
 
             var b = @"
-cpu: UnitTests.Mocks.MockCPU";
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             ProcessSource(source, a, b);
         }
@@ -117,8 +117,8 @@ cpu: UnitTests.Mocks.MockCPU";
         public void ShouldHandleIrqDestinationOnPrefixing()
         {
             var a = @"
-cpu: UnitTests.Mocks.MockReceiver
-sender: UnitTests.Mocks.MockIrqSender
+cpu: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     Irq -> cpu@0";
 
             var source = @"
@@ -132,15 +132,15 @@ using ""A"" prefixed ""sth_""";
         {
             var b = @"
 using ""A""
-p: UnitTests.Mocks.EmptyPeripheral";
+p: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var a = @"
 using ""B""
-p2: UnitTests.Mocks.EmptyPeripheral";
+p2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var source = @"
 using ""B""
-p3: UnitTests.Mocks.EmptyPeripheral";
+p3: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a, b));
             Assert.AreEqual(ParsingError.RecurringUsing, exception.Error);
@@ -151,11 +151,11 @@ p3: UnitTests.Mocks.EmptyPeripheral";
         {
             var a = @"
 using ""A""
-p: UnitTests.Mocks.EmptyPeripheral";
+p: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var source = @"
 using ""A""
-p2: UnitTests.Mocks.EmptyPeripheral";
+p2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
             Assert.AreEqual(ParsingError.RecurringUsing, exception.Error);

@@ -1,12 +1,12 @@
 //
-// Copyright (c) Antmicro
+// Copyright (c) 2010-2017 Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Emul8.Plugins;
-using Emul8.UserInterface;
+using Antmicro.Renode.Plugins;
+using Antmicro.Renode.UserInterface;
 
 namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {

@@ -1,26 +1,27 @@
-:name: versatile linux (console)
-#
-# DEMO SCRIPT
-#
-# platform: versatile linux
-#
+:name: Versatile
+:description: This script runs Linux on Versatile.
+# log in with username "root"
 
 using sysbus
-mach create
+$name?="Versatile"
+mach create $name
 
 machine LoadPlatformDescription @platforms/boards/versatile.repl
+machine SetClockSource sysbus.cpu
+
 sysbus Redirect 0xC0000000 0x0 0x10000000
+
+$bin?=@http://antmicro.com/projects/renode/versatile--vmlinux-versatile-buildroot--b2f53187e2d5fd0f74e1b0c8922378605052915e
+$rootfs?=@http://antmicro.com/projects/renode/flash_versatile.img-s_33554432-6c62cf05cbf82eeb7b2343cb7f063a7c0eee6b32
 
 ### create externals ###
 
 showAnalyzer sysbus.uart0
 
 emulation CreateSwitch "switch"
-emulation CreateTap "tap0" "tap"
-connector Connect host.tap switch
 connector Connect smc91x switch
 
-machine CFIFlashFromFile @http://antmicro.com/projects/renode/flash_versatile.img-s_8388608-a6f8e77e2f49daa86b77c3365f30299c3180690b 0x34000000 "flash"
+machine CFIFlashFromFile $rootfs 0x34000000 "flash"
 
 macro reset
 """
@@ -32,7 +33,7 @@ macro reset
 
     ### load binaries ###
 
-    sysbus LoadELF @http://antmicro.com/projects/renode/versatile--vmlinux-versatile-buildroot--b2f53187e2d5fd0f74e1b0c8922378605052915e false
+    sysbus LoadELF $bin false
 
     sysbus LoadAtags "console=ttyAMA0,115200 noinitrd root=/dev/mtdblock0 rw rootfstype=jffs2 mtdparts=armflash.0:64m@0x0 earlyprintk mem=256M" 0x10000000 0x100
     cpu PC 0x8000

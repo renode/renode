@@ -1,16 +1,16 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Emul8.Core;
-using Emul8.Exceptions;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.PlatformDescription;
-using Emul8.Utilities;
+using Antmicro.Renode.Utilities;
 using NUnit.Framework;
-using Emul8.Peripherals.CPU;
+using Antmicro.Renode.Peripherals.CPU;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -21,7 +21,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         public void ShouldProcessOneObject()
         {
             var source = @"
-mock: UnitTests.Mocks.EmptyPeripheral";
+mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             ProcessSource(source);
         }
@@ -30,7 +30,7 @@ mock: UnitTests.Mocks.EmptyPeripheral";
         public void ShouldProcessLateAttach()
         {
             var source = @"
-mock: UnitTests.Mocks.EmptyPeripheral
+mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
 
 mock: @sysbus <0x0, +0x100>";
 
@@ -43,7 +43,7 @@ mock: @sysbus <0x0, +0x100>";
             var source = @"
 mock: @sysbus <0x0, 0x1000>
 
-mock: UnitTests.Mocks.EmptyPeripheral";
+mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeNotSpecifiedInFirstVariableUse, exception.Error);
@@ -53,9 +53,9 @@ mock: UnitTests.Mocks.EmptyPeripheral";
         public void ShouldFailIfTypeIsSpecifiedSecondTime()
         {
             var source = @"
-mock: UnitTests.Mocks.EmptyPeripheral
+mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
 
-mock: UnitTests.Mocks.EmptyPeripheral";
+mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.VariableAlreadyDeclared, exception.Error);
@@ -84,7 +84,7 @@ someDevice: NotExistingType";
         public void ShouldFailOnRegisteringNotIPeripheral()
         {
             var source = @"
-external: Emul8.UnitTests.Mocks.MockExternal @ sysbus
+external: Antmicro.Renode.UnitTests.Mocks.MockExternal @ sysbus
 ";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -95,7 +95,7 @@ external: Emul8.UnitTests.Mocks.MockExternal @ sysbus
         public void ShouldFailOnStringMismatch()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     Placeholder: 8
 ";
 
@@ -107,7 +107,7 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldFailOnNonWritableProperty()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     Model: ""abc""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -118,7 +118,7 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldFailOnNumericEnumMismatch()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     EnumValue: ""abc""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -129,7 +129,7 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldFailOnNonExistingInlineType()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: new NotExistingType";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -140,7 +140,7 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldFailOnDoubleAttribute()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     EnumValue: One
     EnumValue: Two";
 
@@ -153,7 +153,7 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldFailOnNonExistingProperty()
         {
             var source = @"
-external: UnitTests.Mocks.MockCPU
+external: Antmicro.Renode.UnitTests.Mocks.MockCPU
     NotExistingProperty: ""value""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -164,10 +164,10 @@ external: UnitTests.Mocks.MockCPU
         public void ShouldCheckTypeOfAReference()
         {
             var source = @"
-one: UnitTests.Mocks.MockCPU
+one: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: two
 
-two: UnitTests.Mocks.EmptyPeripheral";
+two: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
@@ -177,8 +177,8 @@ two: UnitTests.Mocks.EmptyPeripheral";
         public void ShouldFailOnIncorrectInlineObjectType()
         {
             var source = @"
-one: UnitTests.Mocks.MockCPU
-    OtherCpu: new UnitTests.Mocks.EmptyPeripheral";
+one: Antmicro.Renode.UnitTests.Mocks.MockCPU
+    OtherCpu: new Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
@@ -188,9 +188,9 @@ one: UnitTests.Mocks.MockCPU
         public void ShouldFailOnIncorrectPropertyTypeInNestedInlineObject()
         {
             var source = @"
-cpu: UnitTests.Mocks.MockCPU
-    OtherCpu: new UnitTests.Mocks.MockCPU
-        OtherCpu: new UnitTests.Mocks.MockCPU
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
+    OtherCpu: new Antmicro.Renode.UnitTests.Mocks.MockCPU
+        OtherCpu: new Antmicro.Renode.UnitTests.Mocks.MockCPU
             EnumValue: ""string""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -201,7 +201,7 @@ cpu: UnitTests.Mocks.MockCPU
         public void ShouldFailOnNotExistingIrqDestination()
         {
             var source = @"
-sender: UnitTests.Mocks.MockIrqSender
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     IRQ -> receiver@0";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -212,8 +212,8 @@ sender: UnitTests.Mocks.MockIrqSender
         public void ShouldFailOnIrqDestinationNotBeingIrqReceiver()
         {
             var source = @"
-cpu: UnitTests.Mocks.MockCPU
-sender: UnitTests.Mocks.MockIrqSender
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     Irq -> cpu@0";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -224,9 +224,9 @@ sender: UnitTests.Mocks.MockIrqSender
         public void ShouldFailOnWrongIrqArity()
         {
             var source = @"
-sender: UnitTests.Mocks.MockIrqSender
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     [Irq] -> receiver@[0,1]
-receiver: UnitTests.Mocks.MockReceiver";
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.WrongIrqArity, exception.Error);
@@ -237,9 +237,9 @@ receiver: UnitTests.Mocks.MockReceiver";
         public void ShouldFailOnWrongIrqName()
         {
             var source = @"
-sender: UnitTests.Mocks.MockIrqSender
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     Something -> receiver@0
-receiver: UnitTests.Mocks.MockReceiver";
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.IrqSourceDoesNotExist, exception.Error);
@@ -249,9 +249,9 @@ receiver: UnitTests.Mocks.MockReceiver";
         public void ShouldFailOnNumberIrqSourceNotBeingNumberedGpioOutput()
         {
             var source = @"
-sender: UnitTests.Mocks.MockIrqSender
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     [0-1] -> receiver@[0-1]
-receiver: UnitTests.Mocks.MockReceiver";
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.IrqSourceIsNotNumberedGpioOutput, exception.Error);
@@ -261,10 +261,10 @@ receiver: UnitTests.Mocks.MockReceiver";
         public void ShouldFailOnAmbiguousDefaultIrq()
         {
             var source = @"
-sender: Emul8.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
     -> receiver@0
 
-receiver: UnitTests.Mocks.MockReceiver";
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AmbiguousDefaultIrqSource, exception.Error);
@@ -274,9 +274,9 @@ receiver: UnitTests.Mocks.MockReceiver";
         public void ShouldFailOnNoIrqWhenUsingDefaultOne()
         {
             var source = @"
-cpu: UnitTests.Mocks.MockCPU
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     -> receiver@0
-receiver: UnitTests.Mocks.MockReceiver";
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.IrqSourceDoesNotExist, exception.Error);
@@ -286,8 +286,8 @@ receiver: UnitTests.Mocks.MockReceiver";
         public void ShouldFailIfInterruptUsedSecondTimeInEntryAsSource()
         {
             var source = @"
-receiver: UnitTests.Mocks.MockReceiver
-sender: UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral
     2 -> receiver@6
     [0, 1-3, 7] -> receiver@[5-9]";
 
@@ -299,8 +299,8 @@ sender: UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral
         public void ShouldFailIfDefaultInterruptUsedSecondTimeInEntry()
         {
             var source = @"
-receiver: UnitTests.Mocks.MockReceiver
-sender: UnitTests.Mocks.MockIrqSender
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     -> receiver@0
     -> receiver @1";
 
@@ -312,8 +312,8 @@ sender: UnitTests.Mocks.MockIrqSender
         public void ShouldFailIfTheSameIrqUsedTwiceOnceAsDefault()
         {
             var source = @"
-receiver: UnitTests.Mocks.MockReceiver
-sender: UnitTests.Mocks.MockIrqSender
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
     -> receiver@0
     Irq -> receiver @1";
 
@@ -325,8 +325,8 @@ sender: UnitTests.Mocks.MockIrqSender
         public void ShouldFailIfInterruptUsedSecondTimeInEntryAsDestination()
         {
             var source = @"
-receiver: UnitTests.Mocks.MockReceiver
-sender: Emul8.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
     Irq -> receiver@0
     AnotherIrq -> receiver@0";
 
@@ -338,7 +338,7 @@ sender: Emul8.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
         public void ShouldFailWithMoreThanOneInitAttribute()
         {
             var source = @"
-device: UnitTests.Mocks.MockCPU
+device: Antmicro.Renode.UnitTests.Mocks.MockCPU
     init:
         DoSomething
     init add:
@@ -352,7 +352,7 @@ device: UnitTests.Mocks.MockCPU
         public void ShouldFailOnMissingReference()
         {
             var source = @"
-device: UnitTests.Mocks.MockCPU
+device: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: unknown";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -363,7 +363,7 @@ device: UnitTests.Mocks.MockCPU
         public void ShouldFailOnMissingReferenceInRegistrationPoint()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.MissingReference, exception.Error);
@@ -373,8 +373,8 @@ device: UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
         public void ShouldFailOnWrongReferenceRegistrationPointType()
         {
             var source = @"
-regPoint: UnitTests.Mocks.MockCPU
-device: UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
+regPoint: Antmicro.Renode.UnitTests.Mocks.MockCPU
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
@@ -384,7 +384,7 @@ device: UnitTests.Mocks.EmptyPeripheral @ sysbus regPoint";
         public void ShouldFailOnWrongObjectRegistrationPointType()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral @ sysbus new UnitTests.Mocks.MockCPU { Placeholder: ""abc"" }";
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus new Antmicro.Renode.UnitTests.Mocks.MockCPU { Placeholder: ""abc"" }";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
@@ -394,7 +394,7 @@ device: UnitTests.Mocks.EmptyPeripheral @ sysbus new UnitTests.Mocks.MockCPU { P
         public void ShouldFailOnNonConstruableRegistrationPoint()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral @ sysbus ""something""";
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus ""something""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.NoCtorForRegistrationPoint, exception.Error);
@@ -404,8 +404,8 @@ device: UnitTests.Mocks.EmptyPeripheral @ sysbus ""something""";
         public void ShouldFailOnAmbiguousConstructorForRegistrationPoint()
         {
             var source = @"
-register: Emul8.UnitTests.Mocks.AmbiguousRegister
-device: UnitTests.Mocks.EmptyPeripheral @ register 1";
+register: Antmicro.Renode.UnitTests.Mocks.AmbiguousRegister
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ register 1";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AmbiguousCtorForRegistrationPoint, exception.Error);
@@ -415,7 +415,7 @@ device: UnitTests.Mocks.EmptyPeripheral @ register 1";
         public void ShouldValidateObjectValueInCtorParameter()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
     ctorParam: new NoSuchType";
 
             // note that this would also fail on not getting ctor, but it is important it will fail on unresolved type *earlier*
@@ -428,7 +428,7 @@ device: UnitTests.Mocks.EmptyPeripheral
         public void ShouldFailOnNoAvailableCtorInEntry()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
     ctorParam: 3";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -439,7 +439,7 @@ device: UnitTests.Mocks.EmptyPeripheral
         public void ShouldFailOnAmbiguousCtorInEntry()
         {
             var source = @"
-device: UnitTests.Mocks.EmptyPeripheral
+device: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
     value: 3";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -450,9 +450,9 @@ device: UnitTests.Mocks.EmptyPeripheral
         public void ShouldFailOnNoAvailableCtorInObjectValue()
         {
             var source = @"
-peripheral: Emul8.UnitTests.Mocks.MockPeripheralWithDependency
-    other: new Emul8.UnitTests.Mocks.MockPeripheralWithDependency
-        other: new Emul8.UnitTests.Mocks.MockPeripheralWithDependency
+peripheral: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
+    other: new Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
+        other: new Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
             x: 7";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -463,10 +463,10 @@ peripheral: Emul8.UnitTests.Mocks.MockPeripheralWithDependency
         public void ShouldFailOnAmbiguousCtorInObjectValue()
         {
             var source = @"
-peripheral: Emul8.UnitTests.Mocks.MockPeripheralWithDependency
-    other: new Emul8.UnitTests.Mocks.MockPeripheralWithDependency
-        other: new Emul8.UnitTests.Mocks.MockPeripheralWithDependency
-            other: new UnitTests.Mocks.EmptyPeripheral
+peripheral: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
+    other: new Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
+        other: new Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
+            other: new Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
                 value: 4";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
@@ -477,7 +477,7 @@ peripheral: Emul8.UnitTests.Mocks.MockPeripheralWithDependency
         public void ShouldNotAcceptNullRegistrationPointWhenRealOneIsNecessary()
         {
             var source = @"
-peripheral: UnitTests.Mocks.EmptyPeripheral @ sysbus";
+peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.NoCtorForRegistrationPoint, exception.Error);
@@ -487,9 +487,9 @@ peripheral: UnitTests.Mocks.EmptyPeripheral @ sysbus";
         public void ShouldFailOnAmbiguousRegistrationPoint()
         {
             var source = @"
-register: Emul8.UnitTests.Mocks.AmbiguousRegister
-regPoint: Emul8.UnitTests.Mocks.MockRegistrationPoint
-peripheral: UnitTests.Mocks.EmptyPeripheral @ register regPoint";
+register: Antmicro.Renode.UnitTests.Mocks.AmbiguousRegister
+regPoint: Antmicro.Renode.UnitTests.Mocks.MockRegistrationPoint
+peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ register regPoint";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AmbiguousRegistrationPointType, exception.Error);
@@ -499,7 +499,7 @@ peripheral: UnitTests.Mocks.EmptyPeripheral @ register regPoint";
         public void ShouldFailOnAliasWithoutRegistrationInfo()
         {
             var source = @"
-peripheral: UnitTests.Mocks.EmptyPeripheral as ""alias""";
+peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral as ""alias""";
             
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AliasWithoutRegistration, exception.Error);
@@ -509,7 +509,7 @@ peripheral: UnitTests.Mocks.EmptyPeripheral as ""alias""";
         public void ShouldFailOnAliasWithNoneRegistrationInfo()
         {
             var source = @"
-peripheral: UnitTests.Mocks.EmptyPeripheral @ none as ""alias""";
+peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ none as ""alias""";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AliasWithNoneRegistration, exception.Error);
@@ -530,8 +530,8 @@ sysbus:
         public void ShouldFailOnAmbiguousRegistree()
         {
             var source = @"
-register: Emul8.UnitTests.Mocks.AmbiguousRegister
-peripheral: UnitTests.Mocks.EmptyPeripheral @ register 2.0";
+register: Antmicro.Renode.UnitTests.Mocks.AmbiguousRegister
+peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ register 2.0";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AmbiguousRegistree, exception.Error);
@@ -541,8 +541,8 @@ peripheral: UnitTests.Mocks.EmptyPeripheral @ register 2.0";
         public void ShouldFailOnNonPeripheralRegister()
         {
             var source = @"
-emptyIterestingType: Emul8.UnitTests.Mocks.EmptyInterestingType
-cpu: UnitTests.Mocks.MockCPU @ emptyIterestingType
+emptyIterestingType: Antmicro.Renode.UnitTests.Mocks.EmptyInterestingType
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ emptyIterestingType
 ";
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.CastException, exception.Error);
@@ -551,12 +551,11 @@ cpu: UnitTests.Mocks.MockCPU @ emptyIterestingType
         [TestFixtureSetUp]
         public void Init()
         {
-            string emul8Dir;
-            if(!Misc.TryGetEmul8Directory(out emul8Dir))
+            if(!Misc.TryGetRootDirectory(out var rootDir))
             {
-                throw new ArgumentException("Couldn't get Emul8 directory.");
+                throw new ArgumentException("Couldn't get root directory.");
             }
-            TypeManager.Instance.Scan(emul8Dir);
+            TypeManager.Instance.Scan(rootDir);
         }
 
         private static void ProcessSource(string source)

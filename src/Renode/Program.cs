@@ -1,16 +1,16 @@
 //
-// Copyright (c) Antmicro
+// Copyright (c) 2010-2017 Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System.Threading;
-using Emul8;
+using Antmicro.Renode;
 using System.IO;
 using System;
-using Emul8.Utilities;
+using Antmicro.Renode.Utilities;
 using Antmicro.Renode.RobotFramework;
-using Emul8.Logging;
+using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode
 {
@@ -27,7 +27,7 @@ namespace Antmicro.Renode
                 {
                     if(optionsParser.Parse(options, args))
                     {
-                        Emul8.CLI.CommandLineInterface.Run(options, (context) =>
+                        Antmicro.Renode.UI.CommandLineInterface.Run(options, (context) =>
                         {
                             if(options.RobotFrameworkRemoteServerPort >= 0)
                             {
@@ -52,19 +52,16 @@ namespace Antmicro.Renode
             ConsoleBackend.Instance.WindowTitle = "Renode";
 
             string configFile = null;
-            string emul8Dir;
-            if(Misc.TryGetEmul8Directory(out emul8Dir))
+            if(Misc.TryGetRootDirectory(out var rootDir))
             {
-                var localConfig = Path.Combine(emul8Dir, "renode.config");
+                var localConfig = Path.Combine(rootDir, "renode.config");
                 if(File.Exists(localConfig))
                 {
                     configFile = localConfig;
                 }
             }
 
-            Emulator.UserDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".renode");
             ConfigurationManager.Initialize(configFile ?? Path.Combine(Emulator.UserDirectoryPath, "config"));
-            TemporaryFilesManager.Initialize(Path.GetTempPath(), "renode-");
 
             // set Termsharp as a default terminal if there is none already
             ConfigurationManager.Instance.Get("general", "terminal", "Termsharp");

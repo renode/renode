@@ -1,9 +1,9 @@
 
 using System.Threading.Tasks;
-using Emul8;
-using Emul8.Core;
-using Emul8.UserInterface;
-using Emul8.Utilities;
+using Antmicro.Renode;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.UserInterface;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
 {

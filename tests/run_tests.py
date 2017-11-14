@@ -3,11 +3,6 @@
 
 import os
 import sys
-
-this_path = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(this_path, '../src/Emul8/Tools/scripts'))
-
-# we must import those after altering the system path
 import nunit_tests_provider
 import robot_tests_provider
 import tests_engine

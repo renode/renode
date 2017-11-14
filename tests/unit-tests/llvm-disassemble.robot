@@ -6,6 +6,7 @@ Resource                      ${CURDIR}/../../src/Renode/RobotFrameworkEngine/re
 
 *** Test Cases ***
 Disassemble Block
-    Execute Command           createPlatform Versatile
+    Execute Command           mach create
+    Execute Command           machine LoadPlatformDescription @platforms/boards/versatile.repl
     Execute Command           sysbus.cpu DisassembleBlock `sysbus.cpu PC`
 

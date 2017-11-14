@@ -3,6 +3,8 @@ How to contribute?
 
 If you are reading this, chances are you want to contribute to the Renode project, and that is already great news.
 
+As contributions to this project are covered by a Contributors License Agreement, you must sign and submit the CLA in order to contribute to this project.
+
 Please read the short manual below where we provide some simple guidelines for a good cooperation experience.
 
 Issues
@@ -27,7 +29,7 @@ To do that, you need to:
 * create a fork of our repository on your account (if you haven't done it already);
 * create a branch based on the current ``master`` branch with the following name:
 
-   ``NUMBER_OF_TICKET-short_name_of_the_issue``, for example ``1234-invalid_instruction_wfi``;
+  ``NUMBER_OF_TICKET-short_name_of_the_issue``, for example ``1234-invalid_instruction_wfi``;
 * write and commit your code (see sections below);
 * create the pull request to our repository on that branch.
 
@@ -85,7 +87,7 @@ Code formatting and quality
 
 As we use Monodevelop for development, we rely on its formatting engine.
 Each project and solution contains settings for the Monodevelop formatter.
-If you use another editor, you may read the *.csproj* file and apply these rules by hand, as they are written in a readable format.
+If you use another editor, you may read the ``.csproj`` file and apply these rules by hand, as they are written in a readable format.
 
 Please do not introduce formatting that is strictly inconsistent with other files.
 

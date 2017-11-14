@@ -1,0 +1,9 @@
+src/Infrastructure/src/Emulator/Extensions/MonitorTests/MonitorTests.csproj
+src/Infrastructure/src/Emulator/Main/Tests/SystemTests/SystemTests.csproj
+src/Infrastructure/src/Emulator/Main/Tests/UnitTests/UnitTests.csproj
+src/Infrastructure/src/Emulator/Peripherals/Test/PeripheralsTests/PeripheralsTests.csproj
+tests/unit-tests/RenodeTests/RenodeTests.csproj
+src/Renode/RobotFrameworkEngine/renode-keywords.robot
+tests/platforms/CC2538/cc2538_cryptoprocessor.robot
+tests/platforms/QuarkC1000/QuarkC1000.robot
+tests/unit-tests/llvm-disassemble.robot

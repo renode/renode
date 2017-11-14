@@ -6,19 +6,19 @@ Resource                      ${CURDIR}/../../../src/Renode/RobotFrameworkEngine
 
 *** Variables ***
 ${UART}                       sysbus.uart0
-${URI}                        @https://dev.antmicro.com/emul8_files/binaries/emul8/
+${URI}                        @http://antmicro.com/projects/renode
 
 *** Keywords ***
 Create Machine
     [Arguments]  ${elf}
 
     Execute Command           mach create
-    Execute Command           i @platforms/boards/cc2538
+    Execute Command           machine LoadPlatformDescription @platforms/cpus/cc2538.repl
     Execute Command           machine SetClockSource sysbus.cpu
     Execute Command           machine PyDevFromFile @scripts/pydev/flipflop.py 0x400D2004 0x4 True
     Execute Command           machine PyDevFromFile @scripts/pydev/flipflop.py 0x400D7000 0x4 True
 
-    Execute Command           sysbus LoadBinary @https://dev.antmicro.com/emul8_files/binaries/emul8/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
+    Execute Command           sysbus LoadBinary @http://antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
     Execute Command           sysbus LoadELF ${elf}
     Execute Command           sysbus.cpu VectorTableOffset 0x200000
 

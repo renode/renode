@@ -45,6 +45,11 @@ gpio: X86.Quark_GPIOController @ sysbus 0xB0000C00
 pwm: X86.Quark_PWM @ sysbus 0xB0000800
     IRQ -> ioapic@9
 
+aonc_cnt: Python.PythonPeripheral @ sysbus 0xB0800700
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/counter.py"
+
 sysbus:
     init:
         Tag <0xB0800000 0x4000> "SCSS"
@@ -59,4 +64,7 @@ sysbus:
         Tag <0xB0000800 0x400> "APB_TIMER"
         Tag <0xB0000400 0x400> "RTC"
         Tag <0xB0000000 0x400> "WATCHDOG_TIMER"
+        Tag <0xB0000C50 4> "GPIO_EXT_PORTA" 0xFFFFFFFFF
+        Tag <0xB0800004 4> "OSC0_STAT1" 0xFFFFFFFF
+        Tag <0xB0100014 4> "FLASH_STTS" 0xFFFFFFFF
 

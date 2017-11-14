@@ -4,7 +4,7 @@ Renode
 What is Renode?
 ---------------
 
-Renode was created by Antmicro as a virtual development tool for multinode embedded networks (both wired and wireless) and intended to enable a scalable workflow for creating effective, tested and secure IoT systems.
+Renode was created by Antmicro as a virtual development tool for multinode embedded networks (both wired and wireless) and is intended to enable a scalable workflow for creating effective, tested and secure IoT systems.
 
 With Renode, developing, testing, debugging and simulating unmodified software for IoT devices is fast, cost-effective and reliable.
 
@@ -29,6 +29,22 @@ One important aspect of the tool is that it simulates not only CPUs but entire S
 
 Installation
 ------------
+
+=============
+From packages
+=============
+
+``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS are provided in `the releases section <https://github.com/renode/renode/releases/latest>`_ - use them as normal to install Renode using your package manager.
+
+For macOS, you need to install Mono framework manually - consult `Mac`_ section for instructions.
+
+For Windows, just unzip the ``*.zip`` package in the directory of your choice.
+
+Once you install Renode, you can skip directly to `Running Renode`_.
+
+===============================
+Building from source (advanced)
+===============================
 
 Prerequisites
 +++++++++++++
@@ -102,21 +118,7 @@ Submodules will be automatically initialised and downloaded during the build pro
 Building Renode
 +++++++++++++++
 
-If you are not interested in customizing your build, a solution containing all projects can be generated with::
-
-  ./configure
-
-This will create the ``output`` directory containing a ``Renode.sln`` file that can then be used in the build process.
-
-.. note:: Configuring your build (optional)
-
-   To create a customized solution file which only includes a subset of available projects, just use::
-
-      ./configure -i
-
-   which will open a dialog window with further instructions.
-
-Now (with your ``Renode.sln`` file in the ``output`` directory) you can begin the build with::
+To build Renode, run::
 
    ./build.sh
 
@@ -125,19 +127,26 @@ There are some optional flags you can use::
    -c          clean instead of building
    -d          build in debug configuration
    -v          verbose mode
+   -p          build binary packages (requires some additional dependencies)
+
+You may also build ``Renode.sln`` from your IDE (like MonoDevelop), but the ``build.sh`` script has to be run at least once.
 
 Running Renode
 --------------
 
-Start Renode with::
+If you installed from a package, you should have a system-wide ``renode`` command that you can use to run the tool::
 
-   ./run.sh [file]
+   renode [flags] [file]
+
+If you built it from source, navigate to the relevant directory and use::
+
+   ./renode [flags] [file]
 
 The optional ``[file]`` argument allows the user to provide the path to a script to be run on startup.
 
 The script allows several optional flags, most useful of which are presented below::
 
-   -d            debug mode (requires prior build in debug configuration)
+   -d            debug mode (requires prior build in debug configuration) - only available when built from source
    -e COMMAND    execute command on startup (does not allow the [file] argument)
    -p            remove steering codes (e.g., colours) from output
    -P PORT       listen on a port for monitor commands instead of opening a window
@@ -154,10 +163,10 @@ License & contributions
 -----------------------
 
 Renode is released under the permissive MIT license.
-For details, see the ``LICENSE`` file.
+For details, see the `LICENSE <LICENSE>`_ file.
 
 We’re happy to accept bug reports, feature requests and contributions via GitHub pull requests / issues.
-For details, see the ``CONTRIBUTING.rst`` file.
+For details, see the `CONTRIBUTING.rst <CONTRIBUTING.rst>`_ file.
 
 Commercial support
 ------------------
@@ -167,5 +176,4 @@ Commercial support for Renode is provided by `Antmicro <http://antmicro.com>`_, 
 Antmicro created and maintain the Renode framework and related tooling, and are happy to provide services such as adding new platforms, integrations, plugins and tools.
 
 To inquire about our services, contact us at support@renode.io.
-
 

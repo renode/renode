@@ -1,8 +1,8 @@
-﻿﻿﻿﻿﻿﻿﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using System.Collections.Generic;
@@ -11,14 +11,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Emul8.Core;
-using Emul8.Core.Structure;
-using Emul8.Exceptions;
-using Emul8.Logging;
-using Emul8.Peripherals;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Core.Structure;
+using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.PlatformDescription.Syntax;
-using Emul8.Utilities;
-using Emul8.Utilities.Collections;
+using Antmicro.Renode.Utilities;
+using Antmicro.Renode.Utilities.Collections;
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription
@@ -1522,7 +1522,7 @@ namespace Antmicro.Renode.PlatformDescription
             typeof(decimal), typeof(float), typeof(double)
         }.Select(x => new[] { x, typeof(Nullable<>).MakeGenericType(x)}).SelectMany(x => x));
 
-        private const string DefaultNamespace = "Emul8.Peripherals.";
+        private const string DefaultNamespace = "Antmicro.Renode.Peripherals.";
         private const string TypeMismatchMessage = "Type mismatch. Expected {0}.";
 
         private class WithPositionForSyntaxErrors : IWithPosition

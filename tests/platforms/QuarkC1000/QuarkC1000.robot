@@ -7,9 +7,9 @@ Library                       quark_helper.py
 
 *** Variables ***
 ${CPU}                        sysbus.cpu
-${UART}                       sysbus.uart_b
+${UART}                       sysbus.uartB
 ${URI}                        @http://antmicro.com/projects/renode
-${SCRIPT}                     ${CURDIR}/../../../src/Emul8/scripts/demos/standalone/quark_c1000-shell
+${SCRIPT}                     ${CURDIR}/../../../scripts/single-node/quark_c1000.resc
 
 *** Test Cases ***
 Should Run Hello World
@@ -27,7 +27,7 @@ Should Run Hello World With Sleep
     [Tags]                    zephyr  uart  interrupts
     Set Test Variable         ${SLEEP_TIME}                 2000
     Set Test Variable         ${SLEEP_TOLERANCE}            20
-    Set Test Variable         ${REPEATS}                    10
+    Set Test Variable         ${REPEATS}                    5
 
     Execute Command           $bin = ${URI}/hello_world-with-sleep.elf-s_317148-a279de34d55b10c97720845fdf7e58bd42bb0477
     Execute Script            ${SCRIPT}
@@ -71,7 +71,7 @@ Should Run Shell
 Should Handle Gpio Button
     [Documentation]           Runs Zephyr's 'basic/button' sample on Quark C1000 platform.
     [Tags]                    zephyr  uart  interrupts  gpio  button  non-critical
-    Set Test Variable         ${WAIT_PERIOD}             5
+    Set Test Variable         ${WAIT_PERIOD}             2
     Execute Command           $bin = ${URI}/button.elf-s_317524-b42765dd760d0dd260079b99724aabec2b5cf34b
     Execute Script            ${SCRIPT}
 
@@ -107,23 +107,25 @@ Should Read Sensor
 Should Talk Over Network Using Ethernet
     [Documentation]           Runs Zephyr's 'net/echo' sample on Quark C1000 platform with external ENC28J60 ethernet module.
     [Tags]                    zephyr  uart  spi  ethernet  gpio
-    Set Test Variable         ${REPEATS}             10
+    Set Test Variable         ${REPEATS}             5
 
     Execute Command           emulation CreateSwitch "switch"
     Execute Command           emulation AddSyncDomain
     Execute Command           switch SetSyncDomainFromEmulation 0
     Execute Command           $bin = ${URI}/echo_server.elf-s_684004-1ebf8c5dffefb95db60350692cf81fb7fd888869
+    Execute Command           $name="quark-server"
     Execute Script            ${SCRIPT}
     Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
 
     Execute Command           mach clear
     Execute Command           $bin = ${URI}/echo_client.elf-s_686384-fab5f2579652cf4bf16d68a456e6f6e4dbefbafa
+    Execute Command           $name="quark-client"
     Execute Script            ${SCRIPT}
     Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
-    ${mach0_tester}=  Create Terminal Tester    ${UART}  machine=machine-0
-    ${mach1_tester}=  Create Terminal Tester    ${UART}  machine=machine-1
+    ${mach0_tester}=  Create Terminal Tester    ${UART}  machine=quark-server
+    ${mach1_tester}=  Create Terminal Tester    ${UART}  machine=quark-client
 
     Start Emulation
 

@@ -1,14 +1,15 @@
-#
-# efr32mg
-#
+:name: EFR32MG
+:description: This script runs Zephyr on EFR32MG.
 
+$name?="EFR32-MG"
 using sysbus
-mach create
+mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/efr32mg.repl
 
 machine SetClockSource sysbus.cpu
 
+$bin?=@http://antmicro.com/projects/renode/zephyr.elf-s_408460-78d9cb6ba6a067f86d437cf4f9ef2672bec39c15
 sysbus Tag <0x400e4000 0x400> "CMU"
 sysbus Tag <0x40080000 0x400> "RADIO"
 

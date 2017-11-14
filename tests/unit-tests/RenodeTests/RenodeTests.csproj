@@ -33,15 +33,15 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\src\Emul8\External\Tools\nunit.framework.dll</HintPath>
+      <HintPath>..\..\..\lib\resources\tools\nunit.framework.dll</HintPath>
       <Package>nunit</Package>
       <Private>True</Private>
     </Reference>
     <Reference Include="Sprache">
-      <HintPath>..\..\..\resources\libraries\Sprache.dll</HintPath>
+      <HintPath>..\..\..\lib\resources\libraries\Sprache.dll</HintPath>
     </Reference>
     <Reference Include="Moq">
-      <HintPath>..\..\..\src\Emul8\External\Lib\Moq.dll</HintPath>
+      <HintPath>..\..\..\lib\resources\libraries\Moq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -58,11 +58,11 @@
       <Project>{5A7EF2B0-889A-488A-B296-97AF33791772}</Project>
       <Name>Renode</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Emul8\Emulator\Main\Emulator.csproj">
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Emulator.csproj">
       <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
       <Name>Emulator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Emul8\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
       <Project>{E0E61E22-8E42-4ED8-8C1F-D683D7EC9FF6}</Project>
       <Name>UnitTests</Name>
     </ProjectReference>
@@ -75,7 +75,7 @@
     <MonoDevelop>
       <Properties>
         <Policies>
-          <TextStylePolicy FileWidth="120" TabWidth="4" IndentWidth="4" RemoveTrailingWhitespace="True" NoTabsAfterNonTabs="False" EolMarker="Native" TabsToSpaces="True" scope="text/x-csharp">
+          <TextStylePolicy FileWidth="120" TabWidth="4" IndentWidth="4" RemoveTrailingWhitespace="True" TabsToSpaces="True" NoTabsAfterNonTabs="True" EolMarker="Unix" scope="text/x-csharp">
             <inheritsSet />
             <inheritsScope />
           </TextStylePolicy>
@@ -83,7 +83,7 @@
             <inheritsSet />
             <inheritsScope />
           </DotNetNamingPolicy>
-          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchSection="False" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInTypes="True" NewLinesForBracesInMethods="True" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceAfterControlFlowStatementKeyword="False" SpaceBeforeOpenSquareBracket="False" scope="text/x-csharp">
+          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchSection="True" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInTypes="True" NewLinesForBracesInMethods="True" NewLinesForBracesInProperties="True" NewLinesForBracesInAccessors="True" NewLinesForBracesInAnonymousMethods="True" NewLinesForBracesInControlBlocks="True" NewLinesForBracesInAnonymousTypes="True" NewLinesForBracesInObjectCollectionArrayInitializers="True" NewLinesForBracesInLambdaExpressionBody="True" NewLineForElse="True" NewLineForCatch="True" NewLineForFinally="True" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceAfterMethodCallName="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBeforeOpenSquareBracket="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" SpaceAfterControlFlowStatementKeyword="False" scope="text/x-csharp">
             <inheritsSet />
             <inheritsScope />
           </CSharpFormattingPolicy>
@@ -95,15 +95,9 @@
             <inheritsSet />
             <inheritsScope />
           </TextStylePolicy>
-          <StandardHeader IncludeInNewFiles="True" Text="&#xA;Copyright (c) Antmicro&#xA;&#xA;This file is part of the Renode project.&#xA;Full license details are defined in the 'LICENSE' file.&#xA;">
-            <inheritsSet />
-            <inheritsScope />
-          </StandardHeader>
+          <StandardHeader IncludeInNewFiles="True" Text="&#xA;Copyright (c) 2010-${Year} Antmicro&#xA;&#xA; This file is licensed under the MIT License.&#xA; Full license text is available in 'licenses/MIT.txt'.&#xA;" />
         </Policies>
       </Properties>
     </MonoDevelop>
-    <Emul8>
-      <ProjectInfo Type="Tests" />
-    </Emul8>
   </ProjectExtensions>
 </Project>

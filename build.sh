@@ -1,29 +1,167 @@
 #!/bin/bash
+
+set -u
 set -e
 
-ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
-TARGET="$ROOT_PATH/output/Renode.sln"
-if [ ! -f "$TARGET" ]
-then
-    ./configure
-fi
+UPDATE_SUBMODULES=false
 
-. "${ROOT_PATH}/src/Emul8/Tools/common.sh"
+export ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
+OUTPUT_DIRECTORY="$ROOT_PATH/output"
 
-VERSION=1.0
-DEBUG=false
+CONFIGURATION="Release"
+CLEAN=false
+PACKAGES=false
+PARAMS=()
 
-while getopts ":pd" opt
+while getopts "cdvp:s" opt
 do
   case $opt in
+    c)
+      CLEAN=true
+      ;;
     d)
-      DEBUG=true
+      CONFIGURATION="Debug"
+      ;;
+    v)
+      PARAMS+=(/verbosity:detailed)
+      ;;
+    p)
+      PACKAGES=true
+      VERSION="$OPTARG"
+      ;;
+    s)
+      UPDATE_SUBMODULES=true
+      ;;
+    \?)
+      echo "Usage: $0 [-cdvs] [-p VERSION]"
+      echo ""
+      echo "-c           clean instead of building"
+      echo "-d           build Debug configuration"
+      echo "-v           verbose output"
+      echo "-p VERSION   create packages after building and assign VERSION number"
+      echo "-s           update sumbodules"
+      exit 1
       ;;
   esac
 done
 
-cd src/Emul8
-PARAMS=( \
-    -t "`get_path "$TARGET"`" \
-    -o "`get_path "$PWD/../../output/bin"`")
-./build.sh "${PARAMS[@]}" "$@"
+# Update submodules if not initialized or if requested by the user
+# Warn if not updating, but unclean
+# Disabling -e to allow grep to fail
+set +e
+git submodule status --recursive | grep -q "^-"
+SUBMODULES_NOT_INITED=$?
+
+git submodule status --recursive | grep -q "^+"
+SUBMODULES_NOT_CLEAN=$?
+set -e
+
+if $UPDATE_SUBMODULES || [ $SUBMODULES_NOT_INITED -eq 0 ]
+then
+    echo "Updating submodules..."
+    git submodule update --init --recursive
+elif [ $SUBMODULES_NOT_CLEAN -eq 0 ]
+then
+    echo "Submodules are not updated. Use -s to force update."
+fi
+
+. "${ROOT_PATH}/tools/common.sh"
+
+"${ROOT_PATH}"/tools/building/fetch_libraries.sh
+
+TARGET="`get_path \"$PWD/Renode.sln\"`"
+
+# Update references to Xwt
+TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
+if [ -e "$TERMSHARP_PROJECT" ]
+then
+    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT"
+    rm "$TERMSHARP_PROJECT.bak"
+fi
+
+# Verify Mono and mcs version on Linux and macOS
+if ! $ON_WINDOWS
+then
+	if ! [ -x "$(command -v mono)" ]
+	then
+	    echo "Mono not found. Please refer to documentation for installation instructions. Exiting!"
+	    exit 1
+	fi
+
+	if ! [ -x "$(command -v mcs)" ]
+	then
+	    echo "mcs not found. Please refer to documentation for installation instructions. Exiting!"
+	    exit 1
+	fi
+
+
+	# Check mono version
+	MONO_VERSION=`mono --version | head -n1 | cut -d' ' -f5`
+	MONO_VERSION_MAJOR=`echo $MONO_VERSION | cut -d'.' -f1`
+	MONO_VERSION_MINOR=`echo $MONO_VERSION | cut -d'.' -f2`
+
+	if [ $MONO_VERSION_MAJOR -lt 5 ]
+	then
+	    echo "Wrong mono version detected: $MONO_VERSION. Please refer to documentation for installation instructions. Exiting!"
+	    exit 1
+	fi
+fi
+
+# Copy properties file according to the running OS
+mkdir -p "$OUTPUT_DIRECTORY"
+if $ON_OSX
+then
+  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
+elif $ON_LINUX
+then
+  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+else
+  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+fi
+cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
+
+# Build CCTask in Release configuration
+$CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" > /dev/null
+
+# clean instead of building
+if $CLEAN
+then
+    for conf in Debug Release
+    do
+        $CS_COMPILER /t:Clean /p:Configuration=$conf "$TARGET" "${PARAMS[@]}"
+        rm -fr "${OUTPUT:=`get_path \"$PWD/output\"`}/$conf"
+    done
+    exit 0
+fi
+
+# check weak implementations of core libraries
+pushd "$ROOT_PATH/tools/building" > /dev/null
+./check_weak_implementations.sh
+popd > /dev/null
+
+PARAMS+=(/p:BuildingFromBuildScript=true /p:Configuration=$CONFIGURATION)
+
+# build
+$CS_COMPILER "${PARAMS[@]}" "$TARGET"
+
+# build packages after successful compilation
+if $PACKAGES
+then
+    if $ON_WINDOWS
+    then
+        echo "Creating packages is not supported on Windows."
+        exit 1
+    fi
+    params="$VERSION -n"
+    if [ $CONFIGURATION == "Debug" ]
+    then
+        params="$params -d"
+    fi
+    if $ON_LINUX
+    then
+      $ROOT_PATH/tools/packaging/make_linux_packages.sh $params
+    elif $ON_OSX
+    then
+      $ROOT_PATH/tools/packaging/make_macos_packages.sh $params
+    fi
+fi

@@ -1,15 +1,15 @@
-﻿﻿﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using AntShell.Terminal;
 using TermSharp;
 using TermSharp.Vt100;
-using Emul8.Logging;
-using Emul8.CLI;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.UI;
 using Antmicro.Migrant;
 
 namespace Antmicro.Renode.UI

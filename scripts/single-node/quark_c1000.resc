@@ -1,0 +1,29 @@
+:name: Quark C1000
+:description: This script runs Zephyr shell example on Quark C1000 (32-bit x86).
+
+using sysbus
+$name?="Quark-C1000"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/arduino_101-shield.repl
+
+$bin ?= @http://antmicro.com/projects/renode/zephyr_shell.elf-s_398140-ed6b1a68e94b1cb8ac3cc7d80fb4d36e36a22766
+$boot ?= @http://antmicro.com/projects/renode/quark_se_rom.bin-s_8192-b688c8b9380014d7deb2bd42dc218fc5ee8d1abf
+
+machine SetClockSource cpu
+
+showAnalyzer uartB
+
+macro reset
+"""
+    #set WAIT_FOR_JTAG gpio pin. It's active low, anyway
+    gpio OnGPIO 15 true
+
+    sysbus LoadBinary $boot 0xffffe000
+    sysbus LoadELF $bin
+
+    sysbus.cpu PC 0xfffffff0
+"""
+
+runMacro $reset
+

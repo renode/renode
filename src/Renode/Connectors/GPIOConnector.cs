@@ -1,17 +1,17 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Emul8 project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System.Linq;
-using Emul8.Time;
-using Emul8.Core;
-using Emul8.Exceptions;
-using Emul8.Logging;
+using Antmicro.Renode.Time;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
 using System.Collections.Generic;
-using Emul8.Utilities;
-using Emul8.Peripherals;
+using Antmicro.Renode.Utilities;
+using Antmicro.Renode.Peripherals;
 
 namespace Antmicro.Renode.Connectors
 {

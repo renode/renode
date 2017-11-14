@@ -1,11 +1,11 @@
 output
 obj
 bin
-.emul8root
 
 *.pyc
 *.swp
 .vscode
+*.userprefs
 
 # robot test result files
 output.xml
@@ -14,5 +14,6 @@ log.html
 
 #resources
 .renode_libs_fetched
-resources/
+lib/resources/
 src/Renode/Properties/AssemblyInfo.cs
+packages

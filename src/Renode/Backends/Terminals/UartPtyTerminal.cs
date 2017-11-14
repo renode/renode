@@ -1,18 +1,18 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
 //
-using Emul8.Core;
-using Emul8.Exceptions;
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
+//
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 #if !PLATFORM_WINDOWS
 using System;
-using Emul8.Utilities;
+using Antmicro.Renode.Utilities;
 using AntShell.Terminal;
 using Mono.Unix;
 using System.IO;
-using Emul8.Backends.Terminals;
+using Antmicro.Renode.Backends.Terminals;
 #endif
 
 namespace Antmicro.Renode.Backends.Terminals

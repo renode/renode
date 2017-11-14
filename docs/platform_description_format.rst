@@ -99,7 +99,7 @@ The consecutive entries (for the given variable) are called updating because the
 Eventually all entries corresponding to the given variable are *merged* so that the merge result contains attributes from all entries, possibly some invalidated by some other.
 
 TypeName must be provided with the full namespace the type is located in.
-However, if the namespace starts with ``Emul8.Peripherals``, then this part can be omitted.
+However, if the namespace starts with ``Antmicro.Renode.Peripherals``, then this part can be omitted.
 
 A creating entry can have an optional prefix ``local``, then variable declared in this entry is called a *local* variable.
 The prefix is only used with creating entry, not with updating one.

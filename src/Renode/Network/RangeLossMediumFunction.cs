@@ -1,13 +1,13 @@
-﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Emul8.Peripherals.Wireless;
-using Emul8.Exceptions;
-using Emul8.Core;
+using Antmicro.Renode.Peripherals.Wireless;
+using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Core;
 
 namespace Antmicro.Renode.Network
 {

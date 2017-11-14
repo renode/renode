@@ -1,15 +1,15 @@
-﻿﻿﻿﻿﻿//
-// Copyright (c) Antmicro
 //
-// This file is part of the Renode project.
-// Full license details are defined in the 'LICENSE' file.
+// Copyright (c) 2010-2017 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using Xwt;
-using Emul8.Peripherals.UART;
+using Antmicro.Renode.Peripherals.UART;
 using AntShell.Terminal;
-using Emul8.Utilities;
-using Emul8.Logging;
+using Antmicro.Renode.Utilities;
+using Antmicro.Renode.Logging;
 using TermSharp;
 using System.Collections.Generic;
 using TermSharp.Rows;
@@ -35,7 +35,7 @@ namespace Antmicro.Renode.UI
                 {CreateKey(Key.NumPad0, ModifierKeys.Control), SetDefaultFontSize}
             };
 
-            modifyLineEndings = ConfigurationManager.Instance.Get("termsharp", "append-CR-to-LF", false);
+            modifyLineEndings = ConfigurationManager.Instance.Get("termsharp", "append-CR-to-LF", true);
             terminal = new Terminal(focusProvider);
             IOSource = new TerminalIOSource(terminal);
             IOSource.BeforeWrite += b =>
