@@ -36,7 +36,7 @@ From packages
 
 ``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS are provided in `the releases section <https://github.com/renode/renode/releases/latest>`_ - use them as normal to install Renode using your package manager.
 
-For macOS, you need to install Mono framework manually - consult `Mac`_ section for instructions.
+For macOS, you need to install the Mono framework manually - consult the `Mac`_ section for instructions.
 
 For Windows, just unzip the ``*.zip`` package in the directory of your choice.
 
