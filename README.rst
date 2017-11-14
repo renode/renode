@@ -30,13 +30,25 @@ One important aspect of the tool is that it simulates not only CPUs but entire S
 Installation
 ------------
 
-=============
-From packages
-=============
+===================================
+Getting Mono (Linux and macOS only)
+===================================
 
-``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS are provided in `the releases section <https://github.com/renode/renode/releases/latest>`_ - use them as normal to install Renode using your package manager.
+Renode requires Mono >= 5.0.
+To install it on Linux, use::
 
-For macOS, you need to install the Mono framework manually - consult the `Mac`_ section for instructions.
+   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+   echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+   sudo apt-get update
+   sudo apt-get install mono-complete
+
+On macOS, Mono can be downloaded from `the official Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
+
+========================
+Installing from packages
+========================
+
+With Mono instelled as described above, use the ``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS from `the releases section <https://github.com/renode/renode/releases/latest>`_ as normal to install Renode using your package manager.
 
 For Windows, just unzip the ``*.zip`` package in the directory of your choice.
 
@@ -54,21 +66,14 @@ Linux
 
 The following instructions have been tested on Ubuntu 16.04, however there should not be any major issues preventing you from using other (especially Debian-based) distributions as well.
 
-Renode requires Mono >= 5.0 and several other packages.
-To install them, use::
+Apart from Mono, Renode on Linux has several other requirements, which you can install with::
 
-   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-   echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-   sudo apt-get update
-   sudo apt-get install git mono-complete automake autoconf libtool g++ realpath \
-                        gksu libgtk2.0-dev dialog screen uml-utilities gtk-sharp2
+   sudo apt-get install git automake autoconf libtool g++ realpath gksu libgtk2.0-dev dialog screen uml-utilities gtk-sharp2
 
-Mac
-~~~
+macOS
+~~~~~
 
-Renode requires the Mono framework, which can be downloaded from `the official Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
-
-To install the remaining prerequisites of Renode, use::
+Apart from Mono, Renode on macOS has several other requirements, which can be installed with::
 
    brew install binutils gnu-sed coreutils homebrew/versions/gcc49 dialog
 
@@ -79,7 +84,7 @@ To install the remaining prerequisites of Renode, use::
 Windows
 ~~~~~~~
 
-Prior to repository clone, git has to be configured appropriately::
+Prior to cloning the source code repository, configure git appropriately::
 
    git config --global core.autocrlf false
    git config --global core.symlinks true
@@ -94,7 +99,7 @@ The prerequisites for Renode on Windows are as follows:
 * Gtk# 2.12.30 (this precise version is required, downloadable from `Xamarin website <http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.30.msi>`_
 * Git (either natively on Windows or as a Cygwin module)
 
-The building process described further on in this document may be only executed in Cygwin shell.
+The building process described further on in this document can only be executed in a Cygwin shell.
 To be able to use all of the prerequisites, the user has to configure Cygwin's PATH variable to include the following directories:
 
 * MSBuild
