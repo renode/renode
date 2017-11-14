@@ -163,10 +163,10 @@ License & contributions
 -----------------------
 
 Renode is released under the permissive MIT license.
-For details, see the `LICENSE <LICENSE>`_ file.
+For details, see the `<LICENSE>`_ file.
 
 We’re happy to accept bug reports, feature requests and contributions via GitHub pull requests / issues.
-For details, see the `CONTRIBUTING.rst <CONTRIBUTING.rst>`_ file.
+For details, see the `<CONTRIBUTING.rst>`_ file.
 
 Commercial support
 ------------------

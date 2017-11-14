@@ -33,5 +33,5 @@ Fixed:
 
 This is the initial release of Renode.
 Renode is a virtual development and testing tool for multinode embedded networks.
-For more information please visit `https://www.renode.io`_.
+For more information please visit `<https://www.renode.io>`_.
 
