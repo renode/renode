@@ -10,4 +10,4 @@ Many thanks to companies and organizations who supported the development of Reno
 * Zephyr Project (https://www.zephyrproject.org) for sponsoring Quark C1000 and CC2520 support
 * RISE SICS (https://www.sics.se) for partially sponsoring CC2538 support
 * Manetos (https://www.manetos.com) for partially sponsoring EFR32 support
-* Microsemi (https://www.microsemi.com) for partially sponsoring Windows support
+* Microsemi (https://www.microsemi.com) for partially sponsoring Windows support and RV32G support
