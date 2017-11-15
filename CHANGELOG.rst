@@ -16,6 +16,7 @@ Changed:
 
 * timers can now hold values up to 64 bits
 * ``Button`` peripheral can now have inverted logic
+* GDB server can be configured to autostart after the first "monitor halt" received
 
 Fixed:
 
