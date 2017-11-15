@@ -1,0 +1,23 @@
+using "platforms/cpus/miv.repl"
+
+gpioOutputs:
+    0 -> led0@0
+    1 -> led1@0
+
+led0: Miscellaneous.LED @ gpioOutputs 0
+    invert: true
+
+led1: Miscellaneous.LED @ gpioOutputs 1
+    invert: true
+
+user_switch_0: Miscellaneous.Button @ gpioInputs 0
+    invert: true
+    -> gpioInputs@0
+
+user_switch_1: Miscellaneous.Button @ gpioInputs 1
+    invert: true
+    -> gpioInputs@1
+
+user_switch_2: Miscellaneous.Button @ gpioInputs 2
+    invert: true
+    -> gpioInputs@2

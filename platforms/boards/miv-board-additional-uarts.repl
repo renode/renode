@@ -1,0 +1,8 @@
+using "platforms/boards/miv-board.repl"
+
+uart_net_1: UART.MiV_CoreUART @ sysbus 0x70008000
+    clockFrequency: 66000000
+
+uart_net_2: UART.MiV_CoreUART @ sysbus 0x70009000
+    clockFrequency: 66000000
+

@@ -1,0 +1,35 @@
+flash: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x40000
+
+ddr: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x4000000
+
+uart: UART.MiV_CoreUART @ sysbus 0x70001000
+    clockFrequency: 66000000
+
+cpu: CPU.RiscV @ sysbus
+    cpuType: "rv32g"
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
+    IRQ -> cpu@1
+    numberOfSources: 31
+    prioritiesEnabled : false
+
+// Power/Reset/Clock/Interrupt
+prci: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000
+    IRQ -> cpu@0
+    SoftwareIRQ -> cpu@2
+    frequency: 66000000
+
+gpioInputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70002000
+    -> plic@29
+
+gpioOutputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70005000
+
+timer0: Timers.MiV_CoreTimer @ sysbus 0x70003000
+    -> plic@30
+    clockFrequency: 66000000
+
+timer1: Timers.MiV_CoreTimer @ sysbus 0x70004000
+    -> plic@31
+    clockFrequency: 66000000
