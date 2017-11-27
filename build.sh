@@ -139,7 +139,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:BuildingFromBuildScript=true /p:Configuration=$CONFIGURATION)
+PARAMS+=(/p:Configuration=$CONFIGURATION)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
