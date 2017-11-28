@@ -52,6 +52,7 @@
     <Compile Include="PlatformDescription\PreLexerTests.cs" />
     <Compile Include="PlatformDescription\UsingTests.cs" />
     <Compile Include="PlatformDescription\VerificationTests.cs" />
+    <Compile Include="ReplLoadingTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Renode\Renode.csproj">
@@ -65,6 +66,14 @@
     <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
       <Project>{E0E61E22-8E42-4ED8-8C1F-D683D7EC9FF6}</Project>
       <Name>UnitTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Extensions\Extensions.csproj">
+      <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\lib\AntShell\AntShell\AntShell.csproj">
+      <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
+      <Name>AntShell</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
