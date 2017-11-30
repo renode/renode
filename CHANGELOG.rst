@@ -3,6 +3,20 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+The `Master_` section contains changes availabale on the *master* branch.
+
+Master
+------
+
+Added:
+
+* test for loading REPL files
+
+Fixed:
+
+* handling of timer events for a specific timer configuration
+* implementation of LED tester
+
 1.2.0 - 2017.11.15
 ------------------
 
