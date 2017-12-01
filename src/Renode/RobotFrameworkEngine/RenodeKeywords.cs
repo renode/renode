@@ -103,20 +103,36 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public void HandleHotSpot(HotSpotAction action)
         {
+            var isStarted = EmulationManager.Instance.CurrentEmulation.IsStarted;
             switch(action)
             {
                 case HotSpotAction.None:
                     // do nothing
                     break;
                 case HotSpotAction.Pause:
-                    EmulationManager.Instance.CurrentEmulation.PauseAll();
-                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                    if(isStarted)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.PauseAll();
+                        EmulationManager.Instance.CurrentEmulation.StartAll();
+                    }
                     break;
                 case HotSpotAction.Serialize:
                     var fileName = TemporaryFilesManager.Instance.GetTemporaryFile();
+                    var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+                    if(monitor.Machine != null)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.AddOrUpdateInBag("monitor_machine", monitor.Machine);
+                    }
                     EmulationManager.Instance.Save(fileName);
                     EmulationManager.Instance.Load(fileName);
-                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                    if(EmulationManager.Instance.CurrentEmulation.TryGetFromBag<Machine>("monitor_machine", out var mac))
+                    {
+                        monitor.Machine = mac;
+                    }
+                    if(isStarted)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.StartAll();
+                    }
                     break;
                 default:
                     throw new KeywordException("Hot spot action {0} is not currently supported", action);
