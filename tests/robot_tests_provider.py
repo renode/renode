@@ -6,6 +6,7 @@ import os
 import sys
 import fnmatch
 import subprocess
+import psutil
 
 import robot
 
@@ -17,6 +18,10 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
     parser.add_argument("--disable-xwt", dest="disable_xwt", action="store_true", default=False, help="Disables support for XWT.")
     parser.add_argument("--exclude", default="", help="Do not run tests marked with a tag.")
+    parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
+    parser.add_argument("--show-monitor", dest="show_monitor", action="store_true", default=False, help="Display monitor window.")
+    parser.add_argument("--show-analyzers", dest="show_analyzers", action="store_true", default=False, help="Display analyzers.")
+    parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
 
 def verify_cli_arguments(options):
     if options.port == str(options.remote_server_port):
@@ -26,7 +31,7 @@ def verify_cli_arguments(options):
 class RobotTestSuite(object):
     instances_count = 0
     robot_frontend_process = None
-    hotspot_action = ['None', 'Pause']
+    hotspot_action = ['None', 'Pause', 'Serialize']
     log_files = []
 
     def __init__(self, path):
@@ -47,7 +52,14 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to bootstrap and build?".format(remote_server_binary))
             sys.exit(1)
 
-        args = [remote_server_binary, '--hide-monitor', '--hide-log', '--robot-server-port', str(options.remote_server_port)]
+        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
+        if not options.show_monitor:
+            args.append('--hide-monitor')
+        if not options.show_log:
+            args.append('--hide-log')
+        if not options.show_analyzers:
+            args.append('--hide-analyzers')
+
         if platform.startswith("linux") or platform == "darwin":
             args.insert(0, 'mono')
 
@@ -60,6 +72,19 @@ class RobotTestSuite(object):
             args.insert(1, '--debug')
         if options.disable_xwt:
             args.insert(-1, '--disable-xwt')
+
+        if sys.stdin.isatty():
+            try:
+                for proc in [psutil.Process(pid) for pid in psutil.pids()]:
+                    if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
+                        print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
+                        result = raw_input('Do you want me to kill it? [y/N] ')
+                        if result in ['Y', 'y']:
+                            proc.kill()
+                        break
+            except:
+                # do nothing here
+                pass
 
         RobotTestSuite.robot_frontend_process = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
 
@@ -86,6 +111,8 @@ class RobotTestSuite(object):
             result = result and self._run_inner(options.fixture, None, tests_without_hotspots, options)
         if any(tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
+                if options.hotspot and options.hotspot != hotspot:
+                    continue
                 result = result and self._run_inner(options.fixture, hotspot, tests_with_hotspots, options)
 
         return result
