@@ -44,11 +44,14 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         public void ClearPipe()
         {
-            wiresharkPipe.Close();
+            if(wiresharkPipe != null)
+            {
+                wiresharkPipe.Close();
 #if !PLATFORM_WINDOWS
-            //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
-            File.Delete($"{NamedPipePrefix}{pipeName}");
+                //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
+                File.Delete($"{NamedPipePrefix}{pipeName}");
 #endif
+            }
         }
 
         public bool TryOpenWireshark()
