@@ -6,7 +6,6 @@ mach create $name
 
 $bin?=@http://antmicro.com/projects/renode/u-boot-x86-minimal-s_925199-6543506df8e9f59fb57adb2e378838e8f028f40f
 machine LoadPlatformDescription @platforms/cpus/i386.repl
-machine SetClockSource sysbus.cpu
 
 sysbus LoadELF $bin
 sysbus.cpu PC 0xFFFFF800

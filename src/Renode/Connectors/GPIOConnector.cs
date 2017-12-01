@@ -23,7 +23,7 @@ namespace Antmicro.Renode.Connectors
         }
     }
 
-    public class GPIOConnector : SynchronizedExternalBase, IExternal, IConnectable<IPeripheral>, IGPIOReceiver
+    public class GPIOConnector : IExternal, IConnectable<IPeripheral>, IGPIOReceiver
     {
         public GPIOConnector()
         {
@@ -37,10 +37,8 @@ namespace Antmicro.Renode.Connectors
 
         public void OnGPIO(int number, bool value)
         {
-            ExecuteOnNearestSync(() =>
-            {
-                connectorPin.Set(value);
-            });
+            var mach = connectorPin.Endpoint.Receiver.GetMachine();
+            mach.HandleTimeDomainEvent(connectorPin.Set, value, TimeDomainsManager.Instance.VirtualTimeStamp);
         }
 
         //This method should not be executed on a runnning emulation, as IGPIO.Connect call

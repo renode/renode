@@ -14,7 +14,6 @@ Create Machine
 
     Execute Command           mach create
     Execute Command           machine LoadPlatformDescription @platforms/cpus/cc2538.repl
-    Execute Command           machine SetClockSource sysbus.cpu
     Execute Command           machine PyDevFromFile @scripts/pydev/flipflop.py 0x400D2004 0x4 True
     Execute Command           machine PyDevFromFile @scripts/pydev/flipflop.py 0x400D7000 0x4 True
 

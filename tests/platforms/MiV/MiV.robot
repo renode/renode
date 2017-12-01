@@ -15,7 +15,6 @@ Create Machine
     Execute Command          mach create
     Execute Command          machine LoadPlatformDescription @platforms/boards/miv-board.repl
 
-    Execute Command          machine SetClockSource sysbus.cpu
     Execute Command          sysbus LoadELF ${URI}/${elf}
 
 *** Test Cases ***

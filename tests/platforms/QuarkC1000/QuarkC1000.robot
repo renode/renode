@@ -54,9 +54,6 @@ Should Run Shell
     [Tags]                    zephyr  uart  interrupts
     Execute Command           $bin = ${URI}/shell.elf-s_392956-4b5bdd435f3d7c6555e78447438643269a87186b
     Execute Script            ${SCRIPT}
-# Explicit creation of the sync domain here is kind of a hack and should be removed after #8011 is resolved.
-    Execute Command           emulation AddSyncDomain
-    Execute Command           machine SetSyncDomainFromEmulation 0
 
     Create Terminal Tester    ${UART}  shell>
     Start Emulation
@@ -110,19 +107,15 @@ Should Talk Over Network Using Ethernet
     Set Test Variable         ${REPEATS}             5
 
     Execute Command           emulation CreateSwitch "switch"
-    Execute Command           emulation AddSyncDomain
-    Execute Command           switch SetSyncDomainFromEmulation 0
     Execute Command           $bin = ${URI}/echo_server.elf-s_684004-1ebf8c5dffefb95db60350692cf81fb7fd888869
     Execute Command           $name="quark-server"
     Execute Script            ${SCRIPT}
-    Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
 
     Execute Command           mach clear
     Execute Command           $bin = ${URI}/echo_client.elf-s_686384-fab5f2579652cf4bf16d68a456e6f6e4dbefbafa
     Execute Command           $name="quark-client"
     Execute Script            ${SCRIPT}
-    Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
     ${mach0_tester}=  Create Terminal Tester    ${UART}  machine=quark-server
     ${mach1_tester}=  Create Terminal Tester    ${UART}  machine=quark-client
