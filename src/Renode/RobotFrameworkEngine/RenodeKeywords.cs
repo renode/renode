@@ -145,6 +145,36 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        [RobotFrameworkKeyword]
+        public void WaitForPause(int timeout)
+        {
+            var masterTimeSource = EmulationManager.Instance.CurrentEmulation.MasterTimeSource;
+            var mre = new System.Threading.ManualResetEvent(false);
+            var callback = (Action)(() =>
+            {
+                // it is possible that the block hook is triggered before virtual time has passed
+                // - in such case it should not be interpreted as a machine pause
+                if(masterTimeSource.ElapsedVirtualTime.Ticks > 0)
+                {
+                    mre.Set();
+                }
+            });
+
+            try
+            {
+                masterTimeSource.BlockHook += callback;
+
+                if(!mre.WaitOne(timeout * 1000))
+                {
+                    throw new KeywordException($"Emulation did not pause in expected time of {timeout} seconds.");
+                }
+            }
+            finally
+            {
+                masterTimeSource.BlockHook -= callback;
+            }
+        }
+
         private readonly Monitor monitor;
     }
 }
