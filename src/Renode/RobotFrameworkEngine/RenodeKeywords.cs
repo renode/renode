@@ -43,6 +43,29 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public string ExecuteCommand(string command, string machine = null)
+        {
+            var interaction = monitor.Interaction as CommandInteractionWrapper;
+            interaction.Clear();
+            if(!string.IsNullOrWhiteSpace(machine))
+            {
+                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out var machobj))
+                {
+                    throw new KeywordException("Could not find machine named {0} in the emulation", machine);
+
+                }
+                monitor.Machine = machobj;
+            }
+
+            if(!monitor.Parse(command))
+            {
+                throw new KeywordException("Could not execute command '{0}': {1}", command, interaction.GetError());
+            }
+
+            return interaction.GetContents();
+        }
+
+        [RobotFrameworkKeyword]
         // This method accepts array of strings that is later
         // concatenated using single space and parsed by the monitor.
         //
@@ -50,17 +73,10 @@ namespace Antmicro.Renode.RobotFramework
         // split long commands into several lines using (...)
         // notation in robot script; otherwise it would be impossible
         // as there is no option to split a single parameter.
-        public string ExecuteCommand(string[] commandFragments)
+        public string ExecuteCommand(string[] commandFragments, string machine = null)
         {
-            var interaction = monitor.Interaction as CommandInteractionWrapper;
-            interaction.Clear();
             var command = string.Join(" ", commandFragments);
-            if(!monitor.Parse(command))
-            {
-                throw new KeywordException("Could not execute command '{0}': {1}", command, interaction.GetError());
-            }
-
-            return interaction.GetContents();
+            return ExecuteCommand(command, machine);
         }
 
         [RobotFrameworkKeyword]
