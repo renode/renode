@@ -96,7 +96,7 @@ then
 
 
 	# Check mono version
-	MONO_VERSION=`mono --version | head -n1 | cut -d' ' -f5`
+	MONO_VERSION=`cat tools/mono_version`
 	MONO_VERSION_MAJOR=`echo $MONO_VERSION | cut -d'.' -f1`
 	MONO_VERSION_MINOR=`echo $MONO_VERSION | cut -d'.' -f2`
 
@@ -147,17 +147,17 @@ $CS_COMPILER "${PARAMS[@]}" "$TARGET"
 # build packages after successful compilation
 if $PACKAGES
 then
-    if $ON_WINDOWS
-    then
-        echo "Creating packages is not supported on Windows."
-        exit 1
-    fi
     params="$VERSION -n"
+
     if [ $CONFIGURATION == "Debug" ]
     then
         params="$params -d"
     fi
-    if $ON_LINUX
+
+    if $ON_WINDOWS
+    then
+	$ROOT_PATH/tools/packaging/make_windows_packages.sh $params
+    elif $ON_LINUX
     then
       $ROOT_PATH/tools/packaging/make_linux_packages.sh $params
     elif $ON_OSX
