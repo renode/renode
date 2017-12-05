@@ -5,54 +5,7 @@ set -u
 
 #change dir to script location
 cd "${0%/*}"
-
-TARGET="Release"
-BASE=../..
-
-REMOVE_WORKDIR=true
-
-DATE=""
-COMMIT=""
-
-function help {
-    echo "$0 {version-number} [-d] [-n] [-l]"
-    echo
-    echo -e "-d\tuse Debug configuration"
-    echo -e "-n\tcreate a nightly build with date and commit SHA"
-    echo -e "-l\tleave .app directory as is"
-}
-
-if [ $# -lt 1 ]
-then
-    help
-    exit
-fi
-
-VERSION=$1
-
-shift
-while getopts "dnl" opt
-do
-    case $opt in
-        d)
-            TARGET="Debug"
-            ;;
-        n)
-            DATE="+`date +%Y%m%d`"
-            COMMIT="git`git rev-parse --short HEAD`"
-            ;;
-        l)
-            REMOVE_WORKDIR=false
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG"
-            help
-            exit
-            ;;
-    esac
-done
-
-VERSION="$VERSION$DATE$COMMIT"
+. common_make_packages.sh
 
 # create MacOS app structure
 MACOS_APP_DIR=Renode.app
