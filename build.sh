@@ -11,9 +11,10 @@ OUTPUT_DIRECTORY="$ROOT_PATH/output"
 CONFIGURATION="Release"
 CLEAN=false
 PACKAGES=false
+NIGHTLY=false
 PARAMS=()
 
-while getopts "cdvp:s" opt
+while getopts "cdvpns" opt
 do
   case $opt in
     c)
@@ -27,18 +28,21 @@ do
       ;;
     p)
       PACKAGES=true
-      VERSION="$OPTARG"
+      ;;
+    n)
+      NIGHTLY=true
       ;;
     s)
       UPDATE_SUBMODULES=true
       ;;
     \?)
-      echo "Usage: $0 [-cdvs] [-p VERSION]"
+      echo "Usage: $0 [-cdvspn]"
       echo ""
       echo "-c           clean instead of building"
       echo "-d           build Debug configuration"
       echo "-v           verbose output"
-      echo "-p VERSION   create packages after building and assign VERSION number"
+      echo "-p           create packages after building"
+      echo "-n           create a nightly package, requires -p"
       echo "-s           update sumbodules"
       exit 1
       ;;
@@ -150,7 +154,11 @@ cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libLLVM.*
 # build packages after successful compilation
 if $PACKAGES
 then
-    params="$VERSION -n"
+    params=""
+    if $NIGHTLY
+    then
+      params="$params -n"
+    fi
 
     if [ $CONFIGURATION == "Debug" ]
     then

@@ -6,7 +6,7 @@ DATE=""
 COMMIT=""
 
 function help {
-    echo "$0 {version-number} [-d] [-n] [-l]"
+    echo "$0 [-d] [-n] [-l]"
     echo
     echo -e "-d\tuse Debug configuration"
     echo -e "-n\tcreate a nightly build with date and commit SHA"
@@ -22,15 +22,6 @@ function is_dep_available {
     return 0
 }
 
-if [ $# -lt 1 ]
-then
-    help
-    exit
-fi
-
-VERSION=$1
-
-shift
 while getopts "dnl" opt
 do
     case $opt in
@@ -52,4 +43,5 @@ do
     esac
 done
 
+VERSION=`cat ../version`
 VERSION="$VERSION$DATE$COMMIT"
