@@ -144,6 +144,9 @@ PARAMS+=(/p:Configuration=$CONFIGURATION)
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
 
+# copy llvm library
+cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libLLVM.* output/bin/$CONFIGURATION
+
 # build packages after successful compilation
 if $PACKAGES
 then
