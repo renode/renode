@@ -31,6 +31,7 @@ do
       ;;
     n)
       NIGHTLY=true
+      PACKAGES=true
       ;;
     s)
       UPDATE_SUBMODULES=true
@@ -42,7 +43,7 @@ do
       echo "-d           build Debug configuration"
       echo "-v           verbose output"
       echo "-p           create packages after building"
-      echo "-n           create a nightly package, requires -p"
+      echo "-n           create nightly packages after building"
       echo "-s           update sumbodules"
       exit 1
       ;;
