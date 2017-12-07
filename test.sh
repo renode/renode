@@ -9,4 +9,6 @@ TESTS_RESULTS="$ROOT_PATH/output/tests"
 
 . "${ROOT_PATH}/tools/common.sh"
 
+STTY_CONFIG=`stty -g`
 python -u "`get_path "$ROOT_PATH/tests/run_tests.py"`" --properties-file "`get_path "$ROOT_PATH/output/properties.csproj"`" -r "`get_path "$TESTS_RESULTS"`" -t "`get_path "$TESTS_FILE"`" "$@"
+stty "$STTY_CONFIG"
