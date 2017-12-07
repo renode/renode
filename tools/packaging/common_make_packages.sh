@@ -22,7 +22,7 @@ function is_dep_available {
     return 0
 }
 
-while getopts "dnl" opt
+while getopts ":dnl" opt
 do
     case $opt in
         d)
