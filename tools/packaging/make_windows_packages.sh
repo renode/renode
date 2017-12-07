@@ -42,3 +42,8 @@ then
 else
     zip -qr $DIR.zip $DIR/
 fi
+
+mkdir -p $OUTPUT/windows
+mv $DIR.zip $OUTPUT/windows
+
+echo "Created a Windows package in $PACKAGES/windows/$DIR.zip"
