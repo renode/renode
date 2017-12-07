@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -u
 
 ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
 ROBOT_LOCATION="$ROOT_PATH/output/bin"
