@@ -131,9 +131,10 @@ $CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.
 # clean instead of building
 if $CLEAN
 then
+    PARAMS+=(/t:Clean)
     for conf in Debug Release
     do
-        $CS_COMPILER /t:Clean /p:Configuration=$conf "$TARGET" "${PARAMS[@]}"
+        $CS_COMPILER "${PARAMS[@]}" /p:Configuration=$conf "$TARGET"
         rm -fr "${OUTPUT:=`get_path \"$PWD/output\"`}/$conf"
     done
     exit 0
