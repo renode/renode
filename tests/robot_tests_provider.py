@@ -132,7 +132,7 @@ class RobotTestSuite(object):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory)]
+        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port)]
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
