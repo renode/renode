@@ -111,6 +111,7 @@
     <Compile Include="UI\TerminalIOSource.cs" />
     <Compile Include="UI\TerminalActions.cs" />
     <Compile Include="UI\TermsharpProvider.cs" />
+    <Compile Include="EmulationEnvironment\EmulationEnvironment.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -223,6 +224,7 @@
     <Folder Include="Connectors\" />
     <Folder Include="UI\" />
     <Folder Include="Resources\" />
+    <Folder Include="EmulationEnvironment\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\lib\resources\images\Renode-logo.png">
