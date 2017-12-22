@@ -27,6 +27,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             monitor.Interaction = interaction.UnderlyingCommandInteraction;
+            TemporaryFilesManager.Instance.Cleanup();
         }
 
         [RobotFrameworkKeyword]
@@ -189,6 +190,12 @@ namespace Antmicro.Renode.RobotFramework
             {
                 masterTimeSource.BlockHook -= callback;
             }
+        }
+
+        [RobotFrameworkKeyword]
+        public string AllocateTemporaryFile()
+        {
+            return TemporaryFilesManager.Instance.GetTemporaryFile();
         }
 
         private readonly Monitor monitor;
