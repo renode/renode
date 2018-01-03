@@ -69,7 +69,7 @@ namespace Antmicro.Renode.RobotFramework
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             interaction.Clear();
 
-            if(!monitor.TryExecuteScript(path))
+            if(!monitor.TryExecuteScript(path, interaction))
             {
                 throw new KeywordException("Could not execute script: {0}", interaction.GetError());
             }
