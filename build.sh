@@ -145,7 +145,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:Configuration=$CONFIGURATION)
+PARAMS+=(/p:Configuration=$CONFIGURATION /p:GenerateFullPaths=true)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
