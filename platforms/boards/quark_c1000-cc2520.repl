@@ -9,14 +9,14 @@ button: Miscellaneous.Button @ gpio 0x00000000
     -> gpio@7
 
 radio: Wireless.CC2520 @ spi1
-    1 -> gpio@19
-    2 -> gpio@17
-    3 -> gpio@18
-    4 -> gpio@15
+    1 -> gpio@4
+    2 -> gpio@5
+    3 -> gpio@6
+    4 -> gpio@29
 
 gpio:
-    16 -> radio@0
-    20 -> radio@1
+    0 -> radio@0
+    1 -> radio@1
 
 lm74: Sensors.TI_LM74 @ spi0
 
