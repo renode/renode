@@ -60,6 +60,8 @@ Should Run Shell
 
     Wait For Prompt On Uart
     Set New Prompt For Uart   sample_module>
+    # this sleep here is to prevent against writing to soon on uart - it can happen under high stress of the host CPU - when an uart driver is not initalized which leads to irq-loop
+    Sleep                     3
     Write Line To Uart        select sample_module
     Wait For Prompt On Uart
     Write Line To Uart        ping
