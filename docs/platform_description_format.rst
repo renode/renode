@@ -27,7 +27,7 @@ For example these files are equivalent:
 .. code-block:: none
     line1
     line2 { line3; line4 { line5 }; line 6 }
-        
+
 
 Comments
 --------
@@ -109,7 +109,7 @@ For example:
 
     local cpu: SomeCPU
         StringProp: "a"
-    
+
     cpu:
         IntProp: 32
 
@@ -343,7 +343,7 @@ So, for example, these codes lead to the same effect:
 
     variable: SomeType
         SomeProperty: point
-    
+
     point: Point
         x: 5
         y: 3
