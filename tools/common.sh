@@ -1,6 +1,7 @@
 UNAME=`uname -s`
 if [ "$UNAME" == "Linux" ]
 then
+    DETECTED_OS="linux"
     ON_WINDOWS=false
     ON_OSX=false
     ON_LINUX=true
@@ -8,12 +9,14 @@ then
     LAUNCHER="mono"
 elif [ "$UNAME" == "Darwin" ]
 then
+    DETECTED_OS="osx"
     ON_WINDOWS=false
     ON_OSX=true
     ON_LINUX=false
     CS_COMPILER=xbuild
     LAUNCHER="mono"
 else
+    DETECTED_OS="windows"
     ON_WINDOWS=true
     ON_OSX=false
     ON_LINUX=false

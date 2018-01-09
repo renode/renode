@@ -167,14 +167,5 @@ then
         params="$params -d"
     fi
 
-    if $ON_WINDOWS
-    then
-	$ROOT_PATH/tools/packaging/make_windows_packages.sh $params
-    elif $ON_LINUX
-    then
-      $ROOT_PATH/tools/packaging/make_linux_packages.sh $params
-    elif $ON_OSX
-    then
-      $ROOT_PATH/tools/packaging/make_macos_packages.sh $params
-    fi
+    $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
 fi
