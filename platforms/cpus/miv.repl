@@ -8,6 +8,7 @@ uart: UART.MiV_CoreUART @ sysbus 0x70001000
     clockFrequency: 66000000
 
 cpu: CPU.RiscV @ sysbus
+    frequency: 66000000
     cpuType: "rv32g"
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
@@ -16,10 +17,10 @@ plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
     prioritiesEnabled : false
 
 // Power/Reset/Clock/Interrupt
-prci: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000
+    cpu: cpu
     IRQ -> cpu@0
     SoftwareIRQ -> cpu@2
-    frequency: 66000000
 
 gpioInputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70002000
     -> plic@29
