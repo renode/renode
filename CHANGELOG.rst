@@ -3,19 +3,34 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
-The `Master_` section contains changes availabale on the *master* branch.
-
-Master
-------
+1.3.0 - 2018.01.26
+------------------
 
 Added:
 
+* EmulationEnvironment - a mechanism to handle sensor data in a centralized way
 * test for loading REPL files
+* several registers and commands in CC2538RF
+* SCSS device for QuarkC1000 platform
+* sample scripts with two nodes running a Zephyr demo
+
+Changed:
+
+* ComparingTimer and LimitTimer are now more similar in terms of API
+* macOS runs a 64-bit version of Renode
+* changed Arduino 101 with CC2520 board to Quark C1000 devkit
+* improvements in RISC-V interrupt handling
+* current working directory is now always a part of Monitor's default path
 
 Fixed:
 
+* crash when closing Renode with Wireshark enabled but not yet started
 * handling of timer events for a specific timer configuration
 * implementation of LED tester
+* starting Robot on Windows without administrative privileges
+* terminal state after running Robot tests
+* improper timer initialization in RISC-V's CoreLevelInterruptor
+* text highlighting in wrapped lines in terminal windows
 
 1.2.0 - 2017.11.15
 ------------------
