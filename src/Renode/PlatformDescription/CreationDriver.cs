@@ -1211,12 +1211,12 @@ namespace Antmicro.Renode.PlatformDescription
                 if(error != null)
                 {
                     return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.EnumMismatch,
-                                                string.Format("Enum namespace or type mismatch, expected '{0}' instead of '{1}'.", error.Item2, error.Item1));
+                                                $"Enum namespace or type mismatch, expected '{error.Item2}' instead of '{error.Item1}'.");
                 }
                 if(!SmartParser.Instance.TryParse(enumValue.Value, expectedType, out result))
                 {
                     return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.EnumMismatch,
-                                                string.Format("Unexpected enum value '{0}'.", enumValue.Value));
+                                                $"Unexpected enum value '{enumValue.Value}'.{Environment.NewLine}{Environment.NewLine}    Valid values:{Environment.NewLine}{GetValidEnumValues(expectedType)}");
                 }
                 return ConversionResult.Success;
             }
@@ -1305,7 +1305,8 @@ namespace Antmicro.Renode.PlatformDescription
                     var simpleConversionResult = TryConvertSimpleValue(argument.ParameterType, correspondingAttribute.Value, out convertedObject);
                     if(simpleConversionResult.ResultType == ConversionResultType.ConversionUnsuccesful)
                     {
-                        constructorSelectionReport.Add(() => "    Value could not be converted, constructor rejected.");
+                        constructorSelectionReport.Add(() => "    There was an error when converting the value:");
+                        constructorSelectionReport.Add(() => "    " + simpleConversionResult.Message);
                         goto next; // same as above
                     }
                     if(simpleConversionResult.ResultType == ConversionResultType.ConversionSuccessful)
@@ -1504,6 +1505,16 @@ namespace Antmicro.Renode.PlatformDescription
         private static IEnumerable<PropertyInfo> GetGpioProperties(Type type)
         {
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => typeof(GPIO).IsAssignableFrom(x.PropertyType));
+        }
+
+        private static string GetValidEnumValues(Type expectedType)
+        {
+            var validValues = new StringBuilder();
+            foreach(var field in Enum.GetValues(expectedType))
+            {
+                validValues.AppendLine($"       {expectedType.Name}.{field},");
+            }
+            return validValues.ToString();
         }
 
         private readonly Machine machine;
