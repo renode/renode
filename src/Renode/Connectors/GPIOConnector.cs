@@ -32,6 +32,10 @@ namespace Antmicro.Renode.Connectors
 
         public void AttachTo(IPeripheral peripheral)
         {
+            if(peripherals.Count == 2)
+            {
+                throw new RecoverableException("Only two peripherals can be connected to this GPIO Connector (source and destination).");
+            }
             peripherals.Add(peripheral);
         }
 
@@ -48,20 +52,15 @@ namespace Antmicro.Renode.Connectors
         public void SelectSourcePin(INumberedGPIOOutput source, int pinNumber)
         {
             VerifyPeripheralOrThrow(source);
-            IGPIO tempPin;
-            if(!source.Connections.TryGetValue(pinNumber, out tempPin))
+            if(!source.Connections.TryGetValue(pinNumber, out IGPIO tempPin))
             {
                 throw new RecoverableException("Peripheral {0} has no GPIO with number: {1}".FormatWith(source, pinNumber));
-            }
-            if(tempPin == null)
-            {
-                throw new RecoverableException("Source PIN cannot be selected.");
             }
             if(sourcePin != null)
             {
                 sourcePin.Disconnect();
             }
-            sourcePin = tempPin;
+            sourcePin = tempPin ?? throw new RecoverableException("Source PIN cannot be selected.");
             if(sourcePin.IsConnected)
             {
                 this.Log(LogLevel.Warning, "Overwriting source PIN connection.");
@@ -139,6 +138,6 @@ namespace Antmicro.Renode.Connectors
 
         private Machine destinationMachine;
         private IGPIO sourcePin;
-        private IList<IPeripheral> peripherals = new List<IPeripheral>();
+        private ISet<IPeripheral> peripherals = new HashSet<IPeripheral>();
     }
 }
