@@ -67,13 +67,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             (from sign in Minus.Optional()
              from prefix in HexadecimalPrefix
              from digits in HexadecimalDigit.AtLeastOnce().Text()
-             select sign.IsDefined ? "-" : "" + prefix + digits).Token().Named("hexadecimal number");
+             select (sign.IsDefined ? "-" : "") + prefix + digits).Token().Named("hexadecimal number");
 
         public static readonly Parser<string> DecimalNumberWithSign =
             (from sign in Minus.Optional()
              from integerPart in Parse.Number
              from fractionalPart in (Parse.Char('.').Then(x => Parse.Number.Select(y => x + y))).Optional()
-             select sign.IsDefined ? "-" : "" + integerPart + fractionalPart.GetOrElse("")).Token().Named("decimal number");
+             select (sign.IsDefined ? "-" : "") + integerPart + fractionalPart.GetOrElse("")).Token().Named("decimal number");
 
         public static readonly Parser<string> Number = HexadecimalNumberWithSign.Or(DecimalNumberWithSign);
 
