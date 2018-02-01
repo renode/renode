@@ -78,6 +78,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
             var source = new Input(number);
             var result = Grammar.Number.End()(source);
             Assert.IsTrue(result.WasSuccessful, result.Message);
+            Assert.AreEqual(number.Replace(" ", string.Empty), result.Value);
         }
 
         [Test]
