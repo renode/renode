@@ -1162,7 +1162,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
             if(comparedType != expectedType)
             {
-                return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, typeName));
+                return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, expectedType));
             }
             result = tValue.ConvertedValue;
             return ConversionResult.Success;
