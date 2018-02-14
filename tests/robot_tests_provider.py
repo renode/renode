@@ -86,6 +86,9 @@ class RobotTestSuite(object):
                 # do nothing here
                 pass
 
+        if options.run_gdb:
+            args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
+
         RobotTestSuite.robot_frontend_process = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
 
     def run(self, options):

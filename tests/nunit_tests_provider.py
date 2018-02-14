@@ -9,7 +9,6 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
     parser.add_argument("--properties-file", action="store", help="Location of properties file.")
-    parser.add_argument("--run-gdb", dest="run_gdb", action="store_true", help="Run tests under GDB control.")
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit-console.exe')
