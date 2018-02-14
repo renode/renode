@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Testing;
+using Antmicro.Renode.Time;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -69,7 +70,7 @@ namespace Antmicro.Renode.RobotFramework
                     throw new KeywordException("Terminal tester for peripheral {0} in machine {1} already exists", uart, machine);
                 }
 
-                var tester = new TerminalTester(TimeSpan.FromSeconds(timeout), prompt);
+                var tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout), prompt);
                 tester.Terminal.AttachTo(uartObject);
                 uartsWithTesters.Add(uartObject);
                 testers.Add(uartsWithTesters.Count, tester);
@@ -84,7 +85,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForLineOnUart(string content, int? timeout = null, int? testerId = null, bool treatAsRegex = false)
+        public TerminalTesterResult WaitForLineOnUart(string content, uint? timeout = null, int? testerId = null, bool treatAsRegex = false)
         {
             var groups = new string[0];
             GetTesterOrThrowException(testerId).WaitUntilLineFunc(
@@ -97,31 +98,31 @@ namespace Antmicro.Renode.RobotFramework
                     var match = Regex.Match(x, content);
                     groups = match.Success ? match.Groups.Cast<Group>().Skip(1).Select(y => y.Value).ToArray() : new string[0];
                     return match.Success;
-                }, 
-                out string line, 
-                out TimeSpan time,
-                timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)
+                },
+                out string line,
+                out var time,
+                timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)
             );
             return new TerminalTesterResult(line, time.TotalMilliseconds, groups);
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForNextLineOnUart(int? timeout = null, int? testerId = null)
+        public TerminalTesterResult WaitForNextLineOnUart(uint? timeout = null, int? testerId = null)
         {
             GetTesterOrThrowException(testerId).WaitUntilLineExpr(
-                x => true, 
-                out string line, 
-                out TimeSpan time,
-                timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)
+                x => true,
+                out string line,
+                out var time,
+                timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)
             );
             return new TerminalTesterResult(line, time.TotalMilliseconds);
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForPromptOnUart(int? testerId = null, int? timeout = null)
+        public TerminalTesterResult WaitForPromptOnUart(int? testerId = null, uint? timeout = null)
         {
             return new TerminalTesterResult(
-                GetTesterOrThrowException(testerId).ReadToPrompt(out TimeSpan time, timeout == null ? (TimeSpan?)null : TimeSpan.FromSeconds(timeout.Value)),
+                GetTesterOrThrowException(testerId).ReadToPrompt(out var time, timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)),
                 time.TotalMilliseconds
             );
         }
@@ -129,14 +130,14 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public TerminalTesterResult WriteLineToUart(string content, int? testerId = null)
         {
-            GetTesterOrThrowException(testerId).WriteLine(out TimeSpan time, content);
+            GetTesterOrThrowException(testerId).WriteLine(out var time, content);
             return new TerminalTesterResult(content, time.TotalMilliseconds);
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(int timeInSeconds, int? testerId = null)
+        public void TestIfUartIsIdle(uint timeInSeconds, int? testerId = null)
         {
-            GetTesterOrThrowException(testerId).CheckIfUartIsIdle(TimeSpan.FromSeconds(timeInSeconds));
+            GetTesterOrThrowException(testerId).CheckIfUartIsIdle(TimeInterval.FromSeconds(timeInSeconds));
         }
 
         private TerminalTester GetTesterOrThrowException(int? testerId)

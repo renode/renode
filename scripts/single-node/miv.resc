@@ -7,8 +7,6 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/boards/miv-board.repl
 
-machine SetClockSource cpu
-
 $bin?=@http://antmicro.com/projects/renode/riscv-liteos-port.elf-s_689820-e68d3bcf0a12c25daa66fc51e474281bcbed2fc7
 
 showAnalyzer uart

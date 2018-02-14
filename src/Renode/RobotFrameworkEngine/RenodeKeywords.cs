@@ -27,6 +27,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             monitor.Interaction = interaction.UnderlyingCommandInteraction;
+            TemporaryFilesManager.Instance.Cleanup();
         }
 
         [RobotFrameworkKeyword]
@@ -43,6 +44,29 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public string ExecuteCommand(string command, string machine = null)
+        {
+            var interaction = monitor.Interaction as CommandInteractionWrapper;
+            interaction.Clear();
+            if(!string.IsNullOrWhiteSpace(machine))
+            {
+                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out var machobj))
+                {
+                    throw new KeywordException("Could not find machine named {0} in the emulation", machine);
+
+                }
+                monitor.Machine = machobj;
+            }
+
+            if(!monitor.Parse(command))
+            {
+                throw new KeywordException("Could not execute command '{0}': {1}", command, interaction.GetError());
+            }
+
+            return interaction.GetContents();
+        }
+
+        [RobotFrameworkKeyword]
         // This method accepts array of strings that is later
         // concatenated using single space and parsed by the monitor.
         //
@@ -50,17 +74,10 @@ namespace Antmicro.Renode.RobotFramework
         // split long commands into several lines using (...)
         // notation in robot script; otherwise it would be impossible
         // as there is no option to split a single parameter.
-        public string ExecuteCommand(string[] commandFragments)
+        public string ExecuteCommand(string[] commandFragments, string machine = null)
         {
-            var interaction = monitor.Interaction as CommandInteractionWrapper;
-            interaction.Clear();
             var command = string.Join(" ", commandFragments);
-            if(!monitor.Parse(command))
-            {
-                throw new KeywordException("Could not execute command '{0}': {1}", command, interaction.GetError());
-            }
-
-            return interaction.GetContents();
+            return ExecuteCommand(command, machine);
         }
 
         [RobotFrameworkKeyword]
@@ -87,20 +104,36 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public void HandleHotSpot(HotSpotAction action)
         {
+            var isStarted = EmulationManager.Instance.CurrentEmulation.IsStarted;
             switch(action)
             {
                 case HotSpotAction.None:
                     // do nothing
                     break;
                 case HotSpotAction.Pause:
-                    EmulationManager.Instance.CurrentEmulation.PauseAll();
-                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                    if(isStarted)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.PauseAll();
+                        EmulationManager.Instance.CurrentEmulation.StartAll();
+                    }
                     break;
                 case HotSpotAction.Serialize:
                     var fileName = TemporaryFilesManager.Instance.GetTemporaryFile();
+                    var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+                    if(monitor.Machine != null)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.AddOrUpdateInBag("monitor_machine", monitor.Machine);
+                    }
                     EmulationManager.Instance.Save(fileName);
                     EmulationManager.Instance.Load(fileName);
-                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                    if(EmulationManager.Instance.CurrentEmulation.TryGetFromBag<Machine>("monitor_machine", out var mac))
+                    {
+                        monitor.Machine = mac;
+                    }
+                    if(isStarted)
+                    {
+                        EmulationManager.Instance.CurrentEmulation.StartAll();
+                    }
                     break;
                 default:
                     throw new KeywordException("Hot spot action {0} is not currently supported", action);
@@ -127,6 +160,42 @@ namespace Antmicro.Renode.RobotFramework
             {
                 robotFrontendEngine.ExecuteKeyword(e.Name, e.Arguments);
             }
+        }
+
+        [RobotFrameworkKeyword]
+        public void WaitForPause(int timeout)
+        {
+            var masterTimeSource = EmulationManager.Instance.CurrentEmulation.MasterTimeSource;
+            var mre = new System.Threading.ManualResetEvent(false);
+            var callback = (Action)(() =>
+            {
+                // it is possible that the block hook is triggered before virtual time has passed
+                // - in such case it should not be interpreted as a machine pause
+                if(masterTimeSource.ElapsedVirtualTime.Ticks > 0)
+                {
+                    mre.Set();
+                }
+            });
+
+            try
+            {
+                masterTimeSource.BlockHook += callback;
+
+                if(!mre.WaitOne(timeout * 1000))
+                {
+                    throw new KeywordException($"Emulation did not pause in expected time of {timeout} seconds.");
+                }
+            }
+            finally
+            {
+                masterTimeSource.BlockHook -= callback;
+            }
+        }
+
+        [RobotFrameworkKeyword]
+        public string AllocateTemporaryFile()
+        {
+            return TemporaryFilesManager.Instance.GetTemporaryFile();
         }
 
         private readonly Monitor monitor;

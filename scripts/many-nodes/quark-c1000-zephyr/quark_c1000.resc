@@ -18,13 +18,6 @@ machine LoadPlatformDescription @platforms/boards/quark_c1000-cc2520.repl
 # This is a default bootloader:
 $boot ?= @http://antmicro.com/projects/renode/quark_se_rom.bin-s_8192-b688c8b9380014d7deb2bd42dc218fc5ee8d1abf
 
-# CPU as a clocksource indicates that the time flow is controlled by the number of executed instructions,
-# not by the progress of host time.
-machine SetClockSource cpu
-
-# Add the current machine to the sync domain.
-machine SetSyncDomainFromEmulation $domain
-
 # Open a window for the `sysbus.uartB` device - which, in this case, is a default UART for user interaction.
 showAnalyzer uartB
 

@@ -6,7 +6,6 @@ $name?="STM32F746"
 mach create $name
 
 machine LoadPlatformDescription @platforms/boards/stm32f7_discovery-bb.repl
-machine SetClockSource sysbus.cpu
 
 showAnalyzer usart1
 showAnalyzer ltdc

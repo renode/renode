@@ -84,7 +84,3 @@ sysbus:
         Tag <0x40023804, 0x40023807> "RCC_PLLCFGR" 0x00000000
         Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 
-machine:
-    init:
-        SetClockSource sysbus.cpu
-

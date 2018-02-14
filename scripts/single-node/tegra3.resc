@@ -6,7 +6,6 @@ $name?="Tegra-3"
 mach create $name
 
 machine LoadPlatformDescription @platforms/boards/tegra3.repl
-machine SetClockSource sysbus.cpu
 
 sysbus Redirect 0xC0000000 0x80000000 0x40000000
 

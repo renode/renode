@@ -7,8 +7,6 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/boards/zedboard.repl
 
-machine SetClockSource sysbus.cpu
-
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
 $bin?=@http://antmicro.com/projects/renode/zedboard-console--vmlinux-zedboard--f85b95c95b7c8c2e34db859d255d9632fd15a8c9

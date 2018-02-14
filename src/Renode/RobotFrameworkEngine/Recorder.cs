@@ -24,7 +24,8 @@ namespace Antmicro.Renode.RobotFramework
 
         public void SaveCurrentState(string name)
         {
-            savedStates.Add(name, new List<Event>(events));
+            // this is to allow overwriting when running tests with -n argument
+            savedStates[name] = new List<Event>(events);
         }
 
         public bool TryGetState(string name, out List<Event> events)

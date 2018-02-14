@@ -16,10 +16,6 @@
 # Create a new wireless transmission medium. This command adds the `wireless` object to the emulation.
 emulation CreateWirelessMedium "wireless"
 
-# Create a synchronization domain. This will ensure the two machines communicate in a synchronized way.
-$domain = `emulation AddSyncDomain`
-wireless SetSyncDomainFromEmulation $domain
-
 # The radio is using a range-based medium (with the `Range` set to `11`).
 # If not set, the default SimpleMediumFunction will be used (where range is not relevant).
 wireless SetRangeWirelessFunction 11
@@ -43,7 +39,6 @@ connector Connect spi1.radio wireless
 # Each radio in a machine can have its position set independently.
 wireless SetPosition spi1.radio 0 0 0
 
-machine SyncUnit 10000
 ########################## UDP SERVER - end ##########################
 
 # The Monitor works in the context of the current machine. It allows the user to access the machine's peripherals
@@ -63,7 +58,6 @@ connector Connect spi1.radio wireless
 # The node is placed 10 units from the server. With the maximum range set to 11, all packets will be delivered.
 wireless SetPosition spi1.radio 10 0 0
 
-machine SyncUnit 11000
 ########################## UDP CLIENT - end ##########################
 
 # This clears the Monitor's context. To select a machine, use the `mach set` command (try `help mach`).

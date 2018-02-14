@@ -7,7 +7,6 @@ $name?="Versatile"
 mach create $name
 
 machine LoadPlatformDescription @platforms/boards/versatile.repl
-machine SetClockSource sysbus.cpu
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 

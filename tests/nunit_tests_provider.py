@@ -9,6 +9,7 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
     parser.add_argument("--properties-file", action="store", help="Location of properties file.")
+    parser.add_argument("--run-gdb", dest="run_gdb", action="store_true", help="Run tests under GDB control.")
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit-console.exe')
@@ -56,15 +57,20 @@ class NUnitTestSuite(object):
         if options.fixture:
             args.append('-run:' + options.fixture)
 
-        NUnitTestSuite.output_files.append(os.path.join(options.results_directory, output_file))
-        process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while True:
-            line = process.stdout.readline()
-            ret = process.poll()
-            if ret is not None:
-                return ret == 0
-            if line and not line.isspace() and 'GLib-' not in line:
-                options.output.write(line)
+        if options.run_gdb:
+            args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
+            process = subprocess.Popen(args, cwd=options.results_directory)
+            process.wait()
+        else:
+            NUnitTestSuite.output_files.append(os.path.join(options.results_directory, output_file))
+            process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            while True:
+                line = process.stdout.readline()
+                ret = process.poll()
+                if ret is not None:
+                    return ret == 0
+                if line and not line.isspace() and 'GLib-' not in line:
+                    options.output.write(line)
 
     def cleanup(self, options):
         NUnitTestSuite.instances_count -= 1

@@ -10,7 +10,6 @@ using sysbus
 $name?="VersatileExpress"
 mach create $name
 machine LoadPlatformDescription @platforms/boards/vexpress.repl
-machine SetClockSource sysbus.cpu
 
 sysbus Redirect 0xC0000000 0x80000000 0x20000000
 
