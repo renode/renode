@@ -157,15 +157,12 @@ Should Serve Webpage Using Tap
     Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
 
     Execute Command           emulation CreateSwitch "switch"
-    Execute Command           emulation AddSyncDomain
-    Execute Command           switch SetSyncDomainFromEmulation 0
 
     Execute Command           emulation CreateTap "tap0" "tap"
     Execute Command           connector Connect host.tap switch
 
     Execute Command           $bin = ${URI}/http_server.elf-s_831660-df4e7a424882a5eb4883dddb3988971760732f78
     Execute Script            ${SCRIPT}
-    Execute Command           machine SetSyncDomainFromEmulation 0
     Execute Command           connector Connect spi1.ethernet switch
     Create Terminal Tester    ${UART}
 
