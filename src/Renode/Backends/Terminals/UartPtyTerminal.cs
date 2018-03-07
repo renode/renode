@@ -12,7 +12,6 @@ using Antmicro.Renode.Utilities;
 using AntShell.Terminal;
 using Mono.Unix;
 using System.IO;
-using Antmicro.Renode.Backends.Terminals;
 #endif
 
 namespace Antmicro.Renode.Backends.Terminals
@@ -34,11 +33,38 @@ namespace Antmicro.Renode.Backends.Terminals
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
         {
-            var ptyUnixStream = new PtyUnixStream();
+            ptyStream = new PtyUnixStream();
 
-            io = new IOProvider { Backend = new StreamIOSource(ptyUnixStream) };
+            this.linkName = linkName;
+            this.forceCreate = forceCreate;
+
+            io = new IOProvider { Backend = new StreamIOSource(ptyStream) };
             io.ByteRead += b => CallCharReceived((byte)b);
 
+            CreateSymlink();
+        }
+
+        public void Dispose()
+        {
+            io.Dispose();
+            try
+            {
+                symlink.Delete();
+            }
+            catch(FileNotFoundException e)
+            {
+                throw new RecoverableException(string.Format("There was an error when removing symlink `{0}': {1}", symlink.FullName, e.Message));
+            }
+        }
+
+        public override void WriteChar(byte value)
+        {
+            io.Write(value);
+        }
+
+        [Migrant.Hooks.PostDeserialization]
+        private void CreateSymlink()
+        {
             if(File.Exists(linkName))
             {
                 if(!forceCreate)
@@ -57,7 +83,7 @@ namespace Antmicro.Renode.Backends.Terminals
             }
             try
             {
-                var slavePtyFile = new UnixFileInfo(ptyUnixStream.SlaveName);
+                var slavePtyFile = new UnixFileInfo(ptyStream.SlaveName);
                 symlink = slavePtyFile.CreateSymbolicLink(linkName);
             }
             catch(Exception e)
@@ -66,26 +92,12 @@ namespace Antmicro.Renode.Backends.Terminals
             }
         }
 
-        public void Dispose()
-        {
-            io.Dispose();
-            try
-            {
-                symlink.Delete();
-            }
-            catch(Exception e)
-            {
-                throw new RecoverableException(string.Format("There was an error when removing symlink `{0}': {1}", symlink.Name, e.Message));
-            }
-        }
+        private UnixSymbolicLinkInfo symlink;
 
-        public override void WriteChar(byte value)
-        {
-            io.Write(value);
-        }
-
+        private readonly bool forceCreate;
+        private readonly string linkName;
         private readonly IOProvider io;
-        private readonly UnixSymbolicLinkInfo symlink;
+        private readonly PtyUnixStream ptyStream;
     }
 #endif
 }
