@@ -96,7 +96,7 @@ On Windows systems Renode can be run by starting Renode.exe with a similar set o
 Documentation
 -------------
 
-Documentation is under development, available on `Read the Docs <http://renode.readthedocs.io>`_.
+Documentation is available on `Read the Docs <http://renode.readthedocs.io>`_.
 
 License & contributions
 -----------------------

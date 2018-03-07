@@ -3,7 +3,7 @@ How to contribute?
 
 If you are reading this, chances are you want to contribute to the Renode project, and that is already great news.
 
-As contributions to this project are covered by a Contributors License Agreement, you must sign and submit the CLA in order to contribute to this project.
+Note that you must sign a Contributor License Agreement (CLA) in order to contribute to this project.
 
 Please read the short manual below where we provide some simple guidelines for a good cooperation experience.
 
@@ -39,7 +39,9 @@ Your merge request will be reviewed by the Renode team, and potentially a discus
 
 We might ask you to do some fixes or write a test for your change, but this is only meant to keep code quality high(er).
 
-After the final review your code will be merged to the Renode master.
+If this is your first contribution to Renode, you will also be asked to sign our Contributor License Agreement, which you can do directly from within the Pull Request in question.
+
+After you sign the CLA and our team performs a final review of your code, it will be merged to the Renode master branch.
 
 Committing
 ----------
