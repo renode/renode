@@ -54,14 +54,18 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<long> DecimalLong = Parse.Number.Select(x => long.Parse(x)).Token().Named("decimal number");
 
+        public static readonly Parser<ulong> DecimalUnsignedLong = Parse.Number.Select(x => ulong.Parse(x)).Token().Named("decimal non-negative number");
+
         public static readonly Parser<char> HexadecimalDigit = Parse.Chars("0123456789ABCDEFabcdef");
 
-        public static readonly Parser<long> HexadecimalLong =
-            HexadecimalPrefix.Then(x => HexadecimalDigit.AtLeastOnce().Text().Select(y => long.Parse(y, System.Globalization.NumberStyles.HexNumber))).Token().Named("hexadecimal number");
+        public static readonly Parser<ulong> HexadecimalUnsignedLong =
+            HexadecimalPrefix.Then(x => HexadecimalDigit.AtLeastOnce().Text().Select(y => ulong.Parse(y, System.Globalization.NumberStyles.HexNumber))).Token().Named("hexadecimal number");
 
-        public static readonly Parser<int> HexadecimalInt = HexadecimalLong.Select(x => (int)x);
+        public static readonly Parser<uint> HexadecimalUnsignedInt = HexadecimalUnsignedLong.Select(x => (uint)x);
+        public static readonly Parser<int> HexadecimalInt = HexadecimalUnsignedLong.Select(x => (int)x);
 
         public static readonly Parser<int> DecimalInt = DecimalLong.Select(x => (int)x);
+        public static readonly Parser<uint> DecimalUnsignedInt = DecimalUnsignedLong.Select(x => (uint)x);
 
         public static readonly Parser<string> HexadecimalNumberWithSign =
             (from sign in Minus.Optional()
@@ -128,10 +132,10 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<RangeValue> Range =
             (from opening in OpeningChevron
-             from begin in HexadecimalLong.Or(DecimalLong)
+             from begin in HexadecimalUnsignedLong.Or(DecimalUnsignedLong)
              from comma in Comma
              from plus in PlusSign.Optional()
-             from end in HexadecimalLong.Or(DecimalLong).Select(x => plus.IsEmpty ? x : begin + x).Where(x => begin <= x).Named("end of range that defines positive range")
+             from end in HexadecimalUnsignedLong.Or(DecimalUnsignedLong).Select(x => plus.IsEmpty ? x : begin + x).Where(x => begin <= x).Named("end of range that defines positive range")
              from closing in ClosingChevron
              select new RangeValue(begin, end)).Named("range");
 
@@ -215,10 +219,10 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              select new InitAttribute(initValue, !addSuffix.IsEmpty)).Named("init section");
 
         public static readonly Parser<IEnumerable<int>> IrqRange =
-            (from leftSide in HexadecimalInt.Or(DecimalInt)
+            (from leftSide in HexadecimalUnsignedInt.Or(DecimalUnsignedInt)
              from dash in Minus
-             from rightSide in HexadecimalInt.Or(DecimalInt).Where(x => x != leftSide).Named(string.Format("number other than {0}", leftSide))
-             select MakeSimpleRange(leftSide, rightSide));
+             from rightSide in HexadecimalUnsignedInt.Or(DecimalUnsignedInt).Where(x => x != leftSide).Named(string.Format("number other than {0}", leftSide))
+             select MakeSimpleRange(checked((int)leftSide), checked((int)rightSide)));
 
         public static Parser<SingleOrMultiIrqEnd> GetIrqEnd(bool source)
         {

@@ -5,13 +5,14 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+using System;
 using Antmicro.Renode.Core;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
     public sealed class RangeValue : Value, ISimplestValue
     {
-        public RangeValue(long begin, long end)
+        public RangeValue(ulong begin, ulong end)
         {
             Begin = begin;
             End = end;
@@ -35,7 +36,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             }
         }
 
-        public long Begin { get; private set; }
-        public long End { get; private set; }
+        public ulong Begin { get; private set; }
+        public ulong End { get; private set; }
     }
 }
