@@ -7,7 +7,7 @@ ddr: Memory.MappedMemory @ sysbus 0x80000000
 uart: UART.MiV_CoreUART @ sysbus 0x70001000
     clockFrequency: 66000000
 
-cpu: CPU.RiscV @ sysbus
+cpu: CPU.RiscV32 @ sysbus
     frequency: 66000000
     cpuType: "rv32g"
     privilegeMode: PrivilegeMode.Priv1_09

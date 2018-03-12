@@ -213,6 +213,10 @@
       <Project>{66A9995A-13AE-4454-88A6-29EB2D6F5988}</Project>
       <Name>WiresharkPlugin</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64.csproj">
+      <Project>{BB222124-707C-5EFD-8289-2728351FB7AA}</Project>
+      <Name>cores-riscv64</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlatformDescription\" />
