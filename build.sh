@@ -87,29 +87,32 @@ fi
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS
 then
-	if ! [ -x "$(command -v mono)" ]
-	then
-	    echo "Mono not found. Please refer to documentation for installation instructions. Exiting!"
-	    exit 1
-	fi
+    if ! [ -x "$(command -v mono)" ]
+    then
+        echo "Mono not found. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
 
-	if ! [ -x "$(command -v mcs)" ]
-	then
-	    echo "mcs not found. Please refer to documentation for installation instructions. Exiting!"
-	    exit 1
-	fi
+    if ! [ -x "$(command -v mcs)" ]
+    then
+        echo "mcs not found. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
 
+    # Check mono version
+    MINIMAL_MONO=`cat tools/mono_version`
+    MINIMAL_MONO_MAJOR=`echo $MINIMAL_MONO | cut -d'.' -f1`
+    MINIMAL_MONO_MINOR=`echo $MINIMAL_MONO | cut -d'.' -f2`
 
-	# Check mono version
-	MONO_VERSION=`cat tools/mono_version`
-	MONO_VERSION_MAJOR=`echo $MONO_VERSION | cut -d'.' -f1`
-	MONO_VERSION_MINOR=`echo $MONO_VERSION | cut -d'.' -f2`
+    INSTALLED_MONO=`mono --version | head -n1 | cut -d' ' -f5`
+    INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
+    INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
 
-	if [ $MONO_VERSION_MAJOR -lt 5 ]
-	then
-	    echo "Wrong mono version detected: $MONO_VERSION. Please refer to documentation for installation instructions. Exiting!"
-	    exit 1
-	fi
+    if (( $INSTALLED_MONO_MAJOR < $MINIMAL_MONO_MAJOR || (($INSTALLED_MONO_MAJOR == $MINIMAL_MONO_MAJOR) && ($INSTALLED_MONO_MINOR < $MINIMAL_MONO_MINOR)) ))
+    then
+        echo "Wrong mono version detected: $INSTALLED_MONO. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
 fi
 
 # Copy properties file according to the running OS
