@@ -87,7 +87,6 @@
     <Compile Include="PlatformDescription\Syntax\SyntaxTreeHelpers.cs" />
     <Compile Include="PlatformDescription\Syntax\UsingEntry.cs" />
     <Compile Include="PlatformDescription\Syntax\Value.cs" />
-    <Compile Include="Options.cs" />
     <Compile Include="RobotFrameworkEngine\RobotFrameworkEngine.cs" />
     <Compile Include="RobotFrameworkEngine\HotSpotAction.cs" />
     <Compile Include="RobotFrameworkEngine\HttpServer.cs" />

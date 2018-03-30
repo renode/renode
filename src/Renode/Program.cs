@@ -6,6 +6,7 @@
 //
 using System.Threading;
 using Antmicro.Renode;
+using Antmicro.Renode.UI;
 using System.IO;
 using System;
 using Antmicro.Renode.Utilities;
