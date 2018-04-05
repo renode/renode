@@ -41,7 +41,12 @@ function get_path {
 function clone_if_necessary() {
     if [ -e "$4" ]
     then
-        top_ref=`git ls-remote -h $2 master | cut -f1`
+        top_ref=`git ls-remote -h $2 master 2>/dev/null | cut -f1`
+        if [ "$top_ref" == "" ]
+        then
+            echo "Could not access remote $2. Continuing without verification of required libraries."
+            exit
+        fi
         pushd "$3" >/dev/null
         cur_ref=`git rev-parse HEAD`
         master_ref=`git rev-parse master`
