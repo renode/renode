@@ -1,0 +1,15 @@
+using "platforms/cpus/silabs/efm32xg/efm32g222.repl"
+
+usart2: UART.EFM32_UART @ sysbus <0x4000c800, +0x400>
+    ReceiveIRQ -> nvic@14
+    TransmitIRQ -> nvic@15
+
+leUart1: UART.LEUART @ sysbus <0x40084400, +0x400>
+    -> nvic@19
+
+deviceInformation:
+    deviceNumber: 232
+
+sysbus:
+    init add:
+        Tag <0x40086800,0x40086bff> "PCNT2"

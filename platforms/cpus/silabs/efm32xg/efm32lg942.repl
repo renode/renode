@@ -1,0 +1,15 @@
+using "platforms/cpus/silabs/efm32xg/efm32gg942.repl"
+
+sram:
+    size: 0x00008000
+
+flash:
+    size: 0x00040000
+
+deviceInformation:
+    deviceFamily: DeviceFamily.EFM32LG
+    deviceNumber: 942
+
+sysbus:
+    init add:
+        Tag <0x4008a000,0x4008a3ff> "LCD"

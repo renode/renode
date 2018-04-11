@@ -1,0 +1,15 @@
+using "platforms/cpus/silabs/efm32xg/efm32gg942.repl"
+
+uart0: UART.EFM32_UART @ sysbus <0x4000e000, +0x400>
+    ReceiveIRQ -> nvic@20
+    TransmitIRQ -> nvic@21
+uart1: UART.EFM32_UART @ sysbus <0x4000e400, +0x400>
+    ReceiveIRQ -> nvic@22
+    TransmitIRQ -> nvic@23
+
+deviceInformation:
+    deviceNumber: 995
+
+sysbus:
+    init add:
+        Tag <0x40008000,0x400083ff> "EBI"

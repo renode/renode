@@ -1,0 +1,7 @@
+using "platforms/cpus/silabs/efm32xg/efm32zg222.repl"
+
+led0: Miscellaneous.LED @ gpioPort 66
+led1: Miscellaneous.LED @ gpioPort 67
+
+button0: Miscellaneous.Button @ gpioPort 64
+button1: Miscellaneous.Button @ gpioPort 65

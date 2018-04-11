@@ -1,4 +1,0 @@
-using "platforms/cpus/efm32gg.repl"
-using "platforms/boards/efm32gg_dk3750_ethernet.repl"
-using "platforms/boards/efm32gg_dk3750.repl"
-

@@ -15,12 +15,6 @@ usart1: UART.EFR32_USART @ sysbus <0x40010400, +0x400>
     ReceiveIRQ -> nvic@19
     TransmitIRQ -> nvic@20
 
-timer0: Timers.Efm32Timer @ sysbus <0x40018000, +0x400>
-    -> nvic@10
-
-timer1: Timers.Efm32Timer @ sysbus <0x40018400, +0x400>
-    -> nvic@18
-
 ramCode: Memory.MappedMemory @ sysbus 0x10000000
     size: 0x7C00
 
@@ -48,8 +42,8 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
     cpuType: "cortex-m3"
 
-deviceInformation: EFM32DeviceInformation @ sysbus 0x0FE081B0
-    deviceFamily: Family.Gecko // EFR32MG1P
+deviceInformation: Miscellaneous.SiLabs.EFR32DeviceInformation @ sysbus 0x0FE081B0
+    deviceFamily: DeviceFamily.EFR32BG12P
     deviceNumber: 1
-    flashSize: 256
-    sramSize: 64
+    flashDevice: flash
+    sramDevice: ramData

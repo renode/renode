@@ -1,0 +1,13 @@
+using "platforms/cpus/silabs/efr32/efr32mg1.repl"
+
+led0: Miscellaneous.LED @ gpioPort 66
+led1: Miscellaneous.LED @ gpioPort 67
+
+button0: Miscellaneous.Button @ gpioPort 64
+button1: Miscellaneous.Button @ gpioPort 65
+
+si7021: Sensors.SI70xx @ i2c0 0x80
+    model: Model.SI7021
+
+deviceInformation:
+    deviceNumber: 132

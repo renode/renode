@@ -1,4 +1,0 @@
-utsConverter: SPI.UARTToSpiConverter @ usart1
-
-ks8851: Network.KS8851 @ utsConverter
-

@@ -28,11 +28,11 @@ ks8851: Network.KS8851 @ utsConverter
 memory2: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x20000
 
-deviceInformation: EFM32DeviceInformation @ sysbus 0x0FE081B0
-    deviceFamily: Family.GiantGecko
+deviceInformation: Miscellaneous.SiLabs.EFM32xG1xBDeviceInformation @ sysbus 0x0FE081B0
+    deviceFamily: DeviceFamily.GG
     deviceNumber: 1
-    flashSize: 1024
-    sramSize: 128
+    flashDevice: memory
+    sramDevice: memory2
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     IRQ -> cpu@0

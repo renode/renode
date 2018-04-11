@@ -1,0 +1,8 @@
+using "platforms/cpus/silabs/efm32xg/efm32g232.repl"
+
+deviceInformation:
+    deviceNumber: 842
+
+sysbus:
+    init add:
+        Tag <0x4008a000,0x4008a3ff> "LCD"

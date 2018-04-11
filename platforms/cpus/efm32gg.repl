@@ -58,11 +58,11 @@ cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m3"
     nvic: nvic
 
-deviceInformation: EFM32DeviceInformation @ sysbus 0x0FE081B0
-    deviceFamily: Family.GiantGecko
+deviceInformation: Miscellaneous.SiLabs.EFM32xG1xBDeviceInformation @ sysbus 0x0FE081B0
+    deviceFamily: DeviceFamily.GG
     deviceNumber: 1
-    flashSize: 1024
-    sramSize: 128
+    flashDevice: flash
+    sramDevice: sram
 
 sysbus:
     init:

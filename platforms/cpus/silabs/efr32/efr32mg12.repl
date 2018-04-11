@@ -1,0 +1,49 @@
+using "platforms/cpus/silabs/efr32/efr32mg1.repl"
+
+i2c0:
+    -> nvic@17
+i2c1: I2C.EFR32_I2CController @ sysbus <0x4000c400, +0x400>
+    -> nvic@42
+
+usart0:
+    ReceiveIRQ -> nvic@12
+    TransmitIRQ -> nvic@13
+usart1:
+    ReceiveIRQ -> nvic@20
+    TransmitIRQ -> nvic@21
+usart2: UART.EFR32_USART @ sysbus <0x40010800, +0x400>
+    ReceiveIRQ -> nvic@40
+    TransmitIRQ -> nvic@41
+usart3: UART.EFR32_USART @ sysbus <0x40010c00, +0x400>
+    ReceiveIRQ -> nvic@43
+    TransmitIRQ -> nvic@44
+
+leUart0:
+    -> nvic@22
+
+gpioPort:
+    EvenIRQ -> nvic@10
+    OddIRQ -> nvic@18
+
+sram:
+    size: 0x00040000
+
+flash:
+    size: 0x00100000
+
+deviceInformation:
+    deviceFamily: DeviceFamily.EFR32MG12P
+
+sysbus:
+    init add:
+        Tag <0x400f0000,0x400f03ff> "CRYPTO0"
+        Tag <0x4001a000,0x4001a3ff> "WTIMER0"
+        Tag <0x4001a400,0x4001a7ff> "WTIMER1"
+        Tag <0x4004e400,0x4004e7ff> "PCNT1"
+        Tag <0x4004e800,0x4004ebff> "PCNT2"
+        Tag <0x40008000,0x400083ff> "VDAC0"
+        Tag <0x4001f000,0x4001f3ff> "CSEN"
+        Tag <0x40055000,0x400553ff> "LESENSE"
+        Tag <0x40052400,0x400527ff> "WDOG1"
+        Tag <0x40022000,0x400223ff> "SMU"
+        Tag <0x4001d000,0x4001d3ff> "TRNG0"

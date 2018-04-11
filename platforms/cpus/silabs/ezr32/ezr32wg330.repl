@@ -1,0 +1,11 @@
+using "platforms/cpus/silabs/ezr32/ezr32lg330.repl"
+
+cpu:
+    cpuType: "cortex-m4f"
+
+deviceInformation:
+    deviceFamily: DeviceFamily.EZR32WG
+
+sysbus:
+    init add:
+        Tag <0x400c1c00,0x400c1fff> "FPUEH"

@@ -1,0 +1,11 @@
+using "platforms/cpus/silabs/efm32xg/efm32g210.repl"
+
+timer2: Timers.Efm32Timer @ sysbus <0x40010800, +0x400>
+    -> nvic@11
+
+deviceInformation:
+    deviceNumber: 222
+
+sysbus:
+    init add:
+        Tag <0x40086400,0x400867ff> "PCNT1"
