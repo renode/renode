@@ -16,7 +16,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-directory-prefix", dest="remote_server_directory_prefix", action="store", default=os.path.join(this_path, '../output/bin'), help="Location of robot framework remote server binary. This is concatenated with current configuration to create full path.")
     parser.add_argument("--robot-framework-remote-server-name", dest="remote_server_name", action="store", default="Renode.exe", help="Name of robot framework remote server binary.")
     parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
-    parser.add_argument("--disable-xwt", dest="disable_xwt", action="store_true", default=False, help="Disables support for XWT.")
+    parser.add_argument("--enable-xwt", dest="enable_xwt", action="store_true", default=False, help="Enables support for XWT.")
     parser.add_argument("--exclude", default="", help="Do not run tests marked with a tag.")
     parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
     parser.add_argument("--show-monitor", dest="show_monitor", action="store_true", default=False, help="Display monitor window.")
@@ -66,6 +66,8 @@ class RobotTestSuite(object):
             args.append('--hide-log')
         if not options.show_analyzers:
             args.append('--hide-analyzers')
+        if not options.enable_xwt and not(options.show_analyzers or options.show_monitor):
+           args.append('--disable-xwt')
 
         if platform.startswith("linux") or platform == "darwin":
             args.insert(0, 'mono')
@@ -77,8 +79,6 @@ class RobotTestSuite(object):
             args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
         elif options.debug_mode:
             args.insert(1, '--debug')
-        if options.disable_xwt:
-            args.insert(-1, '--disable-xwt')
 
         if sys.stdin.isatty():
             try:
