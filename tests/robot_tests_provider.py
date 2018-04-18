@@ -28,6 +28,13 @@ def verify_cli_arguments(options):
         print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
         sys.exit(1)
 
+def is_process_running(pid):
+    if not psutil.pid_exists(pid):
+        return False
+    proc = psutil.Process(pid)
+    #docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
+    return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
+
 class RobotTestSuite(object):
     instances_count = 0
     robot_frontend_process = None
@@ -77,6 +84,9 @@ class RobotTestSuite(object):
             try:
                 for proc in [psutil.Process(pid) for pid in psutil.pids()]:
                     if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
+                        if not is_process_running(proc.pid):
+                            #process is zombie
+                            continue
                         print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
                         result = raw_input('Do you want me to kill it? [y/N] ')
                         if result in ['Y', 'y']:
@@ -88,7 +98,6 @@ class RobotTestSuite(object):
 
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
-
         RobotTestSuite.robot_frontend_process = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
 
     def run(self, options):
@@ -109,7 +118,9 @@ class RobotTestSuite(object):
 
         if RobotTestSuite.robot_frontend_process is None:
             self._run_remote_server(options)
-
+        elif not is_process_running(RobotTestSuite.robot_frontend_process.pid):
+            self._run_remote_server(options)
+        
         if any(tests_without_hotspots):
             result = result and self._run_inner(options.fixture, None, tests_without_hotspots, options)
         if any(tests_with_hotspots):
