@@ -1190,6 +1190,12 @@ namespace Antmicro.Renode.PlatformDescription
 
             if(numericalValue != null)
             {
+                // numbers can be interpreted as enums either when they match a numerical value of one
+                // of the enum's entries or when the enum has AllowAnyNumericalValueAttribute defined
+                if(expectedType.IsEnum && SmartParser.Instance.TryParse(numericalValue.Value, expectedType, out result))
+                {
+                    return ConversionResult.Success;
+                }
                 if(!NumericTypes.Contains(expectedType) || !SmartParser.Instance.TryParse(numericalValue.Value, expectedType, out result))
                 {
                     return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, expectedType));
