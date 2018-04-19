@@ -14,6 +14,7 @@ using Antmicro.Renode.Utilities;
 using Moq;
 using NUnit.Framework;
 using Antmicro.Renode.UnitTests.Mocks;
+using static Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -530,6 +531,78 @@ mockRegister2: Antmicro.Renode.UnitTests.Mocks.MockRegister @ sysbus 0x100
             ICPU peripheral;
             Assert.IsTrue(machine.TryGetByName("sysbus.mockRegister1.cpu", out peripheral));
             Assert.IsTrue(machine.TryGetByName("sysbus.mockRegister2.cpu", out peripheral));
+        }
+
+        [Test]
+        public void ShouldProcessValidEnum()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute @ sysbus <0, 1>
+    mockEnum: MockEnum.ValidValue
+";
+
+            ProcessSource(source);
+            var result = machine.TryGetByName("sysbus.mockPeripheral", out Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute mockPeripheral);
+            Assert.IsTrue(result);
+            Assert.AreEqual(MockEnum.ValidValue, mockPeripheral.MockEnumValue);
+        }
+
+        [Test]
+        public void ShouldFailOnInvalidEnum()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute
+    mockEnum: MockEnum.InvalidValue
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
+        [Test]
+        public void ShouldProcessValidIntAsEnum()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute @ sysbus <0, 1>
+    mockEnum: 1
+";
+            ProcessSource(source);
+            Assert.IsTrue(machine.TryGetByName("sysbus.peripheral", out Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute mockPeripheral));
+            Assert.AreEqual(MockEnum.ValidValue, mockPeripheral.MockEnumValue);
+        }
+
+        [Test]
+        public void ShouldFailOnInvalidIntToEnumCast()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute
+    mockEnum: 2
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnInvalidIntToEnumWithAttributeCast()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute @ sysbus <0, 1>
+    mockEnumWithAttribute: MockEnumWithAttribute.InvalidValue
+";
+            //ProcessSource(source);
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
+        [Test]
+        public void ShouldProcessCastOfAnyIntToEnumWithAttribute()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute @ sysbus <0, 1>
+    mockEnumWithAttribute: 2
+";
+            ProcessSource(source);
+            Assert.IsTrue(machine.TryGetByName("sysbus.peripheral", out Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute mockPeripheral));
+            Assert.AreEqual((MockEnumWithAttribute)2, mockPeripheral.MockEnumWithAttributeValue);
         }
 
         [TestFixtureSetUp]
