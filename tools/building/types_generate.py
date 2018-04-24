@@ -73,7 +73,7 @@ rets.append("#define action_return$ void")
 vars.append("#define action_vars$ ")
 args.append("#define action_args$ ")
 # C# has predefined Action, but not the attacher
-csharpdefs.append(("", "public delegate void AttachAction(System.Action param);"))
+csharpdefs.append(("", "[UnmanagedFunctionPointer(CallingConvention.Cdecl)]\npublic delegate void AttachAction(System.Action param);"))
 for t in types:
         typedef_name = make_typedef_name([], t)
 	typedefs.append(make_c_def([], t))
