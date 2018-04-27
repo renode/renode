@@ -55,9 +55,13 @@ On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.co
 Installing from packages
 ........................
 
-With Mono instelled as described above, use the ``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS from `the releases section <https://github.com/renode/renode/releases/latest>`_ as normal to install Renode using your package manager.
+With Mono installed as described above, use the ``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS from `the releases section <https://github.com/renode/renode/releases/latest>`_ as normal to install Renode using your package manager.
+
+To be able to run Renode from the command line on macOS, create an appropriate alias.
+If you're using Bash, you can do it by adding ``alias renode="mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe"`` to your ``.bashrc`` file.
 
 For Windows, just unzip the ``*.zip`` package in the directory of your choice.
+Add the location of the ``bin`` subdirectory to the PATH variable to have the ``renode`` command available from the command line.
 
 Additional prerequisites
 ........................
@@ -73,7 +77,7 @@ For information on building Renode from source see `the documentation <http://re
 Running Renode
 --------------
 
-If you installed from a package, you should have a system-wide ``renode`` command that you can use to run the tool::
+If you followed the instructions on installing from a package above, you should have a system-wide ``renode`` command that you can use to run the tool::
 
    renode [flags] [file]
 
