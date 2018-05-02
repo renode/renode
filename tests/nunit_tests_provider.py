@@ -9,6 +9,7 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
     parser.add_argument("--properties-file", action="store", help="Location of properties file.")
+    parser.add_argument("--skip-building", action="store_true", help="Do not build tests before run.")
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit-console.exe')
@@ -21,6 +22,9 @@ class NUnitTestSuite(object):
 
     def prepare(self, options):
         NUnitTestSuite.instances_count += 1
+        if options.skip_building:
+            print('Skipping the build')
+            return 0
         print("Building {0}".format(self.path))
         if platform == "win32":
             builder = 'MSBuild.exe'
