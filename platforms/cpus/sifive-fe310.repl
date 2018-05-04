@@ -9,15 +9,16 @@ uart1: UART.FE310_UART @ sysbus 0x10023000
 
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32g"
-    frequency: 62000000
+    clint: clint
+    plic: plic
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
-    IRQ -> cpu@1
+    0 -> cpu@1
     numberOfSources: 52
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
-    cpu: cpu
-    IRQ -> cpu@0
+    0 -> cpu@0
+    frequency: 62000000
 
 qspi0Xip: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x20000000
