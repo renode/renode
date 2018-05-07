@@ -128,9 +128,9 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WriteLineToUart(string content, int? testerId = null)
+        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true)
         {
-            GetTesterOrThrowException(testerId).WriteLine(out var time, content);
+            GetTesterOrThrowException(testerId).WriteLine(out var time, content, !waitForEcho);
             return new TerminalTesterResult(content, time.TotalMilliseconds);
         }
 
