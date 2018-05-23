@@ -3,14 +3,12 @@ cpu: CPU.RiscV64 @ sysbus
     hartId: 0
     privilegeMode: PrivilegeMode.Priv1_10
     clint: clint
-    plic: plic
 
 cpu1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 1
     privilegeMode: PrivilegeMode.Priv1_10
     clint: clint
-    plic: plic
 
 debug: Memory.MappedMemory @sysbus 0x0
     size: 0x3000
