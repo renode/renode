@@ -51,6 +51,7 @@ namespace Antmicro.Renode.PlatformDescription
         RegistrationException = 39,
         PropertySettingException = 40,
         NameSettingException = 41,
-        CastException = 42
+        CastException = 42,
+        IrqSourcePinDoesNotExist = 43
     }
 }

@@ -748,7 +748,14 @@ namespace Antmicro.Renode.PlatformDescription
                 }
                 else
                 {
-                    source = ((INumberedGPIOOutput)objectToSetOn).Connections[irqEnd.Number];
+                    var connections = ((INumberedGPIOOutput)objectToSetOn).Connections;
+                    if(!connections.ContainsKey(irqEnd.Number))
+                    {
+                        HandleError(ParsingError.IrqSourcePinDoesNotExist, attribute,
+                                    $"{objectToSetOn} doesn't have IRQ {irqEnd.Number}.\nAvailable IRQs: {connections.Count}.", false);
+                        continue;
+                    }
+                    source = connections[irqEnd.Number];
                 }
 
                 if(attribute.DestinationPeripheral.LocalIndex.HasValue)
