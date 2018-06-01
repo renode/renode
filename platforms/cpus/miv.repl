@@ -9,7 +9,7 @@ uart: UART.MiV_CoreUART @ sysbus 0x70001000
 
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32g"
-    privilegeMode: PrivilegeMode.Priv1_09
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_09
     clint: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000

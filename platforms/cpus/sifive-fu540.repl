@@ -1,13 +1,13 @@
 cpu: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 0
-    privilegeMode: PrivilegeMode.Priv1_10
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     clint: clint
 
 cpu1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 1
-    privilegeMode: PrivilegeMode.Priv1_10
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     clint: clint
 
 debug: Memory.MappedMemory @sysbus 0x0
