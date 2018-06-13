@@ -55,3 +55,14 @@ qspi0Flash: Memory.MappedMemory @ sysbus 0x20000000
 
 ddr: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x10000000
+
+ethernet: Network.CadenceGEM @ sysbus 0x10090000
+    IRQ -> plic@53
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    id1: 0x0141
+    id2: 0x0e40
+    autoNegotiationAdvertisement: 0x1e1
+    autoNegotiationLinkPartnerAbility: 0x1e1
+    gigabitControl: 0x300
+    gigabitStatus: 0x3000

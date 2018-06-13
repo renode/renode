@@ -7,7 +7,7 @@ machine LoadPlatformDescription @platforms/cpus/sifive-fu540.repl
 showAnalyzer uart0
 
 $bin?=@http://antmicro.com/projects/renode/hifive-unleashed--bbl.elf-s_17199104-271f72702a6e4f975f897764b70b757587979bd0
-$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_7027-fbfc169305d400fcf72d73ce3b4ccc611688ca26
+$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_7396-d0980bdfc4bd5df3794fb7a08d93415508ae427d
 $vmlinux?=@http://antmicro.com/projects/renode/hifive-unleashed--vmlinux.elf-s_80200256-60b3d4c5317c1ba01f9d0a749ea4eb12dea941e9
 
 sysbus LoadELF $bin
