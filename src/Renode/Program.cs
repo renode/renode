@@ -17,6 +17,7 @@ namespace Antmicro.Renode
 {
     public class Program
     {
+        [STAThread]
         public static void Main(string[] args)
         {
             ConfigureEnvironment();
