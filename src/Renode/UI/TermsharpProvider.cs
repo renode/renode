@@ -27,7 +27,7 @@ namespace Antmicro.Renode.UI
             ApplicationExtensions.InvokeInUIThread(() =>
             {
                 window = new Window();
-                window.Title = consoleName;
+                window.Title = consoleName == null ? "Renode" : consoleName;
                 window.Width = 700;
                 window.Height = 400;
                 window.Location = WindowPositionProvider.Instance.GetNextPosition();
