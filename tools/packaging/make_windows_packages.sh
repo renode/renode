@@ -14,13 +14,8 @@ fi
 
 if [ -z "${MINGW_PATH:-}" ]
 then
-    MINGW_PATH="C:/MinGW/bin"
+    MINGW_PATH="C:/MinGW64/mingw64/bin"
     echo "MINGW_PATH is not set, using default path ($MINGW_PATH)"
-fi
-if [ -z "${GTKSHARP_PATH:-}" ]
-then
-    GTKSHARP_PATH="C:/Program Files (x86)/GtkSharp/2.12/bin"
-    echo "GTKSHARP_PATH path is not set, using default path ($GTKSHARP_PATH)"
 fi
 
 DIR=renode_$VERSION
@@ -31,8 +26,7 @@ PACKAGES=output/renode_packages/$TARGET
 OUTPUT=$BASE/$PACKAGES
 
 ### copy windows dependencies
-cp "$MINGW_PATH"/libgcc_s_dw2-1.dll $DIR/bin
-cp "$GTKSHARP_PATH"/*.dll $DIR/bin
+cp "$MINGW_PATH"/libgcc_s_seh-1.dll $DIR/bin
 cp windows/mingw-license $DIR/licenses
 
 ### create windows package
