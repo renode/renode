@@ -3,6 +3,44 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.4.0 - 2018.06.22
+------------------
+
+Added:
+
+* support for RISC-V Privileged Architecture 1.10
+* 64-bit RISC-V target emulation
+* support for HiFive Unleashed platform
+* support for SiFive Freedom E310 platform
+* new way of handling time progression and synchronization in the whole framework
+* support for 64-bit registers
+* basic support for a range of SiLabs EFM32, EFR32 and EZR32 MCUs
+* several new Robot keywords
+* Wireshark support for macOS
+
+Changed:
+
+* Windows runs a 64-bit version of Renode
+* 32-bit host OSes are no longer supported
+* Robot tests can now be marked as OS-specific or ignored
+* improvements in CC2538 radio model
+* enum values in REPL files can now be provided as integers
+* updated interrupt model in RISC-V
+* MaximumBlockSize is no longer forced to 1 when starting GDB server
+
+Fixed:
+
+* several fixes in REPL grammar
+* fixes in Robot test handling
+* fixes in GDB watchpoints and breakpoints
+* few other fixes in GDB integration layer
+* floating point operations in RISC-V
+* atomic operations in RISC-V
+* high CPU usage when loading many nodes at the same time
+* deserialization of the UART windows
+* symbol names caching when loading new symbol files
+* several minor fixes in different platform files
+
 1.3.0 - 2018.01.26
 ------------------
 
