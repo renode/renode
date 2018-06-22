@@ -37,7 +37,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
     {
         public WiresharkSender(string pipeName, uint pcapNetId, string wiresharkPath)
         {
-            this.pipeName = pipeName;
+            // Mono is using the "/var/tmp" prefix for pipes by default.
+            // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
+            this.pipeName = $"{namedPipePrefix}{pipeName}";
             this.pcapNetId = pcapNetId;
             this.wiresharkPath = wiresharkPath;
         }
@@ -49,7 +51,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 wiresharkPipe.Close();
 #if !PLATFORM_WINDOWS
                 //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
-                File.Delete($"{NamedPipePrefix}{pipeName}");
+                File.Delete(pipeName);
 #endif
             }
         }
@@ -67,7 +69,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
 
-            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, $"-ni {NamedPipePrefix}{pipeName} -k")
+            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, $"-ni {pipeName} -k")
             {
                 UseShellExecute = false,
                 RedirectStandardError = true,
@@ -200,10 +202,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private static readonly DateTime localEpoch = new DateTime(1970, 1, 1).ToLocalTime();
 
 #if !PLATFORM_WINDOWS
-        private const string NamedPipePrefix = "/var/tmp/";
+        private string namedPipePrefix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
         private const PipeOptions NamedPipeOptions = PipeOptions.None;
 #else
-        private const string NamedPipePrefix = @"\\.\pipe\";
+        private string namedPipePrefix = @"\\.\pipe\";
         private const PipeOptions NamedPipeOptions = PipeOptions.Asynchronous;
 #endif
 

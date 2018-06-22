@@ -11,8 +11,10 @@ uart1: UART.STM32_UART @ sysbus <0x40011000, +0x100>
     -> nvic@37
 
 uart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
+    -> nvic@38
 
 uart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
+    -> nvic@39
 
 uart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
     -> nvic@52

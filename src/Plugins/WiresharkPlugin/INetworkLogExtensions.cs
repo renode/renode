@@ -139,9 +139,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private static Wireshark CreateWireshark(this Emulation emulation, string name, LinkLayer layer)
         {
-#if PLATFORM_OSX
-            throw new RecoverableException("Wireshark is not available on OS X.");
-#else
             Wireshark result;
             var wiresharkPath = ConfigurationManager.Instance.Get("wireshark", "wireshark-path", WiresharkPath);
             if(File.Exists(wiresharkPath))
@@ -155,7 +152,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
             emulation.HostMachine.AddHostMachineElement(result, name);
             return result;
-#endif
         }
 
         private static string GetName(IEmulationElement element, IEmulationElement nextElement = null)

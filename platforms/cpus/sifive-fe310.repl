@@ -1,26 +1,26 @@
 dtim: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x20000
 
-uart0: UART.FE310_UART @ sysbus 0x10013000
+uart0: UART.SiFive_UART @ sysbus 0x10013000
     IRQ -> plic@3
 
-uart1: UART.FE310_UART @ sysbus 0x10023000
+uart1: UART.SiFive_UART @ sysbus 0x10023000
     IRQ -> plic@4
 
-cpu: CPU.RiscV @ sysbus
+cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32g"
-    frequency: 62000000
+    clint: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
-    IRQ -> cpu@1
+    3 -> cpu@11
     numberOfSources: 52
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
-    cpu: cpu
-    IRQ -> cpu@0
+    0 -> cpu@7
+    frequency: 62000000
 
 qspi0Xip: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x20000000
 
-gpioInputs: GPIOPort.FE310_GPIO @  sysbus 0x10012000
+gpioInputs: GPIOPort.SiFive_GPIO @  sysbus 0x10012000
     [0-31] -> plic@[8-39]

@@ -12,3 +12,7 @@ $bin?=@http://antmicro.com/projects/renode/riscv-liteos-port.elf-s_689820-e68d3b
 showAnalyzer uart
 
 sysbus LoadELF $bin
+
+# this magic PerformanceInMips is required to run the script
+# it is related to a bug in LiteOS (stack overflow and corruption) when interrupts happens in *wrong* moments
+cpu PerformanceInMips 300

@@ -81,6 +81,11 @@ Should Run LiteOS Port Sample
     Create Machine            riscv-liteos-port.elf-s_689820-e68d3bcf0a12c25daa66fc51e474281bcbed2fc7
     Create Terminal Tester    ${UART}
 
+    # this magic PerformanceInMips is required for the test to pass
+    # it is related to a bug in LiteOS (stack overflow and corruption) when interrupts happens in *wrong* moments
+    Execute Command           sysbus.cpu PerformanceInMips 300
+    Execute Command           showAnalyzer ${UART}
+
     Start Emulation
 
     Wait For Line On Uart     Los Inspect start.

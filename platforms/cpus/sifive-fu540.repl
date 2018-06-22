@@ -1,0 +1,66 @@
+cpu: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 0
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+cpu1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 1
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+debug: Memory.MappedMemory @sysbus 0x0
+    size: 0x3000
+
+e51Hart0Tim: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x2000
+
+u54Hart1Tim: Memory.MappedMemory @ sysbus 0x01808000
+    size: 0x7000
+
+u54Hart2Tim: Memory.MappedMemory @ sysbus 0x01810000
+    size: 0x7000
+
+u54Hart3Tim: Memory.MappedMemory @ sysbus 0x01818000
+    size: 0x7000
+
+u54Hart4Tim: Memory.MappedMemory @ sysbus 0x01820000
+    size: 0x7000
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
+    frequency: 1000000
+    [0, 1] -> cpu@[3, 7]
+    [2, 3] -> cpu1@[3, 7]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
+    [0-3] -> cpu@[8-11]
+    [4-7] -> cpu1@[8-11]
+    numberOfSources: 53
+    numberOfTargets: 2 // linux uses hart1
+    prioritiesEnabled : false
+
+uart0: UART.SiFive_UART @ sysbus 0x10010000
+    IRQ -> plic@4
+
+uart1: UART.SiFive_UART @ sysbus 0x10011000
+    IRQ -> plic@5
+
+gpio: GPIOPort.SiFive_GPIO @ sysbus 0x10060000
+
+qspi0Flash: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x2000000
+
+ddr: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x10000000
+
+ethernet: Network.CadenceGEM @ sysbus 0x10090000
+    IRQ -> plic@53
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    id1: 0x0141
+    id2: 0x0e40
+    autoNegotiationAdvertisement: 0x1e1
+    autoNegotiationLinkPartnerAbility: 0x1e1
+    gigabitControl: 0x300
+    gigabitStatus: 0x3000

@@ -21,7 +21,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         public void ShouldParseHexadecimalLong([Values("0x1000", "0x12AB", "0x0ff")] string number)
         {
             var input = new Input(number);
-            var result = Grammar.HexadecimalLong(input);
+            var result = Grammar.HexadecimalUnsignedLong(input);
             Assert.IsTrue(result.WasSuccessful, result.Message);
             Assert.AreEqual(long.Parse(number.Substring(2), System.Globalization.NumberStyles.HexNumber), result.Value);
         }
