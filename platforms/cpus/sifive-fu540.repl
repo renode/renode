@@ -30,12 +30,12 @@ u54Hart4Tim: Memory.MappedMemory @ sysbus 0x01820000
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
     frequency: 1000000
-    [0, 1] -> cpu@[0, 2]
-    [2, 3] -> cpu1@[0, 2]
+    [0, 1] -> cpu@[3, 7]
+    [2, 3] -> cpu1@[3, 7]
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
-    0 -> cpu@1
-    1 -> cpu1@1
+    [0-3] -> cpu@[8-11]
+    [4-7] -> cpu1@[8-11]
     numberOfSources: 53
     numberOfTargets: 2 // linux uses hart1
     prioritiesEnabled : false
