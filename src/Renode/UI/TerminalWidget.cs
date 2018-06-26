@@ -54,8 +54,8 @@ namespace Antmicro.Renode.UI
 
             // We set the default font as a fall-back option.
             terminal.CurrentFont = Xwt.Drawing.Font.SystemMonospaceFont;
-#if PLATFORM_LINUX
-            // Here we try to load the robot font; unfortunately it doesn't work on OSX and Windows. Moreover, on some versions of
+#if !PLATFORM_OSX
+            // Here we try to load the robot font; unfortunately it doesn't work on OSX. Moreover, on some versions of
             // OSX it passes with no error (and no effect), on the others - it hangs. That's why we try to set the font and then
             // we check if we succeeded.
             var fontFile = typeof(TerminalWidget).Assembly.FromResourceToTemporaryFile("RobotoMono-Regular.ttf");
@@ -212,11 +212,11 @@ namespace Antmicro.Renode.UI
         private Terminal terminal;
         private const int MinimalBottomMargin = 2;
 
-#if PLATFORM_OSX
-        // Default font size on OSX is slightly larger than on generic Linux system.
-        private const double PredefinedFontSize = 12.0;
-#else
+#if PLATFORM_LINUX
         private const double PredefinedFontSize = 10.0;
+#else
+        // Default font size on OSX and Windows is slightly larger than on generic Linux system.
+        private const double PredefinedFontSize = 12.0;
 #endif
         private const double MinFontSize = 1.0;
     }
