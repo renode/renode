@@ -560,6 +560,16 @@ sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral
             Assert.AreEqual(ParsingError.IrqSourcePinDoesNotExist, exception.Error);
         }
 
+        [Test]
+        public void ShouldFailOnNonExistingConstructor()
+        {
+            var source = @"
+p: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithProtectedConstructor @ sysbus 0x0
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
         [TestFixtureSetUp]
         public void Init()
         {

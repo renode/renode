@@ -1381,8 +1381,7 @@ namespace Antmicro.Renode.PlatformDescription
                 return result[0];
             }
 
-            var constructorSelectionReportAsString = Environment.NewLine + "Constructor selection report:" + Environment.NewLine +
-                                                                constructorSelectionReport.ToList().Aggregate((x, y) => x + Environment.NewLine + y);
+            var constructorSelectionReportAsString = $"{Environment.NewLine}Constructor selection report:{Environment.NewLine}{string.Join(Environment.NewLine, constructorSelectionReport.ToList())}";
 
             if(result.Count == 0)
             {
