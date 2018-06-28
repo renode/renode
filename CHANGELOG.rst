@@ -3,6 +3,22 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.4.1 - 2018.06.28
+------------------
+
+Added:
+
+* AXI UART Lite model
+
+Changed:
+
+* event dispatching on WPF on Windows
+
+Fixed:
+
+* an error in handling of generated code on Windows, causing the emulated application to misbehave
+* font loading and default font size on Windows
+
 1.4.0 - 2018.06.22
 ------------------
 
