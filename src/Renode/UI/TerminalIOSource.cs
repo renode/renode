@@ -20,7 +20,7 @@ namespace Antmicro.Renode.UI
         public TerminalIOSource(Terminal terminal)
         {
             vt100decoder = new TermSharp.Vt100.Decoder(terminal, b => HandleInput(b), new TerminalToRenodeLogger(terminal));
-            utfDecoder = new ByteUtf8Decoder(vt100decoder.Feed);
+            utfDecoder = new ByteUtf8Decoder(x => ApplicationExtensions.InvokeInUIThread(() => vt100decoder.Feed(x)));
         }
 
         public void Dispose()
@@ -36,7 +36,7 @@ namespace Antmicro.Renode.UI
         public void Write(byte b)
         {
             BeforeWrite?.Invoke(b);
-            ApplicationExtensions.InvokeInUIThread(() => utfDecoder.Feed(b));
+            utfDecoder.Feed(b);
         }
 
         public void HandleInput(int b)
