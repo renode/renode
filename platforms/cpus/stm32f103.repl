@@ -19,14 +19,24 @@ cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m3"
     nvic: nvic
 
-gpioPortA: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020000, +0x100>
-    0 -> led0@0
-    1 -> led1@0
-    2 -> led2@0
+gpioPortA: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010800, +0x400>
+    [0-15] -> exti@[0-15]
 
-led0: Miscellaneous.LED @ gpioPortA
+gpioPortB: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010C00, +0x400>
+    [0-15] -> exti@[0-15]
 
-led1: Miscellaneous.LED @ gpioPortA
+gpioPortC: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011000, +0x400>
+    [0-15] -> exti@[0-15]
 
-led2: Miscellaneous.LED @ gpioPortA
+gpioPortD: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011400, +0x400>
+    [0-15] -> exti@[0-15]
+
+gpioPortE: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011800, +0x400>
+    [0-15] -> exti@[0-15]
+
+gpioPortF: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011C00, +0x400>
+    [0-15] -> exti@[0-15]
+
+gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
+    [0-15] -> exti@[0-15]
 
