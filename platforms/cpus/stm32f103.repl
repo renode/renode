@@ -7,17 +7,39 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x20000000
 
-uart4: UART.STM32_UART @ sysbus <0x40013800, +0x100>
+uart1: UART.STM32_UART @ sysbus <0x40013800, +0x100>
+    -> nvic@37
 
-uart3: UART.STM32_UART @ sysbus <0x40005000, +0x100>
+uart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
+    -> nvic@38
+
+uart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
+    -> nvic@39
+
+uart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
+    -> nvic@52
+
+uart5: UART.STM32_UART @ sysbus <0x40005000, +0x100>
     -> nvic@53
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 72000000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m3"
     nvic: nvic
+
+i2c1: I2C.STM32F4_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+
+i2c2: I2C.STM32F4_I2C @ sysbus 0x40005800
+    EventInterrupt -> nvic@33
+    ErrorInterrupt -> nvic@34
+
+exti: IRQControllers.EXTI @ sysbus 0x40010400
+    [0-6] -> nvic@[6-10, 23, 40]
 
 gpioPortA: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010800, +0x400>
     [0-15] -> exti@[0-15]
@@ -40,3 +62,7 @@ gpioPortF: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011C00, +0x400>
 gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
     [0-15] -> exti@[0-15]
 
+sysbus:
+    init:
+        ApplySVD @http://antmicro.com/projects/renode/svd/STM32F103.svd.gz
+        Tag <0x40021000, 0x40021003> "RCC_CR" 0x0A020083
