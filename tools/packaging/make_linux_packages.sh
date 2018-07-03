@@ -48,7 +48,7 @@ GENERAL_FLAGS=(\
 
 ### create debian package
 fpm -s dir -t deb\
-    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d gksu\
+    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d policykit-1\
     --deb-no-default-config-files\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
@@ -73,7 +73,7 @@ mv $rpm $OUTPUT/rpm
 
 ### create arch package
 fpm -s dir -t pacman\
-    -d mono -d gtk-sharp-2 -d screen -d gksu\
+    -d mono -d gtk-sharp-2 -d screen -d polkit\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 mkdir -p $OUTPUT/arch
