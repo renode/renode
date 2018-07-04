@@ -548,6 +548,18 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ emptyIterestingType
             Assert.AreEqual(ParsingError.CastException, exception.Error);
         }
 
+        [Test]
+        public void ShouldFailOnNonExistingIrqSourcePin()
+        {
+            var source = @"
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
+sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral
+    gpios: 2
+    2 -> receiver@1";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.IrqSourcePinDoesNotExist, exception.Error);
+        }
+
         [TestFixtureSetUp]
         public void Init()
         {
