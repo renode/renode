@@ -60,7 +60,7 @@ namespace Antmicro.Renode.RobotFramework
                     result.Clear();
 
                     result.Add(KeywordResultStatus, KeywordResultFail);
-                    result.Add(KeywordResultError, BuildRecursiveErrorMessage(e));
+                    result.Add(KeywordResultError, BuildRecursiveErrorMessage(e).StripNonSafeCharacters());
                     result.Add(KeywordResultTraceback, e.StackTrace);
                 }
 

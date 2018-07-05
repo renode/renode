@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.UART;
@@ -180,7 +181,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             public TerminalTesterResult(string line, double timestamp, string[] groups = null)
             {
-                this.line = line ?? string.Empty;
+                this.line = line == null ? string.Empty : line.StripNonSafeCharacters();
                 this.timestamp = timestamp;
                 this.groups = groups ?? new string[0];
             }
