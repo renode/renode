@@ -119,12 +119,27 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForPromptOnUart(int? testerId = null, uint? timeout = null)
+        public TerminalTesterResult WaitForPromptOnUart(string prompt = null, int? testerId = null, uint? timeout = null)
         {
-            return new TerminalTesterResult(
-                GetTesterOrThrowException(testerId).ReadToPrompt(out var time, timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)),
+            var tester = GetTesterOrThrowException(testerId);
+            string previousPrompt = null;
+            if(prompt != null)
+            {
+                previousPrompt = tester.Terminal.Prompt;
+                tester.Terminal.Prompt = prompt;
+            }
+
+            var result = new TerminalTesterResult(
+                tester.ReadToPrompt(out var time, timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)),
                 time.TotalMilliseconds
             );
+
+            if(previousPrompt != null)
+            {
+                tester.Terminal.Prompt = previousPrompt;
+            }
+
+            return result;
         }
 
         [RobotFrameworkKeyword]

@@ -64,3 +64,28 @@ phy: Network.EthernetPhysicalLayer @ ethernet 0
     autoNegotiationLinkPartnerAbility: 0x1e1
     gigabitControl: 0x300
     gigabitStatus: 0x3000
+
+qspi0: SPI.HiFive_SPI @ sysbus 0x10040000
+    IRQ -> plic@51
+    numberOfSupportedSlaves: 1
+
+// The registration address value is taken from the device tree.
+// It is different in the documentation (0x10140000).
+qspi1: SPI.HiFive_SPI @ sysbus 0x10041000
+    IRQ -> plic@52
+    numberOfSupportedSlaves: 4
+
+qspi2: SPI.HiFive_SPI @ sysbus 0x10050000
+    IRQ -> plic@6
+    numberOfSupportedSlaves: 1
+
+i2c: I2C.OpenCoresI2C @ sysbus 0x10030000
+    // our model does not support interrupts yet, but if it did:
+    // IRQ -> plic@50
+
+pwm0: HiFive_PWM @ sysbus 0x10020000
+    IRQ -> plic@42
+
+pwm1: HiFive_PWM @ sysbus 0x10021000
+    IRQ -> plic@46
+

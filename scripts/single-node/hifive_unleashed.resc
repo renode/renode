@@ -6,9 +6,9 @@ machine LoadPlatformDescription @platforms/cpus/sifive-fu540.repl
 
 showAnalyzer uart0
 
-$bin?=@http://antmicro.com/projects/renode/hifive-unleashed--bbl.elf-s_17199144-b22103b1dcc33d05f1c026218738f87e4a67bec0
-$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_7396-d0980bdfc4bd5df3794fb7a08d93415508ae427d
-$vmlinux?=@http://antmicro.com/projects/renode/hifive-unleashed--vmlinux.elf-s_80200256-60b3d4c5317c1ba01f9d0a749ea4eb12dea941e9
+$bin?=@http://antmicro.com/projects/renode/hifive-unleashed--bbl.elf-s_17219640-c7e1b920bf81be4062f467d9ecf689dbf7f29c7a
+$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_8564-6bd502d80700983442ae59d2c5c97f4ec36796a9
+$vmlinux?=@http://antmicro.com/projects/renode/hifive-unleashed--vmlinux.elf-s_80421976-46788813c50dc7eb1a1a33c1730ca633616f75f5
 
 sysbus LoadELF $bin
 sysbus LoadFdt $fdt 0x81000000 "earlyconsole mem=256M@0x80000000"
