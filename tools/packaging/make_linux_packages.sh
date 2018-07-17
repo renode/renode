@@ -48,7 +48,7 @@ GENERAL_FLAGS=(\
 
 ### create debian package
 fpm -s dir -t deb\
-    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d policykit-1 libc6-dev\
+    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d policykit-1 -d libc6-dev\
     --deb-no-default-config-files\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
