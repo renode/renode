@@ -1,7 +1,7 @@
-:name: MI-V
-:description: This script runs LiteOS on MI-V RISC-V board.
+:name: Mi-V
+:description: This script runs LiteOS on a Mi-V RISC-V board.
 
-$name?="MI-V"
+$name?="Mi-V"
 
 using sysbus
 mach create $name
@@ -13,6 +13,6 @@ showAnalyzer uart
 
 sysbus LoadELF $bin
 
-# this magic PerformanceInMips is required to run the script
-# it is related to a bug in LiteOS (stack overflow and corruption) when interrupts happens in *wrong* moments
+# this PerformanceInMips magic is required to run the script
+# it is related to a bug in LiteOS (stack overflow and corruption) when interrupts happen in *wrong* moments
 cpu PerformanceInMips 300
