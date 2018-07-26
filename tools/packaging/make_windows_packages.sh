@@ -12,12 +12,6 @@ then
     exit
 fi
 
-if [ -z "${MINGW_PATH:-}" ]
-then
-    MINGW_PATH="C:/Program Files/mingw-w64/mingw/mingw64/bin"
-    echo "MINGW_PATH is not set, using default path ($MINGW_PATH)"
-fi
-
 DIR=renode_$VERSION
 
 . common_copy_files.sh
@@ -26,7 +20,7 @@ PACKAGES=output/renode_packages/$TARGET
 OUTPUT=$BASE/$PACKAGES
 
 ### copy windows dependencies
-cp "$MINGW_PATH"/libgcc_s_seh-1.dll $DIR/bin
+cp "`which libgcc_s_seh-1.dll`" $DIR/bin
 cp windows/mingw-license $DIR/licenses
 
 MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=$VERSION
