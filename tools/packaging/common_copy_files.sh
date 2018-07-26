@@ -2,7 +2,8 @@ rm -rf $DIR
 mkdir -p $DIR/{bin,licenses}
 
 #copy the main content
-cp -r $BASE/output/bin/$TARGET/*.{dll,exe,dll.config} $DIR/bin
+cp -r $BASE/output/bin/$TARGET/*.{dll,exe} $DIR/bin
+cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 
 
