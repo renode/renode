@@ -13,7 +13,9 @@ import robot
 this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
-    parser.add_argument("--robot-framework-remote-server-directory-prefix", dest="remote_server_directory_prefix", action="store", default=os.path.join(this_path, '../output/bin'), help="Location of robot framework remote server binary. This is concatenated with current configuration to create full path.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--robot-framework-remote-server-full-directory", dest="remote_server_full_directory", action="store", help="Full location of robot framework remote server binary.")
+    group.add_argument("--robot-framework-remote-server-directory-prefix", dest="remote_server_directory_prefix", action="store", default=os.path.join(this_path, '../output/bin'), help="Directory of robot framework remote server binary. This is concatenated with current configuration to create full path.")
     parser.add_argument("--robot-framework-remote-server-name", dest="remote_server_name", action="store", default="Renode.exe", help="Name of robot framework remote server binary.")
     parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
     parser.add_argument("--enable-xwt", dest="enable_xwt", action="store_true", default=False, help="Enables support for XWT.")
@@ -52,7 +54,11 @@ class RobotTestSuite(object):
             return
 
     def _run_remote_server(self, options):
-        self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
+        if options.remote_server_full_directory is not None:
+            self.remote_server_directory = options.remote_server_full_directory
+        else:
+            self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
+
         remote_server_binary = os.path.join(self.remote_server_directory, options.remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
@@ -120,7 +126,7 @@ class RobotTestSuite(object):
             self._run_remote_server(options)
         elif not is_process_running(RobotTestSuite.robot_frontend_process.pid):
             self._run_remote_server(options)
-        
+
         if any(tests_without_hotspots):
             result = result and self._run_inner(options.fixture, None, tests_without_hotspots, options)
         if any(tests_with_hotspots):
