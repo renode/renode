@@ -1,11 +1,14 @@
 rm -rf $DIR
-mkdir -p $DIR/{bin,licenses}
+mkdir -p $DIR/{bin,licenses,tests}
 
 #copy the main content
 cp -r $BASE/output/bin/$TARGET/*.{dll,exe} $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 
+#copy the test instrastructure and update the paths
+cp -r $BASE/src/Renode/RobotFrameworkEngine/*.{py,robot} $DIR/tests
+sed -i 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DIR/tests/renode-keywords.robot
 
 #copy the licenses
 #some files already include the library name

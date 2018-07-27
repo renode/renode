@@ -29,6 +29,7 @@ namespace Antmicro.Renode.RobotFramework
                 }
                 finally
                 {
+                    Emulator.Exit();
                     Emulator.FinishExecutionAsMainThread();
                 }
             });
