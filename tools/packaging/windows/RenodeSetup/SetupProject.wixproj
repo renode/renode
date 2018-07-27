@@ -7,7 +7,7 @@
     </CreateProperty>
   </Target>
   <PropertyGroup>
-    <DefineConstants>VERSION=$(version);ItemDir=..\..\renode_$(version)\</DefineConstants>
+    <DefineConstants>VERSION=$(version);ItemDir=..\..\$(workdir)\</DefineConstants>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform>x64</Platform>
     <ProductVersion>3.10</ProductVersion>
@@ -33,7 +33,7 @@
     <Compile Include="RenodeUI.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <HarvestDirectory Include="..\..\renode_$(version)\">
+    <HarvestDirectory Include="..\..\$(workdir)\">
       <DirectoryRefId>INSTALLDIR</DirectoryRefId>
       <ComponentGroupName>Items</ComponentGroupName>
       <PreprocessorVariable>var.ItemDir</PreprocessorVariable>

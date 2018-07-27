@@ -23,7 +23,7 @@ OUTPUT=$BASE/$PACKAGES
 cp "`which libgcc_s_seh-1.dll`" $DIR/bin
 cp windows/mingw-license $DIR/licenses
 
-MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=$VERSION
+MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=${VERSION%\+*} /p:workdir=$DIR
 
 ### create windows package
 if $REMOVE_WORKDIR
