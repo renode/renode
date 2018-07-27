@@ -28,6 +28,17 @@ DIR=renode_$VERSION
 
 . common_copy_files.sh
 
+cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine}.py $DIR/tests
+cp -r $BASE/test.sh $DIR/tests
+cp -r $BASE/tools/common.sh $DIR/tests
+sed -i '/nunit/d' $DIR/tests/run_tests.py
+sed -i 's#tools/##' $DIR/tests/test.sh
+sed -i 's#tests/run_tests.py#run_tests.py#' $DIR/tests/test.sh
+sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory=/opt/renode/bin -r . "$@"#' $DIR/tests/test.sh
+sed -i '/ROBOT_LOCATION/d' $DIR/tests/test.sh
+sed -i '/TESTS_FILE/d' $DIR/tests/test.sh
+sed -i '/TESTS_RESULTS/d' $DIR/tests/test.sh
+
 PACKAGES=output/renode_packages/$TARGET
 OUTPUT=$BASE/$PACKAGES
 
