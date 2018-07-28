@@ -236,6 +236,10 @@
     <Folder Include="EmulationEnvironment\" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\lib\resources\images\windows_setup\renode_nobg.ico">
+      <Link>Resources\renode_nobg.ico</Link>
+      <LogicalName>renode_nobg.ico</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\..\lib\resources\images\Renode-logo.png">
       <Link>Resources\logo.png</Link>
       <LogicalName>logo.png</LogicalName>

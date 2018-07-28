@@ -27,6 +27,9 @@ namespace Antmicro.Renode.UI
             ApplicationExtensions.InvokeInUIThread(() =>
             {
                 window = new Window();
+#if PLATFORM_WINDOWS
+                window.Icon = Xwt.Drawing.Image.FromResource("renode_nobg.ico");
+#endif
                 window.Title = consoleName == null ? "Renode" : consoleName;
                 window.Width = 700;
                 window.Height = 400;
