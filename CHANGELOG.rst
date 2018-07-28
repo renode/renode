@@ -3,6 +3,35 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.4.2 - 2018.07.27
+------------------
+
+Added:
+
+* debug mode in RISC-V, masking interrupts and ignoring WFI when connected via GDB
+* installer file for Windows
+* GPIO controller for STM32F103, with other improvements to the platform file
+* PWM, I2C and SPI peripherals for HiFive Unleashed
+* tests for HiFive Unleashed
+* configuration option to always add machine name in logs
+* test scripts when installing Renode from a package on Linux
+
+Changed:
+
+* changed gksu dependency to pkexec, as Ubuntu does not provide gksu anymore
+* virtual time of machines created after some time is synchronized with other machines
+* improved Vector Table Offset guessing when loading ELF files on ARM Cortex-M CPUs
+* extended capabilities of some Robot keywords
+* changed the way peripheral names are resolved in logs, so that they don't disappear when removing the emulation
+
+Fixed:
+
+* support for writing 64-bit registers from GDB
+* crash when trying to connect to a nonexisting interrupt
+* GDB access to Cortex-M registers
+* some fixes in EFR32_USART
+
+
 1.4.1 - 2018.06.28
 ------------------
 
