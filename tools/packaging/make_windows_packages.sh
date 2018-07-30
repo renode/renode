@@ -13,6 +13,8 @@ then
 fi
 
 DIR=renode_$VERSION
+ZIP=$DIR.zip
+MSI=$DIR.msi
 
 SED_COMMAND="sed -i"
 . common_copy_files.sh
@@ -26,18 +28,18 @@ cp windows/mingw-license $DIR/licenses
 
 mkdir -p $OUTPUT
 
-MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=${VERSION%\+*} /p:workdir=$DIR
+MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=${VERSION%\+*} /p:installer_name=$DIR
 
 ### create windows package
 if $REMOVE_WORKDIR
 then
-    zip -qrm $DIR.zip $DIR/
+    zip -qrm $ZIP $DIR/
 else
-    zip -qr $DIR.zip $DIR/
+    zip -qr $ZIP $DIR/
 fi
 
-mv $DIR.zip $OUTPUT
-mv windows/RenodeSetup/bin/Release/RenodeSetup.msi $OUTPUT
+mv $ZIP $OUTPUT
+mv windows/RenodeSetup/bin/Release/$MSI $OUTPUT
 
-echo "Created a Windows package in $PACKAGES/$DIR.zip"
-echo "Created a Windows installer in $PACKAGES/RenodeSetup.msi "
+echo "Created a Windows package in $PACKAGES/$ZIP"
+echo "Created a Windows installer in $PACKAGES/$MSI"

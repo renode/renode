@@ -2,18 +2,18 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" 
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="BeforeBuild">
-    <CreateProperty Value="VERSION=$(VERSION);WORKDIR=$(WORKDIR);$(DefineConstants)">
+    <CreateProperty Value="VERSION=$(VERSION);INSTALLER_NAME=$(INSTALLER_NAME);$(DefineConstants)">
       <Output TaskParameter="Value" PropertyName="DefineConstants"/>
     </CreateProperty>
   </Target>
   <PropertyGroup>
-    <DefineConstants>VERSION=$(version);ItemDir=..\..\$(workdir)\</DefineConstants>
+    <DefineConstants>VERSION=$(version);ItemDir=..\..\$(installer_name)\</DefineConstants>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform>x64</Platform>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>efe20296-776e-4417-9980-0c4b8adfb8c3</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>RenodeSetup</OutputName>
+    <OutputName>$(installer_name)</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup>
@@ -33,7 +33,7 @@
     <Compile Include="RenodeUI.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <HarvestDirectory Include="..\..\$(workdir)\">
+    <HarvestDirectory Include="..\..\$(installer_name)\">
       <DirectoryRefId>INSTALLDIR</DirectoryRefId>
       <ComponentGroupName>Items</ComponentGroupName>
       <PreprocessorVariable>var.ItemDir</PreprocessorVariable>
