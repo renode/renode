@@ -14,7 +14,7 @@ then
     ON_OSX=true
     ON_LINUX=false
     CS_COMPILER=xbuild
-    LAUNCHER="mono"
+    LAUNCHER="mono64"
 else
     DETECTED_OS="windows"
     ON_WINDOWS=true

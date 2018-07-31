@@ -87,9 +87,9 @@ fi
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS
 then
-    if ! [ -x "$(command -v mono)" ]
+    if ! [ -x "$(command -v $LAUNCHER)" ]
     then
-        echo "Mono not found. Please refer to documentation for installation instructions. Exiting!"
+        echo "$LAUNCHER not found. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
@@ -104,7 +104,7 @@ then
     MINIMAL_MONO_MAJOR=`echo $MINIMAL_MONO | cut -d'.' -f1`
     MINIMAL_MONO_MINOR=`echo $MINIMAL_MONO | cut -d'.' -f2`
 
-    INSTALLED_MONO=`mono --version | head -n1 | cut -d' ' -f5`
+    INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
     INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
     INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
 

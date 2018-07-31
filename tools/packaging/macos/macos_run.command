@@ -20,7 +20,7 @@ VERSION_TITLE="Cannot launch $APPNAME"
 VERSION_MSG="$APPNAME requires the Mono Framework version $REQUIRED_MAJOR.$REQUIRED_MINOR or later."
 DOWNLOAD_URL="http://www.mono-project.com/download/stable/"
 
-MONO_VERSION="$(mono --version | grep 'Mono JIT compiler version ' |  cut -f5 -d\ )"
+MONO_VERSION="$(mono64 --version | grep 'Mono JIT compiler version ' |  cut -f5 -d\ )"
 MONO_VERSION_MAJOR="$(echo $MONO_VERSION | cut -f1 -d.)"
 MONO_VERSION_MINOR="$(echo $MONO_VERSION | cut -f2 -d.)"
 if [ -z "$MONO_VERSION" ] \
@@ -36,4 +36,4 @@ then
 fi
 
 #run app using mono
-exec -a \"$PROCESS_NAME\" mono $MONO_OPTIONS "$EXE_PATH" $*
+exec -a \"$PROCESS_NAME\" mono64 $MONO_OPTIONS "$EXE_PATH" $*
