@@ -4,7 +4,7 @@
 <?define BannerDlg="..\..\..\..\lib\resources\images\windows_setup\setup_screen-02.png"?>
 <?define RenodeIcon="..\..\..\..\lib\resources\images\windows_setup\renode.ico"?>
 <?define RenodeNoBgIcon="..\..\..\..\lib\resources\images\windows_setup\renode_nobg.ico"?>
-  <Product Id="*" Name="Renode" Language="1033" Version="$(var.VERSION)" Manufacturer="Antmicro" UpgradeCode="7e549c3f-a15a-4101-8071-9d52a16a28f6">
+  <Product Id="f3d4ef7d-02d3-49b8-9a51-1f43eb063c89" Name="Renode" Language="1033" Version="$(var.VERSION)" Manufacturer="Antmicro" UpgradeCode="7e549c3f-a15a-4101-8071-9d52a16a28f6">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade AllowDowngrades="no" DowngradeErrorMessage="A newer version of this software is already installed." AllowSameVersionUpgrades="no" />
