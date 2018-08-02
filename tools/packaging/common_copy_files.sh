@@ -8,7 +8,8 @@ cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 
 #copy the test instrastructure and update the paths
 cp -r $BASE/src/Renode/RobotFrameworkEngine/*.{py,robot} $DIR/tests
-sed -i 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DIR/tests/renode-keywords.robot
+#sed has different parameters on osx/linux so the command must be defined by scripts including this one
+$SED_COMMAND 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DIR/tests/renode-keywords.robot
 
 #copy the licenses
 #some files already include the library name

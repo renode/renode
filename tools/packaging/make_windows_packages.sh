@@ -14,6 +14,7 @@ fi
 
 DIR=renode_$VERSION
 
+SED_COMMAND="sed -i"
 . common_copy_files.sh
 
 PACKAGES=output/renode_packages/$TARGET

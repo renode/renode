@@ -13,6 +13,7 @@ mkdir -p $MACOS_APP_DIR/Contents/{MacOS,Resources}/
 
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
+SED_COMMAND="sed -i ''"
 . common_copy_files.sh
 
 cp macos/macos_run.* $MACOS_APP_DIR/Contents/MacOS

@@ -26,6 +26,7 @@ fi
 
 DIR=renode_$VERSION
 
+SED_COMMAND="sed -i"
 . common_copy_files.sh
 
 cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine}.py $DIR/tests
