@@ -30,47 +30,49 @@ One important aspect of the tool is that it simulates not only CPUs but entire S
 Installation
 ------------
 
-Installing dependecies for Linux and macOS
-..........................................
+Installing dependencies
++++++++++++++++++++++++
 
-Renode requires Mono >= 5.0.
-To install it on Linux, use::
+Mono/.NET
+~~~~~~~~~
 
-   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-   echo "deb http://download.mono-project.com/repo/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-   sudo apt-get update
-   sudo apt-get install mono-complete policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev
+Renode requires Mono >= 5.0 (Linux, macOS) or .NET >= 4.7 (Windows).
 
-.. note::
+**Linux**: Install the ``mono-complete`` package as per the installation instructions for various Linux distributions which can be found on `the Mono project website <https://www.mono-project.com/download/stable/#download-lin>`_.
 
-    Modify the distribution name according to your setup.
+**macOS**: On macOS, the Mono package can be downloaded directly from `the Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
 
-On macOS, Mono can be downloaded from `the official Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
+**Windows**: On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_. Windows 10 ships with .NET by default, so no action is required there.
 
-Getting .NET (Windows 7 only)
-.............................
+Other dependencies (Linux only)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_.
+On Ubuntu 16.04, you can install the remaining dependencies with the following command::
+
+   sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev
+
+If you are running a different distribution, you will need to install an analogous list of packages using your package manager; note that the package names may differ slightly.
 
 Installing from packages
-........................
+++++++++++++++++++++++++
 
-With Mono installed as described above, use the ``*.deb``, ``*.rpm``, ``*.pkg.tar.xz`` files for Linux and ``*.dmg`` files for macOS from `the releases section <https://github.com/renode/renode/releases/latest>`_ as normal to install Renode using your package manager.
+Go to `the releases section <https://github.com/renode/renode/releases/latest>`_ of this repository and download the appropriate package for your system.
 
-To be able to run Renode from the command line on macOS, create an appropriate alias.
-If you're using Bash, you can do it by adding ``alias renode="mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe"`` to your ``.bashrc`` file.
+**Linux**: Install Renode as normal with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
 
-For Windows, just unzip the ``*.zip`` package in the directory of your choice.
-Add the location of the ``bin`` subdirectory to the PATH variable to have the ``renode`` command available from the command line.
+**macOS**: Use the provided ``*.dmg`` as normal. Additionally, to be able to run Renode from the command line on macOS, create an appropriate alias. If you're using Bash, you can do it by adding ``alias renode="mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe"`` to your ``.bashrc`` file.
 
-Additional prerequisites
-........................
+**Windows**: Install Renode from the provided ``*.msi`` file. The installer will allow you to add icons to your Desktop and/or Start Menu and an entry to your PATH.
 
-To run tests you must install Python 2.7 with additional modules.
-For detailed info, see `the documentation <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#installing-python-modules>`_.
+Additional prerequisites (for Robot framework testing)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+To write and run test cases, Renode integrates with the Robot testing framework. This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows <the advanced installation instructions >`_) with ``pip`` and some additional modules::
+
+    python -m pip install robotframework netifaces requests psutil
 
 Building from source (advanced)
-...............................
++++++++++++++++++++++++++++++++
 
 For information on building Renode from source see `the documentation <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
 
