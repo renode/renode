@@ -1,0 +1,20 @@
+mem: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+mem2: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x40000
+
+ddr: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+cpu: CPU.VexRiscv @ sysbus
+
+uart: UART.LiteX_UART @ sysbus 0xE0001000
+    -> cpu@2
+
+sysbus:
+    init:
+        Tag <0xE0002000 0x200> "TIMER0"
+        Tag <0xE0008000 0x200> "DDR_PHY"
+        Tag <0xE0004000 0x200> "SDRAM_CONTROLLER"
+        Tag <0xE0000800 0x200> "UART_PHY"

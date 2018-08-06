@@ -1,0 +1,21 @@
+:name: LiteX VexRiscv
+:description: This script runs LiteX BIOS on VexRiscv CPU.
+
+$name?="LiteX"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/litex_vexriscv.repl
+
+$bin?=@http://antmicro.com/projects/renode/litex_bios.elf-s_108012-e267703e9098e1703c9e0d9ee0036587c4914c54
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
+
+
