@@ -9,6 +9,8 @@ cd "${0%/*}"
 
 # create MacOS app structure
 MACOS_APP_DIR=Renode.app
+PACKAGES=output/packages
+OUTPUT=$BASE/$PACKAGES
 mkdir -p $MACOS_APP_DIR/Contents/{MacOS,Resources}/
 
 DIR=$MACOS_APP_DIR/Contents/MacOS
@@ -20,7 +22,8 @@ cp macos/macos_run.* $MACOS_APP_DIR/Contents/MacOS
 cp macos/Info.plist $MACOS_APP_DIR/Contents/
 cp macos/renode.icns $MACOS_APP_DIR/Contents/Resources #Made with png2icns
 
-hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO renode_$VERSION.dmg
+mkdir -p $OUTPUT
+hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.dmg
 
 #cleanup unless user requests otherwise
 if $REMOVE_WORKDIR

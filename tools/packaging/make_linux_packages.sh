@@ -40,7 +40,7 @@ sed -i '/ROBOT_LOCATION/d' $DIR/tests/test.sh
 sed -i '/TESTS_FILE/d' $DIR/tests/test.sh
 sed -i '/TESTS_RESULTS/d' $DIR/tests/test.sh
 
-PACKAGES=output/renode_packages/$TARGET
+PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
 GENERAL_FLAGS=(\
@@ -64,12 +64,10 @@ fpm -s dir -t deb\
     --deb-no-default-config-files\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
-mkdir -p $OUTPUT/deb
-deb=renode*deb
-echo -n "Created a Debian package in $PACKAGES/deb/"
-echo $deb
-mv $deb $OUTPUT/deb
-
+mkdir -p $OUTPUT
+deb=(renode*deb)
+mv $deb $OUTPUT
+echo "Created a Debian package in $PACKAGES/$deb"
 ### create rpm package
 fpm -s dir -t rpm\
     -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d beesu\
@@ -77,23 +75,17 @@ fpm -s dir -t rpm\
     --rpm-auto-add-directories\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
-mkdir -p $OUTPUT/rpm
-rpm=renode*rpm
-echo -n "Created a Fedora package in $PACKAGES/rpm/"
-echo $rpm
-mv $rpm $OUTPUT/rpm
-
+rpm=(renode*rpm)
+mv $rpm $OUTPUT
+echo "Created a Fedora package in $PACKAGES/$rpm"
 ### create arch package
 fpm -s dir -t pacman\
     -d mono -d gtk-sharp-2 -d screen -d polkit\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
-mkdir -p $OUTPUT/arch
-arch=renode*.pkg.tar.xz
-echo -n "Created an Arch package in $PACKAGES/arch/"
-echo $arch
-mv $arch $OUTPUT/arch
-
+arch=(renode*.pkg.tar.xz)
+mv $arch $OUTPUT
+echo "Created an Arch package in $PACKAGES/$arch"
 #cleanup unless user requests otherwise
 if $REMOVE_WORKDIR
 then
