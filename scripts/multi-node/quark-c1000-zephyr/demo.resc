@@ -29,7 +29,7 @@ $bin=@http://antmicro.com/projects/renode/zephyr-echo-server.elf-s_1003060-56eb8
 $name="server"
 
 # Load the script for a single generic node:
-i @scripts/many-nodes/quark-c1000-zephyr/quark_c1000.resc
+i @scripts/multi-nodes/quark-c1000-zephyr/quark_c1000.resc
 
 # Each radio device has to be connected to a wireless medium. Two devices can communicate
 # if they are connected to the same medium.
@@ -52,7 +52,7 @@ mach clear
 $bin=@http://antmicro.com/projects/renode/zephyr-echo-client.elf-s_1016316-bfb6584d9d63950e8106c6820efccdaf0b7738a5
 $name="client"
 
-i @scripts/many-nodes/quark-c1000-zephyr/quark_c1000.resc
+i @scripts/multi-nodes/quark-c1000-zephyr/quark_c1000.resc
 connector Connect spi1.radio wireless
 
 # The node is placed 10 units from the server. With the maximum range set to 11, all packets will be delivered.
