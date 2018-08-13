@@ -26,4 +26,4 @@ Should Load Demos
         ${CURDIR}/../../scripts/single-node/vexpress.resc
         ${CURDIR}/../../scripts/single-node/vybrid.resc
         ${CURDIR}/../../scripts/single-node/zedboard.resc
-        ${CURDIR}/../../scripts/multi-nodes/quark-c1000-zephyr/demo.resc
+        ${CURDIR}/../../scripts/multi-node/quark-c1000-zephyr/demo.resc
