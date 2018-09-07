@@ -745,6 +745,13 @@ namespace Antmicro.Renode.PlatformDescription
                 if(irqEnd.PropertyName != null)
                 {
                     source = (IGPIO)GetGpioProperties(objectType).Single(x => x.Name == irqEnd.PropertyName).GetValue(objectToSetOn);
+
+                    if(source == null)
+                    {
+                        HandleError(ParsingError.UninitializedSourceIrqObject, attribute,
+                                    $"{objectToSetOn} has uninitialized IRQ object {irqEnd.PropertyName}", false);
+                        continue;
+                    }
                 }
                 else
                 {
@@ -756,6 +763,13 @@ namespace Antmicro.Renode.PlatformDescription
                         continue;
                     }
                     source = connections[irqEnd.Number];
+
+                    if(source == null)
+                    {
+                        HandleError(ParsingError.UninitializedSourceIrqObject, attribute,
+                                    $"{objectToSetOn} has uninitialized IRQ {irqEnd.Number}", false);
+                        continue;
+                    }
                 }
 
                 if(attribute.DestinationPeripheral.LocalIndex.HasValue)
