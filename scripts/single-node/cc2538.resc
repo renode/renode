@@ -1,7 +1,12 @@
+:name: CC2538
+:description: This script runs Contiki-NG hello-world example on STM32F4 Discovery.
+
+$name?="CC2538"
+$bin?=@http://antmicro.com/projects/renode/cc2538-contiki_hello_world.elf-s_242120-08fc83d11f790ccc1aa46abfdfc9c2e1a94baed2
+
 mach create $name
 using sysbus
 machine LoadPlatformDescription @platforms/cpus/cc2538.repl
-connector Connect radio wireless
 
 machine PyDevFromFile @scripts/pydev/rolling-bit.py 0x400D2004 0x4 True "sysctrl"
 
@@ -26,3 +31,5 @@ macro reset
 """
 
 runMacro $reset
+
+showAnalyzer sysbus.uart0

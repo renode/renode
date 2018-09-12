@@ -18,27 +18,25 @@ wireless SetRangeWirelessFunction 11
 ######################### UDP SERVER - begin #########################
 $bin=@http://antmicro.com/projects/renode/udp-server.elf-s_173732-a2aefb896d521a8fdc2a052cac1933c68cc39bf5
 $name="server"
-i $ORIGIN/cc2538-node.resc
+i @scripts/single-node/cc2538.resc
+connector Connect radio wireless
 wireless SetPosition radio 0 0 0
-showAnalyzer sysbus.uart0
 mach clear
 ########################## UDP SERVER - end ##########################
 
 ######################### UDP CLIENT - begin #########################
 $bin=@http://antmicro.com/projects/renode/udp-client.elf-s_173840-9eed7fe31993d055b98410b886044e8205a95644
 $name="client-1"
-
-i $ORIGIN/cc2538-node.resc
+i @scripts/single-node/cc2538.resc
+connector Connect radio wireless
 wireless SetPosition radio 10 0 0
-showAnalyzer sysbus.uart0
 mach clear
 ########################## UDP CLIENT - end ##########################
 
 ######################### UDP CLIENT - begin #########################
 $name="client-2"
-
-i $ORIGIN/cc2538-node.resc
+i @scripts/single-node/cc2538.resc
+connector Connect radio wireless
 wireless SetPosition radio 0 10 0
-showAnalyzer sysbus.uart0
 mach clear
 ########################## UDP CLIENT - end ##########################
