@@ -38,7 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Mono.Posix" />
+    <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
     <Reference Include="Sprache">
       <HintPath>..\..\lib\resources\libraries\Sprache.dll</HintPath>
     </Reference>

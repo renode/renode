@@ -74,7 +74,12 @@ fi
 
 "${ROOT_PATH}"/tools/building/fetch_libraries.sh
 
-TARGET="`get_path \"$PWD/Renode.sln\"`"
+if $ON_WINDOWS
+then
+    TARGET="`get_path \"$PWD/Renode-Windows.sln\"`"
+else
+    TARGET="`get_path \"$PWD/Renode.sln\"`"
+fi
 
 # Update references to Xwt
 TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
