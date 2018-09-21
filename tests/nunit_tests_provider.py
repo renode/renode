@@ -49,14 +49,13 @@ class NUnitTestSuite(object):
         args = [copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(output_file), project_file.replace("csproj", "dll")]
         if platform.startswith("linux") or platform == "darwin":
             args.insert(0, 'mono')
-
-        if options.port is not None:
-            if options.suspend:
-                print('Waiting for a debugger at port: {}'.format(options.port))
-            args.insert(1, '--debug')
-            args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
-        elif options.debug_mode:
-            args.insert(1, '--debug')
+            if options.port is not None:
+                if options.suspend:
+                    print('Waiting for a debugger at port: {}'.format(options.port))
+                args.insert(1, '--debug')
+                args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
+            elif options.debug_mode:
+                args.insert(1, '--debug')
         if options.fixture:
             args.append('-run:' + options.fixture)
 

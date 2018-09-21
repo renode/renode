@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
+from sys import platform
 import os
 import sys
 import argparse
@@ -18,8 +19,9 @@ def prepare_parser():
     parser.add_argument("-o", "--output",   dest="output_file", action="store",       default=None,  help="Output file, default STDOUT.")
     parser.add_argument("-b", "--buildbot", dest="buildbot",    action="store_true",  default=False, help="Buildbot mode. Before running tests prepare environment, i.e., create tap0 interface.")
     parser.add_argument("-t", "--tests",    dest="tests_file",  action="store",       default=None,  help="Path to a file with a list of assemblies with tests to run. This is ignored if any test file is passed as positional argument.")
-    parser.add_argument("-p", "--port",     dest="port",        action="store",       default=None,  help="Debug port.")
-    parser.add_argument("-s", "--suspend",  dest="suspend",     action="store_true",  default=False, help="Suspend test waiting for a debugger.")
+    if platform != "win32":
+        parser.add_argument("-p", "--port",     dest="port",        action="store",       default=None,  help="Debug port.")
+        parser.add_argument("-s", "--suspend",  dest="suspend",     action="store_true",  default=False, help="Suspend test waiting for a debugger.")
     parser.add_argument("-T", "--type",     dest="test_type",   action="store",       default="all", help="Type of test to execute (all by default)")
     parser.add_argument("-r", "--results-dir",  dest="results_directory",  action="store", default=os.path.join(this_path, 'tests'),  help="Location where test results should be stored.")
     parser.add_argument("--run-gdb", dest="run_gdb", action="store_true", help="Run tests under GDB control.")
@@ -43,7 +45,7 @@ def handle_options(options):
         setup_tap()
     if options.debug_mode:
         print("Running in debug mode.")
-    elif options.port is not None or options.suspend:
+    elif platform != "win32" and (options.port is not None or options.suspend):
         print('Port/suspend options can be used in debug mode only.')
         sys.exit(1)
     if 'FIXTURE' in os.environ:
