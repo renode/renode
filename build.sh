@@ -143,7 +143,7 @@ then
     for conf in Debug Release
     do
         $CS_COMPILER "${PARAMS[@]}" /p:Configuration=$conf "$TARGET"
-        rm -fr "${OUTPUT:=`get_path \"$PWD/output\"`}/$conf"
+        rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
     exit 0
 fi
