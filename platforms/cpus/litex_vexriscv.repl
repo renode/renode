@@ -9,7 +9,7 @@ ddr: Memory.MappedMemory @ sysbus 0x40000000
 
 cpu: CPU.VexRiscv @ sysbus
 
-uart: UART.LiteX_UART @ sysbus 0xE0001000
+uart: UART.LiteX_UART @ sysbus 0xE0001800
     -> cpu@2
 
 sysbus:
