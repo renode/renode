@@ -3,6 +3,44 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.5.0 - 2018.10.03
+------------------
+
+Added:
+
+* custom CSR registers in RISC-V
+* VexRiscv CPU
+* basic LiteX platform with VexRiscv
+* LiteX VexRiscv demo with Zephyr
+* single and multinode CC2538 demos with Contiki-NG
+* PSE peripherals
+* several tests for demos and internal mechanisms
+* base classes for bus peripherals, allowing for easier definition of registers
+
+Changed:
+
+* installation instructions in README
+* the target .NET version changed to 4.5 reducing the number of dependencies
+* forced mono64 on macOS
+* renamed the multinode demos directory
+* RISC-V CPUs now generate an exception on unaligned memory reads and writes
+* CLINT is now optional for RISC-V CPUs
+* reimplemented FileStreamLimitWrapper
+
+Fixed:
+
+* first line blinking in terminal on Windows
+* performance fixes in function logging
+* handling of broken CSI codes in Termsharp
+* completely removed the GTK dependency on Windows
+* handling of CheckIfUartIsIdle Robot keyword
+* resetting of RISC-V-based platforms
+* prevented a rare crash on disposing multicore platforms when using hooks
+* handling of unsupported characters in Robot protocol
+* Windows installer correctly finds the previous Renode installation (may require manual deinstallation of the previous version)
+* compilation of translation libraries on Windows is no longer forced on every Renode recompilation
+
+
 1.4.2 - 2018.07.27
 ------------------
 
