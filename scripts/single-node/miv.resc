@@ -11,7 +11,11 @@ $bin?=@http://antmicro.com/projects/renode/riscv-liteos-port.elf-s_689820-e68d3b
 
 showAnalyzer uart
 
-sysbus LoadELF $bin
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
 
 # this PerformanceInMips magic is required to run the script
 # it is related to a bug in LiteOS (stack overflow and corruption) when interrupts happen in *wrong* moments
