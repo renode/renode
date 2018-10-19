@@ -6,12 +6,12 @@ phy: Network.EthernetPhysicalLayer @ gem0 3
     gigabitControl: 0x300
     gigabitStatus: 0x0000
 
-usbHub: USB.UsbHub @ usbEhci 1
+usbHub: USBDeprecated.UsbHub @ usbEhci 1
     nrPorts: 8
 
-usbMouse: USB.USBMouse @ usbHub 2
+usbMouse: USBDeprecated.USBMouse @ usbHub 2
 
-usbKeyboard: USB.USBKeyboard @ usbHub 1
+usbKeyboard: USBDeprecated.USBKeyboard @ usbHub 1
 
 flash: MTD.DummySPIFlash @ qspi
 

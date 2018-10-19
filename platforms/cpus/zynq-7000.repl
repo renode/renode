@@ -1,7 +1,7 @@
-usbEhci2: USB.EHCIHostController @ sysbus <0xE0003000, +0x1000>
+usbEhci2: USBDeprecated.EHCIHostController @ sysbus <0xE0003000, +0x1000>
     -> gic@44
 
-usbEhci: USB.EHCIHostController @ sysbus <0xE0002000, +0x1000>
+usbEhci: USBDeprecated.EHCIHostController @ sysbus <0xE0002000, +0x1000>
     -> gic@21
 
 pl310: Cache.PL310 @ sysbus <0xF8F02000, +0x1000>

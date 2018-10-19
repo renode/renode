@@ -1,9 +1,9 @@
 using "platforms/cpus/versatile.repl"
 
-usbEhci: USB.ISP1761 @ pci 1
+usbEhci: USBDeprecated.ISP1761 @ pci 1
     -> sic@12
 
-usbHub: USB.UsbHub @ usbEhci 1
+usbHub: USBDeprecated.UsbHub @ usbEhci 1
     nrPorts: 8
 
 lcd: Video.PL110 @ sysbus <0x10120000, +0x1000>
@@ -14,7 +14,7 @@ keyboard: Input.PS2Keyboard @ kmi0
 
 mouse: Input.PS2Mouse @ kmi1
 
-usbMouse: USB.USBMouse @ usbHub 2
+usbMouse: USBDeprecated.USBMouse @ usbHub 2
 
-usbKeyboard: USB.USBKeyboard @ usbHub 1
+usbKeyboard: USBDeprecated.USBKeyboard @ usbHub 1
 

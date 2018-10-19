@@ -37,7 +37,7 @@ pl310: Cache.PL310 @ sysbus <0x1E00A000, +0x10000>
 pl031: Timers.PL031 @ sysbus <0x10017000, +0x1000>
     -> gic@4
 
-usbEhci: USB.ISP1761 @ sysbus <0x4F000000, +0xFFFF>
+usbEhci: USBDeprecated.ISP1761 @ sysbus <0x4F000000, +0xFFFF>
     -> gic@16
 
 kmi0: Input.PL050 @ sysbus <0x10006000, +0x1000>

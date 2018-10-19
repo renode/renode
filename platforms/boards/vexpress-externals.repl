@@ -2,12 +2,12 @@ keyboard: Input.PS2Keyboard @ kmi0
 
 mouse: Input.PS2Mouse @ kmi1
 
-usbHub: USB.UsbHub @ usbEhci 1
+usbHub: USBDeprecated.UsbHub @ usbEhci 1
     nrPorts: 8
 
-usbMouse: USB.USBMouse @ usbHub 2
+usbMouse: USBDeprecated.USBMouse @ usbHub 2
 
-usbKeyboard: USB.USBKeyboard @ usbHub 1
+usbKeyboard: USBDeprecated.USBKeyboard @ usbHub 1
 
 controller: Miscellaneous.EmulatorController @ sysbus 0x20000000
 

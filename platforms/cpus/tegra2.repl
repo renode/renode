@@ -49,13 +49,13 @@ scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
 cpu: CPU.Arm @ sysbus
     cpuType: "cortex-a9"
 
-usbEhci1: USB.EHCIHostController @ sysbus <0xC5000000, +0x1000>
+usbEhci1: USBDeprecated.EHCIHostController @ sysbus <0xC5000000, +0x1000>
     -> gic@20
 
-usbEhci2: USB.EHCIHostController @ sysbus <0xC5004000, +0x1000>
+usbEhci2: USBDeprecated.EHCIHostController @ sysbus <0xC5004000, +0x1000>
     -> gic@21
 
-usbEhci3: USB.EHCIHostController @ sysbus <0xC5008000, +0x1000>
+usbEhci3: USBDeprecated.EHCIHostController @ sysbus <0xC5008000, +0x1000>
     -> gic@23
 
 apbDma: DMA.TegraDma @ sysbus 0x6000A000

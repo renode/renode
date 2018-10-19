@@ -11,10 +11,10 @@ eDma0: DMA.VybridDma @ sysbus <0x40018000, +0x2000> { -> mscm@0 }
 eDma1: DMA.VybridDma @ sysbus <0x40098000, +0x2000> { -> mscm@2 }
 fb: Video.VybridDCU @ sysbus <0x40058000, +0x2000>
 
-usbEhci0: USB.EHCIHostController @ sysbus <0x40034000, +0x2000>
+usbEhci0: USBDeprecated.EHCIHostController @ sysbus <0x40034000, +0x2000>
     IRQ -> mscm@67
 
-usbEhci1: USB.EHCIHostController @ sysbus <0x400B4000, +0x2000>
+usbEhci1: USBDeprecated.EHCIHostController @ sysbus <0x400B4000, +0x2000>
     IRQ -> mscm@68
 
 i2c0: I2C.VybridI2C @ sysbus 0x40066000 { -> mscm@63 }

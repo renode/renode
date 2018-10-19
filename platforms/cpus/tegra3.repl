@@ -60,13 +60,13 @@ pl310: Cache.PL310 @ sysbus <0x50043000, +0x1000>
 cpu: CPU.Arm @ sysbus
     cpuType: "cortex-a9"
 
-usbEhci1: USB.EHCIHostController @ sysbus <0x7D000000, +0x1000>
+usbEhci1: USBDeprecated.EHCIHostController @ sysbus <0x7D000000, +0x1000>
     -> gic@20
 
-usbEhci2: USB.EHCIHostController @ sysbus <0x7D004000, +0x1000>
+usbEhci2: USBDeprecated.EHCIHostController @ sysbus <0x7D004000, +0x1000>
     -> gic@21
 
-usbEhci3: USB.EHCIHostController @ sysbus <0x7D008000, +0x1000>
+usbEhci3: USBDeprecated.EHCIHostController @ sysbus <0x7D008000, +0x1000>
     -> gic@23
 
 apbDma: DMA.TegraDma @ sysbus 0x6000A000

@@ -39,14 +39,14 @@ uart7: UART.NS16550 @ sysbus 0x1C29c00
     wideRegisters: true
     -> gic@0x14
 
-usbEhci1: USB.EHCIHostController @ sysbus <0x1C14000, +0x1000>
+usbEhci1: USBDeprecated.EHCIHostController @ sysbus <0x1C14000, +0x1000>
     -> gic@0x27
     ehciBaseAddress: 0x0
     capabilityRegistersLength: 0x10
 
-usbHub: USB.UsbHub @ usbEhci1 1
+usbHub: USBDeprecated.UsbHub @ usbEhci1 1
 
-usbEhci2: USB.EHCIHostController @ sysbus <0x1C1C000, +0x1000>
+usbEhci2: USBDeprecated.EHCIHostController @ sysbus <0x1C1C000, +0x1000>
     -> gic@0x28
     ehciBaseAddress: 0x0
     capabilityRegistersLength: 0x10
