@@ -1,5 +1,7 @@
 import netifaces
 import subprocess
+import fnmatch
+import os
 
 def network_interface_should_exist(name):
     if name not in netifaces.interfaces():
@@ -22,3 +24,9 @@ def network_interface_should_have_address(name, address):
     if address not in addresses:
         raise Exception('Network interface {0} does not have address {1}.'.format(name, address))
 
+def list_files_in_directory_recursively(directory_name, pattern):
+    files = []
+    for root, dirnames, filenames in os.walk(directory_name):
+        for filename in fnmatch.filter(filenames, pattern):
+            files.append(os.path.join(root, filename))
+    return files

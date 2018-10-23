@@ -15,6 +15,8 @@ mach create $name
 # Load the hardware description from the REPL file.
 machine LoadPlatformDescription @platforms/boards/quark_c1000-cc2520.repl
 
+# This is a sample shell binary:
+$bin ?= @http://antmicro.com/projects/renode/zephyr_shell.elf-s_398140-ed6b1a68e94b1cb8ac3cc7d80fb4d36e36a22766
 # This is a default bootloader:
 $boot ?= @http://antmicro.com/projects/renode/quark_se_rom.bin-s_8192-b688c8b9380014d7deb2bd42dc218fc5ee8d1abf
 
