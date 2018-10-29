@@ -21,3 +21,6 @@ Should Fail On Python Command With Invalid Parameters
     ${msg}=     Run Keyword And Expect Error        *   Execute Command     next_value invalid_value
     Should Contain      ${msg}      unsupported operand type
 
+Should Fail On Command Error
+    ${msg}=     Run Keyword And Expect Error        *   Execute Command     include @nonexistingfile
+    Should Contain      ${msg}      No such file

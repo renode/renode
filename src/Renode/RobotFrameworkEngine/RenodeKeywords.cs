@@ -63,6 +63,12 @@ namespace Antmicro.Renode.RobotFramework
                 throw new KeywordException("Could not execute command '{0}': {1}", command, interaction.GetError());
             }
 
+            var error = interaction.GetError();
+            if(!string.IsNullOrEmpty(error))
+            {
+                throw new KeywordException($"There was an error when executing command '{command}': {error}");
+            }
+
             return interaction.GetContents();
         }
 
