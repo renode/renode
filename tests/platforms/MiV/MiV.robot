@@ -7,6 +7,7 @@ Resource                      ${CURDIR}/../../../src/Renode/RobotFrameworkEngine
 *** Variables ***
 ${UART}                       sysbus.uart
 ${URI}                        @http://antmicro.com/projects/renode
+${LED_DELAY}                  20000
 
 *** Keywords ***
 Create Machine
@@ -29,16 +30,16 @@ Should Blink Led Using Systick
     Wait For Line On Uart      System timer Blinky Example.
 
     # because of very fast LED switching this ends very soon
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
 
 Should Blink Led Using CoreTimer
     Create Machine            riscv-interrupt-blinky.elf-s_133356-bb1bdea7e6e8cb559119908f8c7a7301f6116298
@@ -50,14 +51,14 @@ Should Blink Led Using CoreTimer
 
     Wait For Line On Uart      CoreTIMER and external Interrupt Example.
 
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
-    Execute Command            led0_tester AssertState true 10000
-    Execute Command            led0_tester AssertState false 10000
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Execute Command            led0_tester AssertState true ${LED_DELAY}
+    Execute Command            led0_tester AssertState false ${LED_DELAY}
 
 Should Run FreeRTOS Sample
     Create Machine            riscv-freertos-sample.elf-s_208404-40208b240e2d718e999a533e084f022628aec5d6
