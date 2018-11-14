@@ -7,7 +7,7 @@ machine LoadPlatformDescription @platforms/cpus/sifive-fu540.repl
 showAnalyzer uart0
 
 $bin?=@http://antmicro.com/projects/renode/hifive-unleashed--bbl.elf-s_17219640-c7e1b920bf81be4062f467d9ecf689dbf7f29c7a
-$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_8564-6bd502d80700983442ae59d2c5c97f4ec36796a9
+$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_10532-70cd4fc9f3b4df929eba6e6f22d02e6ce4c17bd1
 $vmlinux?=@http://antmicro.com/projects/renode/hifive-unleashed--vmlinux.elf-s_80421976-46788813c50dc7eb1a1a33c1730ca633616f75f5
 
 macro reset
@@ -18,10 +18,7 @@ macro reset
     # Load the Linux kernel symbols, as they are not included in the BBL
     sysbus LoadSymbolsFrom $vmlinux
 
-    cpu PC 0x80000000
-    cpu1 PC 0x80000000
-
     # Device tree address is passed as an argument to the BBL
-    cpu SetRegisterUnsafe 11 0x81000000
+    e51 SetRegisterUnsafe 11 0x81000000
 """
 runMacro $reset

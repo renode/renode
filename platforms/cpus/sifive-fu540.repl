@@ -1,12 +1,30 @@
-cpu: CPU.RiscV64 @ sysbus
-    cpuType: "rv64gc"
+e51: CPU.RiscV64 @ sysbus
+    cpuType: "rv64imac"
     hartId: 0
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     clint: clint
 
-cpu1: CPU.RiscV64 @ sysbus
+u54_1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 1
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_2: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 2
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_3: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 3
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_4: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 4
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     clint: clint
 
@@ -30,14 +48,21 @@ u54Hart4Tim: Memory.MappedMemory @ sysbus 0x01820000
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
     frequency: 1000000
-    [0, 1] -> cpu@[3, 7]
-    [2, 3] -> cpu1@[3, 7]
+    numberOfTargets: 5
+    [0, 1] -> e51@[3, 7]
+    [2, 3] -> u54_1@[3, 7]
+    [4, 5] -> u54_2@[3, 7]
+    [6, 7] -> u54_3@[3, 7]
+    [8, 9] -> u54_4@[3, 7]
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
-    [0-3] -> cpu@[8-11]
-    [4-7] -> cpu1@[8-11]
+    [0-3] -> e51@[8-11]
+    [4-7] -> u54_1@[8-11]
+    [8-11] -> u54_2@[8-11]
+    [12-15] -> u54_3@[8-11]
+    [16-19] -> u54_4@[8-11]
     numberOfSources: 53
-    numberOfTargets: 2 // linux uses hart1
+    numberOfTargets: 5
     prioritiesEnabled : false
 
 uart0: UART.SiFive_UART @ sysbus 0x10010000
