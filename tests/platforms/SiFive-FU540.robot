@@ -30,7 +30,7 @@ Should Boot Linux
     Create Terminal Tester    ${UART}  prompt=\#
     Start Emulation
 
-    Wait For Prompt On Uart   buildroot login  timeout=60
+    Wait For Prompt On Uart   buildroot login  timeout=120
     Write Line To Uart        root
     Wait For Prompt On Uart   Password         timeout=60
     Write Line To Uart        root             waitForEcho=false
