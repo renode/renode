@@ -26,6 +26,7 @@ OUTPUT=$BASE/$PACKAGES
 cp "`which libgcc_s_seh-1.dll`" $DIR/bin
 cp "`which libwinpthread-1.dll`" $DIR/bin
 cp windows/mingw-license $DIR/licenses
+cp windows/winpthreads-license $DIR/licenses
 
 mkdir -p $OUTPUT
 
