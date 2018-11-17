@@ -24,6 +24,7 @@ OUTPUT=$BASE/$PACKAGES
 
 ### copy windows dependencies
 cp "`which libgcc_s_seh-1.dll`" $DIR/bin
+cp "`which libwinpthread-1.dll`" $DIR/bin
 cp windows/mingw-license $DIR/licenses
 
 mkdir -p $OUTPUT
