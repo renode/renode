@@ -6,6 +6,7 @@ tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 tests/platforms/QuarkC1000/QuarkC1000.robot
 tests/platforms/SiFive-FE310/SiFive-FE310.robot
 tests/platforms/SiFive-FU540.robot
+tests/platforms/PicoSoC.robot
 tests/platforms/MiV/MiV.robot
 tests/platforms/STM32F103.robot
 tests/unit-tests/llvm-disassemble.robot
