@@ -1,0 +1,16 @@
+sram: Memory.MappedMemory @ sysbus 0x0
+    size: 0x1000000
+
+flash: Memory.MappedMemory @ sysbus 0x1000000
+    size: 0x1000000
+
+cpu: CPU.PicoRV32 @ sysbus
+    cpuType: "rv32imc"
+
+uart: UART.PicoSoC_SimpleUART @ sysbus 0x2000004
+
+sysbus:
+    init:
+        Tag <0x2000000 0x4> "SPI_FLASH_CONTROLLER_CONFIG_REGISTER"
+        Tag <0x3000000 0x100> "GPIO"
+
