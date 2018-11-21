@@ -1,0 +1,177 @@
+e51: CPU.RiscV64 @ sysbus
+    cpuType: "rv64imac"
+    hartId: 0
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 1
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_2: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 2
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_3: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 3
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+u54_4: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 4
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    clint: clint
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
+    frequency: 1000000
+    numberOfTargets: 5
+    [0, 1] -> e51@[3, 7]
+    [2, 3] -> u54_1@[3, 7]
+    [4, 5] -> u54_2@[3, 7]
+    [6, 7] -> u54_3@[3, 7]
+    [8, 9] -> u54_4@[3, 7]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
+    // E51: only machine mode interrupt
+    3 -> e51@11
+    // No user mode or hypervisor mode interrupts
+    [5,7] -> u54_1@[9,11]
+    [9,11] -> u54_2@[9,11]
+    [13,15] -> u54_3@[9,11]
+    [17,19] -> u54_4@[9,11]
+
+    numberOfSources: 186
+    numberOfTargets: 5
+    prioritiesEnabled : false
+
+mmuart0: UART.NS16550 @ sysbus 0x20000000
+    wideRegisters: true
+    IRQ -> plic@90
+
+mmuart1: UART.NS16550 @ sysbus 0x20100000
+    wideRegisters: true
+    IRQ -> plic@91
+
+mmuart2: UART.NS16550 @ sysbus 0x20102000
+    wideRegisters: true
+    IRQ -> plic@92
+
+mmuart3: UART.NS16550 @ sysbus 0x20104000
+    wideRegisters: true
+    IRQ -> plic@93
+
+mmuart4: UART.NS16550 @ sysbus 0x20106000
+    wideRegisters: true
+    IRQ -> plic@94
+
+mmc: SD.PSE_SDController @ sysbus 0x20008000
+    IRQ -> plic@88
+    WakeupIRQ -> plic@89
+
+spi0: SPI.PSE_SPI @ sysbus 0x20108000
+    IRQ -> plic@54
+
+spi1: SPI.PSE_SPI @ sysbus 0x20109000
+    IRQ -> plic@55
+
+i2c0: I2C.PSE_I2C @ sysbus 0x2010A000
+    IRQ -> plic@58
+
+i2c1: I2C.PSE_I2C @ sysbus 0x2010B000
+    IRQ -> plic@61
+
+can0: CAN.PSE_CAN @ sysbus 0x2010C000
+    IRQ -> plic@56
+
+can1: CAN.PSE_CAN @ sysbus 0x2010D000
+    IRQ -> plic@57
+
+mac0: Network.CadenceGEM @ sysbus 0x20110000
+    IRQ -> plic@64
+
+mac1: Network.CadenceGEM @ sysbus 0x20112000
+    IRQ -> plic@70
+
+phy: Network.EthernetPhysicalLayer @ {
+        mac0 0;
+        mac1 0
+    }
+    id1: 0x0141
+    id2: 0x0e40
+    autoNegotiationAdvertisement: 0x1e1
+    autoNegotiationLinkPartnerAbility: 0x1e1
+    gigabitControl: 0x300
+    gigabitStatus: 0x3000
+
+gpio0: GPIOPort.PSE_GPIO @ sysbus 0x20120000
+    [0-13] -> plic@[13-26]
+    IRQ -> plic@51
+
+gpio1: GPIOPort.PSE_GPIO @ sysbus 0x20121000
+    [0-23] -> plic@[27-50]
+    IRQ -> plic@52
+
+gpio2: GPIOPort.PSE_GPIO @ sysbus 0x20122000
+    [0-31] -> plic@[13-44]
+    IRQ -> plic@53
+
+rtc: Timers.PSE_RTC @ sysbus 0x20124000
+    WakeupIRQ -> plic@80
+    MatchIRQ -> plic@81
+
+mstimer: Timers.PSE_Timer @ sysbus 0x20125000
+    Timer1IRQ -> plic@82
+    Timer2IRQ -> plic@83
+
+envmCfg: MTD.PSE_eNVM @ sysbus 0x20200000
+    memory: envmData
+    IRQ -> plic@84
+
+envmData: Memory.MappedMemory @ sysbus 0x20220000
+    size: 0x20000
+
+usb: USB.PSE_USB @ sysbus 0x20201000
+    DmaIRQ -> plic@86
+    MainIRQ -> plic@87
+
+lim: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x01000000
+
+ram: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x01000000
+
+ddr: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x40000000
+
+pcie0: PCI.PSE_PCIe @ sysbus 0x53004000
+
+pcie1: PCI.PSE_PCIe @ {
+        sysbus 0x53008000;
+        sysbus new Bus.BusMultiRegistration { address: 0x60000000; size: 0x20000000; region: "ecam" }
+    }
+
+pcieRC0: PCI.PCIeRootComplex @ pcie0 0
+    parent: pcie1
+
+pcieRC1: PCI.PCIeRootComplex @ pcie1 0
+    parent: pcie1
+
+pcieMem: PCI.PCIeMemory  @ pcie1 1
+    size: 0x20000
+    parent: pcie1
+
+qspi: SPI.PSE_QSPI @ sysbus 0x21000000
+    IRQ -> plic@85
+
+pseFlash: SPI.Micron_MT25Q @ qspi
+    memory: qspiXip
+
+qspiXip: Memory.MappedMemory
+    size: 0x01000000
+

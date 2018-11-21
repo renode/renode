@@ -1,0 +1,20 @@
+:name: PolarFire SoC
+:description: This is a sample script prepared to create a PolarFire SoC platform
+
+using sysbus
+mach create
+
+machine LoadPlatformDescription @platforms/cpus/polarfire.repl
+
+showAnalyzer mmuart0
+
+# To load an ELF directly:
+# sysbus LoadELF @path/to/elf.file
+
+# Alternatively, to start GDB and load from SoftConsole:
+# e51 StartGdbServer 3333 true
+# Remember! After the connection is done and the binary is loaded, you have to issue:
+# u54_1 PC `e51 PC`
+# for every core you need to use as GDB initializes only the e51 core.
+# If you don't want the core to run, issue:
+# u54_4 IsHalted true
