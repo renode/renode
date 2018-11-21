@@ -3,6 +3,60 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.6.0 - 2018.11.21
+------------------
+
+Added:
+
+* new USB infrastructure
+* new PCI infrastructure
+* PolarFire SoC platform support
+* atomic instructions on RISC-V
+* basic PicoSoC support - the picorv32 CPU and UART
+* block-finished event infrastructure - verified on RISC-V and ARM cores
+* more PSE peripherals: RTC, PCIe controller, USB controller, QSPI, CAN, etc
+* Micron MT25Q flash model
+* ``watch`` command to run Monitor commands periodically
+* a message on the Monitor when quitting Renode
+* qXfer support for GDB, allowing the client to autodetect the architecture
+* log tester for Robot Framework
+
+Changed:
+
+* added error handling for uninitialized IRQ objects in REPL loading
+* RISC-V CSR registers are now accessible in relevant privilege architecture version only
+* RISC-V CPUs no longer require CLINT provided as a constructor parameter
+* added second timer interrupt to PSE_Timer
+* machine.GetClockSourceInfo now prints the current value for each clock entry
+* REPL loading tests are now in Robot
+* value provider callbacks on write-only fields will generate exceptions
+* watchpoint handling infrastructure
+* reworked single stepping
+* Monitor errors are forwarded to the GDB client when issuing qRcmd
+* LoadELF command initializes PC on all cores by default
+* reduced the default synchronization quantum
+* CPU abort now halts the emulation
+* --disable-xwt no longer requires opening a port
+* RISC-V atomic instructions now fail if the A instruction set is not enabled
+
+Fixed:
+
+* pausing and halting the CPU from hooks
+* error when trying to TAB-complete nonexisting paths
+* packaging script on Windows
+* crash on extremely narrow Terminal on Windows
+* inconsistent cursor position when erasing in Termsharp
+* selection of multibyte UTF characters on Linux
+* scrollbar behavior on Windows
+* error reporting from executed commands in Robot
+* RISC-V cores reset
+* several fixes in time framework
+* output pin handling and interrupt clearing in PSE_GPIO
+* minor fixes in PSE_SPI
+* throwing invalid instruction exception on wrong CSR access in RISC-V
+* CPU abort will now stop the failing CPU
+
+
 1.5.0 - 2018.10.03
 ------------------
 
