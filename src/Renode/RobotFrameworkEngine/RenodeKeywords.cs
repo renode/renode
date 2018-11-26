@@ -204,6 +204,48 @@ namespace Antmicro.Renode.RobotFramework
             return TemporaryFilesManager.Instance.GetTemporaryFile();
         }
 
+        [RobotFrameworkKeyword]
+        public void CreateLogTester(int defaultMillisecondsTimeout)
+        {
+            logTester = new LogTester(defaultMillisecondsTimeout);
+            Logging.Logger.AddBackend(logTester, "Log Tester", true);
+        }
+
+        [RobotFrameworkKeyword]
+        public string WaitForLogEntry(string pattern, int? millisecondsTimeout = null, bool keep = false)
+        {
+            CheckLogTester();
+
+            var result = logTester.WaitForEntry(pattern, millisecondsTimeout, keep);
+            if(result == null)
+            {
+                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log");
+            }
+            return result;
+        }
+
+        [RobotFrameworkKeyword]
+        public void ShouldNotBeInLog(String pattern, int? millisecondsTimeout = null)
+        {
+            CheckLogTester();
+
+            var result = logTester.WaitForEntry(pattern, millisecondsTimeout, true);
+            if(result != null)
+            {
+                throw new KeywordException($"Unexpected line detected in the log: {result}");
+            }
+        }
+
+        private void CheckLogTester()
+        {
+            if(logTester == null)
+            {
+                throw new KeywordException("Log tester is not available. Create it with the `CreateLogTester` keyword");
+            }
+        }
+
+        private LogTester logTester;
+
         private readonly Monitor monitor;
     }
 }
