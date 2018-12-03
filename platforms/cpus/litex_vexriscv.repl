@@ -12,6 +12,10 @@ cpu: CPU.VexRiscv @ sysbus
 uart: UART.LiteX_UART @ sysbus 0xE0001800
     -> cpu@2
 
+timer0: Timers.LitexTimer @ sysbus 0xE0002800
+    -> cpu@1
+    frequency: 1500
+
 sysbus:
     init:
         Tag <0xE0002000 0x200> "TIMER0"
