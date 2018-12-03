@@ -12,9 +12,12 @@ cpu: CPU.VexRiscv @ sysbus
 uart: UART.LiteX_UART @ sysbus 0xE0001800
     -> cpu@2
 
+timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
+    -> cpu@1
+    frequency: 100000000
+
 sysbus:
     init:
-        Tag <0xE0002000 0x200> "TIMER0"
         Tag <0xE0008000 0x200> "DDR_PHY"
         Tag <0xE0004000 0x200> "SDRAM_CONTROLLER"
         Tag <0xE0000800 0x200> "UART_PHY"
