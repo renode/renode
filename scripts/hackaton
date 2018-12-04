@@ -1,0 +1,10 @@
+mach create
+machine LoadPlatformDescription @platforms/cpus/litex_vexriscv.repl
+sysbus Redirect 0x0 0xC0000000 0x10000000
+sysbus LoadBinary @/path/to/vmlinux.dtb 0xc1000000
+sysbus LoadBinary @/path/to/initramfs.gz 0xc2000000
+
+sysbus LoadELF @/path/to/vmlinux
+using sysbus
+showAnalyzer sysbus.uart
+
