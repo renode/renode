@@ -1,5 +1,11 @@
+maskRom: Memory.MappedMemory @sysbus 0x1000
+    size: 0x1000
+
+otp: Memory.MappedMemory @sysbus 0x20000
+    size: 0x2000
+
 dtim: Memory.MappedMemory @ sysbus 0x80000000
-    size: 0x20000
+    size: 0x4000
 
 uart0: UART.SiFive_UART @ sysbus 0x10013000
     IRQ -> plic@3
