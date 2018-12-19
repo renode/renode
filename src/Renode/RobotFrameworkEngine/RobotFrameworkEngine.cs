@@ -11,7 +11,7 @@ namespace Antmicro.Renode.RobotFramework
     {
         public RobotFrameworkEngine()
         {
-            var keywordManager = new KeywordManager();
+            keywordManager = new KeywordManager();
             TypeManager.Instance.AutoLoadedType += keywordManager.Register;
 
             var processor = new XmlRpcServer(keywordManager);
@@ -46,5 +46,6 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private readonly HttpServer server;
+        private readonly KeywordManager keywordManager;
     }
 }
