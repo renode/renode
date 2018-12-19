@@ -56,8 +56,8 @@ namespace Antmicro.Renode.RobotFramework
                 result.Clear();
 
                 result.Add(KeywordResultStatus, KeywordResultFail);
-                result.Add(KeywordResultError, BuildRecursiveErrorMessage(e).StripNonSafeCharacters());
-                result.Add(KeywordResultTraceback, e.StackTrace);
+                result.Add(KeywordResultError, BuildRecursiveValueFromException(e, ex => ex.Message).StripNonSafeCharacters());
+                result.Add(KeywordResultTraceback, BuildRecursiveValueFromException(e, ex => ex.StackTrace).StripNonSafeCharacters());
             }
             if(argumentsNotMatched)
             {
@@ -73,12 +73,12 @@ namespace Antmicro.Renode.RobotFramework
             robotFrontendEngine.Shutdown();
         }
 
-        private static string BuildRecursiveErrorMessage(Exception e)
+        private static string BuildRecursiveValueFromException(Exception e, Func<Exception, string> generator)
         {
             var result = new StringBuilder();
             while(e != null)
             {
-                result.AppendFormat("{0}: {1}\n", e.GetType().Name, e.Message);
+                result.AppendFormat("{0}: {1}\n", e.GetType().Name, generator(e));
                 e = e.InnerException;
             }
 
