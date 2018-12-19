@@ -72,6 +72,24 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        public static bool TryExecuteKeyword(string keywordName, IEnumerable<Keyword> keywords, string[] arguments, out object keywordResult)
+        {
+            foreach(var keyword in keywords)
+            {
+                object[] parsedArguments;
+                if(!keyword.TryMatchArguments(arguments, out parsedArguments))
+                {
+                    continue;
+                }
+
+                Recorder.Instance.RecordEvent(keywordName, arguments);
+                keywordResult = keyword.Execute(parsedArguments);
+                return true;
+            }
+            keywordResult = null;
+            return false;
+        }
+
         private readonly Dictionary<string, List<Keyword>> keywords;
         private readonly Dictionary<Type, IRobotFrameworkKeywordProvider> objects;
     }

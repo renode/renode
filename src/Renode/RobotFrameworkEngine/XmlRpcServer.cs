@@ -30,44 +30,40 @@ namespace Antmicro.Renode.RobotFramework
         public XmlRpcStruct RunKeyword(string keywordName, string[] arguments)
         {
             var result = new XmlRpcStruct();
+            var argumentsNotMatched = false;
 
-            List<Keyword> keywords;
-            if(!keywordManager.TryGetKeyword(keywordName, out keywords))
+            if(!keywordManager.TryGetKeyword(keywordName, out var keywords))
             {
                 throw new XmlRpcFaultException(1, string.Format("Keyword \"{0}\" not found", keywordName));
             }
-
-            foreach(var keyword in keywords)
+            try
             {
-                object[] parsedArguments;
-                if(!keyword.TryMatchArguments(arguments, out parsedArguments))
+                if(KeywordManager.TryExecuteKeyword(keywordName, keywords, arguments, out var keywordResult))
                 {
-                    continue;
-                }
-
-                try
-                {
-                    Recorder.Instance.RecordEvent(keywordName, arguments);
-                    var keywordResult = keyword.Execute(parsedArguments);
                     if(keywordResult != null)
                     {
                         result.Add(KeywordResultValue, keywordResult);
                     }
                     result.Add(KeywordResultStatus, KeywordResultPass);
                 }
-                catch(Exception e)
+                else
                 {
-                    result.Clear();
-
-                    result.Add(KeywordResultStatus, KeywordResultFail);
-                    result.Add(KeywordResultError, BuildRecursiveErrorMessage(e).StripNonSafeCharacters());
-                    result.Add(KeywordResultTraceback, e.StackTrace);
+                    argumentsNotMatched = true;
                 }
-
-                return result;
             }
+            catch(Exception e)
+            {
+                result.Clear();
 
-            throw new XmlRpcFaultException(2, string.Format("Arguments types do not match any available keyword \"{0}\" : [{1}]", keywordName, string.Join(", ", arguments)));
+                result.Add(KeywordResultStatus, KeywordResultFail);
+                result.Add(KeywordResultError, BuildRecursiveErrorMessage(e).StripNonSafeCharacters());
+                result.Add(KeywordResultTraceback, e.StackTrace);
+            }
+            if(argumentsNotMatched)
+            {
+                throw new XmlRpcFaultException(2, string.Format("Arguments types do not match any available keyword \"{0}\" : [{1}]", keywordName, string.Join(", ", arguments)));
+            }
+            return result;
         }
 
         [XmlRpcMethod("stop_remote_server")]
