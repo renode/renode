@@ -1,4 +1,4 @@
-
+using System;
 using System.Threading.Tasks;
 using Antmicro.Renode;
 using Antmicro.Renode.Core;
@@ -37,7 +37,12 @@ namespace Antmicro.Renode.RobotFramework
 
         public void ExecuteKeyword(string name, string[] arguments)
         {
-            server.Processor.RunKeyword(name, arguments);
+            if(!keywordManager.TryGetKeyword(name, out var keywords))
+            {
+                throw new ArgumentException($"Could not find the '{name}' keyword, although it was used previously. It might indicate an internal error.");
+            }
+            // We ignore the return value and the result. The arguments will match anyway.
+            KeywordManager.TryExecuteKeyword(name, keywords, arguments, out var _);
         }
 
         public void Shutdown()
