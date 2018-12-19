@@ -41,6 +41,9 @@ bitband: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
 crypto: Miscellaneous.CC2538_Cryptoprocessor @ sysbus 0x4008B000
     -> nvic@143
 
+flashCtrl: MTD.CC2538FlashController @ sysbus 0x400D3000
+    flash: flash
+
 sysbus:
     init:
         Tag <0x400D2000, 0x400D2FFF> "SYS_CTRL_CLOCK_CTRL" 1
