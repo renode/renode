@@ -3,6 +3,26 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.6.1 - 2019.01.02
+------------------
+
+Added:
+
+* CC2538 Flash Controller
+* ECB mode for CC2538 Cryptoprocessor
+
+Changed:
+
+* unhandled read/write logs are now decorated with the CPU name instead of the number
+* message acknowledge logic on PolarFire CAN controller
+
+Fixed:
+
+* race condition in PromptTerminal used by the Robot Framework
+* Monitor socket not opening in certain situations
+* unaligned accesses in RISC-V not setting the proper badaddr value
+* handling of data exceeding the maximum packet size of USB endpoint
+
 1.6.0 - 2018.11.21
 ------------------
 
