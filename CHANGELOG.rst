@@ -22,6 +22,8 @@ Fixed:
 * Monitor socket not opening in certain situations
 * unaligned accesses in RISC-V not setting the proper badaddr value
 * handling of data exceeding the maximum packet size of USB endpoint
+* memory map and CPU definition for SiFive FE310
+* out of bounds access when using Ctrl+R with wrapped lines in the Monitor
 
 1.6.0 - 2018.11.21
 ------------------
