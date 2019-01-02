@@ -102,6 +102,26 @@ The script allows several optional flags, most useful of which are presented bel
 
 On Windows systems Renode can be run by starting Renode.exe with a similar set of optional flags.
 
+Running Renode in a Docker container
+------------------------------------
+
+If you want to run Renode in Docker you can use a prebuilt image available on Docker Hub.
+
+To start it in interactive mode on Linux, assuming you have installed Docker on your system, run::
+
+   docker run -ti -e DISPLAY -v $XAUTHORITY:/home/developer/.Xauthority --net=host antmicro/renode
+
+This should display the Renode Monitor window.
+Alternatively, you can provide your custom command at the end of the above line.
+
+To run the image in console mode without X server passthrough, run::
+
+   docker run -ti antmicro/renode bash
+
+To mount your own directories, add more ``-v`` switches to the command.
+
+For more information and the underlying Dockerfile, visit the `repository on GitHub <github.com/renode/renode-docker>`_.
+
 Documentation
 -------------
 
