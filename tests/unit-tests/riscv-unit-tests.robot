@@ -14,6 +14,7 @@ ${next_instruction}           0x2004
 ${mtvec}                      0x1010
 ${load_misaligned}            0x4
 ${store_misaligned}           0x6
+${register_0}                 0x0
 
 
 *** Keywords ***
@@ -266,3 +267,12 @@ Should Fail SD
 
     ${mcause}=                      Execute Command     cpu MCAUSE
     Should Be Equal As Numbers      ${mcause}   ${store_misaligned}
+    
+Should Fail On Setting X0 register
+    Create Machine 32
+
+    ${msg}=     		    Run Keyword And Expect Error        *   Execute Command       cpu SetRegisterUnsafe ${register_0} 0x00000001
+    Should Contain      	    ${msg}      value is not writable
+
+    ${val}=     		    Execute Command     cpu GetRegisterUnsafe 0
+    Should Be Equal As Numbers	    ${val}   0x0
