@@ -20,6 +20,8 @@ namespace Antmicro.Renode
         [STAThread]
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.ProcessExit += (_, __) => Emulator.Exit();
+
             ConfigureEnvironment();
             var thread = new Thread(() =>
             {
