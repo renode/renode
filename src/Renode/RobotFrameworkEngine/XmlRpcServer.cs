@@ -30,25 +30,17 @@ namespace Antmicro.Renode.RobotFramework
         public XmlRpcStruct RunKeyword(string keywordName, string[] arguments)
         {
             var result = new XmlRpcStruct();
-            var argumentsNotMatched = false;
-
-            if(!keywordManager.TryGetKeyword(keywordName, out var keywords))
-            {
-                throw new XmlRpcFaultException(1, string.Format("Keyword \"{0}\" not found", keywordName));
-            }
+            KeywordManager.KeywordLookupResult lookupResult = default(KeywordManager.KeywordLookupResult);
             try
             {
-                if(KeywordManager.TryExecuteKeyword(keywordName, keywords, arguments, out var keywordResult))
+                lookupResult = keywordManager.TryExecuteKeyword(keywordName, arguments, out var keywordResult);
+                if(lookupResult == KeywordManager.KeywordLookupResult.Success)
                 {
                     if(keywordResult != null)
                     {
                         result.Add(KeywordResultValue, keywordResult);
                     }
                     result.Add(KeywordResultStatus, KeywordResultPass);
-                }
-                else
-                {
-                    argumentsNotMatched = true;
                 }
             }
             catch(Exception e)
@@ -59,7 +51,11 @@ namespace Antmicro.Renode.RobotFramework
                 result.Add(KeywordResultError, BuildRecursiveValueFromException(e, ex => ex.Message).StripNonSafeCharacters());
                 result.Add(KeywordResultTraceback, BuildRecursiveValueFromException(e, ex => ex.StackTrace).StripNonSafeCharacters());
             }
-            if(argumentsNotMatched)
+            if(lookupResult == KeywordManager.KeywordLookupResult.KeywordNotFound)
+            {
+                throw new XmlRpcFaultException(1, string.Format("Keyword \"{0}\" not found", keywordName));
+            }
+            if(lookupResult == KeywordManager.KeywordLookupResult.ArgumentsNotMatched)
             {
                 throw new XmlRpcFaultException(2, string.Format("Arguments types do not match any available keyword \"{0}\" : [{1}]", keywordName, string.Join(", ", arguments)));
             }

@@ -37,12 +37,10 @@ namespace Antmicro.Renode.RobotFramework
 
         public void ExecuteKeyword(string name, string[] arguments)
         {
-            if(!keywordManager.TryGetKeyword(name, out var keywords))
+            if(keywordManager.TryExecuteKeyword(name, arguments, out var _) != KeywordManager.KeywordLookupResult.Success)
             {
-                throw new ArgumentException($"Could not find the '{name}' keyword, although it was used previously. It might indicate an internal error.");
+                throw new ArgumentException($"Could not find the '{name}' keyword with matching arguments, although it was used previously. It might indicate an internal error.");
             }
-            // We ignore the return value and the result. The arguments will match anyway.
-            KeywordManager.TryExecuteKeyword(name, keywords, arguments, out var _);
         }
 
         public void Shutdown()

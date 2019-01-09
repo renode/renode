@@ -54,9 +54,22 @@ namespace Antmicro.Renode.RobotFramework
             return result;
         }
 
-        public bool TryGetKeyword(string keyword, out List<Keyword> result)
+        public KeywordLookupResult TryExecuteKeyword(string keywordName, string[] arguments, out object keywordResult)
         {
-            return keywords.TryGetValue(keyword, out result);
+            keywordResult = null;
+            if(!keywords.TryGetValue(keywordName, out var candidates))
+            {
+                return KeywordLookupResult.KeywordNotFound;
+            }
+            object[] parsedArguments = null;
+            var keyword = candidates.FirstOrDefault(x => x.TryMatchArguments(arguments, out parsedArguments));
+            if(keyword == null)
+            {
+                return KeywordLookupResult.ArgumentsNotMatched;
+            }
+            Recorder.Instance.RecordEvent(keywordName, arguments);
+            keywordResult = keyword.Execute(parsedArguments);
+            return KeywordLookupResult.Success;
         }
 
         public string[] GetRegisteredKeywords()
@@ -71,27 +84,15 @@ namespace Antmicro.Renode.RobotFramework
                 obj.Value.Dispose();
             }
         }
-
-        public static bool TryExecuteKeyword(string keywordName, IEnumerable<Keyword> keywords, string[] arguments, out object keywordResult)
-        {
-            foreach(var keyword in keywords)
-            {
-                object[] parsedArguments;
-                if(!keyword.TryMatchArguments(arguments, out parsedArguments))
-                {
-                    continue;
-                }
-
-                Recorder.Instance.RecordEvent(keywordName, arguments);
-                keywordResult = keyword.Execute(parsedArguments);
-                return true;
-            }
-            keywordResult = null;
-            return false;
-        }
-
         private readonly Dictionary<string, List<Keyword>> keywords;
         private readonly Dictionary<Type, IRobotFrameworkKeywordProvider> objects;
+
+        public enum KeywordLookupResult
+        {
+            Success,
+            KeywordNotFound,
+            ArgumentsNotMatched
+        }
     }
 }
 
