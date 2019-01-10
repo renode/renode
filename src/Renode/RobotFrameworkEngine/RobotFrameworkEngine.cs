@@ -1,4 +1,4 @@
-
+using System;
 using System.Threading.Tasks;
 using Antmicro.Renode;
 using Antmicro.Renode.Core;
@@ -11,7 +11,7 @@ namespace Antmicro.Renode.RobotFramework
     {
         public RobotFrameworkEngine()
         {
-            var keywordManager = new KeywordManager();
+            keywordManager = new KeywordManager();
             TypeManager.Instance.AutoLoadedType += keywordManager.Register;
 
             var processor = new XmlRpcServer(keywordManager);
@@ -37,7 +37,10 @@ namespace Antmicro.Renode.RobotFramework
 
         public void ExecuteKeyword(string name, string[] arguments)
         {
-            server.Processor.RunKeyword(name, arguments);
+            if(keywordManager.TryExecuteKeyword(name, arguments, out var _) != KeywordManager.KeywordLookupResult.Success)
+            {
+                throw new ArgumentException($"Could not find the '{name}' keyword with matching arguments, although it was used previously. It might indicate an internal error.");
+            }
         }
 
         public void Shutdown()
@@ -46,5 +49,6 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private readonly HttpServer server;
+        private readonly KeywordManager keywordManager;
     }
 }
