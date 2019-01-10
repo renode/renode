@@ -3,6 +3,27 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.6.2 - 2019.01.10
+------------------
+
+Added:
+
+* instructions on running in Docker
+* --pid-file option to save Renode's process ID to a file
+
+Changed:
+
+* RISC-V X0 register is now protected from being written from the Monitor
+* Renode will now close when it receives a signal from the environment (e.g. Ctrl+C from the console window)
+* invalid instructions in RISC-V will no longer lead to CPU abort - an exception will be issued instead, to be handled by the guest software
+* Robot tests will now log more
+
+Fixed:
+
+* formatting of symbol logging
+* error reporting in Robot tests using the ``Requires`` keyword
+* Microsemi's Mi-V CPU description
+
 1.6.1 - 2019.01.02
 ------------------
 
