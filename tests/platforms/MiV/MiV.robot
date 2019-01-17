@@ -97,6 +97,17 @@ Should Run LiteOS Port Sample
     Execute Command           sysbus.gpioInputs.user_switch_2 Toggle
     Wait For Line On Uart     Key test example
 
+Should Run ZephyrRTOS Shell Sample
+    Create Machine            shell-demo-miv.elf-s_803248-ea4ddb074325b2cc1aae56800d099c7cf56e592a
+    Create Terminal Tester    ${UART}
+
+    Execute Command           showAnalyzer ${UART}
+
+    Start Emulation
+    Write Line To Uart        version
+    Wait For Line On Uart     Zephyr version 1.13.99
+
+
 Should Generate Interrupts On Gpio Rising Edge
     Create Machine            riscv-interrupt-blinky-gpio_interrupts.elf-s_134928-755a01d2896d56f62d40b8fd7620f4b019e114ba
     Create Terminal Tester    ${UART}
