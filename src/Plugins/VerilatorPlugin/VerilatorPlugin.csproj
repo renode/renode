@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="VerilatorPlugin.cs" />
     <Compile Include="Verilated\Peripherals\BasePeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\UART.cs" />
     <Compile Include="Connection\Socket.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionNumber.cs" />
