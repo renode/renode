@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
     <Compile Include="Connection\CommunicationChannel.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionType.cs" />
