@@ -1,0 +1,30 @@
+//
+// Copyright (c) 2010-2019 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
+//
+#include "../renode.h"
+#include "../buses/bus.h"
+
+// UARTAction must be in sync with Renode's protocol
+enum UARTAction
+{
+    txdRequest = 11,
+    rxdRequest = 12
+};
+
+struct UART : RenodeAgent
+{
+    public:
+    UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler);
+    unsigned char* txd;
+    unsigned char* rxd;
+    unsigned int prescaler;
+
+    private:
+    void writeToBus(unsigned long addr, unsigned long value) override;
+    void handleCustomRequestType(Protocol* message) override;
+    void Txd();
+    void Rxd(unsigned char value);
+};
