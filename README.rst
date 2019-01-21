@@ -129,7 +129,7 @@ To compile and use a custom version of your choice you can run::
    ./build.sh -p
    sudo apt install -y ./output/packages/renode*deb
 
-For more information and the underlying Dockerfile, visit the `repository on GitHub <github.com/renode/renode-docker>`_.
+For more information and the underlying Dockerfile, visit the `repository on GitHub <http://github.com/renode/renode-docker>`_.
 
 Documentation
 -------------
