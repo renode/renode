@@ -80,6 +80,8 @@ ddr: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x10000000
 
 ethernet: Network.CadenceGEM @ sysbus 0x10090000
+    moduleRevision: 0x0109
+    moduleId: 0x1007
     IRQ -> plic@53
 
 phy: Network.EthernetPhysicalLayer @ ethernet 0
