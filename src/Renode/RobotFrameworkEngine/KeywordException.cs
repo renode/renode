@@ -9,6 +9,10 @@ namespace Antmicro.Renode.RobotFramework
 {
     public class KeywordException : Exception
     {
+        public KeywordException(string message) : base(message)
+        {
+        }
+
         public KeywordException(string message, params object[] args) : base(string.Format(message, args))
         {
         }
