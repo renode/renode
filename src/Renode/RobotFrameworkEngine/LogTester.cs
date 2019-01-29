@@ -7,7 +7,7 @@ namespace Antmicro.Renode.RobotFramework
 {
     public class LogTester : TextBackend
     {
-        public LogTester(int defaultMillisecondsTimeout = 5000)
+        public LogTester(int defaultMillisecondsTimeout)
         {
             this.defaultMillisecondsTimeout = defaultMillisecondsTimeout;
             messages = new List<string>();

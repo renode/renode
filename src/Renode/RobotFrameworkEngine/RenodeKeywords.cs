@@ -205,7 +205,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void CreateLogTester(int defaultMillisecondsTimeout)
+        public void CreateLogTester(int defaultMillisecondsTimeout = 5000)
         {
             logTester = new LogTester(defaultMillisecondsTimeout);
             Logging.Logger.AddBackend(logTester, "Log Tester", true);
