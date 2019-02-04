@@ -19,6 +19,9 @@ class NUnitTestSuite(object):
     def __init__(self, path):
         #super(NUnitTestSuite, self).__init__(path)
         self.path = path
+    
+    def check(self, options): #API requires this method 
+        pass 
 
     def prepare(self, options):
         NUnitTestSuite.instances_count += 1

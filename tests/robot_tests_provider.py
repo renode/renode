@@ -37,6 +37,24 @@ def is_process_running(pid):
     #docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
+def check_if_port_available(options):
+    if not sys.stdin.isatty():
+        return 
+    try:
+        for proc in [psutil.Process(pid) for pid in psutil.pids()]:
+            if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
+                if not is_process_running(proc.pid):
+                    #process is zombie
+                    continue
+                print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
+                result = raw_input('Do you want me to kill it? [y/N] ')
+                if result in ['Y', 'y']:
+                    proc.kill()
+                break
+    except:
+        # do nothing here
+        pass
+
 class RobotTestSuite(object):
     instances_count = 0
     robot_frontend_process = None
@@ -47,6 +65,9 @@ class RobotTestSuite(object):
         self.path = path
         self._dependencies_met = set()
         self.remote_server_directory = None
+
+    def check(self, options):
+        check_if_port_available(options)
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
@@ -85,21 +106,7 @@ class RobotTestSuite(object):
             elif options.debug_mode:
                 args.insert(1, '--debug')
 
-        if sys.stdin.isatty():
-            try:
-                for proc in [psutil.Process(pid) for pid in psutil.pids()]:
-                    if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
-                        if not is_process_running(proc.pid):
-                            #process is zombie
-                            continue
-                        print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
-                        result = raw_input('Do you want me to kill it? [y/N] ')
-                        if result in ['Y', 'y']:
-                            proc.kill()
-                        break
-            except:
-                # do nothing here
-                pass
+        check_if_port_available(options)
 
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args

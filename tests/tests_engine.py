@@ -85,9 +85,13 @@ def run():
             continue
         for handler in registered_handlers:
             if (options.test_type == 'all' or handler['type'] == options.test_type) and path.endswith(handler['extension']):
-                suite = handler['creator'](path)
-                suite.prepare(options)
-                tests_suites.append(suite)
+                tests_suites.append(handler['creator'](path))
+    
+    for suite in tests_suites: 
+        suite.check(options)
+
+    for suite in tests_suites:
+        suite.prepare(options)
 
     print("Starting suites")
     tests_failed = False
