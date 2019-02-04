@@ -83,6 +83,9 @@ def run():
     for path in options.tests:
         if path.startswith('#'):
             continue
+        if not os.path.exists(path):
+            print("Path {} does not exist. Quitting ...".format(path)) 
+            exit(1)
         for handler in registered_handlers:
             if (options.test_type == 'all' or handler['type'] == options.test_type) and path.endswith(handler['extension']):
                 tests_suites.append(handler['creator'](path))
