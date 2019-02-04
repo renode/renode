@@ -77,6 +77,9 @@ dma1: DMA.STM32DMA @ sysbus 0x40026000
 dma2: DMA.STM32DMA @ sysbus 0x40023400
     [0-7] -> nvic@[56-60,68-70]
 
+rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
+    -> nvic@80
+
 sysbus:
     init:
         ApplySVD @http://antmicro.com/projects/renode/svd/STM32F40x.svd.gz
