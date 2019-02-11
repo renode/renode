@@ -170,8 +170,5 @@ qspi: SPI.PSE_QSPI @ sysbus 0x21000000
     IRQ -> plic@85
 
 pseFlash: SPI.Micron_MT25Q @ qspi
-    memory: qspiXip
-
-qspiXip: Memory.MappedMemory
-    size: 0x01000000
+    size: SPI.MicronFlashSize.Mb_64
 
