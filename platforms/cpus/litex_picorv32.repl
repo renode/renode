@@ -1,0 +1,24 @@
+mem: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+rom: Memory.MappedMemory @ sysbus 0x20020000
+    size: 0x00008000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00020000
+
+ddr: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+cpu: CPU.PicoRV32 @ sysbus
+    cpuType: "rv32imc"
+
+uart: UART.LiteX_UART @ sysbus 0xE0001800
+    -> cpu@2
+
+sysbus:
+    init:
+        Tag <0xE0002000 0x200> "TIMER0"
+        Tag <0xE0008000 0x200> "DDR_PHY"
+        Tag <0xE0004000 0x200> "SDRAM_CONTROLLER"
+        Tag <0xE0000800 0x200> "UART_PHY"
