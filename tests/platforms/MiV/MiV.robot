@@ -20,7 +20,7 @@ Create Machine
 
 *** Test Cases ***
 Should Blink Led Using Systick
-    Create Machine            riscv-systick-blinky.elf-s_124348-0db68b9e854ad8953e038e24eddb2c428dd29beb
+    Create Machine            riscv-systick-blinky.elf-s_125004-59e1fa0a46f86e8ccad8b5bbb4d92b8dfa009af3
     Create Terminal Tester    ${UART}
 
     Execute Command           emulation CreateLEDTester "led0_tester" sysbus.gpioOutputs.led0
@@ -42,7 +42,7 @@ Should Blink Led Using Systick
     Execute Command            led0_tester AssertState false ${LED_DELAY}
 
 Should Blink Led Using CoreTimer
-    Create Machine            riscv-interrupt-blinky.elf-s_133356-bb1bdea7e6e8cb559119908f8c7a7301f6116298
+    Create Machine            riscv-interrupt-blinky.elf-s_135504-4fe164958c1fe3e89790f8d7d2824ba16182fa75
     Create Terminal Tester    ${UART}
 
     Execute Command           emulation CreateLEDTester "led0_tester" sysbus.gpioOutputs.led0
@@ -109,7 +109,7 @@ Should Run ZephyrRTOS Shell Sample
 
 
 Should Generate Interrupts On Gpio Rising Edge
-    Create Machine            riscv-interrupt-blinky-gpio_interrupts.elf-s_134928-755a01d2896d56f62d40b8fd7620f4b019e114ba
+    Create Machine            riscv-interrupt-blinky_gpio-interrupts-edge-positive.elf-s_135192-436f2656cbcff66f043ae6ba0b7977d0ee5e82a1
     Create Terminal Tester    ${UART}
 
     Start Emulation
@@ -120,19 +120,19 @@ Should Generate Interrupts On Gpio Rising Edge
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
-
-    Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Test If Uart Is Idle      5
 
+    Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
 
 Should Generate Interrupts On Gpio Falling Edge
-    Create Machine            riscv-interrupt-blinky-gpio_interrupts-edge_negative.elf-s_134928-398f3ba48fd3c0c9ea323b4dfd7140d94ad56782
+    Create Machine            riscv-interrupt-blinky_gpio-interrupts-edge-negative.elf-s_135192-19e453c25b09a2ecfeb7a8015588355f90ad8f02
     Create Terminal Tester    ${UART}
 
     Start Emulation
@@ -155,7 +155,7 @@ Should Generate Interrupts On Gpio Falling Edge
     Test If Uart Is Idle      5
 
 Should Generate Interrupts On Gpio Both Edges
-    Create Machine            riscv-interrupt-blinky-gpio_interrupts-edge_both.elf-s_134928-d90257bf9f12b2133c1631952a379c1bebdfd97b
+    Create Machine            riscv-interrupt-blinky_gpio-interrupts-edge-both.elf-s_135192-1afc01350e4f0e17e2e556796cf577d2768636ec
     Create Terminal Tester    ${UART}
 
     Start Emulation
@@ -178,7 +178,7 @@ Should Generate Interrupts On Gpio Both Edges
     Wait For Line On Uart     GPIO2
 
 Should Generate Interrupts On Gpio High Level
-    Create Machine            riscv-interrupt-blinky-gpio_interrupts-level_high.elf-s_134928-e5184e20f1458b9784c10c48ad8fde0a738cfb65
+    Create Machine            riscv-interrupt-blinky_gpio-interrupts-level-high.elf-s_135168-e03e81b692982ad2f1f46085b9077fdfef62adf2
     Create Terminal Tester    ${UART}
 
     Start Emulation
@@ -213,7 +213,7 @@ Should Generate Interrupts On Gpio High Level
     Wait For Line On Uart     GPIO2
 
 Should Generate Interrupts On Gpio Low Level
-    Create Machine            riscv-interrupt-blinky-gpio_interrupts-level_low.elf-s_134928-3d7a09bb3cf434fde9bf9d2c29888ffb11861c0b
+    Create Machine            riscv-interrupt-blinky_gpio-interrupts-level-low.elf-s_135168-f570dad79ea5aa0bfe9aa1000f453f0f50f344df
     Create Terminal Tester    ${UART}
 
     Start Emulation
