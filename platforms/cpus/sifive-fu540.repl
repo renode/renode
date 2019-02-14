@@ -29,21 +29,21 @@ u54_4: CPU.RiscV64 @ sysbus
     clint: clint
 
 debug: Memory.MappedMemory @sysbus 0x0
-    size: 0x3000
+    size: 0x1000
 
-e51Hart0Tim: Memory.MappedMemory @ sysbus 0x01000000
+e51DTim: Memory.MappedMemory @ sysbus 0x01000000
     size: 0x2000
 
-u54Hart1Tim: Memory.MappedMemory @ sysbus 0x01808000
+u54Hart1ITim: Memory.MappedMemory @ sysbus 0x01808000
     size: 0x7000
 
-u54Hart2Tim: Memory.MappedMemory @ sysbus 0x01810000
+u54Hart2ITim: Memory.MappedMemory @ sysbus 0x01810000
     size: 0x7000
 
-u54Hart3Tim: Memory.MappedMemory @ sysbus 0x01818000
+u54Hart3ITim: Memory.MappedMemory @ sysbus 0x01818000
     size: 0x7000
 
-u54Hart4Tim: Memory.MappedMemory @ sysbus 0x01820000
+u54Hart4ITim: Memory.MappedMemory @ sysbus 0x01820000
     size: 0x7000
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
