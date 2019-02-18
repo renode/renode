@@ -115,6 +115,7 @@
     <Compile Include="UI\TerminalActions.cs" />
     <Compile Include="UI\TermsharpProvider.cs" />
     <Compile Include="EmulationEnvironment\EmulationEnvironment.cs" />
+    <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

@@ -98,11 +98,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<string> PrefixedKeyword = MakeKeyword("prefixed");
 
-        public static readonly Parser<string> TrueKeyword = MakeKeyword("true");
+        public static readonly Parser<bool> TrueKeyword = MakeKeyword("true", true);
 
-        public static readonly Parser<string> FalseKeyword = MakeKeyword("false");
+        public static readonly Parser<bool> FalseKeyword = MakeKeyword("false", false);
 
-        public static readonly Parser<string> NoneKeyword = MakeKeyword("none");
+        public static readonly Parser<Value> NoneKeyword = MakeKeyword("none", (Value)null);
+
+        public static readonly Parser<EmptyValue> EmptyKeyword = MakeKeyword("empty", EmptyValue.Instance);
 
         public static readonly Parser<string> Identifier = GeneralIdentifier.Named("identifier").Where(x => !Keywords.Contains(x));
 
@@ -153,7 +155,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<ReferenceValue> ReferenceValue = Identifier.Select(x => new ReferenceValue(x)).Named("reference");
 
         public static readonly Parser<BoolValue> BoolValue =
-            TrueKeyword.Select(x => true).Or(FalseKeyword.Select(x => false)).Select(x => new BoolValue(x)).Named("bool");
+            TrueKeyword.Or(FalseKeyword).Select(x => new BoolValue(x)).Named("bool");
 
         public static readonly Parser<Value> Value = QuotedString.Select(x => new StringValue(x))
                                                                  .XOr<Value>(Range)
@@ -163,7 +165,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                                                                  .Or(BoolValue)
                                                                  .Or(ReferenceValue)
                                                                  .Positioned();
-
 
         public static readonly Parser<RegistrationInfo> RegistrationInfoInner =
             (from register in ReferenceValue.Named("register reference").Positioned()
@@ -188,9 +189,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<ConstructorOrPropertyAttribute> ConstructorOrPropertyAttribute =
             (from identifier in Identifier.Named("constructor or property name")
              from colon in Colon
-             from value in Value.Named("constructor or property value").Or(NoneKeyword.Select(x => (Value)null))
+             from value in Value.Named("constructor or property value").Or(NoneKeyword).Or(EmptyKeyword)
              select new ConstructorOrPropertyAttribute(identifier, value)).Named("constructor or property name and value");
-
+ 
         public static readonly Parser<string> QuotedMonitorStatementElement =
             (from openingQuote in QuotationMark
              from content in QuotedStringElement.Many().Text()
@@ -387,6 +388,12 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         {
             Keywords.Add(keyword);
             return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword");
+        }
+
+        public static Parser<T> MakeKeyword<T>(string keyword, T obj)
+        {
+            Keywords.Add(keyword);
+            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword").Select(x => obj);
         }
 
         public static IEnumerable<int> MakeSimpleRange(int begin, int end)

@@ -1193,6 +1193,12 @@ namespace Antmicro.Renode.PlatformDescription
         {
             result = null;
 
+            if(value is EmptyValue)
+            {
+                result = expectedType.IsValueType ? Activator.CreateInstance(expectedType) : null;
+                return ConversionResult.Success;
+            }
+
             var numericalValue = value as NumericalValue;
             var enumValue = value as EnumValue;
 
