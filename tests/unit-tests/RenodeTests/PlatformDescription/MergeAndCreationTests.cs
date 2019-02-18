@@ -122,6 +122,135 @@ cpu:
         }
 
         [Test]
+        public void ShouldHandleEmptyNumericalValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithNumericalAttrubute @ sysbus  <0, 1>
+    mockInt: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralWithNumericalAttrubute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(int), mockPeripheral.MockInt);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyStringValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithStringAttribute @ sysbus  <0, 1>
+    mockString: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralWithStringAttribute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(string), mockPeripheral.MockString);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyEnumValue()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    EnumValue: empty";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual(default(TwoStateEnum), mock.EnumValue);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyRangeValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithRangeAttribute @ sysbus  <0, 1>
+    mockRange: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralWithRangeAttribute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(Core.Range), mockPeripheral.MockRange);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyObjectValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithObjectAttribute @ sysbus  <0, 1>
+    mockObject: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralWithObjectAttribute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(Object), mockPeripheral.MockObject);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyBoolValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithBoolAttribute @ sysbus  <0, 1>
+    mockBool: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralWithBoolAttribute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(bool), mockPeripheral.MockBool);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyReferenceAttribute()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralUsingReferenceAttribute @ sysbus <0, 1>
+    mockReference: empty";
+
+            ProcessSource(source);
+            Tests.UnitTests.Mocks.MockPeripheralUsingReferenceAttribute mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(Antmicro.Renode.Peripherals.IPeripheral), mockPeripheral.MockReference);
+        }
+
+        [Test]
+        public void ShouldFailOnEmptyKeywordAsType()
+        {
+            var source = @"
+mockPeripheral: empty @ sysbus <0, 1>
+    value: 0";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnEmptyKeywordAsRegistrationDestination()
+        {
+            var source = @"
+mockPeripheral:  Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ empty <0, 1>
+    value: 0";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnEmptyKeywordAsParameterName()
+        {
+            var source = @"
+mockPeripheral:  Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus <0, 1>
+    empty: 0";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnEmptyKeywordAsUsingParameter()
+        {
+            var source = @"using empty";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+        }
+
+        [Test]
         public void ShouldHandleNoneInCtorParam()
         {
             var source = @"
