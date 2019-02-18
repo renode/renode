@@ -20,6 +20,12 @@ timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
     -> cpu@1
     frequency: 100000000
 
+eth: Network.LiteX_Ethernet @ {
+        sysbus <0xE0007800, +0x100>;
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
+    }
+    IRQ -> cpu@3
+
 sysbus:
     init:
         Tag <0xE0008000 0x200> "DDR_PHY"
