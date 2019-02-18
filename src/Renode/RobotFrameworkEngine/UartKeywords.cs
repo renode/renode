@@ -64,11 +64,12 @@ namespace Antmicro.Renode.RobotFramework
 
                 if(!machineObject.TryGetByName(uart, out IUART uartObject))
                 {
-                    throw new KeywordException("Peripheral for machine {0} not found or of wrong type: {1}", machine, uart);
+                    throw new KeywordException("Peripheral for machine '{0}' not found or of wrong type: '{1}'. Available peripherals: [{2}]", machine, uart,
+                            string.Join(", ", machineObject.GetAllNames()));
                 }
                 if(uartsWithTesters.Contains(uartObject))
                 {
-                    throw new KeywordException("Terminal tester for peripheral {0} in machine {1} already exists", uart, machine);
+                    throw new KeywordException("Terminal tester for peripheral '{0}' in machine '{1}' already exists", uart, machine);
                 }
 
                 var tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout), prompt);
