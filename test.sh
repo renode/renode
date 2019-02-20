@@ -11,7 +11,7 @@ TESTS_RESULTS="$ROOT_PATH/output/tests"
 
 set +e
 STTY_CONFIG=`stty -g 2>/dev/null`
-python -u "`get_path "$ROOT_PATH/tests/run_tests.py"`" --exclude skip-$DETECTED_OS --properties-file "`get_path "$ROOT_PATH/output/properties.csproj"`" -r "`get_path "$TESTS_RESULTS"`" -t "`get_path "$TESTS_FILE"`" "$@"
+python -u "`get_path "$ROOT_PATH/tests/run_tests.py"`" --exclude "skip_${DETECTED_OS}" --properties-file "`get_path "$ROOT_PATH/output/properties.csproj"`" -r "`get_path "$TESTS_RESULTS"`" -t "`get_path "$TESTS_FILE"`" "$@"
 RESULT_CODE=$?
 set -e
 if [ -n "${STTY_CONFIG:-}" ]

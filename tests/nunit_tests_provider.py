@@ -61,6 +61,8 @@ class NUnitTestSuite(object):
                 args.insert(1, '--debug')
         if options.fixture:
             args.append('-run:' + options.fixture)
+        if options.exclude:
+            args.append('-exclude=' + ','.join(options.exclude))
 
         if options.run_gdb:
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args

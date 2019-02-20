@@ -69,7 +69,7 @@ Should Run Shell
 
 Should Handle Gpio Button
     [Documentation]           Runs Zephyr's 'basic/button' sample on Quark C1000 platform.
-    [Tags]                    zephyr  uart  interrupts  gpio  button  non-critical
+    [Tags]                    zephyr  uart  interrupts  gpio  button  non_critical
     Set Test Variable         ${WAIT_PERIOD}             2
     Execute Command           $bin = ${URI}/button.elf-s_317524-b42765dd760d0dd260079b99724aabec2b5cf34b
     Execute Script            ${SCRIPT}
@@ -148,7 +148,7 @@ Should Talk Over Network Using Ethernet
 
 Should Serve Webpage Using Tap
     [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.
-    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  skip-osx  skip-windows  non-critical
+    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  skip_osx  skip_windows  non_critical
     Set Test Variable         ${TAP_INTERFACE}     tap0
     Set Test Variable         ${TAP_INTERFACE_IP}  192.0.2.1
     Set Test Variable         ${SERVER_IP}         192.0.2.2
