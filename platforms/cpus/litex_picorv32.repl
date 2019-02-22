@@ -26,6 +26,9 @@ eth: Network.LiteX_Ethernet @ {
     }
     IRQ -> cpu@3
 
+boot_flash: Memory.ArrayMemory @ sysbus 0x20228000
+    size: 0x20000
+
 sysbus:
     init:
         Tag <0xE0008000 0x200> "DDR_PHY"
