@@ -121,6 +121,31 @@ gpio2: GPIOPort.PSE_GPIO @ sysbus 0x20122000
     [0-31] -> plic@[13-44]
     IRQ -> plic@53
 
+wdog0: Timers.PSE_Watchdog @ sysbus 0x20001000
+    frequency: 156250 //this value is estimated from the comments in the code
+    RefreshEnable -> plic@100
+    Trigger -> plic@105
+
+wdog1: Timers.PSE_Watchdog @ sysbus 0x20101000
+    frequency: 156250 //this value is estimated from the comments in the code
+    RefreshEnable -> plic@101
+    Trigger -> plic@106
+
+wdog2: Timers.PSE_Watchdog @ sysbus 0x20103000
+    frequency: 156250 //this value is estimated from the comments in the code
+    RefreshEnable -> plic@102
+    Trigger -> plic@107
+
+wdog3: Timers.PSE_Watchdog @ sysbus 0x20105000
+    frequency: 156250 //this value is estimated from the comments in the code
+    RefreshEnable -> plic@103
+    Trigger -> plic@108
+
+wdog4: Timers.PSE_Watchdog @ sysbus 0x20107000
+    frequency: 156250 //this value is estimated from the comments in the code
+    RefreshEnable -> plic@104
+    Trigger -> plic@109
+
 rtc: Timers.PSE_RTC @ sysbus 0x20124000
     WakeupIRQ -> plic@80
     MatchIRQ -> plic@81
