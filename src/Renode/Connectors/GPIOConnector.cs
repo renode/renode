@@ -41,8 +41,11 @@ namespace Antmicro.Renode.Connectors
 
         public void OnGPIO(int number, bool value)
         {
-            var mach = connectorPin.Endpoint.Receiver.GetMachine();
-            mach.HandleTimeDomainEvent(connectorPin.Set, value, TimeDomainsManager.Instance.VirtualTimeStamp);
+            var endpoints = connectorPin.Endpoints;
+            for(var i = 0; i < endpoints.Count; i++)
+            {
+                endpoints[i].Receiver.GetMachine().HandleTimeDomainEvent(connectorPin.Set, value, TimeDomainsManager.Instance.VirtualTimeStamp);
+            }
         }
 
         //This method should not be executed on a runnning emulation, as IGPIO.Connect call
@@ -82,9 +85,9 @@ namespace Antmicro.Renode.Connectors
 
         public void DetachFrom(IPeripheral peripheral)
         {
-            if(connectorPin.IsConnected && peripheral == connectorPin.Endpoint.Receiver)
+            if(connectorPin.IsConnected && connectorPin.Endpoints.Any(x => x.Receiver == peripheral))
             {
-                connectorPin.Disconnect();
+                connectorPin.Disconnect(connectorPin.Endpoints.First(x => x.Receiver == peripheral));
                 destinationMachine.MachineReset -= ResetDestinationPinState;
             }
             else

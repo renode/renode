@@ -88,25 +88,28 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public void FlattenIrqAttributes()
         {
             // one must (and should) flatten attributes after premerge validation and before merge
-            var irqAttributes = Attributes.OfType<IrqAttribute>();
+            var multiplexedAttributes = Attributes.OfType<IrqAttribute>();
             var result = new List<IrqAttribute>();
-            foreach(var attribute in irqAttributes)
+            Func<SingleOrMultiIrqEnd, IEnumerable<SingleOrMultiIrqEnd>> selector = x => x.Ends.Select(y => x.WithEnds(new[] { y }));
+            foreach(var multiplexedAttribute in multiplexedAttributes)
             {
-                if(attribute.DestinationPeripheral == null)
+                var sourcesAsArray = multiplexedAttribute.Sources.SelectMany(selector).ToArray();
+                foreach(var attribute in multiplexedAttribute.Destinations)
                 {
-                    result.Add(attribute);
-                    continue;
-                }
-                Func<SingleOrMultiIrqEnd, IEnumerable<SingleOrMultiIrqEnd>> selector = x => x.Ends.Select(y => x.WithEnds(new[] { y }));
-
-                var sourcesAsArray = attribute.Sources.SelectMany(selector).ToArray();
-                var destinationsAsArray = attribute.Destinations.SelectMany(selector).ToArray();
-                for(var i = 0; i < sourcesAsArray.Length; i++)
-                {
-                    result.Add(attribute.SingleAttributeWithInheritedPosition(sourcesAsArray[i], attribute.DestinationPeripheral, destinationsAsArray[i]));
+                    // Irq -> none
+                    if(attribute.DestinationPeripheral == null)
+                    {
+                        result.Add(multiplexedAttribute);
+                        continue;
+                    }
+                    var destinationsAsArray = attribute.Destinations.SelectMany(selector).ToArray();
+                    for(var i = 0; i < sourcesAsArray.Length; i++)
+                    {
+                        result.Add(multiplexedAttribute.SingleAttributeWithInheritedPosition(sourcesAsArray[i], attribute.DestinationPeripheral, destinationsAsArray[i]));
+                    }
                 }
             }
-            Attributes = Attributes.Except(irqAttributes).Concat(result).ToArray();
+            Attributes = Attributes.Except(multiplexedAttributes).Concat(result).ToArray();
         }
 
         public Entry MakeShallowCopy()

@@ -18,7 +18,12 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public override string ToString()
         {
-            return string.Format("[ReferenceValue: {0}]", Value);
+            return $"[ReferenceValue: {Value}]";
+        }
+
+        public string ToShortString()
+        {
+            return $"{Value}";
         }
 
         public void Prefix(string with)

@@ -25,6 +25,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<char> AtSign = Parse.Char('@').Token();
 
+        public static readonly Parser<char> MultiplexSign = Parse.Char('|').Token();
+
         public static readonly Parser<char> Colon = Parse.Char(':').Token().Named("colon");
 
         public static readonly Parser<char> Comma = Parse.Char(',').Token();
@@ -246,32 +248,42 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                  select new[] { first }.Concat(rest));
         }
 
-        public static Parser<IrqDestination> IrqDestination =
+        public static Parser<IrqReceiver> IrqReceiver =
             (from destinationName in ReferenceValue.Named("destination peripheral reference")
              from localIndex in Parse.Char('#').Then(x => Parse.Number.Select(y => (int?)int.Parse(y))).Named("local index").XOptional()
-             select new IrqDestination(destinationName, localIndex.GetOrDefault())).Positioned();
+             select new IrqReceiver(destinationName, localIndex.GetOrDefault())).Positioned();
+
+        public static readonly Parser<IrqDestinations> SimpleDestination =
+           (from destinationIdentifier in IrqReceiver
+            from at in AtSign
+            from end in GetIrqEnd(false)
+            select new IrqDestinations(destinationIdentifier, new SingleOrMultiIrqEnd[] { end }));
+
+        public static readonly Parser<IrqDestinations> MultiDestination =
+           (from destinationIdentifier in IrqReceiver
+            from at in AtSign
+            from ends in GetIrqEnds(false)
+            select new IrqDestinations(destinationIdentifier, ends));
 
         public static readonly Parser<IrqAttribute> SimpleIrqAttribute =
             (from source in GetIrqEnd(true).Select(x => new[] { x }).Optional()
              from arrow in RightArrow
-             from destinationIdentifier in IrqDestination
-             from at in AtSign
-             from destination in GetIrqEnd(false)
-             select new IrqAttribute(source.GetOrDefault(), destinationIdentifier, new[] { destination }));
+             from destination in SimpleDestination
+             from rest in MultiplexSign.XOptional().Then(x => SimpleDestination).XMany()
+             select new IrqAttribute(source.GetOrDefault(), new[] { destination }.Concat(rest)));
 
         public static readonly Parser<IrqAttribute> MultiIrqAttribute =
             (from sources in GetIrqEnds(true)
              from arrow in RightArrow
-             from destinationIdentifier in IrqDestination
-             from at in AtSign
-             from destinations in GetIrqEnds(false)
-             select new IrqAttribute(sources, destinationIdentifier, destinations));
+             from destination in MultiDestination
+             from rest in MultiplexSign.XOptional().Then(x => MultiDestination).XMany()
+             select new IrqAttribute(sources, new[] { destination }.Concat(rest)));
 
         public static readonly Parser<IrqAttribute> NoneIrqAttribute =
             (from source in GetIrqEnd(true).Select(x => new[] { x }).Optional()
              from arrow in RightArrow
              from noneKeyword in NoneKeyword
-             select new IrqAttribute(source.GetOrDefault(), null, null));
+             select new IrqAttribute(source.GetOrDefault(), new[] { new IrqDestinations(null, null) }));
 
         public static readonly Parser<Attribute> Attribute = InitAttribute
             .Or<Attribute>(ConstructorOrPropertyAttribute)

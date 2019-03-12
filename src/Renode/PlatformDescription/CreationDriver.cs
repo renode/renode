@@ -728,60 +728,63 @@ namespace Antmicro.Renode.PlatformDescription
             }
 
             var irqAttributes = attributes.OfType<IrqAttribute>();
-            foreach(var attribute in irqAttributes)
+            foreach(var multiplexedAttributes in irqAttributes)
             {
-                if(attribute.DestinationPeripheral == null)
+                foreach(var attribute in multiplexedAttributes.Destinations)
                 {
-                    // irq -> none case, we can simply ignore it
-                    continue;
-                }
-                // at this moment all irq attributes are of simple type (i.e. a->b@c)
-                var destination = variableStore.GetVariableFromReference(attribute.DestinationPeripheral.Reference).Value;
-
-                IGPIO source;
-                IGPIOReceiver destinationReceiver;
-
-                var irqEnd = attribute.Sources.Single().Ends.Single();
-                if(irqEnd.PropertyName != null)
-                {
-                    source = (IGPIO)GetGpioProperties(objectType).Single(x => x.Name == irqEnd.PropertyName).GetValue(objectToSetOn);
-
-                    if(source == null)
+                    if(attribute.DestinationPeripheral == null)
                     {
-                        HandleError(ParsingError.UninitializedSourceIrqObject, attribute,
-                                    $"{objectToSetOn} has uninitialized IRQ object {irqEnd.PropertyName}", false);
+                        // irq -> none case, we can simply ignore it
                         continue;
                     }
-                }
-                else
-                {
-                    var connections = ((INumberedGPIOOutput)objectToSetOn).Connections;
-                    if(!connections.ContainsKey(irqEnd.Number))
+                    // at this moment all irq attributes are of simple type (i.e. a->b@c)
+                    var destination = variableStore.GetVariableFromReference(attribute.DestinationPeripheral.Reference).Value;
+                    
+                    IGPIO source;
+                    IGPIOReceiver destinationReceiver;
+                    
+                    var irqEnd = multiplexedAttributes.Sources.Single().Ends.Single();
+                    if(irqEnd.PropertyName != null)
                     {
-                        HandleError(ParsingError.IrqSourcePinDoesNotExist, attribute,
-                                    $"{objectToSetOn} doesn't have IRQ {irqEnd.Number}.\nAvailable IRQs: {connections.Count}.", false);
-                        continue;
+                        source = (IGPIO)GetGpioProperties(objectType).Single(x => x.Name == irqEnd.PropertyName).GetValue(objectToSetOn);
+                        
+                        if(source == null)
+                        {
+                            HandleError(ParsingError.UninitializedSourceIrqObject, multiplexedAttributes,
+                                        $"{objectToSetOn} has uninitialized IRQ object {irqEnd.PropertyName}", false);
+                            continue;
+                        }
                     }
-                    source = connections[irqEnd.Number];
-
-                    if(source == null)
+                    else
                     {
-                        HandleError(ParsingError.UninitializedSourceIrqObject, attribute,
-                                    $"{objectToSetOn} has uninitialized IRQ {irqEnd.Number}", false);
-                        continue;
+                        var connections = ((INumberedGPIOOutput)objectToSetOn).Connections;
+                        if(!connections.ContainsKey(irqEnd.Number))
+                        {
+                            HandleError(ParsingError.IrqSourcePinDoesNotExist, multiplexedAttributes,
+                                        $"{objectToSetOn} doesn't have IRQ {irqEnd.Number}.\nAvailable IRQs: {connections.Count}.", false);
+                            continue;
+                        }
+                        source = connections[irqEnd.Number];
+                        
+                        if(source == null)
+                        {
+                            HandleError(ParsingError.UninitializedSourceIrqObject, multiplexedAttributes,
+                                        $"{objectToSetOn} has uninitialized IRQ {irqEnd.Number}", false);
+                            continue;
+                        }
                     }
+                    
+                    if(attribute.DestinationPeripheral.LocalIndex.HasValue)
+                    {
+                        destinationReceiver = ((ILocalGPIOReceiver)destination).GetLocalReceiver(attribute.DestinationPeripheral.LocalIndex.Value);
+                    }
+                    else
+                    {
+                        destinationReceiver = (IGPIOReceiver)destination;
+                    }
+                    
+                    source.Connect(destinationReceiver, attribute.Destinations.Single().Ends.Single().Number);
                 }
-
-                if(attribute.DestinationPeripheral.LocalIndex.HasValue)
-                {
-                    destinationReceiver = ((ILocalGPIOReceiver)destination).GetLocalReceiver(attribute.DestinationPeripheral.LocalIndex.Value);
-                }
-                else
-                {
-                    destinationReceiver = (IGPIOReceiver)destination;
-                }
-
-                source.Connect(destinationReceiver, attribute.Destinations.Single().Ends.Single().Number);
             }
         }
 
@@ -909,9 +912,9 @@ namespace Antmicro.Renode.PlatformDescription
             return true;
         }
 
-        private void ValidateAttributePreMerge(Type objectType, Syntax.Attribute attribute)
+        private void ValidateAttributePreMerge(Type objectType, Syntax.Attribute syntaxAttribute)
         {
-            var ctorOrPropertyAttribute = attribute as ConstructorOrPropertyAttribute;
+            var ctorOrPropertyAttribute = syntaxAttribute as ConstructorOrPropertyAttribute;
             // at this point we can only fully validate properties, because only after merge we will know which ctor to choose
             if(ctorOrPropertyAttribute != null)
             {
@@ -925,7 +928,7 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                     else
                     {
-                        HandleError(ParsingError.PropertyDoesNotExist, attribute,
+                        HandleError(ParsingError.PropertyDoesNotExist, syntaxAttribute,
                                     string.Format("Property '{0}' does not exist in type '{1}.", ctorOrPropertyAttribute.Name, objectType), false);
                     }
                     ctorOrPropertyAttribute.Property = propertyInfo;
@@ -946,94 +949,97 @@ namespace Antmicro.Renode.PlatformDescription
                 }
             }
 
-            var irqAttribute = attribute as IrqAttribute;
+            var irqAttribute = syntaxAttribute as IrqAttribute;
             if(irqAttribute != null)
             {
-                Variable irqDestinationVariable;
-                if(irqAttribute.DestinationPeripheral != null)
+                foreach(var attribute in irqAttribute.Destinations)
                 {
-                    if(!variableStore.TryGetVariableFromReference(irqAttribute.DestinationPeripheral.Reference, out irqDestinationVariable))
+                    Variable irqDestinationVariable;
+                    if(attribute.DestinationPeripheral != null)
                     {
-                        HandleError(ParsingError.IrqDestinationDoesNotExist, irqAttribute.DestinationPeripheral,
-                                    string.Format("Irq destination '{0}' does not exist.", irqAttribute.DestinationPeripheral.Reference.Value), true);
-                    }
-
-                    if(irqAttribute.DestinationPeripheral.LocalIndex.HasValue && !typeof(ILocalGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
-                    {
-                        HandleError(ParsingError.NotLocalGpioReceiver, irqAttribute.DestinationPeripheral,
-                                    string.Format("Used local irq destination, while type '{0}' does not implement ILocalGPIOReceiver.", irqDestinationVariable.VariableType), true);
-                    }
-                }
-                else
-                {
-                    // irq -> none case
-                    irqDestinationVariable = null;
-                }
-
-                if(irqAttribute.Sources == null)
-                {
-                    var gpioProperties = GetGpioProperties(objectType).ToArray();
-                    if(gpioProperties.Length == 0)
-                    {
-
-                        HandleError(ParsingError.IrqSourceDoesNotExist, irqAttribute,
-                                    string.Format("Type '{0}' does not contain any property of type GPIO.", objectType), false);
-                    }
-                    if(gpioProperties.Length > 1)
-                    {
-
-                        HandleError(ParsingError.AmbiguousDefaultIrqSource, irqAttribute,
-                                    string.Format("There are at least '{0}' and '{1}' properties of GPIO type, ambiguous choice of default interrupt.", gpioProperties[0], gpioProperties[1]),
-                                    false);
-                    }
-                    // we can now fill the missing source so that we can treat default irqs as normal ones from this point on
-                    irqAttribute.SetDefaultSource(gpioProperties[0].Name);
-                }
-                else
-                {
-                    if(irqAttribute.Destinations != null)
-                    {
-                        // for irq -> none arity is always correct
-                        var leftArity = irqAttribute.Sources.Sum(x => x.Ends.Count());
-                        var rightArity = irqAttribute.Destinations.Sum(x => x.Ends.Count());
-                        if(leftArity != rightArity)
+                        if(!variableStore.TryGetVariableFromReference(attribute.DestinationPeripheral.Reference, out irqDestinationVariable))
                         {
-                            HandleError(ParsingError.WrongIrqArity, irqAttribute,
-                                        string.Format("Irq arity does not match. It is {0} on the left side and {1} on the right side.", leftArity, rightArity), false);
+                            HandleError(ParsingError.IrqDestinationDoesNotExist, attribute.DestinationPeripheral,
+                                        string.Format("Irq destination '{0}' does not exist.", attribute.DestinationPeripheral.Reference.Value), true);
+                        }
+                        
+                        if(attribute.DestinationPeripheral.LocalIndex.HasValue && !typeof(ILocalGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
+                        {
+                            HandleError(ParsingError.NotLocalGpioReceiver, attribute.DestinationPeripheral,
+                                        string.Format("Used local irq destination, while type '{0}' does not implement ILocalGPIOReceiver.", irqDestinationVariable.VariableType), true);
                         }
                     }
-
-                    foreach(var source in irqAttribute.Sources)
+                    else
                     {
-                        foreach(var end in source.Ends)
+                        // irq -> none case
+                        irqDestinationVariable = null;
+                    }
+                    
+                    if(irqAttribute.Sources == null)
+                    {
+                        var gpioProperties = GetGpioProperties(objectType).ToArray();
+                        if(gpioProperties.Length == 0)
                         {
-                            if(end.PropertyName != null)
+                            
+                            HandleError(ParsingError.IrqSourceDoesNotExist, irqAttribute,
+                                        string.Format("Type '{0}' does not contain any property of type GPIO.", objectType), false);
+                        }
+                        if(gpioProperties.Length > 1)
+                        {
+                            
+                            HandleError(ParsingError.AmbiguousDefaultIrqSource, irqAttribute,
+                                        string.Format("There are at least '{0}' and '{1}' properties of GPIO type, ambiguous choice of default interrupt.", gpioProperties[0], gpioProperties[1]),
+                                        false);
+                        }
+                        // we can now fill the missing source so that we can treat default irqs as normal ones from this point on
+                        irqAttribute.SetDefaultSource(gpioProperties[0].Name);
+                    }
+                    else
+                    {
+                        if(attribute.Destinations != null)
+                        {
+                            // for irq -> none arity is always correct
+                            var leftArity = irqAttribute.Sources.Sum(x => x.Ends.Count());
+                            var rightArity = attribute.Destinations.Sum(x => x.Ends.Count());
+                            if(leftArity != rightArity)
                             {
-                                var gpioProperty = objectType.GetProperty(end.PropertyName);
-                                if(gpioProperty == null || gpioProperty.PropertyType != typeof(GPIO))
-                                {
-                                    HandleError(ParsingError.IrqSourceDoesNotExist, source,
-                                                string.Format("Property '{0}' does not exist in '{1}' or is not of the GPIO type.", end.PropertyName, objectType), true);
-                                }
+                                HandleError(ParsingError.WrongIrqArity, irqAttribute,
+                                            string.Format("Irq arity does not match. It is {0} on the left side and {1} on the right side.", leftArity, rightArity), false);
                             }
-                            else
+                        }
+                        
+                        foreach(var source in irqAttribute.Sources)
+                        {
+                            foreach(var end in source.Ends)
                             {
-                                if(!typeof(INumberedGPIOOutput).IsAssignableFrom(objectType))
+                                if(end.PropertyName != null)
                                 {
-                                    HandleError(ParsingError.IrqSourceIsNotNumberedGpioOutput, source,
-                                                string.Format("Type '{0}' is not a numbered gpio output, while numbered output was used.", objectType), true);
+                                    var gpioProperty = objectType.GetProperty(end.PropertyName);
+                                    if(gpioProperty == null || gpioProperty.PropertyType != typeof(GPIO))
+                                    {
+                                        HandleError(ParsingError.IrqSourceDoesNotExist, source,
+                                                    string.Format("Property '{0}' does not exist in '{1}' or is not of the GPIO type.", end.PropertyName, objectType), true);
+                                    }
+                                }
+                                else
+                                {
+                                    if(!typeof(INumberedGPIOOutput).IsAssignableFrom(objectType))
+                                    {
+                                        HandleError(ParsingError.IrqSourceIsNotNumberedGpioOutput, source,
+                                                    string.Format("Type '{0}' is not a numbered gpio output, while numbered output was used.", objectType), true);
+                                    }
                                 }
                             }
                         }
                     }
+                    
+                    if(irqDestinationVariable!= null && !typeof(IGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
+                    {
+                        HandleError(ParsingError.IrqDestinationIsNotIrqReceiver, attribute.DestinationPeripheral,
+                                    string.Format("Type '{0}' does not implement IGPIOReceiver and cannot be a destination of interrupts.", irqDestinationVariable.VariableType), false);
+                    }
+                    return;
                 }
-
-                if(irqDestinationVariable!= null && !typeof(IGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
-                {
-                    HandleError(ParsingError.IrqDestinationIsNotIrqReceiver, irqAttribute.DestinationPeripheral,
-                                string.Format("Type '{0}' does not implement IGPIOReceiver and cannot be a destination of interrupts.", irqDestinationVariable.VariableType), false);
-                }
-                return;
             }
         }
 
@@ -1147,17 +1153,20 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                 }
 
-                if(attribute.DestinationPeripheral != null)
+                foreach(var multiplexedDestination in attribute.Destinations)
                 {
-                    // for irq -> none case this test does not make sense
-                    foreach(var destination in attribute.Destinations)
+                    if(multiplexedDestination.DestinationPeripheral != null)
                     {
-                        foreach(var end in destination.Ends)
+                        // for irq -> none case this test does not make sense
+                        foreach(var destination in multiplexedDestination.Destinations)
                         {
-                            if(!destinations.Add(Tuple.Create(attribute.DestinationPeripheral.Reference.Value, attribute.DestinationPeripheral.LocalIndex, end.Number)))
+                            foreach(var end in destination.Ends)
                             {
-                                HandleError(ParsingError.IrqDestinationUsedMoreThanOnce, destination,
-                                            string.Format("Destination '{0}:{1}' has already been used as a destination in this entry.", attribute.DestinationPeripheral, end.ToShortString()), true);
+                                if(!destinations.Add(Tuple.Create(multiplexedDestination.DestinationPeripheral.Reference.Value, multiplexedDestination.DestinationPeripheral.LocalIndex, end.Number)))
+                                {
+                                    HandleError(ParsingError.IrqDestinationUsedMoreThanOnce, destination,
+                                                string.Format("Destination '{0}:{1}' has already been used as a destination in this entry.", multiplexedDestination.DestinationPeripheral, end.ToShortString()), true);
+                                }
                             }
                         }
                     }

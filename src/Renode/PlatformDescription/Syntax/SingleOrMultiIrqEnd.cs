@@ -5,10 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Antmicro.Migrant;
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -38,12 +36,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public override string ToString()
         {
-            var endsAsArray = Ends.ToArray();
-            if(endsAsArray.Length < 2)
-            {
-                return "IRQ: " + endsAsArray[0].ToShortString();
-            }
-            return "IRQs: " + endsAsArray.Select(x => x.ToShortString()).Aggregate((x, y) => x + ',' + y);
+            return PrettyPrintEnds(Ends);
         }
 
         public IEnumerable<object> Visit()
@@ -54,5 +47,15 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public Position StartPosition { get; private set; }
         public int Length { get; private set; }
         public IEnumerable<IrqEnd> Ends { get; private set; }
+
+        private static string PrettyPrintEnds(IEnumerable<IrqEnd> ends)
+        {
+            var endsAsArray = ends.ToArray();
+            if(endsAsArray.Length < 2)
+            {
+                return endsAsArray[0].ToShortString();
+            }
+            return $"[{endsAsArray.Select(x => x.ToShortString()).Aggregate((x, y) => x + ',' + y)}]";
+        }
     }
 }

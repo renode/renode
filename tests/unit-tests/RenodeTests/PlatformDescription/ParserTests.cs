@@ -195,10 +195,80 @@ uart:
             var entry = result.Value.Entries.Single();
             var attributes = entry.Attributes.Cast<IrqAttribute>().ToArray();
             Assert.AreEqual(1, attributes[0].Sources.Single().Ends.Single().Number);
-            Assert.AreEqual("pic", attributes[0].DestinationPeripheral.Reference.Value);
-            Assert.AreEqual(2, attributes[0].Destinations.Single().Ends.Single().Number);
+            Assert.AreEqual("pic", attributes[0].Destinations.ElementAt(0).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(2, attributes[0].Destinations.ElementAt(0).Destinations.Single().Ends.Single().Number);
             Assert.AreEqual("IRQ", attributes[1].Sources.Single().Ends.Single().PropertyName);
             Assert.IsNull(attributes[2].Sources);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithSimpleMultiplexedIrqEntries()
+        {
+            var source = @"
+uart:
+    1 -> pic@2 | pic1@3
+    -> pic2@4 | pic3@5
+    IRQ -> pic4@6 | pic5@7 | pic6@8 | pic7@9";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            var attributes = entry.Attributes.Cast<IrqAttribute>().ToArray();
+
+            Assert.AreEqual(1, attributes[0].Sources.Single().Ends.Single().Number);
+            Assert.AreEqual(2, attributes[0].Destinations.ElementAt(0).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual("pic", attributes[0].Destinations.ElementAt(0).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(3, attributes[0].Destinations.ElementAt(1).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual("pic1", attributes[0].Destinations.ElementAt(1).DestinationPeripheral.Reference.Value);
+
+            Assert.IsNull(attributes[1].Sources);
+            Assert.AreEqual(4, attributes[1].Destinations.ElementAt(0).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual("pic2", attributes[1].Destinations.ElementAt(0).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(5, attributes[1].Destinations.ElementAt(1).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual("pic3", attributes[1].Destinations.ElementAt(1).DestinationPeripheral.Reference.Value);
+
+            Assert.AreEqual("IRQ", attributes[2].Sources.ElementAt(0).Ends.ElementAt(0).PropertyName);
+            Assert.AreEqual(4, attributes[2].Destinations.Count());
+        }
+
+        [Test]
+        public void ShouldParseEntryWithMultiplexedMultiIrqEntries()
+        {
+            var source = @"
+uart:
+    [1-2, IRQ] -> pic0@[4-6] | pic1@[7-8, 9] | pic2@[10, 11, 12]";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            var attribute = entry.Attributes.Cast<IrqAttribute>().Single();
+
+            var flattenedSources = attribute.Sources.SelectMany(x => x.Ends).ToArray();
+            var flattenedDestinations = attribute.Destinations.ElementAt(0).Destinations.SelectMany(x => x.Ends).ToArray();
+            Assert.AreEqual(1, flattenedSources[0].Number);
+            Assert.AreEqual(2, flattenedSources[1].Number);
+            Assert.AreEqual("IRQ", flattenedSources[2].PropertyName);
+            Assert.AreEqual(3, flattenedSources.Count());
+
+            Assert.AreEqual("pic0", attribute.Destinations.ElementAt(0).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(flattenedSources.Count(), attribute.Destinations.ElementAt(0).Destinations.SelectMany(x => x.Ends).Count());
+            Assert.AreEqual(4, attribute.Destinations.ElementAt(0).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual(5, attribute.Destinations.ElementAt(0).Destinations.ElementAt(0).Ends.ElementAt(1).Number);
+            Assert.AreEqual(6, attribute.Destinations.ElementAt(0).Destinations.ElementAt(0).Ends.ElementAt(2).Number);
+
+            Assert.AreEqual("pic1", attribute.Destinations.ElementAt(1).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(flattenedSources.Count(), attribute.Destinations.ElementAt(1).Destinations.SelectMany(x => x.Ends).Count());
+            Assert.AreEqual(7, attribute.Destinations.ElementAt(1).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual(8, attribute.Destinations.ElementAt(1).Destinations.ElementAt(0).Ends.ElementAt(1).Number);
+            Assert.AreEqual(9, attribute.Destinations.ElementAt(1).Destinations.ElementAt(1).Ends.ElementAt(0).Number);
+
+            Assert.AreEqual("pic2", attribute.Destinations.ElementAt(2).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(flattenedSources.Count(), attribute.Destinations.ElementAt(2).Destinations.SelectMany(x => x.Ends).Count());
+            Assert.AreEqual(10, attribute.Destinations.ElementAt(2).Destinations.ElementAt(0).Ends.ElementAt(0).Number);
+            Assert.AreEqual(11, attribute.Destinations.ElementAt(2).Destinations.ElementAt(1).Ends.ElementAt(0).Number);
+            Assert.AreEqual(12, attribute.Destinations.ElementAt(2).Destinations.ElementAt(2).Ends.ElementAt(0).Number);
         }
 
         [Test]
@@ -212,9 +282,9 @@ uart:
             Assert.IsTrue(result.WasSuccessful, result.ToString());
 
             var entry = result.Value.Entries.Single();
-            var attributes = entry.Attributes.Cast<IrqAttribute>().ToArray();
-            var flattenedSources = attributes[0].Sources.SelectMany(x => x.Ends).ToArray();
-            var flattenedDestinations = attributes[0].Destinations.SelectMany(x => x.Ends).ToArray();
+            var attribute = entry.Attributes.Cast<IrqAttribute>().Single();
+            var flattenedSources = attribute.Sources.SelectMany(x => x.Ends).ToArray();
+            var flattenedDestinations = attribute.Destinations.ElementAt(0).Destinations.SelectMany(x => x.Ends).ToArray();
             Assert.AreEqual(1, flattenedSources[0].Number);
             Assert.AreEqual(2, flattenedSources[1].Number);
             Assert.AreEqual(3, flattenedSources[2].Number);
@@ -239,9 +309,9 @@ uart:
             var entry = result.Value.Entries.Single();
             var attribute = entry.Attributes.OfType<IrqAttribute>().Single();
             Assert.AreEqual(1, attribute.Sources.Single().Ends.Single().Number);
-            Assert.AreEqual("something", attribute.DestinationPeripheral.Reference.Value);
-            Assert.AreEqual(3, attribute.DestinationPeripheral.LocalIndex);
-            Assert.AreEqual(2, attribute.Destinations.Single().Ends.Single().Number);
+            Assert.AreEqual("something", attribute.Destinations.ElementAt(0).DestinationPeripheral.Reference.Value);
+            Assert.AreEqual(3, attribute.Destinations.ElementAt(0).DestinationPeripheral.LocalIndex);
+            Assert.AreEqual(2, attribute.Destinations.ElementAt(0).Destinations.Single().Ends.Single().Number);
         }
 
         [Test]

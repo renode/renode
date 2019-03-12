@@ -72,8 +72,7 @@
     <Compile Include="PlatformDescription\Syntax\IInitable.cs" />
     <Compile Include="PlatformDescription\Syntax\InitAttribute.cs" />
     <Compile Include="PlatformDescription\Syntax\IPrefixable.cs" />
-    <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
-    <Compile Include="PlatformDescription\Syntax\IrqDestination.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqReceiver.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqEnd.cs" />
     <Compile Include="PlatformDescription\Syntax\ISimplestValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IVisitable.cs" />
@@ -116,6 +115,8 @@
     <Compile Include="UI\TermsharpProvider.cs" />
     <Compile Include="EmulationEnvironment\EmulationEnvironment.cs" />
     <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqDestinations.cs" />
+    <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

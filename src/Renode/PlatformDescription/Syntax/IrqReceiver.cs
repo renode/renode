@@ -4,22 +4,21 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
+
 using System.Collections.Generic;
-using Antmicro.Migrant;
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-    public sealed class IrqDestination : IPositionAware<IrqDestination>, IWithPosition, IVisitable
+    public sealed class IrqReceiver : IPositionAware<IrqReceiver>, IWithPosition, IVisitable
     {
-        public IrqDestination(ReferenceValue reference, int? localIndex)
+        public IrqReceiver(ReferenceValue reference, int? localIndex)
         {
             Reference = reference;
             LocalIndex = localIndex;
         }
 
-        public IrqDestination SetPos(Position startPos, int length)
+        public IrqReceiver SetPos(Position startPos, int length)
         {
             var copy = SerializationProvider.Instance.DeepClone(this);
         	copy.StartPosition = startPos;
@@ -29,7 +28,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public string ToShortString()
         {
-            return Reference + (LocalIndex != null ? "#" + LocalIndex.ToString() : "");
+            return Reference.ToShortString() + (LocalIndex != null ? "#" + LocalIndex.ToString() : "");
         }
 
         public IEnumerable<object> Visit()

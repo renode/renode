@@ -279,7 +279,36 @@ sender:
             ProcessSource(source);
             MockIrqSender sender;
             Assert.IsTrue(machine.TryGetByName("sysbus.sender", out sender));
-            Assert.AreEqual(1, sender.Irq.Endpoint.Number);
+            Assert.AreEqual(1, sender.Irq.Endpoints[0].Number);
+        }
+
+        [Test]
+        public void ShouldHandleManyMultiplexedMultiDestinationInterrupts()
+        {
+            var source = @"
+sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral @ sysbus <0, 1>
+    gpios: 2
+    [0, Irq] -> receiver@[1-2] | receiver2@[3-4] | receiver3@[5-6]
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus <0, 1>
+receiver2: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus <1, 2>
+receiver3: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus <2, 3>";
+
+            ProcessSource(source);
+            MockGPIOByNumberConnectorPeripheral sender;
+            MockReceiver receiver, receiver2, receiver3;
+            Assert.IsTrue(machine.TryGetByName("sysbus.sender", out sender));
+            Assert.IsTrue(machine.TryGetByName("sysbus.receiver", out receiver));
+            Assert.IsTrue(machine.TryGetByName("sysbus.receiver2", out receiver2));
+            Assert.IsTrue(machine.TryGetByName("sysbus.receiver3", out receiver3));
+
+            Assert.AreEqual(3, sender.Irq.Endpoints.Count);
+            Assert.AreEqual(2, sender.Irq.Endpoints[0].Number);
+            Assert.AreEqual(4, sender.Irq.Endpoints[1].Number);
+            Assert.AreEqual(6, sender.Irq.Endpoints[2].Number);
+
+            Assert.AreEqual(receiver, sender.Irq.Endpoints[0].Receiver);
+            Assert.AreEqual(receiver2, sender.Irq.Endpoints[1].Receiver);
+            Assert.AreEqual(receiver3, sender.Irq.Endpoints[2].Receiver);
         }
 
         [Test]
@@ -310,7 +339,7 @@ sender:
             ProcessSource(source);
             MockIrqSender sender;
             Assert.IsTrue(machine.TryGetByName("sysbus.sender", out sender));
-            Assert.AreEqual(2, sender.Irq.Endpoint.Number);
+            Assert.AreEqual(2, sender.Irq.Endpoints[0].Number);
         }
 
         [Test]
@@ -319,7 +348,7 @@ sender:
             var a = @"
 sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral @ sysbus <0, 1>
     gpios: 64
-    [0-2, 3-5, Irq, OtherIrq] -> receiver@[0-7]
+    [0-2, 3-5, Irq, OtherIrq] -> receiver@[0-7] | receiver@[8-15]
     6 -> receiver2@7
 receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus<1, 2>
 receiver2: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus<2, 3>";
@@ -340,28 +369,28 @@ sender:
             Assert.IsTrue(machine.TryGetByName("sysbus.receiver", out receiver1));
             Assert.IsTrue(machine.TryGetByName("sysbus.receiver2", out receiver2));
 
-            Assert.AreEqual(0, sender.Irq.Endpoint.Number);
-            Assert.AreEqual(receiver2, sender.Irq.Endpoint.Receiver);
-            Assert.AreEqual(7, sender.OtherIrq.Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.OtherIrq.Endpoint.Receiver);
-            Assert.AreEqual(0, sender.Connections[0].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[0].Endpoint.Receiver);
-            Assert.AreEqual(1, sender.Connections[1].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[1].Endpoint.Receiver);
-            Assert.AreEqual(2, sender.Connections[2].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[2].Endpoint.Receiver);
-            Assert.AreEqual(1, sender.Connections[3].Endpoint.Number);
-            Assert.AreEqual(receiver2, sender.Connections[3].Endpoint.Receiver);
-            Assert.AreEqual(2, sender.Connections[4].Endpoint.Number);
-            Assert.AreEqual(receiver2, sender.Connections[4].Endpoint.Receiver);
-            Assert.AreEqual(5, sender.Connections[5].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[5].Endpoint.Receiver);
-            Assert.AreEqual(7, sender.Connections[6].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[6].Endpoint.Receiver);
-            Assert.AreEqual(8, sender.Connections[7].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[7].Endpoint.Receiver);
-            Assert.AreEqual(9, sender.Connections[8].Endpoint.Number);
-            Assert.AreEqual(receiver1, sender.Connections[8].Endpoint.Receiver);
+            Assert.AreEqual(0, sender.Irq.Endpoints[0].Number);
+            Assert.AreEqual(receiver2, sender.Irq.Endpoints[0].Receiver);
+            Assert.AreEqual(7, sender.OtherIrq.Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.OtherIrq.Endpoints[0].Receiver);
+            Assert.AreEqual(0, sender.Connections[0].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[0].Endpoints[0].Receiver);
+            Assert.AreEqual(1, sender.Connections[1].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[1].Endpoints[0].Receiver);
+            Assert.AreEqual(2, sender.Connections[2].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[2].Endpoints[0].Receiver);
+            Assert.AreEqual(1, sender.Connections[3].Endpoints[0].Number);
+            Assert.AreEqual(receiver2, sender.Connections[3].Endpoints[0].Receiver);
+            Assert.AreEqual(2, sender.Connections[4].Endpoints[0].Number);
+            Assert.AreEqual(receiver2, sender.Connections[4].Endpoints[0].Receiver);
+            Assert.AreEqual(5, sender.Connections[5].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[5].Endpoints[0].Receiver);
+            Assert.AreEqual(7, sender.Connections[6].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[6].Endpoints[0].Receiver);
+            Assert.AreEqual(8, sender.Connections[7].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[7].Endpoints[0].Receiver);
+            Assert.AreEqual(9, sender.Connections[8].Endpoints[0].Number);
+            Assert.AreEqual(receiver1, sender.Connections[8].Endpoints[0].Receiver);
         }
 
         [Test]
