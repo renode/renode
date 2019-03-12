@@ -1,0 +1,16 @@
+cpu: CPU.VexRiscv @ sysbus
+
+mem: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x40000
+
+mem2: Memory.MappedMemory @ sysbus 0x00001000
+    size: 0x40000
+
+uart: UART.Murax_UART @ sysbus 0xF0010000
+    IRQ -> cpu@11 // Machine External Interrupt
+
+gpioA: GPIOPort.Murax_GPIO @ sysbus 0xF0000000
+
+timer: Timers.Murax_Timer @ sysbus 0xF0020000
+    IRQ -> cpu@7 // Machine Timer Interrupt
+
