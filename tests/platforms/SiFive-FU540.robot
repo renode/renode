@@ -31,14 +31,14 @@ Should Boot Linux
     [Tags]                    linux  uart  interrupts
     Prepare Machine
 
-    Create Terminal Tester    ${UART}  prompt=\#
+    Create Terminal Tester    ${UART}
     Start Emulation
 
     Wait For Prompt On Uart   buildroot login  timeout=480
     Write Line To Uart        root
     Wait For Prompt On Uart   Password         timeout=60
     Write Line To Uart        root             waitForEcho=false
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart   \#
 
     Provides                  booted-linux
 

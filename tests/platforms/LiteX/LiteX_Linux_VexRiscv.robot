@@ -5,6 +5,10 @@ Suite Teardown                Teardown
 Test Setup                    Reset Emulation
 Resource                      ${RENODEKEYWORDS}
 
+
+*** Variables ***
+${SHELL_PROMPT}                $
+
 *** Keywords ***
 Create Platform
     Execute Command            using sysbus
@@ -26,18 +30,17 @@ Create Platform
 *** Test Cases ***
 Should Boot
     Create Platform
-    Create Terminal Tester     sysbus.uart  prompt=buildroot login:
+    Create Terminal Tester     sysbus.uart
     Execute Command            showAnalyzer sysbus.uart
 
     Start Emulation
 
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    buildroot login:
     Write Line To Uart         root
 
     Wait For Line On Uart      root login on 'console'
 
     Write Line To Uart         export PS1="$ "
-    Set New Prompt For Uart    $
 
     Provides                   booted-image
 
@@ -48,44 +51,44 @@ Should Control LED
     Execute Command            led_tester AssertState false
 
     Write Line To Uart         cd /sys/class/gpio
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Write Line To Uart         echo 508 > export
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Write Line To Uart         cd gpio508
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Execute Command            led_tester AssertState false
     Write Line To Uart         echo 1 > value
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Execute Command            led_tester AssertState true
 
     Write Line To Uart         echo 0 > value
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Execute Command            led_tester AssertState false
 
 Should Read Button
     Requires                   booted-image
 
     Write Line To Uart         cd /sys/class/gpio
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Write Line To Uart         echo 504 > export
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
     Write Line To Uart         cd gpio504
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Write Line To Uart         cat value
     Wait For Line On Uart      0
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Execute Command            gpio_in.button Toggle
     Write Line To Uart         cat value
     Wait For Line On Uart      1
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Execute Command            gpio_in.button Toggle
     Write Line To Uart         cat value
     Wait For Line On Uart      0
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
 Should Handle SPI
     Requires                   booted-image
@@ -114,11 +117,10 @@ Should Handle I2C
 
     Write Line To Uart         cat in_temp_raw
     Wait For Line On Uart      4352
-    Set New Prompt For Uart    $
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Execute Command            i2c.si7021 Temperature 36
     Write Line To Uart         cat in_temp_raw
     Wait For Line On Uart      3840
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    ${SHELL_PROMPT}
 

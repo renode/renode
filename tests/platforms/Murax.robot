@@ -30,7 +30,7 @@ Echo On Uart
     Write Char On Uart         n
     Write Char On Uart         t
 
-    Wait For Prompt On Uart    prompt=Ant
+    Wait For Prompt On Uart    Ant
 
 Timer Blinking Led
     [Tags]                     non_critical

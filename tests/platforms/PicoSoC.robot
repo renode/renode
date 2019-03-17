@@ -17,9 +17,9 @@ Should Run Sample Binary
     Execute Command           $bin = ${URI}/icebreaker_fw.elf-s_14080-c09a99cd3716d6428af7700e19af66d7935ea438
     Execute Script            ${SCRIPT}
 
-    Create Terminal Tester    ${UART}  Command>
+    Create Terminal Tester    ${UART}  endLineOption=TreatCarriageReturnAsEndLine
     Start Emulation
 
     Wait For Line On Uart     Press ENTER to continue..
     Write Line To Uart
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart   Command>

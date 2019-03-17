@@ -23,17 +23,18 @@ Frame Buffer Test
 
     Execute Command            cpu PC 0x20000000
 
-    Create Terminal Tester     sysbus.uart  prompt=buildroot login:        timeout=240
+    Create Terminal Tester     sysbus.uart  
+    ...                        timeout=240
 
     Start Emulation
 
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart    buildroot login: 
     Write Line To Uart         root
 
     Wait For Line On Uart      root login on 'console'
 
     Write Line To Uart         export PS1="$ "
-    Set New Prompt For Uart    $
+    Wait For Prompt On Uart    $
 
     Execute Command            emulation CreateFrameBufferTester "fb_tester"
 

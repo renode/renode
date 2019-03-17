@@ -55,15 +55,14 @@ Should Run Shell
     Execute Command           $bin = ${URI}/shell.elf-s_392956-4b5bdd435f3d7c6555e78447438643269a87186b
     Execute Script            ${SCRIPT}
 
-    Create Terminal Tester    ${UART}  shell>
+    Create Terminal Tester    ${UART}  endLineOption=TreatCarriageReturnAsEndLine
     Start Emulation
 
-    Wait For Prompt On Uart
-    Set New Prompt For Uart   sample_module>
+    Wait For Prompt On Uart   shell>
     # this sleep here is to prevent against writing to soon on uart - it can happen under high stress of the host CPU - when an uart driver is not initalized which leads to irq-loop
     Sleep                     3
     Write Line To Uart        select sample_module
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart   sample_module>
     Write Line To Uart        ping
     Wait For Line On Uart     pong
 

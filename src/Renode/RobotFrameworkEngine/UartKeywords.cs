@@ -7,8 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Testing;
@@ -23,77 +21,69 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public int CreateTerminalTester(string uart, string prompt = null, int timeout = 120, string machine = null)
+        public string GetTerminalTesterReport(int? testerId = null)
         {
-            return CreateNewTester(uartObject => 
+            return GetTesterOrThrowException(testerId).GetReport();
+        }
+
+        [RobotFrameworkKeyword]
+        public int CreateTerminalTester(string uart, int timeout = 120, string machine = null, string endLineOption = null)
+        {
+            return CreateNewTester(uartObject =>
             {
-                var tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout), prompt);
-                tester.Terminal.AttachTo(uartObject);
+                TerminalTester tester;
+                if(Enum.TryParse<EndLineOption>(endLineOption, out var result))
+                {
+                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout), result);
+                }
+                else
+                {
+                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout));
+                }
+                tester.AttachTo(uartObject);
                 return tester;
             }, uart, machine);
         }
 
         [RobotFrameworkKeyword]
-        public void SetNewPromptForUart(string prompt, int? testerId = null)
+        public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, uint? timeout = null, bool treatAsRegex = false)
         {
-            GetTesterOrThrowException(testerId).NowPromptIs(prompt);
+            return WaitForLineOnUart(prompt, timeout, testerId, treatAsRegex, true);
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForLineOnUart(string content, uint? timeout = null, int? testerId = null, bool treatAsRegex = false)
+        public TerminalTesterResult WaitForLineOnUart(string content, ulong? timeout = null, int? testerId = null, bool treatAsRegex = false, bool includeUnfinishedLine = false)
         {
-            var groups = new string[0];
-            GetTesterOrThrowException(testerId).WaitUntilLineFunc(
-                x =>
-                {
-                    if(!treatAsRegex)
-                    {
-                        return x.Contains(content);
-                    }
-                    var match = Regex.Match(x, content);
-                    groups = match.Success ? match.Groups.Cast<Group>().Skip(1).Select(y => y.Value).ToArray() : new string[0];
-                    return match.Success;
-                },
-                out string line,
-                out var time,
-                timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)
-            );
-            return new TerminalTesterResult(line, time.TotalMilliseconds, groups);
+            TimeInterval? timeInterval = null;
+            if(timeout.HasValue)
+            {
+                timeInterval = TimeInterval.FromSeconds(timeout.Value);
+            }
+
+            var tester = GetTesterOrThrowException(testerId);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine);
+            if(result == null)
+            {
+                OperationFail(tester);
+            }
+            return result;
         }
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForNextLineOnUart(uint? timeout = null, int? testerId = null)
         {
-            GetTesterOrThrowException(testerId).WaitUntilLineExpr(
-                x => true,
-                out string line,
-                out var time,
-                timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)
-            );
-            return new TerminalTesterResult(line, time.TotalMilliseconds);
-        }
+            TimeInterval? timeInterval = null;
+            if(timeout.HasValue)
+            {
+                timeInterval = TimeInterval.FromSeconds(timeout.Value);
+            }
 
-        [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForPromptOnUart(string prompt = null, int? testerId = null, uint? timeout = null)
-        {
             var tester = GetTesterOrThrowException(testerId);
-            string previousPrompt = null;
-            if(prompt != null)
+            var result = tester.NextLine(timeInterval);
+            if(result == null)
             {
-                previousPrompt = tester.Terminal.Prompt;
-                tester.Terminal.Prompt = prompt;
+                OperationFail(tester);
             }
-
-            var result = new TerminalTesterResult(
-                tester.ReadToPrompt(out var time, timeout == null ? (TimeInterval?)null : TimeInterval.FromSeconds(timeout.Value)),
-                time.TotalMilliseconds
-            );
-
-            if(previousPrompt != null)
-            {
-                tester.Terminal.Prompt = previousPrompt;
-            }
-
             return result;
         }
 
@@ -107,34 +97,35 @@ namespace Antmicro.Renode.RobotFramework
         public TerminalTesterResult WriteCharOnUart(char c, int? testerId = null)
         {
             GetTesterOrThrowException(testerId).Write(c.ToString());
-            return new TerminalTesterResult(null, 0);
+            return new TerminalTesterResult(string.Empty, 0);
         }
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true)
         {
-            GetTesterOrThrowException(testerId).WriteLine(out var time, content, !waitForEcho);
-            return new TerminalTesterResult(content, time.TotalMilliseconds);
+            var tester = GetTesterOrThrowException(testerId);
+            tester.WriteLine(content);
+            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true) == null)
+            {
+                OperationFail(tester);
+            }
+            return new TerminalTesterResult(string.Empty, 0);
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(uint timeInSeconds, int? testerId = null)
+        public void TestIfUartIsIdle(ulong timeInSeconds, int? testerId = null)
         {
-            GetTesterOrThrowException(testerId).CheckIfUartIsIdle(TimeInterval.FromSeconds(timeInSeconds));
+            var tester = GetTesterOrThrowException(testerId);
+            var result = tester.IsIdle(TimeInterval.FromSeconds(timeInSeconds));
+            if(!result)
+            {
+                OperationFail(tester);
+            }
         }
 
-        public struct TerminalTesterResult
+        private void OperationFail(TerminalTester tester)
         {
-            public TerminalTesterResult(string line, double timestamp, string[] groups = null)
-            {
-                this.line = line == null ? string.Empty : line.StripNonSafeCharacters();
-                this.timestamp = timestamp;
-                this.groups = groups ?? new string[0];
-            }
-
-            public string line;
-            public string[] groups;
-            public double timestamp;
+            throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
         }
     }
 }
