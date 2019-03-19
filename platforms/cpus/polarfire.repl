@@ -52,23 +52,23 @@ plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
 
 mmuart0: UART.NS16550 @ sysbus 0x20000000
     wideRegisters: true
-    IRQ -> plic@90
+    IRQ -> plic@90 | e51@27
 
 mmuart1: UART.NS16550 @ sysbus 0x20100000
     wideRegisters: true
-    IRQ -> plic@91
+    IRQ -> plic@91 | u54_1@27
 
 mmuart2: UART.NS16550 @ sysbus 0x20102000
     wideRegisters: true
-    IRQ -> plic@92
+    IRQ -> plic@92 | u54_2@27
 
 mmuart3: UART.NS16550 @ sysbus 0x20104000
     wideRegisters: true
-    IRQ -> plic@93
+    IRQ -> plic@93 | u54_3@27
 
 mmuart4: UART.NS16550 @ sysbus 0x20106000
     wideRegisters: true
-    IRQ -> plic@94
+    IRQ -> plic@94 | u54_4@27
 
 mmc: SD.PSE_SDController @ sysbus 0x20008000
     IRQ -> plic@88

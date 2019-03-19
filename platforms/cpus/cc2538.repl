@@ -32,8 +32,7 @@ cpu: CPU.CortexM @ sysbus
     PerformanceInMips: 24
 
 radio: Wireless.CC2538RF @ sysbus 0x40088000
-    IRQ -> nvic@141
-    AlternativeIRQ -> nvic@26
+    IRQ -> nvic@141 | nvic@26
 
 bitband: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
     peripheralBase: 0x20000000
