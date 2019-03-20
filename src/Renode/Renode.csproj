@@ -98,6 +98,7 @@
     <Compile Include="RobotFrameworkEngine\Recorder.cs" />
     <Compile Include="RobotFrameworkEngine\RenodeKeywords.cs" />
     <Compile Include="RobotFrameworkEngine\RobotFrameworkKeywordAttribute.cs" />
+    <Compile Include="RobotFrameworkEngine\TestersProvider.cs" />
     <Compile Include="RobotFrameworkEngine\UartKeywords.cs" />
     <Compile Include="RobotFrameworkEngine\XmlRpcServer.cs" />
     <Compile Include="RobotFrameworkEngine\HelperExtensions.cs" />
