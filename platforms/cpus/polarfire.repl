@@ -93,10 +93,10 @@ can1: CAN.PSE_CAN @ sysbus 0x2010D000
     IRQ -> plic@57
 
 mac0: Network.CadenceGEM @ sysbus 0x20110000
-    IRQ -> plic@64
+    IRQ -> plic@64 | u54_1@24 | u54_2@24
 
 mac1: Network.CadenceGEM @ sysbus 0x20112000
-    IRQ -> plic@70
+    IRQ -> plic@70 | u54_3@24 | u54_4@24
 
 phy: Network.EthernetPhysicalLayer @ {
         mac0 0;
@@ -123,28 +123,28 @@ gpio2: GPIOPort.PSE_GPIO @ sysbus 0x20122000
 
 wdog0: Timers.PSE_Watchdog @ sysbus 0x20001000
     frequency: 156250 //this value is estimated from the comments in the code
-    RefreshEnable -> plic@100
-    Trigger -> plic@105
+    RefreshEnable -> plic@100 | e51@26
+    Trigger -> plic@105 | e51@25
 
 wdog1: Timers.PSE_Watchdog @ sysbus 0x20101000
     frequency: 156250 //this value is estimated from the comments in the code
-    RefreshEnable -> plic@101
-    Trigger -> plic@106
+    RefreshEnable -> plic@101 | u54_1@26
+    Trigger -> plic@106 | u54_1@25 | e51@24
 
 wdog2: Timers.PSE_Watchdog @ sysbus 0x20103000
     frequency: 156250 //this value is estimated from the comments in the code
-    RefreshEnable -> plic@102
-    Trigger -> plic@107
+    RefreshEnable -> plic@102 | u54_2@26
+    Trigger -> plic@107 | u54_2@25 | e51@23
 
 wdog3: Timers.PSE_Watchdog @ sysbus 0x20105000
     frequency: 156250 //this value is estimated from the comments in the code
-    RefreshEnable -> plic@103
-    Trigger -> plic@108
+    RefreshEnable -> plic@103 | u54_3@26
+    Trigger -> plic@108 | u54_3@25 | e51@22
 
 wdog4: Timers.PSE_Watchdog @ sysbus 0x20107000
     frequency: 156250 //this value is estimated from the comments in the code
-    RefreshEnable -> plic@104
-    Trigger -> plic@109
+    RefreshEnable -> plic@104 | u54_4@26
+    Trigger -> plic@109 | u54_4@25 | e51@21
 
 rtc: Timers.PSE_RTC @ sysbus 0x20124000
     WakeupIRQ -> plic@80
