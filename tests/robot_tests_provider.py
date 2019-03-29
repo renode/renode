@@ -23,6 +23,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--show-monitor", dest="show_monitor", action="store_true", default=False, help="Display monitor window.")
     parser.add_argument("--show-analyzers", dest="show_analyzers", action="store_true", default=False, help="Display analyzers.")
     parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
+    parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
 
 def verify_cli_arguments(options):
     if platform != "win32" and options.port == str(options.remote_server_port):
@@ -189,6 +190,9 @@ class RobotTestSuite(object):
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
             variables.append('CONFIGURATION:Debug')
+
+        if options.variables:
+            variables += options.variables
 
         test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
         if fixture:
