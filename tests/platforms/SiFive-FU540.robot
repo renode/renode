@@ -21,6 +21,10 @@ Prepare Machine
     # attach I2C sensors
     Execute Command           machine LoadPlatformDescriptionFromString "si7021: Sensors.SI70xx @ i2c 0x40 { model: Model.SI7021 }"
 
+    # create gpio analyzer and connect pwm0 to it
+    Execute Command           machine LoadPlatformDescriptionFromString "pt: PWMTester @ pwm0 2"
+    Execute Command           machine LoadPlatformDescriptionFromString "pwm0: { 2 -> pt@0 }"
+
 *** Test Cases ***
 Should Boot Linux
     [Documentation]           Boots Linux on SiFive Freedom U540 platform.
@@ -88,3 +92,67 @@ Should Read Temperature From I2C sensor
     # warning: the driver uses different equation to calculate the actual value than the documentation says, so it will differ from what we set in the peripheral
     Write Line To Uart        cat in_temp_raw
     Wait For Line On Uart     7780
+
+# there is some bug in PWM implementation or the PWM tester and this tests fails non-deterministically
+Should Generate Proper PWM Pulses
+    [Tags]                    non_critical
+    Requires                  booted-linux
+
+    Write Line To Uart        echo 5 > /sys/class/leds/netdev/brightness
+    Execute Command           pwm0.pt Reset
+    Sleep                     3
+    ${hp}=  Execute Command   pwm0.pt HighPercentage
+    ${hpn}=  Convert To Number  ${hp}
+    Should Be True            ${hpn} < 10
+    Should Be True            ${hpn} > 0
+
+    Write Line To Uart        echo 127 > /sys/class/leds/netdev/brightness
+    Execute Command           pwm0.pt Reset
+    Sleep                     3
+    ${hp}=  Execute Command   pwm0.pt HighPercentage
+    ${hpn}=  Convert To Number  ${hp}
+    Should Be True            ${hpn} < 55
+    Should Be True            ${hpn} > 45
+
+    Write Line To Uart        echo 250 > /sys/class/leds/netdev/brightness
+    Execute Command           pwm0.pt Reset
+    Sleep                     3
+    ${hp}=  Execute Command   pwm0.pt HighPercentage
+    ${hpn}=  Convert To Number  ${hp}
+    Should Be True            ${hpn} < 100
+    Should Be True            ${hpn} > 90
+
+Should Ping Linux
+    Execute Command           emulation CreateSwitch "switch"
+
+    Execute Command           $name="unleashed-1"
+    Prepare Machine
+    Execute Command           connector Connect ethernet switch
+    ${u1}=                    Create Terminal Tester    ${UART}     machine=unleashed-1
+
+    Execute Command           mach clear
+    Execute Command           $name="unleashed-2"
+    Prepare Machine
+    Execute Command           connector Connect ethernet switch
+    ${u2}=                    Create Terminal Tester    ${UART}     machine=unleashed-2
+    Execute Command           mach clear
+    
+    Start Emulation
+
+    Wait For Prompt On Uart   buildroot login                    timeout=120    testerId=${u1}
+    Write Line To Uart        root                                              testerId=${u1}
+    Wait For Prompt On Uart   Password                                          testerId=${u1}
+    Write Line To Uart        root                         waitForEcho=false    testerId=${u1}
+
+    Wait For Prompt On Uart   buildroot login                     timeout=120   testerId=${u2}
+    Write Line To Uart        root                                              testerId=${u2}
+    Wait For Prompt On Uart   Password                                          testerId=${u2}
+    Write Line To Uart        root                         waitForEcho=false    testerId=${u2}
+
+    Write Line To Uart        ifconfig eth0 hw ether 02:01:03:05:04:06          testerId=${u1}
+    Write Line To Uart        ifconfig eth0 192.168.0.1 netmask 255.255.255.0   testerId=${u1}
+    Write Line To Uart        ifconfig eth0 192.168.0.2 netmask 255.255.255.0   testerId=${u2}
+
+    Write Line To Uart        ping 192.168.0.1                                  testerId=${u2}
+    Wait For Line On Uart     64 bytes from 192.168.0.1           timeout=60    testerId=${u2}
+
