@@ -22,7 +22,7 @@ plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
     numberOfSources: 52
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
-    0 -> cpu@7
+    [0,1] -> cpu@[3,7]
     frequency: 62000000
 
 qspi0Xip: Memory.MappedMemory @ sysbus 0x20000000
