@@ -1,29 +1,13 @@
-mem: Memory.MappedMemory @ sysbus 0x0
-    size: 0x40000
-
-mem2: Memory.MappedMemory @ sysbus 0x10000000
-    size: 0x40000
-
-ddr: Memory.MappedMemory @ sysbus 0x40000000
-    size: 0x10000000
+using "platforms/cpus/litex_common.repl"
 
 cpu: CPU.VexRiscv @ sysbus
 
-uart: UART.LiteX_UART @ sysbus 0xE0001800
+timer0:
+    -> cpu@1
+
+uart:
     -> cpu@2
 
-timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
-    -> cpu@1
-    frequency: 100000000
+eth:
+    -> cpu@3
 
-eth: Network.LiteX_Ethernet @ {
-        sysbus <0xE0007800, +0x100>;
-        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
-    }
-    IRQ -> cpu@3
-
-sysbus:
-    init:
-        Tag <0xE0008000 0x200> "DDR_PHY"
-        Tag <0xE0004000 0x200> "SDRAM_CONTROLLER"
-        Tag <0xE0000800 0x200> "UART_PHY"
