@@ -3,6 +3,67 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.7.0 - 2019.05.02
+------------------
+
+Added:
+
+* PicoRV32 CPU
+* LiteX platform with PicoRV32
+* LiteX timer and ethernet (LiteEth) model
+* Murax SoC with UART, timer and GPIO controller models
+* Fomu target support with LiteX and VexRiscv
+* SAM E70 Xplained platform with USART, TRNG and ethernet controller models
+* STM32F4 Random Number Generator model
+* PSE watchdog model
+* PTP support in Cadence GEM ethernet model, along with several fixes
+* option to execute CPUs in serial instead of parallel
+* support for custom instructions in RISC-V
+* ``empty`` keyword in REPL
+* graphical display analyzer support on Windows
+* multi-target GPIO support, along with the new REPL syntax
+* local interrupts in PolarFire SoC platform
+* option to pass variables to Robot tests via test.sh
+* some SiFive FU540 tests
+* network interface tester for Robot tests
+* tests for PTP implementation in Zephyr
+
+Changed:
+
+* Micron MT25Q is now able to use file as a backend and does not need to have a separate memory provided in REPL
+* Micron MT25Q now has selectable endianess
+* ``logFile`` command will now create a copy of the previous log before overwriting it
+* ``sysbus LogPeripheralAccess`` will now add the active CPU name and current PC to log messages
+* single-stepping of a CPU is now easier, it requires only a single call to ``cpu Step`` on a paused CPU
+* NVIC reload value is now 24-bit
+* reimplemented the STM32_UART model
+* updated the PolarFire SoC memory map
+* updated the SiFive FU540 memory map
+* ``GetClockSourceInfo`` will now display the name of the timer
+* Termsharp will no longer print the NULL character
+* RISC-V cores will now abort when trying to run a disabled F/D instruction
+
+Fixed:
+
+* handling of divider in ComparingTimer
+* reporting of download progress on some Mono versions
+* running Robot tests on Windows
+* generation of TAP helper on newest Mono releases
+* Renode crashing after opening a socket on the same port twice
+* serialization of data storage structures
+* architecture name reported on GDB connection for Cortex-M CPUs
+* highlighting of wrapped lines in the terminal on Windows
+* TAB completion in the Monitor on Windows
+* RNG determinism and serialization for multicore/multi-node systems
+* SiFive FE310 interrupt connection
+* instruction counting in RISC-V on MMU faults
+* time progress in multicore systems
+* fixes in MiV GPIO controller model
+* several fixes and improvements in file backend storage layer
+* several fixes in testing scripts
+* several fixes in various LiteX peripherals
+* several fixes in PSE QSPI and Micron MT25Q model
+
 1.6.2 - 2019.01.10
 ------------------
 
