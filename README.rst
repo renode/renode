@@ -38,11 +38,12 @@ Mono/.NET
 
 Renode requires Mono >= 5.0 (Linux, macOS) or .NET >= 4.7 (Windows).
 
-**Linux**: Install the ``mono-complete`` package as per the installation instructions for various Linux distributions which can be found on `the Mono project website <https://www.mono-project.com/download/stable/#download-lin>`_.
+.. csv-table::
+   :delim: |
 
-**macOS**: On macOS, the Mono package can be downloaded directly from `the Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
-
-**Windows**: On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_. Windows 10 ships with .NET by default, so no action is required there.
+   **Linux** | Install the ``mono-complete`` package as per the installation instructions for various Linux distributions which can be found on `the Mono project website <https://www.mono-project.com/download/stable/#download-lin>`_.
+   **macOS** | On macOS, the Mono package can be downloaded directly from `the Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
+   **Windows** | On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_. Windows 10 ships with .NET by default, so no action is required there.
 
 Other dependencies (Linux only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,11 +59,12 @@ Installing from packages
 
 Go to `the releases section <https://github.com/renode/renode/releases/latest>`_ of this repository and download the appropriate package for your system.
 
-**Linux**: Install Renode as normal with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
+.. csv-table::
+   :delim: |
 
-**macOS**: Use the provided ``*.dmg`` as normal. Additionally, to be able to run Renode from the command line on macOS, create an appropriate alias. If you're using Bash, you can do it by adding ``alias renode="mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe"`` to your ``.bashrc`` file.
-
-**Windows**: Install Renode from the provided ``*.msi`` file. The installer will allow you to add icons to your Desktop and/or Start Menu and an entry to your PATH.
+   **Linux** | Install Renode as normal with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
+   **macOS** | Use the provided ``*.dmg`` as normal. Additionally, to be able to run Renode from the command line on macOS, create an appropriate alias. If you're using Bash, you can do it by adding ``alias renode="mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe"`` to your ``.bashrc`` file.
+   **Windows** | Install Renode from the provided ``*.msi`` file. The installer will allow you to add icons to your Desktop and/or Start Menu and an entry to your PATH.
 
 Additional prerequisites (for Robot framework testing)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -153,4 +155,3 @@ Commercial support for Renode is provided by `Antmicro <http://antmicro.com>`_, 
 Antmicro created and maintains the Renode framework and related tooling, and is happy to provide services such as adding new platforms, integrations, plugins and tools.
 
 To inquire about our services, contact us at support@renode.io.
-
