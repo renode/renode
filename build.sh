@@ -92,31 +92,31 @@ fi
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS
 then
-    MINIMAL_MONO=`cat tools/mono_version`
+    MINIMUM_MONO=`cat tools/mono_version`
 
     if ! [ -x "$(command -v $LAUNCHER)" ]
     then
-        echo "$LAUNCHER not found. Renode requires Mono $MINIMAL_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
     if ! [ -x "$(command -v mcs)" ]
     then
-        echo "mcs not found. Renode requries Mono $MINIMAL_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
     # Check mono version
-    MINIMAL_MONO_MAJOR=`echo $MINIMAL_MONO | cut -d'.' -f1`
-    MINIMAL_MONO_MINOR=`echo $MINIMAL_MONO | cut -d'.' -f2`
+    MINIMUM_MONO_MAJOR=`echo $MINIMUM_MONO | cut -d'.' -f1`
+    MINIMUM_MONO_MINOR=`echo $MINIMUM_MONO | cut -d'.' -f2`
 
     INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
     INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
     INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
 
-    if (( $INSTALLED_MONO_MAJOR < $MINIMAL_MONO_MAJOR || (($INSTALLED_MONO_MAJOR == $MINIMAL_MONO_MAJOR) && ($INSTALLED_MONO_MINOR < $MINIMAL_MONO_MINOR)) ))
+    if (( $INSTALLED_MONO_MAJOR < $MINIMUM_MONO_MAJOR || (($INSTALLED_MONO_MAJOR == $MINIMUM_MONO_MAJOR) && ($INSTALLED_MONO_MINOR < $MINIMUM_MONO_MINOR)) ))
     then
-        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMAL_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 fi
