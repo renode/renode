@@ -30,6 +30,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Diagnostics;
 using System.IO.Pipes;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
