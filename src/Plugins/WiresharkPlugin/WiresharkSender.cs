@@ -142,7 +142,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private bool SendToWireshark(byte[] buffer, int offset, int lenght)
         {
-            return SendToWireshark(buffer, offset, lenght, DateTime.Now);
+            return SendToWireshark(buffer, offset, lenght, CustomDateTime.Now);
         }
 
         private bool SendToWireshark(byte[] buffer, int offset, int lenght, DateTime date)
