@@ -25,16 +25,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             mainSocket = new CommunicationChannel(timeout);
             asyncEventsSocket = new CommunicationChannel(timeout);
-            InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
-            InitTimer(machine.ClockSource, frequency, limitBuffer);
-
             receiveThread = new Thread(ReceiveLoop)
             {
                 IsBackground = true,
                 Name = "Verilated.Receiver"
             };
-            receiveThread.Start();
-            Handshake();
+            SimulationFilePath = simulationFilePath;
+            InitTimer(machine.ClockSource, frequency, limitBuffer);
+
         }
 
         public uint ReadDoubleWord(long offset)
@@ -87,6 +85,29 @@ namespace Antmicro.Renode.Peripherals.Verilated
             isConnected = false;
             receiveThread.Join();
             verilatedProcess.Close();
+        }
+
+        public string SimulationFilePath
+        {
+            get
+            {
+                return simulationFilePath;
+            }
+            set
+            {
+                if(!String.IsNullOrWhiteSpace(simulationFilePath))
+                {
+                    throw new RecoverableException("Verilated peripheral already initialized, cannot change the file name");
+                }
+                simulationFilePath = value;
+                if(!String.IsNullOrWhiteSpace(simulationFilePath))
+                {
+                    this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
+                    InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
+                    receiveThread.Start();
+                    Handshake();
+                }
+            }
         }
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
@@ -153,6 +174,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
                 verilatedProcess.Exited += (sender, args) =>
                 {
+                    this.Log(LogLevel.Debug, "Disconnecting from '{0}'", simulationFilePath);
                     isConnectionValid = false;
                 };
 
@@ -169,10 +191,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
             mainSocket.TrySend(new ProtocolMessage(ActionType.Handshake, 0, 0));
             if(!mainSocket.TryReceive(out var result))
             {
+                this.Log(LogLevel.Warning, "Failed to connect to the verilated peripheral");
                 isConnectionValid = false;
                 return;
             }
             isConnectionValid = result.ActionId == ActionType.Handshake;
+            this.Log(LogLevel.Debug, "Connected to the verilated peripheral. Connection is {0}valid.", isConnectionValid ? String.Empty : "not ");
         }
 
         private ProtocolMessage Receive()
@@ -199,6 +223,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private readonly Thread receiveThread;
         private Process verilatedProcess;
         private bool isConnected;
+        private string simulationFilePath;
 
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
