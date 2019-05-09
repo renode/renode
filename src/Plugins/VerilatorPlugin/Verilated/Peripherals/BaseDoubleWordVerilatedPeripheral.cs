@@ -16,6 +16,7 @@ using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 using Antmicro.Renode.Time;
+using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
@@ -103,6 +104,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
                     this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
+#if !PLATFORM_WINDOWS
+                    Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
+#endif
                     InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
                     receiveThread.Start();
                     Handshake();
