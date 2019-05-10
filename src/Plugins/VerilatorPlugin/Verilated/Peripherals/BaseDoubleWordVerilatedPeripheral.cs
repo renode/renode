@@ -107,6 +107,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             set
             {
+#if PLATFORM_WINDOWS
+                this.Log(LogLevel.Error, "Running verilated peripherals is not yet supported on Windows.");
+                return;
+#endif
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
                     throw new RecoverableException("Verilated peripheral already initialized, cannot change the file name");
