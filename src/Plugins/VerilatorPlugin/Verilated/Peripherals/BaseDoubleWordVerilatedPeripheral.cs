@@ -84,8 +84,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 mainSocket.TrySend(new ProtocolMessage(ActionType.Disconnect, 0, 0));
             }
             isConnected = false;
-            receiveThread.Join();
-            verilatedProcess.Close();
+            if(receiveThread.IsAlive)
+            {
+                receiveThread.Join();
+            }
+            if(verilatedProcess != null)
+            {
+                verilatedProcess.Close();
+            }
         }
 
         public string SimulationFilePath
