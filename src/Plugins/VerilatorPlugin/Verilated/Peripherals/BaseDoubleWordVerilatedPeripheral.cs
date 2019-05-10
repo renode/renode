@@ -224,14 +224,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
             throw new CpuAbortException();
         }
 
-        private readonly CommunicationChannel mainSocket;
-        private bool isConnectionValid;
-        private readonly LimitTimer timer;
-        private readonly CommunicationChannel asyncEventsSocket;
-        private readonly Thread receiveThread;
         private Process verilatedProcess;
         private bool isConnected;
+        private bool isConnectionValid;
         private string simulationFilePath;
+        private readonly LimitTimer timer;
+        private readonly CommunicationChannel mainSocket;
+        private readonly CommunicationChannel asyncEventsSocket;
+        private readonly Thread receiveThread;
 
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
