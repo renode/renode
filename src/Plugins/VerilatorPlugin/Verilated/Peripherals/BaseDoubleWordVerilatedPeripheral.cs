@@ -32,7 +32,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 Name = "Verilated.Receiver"
             };
             SimulationFilePath = simulationFilePath;
-            InitTimer(machine.ClockSource, frequency, limitBuffer);
+            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
+            timer.LimitReached += () =>
+            {
+                Send(ActionType.TickClock, 0, limitBuffer);
+            };
 
         }
 
@@ -75,6 +79,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public void Reset()
         {
             Send(ActionType.ResetPeripheral, 0, 0);
+            timer.Reset();
         }
 
         public void Dispose()
@@ -160,15 +165,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
         protected const ulong LimitBuffer = 1000000;
         protected const int DefaultTimeout = 3;
 
-        private void InitTimer(IClockSource clockSource, long frequency, ulong limit)
-        {
-            var timer = new LimitTimer(clockSource, frequency, this, LimitTimerName, limit, enabled: true, eventEnabled: true, autoUpdate: true);
-            timer.LimitReached += () =>
-            {
-                Send(ActionType.TickClock, 0, limit);
-            };
-        }
-
         private void InitVerilatedProcess(string filePath, int mainPort, int receiverPort)
         {
             try
@@ -206,6 +202,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 return;
             }
             isConnectionValid = result.ActionId == ActionType.Handshake;
+            timer.Enabled = isConnectionValid;
             this.Log(LogLevel.Debug, "Connected to the verilated peripheral. Connection is {0}valid.", isConnectionValid ? String.Empty : "not ");
         }
 
@@ -229,6 +226,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private readonly CommunicationChannel mainSocket;
         private bool isConnectionValid;
+        private readonly LimitTimer timer;
         private readonly CommunicationChannel asyncEventsSocket;
         private readonly Thread receiveThread;
         private Process verilatedProcess;
