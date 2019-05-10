@@ -107,8 +107,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             set
             {
-#if PLATFORM_WINDOWS
-                this.Log(LogLevel.Error, "Running verilated peripherals is not yet supported on Windows.");
+#if !PLATFORM_LINUX
+                this.Log(LogLevel.Error, "Running verilated peripherals is only supported on Linux.");
                 return;
 #endif
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
