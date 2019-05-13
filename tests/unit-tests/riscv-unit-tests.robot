@@ -23,7 +23,7 @@ Create Machine 32
     Execute Command           mach create "risc-v"
 
     Execute Command           machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { clint: clint; cpuType: \\"rv32gc\\" }"
+    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { timeProvider: clint; cpuType: \\"rv32gc\\" }"
     Execute Command           machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x40000 }"
 
     Execute Command           cpu PC ${starting_pc}
@@ -33,7 +33,7 @@ Create Machine 64
     Execute Command           mach create "risc-v"
 
     Execute Command           machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { clint: clint; cpuType: \\"rv64gc\\" }"
+    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { timeProvider: clint; cpuType: \\"rv64gc\\" }"
     Execute Command           machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x40000 }"
 
     Execute Command           cpu PC ${starting_pc}
