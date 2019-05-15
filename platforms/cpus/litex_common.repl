@@ -13,9 +13,6 @@ rom: Memory.MappedMemory @ sysbus 0x20020000
 boot_flash: Memory.ArrayMemory @ sysbus 0x20228000
     size: 0x00100000
 
-timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
-    frequency: 100000000
-
 uart: UART.LiteX_UART @ sysbus 0xE0001800
 
 eth: Network.LiteX_Ethernet @ {
