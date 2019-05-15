@@ -37,6 +37,9 @@ clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
     [6, 7] -> u54_3@[3, 7]
     [8, 9] -> u54_4@[3, 7]
 
+pdma: DMA.PSE_PDMA @ sysbus 0x3000000
+    [0-7] -> plic@[5-12]
+
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
     // E51: only machine mode interrupt
     3 -> e51@11
