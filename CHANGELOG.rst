@@ -3,6 +3,25 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.7.1 - 2019.05.15
+------------------
+
+Added:
+
+* integration layer for Verilator
+* base infrastructure for verilated peripherals
+* base class for verilated UARTs, with analyzer support
+* Linux on LiteX with VexRiscv demo
+
+Changed:
+
+* RISC-V CPUs now don't need CLINT in their constructor, but will accept any abstract time provider
+* updated LiteX with PicoRV32 and LiteX with VexRibscv platform`
+
+Fixed:
+
+* sharing violation when trying to run downloaded files
+
 1.7.0 - 2019.05.02
 ------------------
 
