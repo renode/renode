@@ -16,7 +16,9 @@ using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 using Antmicro.Renode.Time;
+#if !PLATFORM_WINDOWS
 using Mono.Unix.Native;
+#endif
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
