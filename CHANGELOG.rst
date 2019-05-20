@@ -16,7 +16,7 @@ Added:
 Changed:
 
 * RISC-V CPUs now don't need CLINT in their constructor, but will accept any abstract time provider
-* updated LiteX with PicoRV32 and LiteX with VexRiscv platform`
+* updated LiteX with PicoRV32 and LiteX with VexRiscv platform
 
 Fixed:
 
