@@ -13,7 +13,7 @@ namespace Antmicro.Renode.Network
 {
     public static class RangeLossMediumExtension
     {
-        public static void SetLossRangeWirelessFunction(this WirelessMedium wirelessMedium, int lossRange = 0, float txRatio = 0, float rxRatio = 0)
+        public static void SetRangeLossWirelessFunction(this WirelessMedium wirelessMedium, int lossRange = 0, float txRatio = 0, float rxRatio = 0)
         {
             var function = new RangeLossMediumFunction();
             function.LossRange = lossRange;
