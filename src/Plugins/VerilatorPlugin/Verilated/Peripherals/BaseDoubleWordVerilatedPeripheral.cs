@@ -39,7 +39,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 Send(ActionType.TickClock, 0, limitBuffer);
             };
-
         }
 
         public uint ReadDoubleWord(long offset)
