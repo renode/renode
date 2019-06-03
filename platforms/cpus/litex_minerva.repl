@@ -1,0 +1,36 @@
+mem: Memory.MappedMemory @ sysbus 0x0
+    size: 0x00040000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00040000
+
+ddr: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+rom: Memory.MappedMemory @ sysbus 0x20020000
+    size: 0x00008000
+
+boot_flash: Memory.ArrayMemory @ sysbus 0x20228000
+    size: 0x00100000
+
+uart: UART.LiteX_UART @ sysbus 0xE0001800
+    -> cpu@0
+
+eth: Network.LiteX_Ethernet @ {
+        sysbus <0xE0003800, +0x100>;
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
+    }
+    -> cpu@2
+
+cpu: CPU.Minerva @ sysbus
+
+timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
+    frequency: 100000000
+    -> cpu@1
+
+sysbus:
+    init:
+        Tag <0xE0008000 0x200> "DDR_PHY"
+        Tag <0xE0004000 0x200> "SDRAM_CONTROLLER"
+        Tag <0xE0000800 0x200> "UART_PHY"
+
