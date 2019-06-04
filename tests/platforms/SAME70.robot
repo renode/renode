@@ -39,7 +39,7 @@ Wait For Outgoing PTPv2 Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTP packets
     # The next byte is the type of packet, and the next version (should be 0x02)
 
-    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f7__02  12  20  10
+    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f7__02  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
     [return]                                       ${bytes}  ${pkt.timestamp}
@@ -48,7 +48,7 @@ Wait For Outgoing PTPv2 Announce Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
     # Announce packet should have 0x1b at the next byte
 
-    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f71b  12  20  10
+    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f71b  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
     [return]                                       ${bytes}  ${pkt.timestamp}
@@ -57,7 +57,7 @@ Wait For Outgoing PTPv2 Sync Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
     # Sync packet should have 0x10 at the next byte
 
-    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f710  12  20  10
+    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f710  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
     [return]                                       ${bytes}  ${pkt.timestamp}
@@ -66,7 +66,7 @@ Wait For Outgoing PTPv2 Sync Follow Up Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
     # Sync FUP packet should have 0x18 at the next byte
 
-    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f718  12  20  10
+    ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f718  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
     [return]                                       ${bytes}  ${pkt.timestamp}
@@ -361,6 +361,8 @@ Setup Multi Node Scenario
     Setup Master Node                              master
     Setup Slave Node                               slave
 
+    Execute Command                                emulation SetGlobalSerialExecution True
+
 *** Test Cases ***
 
 Single Node Should Send A PDelay Request Packet
@@ -374,7 +376,7 @@ Single Node Should Send A PDelay Request Packet
 
 Slave Should Call The Phase Dis Callback
     Setup Multi Node Scenario
-    Create Terminal Tester                         sysbus.usart1  machine=slave
+    Create Terminal Tester                         sysbus.usart1  machine=slave  timeout=120
     Start Emulation
 
     Wait For Line On Uart                          net_gptp_sample.gptp_phase_dis_cb
