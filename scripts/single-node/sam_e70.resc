@@ -9,6 +9,9 @@ $bin?=@https://antmicro.com/projects/renode/sam-e70_xplained--zephyr-shell.elf-s
 
 showAnalyzer sysbus.usart1
 
+# we silence the MPU warnings in nvic
+logLevel 3 nvic
+
 macro reset
 """
     sysbus LoadELF $bin
