@@ -44,4 +44,5 @@ PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0668
 
 sysbus:
     init:
+        Tag <0x400E0940 0x4> "CIDR" 0xa1020e00
         ApplySVD @http://antmicro.com/projects/renode/svd/ATSAME70Q21.svd
