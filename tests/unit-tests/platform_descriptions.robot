@@ -2,7 +2,7 @@
 Suite Setup                   Get Test Cases
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
-Resource                      ${CURDIR}/../../src/Renode/RobotFrameworkEngine/renode-keywords.robot
+Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 @{cpus_path}=		      ${CURDIR}/../../platforms/cpus

@@ -3,7 +3,7 @@ Library                       Process
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
-Resource                      ${CURDIR}/../../src/Renode/RobotFrameworkEngine/renode-keywords.robot
+Resource                      ${RENODEKEYWORDS}
 
 
 *** Keywords ***

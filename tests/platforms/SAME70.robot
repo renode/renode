@@ -2,7 +2,7 @@
 Suite Setup                                        Setup
 Suite Teardown                                     Teardown
 Test Setup                                         GPTP Test Setup
-Resource                                           ${CURDIR}/../../src/Renode/RobotFrameworkEngine/renode-keywords.robot
+Resource                                           ${RENODEKEYWORDS}
 
 *** Variables ***
 

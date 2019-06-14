@@ -186,6 +186,8 @@ class RobotTestSuite(object):
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
         variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port)]
+        path = os.path.abspath(os.path.join(this_path, "../src/Renode/RobotFrameworkEngine/renode-keywords.robot"))
+        variables.append('RENODEKEYWORDS:{}'.format(path))
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:

@@ -3,7 +3,6 @@ set -e
 set -u
 
 ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
-ROBOT_LOCATION="$ROOT_PATH/output/bin"
 TESTS_FILE="$ROOT_PATH/tests/tests.txt"
 TESTS_RESULTS="$ROOT_PATH/output/tests"
 
