@@ -177,4 +177,9 @@ then
     fi
 
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+
+    if $ON_LINUX
+    then
+      $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+    fi
 fi

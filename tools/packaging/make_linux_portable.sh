@@ -1,10 +1,15 @@
 #!/bin/bash
 
+set -e
+set -u
+
 THIS_DIR="$(dirname $(realpath ${BASH_SOURCE[0]}))"
 cd $THIS_DIR
 
+. common_make_packages.sh
+
 RENODE_ROOT_DIR=$THIS_DIR/../..
-OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/Release
+OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET
 DESTINATION=$RENODE_ROOT_DIR/output/bin/Portable
 RENODE_BIN=$OUTPUT_DIR/Renode.exe
 MONO_VERSION=4.5
@@ -29,6 +34,8 @@ ln -sf $OUTPUT_DIR/LZ4.dll LZ4cc.dll
 ln -sf $OUTPUT_DIR/LZ4.dll LZ4mm.dll
 ln -sf $OUTPUT_DIR/LZ4.dll LZ4pn.dll
 
+# this one might crash, we will re-compile it
+set +e
 mkbundle \
     --simple \
     --custom \
@@ -43,6 +50,7 @@ mkbundle \
     -L /usr/lib/mono/$MONO_VERSION \
     -z --static --keeptemp --nomain \
     $RENODE_BIN 2>/dev/null
+set -e
 
 echo ">>> Re-compiling bundle..."
 
@@ -55,7 +63,7 @@ echo "extern void mono_aot_register_module();" >> $WRAPPER_SOURCE_FILE
 cat $THIS_DIR/temp.c >> $WRAPPER_SOURCE_FILE
 
 # this file is proveded by us
-cat $THIS_DIR/additional.c >> $WRAPPER_SOURCE_FILE
+cat $THIS_DIR/linux_portable/additional.c >> $WRAPPER_SOURCE_FILE
 
 gcc \
     -Wl,--wrap=powf  \
@@ -100,5 +108,6 @@ rm LZ4mm.dll
 rm LZ4pn.dll
 
 echo ">>> Creating renode_portable.tar..."
-tar -cf renode_portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
+tar -cf ../../output/packages/renode-$VERSION-portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
 
+echo "Created a portable package in output/packages/renode-$VERSION-portable.tar"
