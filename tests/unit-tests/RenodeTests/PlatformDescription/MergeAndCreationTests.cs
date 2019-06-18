@@ -15,6 +15,7 @@ using Moq;
 using NUnit.Framework;
 using Antmicro.Renode.UnitTests.Mocks;
 using static Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute;
+using System.Security.Policy;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -103,6 +104,266 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
             MockCPU mock;
             Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
             Assert.AreEqual("one with \"escaped\" quote\"", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldHandleMultilineQuotedStringAsValue()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string'''";  
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is\nmultiline\nstring", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldHandleMultipleMultilineQuotedStrings()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is a
+multiline
+string'''
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is another
+multilineeee
+stringgggg'''";
+
+            ProcessSource(source);
+            MockCPU mock1;
+            MockCPU mock2;
+
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock1));
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu2", out mock2));
+
+            Assert.AreEqual("this is a\nmultiline\nstring", mock1.Placeholder);
+            Assert.AreEqual("this is another\nmultilineeee\nstringgggg", mock2.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFailOnUnclosedMultipleMultilineQuotedStrings()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string'''
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string'''
+cpu3: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+            var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
+            Assert.AreEqual("At 11:17:", position);
+        }
+
+        [Test]
+        public void ShouldFailOnUnclosedMultilineQuotedStringBetweenQuotedStrings()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string'''
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline
+string
+cpu3: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+multiline'''
+string";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+            var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
+            Assert.AreEqual("At 12:9:", position);
+        }
+
+        [Test, Ignore]
+        public void ShouldHandleEscapedMultilineStringQuoteInSingleLineQuotedString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: ""one with \''' escaped quote""";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("one with ''' escaped quote", mock.Placeholder);
+        }
+
+        [Test, Ignore]
+        public void ShouldHandleMultipleEscapeCharsInMultilineString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''one with escaped quote\\'''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("one with escaped quote\\", mock.Placeholder);
+        }
+
+
+        [Test]
+        public void ShouldHandleMultilineQuotedStringInOneLine()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is single line'''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is single line", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFailOnMultilineQuotedStringInUsing()
+        {
+            var source = @"
+using '''this is
+multiline
+string '''";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+        }
+
+        [Test]
+        public void ShouldHandleEscapedQuoteInMultilineString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is \''' single line'''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is ''' single line", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldHandleEscapedUnescapedSingleQuoteCharInMultilineString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: ''' this is string with ' and '' '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual(" this is string with ' and '' ", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFailOnAnyStringAfterClosedMultilineString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is
+not a single line ''' xx";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+            var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
+            Assert.AreEqual("At 4:23:", position);
+        }
+
+        [Test]
+        public void ShouldFailOnMultipleMultilineStringSignsInOneLine()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is \''' ''' ''' '''
+not a single line '''";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+            var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
+            Assert.AreEqual("At 4:18:", position);
+        }
+
+        [Test]
+        public void ShouldHandleMultipleEscapedMultilineStringSignsInOneLine()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is \''' \''' \''' \'''
+not a single line '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is ''' ''' ''' '''\nnot a single line ", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFailOnUnclosedMultilineString()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is ";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
+            var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
+            Assert.AreEqual("At 3:17:", position);
+        }
+
+        [Test]
+        public void ShouldHandleEscapedMultilineStringSignInNewLine()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is 
+\'''
+not a single line '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is \n\'''\nnot a single line ", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldHandleEscapedMultilineStringSignAtTheEndOfALine()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is \'''
+not a single line '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("this is \'''\nnot a single line ", mock.Placeholder);
+        }
+
+        [Test, Ignore]
+        public void ShouldHandleMultipleBackslashesAsEscapingCharacters()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: '''this is \\\'''
+not a single line '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual(@"this is \\\'''
+not a single line ", mock.Placeholder);
         }
 
         [Test]

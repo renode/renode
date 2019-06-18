@@ -50,6 +50,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         //not set as a token, as it may be used inside strings where we want to preserve spaces
         public static readonly Parser<char> QuotationMark = Parse.Char('"');
 
+        public static readonly Parser<string> MultiQuotationMark = Parse.String("'''").Text(); 
+
         public static readonly Parser<string> RightArrow = Parse.String("->").Text().Token().Named("arrow");
 
         public static readonly Parser<string> HexadecimalPrefix = Parse.String("0x").Text();
@@ -115,18 +117,28 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from rest in Parse.Char('.').Then(x => Identifier).XMany()
              select new StringWithPosition(rest.Aggregate(first, (x, y) => x + '.' + y))).Positioned();
 
-        public static readonly Parser<char> QuotedStringElement = Parse.Char('\\').Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
+        public const char EscapeChatacter = '\\';
 
-        public static readonly Parser<string> QuotedString =
+        public static readonly Parser<char> QuotedStringElement = Parse.Char(EscapeChatacter).Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
+
+        public static readonly Parser<string> MultiQuotedStringElement = Parse.String(EscapeChatacter.ToString()).Then(x => MultiQuotationMark).XOr(Parse.AnyChar.Except(MultiQuotationMark).Select(x => x.ToString()));
+
+        public static readonly Parser<string> SingleLineQuotedString =
             (from openingQuote in QuotationMark
              from content in QuotedStringElement.Many().Text()
              from closingQuote in QuotationMark
              select content).Token().Named("quoted string");
+       
+        public static readonly Parser<string> MultilineQuotedString =
+            (from openingQuote in MultiQuotationMark
+             from content in MultiQuotedStringElement.Many().Select(x => string.Join(String.Empty, x))
+             from closingQuote in MultiQuotationMark
+             select content).Token().Named("multiline quoted string");
 
         public static readonly Parser<UsingEntry> Using =
             (from usingKeyword in UsingKeyword
-             from filePath in QuotedString.Select(x => new StringWithPosition(x)).Positioned()
-             from prefixedKeyword in PrefixedKeyword.Then(x => QuotedString).Named("using prefix").Optional()
+             from filePath in SingleLineQuotedString.Select(x => new StringWithPosition(x)).Positioned()
+             from prefixedKeyword in PrefixedKeyword.Then(x => SingleLineQuotedString).Named("using prefix").Optional()
              select new UsingEntry(filePath, prefixedKeyword.GetOrDefault())).Token().Positioned().Named("using entry");
 
         public static readonly Parser<IEnumerable<UsingEntry>> Usings =
@@ -159,7 +171,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<BoolValue> BoolValue =
             TrueKeyword.Or(FalseKeyword).Select(x => new BoolValue(x)).Named("bool");
 
-        public static readonly Parser<Value> Value = QuotedString.Select(x => new StringValue(x))
+        public static readonly Parser<Value> Value = (SingleLineQuotedString.Or(MultilineQuotedString)).Select(x => new StringValue(x))
                                                                  .XOr<Value>(Range)
                                                                  .XOr(Number.Select(x => new NumericalValue(x)))
                                                                  .XOr(ObjectValue)
@@ -309,7 +321,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from colon in Colon
              from type in TypeName.XOptional().Named("type name")
              from registationInfo in RegistrationInfo.Or(NoneRegistrationInfo).Select(x => new[] { x }).Or(RegistrationInfos).XOptional()
-             from alias in AsKeyword.Then(x => QuotedString.Select(y => new StringWithPosition(y)).Named("alias").Positioned()).XOptional()
+             from alias in AsKeyword.Then(x => SingleLineQuotedString.Select(y => new StringWithPosition(y)).Named("alias").Positioned()).XOptional()
              from attributes in Attributes.XOptional()
              select new Entry(variableName, type.GetOrDefault(), registationInfo.GetOrDefault(), attributes.GetOrElse(new Attribute[0]), localKeyword.IsDefined, alias.GetOrDefault()))
                 .Positioned().Token().Named("entry");

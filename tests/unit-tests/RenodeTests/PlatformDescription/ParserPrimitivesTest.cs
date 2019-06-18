@@ -131,7 +131,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         public void ShouldParseQuotedString()
         {
             var source = new Input("\"some text\"");
-            var result = Grammar.QuotedString(source);
+            var result = Grammar.SingleLineQuotedString(source);
             Assert.IsTrue(result.WasSuccessful, result.Message);
 
             Assert.AreEqual("some text", result.Value);
@@ -141,7 +141,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
         public void ShouldParseQuotedStringWithASemicolon()
         {
             var source = new Input ("\"some;text\"");
-            var result = Grammar.QuotedString(source);
+            var result = Grammar.SingleLineQuotedString(source);
             Assert.IsTrue(result.WasSuccessful, result.Message);
 
             Assert.AreEqual("some;text", result.Value);

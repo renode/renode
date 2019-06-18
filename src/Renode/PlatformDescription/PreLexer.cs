@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Antmicro.Renode.PlatformDescription
 {
@@ -16,7 +17,8 @@ namespace Antmicro.Renode.PlatformDescription
         public static IEnumerable<string> Process(string source, string path = "")
         {
             // We remove '\r' so that we don't have to worry about line endings.
-            var lineSource = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
+            var sourceInLines = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
+            var lineSource = HandleMultilineStrings(sourceInLines, path);
             var inputBraceLevel = 0;
             var outputBraceLevel = 0;
 
@@ -234,6 +236,80 @@ finish:
                 }
             }
             return FindResult.Nothing;
+        }
+
+        public static IEnumerable<string> HandleMultilineStrings(IEnumerable<string> sourceLine, string path)
+        {
+            const string quoteDelimiter = "'''";
+            var multilineString = new List<string>();
+            var inMultilineString = false;
+            var regexCharacterToFind = new Regex(Regex.Escape(quoteDelimiter), RegexOptions.None);
+            var openingQuoteLine = new Tuple<int, string, int>(-1, "", -1);
+
+            foreach(var currentLine in sourceLine.Select((value, index) => new { index, value }))
+            {
+                var line = currentLine.value;
+                var validQuotes = CountUnescapedCharacters(line, regexCharacterToFind, out var lastQuoteIndex);
+
+                if(inMultilineString)
+                {
+                    multilineString.Add(line);
+                    if(validQuotes >= 1)
+                    {
+                        inMultilineString = false;
+                        var str = string.Join("\n", multilineString);
+                        multilineString.Clear();
+                        yield return str;
+                    }
+                }
+                else
+                {
+                    if(validQuotes != 1) // we have opening and closing quote (or more) or no quotes at all
+                    {
+                        yield return line;
+                        continue;
+                    }
+                    openingQuoteLine = new Tuple<int, string, int>(currentLine.index, currentLine.value, lastQuoteIndex);
+                    inMultilineString = true;
+                    multilineString.Add(line);
+                }
+            }
+
+            if(inMultilineString) //if closing quote was never found
+            {
+                var errorLine = openingQuoteLine.Item2;
+                var errorQuoteIndex = openingQuoteLine.Item3;
+                throw GetException(ParsingError.SyntaxError, openingQuoteLine.Item1, errorQuoteIndex, errorLine,
+                                   "Unclosed multiline string", path);
+            }
+        }
+
+        public static int CountUnescapedCharacters(string line, Regex regexCharacterToFind, out int lastQuoteIndex, char escapeCharacter = '\\')
+        {
+            var matches = regexCharacterToFind.Matches(line);
+            var validQuotesCount = 0;
+            var validQuotesIndexes = new List<int>();
+
+            foreach(Match ma in matches)
+            {
+                var index = ma.Index - 1;
+                var startIndex = index;
+                var backslashCount = 0;
+
+                while(index >= 0 && line[index] == escapeCharacter)
+                {
+                    backslashCount++;
+                    index--; 
+                }
+               
+                if(backslashCount % 2 == 0)
+                {
+                    validQuotesCount++;
+                    validQuotesIndexes.Add(startIndex);
+                }
+            }
+            lastQuoteIndex = (validQuotesIndexes.Count != 0) ? validQuotesIndexes[validQuotesIndexes.Count - 1] : -1; 
+            return validQuotesCount; 
         }
 
         private static string DecorateLineIfNecessary(string line, int oldIndentLevel, int newIndentLevel, bool doNotInsertSemicolon)
