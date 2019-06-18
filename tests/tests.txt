@@ -17,3 +17,4 @@ tests/unit-tests/platform_descriptions.robot
 tests/unit-tests/riscv-unit-tests.robot
 tests/platforms/SAME70.robot
 tests/platforms/Murax.robot
+tests/unit-tests/monitor-tests.robot
