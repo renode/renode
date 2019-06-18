@@ -63,6 +63,7 @@ ATTR void* GetBundleDataPointer(int id) {
 // end of helper methods
 //
 
+#include <mono/jit/jit.h>
 int main (int argc, char* argv[]) {
         char **newargs;
         int i, k = 0;
