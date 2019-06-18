@@ -18,10 +18,10 @@ MONO_VERSION=4.5
 mkdir -p $DESTINATION
 rm -rf $DESTINATION/*
 
-echo ">>> Preparing dlls config..."
 mkdir -p $WORKDIR
 rm -rf $WORKDIR/*
 
+# Prepare dlls config
 
 CONFIG_FILE=$WORKDIR/config
 cat /etc/mono/config > $CONFIG_FILE
@@ -32,7 +32,7 @@ echo '<dllmap dll="i:dl">' >> $CONFIG_FILE
 echo '  <dllentry dll="__Internal" name="dlopen" target="dlopen"/>' >> $CONFIG_FILE
 echo '</dllmap>' >> $CONFIG_FILE
 
-echo ">>> Generating bundle..."
+# Generate bundle
 
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4cc.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4mm.dll
@@ -56,7 +56,7 @@ set +e
     $RENODE_BIN 2>/dev/null)
 set -e
 
-echo ">>> Re-compiling bundle..."
+# Re-compile bundle
 
 WRAPPER_SOURCE_FILE=$WORKDIR/bundler.c
 
@@ -88,7 +88,7 @@ gcc \
     -static-libgcc -static-libstdc++ \
     -o $DESTINATION/Renode
 
-echo ">>> Copying dependencies..."
+# Copy dependencies
 
 cp $RENODE_OUTPUT_DIR/cores-*.dll $DESTINATION
 cp $RENODE_OUTPUT_DIR/Renode-peripherals.dll $DESTINATION
@@ -100,7 +100,7 @@ cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
 cp -r $RENODE_ROOT_DIR/platforms $DESTINATION
 
-echo ">>> Creating renode_portable.tar..."
+# Create tar
 tar -cf ../../output/packages/renode-$VERSION.linux-portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
 
 echo "Created a portable package in output/packages/renode-$VERSION-portable.tar"
