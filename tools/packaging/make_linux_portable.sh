@@ -108,6 +108,6 @@ rm LZ4mm.dll
 rm LZ4pn.dll
 
 echo ">>> Creating renode_portable.tar..."
-tar -cf ../../output/packages/renode-$VERSION-portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
+tar -cf ../../output/packages/renode-$VERSION.linux-portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
 
 echo "Created a portable package in output/packages/renode-$VERSION-portable.tar"
