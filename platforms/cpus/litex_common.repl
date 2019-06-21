@@ -16,12 +16,6 @@ ddr: Memory.MappedMemory @ {
     }
     size: 0x10000000
 
-rom: Memory.MappedMemory @ sysbus 0x20020000
-    size: 0x00008000
-
-boot_flash: Memory.ArrayMemory @ sysbus 0x20228000
-    size: 0x00100000
-
 uart: UART.LiteX_UART @ {
         sysbus 0x60001800;
         sysbus 0xE0001800 // shadow
@@ -33,6 +27,16 @@ eth: Network.LiteX_Ethernet @ {
         sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
         sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" } // shadow
     }
+
+spi: SPI.LiteX_SPI @ {
+    sysbus 0x60005000;
+    sysbus 0xe0005000; // shadow
+    sysbus new Bus.BusMultiRegistration { address: 0x20000000; size: 0x2000000; region: "xip" };
+    sysbus new Bus.BusMultiRegistration { address: 0xa0000000; size: 0x2000000; region: "xip" } // shadow
+}
+
+flash: SPI.Micron_MT25Q @ spi
+    size: MicronFlashSize.Mb_256
 
 sysbus:
     init:
