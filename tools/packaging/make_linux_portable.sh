@@ -27,7 +27,7 @@ CONFIG_FILE=$WORKDIR/config
 cat /etc/mono/config > $CONFIG_FILE
 sed -e 's/$mono_libdir\///g' -i $CONFIG_FILE
 
-# TODO: this seems to be necessary, otherwise Renode crashes on opening tlib.so in docker
+# this seems to be necessary, otherwise Renode crashes on opening tlib.so in docker
 echo '<dllmap dll="i:dl">' >> $CONFIG_FILE
 echo '  <dllentry dll="__Internal" name="dlopen" target="dlopen"/>' >> $CONFIG_FILE
 echo '</dllmap>' >> $CONFIG_FILE
@@ -38,7 +38,7 @@ ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4cc.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4mm.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4pn.dll
 
-# this one might crash, we will re-compile it
+# this is ok to crash here, we will re-compile it
 set +e
 (cd $WORKDIR; mkbundle \
     --simple \
