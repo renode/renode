@@ -103,7 +103,7 @@ cp -r $RENODE_ROOT_DIR/platforms $DESTINATION
 # Create tar
 tar -cf ../../output/packages/renode-$VERSION.linux-portable.tar --transform='s/output\/bin\/Portable/renode_portable/' $DESTINATION
 
-echo "Created a portable package in output/packages/renode-$VERSION-portable.tar"
+echo "Created a portable package in output/packages/renode-$VERSION.linux-portable.tar"
 
 # Cleanup
 
