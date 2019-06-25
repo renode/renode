@@ -7,11 +7,12 @@ Resource                      ${RENODEKEYWORDS}
 *** Variables ***
 @{scripts_path}=              ${CURDIR}/../../scripts
 @{pattern}=                   *.resc
+@{excludes}=                  complex
 
 *** Keywords ***
 Get Test Cases
     Setup
-    @{scripts}=  List Files In Directory Recursively  @{scripts_path}  @{pattern}
+    @{scripts}=  List Files In Directory Recursively  @{scripts_path}  @{pattern}  @{excludes}
     Set Suite Variable  @{scripts}
 
 Load Script
