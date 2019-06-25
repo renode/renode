@@ -24,9 +24,16 @@ def network_interface_should_have_address(name, address):
     if address not in addresses:
         raise Exception('Network interface {0} does not have address {1}.'.format(name, address))
 
-def list_files_in_directory_recursively(directory_name, pattern):
+def list_files_in_directory_recursively(directory_name, pattern, excludes=None):
     files = []
-    for root, dirnames, filenames in os.walk(directory_name):
+    for root, dirnames, filenames in os.walk(directory_name, topdown=True):
+        if excludes and os.path.basename(root) in excludes:
+            # this is an `os.walk` trick: when using `topdown=True`
+            # you can modify `dirnames` in place to tell `os.walk`
+            # which folders to visit; in this case - visit nothing
+            dirnames[:] = []
+            continue
+
         for filename in fnmatch.filter(filenames, pattern):
             files.append(os.path.join(root, filename))
     return files
