@@ -27,16 +27,53 @@ CONFIG_FILE=$WORKDIR/config
 cat /etc/mono/config > $CONFIG_FILE
 sed -e 's/$mono_libdir\///g' -i $CONFIG_FILE
 
+# this tag will be added later
+sed -e '/<\/configuration>/d' -i $CONFIG_FILE
+
 # this seems to be necessary, otherwise Renode crashes on opening tlib.so in docker
 echo '<dllmap dll="i:dl">' >> $CONFIG_FILE
 echo '  <dllentry dll="__Internal" name="dlopen" target="dlopen"/>' >> $CONFIG_FILE
 echo '</dllmap>' >> $CONFIG_FILE
+
+echo '
+  <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.so.0"/>
+  <dllmap dll="libgobject-2.0-0.dll" target="libgobject-2.0.so.0"/>
+  <dllmap dll="libgthread-2.0-0.dll" target="libgthread-2.0.so.0"/>
+
+  <dllmap dll="libpango-1.0-0.dll" target="libpango-1.0.so.0"/>
+  <dllmap dll="libpangocairo-1.0-0.dll" target="libpangocairo-1.0.so.0"/>
+
+  <dllmap dll="libatk-1.0-0.dll" target="libatk-1.0.so.0"/>
+
+  <dllmap dll="libgtk-win32-2.0-0.dll" target="libgtk-x11-2.0.so.0"/>
+  <dllmap dll="libgdk-win32-2.0-0.dll" target="libgdk-x11-2.0.so.0"/>
+
+  <dllmap dll="libgdk_pixbuf-2.0-0.dll" target="libgdk_pixbuf-2.0.so.0"/>
+
+  <dllmap dll="glibsharpglue-2" target="libglibsharpglue-2.so"/>
+  <dllmap dll="gtksharpglue-2" target="libgtksharpglue-2.so"/>
+  <dllmap dll="gdksharpglue-2" target="libgdksharpglue-2.so"/>
+  <dllmap dll="pangosharpglue-2" target="libpangosharpglue-2.so"/>
+</configuration>
+' >> $CONFIG_FILE
 
 # Generate bundle
 
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4cc.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4mm.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4pn.dll
+
+# those dlls are copied to a common directory and not
+# taken directly from /usr/lib/cli to skip their
+# dll.config files - those have absolute paths
+# inside which makes portable package not work
+# correctly
+mkdir -p $WORKDIR/dependencies
+cp /usr/lib/cli/atk-sharp-2.0/atk-sharp.dll $WORKDIR/dependencies
+cp /usr/lib/cli/gtk-sharp-2.0/gtk-sharp.dll $WORKDIR/dependencies
+cp /usr/lib/cli/gdk-sharp-2.0/gdk-sharp.dll $WORKDIR/dependencies
+cp /usr/lib/cli/glib-sharp-2.0/glib-sharp.dll $WORKDIR/dependencies
+cp /usr/lib/cli/pango-sharp-2.0/pango-sharp.dll $WORKDIR/dependencies
 
 # this is ok to crash here, we will re-compile it
 set +e
@@ -46,11 +83,7 @@ set +e
     --machine-config /etc/mono/$MONO_VERSION/machine.config \
     --config $CONFIG_FILE \
     -L $RENODE_OUTPUT_DIR \
-    -L /usr/lib/cli/atk-sharp-2.0 \
-    -L /usr/lib/cli/glib-sharp-2.0 \
-    -L /usr/lib/cli/gdk-sharp-2.0 \
-    -L /usr/lib/cli/pango-sharp-2.0 \
-    -L /usr/lib/cli/gtk-sharp-2.0 \
+    -L $WORKDIR/dependencies \
     -L /usr/lib/mono/$MONO_VERSION \
     -z --static --keeptemp --nomain \
     $RENODE_BIN 2>/dev/null)
@@ -93,12 +126,17 @@ gcc \
 cp $RENODE_OUTPUT_DIR/cores-*.dll $DESTINATION
 cp $RENODE_OUTPUT_DIR/Renode-peripherals.dll $DESTINATION
 
-cp /usr/lib/libMonoPosixHelper.so $DESTINATION
-cp /usr/lib/libmono-btls-shared.so $DESTINATION
-
 cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
 cp -r $RENODE_ROOT_DIR/platforms $DESTINATION
+
+cp /usr/lib/libMonoPosixHelper.so $DESTINATION
+cp /usr/lib/libmono-btls-shared.so $DESTINATION
+
+cp /usr/lib/cli/glib-sharp-2.0/libglibsharpglue-2.so $DESTINATION
+cp /usr/lib/cli/gtk-sharp-2.0/libgtksharpglue-2.so $DESTINATION
+cp /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so $DESTINATION
+cp /usr/lib/cli/pango-sharp-2.0/libpangosharpglue-2.so $DESTINATION
 
 # Create tar
 tar -cf ../../output/packages/renode-$VERSION.linux-portable.tar $DESTINATION
