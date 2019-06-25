@@ -1,10 +1,19 @@
-mem: Memory.MappedMemory @ sysbus 0x0
+mem: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus 0x80000000 // shadow
+    }
     size: 0x00040000
 
-sram: Memory.MappedMemory @ sysbus 0x10000000
+sram: Memory.MappedMemory @ {
+        sysbus 0x10000000;
+        sysbus 0x90000000 // shadow
+    }
     size: 0x00040000
 
-ddr: Memory.MappedMemory @ sysbus 0x40000000
+ddr: Memory.MappedMemory @ {
+        sysbus 0x40000000;
+        sysbus 0xc0000000 // shadow
+    }
     size: 0x10000000
 
 rom: Memory.MappedMemory @ sysbus 0x20020000
@@ -13,11 +22,16 @@ rom: Memory.MappedMemory @ sysbus 0x20020000
 boot_flash: Memory.ArrayMemory @ sysbus 0x20228000
     size: 0x00100000
 
-uart: UART.LiteX_UART @ sysbus 0xE0001800
+uart: UART.LiteX_UART @ {
+        sysbus 0x60001800;
+        sysbus 0xE0001800 // shadow
+    }
 
 eth: Network.LiteX_Ethernet @ {
-        sysbus <0xE0007800, +0x100>;
-        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
+        sysbus <0x60007800, +0x100>;
+        sysbus <0xE0007800, +0x100>; // shadow
+        sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" } // shadow
     }
 
 sysbus:
