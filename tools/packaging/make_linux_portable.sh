@@ -77,7 +77,7 @@ cp /usr/lib/cli/pango-sharp-2.0/pango-sharp.dll $WORKDIR/dependencies
 
 # this is ok to crash here, we will re-compile it
 set +e
-(cd $WORKDIR; mkbundle \
+(cd $WORKDIR; ls $RENODE_OUTPUT_DIR/*.dll | xargs mkbundle \
     --simple \
     --custom \
     --machine-config /etc/mono/$MONO_VERSION/machine.config \
@@ -123,8 +123,7 @@ gcc \
 
 # Copy dependencies
 
-cp $RENODE_OUTPUT_DIR/cores-*.dll $DESTINATION
-cp $RENODE_OUTPUT_DIR/Renode-peripherals.dll $DESTINATION
+cp $RENODE_OUTPUT_DIR/libLLVM.so $DESTINATION
 
 cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
