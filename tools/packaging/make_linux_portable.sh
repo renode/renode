@@ -139,9 +139,9 @@ cp /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so $DESTINATION
 cp /usr/lib/cli/pango-sharp-2.0/libpangosharpglue-2.so $DESTINATION
 
 # Create tar
-tar -cf ../../output/packages/renode-$VERSION.linux-portable.tar $DESTINATION
+tar -czf ../../output/packages/renode-$VERSION.linux-portable.tar.gz $DESTINATION
 
-echo "Created a portable package in output/packages/renode-$VERSION.linux-portable.tar"
+echo "Created a portable package in output/packages/renode-$VERSION.linux-portable.tar.gz"
 
 # Cleanup
 
