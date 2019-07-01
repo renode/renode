@@ -1,5 +1,9 @@
 using "platforms/cpus/silabs/efr32/efr32mg1.repl"
 
+rtcc: Timers.EFR32_RTCC @ sysbus 0x40042000
+    frequency: 32768
+    -> nvic@31
+
 i2c0:
     -> nvic@17
 i2c1: I2C.EFR32_I2CController @ sysbus <0x4000c400, +0x400>
@@ -47,3 +51,5 @@ sysbus:
         Tag <0x40052400,0x400527ff> "WDOG1"
         Tag <0x40022000,0x400223ff> "SMU"
         Tag <0x4001d000,0x4001d3ff> "TRNG0"
+        Tag <0x4001d004 0x4> "FIFOLEVEL" 0x40
+        Tag <0x40002038 0x4> "IF" 0x1 #single conversion finished

@@ -15,8 +15,11 @@ gpioPort: GPIOPort.EFR32_GPIOPort @ sysbus 0x4000a000
     EvenIRQ -> nvic@9
     OddIRQ -> nvic@17
 
-bitband: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+bitband_peripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
     peripheralBase: 0x40000000
+
+bitband_sram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x2000000>
+    peripheralBase: 0x20000000
 
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x00008000
