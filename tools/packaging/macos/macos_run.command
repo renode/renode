@@ -12,9 +12,13 @@ MONO_FRAMEWORK_PATH=/Library/Frameworks/Mono.framework/Versions/Current
 export DYLD_FALLBACK_LIBRARY_PATH="$DIR:$MONO_FRAMEWORK_PATH/lib:/lib:/usr/lib"
 export PATH="$MONO_FRAMEWORK_PATH/bin:$PATH"
 
-#mono version check
-REQUIRED_MAJOR=4
-REQUIRED_MINOR=2
+# REQUIRED_MAJOR and REQUIRED_MINOR should be
+# set automatically at the moment of packaging
+if [ -z "$REQUIRED_MAJOR" -o -z "$REQUIRED_MINOR" ]
+then
+	echo "No required mono version set. It most probably indicates a problem in packaging scripts"
+	exit 1
+fi
 
 VERSION_TITLE="Cannot launch $APPNAME"
 VERSION_MSG="$APPNAME requires the Mono Framework version $REQUIRED_MAJOR.$REQUIRED_MINOR or later."
