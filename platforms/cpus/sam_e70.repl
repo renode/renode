@@ -28,10 +28,10 @@ gem: Network.CadenceGEM @ sysbus 0x40050000
     IRQ -> nvic@39
 
 phy: Network.EthernetPhysicalLayer @ gem 0
-    id1: 0x0007
-    id2: 0xC0F1
-    autoNegotiationAdvertisement: 0x00A1
-    autoNegotiationLinkPartnerAbility: 0x0001
+    Id1: 0x0007
+    Id2: 0xC0F1
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x0001
 
 trng: Miscellaneous.SAM_TRNG @ sysbus 0x40070000
     // our model does not support interrupts yet, but if it did:

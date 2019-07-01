@@ -129,3 +129,12 @@ Should Read Buttons
     Write Line To Uart         debug cas buttons clear
     Write Line To Uart         debug cas buttons read
     Wait For Line On Uart      0 0
+
+Should Read Ethernet PHY Status
+    [Documentation]         Reads the status of LiteX Ethernet PHY.
+    Create Platform
+    Create Terminal Tester     sysbus.uart
+    Start Emulation
+
+    Wait For Line On Uart  MDIO mode: 100Mbps / link: up
+

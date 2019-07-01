@@ -24,9 +24,16 @@ uart: UART.LiteX_UART @ {
 eth: Network.LiteX_Ethernet @ {
         sysbus <0x60007800, +0x100>;
         sysbus <0xE0007800, +0x100>; // shadow
+
         sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
-        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" } // shadow
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }; // shadow
+
+        sysbus new Bus.BusMultiRegistration { address: 0x60007000; size: 0x800; region: "phy" };
+        sysbus new Bus.BusMultiRegistration { address: 0xe0007000; size: 0x800; region: "phy" } // shadow
     }
+
+phy: Network.EthernetPhysicalLayer @ eth 0
+    VendorSpecific1: 0x4400 // MDIO status: 100Mbps + link up 
 
 spi: SPI.LiteX_SPI @ {
     sysbus 0x60005000;
