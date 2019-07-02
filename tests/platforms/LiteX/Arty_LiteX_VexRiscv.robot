@@ -1,0 +1,131 @@
+*** Settings ***
+Library                       Process
+Suite Setup                   Setup
+Suite Teardown                Teardown
+Test Setup                    Reset Emulation
+Resource                      ${RENODEKEYWORDS}
+
+
+*** Keywords ***
+Create Platform
+    Execute Command            using sysbus
+    Execute Command            mach create
+    Execute Command            machine LoadPlatformDescription @platforms/boards/arty_litex_vexriscv.repl
+    Execute Command            sysbus LoadELF @https://antmicro.com/projects/renode/arty_litex_vexriscv--firmware.elf-s_438376-e20651f6e9625812f6588ce2b79c978f2c4d7eab
+
+*** Test Cases ***
+Should Booot
+    Create Platform
+    Create Terminal Tester     sysbus.uart  prompt=H2U
+    Execute Command            showAnalyzer sysbus.uart
+
+    Start Emulation
+
+    Wait For Prompt On Uart
+
+    Provides                   booted-image
+
+Should Control LEDs
+    Requires                   booted-image
+
+    Execute Command            emulation CreateLEDTester "led0_tester" cas.led0
+    Execute Command            emulation CreateLEDTester "led1_tester" cas.led1
+    Execute Command            emulation CreateLEDTester "led2_tester" cas.led2
+    Execute Command            emulation CreateLEDTester "led3_tester" cas.led3
+
+    Execute Command            led0_tester AssertState false
+    Execute Command            led1_tester AssertState false
+    Execute Command            led2_tester AssertState false
+    Execute Command            led3_tester AssertState false
+
+    Write Line To Uart         debug cas leds 1
+    Execute Command            led0_tester AssertState true
+    Execute Command            led1_tester AssertState false
+    Execute Command            led2_tester AssertState false
+    Execute Command            led3_tester AssertState false
+
+    Write Line To Uart         debug cas leds 3
+    Execute Command            led0_tester AssertState true
+    Execute Command            led1_tester AssertState true
+    Execute Command            led2_tester AssertState false
+    Execute Command            led3_tester AssertState false
+
+    Write Line To Uart         debug cas leds 7
+    Execute Command            led0_tester AssertState true
+    Execute Command            led1_tester AssertState true
+    Execute Command            led2_tester AssertState true
+    Execute Command            led3_tester AssertState false
+
+    Write Line To Uart         debug cas leds 15
+    Execute Command            led0_tester AssertState true
+    Execute Command            led1_tester AssertState true
+    Execute Command            led2_tester AssertState true
+    Execute Command            led3_tester AssertState true
+
+    Write Line To Uart         debug cas leds 0
+    Execute Command            led0_tester AssertState false
+    Execute Command            led1_tester AssertState false
+    Execute Command            led2_tester AssertState false
+    Execute Command            led3_tester AssertState false
+
+Should Read Switches
+    Requires                   booted-image
+
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      0
+
+    Execute Command            cas.switch0 Toggle
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      1
+
+    Execute Command            cas.switch1 Toggle
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      3
+
+    Execute Command            cas.switch2 Toggle
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      7
+
+    Execute Command            cas.switch3 Toggle
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      F
+
+    Execute Command            cas.switch0 Toggle
+    Execute Command            cas.switch1 Toggle
+    Execute Command            cas.switch2 Toggle
+    Execute Command            cas.switch3 Toggle
+    Write Line To Uart         debug cas switches
+    Wait For Line On Uart      0
+
+Should Read Buttons
+    Requires                   booted-image
+
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      0 0
+
+    Execute Command            cas.button0 Toggle
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      1 1
+
+    Execute Command            cas.button1 Toggle
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      3 3
+
+    Execute Command            cas.button2 Toggle
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      7 7
+
+    Execute Command            cas.button3 Toggle
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      F F
+
+    Execute Command            cas.button0 Toggle
+    Execute Command            cas.button1 Toggle
+    Execute Command            cas.button2 Toggle
+    Execute Command            cas.button3 Toggle
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      0 F
+
+    Write Line To Uart         debug cas buttons clear
+    Write Line To Uart         debug cas buttons read
+    Wait For Line On Uart      0 0

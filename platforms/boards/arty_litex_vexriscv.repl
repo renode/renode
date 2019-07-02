@@ -1,0 +1,46 @@
+using "platforms/cpus/litex_vexriscv.repl"
+
+timer0:
+    -> cpu@1
+
+uart:
+    -> cpu@0
+
+eth:
+    -> cpu@2
+
+cas: GPIOPort.LiteX_ControlAndStatus @ {
+        sysbus 0x60006800;
+        sysbus 0xe0006800 // shadow
+    }
+
+    0 -> led0@0
+    1 -> led1@0
+    2 -> led2@0
+    3 -> led3@0
+
+// leds are in range 0-31
+led0: Miscellaneous.LED @ cas 0
+led1: Miscellaneous.LED @ cas 1
+led2: Miscellaneous.LED @ cas 2
+led3: Miscellaneous.LED @ cas 3
+
+// switches are in range 32-63
+switch0: Miscellaneous.Button @ cas 32
+    -> cas@32
+switch1: Miscellaneous.Button @ cas 33
+    -> cas@33
+switch2: Miscellaneous.Button @ cas 34
+    -> cas@34
+switch3: Miscellaneous.Button @ cas 35
+    -> cas@35
+
+// buttons are in range 64-95
+button0: Miscellaneous.Button @ cas 64
+    -> cas@64
+button1: Miscellaneous.Button @ cas 65
+    -> cas@65
+button2: Miscellaneous.Button @ cas 66
+    -> cas@66
+button3: Miscellaneous.Button @ cas 67
+    -> cas@67
