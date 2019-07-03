@@ -15,9 +15,9 @@ enum class AxiBurstType  {FIXED = 0, INCR = 1, WRAP = 2, RESERVED = 3};
 struct Axi : public BaseBus
 {
     Axi(unsigned int dataWidth, unsigned int addrWidth);
-    virtual void tick(bool countEnable, unsigned long steps);
-    virtual void write(unsigned long addr, unsigned long value);
-    virtual unsigned long read(unsigned long addr);
+    virtual void tick(bool countEnable, unsigned long long steps);
+    virtual void write(unsigned long long addr, unsigned long long value);
+    virtual unsigned long read(unsigned long long addr);
     virtual void reset();
 
     void timeoutTick(unsigned char *signal, unsigned char value, int timeout = 20);

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -65,7 +65,7 @@ void UART::handleCustomRequestType(Protocol* message) {
     }
 }
 
-void UART::writeToBus(unsigned long addr, unsigned long value) {
+void UART::writeToBus(unsigned long long addr, unsigned long long value) {
     RenodeAgent::writeToBus(addr, value);
     if(addr == tx_reg_addr) {
         Txd();

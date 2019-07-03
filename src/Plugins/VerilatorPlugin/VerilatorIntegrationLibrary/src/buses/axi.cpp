@@ -26,9 +26,9 @@ void Axi::setAgent(RenodeAgent* agent)
     this->agent = agent;
 }
 
-void Axi::tick(bool countEnable, unsigned long steps = 1)
+void Axi::tick(bool countEnable, unsigned long long steps = 1)
 {
-    for(int i = 0; i < steps; i++) {
+    for(unsigned long long i = 0; i < steps; i++) {
         *aclk = 1;
         evaluateModel();
         *aclk = 0;
@@ -52,7 +52,7 @@ void Axi::timeoutTick(unsigned char *signal, unsigned char value, int timeout)
     }
 }
 
-void Axi::write(unsigned long addr, unsigned long value)
+void Axi::write(unsigned long long addr, unsigned long long value)
 {
     *awvalid = 1;
     *awlen   = 0; // TODO: Variable write length
@@ -60,14 +60,14 @@ void Axi::write(unsigned long addr, unsigned long value)
     *awburst = static_cast<unsigned char>(AxiBurstType::INCR);
     *awaddr  = addr;
 
-    this->agent->log(0, std::string("Axi write - AW"));
+    this->agent->log(0, "Axi write - AW");
 
     timeoutTick(awready, 1);
     tick(true);
     *awvalid = 0;
     tick(true);
 
-    this->agent->log(0, std::string("Axi write - W"));
+    this->agent->log(0, "Axi write - W");
 
     *wvalid = 1;
     *wdata = value;
@@ -79,7 +79,7 @@ void Axi::write(unsigned long addr, unsigned long value)
     *wvalid = 0;
     tick(true);
 
-    this->agent->log(0, std::string("Axi write - B"));
+    this->agent->log(0, "Axi write - B");
 
     *bready = 1;
 
@@ -89,7 +89,7 @@ void Axi::write(unsigned long addr, unsigned long value)
     tick(true);
 }
 
-unsigned long Axi::read(unsigned long addr)
+unsigned long Axi::read(unsigned long long addr)
 {
     unsigned long result;
 
@@ -99,14 +99,14 @@ unsigned long Axi::read(unsigned long addr)
     *arburst = static_cast<unsigned char>(AxiBurstType::INCR);
     *araddr  = addr;
 
-    this->agent->log(0, std::string("Axi read - AR"));
+    this->agent->log(0, "Axi read - AR");
 
     timeoutTick(arready, 1);
     tick(true);
     *arvalid = 0;
     tick(true);
 
-    this->agent->log(0, std::string("Axi read - R"));
+    this->agent->log(0, "Axi read - R");
 
     *rready = 1;
 

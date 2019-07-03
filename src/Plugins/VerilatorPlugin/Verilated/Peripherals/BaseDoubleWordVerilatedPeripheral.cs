@@ -25,7 +25,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout)
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
         {
             this.machine = machine;
             mainSocket = new CommunicationChannel(timeout);
@@ -70,6 +70,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void ReceiveLoop()
         {
+            asyncEventsSocket.AcceptConnection();
             isConnected = true;
 
             while(isConnected)
@@ -168,6 +169,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
 #endif
                 InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
+                mainSocket.AcceptConnection();
                 receiveThread.Start();
                 Handshake();
             }
@@ -189,7 +191,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     this.Log(LogLevel.Warning, "Invalid action received");
                     break;
                 case ActionType.LogMessage:
-                    this.Log((LogLevel)(int)message.Data, "Verilated: '{0}'", asyncEventsSocket.ReceiveString());
+                    // message.Address is used to transfer log length
+                    this.Log((LogLevel)(int)message.Data, "Verilated: '{0}'", asyncEventsSocket.ReceiveString((int)message.Address));
                     break;
                 case ActionType.Interrupt:
                     HandleInterrupt(message);
@@ -220,7 +223,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         }
 
         protected const ulong LimitBuffer = 1000000;
-        protected const int DefaultTimeout = 3;
+        protected const int DefaultTimeout = 3000;
 
         private void InitVerilatedProcess(string filePath, int mainPort, int receiverPort)
         {

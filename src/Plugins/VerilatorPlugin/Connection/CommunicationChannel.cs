@@ -1,35 +1,46 @@
 ﻿//
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
-using NetMQ;
-using NetMQ.Sockets;
 
 namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 {
     public class CommunicationChannel : IDisposable
     {
-        public CommunicationChannel(double timeoutInSeconds)
+        public CommunicationChannel(int timeoutInMiliseconds)
         {
-            socket = new PairSocket();
-            Port = socket.BindRandomPort(AddressOffset);
-            timeout = timeoutInSeconds;
+            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listener.Bind(new IPEndPoint(IPAddress.Parse(Address), 0));
+            Port = ((IPEndPoint)listener.LocalEndPoint).Port;
+            listener.Listen(MaxPendingConnections);
+            timeout = timeoutInMiliseconds;
+        }
+
+        public void AcceptConnection()
+        {
+            socket = listener.Accept();
+            socket.SendTimeout = timeout;
         }
 
         public bool TrySend(ProtocolMessage message)
         {
             var buffer = message.Serialize();
-            return socket.TrySendFrame(TimeSpan.FromSeconds(timeout), buffer);
+            return socket.Send(buffer) == buffer.Length;
         }
 
         public bool TryReceive(out ProtocolMessage message)
         {
             message = new ProtocolMessage();
-            var result = socket.TryReceiveFrameBytes(TimeSpan.FromSeconds(timeout), out var buffer);
+            var size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(ProtocolMessage));
+            var buffer = new byte[size];
+            var result = socket.Receive(buffer) == size;
             if(result)
             {
                 message.Deserialize(buffer);
@@ -37,9 +48,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             return result;
         }
 
-        public string ReceiveString()
+        public string ReceiveString(int size)
         {
-            return socket.ReceiveFrameString();
+            var buffer = new byte[size];
+            socket.Receive(buffer);
+            return Encoding.ASCII.GetString(buffer);
         }
 
         public void Dispose()
@@ -49,8 +62,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public int Port { get; private set; }
 
-        protected readonly PairSocket socket;
-        private double timeout;
-        private const string AddressOffset = "tcp://*";
+        protected Socket socket;
+        private readonly Socket listener;
+        private readonly int timeout;
+
+        private const string Address = "127.0.0.1";
+        private const int MaxPendingConnections = 1;
     }
 }

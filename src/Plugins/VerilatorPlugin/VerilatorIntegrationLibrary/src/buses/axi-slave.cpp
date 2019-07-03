@@ -23,9 +23,9 @@ AxiSlave::AxiSlave(unsigned int dataWidth, unsigned int addrWidth) : Axi(dataWid
     bvalid_new = 0;
 }
 
-void AxiSlave::tick(bool countEnable, unsigned long steps = 1)
+void AxiSlave::tick(bool countEnable, unsigned long long steps = 1)
 {
-    for(int i = 0; i < steps; i++) {
+    for(unsigned long long i = 0; i < steps; i++) {
         readHandler();
         writeHandler();
         *aclk = 1;
@@ -79,7 +79,7 @@ void AxiSlave::updateSignals()
 
 void AxiSlave::readWord(uint64_t addr)
 {
-    sprintf(buffer, "Axi read from: 0x%X", addr);
+    sprintf(buffer, "Axi read from: 0x%llX", addr);
     this->agent->log(0, buffer);
     rdata_new = this->agent->requestFromAgent(addr);
 }
@@ -109,7 +109,7 @@ void AxiSlave::readHandler()
                 if(readNumBytes != int(dataWidth/8))
                     throw "Narrow bursts are not supported";
 
-                this->agent->log(0, std::string("Axi read start"));
+                this->agent->log(0, "Axi read start");
 
                 readWord(readAddr);
             }
@@ -122,7 +122,7 @@ void AxiSlave::readHandler()
                     readState = AxiReadState::AR;
                     rvalid_new = 0;
                     rlast_new = 0;
-                    this->agent->log(0, std::string("Axi read transfer completed"));
+                    this->agent->log(0, "Axi read transfer completed");
                 } else {
                     readLen--;
                     readAddr += int(dataWidth/8); // TODO: make data width configurable
@@ -139,7 +139,7 @@ void AxiSlave::readHandler()
 
 void AxiSlave::writeWord(uint64_t addr, uint32_t data, uint8_t strb)
 {
-    sprintf(buffer, "Axi write to: 0x%X, data: 0x%X", addr, data);
+    sprintf(buffer, "Axi write to: 0x%llX, data: 0x%X", addr, data);
     this->agent->log(0, buffer);
     this->agent->pushToAgent(writeAddr, *wdata);
 }
@@ -167,7 +167,7 @@ void AxiSlave::writeHandler()
                 if(writeNumBytes != int(dataWidth/8))
                     throw "Narrow bursts are not supported";
 
-                this->agent->log(0, std::string("Axi write start"));
+                this->agent->log(0, "Axi write start");
             }
             break;
         case AxiWriteState::W:
@@ -188,7 +188,7 @@ void AxiSlave::writeHandler()
             if(*bready == 1 && *bvalid == 1) {
                 bvalid_new = 0;
                 writeState = AxiWriteState::AW;
-                this->agent->log(0, std::string("Axi write transfer completed"));
+                this->agent->log(0, "Axi write transfer completed");
             }
             break;
         default:
@@ -206,12 +206,12 @@ void AxiSlave::reset()
 }
 
 // You can't read/write using slave bus
-void AxiSlave::write(unsigned long addr, unsigned long value)
+void AxiSlave::write(unsigned long long addr, unsigned long long value)
 {
     throw "Unsupported";
 }
 
-unsigned long AxiSlave::read(unsigned long addr)
+unsigned long AxiSlave::read(unsigned long long addr)
 {
     throw "Unsupported";
 }

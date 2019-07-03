@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -10,9 +10,9 @@
 
 struct AxiLite : public BaseBus
 {
-    virtual void tick(bool countEnable, unsigned long steps);
-    virtual void write(unsigned long addr, unsigned long value);
-    virtual unsigned long read(unsigned long addr);
+    virtual void tick(bool countEnable, unsigned long long steps);
+    virtual void write(unsigned long long addr, unsigned long long value);
+    virtual unsigned long read(unsigned long long addr);
     virtual void reset();
     void timeoutTick(bool condition, int timeout);
 
@@ -35,9 +35,9 @@ struct AxiLite : public BaseBus
     unsigned char *rresp;
     unsigned char *rvalid;
     unsigned char *rready;
-    unsigned long *awaddr;
-    unsigned long *wdata;
-    unsigned long *araddr;
-    unsigned long *rdata;
+    unsigned long long *awaddr;
+    unsigned long long *wdata;
+    unsigned long long *araddr;
+    unsigned long long *rdata;
 };
 #endif

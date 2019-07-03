@@ -1,12 +1,12 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "axilite.h"
 
-void AxiLite::tick(bool countEnable, unsigned long steps = 1)
+void AxiLite::tick(bool countEnable, unsigned long long steps = 1)
 {
     for(int i = 0; i < steps; i++) {
         *clk = 1;
@@ -33,7 +33,7 @@ void AxiLite::timeoutTick(bool condition, int timeout = 20)
     }
 }
 
-void AxiLite::write(unsigned long addr, unsigned long value)
+void AxiLite::write(unsigned long long addr, unsigned long long value)
 {
     int timeout;
     *awvalid = 1;
@@ -63,7 +63,7 @@ void AxiLite::write(unsigned long addr, unsigned long value)
     tick(true);
 }
 
-unsigned long AxiLite::read(unsigned long addr)
+unsigned long AxiLite::read(unsigned long long addr)
 {
     int timeout;
     *araddr = addr;

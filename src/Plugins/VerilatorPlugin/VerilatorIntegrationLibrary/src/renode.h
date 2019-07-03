@@ -6,25 +6,25 @@
 //
 #ifndef Renode_H
 #define Renode_H
-#include <zmq.hpp>
 #include <string>
 #include <vector>
 #include "buses/bus.h"
+#include "../libs/socket-cpp/Socket/TCPClient.h"
 
 // Protocol must be in sync with Renode's ProtocolMessage
 #pragma pack(push, 1)
 struct Protocol
 {
-  Protocol(int actionId, unsigned long addr, unsigned long value)
+  Protocol(int actionId, unsigned long long addr, unsigned long long value)
   {
     this->actionId = actionId;
     this->addr = addr;
     this->value = value;
   }
 
-  uint32_t actionId;
-  uint64_t addr;
-  uint64_t value;
+  int actionId;
+  unsigned long long addr;
+  unsigned long long value;
 };
 #pragma pack(pop)
 
@@ -51,25 +51,24 @@ class RenodeAgent
 public:
   RenodeAgent(BaseBus* bus);
   void simulate(int receiverPort, int senderPort);
-  void log(int logLevel, std::string message);
+  void log(int logLevel, const char* data);
   void addBus(BaseBus* bus);
   virtual void pushToAgent(unsigned long addr, unsigned long value);
   virtual unsigned long requestFromAgent(unsigned long addr);
 protected:
   virtual void tick(bool countEnable, unsigned long steps);
   virtual void reset();
-  virtual void writeToBus(unsigned long addr, unsigned long value);
-  virtual void readFromBus(unsigned long addr);
+  virtual void writeToBus(unsigned long long addr, unsigned long long value);
+  virtual void readFromBus(unsigned long long addr);
   void mainSocketSend(Protocol message);
   void senderSocketSend(Protocol request);
-  void senderSocketSend(std::string text);
+  void senderSocketSend(const char* text);
   virtual void handleCustomRequestType(Protocol* message);
   std::vector<BaseBus*> interfaces;
 
 private:
-  zmq::context_t context;
-  zmq::socket_t mainSocket;
-  zmq::socket_t senderSocket;
+  std::unique_ptr<CTCPClient> mainSocket;
+  std::unique_ptr<CTCPClient> senderSocket;
   bool isConnected;
   void handshakeValid();
   struct Protocol* receive();

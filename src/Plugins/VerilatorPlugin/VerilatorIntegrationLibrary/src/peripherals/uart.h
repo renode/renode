@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -27,7 +27,7 @@ struct UART : RenodeAgent
     unsigned char prev_irq;
 
     private:
-    void writeToBus(unsigned long addr, unsigned long value) override;
+    void writeToBus(unsigned long long addr, unsigned long long value) override;
     void handleCustomRequestType(Protocol* message) override;
     void Txd();
     void Rxd(unsigned char value);

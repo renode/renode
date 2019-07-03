@@ -9,12 +9,13 @@
 #define IO_THREADS 1
 
 RenodeAgent::RenodeAgent(BaseBus* bus)
-    : context(IO_THREADS),
-      mainSocket(context, ZMQ_PAIR),
-      senderSocket(context, ZMQ_PAIR)
 {
     interfaces.push_back(bus);
     interfaces[0]->tickCounter = 0;
+
+    auto LogPrinter = [](const std::string& strLogMsg) { std::cout << strLogMsg << std::endl;  };
+    mainSocket.reset(new CTCPClient(LogPrinter));
+    senderSocket.reset(new CTCPClient(LogPrinter));
 }
 
 void RenodeAgent::addBus(BaseBus* bus)
@@ -22,7 +23,7 @@ void RenodeAgent::addBus(BaseBus* bus)
     interfaces.push_back(bus);
 }
 
-void RenodeAgent::writeToBus(unsigned long addr, unsigned long value)
+void RenodeAgent::writeToBus(unsigned long long addr, unsigned long long value)
 {
     try {
         interfaces[0]->write(addr, value);
@@ -35,10 +36,10 @@ void RenodeAgent::writeToBus(unsigned long addr, unsigned long value)
     }
 }
 
-void RenodeAgent::readFromBus(unsigned long addr)
+void RenodeAgent::readFromBus(unsigned long long addr)
 {
     try {
-        unsigned long readValue = interfaces[0]->read(addr);
+        unsigned long long readValue = interfaces[0]->read(addr);
         mainSocketSend(Protocol(readRequest, addr, readValue));
     }
     catch(const char* msg) {
@@ -83,8 +84,8 @@ void RenodeAgent::reset()
 
 void RenodeAgent::simulate(int receiverPort, int senderPort)
 {
-    mainSocket.connect("tcp://localhost:" + std::to_string(receiverPort));
-    senderSocket.connect("tcp://localhost:" + std::to_string(senderPort));
+    mainSocket->Connect("127.0.0.1", std::to_string(receiverPort));
+    senderSocket->Connect("127.0.0.1", std::to_string(senderPort));
 
     Protocol *result;
     long ticks;
@@ -130,36 +131,34 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
 
 void RenodeAgent::handleCustomRequestType(Protocol* message)
 {
-    log(2, std::string("Unhandled request type: %d", message->actionId));
+    log(2, std::string("Unhandled request type: %d", message->actionId).c_str());
 }
 
-void RenodeAgent::log(int logLevel, std::string data)
+void RenodeAgent::log(int logLevel, const char* data)
 {
-    senderSocketSend(Protocol(logMessage, 0, logLevel));
+    senderSocketSend(Protocol(logMessage, strlen(data), logLevel));
     senderSocketSend(data);
 }
 
 void RenodeAgent::mainSocketSend(Protocol message)
 {
-    mainSocket.send(&message, sizeof(struct Protocol));
+    mainSocket->Send((char *)&message, sizeof(struct Protocol));
 }
 
 void RenodeAgent::senderSocketSend(Protocol request)
 {
-    senderSocket.send(&request, sizeof(Protocol));
+    senderSocket->Send((char *)&request, sizeof(Protocol));
 }
 
-void RenodeAgent::senderSocketSend(std::string text)
+void RenodeAgent::senderSocketSend(const char* text)
 {
-    zmq::message_t message(text.size());
-    std::memcpy (message.data(), text.data(), text.size());
-    senderSocket.send(message);
+    senderSocket->Send(text, strlen(text));
 }
 
 Protocol* RenodeAgent::receive()
 {
     size_t length = sizeof(Protocol);
     char *buffer = new char[length];
-    mainSocket.recv(buffer, length);
+    mainSocket->CTCPClient::Receive(buffer, length);
     return (Protocol *)buffer;
 }

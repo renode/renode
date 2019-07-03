@@ -1,12 +1,12 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "wishbone.h"
 
-void Wishbone::tick(bool countEnable, unsigned long steps = 1)
+void Wishbone::tick(bool countEnable, unsigned long long steps = 1)
 {
     for(int i = 0; i < steps; i++) {
         *wb_clk = 1;
@@ -33,7 +33,7 @@ void Wishbone::timeoutTick(bool condition, int timeout = 20)
     }
 }
 
-void Wishbone::write(unsigned long addr, unsigned long value)
+void Wishbone::write(unsigned long long addr, unsigned long long value)
 {
     int timeout;
 
@@ -58,7 +58,7 @@ void Wishbone::write(unsigned long addr, unsigned long value)
     tick(true);
 }
 
-unsigned long Wishbone::read(unsigned long addr)
+unsigned long Wishbone::read(unsigned long long addr)
 {
     int timeout;
 

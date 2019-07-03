@@ -16,9 +16,9 @@ enum class AxiWriteState {AW, W, B};
 struct AxiSlave : public Axi
 {
     AxiSlave(unsigned int dataWidth, unsigned int addrWidth);
-    virtual void tick(bool countEnable, unsigned long steps);
-    virtual void write(unsigned long addr, unsigned long value);
-    virtual unsigned long read(unsigned long addr);
+    virtual void tick(bool countEnable, unsigned long long steps);
+    virtual void write(unsigned long long addr, unsigned long long value);
+    virtual unsigned long read(unsigned long long addr);
     virtual void reset();
 
     void readWord(uint64_t addr);
