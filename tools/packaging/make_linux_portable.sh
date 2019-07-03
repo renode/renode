@@ -119,7 +119,7 @@ gcc \
     -lmono-2.0  \
     -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //"`  \
     -static-libgcc -static-libstdc++ \
-    -o $DESTINATION/renode
+    -o $DESTINATION/renode_bundled
 
 # Copy dependencies
 
@@ -136,6 +136,8 @@ cp /usr/lib/cli/glib-sharp-2.0/libglibsharpglue-2.so $DESTINATION
 cp /usr/lib/cli/gtk-sharp-2.0/libgtksharpglue-2.so $DESTINATION
 cp /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so $DESTINATION
 cp /usr/lib/cli/pango-sharp-2.0/libpangosharpglue-2.so $DESTINATION
+
+cp $THIS_DIR/linux_portable/renode $DESTINATION
 
 # Create tar
 tar -czf ../../output/packages/renode-$VERSION.linux-portable.tar.gz $DESTINATION
