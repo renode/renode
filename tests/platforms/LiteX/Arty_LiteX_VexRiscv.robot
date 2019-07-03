@@ -14,7 +14,7 @@ Create Platform
     Execute Command            sysbus LoadELF @https://antmicro.com/projects/renode/arty_litex_vexriscv--firmware.elf-s_438376-e20651f6e9625812f6588ce2b79c978f2c4d7eab
 
 *** Test Cases ***
-Should Booot
+Should Boot
     Create Platform
     Create Terminal Tester     sysbus.uart  prompt=H2U
     Execute Command            showAnalyzer sysbus.uart
