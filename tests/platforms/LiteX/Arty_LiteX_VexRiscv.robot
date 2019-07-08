@@ -133,8 +133,15 @@ Should Read Buttons
 Should Read Ethernet PHY Status
     [Documentation]         Reads the status of LiteX Ethernet PHY.
     Create Platform
-    Create Terminal Tester     sysbus.uart
+    Create Terminal Tester  sysbus.uart
+
+    # MDIO status: 10Mbps + link down
+    Execute Command         eth.phy VendorSpecific1 0x0
     Start Emulation
 
-    Wait For Line On Uart  MDIO mode: 100Mbps / link: up
+    Wait For Line On Uart   MDIO mode: 10Mbps / link: down
 
+    # MDIO status: 100Mbps + link up
+    Execute Command         eth.phy VendorSpecific1 0x4400
+    Write Line To Uart      mdio_status
+    Wait For Line On Uart   MDIO mode: 100Mbps / link: up
