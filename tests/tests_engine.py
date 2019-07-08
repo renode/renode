@@ -26,6 +26,7 @@ def prepare_parser():
     parser.add_argument("-r", "--results-dir",  dest="results_directory",  action="store", default=os.path.join(this_path, 'tests'),  help="Location where test results should be stored.")
     parser.add_argument("--run-gdb", dest="run_gdb", action="store_true", help="Run tests under GDB control.")
     parser.add_argument("--exclude", default=[], action="append", help="Do not run tests marked with a tag.")
+    parser.add_argument("--stop-on-error", dest="stop_on_error", action="store_true", default=False, help="Terminate immediately on the first test failure")
     return parser
 
 def call_or_die(to_call, error_message):

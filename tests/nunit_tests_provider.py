@@ -50,6 +50,8 @@ class NUnitTestSuite(object):
         project_file = os.path.split(self.path)[1]
         output_file = project_file.replace('csproj', 'xml')
         args = [copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(output_file), project_file.replace("csproj", "dll")]
+        if options.stop_on_error:
+            args.append('-stoponerror')
         if platform.startswith("linux") or platform == "darwin":
             args.insert(0, 'mono')
             if options.port is not None:
