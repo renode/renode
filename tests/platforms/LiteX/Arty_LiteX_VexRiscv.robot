@@ -39,30 +39,35 @@ Should Control LEDs
     Execute Command            led3_tester AssertState false
 
     Write Line To Uart         debug cas leds 1
+    Wait For Prompt On Uart
     Execute Command            led0_tester AssertState true
     Execute Command            led1_tester AssertState false
     Execute Command            led2_tester AssertState false
     Execute Command            led3_tester AssertState false
 
     Write Line To Uart         debug cas leds 3
+    Wait For Prompt On Uart
     Execute Command            led0_tester AssertState true
     Execute Command            led1_tester AssertState true
     Execute Command            led2_tester AssertState false
     Execute Command            led3_tester AssertState false
 
     Write Line To Uart         debug cas leds 7
+    Wait For Prompt On Uart
     Execute Command            led0_tester AssertState true
     Execute Command            led1_tester AssertState true
     Execute Command            led2_tester AssertState true
     Execute Command            led3_tester AssertState false
 
     Write Line To Uart         debug cas leds 15
+    Wait For Prompt On Uart
     Execute Command            led0_tester AssertState true
     Execute Command            led1_tester AssertState true
     Execute Command            led2_tester AssertState true
     Execute Command            led3_tester AssertState true
 
     Write Line To Uart         debug cas leds 0
+    Wait For Prompt On Uart
     Execute Command            led0_tester AssertState false
     Execute Command            led1_tester AssertState false
     Execute Command            led2_tester AssertState false
