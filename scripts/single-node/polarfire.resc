@@ -16,7 +16,7 @@ showAnalyzer mmuart0
 #runMacro $reset
 
 ## Alternatively, to start GDB and load from SoftConsole:
-# e51 StartGdbServer 3333 true
+# machine StartGdbServer 3333 true
 ## Remember! After the connection is done and the binary is loaded, you have to issue:
 # u54_1 PC `e51 PC`
 ## for every core you need to use as GDB initializes only the e51 core.
