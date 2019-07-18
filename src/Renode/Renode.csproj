@@ -12,6 +12,7 @@
     <AssemblyName>Renode</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <Import Project="$(PropertiesLocation)" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
