@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.UserInterface;
 using Antmicro.Renode.Utilities;
+using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -234,6 +235,12 @@ namespace Antmicro.Renode.RobotFramework
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
             }
+        }
+
+        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
+        public void LogToFile(string filePath, bool flushAfterEveryWrite = false)
+        {
+            Logger.AddBackend(new FileBackend(filePath, flushAfterEveryWrite), "file", true);
         }
 
         private void CheckLogTester()
