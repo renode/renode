@@ -48,6 +48,15 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        public bool ShouldNotBeReplayed
+        {
+            get
+            {
+                var attr = methodInfo.GetCustomAttributes<RobotFrameworkKeywordAttribute>().Single();
+                return attr.ShouldNotBeReplayed;
+            }
+        }
+
         private bool TryParseArguments(ParameterInfo[] parameters, string[] arguments, out object[] parsedArguments)
         {
             parsedArguments = null;

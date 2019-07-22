@@ -10,16 +10,14 @@ namespace Antmicro.Renode.RobotFramework
 {
     public class RobotFrameworkKeywordAttribute : Attribute
     {
-        public RobotFrameworkKeywordAttribute()
-        {
-        }
-
-        public RobotFrameworkKeywordAttribute(string name)
+        public RobotFrameworkKeywordAttribute(string name = null, bool shouldNotBeReplayed = false)
         {
             Name = name;
+            ShouldNotBeReplayed = shouldNotBeReplayed;
         }
 
         public string Name { get; private set; }
+        public bool ShouldNotBeReplayed { get; private set; }
     }
 }
 
