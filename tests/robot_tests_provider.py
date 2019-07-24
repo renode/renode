@@ -20,8 +20,6 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
     parser.add_argument("--enable-xwt", dest="enable_xwt", action="store_true", default=False, help="Enables support for XWT.")
     parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
-    parser.add_argument("--show-monitor", dest="show_monitor", action="store_true", default=False, help="Display monitor window.")
-    parser.add_argument("--show-analyzers", dest="show_analyzers", action="store_true", default=False, help="Display analyzers.")
     parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
     parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
 
@@ -87,13 +85,9 @@ class RobotTestSuite(object):
             sys.exit(1)
 
         args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
-        if not options.show_monitor:
-            args.append('--hide-monitor')
         if not options.show_log:
             args.append('--hide-log')
-        if not options.show_analyzers:
-            args.append('--hide-analyzers')
-        if not options.enable_xwt and not(options.show_analyzers or options.show_monitor):
+        if not options.enable_xwt:
            args.append('--disable-xwt')
 
         if platform.startswith("linux") or platform == "darwin":
