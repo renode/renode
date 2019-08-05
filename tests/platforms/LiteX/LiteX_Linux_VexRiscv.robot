@@ -13,7 +13,7 @@ Create Platform
 
     Execute Command            set kernel @https://antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4402492-63e4ad768e0aca4831bb95704f335f0152357e3b
     Execute Command            set rootfs @https://antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4071424-a3995f05549010596e955558f19f0e2e1e25ce3b
-    Execute Command            set device_tree @https://antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2301-4fbf6c609566e100ce05d4d86ba4b849fce44b29
+    Execute Command            set device_tree @https://antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2297-74742abc8cb2aea59b7e7d1dffa43f7f837ec48c
     Execute Command            set emulator @https://antmicro.com/projects/renode/litex_vexriscv--emulator.bin-s_9028-796a4227b806997c6629462fdf0dcae73de06929
 
     Execute Command            sysbus LoadBinary $emulator 0x20000000
@@ -87,4 +87,12 @@ Should Read Button
     Wait For Line On Uart      0
     Wait For Prompt On Uart
 
+Should Handle SPI
+    Requires                   booted-image
+
+    Write Line To Uart         spidev_test -D /dev/spidev0.0 --speed 1000000
+    Wait For Line On Uart      spi mode: 0x0
+    Wait For Line On Uart      bits per word: 8
+    Wait For Line On Uart      max speed: 1000000 Hz (1000 KHz)
+    Wait For Line On Uart      RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D
 
