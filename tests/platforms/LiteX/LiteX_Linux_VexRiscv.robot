@@ -11,9 +11,9 @@ Create Platform
     Execute Command            mach create
     Execute Command            machine LoadPlatformDescription @${CURDIR}/litex_linux_vexriscv.repl
 
-    Execute Command            set kernel @https://antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4402492-63e4ad768e0aca4831bb95704f335f0152357e3b
-    Execute Command            set rootfs @https://antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4071424-a3995f05549010596e955558f19f0e2e1e25ce3b
-    Execute Command            set device_tree @https://antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2297-74742abc8cb2aea59b7e7d1dffa43f7f837ec48c
+    Execute Command            set kernel @https://antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4578292-f63a4736100b5ff79a8d72429c1b79718ec7a446
+    Execute Command            set rootfs @https://antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4163584-c44ad487ba1f73c00430a1bb108ceef84007274f
+    Execute Command            set device_tree @https://antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2609-9a915b47b8e31d0d3f268c4a297dc0b0555e8cd0
     Execute Command            set emulator @https://antmicro.com/projects/renode/litex_vexriscv--emulator.bin-s_9028-796a4227b806997c6629462fdf0dcae73de06929
 
     Execute Command            sysbus LoadBinary $emulator 0x20000000
@@ -95,4 +95,30 @@ Should Handle SPI
     Wait For Line On Uart      bits per word: 8
     Wait For Line On Uart      max speed: 1000000 Hz (1000 KHz)
     Wait For Line On Uart      RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D
+
+Should Handle I2C
+    Requires                   booted-image
+
+    Write Line To Uart         i2cdetect -y 0
+
+    Wait For Line On Uart      00:${SPACE*10}-- -- UU -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    Wait For Line On Uart      70: -- -- -- -- -- -- -- --
+
+    Write Line To Uart         cd /sys/class/i2c-dev/i2c-0/device/0-0005/iio:device0
+
+    Write Line To Uart         cat in_temp_raw
+    Wait For Line On Uart      4352
+    Set New Prompt For Uart    $
+    Wait For Prompt On Uart
+
+    Execute Command            i2c.si7021 Temperature 36
+    Write Line To Uart         cat in_temp_raw
+    Wait For Line On Uart      3840
+    Wait For Prompt On Uart
 

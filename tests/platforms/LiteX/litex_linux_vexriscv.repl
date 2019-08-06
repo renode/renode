@@ -27,6 +27,13 @@ spi: SPI.LiteX_SPI @ {
 
 spi_loopback: SPI.SPILoopback @ spi
 
+i2c: I2C.LiteX_I2C @ {
+    sysbus 0xF0007000
+}
+
+si7021: Sensors.SI70xx @ i2c 5
+    model: Model.SI7021
+
 gpio_out: GPIOPort.LiteX_GPIO @ {
     sysbus 0xF0005800
 }
