@@ -74,7 +74,7 @@ This requires you to install Python 2.7 (on Windows, you will also need Cygwin -
 
 Once you have Python 2.7 and ``pip``, install some additional modules::
 
-    python -m pip install robotframework netifaces requests psutil
+    python -m pip install robotframework==3.0.4 netifaces requests psutil
 
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
