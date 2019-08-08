@@ -40,6 +40,8 @@ deviceInformation: Miscellaneous.SiLabs.EFM32xG1xBDeviceInformation @ sysbus 0x0
     flashDevice: flash
     sramDevice: sram
 
+gpcrc: Miscellaneous.SiLabs.EFR32_GPCRC @ sysbus 0x4001c000
+
 sysbus:
     init:
         Tag <0x400e0000,0x400e07ff> "MSC"
@@ -49,7 +51,6 @@ sysbus:
         Tag <0x400f0000,0x400f03ff> "CRYPTO"
         Tag <0x400e6000,0x400e63ff> "PRS"
         Tag <0x400e2000,0x400e2fff> "LDMA"
-        Tag <0x4001c000,0x4001c3ff> "GPCRC"
         Tag <0x40046000,0x400463ff> "LETIMER0"
         Tag <0x4001e000,0x4001e3ff> "CRYOTIMER"
         Tag <0x4004e000,0x4004e3ff> "PCNT0"
