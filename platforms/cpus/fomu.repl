@@ -33,10 +33,15 @@ timer0: Timers.LiteX_Timer @ {
     frequency: 12000000
     -> cpu@0
 
+valenty: USB.ValentyUSB @ {
+        sysbus 0x60004800;
+        sysbus 0xe0004800 // shadow
+    }
+    -> cpu@3
+
 sysbus:
     init:
         Tag <0xe0000000 0x800> "CTRL"
-        Tag <0xe0004800 0x800> "USB"
         Tag <0xe0005000 0x800> "PICORV_SPI"
         Tag <0xe0005800 0x800> "TOUCH"
         Tag <0xE0006000 0x800> "REBOOT"
