@@ -35,6 +35,9 @@ sram:
 flash:
     size: 0x00100000
 
+flashCtrl: MTD.EFR32xg13FlashController @ sysbus 0x400E0000
+    flash: flash
+
 deviceInformation:
     deviceFamily: DeviceFamily.EFR32MG12P
 
