@@ -1,0 +1,57 @@
+emulator_ram: Memory.MappedMemory @ {
+        sysbus 0x20000000
+    }
+    size: 0x10000000
+
+ddr: Memory.MappedMemory @ {
+        sysbus 0xc0000000
+    }
+    size: 0x10000000
+
+uart: UART.LiteX_UART @ {
+        sysbus 0xf0001000
+    }
+    -> cpu@0
+
+eth: Network.LiteX_Ethernet @ {
+        sysbus <0xF0003800, +0x100>;
+
+        sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
+    }
+    -> cpu@2
+
+spi: SPI.LiteX_SPI @ {
+    sysbus 0xF0006800
+}
+
+spi_loopback: SPI.SPILoopback @ spi
+
+gpio_out: GPIOPort.LiteX_GPIO @ {
+    sysbus 0xF0005800
+}
+    type: Type.Out
+    0 -> led@0
+
+gpio_in: GPIOPort.LiteX_GPIO @ {
+    sysbus 0xF0006000
+}
+    type: Type.In
+
+cpuTimer: Timers.LiteX_CPUTimer @ {
+        sysbus 0xF0000800
+    }
+    // according to the LiteX Configuration this should be 10.000.000 Hz, but I modified it in order to obtain 10ms tick
+    frequency: 40000000
+    // IRQ #100 is Machine Timer Interrupt
+    -> cpu@100
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32ima"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: cpuTimer
+
+led : Miscellaneous.LED @ gpio_out 0
+
+button: Miscellaneous.Button @ gpio_in 0
+    -> gpio_in@0

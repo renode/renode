@@ -19,3 +19,4 @@ tests/platforms/SAME70.robot
 tests/platforms/Murax.robot
 tests/unit-tests/monitor-tests.robot
 tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
+tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
