@@ -35,7 +35,7 @@ eth: Network.LiteX_Ethernet @ {
 phy: Network.EthernetPhysicalLayer @ eth 0
     VendorSpecific1: 0x4400 // MDIO status: 100Mbps + link up 
 
-spi: SPI.LiteX_SPI @ {
+spi: SPI.LiteX_SPI_Flash @ {
     sysbus 0x60005000;
     sysbus 0xe0005000; // shadow
     sysbus new Bus.BusMultiRegistration { address: 0x20000000; size: 0x2000000; region: "xip" };
