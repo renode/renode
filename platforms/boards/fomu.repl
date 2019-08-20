@@ -1,4 +1,0 @@
-using "platforms/cpus/litex_vexriscv.repl"
-
-fomu_mem: Memory.MappedMemory @ sysbus 0x20040000
-    size: 0x10000000

@@ -1,0 +1,44 @@
+//
+// This platform is based on LiteX headers
+// shipped together with Foboot: the Bootloader for Fomu
+// https://github.com/im-tomu/foboot/tree/637bbf10fa9a0b7f52cbd459d80c8c7532d56a18/sw/include/generated
+//
+
+rom: Memory.MappedMemory @ {
+        sysbus 0x00000000;
+        sysbus 0x80000000 // shadow
+    }
+    size: 0x00002000
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x10000000;
+        sysbus 0x90000000 // shadow
+    }
+    size: 0x00020000
+
+vexriscv_debug: Memory.MappedMemory @ {
+        sysbus 0x700f0000;
+        sysbus 0xf00f0000 // shadow
+    }
+    // according to the header this memory has a size of 0x10,
+    // but it's currently not possible to allocate such a small memory in Renode
+    size: 0x00001000
+
+cpu: CPU.VexRiscv @ sysbus
+
+timer0: Timers.LiteX_Timer @ {
+        sysbus 0x60002800;
+        sysbus 0xE0002800 // shadow
+    }
+    frequency: 12000000
+    -> cpu@0
+
+sysbus:
+    init:
+        Tag <0xe0000000 0x800> "CTRL"
+        Tag <0xe0004800 0x800> "USB"
+        Tag <0xe0005000 0x800> "PICORV_SPI"
+        Tag <0xe0005800 0x800> "TOUCH"
+        Tag <0xE0006000 0x800> "REBOOT"
+        Tag <0xE0006800 0x800> "RGB"
+        Tag <0xE0007000 0x800> "VERSION"
