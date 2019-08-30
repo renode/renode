@@ -54,7 +54,7 @@ Setup
     ...    Fatal Error  Windows doesn't support server remote debug option.
 
     #The distinction between operating systems is because localhost is not universally understood on Linux and 127.0.0.1 is not always available on Windows.
-    Run Keyword If       not '${SYSTEM}' == 'Windows'  
+    Run Keyword If       not '${SYSTEM}' == 'Windows'
     ...   Wait Until Keyword Succeeds  60s  1s
           ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/
     Run Keyword If       '${SYSTEM}' == 'Windows'
