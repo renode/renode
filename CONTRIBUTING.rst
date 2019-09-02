@@ -10,7 +10,7 @@ Please read the short manual below where we provide some simple guidelines for a
 Issues
 ------
 
-Issues in the Renode  project are tracked in the `Github issues system <https://github.com/antmicro/renode/issues>`_.
+Issues in the Renode  project are tracked in the `GitHub issues system <https://github.com/antmicro/renode/issues>`_.
 
 We also use an internal issue tracker, so it is possible that some referenced issues are not publicly available.
 
@@ -35,7 +35,7 @@ To do that, you need to:
 
 What happens then?
 
-Your merge request will be reviewed by the Renode team, and potentially a discussion on Github will ensue.
+Your merge request will be reviewed by the Renode team, and potentially a discussion on GitHub will ensue.
 
 We might ask you to do some fixes or write a test for your change, but this is only meant to keep code quality high(er).
 
@@ -67,23 +67,24 @@ Here is a proposed format of the commit message:
 
 .. code-block::
 
-   [#1234] optional-tag: Short description of a commit.
+   [#1234] optional-tag: Short description of a commit
 
    If you feel that the commit needs a bit more explanation than
    a short description you can put all your thoughts here (after
    a blank line).
 
-``#1234`` is obviously the number of the Github issue that describes the problem you're trying to fix.
-As we use an internal issue tracker, you may observe that some issue numbers (over #5000) are not pointing to any Github issue.
+``#1234`` is obviously the number of the GitHub issue that describes the problem you're trying to fix.
+As we use an internal issue tracker, you may observe that some issue numbers (over #5000) are not pointing to any GitHub issue.
 
 The short description is just a short sentence describing changes introduced by a commit.
 If you have problems to formulate a single sentence (because the commit makes a lot of changes) than perhaps you should consider splitting it into several independent commits (as noted above).
-We usually write these descriptions in the form of a sentence, in imperative mood starting with a capitalized letter.
-You can also use a tag before the main sentence describing the general area the commit relates to, but it is not obligatory.
+We usually write these descriptions in a form of a sentence, in imperative mood, starting with a capitalized letter.
+
+You can add an optional tag word before the commit message - it is especially useful if you have a series of commits related to the same topic (e.g. changes in one peripheral model).
 
 The long description is not obligatory, but nice to have.
 There is no word limit here, but we all should be reasonable.
-Discussions and long analyses should be placed in the github issue system.
+Discussions and long analyses should be placed in the GitHub issue system.
 
 Code formatting and quality
 ---------------------------
