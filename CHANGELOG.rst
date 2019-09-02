@@ -3,6 +3,61 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.8.0 - 2019.09.02
+------------------
+
+Added:
+
+* support for RI5CY core and the VEGA board
+* UART and timer models for RI5CY
+* support for Minerva, a 32-bit RISC-V soft CPU
+* LiteX with Minerva platform
+* LiteX with VexRiscv on Arty platform
+* SPI, Control and Status, SPI Flash and GPIO port peripheral models for LiteX
+* PSE_PDMA peripheral model for the PolarFire SoC platform
+* basic slave mode support in PSE_I2C
+* EtherBone bridge model to connect Renode with FPGA via EtherBone
+* EtherBone bridge demo on Fomu
+* RTCC and GPCRC peripheral models for EFR32
+* support for deep sleep on Cortex-M cores
+* option of bundling Renode as an ELF executable
+
+Changed:
+
+* GDB server is now started from the ``machine`` level instead of ``cpu`` and is able to handle multiple cores at once
+* renamed ``SetLossRangeWirelessFunction`` to ``SetRangeLossWirelessFunction``
+* LiteX Ethernet now supports MDIO interface
+* updated memory map for several EFR32 platforms
+* changed the interrupt handling of EFR32_USART
+* several changes in Ethernet PHY
+* switch is now started immediately after creation
+* the Monitor (and other mechanisms) now uses caching, increasing its performance
+* Robot tests are now part of packages
+* Robot tests no longer cause the Monitor telnet server to start automatically
+* REPL files now accept multiline strings delimited with triple apostrophe
+* UART analyzers are writing to the Renode log when running from Robot
+* simplified command line switches for running Robot tests
+* some Robot keywords (e.g. ``LogToFile``) are not saved between related tests
+
+Fixed:
+
+* compilation of verilated peripheral classes in Windows (backported to 1.7.1 package)
+* determinism of SAM E70 tests
+* crash when using ``logLevel`` command with ``--hide-log`` switch
+* ad-hoc compiler behavior in Windows
+* crash on too short Ethernet packets
+* byte read behavior in NS16550
+* auto update behavior of PSE_Timer
+* connection mode when running the Monitor via telnet
+* deserialization of ``SerializableStreamView``
+* crash when completing interrupts in PLIC when no interrupt is pending
+* Renode startup position on Windows with desktop scaling enabled
+* fence.* operation decoding in RISC-V
+* invalid size reported by SD card
+* crash when trying to set the same log file twice
+* compilation issues on GCC 9
+
+
 1.7.1 - 2019.05.15
 ------------------
 
