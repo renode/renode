@@ -20,13 +20,13 @@ Added:
 * EtherBone bridge demo on Fomu
 * RTCC and GPCRC peripheral models for EFR32
 * support for deep sleep on Cortex-M cores
-* option of bundling Renode as an ELF executable
+* option of bundling Renode as an ELF executable on Linux
 
 Changed:
 
 * GDB server is now started from the ``machine`` level instead of ``cpu`` and is able to handle multiple cores at once
 * renamed ``SetLossRangeWirelessFunction`` to ``SetRangeLossWirelessFunction``
-* LiteX Ethernet now supports MDIO interface
+* LiteX Ethernet now supports the MDIO interface
 * updated memory map for several EFR32 platforms
 * changed the interrupt handling of EFR32_USART
 * several changes in Ethernet PHY
