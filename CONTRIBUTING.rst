@@ -67,7 +67,7 @@ Here is a proposed format of the commit message:
 
 .. code-block::
 
-   [#1234] Short description of a commit.
+   [#1234] optional-tag: Short description of a commit.
 
    If you feel that the commit needs a bit more explanation than
    a short description you can put all your thoughts here (after
@@ -78,7 +78,8 @@ As we use an internal issue tracker, you may observe that some issue numbers (ov
 
 The short description is just a short sentence describing changes introduced by a commit.
 If you have problems to formulate a single sentence (because the commit makes a lot of changes) than perhaps you should consider splitting it into several independent commits (as noted above).
-We usually write these descriptions in the form of a sentence, starting with a capitalized letter and ending with a period.
+We usually write these descriptions in the form of a sentence, in imperative mood starting with a capitalized letter.
+You can also use a tag before the main sentence describing the general area the commit relates to, but it is not obligatory.
 
 The long description is not obligatory, but nice to have.
 There is no word limit here, but we all should be reasonable.
