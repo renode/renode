@@ -4,7 +4,7 @@
 using sysbus
 mach create
 
-machine LoadPlatformDescription @platforms/cpus/polarfire.repl
+machine LoadPlatformDescription @platforms/cpus/polarfire-soc.repl
 
 showAnalyzer mmuart0
 
