@@ -1,0 +1,59 @@
+// This platform's configuration is based on:
+// https://github.com/zephyrproject-rtos/zephyr/blob/master/dts/riscv/riscv32-litex-vexriscv.dtsi
+
+ram: Memory.MappedMemory @ {
+        sysbus 0x40000000;
+        sysbus 0xc0000000 // shadow
+    }
+    size: 0x10000000
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32imac"
+
+uart: UART.LiteX_UART @ {
+        sysbus 0x60001800;
+        sysbus 0xE0001800 // shadow
+    }
+    -> cpu@2
+
+spi: SPI.LiteX_SPI @ {
+        sysbus 0x60002000;
+        sysbus 0xE0002000 // shadow
+    }
+
+timer0: Timers.LiteX_Timer @ {
+        sysbus 0x60002800;
+        sysbus 0xE0002800 // shadow
+    }
+    frequency: 100000000
+    -> cpu@1
+
+gpio_out: GPIOPort.LiteX_GPIO @ {
+        sysbus 0x60005800;
+        sysbus 0xE0005800 // shadow
+    }
+    type: Type.Out
+
+gpio_in: GPIOPort.LiteX_GPIO @ {
+        sysbus 0x60006000;
+        sysbus 0xE0006000 // shadow
+    }
+    type: Type.In
+
+eth: Network.LiteX_Ethernet @ {
+        sysbus <0x60009800, +0x100>;
+        sysbus <0xE0009800, +0x100>; // shadow
+
+        sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }; // shadow
+
+        sysbus new Bus.BusMultiRegistration { address: 0x60009000; size: 0x800; region: "phy" };
+        sysbus new Bus.BusMultiRegistration { address: 0xe0009000; size: 0x800; region: "phy" } // shadow
+    }
+
+sysbus:
+    init:
+        Tag <0xE0003800 0x100> "DNA"
+        Tag <0xE0005000 0x100> "I2C"
+        Tag <0xE0006800 0x100> "PRBS RNG"
+        Tag <0xE0007000 0x100> "PWM"
