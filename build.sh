@@ -44,7 +44,7 @@ do
       echo "-v           verbose output"
       echo "-p           create packages after building"
       echo "-n           create nightly packages after building"
-      echo "-s           update sumbodules"
+      echo "-s           update submodules"
       exit 1
       ;;
   esac
