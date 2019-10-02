@@ -22,10 +22,14 @@ def install_cli_arguments(parser):
     parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
     parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
     parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
+    parser.add_argument("--css-file", dest="css_file", action="store", default=os.path.join(this_path, '../lib/resources/styles/robot.css'), help="Custom CSS style for the result files.")
 
 def verify_cli_arguments(options):
     if platform != "win32" and options.port == str(options.remote_server_port):
         print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
+        sys.exit(1)
+    if options.css_file and not os.path.isfile(options.css_file):
+        print("Unable to find provided CSS file: {0}.".format(options.css_file))
         sys.exit(1)
 
 def is_process_running(pid):
@@ -163,6 +167,15 @@ class RobotTestSuite(object):
             if len(RobotTestSuite.log_files) > 0:
                 print("Aggregating all robot results")
                 robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', outputdir=options.results_directory, output='robot_output.xml')
+            if options.css_file:
+                with open(options.css_file) as style:
+                    style_content = style.read()
+                    for report_name in ("report.html", "log.html"):
+                        with open(os.path.join(options.results_directory, report_name), "a") as report:
+                            report.write("<style media=\"all\" type=\"text/css\">")
+                            report.write(style_content)
+                            report.write("</style>")
+
 
     @staticmethod
     def _create_suite_name(test_name, hotspot):
