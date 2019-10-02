@@ -41,7 +41,7 @@ def is_process_running(pid):
 
 def check_if_port_available(options):
     if not sys.stdin.isatty():
-        return 
+        return
     try:
         for proc in [psutil.Process(pid) for pid in psutil.pids()]:
             if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
