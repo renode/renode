@@ -37,7 +37,7 @@ cp -r $BASE/tests/platforms $DIR/tests/platforms
 sed -i '/nunit/d' $DIR/tests/run_tests.py
 sed -i 's#tools/##' $DIR/tests/test.sh
 sed -i 's#tests/run_tests.py#run_tests.py#' $DIR/tests/test.sh
-sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin -r . "$@"#' $DIR/tests/test.sh
+sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r . "$@"#' $DIR/tests/test.sh
 sed -i 's#^ROOT_PATH=".*#ROOT_PATH="'$INSTALL_DIR'/tests"#g' $DIR/tests/test.sh
 sed -i '/TESTS_FILE/d' $DIR/tests/test.sh
 sed -i '/TESTS_RESULTS/d' $DIR/tests/test.sh
