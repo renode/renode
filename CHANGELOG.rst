@@ -3,6 +3,34 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.8.1 - 2019.10.09
+------------------
+
+Added:
+
+* LiteX with VexRiscv configuration running Zephyr
+* USB/IP Server for attaching Renode peripherals as USB devices to host
+* optional NMI support in RISC-V
+* flash controller for EFR32
+* I2C controller for LiteX
+* SPI controller for PicoRV
+* framebuffer controller for LiteX
+* USB keyboard model
+
+
+Changed:
+
+* ``-e`` parameter for commands executed at startup can be provided multiple times
+* ``polarfire`` platform is now renamed to ``polarfire-soc``
+* style of Robot Framework result files
+* MT25Q flash backend has changed from file to memory, allowing software to execute directly from it
+* improved LiteX on Fomu platform
+* terminals based on sockets now accept reconnections from clients
+
+Fixed:
+
+* ``Bad IL`` exceptions when running on Mono 6.4
+
 1.8.0 - 2019.09.02
 ------------------
 
