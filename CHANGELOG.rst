@@ -9,14 +9,13 @@ This document describes notable changes to the Renode framework.
 Added:
 
 * LiteX with VexRiscv configuration running Zephyr
-* USB/IP Server for attaching Renode peripherals as USB devices to host
+* USB/IP Server for attaching Renode peripherals as a USB device to host
 * optional NMI support in RISC-V
 * flash controller for EFR32
 * I2C controller for LiteX
 * SPI controller for PicoRV
 * framebuffer controller for LiteX
 * USB keyboard model
-
 
 Changed:
 
