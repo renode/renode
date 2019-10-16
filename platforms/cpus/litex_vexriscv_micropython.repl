@@ -1,0 +1,4 @@
+using "platforms/cpus/litex_vexriscv.repl"
+
+uart:
+    -> cpu@0
