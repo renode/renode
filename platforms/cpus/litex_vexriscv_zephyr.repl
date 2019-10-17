@@ -41,8 +41,8 @@ gpio_in: GPIOPort.LiteX_GPIO @ {
     type: Type.In
 
 eth: Network.LiteX_Ethernet @ {
-        sysbus <0x60009800, +0x100>;
-        sysbus <0xE0009800, +0x100>; // shadow
+        sysbus 0x60009800;
+        sysbus 0xE0009800; // shadow
 
         sysbus new Bus.BusMultiRegistration { address: 0x30000000; size: 0x2000; region: "buffer" };
         sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }; // shadow
