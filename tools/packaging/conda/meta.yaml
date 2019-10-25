@@ -1,0 +1,34 @@
+package:
+    name: renode
+    version: {{GIT_DESCRIBE_TAG}}
+
+source:
+    git_url: https://github.com/renode/renode.git
+    git_rev: master
+
+requirements:
+    build:
+        - python 2.7
+        - git
+        - automake
+        - autoconf
+        - libtool
+        - {{ compiler('cxx') }}
+        - {{ compiler('c') }}
+        - mono
+        - gtk2
+    run:
+        - python 2.7
+        - glib
+        - mono
+        - gtk2
+        - pcre
+        - cairo
+        - pango
+        - atk
+        - fontconfig
+
+about:
+    home: https://github.com/renode/renode
+    license: The MIT License (MIT)
+    license_file: LICENSE
