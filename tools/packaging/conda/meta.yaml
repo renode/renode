@@ -8,25 +8,26 @@ source:
 
 requirements:
     build:
-        - python 2.7
+        - python
         - git
-        - automake
-        - autoconf
-        - libtool
+        - automake [not win]
+        - autoconf [not win]
+        - libtool  [not win]
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
-        - mono
-        - gtk2
+        - mono [not win]
+        - gtk2 [not win]
+        - vc >=10 [win]
     run:
-        - python 2.7
-        - glib
-        - mono
-        - gtk2
-        - pcre
-        - cairo
-        - pango
-        - atk
-        - fontconfig
+        - python
+        - glib [not win]
+        - mono [not win]
+        - gtk2 [not win]
+        - pcre [not win]
+        - cairo [not win]
+        - pango [not win]
+        - atk [not win]
+        - fontconfig [not win]
 
 about:
     home: https://github.com/renode/renode
