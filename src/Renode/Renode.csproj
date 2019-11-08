@@ -193,6 +193,10 @@
       <Project>{23222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-ppc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64.csproj">
+      <Project>{44422114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-ppc64</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc.csproj">
       <Project>{13222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-sparc</Name>
