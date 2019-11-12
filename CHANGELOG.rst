@@ -3,6 +3,27 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.8.2 - 2019.11.12
+------------------
+
+Added:
+
+* a sample running HiFive Unleashed with Fomu running Foboot, connected via USB
+* a sample running MicroPython on LiteX with VexRiscv
+* vectored interrupts support in RISC-V
+* ``pythonEngine`` variable is now availalbe in Python scripting
+
+Changed:
+
+* Renode now requires Mono 5.20 on Linux and macOS
+* USB setup packets are now handled asynchronously, allowing more advanced processing on the USB device side
+* additional flash sizes for Micron MT25Q
+* LiteX_Ethernet has a constant size now
+
+Fixed:
+
+* problem with halting cores in GDB support layer when hitting a breakpoint - GDB works in a proper all-stop mode now
+
 1.8.1 - 2019.10.09
 ------------------
 
