@@ -25,7 +25,6 @@ if [[ "$(uname)" == 'Linux' ]]; then
     install -D /usr/lib/cli/gtk-sharp-2.0/libgtksharpglue-2.so $PREFIX/lib/libgtksharpglue-2.so
     install -D /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so $PREFIX/lib/libgdksharpglue-2.so
     install -D /usr/lib/cli/glib-sharp-2.0/libglibsharpglue-2.so $PREFIX/lib/libglibsharpglue-2.so
-    install -D /usr/lib/x86_64-linux-gnu/libdl.so $PREFIX/lib/libdl.so
     install -D /usr/lib/x86_64-linux-gnu/gtk-2.0/modules/libatk-bridge.so $PREFIX/lib/libatk-bridge.so
 
     sed -i 's/\/usr\/lib\/cli\/.*-sharp-2.0\///g' $PREFIX/opt/renode/bin/*.dll.config
@@ -75,4 +74,7 @@ done
 mkdir -p $PREFIX/bin/
 
 echo -e '#!/bin/bash\n\nmono $MONO_OPTIONS $CONDA_PREFIX/opt/renode/bin/Renode.exe "$@"' > $PREFIX/bin/renode
+
+mkdir -p "${PREFIX}/etc/conda/activate.d"
+cp "${RECIPE_DIR}/activate.sh" "${PREFIX}/etc/conda/activate.d/${PKG_NAME}_activate.sh"
 

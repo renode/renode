@@ -1,0 +1,7 @@
+diff --git a/tools/mono_version b/tools/mono_version
+index d9cdae59..819e07a2 100644
+--- a/tools/mono_version
++++ b/tools/mono_version
+@@ -1 +1 @@
+-5.20
++5.0

@@ -5,6 +5,8 @@ package:
 source:
     git_url: https://github.com/renode/renode.git
     git_rev: master
+    patches:
+        - lower_mono_version.patch
 
 requirements:
     build:
