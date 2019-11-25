@@ -7,10 +7,11 @@
 using System;
 using Antmicro.Renode.Testing;
 using Antmicro.Renode.Peripherals.Network;
+using Antmicro.Renode.Peripherals.Wireless;
 
 namespace Antmicro.Renode.RobotFramework
 {
-    internal class NetworInterfaceKeywords : TestersProvider<NetworkInterfaceTester, IMACInterface>, IRobotFrameworkKeywordProvider
+    internal class NetworInterfaceKeywords : TestersProvider<NetworkInterfaceTester, INetworkInterface>, IRobotFrameworkKeywordProvider
     {
         public void Dispose()
         {
@@ -19,7 +20,17 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public int CreateNetworkInterfaceTester(string networkInterface, string machine = null)
         {
-            return CreateNewTester(p => new NetworkInterfaceTester(p), networkInterface, machine);
+            return CreateNewTester(p => {
+                        if(p is IMACInterface mac)
+                        {
+                            return new NetworkInterfaceTester(mac);
+                        }
+                        if(p is IRadio radio)
+                        {
+                            return new NetworkInterfaceTester(radio);
+                        }
+                        throw new KeywordException($"Could not create NetworkInterfaceTester from {p}.");
+                    }, networkInterface, machine);
         }
 
         [RobotFrameworkKeyword]
