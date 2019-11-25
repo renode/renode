@@ -1,0 +1,68 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xE0
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+    
+uart: UART.PL011 @ sysbus 0x40010000
+    -> nvic@7
+    size: 0x1000
+
+m4mem: Memory.MappedMemory @ {
+    sysbus 0x0;
+    sysbus 0x20000000 //mirror
+    }
+    size: 0x80000
+
+sysbus:
+    init:
+        Tag <0x40005400, 0x4000549F> "AnalogIP" 0x0
+        Tag <0x400054A0, 0x400057FF> "AnalogIP (unlocked)" 0x1
+
+        Tag <0x40004400, 0x4000446F> "PowerManagementUnit 1/6" 0x1
+        Tag <0x40004470, 0x4000448F> "PowerManagementUnit 2/6" 0x0
+        Tag <0x40004490, 0x400044AF> "PowerManagementUnit 3/6" 0x1
+        Tag <0x400044B0, 0x400044CF> "PowerManagementUnit 4/6" 0x0
+        Tag <0x400044D0, 0x400044E3> "PowerManagementUnit 5/6" 0x1
+        Tag <0x400044E4, 0x400047FF> "PowerManagementUnit 6/6" 0x2A
+
+        Tag <0x40004000, 0x400043FF> "Clock (CRU)" 0x1
+
+        Tag <0x40000000, 0x400000FF> "M4_Regs"
+        Tag <0x40002000, 0x40003FFF> "Packet FIFO Bank"
+        Tag <0x40004800, 0x40004BFF> "Intr_Ctrl (WIC)"
+        Tag <0x40004C00, 0x40004FFF> "IO_Mux"
+        Tag <0x40005000, 0x400053FF> "Misc"
+        Tag <0x40005A00, 0x40005BFF> "JTM"
+        Tag <0x40005C00, 0x40005DFF> "SPT"
+        Tag <0x40006000, 0x40006FFF> "A1_Regs"
+        Tag <0x40007000, 0x400073FF> "SPI_MS"
+        Tag <0x40007400, 0x400077FF> "DMA_SPI_MS"
+        Tag <0x40008000, 0x400083FF> "eFuse"
+        Tag <0x4000B000, 0x4000BFFF> "I2S_Slave"
+        Tag <0x4000C000, 0x4000CFFF> "SDMA"
+        Tag <0x4000D000, 0x4000DFFF> "SDMA_Bridge"
+        Tag <0x4000F000, 0x4000FFFF> "SDMA_SRAM"
+        Tag <0x40012000, 0x40012FFF> "WDT"
+        Tag <0x40013000, 0x40013FFF> "Timer"
+        Tag <0x40014000, 0x40014FFF> "CFG_CTL_TOP (PIF Controller)"
+        Tag <0x40015000, 0x40015FFF> "AUD Slave"
+        Tag <0x40018000, 0x40018FFF> "RAMFIFO0"
+        Tag <0x40019000, 0x40019FFF> "RAMFIFO1"
+        Tag <0x4001A000, 0x4001AFFF> "RAMFIFO2"
+        Tag <0x4001B000, 0x4001BFFF> "RAMFIFO3"
+        Tag <0x40020000, 0x4003FFFF> "Fabric"
+
+        Tag <0x40040000, 0x40043FFF> "FFE_DM0" 0x10000
+        
+        Tag <0x40044000, 0x40047FFF> "FFE_SM0"
+        Tag <0x40048000, 0x40049FFF> "FFE_SM1"
+        Tag <0x4004A000, 0x4004BFFF> "FFE_ExtRegs"
+        Tag <0x40050000, 0x4007FFFF> "FFE_CM"
+        Tag <0xE0000000, 0xE0000FFF> "M4_ITM"
+        Tag <0xE0001000, 0xE0001FFF> "M4_DWT"
+        Tag <0xE0002000, 0xE0002FFF> "M4_FBP"
+        Tag <0xE0040000, 0xE0040FFF> "M4_TPIU"
+        Tag <0xE00FF000, 0xE00FFFFF> "M4_DAP"
