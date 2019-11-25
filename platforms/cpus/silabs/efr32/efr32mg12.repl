@@ -2,7 +2,7 @@ using "platforms/cpus/silabs/efr32/efr32mg1.repl"
 
 rtcc: Timers.EFR32_RTCC @ sysbus 0x40042000
     frequency: 32768
-    -> nvic@31
+    -> nvic@30
 
 i2c0:
     -> nvic@17
@@ -38,14 +38,28 @@ flash:
 flashCtrl: MTD.EFR32xg13FlashController @ sysbus 0x400E0000
     flash: flash
 
+timer0:
+    -> nvic@11
+
+timer1:
+    -> nvic@19
+
+wtimer0: Timers.EFR32_Timer @ sysbus 0x4001a000
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit32
+    -> nvic@36
+
+wtimer1: Timers.EFR32_Timer @ sysbus 0x4001a400
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit32
+    -> nvic@37
+
 deviceInformation:
     deviceFamily: DeviceFamily.EFR32MG12P
 
 sysbus:
     init add:
         Tag <0x400f0000,0x400f03ff> "CRYPTO0"
-        Tag <0x4001a000,0x4001a3ff> "WTIMER0"
-        Tag <0x4001a400,0x4001a7ff> "WTIMER1"
         Tag <0x4004e400,0x4004e7ff> "PCNT1"
         Tag <0x4004e800,0x4004ebff> "PCNT2"
         Tag <0x40008000,0x400083ff> "VDAC0"

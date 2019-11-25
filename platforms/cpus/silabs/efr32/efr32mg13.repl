@@ -1,0 +1,34 @@
+using "platforms/cpus/silabs/efr32/efr32mg12.repl"
+
+rtcc:
+    -> nvic@31
+
+i2c1:
+    -> nvic@40
+
+usart0:
+    ReceiveIRQ -> nvic@12
+    TransmitIRQ -> nvic@13
+usart1:
+    ReceiveIRQ -> nvic@20
+    TransmitIRQ -> nvic@21
+usart2:
+    ReceiveIRQ -> nvic@38
+    TransmitIRQ -> nvic@39
+usart3: @ none
+
+sram:
+    size: 0x00040000
+
+flash:
+    size: 0x00100000
+
+wtimer0:
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit32
+    -> nvic@37
+
+wtimer1: @ none
+
+deviceInformation:
+    deviceFamily: DeviceFamily.EFR32MG13P

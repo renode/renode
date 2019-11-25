@@ -42,6 +42,16 @@ deviceInformation: Miscellaneous.SiLabs.EFR32DeviceInformation @ sysbus 0x0fe081
 
 gpcrc: Miscellaneous.SiLabs.EFR32_GPCRC @ sysbus 0x4001c000
 
+timer0: Timers.EFR32_Timer @ sysbus 0x40018000
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit16
+    -> nvic@10
+
+timer1: Timers.EFR32_Timer @ sysbus 0x40018400
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit16
+    -> nvic@18
+
 sysbus:
     init:
         Tag <0x400e0000,0x400e07ff> "MSC"
@@ -51,15 +61,6 @@ sysbus:
         Tag <0x400e6000,0x400e63ff> "PRS"
         Tag <0x400e2000,0x400e2fff> "LDMA"
         Tag <0x400e1000,0x400e13ff> "FPUEH"
-        Tag <0x40018000,0x400183ff> "TIMER0"
-        Tag <0x40018400,0x400187ff> "TIMER1"
         Tag <0x40046000,0x400463ff> "LETIMER0"
         Tag <0x4001e000,0x4001e3ff> "CRYOTIMER"
         Tag <0x4004e000,0x4004e3ff> "PCNT0"
-        Tag <0x40002000,0x400023ff> "ADC0"
-        Tag <0x40000000,0x400003ff> "ACMP0"
-        Tag <0x40000400,0x400007ff> "ACMP1"
-        Tag <0x40006000,0x400063ff> "IDAC0"
-        Tag <0x40042000,0x400423ff> "RTCC"
-        Tag <0x40052000,0x400523ff> "WDOG0"
-        Tag <0xe0041000,0xe0080fff> "ETM"
