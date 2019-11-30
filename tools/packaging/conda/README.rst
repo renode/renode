@@ -20,7 +20,7 @@ Building the package itself is easy.
 On Linux and macOS run::
 
     conda build -c conda-forge path/to/renode/tools/packaging/conda
-    
+
 On Windows, as it does not depend on Mono provided by ``conda-forge``, run::
 
     conda build path/to/renode/tools/packaging/conda
@@ -28,3 +28,12 @@ On Windows, as it does not depend on Mono provided by ``conda-forge``, run::
 When the package is built, you can install it with::
 
     conda install [-c conda-forge] --use-local renode
+
+Using prebuilt packages
+-----------------------
+
+To install packages from the ``antmicro`` channel, run::
+
+    conda install [-c conda-forge] -c antmicro renode
+
+The ``conda-forge`` channel is not required on Windows.
