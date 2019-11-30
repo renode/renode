@@ -9,7 +9,7 @@ Building packages
 -----------------
 
 To build a package you need to have ``conda`` installed on your system.
-The easiest way to obtain it is to use `Miniconda installer <https://docs.conda.io/en/latest/miniconda.html>`_.
+The easiest way to obtain it is to use the `Miniconda installer <https://docs.conda.io/en/latest/miniconda.html>`_.
 
 You also need to have the ``conda-build`` package installed.
 If you have already installed ``conda``, simply run::
