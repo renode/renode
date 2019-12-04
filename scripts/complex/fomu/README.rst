@@ -20,6 +20,13 @@ litex_server talks over USB with FOMU programmed with a bitstream containing the
 How to run it?
 --------------
 
+0. Clone LiteX and Migen (required to start litex_server)::
+
+    git clone https://github.com/enjoy-digital/litex.git
+    git clone https://github.com/m-labs/migen.git
+
+    export PYTHONPATH=`pwd`/litex:`pwd`/migen
+
 1. Attach FOMU to a USB port and verify in dmesg that it's recognized::
 
     [3265038.250957] usb 2-1: new full-speed USB device number 16 using xhci_hcd
@@ -30,6 +37,7 @@ How to run it?
 
 2. Start litex_server.py (shipped together with LiteX available at https://github.com/enjoy-digital/litex.git)::
 
+    cd litex
     (sudo) python3 litex/tools/litex_server.py --usb --usb-vid 0x1209 --usb-pid 0x5bf0
 
    This will start EtherBone server on 127.0.0.1:1234 by default. If you want to change the port, use --bin-port switch.
