@@ -30,9 +30,14 @@ How to run it?
 
 2. Start litex_server.py (shipped together with LiteX available at https://github.com/enjoy-digital/litex.git)::
 
-    sudo python3 litex/tools/litex_server.py --usb --usb-vid 0x1209 --usb-pid 0x5bf0
+    (sudo) python3 litex/tools/litex_server.py --usb --usb-vid 0x1209 --usb-pid 0x5bf0
 
    This will start EtherBone server on 127.0.0.1:1234 by default. If you want to change the port, use --bin-port switch.
+
+   Note: To allow non-root users to access USB Fomu device, install an udev rule in your system::
+
+    sudo cp 99-fomu.rules /etc/udev/rules.d
+    sudo udevadm control --reload
 
 3. Start Renode and run 'renode_etherbone_fomu.resc' script.
 
