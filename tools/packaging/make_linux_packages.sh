@@ -59,7 +59,13 @@ GENERAL_FLAGS=(\
     $DIR/tests/test.sh=/usr/bin/renode-test\
     linux/renode.sh=/usr/bin/renode\
     linux/Renode.desktop=/usr/share/applications/Renode.desktop\
-    linux/icons/=/usr/share/icons/hicolor
+    linux/icons/128x128/apps/renode.png=/usr/share/icons/hicolor/128x128/apps/renode.png
+    linux/icons/16x16/apps/renode.png=/usr/share/icons/hicolor/16x16/apps/renode.png
+    linux/icons/24x24/apps/renode.png=/usr/share/icons/hicolor/24x24/apps/renode.png
+    linux/icons/32x32/apps/renode.png=/usr/share/icons/hicolor/32x32/apps/renode.png
+    linux/icons/48x48/apps/renode.png=/usr/share/icons/hicolor/48x48/apps/renode.png
+    linux/icons/64x64/apps/renode.png=/usr/share/icons/hicolor/64x64/apps/renode.png
+    linux/icons/scalable/apps/renode.svg=/usr/share/icons/hicolor/scalable/apps/renode.svg
     )
 
 ### create debian package
@@ -76,7 +82,6 @@ echo "Created a Debian package in $PACKAGES/$deb"
 fpm -s dir -t rpm\
     -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d beesu\
     --rpm-dist $RPM_MIN_DIST\
-    --rpm-auto-add-directories\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 rpm=(renode*rpm)
