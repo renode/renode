@@ -15,9 +15,7 @@ Create Murax
     Execute Command            sysbus.cpu MTVEC 0x80000020
 
     # this is a hack to allow handling interrupts at all; this should be fixed after #13326
-    Execute Command            allowPrivates true
-    Execute Command            sysbus.cpu irqMask 0xffffffff
-    Execute Command            allowPrivates false
+    Execute Command            sysbus.cpu SetMachineIrqMask 0xffffffff
 
 
 *** Test Cases ***
