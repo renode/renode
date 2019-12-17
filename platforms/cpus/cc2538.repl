@@ -43,15 +43,17 @@ crypto: Miscellaneous.CC2538_Cryptoprocessor @ sysbus 0x4008B000
 flashCtrl: MTD.CC2538FlashController @ sysbus 0x400D3000
     flash: flash
 
+ssi0: SPI.CC2538_SSI @ sysbus 0x40008000
+    -> nvic@7
+
+ssi1: SPI.CC2538_SSI @ sysbus 0x40009000
+    -> nvic@34
+
 sysbus:
     init:
         Tag <0x400D2000, 0x400D2FFF> "SYS_CTRL_CLOCK_CTRL" 1
         Tag <0x40088664, 0x40088667> "RFCORE_XREG_RSSISTAT" 1
         Tag <0x400D2004, 0x400D2007> "CLOCK_STATUS" 0x10004B0
-        Tag <0x4000C000, 0x4000CFFF> "UART0"
-        Tag <0x4000D000, 0x4000DFFF> "UART1"
-        Tag <0x40008000, 0x40008FFF> "SSI0"
-        Tag <0x40009000, 0x40009FFF> "SSI1"
         Tag <0x400D7000, 0x400D70FF> "ADC"
         Tag <0x400D9000, 0x400D9FFF> "GPIO_A_BASE"
         Tag <0x400DA000, 0x400DAFFF> "GPIO_B_BASE"
