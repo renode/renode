@@ -27,3 +27,5 @@ cpu_timer: Timers.LiteX_CPUTimer @ sysbus 0xf0000800
     // IRQ #100 is Machine Timer Interrupt
     -> cpu@100
 
+spi: SPI.LiteX_SPI @ sysbus 0xf0008000
+
