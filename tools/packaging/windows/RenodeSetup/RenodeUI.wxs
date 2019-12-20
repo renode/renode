@@ -72,7 +72,7 @@
         <Control Id="PathCheckbox" Type="CheckBox" X="25" Y="100" Width="150" Height="17" Text="Add to PATH" Property="PATHOPTION" CheckBoxValue="1"/>
         <Control Id="DesktopShortcutCheckbox" Type="CheckBox" X="25" Y="120" Width="150" Height="17" Text="Add shortcut to Desktop" Property="DESKTOPSHORTCUT" CheckBoxValue="1">
         </Control>
-        <Control Id="MenuStartShortcut" Type="CheckBox" X="25" Y="140" Width="150" Height="17" Text="Add shortcut to Menu Start" Property="MENUSTARTSHORTCUT" CheckBoxValue="1">
+        <Control Id="StartMenuShortcut" Type="CheckBox" X="25" Y="140" Width="150" Height="17" Text="Add shortcut to Start Menu" Property="STARTMENUSHORTCUT" CheckBoxValue="1">
         </Control>
 
         <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Select options for Renode installation" />
