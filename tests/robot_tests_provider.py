@@ -73,6 +73,31 @@ class RobotTestSuite(object):
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
+
+        file_name = os.path.splitext(os.path.basename(self.path))[0]
+
+        self.tests_with_hotspots = []
+        self.tests_without_hotspots = []
+        _suite = robot.parsing.model.TestData(source=self.path)
+        for test in _suite.testcase_table.tests:
+            if any(hasattr(step, 'name') and step.name == 'Hot Spot' for step in test.steps):
+                self.tests_with_hotspots.append(test.name)
+            else:
+                self.tests_without_hotspots.append(test.name)
+
+        if any(self.tests_without_hotspots):
+            log_file = os.path.join(options.results_directory, '{0}.xml'.format(file_name))
+            RobotTestSuite.log_files.append(log_file)
+        if any(self.tests_with_hotspots):
+            for hotspot in RobotTestSuite.hotspot_action:
+                if options.hotspot and options.hotspot != hotspot:
+                    continue
+                log_file = os.path.join(options.results_directory, '{0}{1}.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+                RobotTestSuite.log_files.append(log_file)
+
+        if RobotTestSuite.robot_frontend_process is None or not is_process_running(RobotTestSuite.robot_frontend_process.pid):
+            self._run_remote_server(options)
+
         if RobotTestSuite.instances_count > 1:
             return
 
@@ -117,27 +142,13 @@ class RobotTestSuite(object):
         print('Running ' + self.path)
         result = True
 
-        tests_with_hotspots = []
-        tests_without_hotspots = []
-        _suite = robot.parsing.model.TestData(source=self.path)
-        for test in _suite.testcase_table.tests:
-            if any(hasattr(step, 'name') and step.name == 'Hot Spot' for step in test.steps):
-                tests_with_hotspots.append(test.name)
-            else:
-                tests_without_hotspots.append(test.name)
-
-        if RobotTestSuite.robot_frontend_process is None:
-            self._run_remote_server(options)
-        elif not is_process_running(RobotTestSuite.robot_frontend_process.pid):
-            self._run_remote_server(options)
-
-        if any(tests_without_hotspots):
-            result = result and self._run_inner(options.fixture, None, tests_without_hotspots, options)
-        if any(tests_with_hotspots):
+        if any(self.tests_without_hotspots):
+            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
+        if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = result and self._run_inner(options.fixture, hotspot, tests_with_hotspots, options)
+                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
 
         return result
 
@@ -216,5 +227,4 @@ class RobotTestSuite(object):
 
         metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
         log_file = os.path.join(options.results_directory, '{0}{1}.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-        RobotTestSuite.log_files.append(log_file)
         return robot.run(self.path, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, noncritical=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
