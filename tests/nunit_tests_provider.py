@@ -25,31 +25,35 @@ class NUnitTestSuite(object):
 
     def prepare(self, options):
         NUnitTestSuite.instances_count += 1
-        if options.skip_building:
-            print('Skipping the build')
-            return 0
-        print("Building {0}".format(self.path))
-        if platform == "win32":
-            builder = 'MSBuild.exe'
+
+        if not options.skip_building:
+            print("Building {0}".format(self.path))
+            if platform == "win32":
+                builder = 'MSBuild.exe'
+            else:
+                builder = 'xbuild'
+            result = subprocess.call([builder, '/p:PropertiesLocation={0}'.format(options.properties_file), '/p:OutputPath={0}'.format(options.results_directory), '/nologo', '/verbosity:quiet', '/p:OutputDir=tests_output', '/p:Configuration={0}'.format(options.configuration), self.path])
+            if result != 0:
+                print("Building project `{}` failed with error code: {}".format(self.path, result))
+                return result
         else:
-            builder = 'xbuild'
+            print('Skipping the build')
 
-        result = subprocess.call([builder, '/p:PropertiesLocation={0}'.format(options.properties_file), '/p:OutputPath={0}'.format(options.results_directory), '/nologo', '/verbosity:quiet', '/p:OutputDir=tests_output', '/p:Configuration={0}'.format(options.configuration), self.path])
+        self.project_file = os.path.split(self.path)[1]
+        self.output_file = self.project_file.replace('csproj', 'xml')
+        NUnitTestSuite.output_files.append(os.path.join(options.results_directory, self.output_file))
 
-        if result != 0:
-            print("Building project `{}` failed with error code: {}".format(self.path, result))
-        return result
+        # copying nunit console binaries seems to be necessary in order to use -domain:None switch; otherwise it is not needed
+        self.copied_nunit_path = os.path.join(options.results_directory, 'nunit-console.exe')
+        if not os.path.isfile(self.copied_nunit_path):
+            subprocess.call(['bash', '-c', 'cp -r \'{0}/\'* \'{1}\''.format(os.path.dirname(NUnitTestSuite.nunit_path), options.results_directory)])
+
+        return 0
 
     def run(self, options):
         print('Running ' + self.path)
-        # copying nunit console binaries seems to be necessary in order to use -domain:None switch; otherwise it is not needed
-        copied_nunit_path = os.path.join(options.results_directory, 'nunit-console.exe')
-        if not os.path.isfile(copied_nunit_path):
-            subprocess.call(['bash', '-c', 'cp -r \'{0}/\'* \'{1}\''.format(os.path.dirname(NUnitTestSuite.nunit_path), options.results_directory)])
 
-        project_file = os.path.split(self.path)[1]
-        output_file = project_file.replace('csproj', 'xml')
-        args = [copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(output_file), project_file.replace("csproj", "dll")]
+        args = [self.copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
         if options.stop_on_error:
             args.append('-stoponerror')
         if platform.startswith("linux") or platform == "darwin":
@@ -71,7 +75,6 @@ class NUnitTestSuite(object):
             process = subprocess.Popen(args, cwd=options.results_directory)
             process.wait()
         else:
-            NUnitTestSuite.output_files.append(os.path.join(options.results_directory, output_file))
             process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             while True:
                 line = process.stdout.readline()
