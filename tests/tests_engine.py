@@ -6,9 +6,42 @@ import os
 import sys
 import argparse
 import subprocess
+import yaml
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
+
+
+class IncludeLoader(yaml.SafeLoader):
+
+    def __init__(self, stream):
+
+        self._root = os.path.split(stream.name)[0]
+
+        super(IncludeLoader, self).__init__(stream)
+
+    def include(self, node):
+        config = self.construct_mapping(node)
+        filename = os.path.join(self._root, config['path'])
+
+        def _append_prefix(lst, prefix):
+            for idx, val in enumerate(lst):
+                if isinstance(val, str):
+                    lst[idx] = os.path.join(prefix, lst[idx])
+                elif isinstance(val, dict):
+                    _append_prefix(val.values()[0], prefix)
+                else:
+                    raise Exception('Unsupported list element: ' + val)
+
+        with open(filename, 'r') as f:
+            data = yaml.load(f, IncludeLoader)
+            if 'prefix' in config:
+                _append_prefix(data, config['prefix'])
+            return data
+
+
+IncludeLoader.add_constructor('!include', IncludeLoader.include)
+
 
 def prepare_parser():
     parser = argparse.ArgumentParser()
@@ -112,6 +145,22 @@ def setup_tap():
     call_or_die(['sudo', '-n', 'ip', 'addr', 'add', '192.0.2.1/24', 'dev', 'tap0'], 'Error while setting ip address')
 
 
+def parse_tests_file(path):
+
+    def _process(data, result):
+        for entry in data:
+            if isinstance(entry, list):
+                _process(entry, result)
+            else:
+                result.append(entry)
+
+    result = []
+    with open(path) as f:
+        data = yaml.load(f, Loader=IncludeLoader)
+        _process(data, result)
+    return result
+
+
 def handle_options(options):
     if options.buildbot:
         print("Preparing Environment")
@@ -126,7 +175,7 @@ def handle_options(options):
     if options.fixture:
         print("Testing fixture: " + options.fixture)
     if options.tests_file is not None and not options.tests:
-        options.tests = [line.rstrip() for line in open(options.tests_file)]
+        options.tests = parse_tests_file(options.tests_file)
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
 
@@ -156,8 +205,6 @@ def run():
     print("Preparing suites")
     tests_suites = []
     for path in options.tests:
-        if path.startswith('#'):
-            continue
         if not os.path.exists(path):
             print("Path {} does not exist. Quitting ...".format(path)) 
             exit(1)

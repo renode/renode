@@ -3,7 +3,7 @@ set -e
 set -u
 
 ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
-TESTS_FILE="$ROOT_PATH/tests/tests.txt"
+TESTS_FILE="$ROOT_PATH/tests/tests.yaml"
 TESTS_RESULTS="$ROOT_PATH/output/tests"
 
 . "${ROOT_PATH}/tools/common.sh"
