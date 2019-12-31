@@ -7,6 +7,7 @@ import sys
 import argparse
 import subprocess
 import yaml
+import multiprocessing
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
@@ -115,6 +116,13 @@ def prepare_parser():
                         default=False,
                         help="Terminate immediately on the first test failure")
 
+    parser.add_argument("-j", "--jobs",
+                        dest="jobs",
+                        action="store",
+                        default=1,
+                        type=int,
+                        help="Maximum number of parallel tests")
+
     if platform != "win32":
         parser.add_argument("-p", "--port",
                             dest="port",
@@ -174,13 +182,84 @@ def handle_options(options):
         options.fixture = os.environ['FIXTURE']
     if options.fixture:
         print("Testing fixture: " + options.fixture)
-    if options.tests_file is not None and not options.tests:
-        options.tests = parse_tests_file(options.tests_file)
+
+    if options.tests:
+        tests_collection = options.tests
+    elif options.tests_file is not None:
+        tests_collection = parse_tests_file(options.tests_file)
+    options.tests = split_tests_into_groups(tests_collection, options.test_type)
+
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
 
 def register_handler(handler_type, extension, creator, before_parsing=None, after_parsing=None):
     registered_handlers.append({'type': handler_type, 'extension': extension, 'creator': creator, 'before_parsing': before_parsing, 'after_parsing': after_parsing})
+
+
+def split_tests_into_groups(tests, test_type):
+
+    def _handle_entry(test_type, path, result):
+        if not os.path.exists(path):
+            print("Path {} does not exist. Quitting ...".format(path))
+            return False
+        for handler in registered_handlers:
+            if (test_type == 'all' or handler['type'] == test_type) and path.endswith(handler['extension']):
+                result.append(handler['creator'](path))
+        return True
+
+    parallel_group_counter = 0
+    test_groups = {}
+
+    for entry in tests:
+        if isinstance(entry, dict):
+            group_name = entry.keys()[0]
+            if group_name not in test_groups:
+                test_groups[group_name] = []
+            for inner_entry in entry[group_name]:
+                if not _handle_entry(test_type, inner_entry, test_groups[group_name]):
+                    return None
+        elif isinstance(entry, str):
+            group_name = '__NONE_' + str(parallel_group_counter) + '__'
+            parallel_group_counter += 1
+            if group_name not in test_groups:
+                test_groups[group_name] = []
+            if not _handle_entry(test_type, entry, test_groups[group_name]):
+                return None
+        else:
+            print("Unexpected test type: " + entry)
+            return None
+
+    return test_groups
+
+
+def configure_output(options):
+    options.output = sys.stdout
+    if options.output_file is not None:
+        try:
+            options.output = open(options.output_file)
+        except Exception:
+            print("Failed to open output file. Falling back to STDOUT.")
+
+
+def run_test_group(args):
+
+    group, options = args
+
+    counter = 0
+    tests_failed = False
+
+    # this function will be called in a separate
+    # context (due to the pool.map_async) and
+    # needs the stdout to be reconfigured
+    configure_output(options)
+
+    while options.repeat_count == 0 or counter < options.repeat_count:
+        counter += 1
+        for suite in group:
+            if not suite.run(options):
+                tests_failed = True
+
+    return tests_failed
 
 
 def run():
@@ -195,41 +274,31 @@ def run():
         if 'after_parsing' in handler and handler['after_parsing'] is not None:
             handler['after_parsing'](options)
 
-    options.output = sys.stdout
-    if not options.output_file is None:
-        try:
-            options.output = open(options.output_file)
-        except Exception as e:
-            print("Failed to open output file. Falling back to STDOUT.")
+    configure_output(options)
 
     print("Preparing suites")
-    tests_suites = []
-    for path in options.tests:
-        if not os.path.exists(path):
-            print("Path {} does not exist. Quitting ...".format(path)) 
-            exit(1)
-        for handler in registered_handlers:
-            if (options.test_type == 'all' or handler['type'] == options.test_type) and path.endswith(handler['extension']):
-                tests_suites.append(handler['creator'](path))
-    
-    for suite in tests_suites: 
-        suite.check(options)
 
-    for suite in tests_suites:
-        suite.prepare(options)
+    for group in options.tests:
+        for suite in options.tests[group]:
+            suite.check(options)
+
+    for group in options.tests:
+        for suite in options.tests[group]:
+            suite.prepare(options)
 
     print("Starting suites")
-    tests_failed = False
-    counter = 0
-    while options.repeat_count == 0 or counter < options.repeat_count:
-        counter += 1
-        for suite in tests_suites:
-            if not suite.run(options):
-                tests_failed = True
+
+    pool = multiprocessing.Pool(processes=options.jobs)
+    # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
+    # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
+    # otherwise it would not be possible to abort tests in progress
+    tests_failed = any(pool.map_async(run_test_group, ((group, options) for group in options.tests.values())).get(9999999999))
 
     print("Cleaning up suites")
-    for suite in tests_suites:
-        suite.cleanup(options)
+
+    for group in options.tests:
+        for suite in options.tests[group]:
+            suite.cleanup(options)
 
     options.output.flush()
     if options.output is not sys.stdout:
