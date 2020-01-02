@@ -23,3 +23,7 @@
     - tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
     - tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
     - tests/platforms/Fomu.robot
+    - tests/platforms/verilated/UARTLite.robot
+    - tests/platforms/CC2538/cc2538_rpl-udp.robot
+    - tests/platforms/CC2538/cc2538_flash_controller.robot
+    - tests/platforms/CC2538/cc2538_single-node.robot
