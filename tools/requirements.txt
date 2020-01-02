@@ -1,0 +1,4 @@
+robotframework==3.0.4
+netifaces
+requests
+psutil
