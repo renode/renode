@@ -33,7 +33,7 @@ def install_cli_arguments(parser):
                         default="Renode.exe",
                         help="Name of robot framework remote server binary.")
 
-    parser.add_argument("--robot-framework-remote-server-port",
+    parser.add_argument("--robot-framework-remote-server-port", "-P",
                         dest="remote_server_port",
                         action="store",
                         default=9999,
