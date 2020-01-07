@@ -15,16 +15,65 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--robot-framework-remote-server-full-directory", dest="remote_server_full_directory", action="store", help="Full location of robot framework remote server binary.")
-    group.add_argument("--robot-framework-remote-server-directory-prefix", dest="remote_server_directory_prefix", action="store", default=os.path.join(this_path, '../output/bin'), help="Directory of robot framework remote server binary. This is concatenated with current configuration to create full path.")
-    parser.add_argument("--robot-framework-remote-server-name", dest="remote_server_name", action="store", default="Renode.exe", help="Name of robot framework remote server binary.")
-    parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
-    parser.add_argument("--enable-xwt", dest="enable_xwt", action="store_true", default=False, help="Enables support for XWT.")
-    parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
-    parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
-    parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
-    parser.add_argument("--css-file", dest="css_file", action="store", default=os.path.join(this_path, '../lib/resources/styles/robot.css'), help="Custom CSS style for the result files.")
-    parser.add_argument("--runner", dest="runner", action="store", default="mono" if platform.startswith("linux") or platform == "darwin" else "none", help=".NET runner")
+
+    group.add_argument("--robot-framework-remote-server-full-directory",
+                       dest="remote_server_full_directory",
+                       action="store",
+                       help="Full location of robot framework remote server binary.")
+
+    group.add_argument("--robot-framework-remote-server-directory-prefix",
+                       dest="remote_server_directory_prefix",
+                       action="store",
+                       default=os.path.join(this_path, '../output/bin'),
+                       help="Directory of robot framework remote server binary. This is concatenated with current configuration to create full path.")
+
+    parser.add_argument("--robot-framework-remote-server-name",
+                        dest="remote_server_name",
+                        action="store",
+                        default="Renode.exe",
+                        help="Name of robot framework remote server binary.")
+
+    parser.add_argument("--robot-framework-remote-server-port",
+                        dest="remote_server_port",
+                        action="store",
+                        default=9999,
+                        help="Port of robot framework remote server binary.")
+
+    parser.add_argument("--enable-xwt",
+                        dest="enable_xwt",
+                        action="store_true",
+                        default=False,
+                        help="Enables support for XWT.")
+
+    parser.add_argument("--show-log",
+                        dest="show_log",
+                        action="store_true",
+                        default=False,
+                        help="Display log messages in console (might corrupt robot summary output).")
+
+    parser.add_argument("--hot-spot",
+                        dest="hotspot",
+                        action="store",
+                        default=None,
+                        help="Test given hot spot action.")
+
+    parser.add_argument("--variable",
+                        dest="variables",
+                        action="append",
+                        default=None,
+                        help="Variable to pass to Robot.")
+
+    parser.add_argument("--css-file",
+                        dest="css_file",
+                        action="store",
+                        default=os.path.join(this_path, '../lib/resources/styles/robot.css'),
+                        help="Custom CSS style for the result files.")
+
+    parser.add_argument("--runner",
+                        dest="runner",
+                        action="store",
+                        default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
+                        help=".NET runner")
 
 
 def verify_cli_arguments(options):
