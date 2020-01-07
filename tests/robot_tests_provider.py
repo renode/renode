@@ -12,6 +12,7 @@ import robot
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
+
 def install_cli_arguments(parser):
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--robot-framework-remote-server-full-directory", dest="remote_server_full_directory", action="store", help="Full location of robot framework remote server binary.")
@@ -25,6 +26,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--css-file", dest="css_file", action="store", default=os.path.join(this_path, '../lib/resources/styles/robot.css'), help="Custom CSS style for the result files.")
     parser.add_argument("--runner", dest="runner", action="store", default="mono" if platform.startswith("linux") or platform == "darwin" else "none", help=".NET runner")
 
+
 def verify_cli_arguments(options):
     if platform != "win32" and options.port == str(options.remote_server_port):
         print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
@@ -33,12 +35,14 @@ def verify_cli_arguments(options):
         print("Unable to find provided CSS file: {0}.".format(options.css_file))
         sys.exit(1)
 
+
 def is_process_running(pid):
     if not psutil.pid_exists(pid):
         return False
     proc = psutil.Process(pid)
-    #docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
+    # docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
+
 
 def check_if_port_available(options):
     if not sys.stdin.isatty():
@@ -47,16 +51,17 @@ def check_if_port_available(options):
         for proc in [psutil.Process(pid) for pid in psutil.pids()]:
             if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
                 if not is_process_running(proc.pid):
-                    #process is zombie
+                    # process is zombie
                     continue
                 print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
                 result = raw_input('Do you want me to kill it? [y/N] ')
                 if result in ['Y', 'y']:
                     proc.kill()
                 break
-    except:
+    except Exception:
         # do nothing here
         pass
+
 
 class RobotTestSuite(object):
     instances_count = 0
@@ -118,7 +123,7 @@ class RobotTestSuite(object):
         if not options.show_log:
             args.append('--hide-log')
         if not options.enable_xwt:
-           args.append('--disable-xwt')
+            args.append('--disable-xwt')
 
         if options.runner == 'mono':
             args.insert(0, 'mono')
@@ -187,7 +192,6 @@ class RobotTestSuite(object):
                             report.write("<style media=\"all\" type=\"text/css\">")
                             report.write(style_content)
                             report.write("</style>")
-
 
     @staticmethod
     def _create_suite_name(test_name, hotspot):
