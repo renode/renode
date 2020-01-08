@@ -1,0 +1,32 @@
+rom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x00008000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00008000
+
+ram: Memory.MappedMemory @ sysbus 0xc0000000
+    size: 0x20000000
+
+emulator_ram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x00004000
+
+cpu: CPU.VexRiscv @ sysbus
+    timeProvider: cpu_timer
+    cpuType: "rv32ima"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+
+timer0: Timers.LiteX_Timer @ sysbus 0xF0001800
+    frequency: 100000000
+    -> cpu@1
+
+uart: UART.LiteX_UART @ sysbus 0xF0001000
+    -> cpu@0
+
+cpu_timer: Timers.LiteX_CPUTimer @ sysbus 0xf0000800
+    frequency: 66000000
+    // IRQ #100 is Machine Timer Interrupt
+    -> cpu@100
+
+litex_video: Video.LiteX_Framebuffer @ sysbus 0xf0006800
+    format: PixelFormat.XBGR8888
+    memory: ram
