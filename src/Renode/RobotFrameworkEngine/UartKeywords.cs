@@ -21,24 +21,30 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public void SetDefaultUartTimeout(int timeout)
+        {
+            globalTimeout = timeout;
+        }
+
+        [RobotFrameworkKeyword]
         public string GetTerminalTesterReport(int? testerId = null)
         {
             return GetTesterOrThrowException(testerId).GetReport();
         }
 
         [RobotFrameworkKeyword]
-        public int CreateTerminalTester(string uart, int timeout = 120, string machine = null, string endLineOption = null)
+        public int CreateTerminalTester(string uart, int? timeout = null, string machine = null, string endLineOption = null)
         {
             return CreateNewTester(uartObject =>
             {
                 TerminalTester tester;
                 if(Enum.TryParse<EndLineOption>(endLineOption, out var result))
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout), result);
+                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)(timeout ?? globalTimeout)), result);
                 }
                 else
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)timeout));
+                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)(timeout ?? globalTimeout)));
                 }
                 tester.AttachTo(uartObject);
                 return tester;
@@ -134,5 +140,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
         }
+
+        private int globalTimeout = 120;
     }
 }
