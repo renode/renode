@@ -16,6 +16,7 @@ ${DIRECTORY}              ${CURDIR}/../../../output/bin/${CONFIGURATION}
 ${BINARY_NAME}            Renode.exe
 ${HOTSPOT_ACTION}         None
 ${DISABLE_XWT}            False
+${DEFAULT_UART_TIMEOUT}   120
 
 *** Keywords ***
 Setup
@@ -60,6 +61,8 @@ Setup
     Run Keyword If       '${SYSTEM}' == 'Windows'
     ...   Wait Until Keyword Succeeds  60s  1s
           ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/
+
+    Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
     Reset Emulation
 
