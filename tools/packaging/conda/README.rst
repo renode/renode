@@ -19,7 +19,7 @@ If you have already installed ``conda``, simply run::
 Building the package itself is easy.
 On Linux and macOS run::
 
-    conda build -c conda-forge path/to/renode/tools/packaging/conda
+    conda build -c conda-forge path-to-renode/tools/packaging/conda
 
 On Windows, as it does not depend on Mono provided by ``conda-forge``, run::
 
