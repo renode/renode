@@ -187,6 +187,8 @@ def handle_options(options):
         tests_collection = options.tests
     elif options.tests_file is not None:
         tests_collection = parse_tests_file(options.tests_file)
+    else:
+        tests_collection = []
     options.tests = split_tests_into_groups(tests_collection, options.test_type)
 
     options.configuration = 'Debug' if options.debug_mode else 'Release'
