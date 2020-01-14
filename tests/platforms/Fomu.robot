@@ -21,9 +21,9 @@ List Fomu in Linux
     # Create Linux board
     Execute Command  mach clear
     Execute Command  set fdt @https://antmicro.com/projects/renode/hifive_unleashed_usb--devicetree_with_pse_usb.dtb-s_8894-5e4fb8fcdadcd8e35c841a430a83bf66df192c69
-    Execute Command  set bin @https://antmicro.com/projects/renode/hifive_unleashed_usb--linux_kernel.elf-s_17313704-faa5d98a1388d52c9b9f9eb9202be6beb10021e9
+    Execute Command  set bin @https://antmicro.com/projects/renode/hifive_unleashed_usb--bbl.elf-s_17285160-88e89cf2bb6dc92d176cfffcabb06b0d8b28c1cc
     Execute Command  include @scripts/single-node/hifive_unleashed.resc
-    Execute Command  machine LoadPlatformDescriptionFromString 'usb: USB.PSE_USB @ sysbus 0x30020000 { MainIRQ -> plic@5 }'
+    Execute Command  machine LoadPlatformDescriptionFromString 'usb: USB.PSE_USB @ sysbus 0x30020000 { MainIRQ -> plic@0x20 }'
 
     Create Terminal Tester
     ...                         sysbus.uart0
