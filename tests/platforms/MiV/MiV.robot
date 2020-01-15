@@ -104,6 +104,7 @@ Should Run ZephyrRTOS Shell Sample
     Execute Command           showAnalyzer ${UART}
 
     Start Emulation
+    Wait For Prompt On Uart   uart:~
     Write Line To Uart        version
     Wait For Line On Uart     Zephyr version 1.13.99
 
