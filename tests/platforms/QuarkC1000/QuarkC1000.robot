@@ -130,7 +130,7 @@ Should Talk Over Network Using Ethernet
     \    RepeatKeyword  ${r}  
     \    ...  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
-    \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
+    \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+) bytes  testerId=${mach0_tester}    treatAsRegex=true
     \    ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
     \    Should Contain  ${n.line}  pkt_sent: Sent ${p.groups[0]} bytes
@@ -141,7 +141,7 @@ Should Talk Over Network Using Ethernet
     \    RepeatKeyword  ${r}  
     \    ...  Wait For Next Line On Uart  testerId=${mach1_tester}
     \
-    \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
+    \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+) bytes  testerId=${mach1_tester}    treatAsRegex=true
     \    ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
     \
     \    Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
