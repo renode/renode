@@ -22,9 +22,7 @@ SED_COMMAND="sed -i"
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
-### copy windows dependencies
-cp "`which libgcc_s_seh-1.dll`" $DIR/bin
-cp "`which libwinpthread-1.dll`" $DIR/bin
+### copy licenses
 cp windows/mingw-license $DIR/licenses
 cp windows/winpthreads-license $DIR/licenses
 

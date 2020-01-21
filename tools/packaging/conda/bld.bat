@@ -46,13 +46,6 @@ call copy lib\Migrant\LICENSE %LIBRARY_PREFIX%\renode\licenses\Migrant-license
 call copy lib\FdtSharp\LICENCE %LIBRARY_PREFIX%\renode\licenses\FdtSharp-license
 call copy lib\xwt\LICENSE.txt %LIBRARY_PREFIX%\renode\licenses\xwt-license
 
-
-REM add dll to pkg
-FOR /F "tokens=*" %%g IN ('where libgcc_s_seh-1.dll') do (SET FILE_TO_COPY=%%g)
-call copy "%FILE_TO_COPY%" %LIBRARY_PREFIX%\renode\exec\
-FOR /F "tokens=*" %%g IN ('where libwinpthread-1.dll') do (SET FILE_TO_COPY=%%g)
-call copy "%FILE_TO_COPY%" %LIBRARY_PREFIX%\renode\exec\
-
 REM Add activation script to append renode dir to PATH
 if not exist %PREFIX%\etc\conda\activate.d call mkdir %PREFIX%\etc\conda\activate.d
 call copy %RECIPE_DIR%\activate.bat %PREFIX%\etc\conda\activate.d\%PKG_NAME%_activate.bat
