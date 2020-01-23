@@ -5,7 +5,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m4f"
     nvic: nvic
-    
+
 uart: UART.PL011 @ sysbus 0x40010000
     -> intrCtrl@7
     size: 0x1000
@@ -66,7 +66,7 @@ sysbus:
         Tag <0x40020000, 0x4003FFFF> "Fabric"
 
         Tag <0x40040000, 0x40043FFF> "FFE_DM0" 0x10000
-        
+
         Tag <0x40044000, 0x40047FFF> "FFE_SM0"
         Tag <0x40048000, 0x40049FFF> "FFE_SM1"
         Tag <0x4004A000, 0x4004BFFF> "FFE_ExtRegs"
