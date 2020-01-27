@@ -95,10 +95,10 @@ can0: CAN.PSE_CAN @ sysbus 0x2010C000
 can1: CAN.PSE_CAN @ sysbus 0x2010D000
     IRQ -> plic@57
 
-mac0: Network.CadenceGEM @ sysbus 0x20110000
+mac0: Network.CadenceGEM @ { sysbus 0x20110000; sysbus 0x28110000 }
     IRQ -> plic@64 | u54_1@24 | u54_2@24
 
-mac1: Network.CadenceGEM @ sysbus 0x20112000
+mac1: Network.CadenceGEM @ { sysbus 0x20112000; sysbus 0x28112000 }
     IRQ -> plic@70 | u54_3@24 | u54_4@24
 
 phy: Network.EthernetPhysicalLayer @ {
