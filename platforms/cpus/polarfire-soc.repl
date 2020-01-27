@@ -102,8 +102,13 @@ mac1: Network.CadenceGEM @ { sysbus 0x20112000; sysbus 0x28112000 }
     IRQ -> plic@70 | u54_3@24 | u54_4@24
 
 phy: Network.EthernetPhysicalLayer @ {
-        mac0 0;
-        mac1 0
+        // this is a slight hack to enable testing on multiple physical configurations with a single repl
+        mac0 3;
+        mac0 4;
+        mac0 16;
+        mac1 3;
+        mac1 4;
+        mac1 16
     }
     Id1: 0x0141
     Id2: 0x0e40
