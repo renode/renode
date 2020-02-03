@@ -24,7 +24,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable
     {
-        public BaseDoubleWordVerilatedPeripheral(Machine machine, string simulationFilePath, long frequency, ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout)
+        public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePath = null, ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout)
         {
             mainSocket = new CommunicationChannel(timeout);
             asyncEventsSocket = new CommunicationChannel(timeout);
@@ -33,12 +33,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 IsBackground = true,
                 Name = "Verilated.Receiver"
             };
-            SimulationFilePath = simulationFilePath;
             timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
                 Send(ActionType.TickClock, 0, limitBuffer);
             };
+            SimulationFilePath = simulationFilePath;
         }
 
         public uint ReadDoubleWord(long offset)
