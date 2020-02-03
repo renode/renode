@@ -16,6 +16,18 @@ uart1: UART.PL011 @ sysbus 0x4000D000
 ram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x40000
 
+gpioA: GPIOPort.CC2538_GPIO @ sysbus 0x400D9000
+    -> nvic@0
+
+gpioB: GPIOPort.CC2538_GPIO @ sysbus 0x400DA000
+    -> nvic@1
+
+gpioC: GPIOPort.CC2538_GPIO @ sysbus 0x400DB000
+    -> nvic@2
+
+gpioD: GPIOPort.CC2538_GPIO @ sysbus 0x400DC000
+    -> nvic@3
+
 rom: Memory.MappedMemory @ sysbus 0x0
     size: 0x20000
 
@@ -55,10 +67,6 @@ sysbus:
         Tag <0x40088664, 0x40088667> "RFCORE_XREG_RSSISTAT" 1
         Tag <0x400D2004, 0x400D2007> "CLOCK_STATUS" 0x10004B0
         Tag <0x400D7000, 0x400D70FF> "ADC"
-        Tag <0x400D9000, 0x400D9FFF> "GPIO_A_BASE"
-        Tag <0x400DA000, 0x400DAFFF> "GPIO_B_BASE"
-        Tag <0x400DB000, 0x400DBFFF> "GPIO_C_BASE"
-        Tag <0x400DC000, 0x400DDFFF> "GPIO_D_BASE"
         Tag <0x40030000, 0x40030FFF> "GPTIMER0"
         Tag <0x40031000, 0x40031FFF> "GPTIMER1"
         Tag <0x40032000, 0x40032FFF> "GPTIMER2"
