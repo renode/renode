@@ -73,3 +73,27 @@ function add_path_property {
     sed -i.bak "s#</PropertyGroup>#  <$2>$sanitized_path</$2>"'\
 </PropertyGroup>#' "$1"
 }
+
+function verify_mono_version {
+    MINIMUM_MONO=`cat tools/mono_version`
+
+    if ! [ -x "$(command -v $LAUNCHER)" ]
+    then
+        echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
+
+    # Check mono version
+    MINIMUM_MONO_MAJOR=`echo $MINIMUM_MONO | cut -d'.' -f1`
+    MINIMUM_MONO_MINOR=`echo $MINIMUM_MONO | cut -d'.' -f2`
+
+    INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
+    INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
+    INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
+
+    if [ $INSTALLED_MONO_MAJOR -lt $MINIMUM_MONO_MAJOR ] || [ $INSTALLED_MONO_MAJOR -eq $MINIMUM_MONO_MAJOR -a $INSTALLED_MONO_MINOR -lt $MINIMUM_MONO_MINOR ]
+    then
+        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
+}

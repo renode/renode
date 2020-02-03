@@ -126,33 +126,13 @@ fi
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS
 then
-    MINIMUM_MONO=`cat tools/mono_version`
-
-    if ! [ -x "$(command -v $LAUNCHER)" ]
-    then
-        echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
-        exit 1
-    fi
-
     if ! [ -x "$(command -v mcs)" ]
     then
         echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
-    # Check mono version
-    MINIMUM_MONO_MAJOR=`echo $MINIMUM_MONO | cut -d'.' -f1`
-    MINIMUM_MONO_MINOR=`echo $MINIMUM_MONO | cut -d'.' -f2`
-
-    INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
-    INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
-    INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
-
-    if [ $INSTALLED_MONO_MAJOR -lt $MINIMUM_MONO_MAJOR ] || [ $INSTALLED_MONO_MAJOR -eq $MINIMUM_MONO_MAJOR -a $INSTALLED_MONO_MINOR -lt $MINIMUM_MONO_MINOR ]
-    then
-        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
-        exit 1
-    fi
+    verify_mono_version
 fi
 
 # Copy properties file according to the running OS
