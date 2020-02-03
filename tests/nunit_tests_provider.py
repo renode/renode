@@ -51,8 +51,6 @@ class NUnitTestSuite(object):
         return 0
 
     def run(self, options):
-        print('Running ' + self.path)
-
         args = [self.copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
         if options.stop_on_error:
             args.append('-stoponerror')

@@ -139,7 +139,6 @@ class RobotTestSuite(object):
         if self.path.endswith('renode-keywords.robot'):
             print('Ignoring helper file: {}'.format(self.path))
             return True
-        print('Running ' + self.path)
         result = True
 
         if any(self.tests_without_hotspots):

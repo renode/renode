@@ -8,6 +8,7 @@ import argparse
 import subprocess
 import yaml
 import multiprocessing
+import time
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
@@ -258,8 +259,12 @@ def run_test_group(args):
     while options.repeat_count == 0 or counter < options.repeat_count:
         counter += 1
         for suite in group:
+            start = time.time()
+            print('Running {}'.format(suite.path))
             if not suite.run(options):
                 tests_failed = True
+            stop = time.time()
+            print('Finished {} in {} seconds'.format(suite.path, stop - start))
 
     return tests_failed
 
