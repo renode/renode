@@ -1,0 +1,9 @@
+using "platforms/cpus/cc2538.repl"
+
+cc1200: Wireless.CC1200 @ ssi0
+    0 -> gpioB@4
+    2 -> gpioB@0
+    4 -> gpioB@3
+
+gpioB:
+    5 -> cc1200@0
