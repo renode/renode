@@ -43,6 +43,15 @@ sed -i '/TESTS_FILE/d' $DIR/tests/test.sh
 sed -i '/TESTS_RESULTS/d' $DIR/tests/test.sh
 sed -i 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $DIR/tests/robot_tests_provider.py
 
+COMMAND_SCRIPT=linux/renode.sh
+echo "#!/bin/sh" > $COMMAND_SCRIPT
+echo "MONOVERSION=$MONOVERSION" >> $COMMAND_SCRIPT
+echo "REQUIRED_MAJOR=$MONO_MAJOR" >> $COMMAND_SCRIPT
+echo "REQUIRED_MINOR=$MONO_MINOR" >> $COMMAND_SCRIPT
+# skip the first line (with the hashbang)
+tail -n +2 linux/renode.sh-template >> $COMMAND_SCRIPT
+chmod u+x $COMMAND_SCRIPT
+
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
@@ -58,7 +67,7 @@ GENERAL_FLAGS=(\
     --license MIT\
     $DIR/=$INSTALL_DIR\
     $DIR/tests/test.sh=/usr/bin/renode-test\
-    linux/renode.sh=/usr/bin/renode\
+    $COMMAND_SCRIPT=/usr/bin/renode\
     linux/Renode.desktop=/usr/share/applications/Renode.desktop\
     linux/icons/128x128/apps/renode.png=/usr/share/icons/hicolor/128x128/apps/renode.png
     linux/icons/16x16/apps/renode.png=/usr/share/icons/hicolor/16x16/apps/renode.png

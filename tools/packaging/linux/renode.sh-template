@@ -1,0 +1,22 @@
+#!/bin/bash
+
+LAUNCHER=mono
+
+if ! [ -x "$(command -v $LAUNCHER)" ]
+then
+    echo "$LAUNCHER not found. Renode requires Mono $MONOVERSION or newer. Please refer to documentation for installation instructions. Exiting!"
+    exit 1
+fi
+
+# Check installed mono version
+INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
+INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
+INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
+
+if [ $INSTALLED_MONO_MAJOR -lt $REQUIRED_MAJOR ] || [ $INSTALLED_MONO_MAJOR -eq $REQUIRED_MAJOR -a $INSTALLED_MONO_MINOR -lt $REQUIRED_MINOR ]
+then
+    echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MONOVERSION or newer. Please refer to documentation for installation instructions. Exiting!"
+    exit 1
+fi
+
+$LAUNCHER $MONO_OPTIONS /opt/renode/bin/Renode.exe "$@"
