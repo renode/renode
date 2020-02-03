@@ -26,6 +26,11 @@ do
     fi
 done
 
+if ! $ON_WINDOWS
+then
+    verify_mono_version
+fi
+
 if ${REMOTE:-false}
 then
     LAUNCHER="$LAUNCHER --debugger-agent=transport=dt_socket,address=0.0.0.0:${REMOTE_PORT:=9876},server=y"
