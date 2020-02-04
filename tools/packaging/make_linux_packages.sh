@@ -55,6 +55,7 @@ GENERAL_FLAGS=(\
     --url 'www.renode.io'\
     --after-install linux/update_icon_cache.sh\
     --after-remove linux/update_icon_cache.sh\
+    --license MIT\
     $DIR/=$INSTALL_DIR\
     $DIR/tests/test.sh=/usr/bin/renode-test\
     linux/renode.sh=/usr/bin/renode\
