@@ -72,7 +72,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-dma2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40026400
     [0-7] -> nvic@[56-60,68-70]
 
 ltdc: Video.STM32LTDC @ sysbus 0x40016800
