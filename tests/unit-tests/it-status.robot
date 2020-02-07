@@ -207,7 +207,7 @@ Should Save and Restore State of IT Block Correctly
            Execute Command     cpu Step 5
   ${old}=  Execute Command     cpu GetItState
 
-		   ${tmp_file}=   	   Allocate Temporary File
+           ${tmp_file}=        Allocate Temporary File
            Execute Command     Save @${tmp_file}
            Execute Command     Load @${tmp_file}
            Execute Command     mach set 0
