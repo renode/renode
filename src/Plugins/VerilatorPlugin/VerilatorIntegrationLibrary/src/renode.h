@@ -54,7 +54,7 @@ protected:
   void mainSocketSend(Protocol message);
   void senderSocketSend(Protocol request);
   void senderSocketSend(std::string text);
-  virtual void handleCustomRequestType(Protocol* message) = 0;
+  virtual void handleCustomRequestType(Protocol* message);
   BaseBus* bus;
 
 private:

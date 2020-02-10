@@ -98,6 +98,11 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
     }
 }
 
+void RenodeAgent::handleCustomRequestType(Protocol* message)
+{
+    log(2, std::string("Unhandled request type: %d", message->actionId));
+}
+
 void RenodeAgent::log(int logLevel, std::string data)
 {
     senderSocketSend(Protocol(logMessage, 0, logLevel));
