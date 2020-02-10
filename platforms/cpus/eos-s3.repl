@@ -10,6 +10,8 @@ uart: UART.PL011 @ sysbus 0x40010000
     -> intrCtrl@7
     size: 0x1000
 
+spt: Timers.EOSS3_SimplePeriodicTimer @ sysbus 0x40005C00
+
 m4mem: Memory.MappedMemory @ {
     sysbus 0x0;
     sysbus 0x20000000 //mirror
@@ -46,7 +48,6 @@ sysbus:
         Tag <0x40004C00, 0x40004FFF> "IO_Mux"
         Tag <0x40005000, 0x400053FF> "Misc"
         Tag <0x40005A00, 0x40005BFF> "JTM"
-        Tag <0x40005C00, 0x40005DFF> "SPT"
         Tag <0x40006000, 0x40006FFF> "A1_Regs"
         Tag <0x40007000, 0x400073FF> "SPI_MS"
         Tag <0x40007400, 0x400077FF> "DMA_SPI_MS"
