@@ -255,3 +255,48 @@ Should Survive Interrupt Handlers
             Should Contain      ${r3}    0x00
             Should Contain      ${r4}    0x02
 
+Should Work in BlockBeginHooks
+            # Value returned in block begin concerns first instruction in current block
+
+            Create Machine      ${SIMPLE_BIN}
+            Create Log Tester   5000
+
+            Start Emulation
+            Execute Command     cpu Step 3
+            Execute Command     cpu SetHookAtBlockBegin "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
+            Execute Command     cpu Step
+            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  PC 0x800004a;IT_state 0x0
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x800004c;IT_state 0x5
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x800004e;IT_state 0xa
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x8000050;IT_state 0x14
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x8000052;IT_state 0x8
+            Execute Command     cpu Step
+            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  PC 0x8000054;IT_state 0x0
+
+Should Work in BlockEndHooks
+            # In BlockEnd both PC and It_status concerns first instruction of next block
+
+            Create Machine      ${SIMPLE_BIN}
+            Create Log Tester   5000
+
+            Start Emulation                     #PC = 0x8000044
+            Execute Command     cpu Step 3      #PC = 0x8000048
+            Execute Command     cpu SetHookAtBlockEnd "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
+            Execute Command     cpu Step        #PC = 0x800004a
+            Wait For Log Entry  PC 0x800004c;IT_state 0x5
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x800004e;IT_state 0xa
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x8000050;IT_state 0x14
+            Execute Command     cpu Step
+            Wait For Log Entry  PC 0x8000052;IT_state 0x8
+            Execute Command     cpu Step
+            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  PC 0x8000054;IT_state 0x0
+
