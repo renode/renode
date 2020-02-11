@@ -34,7 +34,7 @@ Should Boot Linux
     Create Terminal Tester    ${UART}  prompt=\#
     Start Emulation
 
-    Wait For Prompt On Uart   buildroot login  timeout=120
+    Wait For Prompt On Uart   buildroot login  timeout=480
     Write Line To Uart        root
     Wait For Prompt On Uart   Password         timeout=60
     Write Line To Uart        root             waitForEcho=false
@@ -139,12 +139,12 @@ Should Ping Linux
     
     Start Emulation
 
-    Wait For Prompt On Uart   buildroot login                    timeout=120    testerId=${u1}
+    Wait For Prompt On Uart   buildroot login                    timeout=480    testerId=${u1}
     Write Line To Uart        root                                              testerId=${u1}
     Wait For Prompt On Uart   Password                                          testerId=${u1}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u1}
 
-    Wait For Prompt On Uart   buildroot login                     timeout=120   testerId=${u2}
+    Wait For Prompt On Uart   buildroot login                     timeout=480   testerId=${u2}
     Write Line To Uart        root                                              testerId=${u2}
     Wait For Prompt On Uart   Password                                          testerId=${u2}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u2}
