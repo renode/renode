@@ -15,8 +15,8 @@ call robocopy output\bin\Release\ %LIBRARY_PREFIX%\renode\exec\ /njh /njs /ndl /
 call robocopy tests\ %LIBRARY_PREFIX%\renode\tests /njh /njs /ndl /S
 call robocopy scripts\ %LIBRARY_PREFIX%\renode\scripts /njh /njs /ndl /S
 call robocopy platforms\ %LIBRARY_PREFIX%\renode\platforms /njh /njs /ndl /S
-call robocopy .\ %LIBRARY_PREFIX%\renode\ .renode-root 
-call robocopy .\ %LIBRARY_PREFIX%\renode\ LICENSE 
+call robocopy .\ %LIBRARY_PREFIX%\renode\ .renode-root
+call robocopy .\ %LIBRARY_PREFIX%\renode\ LICENSE
 
 REM copy all licenses
 call copy lib\resources\tools\nunit-license %LIBRARY_PREFIX%\renode\licenses\
@@ -52,6 +52,7 @@ call copy %RECIPE_DIR%\activate.bat %PREFIX%\etc\conda\activate.d\%PKG_NAME%_act
 
 EXIT /B 0
 
-:convert_to_unix_newline 
+:convert_to_unix_newline
 powershell -Command "(Get-Content %~1 -Raw).Replace(\"`r\",\"\") |Set-Content -NoNewLine %~1 -Force"
 EXIT /B 0
+
