@@ -46,6 +46,9 @@ call copy lib\termsharp\LICENSE %LIBRARY_PREFIX%\renode\licenses\termsharp-licen
 call copy lib\Migrant\LICENSE %LIBRARY_PREFIX%\renode\licenses\Migrant-license
 call copy lib\FdtSharp\LICENCE %LIBRARY_PREFIX%\renode\licenses\FdtSharp-license
 call copy lib\xwt\LICENSE.txt %LIBRARY_PREFIX%\renode\licenses\xwt-license
+call copy tools\packaging\windows\mingw-license %LIBRARY_PREFIX%\renode\licenses\mingw-license
+call copy tools\packaging\windows\winpthreads-license %LIBRARY_PREFIX%\renode\licenses\winpthreads-license
+
 
 REM Add activation script to append renode dir to PATH
 if not exist %PREFIX%\etc\conda\activate.d call mkdir %PREFIX%\etc\conda\activate.d
