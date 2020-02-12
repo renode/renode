@@ -1,6 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 set PATH=C:\cygwin64\bin\;%PATH%
+set PLATFORM=Any CPU
 for /r %%i in (*.sh) do  CALL :convert_to_unix_newline %%i
 
 call bash build.sh
