@@ -28,7 +28,7 @@ List Fomu in Linux
     Create Terminal Tester
     ...                         sysbus.uart0
     ...                         prompt=buildroot login:
-    ...                         timeout=240
+    ...                         timeout=300
     ...                         machine=hifive-unleashed
 
     Start Emulation
