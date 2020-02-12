@@ -41,10 +41,10 @@
 
  *    /* Use of '.inst' is cause by gcc bug : https://bugs.launchpad.net/gcc-arm-embedded/+bug/1620025 */
  *    ITTET EQ
- *    .inst 0x2102        /* MOV r1, #2 ; executes */
+ *    .inst 0x2101        /* MOV r1, #1 ; executes */
  *    .inst 0x2202        /* MOV r2, #2 ; executes */
- *    .inst 0x2301        /* MOV r3, #1 ; does not execute */
- *    .inst 0x2402        /* MOV r4, #2 ; executes */
+ *    .inst 0x2303        /* MOV r3, #3 ; does not execute */
+ *    .inst 0x2404        /* MOV r4, #4 ; executes */
 
  *    LDR r5,  =0x20000000 /* Sets address to store register values */
  *    STR r1, [r5]         /* Store register r1 value */
@@ -63,10 +63,10 @@
  *    CMP r6, #7
 
  *    ITEET GE
- *    .inst 0x2102        /* MOV r1, #2 ; does not execute */
+ *    .inst 0x2101        /* MOV r1, #1 ; does not execute */
  *    .inst 0x2202        /* MOV r2, #2 ; executes */
- *    .inst 0x2301        /* MOV r3, #2 ; executes */
- *    .inst 0x2402        /* MOV r4, #2 ; does not execute*/
+ *    .inst 0x2303        /* MOV r3, #3 ; executes */
+ *    .inst 0x2404        /* MOV r4, #4 ; does not execute */
 
  *    ADD r5, r5, #4
  *    STR r1, [r5]
@@ -184,10 +184,10 @@ Should Execute Only 'Then' Instructions
     ${r2}=  Execute Command     sysbus ReadByte 0x20000004
     ${r3}=  Execute Command     sysbus ReadByte 0x20000008
     ${r4}=  Execute Command     sysbus ReadByte 0x2000000C
-            Should Contain      ${r1}    0x02
+            Should Contain      ${r1}    0x01
             Should Contain      ${r2}    0x02
             Should Contain      ${r3}    0x00
-            Should Contain      ${r4}    0x02
+            Should Contain      ${r4}    0x04
             Execute Command     cpu Step 20                 # After CMP 6, 7 ; ITTET GE
     ${r1}=  Execute Command     sysbus ReadByte 0x20000010
     ${r2}=  Execute Command     sysbus ReadByte 0x20000014
@@ -195,7 +195,7 @@ Should Execute Only 'Then' Instructions
     ${r4}=  Execute Command     sysbus ReadByte 0x2000001C
             Should Contain      ${r1}    0x00
             Should Contain      ${r2}    0x02
-            Should Contain      ${r3}    0x01
+            Should Contain      ${r3}    0x03
             Should Contain      ${r4}    0x00
 
 
@@ -228,10 +228,10 @@ Should Save and Restore State of IT Block Correctly
    ${r2}=  Execute Command     sysbus ReadByte 0x20000004
    ${r3}=  Execute Command     sysbus ReadByte 0x20000008
    ${r4}=  Execute Command     sysbus ReadByte 0x2000000C
-           Should Contain      ${r1}    0x02
+           Should Contain      ${r1}    0x01
            Should Contain      ${r2}    0x02
            Should Contain      ${r3}    0x00
-           Should Contain      ${r4}    0x02
+           Should Contain      ${r4}    0x04
 
 Should Survive Interrupt Handlers
 
@@ -250,10 +250,10 @@ Should Survive Interrupt Handlers
     ${r2}=  Execute Command     sysbus ReadByte 0x20000004
     ${r3}=  Execute Command     sysbus ReadByte 0x20000008
     ${r4}=  Execute Command     sysbus ReadByte 0x2000000C
-            Should Contain      ${r1}    0x02
+            Should Contain      ${r1}    0x01
             Should Contain      ${r2}    0x02
             Should Contain      ${r3}    0x00
-            Should Contain      ${r4}    0x02
+            Should Contain      ${r4}    0x04
 
 Should Work in BlockBeginHooks
             # Value returned in block begin concerns first instruction in current block
