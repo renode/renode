@@ -23,7 +23,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public int CreateTerminalTester(string uart, string prompt = null, int timeout = 30, string machine = null)
+        public int CreateTerminalTester(string uart, string prompt = null, int timeout = 120, string machine = null)
         {
             return CreateNewTester(uartObject => 
             {
