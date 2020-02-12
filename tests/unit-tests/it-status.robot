@@ -31,43 +31,43 @@
  *    NOP
  *    NOP
  *    NOP
- *    .inst 0xfffffff9        /* IRQ 16 jump address : set to 0xfffffff9 to make immediate interrupt_exit */
+ *    .word 0x800008F     /* IRQ 16 jump address */
  *  08000044 <_start>:
  *    .thumb
-
+ *
  *    CPSIE I
  *    MOV r6, #6          /* Sets value to r6 */
  *    CMP r6, #6          /* Compares register value to imm */
-
- *    /* Use of '.inst' is cause by gcc bug : https://bugs.launchpad.net/gcc-arm-embedded/+bug/1620025 */
+ *
+ *    /* Use of '.inst' is caused by gcc bug : https://bugs.launchpad.net/gcc-arm-embedded/+bug/1620025 */
  *    ITTET EQ
  *    .inst 0x2101        /* MOV r1, #1 ; executes */
  *    .inst 0x2202        /* MOV r2, #2 ; executes */
  *    .inst 0x2303        /* MOV r3, #3 ; does not execute */
  *    .inst 0x2404        /* MOV r4, #4 ; executes */
-
+ *
  *    LDR r5,  =0x20000000 /* Sets address to store register values */
  *    STR r1, [r5]         /* Store register r1 value */
  *    ADD r5, r5, #4       /* Add 4 to address */
- *    STR r2, [r5]         /* Store register r2 value
+ *    STR r2, [r5]         /* Store register r2 value */
  *    ADD r5, r5, #4       /* Add 4 to address */
  *    STR r3, [r5]         /* Store register r3 value */
  *    ADD r5, r5, #4       /* Add 4 to address */
  *    STR r4, [r5]         /* Store register r4 value */
-
+ *
  *    MOV r1, #0           /* Clear registers */
  *    MOV r2, #0
  *    MOV r3, #0
  *    MOV r4, #0
-
+ *
  *    CMP r6, #7
-
+ *
  *    ITEET GE
  *    .inst 0x2101        /* MOV r1, #1 ; does not execute */
  *    .inst 0x2202        /* MOV r2, #2 ; executes */
  *    .inst 0x2303        /* MOV r3, #3 ; executes */
  *    .inst 0x2404        /* MOV r4, #4 ; does not execute */
-
+ *
  *    ADD r5, r5, #4
  *    STR r1, [r5]
  *    ADD r5, r5, #4
@@ -76,6 +76,13 @@
  *    STR r3, [r5]
  *    ADD r5, r5, #4
  *    STR r4, [r5]
+ *
+ *    NOP
+ *    NOP
+ *    ADD r1, r1, #1      /* IRQ 16 */
+ *    ADD r1, r1, #2
+ *    ADD r1, r1, #4
+ *    MOVS PC, R14
  *
  * IT_state Bits:
  *     Name  | IT_cond | a | b | c | d | e |
@@ -102,7 +109,7 @@ Library                ${CURDIR}/../gdb/gdb_library.py
 
 *** Variables ***
 ${URI}                 @http://antmicro.com/projects/renode
-${SIMPLE_BIN}          arm-itte-block-test-s_66144-8753989bf68af93314e5e774afcf60567cac0408
+${SIMPLE_BIN}          arm-itte-block-test-s_66176-b7b0c6bd39ebdbaa645794b1c821b8a15b06ac39
 ${GDB_REMOTE_PORT}     3333
 *** Keywords ***
 Create Machine
@@ -116,8 +123,9 @@ Create Machine
             Execute Command     cpu MaximumBlockSize 1
             Execute Command     cpu PerformanceInMips 125
 
-            Execute Command     sysbus LoadELF ${URI}/${SIMPLE_BIN}
+            Execute Command     sysbus LoadELF ${URI}/${elf}
             Execute Command     cpu PC 0x08000044
+            Execute Command     cpu SP 0x08200000
             Execute Command     cpu ExecutionMode SingleStep
 
 *** Test Cases ***
@@ -233,23 +241,32 @@ Should Save and Restore State of IT Block Correctly
            Should Contain      ${r3}    0x00
            Should Contain      ${r4}    0x04
 
-Should Survive Interrupt Handlers
+Should Survive Interrupt
 
             Create Machine      ${SIMPLE_BIN}
 
             Execute Command     nvic WriteDoubleWord 0x100 0x01
-            Execute Command     machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0xFFFF0000 {size: 0x10000}"
             Start Emulation
             Execute Command     cpu Step 5
 
             Execute Command     nvic OnGPIO 0 true
             Execute Command     nvic OnGPIO 0 false
-            Execute Command     cpu Step 11
+            Execute Command     cpu Step
+   ${pc}=   Execute Command     cpu PC
+            Should Contain      ${pc}   0x8000090   # Check if in interrupt
+   ${it}=   Execute Command     cpu GetItState
+            Should Contain      ${it}    0x00
+            Execute Command     cpu Step 3           # exit interrupt
+            Execute Command     cpu Step 1
+   ${it}=   Execute Command     cpu GetItState
+            Should Contain      ${it}   0x00000014
+            Execute Command     cpu Step 10
 
-    ${r1}=  Execute Command     sysbus ReadByte 0x20000000
-    ${r2}=  Execute Command     sysbus ReadByte 0x20000004
-    ${r3}=  Execute Command     sysbus ReadByte 0x20000008
-    ${r4}=  Execute Command     sysbus ReadByte 0x2000000C
+
+   ${r1}=   Execute Command     sysbus ReadByte 0x20000000
+   ${r2}=   Execute Command     sysbus ReadByte 0x20000004
+   ${r3}=   Execute Command     sysbus ReadByte 0x20000008
+   ${r4}=   Execute Command     sysbus ReadByte 0x2000000C
             Should Contain      ${r1}    0x01
             Should Contain      ${r2}    0x02
             Should Contain      ${r3}    0x00
