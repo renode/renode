@@ -164,10 +164,14 @@ int ASocket::SelectSockets(const ASocket::Socket* pSocketsToSelect, const size_t
    {
       FD_SET(pSocketsToSelect[i], &rset);
 
+#ifndef _WIN32
+      // on Windows this code causes warnings as Socket is unsigned but
+      // 1st param is ignored by winsock2's select so max_fd can be -1
       if (pSocketsToSelect[i] > max_fd)
       {
          max_fd = pSocketsToSelect[i];
       }
+#endif
    }
 
    // block until one socket is ready to read.

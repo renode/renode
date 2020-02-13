@@ -13,9 +13,10 @@ RenodeAgent::RenodeAgent(BaseBus* bus)
     interfaces.push_back(bus);
     interfaces[0]->tickCounter = 0;
 
-    auto LogPrinter = [](const std::string& strLogMsg) { std::cout << strLogMsg << std::endl;  };
-    mainSocket.reset(new CTCPClient(LogPrinter));
-    senderSocket.reset(new CTCPClient(LogPrinter));
+    ASocket::SettingsFlag dontLog = ASocket::NO_FLAGS;
+
+    mainSocket.reset(new CTCPClient(NULL, dontLog));
+    senderSocket.reset(new CTCPClient(NULL, dontLog));
 }
 
 void RenodeAgent::addBus(BaseBus* bus)
@@ -89,7 +90,6 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
 
     Protocol *result;
     long ticks;
-    unsigned long readValue;
     handshakeValid();
     reset();
 

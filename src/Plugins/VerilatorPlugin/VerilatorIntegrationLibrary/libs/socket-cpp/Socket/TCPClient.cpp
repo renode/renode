@@ -10,8 +10,8 @@ CTCPClient::CTCPClient(const LogFnCallback oLogger,
                        const SettingsFlag eSettings /*= ALL_FLAGS*/) :
    ASocket(oLogger, eSettings),
    m_eStatus(DISCONNECTED),
-   m_pResultAddrInfo(nullptr),
-   m_ConnectSocket(INVALID_SOCKET)
+   m_ConnectSocket(INVALID_SOCKET),
+   m_pResultAddrInfo(nullptr)
    //m_uRetryCount(0),
    //m_uRetryPeriod(0)
 {
@@ -119,7 +119,7 @@ bool CTCPClient::Connect(const std::string& strServer, const std::string& strPor
    int iErr;
    
    iErr = setsockopt(m_ConnectSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&on, sizeof(on));
-   if (iErr == INVALID_SOCKET)
+   if (iErr == SOCKET_ERROR)
    {
       if (m_eSettingsFlags & ENABLE_LOG)
          m_oLog("[TCPClient][Error] Socket error in call to setsockopt");
@@ -265,7 +265,7 @@ bool CTCPClient::Send(const char* pData, const size_t uSize) const
       return false;
    }
 
-   int total = 0;
+   size_t total = 0;
    do
    {
       const int flags = 0;
@@ -317,7 +317,7 @@ int CTCPClient::Receive(char* pData, const size_t uSize, bool bReadFully /*= tru
    int tries = 0;
    #endif
 
-   int total = 0;
+   size_t total = 0;
    do
    {
       int nRecvd = recv(m_ConnectSocket, pData + total, uSize - total, 0);

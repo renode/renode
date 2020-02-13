@@ -8,7 +8,7 @@
 
 void AxiLite::tick(bool countEnable, unsigned long long steps = 1)
 {
-    for(int i = 0; i < steps; i++) {
+    for(unsigned int i = 0; i < steps; i++) {
         *clk = 1;
         evaluateModel();
         *clk = 0;
@@ -35,7 +35,6 @@ void AxiLite::timeoutTick(bool condition, int timeout = 20)
 
 void AxiLite::write(unsigned long long addr, unsigned long long value)
 {
-    int timeout;
     *awvalid = 1;
     *awaddr = addr;
 
@@ -65,7 +64,6 @@ void AxiLite::write(unsigned long long addr, unsigned long long value)
 
 unsigned long AxiLite::read(unsigned long long addr)
 {
-    int timeout;
     *araddr = addr;
     *arvalid = 1;
 

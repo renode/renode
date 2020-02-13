@@ -8,7 +8,7 @@
 
 void Wishbone::tick(bool countEnable, unsigned long long steps = 1)
 {
-    for(int i = 0; i < steps; i++) {
+    for(unsigned int i = 0; i < steps; i++) {
         *wb_clk = 1;
         evaluateModel();
         *wb_clk = 0;
@@ -35,8 +35,6 @@ void Wishbone::timeoutTick(bool condition, int timeout = 20)
 
 void Wishbone::write(unsigned long long addr, unsigned long long value)
 {
-    int timeout;
-
     *wb_we = 1;
     *wb_sel = 0xF;
     *wb_cyc = 1;
@@ -60,8 +58,6 @@ void Wishbone::write(unsigned long long addr, unsigned long long value)
 
 unsigned long Wishbone::read(unsigned long long addr)
 {
-    int timeout;
-
     *wb_we = 0;
     *wb_sel = 0xF;
     *wb_cyc = 1;
