@@ -13,8 +13,9 @@ CLEAN=false
 PACKAGES=false
 NIGHTLY=false
 PARAMS=()
+CUSTOM_PROP=
 
-while getopts "cdvpns" opt
+while getopts "cdvpnsb:" opt
 do
   case $opt in
     c)
@@ -36,8 +37,11 @@ do
     s)
       UPDATE_SUBMODULES=true
       ;;
+    b)
+      CUSTOM_PROP=$OPTARG
+      ;;
     \?)
-      echo "Usage: $0 [-cdvspn]"
+      echo "Usage: $0 [-cdvspn] [-b properties-file.csproj]"
       echo ""
       echo "-c           clean instead of building"
       echo "-d           build Debug configuration"
@@ -45,10 +49,12 @@ do
       echo "-p           create packages after building"
       echo "-n           create nightly packages after building"
       echo "-s           update submodules"
+      echo "-b           custom build properties file"
       exit 1
       ;;
   esac
 done
+shift "$((OPTIND-1))"
 
 # Update submodules if not initialized or if requested by the user
 # Warn if not updating, but unclean
@@ -123,14 +129,18 @@ fi
 
 # Copy properties file according to the running OS
 mkdir -p "$OUTPUT_DIRECTORY"
-if $ON_OSX
-then
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
-elif $ON_LINUX
-then
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+if [ -n "${CUSTOM_PROP}" ]; then
+    PROP_FILE=$CUSTOM_PROP
 else
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+    if $ON_OSX
+    then
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
+    elif $ON_LINUX
+    then
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+    else
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+    fi
 fi
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 
