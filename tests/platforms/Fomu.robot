@@ -5,6 +5,12 @@ Suite Teardown                Teardown
 Test Setup                    Reset Emulation
 Resource                      ${RENODEKEYWORDS}
 
+*** Keywords ***
+Write To Uart And Wait
+    [Arguments]            ${input}            ${expected_output}
+    Write Line To Uart     ${input}
+    Wait For Line On Uart  ${expected_output}  timeout=2
+
 *** Test Cases ***
 List Fomu in Linux
     Execute Command  using sysbus
@@ -45,11 +51,12 @@ List Fomu in Linux
 
     Execute Command               usb_connector RegisterInController usb
     Wait For Line On Uart         usb 1-1: new high-speed USB device number 2 using musb-hdrc
-    Sleep                         5
-
     Write Line To Uart            cd /sys/bus/usb/devices
-    Write Line To Uart            ls -l
-    Wait For Line On Uart         1-1
+
+    # it might take a while for the USB device to show up
+    Wait Until Keyword Succeeds   10x    0
+    ...  Write To Uart And Wait   ls -l
+    ...                           1-1
 
     Write Line To Uart            cd 1-1
 
