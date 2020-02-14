@@ -282,7 +282,7 @@ Should Work in BlockBeginHooks
             Execute Command     cpu Step 3
             Execute Command     cpu SetHookAtBlockBegin "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
             Execute Command     cpu Step
-            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  Checking IT_STATE, while not in IT block
             Wait For Log Entry  PC 0x800004a;IT_state 0x0
             Execute Command     cpu Step
             Wait For Log Entry  PC 0x800004c;IT_state 0x5
@@ -293,7 +293,7 @@ Should Work in BlockBeginHooks
             Execute Command     cpu Step
             Wait For Log Entry  PC 0x8000052;IT_state 0x8
             Execute Command     cpu Step
-            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  Checking IT_STATE, while not in IT block
             Wait For Log Entry  PC 0x8000054;IT_state 0x0
 
 Should Work in BlockEndHooks
@@ -314,6 +314,6 @@ Should Work in BlockEndHooks
             Execute Command     cpu Step
             Wait For Log Entry  PC 0x8000052;IT_state 0x8
             Execute Command     cpu Step
-            Wait For Log Entry  Checking next IT instruction status, while not in IT block
+            Wait For Log Entry  Checking IT_STATE, while not in IT block
             Wait For Log Entry  PC 0x8000054;IT_state 0x0
 
