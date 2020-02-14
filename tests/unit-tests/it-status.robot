@@ -1,104 +1,106 @@
-/* ARM IT test.
- *   The IT (If-Then) instruction makes up to four following instructions (the IT block) conditional.
- *   The conditions can be all the same, or some of them can be the logical inverse of the others.
- *   Syntax
- *     IT{x{y{z}}} {cond}
- *   where:
- *     x - specifies the condition switch for the second instruction in the IT block.
- *     y - specifies the condition switch for the third instruction in the IT block.
- *     z - specifies the condition switch for the fourth instruction in the IT block.
- *     cond - specifies the condition for the first instruction in the IT block.
- *   The condition switch for the second, third and fourth instruction in the IT block can be either:
- *     T - Then. Applies the condition cond to the instruction.
- *     E - Else. Applies the inverse condition of cond to the instruction.
- *
- * Test ELF:
- *  08000000 <.irq>:
- *    .arm
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    NOP
- *    .word 0x800008F     /* IRQ 16 jump address */
- *  08000044 <_start>:
- *    .thumb
- *
- *    CPSIE I
- *    MOV r6, #6          /* Sets value to r6 */
- *    CMP r6, #6          /* Compares register value to imm */
- *
- *    /* Use of '.inst' is caused by gcc bug : https://bugs.launchpad.net/gcc-arm-embedded/+bug/1620025 */
- *    ITTET EQ
- *    .inst 0x2101        /* MOV r1, #1 ; executes */
- *    .inst 0x2202        /* MOV r2, #2 ; executes */
- *    .inst 0x2303        /* MOV r3, #3 ; does not execute */
- *    .inst 0x2404        /* MOV r4, #4 ; executes */
- *
- *    LDR r5,  =0x20000000 /* Sets address to store register values */
- *    STR r1, [r5]         /* Store register r1 value */
- *    ADD r5, r5, #4       /* Add 4 to address */
- *    STR r2, [r5]         /* Store register r2 value */
- *    ADD r5, r5, #4       /* Add 4 to address */
- *    STR r3, [r5]         /* Store register r3 value */
- *    ADD r5, r5, #4       /* Add 4 to address */
- *    STR r4, [r5]         /* Store register r4 value */
- *
- *    MOV r1, #0           /* Clear registers */
- *    MOV r2, #0
- *    MOV r3, #0
- *    MOV r4, #0
- *
- *    CMP r6, #7
- *
- *    ITEET GE
- *    .inst 0x2101        /* MOV r1, #1 ; does not execute */
- *    .inst 0x2202        /* MOV r2, #2 ; executes */
- *    .inst 0x2303        /* MOV r3, #3 ; executes */
- *    .inst 0x2404        /* MOV r4, #4 ; does not execute */
- *
- *    ADD r5, r5, #4
- *    STR r1, [r5]
- *    ADD r5, r5, #4
- *    STR r2, [r5]
- *    ADD r5, r5, #4
- *    STR r3, [r5]
- *    ADD r5, r5, #4
- *    STR r4, [r5]
- *
- *    NOP
- *    NOP
- *    ADD r1, r1, #1      /* IRQ 16 */
- *    ADD r1, r1, #2
- *    ADD r1, r1, #4
- *    MOVS PC, R14
- *
- * IT_state Bits:
- *     Name  | IT_cond | a | b | c | d | e |
- *     Bits  |   7-5   | 4 | 3 | 2 | 1 | 0 |
- *   The a, b, c, d, and e bits encode the number of instructions that are to be conditionally executed, and whether the condition for each is the base condition code or the inverse of the base condition code. They must contain b00000 when no IT block is active. Value of one means instruction should be skipped
-.
- *   When an IT instruction is executed, these bits are set according to the condition in the instruction, and the Then and Else (T and E) parameters in the instruction.
- *   During execution of an IT block, the a, b, c, d, and e bits are shifted left after every instruction:
- *    - to reduce the number of instructions to be conditionally executed by one
- *    - to move the next bit into position `a` basing on whichi the cpu decides if instruction should be executed.
- * IT_cond:
- *   To encode condition on 3 bits we omit last bit which always means reversing the condition, and negate abcde bits if neccessary.
- *   For example: ITTET GT is encoded as IT_COND = 0b110 and abcde= 0b00101
- *                ITTET LE is encoded as IT_COND = 0b110 and abcde= 0b11011
- *   Bit denoting end of sequence always equals 1.
- */
+*** Comments ***
+
+ARM IT test.
+  The IT (If-Then) instruction makes up to four following instructions (the IT block) conditional.
+  The conditions can be all the same, or some of them can be the logical inverse of the others.
+  Syntax
+    IT{x{y{z}}} {cond}
+  where:
+    x - specifies the condition switch for the second instruction in the IT block.
+    y - specifies the condition switch for the third instruction in the IT block.
+    z - specifies the condition switch for the fourth instruction in the IT block.
+    cond - specifies the condition for the first instruction in the IT block.
+  The condition switch for the second, third and fourth instruction in the IT block can be either:
+    T - Then. Applies the condition cond to the instruction.
+    E - Else. Applies the inverse condition of cond to the instruction.
+
+Test ELF:
+ 08000000 <.irq>:
+   .arm
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   NOP
+   .word 0x800008F     /* IRQ 16 jump address */
+ 08000044 <_start>:
+   .thumb
+
+   CPSIE I
+   MOV r6, #6          /* Sets value to r6 */
+   CMP r6, #6          /* Compares register value to imm */
+
+   /* Use of '.inst' is caused by gcc bug : https://bugs.launchpad.net/gcc-arm-embedded/+bug/1620025 */
+   ITTET EQ
+   .inst 0x2101        /* MOV r1, #1 ; executes */
+   .inst 0x2202        /* MOV r2, #2 ; executes */
+   .inst 0x2303        /* MOV r3, #3 ; does not execute */
+   .inst 0x2404        /* MOV r4, #4 ; executes */
+
+   LDR r5,  =0x20000000 /* Sets address to store register values */
+   STR r1, [r5]         /* Store register r1 value */
+   ADD r5, r5, #4       /* Add 4 to address */
+   STR r2, [r5]         /* Store register r2 value */
+   ADD r5, r5, #4       /* Add 4 to address */
+   STR r3, [r5]         /* Store register r3 value */
+   ADD r5, r5, #4       /* Add 4 to address */
+   STR r4, [r5]         /* Store register r4 value */
+
+   MOV r1, #0           /* Clear registers */
+   MOV r2, #0
+   MOV r3, #0
+   MOV r4, #0
+
+   CMP r6, #7
+
+   ITEET GE
+   .inst 0x2101        /* MOV r1, #1 ; does not execute */
+   .inst 0x2202        /* MOV r2, #2 ; executes */
+   .inst 0x2303        /* MOV r3, #3 ; executes */
+   .inst 0x2404        /* MOV r4, #4 ; does not execute */
+
+   ADD r5, r5, #4
+   STR r1, [r5]
+   ADD r5, r5, #4
+   STR r2, [r5]
+   ADD r5, r5, #4
+   STR r3, [r5]
+   ADD r5, r5, #4
+   STR r4, [r5]
+
+   NOP
+   NOP
+   ADD r1, r1, #1      /* IRQ 16 */
+   ADD r1, r1, #2
+   ADD r1, r1, #4
+   MOVS PC, R14
+
+IT_state Bits:
+    Name  | IT_cond | a | b | c | d | e |
+    Bits  |   7-5   | 4 | 3 | 2 | 1 | 0 |
+  The a, b, c, d, and e bits encode the number of instructions that are to be conditionally executed, and whether the condition for each is the base condition code or the inverse of the base condition code. They must contain b00000 when no IT block is active. Value of one means instruction should be skipped.
+
+  When an IT instruction is executed, these bits are set according to the condition in the instruction, and the Then and Else (T and E) parameters in the instruction.
+  During execution of an IT block, the a, b, c, d, and e bits are shifted left after every instruction:
+   - to reduce the number of instructions to be conditionally executed by one
+   - to move the next bit into position `a` basing on whichi the cpu decides if instruction should be executed.
+IT_cond:
+  To encode condition on 3 bits we omit last bit which always means reversing the condition, and negate abcde bits if neccessary.
+  For example: ITTET GT is encoded as IT_COND = 0b110 and abcde= 0b00101
+               ITTET LE is encoded as IT_COND = 0b110 and abcde= 0b11011
+  Bit denoting end of sequence always equals 1.
+
 
 *** Settings ***
 Suite Setup            Setup
