@@ -12,10 +12,11 @@ CONFIGURATION="Release"
 CLEAN=false
 PACKAGES=false
 NIGHTLY=false
+PORTABLE=false
 PARAMS=()
 CUSTOM_PROP=
 
-while getopts "cdvpnsb:" opt
+while getopts "cdvpnstb:" opt
 do
   case $opt in
     c)
@@ -34,6 +35,9 @@ do
       NIGHTLY=true
       PACKAGES=true
       ;;
+    t)
+      PORTABLE=true
+      ;;
     s)
       UPDATE_SUBMODULES=true
       ;;
@@ -41,13 +45,14 @@ do
       CUSTOM_PROP=$OPTARG
       ;;
     \?)
-      echo "Usage: $0 [-cdvspn] [-b properties-file.csproj]"
+      echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj]"
       echo ""
       echo "-c           clean instead of building"
       echo "-d           build Debug configuration"
       echo "-v           verbose output"
       echo "-p           create packages after building"
       echo "-n           create nightly packages after building"
+      echo "-t           create a portable package (experimental, Linux only)"
       echo "-s           update submodules"
       echo "-b           custom build properties file"
       exit 1
@@ -185,11 +190,17 @@ then
     then
         params="$params -d"
     fi
+fi
 
-    $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+$ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
 
+if $PORTABLE
+then
     if $ON_LINUX
     then
       $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+    else
+      echo "Portable packages are only available on Linux. Exiting!"
+      exit 1
     fi
 fi
