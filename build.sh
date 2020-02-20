@@ -178,17 +178,18 @@ $CS_COMPILER "${PARAMS[@]}" "$TARGET"
 cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libLLVM.* output/bin/$CONFIGURATION
 
 # build packages after successful compilation
+params=""
+
+if [ $CONFIGURATION == "Debug" ]
+then
+    params="$params -d"
+fi
+
 if $PACKAGES
 then
-    params=""
     if $NIGHTLY
     then
       params="$params -n"
-    fi
-
-    if [ $CONFIGURATION == "Debug" ]
-    then
-        params="$params -d"
     fi
 
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
