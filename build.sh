@@ -190,9 +190,10 @@ then
     then
         params="$params -d"
     fi
+
+    $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
 fi
 
-$ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
 
 if $PORTABLE
 then
