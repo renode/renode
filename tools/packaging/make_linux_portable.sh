@@ -143,7 +143,7 @@ gcc \
 
 # Copy dependencies
 
-cp $RENODE_OUTPUT_DIR/libLLVM.so $DESTINATION
+cp $RENODE_OUTPUT_DIR/libllvm-disas.so $DESTINATION
 
 cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
