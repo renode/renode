@@ -146,7 +146,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     this.Log(LogLevel.Warning, "Invalid action received");
                     break;
                 case ActionType.LogMessage:
-                    this.Log((LogLevel)(int)message.Data, "Verilated: ", asyncEventsSocket.ReceiveString());
+                    this.Log((LogLevel)(int)message.Data, "Verilated: '{0}'", asyncEventsSocket.ReceiveString());
                     break;
                 case ActionType.Interrupt:
                     HandleInterrupt(message);
@@ -156,7 +156,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected virtual void HandleInterrupt(ProtocolMessage interrupt)
         {
-            this.Log(LogLevel.Info, "Unhandled interrupt: ", interrupt.Address);
+            this.Log(LogLevel.Info, "Unhandled interrupt: '{0}'", interrupt.Address);
         }
 
         protected void CheckValidation(ProtocolMessage message)
