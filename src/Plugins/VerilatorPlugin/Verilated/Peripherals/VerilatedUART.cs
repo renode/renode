@@ -18,6 +18,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
     {
         public VerilatedUART(Machine machine, long frequency, string simulationFilePath = null, ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout) : base (machine, frequency, simulationFilePath, limitBuffer, timeout)
         {
+            IRQ = new GPIO();
         }
 
         public void WriteChar(byte value)
@@ -31,6 +32,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public uint BaudRate { get { return 115200; } }
 
         public event Action<byte> CharReceived;
+
+        public GPIO IRQ { get; private set; }
 
         protected override void HandleReceived(ProtocolMessage message)
         {
@@ -50,7 +53,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             switch(interrupt.Address)
             {
                 case RxdInterrupt:
-                    this.Log(LogLevel.Info, "Rxd interrupt: ", interrupt.Address);
+                    IRQ.Set(interrupt.Data != 0);
                     break;
                 default:
                     base.HandleInterrupt(interrupt);
