@@ -41,7 +41,9 @@ void Wishbone::write(unsigned long addr, unsigned long value)
     *wb_sel = 0xF;
     *wb_cyc = 1;
     *wb_stb = 1;
-    *wb_addr = addr;
+//  According to Wishbone B4 spec when using 32 bit bus with byte granularity
+//  we drop 2 youngest bits
+    *wb_addr = addr >> 2;
     *wb_wr_dat = value;
 
     timeoutTick(*wb_ack == 1);
@@ -64,11 +66,11 @@ unsigned long Wishbone::read(unsigned long addr)
     *wb_sel = 0xF;
     *wb_cyc = 1;
     *wb_stb = 1;
-    *wb_addr = addr;
-    unsigned long result = *wb_rd_dat;
+    *wb_addr = addr >> 2;
 
     timeoutTick(*wb_ack == 1);
     tick(true);
+    unsigned long result = *wb_rd_dat;
 
     *wb_cyc = 0;
     *wb_stb = 0;
