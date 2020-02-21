@@ -1,0 +1,30 @@
+mem: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus 0x80000000 // shadow
+    }
+    size: 0x00040000
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x10000000;
+        sysbus 0x90000000 // shadow
+    }
+    size: 0x00040000
+
+ddr: Memory.MappedMemory @ {
+        sysbus 0x40000000;
+        sysbus 0xc0000000 // shadow
+    }
+    size: 0x10000000
+
+cpu: CPU.VexRiscv @ sysbus
+
+timer0: Timers.LiteX_Timer @ {
+        sysbus 0x60002800;
+        sysbus 0xE0002800 // shadow
+    }
+    frequency: 100000000
+    -> cpu@1
+
+uart: Verilated.VerilatedUART @ sysbus <0xE0001000, +0x1000>
+    frequency: 100000000
+    -> cpu@2
