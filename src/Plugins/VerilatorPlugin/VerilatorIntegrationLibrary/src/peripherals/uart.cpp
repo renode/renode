@@ -32,7 +32,7 @@ void UART::Rxd(unsigned char value) {
     std::bitset<8> buffer(value);
     *rxd = 0;
     bus->tick(true, prescaler * 8);
-    for(int i = 7; i >= 0; i--) {
+    for(int i = 0; i < 8; i++) {
         *rxd = buffer[i];
         bus->tick(true, prescaler * 8);
     }
