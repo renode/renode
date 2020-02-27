@@ -30,7 +30,6 @@ call copy lib\resources\libraries\Mono.Cecil-license %LIBRARY_PREFIX%\renode\lic
 call copy lib\resources\libraries\Mono.Linq.Expressions-license %LIBRARY_PREFIX%\renode\licenses\
 call copy lib\resources\libraries\Sprache-license %LIBRARY_PREFIX%\renode\licenses\
 call copy lib\resources\libraries\CookComputing.XmlRpcV2-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\NetMQ-license %LIBRARY_PREFIX%\renode\licenses\
 call copy lib\resources\libraries\AsyncIO-license %LIBRARY_PREFIX%\renode\licenses\
 call copy lib\resources\libraries\Nini-license %LIBRARY_PREFIX%\renode\licenses\
 call copy lib\resources\libraries\LZ4n-license %LIBRARY_PREFIX%\renode\licenses\

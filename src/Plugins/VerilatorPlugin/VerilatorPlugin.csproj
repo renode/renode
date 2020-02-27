@@ -37,9 +37,6 @@
     <Reference Include="System" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Core" />
-    <Reference Include="NetMQ">
-      <HintPath>..\..\..\lib\resources\libraries\NetMQ.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
   </ItemGroup>
   <ItemGroup>
