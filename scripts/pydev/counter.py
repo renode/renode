@@ -1,6 +1,6 @@
 if request.isInit:
     lastVal = -1
-else:
+elif request.isRead:
     request.value = lastVal + 1
     lastVal += 1
 
