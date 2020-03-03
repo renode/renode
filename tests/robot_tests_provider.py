@@ -110,7 +110,7 @@ class RobotTestSuite(object):
         remote_server_binary = os.path.join(self.remote_server_directory, options.remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
-            print("Robot framework remote server binary not found: '{}'! Did you forget to bootstrap and build?".format(remote_server_binary))
+            print("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
             sys.exit(1)
 
         args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
