@@ -140,6 +140,7 @@ cp /usr/lib/cli/pango-sharp-2.0/libpangosharpglue-2.so $DESTINATION
 cp $THIS_DIR/linux_portable/renode $DESTINATION
 
 # Create tar
+mkdir -p ../../output/packages
 tar -czf ../../output/packages/renode-$VERSION.linux-portable.tar.gz $DESTINATION
 
 echo "Created a portable package in output/packages/renode-$VERSION.linux-portable.tar.gz"
