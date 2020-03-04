@@ -16,7 +16,7 @@ PORTABLE=false
 PARAMS=()
 CUSTOM_PROP=
 
-while getopts "cdvpnstb:" opt
+while getopts "cdvpnstb:-:" opt
 do
   case $opt in
     c)
@@ -44,8 +44,15 @@ do
     b)
       CUSTOM_PROP=$OPTARG
       ;;
+    -)
+      case $OPTARG in
+        "no-gui")
+          PARAMS+=(/p:GUI_DISABLED=true)
+          ;;
+      esac
+      ;;
     \?)
-      echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj]"
+      echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui]"
       echo ""
       echo "-c           clean instead of building"
       echo "-d           build Debug configuration"
@@ -55,6 +62,7 @@ do
       echo "-t           create a portable package (experimental, Linux only)"
       echo "-s           update submodules"
       echo "-b           custom build properties file"
+      echo "--no-gui     build with GUI disabled"
       exit 1
       ;;
   esac
