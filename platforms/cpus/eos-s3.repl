@@ -1,5 +1,6 @@
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xE0
+    systickFrequency: 61440000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
@@ -18,7 +19,11 @@ m4mem: Memory.MappedMemory @ {
     }
     size: 0x80000
 
-intrCtrl: IRQControllers.EOSS3_IntrCtrl @ sysbus 0x40004800 {
+intrCtrl: IRQControllers.EOSS3_IntrCtrl @ {
+        sysbus 0x40004800;
+        sysbus new Bus.BusMultiRegistration { address: 0x40005100; size: 0x8; region: "misc" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40004C00; size: 0x200; region: "iomux" }
+    } {
     // we have to use braces to split this very long single line
     [
         SoftwareIrq2, SoftwareIrq1, /* Reserved1, */ FFE0MessageIrq, FabricIrq, GPIOIrq, SRAMIrq, UARTIrq, TimerIrq,
