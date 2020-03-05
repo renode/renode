@@ -33,11 +33,14 @@ namespace Antmicro.Renode.UI
                 window.Title = consoleName == null ? "Renode" : consoleName;
                 window.Width = 700;
                 window.Height = 400;
-                window.Location = WindowPositionProvider.Instance.GetNextPosition();
+                var windowLocation = WindowPositionProvider.Instance.GetNextPosition();
+                window.Location = windowLocation;
                 window.Padding = new WidgetSpacing();
                 window.Content = terminalWidget;
                 terminalWidget.Initialized += mre.Set;
                 window.Show();
+                // window.Show() sets Location off screen if scaling > 100% on Windows
+                window.Location = windowLocation;
                 window.Closed += (sender, e) =>
                 {
                     InnerOnClose();
