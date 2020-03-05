@@ -9,7 +9,7 @@ Frame Buffer Test
     Execute Command            using sysbus
 
     Execute Command            mach create
-    Execute Command            machine LoadPlatformDescription @${CURDIR}/litex_netv2_vexriscv_linux.repl
+    Execute Command            machine LoadPlatformDescription @platforms/cpus/litex_netv2_vexriscv_linux.repl
 
     Execute Command            $kernel?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--linux_kernel.bin-s_4553716-63780a978bf5768b81854e3febd58cabb47be4f0
     Execute Command            $rootfs?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--buildroot_rootfs.cpio-s_4061696-befa7810480d9d85fd7d6a7e6c5f2514eb5de4ab
