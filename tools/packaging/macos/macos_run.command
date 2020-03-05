@@ -40,4 +40,4 @@ then
 fi
 
 #run app using mono
-exec -a \"$PROCESS_NAME\" mono64 $MONO_OPTIONS "$EXE_PATH" $*
+exec -a \"$PROCESS_NAME\" mono64 $MONO_OPTIONS "$EXE_PATH" "$@"
