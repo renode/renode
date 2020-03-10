@@ -3,6 +3,75 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.9.0 - 2019.03.10
+------------------
+
+Breaking changes:
+
+* the Renode configuration directory was moved to another location.
+
+  The directory is moved from ``~/.renode`` on Unix-like systems and ``Documents`` on Windows to
+  ``~/.config/renode`` and ``AppData\Roaming\renode`` respectively. To use your previous settings
+  and Monitor history, please start Renode 1.9 and copy your old config folder over the new one.
+
+Added:
+
+* support for RISC-V Privileged Architecture 1.11
+* EOS S3 platform, with QuickFeather and Qomu boards support
+* EFR32MG13 platform support
+* Zolertia Firefly dual radio (CC2538/CC1200) platform support
+* Kendryte K210 platform support
+* NeTV2 with LiteX and VexRiscv platform support
+* EFR32 timer and gpcrc models
+* CC2538 GPIO controller and SSI models
+* CC1200 radio model
+* MAX3421E USB controller model
+* LiteX SoC controller model
+* support for Wishbone bus in verilated peripherals, exemplified with the ``riscv_verilated_liteuart.resc`` sample
+* one-shot mode in AutoRepaintingVideo allowing display models to control when they are refreshed
+* ``GetItState`` for ARM Cortex-M cores allowing to verify the current status of the IT block
+* scripts to create Conda packages for Linux, Windows and macOS
+* requirements.txt with Python dependencies to simplify the compilation process
+* configuration option to collapse repeated lines in the log - turn it to false if you observe strange behavior of the log output
+
+Changed:
+
+* VexRiscv now supports Supervisor level interrupts, following latest changes to this core
+* PolarFire SoC script now has a sample binary, running FreeRTOS with LwIP stack
+* the output of Robot test is now upgraded to clearly indicate time of execution
+* NetworkInterfaceKeywords now support wireless communication
+* exposed several RISC-V registers to the Monitor
+* VerilatedUART now supports interrupts
+* tests file format was changed to yaml, thus changing tests.txt to tests.yaml
+* test.sh can now run NUnit tests in parallel
+* ``./build.sh -p`` will no longer build the portable Linux package as it requires a very specific Mono version
+* path to ``ar`` can now be specified in the properties file before building
+* MinGW libraries are now compiled in statically, significantly reducing the Windows package size
+
+Fixed:
+
+* crash when trying to set the underlying model for verilated peripheral in REPL
+* crash when copying data from the terminal to clipboard on Windows
+* crash on loading missing FDT file
+* crash when starting the GDB server before loading the platform
+* handling of very long commands via GDB
+* improper window positioning when running on Windows with a display scaling enabled
+* exception reporting from running CPUs
+* flushing of closing LoggingUartAnalyzer
+* icon installation on Fedora
+* rebuilding translation libraries when only a header is changed
+* macOS run scripts bundled in packages
+* priority level handling in NVIC
+* COUNTFLAG handling in NVIC
+* several improvements in Cadence GEM frame handling
+* FastRead operations in Micron MT25Q flash
+* PolarFire SoC Watchdog forbidden range handling
+* offset calculation on byte accesses in NS16550 model
+* interrupt handling in PolarFire SoC QSPI model
+* connected pins state readout in PolarFire SoC GPIO model
+* several fixes in HiFive SPI model
+* page latch alignment in PolarFire SoC
+
 1.8.2 - 2019.11.12
 ------------------
 
