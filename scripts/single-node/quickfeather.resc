@@ -1,5 +1,5 @@
-:name: QuickLogic Quick Feather
-:description: This script runs Zephyr RTOS "Dining philosophers" sample on a Quick Feather board.
+:name: QuickLogic QuickFeather
+:description: This script runs Zephyr RTOS "Dining philosophers" sample on a QuickFeather board.
 
 $name?="QuickFeather"
 
