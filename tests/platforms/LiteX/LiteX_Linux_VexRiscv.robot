@@ -11,10 +11,10 @@ Create Platform
     Execute Command            mach create
     Execute Command            machine LoadPlatformDescription @${CURDIR}/litex_linux_vexriscv.repl
 
-    Execute Command            set kernel @https://antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4578292-f63a4736100b5ff79a8d72429c1b79718ec7a446
-    Execute Command            set rootfs @https://antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4163584-c44ad487ba1f73c00430a1bb108ceef84007274f
-    Execute Command            set device_tree @https://antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2609-9a915b47b8e31d0d3f268c4a297dc0b0555e8cd0
-    Execute Command            set emulator @https://antmicro.com/projects/renode/litex_vexriscv--emulator.bin-s_9028-796a4227b806997c6629462fdf0dcae73de06929
+    Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4578292-f63a4736100b5ff79a8d72429c1b79718ec7a446
+    Execute Command            set rootfs @https://dl.antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4163584-c44ad487ba1f73c00430a1bb108ceef84007274f
+    Execute Command            set device_tree @https://dl.antmicro.com/projects/renode/litex_linux_vexriscv--rv32.dtb-s_2609-9a915b47b8e31d0d3f268c4a297dc0b0555e8cd0
+    Execute Command            set emulator @https://dl.antmicro.com/projects/renode/litex_vexriscv--emulator.bin-s_9028-796a4227b806997c6629462fdf0dcae73de06929
 
     Execute Command            sysbus LoadBinary $emulator 0x20000000
     Execute Command            sysbus LoadBinary $kernel 0xc0000000

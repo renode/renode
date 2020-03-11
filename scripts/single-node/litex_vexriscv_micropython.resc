@@ -7,7 +7,7 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/litex_vexriscv_micropython.repl
 
-$bin?=@http://antmicro.com/projects/renode/litex_vexriscv--micropython.elf-s_2713384-e2d6be24b6a0de3d1bcf3161e38191b0e4489010
+$bin?=@https://dl.antmicro.com/projects/renode/litex_vexriscv--micropython.elf-s_2713384-e2d6be24b6a0de3d1bcf3161e38191b0e4489010
 
 showAnalyzer sysbus.uart
 

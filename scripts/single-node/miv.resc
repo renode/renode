@@ -7,7 +7,7 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/boards/miv-board.repl
 
-$bin?=@http://antmicro.com/projects/renode/shell-demo-miv.elf-s_803248-ea4ddb074325b2cc1aae56800d099c7cf56e592a
+$bin?=@https://dl.antmicro.com/projects/renode/shell-demo-miv.elf-s_803248-ea4ddb074325b2cc1aae56800d099c7cf56e592a
 
 showAnalyzer uart
 

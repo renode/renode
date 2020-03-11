@@ -92,6 +92,6 @@ i2c3: I2C.STM32F4_I2C @ sysbus 0x40005C00
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/STM32F429x.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F429x.svd.gz
         Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 

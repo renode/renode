@@ -40,5 +40,5 @@ cpu: CPU.CortexM @ sysbus
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/STM32W108.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32W108.svd.gz
 

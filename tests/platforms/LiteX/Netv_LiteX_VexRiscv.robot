@@ -11,10 +11,10 @@ Frame Buffer Test
     Execute Command            mach create
     Execute Command            machine LoadPlatformDescription @platforms/cpus/litex_netv2_vexriscv_linux.repl
 
-    Execute Command            $kernel?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--linux_kernel.bin-s_4553716-63780a978bf5768b81854e3febd58cabb47be4f0
-    Execute Command            $rootfs?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--buildroot_rootfs.cpio-s_4061696-befa7810480d9d85fd7d6a7e6c5f2514eb5de4ab
-    Execute Command            $dtb?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--linux.dtb-s_2068-2b68e9266b67dac4bafae70027a19fa487278bbe
-    Execute Command            $emulator?=@https://antmicro.com/projects/renode/litex_netv2_vexriscv--emulator.bin-s_10248-8039372fef62d8e4e4cb57e20561e37674fcc4ea
+    Execute Command            $kernel?=@https://dl.antmicro.com/projects/renode/litex_netv2_vexriscv--linux_kernel.bin-s_4553716-63780a978bf5768b81854e3febd58cabb47be4f0
+    Execute Command            $rootfs?=@https://dl.antmicro.com/projects/renode/litex_netv2_vexriscv--buildroot_rootfs.cpio-s_4061696-befa7810480d9d85fd7d6a7e6c5f2514eb5de4ab
+    Execute Command            $dtb?=@https://dl.antmicro.com/projects/renode/litex_netv2_vexriscv--linux.dtb-s_2068-2b68e9266b67dac4bafae70027a19fa487278bbe
+    Execute Command            $emulator?=@https://dl.antmicro.com/projects/renode/litex_netv2_vexriscv--emulator.bin-s_10248-8039372fef62d8e4e4cb57e20561e37674fcc4ea
 
     Execute Command            sysbus LoadBinary $kernel 0xc0000000
     Execute Command            sysbus LoadBinary $rootfs 0xc0800000
@@ -40,4 +40,4 @@ Frame Buffer Test
     Execute Command            fb_tester AttachTo litex_video
 
     Write Line To Uart         cat /etc/motd > /dev/tty0
-    Execute Command            fb_tester WaitForFrame @https://antmicro.com/projects/renode/screenshots/penguin_with_litex_logo.png-s_15074-bbb8416ce2281def08847e6192953b1841cb8807
+    Execute Command            fb_tester WaitForFrame @https://dl.antmicro.com/projects/renode/screenshots/penguin_with_litex_logo.png-s_15074-bbb8416ce2281def08847e6192953b1841cb8807

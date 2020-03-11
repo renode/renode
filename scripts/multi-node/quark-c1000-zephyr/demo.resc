@@ -25,7 +25,7 @@ wireless SetRangeWirelessFunction 11
 #
 # The `$bin` variable contains the path to the server ELF file. The `$name` variable will indicate
 # the name of the created machine. Both variables are used in quark_c1000.resc.
-$bin=@http://antmicro.com/projects/renode/zephyr-echo-server.elf-s_1003060-56eb87aafc8c00f73ebe154dafee627a3a4f23f6
+$bin=@https://dl.antmicro.com/projects/renode/zephyr-echo-server.elf-s_1003060-56eb87aafc8c00f73ebe154dafee627a3a4f23f6
 $name="server"
 
 # Load the script for a single generic node:
@@ -49,7 +49,7 @@ mach clear
 ######################### UDP CLIENT - begin #########################
 # This creates a client node.
 
-$bin=@http://antmicro.com/projects/renode/zephyr-echo-client.elf-s_1016316-bfb6584d9d63950e8106c6820efccdaf0b7738a5
+$bin=@https://dl.antmicro.com/projects/renode/zephyr-echo-client.elf-s_1016316-bfb6584d9d63950e8106c6820efccdaf0b7738a5
 $name="client"
 
 i @scripts/multi-node/quark-c1000-zephyr/quark_c1000.resc

@@ -6,7 +6,7 @@ Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart0
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 
 *** Keywords ***
 Create Machine
@@ -18,7 +18,7 @@ Create Machine
 
     Execute Command             machine PyDevFromFile @scripts/pydev/rolling-bit.py 0x400D2004 0x4 True "sysctrl"
 
-    Execute Command             sysbus LoadBinary @http://antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
+    Execute Command             sysbus LoadBinary @https://dl.antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
     Execute Command             sysbus LoadELF ${elf}
     Execute Command             sysbus.cpu VectorTableOffset `sysbus GetSymbolAddress "vectors"`
 

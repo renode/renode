@@ -6,7 +6,7 @@ Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart0
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 
 *** Keywords ***
 Create Machine
@@ -28,7 +28,7 @@ Create Machine
     Execute Command             sysbus WriteDoubleWord 0x00280040 0x12
     Execute Command             sysbus WriteDoubleWord 0x00280044 0x00
 
-    Execute Command             sysbus LoadBinary @http://antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
+    Execute Command             sysbus LoadBinary @https://dl.antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
     Execute Command             sysbus LoadELF ${elf}
     Execute Command             cpu VectorTableOffset `sysbus GetSymbolAddress "vectors"`
 
@@ -40,21 +40,21 @@ Should Talk Over Wireless Network
     Execute Command             emulation CreateWirelessMedium "wireless"
     Execute Command             wireless SetRangeWirelessFunction 11
 
-    Create Machine              @http://antmicro.com/projects/renode/udp-server.elf-s_173732-a2aefb896d521a8fdc2a052cac1933c68cc39bf5       "server"      1
+    Create Machine              @https://dl.antmicro.com/projects/renode/udp-server.elf-s_173732-a2aefb896d521a8fdc2a052cac1933c68cc39bf5       "server"      1
     Execute Command             wireless SetPosition radio 0 0 0
     ${server-tester}=           Create Terminal Tester      ${UART}     machine=server
     Execute Command             mach clear
-    
-    Create Machine              @http://antmicro.com/projects/renode/udp-client.elf-s_173840-9eed7fe31993d055b98410b886044e8205a95644       "client-1"    2
+
+    Create Machine              @https://dl.antmicro.com/projects/renode/udp-client.elf-s_173840-9eed7fe31993d055b98410b886044e8205a95644       "client-1"    2
     Execute Command             wireless SetPosition radio 10 0 0
     ${client1-tester}=          Create Terminal Tester      ${UART}     machine=client-1
     Execute Command             mach clear
 
-    Create Machine              @http://antmicro.com/projects/renode/udp-client.elf-s_173840-9eed7fe31993d055b98410b886044e8205a95644       "client-2"    3
+    Create Machine              @https://dl.antmicro.com/projects/renode/udp-client.elf-s_173840-9eed7fe31993d055b98410b886044e8205a95644       "client-2"    3
     Execute Command             wireless SetPosition radio 0 10 0
     ${client2-tester}=          Create Terminal Tester      ${UART}     machine=client-2
     Execute Command             mach clear
-    
+
 
     Start Emulation
 

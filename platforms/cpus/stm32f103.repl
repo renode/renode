@@ -64,5 +64,5 @@ gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/STM32F103.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F103.svd.gz
         Tag <0x40021000, 0x40021003> "RCC_CR" 0x0A020083

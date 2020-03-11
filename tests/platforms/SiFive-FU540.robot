@@ -11,7 +11,7 @@ ${UART}                       sysbus.uart0
 *** Keywords ***
 Prepare Machine
     # we use special FDT that contains spi sensors
-    Execute Command           \$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree-tests.dtb-s_8718-ba79c50f59ec31c6317ba31d1eeebee2b4fb3d89
+    Execute Command           \$fdt?=@https://dl.antmicro.com/projects/renode/hifive-unleashed--devicetree-tests.dtb-s_8718-ba79c50f59ec31c6317ba31d1eeebee2b4fb3d89
     Execute Script            ${SCRIPT}
 
     # attach SPI sensor
@@ -136,7 +136,7 @@ Should Ping Linux
     Execute Command           connector Connect ethernet switch
     ${u2}=                    Create Terminal Tester    ${UART}     machine=unleashed-2
     Execute Command           mach clear
-    
+
     Start Emulation
 
     Wait For Prompt On Uart   buildroot login                    timeout=480    testerId=${u1}

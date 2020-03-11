@@ -7,7 +7,7 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
 
-$bin?=@http://antmicro.com/projects/renode/zephyr-fe310-shell.elf-s_323068-cf87169150ecdb30ad5a14c87ae209c53dd3eca2
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr-fe310-shell.elf-s_323068-cf87169150ecdb30ad5a14c87ae209c53dd3eca2
 
 showAnalyzer uart0
 sysbus LoadELF $bin

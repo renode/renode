@@ -70,7 +70,7 @@ Additional prerequisites (for Robot framework testing)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 To write and run test cases, Renode integrates with the Robot testing framework.
-This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` on Linux).
+This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` on Linux).
 
 Once you have Python 2.7 and ``pip``, install some additional modules::
 
@@ -79,7 +79,7 @@ Once you have Python 2.7 and ``pip``, install some additional modules::
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
 
-For information on building Renode from source see `the documentation <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
+For information on building Renode from source see `the documentation <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
 
 Running Renode
 --------------
@@ -131,12 +131,12 @@ To compile and use a custom version of your choice you can run::
    ./build.sh -p
    sudo apt install -y ./output/packages/renode*deb
 
-For more information and the underlying Dockerfile, visit the `repository on GitHub <http://github.com/renode/renode-docker>`_.
+For more information and the underlying Dockerfile, visit the `repository on GitHub <https://github.com/renode/renode-docker>`_.
 
 Documentation
 -------------
 
-Documentation is available on `Read the Docs <http://renode.readthedocs.io>`_.
+Documentation is available on `Read the Docs <https://renode.readthedocs.io>`_.
 
 License & contributions
 -----------------------
@@ -150,7 +150,7 @@ For details, see the `<CONTRIBUTING.rst>`_ file.
 Commercial support
 ------------------
 
-Commercial support for Renode is provided by `Antmicro <http://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
+Commercial support for Renode is provided by `Antmicro <https://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
 
 Antmicro created and maintains the Renode framework and related tooling, and is happy to provide services such as adding new platforms, integrations, plugins and tools.
 

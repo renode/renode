@@ -22,8 +22,8 @@ ${EXPECTED_PTP_TIME_SOURCE}                        \xa0
 
 ${SAM_GMAC_PTP_TIMER_SECONDS_REG}                  0x1D0
 
-${ZEPHYR_MASTER_ELF}                               https://antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-gm.elf-s_2087900-49bb30b12c6ca60206c923771cd9cb04c09d5f35
-${ZEPHYR_SLAVE_ELF}                                https://antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-nogm.elf-s_2085692-204437fef2ce19260e916a358b657d2691c9df28
+${ZEPHYR_MASTER_ELF}                               https://dl.antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-gm.elf-s_2087900-49bb30b12c6ca60206c923771cd9cb04c09d5f35
+${ZEPHYR_SLAVE_ELF}                                https://dl.antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-nogm.elf-s_2085692-204437fef2ce19260e916a358b657d2691c9df28
 
 *** Keywords ***
 

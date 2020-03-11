@@ -34,4 +34,4 @@ gpioInputs: GPIOPort.SiFive_GPIO @  sysbus 0x10012000
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/FE310.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/FE310.svd.gz

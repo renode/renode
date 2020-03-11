@@ -21,13 +21,13 @@ List Fomu in Linux
     # Create FOMU board
     Execute Command  mach create "fomu"
     Execute Command  machine LoadPlatformDescription @platforms/cpus/fomu.repl
-    Execute Command  sysbus LoadELF @https://antmicro.com/projects/renode/fomu--foboot.elf-s_112080-c31fe1f32fba7894338f3cf4bfb82ec2a8265683
+    Execute Command  sysbus LoadELF @https://dl.antmicro.com/projects/renode/fomu--foboot.elf-s_112080-c31fe1f32fba7894338f3cf4bfb82ec2a8265683
     Execute Command  connector Connect valenty usb_connector
 
     # Create Linux board
     Execute Command  mach clear
-    Execute Command  set fdt @https://antmicro.com/projects/renode/hifive_unleashed_usb--devicetree_with_pse_usb.dtb-s_8894-5e4fb8fcdadcd8e35c841a430a83bf66df192c69
-    Execute Command  set bin @https://antmicro.com/projects/renode/hifive_unleashed_usb--bbl.elf-s_17285160-88e89cf2bb6dc92d176cfffcabb06b0d8b28c1cc
+    Execute Command  set fdt @https://dl.antmicro.com/projects/renode/hifive_unleashed_usb--devicetree_with_pse_usb.dtb-s_8894-5e4fb8fcdadcd8e35c841a430a83bf66df192c69
+    Execute Command  set bin @https://dl.antmicro.com/projects/renode/hifive_unleashed_usb--bbl.elf-s_17285160-88e89cf2bb6dc92d176cfffcabb06b0d8b28c1cc
     Execute Command  include @scripts/single-node/hifive_unleashed.resc
     Execute Command  machine LoadPlatformDescriptionFromString 'usb: USB.PSE_USB @ sysbus 0x30020000 { MainIRQ -> plic@0x20 }'
 

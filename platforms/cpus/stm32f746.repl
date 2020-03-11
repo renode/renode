@@ -107,6 +107,6 @@ syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x40013800
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
         Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 

@@ -9,9 +9,9 @@ machine LoadPlatformDescription @platforms/boards/zedboard.repl
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
-$bin?=@http://antmicro.com/projects/renode/zedboard-console--vmlinux-zedboard--f85b95c95b7c8c2e34db859d255d9632fd15a8c9
-$rootfs?=@http://antmicro.com/projects/renode/zedboard-console--ramdisk8M.image-s_3699347-af6ba178f389fff0ecba89170124abf99f58f904
-$dtb?=@http://antmicro.com/projects/renode/zedboard-console--devicetree-zedboard.dtb--7f202b8521d5c0e1b2120e07e677591b8917c788
+$bin?=@https://dl.antmicro.com/projects/renode/zedboard-console--vmlinux-zedboard--f85b95c95b7c8c2e34db859d255d9632fd15a8c9
+$rootfs?=@https://dl.antmicro.com/projects/renode/zedboard-console--ramdisk8M.image-s_3699347-af6ba178f389fff0ecba89170124abf99f58f904
+$dtb?=@https://dl.antmicro.com/projects/renode/zedboard-console--devicetree-zedboard.dtb--7f202b8521d5c0e1b2120e07e677591b8917c788
 ### create externals ###
 
 showAnalyzer sysbus.uart1

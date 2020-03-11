@@ -7,7 +7,7 @@ mach create $name
 
 sysbus Endianess BigEndian
 
-$bin?=@http://antmicro.com/projects/renode/redboot.elf-s_881357-5e10ad9d866f42a5d7e80ba0555ed0be2adfd591
+$bin?=@https://dl.antmicro.com/projects/renode/redboot.elf-s_881357-5e10ad9d866f42a5d7e80ba0555ed0be2adfd591
 
 machine LoadPlatformDescription @platforms/cpus/mpc5567.repl
 

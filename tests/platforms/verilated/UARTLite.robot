@@ -5,7 +5,7 @@ Test Setup                    Reset Emulation
 Resource                      ${CURDIR}/../../../src/Renode/RobotFrameworkEngine/renode-keywords.robot
 
 *** Variables ***
-${URI}                              @http://antmicro.com/projects/renode
+${URI}                              @https://dl.antmicro.com/projects/renode
 ${LOCAL_FILENAME}                   uartlite
 ${UART}                             sysbus.uart
 ${UARTLITE_SCRIPT}                  scripts/single-node/riscv_verilated_uartlite.resc

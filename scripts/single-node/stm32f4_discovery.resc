@@ -8,7 +8,7 @@ machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
 
 cpu PerformanceInMips 125
 
-$bin?=@http://antmicro.com/projects/renode/stm32f4discovery.elf-s_445441-827a0dedd3790f4559d7518320006613768b5e72
+$bin?=@https://dl.antmicro.com/projects/renode/stm32f4discovery.elf-s_445441-827a0dedd3790f4559d7518320006613768b5e72
 
 showAnalyzer sysbus.uart4
 

@@ -6,7 +6,7 @@ Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart0
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 
 *** Keywords ***
 Create Machine

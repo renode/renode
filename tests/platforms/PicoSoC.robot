@@ -7,7 +7,7 @@ Resource                      ${RENODEKEYWORDS}
 *** Variables ***
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uart
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 ${SCRIPT}                     ${CURDIR}/../../scripts/single-node/picosoc.resc
 
 *** Test Cases ***

@@ -11,7 +11,7 @@ Create Murax
     Execute Command            mach create
     Execute Command            machine LoadPlatformDescription @platforms/cpus/murax_vexriscv.repl
 
-    Execute Command            sysbus LoadELF @http://antmicro.com/projects/renode/murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
+    Execute Command            sysbus LoadELF @https://dl.antmicro.com/projects/renode/murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
     Execute Command            sysbus.cpu MTVEC 0x80000020
 
     # this is a hack to allow handling interrupts at all; this should be fixed after #13326

@@ -110,7 +110,7 @@ Resource               ${RENODEKEYWORDS}
 Library                ${CURDIR}/../gdb/gdb_library.py
 
 *** Variables ***
-${URI}                 @http://antmicro.com/projects/renode
+${URI}                 @https://dl.antmicro.com/projects/renode
 ${SIMPLE_BIN}          arm-itte-block-test-s_66176-b7b0c6bd39ebdbaa645794b1c821b8a15b06ac39
 ${GDB_REMOTE_PORT}     3333
 *** Keywords ***

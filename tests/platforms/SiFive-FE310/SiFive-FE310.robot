@@ -7,7 +7,7 @@ Resource                      ${RENODEKEYWORDS}
 *** Variables ***
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uart0
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 ${SCRIPT}                     ${CURDIR}/../../../scripts/single-node/sifive_fe310.resc
 
 *** Test Cases ***

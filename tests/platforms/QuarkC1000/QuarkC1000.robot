@@ -8,7 +8,7 @@ Library                       quark_helper.py
 *** Variables ***
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uartB
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 ${SCRIPT}                     ${CURDIR}/../../../scripts/single-node/quark_c1000.resc
 
 *** Test Cases ***
@@ -127,7 +127,7 @@ Should Talk Over Network Using Ethernet
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
 
     \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}  
+    \    RepeatKeyword  ${r}
     \    ...  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
     \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
@@ -138,7 +138,7 @@ Should Talk Over Network Using Ethernet
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
 
     \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}  
+    \    RepeatKeyword  ${r}
     \    ...  Wait For Next Line On Uart  testerId=${mach1_tester}
     \
     \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
