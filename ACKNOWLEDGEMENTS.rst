@@ -11,4 +11,4 @@ Many thanks to companies and organizations who supported the development of Reno
 * RISE SICS (https://www.sics.se) for partially sponsoring CC2538 support
 * Manetos (https://www.manetos.com) for partially sponsoring EFR32 support
 * Microsemi (https://www.microsemi.com) for partially sponsoring Windows support and RISC-V support, along with Mi-V and PolarFire SoC platforms
-* QuickLogic (https://https://www.quicklogic.com/) for sponsoring EOS S3 support
+* QuickLogic (https://www.quicklogic.com/) for sponsoring EOS S3 support
