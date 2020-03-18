@@ -28,3 +28,6 @@
 [submodule "lib/options-parser"]
 	path = lib/options-parser
 	url = https://github.com/antmicro/options-parser
+[submodule "lib/CxxDemangler"]
+	path = lib/CxxDemangler
+	url = https://github.com/antmicro/CxxDemangler
