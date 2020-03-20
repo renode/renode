@@ -13,6 +13,7 @@ CLEAN=false
 PACKAGES=false
 NIGHTLY=false
 PORTABLE=false
+HEADLESS=false
 PARAMS=()
 CUSTOM_PROP=
 
@@ -61,7 +62,7 @@ do
     -)
       case $OPTARG in
         "no-gui")
-          PARAMS+=(/p:GUI_DISABLED=true)
+          HEADLESS=true
           ;;
         *)
           print_help
@@ -101,12 +102,18 @@ fi
 
 "${ROOT_PATH}"/tools/building/fetch_libraries.sh
 
-if $ON_WINDOWS
+if $HEADLESS
 then
-    TARGET="`get_path \"$PWD/Renode-Windows.sln\"`"
+    BUILD_TARGET=Headless
+    PARAMS+=(/p:GUI_DISABLED=true)
+elif $ON_WINDOWS
+then
+    BUILD_TARGET=Windows
 else
-    TARGET="`get_path \"$PWD/Renode.sln\"`"
+    BUILD_TARGET=Mono
 fi
+
+TARGET="`get_path \"$PWD/Renode.sln\"`"
 
 # Update references to Xwt
 TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
@@ -174,7 +181,10 @@ then
     PARAMS+=(/t:Clean)
     for conf in Debug Release
     do
-        $CS_COMPILER "${PARAMS[@]}" /p:Configuration=$conf "$TARGET"
+        for build_target in Windows Mono Headless
+        do
+            $CS_COMPILER "${PARAMS[@]}" /p:Configuration=${conf}${build_target} "$TARGET"
+        done
         rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
     exit 0
@@ -185,7 +195,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:Configuration=$CONFIGURATION /p:GenerateFullPaths=true)
+PARAMS+=(/p:Configuration=${CONFIGURATION}${BUILD_TARGET} /p:GenerateFullPaths=true)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"

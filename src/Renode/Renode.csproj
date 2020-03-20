@@ -37,7 +37,7 @@
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition= " $(GUI_DISABLED) == 'true' ">
+  <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -208,7 +208,7 @@
       <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
       <Name>Peripherals</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin.csproj">
+    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin.csproj" Condition=" $(GUI_DISABLED) != 'true' ">
       <Project>{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0}</Project>
       <Name>AdvancedLoggerViewerPlugin</Name>
     </ProjectReference>
