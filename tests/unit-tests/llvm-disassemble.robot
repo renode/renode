@@ -1,7 +1,7 @@
 *** Settings ***
 Suite Setup                   Setup
 Suite Teardown                Teardown
-Test Teardown                 Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Keywords ***

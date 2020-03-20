@@ -192,7 +192,7 @@ IT_cond:
 *** Settings ***
 Suite Setup            Setup
 Suite Teardown         Teardown
-Test Teardown          Reset Emulation
+Test Teardown          Test Teardown
 Resource               ${RENODEKEYWORDS}
 Library                ${CURDIR}/../gdb/gdb_library.py
 

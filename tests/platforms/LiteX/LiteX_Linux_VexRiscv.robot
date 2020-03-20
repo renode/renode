@@ -3,6 +3,7 @@ Library                       Process
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 

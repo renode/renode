@@ -6,17 +6,18 @@ Library         OperatingSystem
 Library         helper.py
 
 *** Variables ***
-${SERVER_REMOTE_DEBUG}    False
-${SERVER_REMOTE_PORT}     12345
-${SERVER_REMOTE_SUSPEND}  y
-${SKIP_RUNNING_SERVER}    False
-${CONFIGURATION}          Release
-${PORT_NUMBER}            9999
-${DIRECTORY}              ${CURDIR}/../../../output/bin/${CONFIGURATION}
-${BINARY_NAME}            Renode.exe
-${HOTSPOT_ACTION}         None
-${DISABLE_XWT}            False
-${DEFAULT_UART_TIMEOUT}   120
+${SERVER_REMOTE_DEBUG}      False
+${SERVER_REMOTE_PORT}       12345
+${SERVER_REMOTE_SUSPEND}    y
+${SKIP_RUNNING_SERVER}      False
+${CONFIGURATION}            Release
+${PORT_NUMBER}              9999
+${DIRECTORY}                ${CURDIR}/../../../output/bin/${CONFIGURATION}
+${BINARY_NAME}              Renode.exe
+${HOTSPOT_ACTION}           None
+${DISABLE_XWT}              False
+${DEFAULT_UART_TIMEOUT}     120
+${CREATE_SNAPSHOT_ON_FAIL}  True
 
 *** Keywords ***
 Setup
@@ -72,6 +73,23 @@ Teardown
 
     Run Keyword Unless  ${SKIP_RUNNING_SERVER}
     ...   Wait For Process
+
+Create Snapshot Of Failed Test
+    ${test_name}=      Set Variable  ${SUITE NAME}-${TEST NAME}.fail.save
+    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+
+    ${snapshots_dir}=  Set Variable  ${EXECDIR}/snapshots
+    Create Directory   ${snapshots_dir}
+
+    ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}"
+    Execute Command  Save ${snapshot_path}
+    Log To Console   Failed emulation's state saved to ${snapshot_path}
+
+Test Teardown
+    Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
+    ...   Run Keyword If Test Failed
+          ...   Create Snapshot Of Failed Test
+    Reset Emulation
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}

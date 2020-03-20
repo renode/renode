@@ -2,6 +2,7 @@
 Suite Setup                                        Setup
 Suite Teardown                                     Teardown
 Test Setup                                         GPTP Test Setup
+Test Teardown                                      Test Teardown
 Resource                                           ${RENODEKEYWORDS}
 
 *** Variables ***
