@@ -16,6 +16,20 @@ PORTABLE=false
 PARAMS=()
 CUSTOM_PROP=
 
+function print_help() {
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui]"
+  echo ""
+  echo "-c           clean instead of building"
+  echo "-d           build Debug configuration"
+  echo "-v           verbose output"
+  echo "-p           create packages after building"
+  echo "-n           create nightly packages after building"
+  echo "-t           create a portable package (experimental, Linux only)"
+  echo "-s           update submodules"
+  echo "-b           custom build properties file"
+  echo "--no-gui     build with GUI disabled"
+}
+
 while getopts "cdvpnstb:-:" opt
 do
   case $opt in
@@ -49,20 +63,14 @@ do
         "no-gui")
           PARAMS+=(/p:GUI_DISABLED=true)
           ;;
+        *)
+          print_help
+          exit 1
+          ;;
       esac
       ;;
     \?)
-      echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui]"
-      echo ""
-      echo "-c           clean instead of building"
-      echo "-d           build Debug configuration"
-      echo "-v           verbose output"
-      echo "-p           create packages after building"
-      echo "-n           create nightly packages after building"
-      echo "-t           create a portable package (experimental, Linux only)"
-      echo "-s           update submodules"
-      echo "-b           custom build properties file"
-      echo "--no-gui     build with GUI disabled"
+      print_help
       exit 1
       ;;
   esac
