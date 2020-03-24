@@ -138,7 +138,7 @@ gcc \
     -Wl,-Bstatic  \
     -lmono-2.0  \
     -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //"`  \
-    -static-libgcc -static-libstdc++ \
+    -static-libgcc \
     -o $DESTINATION/renode_bundled
 
 # Copy dependencies
