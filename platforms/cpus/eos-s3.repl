@@ -39,6 +39,11 @@ adc: Analog.EOSS3_ADC @ sysbus 0x40005A00
 spi: SPI.EOSS3_SPIMaster @ sysbus 0x40007000
     transmitDepth: 128
     receiveDepth: 128
+    -> dma_spi@0
+
+dma_spi: DMA.EOSS3_SPI_DMA @ sysbus 0x40007400
+    -> intrCtrl@17
+    spi: spi
 
 sysbus:
     init:
@@ -60,7 +65,6 @@ sysbus:
         Tag <0x40005000, 0x400053FF> "Misc"
         Tag <0x40005A00, 0x40005BFF> "JTM"
         Tag <0x40006000, 0x40006FFF> "A1_Regs"
-        Tag <0x40007400, 0x400077FF> "DMA_SPI_MS"
         Tag <0x40008000, 0x400083FF> "eFuse"
         Tag <0x4000B000, 0x4000BFFF> "I2S_Slave"
         Tag <0x4000C000, 0x4000CFFF> "SDMA"
