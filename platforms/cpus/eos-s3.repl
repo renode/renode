@@ -39,11 +39,15 @@ adc: Analog.EOSS3_ADC @ sysbus 0x40005A00
 spi: SPI.EOSS3_SPIMaster @ sysbus 0x40007000
     transmitDepth: 128
     receiveDepth: 128
-    -> dma_spi@0
+    -> dmaSpi@0
 
-dma_spi: DMA.EOSS3_SPI_DMA @ sysbus 0x40007400
+dmaSpi: DMA.EOSS3_SPI_DMA @ sysbus 0x40007400
     -> intrCtrl@17
     spi: spi
+
+packetFifo: Miscellaneous.EOSS3_PacketFIFO @sysbus 0x40002000
+
+systemDma: DMA.EOSS3_SystemDMA @ sysbus 0x4000C000
 
 sysbus:
     init:
