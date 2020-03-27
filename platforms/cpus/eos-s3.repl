@@ -48,7 +48,14 @@ dmaSpi: DMA.EOSS3_SPI_DMA @ sysbus 0x40007400
 packetFifo: Miscellaneous.EOSS3_PacketFIFO @ sysbus 0x40002000
     -> intrCtrl@13
 
-systemDma: DMA.EOSS3_SystemDMA @ sysbus 0x4000C000
+systemDma: DMA.UDMA @ sysbus 0x4000C000
+    numberOfChannels: 16
+
+systemDmaBridge: DMA.EOSS3_SystemDMABridge @ sysbus 0x4000D000
+    systemDma: systemDma
+
+systemDmaSram: Memory.MappedMemory @ sysbus 0x4000F000
+    size: 0x1000
 
 ffe: Miscellaneous.EOSS3_FlexibleFusionEngine @ sysbus 0x4004A000
 
