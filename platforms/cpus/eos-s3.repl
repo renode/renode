@@ -45,9 +45,17 @@ dmaSpi: DMA.EOSS3_SPI_DMA @ sysbus 0x40007400
     -> intrCtrl@17
     spi: spi
 
-packetFifo: Miscellaneous.EOSS3_PacketFIFO @sysbus 0x40002000
+packetFifo: Miscellaneous.EOSS3_PacketFIFO @ sysbus 0x40002000
+    -> intrCtrl@13
 
 systemDma: DMA.EOSS3_SystemDMA @ sysbus 0x4000C000
+
+ffe: Miscellaneous.EOSS3_FlexibleFusionEngine @ sysbus 0x4004A000
+
+i2cMaster0: I2C.OpenCoresI2C @ ffe 0
+
+i2cMaster1: I2C.OpenCoresI2C @ ffe 1
+
 
 sysbus:
     init:
