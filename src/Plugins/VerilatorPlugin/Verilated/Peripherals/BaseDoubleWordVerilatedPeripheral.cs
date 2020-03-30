@@ -22,12 +22,13 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable
+    public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable, IHasOwnLife
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
         {
             this.machine = machine;
+            pauseMRES = new ManualResetEventSlim(initialState: true);
             mainSocket = new CommunicationChannel(timeout);
             asyncEventsSocket = new CommunicationChannel(timeout);
             receiveThread = new Thread(ReceiveLoop)
@@ -70,15 +71,16 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void ReceiveLoop()
         {
-            asyncEventsSocket.AcceptConnection();
-            isConnected = true;
-
             while(isConnected)
             {
                 if(asyncEventsSocket.TryReceive(out var message))
                 {
+                    pauseMRES.Wait();
                     HandleReceived(message);
                 }
+
+                // Pause in ReceiveLoop() has to be handled manually
+                pauseMRES.Wait();
             }
         }
 
@@ -97,12 +99,23 @@ namespace Antmicro.Renode.Peripherals.Verilated
             isConnected = false;
             if(receiveThread.IsAlive)
             {
-                receiveThread.Join();
+                receiveThread.Abort();
             }
+            pauseMRES.Dispose();
             if(verilatedProcess != null)
             {
                 verilatedProcess.Close();
             }
+        }
+
+        public void Pause()
+        {
+            pauseMRES.Reset();
+        }
+
+        public void Resume()
+        {
+            pauseMRES.Set();
         }
 
         public string SimulationFilePathLinux
@@ -170,8 +183,21 @@ namespace Antmicro.Renode.Peripherals.Verilated
 #endif
                 InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
                 mainSocket.AcceptConnection();
-                receiveThread.Start();
+                asyncEventsSocket.AcceptConnection();
+                isConnected = true;
                 Handshake();
+            }
+        }
+
+        public void Start()
+        {
+            if(simulationFilePath == null)
+            {
+                throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
+            }
+            else
+            {
+                receiveThread.Start();
             }
         }
 
@@ -293,6 +319,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private readonly CommunicationChannel asyncEventsSocket;
         private readonly Thread receiveThread;
         private readonly Machine machine;
+        private readonly ManualResetEventSlim pauseMRES;
 
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
