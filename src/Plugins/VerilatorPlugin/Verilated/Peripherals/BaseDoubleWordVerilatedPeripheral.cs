@@ -29,8 +29,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             this.machine = machine;
             pauseMRES = new ManualResetEventSlim(initialState: true);
-            mainSocket = new CommunicationChannel(timeout);
-            asyncEventsSocket = new CommunicationChannel(timeout);
+            mainSocket = new CommunicationChannel(this, timeout);
+            asyncEventsSocket = new CommunicationChannel(this, timeout);
             receiveThread = new Thread(ReceiveLoop)
             {
                 IsBackground = true,
@@ -48,10 +48,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public uint ReadDoubleWord(long offset)
         {
-            if(!isConnectionValid)
-            {
-                AbortAndLogError("Connection error!");
-            }
             Send(ActionType.ReadFromBus, (ulong)offset, 0);
             var result = Receive();
             CheckValidation(result);
@@ -61,17 +57,13 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void WriteDoubleWord(long offset, uint value)
         {
-            if(!isConnectionValid)
-            {
-                AbortAndLogError("Connection error!");
-            }
             Send(ActionType.WriteToBus, (ulong)offset, value);
             CheckValidation(Receive());
         }
 
         public void ReceiveLoop()
         {
-            while(isConnected)
+            while(asyncEventsSocket.Connected)
             {
                 if(asyncEventsSocket.TryReceive(out var message))
                 {
@@ -92,11 +84,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void Dispose()
         {
-            if(isConnected)
+            if(mainSocket.Connected)
             {
                 mainSocket.TrySend(new ProtocolMessage(ActionType.Disconnect, 0, 0));
             }
-            isConnected = false;
             if(receiveThread.IsAlive)
             {
                 receiveThread.Abort();
@@ -174,18 +165,41 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 }
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
-                    throw new RecoverableException("Verilated peripheral already initialized, cannot change the file name");
+                    LogAndThrowRE("Verilated peripheral already connected, cannot change the file name!");
                 }
-                simulationFilePath = value;
-                this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
+
+                if(!String.IsNullOrWhiteSpace(value))
+                {
+                    this.Log(LogLevel.Debug,
+                        "Trying to run and connect to the verilated peripheral '{0}' through ports {1} and {2}...",
+                        value, mainSocket.ListenerPort, asyncEventsSocket.ListenerPort);
 #if !PLATFORM_WINDOWS
-                Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
+                    Mono.Unix.Native.Syscall.chmod(value, FilePermissions.S_IRWXU); //setting permissions to 0x700
 #endif
-                InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
-                mainSocket.AcceptConnection();
-                asyncEventsSocket.AcceptConnection();
-                isConnected = true;
-                Handshake();
+                    InitVerilatedProcess(value, mainSocket.ListenerPort, asyncEventsSocket.ListenerPort);
+
+                    if(!mainSocket.AcceptConnection(DefaultTimeout)
+                        || !asyncEventsSocket.AcceptConnection(DefaultTimeout)
+                        || !TryHandshake())
+                    {
+                        mainSocket.ResetConnections();
+                        asyncEventsSocket.ResetConnections();
+                        KillVerilatedProcess();
+
+                        LogAndThrowRE($"Connection to the verilated peripheral ({value}) failed!");
+                    }
+                    else
+                    {
+                        // If connected succesfully, listening sockets can be closed
+                        mainSocket.CloseListener();
+                        asyncEventsSocket.CloseListener();
+
+                        timer.Enabled = true;
+
+                        this.Log(LogLevel.Debug, "Connected to the verilated peripheral!");
+                        simulationFilePath = value;
+                    }
+                }
             }
         }
 
@@ -272,24 +286,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
                 verilatedProcess.Start();
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                throw new ConstructionException(ex.Message);
+                verilatedProcess = null;
+                LogAndThrowRE($"Error starting verilated peripheral!");
             }
-        }
-
-        private void Handshake()
-        {
-            mainSocket.TrySend(new ProtocolMessage(ActionType.Handshake, 0, 0));
-            if(!mainSocket.TryReceive(out var result))
-            {
-                this.Log(LogLevel.Warning, "Failed to connect to the verilated peripheral");
-                isConnectionValid = false;
-                return;
-            }
-            isConnectionValid = result.ActionId == ActionType.Handshake;
-            timer.Enabled = isConnectionValid;
-            this.Log(LogLevel.Debug, "Connected to the verilated peripheral. Connection is {0}valid.", isConnectionValid ? String.Empty : "not ");
         }
 
         private ProtocolMessage Receive()
@@ -304,15 +305,38 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private void AbortAndLogError(string message)
         {
-            isConnected = false;
+            receiveThread.Abort();
             this.Log(LogLevel.Error, message);
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
 
+        private void KillVerilatedProcess()
+        {
+            try
+            {
+                verilatedProcess?.Kill();
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        private void LogAndThrowRE(string info)
+        {
+            this.Log(LogLevel.Error, info);
+            throw new RecoverableException(info);
+        }
+
+        private bool TryHandshake()
+        {
+            return mainSocket.TrySend(new ProtocolMessage(ActionType.Handshake, 0, 0))
+                   && mainSocket.TryReceive(out var result)
+                   && result.ActionId == ActionType.Handshake;
+        }
+
         private Process verilatedProcess;
-        private bool isConnected;
-        private bool isConnectionValid;
         private string simulationFilePath;
         private readonly LimitTimer timer;
         private readonly CommunicationChannel mainSocket;

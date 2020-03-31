@@ -9,24 +9,50 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
+using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 {
     public class CommunicationChannel : IDisposable
     {
-        public CommunicationChannel(int timeoutInMiliseconds)
+        public CommunicationChannel(IEmulationElement parentElement, int timeoutInMilliseconds)
         {
-            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listener.Bind(new IPEndPoint(IPAddress.Parse(Address), 0));
-            Port = ((IPEndPoint)listener.LocalEndPoint).Port;
-            listener.Listen(MaxPendingConnections);
-            timeout = timeoutInMiliseconds;
+            logElement = parentElement;
+            timeout = timeoutInMilliseconds;
+
+            ListenerPort = CreateListenerAndStartListening();
         }
 
-        public void AcceptConnection()
+        public bool AcceptConnection(int timeoutInMilliseconds)
         {
-            socket = listener.Accept();
-            socket.SendTimeout = timeout;
+            // Check if there's any connection waiting to be accepted (with timeout in MICROseconds)
+            var acceptAttempt = listener.Poll(timeoutInMilliseconds * 1000, SelectMode.SelectRead);
+            if(acceptAttempt)
+            {
+                socket = listener.Accept();
+                socket.SendTimeout = timeout;
+            }
+            return acceptAttempt;
+        }
+
+        public void CloseListener()
+        {
+            listener.Close();
+            listener = null;
+        }
+
+        public void ResetConnections()
+        {
+            socket?.Close();
+
+            if(listener.Poll(0, SelectMode.SelectRead))
+            {
+                logElement.DebugLog($"Clients are pending on the listening {ListenerPort} port. Connection queue will be reset.");
+
+                // There's no other way to reset listener's connection queue
+                CloseListener();
+                CreateListenerAndStartListening(ListenerPort);
+            }
         }
 
         public bool TrySend(ProtocolMessage message)
@@ -60,10 +86,22 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             socket.Dispose();
         }
 
-        public int Port { get; private set; }
+        public bool Connected => socket.Connected;
+        public readonly int ListenerPort;
 
-        protected Socket socket;
-        private readonly Socket listener;
+        private int CreateListenerAndStartListening(int port = 0)
+        {
+            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listener.Bind(new IPEndPoint(IPAddress.Parse(Address), port));
+
+            listener.Listen(MaxPendingConnections);
+            return (listener.LocalEndPoint as IPEndPoint).Port;
+        }
+
+        private Socket listener;
+        private Socket socket;
+
+        private readonly IEmulationElement logElement;
         private readonly int timeout;
 
         private const string Address = "127.0.0.1";
