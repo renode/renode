@@ -63,12 +63,15 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void ReceiveLoop()
         {
-            while(asyncEventsSocket.Connected)
+            while(!disposeInitiated && asyncEventsSocket.Connected)
             {
                 if(asyncEventsSocket.ReceiveMessage(out var message))
                 {
                     pauseMRES.Wait();
-                    HandleReceived(message);
+                    if(!disposeInitiated)
+                    {
+                        HandleReceived(message);
+                    }
                 }
                 else
                 {
@@ -88,22 +91,50 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void Dispose()
         {
+            disposeInitiated = true;
             asyncEventsSocket.CancelCommunication();
 
-            if(mainSocket.Connected)
-            {
-                mainSocket.SendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
-            }
-            mainSocket.CancelCommunication();
             if(receiveThread.IsAlive)
             {
-                receiveThread.Abort();
+                if(!receiveThread.Join(500))
+                {
+                    this.NoisyLog("ReceiveLoop didn't join, will be aborted...");
+                    receiveThread.Abort();
+                }
             }
             pauseMRES.Dispose();
+
             if(verilatedProcess != null)
             {
-                verilatedProcess.Close();
+                // Ask verilatedProcess to close, kill if it doesn't
+                if(!verilatedProcess.HasExited)
+                {
+                    this.DebugLog($"Verilated peripheral '{simulationFilePath}' is still working...");
+                    var exited = false;
+
+                    if(mainSocket.Connected)
+                    {
+                        this.DebugLog("Trying to close it gracefully by sending 'Disconnect' message...");
+                        mainSocket.SendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                        mainSocket.CancelCommunication();
+                        exited = verilatedProcess.WaitForExit(500);
+                    }
+
+                    if(exited)
+                    {
+                        this.DebugLog("Verilated peripheral exited gracefully.");
+                    }
+                    else
+                    {
+                        KillVerilatedProcess();
+                        this.Log(LogLevel.Warning, "Verilated peripheral had to be killed.");
+                    }
+                }
+                verilatedProcess.Dispose();
             }
+
+            mainSocket.Dispose();
+            asyncEventsSocket.Dispose();
         }
 
         public void Pause()
@@ -292,12 +323,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     }
                 };
 
-                verilatedProcess.Exited += (sender, args) =>
-                {
-                    this.Log(LogLevel.Debug, "Disconnecting from '{0}'", simulationFilePath);
-                    isConnectionValid = false;
-                };
-
                 verilatedProcess.Start();
             }
             catch(Exception)
@@ -319,8 +344,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private void AbortAndLogError(string message)
         {
-            receiveThread.Abort();
+            if(disposeInitiated)
+            {
+                return;
+            }
             this.Log(LogLevel.Error, message);
+
+            receiveThread.Abort();
+            KillVerilatedProcess();
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
@@ -350,6 +381,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                    && result.ActionId == ActionType.Handshake;
         }
 
+        private bool disposeInitiated;
         private Process verilatedProcess;
         private string simulationFilePath;
         private readonly LimitTimer timer;

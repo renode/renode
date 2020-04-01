@@ -100,7 +100,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public void Dispose()
         {
-            socket.Dispose();
+            listener?.Close(timeout);
+            socket?.Close(timeout);
             disposalCTS.Dispose();
         }
 
