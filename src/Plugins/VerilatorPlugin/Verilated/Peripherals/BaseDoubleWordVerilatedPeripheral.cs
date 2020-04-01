@@ -30,7 +30,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             this.machine = machine;
             pauseMRES = new ManualResetEventSlim(initialState: true);
             mainSocket = new CommunicationChannel(this, timeout);
-            asyncEventsSocket = new CommunicationChannel(this, timeout);
+            asyncEventsSocket = new CommunicationChannel(this, Timeout.Infinite);
             receiveThread = new Thread(ReceiveLoop)
             {
                 IsBackground = true,
@@ -65,10 +65,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             while(asyncEventsSocket.Connected)
             {
-                if(asyncEventsSocket.TryReceive(out var message))
+                if(asyncEventsSocket.ReceiveMessage(out var message))
                 {
                     pauseMRES.Wait();
                     HandleReceived(message);
+                }
+                else
+                {
+                    AbortAndLogError("Connection error!");
                 }
 
                 // Pause in ReceiveLoop() has to be handled manually
@@ -84,10 +88,13 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void Dispose()
         {
+            asyncEventsSocket.CancelCommunication();
+
             if(mainSocket.Connected)
             {
-                mainSocket.TrySend(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                mainSocket.SendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
             }
+            mainSocket.CancelCommunication();
             if(receiveThread.IsAlive)
             {
                 receiveThread.Abort();
@@ -217,9 +224,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!mainSocket.TrySend(new ProtocolMessage(actionId, offset, value)))
+            if(!mainSocket.SendMessage(new ProtocolMessage(actionId, offset, value)))
             {
-                AbortAndLogError("Send timeout!");
+                AbortAndLogError("Send error!");
             }
         }
 
@@ -232,7 +239,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     break;
                 case ActionType.LogMessage:
                     // message.Address is used to transfer log length
-                    this.Log((LogLevel)(int)message.Data, "Verilated: '{0}'", asyncEventsSocket.ReceiveString((int)message.Address));
+                    if(asyncEventsSocket.ReceiveString(out var log, (int)message.Address))
+                    {
+                        this.Log((LogLevel)(int)message.Data, $"Verilated peripheral: {log}");
+                    }
+                    else
+                    {
+                        this.Log(LogLevel.Warning, "Failed to receive log message!");
+                    }
                     break;
                 case ActionType.Interrupt:
                     HandleInterrupt(message);
@@ -295,9 +309,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private ProtocolMessage Receive()
         {
-            if(!mainSocket.TryReceive(out var message))
+            if(!mainSocket.ReceiveMessage(out var message))
             {
-                AbortAndLogError("Receive timeout!");
+                AbortAndLogError("Receive error!");
             }
 
             return message;
@@ -331,8 +345,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private bool TryHandshake()
         {
-            return mainSocket.TrySend(new ProtocolMessage(ActionType.Handshake, 0, 0))
-                   && mainSocket.TryReceive(out var result)
+            return mainSocket.SendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0))
+                   && mainSocket.ReceiveMessage(out var result)
                    && result.ActionId == ActionType.Handshake;
         }
 
