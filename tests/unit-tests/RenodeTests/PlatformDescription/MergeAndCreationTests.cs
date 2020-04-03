@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -1022,6 +1022,28 @@ peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribut
             ProcessSource(source);
             Assert.IsTrue(machine.TryGetByName("sysbus.peripheral", out Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute mockPeripheral));
             Assert.AreEqual((MockEnumWithAttribute)2, mockPeripheral.MockEnumWithAttributeValue);
+        }
+
+        [Test]
+        public void ShouldFailOnAssignmentOfMachineTypeAttribute()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus <0, 1>
+    mach: empty
+    machine: empty
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
+        [Test]
+        public void ShouldNotFailOnAssignmentToAttributeWithMachineParameterNameThatIsNotMachine()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus <0, 1>
+    machine: empty
+";
+            Assert.DoesNotThrow(() => ProcessSource(source));
         }
 
         [TestFixtureSetUp]
