@@ -23,6 +23,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
     parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
     parser.add_argument("--css-file", dest="css_file", action="store", default=os.path.join(this_path, '../lib/resources/styles/robot.css'), help="Custom CSS style for the result files.")
+    parser.add_argument("--runner", dest="runner", action="store", default="mono" if platform.startswith("linux") or platform == "darwin" else "none", help=".NET runner")
 
 def verify_cli_arguments(options):
     if platform != "win32" and options.port == str(options.remote_server_port):
@@ -119,7 +120,7 @@ class RobotTestSuite(object):
         if not options.enable_xwt:
            args.append('--disable-xwt')
 
-        if platform.startswith("linux") or platform == "darwin":
+        if options.runner == 'mono':
             args.insert(0, 'mono')
             if options.port is not None:
                 if options.suspend:
