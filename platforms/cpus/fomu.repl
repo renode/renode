@@ -8,13 +8,13 @@ rom: Memory.MappedMemory @ {
         sysbus 0x00000000;
         sysbus 0x80000000 // shadow
     }
-    size: 0x00002000
+    size: 0x00004000
 
 sram: Memory.MappedMemory @ {
         sysbus 0x10000000;
         sysbus 0x90000000 // shadow
     }
-    size: 0x00020000
+    size: 0x00040000
 
 my_fake_memory: Memory.MappedMemory @ {
         sysbus 0xf0000000
