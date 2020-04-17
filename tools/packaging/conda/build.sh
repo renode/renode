@@ -75,8 +75,9 @@ do
     cp $file $PREFIX/opt/renode/licenses/$dirname-license
 done
 
-sed -i 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $PREFIX/opt/renode/tests/robot_tests_provider.py
-sed -i "s#os\.path\.join(this_path, '\.\./lib/resources/styles/robot\.css')#os.path.join(this_path,'robot.css')#g" $PREFIX/opt/renode/tests/robot_tests_provider.py
+sed -i.bak 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $PREFIX/opt/renode/tests/robot_tests_provider.py
+sed -i.bak "s#os\.path\.join(this_path, '\.\./lib/resources/styles/robot\.css')#os.path.join(this_path,'robot.css')#g" $PREFIX/opt/renode/tests/robot_tests_provider.py
+rm $PREFIX/opt/renode/tests/robot_tests_provider.py.bak
 
 mkdir -p $PREFIX/bin/
 
