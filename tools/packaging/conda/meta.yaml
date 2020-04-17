@@ -10,7 +10,7 @@ source:
 
 requirements:
     build:
-        - python
+        - python =2.7
         - git
         - automake [not win]
         - autoconf [not win]
@@ -21,7 +21,7 @@ requirements:
         - gtk2 [not win]
         - vc >=10 [win]
     run:
-        - python
+        - python =2.7
         - glib [not win]
         - mono [not win]
         - gtk2 [not win]
@@ -30,6 +30,11 @@ requirements:
         - pango [not win]
         - atk [not win]
         - fontconfig [not win]
+        - robotframework
+        - netifaces
+        - requests
+        - psutil
+        - pyyaml
 
 about:
     home: https://github.com/renode/renode
