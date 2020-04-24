@@ -123,6 +123,13 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        [RobotFrameworkKeyword]
+        public void WriteCharDelay(ulong delay, int? testerId = null)
+        {
+            var tester = GetTesterOrThrowException(testerId);
+            tester.WriteCharDelay = TimeSpan.FromMilliseconds(delay);
+        }
+
         private void OperationFail(TerminalTester tester)
         {
             throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
