@@ -15,28 +15,28 @@ build:
 
 requirements:
     build:
-        - python 2.7.* [not win]
-        - python [win]
-        - git
-        - automake [not win]
-        - autoconf [not win]
-        - libtool  [not win]
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
-        - mono [not win]
-        - gtk2 [not win]
-        - vc >=10 [win]
+        - git
+        - python 2.7.*   [not win]
+        - python         [win]
+        - automake       [not win]
+        - autoconf       [not win]
+        - libtool        [not win]
+        - mono           [not win]
+        - gtk2           [not win]
+        - vc >=10        [win]
     run:
-        - python 2.7.* [not win]
-        - python [win]
-        - glib [not win]
-        - mono [not win]
-        - gtk2 [not win]
-        - pcre [not win]
-        - cairo [not win]
-        - pango [not win]
-        - atk [not win]
-        - fontconfig [not win]
+        - python 2.7.*   [not win]
+        - python         [win]
+        - glib           [not win]
+        - mono           [not win]
+        - gtk2           [not win]
+        - pcre           [not win]
+        - cairo          [not win]
+        - pango          [not win]
+        - atk            [not win]
+        - fontconfig     [not win]
         - robotframework
         - netifaces
         - requests
