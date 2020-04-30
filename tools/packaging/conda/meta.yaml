@@ -10,7 +10,8 @@ source:
 
 requirements:
     build:
-        - python =2.7
+        - python 2.7.* [not win]
+        - python [win]
         - git
         - automake [not win]
         - autoconf [not win]
@@ -21,7 +22,8 @@ requirements:
         - gtk2 [not win]
         - vc >=10 [win]
     run:
-        - python =2.7
+        - python 2.7.* [not win]
+        - python [win]
         - glib [not win]
         - mono [not win]
         - gtk2 [not win]
