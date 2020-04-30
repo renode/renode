@@ -8,6 +8,11 @@ source:
     patches:
         - lower_mono_version.patch [not win]
 
+build:
+    missing_dso_whitelist:
+        # This library comes with .NET
+        - "$SYSROOT/System32/mscoree.dll" [win]
+
 requirements:
     build:
         - python 2.7.* [not win]
