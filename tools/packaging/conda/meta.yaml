@@ -38,6 +38,10 @@ requirements:
         - psutil
         - pyyaml
 
+test:
+    commands:
+        - renode --help
+
 about:
     home: https://github.com/renode/renode
     license: The MIT License (MIT)
