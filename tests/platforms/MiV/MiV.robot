@@ -7,7 +7,7 @@ Resource                      ${RENODEKEYWORDS}
 *** Variables ***
 ${UART}                       sysbus.uart
 ${URI}                        @https://dl.antmicro.com/projects/renode
-${LED_DELAY}                  20000
+${LED_DELAY}                  50000
 
 *** Keywords ***
 Create Machine

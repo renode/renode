@@ -9,6 +9,7 @@ ${URI}                              @https://dl.antmicro.com/projects/renode
 ${LOCAL_FILENAME}                   uartlite
 ${UART}                             sysbus.uart
 ${UARTLITE_SCRIPT}                  scripts/single-node/riscv_verilated_uartlite.resc
+${LOG_TIMEOUT}                      15000
 
 *** Test Cases ***
 Should Run UARTLite Binary
@@ -24,7 +25,7 @@ Should Detect Connection Error
     [Tags]                          skip_osx  skip_windows
 
     Execute Command                 $uart = ${URI}/verilator--verilated_connection_error_test-s_16352-11da4b9bcea8e859aeb4790d041edf973aadd735
-    Create Log Tester
+    Create Log Tester               ${LOG_TIMEOUT}
     Execute Script                  ${UARTLITE_SCRIPT}
     Start Emulation
     Wait For Log Entry              Connection error!
@@ -33,7 +34,7 @@ Should Detect Connection Timeout
     [Tags]                          skip_osx  skip_windows
 
     Execute Command                 $uart = ${URI}/verilator--verilated_connection_timeout-s_252704-2deb632c75dc1066ea423347c26b10151f92d88c
-    Create Log Tester
+    Create Log Tester               ${LOG_TIMEOUT}
     Execute Script                  ${UARTLITE_SCRIPT}
     Start Emulation
     Wait For Log Entry              Connection timeout!
