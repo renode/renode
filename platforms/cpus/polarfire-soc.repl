@@ -238,3 +238,27 @@ pseFlash: SPI.Micron_MT25Q @ qspi
 flash_mem: Memory.MappedMemory
     size: 0x00800000
 
+// There are 8 BootRom registers covering range from 0x20003120 to 0x2000313F,
+// but because of Renode's memory alignment limitations they are mapped as a single memory
+sysregScbBootRom: Memory.MappedMemory @ sysbus 0x20003000
+    size: 0x1000
+
+sysbus:
+    init:
+        Tag <0x200020B8, 0x200020BB> "SYSREG:MESH_SEED_CR" 0xFF
+
+        Tag <0x20007000, 0x20007FFF> "CFG_DDR_SGMII_PHY"
+        Tag <0x20007208, 0x2000720B> "IOC_REG1" 0xFF
+        Tag <0x20007814, 0x20007817> "TRAINING_STATUS" 0xFF
+        Tag <0x20007808, 0x2000780B> "LANE_SELECT" 0
+        Tag <0x2000781C, 0x2000781F> "GT_ERR_COMB" 0
+        Tag <0x20007834, 0x20007837> "DQ_DQS_ERR_DONE" 0x8
+        Tag <0x2000784C, 0x2000784F> "DQDQS_WINDOW" 0x8
+
+        Tag <0x20080000, 0x2009FFFF> "DDRCFG"
+        Tag <0x20084428, 0x2008442B> "CSR_APB_MT_DONE_ACK" 0x1
+        Tag <0x20090034, 0x20090037> "CSR_APB_STAT_DFI_INIT_COMPLETE" 0x1
+        Tag <0x20090038, 0x2009003B> "CSR_APB_STAT_DFI_TRAINING_COMPLETE" 0x1
+
+        Tag <0x3E001004, 0x3E001007> "PLL:PLL_CTRL" 0x2000000
+        Tag <0x3E040008, 0x3E04000B> "IOSCB_IO_CALIB_DDR:IOC_REG1" 0xFF
