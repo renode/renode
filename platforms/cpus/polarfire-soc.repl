@@ -3,30 +3,40 @@ e51: CPU.RiscV64 @ sysbus
     hartId: 0
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
+    init:
+        RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 1
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
+    init:
+        RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_2: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 2
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
+    init:
+        RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_3: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 3
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
+    init:
+        RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_4: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 4
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
+    init:
+        RegisterCustomCSR "BPM" 0x7C0 Machine
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
     frequency: 1000000
