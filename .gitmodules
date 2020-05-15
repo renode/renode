@@ -31,3 +31,6 @@
 [submodule "lib/CxxDemangler"]
 	path = lib/CxxDemangler
 	url = https://github.com/antmicro/CxxDemangler
+[submodule "lib/InpliTftpServer"]
+	path = lib/InpliTftpServer
+	url = https://github.com/antmicro/InpliTftpServer.git

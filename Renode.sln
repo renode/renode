@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-riscv64", "src\Infras
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxxDemangler", "lib\CxxDemangler\CxxDemangler\CxxDemangler.csproj", "{3A70B9B8-BBAB-47EA-8473-B7A0B4961D56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tftp", "lib\InpliTftpServer\libtftp\libtftp_alt.csproj", "{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugHeadless|Any CPU = DebugHeadless|Any CPU
@@ -487,6 +489,18 @@ Global
 		{3A70B9B8-BBAB-47EA-8473-B7A0B4961D56}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 		{3A70B9B8-BBAB-47EA-8473-B7A0B4961D56}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A70B9B8-BBAB-47EA-8473-B7A0B4961D56}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
