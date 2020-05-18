@@ -148,7 +148,7 @@ then
     INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
     INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
 
-    if (( $INSTALLED_MONO_MAJOR < $MINIMUM_MONO_MAJOR || (($INSTALLED_MONO_MAJOR == $MINIMUM_MONO_MAJOR) && ($INSTALLED_MONO_MINOR < $MINIMUM_MONO_MINOR)) ))
+    if [ $INSTALLED_MONO_MAJOR -lt $MINIMUM_MONO_MAJOR ] || [ $INSTALLED_MONO_MAJOR -eq $MINIMUM_MONO_MAJOR -a $INSTALLED_MONO_MINOR -lt $MINIMUM_MONO_MINOR ]
     then
         echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
