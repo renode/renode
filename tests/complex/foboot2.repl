@@ -1,0 +1,32 @@
+vexriscv_debug: Memory.MappedMemory @ sysbus 0xf00f0000
+    // size: 0x00000100
+    size: 0x00001000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00020000
+
+rom: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x00002000
+
+rom2: Memory.MappedMemory @ sysbus 0x20000000 //?!
+    size: 0x00200000
+
+usb: USB.ValentyUSB_EPTRI @ sysbus 0xe0004800
+    -> cpu@3
+
+timer0: Timers.LiteX_Timer @ sysbus 0xE0002800
+    frequency: 12000000
+    -> cpu@2
+
+cpu: CPU.VexRiscv @ sysbus
+
+messible: USB.Messible @ sysbus 0xe0008000
+
+sysbus:
+    init:
+        Tag <0xe0000000 0x18> "CTRL"
+        Tag <0xe0005000 0x20> "PICORVSPI"
+        Tag <0xe0006000 0x14> "REBOOT"
+        Tag <0xe0006800 0x10> "RGB"
+        Tag <0xe0005800 0x0C> "TOUCH"
+        Tag <0xe0007000 0x3C> "VERSION"
