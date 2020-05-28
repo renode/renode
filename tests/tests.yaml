@@ -14,6 +14,7 @@
 - tests/platforms/MiV/MiV.robot
 - tests/platforms/STM32F103.robot
 - tests/unit-tests/demos.robot
+- tests/unit-tests/translate-address.robot
 - tests/unit-tests/robot-integration.robot
 - tests/unit-tests/riscv-unit-tests.robot
 - tests/platforms/SAME70.robot
