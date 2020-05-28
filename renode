@@ -18,6 +18,10 @@ do
     if [ "$ARG" == "-d" ]
     then
         TARGET="Debug"
+        if $ON_LINUX
+        then
+            LAUNCHER="$LAUNCHER --debug"
+        fi
     elif [ "$ARG" == "-q" ]
     then
         QUIET=true
