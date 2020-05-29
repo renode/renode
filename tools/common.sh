@@ -75,7 +75,7 @@ function add_path_property {
 }
 
 function verify_mono_version {
-    MINIMUM_MONO=`cat tools/mono_version`
+    MINIMUM_MONO=`cat $ROOT_PATH/tools/mono_version`
 
     if ! [ -x "$(command -v $LAUNCHER)" ]
     then
