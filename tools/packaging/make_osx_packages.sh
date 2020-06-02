@@ -29,7 +29,7 @@ echo "REQUIRED_MAJOR=$MONO_MAJOR" >> $COMMAND_SCRIPT
 echo "REQUIRED_MINOR=$MONO_MINOR" >> $COMMAND_SCRIPT
 # skip the first line (with the hashbang)
 tail -n +2 macos/macos_run.command >> $COMMAND_SCRIPT
-chmod u+x $COMMAND_SCRIPT
+chmod +x $COMMAND_SCRIPT
 
 mkdir -p $OUTPUT
 hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.dmg

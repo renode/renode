@@ -50,7 +50,7 @@ echo "REQUIRED_MAJOR=$MONO_MAJOR" >> $COMMAND_SCRIPT
 echo "REQUIRED_MINOR=$MONO_MINOR" >> $COMMAND_SCRIPT
 # skip the first line (with the hashbang)
 tail -n +2 linux/renode.sh-template >> $COMMAND_SCRIPT
-chmod u+x $COMMAND_SCRIPT
+chmod +x $COMMAND_SCRIPT
 
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
