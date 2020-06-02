@@ -30,7 +30,7 @@ INSTALL_DIR=/opt/renode
 SED_COMMAND="sed -i"
 . common_copy_files.sh
 
-cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine}.py $DIR/tests
+cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DIR/tests
 cp -r $BASE/test.sh $DIR/tests
 cp -r $BASE/tools/common.sh $DIR/tests
 cp -r $BASE/tests/platforms $DIR/tests/platforms
