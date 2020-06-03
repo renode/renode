@@ -1,4 +1,4 @@
-:name: Bult-in TFTP server demo
+:name: Built-in TFTP server demo
 :description: This script runs Micropython on LiteX/VexRiscv booted from the the internal TFTP  server hosted by Renode
 
 $name?="litex-vexriscv"
