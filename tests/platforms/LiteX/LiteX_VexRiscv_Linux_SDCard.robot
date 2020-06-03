@@ -18,7 +18,7 @@ Create Platform
 
     Execute Command            set device_tree @https://dl.antmicro.com/projects/renode/${device_tree}
 
-    Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_5795844-5856fe16d705aaeb09f2d2ae397f89f27ad672c7
+    Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_5787652-2115891ba50b339ae0d8b5ece999fc685791fbbc
     Execute Command            set emulator @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--emulator.bin-s_9584-51b9c133e1938e3b2cec63601a942cc580d93945
 
     Execute Command            sysbus LoadBinary $kernel 0x40000000
