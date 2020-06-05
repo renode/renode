@@ -10,6 +10,9 @@ def mc_next_value(offset = 0):
 def mc_sleep(time):
     sleep(float(time))
 
+def mc_console_log(string):
+    System.Console.WriteLine(string)
+
 def mc_echo(*value):
     if len(value) == 2:
         if value[0] == "-n":
