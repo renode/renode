@@ -36,7 +36,7 @@ Installing dependencies
 Mono/.NET
 ~~~~~~~~~
 
-Renode requires Mono >= 5.0 (Linux, macOS) or .NET >= 4.7 (Windows).
+Renode requires Mono >= 5.20 (Linux, macOS) or .NET >= 4.7 (Windows).
 
 .. csv-table::
    :delim: |
