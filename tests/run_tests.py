@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # pylint: disable=C0301,C0103,C0111
 
 import os

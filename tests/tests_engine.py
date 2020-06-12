@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
 from sys import platform
