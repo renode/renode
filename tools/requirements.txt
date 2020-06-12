@@ -1,4 +1,4 @@
-robotframework
+robotframework==3.1
 netifaces
 requests
 psutil
