@@ -100,7 +100,7 @@ namespace Antmicro.Renode.Network
                     throw new ArgumentException($"Unhandled log severity: {args.Severity}");
             }
 
-            this.Log(LogLevel.Info, args.Message);
+            this.Log(logLevel, args.Message);
         }
 
         private void HandleResponse(IPEndPoint source, byte[] buffer, int count)
