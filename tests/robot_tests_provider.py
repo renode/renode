@@ -37,6 +37,7 @@ def install_cli_arguments(parser):
                         dest="remote_server_port",
                         action="store",
                         default=9999,
+                        type=int,
                         help="Port of robot framework remote server binary.")
 
     parser.add_argument("--enable-xwt",
