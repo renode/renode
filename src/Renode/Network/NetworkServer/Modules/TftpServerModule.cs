@@ -149,14 +149,14 @@ namespace Antmicro.Renode.Network
             string FindFile(string filename)
             {
                 // first check list of files
-                if(!files.TryGetValue(args.Filename, out var result))
+                if(!files.TryGetValue(filename, out var result))
                 {
                     // if not found, scan all the directories
                     foreach(var dir in directories)
                     {
                         foreach(var file in Directory.GetFiles(dir))
                         {
-                            if(file.Substring(dir.Length + 1) == args.Filename)
+                            if(file.Substring(dir.Length + 1) == filename)
                             {
                                 result = file;
                                 break;
