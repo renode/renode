@@ -70,11 +70,11 @@ Additional prerequisites (for Robot framework testing)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 To write and run test cases, Renode integrates with the Robot testing framework.
-This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` on Linux).
+This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` or ``python2-pip`` on Linux).
 
 Once you have Python 2.7 and ``pip``, install some additional modules::
 
-    python -m pip install -r tools/requirements.txt
+    python2 -m pip install -r tools/requirements.txt
 
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
