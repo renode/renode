@@ -241,6 +241,7 @@ finish:
         public static IEnumerable<string> HandleMultilineStrings(IEnumerable<string> sourceLine, string path)
         {
             const string quoteDelimiter = "'''";
+            var result = new List<string>();
             var multilineString = new List<string>();
             var inMultilineString = false;
             var regexCharacterToFind = new Regex(Regex.Escape(quoteDelimiter), RegexOptions.None);
@@ -259,14 +260,14 @@ finish:
                         inMultilineString = false;
                         var str = string.Join("\n", multilineString);
                         multilineString.Clear();
-                        yield return str;
+			result.Add(str);
                     }
                 }
                 else
                 {
                     if(validQuotes != 1) // we have opening and closing quote (or more) or no quotes at all
                     {
-                        yield return line;
+                        result.Add(line);
                         continue;
                     }
                     openingQuoteLine = new Tuple<int, string, int>(currentLine.index, currentLine.value, lastQuoteIndex);
@@ -282,6 +283,8 @@ finish:
                 throw GetException(ParsingError.SyntaxError, openingQuoteLine.Item1, errorQuoteIndex, errorLine,
                                    "Unclosed multiline string", path);
             }
+
+            return result;
         }
 
         public static int CountUnescapedCharacters(string line, Regex regexCharacterToFind, out int lastQuoteIndex, char escapeCharacter = '\\')
