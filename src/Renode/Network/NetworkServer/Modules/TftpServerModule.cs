@@ -145,8 +145,9 @@ namespace Antmicro.Renode.Network
             {
                 this.Log(LogLevel.Warning, "There was an error when reading {0} file: {1}", path, e.Message);
             }
+}
 
-            string FindFile(string filename)
+            private string FindFile(string filename)
             {
                 // first check list of files
                 if(!files.TryGetValue(filename, out var result))
@@ -166,7 +167,6 @@ namespace Antmicro.Renode.Network
                 }
                 return result;
             }
-        }
 
         private readonly Dictionary<string, string> files;
         private readonly List<string> directories;
