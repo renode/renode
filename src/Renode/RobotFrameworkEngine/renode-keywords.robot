@@ -78,7 +78,7 @@ Create Snapshot Of Failed Test
     ${test_name}=      Set Variable  ${SUITE NAME}-${TEST NAME}.fail.save
     ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
 
-    ${snapshots_dir}=  Set Variable  ${EXECDIR}/snapshots
+    ${snapshots_dir}=  Set Variable  ${CURDIR}/../../../output/tests/snapshots
     Create Directory   ${snapshots_dir}
 
     ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}"
