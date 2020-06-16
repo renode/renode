@@ -35,7 +35,7 @@ class IncludeLoader(yaml.SafeLoader):
 
         with open(filename, 'r') as f:
             data = yaml.load(f, IncludeLoader)
-            if 'prefix' in config:
+            if data is not None and 'prefix' in config:
                 _append_prefix(data, config['prefix'])
             return data
 
@@ -155,7 +155,11 @@ def setup_tap():
 def parse_tests_file(path):
 
     def _process(data, result):
+        if data is None:
+            return
         for entry in data:
+            if entry is None:
+                continue
             if isinstance(entry, list):
                 _process(entry, result)
             else:
