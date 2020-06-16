@@ -7,7 +7,7 @@ uart: UART.LiteX_UART @ sysbus 0xf0001000
 eth: Network.LiteX_Ethernet @ {
         sysbus 0xF0004000;
 
-        sysbus new Bus.BusMultiRegistration { address: 0xF0003800; size: 0x000a; region: "buffer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xF0003800; size: 0x000a; region: "phy" };
         sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
     }
     -> cpu@2
