@@ -1,0 +1,44 @@
+ram: Memory.MappedMemory @ {
+        sysbus 0x40000000
+    }
+    size: 0x10000000
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32imac"
+
+uart: UART.LiteX_UART @ {
+        sysbus 0x82001800
+    }
+    -> cpu@0
+
+timer0: Timers.LiteX_Timer @ {
+        sysbus 0x82002000
+    }
+    frequency: 100000000
+    -> cpu@1
+
+i2s_rx: Sound.LiteX_I2S_Slave @ {
+        sysbus 0x82004800;
+        sysbus new Bus.BusMultiRegistration { address: 0xB1000000; size: 0x40000; region: "buffer" }
+    }
+    -> cpu@3
+    format: DataFormat.Standard
+    sampleWidthBits: 24
+    samplingRateHz: 44100
+    numberOfChannels: 2
+
+i2s_tx: Sound.LiteX_I2S_Master @ {
+        sysbus 0x82005000;
+        sysbus new Bus.BusMultiRegistration { address: 0xB2000000; size: 0x40000; region: "buffer" }
+    }
+    -> cpu@4
+    format: DataFormat.Standard
+    sampleWidthBits: 24
+    samplingRateHz: 44100
+    numberOfChannels: 2
+
+eth: Network.LiteX_Ethernet @ {
+        sysbus 0x82003800;
+        sysbus new Bus.BusMultiRegistration { address: 0xb0000000; size: 0x2000; region: "buffer" }
+    }
+
