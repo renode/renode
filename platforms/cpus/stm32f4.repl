@@ -80,6 +80,11 @@ dma2: DMA.STM32DMA @ sysbus 0x40023400
 rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
     -> nvic@80
 
+rcc: Python.PythonPeripheral @ sysbus 0x40023800
+    size: 0x400
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F40x.svd.gz

@@ -7,8 +7,3 @@ UserLED: Miscellaneous.LED @ gpioPortD
 
 gpioPortD:
     12 -> gpioPortD@0
-
-rcc: Python.PythonPeripheral @ sysbus 0x40023800
-    size: 0x400
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
