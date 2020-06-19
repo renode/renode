@@ -31,3 +31,5 @@ button2: Miscellaneous.Button @ gpio2 31
 
 button3: Miscellaneous.Button @ gpio2 28
     -> plic@118
+
+pac1934: Sensors.PAC1934 @ i2c1 0x10000
