@@ -24,6 +24,7 @@ can0: CAN.STMCAN @ sysbus <0x40006400, +0x400>
     [0-3] -> nvic@[19-22]
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
     systickFrequency: 72000000
     IRQ -> cpu@0
 

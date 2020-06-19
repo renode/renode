@@ -32,6 +32,7 @@ externalRam: Memory.MappedMemory @ sysbus 0x68000000
     size: 0x1000000
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF1
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus

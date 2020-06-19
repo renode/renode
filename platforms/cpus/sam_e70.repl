@@ -14,6 +14,7 @@ usart2: UART.SAM_USART @ sysbus 0x4002c000
     IRQ -> nvic@15
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xE0
     systickFrequency: 450000000
     IRQ -> cpu@0
 
