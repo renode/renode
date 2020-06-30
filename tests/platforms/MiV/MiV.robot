@@ -122,15 +122,20 @@ Should Generate Interrupts On Gpio Rising Edge
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Wait For Line On Uart     GPIO1
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
     Wait For Line On Uart     GPIO2
 
 Should Generate Interrupts On Gpio Falling Edge
@@ -146,12 +151,14 @@ Should Generate Interrupts On Gpio Falling Edge
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Test If Uart Is Idle      5
@@ -169,12 +176,15 @@ Should Generate Interrupts On Gpio Both Edges
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
@@ -198,12 +208,15 @@ Should Generate Interrupts On Gpio High Level
     Wait For Line On Uart     GPIO2
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Sleep                     1s
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
 
     Wait For Line On Uart     GPIO1
     Wait For Line On Uart     GPIO2
@@ -226,7 +239,9 @@ Should Generate Interrupts On Gpio Low Level
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
 
     Wait For Line On Uart     GPIO1
     Wait For Line On Uart     GPIO2
@@ -238,12 +253,15 @@ Should Generate Interrupts On Gpio Low Level
     Wait For Line On Uart     GPIO2
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Sleep                     1s
     Test If Uart Is Idle      5
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
 
     Wait For Line On Uart     GPIO1
     Wait For Line On Uart     GPIO2
