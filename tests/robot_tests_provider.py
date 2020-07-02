@@ -108,7 +108,7 @@ def check_if_port_available(port):
                     # process is zombie
                     continue
                 print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), port))
-                result = raw_input('Do you want me to kill it? [y/N] ')
+                result = input('Do you want me to kill it? [y/N] ')
                 if result in ['Y', 'y']:
                     proc.kill()
                 break

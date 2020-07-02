@@ -77,7 +77,7 @@ class NUnitTestSuite(object):
         else:
             process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             while True:
-                line = process.stdout.readline()
+                line = process.stdout.readline().decode('utf-8')
                 ret = process.poll()
                 if ret is not None:
                     return ret == 0

@@ -217,7 +217,7 @@ def split_tests_into_groups(tests, test_type):
 
     for entry in tests:
         if isinstance(entry, dict):
-            group_name = entry.keys()[0]
+            group_name = list(entry.keys())[0]
             if group_name not in test_groups:
                 test_groups[group_name] = []
             for inner_entry in entry[group_name]:

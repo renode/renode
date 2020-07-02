@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # pylint: disable=C0301,C0103,C0111
 
 from __future__ import print_function
@@ -23,4 +23,4 @@ except ImportError as e:
             requirements = os.path.join(root, name)
             break
 
-    print("{}\nPlease install required dependencies with `pip2 install -r {}`".format(e.message, os.path.abspath(requirements)), file=sys.stderr)
+    print("{}\nPlease install required dependencies with `pip install -r {}`".format(e.message, os.path.abspath(requirements)), file=sys.stderr)

@@ -7,7 +7,7 @@ then
     ON_LINUX=true
     CS_COMPILER=xbuild
     LAUNCHER="mono"
-    PYTHON_RUNNER="python2"
+    PYTHON_RUNNER="python3"
 elif [ "$UNAME" == "Darwin" ]
 then
     DETECTED_OS="osx"
@@ -16,7 +16,7 @@ then
     ON_LINUX=false
     CS_COMPILER=xbuild
     LAUNCHER="mono64"
-    PYTHON_RUNNER="python2"
+    PYTHON_RUNNER="python3"
 else
     DETECTED_OS="windows"
     ON_WINDOWS=true
@@ -24,7 +24,7 @@ else
     ON_LINUX=false
     CS_COMPILER=msbuild.exe
     LAUNCHER=""
-    PYTHON_RUNNER="python"
+    PYTHON_RUNNER="py -3"
 fi
 
 function get_path {

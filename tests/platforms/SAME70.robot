@@ -150,7 +150,8 @@ Get Time Source From The Announce Packet
 Get Sync Messages Reported Period
     [Arguments]   ${pktBytes}
 
-    ${logInterval} =                               Evaluate  ord("${pktBytes[47]}")
+    ${b} =                                         Get Substring  ${pktBytes}  47  48
+    ${logInterval} =                               Evaluate  ord('${b}')
 
     # This is a Log2 of the interval, so calculate it in milliseconds
     # (Renode uses milliseconds for timestamps)

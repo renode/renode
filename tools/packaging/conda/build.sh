@@ -92,7 +92,7 @@ cat > $PREFIX/bin/renode-test <<"EOF"
 #!/bin/bash
 
 STTY_CONFIG=`stty -g 2>/dev/null`
-python2 $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-server-full-directory $CONDA_PREFIX/opt/renode/bin "$@"
+python3 $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-server-full-directory $CONDA_PREFIX/opt/renode/bin "$@"
 RESULT_CODE=$?
 if [ -n "${STTY_CONFIG:-}" ]
 then
