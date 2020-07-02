@@ -77,7 +77,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-dma2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40026400
     [0-7] -> nvic@[56-60,68-70]
 
 ltdc: Video.STM32LTDC @ sysbus 0x40016800
@@ -105,8 +105,22 @@ i2c4: I2C.STM32F7_I2C @ sysbus 0x40006000
 syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x40013800
     [0-15] -> exti@[0-15]
 
+rcc: Python.PythonPeripheral @ sysbus 0x40023800
+    size: 0x400
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+sdMmcSta: Python.PythonPeripheral @ sysbus 0x40012C34
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
-        Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 

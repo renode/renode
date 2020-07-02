@@ -75,7 +75,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-dma2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40026400
     [0-7] -> nvic@[56-60,68-70]
 
 rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
@@ -91,7 +91,3 @@ sysbus:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F40x.svd.gz
         Tag <0x40021000, 0x40021003> "GPIOE_MODER" 0xFFFFFFFF
         Tag <0x40021004, 0x40021007> "GPIOE_OTYPER" 0x00000008
-        Tag <0x40023800, 0x40023803> "RCC_CR" 0x0A020083
-        Tag <0x40023804, 0x40023807> "RCC_PLLCFGR" 0x00000000
-        Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
-
