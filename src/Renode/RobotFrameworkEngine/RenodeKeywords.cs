@@ -206,6 +206,23 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public string DownloadFile(string uri)
+        {
+            if(!Uri.TryCreate(uri, UriKind.Absolute, out var parsedUri))
+            {
+                throw new KeywordException($"Wrong URI format: {uri}");
+            }
+
+            var fileFetcher = EmulationManager.Instance.CurrentEmulation.FileFetcher;
+            if(!fileFetcher.TryFetchFromUri(parsedUri, out var result))
+            {
+                throw new KeywordException("Couldn't download file from: {uri}");
+            }
+
+            return result;
+        }
+
+        [RobotFrameworkKeyword]
         public void CreateLogTester(int defaultMillisecondsTimeout = 5000)
         {
             logTester = new LogTester(defaultMillisecondsTimeout);
