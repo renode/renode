@@ -74,11 +74,19 @@ def install_cli_arguments(parser):
                         action="store",
                         default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
                         help=".NET runner")
+                        
     parser.add_argument("--debug-on-error",
                         dest="debug_on_error",
                         action="store_true",
                         default=False,
                         help="Enables the Renode User Interface when test fails")
+    
+    parser.add_argument("--cleanup-timeout",
+                        dest="cleanup_timeout",
+                        action="store",
+                        default=3,
+                        type=int,
+                        help="Robot frontend process cleanup timeout")
 
 
 def verify_cli_arguments(options):
@@ -205,11 +213,16 @@ class RobotTestSuite(object):
         print('Started Renode instance on port {}; pid {}'.format(options.remote_server_port + port_offset, p.pid))
         return p
 
-    def _close_remote_server(self, proc):
+    def _close_remote_server(self, proc, options):
         if proc:
             print('Closing Renode pid {}'.format(proc.pid))
-            os.kill(proc.pid, 15)
-            proc.wait()
+            process = psutil.Process(proc.pid)
+            os.kill(proc.pid, 2)
+            try:
+                process.wait(timeout=options.cleanup_timeout)
+            except psutil.TimeoutExpired:
+                process.kill()
+                process.wait()
 
     def run(self, options, run_id=0):
         if self.path.endswith('renode-keywords.robot'):
@@ -234,7 +247,7 @@ class RobotTestSuite(object):
                     continue
                 result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=run_id)
 
-        self._close_remote_server(proc)
+        self._close_remote_server(proc, options)
         return result
 
     def _get_dependencies(self, test_case):
@@ -257,7 +270,7 @@ class RobotTestSuite(object):
     def cleanup(self, options):
         RobotTestSuite.instances_count -= 1
         if RobotTestSuite.instances_count == 0:
-            self._close_remote_server(RobotTestSuite.robot_frontend_process)
+            self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
             if len(RobotTestSuite.log_files) > 0:
                 print("Aggregating all robot results")
                 robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', outputdir=options.results_directory, output='robot_output.xml')
