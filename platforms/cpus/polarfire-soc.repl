@@ -52,7 +52,7 @@ clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x2000000
     [6, 7] -> u54_3@[3, 7]
     [8, 9] -> u54_4@[3, 7]
 
-pdma: DMA.PSE_PDMA @ sysbus 0x3000000
+pdma: DMA.MPFS_PDMA @ sysbus 0x3000000
     [0-7] -> plic@[5-12]
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xc000000
@@ -88,26 +88,26 @@ mmuart4: UART.NS16550 @ sysbus 0x20106000
     wideRegisters: true
     IRQ -> plic@94 | u54_4@27
 
-mmc: SD.PSE_SDController @ sysbus 0x20008000
+mmc: SD.MPFS_SDController @ sysbus 0x20008000
     IRQ -> plic@88
     WakeupIRQ -> plic@89
 
-spi0: SPI.PSE_SPI @ sysbus 0x20108000
+spi0: SPI.MPFS_SPI @ sysbus 0x20108000
     IRQ -> plic@54
 
-spi1: SPI.PSE_SPI @ sysbus 0x20109000
+spi1: SPI.MPFS_SPI @ sysbus 0x20109000
     IRQ -> plic@55
 
-i2c0: I2C.PSE_I2C @ sysbus 0x2010A000
+i2c0: I2C.MPFS_I2C @ sysbus 0x2010A000
     IRQ -> plic@58
 
-i2c1: I2C.PSE_I2C @ sysbus 0x2010B000
+i2c1: I2C.MPFS_I2C @ sysbus 0x2010B000
     IRQ -> plic@61
 
-can0: CAN.PSE_CAN @ sysbus 0x2010C000
+can0: CAN.MPFS_CAN @ sysbus 0x2010C000
     IRQ -> plic@56
 
-can1: CAN.PSE_CAN @ sysbus 0x2010D000
+can1: CAN.MPFS_CAN @ sysbus 0x2010D000
     IRQ -> plic@57
 
 mac0: Network.CadenceGEM @ { sysbus 0x20110000; sysbus 0x28110000 }
@@ -132,59 +132,59 @@ phy: Network.EthernetPhysicalLayer @ {
     MasterSlaveControl: 0x300
     MasterSlaveStatus: 0x3000
 
-gpio0: GPIOPort.PSE_GPIO @ sysbus 0x20120000
+gpio0: GPIOPort.MPFS_GPIO @ sysbus 0x20120000
     [0-13] -> plic@[13-26]
     IRQ -> plic@51
 
-gpio1: GPIOPort.PSE_GPIO @ sysbus 0x20121000
+gpio1: GPIOPort.MPFS_GPIO @ sysbus 0x20121000
     [0-23] -> plic@[27-50]
     IRQ -> plic@52
 
-gpio2: GPIOPort.PSE_GPIO @ sysbus 0x20122000
+gpio2: GPIOPort.MPFS_GPIO @ sysbus 0x20122000
     [0-31] -> plic@[13-44]
     IRQ -> plic@53
 
-wdog0: Timers.PSE_Watchdog @ sysbus 0x20001000
+wdog0: Timers.MPFS_Watchdog @ sysbus 0x20001000
     frequency: 156250 //this value is estimated from the comments in the code
     RefreshEnable -> plic@100 | e51@26
     Trigger -> plic@105 | e51@25
 
-wdog1: Timers.PSE_Watchdog @ sysbus 0x20101000
+wdog1: Timers.MPFS_Watchdog @ sysbus 0x20101000
     frequency: 156250 //this value is estimated from the comments in the code
     RefreshEnable -> plic@101 | u54_1@26
     Trigger -> plic@106 | u54_1@25 | e51@24
 
-wdog2: Timers.PSE_Watchdog @ sysbus 0x20103000
+wdog2: Timers.MPFS_Watchdog @ sysbus 0x20103000
     frequency: 156250 //this value is estimated from the comments in the code
     RefreshEnable -> plic@102 | u54_2@26
     Trigger -> plic@107 | u54_2@25 | e51@23
 
-wdog3: Timers.PSE_Watchdog @ sysbus 0x20105000
+wdog3: Timers.MPFS_Watchdog @ sysbus 0x20105000
     frequency: 156250 //this value is estimated from the comments in the code
     RefreshEnable -> plic@103 | u54_3@26
     Trigger -> plic@108 | u54_3@25 | e51@22
 
-wdog4: Timers.PSE_Watchdog @ sysbus 0x20107000
+wdog4: Timers.MPFS_Watchdog @ sysbus 0x20107000
     frequency: 156250 //this value is estimated from the comments in the code
     RefreshEnable -> plic@104 | u54_4@26
     Trigger -> plic@109 | u54_4@25 | e51@21
 
-rtc: Timers.PSE_RTC @ sysbus 0x20124000
+rtc: Timers.MPFS_RTC @ sysbus 0x20124000
     WakeupIRQ -> plic@80
     MatchIRQ -> plic@81
 
-mstimer: Timers.PSE_Timer @ sysbus 0x20125000
+mstimer: Timers.MPFS_Timer @ sysbus 0x20125000
     Timer1IRQ -> plic@82
     Timer2IRQ -> plic@83
 
-envmCfg: MTD.PSE_eNVM @ sysbus 0x20200000
+envmCfg: MTD.MPFS_eNVM @ sysbus 0x20200000
     memory: envmData
     IRQ -> plic@84
 
 envmData: Memory.MappedMemory @ sysbus 0x20220000
     size: 0x20000
 
-usb: USB.PSE_USB @ sysbus 0x20201000
+usb: USB.MPFS_USB @ sysbus 0x20201000
     DmaIRQ -> plic@86
     MainIRQ -> plic@87
 
@@ -212,9 +212,9 @@ u54Hart4ITim: Memory.MappedMemory @ sysbus 0x01820000
 ddr: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x40000000
 
-pcie0: PCI.PSE_PCIe @ sysbus 0x53004000
+pcie0: PCI.MPFS_PCIe @ sysbus 0x53004000
 
-pcie1: PCI.PSE_PCIe @ {
+pcie1: PCI.MPFS_PCIe @ {
         sysbus 0x53008000;
         sysbus new Bus.BusMultiRegistration { address: 0x60000000; size: 0x20000000; region: "ecam" }
     }
@@ -229,7 +229,7 @@ pcieMem: PCI.PCIeMemory  @ pcie1 1
     size: 0x20000
     parent: pcie1
 
-qspi: SPI.PSE_QSPI @ sysbus 0x21000000
+qspi: SPI.MPFS_QSPI @ sysbus 0x21000000
     IRQ -> plic@85
 
 pseFlash: SPI.Micron_MT25Q @ qspi
@@ -254,6 +254,7 @@ sysbus:
         Tag <0x2000781C, 0x2000781F> "GT_ERR_COMB" 0
         Tag <0x20007834, 0x20007837> "DQ_DQS_ERR_DONE" 0x8
         Tag <0x2000784C, 0x2000784F> "DQDQS_WINDOW" 0x8
+        Tag <0x20007C20, 0x20007C23> "PVT_STAT" 0x4040
 
         Tag <0x20080000, 0x2009FFFF> "DDRCFG"
         Tag <0x20084428, 0x2008442B> "CSR_APB_MT_DONE_ACK" 0x1

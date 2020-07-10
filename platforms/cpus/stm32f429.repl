@@ -24,6 +24,7 @@ can0: CAN.STMCAN @ sysbus <0x40006400, +0x400>
     [0-3] -> nvic@[19-22]
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
     systickFrequency: 72000000
     IRQ -> cpu@0
 
@@ -72,7 +73,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-dma2: DMA.STM32DMA @ sysbus 0x40023400
+dma2: DMA.STM32DMA @ sysbus 0x40026400
     [0-7] -> nvic@[56-60,68-70]
 
 ltdc: Video.STM32LTDC @ sysbus 0x40016800
@@ -90,8 +91,12 @@ i2c3: I2C.STM32F4_I2C @ sysbus 0x40005C00
     EventInterrupt -> nvic@72
     ErrorInterrupt -> nvic@73
 
+rcc: Python.PythonPeripheral @ sysbus 0x40023800
+    size: 0x400
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F429x.svd.gz
-        Tag <0x40023808, 0x40023809> "RCC_CFGR" 0x0019940A
 

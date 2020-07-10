@@ -7,6 +7,7 @@ then
     ON_LINUX=true
     CS_COMPILER=xbuild
     LAUNCHER="mono"
+    PYTHON_RUNNER="python2"
 elif [ "$UNAME" == "Darwin" ]
 then
     DETECTED_OS="osx"
@@ -15,6 +16,7 @@ then
     ON_LINUX=false
     CS_COMPILER=xbuild
     LAUNCHER="mono64"
+    PYTHON_RUNNER="python2"
 else
     DETECTED_OS="windows"
     ON_WINDOWS=true
@@ -22,6 +24,7 @@ else
     ON_LINUX=false
     CS_COMPILER=msbuild.exe
     LAUNCHER=""
+    PYTHON_RUNNER="python"
 fi
 
 function get_path {
@@ -72,4 +75,28 @@ function add_path_property {
     sanitized_path=$(sed 's:\\:/:g' <<< `get_path "$3"`)
     sed -i.bak "s#</PropertyGroup>#  <$2>$sanitized_path</$2>"'\
 </PropertyGroup>#' "$1"
+}
+
+function verify_mono_version {
+    MINIMUM_MONO=`cat $ROOT_PATH/tools/mono_version`
+
+    if ! [ -x "$(command -v $LAUNCHER)" ]
+    then
+        echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
+
+    # Check mono version
+    MINIMUM_MONO_MAJOR=`echo $MINIMUM_MONO | cut -d'.' -f1`
+    MINIMUM_MONO_MINOR=`echo $MINIMUM_MONO | cut -d'.' -f2`
+
+    INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
+    INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
+    INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
+
+    if [ $INSTALLED_MONO_MAJOR -lt $MINIMUM_MONO_MAJOR ] || [ $INSTALLED_MONO_MAJOR -eq $MINIMUM_MONO_MAJOR -a $INSTALLED_MONO_MINOR -lt $MINIMUM_MONO_MINOR ]
+    then
+        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        exit 1
+    fi
 }

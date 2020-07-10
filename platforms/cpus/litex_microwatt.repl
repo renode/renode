@@ -1,0 +1,25 @@
+rom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x8000
+
+sram: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x00001000
+
+main_ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x20000000
+
+uart: UART.LiteX_UART64 @ sysbus 0xC0001800
+
+cpu: CPU.PowerPc64 @ sysbus
+    endianness: Endianess.LittleEndian
+
+timer0: Timers.LiteX_Timer64 @ sysbus 0xC0002000
+    frequency: 100000000
+    -> cpu@0
+
+sysbus:
+    init:
+        Tag <0xC0000000, 0xC0000048> "CTRL"
+        Tag <0xC0001000, 0xC0001800> "IDENT_MEM"
+        Tag <0xc0002800, 0xC0002850> "DDR_PHY"
+        Tag <0xC0003000, 0xC0003200> "SDRAM_CONTROLLER"
+        Tag <0xC0001000, 0xC0001200> "UART_PHY"

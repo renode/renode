@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
 from sys import platform
@@ -12,51 +11,111 @@ import robot
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
+
 def install_cli_arguments(parser):
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--robot-framework-remote-server-full-directory", dest="remote_server_full_directory", action="store", help="Full location of robot framework remote server binary.")
-    group.add_argument("--robot-framework-remote-server-directory-prefix", dest="remote_server_directory_prefix", action="store", default=os.path.join(this_path, '../output/bin'), help="Directory of robot framework remote server binary. This is concatenated with current configuration to create full path.")
-    parser.add_argument("--robot-framework-remote-server-name", dest="remote_server_name", action="store", default="Renode.exe", help="Name of robot framework remote server binary.")
-    parser.add_argument("--robot-framework-remote-server-port", dest="remote_server_port", action="store", default=9999, help="Port of robot framework remote server binary.")
-    parser.add_argument("--enable-xwt", dest="enable_xwt", action="store_true", default=False, help="Enables support for XWT.")
-    parser.add_argument("--show-log", dest="show_log", action="store_true", default=False, help="Display log messages in console (might corrupt robot summary output).")
-    parser.add_argument("--hot-spot", dest="hotspot", action="store", default=None, help="Test given hot spot action.")
-    parser.add_argument("--variable", dest="variables", action="append", default=None, help="Variable to pass to Robot.")
-    parser.add_argument("--css-file", dest="css_file", action="store", default=os.path.join(this_path, '../lib/resources/styles/robot.css'), help="Custom CSS style for the result files.")
-    parser.add_argument("--runner", dest="runner", action="store", default="mono" if platform.startswith("linux") or platform == "darwin" else "none", help=".NET runner")
+
+    group.add_argument("--robot-framework-remote-server-full-directory",
+                       dest="remote_server_full_directory",
+                       action="store",
+                       help="Full location of robot framework remote server binary.")
+
+    group.add_argument("--robot-framework-remote-server-directory-prefix",
+                       dest="remote_server_directory_prefix",
+                       action="store",
+                       default=os.path.join(this_path, '../output/bin'),
+                       help="Directory of robot framework remote server binary. This is concatenated with current configuration to create full path.")
+
+    parser.add_argument("--robot-framework-remote-server-name",
+                        dest="remote_server_name",
+                        action="store",
+                        default="Renode.exe",
+                        help="Name of robot framework remote server binary.")
+
+    parser.add_argument("--robot-framework-remote-server-port", "-P",
+                        dest="remote_server_port",
+                        action="store",
+                        default=9999,
+                        type=int,
+                        help="Port of robot framework remote server binary.")
+
+    parser.add_argument("--enable-xwt",
+                        dest="enable_xwt",
+                        action="store_true",
+                        default=False,
+                        help="Enables support for XWT.")
+
+    parser.add_argument("--show-log",
+                        dest="show_log",
+                        action="store_true",
+                        default=False,
+                        help="Display log messages in console (might corrupt robot summary output).")
+
+    parser.add_argument("--hot-spot",
+                        dest="hotspot",
+                        action="store",
+                        default=None,
+                        help="Test given hot spot action.")
+
+    parser.add_argument("--variable",
+                        dest="variables",
+                        action="append",
+                        default=None,
+                        help="Variable to pass to Robot.")
+
+    parser.add_argument("--css-file",
+                        dest="css_file",
+                        action="store",
+                        default=os.path.join(this_path, '../lib/resources/styles/robot.css'),
+                        help="Custom CSS style for the result files.")
+
+    parser.add_argument("--runner",
+                        dest="runner",
+                        action="store",
+                        default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
+                        help=".NET runner")
+
 
 def verify_cli_arguments(options):
-    if platform != "win32" and options.port == str(options.remote_server_port):
-        print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
-        sys.exit(1)
+    # port is not available on Windows
+    if platform != "win32":
+        if options.port == str(options.remote_server_port):
+            print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
+            sys.exit(1)
+        if options.port is not None and options.jobs != 1:
+            print("Debug port cannot be used in parallel runs")
+            sys.exit(1)
     if options.css_file and not os.path.isfile(options.css_file):
         print("Unable to find provided CSS file: {0}.".format(options.css_file))
         sys.exit(1)
+
 
 def is_process_running(pid):
     if not psutil.pid_exists(pid):
         return False
     proc = psutil.Process(pid)
-    #docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
+    # docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
-def check_if_port_available(options):
+
+def check_if_port_available(port):
     if not sys.stdin.isatty():
         return
     try:
         for proc in [psutil.Process(pid) for pid in psutil.pids()]:
-            if '--robot-server-port' in proc.cmdline() and str(options.remote_server_port) in proc.cmdline():
+            if '--robot-server-port' in proc.cmdline() and str(port) in proc.cmdline():
                 if not is_process_running(proc.pid):
-                    #process is zombie
+                    # process is zombie
                     continue
-                print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), options.remote_server_port))
+                print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), port))
                 result = raw_input('Do you want me to kill it? [y/N] ')
                 if result in ['Y', 'y']:
                     proc.kill()
                 break
-    except:
+    except Exception:
         # do nothing here
         pass
+
 
 class RobotTestSuite(object):
     instances_count = 0
@@ -69,8 +128,9 @@ class RobotTestSuite(object):
         self._dependencies_met = set()
         self.remote_server_directory = None
 
-    def check(self, options):
-        check_if_port_available(options)
+    def check(self, options, number_of_runs):
+        for i in range(0, number_of_runs):
+            check_if_port_available(options.remote_server_port + i)
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
@@ -96,13 +156,12 @@ class RobotTestSuite(object):
                 log_file = os.path.join(options.results_directory, '{0}{1}.xml'.format(file_name, '_' + hotspot if hotspot else ''))
                 RobotTestSuite.log_files.append(log_file)
 
-        if RobotTestSuite.robot_frontend_process is None or not is_process_running(RobotTestSuite.robot_frontend_process.pid):
-            self._run_remote_server(options)
+        # in parallel runs each parallel group starts it's own Renode process
+        # see: run
+        if options.jobs == 1 and (RobotTestSuite.robot_frontend_process is None or not is_process_running(RobotTestSuite.robot_frontend_process.pid)):
+            RobotTestSuite.robot_frontend_process = self._run_remote_server(options)
 
-        if RobotTestSuite.instances_count > 1:
-            return
-
-    def _run_remote_server(self, options):
+    def _run_remote_server(self, options, port_offset=0):
         if options.remote_server_full_directory is not None:
             self.remote_server_directory = options.remote_server_full_directory
         else:
@@ -114,11 +173,11 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
             sys.exit(1)
 
-        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
+        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port + port_offset)]
         if not options.show_log:
             args.append('--hide-log')
         if not options.enable_xwt:
-           args.append('--disable-xwt')
+            args.append('--disable-xwt')
 
         if options.runner == 'mono':
             args.insert(0, 'mono')
@@ -130,27 +189,45 @@ class RobotTestSuite(object):
             elif options.debug_mode:
                 args.insert(1, '--debug')
 
-        check_if_port_available(options)
+        check_if_port_available(options.remote_server_port + port_offset)
 
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
-        RobotTestSuite.robot_frontend_process = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
 
-    def run(self, options):
+        p = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
+        print('Started Renode instance on port {}; pid {}'.format(options.remote_server_port + port_offset, p.pid))
+        return p
+
+    def _close_remote_server(self, proc):
+        if proc:
+            print('Closing Renode pid {}'.format(proc.pid))
+            os.kill(proc.pid, 15)
+            proc.wait()
+
+    def run(self, options, run_id=0):
         if self.path.endswith('renode-keywords.robot'):
             print('Ignoring helper file: {}'.format(self.path))
             return True
+
         print('Running ' + self.path)
         result = True
 
+        # in non-parallel runs there is only one Renode process for all runs
+        # see: prepare
+        if options.jobs != 1:
+            proc = self._run_remote_server(options, port_offset=run_id)
+        else:
+            proc = None
+
         if any(self.tests_without_hotspots):
-            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
+            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options, port_offset=run_id)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
+                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=run_id)
 
+        self._close_remote_server(proc)
         return result
 
     def _get_dependencies(self, test_case):
@@ -173,9 +250,7 @@ class RobotTestSuite(object):
     def cleanup(self, options):
         RobotTestSuite.instances_count -= 1
         if RobotTestSuite.instances_count == 0:
-            if RobotTestSuite.robot_frontend_process:
-                os.kill(RobotTestSuite.robot_frontend_process.pid, 15)
-                RobotTestSuite.robot_frontend_process.wait()
+            self._close_remote_server(RobotTestSuite.robot_frontend_process)
             if len(RobotTestSuite.log_files) > 0:
                 print("Aggregating all robot results")
                 robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', outputdir=options.results_directory, output='robot_output.xml')
@@ -188,7 +263,6 @@ class RobotTestSuite(object):
                             report.write(style_content)
                             report.write("</style>")
 
-
     @staticmethod
     def _create_suite_name(test_name, hotspot):
         return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
@@ -200,11 +274,11 @@ class RobotTestSuite(object):
         self._dependencies_met.update(test_cases_names)
         return self._run_inner(None, None, test_cases_names, options)
 
-    def _run_inner(self, fixture, hotspot, test_cases_names, options):
+    def _run_inner(self, fixture, hotspot, test_cases_names, options, port_offset=0):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port)]
+        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port + port_offset)]
         path = os.path.abspath(os.path.join(this_path, "../src/Renode/RobotFrameworkEngine/renode-keywords.robot"))
         variables.append('RENODEKEYWORDS:{}'.format(path))
         if hotspot:

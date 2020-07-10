@@ -3,6 +3,7 @@ Library                       Process
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Keywords ***
@@ -11,7 +12,7 @@ Create Platform
     Execute Command            mach create
     Execute Command            machine LoadPlatformDescription @${CURDIR}/nexys4ddr_litex_vexriscv.repl
     Execute Command            sysbus LoadBinary @https://dl.antmicro.com/projects/renode/nexys4ddr_litex_vexriscv--LiteX_BIOS.bin-s_24596-e36b0274a43f416295c6150f0f6fe9070c248761 0x0
-    Execute Command            machine SdCardFromFile @https://dl.antmicro.com/projects/renode/nexys4ddr_litex-fat16_sdcard.image-s_64000000-8a919aa2199e1a1cf086e67546b539295d2d9d8f spisdcard False
+    Execute Command            machine SdCardFromFile @https://dl.antmicro.com/projects/renode/fat16_sdcard.image-s_64000000-8a919aa2199e1a1cf086e67546b539295d2d9d8f spisdcard False
 
     Execute Command            cpu PC 0x0
 

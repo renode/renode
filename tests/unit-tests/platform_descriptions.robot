@@ -2,6 +2,7 @@
 Suite Setup                   Get Test Cases
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***

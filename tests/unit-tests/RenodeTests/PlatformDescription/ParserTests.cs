@@ -246,7 +246,6 @@ uart:
             var attribute = entry.Attributes.Cast<IrqAttribute>().Single();
 
             var flattenedSources = attribute.Sources.SelectMany(x => x.Ends).ToArray();
-            var flattenedDestinations = attribute.Destinations.ElementAt(0).Destinations.SelectMany(x => x.Ends).ToArray();
             Assert.AreEqual(1, flattenedSources[0].Number);
             Assert.AreEqual(2, flattenedSources[1].Number);
             Assert.AreEqual("IRQ", flattenedSources[2].PropertyName);

@@ -123,6 +123,9 @@
     <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqDestinations.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
+    <Compile Include="Network\NetworkServer\NetworkServer.cs" />
+    <Compile Include="Network\NetworkServer\IServerModule.cs" />
+    <Compile Include="Network\NetworkServer\Modules\TftpServerModule.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -239,6 +242,14 @@
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64.csproj">
       <Project>{BB222124-707C-5EFD-8289-2728351FB7AA}</Project>
       <Name>cores-riscv64</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt.csproj">
+      <Project>{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}</Project>
+      <Name>libtftp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\Packet.Net\PacketDotNet\PacketDotNet.csproj">
+      <Project>{55ABBA4C-AAF9-4726-A592-0C92436CEC92}</Project>
+      <Name>PacketDotNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

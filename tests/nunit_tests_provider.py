@@ -20,7 +20,7 @@ class NUnitTestSuite(object):
         #super(NUnitTestSuite, self).__init__(path)
         self.path = path
     
-    def check(self, options): #API requires this method 
+    def check(self, options, number_of_runs): #API requires this method 
         pass 
 
     def prepare(self, options):
@@ -50,7 +50,7 @@ class NUnitTestSuite(object):
 
         return 0
 
-    def run(self, options):
+    def run(self, options, run_id):
         print('Running ' + self.path)
 
         args = [self.copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(self.output_file), self.project_file.replace("csproj", "dll")]

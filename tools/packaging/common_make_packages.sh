@@ -1,4 +1,6 @@
 MONOVERSION=`cat ../mono_version`
+MONO_MAJOR=`echo $MONOVERSION | cut -d'.' -f1`
+MONO_MINOR=`echo $MONOVERSION | cut -d'.' -f2`
 TARGET="Release"
 BASE=../..
 REMOVE_WORKDIR=true

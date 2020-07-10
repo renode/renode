@@ -23,6 +23,7 @@ uart5: UART.STM32_UART @ sysbus <0x40005000, +0x100>
     -> nvic@53
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
     systickFrequency: 72000000
     IRQ -> cpu@0
 

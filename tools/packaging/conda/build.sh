@@ -59,6 +59,7 @@ cp -r platforms/* $PREFIX/opt/renode/platforms/
 cp -r tests/* $PREFIX/opt/renode/tests/
 
 cp lib/resources/styles/robot.css $PREFIX/opt/renode/tests
+cp tools/requirements.txt $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/renode-keywords.robot $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/helper.py $PREFIX/opt/renode/tests
 
@@ -81,8 +82,24 @@ rm $PREFIX/opt/renode/tests/robot_tests_provider.py.bak
 
 mkdir -p $PREFIX/bin/
 
-echo -e '#!/bin/bash\n\nmono $MONO_OPTIONS $CONDA_PREFIX/opt/renode/bin/Renode.exe "$@"' > $PREFIX/bin/renode
-echo -e '#!/bin/bash\n\npython $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-server-full-directory $CONDA_PREFIX/opt/renode/bin "$@"' > $PREFIX/bin/renode-test
+cat > $PREFIX/bin/renode <<"EOF"
+#!/bin/bash
+
+mono $MONO_OPTIONS $CONDA_PREFIX/opt/renode/bin/Renode.exe "$@"
+EOF
+
+cat > $PREFIX/bin/renode-test <<"EOF"
+#!/bin/bash
+
+STTY_CONFIG=`stty -g 2>/dev/null`
+python2 $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-server-full-directory $CONDA_PREFIX/opt/renode/bin "$@"
+RESULT_CODE=$?
+if [ -n "${STTY_CONFIG:-}" ]
+then
+    stty "$STTY_CONFIG"
+fi
+exit $RESULT_CODE
+EOF
 
 mkdir -p "${PREFIX}/etc/conda/activate.d"
 cp "${RECIPE_DIR}/activate.sh" "${PREFIX}/etc/conda/activate.d/${PKG_NAME}_activate.sh"

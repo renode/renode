@@ -1,0 +1,38 @@
+cpu_0: CPU.VexRiscv @ sysbus
+    cpuType: "rv32ima"
+    hartId: 0
+    timeProvider: clint
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
+
+cpu_1: CPU.VexRiscv @ sysbus
+    cpuType: "rv32ima"
+    hartId: 1
+    timeProvider: clint
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
+
+cpu_2: CPU.VexRiscv @ sysbus
+    cpuType: "rv32ima"
+    hartId: 2
+    timeProvider: clint
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
+
+cpu_3: CPU.VexRiscv @ sysbus
+    cpuType: "rv32ima"
+    hartId: 3
+    timeProvider: clint
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
+
+ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x08000000
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0xF0010000
+    frequency: 1000000
+    numberOfTargets: 4
+    // 100 is machine level timer interrupt in VexRiscv
+    // 101 is machine level software interrupt in VexRiscv
+    [0, 1] -> cpu_0@[101, 100]
+    [2, 3] -> cpu_1@[101, 100]
+    [4, 5] -> cpu_2@[101, 100]
+    [6, 7] -> cpu_3@[101, 100]
+
+uart: UART.LiteX_UART @ sysbus 0xF0001800

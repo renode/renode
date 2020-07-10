@@ -1,7 +1,7 @@
 *** Settings ***
 Suite Setup                   Setup
 Suite Teardown                Teardown
-Test Teardown                 Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Keywords ***
@@ -91,6 +91,7 @@ Create Machine
 
     # the last ${extra} field covers the "else" case, keeping the previous value of "extra"; by default, "else" case sets variables to "None"
     ${extra}=          Set Variable If    "${cpu}" == "CortexM"        ; nvic: nvic }; nvic: IRQControllers.NVIC    ${extra}
+    ${extra}=          Set Variable If    "${cpu}" == "PowerPc64"      ; endianness: Endianess.LittleEndian }       ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "RiscV32"        ; timeProvider: empty }                      ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "RiscV64"        ; timeProvider: empty }                      ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "X86"            ; lapic: empty }                             ${extra}
@@ -157,6 +158,15 @@ Should Disassemble PPC
     DisasTest BE           4800007c    b         .+124
     DisasTest BE           7f880040    cmplw     7, 8, 0    hex_addr=123
     DisasTest BE           7ce40034    cntlzw    4, 7
+
+Should Disassemble PPC64 LE
+    Create Machine         PowerPc64   620
+
+    # DisasTest BE is used because of the output formatting
+    # CPU is set as LE in Renode and LLVM's LE version of ppc64 is used
+    DisasTest BE           18002389    lbz       9, 24(3)
+    DisasTest BE           40202a7c    cmpld     10, 4
+    DisasTest BE           71790248    bl        .+162160
 
 Should Disassemble Sparc
     Create Machine         Sparc       leon3
