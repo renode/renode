@@ -50,7 +50,7 @@ Other dependencies (Linux only)
 
 On Ubuntu 16.04, you can install the remaining dependencies with the following command::
 
-   sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev gcc python2 python-pip libzmq5
+   sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev gcc python3 python-pip libzmq5
 
 If you are running a different distribution, you will need to install an analogous list of packages using your package manager; note that the package names may differ slightly.
 
@@ -70,11 +70,11 @@ Additional prerequisites (for Robot framework testing)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 To write and run test cases, Renode integrates with the Robot testing framework.
-This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` or ``python2-pip`` on Linux).
+This requires you to install Python 3 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` or ``python3-pip`` on Linux).
 
-Once you have Python 2.7 and ``pip``, install some additional modules::
+Once you have Python 3 and ``pip``, install some additional modules::
 
-    python2 -m pip install -r tools/requirements.txt
+    python3 -m pip install -r tools/requirements.txt
 
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
