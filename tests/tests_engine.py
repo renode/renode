@@ -309,7 +309,7 @@ def run():
     # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
     # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
     # otherwise it would not be possible to abort tests in progress
-    tests_failed = any(pool.map_async(run_test_group, args).get(999999999))
+    tests_failed = any(pool.map_async(run_test_group, args).get(999999))
 
     configure_output(options)
 
