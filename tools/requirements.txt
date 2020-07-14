@@ -1,5 +1,5 @@
 robotframework==3.1
-netifaces
+netifaces; platform_system != "Windows"
 requests
 psutil
 pyyaml
