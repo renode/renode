@@ -25,6 +25,9 @@ Should Echo Audio
     # sample input file is around 3s long, but let's give some more time for processing
     Execute Command           emulation RunFor "3.2"
 
+    # in order to make sure the output file is closed
+    Execute Command           sysbus.i2s_tx Dispose
+
     ${input_file_size}=       Get File Size  ${input_file}
     ${output_file_size}=      Get File Size  ${output_file} 
 
