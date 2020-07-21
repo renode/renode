@@ -7,6 +7,7 @@ Resource                       ${RENODEKEYWORDS}
 
 *** Test Cases ***
 Frame Buffer Test
+    [Tags]                     non_critical
     Execute Command            using sysbus
 
     Execute Command            mach create
