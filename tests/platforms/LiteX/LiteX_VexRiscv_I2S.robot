@@ -13,7 +13,7 @@ Should Echo Audio
     ${input_file}=            Download File  ${AUDIO_INPUT}
 
     Execute Command           mach create
-    Execute Command           machine LoadPlatformDescription @${CURDIR}/litex_zephyr_vexriscv_i2s.repl
+    Execute Command           machine LoadPlatformDescription @platforms/cpus/litex_zephyr_vexriscv_i2s.repl
     Execute Command           showAnalyzer sysbus.uart
     Execute Command           sysbus LoadELF @https://dl.antmicro.com/projects/renode/litex_i2s--zephyr-echo_sample.elf-s_1172756-db2f7eb8c6c8f396651b2f2d517cee13d79a9a69
 
