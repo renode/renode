@@ -35,3 +35,4 @@
 - tests/network-server/NetworkServer.robot
 - tests/platforms/LiteX/LiteX_VexRiscv_Linux_SDCard.robot
 - tests/platforms/LiteX/LiteX_VexRiscv_I2S.robot
+- tests/platforms/NXP-K64F.robot

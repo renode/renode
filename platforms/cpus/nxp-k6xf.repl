@@ -1,0 +1,35 @@
+sram_l: Memory.MappedMemory @ sysbus 0x1fff0000
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x30000
+
+flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x100000
+
+uart0: UART.K6xF_UART @ sysbus 0x4006A000
+    IRQ -> nvic@31
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 120000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+
+mcg: Miscellaneous.K6xF_MCG @ sysbus 0x40064000
+
+sim: Miscellaneous.K6xF_SIM @ sysbus 0x40047000
+
+eth: Network.K6xF_Ethernet @ sysbus 0x400C0000
+    txIRQ -> nvic@83
+    rxIRQ -> nvic@84
+
+rng: Miscellaneous.K6xF_RNG @ sysbus 0x40029000
+    IRQ -> nvic@23
+
+sysbus:
+    init:
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/MK64F12.svd.gz
+
