@@ -123,6 +123,7 @@ phy: Network.EthernetPhysicalLayer @ {
         mac0 16;
         mac1 3;
         mac1 4;
+        mac1 9;
         mac1 16
     }
     Id1: 0x0141
@@ -209,7 +210,11 @@ u54Hart3ITim: Memory.MappedMemory @ sysbus 0x01818000
 u54Hart4ITim: Memory.MappedMemory @ sysbus 0x01820000
     size: 0x7000
 
-ddr: Memory.MappedMemory @ sysbus 0x80000000
+ddr: Memory.MappedMemory @ {
+        sysbus 0x80000000;
+        sysbus 0xC0000000;
+        sysbus 0x1400000000
+    }
     size: 0x40000000
 
 pcie0: PCI.MPFS_PCIe @ sysbus 0x53004000
@@ -242,6 +247,11 @@ flash_mem: Memory.MappedMemory
 // but because of Renode's memory alignment limitations they are mapped as a single memory
 sysregScbBootRom: Memory.MappedMemory @ sysbus 0x20003000
     size: 0x1000
+
+pydev: Python.PythonPeripheral @ sysbus 0x20007c20
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
 
 sysbus:
     init:
