@@ -248,6 +248,11 @@ flash_mem: Memory.MappedMemory
 sysregScbBootRom: Memory.MappedMemory @ sysbus 0x20003000
     size: 0x1000
 
+DDR_CTRLR: Miscellaneous.MPFS_DDRMock @ sysbus 0x3e001000
+DDR_PHY: Miscellaneous.MPFS_DDRMock @ sysbus 0x20007000
+SCB_DDR_PLL: Miscellaneous.MPFS_DDRMock @ sysbus 0x3e010000
+DDRCFG: Miscellaneous.MPFS_DDRMock @ sysbus 0x20080000
+
 pydev: Python.PythonPeripheral @ sysbus 0x20007c20
     size: 0x4
     initable: true
