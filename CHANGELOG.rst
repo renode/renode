@@ -3,6 +3,77 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.10.0 - 2019.07.28
+-------------------
+
+Added:
+
+* support for the PolarFire SoC-based Icicle Kit platform, with a demo running Linux
+* experimental support for OpenPOWER ISA
+* support for NXP K64F with UART, Ethernet and RNG
+* basic support for Nordic nRF52840
+* Microwatt platform, with Potato UART, running MicroPython or Zephyr
+* LiteX platform with a 4-core VexRiscv in SMP
+* LiteX demo running Microwatt as a CPU
+* LiteX demo with VexRiscv booting Linux from the SD card
+* LiteX demo with VexRiscv showing how to handle input and output via I2S
+* LiteX MMCM model, I2S model and SD card controller model
+* several peripheral models for QuickLogic EOS S3: ADC, SPI DMA, Packet FIFO, FFE etc
+* ADXL345 accelerometer model
+* PAC1934 power monitor model
+* PCM encoder/decoder infrastructure for providing audio data to I2S devices
+* modular network server allowing to easily add server components to the emulation without a host-to-guest connection
+* built-in TFTP server module
+* file backend for UARTs, allowing to send output directly to a file (``uart CreateFileBackend``)
+* ``alias`` Monitor command
+* ``console_log`` Monitor command to simply print to the log window without level filtering
+* ``--no-gui`` build option to build without graphical dependencies
+* option to define an average cycles count per instruction, to be used by CPU counters
+* code formatting rules for translation libraries, to be used with Uncrustify
+
+Changed:
+
+* Renode is now able to be compiled with ``mcs``. This means that you can use your distribution's Mono package instead of the one provided by mono-project.com, as long as it satisfies the minimum version requirement (currently Mono 5.2)
+* the default log level is now set to ``INFO`` instead of ``DEBUG``
+* all PolarFire SoC peripherals are now renamed from PSE_* to MPFS_*, to follow Microchip's naming pattern
+* major rework of the SD card model, along with the added SPI interface
+* RI5CY core can now be created with or without FPU support
+* STM32 and SAM E70 platforms now have verified ``priorityMask`` in NVIC
+* Cortex-M based platforms can now be reset by writing to NVIC
+* easy way to update timer values between synchronization phases, significantly improving the performance of polling on timers
+* tests are now able to run in parallel, using the ``-j`` switch in the testing script execution
+* the pattern for download links in scripts for binaries hosted by Antmicro has been changed
+* portable package now includes testing infrastructure and sample tests
+* the LLVM-based disassembly library is now rebuilt, using less space and being able to support more architectures on all host OSes
+* the C++ symbol demangling now relies on a `CxxDemangler <https://github.com/southpolenator/CxxDemangler>_` library, instead of libstdc++
+* failed Robot tests will now produce snapshots allowing users to debug more easily
+* SVD-based log messages on reads and writes are now more verbose
+* Terminal Tester API has changed slightly, allowing for easier prompt detection, timeout control etc.
+
+Fixed:
+
+* crash when running tests with empty ``tests.yaml`` file
+* crash when Renode is unable to find the root directory
+* crash when loading broken or incompatible state snapshot with ``Load``
+* several issues in the PPC architecture
+* ``mstatus`` CSR behaviour when accessing FP registers in RISC-V
+* PMP napot decoding in RISC-V
+* evaluation of the IT-state related status codes in ARM CPUs
+* invalid setting of CPUID fields in x86 guests
+* PolarFire SoC platform description and various models: CAN, SPI, SD controller, etc.
+* ``ODR`` register behavior in STM32F1 GPIO port
+* ``State changed`` event handling in LED model
+* invalid disposal of the SD card model, possibly leading to filesystem sharing violations
+* some cursor manipulation commands in TermSharp
+* performance issues when hitting breakpoints with GDB
+* on the fly compilation of “*.cs” files in the portable Renode package
+* Mono Framework version detection
+* upgrading Renode version on Windows when installed using the ``msi`` package
+* error message when quitting Renode on Windows
+* running tests from binary packages
+* support for testing in Conda Renode package
+* other various fixes in Conda package building
+
 1.9.0 - 2019.03.10
 ------------------
 
