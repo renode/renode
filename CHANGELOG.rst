@@ -3,7 +3,7 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
-1.10.0 - 2019.07.28
+1.10.0 - 2020.07.28
 -------------------
 
 Added:
@@ -74,7 +74,7 @@ Fixed:
 * support for testing in Conda Renode package
 * other various fixes in Conda package building
 
-1.9.0 - 2019.03.10
+1.9.0 - 2020.03.10
 ------------------
 
 Breaking changes:
