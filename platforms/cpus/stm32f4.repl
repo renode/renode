@@ -81,10 +81,12 @@ dma2: DMA.STM32DMA @ sysbus 0x40026400
 rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
     -> nvic@80
 
-rcc: Python.PythonPeripheral @ sysbus 0x40023800
-    size: 0x400
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> nvic@41
+
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
+    rtcPeripheral: rtc
 
 sysbus:
     init:
