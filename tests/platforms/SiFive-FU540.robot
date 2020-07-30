@@ -48,7 +48,7 @@ Should Ls
     [Tags]                    linux  uart  interrupts
     Requires                  booted-linux
 
-    Write Line To Uart        ls --color=never /
+    Write Line To Uart        ls /
     Wait For Line On Uart     proc
 
 Should Read Temperature From SPI sensors
