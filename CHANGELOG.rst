@@ -3,6 +3,16 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.10.1 - 2020.07.30
+-------------------
+
+This is a hotfix release overriding 1.10.0.
+
+Fixed:
+
+* crash on Windows when accessing high memory addresses
+* installation instructions in README
+
 1.10.0 - 2020.07.28
 -------------------
 
