@@ -55,7 +55,7 @@ Changed:
 * the pattern for download links in scripts for binaries hosted by Antmicro has been changed
 * portable package now includes testing infrastructure and sample tests
 * the LLVM-based disassembly library is now rebuilt, using less space and being able to support more architectures on all host OSes
-* the C++ symbol demangling now relies on a `CxxDemangler <https://github.com/southpolenator/CxxDemangler>_` library, instead of libstdc++
+* the C++ symbol demangling now relies on a `CxxDemangler <https://github.com/southpolenator/CxxDemangler>`_ library, instead of libstdc++
 * failed Robot tests will now produce snapshots allowing users to debug more easily
 * SVD-based log messages on reads and writes are now more verbose
 * Terminal Tester API has changed slightly, allowing for easier prompt detection, timeout control etc.
