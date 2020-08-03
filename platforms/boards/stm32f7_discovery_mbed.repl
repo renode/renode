@@ -1,0 +1,7 @@
+using "platforms/boards/stm32f7_discovery-bb.repl"
+ 
+tim5: Python.PythonPeripheral @ sysbus 0x40000C24
+    size: 0x1
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
