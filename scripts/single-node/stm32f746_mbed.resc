@@ -1,0 +1,20 @@
+:name: STM32F746
+:description: This script runs MBED hello world on STM32F7 Discovery.
+
+using sysbus
+$name?="STM32F746"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/stm32f7_discovery-bb.repl
+
+showAnalyzer usart1
+showAnalyzer ltdc
+
+$bin ?= @https://dl.antmicro.com/projects/renode/renode-mbed-pipeline-helloworld.elf-ga2ede71-s_2466384-6e3635e4ed159bc847cf1deb3dc7f24b10d26b41
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
