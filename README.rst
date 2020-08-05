@@ -17,7 +17,7 @@ Supported architectures include:
 * x86
 * RISC-V
 * SPARC
-* PowerPC
+* POWER
 
 Why use Renode?
 ---------------
