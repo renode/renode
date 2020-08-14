@@ -117,11 +117,11 @@ Should Handle I2C
     Write Line To Uart         cd /sys/class/i2c-dev/i2c-0/device/0-0005/iio:device0
 
     Write Line To Uart         cat in_temp_raw
-    Wait For Line On Uart      4352
+    Wait For Line On Uart      4384
     Wait For Prompt On Uart    ${SHELL_PROMPT}
 
     Execute Command            i2c.si7021 Temperature 36
     Write Line To Uart         cat in_temp_raw
-    Wait For Line On Uart      3840
+    Wait For Line On Uart      7705
     Wait For Prompt On Uart    ${SHELL_PROMPT}
 
