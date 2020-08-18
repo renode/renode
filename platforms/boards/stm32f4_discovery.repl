@@ -6,5 +6,5 @@ UserButton: Miscellaneous.Button @ gpioPortA
 UserLED: Miscellaneous.LED @ gpioPortD
 
 gpioPortD:
-    12 -> gpioPortD@0  
+    12 -> UserLED@0
    

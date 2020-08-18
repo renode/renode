@@ -4,5 +4,5 @@ externalButton: Miscellaneous.Button @ gpioPortA
 externalLed: Miscellaneous.LED @ gpioPortA
 
 gpioPortA:
-    5 -> gpioPortA@0
+    5 -> externalLed@0
 
