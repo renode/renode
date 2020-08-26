@@ -2,6 +2,7 @@
 - src/Infrastructure/src/Emulator/Main/Tests/UnitTests/UnitTests.csproj
 - src/Infrastructure/src/Emulator/Peripherals/Test/PeripheralsTests/PeripheralsTests.csproj
 - tests/unit-tests/RenodeTests/RenodeTests.csproj
+- lib/options-parser/OptionsParserTests.csproj
 
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 - tests/platforms/QuarkC1000/QuarkC1000.robot
