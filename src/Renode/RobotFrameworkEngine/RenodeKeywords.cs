@@ -260,6 +260,18 @@ namespace Antmicro.Renode.RobotFramework
             Logger.AddBackend(new FileBackend(filePath, flushAfterEveryWrite), "file", true);
         }
 
+        [RobotFrameworkKeyword]
+        public void OpenGUI()
+        {
+            Emulator.OpenGUI();
+        }
+
+        [RobotFrameworkKeyword]
+        public void CloseGUI()
+        {
+            Emulator.CloseGUI();
+        }
+
         private void CheckLogTester()
         {
             if(logTester == null)

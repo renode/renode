@@ -4,6 +4,7 @@ Library         Process
 Library         Collections
 Library         OperatingSystem
 Library         helper.py
+Library         Dialogs
 
 *** Variables ***
 ${SERVER_REMOTE_DEBUG}      False
@@ -18,6 +19,7 @@ ${HOTSPOT_ACTION}           None
 ${DISABLE_XWT}              False
 ${DEFAULT_UART_TIMEOUT}     120
 ${CREATE_SNAPSHOT_ON_FAIL}  True
+${HOLD_ON_ERROR}            False
 
 *** Keywords ***
 Setup
@@ -89,6 +91,11 @@ Test Teardown
     Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
     ...   Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
+    Run Keyword If      ${HOLD_ON_ERROR}
+    ...   Run Keyword If Test Failed  Run Keywords
+        ...    Open GUI
+        ...    AND  Pause Execution  Test failed. Press OK once done debugging.
+        ...    AND  Close GUI
     Reset Emulation
 
 Hot Spot

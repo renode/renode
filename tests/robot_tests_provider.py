@@ -74,6 +74,11 @@ def install_cli_arguments(parser):
                         action="store",
                         default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
                         help=".NET runner")
+    parser.add_argument("--debug-on-error",
+                        dest="debug_on_error",
+                        action="store_true",
+                        default=False,
+                        help="Enables the Renode User Interface when test fails")
 
 
 def verify_cli_arguments(options):
@@ -178,6 +183,8 @@ class RobotTestSuite(object):
             args.append('--hide-log')
         if not options.enable_xwt:
             args.append('--disable-xwt')
+        if options.debug_on_error:
+            args.append('--robot-debug-on-error')
 
         if options.runner == 'mono':
             args.insert(0, 'mono')
@@ -285,6 +292,8 @@ class RobotTestSuite(object):
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
             variables.append('CONFIGURATION:Debug')
+        if options.debug_on_error:
+            variables.append('HOLD_ON_ERROR:True')
 
         if options.variables:
             variables += options.variables
