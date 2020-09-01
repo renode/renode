@@ -18,19 +18,19 @@ def decorate(text):
     indent_level = 6
     box_length = 1
 
-    box_upper_corner = u'\u2554'.encode('utf-8')
-    box_horizontal_element = u'\u2550'.encode('utf-8')
-    box_vertical_element = u'\u2551'.encode('utf-8')
-    box_lower_corner = u'\u255a'.encode('utf-8')
+    box_upper_corner = u'\u2554'.encode()
+    box_horizontal_element = u'\u2550'
+    box_vertical_element = u'\u2551'.encode()
+    box_lower_corner = u'\u255a'.encode()
 
-    initial_spacing = " " * indent_level
-    line_prefix = "\n" + initial_spacing + box_vertical_element + " "
+    initial_spacing = (" " * indent_level).encode()
+    line_prefix = u"\n".encode() + initial_spacing + box_vertical_element + u" ".encode()
+    horizontal_line = (box_horizontal_element * box_length).encode()
 
-    return initial_spacing + box_upper_corner + (box_horizontal_element * box_length) \
+    return (initial_spacing + box_upper_corner + horizontal_line \
         + line_prefix \
-        + line_prefix.join(text.encode('utf-8').split("\n")) \
-        + "\n" + initial_spacing + box_lower_corner + (box_horizontal_element * box_length)
-
+        + line_prefix.join([x.encode() for x in text.split("\n")]) \
+        + u"\n".encode() + initial_spacing + box_lower_corner + horizontal_line).decode()
 
 def start_test(data, result):
     print("+++++ Starting test '{}'".format(data.longname))
