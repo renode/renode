@@ -19,8 +19,8 @@ Create Platform
 
     Execute Command            set device_tree @https://dl.antmicro.com/projects/renode/${device_tree}
 
-    Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_5787652-2115891ba50b339ae0d8b5ece999fc685791fbbc
-    Execute Command            set emulator @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--emulator.bin-s_9584-51b9c133e1938e3b2cec63601a942cc580d93945
+    Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_5779444-35ab9df3c7269c9efbbba50a2d88acebf0ba8f41
+    Execute Command            set emulator @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--emulator.bin-s_2992-b37cf5dc3e72d990ca44b12228edbe2d54faaea8
 
     Execute Command            sysbus LoadBinary $kernel 0x40000000
     Execute Command            sysbus LoadBinary $device_tree 0x41000000
@@ -36,7 +36,7 @@ Load Rootfs To Ram
 
 *** Test Cases ***
 Should Mount Filesystem From SD Card
-    Create Platform            litex_vexriscv-sdcard--rv32.dtb-s_4881-7438efa7d1bdf60f21643e7804688c1830b31672
+    Create Platform            litex_vexriscv-sdcard--rv32.dtb-s_2096-de9ce3e0d99ec442a010a5fd45dfb6657d16fb15
     ...                        fat16_sdcard.image-s_64000000-8a919aa2199e1a1cf086e67546b539295d2d9d8f
     Load Rootfs To Ram 
 
@@ -45,7 +45,6 @@ Should Mount Filesystem From SD Card
 
     Start Emulation
 
-    Wait For Line On Uart      litex-mmc f000a000.mmc: Setting clk freq to: 10000000
     Wait For Line On Uart      mmc0: new SD card at address 0000
     Wait For Line On Uart      blk_queue_max_hw_sectors: set to minimum 8
     Wait For Line On Uart      blk_queue_max_segment_size: set to minimum 4096
@@ -95,7 +94,7 @@ Should Mount Filesystem From SD Card
     Wait For Line On Uart      This is a write test
 
 Should Load RootFS From SD Card
-    Create Platform            litex_vexriscv-sdcard--rootfs_from_sdcard-rv32.dtb-s_4813-b837492f949c15f8ddb9e7e318484a4c689b2841
+    Create Platform            litex_vexriscv-sdcard--rootfs_from_sdcard-rv32.dtb-s_2096-7ff4845287ba6298612e3db510c66da6d9c46075
     ...                        riscv32-buildroot--busybox-rootfs.ext4.image-s_67108864-cd5badff81b32092c010d683c471821d4ea99af6
 
     Create Terminal Tester     sysbus.uart
