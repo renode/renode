@@ -18,8 +18,9 @@ namespace Antmicro.Renode.UI
 {
     public partial class TerminalWidget : Widget
     {
-        public TerminalWidget(Func<bool> focusProvider)
+        public TerminalWidget(Func<bool> focusProvider, bool isMonitorWindow)
         {
+            this.isMonitorWindow = isMonitorWindow;
             var shortcutDictionary = new Dictionary<KeyEventArgs, Action>
             {
                 {CreateKey(Key.C, ModifierKeys.Shift | ModifierKeys.Control), CopyMarkedField},
@@ -72,16 +73,7 @@ namespace Antmicro.Renode.UI
             }
             terminal.CurrentFont = font.WithSize(defaultFontSize);
 
-            if(!FirstWindowAlreadyShown)
-            {
-                terminal.AppendRow(new LogoRow());
-                FirstWindowAlreadyShown = true;
-                firstWindow = true;
-            }
-            else
-            {
-                terminal.AppendRow(new MonospaceTextRow(""));
-            }
+            terminal.AppendRow(isMonitorWindow ? new LogoRow() : new MonospaceTextRow(""));
 
             var encoder = new TermSharp.Vt100.Encoder(x =>
             {
@@ -152,7 +144,7 @@ namespace Antmicro.Renode.UI
 
         protected override void OnBoundsChanged()
         {
-            if(!firstWindow)
+            if(!isMonitorWindow)
             {
                 var availableScreenSize = terminal.ScreenSize + terminal.InnerMarginBottom - MinimalBottomMargin;
                 var rowHeight = ((MonospaceTextRow)terminal.GetScreenRow(0, false)).LineHeight;
@@ -206,8 +198,7 @@ namespace Antmicro.Renode.UI
         };
 
         private bool modifyLineEndings;
-        private bool firstWindow;
-        private static bool FirstWindowAlreadyShown;
+        private bool isMonitorWindow;
         private double defaultFontSize;
         private Terminal terminal;
         private const int MinimalBottomMargin = 2;
