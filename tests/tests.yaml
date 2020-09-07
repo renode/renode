@@ -39,3 +39,4 @@
 - tests/platforms/NXP-K64F.robot
 - tests/platforms/STM32F4_Discovery.robot
 - tests/platforms/NRF52840.robot
+- tests/platforms/Icicle-Kit.robot
