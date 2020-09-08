@@ -377,7 +377,7 @@ Single Node Should Send A PDelay Request Packet
 
 Slave Should Call The Phase Dis Callback
     Setup Multi Node Scenario
-    Create Terminal Tester                         sysbus.usart1  machine=slave  timeout=120
+    Create Terminal Tester                         sysbus.usart1  machine=slave
     Start Emulation
 
     Wait For Line On Uart                          net_gptp_sample.gptp_phase_dis_cb

@@ -10,7 +10,7 @@ Resource                          ${RENODEKEYWORDS}
 Write To Uart And Wait
     [Arguments]            ${input}            ${expected_output}
     Write Line To Uart            ${input}
-    Wait For Line On Uart         ${expected_output}  timeout=2
+    Wait For Line On Uart         ${expected_output}
 
 *** Test Cases ***
 List Fomu in Linux
@@ -34,7 +34,6 @@ List Fomu in Linux
 
     Create Terminal Tester
     ...                           sysbus.uart0
-    ...                           timeout=300
     ...                           machine=hifive-unleashed
 
     Start Emulation

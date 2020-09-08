@@ -143,6 +143,6 @@ namespace Antmicro.Renode.RobotFramework
             throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
         }
 
-        private float globalTimeout = 120;
+        private float globalTimeout = 8;
     }
 }

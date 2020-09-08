@@ -41,14 +41,14 @@ Should Run OpenSBI
 Should Boot Linux
 
     Create Platform
-    Create Terminal Tester     sysbus.uart  timeout=360
+    Create Terminal Tester     sysbus.uart
     Execute Command            showAnalyzer sysbus.uart
 
     Start Emulation
 
     Wait For Line On Uart      Linux version 5.0.9
     Wait For Line On Uart      smp: Brought up 1 node, 4 CPUs
-    Wait For Line On Uart      Welcome to Buildroot
+    Wait For Line On Uart      Welcome to Buildroot  timeout=16
 
     Wait For Prompt On Uart    buildroot login:
     Write Line To Uart         root

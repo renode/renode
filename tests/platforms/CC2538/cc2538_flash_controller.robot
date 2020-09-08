@@ -33,6 +33,6 @@ Should Write, Read and Erase Flash using Flash Controller
     Wait For Line On Uart       CC2538 FLASH TEST
     Wait For Line On Uart       FLASH SIZE: 0x10000
     Wait For Line On Uart       [OK] Data written with memset successfully
-    Wait For Line On Uart       [OK] Data written successfully
+    Wait For Line On Uart       [OK] Data written successfully               timeout=12
     Wait For Line On Uart       [OK] Data erased successfully
     Wait For Line On Uart       [OK] Data erased successfully

@@ -26,7 +26,6 @@ Frame Buffer Test
     Execute Command            cpu PC 0x20000000
 
     Create Terminal Tester     sysbus.uart  
-    ...                        timeout=240
 
     Start Emulation
 

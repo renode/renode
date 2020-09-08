@@ -17,7 +17,7 @@ ${DIRECTORY}                ${CURDIR}/../../../output/bin/${CONFIGURATION}
 ${BINARY_NAME}              Renode.exe
 ${HOTSPOT_ACTION}           None
 ${DISABLE_XWT}              False
-${DEFAULT_UART_TIMEOUT}     120
+${DEFAULT_UART_TIMEOUT}     8
 ${CREATE_SNAPSHOT_ON_FAIL}  True
 ${HOLD_ON_ERROR}            False
 

@@ -61,20 +61,20 @@ Should Talk Over Wireless Network
 
     :FOR  ${i}  IN RANGE  0  ${REPEATS}
 
-    \   Wait For Line On Uart       Received request (\\d+) from fd00::200:0:0:2       testerId=${server-tester}        treatAsRegex=true
-    \   Wait For Line On Uart       Sending response (\\d+) to fd00::200:0:0:2      testerId=${server-tester}       treatAsRegex=true
+    \   Wait For Line On Uart       Received request (\\d+) from fd00::200:0:0:2       testerId=${server-tester}        treatAsRegex=true      timeout=10
+    \   Wait For Line On Uart       Sending response (\\d+) to fd00::200:0:0:2         testerId=${server-tester}        treatAsRegex=true
     \   Wait For Line On Uart       Received request (\\d+) from fd00::200:0:0:3       testerId=${server-tester}        treatAsRegex=true
-    \   Wait For Line On Uart       Sending response (\\d+) to fd00::200:0:0:3      testerId=${server-tester}       treatAsRegex=true
+    \   Wait For Line On Uart       Sending response (\\d+) to fd00::200:0:0:3         testerId=${server-tester}        treatAsRegex=true
 
 
     :FOR  ${i}  IN RANGE  0  ${REPEATS}
 
-    \   Wait For Line On Uart       Sending request ${i} to fd00::200:0:0:1      testerId=${client1-tester}
-    \   Wait For Line On Uart       Received response ${i} from fd00::200:0:0:1       testerId=${client1-tester}
+    \   Wait For Line On Uart       Sending request ${i} to fd00::200:0:0:1            testerId=${client1-tester}
+    \   Wait For Line On Uart       Received response ${i} from fd00::200:0:0:1        testerId=${client1-tester}
 
 
     :FOR  ${i}  IN RANGE  0  ${REPEATS}
 
-    \   Wait For Line On Uart       Sending request ${i} to fd00::200:0:0:1      testerId=${client2-tester}
-    \   Wait For Line On Uart       Received response ${i} from fd00::200:0:0:1       testerId=${client2-tester}
+    \   Wait For Line On Uart       Sending request ${i} to fd00::200:0:0:1            testerId=${client2-tester}
+    \   Wait For Line On Uart       Received response ${i} from fd00::200:0:0:1        testerId=${client2-tester}
 

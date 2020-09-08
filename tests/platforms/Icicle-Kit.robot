@@ -62,7 +62,7 @@ Should Boot Linux
     Start Emulation
     #Requires                  booted-uboot
 
-    Wait For Prompt On Uart   buildroot login:  testerId=${uart}  timeout=800
+    Wait For Prompt On Uart   buildroot login:  testerId=${uart}
     Write Line To Uart        root              testerId=${uart}
     Wait For Prompt On Uart   Password          testerId=${uart}
     Write Line To Uart        root              testerId=${uart}  waitForEcho=false
@@ -77,7 +77,7 @@ Should Ls
     ${hss}=                   Create Terminal Tester        ${UART_HSS}
     ${uart}=                  Create Terminal Tester        ${UART}
     Start Emulation
-    Wait For Prompt On Uart   buildroot login:  testerId=${uart}  timeout=800
+    Wait For Prompt On Uart   buildroot login:  testerId=${uart}
     Write Line To Uart        root              testerId=${uart}
     Wait For Prompt On Uart   Password          testerId=${uart}
     Write Line To Uart        root              testerId=${uart}  waitForEcho=false

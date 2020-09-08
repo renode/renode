@@ -22,7 +22,7 @@ Download File Over TFTP
     Execute Command             server StartTFTP 6069
     Execute Command             server.tftp ServeFile @https://dl.antmicro.com/projects/renode/litex_vexriscv-micropython.bin-s_218608-db594ec6a9a75d77d2475afd714b6c28fb6e6498 "boot.bin"
 
-    Create Terminal Tester      sysbus.uart  timeout=600
+    Create Terminal Tester      sysbus.uart
     Execute Command             showAnalyzer sysbus.uart
     Start Emulation
 
