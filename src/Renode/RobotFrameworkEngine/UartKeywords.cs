@@ -21,9 +21,9 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void SetDefaultUartTimeout(int timeout)
+        public void SetDefaultUartTimeout(float timeoutInSeconds)
         {
-            globalTimeout = timeout;
+            globalTimeout = timeoutInSeconds;
         }
 
         [RobotFrameworkKeyword]
@@ -33,18 +33,20 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public int CreateTerminalTester(string uart, int? timeout = null, string machine = null, string endLineOption = null)
+        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null)
         {
             return CreateNewTester(uartObject =>
             {
+                var timeoutInSeconds = timeout ?? globalTimeout;
+
                 TerminalTester tester;
                 if(Enum.TryParse<EndLineOption>(endLineOption, out var result))
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)(timeout ?? globalTimeout)), result);
+                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds), result);
                 }
                 else
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds((uint)(timeout ?? globalTimeout)));
+                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds));
                 }
                 tester.AttachTo(uartObject);
                 return tester;
@@ -52,13 +54,13 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, uint? timeout = null, bool treatAsRegex = false)
+        public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, float? timeout = null, bool treatAsRegex = false)
         {
             return WaitForLineOnUart(prompt, timeout, testerId, treatAsRegex, true);
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForLineOnUart(string content, ulong? timeout = null, int? testerId = null, bool treatAsRegex = false, bool includeUnfinishedLine = false)
+        public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false, bool includeUnfinishedLine = false)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -76,7 +78,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForNextLineOnUart(uint? timeout = null, int? testerId = null)
+        public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -119,7 +121,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(ulong timeInSeconds, int? testerId = null)
+        public void TestIfUartIsIdle(float timeInSeconds, int? testerId = null)
         {
             var tester = GetTesterOrThrowException(testerId);
             var result = tester.IsIdle(TimeInterval.FromSeconds(timeInSeconds));
@@ -130,10 +132,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void WriteCharDelay(ulong delay, int? testerId = null)
+        public void WriteCharDelay(float delay, int? testerId = null)
         {
             var tester = GetTesterOrThrowException(testerId);
-            tester.WriteCharDelay = TimeSpan.FromMilliseconds(delay);
+            tester.WriteCharDelay = TimeSpan.FromSeconds(delay);
         }
 
         private void OperationFail(TerminalTester tester)
@@ -141,6 +143,6 @@ namespace Antmicro.Renode.RobotFramework
             throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
         }
 
-        private int globalTimeout = 120;
+        private float globalTimeout = 120;
     }
 }
