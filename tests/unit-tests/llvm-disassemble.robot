@@ -100,6 +100,33 @@ Create Machine
     Execute Command    machine LoadPlatformDescriptionFromString "cpu: CPU.${cpu} @ sysbus { cpuType: \\"${model}\\" ${extra}"
     Execute Command    machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x50000 }"
 
+Disassemble RV32IMA
+    DisasTest LE           01212823    sw               s2, 16(sp)              # rv32i
+    DisasTest LE           00b785b3    add              a1, a5, a1              # rv32i
+    DisasTest LE           00008297    auipc            t0, 8                   # rv32i
+    DisasTest LE           0000100F    fence.i                                  # Zifencei
+    DisasTest LE           3401f173    csrrci           sp, mscratch, 3         # Zicsr
+    DisasTest LE           02ab5c33    divu             s8, s6, a0              # rv32m
+    DisasTest LE           0805252f    amoswap.w        a0, zero, (a0)          # rv32a
+
+Disassemble RV32FD
+    DisasTest LE           580123d3    fsqrt.s          ft7, ft2, rdn           # rv32f
+    DisasTest LE           5a0123d3    fsqrt.d          ft7, ft2, rdn           # rv32d
+
+Disassemble RV32C
+    DisasTest LE           3fed        jal              -6              2       # rv32c
+
+Disassemble RV64IMAC
+    DisasTest LE           000a3a83    ld               s5, 0(s4)               # rv64i
+    DisasTest LE           abcd8a9b    addiw            s5, s11, -1348          # rv64i
+    DisasTest LE           02ab7c3b    remuw            s8, s6, a0              # rv64m
+    DisasTest LE           e705b52f    amomaxu.d.aqrl   a0, a6, (a1)            # rv64a
+    DisasTest LE           eabc        sd               a5, 80(a3)      2       # rv64c
+
+Disassemble RV64FD
+    DisasTest LE           d0312353    fcvt.s.lu        ft6, sp, rdn            # rv64f
+    DisasTest LE           d2312353    fcvt.d.lu        ft6, sp, rdn            # rv64d
+
 
 *** Test Cases ***
 
@@ -126,31 +153,45 @@ Should Disassemble ARM Cortex-M
     DisasTest Thumb        f44f426d    mov.w    r2, \#60672          hex_addr=9e8
     DisasTest Thumb        10b6        asrs     r6, r6, \#2     2    ad88
 
-Should Disassemble RISCV32
-    Create Machine         RiscV32     generic-rv32
+Should Disassemble RISCV32IMA
+    Create Machine         RiscV32     rv32ima
+    Disassemble RV32IMA
 
-    DisasTest LE           01212823    sw     s2, 16(sp)
-    DisasTest LE           00b785b3    add    a1, a5, a1    hex_addr=20
+Should Disassemble RISCV32IMAC
+    Create Machine         RiscV32     rv32imac
+    Disassemble RV32IMA
+    Disassemble RV32C
 
-Should Disassemble RISCV64
-    Create Machine         RiscV64     generic-rv64
+Should Disassemble RISCV32IMAFDC
+    Create Machine         RiscV32     rv32imafdc
+    Disassemble RV32IMA
+    Disassemble RV32FD
+    Disassemble RV32C
 
-    DisasTest LE           34011173    csrrw    sp, mscratch, sp
-    DisasTest LE           00008297    auipc    t0, 8               hex_addr=cc
+Should Disassemble RISCV32GC
+    Create Machine         RiscV32     rv32gc
+    Disassemble RV32IMA
+    Disassemble RV32FD
+    Disassemble RV32C
 
-# Works only if "+c" feature is passed to LLVMCreateCPU by libllvm-disas
-Should Disassemble RISCV64 compressed instructions
-    [Tags]                 non_critical
+Should Disassemble RISCV64IMAC
+    Create Machine         RiscV64     rv64imac
+    Disassemble RV32IMA
+    Disassemble RV64IMAC
 
-    Create Machine         RiscV64     rv64-imac
-    DisasTest LE           8fed        and          a5, a5, a1    2    452
+Should Disassemble RISCV64IMAFDC
+    Create Machine         RiscV64     rv64imafdc
+    Disassemble RV32IMA
+    Disassemble RV32FD
+    Disassemble RV64IMAC
+    Disassemble RV64FD
 
-# Works only if "+a" feature is passed to LLVMCreateCPU by libllvm-disas
-Should Disassemble RISCV64 atomic instructions
-    [Tags]                 non_critical
-
-    Create Machine         RiscV64     rv64-imac
-    DisasTest LE           0805252f    amoswap.w    a0, zero, (a0)    hex_addr=452
+Should Disassemble RISCV64GC
+    Create Machine         RiscV64     rv64gc
+    Disassemble RV32IMA
+    Disassemble RV32FD
+    Disassemble RV64IMAC
+    Disassemble RV64FD
 
 Should Disassemble PPC
     Create Machine         PowerPc     e200z6
