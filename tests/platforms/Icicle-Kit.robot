@@ -14,6 +14,7 @@ ${UART}                       sysbus.mmuart1
 Prepare Machine
     # we use special FDT that contains spi sensors
     Execute Script            ${SCRIPT}
+    Set Default Uart Timeout  300
 
 # These tests have some code duplication (before the `Requires` keywords) to alleviate the problem related
 # to non-idempotent behavior of `CreateTerminalTester`. This duplication should be removed when we address
@@ -63,7 +64,7 @@ Should Boot Linux
 
     Wait For Prompt On Uart   buildroot login:  testerId=${uart}  timeout=800
     Write Line To Uart        root              testerId=${uart}
-    Wait For Prompt On Uart   Password          testerId=${uart}  timeout=120
+    Wait For Prompt On Uart   Password          testerId=${uart}
     Write Line To Uart        root              testerId=${uart}  waitForEcho=false
     Wait For Prompt On Uart   \#                testerId=${uart}
 
@@ -78,7 +79,7 @@ Should Ls
     Start Emulation
     Wait For Prompt On Uart   buildroot login:  testerId=${uart}  timeout=800
     Write Line To Uart        root              testerId=${uart}
-    Wait For Prompt On Uart   Password          testerId=${uart}  timeout=120
+    Wait For Prompt On Uart   Password          testerId=${uart}
     Write Line To Uart        root              testerId=${uart}  waitForEcho=false
     Wait For Prompt On Uart   \#                testerId=${uart}
     #Requires                  booted-linux
