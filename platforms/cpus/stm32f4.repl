@@ -1,4 +1,4 @@
-fscmBank1: Memory.MappedMemory @ sysbus 0x60000000
+fsmcBank1: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x10000000
 
 sram: Memory.MappedMemory @ sysbus 0x20000000
