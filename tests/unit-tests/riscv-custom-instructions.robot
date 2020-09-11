@@ -12,6 +12,16 @@ ${csr_script}=  SEPARATOR=
 ...  elif request.isWrite:                                               ${\n}${SPACE}
 ...      cpu.DebugLog('CSR written: {}!'.format(hex(request.value)))
 
+${xadd}=  SEPARATOR=
+...  src_reg_a = instruction & 0xF                                                                   ${\n}
+...  src_reg_b = (instruction >> 12) & 0xF                                                           ${\n}
+...  res = cpu.GetRegisterUnsafe(src_reg_a).RawValue + cpu.GetRegisterUnsafe(src_reg_b).RawValue     ${\n}
+...  state['res'] = res
+
+${xmv}=  SEPARATOR=
+...  dst_reg = instruction & 0xF                                         ${\n}
+...  cpu.SetRegisterUnsafe(dst_reg, state['res'])                        
+
 *** Keywords ***
 Create Machine
     Execute Command                             mach create
@@ -111,6 +121,44 @@ Should Override An Existing 32-bit Instruction
     Wait For LogEntry                           --- start ---
     Wait For LogEntry                           custom instruction executed! 
     Wait For LogEntry                           --- stop ---
+
+Should Install Custom 32-bit Instructions Sharing State
+    Create Machine
+    Create Log Tester
+
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111bbbb11111000aaaa" "${xadd}"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111011aaaa" "${xmv}"
+
+    # li x1, 0x147
+    Execute Command                             sysbus WriteDoubleWord 0x0 0x14700093 
+    # li x2, 0x19
+    Execute Command                             sysbus WriteDoubleWord 0x4 0x01900113
+
+    # add values of x1 and x2 and store in the local register
+    Execute Command                             sysbus WriteDoubleWord 0x8 0xB38F2F81
+    # move the local register to x3
+    Execute Command                             sysbus WriteDoubleWord 0xC 0xB38F0FB3
+
+    Register Should Be Equal                    x1  0x0
+    Register Should Be Equal                    x2  0x0
+    Register Should Be Equal                    x3  0x0
+
+    Start Emulation
+    Execute Command                             sysbus.cpu Step 2
+
+    Register Should Be Equal                    x1  0x147
+    Register Should Be Equal                    x2  0x19
+    Register Should Be Equal                    x3  0x0
+
+    Execute Command                             sysbus.cpu Step
+    Register Should Be Equal                    x1  0x147
+    Register Should Be Equal                    x2  0x19
+    Register Should Be Equal                    x3  0x0
+
+    Execute Command                             sysbus.cpu Step
+    Register Should Be Equal                    x1  0x147
+    Register Should Be Equal                    x2  0x19
+    Register Should Be Equal                    x3  0x160
 
 Should Register Simple Custom CSR
     Create Machine
