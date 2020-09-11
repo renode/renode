@@ -85,6 +85,8 @@ sysbus:
         Tag <0x40023C18 4> "FLASH_SR"  0xE
         Tag <0x40007000 4> "PWR_CONTROL" 0x1000
         Tag <0x40007004 4> "PWR_STATUS"  0x8
+        // Hard set all oscillator RDY bits
+        Tag <0x40023800 4> "RCC_CR" 0x2020202
 
 rccCsr: Python.PythonPeripheral @ sysbus 0x40023834
     size: 0x4
