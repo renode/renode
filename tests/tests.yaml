@@ -41,3 +41,4 @@
 - tests/platforms/NRF52840.robot
 - tests/platforms/Icicle-Kit.robot
 - tests/unit-tests/riscv-custom-instructions.robot
+- tests/platforms/LiteX/LiteX_VexRiscv_Linux_SpiFLashQuad.robot
