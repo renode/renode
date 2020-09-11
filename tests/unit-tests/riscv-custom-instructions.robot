@@ -31,6 +31,15 @@ Load Code To Memory
     # csrr x2, 0xf0d
     Execute Command                             sysbus WriteDoubleWord 0x8 0xf0d02173
 
+Register Should Be Equal
+    [Arguments]                                 ${reg_name}     ${value}
+    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe ${reg_name[1:]}
+    Should Be Equal                             ${value}        ${reg.replace('\n', '')}
+
+PC Should Be Equal
+    [Arguments]                                 ${value}
+    Register Should Be Equal                    x32             ${value}
+
 *** Test Cases ***
 Should Install Custom 16-bit Instruction
     Create Machine
@@ -90,16 +99,14 @@ Should Override An Existing 32-bit Instruction
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "00010100011100000000000010010011" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             sysbus WriteDoubleWord 0x0 0x14700093
 
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 1
-    Should Be Equal                             0x0   ${reg.replace('\n', '')}
+    Register Should Be Equal                    x1  0x0
 
     Execute Command                             log "--- start ---"
     Start Emulation
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 1
-    Should Be Equal                             0x0   ${reg.replace('\n', '')}
+    Register Should Be Equal                    x1  0x0
 
     Wait For LogEntry                           --- start ---
     Wait For LogEntry                           custom instruction executed! 
@@ -113,23 +120,16 @@ Should Register Simple Custom CSR
 
     Load Code To Memory
 
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 1
-    Should Be Equal                             0x0   ${reg.replace('\n', '')}
-
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 2
-    Should Be Equal                             0x0   ${reg.replace('\n', '')}
+    Register Should Be Equal                    x1  0x0
+    Register Should Be Equal                    x2  0x0
 
     Start Emulation
     Execute Command                             sysbus.cpu Step 3
     
-    ${pc}=  Execute Command                     sysbus.cpu PC
-    Should Be Equal                             0xc  ${pc.replace('\n', '')}
+    PC Should Be Equal                          0xc
 
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 1
-    Should Be Equal                             0x147   ${reg.replace('\n', '')}
-
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 2
-    Should Be Equal                             0x147   ${reg.replace('\n', '')}
+    Register Should Be Equal                    x1  0x147
+    Register Should Be Equal                    x2  0x147
 
 Should Register Custom CSR
     Create Machine
@@ -146,11 +146,8 @@ Should Register Custom CSR
     ${pc}=  Execute Command                     sysbus.cpu PC
     Should Be Equal                             0xc  ${pc.replace('\n', '')}
 
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 1
-    Should Be Equal                             0x147   ${reg.replace('\n', '')}
-
-    ${reg}=  Execute Command                    sysbus.cpu GetRegisterUnsafe 2
-    Should Be Equal                             0x147   ${reg.replace('\n', '')}
+    Register Should Be Equal                    x1  0x147
+    Register Should Be Equal                    x2  0x147
 
     Wait For LogEntry                           CSR written: 0x147L! 
     Wait For LogEntry                           CSR read! 
