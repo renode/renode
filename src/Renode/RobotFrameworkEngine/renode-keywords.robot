@@ -4,7 +4,6 @@ Library         Process
 Library         Collections
 Library         OperatingSystem
 Library         helper.py
-Library         Dialogs
 
 *** Variables ***
 ${SERVER_REMOTE_DEBUG}      False
@@ -91,11 +90,16 @@ Test Teardown
     Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
     ...   Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
+
+    ${res}=  Run Keyword And Ignore Error
+          ...    Import Library  Dialogs
+
     Run Keyword If      ${HOLD_ON_ERROR}
     ...   Run Keyword If Test Failed  Run Keywords
-        ...    Open GUI
-        ...    AND  Pause Execution  Test failed. Press OK once done debugging.
-        ...    AND  Close GUI
+        ...         Run Keyword If    '${res[0]}' == 'FAIL'    Log                Couldn't load the Dialogs library - interactive debugging is not possible    console=True
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Open GUI
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Pause Execution    Test failed. Press OK once done debugging.
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Close GUI
     Reset Emulation
 
 Hot Spot
