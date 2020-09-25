@@ -3,6 +3,3 @@ netifaces; platform_system != "Windows"
 requests
 psutil
 pyyaml
-matplotlib
-pandas
-numpy

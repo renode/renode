@@ -26,8 +26,3 @@ Should Run Hifive Script With Enabled Profiler
 Dump File Should Be Not Empty
     ${DUMP_FILE_SIZE} =       Get File Size  ${TEST_DUMP_FILE}
     Should Be True            ${DUMP_FILE_SIZE} > 0
-
-Run Metrics Analyzer Should Return 0
-    [Tags]               skip_windows  non_critical
-    ${result} =          Run Process  python3  ${CURDIR}/../../tools/metrics-analyzer/metrics-analyzer.py  ${TEST_DUMP_FILE}  --no-dialog  -o  ${TEST_OUTPUT_DIR}
-    Should be equal as integers  ${result.rc}  0

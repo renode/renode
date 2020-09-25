@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .logParser import *
 from .legend_picker import *
 from .helpers import *
 
-def show_memory_access(options, onePlotFigureSize, fontSize):
-    memoryEntries = parseMemory(options.filePath)
+def show_memory_access(metricsParser, options, onePlotFigureSize, fontSize):
+    memoryEntries = metricsParser.get_memory_entries()
     data = pd.DataFrame(memoryEntries, columns=['realTime', 'virtualTime', 'operation'])
 
     reads = data[data['operation'] == bytes([2])]

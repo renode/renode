@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .logParser import *
 from .legend_picker import *
 from .helpers import *
 
 
-def show_exceptions(options, onePlotFigureSize, fontSize):
-    exceptionEntries = parseExceptions(options.filePath)
+def show_exceptions(metricsParser, options, onePlotFigureSize, fontSize):
+    exceptionEntries = metricsParser.get_exceptions_entries()
     data = pd.DataFrame(exceptionEntries, columns=['realTime', 'virtualTime', 'number'])
     fig, ax = plt.subplots(figsize=onePlotFigureSize, constrained_layout=True)
     time_column = 'realTime' if options.real_time else 'virtualTime'

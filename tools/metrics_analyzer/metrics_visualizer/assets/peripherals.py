@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .logParser import *
 from .legend_picker import *
 from .helpers import *
 
 
-def show_peripheral_access(options, twoPlotFigureSize, fontSize):
-    peripherals, peripheralEntries = parsePeripherals(options.filePath)
+def show_peripheral_access(metricsParser, options, twoPlotFigureSize, fontSize):
+    peripherals, peripheralEntries = metricsParser.get_peripheral_entries()
     data = pd.DataFrame(peripheralEntries, columns=['realTime', 'virtualTime', 'operation', 'address'])
     fig, (writesAx, readsAx) = plt.subplots(2, 1, figsize=twoPlotFigureSize, constrained_layout=True)
 

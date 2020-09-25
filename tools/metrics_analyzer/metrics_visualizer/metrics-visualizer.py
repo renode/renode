@@ -1,10 +1,20 @@
+#!/usr/bin/env python3
+
 import argparse
 import matplotlib.pyplot as plt
+
 from assets.instructions import *
 from assets.memory import *
 from assets.peripherals import *
 from assets.exceptions import *
 
+
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from metrics_parser import MetricsParser
 
 onePlotFigureSize = [10.4,5.2]
 twoPlotFigureSize = [10.4,10.4]
@@ -20,14 +30,15 @@ def prepare_parser():
     return parser
 
 
-def generate_report(options):
-    show_executed_instructions(options, onePlotFigureSize, fontSize)
-    show_memory_access(options, onePlotFigureSize, fontSize)
-    show_peripheral_access(options, twoPlotFigureSize, fontSize)
-    show_exceptions(options, onePlotFigureSize, fontSize)
+def generate_report(metricsParser, options):
+    show_executed_instructions(metricsParser, options, onePlotFigureSize, fontSize)
+    show_memory_access(metricsParser, options, onePlotFigureSize, fontSize)
+    show_peripheral_access(metricsParser, options, twoPlotFigureSize, fontSize)
+    show_exceptions(metricsParser, options, onePlotFigureSize, fontSize)
 
 
 options = prepare_parser().parse_args()
-generate_report(options)
+metricsParser = MetricsParser(options.filePath)
+generate_report(metricsParser, options)
 if not options.no_dialogs:
     plt.show()

@@ -2,14 +2,12 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import pandas as pd
 
-from .logParser import *
 from .legend_picker import *
 from .helpers import *
 
 
-def show_executed_instructions(options, onePlotFigureSize, fontSize):
-    cpus, instructionEntries = parseInstructions(options.filePath)
-    
+def show_executed_instructions(metricsParser, options, onePlotFigureSize, fontSize):
+    cpus, instructionEntries = metricsParser.get_instructions_entries()
     fig, ax = plt.subplots(figsize=onePlotFigureSize, constrained_layout=True)
 
     instructionLines = _prepare_data(fig, ax, cpus, instructionEntries, 'realTime' if options.real_time else 'virtualTime')
