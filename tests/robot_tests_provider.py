@@ -88,6 +88,10 @@ def install_cli_arguments(parser):
                         type=int,
                         help="Robot frontend process cleanup timeout")
 
+    parser.add_argument("--listener",
+                        action="append",
+                        help="Path to additional progress listener (can be provided many times)")
+
 
 def verify_cli_arguments(options):
     # port is not available on Windows
@@ -322,6 +326,10 @@ class RobotTestSuite(object):
             if not self._run_dependencies(deps, options):
                 return False
 
+        listeners = [os.path.join(this_path, 'robot_output_formatter.py')]
+        if options.listener:
+            listeners += options.listener
+
         metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
         log_file = os.path.join(options.results_directory, '{0}{1}.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-        return robot.run(self.path, console='none', listener=os.path.join(this_path, 'robot_output_formatter.py'), exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, noncritical=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
+        return robot.run(self.path, console='none', listener=listeners, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, noncritical=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
