@@ -74,13 +74,13 @@ def install_cli_arguments(parser):
                         action="store",
                         default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
                         help=".NET runner")
-                        
+
     parser.add_argument("--debug-on-error",
                         dest="debug_on_error",
                         action="store_true",
                         default=False,
                         help="Enables the Renode User Interface when test fails")
-    
+
     parser.add_argument("--cleanup-timeout",
                         dest="cleanup_timeout",
                         action="store",
