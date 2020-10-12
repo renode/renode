@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -21,9 +21,9 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void SetDefaultUartTimeout(float timeoutInSeconds)
+        public void SetDefaultUartTimeout(float timeout)
         {
-            globalTimeout = timeoutInSeconds;
+            globalTimeout = timeout;
         }
 
         [RobotFrameworkKeyword]
@@ -121,10 +121,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(float timeInSeconds, int? testerId = null)
+        public void TestIfUartIsIdle(float timeout, int? testerId = null)
         {
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.IsIdle(TimeInterval.FromSeconds(timeInSeconds));
+            var result = tester.IsIdle(TimeInterval.FromSeconds(timeout));
             if(!result)
             {
                 OperationFail(tester);

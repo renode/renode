@@ -53,7 +53,7 @@ PC Should Be Equal
 *** Test Cases ***
 Should Install Custom 16-bit Instruction
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             sysbus WriteWord 0x0 0xb38f
@@ -69,7 +69,7 @@ Should Install Custom 16-bit Instruction
 
 Should Install Custom 32-bit Instruction
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
@@ -85,7 +85,7 @@ Should Install Custom 32-bit Instruction
 
 Should Install Custom 64-bit Instruction
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
@@ -102,7 +102,7 @@ Should Install Custom 64-bit Instruction
 
 Should Override An Existing 32-bit Instruction
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     # normally this instruction means "li x1, 0x147"
     # but we override it with a custom implementation
@@ -124,7 +124,7 @@ Should Override An Existing 32-bit Instruction
 
 Should Install Custom 32-bit Instructions Sharing State
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111bbbb11111000aaaa" "${xadd}"
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111011aaaa" "${xmv}"
@@ -181,7 +181,7 @@ Should Register Simple Custom CSR
 
 Should Register Custom CSR
     Create Machine
-    Create Log Tester
+    Create Log Tester                           1
 
     Execute Command                             sysbus.cpu CSRValidation 0
     Execute Command                             sysbus.cpu RegisterCSRHandlerFromString 0xf0d "${csr_script}"

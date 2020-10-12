@@ -42,11 +42,11 @@ Timer Blinking Led
 
     Start Emulation
 
-    Execute Command            lt AssertState True 30000
+    Execute Command            lt AssertState True 1
     ${ts}=  Execute Command    machine GetTimeSourceInfo
     Should Contain             ${ts}      Elapsed Virtual Time: 00:00:01.
 
-    Execute Command            lt AssertState False 30000
+    Execute Command            lt AssertState False 1
     ${ts}=  Execute Command    machine GetTimeSourceInfo
     Should Contain             ${ts}      Elapsed Virtual Time: 00:00:02.
 

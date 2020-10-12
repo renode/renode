@@ -37,7 +37,7 @@ Frame Buffer Test
     Write Line To Uart         export PS1="$ "
     Wait For Prompt On Uart    $
 
-    Execute Command            emulation CreateFrameBufferTester "fb_tester"
+    Execute Command            emulation CreateFrameBufferTester "fb_tester" 5
 
     Execute Command            fb_tester AttachTo litex_video
 
