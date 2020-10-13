@@ -22,5 +22,5 @@ Should Run Sample Binary
     Start Emulation
 
     Wait For Line On Uart     Press ENTER to continue..
-    Write Line To Uart
+    Send Key To Uart          0xD
     Wait For Prompt On Uart   Command>
