@@ -43,17 +43,12 @@ class NUnitTestSuite(object):
         self.output_file = os.path.join(options.results_directory, self.project_file.replace('csproj', 'xml'))
         NUnitTestSuite.output_files.append(self.output_file)
 
-        # copying nunit console binaries seems to be necessary in order to use -domain:None switch; otherwise it is not needed
-        self.copied_nunit_path = os.path.join(options.results_directory, 'nunit3-console.exe')
-        if not os.path.isfile(self.copied_nunit_path):
-            subprocess.call(['bash', '-c', 'cp -r \'{0}/\'* \'{1}\''.format(os.path.dirname(NUnitTestSuite.nunit_path), options.results_directory)])
-
         return 0
 
     def run(self, options, run_id):
         print('Running ' + self.path)
 
-        args = [self.copied_nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
+        args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
         if options.stop_on_error:
             args.append('--stoponerror')
         if platform.startswith("linux") or platform == "darwin":
