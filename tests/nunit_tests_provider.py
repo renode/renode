@@ -3,7 +3,6 @@ from __future__ import print_function
 from sys import platform
 import os
 import subprocess
-import nunit_results_merger
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -13,8 +12,6 @@ def install_cli_arguments(parser):
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit3/nunit3-console.exe')
-    output_files = []
-    instances_count = 0
 
     def __init__(self, path):
         #super(NUnitTestSuite, self).__init__(path)
@@ -24,8 +21,6 @@ class NUnitTestSuite(object):
         pass 
 
     def prepare(self, options):
-        NUnitTestSuite.instances_count += 1
-
         if not options.skip_building:
             print("Building {0}".format(self.path))
             if platform == "win32":
@@ -39,16 +34,15 @@ class NUnitTestSuite(object):
         else:
             print('Skipping the build')
 
-        self.project_file = os.path.split(self.path)[1]
-        self.output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(self.project_file))
-        NUnitTestSuite.output_files.append(self.output_file)
-
         return 0
 
     def run(self, options, run_id):
         print('Running ' + self.path)
 
-        args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
+        project_file = os.path.split(self.path)[1]
+        output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(project_file))
+
+        args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
         if options.stop_on_error:
             args.append('--stoponerror')
         if platform.startswith("linux") or platform == "darwin":
@@ -79,11 +73,5 @@ class NUnitTestSuite(object):
         return process.returncode == 0
 
     def cleanup(self, options):
-        NUnitTestSuite.instances_count -= 1
-        if NUnitTestSuite.instances_count == 0:
-            # merge nunit results
-            print("Aggregating all nunit results")
-            output = os.path.join(options.results_directory, 'nunit_output.xml')
-            nunit_results_merger.merge(NUnitTestSuite.output_files, output)
-            print('Output:  {}'.format(output))
+        pass
 
