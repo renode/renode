@@ -40,7 +40,7 @@ class NUnitTestSuite(object):
             print('Skipping the build')
 
         self.project_file = os.path.split(self.path)[1]
-        self.output_file = os.path.join(options.results_directory, self.project_file.replace('csproj', 'xml'))
+        self.output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(self.project_file))
         NUnitTestSuite.output_files.append(self.output_file)
 
         return 0
