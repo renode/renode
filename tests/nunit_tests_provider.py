@@ -40,8 +40,8 @@ class NUnitTestSuite(object):
             print('Skipping the build')
 
         self.project_file = os.path.split(self.path)[1]
-        self.output_file = self.project_file.replace('csproj', 'xml')
-        NUnitTestSuite.output_files.append(os.path.join(options.results_directory, self.output_file))
+        self.output_file = os.path.join(options.results_directory, self.project_file.replace('csproj', 'xml'))
+        NUnitTestSuite.output_files.append(self.output_file)
 
         # copying nunit console binaries seems to be necessary in order to use -domain:None switch; otherwise it is not needed
         self.copied_nunit_path = os.path.join(options.results_directory, 'nunit-console.exe')
