@@ -81,7 +81,6 @@ dma2: DMA.STM32DMA @ sysbus 0x40026400
 rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
     -> nvic@80
 
-
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     AlarmIRQ -> nvic@41
 
@@ -155,6 +154,12 @@ timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
     -> nvic@45
     frequency: 10000000
     initialLimit: 0xFFFF
+
+bitbandPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000
+
+bitbandSram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
+    peripheralBase: 0x20000000
 
 sysbus:
     init:
