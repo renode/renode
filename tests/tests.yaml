@@ -43,3 +43,4 @@
 - tests/unit-tests/riscv-custom-instructions.robot
 - tests/metrics-analyzer/metrics-analyzer.robot
 - tests/platforms/STM32W108.robot
+- tests/platforms/STM32F7.robot
