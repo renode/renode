@@ -53,3 +53,35 @@ Configure RTC Alarm
     ${timeInfo}=              Execute Command    emulation GetTimeSourceInfo
     Should Contain            ${timeInfo}        Elapsed Virtual Time: 00:00:08
 
+Should Fire Update Event When Counting Up
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-timer-upcount.elf-g2d98d1b-s_1021132-961284be838516abea9db8302c9af2dcb67b482a
+
+    Create Terminal Tester  sysbus.uart2
+
+    Start Emulation
+
+    Wait For Line On Uart   *** Timer2 Upcount Overflow Example ***
+    Wait For Line On Uart   Tim2 IRQ enabled
+    Wait For Line On Uart   Tim2 started
+    Wait For Line On Uart   period elapsed callback
+    Wait For Line On Uart   period elapsed callback
+    Wait For Line On Uart   period elapsed callback
+
+Should Fire Update Event When Counting Down
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-timer-downcount.elf-g2d98d1b-s_1021136-4995992fa219c49c38d7163da1381104c26c823a
+
+    Create Terminal Tester  sysbus.uart2
+
+    Start Emulation
+
+    Wait For Line On Uart   *** Timer2 Downcount Overflow Example ***
+    Wait For Line On Uart   Tim2 IRQ enabled
+    Wait For Line On Uart   Tim2 started
+    Wait For Line On Uart   period elapsed callback
+    Wait For Line On Uart   period elapsed callback
+    Wait For Line On Uart   period elapsed callback
+
