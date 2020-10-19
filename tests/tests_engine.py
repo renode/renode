@@ -305,11 +305,16 @@ def run():
     # the value is restored later
     options.output = None
 
-    pool = multiprocessing.Pool(processes=options.jobs)
-    # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
-    # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
-    # otherwise it would not be possible to abort tests in progress
-    tests_failed = any(pool.map_async(run_test_group, args).get(999999))
+    if options.jobs == 1:
+        tests_failed = False
+        for a in args:
+            tests_failed |= run_test_group(a)
+    else:
+        pool = multiprocessing.Pool(processes=options.jobs)
+        # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
+        # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
+        # otherwise it would not be possible to abort tests in progress
+        tests_failed = any(pool.map_async(run_test_group, args).get(999999))
 
     configure_output(options)
 
