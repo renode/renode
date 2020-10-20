@@ -84,7 +84,7 @@ Create Snapshot Of Failed Test
 
     ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}"
     Execute Command  Save ${snapshot_path}
-    Log To Console   Failed emulation's state saved to ${snapshot_path}
+    Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
 
 Test Teardown
     Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
