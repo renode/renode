@@ -72,17 +72,10 @@ class NUnitTestSuite(object):
 
         if options.run_gdb:
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
-            process = subprocess.Popen(args, cwd=options.results_directory)
-            process.wait()
-        else:
-            process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while True:
-                line = process.stdout.readline().decode('utf-8')
-                ret = process.poll()
-                if ret is not None:
-                    return ret == 0
-                if line and not line.isspace() and 'GLib-' not in line:
-                    options.output.write(line)
+
+        process = subprocess.Popen(args, cwd=options.results_directory)
+        process.wait()
+        return process.returncode == 0
 
     def cleanup(self, options):
         NUnitTestSuite.instances_count -= 1
