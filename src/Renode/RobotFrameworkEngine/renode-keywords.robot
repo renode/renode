@@ -76,6 +76,8 @@ Teardown
     ...   Wait For Process
 
 Create Snapshot Of Failed Test
+    Return From Keyword If   'skipped' in @{TEST TAGS}
+
     ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail.save
     ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
 
