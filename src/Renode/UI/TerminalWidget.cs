@@ -13,6 +13,7 @@ using Antmicro.Renode.Logging;
 using TermSharp;
 using System.Collections.Generic;
 using TermSharp.Rows;
+using Xwt.Drawing;
 
 namespace Antmicro.Renode.UI
 {
@@ -73,7 +74,13 @@ namespace Antmicro.Renode.UI
             }
             terminal.CurrentFont = font.WithSize(defaultFontSize);
 
-            terminal.AppendRow(isMonitorWindow ? new LogoRow() : new MonospaceTextRow(""));
+            if(isMonitorWindow)
+            {
+                terminal.AppendRow(new ImageRow(Image.FromResource("logo.png"), 3), true);
+            }
+            // this empty dummy row is required as this is where first
+            // characters will be displayed
+            terminal.AppendRow(new MonospaceTextRow(""));
 
             var encoder = new TermSharp.Vt100.Encoder(x =>
             {
@@ -147,7 +154,7 @@ namespace Antmicro.Renode.UI
             if(!isMonitorWindow)
             {
                 var availableScreenSize = terminal.ScreenSize + terminal.InnerMarginBottom - MinimalBottomMargin;
-                var rowHeight = ((MonospaceTextRow)terminal.GetScreenRow(0, false)).LineHeight;
+                var rowHeight = terminal.GetScreenRow(0).LineHeight;
                 var fullLinesCount = Math.Floor(availableScreenSize / rowHeight);
                 var desiredScreenSize = rowHeight * fullLinesCount;
                 terminal.InnerMarginBottom = Math.Floor(availableScreenSize - desiredScreenSize + MinimalBottomMargin);
