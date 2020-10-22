@@ -3,6 +3,59 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.11.0 - 2020.10.22
+-------------------
+
+Added:
+
+* support for generating execution metrics, covering information like executed instructions count, memory and peripheral accesses, and interrupt handling
+* infrastructure for reporting supported CPU features to GDB
+* tests for Icicle Kit with PolarFire SoC
+* ``--debug-on-error`` option for ``renode-test`` allowing interactive debugging of failed Robot tests
+* ``lastLog`` Monitor command displaying ``n`` last log messages
+* ``currentTime`` monitor command with information about elapsed host and virtual time
+* ``WriteLine`` UART helper method to feed strings from the Monitor or scripts
+* support for non-base RISC-V instruction sets disassembly
+* support for custom Robot test results listeners
+* support for Python-based implementation of (stateful) custom CSRs and custom instructions in RISC-V
+* option to control RISC-V CSR access validation level interactively
+* dummy support for data cache flush instruction in VexRiscv
+* 64-bit decrementer support in PowerPC
+* nRF82540 RTC model
+* STM32F4 RTC model
+* STM32F4 RCC stub model
+* unified timer model for STM32F4 and STM32L1 platforms
+* support for ATAPI CD-ROM
+* burst read support in OpenCores I2C
+
+Changed:
+
+* time flow settings in Icicle Kit script now ensure full determinism
+* all testers (for UART, LED, network, sysbus accesses and log messages) now rely on virtual time instead of host time and accept floating point timeouts
+* portable package now includes requirements.txt file
+* skipped tests do not generate save files anymore
+* ``Clear`` Monitor command does not remove current working directory from searched paths
+* WFI handling in RISC-V is simplified, improving performance on sleepy systems
+* translation block fetch logger messages are now logged with Info instead of Debug level
+* Cortex-M CPUs now reports their registers to GDB
+* several infrastructural changes in the PCI subsystem
+* STM32L1 oscillators are now all reported as ready
+
+Fixed:
+
+* Renode logo appearing in UART analyzer windows when running without Monitor
+* logs not being fully written out when terminating Renode
+* keyboard event detection in framebuffer window when no pointer device is attached
+* crash when the logger console reports width equal to 0
+* crash of ad-hoc compilation on Renode portable. Note that this still requires a C# compiler to be available on the host system
+* crash when connecting GDB with the first core not being connected
+* occasional crash when providing incorrect CLI arguments
+* invalid disassembly of 64-bit RISC-V instructions
+* crash on machine reset when using custom CSRs in RISC-V
+* handling of multi-byte reads in LiteX I2C model
+* handling of images with unaligned size in USB pen drive
+* invalid LED connections in STM32F4
+
 1.10.1 - 2020.07.30
 -------------------
 
