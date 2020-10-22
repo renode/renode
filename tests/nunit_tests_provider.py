@@ -2,6 +2,8 @@
 from __future__ import print_function
 from sys import platform
 import os
+import signal
+import psutil
 import subprocess
 
 this_path = os.path.abspath(os.path.dirname(__file__))
@@ -69,7 +71,17 @@ class NUnitTestSuite(object):
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
 
         process = subprocess.Popen(args, cwd=options.results_directory)
+        print('NUnit3 runner PID is {}'.format(process.pid))
         process.wait()
+
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            if 'mono' in (proc.info['name'] or ''):
+                flat_cmdline = ' '.join(proc.info['cmdline'] or [])
+                if 'nunit-agent.exe' in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
+                    # let's kill it
+                    print('KILLING A DANGLING nunit-agent.exe process {}'.format(proc.info['pid']))
+                    os.kill(proc.info['pid'], signal.SIGTERM)
+
         return process.returncode == 0
 
     def cleanup(self, options):
