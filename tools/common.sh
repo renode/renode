@@ -36,39 +36,41 @@ function get_path {
     fi
 }
 
-# $1 = Renode
-# $2 = $REMOTE
-# $3 = $LIBRARIES_DIR
-# $4 = $GUARD
-# $5 = $PWD
 function clone_if_necessary() {
-    if [ -e "$4" ]
+    NAME="$1"
+    REMOTE="$2"
+    BRANCH="$3"
+    TARGET_DIR="$4"
+    GUARD="$5"
+    WORKDIR="$6"
+   
+    if [ -e "$GUARD" ]
     then
-        top_ref=`git ls-remote -h $2 master 2>/dev/null | cut -f1`
+        top_ref=`git ls-remote -h $REMOTE $BRANCH 2>/dev/null | cut -f1`
         if [ "$top_ref" == "" ]
         then
-            echo "Could not access remote $2. Continuing without verification of required libraries."
+            echo "Could not access remote $REMOTE. Continuing without verification of the state of $NAME ."
             exit
         fi
-        pushd "$3" >/dev/null
+        pushd "$TARGET_DIR" >/dev/null
         cur_ref=`git rev-parse HEAD`
-        master_ref=`git rev-parse master`
+        master_ref=`git rev-parse $BRANCH`
         if [ $master_ref != $cur_ref ]
         then
-            echo "The $1 libraries repository is not on the local master branch. This situation should be handled manually."
+            echo "The $NAME repository is not on the local $BRANCH branch. This situation should be handled manually."
             exit
         fi
         popd >/dev/null
         if [ $top_ref == $cur_ref ]
         then
-            echo "Required $1 libraries already downloaded. To repeat the process remove $4 file."
+            echo "Required $NAME repository already downloaded. To repeat the process remove $GUARD file."
             exit
         fi
-        echo "Required $1 libraries are available in a new version. The libraries will be redownloaded..."
+        echo "Required $NAME respoitory is available in a new version. It will be redownloaded..."
     fi
 
-    rm -rf "$3"
-    git clone $2 "`realpath --relative-to="$5" "$3"`"
+    rm -rf "$TARGET_DIR"
+    git clone -b $BRANCH $REMOTE "`realpath --relative-to="$WORKDIR" "$TARGET_DIR"`"
 }
 
 function add_path_property {
