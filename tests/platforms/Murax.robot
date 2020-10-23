@@ -34,6 +34,7 @@ Echo On Uart
     Wait For Prompt On Uart    Ant
 
 Timer Blinking Led
+    [Tags]                     non_critical
     Create Murax
     Execute Command            machine LoadPlatformDescriptionFromString "gpioA: { 7 -> led@0 }; led: Miscellaneous.LED @ gpioA 7"
     Execute Command            emulation CreateLEDTester "lt" sysbus.gpioA.led
