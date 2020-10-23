@@ -189,7 +189,7 @@ string";
             Assert.AreEqual("At 12:9:", position);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleEscapedMultilineStringQuoteInSingleLineQuotedString()
         {
             var source = @"
@@ -202,7 +202,7 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
             Assert.AreEqual("one with ''' escaped quote", mock.Placeholder);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleMultipleEscapeCharsInMultilineString()
         {
             var source = @"
@@ -351,7 +351,7 @@ not a single line '''";
             Assert.AreEqual("this is \'''\nnot a single line ", mock.Placeholder);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleMultipleBackslashesAsEscapingCharacters()
         {
             var source = @"
@@ -1046,7 +1046,7 @@ peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus
             Assert.DoesNotThrow(() => ProcessSource(source));
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Init()
         {
             if(!Misc.TryGetRootDirectory(out var rootDir))
