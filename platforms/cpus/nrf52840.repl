@@ -11,6 +11,9 @@ uart0: UART.NRF52840_UART @ sysbus 0x40002000
 rtc0: Timers.NRF52840_RTC @ sysbus 0x4000B000
     -> nvic@11
 
+rtc1: Timers.NRF52840_RTC @ sysbus 0x40011000
+    -> nvic@17
+
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x20000000
 
