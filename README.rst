@@ -30,6 +30,24 @@ One important aspect of the tool is that it simulates not only CPUs but entire S
 Installation
 ------------
 
+Using the Linux portable release
+++++++++++++++++++++++++++++++++
+
+If you are a Linux user, the easiest way to use Renode is to download the latest `linux-portable` from `the releases section <https://github.com/renode/renode/releases/latest>`_ and unpack it using::
+
+   mkdir renode_portable
+   tar xf  renode-*.linux-portable.tar.gz -C renode_portable --strip-components=1
+
+To use it from any location enter the created directory and add it to the system path::
+
+   cd renode_portable
+   export PATH="`pwd`:$PATH"
+
+Follow the 'Additional Prerequisites' section if you wish to use Robot framework for testing.
+Otherwise you are ready to go to the 'Running Renode' section.
+
+Please note that on the fly compilation of "*.cs" files is not supported in the portable version.
+
 Installing dependencies
 +++++++++++++++++++++++
 
