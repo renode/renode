@@ -8,6 +8,7 @@ using System;
 using System.Threading;
 using AntShell.Terminal;
 using Antmicro.Renode.UI;
+using Antmicro.Renode.Utilities;
 using Xwt;
 
 namespace Antmicro.Renode.UI
@@ -31,8 +32,9 @@ namespace Antmicro.Renode.UI
                 window.Icon = Xwt.Drawing.Image.FromResource("renode_nobg.ico");
 #endif
                 window.Title = consoleName == null ? "Renode" : consoleName;
-                window.Width = 700;
-                window.Height = 400;
+                // while these minimal values are not sane, we assume it's up to the user to decide
+                window.Width = ConfigurationManager.Instance.Get("termsharp", "window-width", 700, x => x >= 0);
+                window.Height = ConfigurationManager.Instance.Get("termsharp", "window-height", 400, x => x >= 0);
                 var windowLocation = WindowPositionProvider.Instance.GetNextPosition();
                 window.Location = windowLocation;
                 window.Padding = new WidgetSpacing();
