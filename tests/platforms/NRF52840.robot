@@ -27,6 +27,29 @@ ${DMA}=     SEPARATOR=
 ...  ${SPACE*4}easyDMA: true                 ${\n}
 ...  """
 
+${ADXL}=     SEPARATOR=
+...  """                                     ${\n}
+...  using "platforms/cpus/nrf52840.repl"    ${\n}
+...                                          ${\n}
+...  adxl372: Sensors.ADXL372 @ spi2         ${\n}
+...                                          ${\n}
+...  gpio0:                                  ${\n}
+...  ${SPACE*4}22 -> adxl372@0 // CS         ${\n}
+...  """
+
+${BUTTON_LED}=     SEPARATOR=
+...  """                                     ${\n}
+...  using "platforms/cpus/nrf52840.repl"    ${\n}
+...                                          ${\n}
+...  gpio0:                                  ${\n}
+...  ${SPACE*4}13 -> led@0                   ${\n}
+...                                          ${\n}
+...  button: Miscellaneous.Button @ gpio0 11 ${\n} 
+...  ${SPACE*4}-> gpio0@11                   ${\n}
+...                                          ${\n}
+...  led: Miscellaneous.LED @ gpio0 13       ${\n}
+...  """
+
 *** Keywords ***
 Create Machine
     [Arguments]              ${platform}  ${elf}
@@ -73,3 +96,51 @@ Should Run Alarm Sample
     ${timeInfo}=              Execute Command    emulation GetTimeSourceInfo
     Should Contain            ${timeInfo}        Elapsed Virtual Time: 00:00:06
 
+Should Handle LED and Button
+    Create Machine            ${BUTTON_LED}  nrf52840--zephyr_button.elf-s_660440-50c3b674193c8105624dae389420904e2036f9c0
+    Create Terminal Tester    ${UART}
+
+    Execute Command           emulation CreateLEDTester "lt" sysbus.gpio0.led
+
+    Start Emulation
+    Wait For Line On Uart     Booting Zephyr OS
+    Wait For Line On Uart     Press the button
+
+    Execute Command           lt AssertState False 0
+    Execute Command           sysbus.gpio0.button Press
+    Sleep           1s
+    Execute Command           lt AssertState True 0
+    Execute Command           sysbus.gpio0.button Release
+    Sleep           1s
+    # TODO: those sleeps shouldn't be necessary!
+    Execute Command           lt AssertState False 0
+
+Should Handle SPI
+    Create Machine            ${ADXL}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173
+    Create Terminal Tester    ${UART}
+
+    Execute Command           sysbus.spi2.adxl372 AccelerationX 0
+    Execute Command           sysbus.spi2.adxl372 AccelerationY 0
+    Execute Command           sysbus.spi2.adxl372 AccelerationZ 0 
+
+    Start Emulation
+    Wait For Line On Uart     Booting Zephyr OS
+    Wait For Line On Uart     0.00 g
+
+    Execute Command           sysbus.spi2.adxl372 AccelerationX 1
+    Execute Command           sysbus.spi2.adxl372 AccelerationY 0
+    Execute Command           sysbus.spi2.adxl372 AccelerationZ 0 
+
+    Wait For Line On Uart     1.00 g
+
+    Execute Command           sysbus.spi2.adxl372 AccelerationX 2
+    Execute Command           sysbus.spi2.adxl372 AccelerationY 2
+    Execute Command           sysbus.spi2.adxl372 AccelerationZ 0 
+
+    Wait For Line On Uart     2.83 g
+
+    Execute Command           sysbus.spi2.adxl372 AccelerationX 3
+    Execute Command           sysbus.spi2.adxl372 AccelerationY 3
+    Execute Command           sysbus.spi2.adxl372 AccelerationZ 3
+
+    Wait For Line On Uart     5.20 g
