@@ -40,6 +40,9 @@ gpiote: GPIOPort.NRF52840_GPIOTasksEvents @ sysbus 0x40006000
     port0: gpio0
     -> nvic@6
 
+twi1: I2C.NRF52840_I2C @ sysbus 0x40004000
+    -> nvic@4
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz

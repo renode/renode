@@ -27,7 +27,7 @@ ${DMA}=     SEPARATOR=
 ...  ${SPACE*4}easyDMA: true                 ${\n}
 ...  """
 
-${ADXL}=     SEPARATOR=
+${ADXL_SPI}=     SEPARATOR=
 ...  """                                     ${\n}
 ...  using "platforms/cpus/nrf52840.repl"    ${\n}
 ...                                          ${\n}
@@ -35,6 +35,13 @@ ${ADXL}=     SEPARATOR=
 ...                                          ${\n}
 ...  gpio0:                                  ${\n}
 ...  ${SPACE*4}22 -> adxl372@0 // CS         ${\n}
+...  """
+
+${ADXL_I2C}=     SEPARATOR=
+...  """                                     ${\n}
+...  using "platforms/cpus/nrf52840.repl"    ${\n}
+...                                          ${\n}
+...  adxl372: Sensors.ADXL372 @ twi1 0x11    ${\n}
 ...  """
 
 ${BUTTON_LED}=     SEPARATOR=
@@ -116,7 +123,7 @@ Should Handle LED and Button
     Execute Command           lt AssertState False 0
 
 Should Handle SPI
-    Create Machine            ${ADXL}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173
+    Create Machine            ${ADXL_SPI}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173
     Create Terminal Tester    ${UART}
 
     Execute Command           sysbus.spi2.adxl372 AccelerationX 0
@@ -142,5 +149,35 @@ Should Handle SPI
     Execute Command           sysbus.spi2.adxl372 AccelerationX 3
     Execute Command           sysbus.spi2.adxl372 AccelerationY 3
     Execute Command           sysbus.spi2.adxl372 AccelerationZ 3
+
+    Wait For Line On Uart     5.20 g
+
+Should Handle I2C
+    Create Machine            ${ADXL_I2C}  nrf52840--zephyr_adxl372_i2c.elf-s_944004-aacf7d772ebcc5a26c156f78ebdef2e03f803cc3
+    Create Terminal Tester    ${UART}
+
+    Execute Command           sysbus.twi1.adxl372 AccelerationX 0
+    Execute Command           sysbus.twi1.adxl372 AccelerationY 0
+    Execute Command           sysbus.twi1.adxl372 AccelerationZ 0 
+
+    Start Emulation
+    Wait For Line On Uart     Booting Zephyr OS
+    Wait For Line On Uart     0.00 g
+
+    Execute Command           sysbus.twi1.adxl372 AccelerationX 1
+    Execute Command           sysbus.twi1.adxl372 AccelerationY 0
+    Execute Command           sysbus.twi1.adxl372 AccelerationZ 0 
+
+    Wait For Line On Uart     1.00 g
+
+    Execute Command           sysbus.twi1.adxl372 AccelerationX 2
+    Execute Command           sysbus.twi1.adxl372 AccelerationY 2
+    Execute Command           sysbus.twi1.adxl372 AccelerationZ 0 
+
+    Wait For Line On Uart     2.83 g
+
+    Execute Command           sysbus.twi1.adxl372 AccelerationX 3
+    Execute Command           sysbus.twi1.adxl372 AccelerationY 3
+    Execute Command           sysbus.twi1.adxl372 AccelerationZ 3
 
     Wait For Line On Uart     5.20 g
