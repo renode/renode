@@ -23,6 +23,7 @@ Run Mbed-OS Hello World
     Provides                  hello-world
 
 Wait For Message on LTDC
+    [Tags]                    non_critical
     Requires                  hello-world
     
     Execute Command           emulation CreateFrameBufferTester "fb_tester" 10
