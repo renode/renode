@@ -25,6 +25,13 @@ sim: Miscellaneous.K6xF_SIM @ sysbus 0x40047000
 eth: Network.K6xF_Ethernet @ sysbus 0x400C0000
     txIRQ -> nvic@83
     rxIRQ -> nvic@84
+    miscIRQ -> nvic@85
+
+phy: Network.EthernetPhysicalLayer @ eth 0
+    Id1: 0x0007
+    Id2: 0xC0F1
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x0001
 
 rng: Miscellaneous.K6xF_RNG @ sysbus 0x40029000
     IRQ -> nvic@23
