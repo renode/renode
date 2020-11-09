@@ -21,7 +21,7 @@ Added:
 * option to control RISC-V CSR access validation level interactively
 * dummy support for data cache flush instruction in VexRiscv
 * 64-bit decrementer support in PowerPC
-* nRF82540 RTC model
+* nRF52840 RTC model
 * STM32F4 RTC model
 * STM32F4 RCC stub model
 * unified timer model for STM32F4 and STM32L1 platforms
