@@ -6,7 +6,12 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
 
 uart0: UART.NRF52840_UART @ sysbus 0x40002000
+    easyDMA: true
     -> nvic@2
+
+uart1: UART.NRF52840_UART @ sysbus 0x40028000
+    easyDMA: true
+    -> nvic@40
 
 rtc0: Timers.NRF52840_RTC @ sysbus 0x4000B000
     -> nvic@11
