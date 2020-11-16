@@ -9,6 +9,11 @@ Resource                      ${RENODEKEYWORDS}
 ${UART}                       sysbus.uart0
 ${URI}                        @https://dl.antmicro.com/projects/renode
 
+${STANDARD}=  SEPARATOR=
+...  """                                     ${\n}
+...  using "platforms/cpus/nrf52840.repl"    ${\n}
+...  """
+
 ${NO_DMA}=  SEPARATOR=
 ...  """                                     ${\n}
 ...  using "platforms/cpus/nrf52840.repl"    ${\n}
@@ -181,3 +186,26 @@ Should Handle I2C
     Execute Command           sysbus.twi1.adxl372 AccelerationZ 3
 
     Wait For Line On Uart     5.20 g
+
+Should Echo I2S Audio
+    Create Machine            ${STANDARD}   nrf52840--nordic_snippets_i2s_master.elf-s_181224-98d5e53081cf7d76d30a183978a03b3e00beaf53
+
+    ${input_file}=            Allocate Temporary File
+    ${output_file}=           Allocate Temporary File
+    Create Binary File        ${input_file}  \x00\x00\x00\x00\x5a\x82\x5a\x82\x7f\xff\x7f\xff\x5a\x82\x5a\x82\x00\x00\x00\x00\xa5\x7e\xa5\x7e\x80\x00\x80\x00\xa5\x7e\xa5\x7e
+
+    Execute Command           sysbus.i2s InputFile @${input_file}
+    Execute Command           sysbus.i2s OutputFile @${output_file}
+
+    Execute Command           emulation RunFor "0.01"
+
+    ${input_file_size}=       Get File Size  ${input_file}
+    ${output_file_size}=      Get File Size  ${output_file} 
+
+    Should Be Equal           ${input_file_size}  ${output_file_size}
+
+    ${input_file_content}=    Get Binary File  ${input_file}
+    ${output_file_content}=   Get Binary File  ${output_file}
+
+    Should Be Equal           ${input_file_content}  ${output_file_content}
+
