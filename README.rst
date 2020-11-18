@@ -118,6 +118,7 @@ The script allows several optional flags, most useful of which are presented bel
    -e COMMAND    execute command on startup (does not allow the [file] argument)
    -p            remove steering codes (e.g., colours) from output
    -P PORT       listen on a port for monitor commands instead of opening a window
+   -v            prints the version number
    -h            help & usage
 
 On Windows systems Renode can be run by starting Renode.exe with a similar set of optional flags.
