@@ -45,3 +45,4 @@
 - tests/platforms/STM32W108.robot
 - tests/platforms/STM32F7.robot
 - tests/peripherals/LSM9DS1.robot
+- tests/peripherals/LSM330.robot
