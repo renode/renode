@@ -52,6 +52,9 @@ timer1: Timers.NRF52840_Timer @ sysbus 0x40009000
 i2s: Sound.NRF52840_I2S @ sysbus 0x40025000
     -> nvic@37
 
+pdm: Sound.NRF52840_PDM @ sysbus 0x4001D000
+    -> nvic@29
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz
