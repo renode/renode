@@ -1,0 +1,19 @@
+using sysbus
+logLevel 3
+
+mach create
+machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
+machine LoadPlatformDescriptionFromString "twi0: I2C.NRF52840_I2C @ sysbus 0x40003000 { -> nvic @ 3 }"
+machine LoadPlatformDescriptionFromString "lsm9ds1_imu: Sensors.LSM9DS1_IMU @ twi0 0x6b"
+machine LoadPlatformDescriptionFromString "lsm9ds1_mag: Sensors.LSM9DS1_Magnetic @ twi0 0x1e"
+
+showAnalyzer uart0
+
+twi0.lsm9ds1_imu MaxFifoDepth 2
+twi0.lsm9ds1_imu FeedAccelerationSample $ORIGIN/../../../tests/peripherals/circle_rotated.data
+
+emulation CreateUSBIPServer
+host.usb CreateArduinoLoader cpu 0 "arduinoLoader"
+
+echo "Now load the TensorFlow Lite magic_wand sample compiled for Arduino NANO 33 BLE using Arduino IDE..."
+arduinoLoader WaitForBinary 120 True
