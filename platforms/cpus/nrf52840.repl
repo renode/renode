@@ -19,6 +19,9 @@ rtc0: Timers.NRF52840_RTC @ sysbus 0x4000B000
 rtc1: Timers.NRF52840_RTC @ sysbus 0x40011000
     -> nvic@17
 
+rtc2: Timers.NRF52840_RTC @ sysbus 0x40024000
+    -> nvic@36
+
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x20000000
 
