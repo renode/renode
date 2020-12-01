@@ -48,3 +48,4 @@
 - tests/peripherals/LSM330.robot
 - tests/peripherals/ArduCAMMini2MPPlus.robot
 - tests/peripherals/BMP180.robot
+- tests/peripherals/LIS2DS12.robot
