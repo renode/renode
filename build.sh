@@ -12,9 +12,26 @@ CONFIGURATION="Release"
 CLEAN=false
 PACKAGES=false
 NIGHTLY=false
+PORTABLE=false
+HEADLESS=false
 PARAMS=()
+CUSTOM_PROP=
 
-while getopts "cdvpns" opt
+function print_help() {
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui]"
+  echo ""
+  echo "-c           clean instead of building"
+  echo "-d           build Debug configuration"
+  echo "-v           verbose output"
+  echo "-p           create packages after building"
+  echo "-n           create nightly packages after building"
+  echo "-t           create a portable package (experimental, Linux only)"
+  echo "-s           update submodules"
+  echo "-b           custom build properties file"
+  echo "--no-gui     build with GUI disabled"
+}
+
+while getopts "cdvpnstb:-:" opt
 do
   case $opt in
     c)
@@ -33,22 +50,33 @@ do
       NIGHTLY=true
       PACKAGES=true
       ;;
+    t)
+      PORTABLE=true
+      ;;
     s)
       UPDATE_SUBMODULES=true
       ;;
+    b)
+      CUSTOM_PROP=$OPTARG
+      ;;
+    -)
+      case $OPTARG in
+        "no-gui")
+          HEADLESS=true
+          ;;
+        *)
+          print_help
+          exit 1
+          ;;
+      esac
+      ;;
     \?)
-      echo "Usage: $0 [-cdvspn]"
-      echo ""
-      echo "-c           clean instead of building"
-      echo "-d           build Debug configuration"
-      echo "-v           verbose output"
-      echo "-p           create packages after building"
-      echo "-n           create nightly packages after building"
-      echo "-s           update submodules"
+      print_help
       exit 1
       ;;
   esac
 done
+shift "$((OPTIND-1))"
 
 # Update submodules if not initialized or if requested by the user
 # Warn if not updating, but unclean
@@ -74,12 +102,18 @@ fi
 
 "${ROOT_PATH}"/tools/building/fetch_libraries.sh
 
-if $ON_WINDOWS
+if $HEADLESS
 then
-    TARGET="`get_path \"$PWD/Renode-Windows.sln\"`"
+    BUILD_TARGET=Headless
+    PARAMS+=(/p:GUI_DISABLED=true)
+elif $ON_WINDOWS
+then
+    BUILD_TARGET=Windows
 else
-    TARGET="`get_path \"$PWD/Renode.sln\"`"
+    BUILD_TARGET=Mono
 fi
+
+TARGET="`get_path \"$PWD/Renode.sln\"`"
 
 # Update references to Xwt
 TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
@@ -92,45 +126,29 @@ fi
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS
 then
-    MINIMUM_MONO=`cat tools/mono_version`
-
-    if ! [ -x "$(command -v $LAUNCHER)" ]
-    then
-        echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
-        exit 1
-    fi
-
     if ! [ -x "$(command -v mcs)" ]
     then
         echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
-    # Check mono version
-    MINIMUM_MONO_MAJOR=`echo $MINIMUM_MONO | cut -d'.' -f1`
-    MINIMUM_MONO_MINOR=`echo $MINIMUM_MONO | cut -d'.' -f2`
-
-    INSTALLED_MONO=`$LAUNCHER --version | head -n1 | cut -d' ' -f5`
-    INSTALLED_MONO_MAJOR=`echo $INSTALLED_MONO | cut -d'.' -f1`
-    INSTALLED_MONO_MINOR=`echo $INSTALLED_MONO | cut -d'.' -f2`
-
-    if (( $INSTALLED_MONO_MAJOR < $MINIMUM_MONO_MAJOR || (($INSTALLED_MONO_MAJOR == $MINIMUM_MONO_MAJOR) && ($INSTALLED_MONO_MINOR < $MINIMUM_MONO_MINOR)) ))
-    then
-        echo "Wrong Mono version detected: $INSTALLED_MONO. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
-        exit 1
-    fi
+    verify_mono_version
 fi
 
 # Copy properties file according to the running OS
 mkdir -p "$OUTPUT_DIRECTORY"
-if $ON_OSX
-then
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
-elif $ON_LINUX
-then
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+if [ -n "${CUSTOM_PROP}" ]; then
+    PROP_FILE=$CUSTOM_PROP
 else
-  PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+    if $ON_OSX
+    then
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
+    elif $ON_LINUX
+    then
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+    else
+      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+    fi
 fi
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 
@@ -143,7 +161,10 @@ then
     PARAMS+=(/t:Clean)
     for conf in Debug Release
     do
-        $CS_COMPILER "${PARAMS[@]}" /p:Configuration=$conf "$TARGET"
+        for build_target in Windows Mono Headless
+        do
+            $CS_COMPILER "${PARAMS[@]}" /p:Configuration=${conf}${build_target} "$TARGET"
+        done
         rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
     exit 0
@@ -154,32 +175,40 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:Configuration=$CONFIGURATION /p:GenerateFullPaths=true)
+PARAMS+=(/p:Configuration=${CONFIGURATION}${BUILD_TARGET} /p:GenerateFullPaths=true)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
 
 # copy llvm library
-cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libLLVM.* output/bin/$CONFIGURATION
+cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
 
 # build packages after successful compilation
+params=""
+
+if [ $CONFIGURATION == "Debug" ]
+then
+    params="$params -d"
+fi
+
 if $PACKAGES
 then
-    params=""
     if $NIGHTLY
     then
       params="$params -n"
     fi
 
-    if [ $CONFIGURATION == "Debug" ]
-    then
-        params="$params -d"
-    fi
-
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+fi
 
+
+if $PORTABLE
+then
     if $ON_LINUX
     then
       $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+    else
+      echo "Portable packages are only available on Linux. Exiting!"
+      exit 1
     fi
 fi

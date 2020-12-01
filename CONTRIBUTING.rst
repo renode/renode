@@ -10,7 +10,7 @@ Please read the short manual below where we provide some simple guidelines for a
 Issues
 ------
 
-Issues in the Renode  project are tracked in the `GitHub issues system <https://github.com/antmicro/renode/issues>`_.
+Issues in the Renode project are tracked in the `GitHub issues system <https://github.com/antmicro/renode/issues>`_.
 
 We also use an internal issue tracker, so it is possible that some referenced issues are not publicly available.
 
@@ -19,6 +19,18 @@ Please create an issue even if you plan to fix it (instead of creating a merge r
 If you are reporting a bug, in the description of the issue try to focus on clearly stating the steps necessary to reproduce the problem - this will make it easier to trace and fix the bug and prevent unnecessary frustration and delays.
 
 If you'd like to file a feature request, then just carefully describe what you need - the more background and precise suggestions you provide, the higher the chance that someone will be able to implement it.
+
+A good issue will include:
+
+* the platform you are using (MacOS, Windows, Linux, what distro/version?)
+* the Renode version you are using
+* the exact platform you are trying to run (``.resc`` and ``.repl`` files or links to those if you are using default ones)
+* preferably, the source code of your binary with build instructions - or at least a binary
+
+We know in some cases users are not able to share the full source code of the binary they are trying to run.
+In this case you may try to isolate the problem to some smaller example which is not problematic to share, or at least share a binary.
+
+Otherwise you can of course contact us at support@renode.io and provide what is needed under NDA.
 
 Pull requests
 -------------

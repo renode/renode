@@ -11,8 +11,8 @@ sysbus Redirect 0xC0000000 0x80000000 0x40000000
 
 showAnalyzer sysbus.uart0
 
-$bin?=@http://antmicro.com/projects/renode/vmlinux-tegra3-s_100633360-e6280cbc8b535fbc34c1cf16695deb4bedcaf982
-$rootfs?=@http://antmicro.com/projects/renode/tegra_pendrive.img-s_36700160-cadcf9fa3e7306301858a9d949b4cd7d579ba88e
+$bin?=@https://dl.antmicro.com/projects/renode/vmlinux-tegra3-s_100633360-e6280cbc8b535fbc34c1cf16695deb4bedcaf982
+$rootfs?=@https://dl.antmicro.com/projects/renode/tegra_pendrive.img-s_36700160-cadcf9fa3e7306301858a9d949b4cd7d579ba88e
 
 machine PendriveFromFile $rootfs "pendrive" sysbus.usbEhci2.usbHub 3 false
 

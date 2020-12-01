@@ -1,0 +1,14 @@
+using "platforms/cpus/eos-s3.repl"
+
+intrCtrl:
+    3 -> ledB@0
+    1 -> ledG@0
+    0 -> ledR@0
+
+ledB: Miscellaneous.LED @ intrCtrl 3
+
+ledG: Miscellaneous.LED @ intrCtrl 1
+
+ledR: Miscellaneous.LED @ intrCtrl 0
+
+

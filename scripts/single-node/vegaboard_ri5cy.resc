@@ -4,7 +4,7 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/ri5cy.repl
 
-$bin?=@http://antmicro.com/projects/renode/vegaboard--zephyr_shell.elf-s_1000428-46ce2752ebea346c8d232ab4e4f8d489999488af
+$bin?=@https://dl.antmicro.com/projects/renode/vegaboard--zephyr_shell.elf-s_1000428-46ce2752ebea346c8d232ab4e4f8d489999488af
 
 showAnalyzer lpuart0
 

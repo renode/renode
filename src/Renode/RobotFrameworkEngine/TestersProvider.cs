@@ -23,6 +23,7 @@ namespace Antmicro.Renode.RobotFramework
                 lock(testers)
                 {
                     testers.Clear();
+                    peripheralsWithTesters.Clear();
                 }
             };
         }

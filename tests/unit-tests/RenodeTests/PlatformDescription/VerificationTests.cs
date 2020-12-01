@@ -570,7 +570,7 @@ p: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithProtectedConstructor @ sysb
             Assert.AreEqual(ParsingError.NoCtor, exception.Error);
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Init()
         {
             if(!Misc.TryGetRootDirectory(out var rootDir))

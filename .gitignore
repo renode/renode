@@ -5,6 +5,7 @@ bin
 *.pyc
 *.swp
 .vscode
+.vs
 *.userprefs
 
 # robot test result files
@@ -20,3 +21,4 @@ packages
 
 #verilator trace files
 *.vcd
+

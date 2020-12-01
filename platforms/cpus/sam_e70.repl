@@ -14,6 +14,7 @@ usart2: UART.SAM_USART @ sysbus 0x4002c000
     IRQ -> nvic@15
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xE0
     systickFrequency: 450000000
     IRQ -> cpu@0
 
@@ -45,4 +46,4 @@ PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0668
 sysbus:
     init:
         Tag <0x400E0940 0x4> "CIDR" 0xa1020e00
-        ApplySVD @http://antmicro.com/projects/renode/svd/ATSAME70Q21.svd
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/ATSAME70Q21.svd

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -170,7 +170,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void WaitForPause(int timeout)
+        public void WaitForPause(float timeout)
         {
             var masterTimeSource = EmulationManager.Instance.CurrentEmulation.MasterTimeSource;
             var mre = new System.Threading.ManualResetEvent(false);
@@ -184,11 +184,14 @@ namespace Antmicro.Renode.RobotFramework
                 }
             });
 
+            var timeoutEvent = masterTimeSource.EnqueueTimeoutEvent((uint)(timeout * 1000));
+
             try
             {
                 masterTimeSource.BlockHook += callback;
+                System.Threading.WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, mre });
 
-                if(!mre.WaitOne(timeout * 1000))
+                if(timeoutEvent.IsTriggered)
                 {
                     throw new KeywordException($"Emulation did not pause in expected time of {timeout} seconds.");
                 }
@@ -206,18 +209,35 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void CreateLogTester(int defaultMillisecondsTimeout = 5000)
+        public string DownloadFile(string uri)
         {
-            logTester = new LogTester(defaultMillisecondsTimeout);
+            if(!Uri.TryCreate(uri, UriKind.Absolute, out var parsedUri))
+            {
+                throw new KeywordException($"Wrong URI format: {uri}");
+            }
+
+            var fileFetcher = EmulationManager.Instance.CurrentEmulation.FileFetcher;
+            if(!fileFetcher.TryFetchFromUri(parsedUri, out var result))
+            {
+                throw new KeywordException("Couldn't download file from: {uri}");
+            }
+
+            return result;
+        }
+
+        [RobotFrameworkKeyword]
+        public void CreateLogTester(float timeout)
+        {
+            logTester = new LogTester(timeout);
             Logging.Logger.AddBackend(logTester, "Log Tester", true);
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForLogEntry(string pattern, int? millisecondsTimeout = null, bool keep = false)
+        public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, millisecondsTimeout, keep);
+            var result = logTester.WaitForEntry(pattern, timeout, keep);
             if(result == null)
             {
                 throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log");
@@ -226,11 +246,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void ShouldNotBeInLog(String pattern, int? millisecondsTimeout = null)
+        public void ShouldNotBeInLog(String pattern, float? timeout = null)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, millisecondsTimeout, true);
+            var result = logTester.WaitForEntry(pattern, timeout, true);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
@@ -241,6 +261,18 @@ namespace Antmicro.Renode.RobotFramework
         public void LogToFile(string filePath, bool flushAfterEveryWrite = false)
         {
             Logger.AddBackend(new FileBackend(filePath, flushAfterEveryWrite), "file", true);
+        }
+
+        [RobotFrameworkKeyword]
+        public void OpenGUI()
+        {
+            Emulator.OpenGUI();
+        }
+
+        [RobotFrameworkKeyword]
+        public void CloseGUI()
+        {
+            Emulator.CloseGUI();
         }
 
         private void CheckLogTester()

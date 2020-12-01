@@ -11,7 +11,7 @@ machine LoadPlatformDescription @platforms/cpus/litex_vexriscv_zephyr.repl
 
 showAnalyzer uart
 
-$zephyr?=@https://antmicro.com/projects/renode/litex_vexriscv--zephyr-shell.elf-s_850340-baf59564d97de15457a3a626aa61c44c1cea66bc
+$zephyr?=@https://dl.antmicro.com/projects/renode/litex_vexriscv--zephyr-shell.elf-s_850340-baf59564d97de15457a3a626aa61c44c1cea66bc
 
 macro reset
 """

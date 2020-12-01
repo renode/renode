@@ -13,8 +13,8 @@ machine LoadPlatformDescription @platforms/boards/vexpress.repl
 
 sysbus Redirect 0xC0000000 0x80000000 0x20000000
 
-$bin?=@http://antmicro.com/projects/renode/vexpress--vmlinux-vexpress--c2e36631a7ac4fced04258b63e5d80d25e0a18cc
-$rootfs?=@http://antmicro.com/projects/renode/cortex-a9--rootfs-minimal.cpio--abd8ed48b3dd3b0fec98f5ffb50fdd881fde40af
+$bin?=@https://dl.antmicro.com/projects/renode/vexpress--vmlinux-vexpress--c2e36631a7ac4fced04258b63e5d80d25e0a18cc
+$rootfs?=@https://dl.antmicro.com/projects/renode/cortex-a9--rootfs-minimal.cpio--abd8ed48b3dd3b0fec98f5ffb50fdd881fde40af
 ### create externals ###
 
 showAnalyzer sysbus.uart0

@@ -1,0 +1,7 @@
+cpu: CPU.PowerPc64 @ sysbus
+    endianness: Endianess.LittleEndian
+
+memory: Memory.MappedMemory @ sysbus 0x0
+    size: 0x60000
+
+uart: UART.Potato_UART @ sysbus 0xC0002000

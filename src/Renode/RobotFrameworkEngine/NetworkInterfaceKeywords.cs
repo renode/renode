@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -34,7 +34,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public NetworkInterfaceTesterResult WaitForOutgoingPacket(int timeout, int? testerId = null)
+        public NetworkInterfaceTesterResult WaitForOutgoingPacket(float timeout, int? testerId = null)
         {
             if(!GetTesterOrThrowException(testerId).TryWaitForOutgoingPacket(timeout, out var packet))
             {
@@ -45,9 +45,9 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public NetworkInterfaceTesterResult WaitForOutgoingPacketWithBytesAtIndex(string bytes, int index, int maxPackets, int singleTimeout, int? testerId = null)
+        public NetworkInterfaceTesterResult WaitForOutgoingPacketWithBytesAtIndex(string bytes, int index, int maxPackets, float timeout, int? testerId = null)
         {
-            if(!GetTesterOrThrowException(testerId).TryWaitForOutgoingPacketWithBytesAtIndex(bytes, index, maxPackets, singleTimeout, out var packet))
+            if(!GetTesterOrThrowException(testerId).TryWaitForOutgoingPacketWithBytesAtIndex(bytes, index, maxPackets, timeout, out var packet))
             {
                 throw new KeywordException("Requested packet not received in the expected time frame.");
             }

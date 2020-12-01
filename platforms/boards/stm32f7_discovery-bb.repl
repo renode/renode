@@ -17,19 +17,3 @@ touchscreen: Input.FT5336 @ i2c3 0x38
     MaxX: 480
     MaxY: 272
     -> gpioPortI@13
-
-rcc: Python.PythonPeripheral @ sysbus 0x40023800
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-sdMmcSta: Python.PythonPeripheral @ sysbus 0x40012C34
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-

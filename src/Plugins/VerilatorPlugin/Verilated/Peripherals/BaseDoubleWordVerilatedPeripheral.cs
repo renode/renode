@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -109,9 +109,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
             set
             {
 #if !PLATFORM_LINUX
+                simulationFilePath = null; // Otherwise there is the "Field 'simulationFilePath' is never assigned to (...)" warning
                 this.Log(LogLevel.Error, "Running verilated peripherals is only supported on Linux.");
                 return;
-#endif
+#else
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
                     throw new RecoverableException("Verilated peripheral already initialized, cannot change the file name");
@@ -120,6 +121,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
                     this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
+// This directive will be required after enabling verilated peripherals on Windows (by removing the `#if !PLATFORM_LINUX` condition at line 111)
 #if !PLATFORM_WINDOWS
                     Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
 #endif
@@ -127,6 +129,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     receiveThread.Start();
                     Handshake();
                 }
+#endif
             }
         }
 
@@ -146,7 +149,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     this.Log(LogLevel.Warning, "Invalid action received");
                     break;
                 case ActionType.LogMessage:
-                    this.Log((LogLevel)(int)message.Data, "Verilated: ", asyncEventsSocket.ReceiveString());
+                    this.Log((LogLevel)(int)message.Data, "Verilated: '{0}'", asyncEventsSocket.ReceiveString());
                     break;
                 case ActionType.Interrupt:
                     HandleInterrupt(message);
@@ -156,7 +159,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected virtual void HandleInterrupt(ProtocolMessage interrupt)
         {
-            this.Log(LogLevel.Info, "Unhandled interrupt: ", interrupt.Address);
+            this.Log(LogLevel.Info, "Unhandled interrupt: '{0}'", interrupt.Address);
         }
 
         protected void CheckValidation(ProtocolMessage message)

@@ -2,6 +2,7 @@
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
@@ -11,7 +12,7 @@ ${UART}                       sysbus.uart0
 *** Keywords ***
 Prepare Machine
     # we use special FDT that contains spi sensors
-    Execute Command           \$fdt?=@http://antmicro.com/projects/renode/hifive-unleashed--devicetree-tests.dtb-s_8718-ba79c50f59ec31c6317ba31d1eeebee2b4fb3d89
+    Execute Command           \$fdt?=@https://dl.antmicro.com/projects/renode/hifive-unleashed--devicetree-tests.dtb-s_8718-ba79c50f59ec31c6317ba31d1eeebee2b4fb3d89
     Execute Script            ${SCRIPT}
 
     # attach SPI sensor
@@ -31,14 +32,14 @@ Should Boot Linux
     [Tags]                    linux  uart  interrupts
     Prepare Machine
 
-    Create Terminal Tester    ${UART}  prompt=\#
+    Create Terminal Tester    ${UART}
     Start Emulation
 
-    Wait For Prompt On Uart   buildroot login  timeout=120
+    Wait For Prompt On Uart   buildroot login
     Write Line To Uart        root
-    Wait For Prompt On Uart   Password         timeout=60
+    Wait For Prompt On Uart   Password
     Write Line To Uart        root             waitForEcho=false
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart   \#
 
     Provides                  booted-linux
 
@@ -47,7 +48,7 @@ Should Ls
     [Tags]                    linux  uart  interrupts
     Requires                  booted-linux
 
-    Write Line To Uart        ls --color=never /
+    Write Line To Uart        ls /
     Wait For Line On Uart     proc
 
 Should Read Temperature From SPI sensors
@@ -136,15 +137,15 @@ Should Ping Linux
     Execute Command           connector Connect ethernet switch
     ${u2}=                    Create Terminal Tester    ${UART}     machine=unleashed-2
     Execute Command           mach clear
-    
+
     Start Emulation
 
-    Wait For Prompt On Uart   buildroot login                    timeout=120    testerId=${u1}
+    Wait For Prompt On Uart   buildroot login                                   testerId=${u1}
     Write Line To Uart        root                                              testerId=${u1}
     Wait For Prompt On Uart   Password                                          testerId=${u1}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u1}
 
-    Wait For Prompt On Uart   buildroot login                     timeout=120   testerId=${u2}
+    Wait For Prompt On Uart   buildroot login                                   testerId=${u2}
     Write Line To Uart        root                                              testerId=${u2}
     Wait For Prompt On Uart   Password                                          testerId=${u2}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u2}
@@ -154,5 +155,5 @@ Should Ping Linux
     Write Line To Uart        ifconfig eth0 192.168.0.2 netmask 255.255.255.0   testerId=${u2}
 
     Write Line To Uart        ping 192.168.0.1                                  testerId=${u2}
-    Wait For Line On Uart     64 bytes from 192.168.0.1           timeout=60    testerId=${u2}
+    Wait For Line On Uart     64 bytes from 192.168.0.1                         testerId=${u2}
 

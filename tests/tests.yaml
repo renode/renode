@@ -2,29 +2,46 @@
 - src/Infrastructure/src/Emulator/Main/Tests/UnitTests/UnitTests.csproj
 - src/Infrastructure/src/Emulator/Peripherals/Test/PeripheralsTests/PeripheralsTests.csproj
 - tests/unit-tests/RenodeTests/RenodeTests.csproj
+- lib/options-parser/OptionsParserTests.csproj
 
-- robot:
-    - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
-    - tests/platforms/QuarkC1000/QuarkC1000.robot
-    - tests/platforms/SiFive-FE310/SiFive-FE310.robot
-    - tests/platforms/SiFive-FU540.robot
-    - tests/platforms/PicoSoC.robot
-    - tests/platforms/MiV/MiV.robot
-    - tests/platforms/STM32F103.robot
-    - tests/unit-tests/llvm-disassemble.robot
-    - tests/unit-tests/demos.robot
-    - tests/unit-tests/emulation-environment.robot
-    - tests/unit-tests/robot-integration.robot
-    - tests/unit-tests/platform_descriptions.robot
-    - tests/unit-tests/riscv-unit-tests.robot
-    - tests/platforms/SAME70.robot
-    - tests/platforms/Murax.robot
-    - tests/unit-tests/monitor-tests.robot
-    - tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
-    - tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
-    - tests/platforms/Fomu.robot
-    - tests/platforms/verilated/UARTLite.robot
-    - tests/platforms/CC2538/cc2538_rpl-udp.robot
-    - tests/platforms/CC2538/cc2538_flash_controller.robot
-    - tests/platforms/CC2538/cc2538_single-node.robot
-    - tests/platforms/LiteX/Netv_LiteX_VexRiscv.robot
+- tests/platforms/CC2538/cc2538_cryptoprocessor.robot
+- tests/platforms/QuarkC1000/QuarkC1000.robot
+- tests/unit-tests/llvm-disassemble.robot
+- tests/unit-tests/emulation-environment.robot
+- tests/unit-tests/platform_descriptions.robot
+- tests/platforms/SiFive-FE310/SiFive-FE310.robot
+- tests/platforms/SiFive-FU540.robot
+- tests/platforms/PicoSoC.robot
+- tests/platforms/MiV/MiV.robot
+- tests/platforms/STM32F103.robot
+- tests/unit-tests/demos.robot
+- tests/unit-tests/translate-address.robot
+- tests/unit-tests/robot-integration.robot
+- tests/unit-tests/riscv-unit-tests.robot
+- tests/platforms/SAME70.robot
+- tests/platforms/Murax.robot
+- tests/unit-tests/monitor-tests.robot
+- tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
+- tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
+- tests/platforms/Fomu.robot
+- tests/platforms/verilated/UARTLite.robot
+- tests/platforms/CC2538/cc2538_rpl-udp.robot
+- tests/platforms/CC2538/cc2538_flash_controller.robot
+- tests/platforms/CC2538/cc2538_single-node.robot
+- tests/platforms/LiteX/Netv_LiteX_VexRiscv.robot
+- tests/platforms/LiteX/Nexys4DDR_LiteX_VexRiscv.robot
+- tests/platforms/Microwatt.robot
+- tests/platforms/LiteX/LiteX_VexRiscv_SMP.robot
+- tests/platforms/LiteX/LiteX_Microwatt.robot
+- tests/network-server/NetworkServer.robot
+- tests/platforms/LiteX/LiteX_VexRiscv_Linux_SDCard.robot
+- tests/platforms/LiteX/LiteX_VexRiscv_I2S.robot
+- tests/platforms/NXP-K64F.robot
+- tests/platforms/STM32F4_Discovery.robot
+- tests/platforms/NRF52840.robot
+- tests/platforms/Icicle-Kit.robot
+- tests/unit-tests/riscv-custom-instructions.robot
+- tests/metrics-analyzer/metrics-analyzer.robot
+- tests/platforms/STM32W108.robot
+- tests/platforms/STM32F7.robot
+- tests/peripherals/LSM9DS1.robot

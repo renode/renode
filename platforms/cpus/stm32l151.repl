@@ -1,5 +1,6 @@
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
-    systickFrequency: 168000000
+    priorityMask: 0xF0
+    systickFrequency: 32000000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
@@ -72,11 +73,54 @@ bitbandPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
 bitbandSram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
     peripheralBase: 0x20000000
 
-timer10: Timers.STM32L_Timer @ sysbus <0x40010C00, +0x1000>
+timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    -> nvic@28
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+
+timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    -> nvic@29
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer4: Timers.STM32_Timer @ sysbus <0x40000800, +0x400>
+    -> nvic@30
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer5: Timers.STM32_Timer @ sysbus <0x40000C00, +0x400>
+    -> nvic@45
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    -> nvic@43
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+    -> nvic@44
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer9: Timers.STM32_Timer @ sysbus <0x40010800, +0x400>
+    -> nvic@25
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer10: Timers.STM32_Timer @ sysbus <0x40010C00, +0x400>
+    -> nvic@26
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer11: Timers.STM32_Timer @ sysbus <0x40011000, +0x400>
+    -> nvic@27
+    frequency: 10000000
+    initialLimit: 0xFFFF
 
 sysbus:
     init:
-        ApplySVD @http://antmicro.com/projects/renode/svd/STM32L1xx.svd.gz
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L1xx.svd.gz
         Tag <0x4000280C, 0x40002810> "RTC_ISR" 0x60
         SilenceRange <0x40003000 4>
         Tag <0xE0042000 4> "MCU_ID" 0x10000416
@@ -84,6 +128,8 @@ sysbus:
         Tag <0x40023C18 4> "FLASH_SR"  0xE
         Tag <0x40007000 4> "PWR_CONTROL" 0x1000
         Tag <0x40007004 4> "PWR_STATUS"  0x8
+        // Hard set all oscillator RDY bits
+        Tag <0x40023800 4> "RCC_CR" 0x2020202
 
 rccCsr: Python.PythonPeripheral @ sysbus 0x40023834
     size: 0x4

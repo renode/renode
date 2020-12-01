@@ -18,6 +18,10 @@ do
     if [ "$ARG" == "-d" ]
     then
         TARGET="Debug"
+        if $ON_LINUX
+        then
+            LAUNCHER="$LAUNCHER --debug"
+        fi
     elif [ "$ARG" == "-q" ]
     then
         QUIET=true
@@ -25,6 +29,11 @@ do
         PARAMS+=("$ARG")
     fi
 done
+
+if ! $ON_WINDOWS
+then
+    verify_mono_version
+fi
 
 if ${REMOTE:-false}
 then

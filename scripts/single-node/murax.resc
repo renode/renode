@@ -10,7 +10,7 @@ showAnalyzer sysbus.uart
 
 macro reset
 """
-    sysbus LoadELF @http://antmicro.com/projects/renode/murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
+    sysbus LoadELF @https://dl.antmicro.com/projects/renode/murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
     sysbus.cpu MTVEC 0x80000020
 """
 

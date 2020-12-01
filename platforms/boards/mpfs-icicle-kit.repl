@@ -1,0 +1,35 @@
+using "platforms/cpus/polarfire-soc.repl"
+
+gpio0: @ none
+
+gpio1: @ none
+
+gpio2:
+    16 -> led0@0
+    17 -> led1@0
+    18 -> led2@0
+    19 -> led3@0
+    26 -> gpio2@30
+    27 -> gpio2@31
+    28 -> plic@118
+
+pseFlash: @ none
+
+led0: Miscellaneous.LED @ gpio2 16
+
+led1: Miscellaneous.LED @ gpio2 17
+
+led2: Miscellaneous.LED @ gpio2 18
+
+led3: Miscellaneous.LED @ gpio2 19
+
+button1: Miscellaneous.Button @ gpio2 30
+    -> gpio2@30
+
+button2: Miscellaneous.Button @ gpio2 31
+    -> gpio2@31
+
+button3: Miscellaneous.Button @ gpio2 28
+    -> plic@118
+
+pac1934: Sensors.PAC1934 @ i2c1 0x10000

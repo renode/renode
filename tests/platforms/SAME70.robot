@@ -2,6 +2,7 @@
 Suite Setup                                        Setup
 Suite Teardown                                     Teardown
 Test Setup                                         GPTP Test Setup
+Test Teardown                                      Test Teardown
 Resource                                           ${RENODEKEYWORDS}
 
 *** Variables ***
@@ -22,8 +23,8 @@ ${EXPECTED_PTP_TIME_SOURCE}                        \xa0
 
 ${SAM_GMAC_PTP_TIMER_SECONDS_REG}                  0x1D0
 
-${ZEPHYR_MASTER_ELF}                               https://antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-gm.elf-s_2087900-49bb30b12c6ca60206c923771cd9cb04c09d5f35
-${ZEPHYR_SLAVE_ELF}                                https://antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-nogm.elf-s_2085692-204437fef2ce19260e916a358b657d2691c9df28
+${ZEPHYR_MASTER_ELF}                               https://dl.antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-gm.elf-s_2087900-49bb30b12c6ca60206c923771cd9cb04c09d5f35
+${ZEPHYR_SLAVE_ELF}                                https://dl.antmicro.com/projects/renode/sam-e70_xplained--gptp-zephyr-nogm.elf-s_2085692-204437fef2ce19260e916a358b657d2691c9df28
 
 *** Keywords ***
 
@@ -78,14 +79,14 @@ Wait For Outgoing PTPv2 Sync Follow Up Packet
 Get Timestamp From The PTP Packet
     [Arguments]   ${pktBytes}
 
-    ${timestamp} =                                 Get Slice From List  ${pktBytes}  48  58
+    ${timestamp} =                                 Get Substring  ${pktBytes}  48  58
 
     [return]                                       ${timestamp}
 
 Get Clock ID From The PTP Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get Slice From List  ${pktBytes}  34  42
+    ${value} =                                     Get Substring  ${pktBytes}  34  42
 
     [return]                                       ${value}
 
@@ -96,49 +97,49 @@ Get Clock ID From The PTP Packet
 Get Priority1 From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get From List  ${pktBytes}  61
+    ${value} =                                     Get Substring  ${pktBytes}  61  61
 
     [return]                                       ${value}
 
 Get Grand Master Clock Class From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get From List  ${pktBytes}  62
+    ${value} =                                     Get Substring  ${pktBytes}  62  62
 
     [return]                                       ${value}
 
 Get Grand Master Clock Accuracy From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get From List  ${pktBytes}  63
+    ${value} =                                     Get Substring  ${pktBytes}  63  63
 
     [return]                                       ${value}
 
 Get Grand Master Clock Variance From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get Slice From List  ${pktBytes}  64  66
+    ${value} =                                     Get Substring  ${pktBytes}  64  66
 
     [return]                                       ${value}
 
 Get Priority2 From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get From List  ${pktBytes}  66
+    ${value} =                                     Get Substring  ${pktBytes}  66  66
 
     [return]                                       ${value}
 
 Get Grand Master Clock ID From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get Slice From List  ${pktBytes}  67  75
+    ${value} =                                     Get Substring  ${pktBytes}  67  75
 
     [return]                                       ${value}
 
 Get Time Source From The Announce Packet
     [Arguments]   ${pktBytes}
 
-    ${value} =                                     Get From List  ${pktBytes}  77
+    ${value} =                                     Get Substring  ${pktBytes}  77  77
 
     [return]                                       ${value}
 
@@ -149,8 +150,8 @@ Get Time Source From The Announce Packet
 Get Sync Messages Reported Period
     [Arguments]   ${pktBytes}
 
-    ${logInterval} =                               Get From List  ${pktBytes}  47
-    ${logInterval} =                               Evaluate  struct.unpack("b", b"${logInterval}")[0]  struct
+    ${b} =                                         Get Substring  ${pktBytes}  47  48
+    ${logInterval} =                               Evaluate  ord('${b}')
 
     # This is a Log2 of the interval, so calculate it in milliseconds
     # (Renode uses milliseconds for timestamps)
@@ -168,9 +169,9 @@ Should Be A PTP Packet
     # Verify if EtherType is 0x88f7 (Bytes 12-13)
 
     ${etherTypePtp} =                              Convert To Bytes  \x88\xf7
-    ${etherTypePkt} =                              Get Slice From List  ${pktBytes}  12  14
+    ${etherTypePkt} =                              Get Substring  ${pktBytes}  12   14
 
-    Lists Should Be Equal                          ${etherTypePtp}  ${etherTypePkt}
+    Should Be Equal As Strings                     ${etherTypePtp}  ${etherTypePkt}
 
 Should Be A PDelay Request Packet
     [Arguments]    ${pktBytes}
@@ -179,9 +180,9 @@ Should Be A PDelay Request Packet
 
     Should Be A PTP Packet                         ${pktBytes}
 
-    ${ptpTypePkt} =                                Get From List  ${pktBytes}  14
+    ${ptpTypePkt} =                                Get Substring  ${pktBytes}  14   14
     ${ptpTypePDelayReqList} =                      Convert To Bytes  \x12
-    ${ptpTypePDelayReq} =                          Get From List  ${ptpTypePDelayReqList}  0
+    ${ptpTypePDelayReq} =                          Get Substring  ${ptpTypePDelayReqList}  0    0
     Should Be Equal                                ${ptpTypePDelayReq}  ${ptpTypePkt}
 
 PTP Clock ID Should Be Correct
@@ -190,18 +191,18 @@ PTP Clock ID Should Be Correct
     # Correct means generated from the MAC address with 0xfffe in the middle
 
     # Get the Reported MAC first
-    ${reportedMac} =                               Get Slice From List  ${pktBytes}  6   12
+    ${reportedMac} =                               Get Substring  ${pktBytes}  6    12
 
     # And then get the reported Clock ID and try to reconstruct the MAC
-    ${reconstructedMacH0} =                        Get Slice From List  ${pktBytes}  34  37
-    ${middleClockBytes} =                          Get Slice From List  ${pktBytes}  37  39
-    ${reconstructedMacH1} =                        Get Slice From List  ${pktBytes}  39  42
+    ${reconstructedMacH0} =                        Get Substring  ${pktBytes}  34   37
+    ${middleClockBytes} =                          Get Substring  ${pktBytes}  37   39
+    ${reconstructedMacH1} =                        Get Substring  ${pktBytes}  39   42
 
-    ${reconstructedMac} =                          Combine Lists  ${reconstructedMacH0}  ${reconstructedMacH1}
-    Lists Should Be Equal                          ${reportedMac}  ${reconstructedMac}
+    ${reconstructedMac} =                          Set Variable  ${reconstructedMacH0}${reconstructedMacH1}
+    Should Be Equal As Strings                     ${reportedMac}  ${reconstructedMac}
 
     ${expectedMiddleClockBytes} =                  Convert To Bytes  \xff\xfe
-    Lists Should Be Equal                          ${middleClockBytes}  ${expectedMiddleClockBytes}
+    Should Be Equal As Strings                     ${middleClockBytes}  ${expectedMiddleClockBytes}
 
 ######################
 ### ANNOUNCE TESTS ###
@@ -216,13 +217,13 @@ Announce Sender Should Be The Grand Master
     ${clockId} =                                   Get Clock ID From The PTP Packet  ${pktBytes}
     ${grandMasterClockId} =                        Get Grand Master Clock ID From The Announce Packet  ${pktBytes}
 
-    Lists Should Be Equal                          ${clockId}  ${grandMasterClockId}
+    Should Be Equal As Strings                     ${clockId}  ${grandMasterClockId}
 
 Should Announce Priority1 Equal To
     [Arguments]   ${pktBytes}  ${priority1}
 
     ${bytes} =                                     Convert To Bytes  ${priority1}
-    ${byte} =                                      Get From List  ${bytes}  0
+    ${byte} =                                      Get Substring  ${bytes}  0  0
 
     ${actualValue} =                               Get Priority1 From The Announce Packet  ${pktBytes}
 
@@ -232,7 +233,7 @@ Should Announce GM Clock Class Equal To
     [Arguments]   ${pktBytes}  ${gmClass}
 
     ${bytes} =                                     Convert To Bytes  ${gmClass}
-    ${byte} =                                      Get From List  ${bytes}  0
+    ${byte} =                                      Get Substring  ${bytes}  0  0
 
     ${actualValue} =                               Get Grand Master Clock Class From The Announce Packet  ${pktBytes}
     Should Be Equal                                ${actualValue}  ${byte}
@@ -241,7 +242,7 @@ Should Announce GM Clock Accuracy Equal To
     [Arguments]   ${pktBytes}  ${gmAccuracy}
 
     ${bytes} =                                     Convert To Bytes  ${gmAccuracy}
-    ${byte} =                                      Get From List  ${bytes}  0
+    ${byte} =                                      Get Substring  ${bytes}  0  0
 
     ${actualValue} =                               Get Grand Master Clock Accuracy From The Announce Packet  ${pktBytes}
     Should Be Equal                                ${actualValue}  ${byte}
@@ -252,13 +253,13 @@ Should Announce GM Clock Variance Equal To
     ${bytes} =                                     Convert To Bytes  ${gmVariance}
 
     ${actualValue} =                               Get Grand Master Clock Variance From The Announce Packet  ${pktBytes}
-    Lists Should Be Equal                          ${actualValue}  ${bytes}
+    Should Be Equal As Strings                     ${actualValue}  ${bytes}
 
 Should Announce Priority2 Equal To
     [Arguments]   ${pktBytes}  ${priority2}
 
     ${bytes} =                                     Convert To Bytes  ${priority2}
-    ${byte} =                                      Get From List  ${bytes}  0
+    ${byte} =                                      Get Substring  ${bytes}  0  0
 
     ${actualValue} =                               Get Priority2 From The Announce Packet  ${pktBytes}
     Should Be Equal                                ${actualValue}  ${byte}
@@ -267,7 +268,7 @@ Should Announce Time Source Equal To
     [Arguments]   ${pktBytes}  ${timeSource}
 
     ${bytes} =                                     Convert To Bytes  ${timeSource}
-    ${byte} =                                      Get From List  ${bytes}  0
+    ${byte} =                                      Get Substring  ${bytes}  0  0
 
     ${actualValue} =                               Get Time Source From The Announce Packet  ${pktBytes}
     Should Be Equal                                ${actualValue}  ${byte}
@@ -301,7 +302,7 @@ Sync Packet Timestamp Should Be Empty
     ${emptyTimestamp} =                            Convert To Bytes  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
     ${actualTimestamp} =                           Get Timestamp From The PTP Packet  ${pktBytes}
 
-    Lists Should Be Equal                          ${emptyTimestamp}  ${actualTimestamp}
+    Should Be Equal As Strings                     ${emptyTimestamp}  ${actualTimestamp}
 
 Sync Packet Timestamp Should Not Be Empty
     [Arguments]   ${pktBytes}
@@ -309,7 +310,7 @@ Sync Packet Timestamp Should Not Be Empty
     ${emptyTimestamp} =                            Convert To Bytes  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
     ${actualTimestamp} =                           Get Timestamp From The PTP Packet  ${pktBytes}
 
-    Run Keyword And Expect Error                   *  Lists Should Be Equal  ${emptyTimestamp}  ${actualTimestamp}
+    Run Keyword And Expect Error                   *  Should Be Equal As Strings  ${emptyTimestamp}  ${actualTimestamp}
 
 Should Have Synchronized Clocks
     [Arguments]   ${mach0}   ${mach1}
@@ -376,7 +377,7 @@ Single Node Should Send A PDelay Request Packet
 
 Slave Should Call The Phase Dis Callback
     Setup Multi Node Scenario
-    Create Terminal Tester                         sysbus.usart1  machine=slave  timeout=120
+    Create Terminal Tester                         sysbus.usart1  machine=slave
     Start Emulation
 
     Wait For Line On Uart                          net_gptp_sample.gptp_phase_dis_cb

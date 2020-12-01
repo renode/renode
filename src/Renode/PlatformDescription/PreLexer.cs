@@ -248,8 +248,9 @@ finish:
 
             foreach(var currentLine in sourceLine.Select((value, index) => new { index, value }))
             {
+                int lastQuoteIndex = -1;
                 var line = currentLine.value;
-                var validQuotes = CountUnescapedCharacters(line, regexCharacterToFind, out var lastQuoteIndex);
+                var validQuotes = CountUnescapedCharacters(line, regexCharacterToFind, out lastQuoteIndex);
 
                 if(inMultilineString)
                 {

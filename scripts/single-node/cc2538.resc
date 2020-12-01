@@ -2,7 +2,7 @@
 :description: This script runs Contiki-NG hello-world example on CC2538.
 
 $name?="CC2538"
-$bin?=@http://antmicro.com/projects/renode/cc2538-contiki_hello_world.elf-s_242120-08fc83d11f790ccc1aa46abfdfc9c2e1a94baed2
+$bin?=@https://dl.antmicro.com/projects/renode/cc2538-contiki_hello_world.elf-s_242120-08fc83d11f790ccc1aa46abfdfc9c2e1a94baed2
 
 mach create $name
 using sysbus
@@ -24,7 +24,7 @@ macro reset
     sysbus WriteDoubleWord 0x00280040 0x12
     sysbus WriteDoubleWord 0x00280044 0x00
 
-    sysbus LoadBinary @http://antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
+    sysbus LoadBinary @https://dl.antmicro.com/projects/renode/cc2538_rom_dump.bin-s_524288-0c196cdc21b5397f82e0ff42b206d1cc4b6d7522 0x0
     sysbus LoadELF $bin
 
     cpu VectorTableOffset `sysbus GetSymbolAddress "vectors"`

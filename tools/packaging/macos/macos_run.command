@@ -1,7 +1,8 @@
 #!/bin/sh
 
 #get the bundle's MacOS directory full path
-DIR=$(cd "$(dirname "$0")"; pwd)
+BIN=$(realpath "$0")
+DIR=$(dirname "$BIN")
 
 EXE_PATH="$DIR/bin/Renode.exe"
 PROCESS_NAME=appname
@@ -40,4 +41,4 @@ then
 fi
 
 #run app using mono
-exec -a \"$PROCESS_NAME\" mono64 $MONO_OPTIONS "$EXE_PATH" $*
+exec -a \"$PROCESS_NAME\" mono64 $MONO_OPTIONS "$EXE_PATH" "$@"

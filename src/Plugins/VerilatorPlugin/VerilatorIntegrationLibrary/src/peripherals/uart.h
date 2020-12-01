@@ -17,10 +17,14 @@ enum UARTAction
 struct UART : RenodeAgent
 {
     public:
-    UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler);
+    UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler, unsigned int tx_reg_addr=4, unsigned char* irq=nullptr);
+    void eval();
     unsigned char* txd;
     unsigned char* rxd;
+    unsigned char* irq;
     unsigned int prescaler;
+    unsigned int tx_reg_addr;
+    unsigned char prev_irq;
 
     private:
     void writeToBus(unsigned long addr, unsigned long value) override;

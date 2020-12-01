@@ -2,12 +2,13 @@
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart
-${URI}                        @http://antmicro.com/projects/renode
-${LED_DELAY}                  20000
+${URI}                        @https://dl.antmicro.com/projects/renode
+${LED_DELAY}                  1
 
 *** Keywords ***
 Create Machine
@@ -92,7 +93,7 @@ Should Run LiteOS Port Sample
     Wait For Line On Uart     Los Inspect start.
     Wait For Line On Uart     Los Key example: please press the UserKey (SW2) key
 
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_2 Toggle
     Wait For Line On Uart     Key test example
@@ -104,6 +105,7 @@ Should Run ZephyrRTOS Shell Sample
     Execute Command           showAnalyzer ${UART}
 
     Start Emulation
+    Wait For Prompt On Uart   uart:~
     Write Line To Uart        version
     Wait For Line On Uart     Zephyr version 1.13.99
 
@@ -117,18 +119,23 @@ Should Generate Interrupts On Gpio Rising Edge
     Wait For Line On Uart     CoreTIMER and external Interrupt Example.
     Wait For Line On Uart     Observe the LEDs blinking on the board. The LED patterns changes every time a timer interrupt occurs
 
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
-    Test If Uart Is Idle      5
+    Sleep                     1s
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Wait For Line On Uart     GPIO1
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
     Wait For Line On Uart     GPIO2
 
 Should Generate Interrupts On Gpio Falling Edge
@@ -140,19 +147,21 @@ Should Generate Interrupts On Gpio Falling Edge
     Wait For Line On Uart     CoreTIMER and external Interrupt Example.
     Wait For Line On Uart     Observe the LEDs blinking on the board. The LED patterns changes every time a timer interrupt occurs
 
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
 Should Generate Interrupts On Gpio Both Edges
     Create Machine            riscv-interrupt-blinky_gpio-interrupts-edge-both.elf-s_135192-1afc01350e4f0e17e2e556796cf577d2768636ec
@@ -163,16 +172,19 @@ Should Generate Interrupts On Gpio Both Edges
     Wait For Line On Uart     CoreTIMER and external Interrupt Example.
     Wait For Line On Uart     Observe the LEDs blinking on the board. The LED patterns changes every time a timer interrupt occurs
 
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
     Wait For Line On Uart     GPIO1
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
+    Sleep                     1s
 
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Wait For Line On Uart     GPIO2
@@ -196,12 +208,15 @@ Should Generate Interrupts On Gpio High Level
     Wait For Line On Uart     GPIO2
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Sleep                     1s
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
 
     Wait For Line On Uart     GPIO1
     Wait For Line On Uart     GPIO2
@@ -221,27 +236,32 @@ Should Generate Interrupts On Gpio Low Level
     Wait For Line On Uart     CoreTIMER and external Interrupt Example.
     Wait For Line On Uart     Observe the LEDs blinking on the board. The LED patterns changes every time a timer interrupt occurs
 
-    Test If Uart Is Idle      5
+    Test If Uart Is Idle      1
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
-    Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
-
-    Wait For Line On Uart     GPIO1
-    Wait For Line On Uart     GPIO2
-    Wait For Line On Uart     GPIO1
-    Wait For Line On Uart     GPIO2
-    Wait For Line On Uart     GPIO1
-    Wait For Line On Uart     GPIO2
-    Wait For Line On Uart     GPIO1
-    Wait For Line On Uart     GPIO2
-
-    Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
     Sleep                     1s
-    Test If Uart Is Idle      5
+
+    Wait For Line On Uart     GPIO1
+    Wait For Line On Uart     GPIO2
+    Wait For Line On Uart     GPIO1
+    Wait For Line On Uart     GPIO2
+    Wait For Line On Uart     GPIO1
+    Wait For Line On Uart     GPIO2
+    Wait For Line On Uart     GPIO1
+    Wait For Line On Uart     GPIO2
 
     Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
     Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
+    Test If Uart Is Idle      1
+
+    Execute Command           sysbus.gpioInputs.user_switch_0 Toggle
+    Sleep                     1s
+    Execute Command           sysbus.gpioInputs.user_switch_1 Toggle
+    Sleep                     1s
 
     Wait For Line On Uart     GPIO1
     Wait For Line On Uart     GPIO2

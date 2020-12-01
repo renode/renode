@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2020 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -189,7 +189,7 @@ string";
             Assert.AreEqual("At 12:9:", position);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleEscapedMultilineStringQuoteInSingleLineQuotedString()
         {
             var source = @"
@@ -202,7 +202,7 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
             Assert.AreEqual("one with ''' escaped quote", mock.Placeholder);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleMultipleEscapeCharsInMultilineString()
         {
             var source = @"
@@ -351,7 +351,7 @@ not a single line '''";
             Assert.AreEqual("this is \'''\nnot a single line ", mock.Placeholder);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Ignored")]
         public void ShouldHandleMultipleBackslashesAsEscapingCharacters()
         {
             var source = @"
@@ -1024,7 +1024,29 @@ peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribut
             Assert.AreEqual((MockEnumWithAttribute)2, mockPeripheral.MockEnumWithAttributeValue);
         }
 
-        [TestFixtureSetUp]
+        [Test]
+        public void ShouldFailOnAssignmentOfMachineTypeAttribute()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus <0, 1>
+    mach: empty
+    machine: empty
+";
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtor, exception.Error);
+        }
+
+        [Test]
+        public void ShouldNotFailOnAssignmentToAttributeWithMachineParameterNameThatIsNotMachine()
+        {
+            var source = @"
+peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus <0, 1>
+    machine: empty
+";
+            Assert.DoesNotThrow(() => ProcessSource(source));
+        }
+
+        [OneTimeSetUp]
         public void Init()
         {
             if(!Misc.TryGetRootDirectory(out var rootDir))

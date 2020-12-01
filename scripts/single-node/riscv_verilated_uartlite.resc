@@ -7,8 +7,8 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/riscv_verilated_uartlite.repl
 
-$bin?=@http://antmicro.com/projects/renode/uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
-$uart?=@http://antmicro.com/projects/renode/verilator--uartlite_trace_off-s_252704-c703fe4dec057a9cbc391a0a750fe9f5777d8a74
+$bin?=@https://dl.antmicro.com/projects/renode/uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
+$uart?=@https://dl.antmicro.com/projects/renode/verilator--uartlite_trace_off-s_252704-c703fe4dec057a9cbc391a0a750fe9f5777d8a74
 
 showAnalyzer uart
 

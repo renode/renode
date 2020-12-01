@@ -6,16 +6,19 @@ Library         OperatingSystem
 Library         helper.py
 
 *** Variables ***
-${SERVER_REMOTE_DEBUG}    False
-${SERVER_REMOTE_PORT}     12345
-${SERVER_REMOTE_SUSPEND}  y
-${SKIP_RUNNING_SERVER}    False
-${CONFIGURATION}          Release
-${PORT_NUMBER}            9999
-${DIRECTORY}              ${CURDIR}/../../../output/bin/${CONFIGURATION}
-${BINARY_NAME}            Renode.exe
-${HOTSPOT_ACTION}         None
-${DISABLE_XWT}            False
+${SERVER_REMOTE_DEBUG}      False
+${SERVER_REMOTE_PORT}       12345
+${SERVER_REMOTE_SUSPEND}    y
+${SKIP_RUNNING_SERVER}      False
+${CONFIGURATION}            Release
+${PORT_NUMBER}              9999
+${DIRECTORY}                ${CURDIR}/../../../output/bin/${CONFIGURATION}
+${BINARY_NAME}              Renode.exe
+${HOTSPOT_ACTION}           None
+${DISABLE_XWT}              False
+${DEFAULT_UART_TIMEOUT}     8
+${CREATE_SNAPSHOT_ON_FAIL}  True
+${HOLD_ON_ERROR}            False
 
 *** Keywords ***
 Setup
@@ -61,6 +64,8 @@ Setup
     ...   Wait Until Keyword Succeeds  60s  1s
           ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/
 
+    Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
+
     Reset Emulation
 
 Teardown
@@ -69,6 +74,35 @@ Teardown
 
     Run Keyword Unless  ${SKIP_RUNNING_SERVER}
     ...   Wait For Process
+
+Create Snapshot Of Failed Test
+    Return From Keyword If   'skipped' in @{TEST TAGS}
+
+    ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail.save
+    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+
+    ${snapshots_dir}=  Set Variable  ${CURDIR}/../../../output/tests/snapshots
+    Create Directory   ${snapshots_dir}
+
+    ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}"
+    Execute Command  Save ${snapshot_path}
+    Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
+
+Test Teardown
+    Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
+    ...   Run Keyword If Test Failed
+          ...   Create Snapshot Of Failed Test
+
+    ${res}=  Run Keyword And Ignore Error
+          ...    Import Library  Dialogs
+
+    Run Keyword If      ${HOLD_ON_ERROR}
+    ...   Run Keyword If Test Failed  Run Keywords
+        ...         Run Keyword If    '${res[0]}' == 'FAIL'    Log                Couldn't load the Dialogs library - interactive debugging is not possible    console=True
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Open GUI
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Pause Execution    Test failed. Press OK once done debugging.
+        ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Close GUI
+    Reset Emulation
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}

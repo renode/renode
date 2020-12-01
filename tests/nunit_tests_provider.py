@@ -2,8 +2,9 @@
 from __future__ import print_function
 from sys import platform
 import os
+import signal
+import psutil
 import subprocess
-import nunit_results_merger
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -12,20 +13,16 @@ def install_cli_arguments(parser):
     parser.add_argument("--skip-building", action="store_true", help="Do not build tests before run.")
 
 class NUnitTestSuite(object):
-    nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit-console.exe')
-    output_files = []
-    instances_count = 0
+    nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit3/nunit3-console.exe')
 
     def __init__(self, path):
         #super(NUnitTestSuite, self).__init__(path)
         self.path = path
     
-    def check(self, options): #API requires this method 
+    def check(self, options, number_of_runs): #API requires this method 
         pass 
 
     def prepare(self, options):
-        NUnitTestSuite.instances_count += 1
-
         if not options.skip_building:
             print("Building {0}".format(self.path))
             if platform == "win32":
@@ -39,23 +36,17 @@ class NUnitTestSuite(object):
         else:
             print('Skipping the build')
 
-        self.project_file = os.path.split(self.path)[1]
-        self.output_file = self.project_file.replace('csproj', 'xml')
-        NUnitTestSuite.output_files.append(os.path.join(options.results_directory, self.output_file))
-
-        # copying nunit console binaries seems to be necessary in order to use -domain:None switch; otherwise it is not needed
-        self.copied_nunit_path = os.path.join(options.results_directory, 'nunit-console.exe')
-        if not os.path.isfile(self.copied_nunit_path):
-            subprocess.call(['bash', '-c', 'cp -r \'{0}/\'* \'{1}\''.format(os.path.dirname(NUnitTestSuite.nunit_path), options.results_directory)])
-
         return 0
 
-    def run(self, options):
+    def run(self, options, run_id):
         print('Running ' + self.path)
 
-        args = [self.copied_nunit_path, '-domain:None', '-noshadow', '-nologo', '-labels', '-xml:{}'.format(self.output_file), self.project_file.replace("csproj", "dll")]
+        project_file = os.path.split(self.path)[1]
+        output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(project_file))
+
+        args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
         if options.stop_on_error:
-            args.append('-stoponerror')
+            args.append('--stoponerror')
         if platform.startswith("linux") or platform == "darwin":
             args.insert(0, 'mono')
             if options.port is not None:
@@ -65,31 +56,34 @@ class NUnitTestSuite(object):
                 args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
             elif options.debug_mode:
                 args.insert(1, '--debug')
+
+        where_conditions = []
         if options.fixture:
-            args.append('-run:' + options.fixture)
+            where_conditions.append('test =~ .*{}.*'.format(options.fixture))
         if options.exclude:
-            args.append('-exclude=' + ','.join(options.exclude))
+            for category in options.exclude:
+                where_conditions.append('cat != {}'.format(category))
+
+        if where_conditions:
+            args.append('--where= ' + ' and '.join(['({})'.format(x) for x in where_conditions]))
 
         if options.run_gdb:
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
-            process = subprocess.Popen(args, cwd=options.results_directory)
-            process.wait()
-        else:
-            process = subprocess.Popen(args, cwd=options.results_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while True:
-                line = process.stdout.readline()
-                ret = process.poll()
-                if ret is not None:
-                    return ret == 0
-                if line and not line.isspace() and 'GLib-' not in line:
-                    options.output.write(line)
+
+        process = subprocess.Popen(args, cwd=options.results_directory)
+        print('NUnit3 runner PID is {}'.format(process.pid))
+        process.wait()
+
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            if 'mono' in (proc.info['name'] or ''):
+                flat_cmdline = ' '.join(proc.info['cmdline'] or [])
+                if 'nunit-agent.exe' in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
+                    # let's kill it
+                    print('KILLING A DANGLING nunit-agent.exe process {}'.format(proc.info['pid']))
+                    os.kill(proc.info['pid'], signal.SIGTERM)
+
+        return process.returncode == 0
 
     def cleanup(self, options):
-        NUnitTestSuite.instances_count -= 1
-        if NUnitTestSuite.instances_count == 0:
-            # merge nunit results
-            print("Aggregating all nunit results")
-            output = os.path.join(options.results_directory, 'nunit_output.xml')
-            nunit_results_merger.merge(NUnitTestSuite.output_files, output)
-            print('Output:  {}'.format(output))
+        pass
 

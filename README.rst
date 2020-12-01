@@ -30,13 +30,31 @@ One important aspect of the tool is that it simulates not only CPUs but entire S
 Installation
 ------------
 
+Using the Linux portable release
+++++++++++++++++++++++++++++++++
+
+If you are a Linux user, the easiest way to use Renode is to download the latest `linux-portable` from `the releases section <https://github.com/renode/renode/releases/latest>`_ and unpack it using::
+
+   mkdir renode_portable
+   tar xf  renode-*.linux-portable.tar.gz -C renode_portable --strip-components=1
+
+To use it from any location enter the created directory and add it to the system path::
+
+   cd renode_portable
+   export PATH="`pwd`:$PATH"
+
+Follow the 'Additional Prerequisites' section if you wish to use Robot framework for testing.
+Otherwise you are ready to go to the 'Running Renode' section.
+
+Please note that on the fly compilation of "*.cs" files is not supported in the portable version.
+
 Installing dependencies
 +++++++++++++++++++++++
 
 Mono/.NET
 ~~~~~~~~~
 
-Renode requires Mono >= 5.0 (Linux, macOS) or .NET >= 4.7 (Windows).
+Renode requires Mono >= 5.20 (Linux, macOS) or .NET >= 4.7 (Windows).
 
 .. csv-table::
    :delim: |
@@ -50,7 +68,7 @@ Other dependencies (Linux only)
 
 On Ubuntu 16.04, you can install the remaining dependencies with the following command::
 
-   sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev
+   sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev gcc python3 python3-pip libzmq5
 
 If you are running a different distribution, you will need to install an analogous list of packages using your package manager; note that the package names may differ slightly.
 
@@ -70,16 +88,16 @@ Additional prerequisites (for Robot framework testing)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 To write and run test cases, Renode integrates with the Robot testing framework.
-This requires you to install Python 2.7 (on Windows, you will also need Cygwin - see `the advanced installation instructions <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` on Linux).
+This requires you to install Python 3 (on Windows, you will also need Cygwin - see `the advanced installation instructions <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html#windows>`_) with ``pip`` (note that the relevant package may be called ``python-pip`` or ``python3-pip`` on Linux).
 
-Once you have Python 2.7 and ``pip``, install some additional modules::
+Once you have Python 3 and ``pip``, install some additional modules::
 
-    python -m pip install -r tools/requirements.txt
+    python3 -m pip install -r tests/requirements.txt
 
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
 
-For information on building Renode from source see `the documentation <http://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
+For information on building Renode from source see `the documentation <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
 
 Running Renode
 --------------
@@ -100,6 +118,7 @@ The script allows several optional flags, most useful of which are presented bel
    -e COMMAND    execute command on startup (does not allow the [file] argument)
    -p            remove steering codes (e.g., colours) from output
    -P PORT       listen on a port for monitor commands instead of opening a window
+   -v            prints the version number
    -h            help & usage
 
 On Windows systems Renode can be run by starting Renode.exe with a similar set of optional flags.
@@ -131,12 +150,12 @@ To compile and use a custom version of your choice you can run::
    ./build.sh -p
    sudo apt install -y ./output/packages/renode*deb
 
-For more information and the underlying Dockerfile, visit the `repository on GitHub <http://github.com/renode/renode-docker>`_.
+For more information and the underlying Dockerfile, visit the `repository on GitHub <https://github.com/renode/renode-docker>`_.
 
 Documentation
 -------------
 
-Documentation is available on `Read the Docs <http://renode.readthedocs.io>`_.
+Documentation is available on `Read the Docs <https://renode.readthedocs.io>`_.
 
 License & contributions
 -----------------------
@@ -150,7 +169,7 @@ For details, see the `<CONTRIBUTING.rst>`_ file.
 Commercial support
 ------------------
 
-Commercial support for Renode is provided by `Antmicro <http://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
+Commercial support for Renode is provided by `Antmicro <https://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
 
 Antmicro created and maintains the Renode framework and related tooling, and is happy to provide services such as adding new platforms, integrations, plugins and tools.
 

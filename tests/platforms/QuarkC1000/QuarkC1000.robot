@@ -2,13 +2,14 @@
 Suite Setup                   Setup
 Suite Teardown                Teardown
 Test Setup                    Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 Library                       quark_helper.py
 
 *** Variables ***
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uartB
-${URI}                        @http://antmicro.com/projects/renode
+${URI}                        @https://dl.antmicro.com/projects/renode
 ${SCRIPT}                     ${CURDIR}/../../../scripts/single-node/quark_c1000.resc
 
 *** Test Cases ***
@@ -55,15 +56,14 @@ Should Run Shell
     Execute Command           $bin = ${URI}/shell.elf-s_392956-4b5bdd435f3d7c6555e78447438643269a87186b
     Execute Script            ${SCRIPT}
 
-    Create Terminal Tester    ${UART}  shell>
+    Create Terminal Tester    ${UART}  endLineOption=TreatCarriageReturnAsEndLine
     Start Emulation
 
-    Wait For Prompt On Uart
-    Set New Prompt For Uart   sample_module>
+    Wait For Prompt On Uart   shell>
     # this sleep here is to prevent against writing to soon on uart - it can happen under high stress of the host CPU - when an uart driver is not initalized which leads to irq-loop
     Sleep                     3
     Write Line To Uart        select sample_module
-    Wait For Prompt On Uart
+    Wait For Prompt On Uart   sample_module>
     Write Line To Uart        ping
     Wait For Line On Uart     pong
 
@@ -127,7 +127,7 @@ Should Talk Over Network Using Ethernet
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
 
     \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}  
+    \    RepeatKeyword  ${r}
     \    ...  Wait For Next Line On Uart  testerId=${mach0_tester}
     \
     \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
@@ -138,7 +138,7 @@ Should Talk Over Network Using Ethernet
     :FOR  ${i}  IN RANGE  1  ${REPEATS}
 
     \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}  
+    \    RepeatKeyword  ${r}
     \    ...  Wait For Next Line On Uart  testerId=${mach1_tester}
     \
     \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true

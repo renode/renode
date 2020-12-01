@@ -10,8 +10,8 @@ machine LoadPlatformDescription @platforms/cpus/vybrid.repl
 sysbus Redirect 0xC0000000 0x80000000 0x10000000
 sysbus LoadAtags "rw mem=256M console=ttymxc1,115200n8 root=/dev/ram init=/sbin/init initrd=0x88300000,8M" 0x10000000 0x80000100
 
-$bin?=@http://antmicro.com/projects/renode/vybrid--vmlinux_vybrid--235183998c9d09618d3945ad57eb98ea1bbef30a
-$rootfs?=@http://antmicro.com/projects/renode/cortex-a9--rootfs-minimal.cpio--abd8ed48b3dd3b0fec98f5ffb50fdd881fde40af
+$bin?=@https://dl.antmicro.com/projects/renode/vybrid--vmlinux_vybrid--235183998c9d09618d3945ad57eb98ea1bbef30a
+$rootfs?=@https://dl.antmicro.com/projects/renode/cortex-a9--rootfs-minimal.cpio--abd8ed48b3dd3b0fec98f5ffb50fdd881fde40af
 
 ### create externals ###
 

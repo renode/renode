@@ -1,0 +1,35 @@
+
+rom: Memory.MappedMemory @ { sysbus 0x0 }
+    size: 0x10000
+
+sram: Memory.MappedMemory @ { sysbus 0x1000000 }
+    size: 0x8000
+
+main_ram: Memory.MappedMemory @ { sysbus 0x40000000 }
+    size: 0x8000000
+
+cpu: CPU.VexRiscv @ sysbus
+
+    cpuType: "rv32im"
+
+ctrl: Miscellaneous.LiteX_SoC_Controller @ { sysbus 0x82000000 }
+
+uart: UART.LiteX_UART @ { sysbus 0x82001800 }
+    -> cpu@0
+
+timer0: Timers.LiteX_Timer @ { sysbus 0x82002000 }
+    -> cpu@1
+    frequency: 75000000
+
+sysbus:
+    init add:
+        SilenceRange <2181048320 0x200> # ddrphy
+
+sysbus:
+    init add:
+        SilenceRange <2181050368 0x200> # sdram
+
+spisdcard: SPI.LiteX_SPI @ {
+    sysbus 0x82003800
+}
+

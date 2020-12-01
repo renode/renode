@@ -2,8 +2,7 @@
 Library                       Process
 Suite Setup                   Setup
 Suite Teardown                Teardown
-Test Setup                    Run Keywords
-Test Teardown                 Reset Emulation
+Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***

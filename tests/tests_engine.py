@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
 from sys import platform
@@ -36,7 +35,7 @@ class IncludeLoader(yaml.SafeLoader):
 
         with open(filename, 'r') as f:
             data = yaml.load(f, IncludeLoader)
-            if 'prefix' in config:
+            if data is not None and 'prefix' in config:
                 _append_prefix(data, config['prefix'])
             return data
 
@@ -156,7 +155,11 @@ def setup_tap():
 def parse_tests_file(path):
 
     def _process(data, result):
+        if data is None:
+            return
         for entry in data:
+            if entry is None:
+                continue
             if isinstance(entry, list):
                 _process(entry, result)
             else:
@@ -214,7 +217,7 @@ def split_tests_into_groups(tests, test_type):
 
     for entry in tests:
         if isinstance(entry, dict):
-            group_name = entry.keys()[0]
+            group_name = list(entry.keys())[0]
             if group_name not in test_groups:
                 test_groups[group_name] = []
             for inner_entry in entry[group_name]:
@@ -245,9 +248,9 @@ def configure_output(options):
 
 def run_test_group(args):
 
-    group, options = args
+    group, options, test_id = args
 
-    counter = 0
+    repeat_counter = 0
     tests_failed = False
 
     # this function will be called in a separate
@@ -255,12 +258,13 @@ def run_test_group(args):
     # needs the stdout to be reconfigured
     configure_output(options)
 
-    while options.repeat_count == 0 or counter < options.repeat_count:
-        counter += 1
+    while options.repeat_count == 0 or repeat_counter < options.repeat_count:
+        repeat_counter += 1
         for suite in group:
-            if not suite.run(options):
+            if not suite.run(options, run_id=test_id if options.jobs != 1 else 0):
                 tests_failed = True
 
+    options.output.flush()
     return tests_failed
 
 
@@ -280,9 +284,15 @@ def run():
 
     print("Preparing suites")
 
+    test_id = 0
+    args = []
+    for group in options.tests.values():
+        args.append((group, options, test_id))
+        test_id += 1
+
     for group in options.tests:
         for suite in options.tests[group]:
-            suite.check(options)
+            suite.check(options, number_of_runs=test_id if options.jobs != 1 else 1)
 
     for group in options.tests:
         for suite in options.tests[group]:
@@ -295,11 +305,16 @@ def run():
     # the value is restored later
     options.output = None
 
-    pool = multiprocessing.Pool(processes=options.jobs)
-    # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
-    # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
-    # otherwise it would not be possible to abort tests in progress
-    tests_failed = any(pool.map_async(run_test_group, ((group, options) for group in options.tests.values())).get(999999999))
+    if options.jobs == 1:
+        tests_failed = False
+        for a in args:
+            tests_failed |= run_test_group(a)
+    else:
+        pool = multiprocessing.Pool(processes=options.jobs)
+        # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
+        # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
+        # otherwise it would not be possible to abort tests in progress
+        tests_failed = any(pool.map_async(run_test_group, args).get(999999))
 
     configure_output(options)
 

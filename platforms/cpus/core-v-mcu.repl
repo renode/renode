@@ -1,0 +1,32 @@
+bootRom: Memory.MappedMemory @ sysbus 0x1A000000
+    size: 0x2000
+
+ram: Memory.MappedMemory @ sysbus 0x1C000000
+    size: 0x80000
+
+cpu: CPU.CV32E40P @ sysbus
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_11
+    // We are overriding the default value to include information about coreID and clusterID
+    HartId: 0x3e0
+
+sysbus:
+    init:
+        Tag <0x1A100000, 0x1A100FFF> "FLL"
+        Tag <0x1A101000, 0x1A101FFF> "GPIO"
+
+        Tag <0x1A102000, 0x1A10207F> "UDMA"
+        Tag <0x1A102080, 0x1A1020FF> "SPI"
+        Tag <0x1A102100, 0x1A10217F> "UART"
+        Tag <0x1A102180, 0x1A1021FF> "I2C0"
+        Tag <0x1A102280, 0x1A1022FF> "CAMERA_INTERFACE"
+        Tag <0x1A102300, 0x1A10237F> "FILTER"
+        Tag <0x1A102380, 0x1A1023FF> "FPGA_CONTROL"
+
+        Tag <0x1A104000, 0x1A104FFF> "SOC_CONTROL"
+        Tag <0x1A105000, 0x1A105FFF> "ADVANCED_TIMER"
+        Tag <0x1A106000, 0x1A106FFF> "SOC_EVENT_GENERATOR"
+        Tag <0x1A109000, 0x1A109FFF> "EVENT/INTERRUPT_UNIT"
+        Tag <0x1A10B000, 0x1A10BFFF> "TIMER"
+        Tag <0x1A10C000, 0x1A10CFFF> "HWPE"
+        Tag <0x1A10F000, 0x1A10FFFF> "STDOUT"
+        Tag <0x1A110000, 0x1A110FFF> "DEBUG_UNIT"

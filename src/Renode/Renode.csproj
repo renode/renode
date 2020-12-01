@@ -37,6 +37,9 @@
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
+    <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
@@ -120,6 +123,10 @@
     <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqDestinations.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
+    <Compile Include="Network\NetworkServer\NetworkServer.cs" />
+    <Compile Include="Network\NetworkServer\IServerModule.cs" />
+    <Compile Include="Network\NetworkServer\Modules\TftpServerModule.cs" />
+    <Compile Include="Integrations\ArduinoLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -165,11 +172,11 @@
       <Project>{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}</Project>
       <Name>Xwt</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\lib\xwt\Xwt.Gtk\Xwt.Gtk.csproj" Condition=" $(CurrentPlatform) != 'Windows'">
+    <ProjectReference Include="..\..\lib\xwt\Xwt.Gtk\Xwt.Gtk.csproj" Condition=" $(CurrentPlatform) != 'Windows' And $(GUI_DISABLED) != 'true' ">
       <Project>{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}</Project>
       <Name>Xwt.Gtk</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\lib\xwt\Xwt.WPF\Xwt.WPF.csproj" Condition=" $(CurrentPlatform) == 'Windows'">
+    <ProjectReference Include="..\..\lib\xwt\Xwt.WPF\Xwt.WPF.csproj" Condition=" $(CurrentPlatform) == 'Windows' And $(GUI_DISABLED) != 'true' ">
       <Project>{c93d746e-1586-4d4f-b411-bf5a966e6a08}</Project>
       <Name>Xwt.WPF</Name>
     </ProjectReference>
@@ -193,6 +200,10 @@
       <Project>{23222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-ppc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64.csproj">
+      <Project>{44422114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-ppc64</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc.csproj">
       <Project>{13222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-sparc</Name>
@@ -205,7 +216,7 @@
       <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
       <Name>Peripherals</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin.csproj">
+    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin.csproj" Condition=" $(GUI_DISABLED) != 'true' ">
       <Project>{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0}</Project>
       <Name>AdvancedLoggerViewerPlugin</Name>
     </ProjectReference>
@@ -232,6 +243,14 @@
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64.csproj">
       <Project>{BB222124-707C-5EFD-8289-2728351FB7AA}</Project>
       <Name>cores-riscv64</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt.csproj">
+      <Project>{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}</Project>
+      <Name>libtftp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\Packet.Net\PacketDotNet\PacketDotNet.csproj">
+      <Project>{55ABBA4C-AAF9-4726-A592-0C92436CEC92}</Project>
+      <Name>PacketDotNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

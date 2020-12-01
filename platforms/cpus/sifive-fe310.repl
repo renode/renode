@@ -15,6 +15,7 @@ uart1: UART.SiFive_UART @ sysbus 0x10023000
 
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32imac"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
@@ -30,3 +31,7 @@ qspi0Xip: Memory.MappedMemory @ sysbus 0x20000000
 
 gpioInputs: GPIOPort.SiFive_GPIO @  sysbus 0x10012000
     [0-31] -> plic@[8-39]
+
+sysbus:
+    init:
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/FE310.svd.gz

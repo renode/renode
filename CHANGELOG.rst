@@ -3,6 +3,209 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.11.0 - 2020.10.22
+-------------------
+
+Added:
+
+* support for generating execution metrics, covering information like executed instructions count, memory and peripheral accesses, and interrupt handling
+* infrastructure for reporting supported CPU features to GDB
+* tests for Icicle Kit with PolarFire SoC
+* ``--debug-on-error`` option for ``renode-test`` allowing interactive debugging of failed Robot tests
+* ``lastLog`` Monitor command displaying ``n`` last log messages
+* ``currentTime`` monitor command with information about elapsed host and virtual time
+* ``WriteLine`` UART helper method to feed strings from the Monitor or scripts
+* support for non-base RISC-V instruction sets disassembly
+* support for custom Robot test results listeners
+* support for Python-based implementation of (stateful) custom CSRs and custom instructions in RISC-V
+* option to control RISC-V CSR access validation level interactively
+* dummy support for data cache flush instruction in VexRiscv
+* 64-bit decrementer support in PowerPC
+* nRF52840 RTC model
+* STM32F4 RTC model
+* STM32F4 RCC stub model
+* unified timer model for STM32F4 and STM32L1 platforms
+* support for ATAPI CD-ROM
+* burst read support in OpenCores I2C
+
+Changed:
+
+* time flow settings in Icicle Kit script now ensure full determinism
+* all testers (for UART, LED, network, sysbus accesses and log messages) now rely on virtual time instead of host time and accept floating point timeouts
+* portable package now includes requirements.txt file
+* skipped tests do not generate save files anymore
+* ``Clear`` Monitor command does not remove current working directory from searched paths
+* WFI handling in RISC-V is simplified, improving performance on sleepy systems
+* translation block fetch logger messages are now logged with Info instead of Debug level
+* Cortex-M CPUs now reports their registers to GDB
+* several infrastructural changes in the PCI subsystem
+* STM32L1 oscillators are now all reported as ready
+
+Fixed:
+
+* Renode logo appearing in UART analyzer windows when running without Monitor
+* logs not being fully written out when terminating Renode
+* keyboard event detection in framebuffer window when no pointer device is attached
+* crash when the logger console reports width equal to 0
+* crash of ad-hoc compilation on Renode portable. Note that this still requires a C# compiler to be available on the host system
+* crash when connecting GDB with the first core not being connected
+* occasional crash when providing incorrect CLI arguments
+* invalid disassembly of 64-bit RISC-V instructions
+* crash on machine reset when using custom CSRs in RISC-V
+* handling of multi-byte reads in LiteX I2C model
+* handling of images with unaligned size in USB pen drive
+* invalid LED connections in STM32F4
+
+1.10.1 - 2020.07.30
+-------------------
+
+This is a hotfix release overriding 1.10.0.
+
+Fixed:
+
+* crash on Windows when accessing high memory addresses
+* installation instructions in README
+
+1.10.0 - 2020.07.28
+-------------------
+
+Added:
+
+* support for the PolarFire SoC-based Icicle Kit platform, with a demo running Linux
+* experimental support for OpenPOWER ISA
+* support for NXP K64F with UART, Ethernet and RNG
+* basic support for Nordic nRF52840
+* Microwatt platform, with Potato UART, running MicroPython or Zephyr
+* LiteX platform with a 4-core VexRiscv in SMP
+* LiteX demo running Microwatt as a CPU
+* LiteX demo with VexRiscv booting Linux from the SD card
+* LiteX demo with VexRiscv showing how to handle input and output via I2S
+* LiteX MMCM model, I2S model and SD card controller model
+* several peripheral models for QuickLogic EOS S3: ADC, SPI DMA, Packet FIFO, FFE etc
+* ADXL345 accelerometer model
+* PAC1934 power monitor model
+* PCM encoder/decoder infrastructure for providing audio data to I2S devices
+* modular network server allowing to easily add server components to the emulation without a host-to-guest connection
+* built-in TFTP server module
+* file backend for UARTs, allowing to send output directly to a file (``uart CreateFileBackend``)
+* ``alias`` Monitor command
+* ``console_log`` Monitor command to simply print to the log window without level filtering
+* ``--no-gui`` build option to build without graphical dependencies
+* option to define an average cycles count per instruction, to be used by CPU counters
+* code formatting rules for translation libraries, to be used with Uncrustify
+
+Changed:
+
+* Renode is now able to be compiled with ``mcs``. This means that you can use your distribution's Mono package instead of the one provided by mono-project.com, as long as it satisfies the minimum version requirement (currently Mono 5.2)
+* the default log level is now set to ``INFO`` instead of ``DEBUG``
+* all PolarFire SoC peripherals are now renamed from PSE_* to MPFS_*, to follow Microchip's naming pattern
+* major rework of the SD card model, along with the added SPI interface
+* RI5CY core can now be created with or without FPU support
+* STM32 and SAM E70 platforms now have verified ``priorityMask`` in NVIC
+* Cortex-M based platforms can now be reset by writing to NVIC
+* easy way to update timer values between synchronization phases, significantly improving the performance of polling on timers
+* tests are now able to run in parallel, using the ``-j`` switch in the testing script execution
+* the pattern for download links in scripts for binaries hosted by Antmicro has been changed
+* portable package now includes testing infrastructure and sample tests
+* the LLVM-based disassembly library is now rebuilt, using less space and being able to support more architectures on all host OSes
+* the C++ symbol demangling now relies on a `CxxDemangler <https://github.com/southpolenator/CxxDemangler>`_ library, instead of libstdc++
+* failed Robot tests will now produce snapshots allowing users to debug more easily
+* SVD-based log messages on reads and writes are now more verbose
+* Terminal Tester API has changed slightly, allowing for easier prompt detection, timeout control etc.
+
+Fixed:
+
+* crash when running tests with empty ``tests.yaml`` file
+* crash when Renode is unable to find the root directory
+* crash when loading broken or incompatible state snapshot with ``Load``
+* several issues in the PPC architecture
+* ``mstatus`` CSR behaviour when accessing FP registers in RISC-V
+* PMP napot decoding in RISC-V
+* evaluation of the IT-state related status codes in ARM CPUs
+* invalid setting of CPUID fields in x86 guests
+* PolarFire SoC platform description and various models: CAN, SPI, SD controller, etc.
+* ``ODR`` register behavior in STM32F1 GPIO port
+* ``State changed`` event handling in LED model
+* invalid disposal of the SD card model, possibly leading to filesystem sharing violations
+* some cursor manipulation commands in TermSharp
+* performance issues when hitting breakpoints with GDB
+* on the fly compilation of “*.cs” files in the portable Renode package
+* Mono Framework version detection
+* upgrading Renode version on Windows when installed using the ``msi`` package
+* error message when quitting Renode on Windows
+* running tests from binary packages
+* support for testing in Conda Renode package
+* other various fixes in Conda package building
+
+1.9.0 - 2020.03.10
+------------------
+
+Breaking changes:
+
+* the Renode configuration directory was moved to another location.
+
+  The directory is moved from ``~/.renode`` on Unix-like systems and ``Documents`` on Windows to
+  ``~/.config/renode`` and ``AppData\Roaming\renode`` respectively. To use your previous settings
+  and Monitor history, please start Renode 1.9 and copy your old config folder over the new one.
+
+Added:
+
+* support for RISC-V Privileged Architecture 1.11
+* EOS S3 platform, with QuickFeather and Qomu boards support
+* EFR32MG13 platform support
+* Zolertia Firefly dual radio (CC2538/CC1200) platform support
+* Kendryte K210 platform support
+* NeTV2 with LiteX and VexRiscv platform support
+* EFR32 timer and gpcrc models
+* CC2538 GPIO controller and SSI models
+* CC1200 radio model
+* MAX3421E USB controller model
+* LiteX SoC controller model
+* support for Wishbone bus in verilated peripherals, exemplified with the ``riscv_verilated_liteuart.resc`` sample
+* one-shot mode in AutoRepaintingVideo allowing display models to control when they are refreshed
+* ``GetItState`` for ARM Cortex-M cores allowing to verify the current status of the IT block
+* scripts to create Conda packages for Linux, Windows and macOS
+* requirements.txt with Python dependencies to simplify the compilation process
+* configuration option to collapse repeated lines in the log - turn it to false if you observe strange behavior of the log output
+
+Changed:
+
+* VexRiscv now supports Supervisor level interrupts, following latest changes to this core
+* PolarFire SoC script now has a sample binary, running FreeRTOS with LwIP stack
+* the output of Robot test is now upgraded to clearly indicate time of execution
+* NetworkInterfaceKeywords now support wireless communication
+* exposed several RISC-V registers to the Monitor
+* VerilatedUART now supports interrupts
+* tests file format was changed to yaml, thus changing tests.txt to tests.yaml
+* test.sh can now run NUnit tests in parallel
+* ``./build.sh -p`` will no longer build the portable Linux package as it requires a very specific Mono version
+* path to ``ar`` can now be specified in the properties file before building
+* MinGW libraries are now compiled in statically, significantly reducing the Windows package size
+
+Fixed:
+
+* crash when trying to set the underlying model for verilated peripheral in REPL
+* crash when copying data from the terminal to clipboard on Windows
+* crash on loading missing FDT file
+* crash when starting the GDB server before loading the platform
+* handling of very long commands via GDB
+* improper window positioning when running on Windows with a display scaling enabled
+* exception reporting from running CPUs
+* flushing of closing LoggingUartAnalyzer
+* icon installation on Fedora
+* rebuilding translation libraries when only a header is changed
+* macOS run scripts bundled in packages
+* priority level handling in NVIC
+* COUNTFLAG handling in NVIC
+* several improvements in Cadence GEM frame handling
+* FastRead operations in Micron MT25Q flash
+* PolarFire SoC Watchdog forbidden range handling
+* offset calculation on byte accesses in NS16550 model
+* interrupt handling in PolarFire SoC QSPI model
+* connected pins state readout in PolarFire SoC GPIO model
+* several fixes in HiFive SPI model
+* page latch alignment in PolarFire SoC
+
 1.8.2 - 2019.11.12
 ------------------
 
