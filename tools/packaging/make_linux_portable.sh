@@ -73,7 +73,6 @@ echo '
   <dllmap dll="glibsharpglue-2" target="libglibsharpglue-2.so"/>
   <dllmap dll="gtksharpglue-2" target="libgtksharpglue-2.so"/>
   <dllmap dll="gdksharpglue-2" target="libgdksharpglue-2.so"/>
-  <dllmap dll="pangosharpglue-2" target="libpangosharpglue-2.so"/>
 </configuration>
 ' >> $CONFIG_FILE
 
