@@ -46,7 +46,7 @@ To use it from any location enter the created directory and add it to the system
 Follow the 'Additional Prerequisites' section if you wish to use Robot framework for testing.
 Otherwise you are ready to go to the 'Running Renode' section.
 
-Please note that on the fly compilation of "*.cs" files is not supported in the portable version.
+Please note that on the fly compilation of ``*.cs`` files is not supported in the portable version.
 
 Installing dependencies
 +++++++++++++++++++++++
