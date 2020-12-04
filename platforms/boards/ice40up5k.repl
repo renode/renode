@@ -1,0 +1,18 @@
+using "platforms/cpus/fomu.repl"
+
+i2c: I2C.LiteX_I2C @ {
+    sysbus 0x60007800;
+    sysbus 0xe0007800 // shadow
+}
+
+bmp180: I2C.BMP180 @ i2c 0x77
+
+lsm330_a: Sensors.LSM330_Accelerometer @ i2c 0x18
+
+lsm330_g: Sensors.LSM330_Gyroscope @ i2c 0x6b
+
+lis2ds12: Sensors.LIS2DS12 @ i2c 0x1d
+
+lsm303dlhc_a: Sensors.LSM303DLHC_Accelerometer @ i2c 0x19
+
+lsm303dlhc_g: Sensors.LSM303DLHC_Gyroscope @ i2c 0x1e
