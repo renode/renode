@@ -12,7 +12,7 @@ twi0.lsm9ds1_imu MaxFifoDepth 2
 twi0.lsm9ds1_imu FeedAccelerationSample $ORIGIN/../../../tests/peripherals/circle_rotated.data
 
 emulation CreateUSBIPServer
-host.usb CreateArduinoLoader cpu 0 "arduinoLoader"
+host.usb CreateArduinoLoader cpu 0x10000 0 "arduinoLoader"
 
 echo "Now load the TensorFlow Lite magic_wand sample compiled for Arduino NANO 33 BLE using Arduino IDE..."
 arduinoLoader WaitForBinary 120 True

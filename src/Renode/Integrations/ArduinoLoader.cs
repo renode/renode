@@ -24,9 +24,9 @@ namespace Antmicro.Renode.Integrations
 {
     public static class ArduinoLoaderExtensions
     {
-        public static void CreateArduinoLoader(this USBIPServer server, CortexM cpu, int? port = null, string name = null)
+        public static void CreateArduinoLoader(this USBIPServer server, CortexM cpu, ulong binaryLoadAddress = 0x10000, int? port = null, string name = null)
         {
-            var loader = new ArduinoLoader(cpu);
+            var loader = new ArduinoLoader(cpu, binaryLoadAddress);
             server.Register(loader, port);
 
             var emulation = EmulationManager.Instance.CurrentEmulation;
@@ -36,11 +36,12 @@ namespace Antmicro.Renode.Integrations
 
     public class ArduinoLoader : IUSBDevice, IExternal
     {
-        public ArduinoLoader(CortexM cpu)
+        public ArduinoLoader(CortexM cpu, ulong binaryLoadAddress = 0x10000)
         {
             USBEndpoint interruptEndpoint = null;
 
             this.cpu = cpu;
+            this.binaryLoadAddress = binaryLoadAddress;
 
             USBCore = new USBDeviceCore(this,
                                         classCode: USBClassCode.CommunicationsCDCControl,
@@ -105,10 +106,10 @@ namespace Antmicro.Renode.Integrations
                 throw new RecoverableException("Received no binary in the selected time window!");
             }
 
-            cpu.GetMachine().SystemBus.WriteBytes(flashBuffer, BinaryLoadAddress, binaryLength);
-            cpu.VectorTableOffset = (uint)BinaryLoadAddress;
+            cpu.GetMachine().SystemBus.WriteBytes(flashBuffer, binaryLoadAddress, binaryLength);
+            cpu.VectorTableOffset = (uint)binaryLoadAddress;
 
-            return $"Binary of size {binaryLength} bytes loaded at 0x{BinaryLoadAddress:X}";
+            return $"Binary of size {binaryLength} bytes loaded at 0x{binaryLoadAddress:X}";
         }
 
         public void Reset()
@@ -318,8 +319,8 @@ namespace Antmicro.Renode.Integrations
 
         private readonly AutoResetEvent binarySync;
         private readonly CortexM cpu;
+        private readonly ulong binaryLoadAddress;
 
-        private const ulong BinaryLoadAddress = 0x10000;
         private const int BufferSize = 0xf0000;
 
         private enum Command : byte
