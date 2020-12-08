@@ -93,11 +93,11 @@ namespace Antmicro.Renode.Integrations
             binarySync = new AutoResetEvent(false);
         }
 
-        public string WaitForBinary(int timeoutInSeconds, bool autoConnect = false)
+        public string WaitForBinary(int timeoutInSeconds, bool autoConnect = false, int port = 0)
         {
             if(autoConnect)
             {
-                SudoTools.EnsureSudoExecute("usbip attach -r 127.0.0.1 -b 1-0");
+                SudoTools.EnsureSudoExecute($"usbip attach -r 127.0.0.1 -b 1-{port}");
             }
 
             if(!binarySync.WaitOne(timeoutInSeconds * 1000))
