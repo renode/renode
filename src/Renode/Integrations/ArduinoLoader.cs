@@ -261,7 +261,6 @@ namespace Antmicro.Renode.Integrations
             deviceToHostEndpoint.HandlePacket(System.Text.ASCIIEncoding.ASCII.GetBytes(s + "\n\r"));
         }
 
-
         private void AppendNibble(ref uint val, byte b)
         {
             val <<= 4;
