@@ -13,9 +13,6 @@ ${LSM9DS1}=     SEPARATOR=
 ...  """                                                 ${\n}
 ...  using "platforms/cpus/nrf52840.repl"                ${\n}
 ...                                                      ${\n}
-...  twi0: I2C.NRF52840_I2C @ sysbus 0x40003000          ${\n}
-...  ${SPACE*4}-> nvic@3                                 ${\n}
-...                                                      ${\n}
 ...  lsm9ds1_imu: Sensors.LSM9DS1_IMU @ twi0 0x6b        ${\n}
 ...                                                      ${\n}
 ...  lsm9ds1_mag: Sensors.LSM9DS1_Magnetic @ twi0 0x1e   ${\n}

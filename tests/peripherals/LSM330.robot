@@ -13,9 +13,6 @@ ${LSM330}=     SEPARATOR=
 ...  """                                                 ${\n}
 ...  using "platforms/cpus/nrf52840.repl"                ${\n}
 ...                                                      ${\n}
-...  twi0: I2C.NRF52840_I2C @ sysbus 0x40003000          ${\n}
-...  ${SPACE*4}-> nvic@3                                 ${\n}
-...                                                      ${\n}
 ...  lsm330_a: Sensors.LSM330_Accelerometer @ twi0 0x1d  ${\n}
 ...                                                      ${\n}
 ...  lsm330_g: Sensors.LSM330_Gyroscope @ twi0 0x6a      ${\n}

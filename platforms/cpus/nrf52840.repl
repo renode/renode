@@ -31,6 +31,9 @@ ram: Memory.MappedMemory @ sysbus 0x60000000
 clock: Miscellaneous.NRF82540_CLOCK @ sysbus 0x40000000
     -> nvic@0
 
+twi0: I2C.NRF52840_I2C @ sysbus 0x40003000
+    -> nvic@0x3
+
 spi2: SPI.NRF52840_SPI @ sysbus 0x40023000
     -> nvic@0x23
 
