@@ -46,3 +46,4 @@
 - tests/platforms/STM32F7.robot
 - tests/peripherals/LSM9DS1.robot
 - tests/peripherals/LSM330.robot
+- tests/peripherals/ArduCAMMini2MPPlus.robot

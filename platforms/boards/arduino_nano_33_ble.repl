@@ -1,0 +1,10 @@
+using "platforms/cpus/nrf52840.repl"
+
+gpio0:
+    23 -> camera@0 // Arducam library seems to use pin 7?!
+
+camera: Sensors.ArduCAMMini2MPPlus @ {
+         spi2;
+         twi0 0x30
+    }
+
