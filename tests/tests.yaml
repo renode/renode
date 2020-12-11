@@ -47,3 +47,4 @@
 - tests/peripherals/LSM9DS1.robot
 - tests/peripherals/LSM330.robot
 - tests/peripherals/ArduCAMMini2MPPlus.robot
+- tests/peripherals/BMP180.robot
