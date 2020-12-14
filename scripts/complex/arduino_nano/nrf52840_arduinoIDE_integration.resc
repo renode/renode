@@ -3,7 +3,6 @@ logLevel 3
 
 mach create
 machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
-machine LoadPlatformDescriptionFromString "twi0: I2C.NRF52840_I2C @ sysbus 0x40003000 { -> nvic @ 3 }"
 machine LoadPlatformDescriptionFromString "lsm9ds1_imu: Sensors.LSM9DS1_IMU @ twi0 0x6b"
 machine LoadPlatformDescriptionFromString "lsm9ds1_mag: Sensors.LSM9DS1_Magnetic @ twi0 0x1e"
 
