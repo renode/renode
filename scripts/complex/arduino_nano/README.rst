@@ -13,7 +13,7 @@ In order to do that, modify the `debug_log.cpp` file located in
 the `Arduino/libraries/Arduino_TensorFlowLite/src/tensorflow/lite/micro/arduino` directory
 and define `DEBUG_SERIAL_OBJECT` as `Serial1` (instead of `Serial`), e.g. with the following command::
 
-    sed '/#define DEBUG_SERIAL_OBJECT/s/(Serial)/(Serial1)/' ~/Arduino/libraries/Arduino_TensorFlowLite/src/tensorflow/lite/micro/arduino/debug_log.cpp
+    sed -i'' '/#define DEBUG_SERIAL_OBJECT/s/(Serial)/(Serial1)/' ~/Arduino/libraries/Arduino_TensorFlowLite/src/tensorflow/lite/micro/arduino/debug_log.cpp
 
 With this change, you should see the following output on uart0 when running the simulation::
 
