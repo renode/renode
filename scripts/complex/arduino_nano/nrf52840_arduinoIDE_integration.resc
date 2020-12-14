@@ -2,9 +2,7 @@ using sysbus
 logLevel 3
 
 mach create
-machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
-machine LoadPlatformDescriptionFromString "lsm9ds1_imu: Sensors.LSM9DS1_IMU @ twi0 0x6b"
-machine LoadPlatformDescriptionFromString "lsm9ds1_mag: Sensors.LSM9DS1_Magnetic @ twi0 0x1e"
+machine LoadPlatformDescription @platforms/boards/arduino_nano_33_ble.repl
 
 showAnalyzer uart0
 
