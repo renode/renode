@@ -17,8 +17,10 @@ namespace Antmicro.Renode.Peripherals
     {
         public SimplePeripheral(Machine machine) : base(machine)
         {
+            IValueRegisterField value;
+
             Registers.Base.Define(this)
-                .WithValueField(0, 32, out var value, FieldMode.Write);
+                .WithValueField(0, 32, out value, FieldMode.Write);
 
             Registers.Multiplier.Define(this)
                 .WithValueField(0, 32, FieldMode.Read, valueProviderCallback: _ => value.Value * 2);
@@ -27,7 +29,7 @@ namespace Antmicro.Renode.Peripherals
                 .WithValueField(0, 32, FieldMode.Read, valueProviderCallback: _ => (uint)BitHelper.GetBits(value.Value).Where(x => x).Select(x => 1).Sum(x => x));
         }
 
-        public long Size => 0x100;
+        public long Size { get { return 0x100; } }
 
         private enum Registers : long
         {
