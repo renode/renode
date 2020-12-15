@@ -15,7 +15,7 @@ ${PLATFORM}=     SEPARATOR=
 Should Compile Simple Peripheral
         Execute Command          include @${CURDIR}/SimplePeripheral.cs
 
-	Execute Command          mach create
+        Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${PLATFORM}
 
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
