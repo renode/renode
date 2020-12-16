@@ -198,6 +198,7 @@ Should Echo I2S Audio
     Execute Command           sysbus.i2s OutputFile @${output_file}
 
     Execute Command           emulation RunFor "0.01"
+    Execute Command           Clear
 
     ${input_file_size}=       Get File Size  ${input_file}
     ${output_file_size}=      Get File Size  ${output_file} 
