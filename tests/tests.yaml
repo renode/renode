@@ -51,3 +51,4 @@
 - tests/peripherals/LSM303.robot
 - tests/unit-tests/adhoc-compiler.robot
 - tests/platforms/OpenTitan.robot
+- tests/platforms/Arnold.robot
