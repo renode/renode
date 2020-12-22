@@ -1,0 +1,35 @@
+:name: OpenTitan
+:description: This script runs hello world example on OpenTitan
+
+$name?="OpenTitan"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/opentitan.repl
+
+sysbus Tag <0x40020000 0x10000> "IBEX_DEV_SPI"
+sysbus Tag <0x40030000 0x10000> "IBEX_DEV_FLASH_CTRL"
+sysbus Tag <0x40070000 0x10000> "IBEX_DEV_PINMUX"
+sysbus Tag <0x40080000 0x10000> "IBEX_DEV_RV_TIMER"
+sysbus Tag <0x400A0000 0x10000> "IBEX_DEV_PWRMGR"
+sysbus Tag <0x400B0000 0x10000> "IBEX_DEV_RSTMGR"
+sysbus Tag <0x400C0000 0x10000> "IBEX_DEV_CLKMGR"
+sysbus Tag <0x40110000 0x10000> "IBEX_DEV_AES"
+sysbus Tag <0x40120000 0x10000> "IBEX_DEV_HMAC"
+sysbus Tag <0x40130000 0x10000> "IBEX_DEV_ALERT_HANDLER"
+sysbus Tag <0x40140000 0x10000> "IBEX_DEV_NMI_GEN"
+sysbus Tag <0x40150000 0x10000> "IBEX_DEV_USBDEV"
+sysbus Tag <0x40160000 0x10000> "IBEX_DEV_PADCTRL"
+
+showAnalyzer sysbus.uart
+
+$boot?=@https://dl.antmicro.com/projects/renode/open_titan--boot_rom_nexysvideo.elf-s_234044-1fd0aae8e8ae9d0007554a4f71db74272e71c796
+$bin?=@https://dl.antmicro.com/projects/renode/open_titan--hello_world_nexysvideo.elf-s_222116-8336b165b6f312f1464e1fe3740e28eb81575667
+
+macro reset
+""" 
+    sysbus LoadELF $bin
+    sysbus LoadELF $boot
+""" 
+
+runMacro $reset

@@ -51,3 +51,4 @@
 - tests/peripherals/LIS2DS12.robot
 - tests/peripherals/LSM303.robot
 - tests/unit-tests/adhoc-compiler.robot
+- tests/platforms/OpenTitan.robot

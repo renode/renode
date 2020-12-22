@@ -1,0 +1,26 @@
+rom: Memory.MappedMemory @ sysbus 0x8000
+    size: 0x4000
+
+main_ram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x10000
+
+flash: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x100000
+
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imc" 
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+uart: UART.IbexUART @ sysbus 0x40000000
+    IRQ -> plic@1
+
+gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40090000
+    3 -> cpu@11
+    numberOfSources: 32
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
+    [0,1] -> cpu@[3,7]
+    frequency: 62000000
