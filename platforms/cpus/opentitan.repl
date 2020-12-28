@@ -13,9 +13,10 @@ cpu: CPU.RiscV32 @ sysbus
     timeProvider: clint
 
 uart: UART.IbexUART @ sysbus 0x40000000
-    IRQ -> plic@1
+    IRQ -> plic@2
 
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
+    IRQ -> plic@1
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40090000
     3 -> cpu@11
