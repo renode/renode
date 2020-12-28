@@ -11,3 +11,7 @@ camera: Sensors.ArduCAMMini2MPPlus @ {
 lsm9ds1_imu: Sensors.LSM9DS1_IMU @ twi0 0x6b
 
 lsm9ds1_mag: Sensors.LSM9DS1_Magnetic @ twi0 0x1e
+
+led_red: Miscellaneous.LED @ gpio0 24
+led_green: Miscellaneous.LED @ gpio0 16
+led_blue: Miscellaneous.LED @ gpio0 6
