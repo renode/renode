@@ -40,7 +40,7 @@ do
         \?)
             echo "Invalid option: -$OPTARG"
             help
-            exit
+            exit 1
             ;;
     esac
 done

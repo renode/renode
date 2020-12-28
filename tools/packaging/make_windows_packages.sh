@@ -9,7 +9,7 @@ cd "${0%/*}"
 
 if ! is_dep_available zip
 then
-    exit
+    exit 1
 fi
 
 DIR=renode_$VERSION

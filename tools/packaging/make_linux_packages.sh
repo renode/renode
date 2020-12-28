@@ -11,7 +11,7 @@ RPM_MIN_DIST="f23"
 
 if ! is_dep_available gem
 then
-    exit
+    exit 1
 fi
 
 export PATH=`gem environment gemdir`/bin:$PATH
@@ -21,7 +21,7 @@ if ! is_dep_available fpm ||\
     ! is_dep_available rpm ||\
     ! is_dep_available bsdtar
 then
-    exit
+    exit 1
 fi
 
 DIR=renode_$VERSION
