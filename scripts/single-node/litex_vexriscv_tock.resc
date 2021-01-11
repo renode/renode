@@ -1,0 +1,19 @@
+:name: LiteX/VexRiscv Tock
+:description: This script runs Tock's cxx_hello sample on LiteX/VexRiscv
+
+$name?="litex-vexriscv"
+set elf @https://dl.antmicro.com/projects/renode/litex_vexriscv--tock-cxx_hello.elf-s_1931324-5ff7e30f6a5092faf9371352bb1dcea5750068d3
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/litex_tock.repl
+
+showAnalyzer uart
+
+macro reset
+"""
+    sysbus LoadELF $elf
+"""
+runMacro $reset
+

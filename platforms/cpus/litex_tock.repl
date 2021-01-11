@@ -1,0 +1,94 @@
+rom: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x0000b000
+
+sram: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x00002000
+
+main_ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+uart: UART.LiteX_UART @ sysbus 0x82002000
+    -> cpu@0
+
+eth: Network.LiteX_Ethernet_CSR32 @ {
+        sysbus 0x82004800;
+
+        sysbus new Bus.BusMultiRegistration { address: 0x80000000; size: 0x2000; region: "buffer" };
+
+        sysbus new Bus.BusMultiRegistration { address: 0x82004000; size: 0x800; region: "phy" }
+    }
+    -> cpu@2
+
+phy: Network.EthernetPhysicalLayer @ eth 0
+    VendorSpecific1: 0x4400 // MDIO status: 100Mbps + link up 
+
+spi: SPI.LiteX_SPI_Flash @ {
+    sysbus 0x60005000;
+    sysbus 0xe0005000
+}
+
+flash: SPI.Micron_MT25Q @ spi
+    underlyingMemory: flash_mem
+
+flash_mem: Memory.MappedMemory @ {
+        sysbus 0x20000000;
+        sysbus 0xA0000000 // shadow
+    }
+    size: 0x02000000
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32imac"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+
+timer0: Timers.LiteX_Timer_CSR32 @ sysbus 0x82002800
+    frequency: 100000000
+    -> cpu@1
+
+cas: GPIOPort.LiteX_ControlAndStatus @ {
+        sysbus 0x60006800;
+        sysbus 0xe0006800 // shadow
+    }
+
+    0 -> led0@0
+    1 -> led1@0
+    2 -> led2@0
+    3 -> led3@0
+
+// leds are in range 0-31
+led0: Miscellaneous.LED @ cas 0
+led1: Miscellaneous.LED @ cas 1
+led2: Miscellaneous.LED @ cas 2
+led3: Miscellaneous.LED @ cas 3
+
+// switches are in range 32-63
+switch0: Miscellaneous.Button @ cas 32
+    -> cas@32
+switch1: Miscellaneous.Button @ cas 33
+    -> cas@33
+switch2: Miscellaneous.Button @ cas 34
+    -> cas@34
+switch3: Miscellaneous.Button @ cas 35
+    -> cas@35
+
+// buttons are in range 64-95
+button0: Miscellaneous.Button @ cas 64
+    -> cas@64
+button1: Miscellaneous.Button @ cas 65
+    -> cas@65
+button2: Miscellaneous.Button @ cas 66
+    -> cas@66
+button3: Miscellaneous.Button @ cas 67
+    -> cas@67
+
+sysbus:
+    init:
+        Tag <0x82000000 0x1000> "CSR_CTRL_BASE"
+        Tag <0x82001000 0x0800> "CSR_IDENTIFIER_MEM_BASE"
+        Tag <0x82001800 0x0200> "CSR_UART_PHY_BASE"
+        Tag <0x82002000 0x0800> "CSR_UART_BASE"
+        Tag <0x82002800 0x0200> "CSR_TIMER0_BASE"
+        Tag <0x82003000 0x0800> "CSR_DDRPHY_BASE"
+        Tag <0x82003800 0x0800> "CSR_SDRAM_BASE"
+        Tag <0x82004000 0x0800> "CSR_ETHPHY_BASE"
+        Tag <0x82004800 0x0800> "CSR_ETHMAC_BASE"
+        Tag <0x82005000 0x0100> "CSR_LEDS_BASE"

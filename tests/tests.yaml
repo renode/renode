@@ -56,3 +56,4 @@
 - tests/platforms/Arnold.robot
 - tests/platforms/CrossLink-NX-EVN.robot
 - tests/platforms/STM32F4_Tock.robot
+- tests/platforms/LiteX/LiteX_Tock.robot
