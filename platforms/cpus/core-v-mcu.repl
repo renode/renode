@@ -13,7 +13,8 @@ itc: IRQControllers.PULP_InterruptController @ sysbus 0x1A109800
     [0-31] -> cpu@[0-31]
 
 uart: UART.PULP_uDMA_UART @ sysbus 0x1A102100
-    IRQ -> itc@1
+    RxIRQ -> itc@4
+    TxIRQ -> itc@5
 
 timer: Timers.PULP_Timer @ sysbus <0x1A10B000, +0x80>
     frequency: 100000
