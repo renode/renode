@@ -18,12 +18,13 @@ MONO_VERSION=4.5
 mkdir -p $DESTINATION
 rm -rf $DESTINATION/*
 
-mkdir $DESTINATION/tests
+mkdir $DESTINATION/{tests,tools}
 cp $RENODE_ROOT_DIR/test.sh $DESTINATION
 cp -r $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DESTINATION/tests
 cp -r $RENODE_ROOT_DIR/src/Renode/RobotFrameworkEngine/*.{py,robot} $DESTINATION/tests
 cp $RENODE_ROOT_DIR/lib/resources/styles/robot.css $DESTINATION/tests/robot.css
 cp -r $RENODE_ROOT_DIR/tools/{common.sh,requirements.txt} $DESTINATION/tests
+cp -r $RENODE_ROOT_DIR/tools/metrics_analyzer $DESTINATION/tools
 
 sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
 sed -i 's#tools/##' $DESTINATION/test.sh
