@@ -20,6 +20,42 @@ ssize_t __wrap_getrandom (void *buffer, size_t length, unsigned int flags) {
  return syscall(__NR_getrandom, buffer, length, flags);
 }
 
+// import MonoPosixHelper functions so that they're exported
+extern void Mono_Posix_Syscall_get_at_fdcwd();
+extern void Mono_Posix_Syscall_L_ctermid();
+extern void Mono_Posix_Syscall_get_utime_now();
+extern void Mono_Posix_Syscall_readlink();
+extern void Mono_Posix_Stdlib_SIG_DFL();
+extern void Mono_Posix_Stdlib_EXIT_FAILURE();
+extern void CreateZStream();
+extern void CloseZStream();
+extern void ReadZStream();
+extern void WriteZStream();
+
+// dummy function so that they're used
+#define ATTR __attribute__ ((__visibility__ ("default"))) __attribute__((noinline))
+ATTR void DO_NOT_RUN_dummy_callback(void) {
+        // the section below contains a list of all
+        // symbols that are to be remapped in the dllmap
+        // by the tools/packaging/make_linux_portable.sh script;
+        // they are extracted automatically, so please
+        // add all new items between markers and
+        // *DO NOT* modify markers themselves
+        
+        // --- REMAPPED SYMBOLS SECTION STARTS ---
+        Mono_Posix_Syscall_get_at_fdcwd();
+        Mono_Posix_Syscall_L_ctermid();
+        Mono_Posix_Syscall_get_utime_now();
+        Mono_Posix_Syscall_readlink();
+        Mono_Posix_Stdlib_SIG_DFL();
+        Mono_Posix_Stdlib_EXIT_FAILURE();
+        CreateZStream();
+        CloseZStream();
+        ReadZStream();
+        WriteZStream();
+        // --- REMAPPED SYMBOLS SECTION ENDS ---
+}
+
 //
 // end of reimplement
 //
@@ -27,7 +63,6 @@ ssize_t __wrap_getrandom (void *buffer, size_t length, unsigned int flags) {
 //
 // helper methods
 //
-#define ATTR __attribute__ ((__visibility__ ("default"))) __attribute__((noinline))
 ATTR int GetBundlesCount(void) {
 	static int bundle_count = -1;
 	if (bundle_count != -1) return bundle_count;

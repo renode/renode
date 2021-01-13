@@ -57,6 +57,20 @@ echo '<dllmap dll="i:dl">' >> $CONFIG_FILE
 echo '  <dllentry dll="__Internal" name="dlopen" target="dlopen"/>' >> $CONFIG_FILE
 echo '</dllmap>' >> $CONFIG_FILE
 
+AWK_COMMANDS='
+/--- REMAPPED SYMBOLS SECTION STARTS ---/ { flag = 1; next }
+/--- REMAPPED SYMBOLS SECTION ENDS ---/   { flag = 0; }
+flag                                      { gsub(/\(\);/, "", $0); print }
+'
+
+# remap functions from MonoPosixHelper to __Internal
+echo '<dllmap dll="i:MonoPosixHelper">' >> $CONFIG_FILE
+FUNCTIONS=`awk "$AWK_COMMANDS" $THIS_DIR/linux_portable/additional.c`
+for F in $FUNCTIONS ; do
+    echo "  <dllentry dll=\"__Internal\" name=\"$F\" target=\"$F\"/>" >> $CONFIG_FILE
+done
+echo '</dllmap>' >> $CONFIG_FILE
+
 echo '
   <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.so.0"/>
   <dllmap dll="libgobject-2.0-0.dll" target="libgobject-2.0.so.0"/>
@@ -137,9 +151,11 @@ gcc \
     $WORKDIR/temp.s  \
     -I/usr/include/mono-2.0  \
     -ldl  \
-    -lz `pkg-config --libs-only-L mono-2`  \
     -Wl,-Bstatic  \
     -lmono-2.0  \
+    -lMonoPosixHelper \
+    -lz \
+    -lbsd \
     -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //" | sed -e "s/\-lm//"`  \
     $RENODE_ROOT_DIR/lib/resources/libraries/libopenlibm-Linux.a  \
     -static-libgcc \
@@ -153,7 +169,6 @@ cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
 cp -r $RENODE_ROOT_DIR/platforms $DESTINATION
 
-cp `find_file libMonoPosixHelper.so` $DESTINATION
 cp `find_file libmono-btls-shared.so` $DESTINATION
 
 cp `find_file libglibsharpglue-2.so` $DESTINATION
