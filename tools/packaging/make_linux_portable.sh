@@ -155,8 +155,9 @@ gcc \
     -lmono-2.0  \
     -lMonoPosixHelper \
     -lz \
+    -lrt \
     -lbsd \
-    -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //" | sed -e "s/\-lm//"`  \
+    -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //" | sed -e "s/\-lm//" | sed -e "s/\-lrt //"`  \
     $RENODE_ROOT_DIR/lib/resources/libraries/libopenlibm-Linux.a  \
     -static-libgcc \
     -o $DESTINATION/renode_bundled
