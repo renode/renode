@@ -83,17 +83,20 @@ ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4cc.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4mm.dll
 ln -sf $RENODE_OUTPUT_DIR/LZ4.dll $WORKDIR/LZ4pn.dll
 
-# those dlls are copied to a common directory and not
-# taken directly from /usr/lib/cli to skip their
-# dll.config files - those have absolute paths
-# inside which makes portable package not work
-# correctly
+function find_file() {
+  FOUND=`(find /usr/lib -name $1 -type f 2> /dev/null | head -n 1) || true`
+  if [ "$FOUND" = "" ] ; then
+      FOUND=`(find /usr/lib64 -name $1 -type f 2> /dev/null | head -n 1) || true`
+  fi
+  echo -n $FOUND
+}
+
 mkdir -p $WORKDIR/dependencies
-cp /usr/lib/cli/atk-sharp-2.0/atk-sharp.dll $WORKDIR/dependencies
-cp /usr/lib/cli/gtk-sharp-2.0/gtk-sharp.dll $WORKDIR/dependencies
-cp /usr/lib/cli/gdk-sharp-2.0/gdk-sharp.dll $WORKDIR/dependencies
-cp /usr/lib/cli/glib-sharp-2.0/glib-sharp.dll $WORKDIR/dependencies
-cp /usr/lib/cli/pango-sharp-2.0/pango-sharp.dll $WORKDIR/dependencies
+cp `find_file atk-sharp.dll` $WORKDIR/dependencies
+cp `find_file gtk-sharp.dll` $WORKDIR/dependencies
+cp `find_file gdk-sharp.dll` $WORKDIR/dependencies
+cp `find_file glib-sharp.dll` $WORKDIR/dependencies
+cp `find_file pango-sharp.dll` $WORKDIR/dependencies
 
 # this is ok to crash here, we will re-compile it
 set +e
@@ -149,12 +152,12 @@ cp $RENODE_ROOT_DIR/.renode-root $DESTINATION
 cp -r $RENODE_ROOT_DIR/scripts $DESTINATION
 cp -r $RENODE_ROOT_DIR/platforms $DESTINATION
 
-cp /usr/lib/libMonoPosixHelper.so $DESTINATION
-cp /usr/lib/libmono-btls-shared.so $DESTINATION
+cp `find_file libMonoPosixHelper.so` $DESTINATION
+cp `find_file libmono-btls-shared.so` $DESTINATION
 
-cp /usr/lib/cli/glib-sharp-2.0/libglibsharpglue-2.so $DESTINATION
-cp /usr/lib/cli/gtk-sharp-2.0/libgtksharpglue-2.so $DESTINATION
-cp /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so $DESTINATION
+cp `find_file libglibsharpglue-2.so` $DESTINATION
+cp `find_file libgtksharpglue-2.so` $DESTINATION
+cp `find_file libgdksharpglue-2.so` $DESTINATION
 
 cp $THIS_DIR/linux_portable/renode $DESTINATION
 
