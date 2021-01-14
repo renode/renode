@@ -7,6 +7,7 @@ Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart
+${STDOUT}                     sysbus.stdout
 ${URI}                        @https://dl.antmicro.com/projects/renode
 
 *** Keywords ***
@@ -17,6 +18,15 @@ Create Machine
     Execute Command          machine LoadPlatformDescription @platforms/boards/A2_CV32E40P.repl
 
     Execute Command          sysbus LoadELF ${URI}/${elf}
+
+Create Test File
+    [Arguments]              ${file}
+    ${string} =              Set Variable   ${EMPTY}
+    FOR  ${index}  IN RANGE  128
+         ${byte}=            Convert To Bytes  ${index}  int
+         ${string}=          Catenate  SEPARATOR=  ${string}  \x00  ${byte}
+    END
+    Create Binary File       ${file}  ${string}
 
 *** Test Cases ***
 Should Print Hello to UART
@@ -75,3 +85,24 @@ Should Echo Characters on UART
     Wait For Prompt On Uart   s
     Write Char On Uart        t
     Wait For Prompt On Uart   t
+
+Should Fail When I2S Not Configured
+    Create Machine            arnold-pulp-i2s_capture-s_566452-62d9e3e48551334dac1ab17af371728e66586c7a
+    Create Log Tester         1
+
+    Start Emulation
+
+    Wait For Log Entry        Starting reception without an input file! Aborting
+
+Should Output I2S Samples From File
+    Create Machine            arnold-pulp-i2s_capture-s_566452-62d9e3e48551334dac1ab17af371728e66586c7a
+
+    ${input_file}=            Allocate Temporary File
+    Create Test File          ${input_file}
+    Execute Command           sysbus.i2s InputFile '${input_file}'
+    Create Terminal Tester    ${STDOUT}
+
+    Start Emulation
+    
+    Wait For Line On Uart     Value of sample 0 = 0
+    Wait For Line On Uart     Value of sample 127 = 127
