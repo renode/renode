@@ -25,6 +25,11 @@ timer: Timers.PULP_Timer @ sysbus <0x1A10B000, +0x80>
 
 gpio: GPIOPort.PULP_APB_GPIO @ sysbus 0x1A101000
 
+i2s: Sound.PULP_I2S @ sysbus 0x1A102200
+    [0, 1, 2] -> itc_ev@[12, 13, 28]
+
+stdout: UART.PULP_STDOUT@ sysbus 0x1A10FF80
+
 sysbus:
     init:
         Tag <0x1A100000, 0x1A100FFF> "FLL"
@@ -42,5 +47,4 @@ sysbus:
         Tag <0x1A109000, 0x1A1097FF> "EVENT/INTERRUPT_UNIT"
         Tag <0x1A10B000, 0x1A10BFFF> "TIMER"
         Tag <0x1A10C000, 0x1A10CFFF> "HWPE"
-        Tag <0x1A10F000, 0x1A10FFFF> "STDOUT"
         Tag <0x1A110000, 0x1A110FFF> "DEBUG_UNIT"
