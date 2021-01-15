@@ -210,3 +210,13 @@ Should Echo I2S Audio
 
     Should Be Equal           ${input_file_content}  ${output_file_content}
 
+Should Detect Yes Pattern
+    Create Machine            ${STANDARD}    nrf52840--tflite-micro_speech.elf-s_7172308-9ab5781883d7af2582d7fea09b14352628da9839
+
+    Execute Command           sysbus.pdm SetInputFile ${URI}/audio_yes_1s.s16le.pcm-s_32000-b69f5518615516f80ae0082fe9b5a5d29ffebce8
+
+    Create Terminal Tester    ${UART}
+    Start Emulation
+
+    Wait For Line On Uart     Heard yes
+
