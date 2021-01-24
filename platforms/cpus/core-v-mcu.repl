@@ -9,12 +9,15 @@ cpu: CPU.CV32E40P @ sysbus
     // We are overriding the default value to include information about coreID and clusterID
     HartId: 0x3e0
 
+itc_ev: IRQControllers.PULP_EventController @ itc
+    parent: itc
+
 itc: IRQControllers.PULP_InterruptController @ sysbus 0x1A109800
     [0-31] -> cpu@[0-31]
 
 uart: UART.PULP_uDMA_UART @ sysbus 0x1A102100
-    RxIRQ -> itc@4
-    TxIRQ -> itc@5
+    RxIRQ -> itc_ev@4
+    TxIRQ -> itc_ev@5
 
 timer: Timers.PULP_Timer @ sysbus <0x1A10B000, +0x80>
     frequency: 100000
