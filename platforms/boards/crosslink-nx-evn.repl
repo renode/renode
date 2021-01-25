@@ -1,0 +1,50 @@
+rom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x8000
+
+sram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x800000
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32im"
+
+ctrl: Miscellaneous.LiteX_SoC_Controller @ sysbus 0xf0000000
+
+uart: UART.LiteX_UART @ sysbus 0xf0002000
+    -> cpu@0
+
+timer0: Timers.LiteX_Timer @ sysbus 0xf0002800
+    -> cpu@1
+    frequency: 75000000
+
+// only LEDs seem to be supported in this LiteX platform
+// but the hardware has DIP switches and buttons as well
+leds: GPIOPort.LiteX_ControlAndStatus @ sysbus 0xf0003000
+    0 -> led0@0
+    1 -> led1@0
+    2 -> led2@0
+    3 -> led3@0
+    4 -> led4@0
+    5 -> led5@0
+    6 -> led6@0
+    7 -> led7@0
+    8 -> led8@0
+    9 -> led9@0
+    10 -> led10@0
+    11 -> led11@0
+    12 -> led12@0
+    13 -> led13@0
+
+led0: Miscellaneous.LED @ leds 0
+led1: Miscellaneous.LED @ leds 1
+led2: Miscellaneous.LED @ leds 2
+led3: Miscellaneous.LED @ leds 3
+led4: Miscellaneous.LED @ leds 4
+led5: Miscellaneous.LED @ leds 5
+led6: Miscellaneous.LED @ leds 6
+led7: Miscellaneous.LED @ leds 7
+led8: Miscellaneous.LED @ leds 8
+led9: Miscellaneous.LED @ leds 9
+led10: Miscellaneous.LED @ leds 10
+led11: Miscellaneous.LED @ leds 11
+led12: Miscellaneous.LED @ leds 12
+led13: Miscellaneous.LED @ leds 13

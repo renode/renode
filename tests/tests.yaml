@@ -52,3 +52,4 @@
 - tests/unit-tests/adhoc-compiler.robot
 - tests/platforms/OpenTitan.robot
 - tests/platforms/Arnold.robot
+- tests/platforms/CrossLink-NX-EVN.robot
