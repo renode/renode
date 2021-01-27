@@ -34,12 +34,16 @@ i2c0: I2C.PULP_uDMA_I2C @ sysbus <0x1A102180, +0x80>
     RxEvent -> itc_ev@8
     TxEvent -> itc_ev@9
 
+spi: SPI.PULP_uDMA_SPI @ sysbus 0x1A102080
+    RxIRQ -> itc_ev@0
+    TxIRQ -> itc_ev@1
+    CmdIRQ -> itc_ev@2
+
 sysbus:
     init:
         Tag <0x1A100000, 0x1A100FFF> "FLL"
 
         Tag <0x1A102000, 0x1A10207F> "UDMA"
-        Tag <0x1A102080, 0x1A1020FF> "SPI"
         Tag <0x1A102280, 0x1A1022FF> "CAMERA_INTERFACE"
         Tag <0x1A102300, 0x1A10237F> "FILTER"
         Tag <0x1A102380, 0x1A1023FF> "FPGA_CONTROL"
