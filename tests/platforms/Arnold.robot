@@ -142,3 +142,73 @@ Should Run I2C test
     Wait For Line On Uart      0x2: 0x2
     Wait For Line On Uart      0x3: 0x3
     Wait For Line On Uart     the end
+
+SPI Should Send Bytes
+    Create Machine           arnold--pulp-rt-examples--spim-send.elf-s_414648-d0100af113d67254d957e26c9ea62c014a753a0c
+    Execute Command          machine LoadPlatformDescriptionFromString "dummySlave: Mocks.DummySPISlave @ spi"
+    Create Log Tester        0.1
+
+    Start Emulation
+
+    Wait For Log Entry       Data received: 0x0
+    Wait For Log Entry       Data received: 0x1
+    Wait For Log Entry       Data received: 0x2
+    Wait For Log Entry       Data received: 0x3
+    Wait For Log Entry       Data received: 0x4
+    Wait For Log Entry       Data received: 0x5
+    Wait For Log Entry       Data received: 0x6
+    Wait For Log Entry       Data received: 0x7
+    Wait For Log Entry       Data received: 0x8
+    Wait For Log Entry       Data received: 0x9
+    Wait For Log Entry       Data received: 0xA
+    Wait For Log Entry       Data received: 0xB
+    Wait For Log Entry       Data received: 0xC
+    Wait For Log Entry       Data received: 0xD
+    Wait For Log Entry       Data received: 0xE
+    Wait For Log Entry       Data received: 0xF
+
+SPI Should Send Bytes Async
+    Create Machine           arnold--spim-async.elf-s_417852-3cf040621fd22ac14bd67be8decfe3a84f7d8d78
+    Execute Command          machine LoadPlatformDescriptionFromString "dummySlave: Mocks.DummySPISlave @ spi"
+    Create Terminal Tester   sysbus.uart
+    Create Log Tester        0.1
+
+    Start Emulation
+
+    Wait For Line On Uart    Executing callback!
+    Wait For Log Entry       Data received: 0x0
+    Wait For Log Entry       Data received: 0x1F
+    Wait For Line On Uart    Executing callback!
+    Wait For Log Entry       Data received: 0x0
+    Wait For Log Entry       Data received: 0x1F
+    Wait For Line On Uart    Executing callback!
+    Wait For Log Entry       Data received: 0x0
+    Wait For Log Entry       Data received: 0x1F
+
+SPI Should Receive Bytes
+    Create Machine           arnold--pulp-rt-examples--spim-receive.elf-s_414528-ba2983aef41f1493d1f6b13c58ea0d7b843bf57a
+    Execute Command          machine LoadPlatformDescriptionFromString "dummySlave: Mocks.DummySPISlave @ spi"
+
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A7F8
+    Should Contain                   ${res}      0x00000000
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A7FC
+    Should Contain                   ${res}      0x00000000
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A800
+    Should Contain                   ${res}      0x00000000
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A804
+    Should Contain                   ${res}      0x00000000
+
+    :FOR  ${i}  IN RANGE  0  16
+    \    Execute Command             sysbus.spi.dummySlave EnqueueValue ${i}
+
+    Start Emulation
+
+    Wait For Log Entry               Data received: 0x0 (idx: 15)
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A7F8
+    Should Contain                   ${res}      0x03020100
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A7FC
+    Should Contain                   ${res}      0x07060504
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A800
+    Should Contain                   ${res}      0x0B0A0908
+    ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A804
+    Should Contain                   ${res}      0x0F0E0D0C
