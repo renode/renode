@@ -106,3 +106,39 @@ Should Output I2S Samples From File
     
     Wait For Line On Uart     Value of sample 0 = 0
     Wait For Line On Uart     Value of sample 127 = 127
+
+Should Run I2C test
+    Create Machine            arnold-pulp-i2c-s_389340-a622fbd1302bc8a0a52b70f8713bc028f341c902
+    Execute Command           machine LoadPlatformDescriptionFromString "i2c_echo: Mocks.EchoI2CDevice @ i2c0 0x55"
+    
+    # There is a problem with the rt_i2c_write() function in the simulation.
+    # It configures the DMA transfer with the first set of commands (CFG, START, WRITE address, RPT, WRITE), but fails to continue with the next one.
+    # The i2c_step1() callback is being called as a result of the interrupt, but it doesn't start the transfer of the actual data.
+    # It looks like the state of the X8 register is wrong - it should contain a base address of the controller, but instead it is 0.
+    # As a result the write that should be directed to I2C's register ends up in the memory. 
+    #
+    # The code belows patches the value of the register by setting it to the TxBufferBaseAddress register of the i2c0 device
+    # in the i2c_step1() function (https://github.com/pulp-platform/pulp-rt/blob/master/kernel/riscv/udma-v3.S#L305).
+    #
+    # WARNING: the addresses below are binary-specific and should be adapted after rebuilding the demo
+
+    Execute Command           sysbus.cpu AddHook 0x1c008208 "self.SetRegisterUnsafe(12, 0x1a102190)"
+    Execute Command           sysbus.cpu AddHook 0x1c00822c "self.SetRegisterUnsafe(12, 0x1a102190)"
+
+    Create Terminal Tester    ${UART}
+
+    Start Emulation
+
+    Wait For Line On Uart     Entering test
+    Wait For Line On Uart     reading...
+    Wait For Line On Uart      0x0: 0x0
+    Wait For Line On Uart      0x1: 0x0
+    Wait For Line On Uart      0x2: 0x0
+    Wait For Line On Uart      0x3: 0x0
+    Wait For Line On Uart     writing...
+    Wait For Line On Uart     readng again...
+    Wait For Line On Uart      0x0: 0x0
+    Wait For Line On Uart      0x1: 0x1
+    Wait For Line On Uart      0x2: 0x2
+    Wait For Line On Uart      0x3: 0x3
+    Wait For Line On Uart     the end

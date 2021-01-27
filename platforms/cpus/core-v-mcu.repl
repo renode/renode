@@ -30,13 +30,16 @@ i2s: Sound.PULP_I2S @ sysbus 0x1A102200
 
 stdout: UART.PULP_STDOUT@ sysbus 0x1A10FF80
 
+i2c0: I2C.PULP_uDMA_I2C @ sysbus <0x1A102180, +0x80>
+    RxEvent -> itc_ev@8
+    TxEvent -> itc_ev@9
+
 sysbus:
     init:
         Tag <0x1A100000, 0x1A100FFF> "FLL"
 
         Tag <0x1A102000, 0x1A10207F> "UDMA"
         Tag <0x1A102080, 0x1A1020FF> "SPI"
-        Tag <0x1A102180, 0x1A1021FF> "I2C0"
         Tag <0x1A102280, 0x1A1022FF> "CAMERA_INTERFACE"
         Tag <0x1A102300, 0x1A10237F> "FILTER"
         Tag <0x1A102380, 0x1A1023FF> "FPGA_CONTROL"
