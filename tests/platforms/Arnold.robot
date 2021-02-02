@@ -72,10 +72,12 @@ Should Print to UART Using a Timer
     \             Should Be True  ${d} <= ${MAX_SLEEP_TIME}  Too long sleep detected between entires ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
 
 Should Echo Characters on UART
-    Create Machine            arnold-pulp-echo-s_387724-9df7d9c7b43d7fa2740d07a44b36dcad35f2d796
+    Create Machine            arnold-pulp-echo-s_387788-cf79547cd654f7ebad125546dd2c98e58b47731e
     Create Terminal Tester    ${UART}
 
     Start Emulation
+
+    Wait For Line On Uart     Entered test
 
     Write Char On Uart        t
     Wait For Prompt On Uart   t
