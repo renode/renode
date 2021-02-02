@@ -20,4 +20,4 @@ except ImportError as e:
     path = os.path.dirname(os.path.realpath(__file__))
     requirements = os.path.join(path, requirements)
 
-    print("{}\nPlease install required dependencies with `pip install -r {}`".format(e.message, os.path.abspath(requirements)), file=sys.stderr)
+    print("{}\nPlease install required dependencies with `pip install -r {}`".format(str(e), os.path.abspath(requirements)), file=sys.stderr)
