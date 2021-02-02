@@ -23,7 +23,7 @@ uart: UART.LiteX_UART @ sysbus 0xF0001000
     -> cpu@0
 
 cpu_timer: Timers.LiteX_CPUTimer @ sysbus 0xf0000800
-    frequency: 66000000
+    frequency: 75000000
     // IRQ #100 is Machine Timer Interrupt
     -> cpu@100
 
