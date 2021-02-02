@@ -11,7 +11,7 @@ cp -r $BASE/src/Renode/RobotFrameworkEngine/*.{py,robot} $DIR/tests
 #sed has different parameters on osx/linux so the command must be defined by scripts including this one
 $SED_COMMAND 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DIR/tests/renode-keywords.robot
 cp $BASE/lib/resources/styles/robot.css $DIR/tests/robot.css
-cp $BASE/tools/requirements.txt $DIR/tests/requirements.txt
+cp $BASE/tests/requirements.txt $DIR/tests/requirements.txt
 
 #copy the licenses
 #some files already include the library name

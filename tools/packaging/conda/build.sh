@@ -59,7 +59,7 @@ cp -r platforms/* $PREFIX/opt/renode/platforms/
 cp -r tests/* $PREFIX/opt/renode/tests/
 
 cp lib/resources/styles/robot.css $PREFIX/opt/renode/tests
-cp tools/requirements.txt $PREFIX/opt/renode/tests
+cp tests/requirements.txt $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/renode-keywords.robot $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/helper.py $PREFIX/opt/renode/tests
 

@@ -92,7 +92,7 @@ This requires you to install Python 3 (on Windows, you will also need Cygwin - s
 
 Once you have Python 3 and ``pip``, install some additional modules::
 
-    python3 -m pip install -r tools/requirements.txt
+    python3 -m pip install -r tests/requirements.txt
 
 Building from source (advanced)
 +++++++++++++++++++++++++++++++

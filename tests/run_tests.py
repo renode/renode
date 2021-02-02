@@ -17,10 +17,7 @@ except ImportError as e:
     # Look for requirements.txt
     name = "requirements.txt"
     requirements = name
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
-    for root, dirs, files in os.walk(path):
-        if name in files:
-            requirements = os.path.join(root, name)
-            break
+    path = os.path.dirname(os.path.realpath(__file__))
+    requirements = os.path.join(path, requirements)
 
     print("{}\nPlease install required dependencies with `pip install -r {}`".format(e.message, os.path.abspath(requirements)), file=sys.stderr)
