@@ -66,7 +66,7 @@ Renode requires Mono >= 5.20 (Linux, macOS) or .NET >= 4.7 (Windows).
 Other dependencies (Linux only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Ubuntu 16.04, you can install the remaining dependencies with the following command::
+On Ubuntu 20.04, you can install the remaining dependencies with the following command::
 
    sudo apt-get install policykit-1 libgtk2.0-0 screen uml-utilities gtk-sharp2 libc6-dev gcc python3 python3-pip libzmq5
 
