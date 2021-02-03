@@ -136,12 +136,12 @@ gcc \
     $WRAPPER_SOURCE_FILE  \
     $WORKDIR/temp.s  \
     -I/usr/include/mono-2.0  \
-    -lm  \
     -ldl  \
     -lz `pkg-config --libs-only-L mono-2`  \
     -Wl,-Bstatic  \
     -lmono-2.0  \
-    -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //"`  \
+    -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //" | sed -e "s/\-lm//"`  \
+    $RENODE_ROOT_DIR/lib/resources/libraries/libopenlibm-Linux.a  \
     -static-libgcc \
     -o $DESTINATION/renode_bundled
 
