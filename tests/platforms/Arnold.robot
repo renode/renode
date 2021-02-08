@@ -214,3 +214,35 @@ SPI Should Receive Bytes
     Should Contain                   ${res}      0x0B0A0908
     ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A804
     Should Contain                   ${res}      0x0F0E0D0C
+
+Should Read Frames From Camera
+    Create Machine           arnold-pulp-camera-s_391968-f3ac0d1bcaf06ba5811c3e5c333aeac8286c5bdc
+    Execute Command          machine LoadPlatformDescriptionFromString "himax: Sensors.HiMaxHM01B0 @ camera_controller"
+
+    Execute Command          sysbus.camera_controller.himax ImageSource ${URI}/images/person_image_0.jpg-s_3853-7f2125e28423fa117a1079d84785b17c9b70f62d
+
+    Create Terminal Tester   ${UART}
+    Start Emulation
+
+    Wait For Line On Uart    Entering main controller
+    Wait For Line On Uart    Frame 1 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 2 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 3 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 4 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 5 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 6 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 7 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 8 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 9 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Frame 10 captured!
+    Wait For Line On Uart    0xff 0xd8 0xff 0xe0 0x0 0x10 0x4a 0x46
+    Wait For Line On Uart    Test success

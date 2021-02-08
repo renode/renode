@@ -39,12 +39,14 @@ spi: SPI.PULP_uDMA_SPI @ sysbus 0x1A102080
     TxIRQ -> itc_ev@1
     CmdIRQ -> itc_ev@2
 
+camera_controller: Sensors.PULP_uDMA_Camera @ sysbus 0x1A102280
+    IRQ -> itc_ev@16
+
 sysbus:
     init:
         Tag <0x1A100000, 0x1A100FFF> "FLL"
 
         Tag <0x1A102000, 0x1A10207F> "UDMA"
-        Tag <0x1A102280, 0x1A1022FF> "CAMERA_INTERFACE"
         Tag <0x1A102300, 0x1A10237F> "FILTER"
         Tag <0x1A102380, 0x1A1023FF> "FPGA_CONTROL"
 
