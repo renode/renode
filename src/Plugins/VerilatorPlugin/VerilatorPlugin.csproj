@@ -40,7 +40,7 @@
     <Reference Include="NetMQ">
       <HintPath>..\..\..\lib\resources\libraries\NetMQ.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" />
+    <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
