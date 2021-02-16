@@ -86,6 +86,7 @@ Run ZephyrRTOS Shell
 
 *** Test Cases ***
 Should Run ZephyrRTOS Shell On UART
+    [Tags]   skipped
     Run ZephyrRTOS Shell      ${NO_DMA}  zephyr_shell_nrf52840.elf-s_1110556-9653ab7fffe1427c50fa6b837e55edab38925681
 
 Should Run ZephyrRTOS Shell On UARTE
