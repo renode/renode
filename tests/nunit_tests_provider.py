@@ -6,6 +6,9 @@ import signal
 import psutil
 import subprocess
 
+import xml.etree.ElementTree as ET
+import glob
+
 this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
@@ -87,3 +90,17 @@ class NUnitTestSuite(object):
     def cleanup(self, options):
         pass
 
+    @staticmethod
+    def find_failed_tests(path, files_pattern='*.csproj.xml'):
+        test_files = glob.glob(os.path.join(path, files_pattern))
+        for test_file in test_files:
+            tree = ET.parse(test_file)
+            root = tree.getroot()
+            ret = {'mandatory': []}
+            for test in root.iter('test-case'):
+                if test.attrib['result'] == 'Failed':
+                    ret['mandatory'].append(test.attrib['fullname'])
+        
+        if not ret['mandatory']:
+            return None
+        return ret
