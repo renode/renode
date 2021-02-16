@@ -19,6 +19,7 @@ DIR=$MACOS_APP_DIR/Contents/MacOS
 # OSX version of sed requires backup appendix when in-place editing, backups are removed later on
 SED_COMMAND="sed -i.sed_backup"
 . common_copy_files.sh
+copy_bash_tests_scripts
 
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
 cp macos/macos_run.command-license $MACOS_APP_DIR/Contents/MacOS

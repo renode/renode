@@ -29,19 +29,7 @@ INSTALL_DIR=/opt/renode
 
 SED_COMMAND="sed -i"
 . common_copy_files.sh
-
-cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DIR/tests
-cp -r $BASE/test.sh $DIR/tests
-cp -r $BASE/tools/common.sh $DIR/tests
-cp -r $BASE/tests/platforms $DIR/tests/platforms
-sed -i '/nunit/d' $DIR/tests/run_tests.py
-sed -i 's#tools/##' $DIR/tests/test.sh
-sed -i 's#tests/run_tests.py#run_tests.py#' $DIR/tests/test.sh
-sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r . "$@"#' $DIR/tests/test.sh
-sed -i 's#^ROOT_PATH=".*#ROOT_PATH="'$INSTALL_DIR'/tests"#g' $DIR/tests/test.sh
-sed -i '/TESTS_FILE/d' $DIR/tests/test.sh
-sed -i '/TESTS_RESULTS/d' $DIR/tests/test.sh
-sed -i 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $DIR/tests/robot_tests_provider.py
+copy_bash_tests_scripts
 
 COMMAND_SCRIPT=linux/renode.sh
 echo "#!/bin/sh" > $COMMAND_SCRIPT
