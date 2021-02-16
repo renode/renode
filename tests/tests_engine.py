@@ -267,6 +267,22 @@ def run_test_group(args):
     options.output.flush()
     return tests_failed
 
+def print_failed_tests(options):
+    for handler in registered_handlers:
+        handler_obj = handler['creator']
+        failed = handler_obj.find_failed_tests(options.results_directory)
+
+        if failed != None:
+            def _print_helper(what):
+                for i, fail in enumerate(failed[what]):
+                    print("\t{0}. {1}".format(i + 1, fail))
+
+            print("Failed {} critical tests:".format(handler['type']))
+            _print_helper('mandatory')
+            if 'non_critical' in failed and failed['non_critical']:
+                print("Failed {} non-critical tests:".format(handler['type']))
+                _print_helper('non_critical')
+            print("------")
 
 def run():
     parser = prepare_parser()
@@ -329,6 +345,7 @@ def run():
         options.output.close()
 
     if tests_failed:
-        print("Some tests failed :( See logs for details!")
+        print("Some tests failed :( See the list of failed tests below and logs for details!")
+        print_failed_tests(options)
         sys.exit(1)
     print("Tests finished successfully :)")
