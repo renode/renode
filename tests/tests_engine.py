@@ -105,7 +105,7 @@ def prepare_parser():
                         help="Run tests under GDB control.")
 
     parser.add_argument("--exclude",
-                        default=[],
+                        default=['skipped'],
                         action="append",
                         help="Do not run tests marked with a tag.")
 
