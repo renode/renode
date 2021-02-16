@@ -22,6 +22,23 @@ SED_COMMAND="sed -i"
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
+### prepare renode-test
+cp $BASE/tests/tests.yaml $DIR/tests/
+sed -i '/^- tests\/platforms/!d' $DIR/tests/tests.yaml
+sed -i 's#tests/##g' $DIR/tests/tests.yaml
+
+cat >> $DIR/tests/test.bat << EOL
+@echo off
+set SCRIPTDIR=%~dp0
+py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory  "%SCRIPTDIR%\..\bin" -r %TEMP% %*
+EOL
+
+cat >> $DIR/bin/renode-test.bat << EOL
+@echo off
+set test_script=%~dp0%..\tests\test.bat
+call "%test_script%" %*
+EOL
+
 ### copy licenses
 cp windows/mingw-license $DIR/licenses
 cp windows/winpthreads-license $DIR/licenses
