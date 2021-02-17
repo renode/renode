@@ -337,7 +337,12 @@ class RobotTestSuite(object):
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
-        tree = ET.parse(os.path.join(path, file))
+        tree = None
+        try:
+            tree = ET.parse(os.path.join(path, file))
+        except FileNotFoundError:
+            return None
+
         root = tree.getroot()
         ret = {'mandatory': [], 'non_critical': []}
         for suite in root.iter('suite'):
@@ -353,6 +358,6 @@ class RobotTestSuite(object):
                     else:
                         ret['mandatory'].append(testname + "." + name)
             
-            if not ret['mandatory'] and not ret['non_critical']:
-                return None
+        if not ret['mandatory'] and not ret['non_critical']:
+            return None
         return ret

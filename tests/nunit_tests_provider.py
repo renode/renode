@@ -93,10 +93,10 @@ class NUnitTestSuite(object):
     @staticmethod
     def find_failed_tests(path, files_pattern='*.csproj.xml'):
         test_files = glob.glob(os.path.join(path, files_pattern))
+        ret = {'mandatory': []}
         for test_file in test_files:
             tree = ET.parse(test_file)
             root = tree.getroot()
-            ret = {'mandatory': []}
             for test in root.iter('test-case'):
                 if test.attrib['result'] == 'Failed':
                     ret['mandatory'].append(test.attrib['fullname'])
