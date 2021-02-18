@@ -34,3 +34,7 @@
 [submodule "lib/InpliTftpServer"]
 	path = lib/InpliTftpServer
 	url = https://github.com/antmicro/InpliTftpServer.git
+[submodule "lib/BigGustave"]
+	path = lib/BigGustave
+	url = https://github.com/antmicro/BigGustave.git
+	branch = renode-build

@@ -83,6 +83,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tftp", "lib\InpliTftpServer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptionsParserTests", "lib\options-parser\OptionsParserTests.csproj", "{69B08E08-10DC-473C-BCB7-3B0C398F63CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigGustave", "lib\BigGustave\src\BigGustave\BigGustave.csproj", "{959D076C-8127-4FEE-9737-0F8FDE5A0E09}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugHeadless|Any CPU = DebugHeadless|Any CPU
@@ -515,6 +517,18 @@ Global
 		{69B08E08-10DC-473C-BCB7-3B0C398F63CF}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
 		{69B08E08-10DC-473C-BCB7-3B0C398F63CF}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
 		{69B08E08-10DC-473C-BCB7-3B0C398F63CF}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
@@ -549,5 +563,6 @@ Global
 		{45A27C6A-1831-4E0D-84C2-FB3893E7FBE5} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
 		{3A70B9B8-BBAB-47EA-8473-B7A0B4961D56} = {CA585D43-7DF3-4486-B9B5-8DAA812716C3}
 		{69B08E08-10DC-473C-BCB7-3B0C398F63CF} = {CD9D4CF9-BD98-4D57-A5EF-EA5C3C75CB0C}
+		{959D076C-8127-4FEE-9737-0F8FDE5A0E09} = {CA585D43-7DF3-4486-B9B5-8DAA812716C3}
 	EndGlobalSection
 EndGlobal
