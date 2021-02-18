@@ -1,6 +1,28 @@
 from time import sleep
+from Antmicro import Renode
 
 current_value = 0
+
+def mc_uart_connect(device_name):
+    def __printer(b):
+        sys.stdout.write(chr(b))
+
+    uart = None
+    try:
+        uart = clr.Convert(self.Machine[str(device_name)], Renode.Peripherals.UART.IUART)
+    except:
+        print("Peripheral %s not found or not an IUART." % device_name)
+        return 1
+
+    print("Redirecting the input to %s, press <ESC> to quit..." % device_name)
+    uart.CharReceived += __printer
+    while True:
+       c = sys.stdin.read(1)
+       if ord(c) == 27:
+           break
+       uart.WriteChar(ord(c))
+    uart.CharReceived -= __printer
+    print("Disconnected from %s" % device_name)
 
 def mc_next_value(offset = 0):
     global current_value
