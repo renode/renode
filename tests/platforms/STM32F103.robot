@@ -17,11 +17,11 @@ Should Handle Button Press
     Start Emulation
 
     Wait For Line On Uart   Press the user defined button on the board
-    Test If Uart Is Idle    3
+    Test If Uart Is Idle    1
     Execute Command         sysbus.gpioPortC.button Press
-    Test If Uart Is Idle    3
+    Test If Uart Is Idle    1
     Execute Command         sysbus.gpioPortC.button Release
     Wait For Line On Uart   Button pressed
-    Test If Uart Is Idle    3
+    Test If Uart Is Idle    1
     Execute Command         sysbus.gpioPortC.button PressAndRelease
     Wait For Line On Uart   Button pressed
