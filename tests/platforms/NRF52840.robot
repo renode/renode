@@ -90,6 +90,7 @@ Should Run ZephyrRTOS Shell On UART
     Run ZephyrRTOS Shell      ${NO_DMA}  zephyr_shell_nrf52840.elf-s_1110556-9653ab7fffe1427c50fa6b837e55edab38925681
 
 Should Run ZephyrRTOS Shell On UARTE
+    [Tags]   skipped
     Run ZephyrRTOS Shell      ${DMA}     renode-nrf52840-zephyr_shell_module.elf-gf8d05cf-s_1310072-c00fbffd6b65c6238877c4fe52e8228c2a38bf1f
 
 
