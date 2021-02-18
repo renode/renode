@@ -260,6 +260,12 @@ def run_test_group(args):
 
     while options.repeat_count == 0 or repeat_counter < options.repeat_count:
         repeat_counter += 1
+
+        if options.repeat_count != 0:
+            print("Running tests iteration {} of {}...".format(repeat_counter, options.repeat_count))
+        else:
+            print("Running tests iteration {}...".format(repeat_counter))
+
         for suite in group:
             if not suite.run(options, run_id=test_id if options.jobs != 1 else 0):
                 tests_failed = True
