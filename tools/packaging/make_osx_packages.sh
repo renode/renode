@@ -15,7 +15,8 @@ mkdir -p $MACOS_APP_DIR/Contents/{MacOS,Resources}/
 
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
-SED_COMMAND="sed -i''"
+# OSX version of sed requires backup appendix when in-place editing, backups are removed later on
+SED_COMMAND="sed -i.sed_backup"
 . common_copy_files.sh
 
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
@@ -30,6 +31,9 @@ echo "REQUIRED_MINOR=$MONO_MINOR" >> $COMMAND_SCRIPT
 # skip the first line (with the hashbang)
 tail -n +2 macos/macos_run.command >> $COMMAND_SCRIPT
 chmod +x $COMMAND_SCRIPT
+
+# remove sed backups
+find $MACOS_APP_DIR -name *.sed_backup -exec rm {} \;
 
 mkdir -p $OUTPUT
 hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.dmg
