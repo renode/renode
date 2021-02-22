@@ -66,6 +66,14 @@ i2cMaster0: I2C.OpenCoresI2C @ ffe 0
 
 i2cMaster1: I2C.OpenCoresI2C @ ffe 1
 
+voice: Sound.EOSS3_Voice @ sysbus 0x40015000
+    -> nvic@45
+
+powerMgmt: Python.PythonPeripheral @ sysbus 0x40004400
+    size: 0x400
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init:
         Tag <0x40005400, 0x4000549F> "AnalogIP" 0x0
@@ -76,7 +84,7 @@ sysbus:
         Tag <0x40004490, 0x400044AF> "PowerManagementUnit 3/6" 0x1
         Tag <0x400044B0, 0x400044CF> "PowerManagementUnit 4/6" 0x0
         Tag <0x400044D0, 0x400044E3> "PowerManagementUnit 5/6" 0x1
-        Tag <0x400044E4, 0x400047FF> "PowerManagementUnit 6/6" 0x2A
+        Tag <0x400044E4, 0x400047FF> "PowerManagementUnit 6/6" 0x2b
 
         Tag <0x40004000, 0x400043FF> "Clock (CRU)" 0x1
 
@@ -94,7 +102,6 @@ sysbus:
         Tag <0x40012000, 0x40012FFF> "WDT"
         Tag <0x40013000, 0x40013FFF> "Timer"
         Tag <0x40014000, 0x40014FFF> "CFG_CTL_TOP (PIF Controller)"
-        Tag <0x40015000, 0x40015FFF> "AUD Slave"
         Tag <0x40018000, 0x40018FFF> "RAMFIFO0"
         Tag <0x40019000, 0x40019FFF> "RAMFIFO1"
         Tag <0x4001A000, 0x4001AFFF> "RAMFIFO2"
