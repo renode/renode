@@ -53,3 +53,4 @@
 - tests/platforms/OpenTitan.robot
 - tests/platforms/Arnold.robot
 - tests/platforms/CrossLink-NX-EVN.robot
+- tests/platforms/STM32F4_Tock.robot
