@@ -353,6 +353,8 @@ class RobotTestSuite(object):
                 if status.attrib['status'] == 'FAIL':
                     name = test.attrib['name']
                     testname = suite.attrib['name']
+                    if test.find("./tags/[tag='skipped']"):
+                        continue # skipped test should not be classified as fail
                     if test.find("./tags/[tag='non_critical']"):
                         ret['non_critical'].append(testname + "." + name)
                     else:
