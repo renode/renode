@@ -39,6 +39,7 @@ Should Run OpenSBI
 
 
 Should Boot Linux
+    [Tags]                     non_critical
 
     Create Platform
     Create Terminal Tester     sysbus.uart
