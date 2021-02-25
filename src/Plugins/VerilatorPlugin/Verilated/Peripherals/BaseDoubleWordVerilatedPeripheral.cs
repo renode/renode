@@ -138,7 +138,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             if(!mainSocket.TrySend(new ProtocolMessage(actionId, offset, value)))
             {
-                AbortAndLogError("Connection timeout!");
+                AbortAndLogError("Send timeout!");
             }
         }
 
@@ -228,7 +228,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             if(!mainSocket.TryReceive(out var message))
             {
-                AbortAndLogError("Connection timeout!");
+                AbortAndLogError("Receive timeout!");
             }
 
             return message;
