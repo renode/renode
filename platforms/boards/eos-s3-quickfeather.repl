@@ -15,4 +15,4 @@ ledG: Miscellaneous.LED @ intrCtrl 5
 
 ledR: Miscellaneous.LED @ intrCtrl 6
 
-
+mc3635: Sensors.MC3635 @ i2cMaster0 0x4c
