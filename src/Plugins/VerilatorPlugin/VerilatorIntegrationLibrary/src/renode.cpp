@@ -48,6 +48,18 @@ void RenodeAgent::readFromBus(unsigned long addr)
     }
 }
 
+void RenodeAgent::pushToAgent(unsigned long addr, unsigned long value)
+{
+    senderSocketSend(Protocol(pushData, addr, value));
+}
+
+unsigned long RenodeAgent::requestFromAgent(unsigned long addr)
+{
+    senderSocketSend(Protocol(getData, addr, 0));
+    Protocol* received = receive();
+    return received->value;
+}
+
 void RenodeAgent::handshakeValid()
 {
     Protocol* received = receive();

@@ -53,6 +53,8 @@ public:
   void simulate(int receiverPort, int senderPort);
   void log(int logLevel, std::string message);
   void addBus(BaseBus* bus);
+  virtual void pushToAgent(unsigned long addr, unsigned long value);
+  virtual unsigned long requestFromAgent(unsigned long addr);
 protected:
   virtual void tick(bool countEnable, unsigned long steps);
   virtual void reset();
