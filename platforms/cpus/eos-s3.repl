@@ -11,6 +11,9 @@ uart: UART.PL011 @ sysbus 0x40010000
     -> intrCtrl@7
     size: 0x1000
 
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
 spt: Timers.EOSS3_SimplePeriodicTimer @ sysbus 0x40005C00
 
 m4mem: Memory.MappedMemory @ {
@@ -63,7 +66,6 @@ i2cMaster0: I2C.OpenCoresI2C @ ffe 0
 
 i2cMaster1: I2C.OpenCoresI2C @ ffe 1
 
-
 sysbus:
     init:
         Tag <0x40005400, 0x4000549F> "AnalogIP" 0x0
@@ -106,7 +108,6 @@ sysbus:
         Tag <0x4004A000, 0x4004BFFF> "FFE_ExtRegs"
         Tag <0x40050000, 0x4007FFFF> "FFE_CM"
         Tag <0xE0000000, 0xE0000FFF> "M4_ITM"
-        Tag <0xE0001000, 0xE0001FFF> "M4_DWT"
         Tag <0xE0002000, 0xE0002FFF> "M4_FBP"
         Tag <0xE0040000, 0xE0040FFF> "M4_TPIU"
         Tag <0xE00FF000, 0xE00FFFFF> "M4_DAP"
