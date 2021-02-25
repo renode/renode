@@ -1,0 +1,21 @@
+:name: LiteX Ibex
+:description: This script runs LiteX BIOS on the LiteX/Ibex platform.
+
+$name?="LiteX+Ibex"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/litex_ibex.repl
+
+$bios?=@https://dl.antmicro.com/projects/renode/litex_ibex--bios.bin-s_20712-80d064cf8ab28801b78c0e5a63cac4830016f6c8
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+    sysbus LoadBinary $bios 0x0
+    sysbus.cpu PC 0x0
+"""
+
+runMacro $reset
+
