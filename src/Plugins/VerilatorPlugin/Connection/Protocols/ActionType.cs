@@ -19,6 +19,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         Disconnect,
         Error,
         OK,
-        Handshake = 10 //all custom action type numbers must not fall in this range
+        Handshake,
+        PushData,
+        GetData = 12 //all custom action type numbers must not fall in this range
     }
 }

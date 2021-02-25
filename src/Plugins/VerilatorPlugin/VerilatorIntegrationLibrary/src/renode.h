@@ -38,7 +38,9 @@ enum Action
   disconnect = 7,
   error = 8,
   ok = 9,
-  handshake = 10
+  handshake = 10,
+  pushData = 11,
+  getData = 12
 };
 
 class RenodeAgent
