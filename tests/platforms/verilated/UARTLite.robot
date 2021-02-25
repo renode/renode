@@ -38,4 +38,4 @@ Should Detect Connection Timeout
     Create Log Tester               ${LOG_TIMEOUT}
     Execute Script                  ${UARTLITE_SCRIPT}
     Start Emulation
-    Wait For Log Entry              Connection timeout!
+    Wait For Log Entry              Receive timeout!
