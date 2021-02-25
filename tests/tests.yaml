@@ -50,6 +50,7 @@
 - tests/peripherals/BMP180.robot
 - tests/peripherals/LIS2DS12.robot
 - tests/peripherals/LSM303.robot
+- tests/peripherals/MC3635.robot
 - tests/unit-tests/adhoc-compiler.robot
 - tests/platforms/OpenTitan.robot
 - tests/platforms/Arnold.robot
