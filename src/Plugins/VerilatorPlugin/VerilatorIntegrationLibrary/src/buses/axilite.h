@@ -22,6 +22,7 @@ struct AxiLite : public BaseBus
     unsigned char *txd;
     unsigned char *awvalid;
     unsigned char *awready;
+    unsigned char *awprot;
     unsigned char *wstrb;
     unsigned char *wvalid;
     unsigned char *wready;
@@ -30,6 +31,7 @@ struct AxiLite : public BaseBus
     unsigned char *bready;
     unsigned char *arvalid;
     unsigned char *arready;
+    unsigned char *arprot;
     unsigned char *rresp;
     unsigned char *rvalid;
     unsigned char *rready;
