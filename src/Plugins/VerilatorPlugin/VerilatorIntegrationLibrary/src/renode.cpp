@@ -13,14 +13,19 @@ RenodeAgent::RenodeAgent(BaseBus* bus)
       mainSocket(context, ZMQ_PAIR),
       senderSocket(context, ZMQ_PAIR)
 {
-    this->bus = bus;
-    bus->tickCounter = 0;
+    interfaces.push_back(bus);
+    interfaces[0]->tickCounter = 0;
+}
+
+void RenodeAgent::addBus(BaseBus* bus)
+{
+    interfaces.push_back(bus);
 }
 
 void RenodeAgent::writeToBus(unsigned long addr, unsigned long value)
 {
     try {
-        bus->write(addr, value);
+        interfaces[0]->write(addr, value);
         mainSocketSend(Protocol(ok, 0, 0));
     }
     catch(const char* msg) {
@@ -33,7 +38,7 @@ void RenodeAgent::writeToBus(unsigned long addr, unsigned long value)
 void RenodeAgent::readFromBus(unsigned long addr)
 {
     try {
-        unsigned long readValue = bus->read(addr);
+        unsigned long readValue = interfaces[0]->read(addr);
         mainSocketSend(Protocol(readRequest, addr, readValue));
     }
     catch(const char* msg) {
@@ -52,6 +57,18 @@ void RenodeAgent::handshakeValid()
     }
 }
 
+void RenodeAgent::tick(bool countEnable, unsigned long steps)
+{
+    for(BaseBus* b : interfaces)
+        b->tick(countEnable, steps);
+}
+
+void RenodeAgent::reset()
+{
+    for(BaseBus* b : interfaces)
+        b->reset();
+}
+
 void RenodeAgent::simulate(int receiverPort, int senderPort)
 {
     mainSocket.connect("tcp://localhost:" + std::to_string(receiverPort));
@@ -61,7 +78,7 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
     long ticks;
     unsigned long readValue;
     handshakeValid();
-    bus->reset();
+    reset();
 
     while(isConnected) {
         result = receive();
@@ -69,14 +86,14 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
             case invalidAction:
                 break;
             case tickClock:
-                ticks = result->value - bus->tickCounter;
+                ticks = result->value - interfaces[0]->tickCounter;
                 if(ticks < 0) {
-                    bus->tickCounter -= result->value;
+                    interfaces[0]->tickCounter -= result->value;
                 }
                 else {
-                    bus->tick(false, ticks);
+                    tick(false, ticks);
                 }
-                bus->tickCounter = 0;
+                interfaces[0]->tickCounter = 0;
                 break;
             case writeRequest:
                 writeToBus(result->addr, result->value);
@@ -85,7 +102,7 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
                 readFromBus(result->addr);
                 break;
             case resetPeripheral:
-                bus->reset();
+                reset();
                 break;
             case disconnect:
                 isConnected = false;
@@ -95,6 +112,7 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
                 handleCustomRequestType(result);
                 break;
         }
+	delete result;
     }
 }
 
