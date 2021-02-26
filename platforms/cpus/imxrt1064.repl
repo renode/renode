@@ -1,0 +1,212 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic
+
+itcm: Memory.MappedMemory @ sysbus 0x0
+    size: 0x80000
+
+dtcm: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x80000
+
+ocram2: Memory.MappedMemory @ sysbus 0x20200000 
+    size: 0x80000
+
+wdog1: Python.PythonPeripheral @ sysbus 0x400B8000
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+wdog2: Python.PythonPeripheral @ sysbus 0x400D0000 
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+wdog3: Python.PythonPeripheral @ sysbus 0x400BC000 
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+iomuxc: Python.PythonPeripheral @ sysbus 0x401F8000
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+analog01: Python.PythonPeripheral @ sysbus 0x400D8000
+    size: 0x30
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+analog03: Python.PythonPeripheral @ sysbus 0x400D8034
+    size: 0x3fcc
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+dcdc: Python.PythonPeripheral @ sysbus 0x40080000
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+gpTimer1: Python.PythonPeripheral @ sysbus 0x401EC000
+    size: 0x4000
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+lpuart1: UART.LowPower_UART @ sysbus 0x40184000
+    IRQ -> nvic@20
+
+lpuart2: UART.LowPower_UART @ sysbus 0x40188000
+    IRQ -> nvic@21
+
+lpuart3: UART.LowPower_UART @ sysbus 0x4018c000
+    IRQ -> nvic@22
+
+lpuart4: UART.LowPower_UART @ sysbus 0x40190000
+    IRQ -> nvic@23
+
+lpuart5: UART.LowPower_UART @ sysbus 0x40194000
+    IRQ -> nvic@24
+
+lpuart6: UART.LowPower_UART @ sysbus 0x40198000
+    IRQ -> nvic@25
+
+lpuart7: UART.LowPower_UART @ sysbus 0x4019c000
+    IRQ -> nvic@26
+
+lpuart8: UART.LowPower_UART @ sysbus 0x401a0000
+    IRQ -> nvic@27
+
+gpio1: GPIOPort.IMXRT_GPIO @ sysbus 0x401B8000
+gpio2: GPIOPort.IMXRT_GPIO @ sysbus 0x401BC000
+gpio3: GPIOPort.IMXRT_GPIO @ sysbus 0x401C0000
+gpio4: GPIOPort.IMXRT_GPIO @ sysbus 0x401C4000
+gpio5: GPIOPort.IMXRT_GPIO @ sysbus 0x400C0000
+gpio6: GPIOPort.IMXRT_GPIO @ sysbus 0x42000000
+gpio7: GPIOPort.IMXRT_GPIO @ sysbus 0x42004000
+gpio8: GPIOPort.IMXRT_GPIO @ sysbus 0x42008000
+gpio9: GPIOPort.IMXRT_GPIO @ sysbus 0x4200C000
+gpio10: GPIOPort.IMXRT_GPIO @ sysbus 0x401C8000
+
+enetIRQs: Miscellaneous.CombinedInput
+    numberOfInputs: 4
+    -> nvic@114
+
+enet2IRQs: Miscellaneous.CombinedInput
+    numberOfInputs: 4
+    -> nvic@152
+
+enet: Network.K6xF_Ethernet @ sysbus 0x402D8000
+    [TxIRQ, RxIRQ, MiscIRQ, PtpIRQ] -> enetIRQs@[0-3]
+    TimerIRQ -> nvic@115
+
+enet2: Network.K6xF_Ethernet @ sysbus 0x402D4000
+    [TxIRQ, RxIRQ, MiscIRQ, PtpIRQ] -> enet2IRQs@[0-3]
+    TimerIRQ -> nvic@153
+
+sysbus:
+    init:
+        Tag <0x41400000, 0x414FFFFF> "cpu configuration port"
+        Tag <0x41100000, 0x411FFFFF> "m configuration port"
+        Tag <0x41000000, 0x410FFFFF> "main configuration port"
+        Tag <0x20280000, 0x202FFFFF> "OCRAM - FlexRAM"
+        Tag <0x20000000, 0x2007FFFF> "DTCM"
+        Tag <0x00200000, 0x0021FFFF> "ROMCP"
+        Tag <0x00000000, 0x0007FFFF> "ITCM"
+        Tag <0x400FC000, 0x400FFFFF> "CCM(CCM)"
+        Tag <0x400FC014, 0x400FC017> "CCM_CBCDR" 0x000A8200
+        Tag <0x400FC024, 0x400FC027> "CCM(CSCDR1)" 0x40
+        Tag <0x400F8000, 0x400FBFFF> "SRC(SRC)"
+        Tag <0x400F4000, 0x400F7FFF> "GPC"
+        Tag <0x400EC000, 0x400EFFFF> "DMA_CH_MUX"
+        Tag <0x400E8000, 0x400EBFFF> "EDMA"
+        Tag <0x400E4000, 0x400E7FFF> "SJC"
+        Tag <0x400E0000, 0x400E3FFF> "TSC_DIG"
+        Tag <0x400DC000, 0x400DFFFF> "CSU"
+        Tag <0x400D8000, 0x400DBFFF> "ANALOG"
+        Tag <0x400D8030, 0x400D8033> "analog02" 0x80002001
+        Tag <0x400D4000, 0x400D7FFF> "SNVS_HP"
+        Tag <0x400D0000, 0x400D3FFF> "WDOG2"
+        Tag <0x400CC000, 0x400CFFFF> "TRNG"
+        Tag <0x400C8000, 0x400CBFFF> "ADC2"
+        Tag <0x400C4000, 0x400C7FFF> "ADC1"
+        Tag <0x400BC000, 0x400BFFFF> "WDOG3"
+        Tag <0x400B8000, 0x400BBFFF> "WDOG1"
+        Tag <0x400B4000, 0x400B7FFF> "EWM"
+        Tag <0x400B0000, 0x400B3FFF> "CM7_MXRT (FLEXRAM)"
+        Tag <0x400AC000, 0x400AFFFF> "IOMUXC_GPR"
+        Tag <0x400A8000, 0x400ABFFF> "IOMUXC_SNVS"
+        Tag <0x400A4000, 0x400A7FFF> "IOMUXC_SNVS_GPR"
+        Tag <0x40094000, 0x40097FFF> "ACMP"
+        Tag <0x40084000, 0x40087FFF> "PIT"
+        Tag <0x40080000, 0x40083FFF> "DCDC"
+        Tag <0x4007C000, 0x4007FFFF> "AIPS-1 Configuration"
+        Tag <0x401FC000, 0x401FFFFF> "KPP"
+        Tag <0x401F8000, 0x401FBFFF> "IOMUXC"
+        Tag <0x401F4000, 0x401F7FFF> "OCOTP"
+        Tag <0x401F0000, 0x401F3FFF> "GPT2"
+        Tag <0x401EC000, 0x401EFFFF> "GPT1"
+        Tag <0x401E8000, 0x401EBFFF> "QTimer4"
+        Tag <0x401E4000, 0x401E7FFF> "QTimer3"
+        Tag <0x401E0000, 0x401E3FFF> "QTimer2"
+        Tag <0x401DC000, 0x401DFFFF> "QTimer1"
+        Tag <0x401D8000, 0x401DBFFF> "FlexCAN3"
+        Tag <0x401D4000, 0x401D7FFF> "FlexCAN2"
+        Tag <0x401D0000, 0x401D3FFF> "FlexCAN1"
+        Tag <0x401B0000, 0x401B3FFF> "FlexIO2"
+        Tag <0x401AC000, 0x401AFFFF> "FlexIO1"
+        Tag <0x40180000, 0x40183FFF> "ROMCP"
+        Tag <0x401AC010, 0x401AC013> "flexio1" 0xfffffff
+        Tag <0x4017C000, 0x4017FFFF> "AIPS-2 Configuration"
+        Tag <0x402FC000, 0x402FFFFF> "DCP"
+        Tag <0x402F0000, 0x402F3FFF> "SEMC"
+        Tag <0x402E0000, 0x402E3FFF> "USB(USB)"
+        Tag <0x402C4000, 0x402C7FFF> "USDHC2"
+        Tag <0x402C0000, 0x402C3FFF> "USDHC1"
+        Tag <0x402BC000, 0x402BFFFF> "CSI"
+        Tag <0x402B8000, 0x402BBFFF> "LCDIF"
+        Tag <0x402B4000, 0x402B7FFF> "PXP"
+        Tag <0x402A8000, 0x402ABFFF> "FlexSPI"
+        Tag <0x402A4000, 0x402A7FFF> "FlexSPI2"
+        Tag <0x402A40F0, 0x402A40F3> "FlexSPI2-f0" 0xffffffff
+        Tag <0x402A40E0, 0x402A40E3> "FlexSPI2-status0" 0x3
+        Tag <0x402A4014, 0x402A4017> "FlexSPI2-interrupt" 0x40
+        Tag <0x4027C000, 0x4027FFFF> "AIPS-3 Configuration"
+        Tag <0x403FC000, 0x403FFFFF> "LPI2C4"
+        Tag <0x403F8000, 0x403FBFFF> "LPI2C3"
+        Tag <0x403F4000, 0x403F7FFF> "LPI2C2"
+        Tag <0x403F0000, 0x403F3FFF> "LPI2C1"
+        Tag <0x403EC000, 0x403EFFFF> "BEE"
+        Tag <0x403E8000, 0x403EBFFF> "FLEXPWM4"
+        Tag <0x403E4000, 0x403E7FFF> "FLEXPWM3"
+        Tag <0x403E0000, 0x403E3FFF> "FLEXPWM2"
+        Tag <0x403DC000, 0x403DFFFF> "FLEXPWM1"
+        Tag <0x403D4000, 0x403D7FFF> "ENC4"
+        Tag <0x403D0000, 0x403D3FFF> "ENC3"
+        Tag <0x403CC000, 0x403CFFFF> "ENC2"
+        Tag <0x403C8000, 0x403CBFFF> "ENC1"
+        Tag <0x403C4000, 0x403C7FFF> "XBAR3"
+        Tag <0x403C0000, 0x403C3FFF> "XBAR2"
+        Tag <0x403BC000, 0x403BFFFF> "XBAR1"
+        Tag <0x403B8000, 0x403BBFFF> "AOI2"
+        Tag <0x403B4000, 0x403B7FFF> "AOI1"
+        Tag <0x403B0000, 0x403B3FFF> "ADC_ETC"
+        Tag <0x403A0000, 0x403A3FFF> "LPSPI4"
+        Tag <0x403A0014, 0x403A0017> "LPSPI4.StatusFlags" 0x400
+        Tag <0x4039C000, 0x4039FFFF> "LPSPI3"
+        Tag <0x40398000, 0x4039BFFF> "LPSPI2"
+        Tag <0x40394000, 0x40397FFF> "LPSPI1"
+        Tag <0x4038C000, 0x4038FFFF> "SAI3"
+        Tag <0x40388000, 0x4038BFFF> "SAI2"
+        Tag <0x40384000, 0x40387FFF> "SAI1"
+        Tag <0x40380000, 0x40383FFF> "SPDIF"
+        Tag <0x4037C000, 0x4037FFFF> "AIPS-4 Configuration"
+        Tag <0x42020000, 0x42023FFF> "FlexIO3"
+        Tag <0x7FC00000, 0x7FFFFFFF> "FlexSPI RX FIFO"
+        Tag <0x7F800000, 0x7FBFFFFF> "FlexSPI TX FIFO"
+        Tag <0x7F400000, 0x7F7FFFFF> "FlexSPI2 RX FIFO"
+        Tag <0x7F000000, 0x7F3FFFFF> "FlexSPI2 TX FIFO"
+        Tag <0x70000000, 0x7EFFFFFF> "FlexSPI2/FlexSPI2 ciphertext"
+        Tag <0x60000000, 0x6FFFFFFF> "FlexSPI/FlexSPI ciphertext"
