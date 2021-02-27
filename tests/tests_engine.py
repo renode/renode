@@ -261,9 +261,9 @@ def run_test_group(args):
     while options.repeat_count == 0 or repeat_counter < options.repeat_count:
         repeat_counter += 1
 
-        if options.repeat_count != 0:
+        if options.repeat_count > 1:
             print("Running tests iteration {} of {}...".format(repeat_counter, options.repeat_count))
-        else:
+        elif options.repeat_count == 0:
             print("Running tests iteration {}...".format(repeat_counter))
 
         for suite in group:
