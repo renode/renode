@@ -1,0 +1,159 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+exti: IRQControllers.EXTI @ sysbus 0x40010400
+    numberOfOutputLines: 32
+    [18, 23, 25, 26, 27, 28] -> nvic@[31, 23, 27, 28, 30, 29]
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0"
+    nvic: nvic
+
+usart1: UART.STM32F7_USART @ sysbus 0x40013800
+    -> nvic@27
+
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
+    -> nvic@28
+
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    -> nvic@29
+
+usart4: UART.STM32F7_USART @ sysbus 0x40004C00
+    -> nvic@29
+
+usart5: UART.STM32F7_USART @ sysbus 0x40005000
+    -> nvic@29
+
+usart6: UART.STM32F7_USART @ sysbus 0x40011400
+    -> nvic@29
+
+usart7: UART.STM32F7_USART @ sysbus 0x40011800
+    -> nvic@29
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x48000000, +0x400>
+    modeResetValue: 0x28000000
+    pullUpPullDownResetValue: 0x24000000
+    [0-15] -> exti@[0-15]
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x48000400, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x48000800, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x48000C00, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x48001000, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x48001400, +0x400>
+    modeResetValue: 0x28000000
+    pullUpPullDownResetValue: 0x24000000
+    [0-15] -> exti@[0-15]
+
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+
+spi1: SPI.STM32SPI @ sysbus 0x40013000
+    -> nvic@25
+
+spi2: SPI.STM32SPI @ sysbus 0x40003800
+    -> nvic@26
+
+timer1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@14
+
+timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+    -> nvic@15
+
+timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@16
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@18
+
+timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@19
+
+timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@20
+
+timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@21
+
+timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@22
+
+can: CAN.STMCAN @ sysbus <0x40006400, +0x400>
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    // missing TamperIRQ, TimeStampIRQ, WakeupEventIRQ 
+    AlarmIRQ -> exti@17
+
+rcc: Python.PythonPeripheral @ sysbus 0x40021000
+    size: 0x400
+    initable: true
+    script: '''
+if request.isInit:
+    lastVal = 0     
+else:               
+    if request.offset != 0x8 :
+        lastVal = 1 - lastVal
+        request.value = lastVal * 0xFFFFFFFF
+    else:
+        lastVal = 1 - lastVal
+        request.value = lastVal * 0xFFFFFFFA
+
+self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.type), request.offset, request.value))
+'''
+
+sysbus:
+    init:
+        Tag <0x40002C00, 0x40002FFF> "WWDG"
+        Tag <0x40003000, 0x400033FF> "IWDG"
+        Tag <0x40005C00, 0x40005FFF> "USB "
+        Tag <0x40006000, 0x400063FF> "USB/CAN SRAM"
+        Tag <0x40006C00, 0x40006FFF> "CRS"
+        Tag <0x40007000, 0x400073FF> "PWR"
+        Tag <0x40007400, 0x400077FF> "DAC"
+        Tag <0x40007800, 0x40007BFF> "CEC"
+        Tag <0x40010000, 0x400103FF> "SYSCFGCOMP"
+        Tag <0x40012400, 0x400127FF> "ADC"
+        Tag <0x40015800, 0x40015BFF> "DBGMCU"
+        Tag <0x40020000, 0x400203FF> "DMA"
+        Tag <0x40020400, 0x400207FF> "DMA2"
+        Tag <0x40022000, 0x400223FF> "FLASH_INTERFACE"
+        Tag <0x40023000, 0x400233FF> "CRC"
+        Tag <0x40024000, 0x400243FF> "TSC"
