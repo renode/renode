@@ -32,7 +32,7 @@ ${LEDS}=    SEPARATOR=
 
 *** Keywords ***
 Setup Machine
-    Execute Command             include @scripts/single-node/opentitan.resc
+    Execute Command             include @scripts/single-node/opentitan-earlgrey.resc
     Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
 
     Create Terminal Tester      ${UART}

@@ -52,7 +52,7 @@
 - tests/peripherals/LSM303.robot
 - tests/peripherals/MC3635.robot
 - tests/unit-tests/adhoc-compiler.robot
-- tests/platforms/OpenTitan.robot
+- tests/platforms/OpenTitan-EarlGrey.robot
 - tests/platforms/Arnold.robot
 - tests/platforms/CrossLink-NX-EVN.robot
 - tests/platforms/STM32F4_Tock.robot

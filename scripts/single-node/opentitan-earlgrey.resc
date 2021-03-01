@@ -1,11 +1,11 @@
 :name: OpenTitan
-:description: This script runs hello world example on OpenTitan
+:description: This script runs hello world example on OpenTitan Earl Grey
 
-$name?="OpenTitan"
+$name?="EarlGrey"
 
 using sysbus
 mach create $name
-machine LoadPlatformDescription @platforms/cpus/opentitan.repl
+machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
 
 sysbus Tag <0x40020000 0x10000> "IBEX_DEV_SPI"
 sysbus Tag <0x40030000 0x10000> "IBEX_DEV_FLASH_CTRL"
