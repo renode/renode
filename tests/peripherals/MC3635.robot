@@ -98,29 +98,34 @@ Should Log Error On Selecting Unimplemented Modes
     Wait For Log Entry        Swake mode unimplemented. Switching to Standby
 
 Should Set Flags
+    # This test relies on the configuration of the emulation and the binary itself.
+    # Any changes require adjusting the `emulation RunFor` arguments
+
     ${NEW_DATA_REG}=          Evaluate  0x08
     ${OVR_DATA_REG}=          Evaluate  0x01
     ${NEW_DATA_POSITION}=     Evaluate  3
     ${OVR_DATA_POSITION}=     Evaluate  0
 
     Requires                  Ready Machine
-
-    Start Emulation
-    Wait For Line On Uart     Sample rate: 54
-    Execute Command           pause
+    
+    # Run until the peripheral is set to `continuous sampling` but the configuration is not yet completed and no samples are read 
+    Execute Command           emulation RunFor '0.007'
     ${OVR_DATA}=              Execute Command  ${MC3635} RegisterRead ${OVR_DATA_REG}
     ${NEW_DATA}=              Execute Command  ${MC3635} RegisterRead ${NEW_DATA_REG}
+    
+    # Assert the flags indicate that samples are being overwritten
     Assert Flag               ${NEW_DATA}  ${NEW_DATA_POSITION}  1
     Assert Flag               ${OVR_DATA}  ${OVR_DATA_POSITION}  1
 
+    # Read sample and check if flags are adjusted
     Execute Command           ${MC3635} RegisterRead 0x2
     ${OVR_DATA}=              Execute Command  ${MC3635} RegisterRead ${OVR_DATA_REG}
     ${NEW_DATA}=              Execute Command  ${MC3635} RegisterRead ${NEW_DATA_REG}
     Assert Flag               ${NEW_DATA}  ${NEW_DATA_POSITION}  0
     Assert Flag               ${OVR_DATA}  ${OVR_DATA_POSITION}  1
 
-    # Wait for the configuration to end, and then for a few more samples
-    Execute Command           emulation RunFor '0.07'
+    # Wait for the configuration to end, and then for a few more samples. Then assert that samples are not being overwritten
+    Execute Command           emulation RunFor '0.05'
     ${OVR_DATA}=              Execute Command  ${MC3635} RegisterRead ${OVR_DATA_REG}
     Assert Flag               ${OVR_DATA}  ${OVR_DATA_POSITION}  0
 
