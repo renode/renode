@@ -164,7 +164,7 @@ gcc \
     -Wl,-Bdynamic `pkg-config --libs-only-l mono-2 | sed -e "s/\-lmono-2.0 //" | sed -e "s/\-lm//" | sed -e "s/\-lrt //"`  \
     $RENODE_ROOT_DIR/lib/resources/libraries/libopenlibm-Linux.a  \
     -static-libgcc \
-    -o $DESTINATION/renode_bundled
+    -o $DESTINATION/renode
 
 # Copy dependencies
 
@@ -179,8 +179,6 @@ cp `find_file libmono-btls-shared.so` $DESTINATION
 cp `find_file libglibsharpglue-2.so` $DESTINATION
 cp `find_file libgtksharpglue-2.so` $DESTINATION
 cp `find_file libgdksharpglue-2.so` $DESTINATION
-
-cp $THIS_DIR/linux_portable/renode $DESTINATION
 
 # Create tar
 mkdir -p ../../output/packages

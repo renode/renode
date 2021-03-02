@@ -1,8 +1,0 @@
-#!/bin/sh
-#
-# this is a wrapper script that sets LD_LIBRARY_PATH and executes renode.exe
-# it's necessary for running from external locations
-
-ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
-export LD_LIBRARY_PATH="$ROOT_PATH"
-exec "$ROOT_PATH/renode_bundled" "$@"
