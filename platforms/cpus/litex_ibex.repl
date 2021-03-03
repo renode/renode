@@ -10,6 +10,7 @@ main_ram: Memory.MappedMemory @ sysbus 0x40000000
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32imc"
     timeProvider: empty
+    interruptMode: InterruptMode.Vectored
 
 ctrl: Miscellaneous.LiteX_SoC_Controller @ sysbus 0x82000000
 
