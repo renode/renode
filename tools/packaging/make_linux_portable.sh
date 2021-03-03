@@ -54,7 +54,7 @@ sed -e 's/$mono_libdir\///g' -i $CONFIG_FILE
 # this tag will be added later
 sed -e '/<\/configuration>/d' -i $CONFIG_FILE
 
-# this seems to be necessary, otherwise Renode crashes on opening tlib.so in docker
+# this seems to be necessary, otherwise Renode crashes on opening tlib
 echo '<dllmap dll="i:dl">' >> $CONFIG_FILE
 echo '  <dllentry dll="__Internal" name="dlopen" target="dlopen"/>' >> $CONFIG_FILE
 echo '</dllmap>' >> $CONFIG_FILE
@@ -147,6 +147,8 @@ gcc \
     -Wl,--wrap=logf  \
     -Wl,--wrap=expf  \
     -Wl,--wrap=getrandom  \
+    -Wl,--wrap=dlopen \
+    -Wl,--wrap=dlsym \
     -fvisibility=hidden \
     -Wl,--export-dynamic \
     $WRAPPER_SOURCE_FILE  \
