@@ -6,7 +6,7 @@ using sysbus
 mach create
 machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
 
-$bin?=@https://dl.antmicro.com/projects/renode/nrf52840--zephyr_shell_fs.elf-s_1397004-c605df83d35b8f89e4b76f4f8f72a7e1b9801256
+$bin?=@https://dl.antmicro.com/projects/renode/renode-nrf52840-zephyr_shell_module.elf-gf8d05cf-s_1310072-c00fbffd6b65c6238877c4fe52e8228c2a38bf1f
 
 showAnalyzer uart0
 
