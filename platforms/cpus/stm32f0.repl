@@ -5,7 +5,22 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 
 exti: IRQControllers.EXTI @ sysbus 0x40010400
     numberOfOutputLines: 32
+    [0, 1] -> nvicInput5@[0, 1]
+    [2, 3] -> nvicInput6@[0, 1]
+    [4-15] -> nvicInput7@[0-11]
     [18, 23, 25, 26, 27, 28] -> nvic@[31, 23, 27, 28, 30, 29]
+
+nvicInput5: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@5
+
+nvicInput6: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@6
+
+nvicInput7: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 12
+    -> nvic@7
 
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m0"
