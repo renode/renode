@@ -12,7 +12,7 @@ $uart?=@https://dl.antmicro.com/projects/renode/verilator--liteuart-s_300416-5a1
 
 showAnalyzer uart
 
-uart SimulationFilePath $uart
+uart SimulationFilePathLinux $uart
 
 macro reset
 """

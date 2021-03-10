@@ -18,8 +18,8 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000
-    Execute Command                             dma SimulationFilePath ${URI}/verilator--VDMATop-s_274432-c7dc709dbf93cfd27586838bd51c0d2aa56ab1d2
-    Execute Command                             mem SimulationFilePath ${URI}/verilator--Vaxi_ram-s_243608-9be6b7d0ee5c6613f97419984c2669c506e6a78c
+    Execute Command                             dma SimulationFilePathLinux ${URI}/verilator--VDMATop-s_274432-c7dc709dbf93cfd27586838bd51c0d2aa56ab1d2
+    Execute Command                             mem SimulationFilePathLinux ${URI}/verilator--Vaxi_ram-s_243608-9be6b7d0ee5c6613f97419984c2669c506e6a78c
 
 
 Transaction Should Finish

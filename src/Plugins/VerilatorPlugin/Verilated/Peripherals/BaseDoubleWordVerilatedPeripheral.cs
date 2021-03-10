@@ -24,7 +24,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable
     {
-        public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePath = null, ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout)
+        public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+            ulong limitBuffer = LimitBuffer, double timeout = DefaultTimeout)
         {
             this.machine = machine;
             mainSocket = new CommunicationChannel(timeout);
@@ -39,7 +40,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 Send(ActionType.TickClock, 0, limitBuffer);
             };
-            SimulationFilePath = simulationFilePath;
+            SimulationFilePathLinux = simulationFilePathLinux;
+            SimulationFilePathWindows = simulationFilePathWindows;
+            SimulationFilePathMacOS = simulationFilePathMacOS;
         }
 
         public uint ReadDoubleWord(long offset)
@@ -101,6 +104,48 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
+        public string SimulationFilePathLinux
+        {
+            get
+            {
+                return simulationFilePath;
+            }
+            set
+            {
+#if PLATFORM_LINUX
+                SimulationFilePath = value;
+#endif
+            }
+        }
+
+        public string SimulationFilePathWindows
+        {
+            get
+            {
+                return simulationFilePath;
+            }
+            set
+            {
+#if PLATFORM_WINDOWS
+                SimulationFilePath = value;
+#endif
+            }
+        }
+
+        public string SimulationFilePathMacOS
+        {
+            get
+            {
+                return simulationFilePath;
+            }
+            set
+            {
+#if PLATFORM_OSX
+                SimulationFilePath = value;
+#endif
+            }
+        }
+
         public string SimulationFilePath
         {
             get
@@ -109,28 +154,22 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             set
             {
-#if !PLATFORM_LINUX
-                simulationFilePath = null; // Otherwise there is the "Field 'simulationFilePath' is never assigned to (...)" warning
-                this.Log(LogLevel.Error, "Running verilated peripherals is only supported on Linux.");
-                return;
-#else
+                if(String.IsNullOrWhiteSpace(value))
+                {
+                    return;
+                }
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
                 {
                     throw new RecoverableException("Verilated peripheral already initialized, cannot change the file name");
                 }
                 simulationFilePath = value;
-                if(!String.IsNullOrWhiteSpace(simulationFilePath))
-                {
-                    this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
-// This directive will be required after enabling verilated peripherals on Windows (by removing the `#if !PLATFORM_LINUX` condition at line 111)
+                this.Log(LogLevel.Debug, "Trying to run and connect to '{0}'", simulationFilePath);
 #if !PLATFORM_WINDOWS
-                    Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
+                Mono.Unix.Native.Syscall.chmod(simulationFilePath, FilePermissions.S_IRWXU); //setting permissions to 0x700
 #endif
-                    InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
-                    receiveThread.Start();
-                    Handshake();
-                }
-#endif
+                InitVerilatedProcess(simulationFilePath, mainSocket.Port, asyncEventsSocket.Port);
+                receiveThread.Start();
+                Handshake();
             }
         }
 
