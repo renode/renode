@@ -22,9 +22,9 @@ struct Protocol
     this->value = value;
   }
 
-  int actionId;
-  unsigned long addr;
-  unsigned long value;
+  uint32_t actionId;
+  uint64_t addr;
+  uint64_t value;
 };
 #pragma pack(pop)
 
