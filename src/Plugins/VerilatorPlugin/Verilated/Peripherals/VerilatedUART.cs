@@ -67,7 +67,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
     // UARTActionNumber must be in sync with Verilator integration library
     public enum UARTActionNumber
     {
-        UARTTxd = 11,
-        UARTRxd = 12
+        UARTTxd = 13,
+        UARTRxd = 14
     }
 }

@@ -10,8 +10,8 @@
 // UARTAction must be in sync with Renode's protocol
 enum UARTAction
 {
-    txdRequest = 11,
-    rxdRequest = 12
+    txdRequest = 13,
+    rxdRequest = 14
 };
 
 struct UART : RenodeAgent
