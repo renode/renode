@@ -6,8 +6,6 @@
 //
 #include "axi-slave.h"
 #include <src/renode.h>
-#include <iostream>
-#include <sstream>
 #include <cmath>
 
 AxiSlave::AxiSlave(unsigned int dataWidth, unsigned int addrWidth) : Axi(dataWidth, addrWidth)
@@ -81,9 +79,8 @@ void AxiSlave::updateSignals()
 
 void AxiSlave::readWord(uint64_t addr)
 {
-    std::ostringstream ss;
-    ss << "Axi read from: 0x" << std::hex << addr;
-    this->agent->log(0, ss.str().c_str());
+    sprintf(buffer, "Axi read from: 0x%X", addr);
+    this->agent->log(0, buffer);
     rdata_new = this->agent->requestFromAgent(addr);
 }
 
@@ -142,9 +139,8 @@ void AxiSlave::readHandler()
 
 void AxiSlave::writeWord(uint64_t addr, uint32_t data, uint8_t strb)
 {
-    std::ostringstream ss;
-    ss << "Axi write to: 0x" << std::hex << addr << ", data: 0x" << std::hex << data;
-    this->agent->log(0, ss.str().c_str());
+    sprintf(buffer, "Axi write to: 0x%X, data: 0x%X", addr, data);
+    this->agent->log(0, buffer);
     this->agent->pushToAgent(writeAddr, *wdata);
 }
 

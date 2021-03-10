@@ -51,5 +51,6 @@ struct AxiSlave : public Axi
     uint8_t       readLen;
     uint8_t       readNumBytes;
 
+    char buffer [50];
 };
 #endif

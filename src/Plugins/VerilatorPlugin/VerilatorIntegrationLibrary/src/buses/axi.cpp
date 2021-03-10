@@ -6,8 +6,6 @@
 //
 #include "axi.h"
 #include <src/renode.h>
-#include <iostream>
-#include <sstream>
 #include <cmath>
 
 Axi::Axi(unsigned int dataWidth, unsigned int addrWidth)
