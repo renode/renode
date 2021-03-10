@@ -23,7 +23,7 @@ Should Run UARTLite Binary
     Wait For Line On Uart           I'm alive! counter = 10
 
 Should Detect Connection Error
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skipped
 
     Execute Command                 $uart = ${URI}/verilator--verilated_connection_error_test-s_16352-11da4b9bcea8e859aeb4790d041edf973aadd735
     Create Log Tester               ${LOG_TIMEOUT}
@@ -32,7 +32,7 @@ Should Detect Connection Error
     Wait For Log Entry              Connection error!
 
 Should Detect Connection Timeout
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skipped
 
     Execute Command                 $uart = ${URI}/verilator--verilated_connection_timeout-s_252704-2deb632c75dc1066ea423347c26b10151f92d88c
     Create Log Tester               ${LOG_TIMEOUT}
