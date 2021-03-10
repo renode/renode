@@ -8,7 +8,6 @@
 #include <bitset>
 
 UART::UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler, unsigned int tx_reg_addr, unsigned char* irq) : RenodeAgent(bus) {
-    this->bus = bus;
     this->txd = txd;
     this->rxd = rxd;
     this->irq = irq;
@@ -36,26 +35,26 @@ void UART::eval() {
 
 void UART::Txd() {
     std::bitset<8> buffer;
-    bus->tick(true, (prescaler * 8) / 2);
-    bus->tick(true, prescaler * 8);
+    tick(true, (prescaler * 8) / 2);
+    tick(true, prescaler * 8);
     for(int i = 0; i < 8; i++) {
         buffer[i] = *txd;
-        bus->tick(true, prescaler * 8);
+        tick(true, prescaler * 8);
     }
-    bus->tick(true, prescaler * 8);
+    tick(true, prescaler * 8);
     senderSocketSend(Protocol(Protocol(txdRequest, 0, buffer.to_ulong())));
 }
 
 void UART::Rxd(unsigned char value) {
     std::bitset<8> buffer(value);
     *rxd = 0;
-    bus->tick(true, prescaler * 8);
+    tick(true, prescaler * 8);
     for(int i = 0; i < 8; i++) {
         *rxd = buffer[i];
-        bus->tick(true, prescaler * 8);
+        tick(true, prescaler * 8);
     }
     *rxd = 1;
-    bus->tick(true, prescaler * 8);
+    tick(true, prescaler * 8);
 }
 
 void UART::handleCustomRequestType(Protocol* message) {
