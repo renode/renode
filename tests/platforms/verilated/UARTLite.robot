@@ -16,7 +16,7 @@ ${LOG_TIMEOUT}                      15000
 Should Run UARTLite Binary
     [Tags]                          skip_osx  skip_windows
 
-    Execute Command                 $uart = ${URI}/verilator--uartlite_trace_off-s_252704-c703fe4dec057a9cbc391a0a750fe9f5777d8a74
+    Execute Command                 $uart = ${URI}/uartlite_vtop-s_244552-c0691e81e8435bf89a2cc13d3634f4bcbbe91571
     Execute Script                  ${UARTLITE_SCRIPT}
     Start Emulation
     Create Terminal Tester          ${UART}
