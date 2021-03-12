@@ -39,6 +39,8 @@ sed -i 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode
 sed -i 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DESTINATION/tests/renode-keywords.robot
 
 cp -r $RENODE_ROOT_DIR/tests/platforms $DESTINATION/tests/platforms
+cp -r $RENODE_ROOT_DIR/tests/peripherals $DESTINATION/tests/peripherals
+cp -r $RENODE_ROOT_DIR/tests/unit-tests $DESTINATION/tests/unit-tests
 
 mkdir -p $WORKDIR
 rm -rf $WORKDIR/*
