@@ -54,5 +54,20 @@ namespace Antmicro.Renode.RobotFramework
 
             return packet;
         }
+
+        [RobotFrameworkKeyword]
+        public void SendFrame(string bytes, int? testerId = null)
+        {
+            var tester = GetTesterOrThrowException(testerId); 
+            try
+            {
+                tester.SendFrame(bytes);
+            }
+            catch(Exception e)
+            {
+                // wrapping exceptions for nicer handling by the robot framework
+                throw new KeywordException(e.Message);
+            }
+        }
     }
 }
