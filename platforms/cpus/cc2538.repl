@@ -9,6 +9,7 @@ watchdog: Timers.CC2538Watchdog @ sysbus 0x400D5000
     periodInMs: 500
 
 sleepTimer: Timers.CC2538SleepTimer @ sysbus 0x400D5040
+    -> nvic@145
 
 uart1: UART.PL011 @ sysbus 0x4000D000
     -> nvic@6
