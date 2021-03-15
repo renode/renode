@@ -35,27 +35,27 @@ cpu: CPU.CortexM @ sysbus
 exti: IRQControllers.EXTI @ sysbus 0x40013C00
     [0-6] -> nvic@[6-10, 23, 40]
 
-gpioPortA: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020000, +0x400>
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
     modeResetValue: 0xA8000000
     pullUpPullDownResetValue: 0x64000000
     [0-15] -> exti@[0-15]
 
-gpioPortB: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020400, +0x400>
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40020400, +0x400>
     modeResetValue: 0x00000280
     outputSpeedResetValue: 0x000000C0
     pullUpPullDownResetValue: 0x00000100
     [0-15] -> exti@[0-15]
 
-gpioPortC: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020800, +0x400>
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40020800, +0x400>
     [0-15] -> exti@[0-15]
 
-gpioPortD: GPIOPort.STM32F4GPIOPort @ sysbus <0x40020C00, +0x400>
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x40020C00, +0x400>
     [0-15] -> exti@[0-15]
 
-gpioPortE: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021000, +0x400>
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x40021000, +0x400>
     [0-15] -> exti@[0-15]
 
-gpioPortF: GPIOPort.STM32F4GPIOPort @ sysbus <0x40021400, +0x400>
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x40021400, +0x400>
     [0-15] -> exti@[0-15]
 
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
