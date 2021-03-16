@@ -12,8 +12,7 @@ cpu: CPU.RiscV32 @ sysbus
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
 
-uart: UART.IbexUART @ sysbus 0x40000000
-    IRQ -> plic@2
+uart: UART.OpenTitan_UART @ sysbus 0x40000000
 
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
     IRQ -> plic@1
