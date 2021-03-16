@@ -7,10 +7,8 @@ sram: Memory.MappedMemory @ sysbus 0x1000000
 main_ram: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x10000000
 
-cpu: CPU.RiscV32 @ sysbus
-    cpuType: "rv32imc"
+cpu: CPU.IbexRiscV32 @ sysbus
     timeProvider: empty
-    interruptMode: InterruptMode.Vectored
 
 ctrl: Miscellaneous.LiteX_SoC_Controller @ sysbus 0x82000000
 
