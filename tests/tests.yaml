@@ -59,3 +59,4 @@
 - tests/platforms/LiteX/LiteX_Tock.robot
 - tests/platforms/LiteX/LiteX_Ibex.robot
 - tests/platforms/QuickFeather.robot
+- tests/platforms/STM32F072b.robot
