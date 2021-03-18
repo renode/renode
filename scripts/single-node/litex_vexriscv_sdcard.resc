@@ -2,10 +2,11 @@
 :description: This script runs Linux on LiteX/VexRiscv with the rootfs loaded form the SD card.
 
 $name?="litex-vexriscv"
+
 $rootfs?=@https://dl.antmicro.com/projects/renode/riscv32-buildroot--busybox-rootfs.ext4.image-s_67108864-cd5badff81b32092c010d683c471821d4ea99af6
-$device_tree?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--rootfs_from_sdcard-rv32.dtb-s_4813-b837492f949c15f8ddb9e7e318484a4c689b2841
-$kernel?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_5787652-2115891ba50b339ae0d8b5ece999fc685791fbbc
-$emulator?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--emulator.bin-s_9584-51b9c133e1938e3b2cec63601a942cc580d93945
+$device_tree?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--rootfs_from_sdcard-rv32.dtb-s_3255-8305d2b80955418e53f5400c492dc74dccf05ac8
+$kernel?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--kernel.bin-s_6934900-7a7291fdb880ad8e2aa75276807f8adf5fb8303a
+$emulator?=@https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--opensbi.bin-s_45360-71c1954133f6589f34fcb00554be44195e23e9d5
 
 using sysbus
 mach create $name
@@ -18,8 +19,8 @@ showAnalyzer uart
 macro reset
 """
     sysbus LoadBinary $kernel 0x40000000
-    sysbus LoadBinary $device_tree 0x41000000
-    sysbus LoadBinary $emulator 0x41100000
-    cpu PC 0x41100000
+    sysbus LoadBinary $device_tree 0x40ef0000
+    sysbus LoadBinary $emulator 0x40f00000
+    cpu PC 0x40f00000
 """
 runMacro $reset

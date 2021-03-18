@@ -2,7 +2,6 @@ ddr: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x10000000
 
 uart: UART.LiteX_UART @ sysbus 0xf0001000
-    -> cpu@0
 
 eth: Network.LiteX_Ethernet @ {
         sysbus 0xF0004000;
@@ -10,7 +9,6 @@ eth: Network.LiteX_Ethernet @ {
         sysbus new Bus.BusMultiRegistration { address: 0xF0003800; size: 0x000a; region: "phy" };
         sysbus new Bus.BusMultiRegistration { address: 0xB0000000; size: 0x2000; region: "buffer" }
     }
-    -> cpu@2
 
 spi: SPI.LiteX_SPI @ sysbus 0xF0007800
 
@@ -28,15 +26,21 @@ gpio_out: GPIOPort.LiteX_GPIO @ sysbus 0xF0004800
 gpio_in: GPIOPort.LiteX_GPIO @ sysbus 0xF0007000
     type: Type.In
 
-cpuTimer: Timers.LiteX_CPUTimer @ sysbus 0xF0000800
-    frequency: 40000000
-    // IRQ #100 is Machine Timer Interrupt
-    -> cpu@100
-
 cpu: CPU.VexRiscv @ sysbus
     cpuType: "rv32ima"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
-    timeProvider: cpuTimer
+    timeProvider: clint
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
+    builtInIrqController: false
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0xF0010000
+    frequency: 100000000
+    numberOfTargets: 1
+    [0, 1] -> cpu@[3, 7]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf0C00000
+    numberOfSources: 31
+    numberOfTargets: 16
+    7 -> cpu@9
 
 led : Miscellaneous.LED @ gpio_out 0
 
@@ -50,10 +54,8 @@ mmcm: Miscellaneous.LiteX_MMCM @ sysbus 0xf0009800
 mmc_controller: SD.LiteSDCard @ {
         sysbus 0xf000a000; // phy
 
-        sysbus new Bus.BusMultiRegistration { address: 0xf000a800; size: 0x200; region: "core" };
-        sysbus new Bus.BusMultiRegistration { address: 0xf000b800; size: 0x200; region: "reader" };
-        sysbus new Bus.BusMultiRegistration { address: 0xf000c000; size: 0x200; region: "writer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf000a800; size: 0x100; region: "core" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf000b800; size: 0x100; region: "reader" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf000c000; size: 0x100; region: "writer" }
+}
 
-        sysbus new Bus.BusMultiRegistration { address: 0xb0002000; size: 0x200; region: "readerBuffer" };
-        sysbus new Bus.BusMultiRegistration { address: 0xb0002200; size: 0x200; region: "writerBuffer" }
-    }
