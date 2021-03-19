@@ -223,3 +223,10 @@ Should Detect Yes Pattern
 
     Wait For Line On Uart     Heard yes
 
+Should Run Zephyr's kernel.interrupt Test
+    [Tags]                    zephyr
+    Create Machine            ${STANDARD}    nrf52840-zephyr-c320bb0-kernel-interrupt-test.elf-s_737512-7802727d11c415c1859c00842063ebec6c0a6fdc
+    Create Terminal Tester    ${UART}
+
+    Start Emulation
+    Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
