@@ -12,6 +12,7 @@ MACOS_APP_DIR=Renode.app
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 mkdir -p $MACOS_APP_DIR/Contents/{MacOS,Resources}/
+INSTALL_DIR=/Applications/Renode.app/Contents/MacOS
 
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
