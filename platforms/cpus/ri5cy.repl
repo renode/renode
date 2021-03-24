@@ -5,7 +5,7 @@ mem: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x30000
 
 lpuart0: UART.LowPower_UART @ sysbus 0x40042000
-    -> cpu@17
+    IRQ -> cpu@17
 
 lpuart1: UART.LowPower_UART @ sysbus 0x40043000
 
