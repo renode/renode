@@ -14,7 +14,7 @@ ${SHELL_PROMPT}                $
 Create Platform
     Execute Command            using sysbus
     Execute Command            mach create
-    Execute Command            machine LoadPlatformDescription @${CURDIR}/litex_linux_vexriscv.repl
+    Execute Command            machine LoadPlatformDescription @tests/platforms/LiteX/litex_linux_vexriscv.repl
 
     Execute Command            set kernel @https://dl.antmicro.com/projects/renode/litex_linux_vexriscv--kernel.bin-s_4578292-f63a4736100b5ff79a8d72429c1b79718ec7a446
     Execute Command            set rootfs @https://dl.antmicro.com/projects/renode/litex_linux_vexriscv--rootfs.cpio-s_4163584-c44ad487ba1f73c00430a1bb108ceef84007274f
