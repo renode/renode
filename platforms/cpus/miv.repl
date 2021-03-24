@@ -19,8 +19,9 @@ cpu: CPU.RiscV32 @ sysbus
     timeProvider: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
-    [0-3] -> cpu@[8-11]
+    0 -> cpu@11
     numberOfSources: 31
+    numberOfContexts: 1
     prioritiesEnabled : false
 
 // Power/Reset/Clock/Interrupt

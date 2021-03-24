@@ -26,9 +26,9 @@ clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
     numberOfTargets: 2
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
-    [3,1] -> cpu1@[11,9]
-    [7,5] -> cpu2@[11,9]
+    [0,1] -> cpu1@[11,9]
+    [2,3] -> cpu2@[11,9]
     numberOfSources: 65
-    numberOfTargets: 2
+    numberOfContexts: 4
 
 

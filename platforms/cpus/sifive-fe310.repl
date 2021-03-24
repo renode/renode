@@ -19,8 +19,9 @@ cpu: CPU.RiscV32 @ sysbus
     timeProvider: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
-    3 -> cpu@11
+    0 -> cpu@11
     numberOfSources: 52
+    numberOfContexts: 1
 
 clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
     [0,1] -> cpu@[3,7]

@@ -18,8 +18,9 @@ gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
     IRQ -> plic@1
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40090000
-    3 -> cpu@11
+    0 -> cpu@11
     numberOfSources: 32
+    numberOfContexts: 1
 
 clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
     [0,1] -> cpu@[3,7]

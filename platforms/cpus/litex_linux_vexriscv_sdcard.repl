@@ -38,9 +38,9 @@ clint: IRQControllers.CoreLevelInterruptor @ sysbus 0xF0010000
     [0, 1] -> cpu@[3, 7]
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf0C00000
+    [0,1] -> cpu@[11, 9]
     numberOfSources: 31
-    numberOfTargets: 16
-    7 -> cpu@9
+    numberOfContexts: 2
 
 led : Miscellaneous.LED @ gpio_out 0
 
