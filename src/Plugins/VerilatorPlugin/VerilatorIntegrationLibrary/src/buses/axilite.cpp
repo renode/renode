@@ -6,9 +6,9 @@
 //
 #include "axilite.h"
 
-void AxiLite::tick(bool countEnable, unsigned long long steps = 1)
+void AxiLite::tick(bool countEnable, uint64_t steps = 1)
 {
-    for(unsigned int i = 0; i < steps; i++) {
+    for(uint64_t i = 0; i < steps; i++) {
         *clk = 1;
         evaluateModel();
         *clk = 0;
@@ -33,7 +33,7 @@ void AxiLite::timeoutTick(bool condition, int timeout = 20)
     }
 }
 
-void AxiLite::write(unsigned long long addr, unsigned long long value)
+void AxiLite::write(uint64_t addr, uint64_t value)
 {
     *awvalid = 1;
     *awaddr = addr;
@@ -62,7 +62,7 @@ void AxiLite::write(unsigned long long addr, unsigned long long value)
     tick(true);
 }
 
-unsigned long AxiLite::read(unsigned long long addr)
+uint64_t AxiLite::read(uint64_t addr)
 {
     *araddr = addr;
     *arvalid = 1;
@@ -75,7 +75,7 @@ unsigned long AxiLite::read(unsigned long long addr)
 
     timeoutTick(*rvalid== 0);
 
-    unsigned long result = *rdata; // we have to fetch data before transaction end
+    uint64_t result = *rdata; // we have to fetch data before transaction end
     tick(true);
     *rready = 0;
     tick(true);

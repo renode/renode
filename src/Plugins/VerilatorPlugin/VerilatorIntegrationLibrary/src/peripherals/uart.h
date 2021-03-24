@@ -17,18 +17,18 @@ enum UARTAction
 struct UART : RenodeAgent
 {
     public:
-    UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler, unsigned int tx_reg_addr=4, unsigned char* irq=nullptr);
+    UART(BaseBus* bus, uint8_t* txd, uint8_t* rxd, uint32_t prescaler, uint32_t tx_reg_addr=4, uint8_t* irq=nullptr);
     void eval();
-    unsigned char* txd;
-    unsigned char* rxd;
-    unsigned char* irq;
-    unsigned int prescaler;
-    unsigned int tx_reg_addr;
-    unsigned char prev_irq;
+    uint8_t* txd;
+    uint8_t* rxd;
+    uint8_t* irq;
+    uint32_t prescaler;
+    uint32_t tx_reg_addr;
+    uint8_t prev_irq;
 
     private:
-    void writeToBus(unsigned long long addr, unsigned long long value) override;
+    void writeToBus(uint64_t addr, uint64_t value) override;
     void handleCustomRequestType(Protocol* message) override;
     void Txd();
-    void Rxd(unsigned char value);
+    void Rxd(uint8_t value);
 };

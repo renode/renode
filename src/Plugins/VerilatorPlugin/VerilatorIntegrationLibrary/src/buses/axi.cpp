@@ -8,7 +8,7 @@
 #include <src/renode.h>
 #include <cmath>
 
-Axi::Axi(unsigned int dataWidth, unsigned int addrWidth)
+Axi::Axi(uint32_t dataWidth, uint32_t addrWidth)
 {
     if(dataWidth != 32)
         throw "Unsupported AXI data width";
@@ -26,9 +26,9 @@ void Axi::setAgent(RenodeAgent* agent)
     this->agent = agent;
 }
 
-void Axi::tick(bool countEnable, unsigned long long steps = 1)
+void Axi::tick(bool countEnable, uint64_t steps = 1)
 {
-    for(unsigned long long i = 0; i < steps; i++) {
+    for(uint64_t i = 0; i < steps; i++) {
         *aclk = 1;
         evaluateModel();
         *aclk = 0;
@@ -40,7 +40,7 @@ void Axi::tick(bool countEnable, unsigned long long steps = 1)
     }
 }
 
-void Axi::timeoutTick(unsigned char *signal, unsigned char value, int timeout)
+void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout)
 {
     do {
         tick(true);
@@ -52,12 +52,12 @@ void Axi::timeoutTick(unsigned char *signal, unsigned char value, int timeout)
     }
 }
 
-void Axi::write(unsigned long long addr, unsigned long long value)
+void Axi::write(uint64_t addr, uint64_t value)
 {
     *awvalid = 1;
     *awlen   = 0; // TODO: Variable write length
     *awsize  = 2; // TODO: Variable write width
-    *awburst = static_cast<unsigned char>(AxiBurstType::INCR);
+    *awburst = static_cast<uint8_t>(AxiBurstType::INCR);
     *awaddr  = addr;
 
     this->agent->log(0, "Axi write - AW");
@@ -89,14 +89,14 @@ void Axi::write(unsigned long long addr, unsigned long long value)
     tick(true);
 }
 
-unsigned long Axi::read(unsigned long long addr)
+uint64_t Axi::read(uint64_t addr)
 {
-    unsigned long result;
+    uint64_t result;
 
     *arvalid = 1;
     *arlen   = 0; // TODO: Variable read length
     *arsize  = 2; // TODO: Variable read width
-    *arburst = static_cast<unsigned char>(AxiBurstType::INCR);
+    *arburst = static_cast<uint8_t>(AxiBurstType::INCR);
     *araddr  = addr;
 
     this->agent->log(0, "Axi read - AR");

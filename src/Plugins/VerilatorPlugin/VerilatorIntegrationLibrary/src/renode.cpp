@@ -24,7 +24,7 @@ void RenodeAgent::addBus(BaseBus* bus)
     interfaces.push_back(bus);
 }
 
-void RenodeAgent::writeToBus(unsigned long long addr, unsigned long long value)
+void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)
 {
     try {
         interfaces[0]->write(addr, value);
@@ -37,10 +37,10 @@ void RenodeAgent::writeToBus(unsigned long long addr, unsigned long long value)
     }
 }
 
-void RenodeAgent::readFromBus(unsigned long long addr)
+void RenodeAgent::readFromBus(uint64_t addr)
 {
     try {
-        unsigned long long readValue = interfaces[0]->read(addr);
+        uint64_t readValue = interfaces[0]->read(addr);
         mainSocketSend(Protocol(readRequest, addr, readValue));
     }
     catch(const char* msg) {
@@ -50,12 +50,12 @@ void RenodeAgent::readFromBus(unsigned long long addr)
     }
 }
 
-void RenodeAgent::pushToAgent(unsigned long addr, unsigned long value)
+void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value)
 {
     senderSocketSend(Protocol(pushData, addr, value));
 }
 
-unsigned long RenodeAgent::requestFromAgent(unsigned long addr)
+uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
 {
     senderSocketSend(Protocol(getData, addr, 0));
     Protocol* received = receive();
@@ -71,7 +71,7 @@ void RenodeAgent::handshakeValid()
     }
 }
 
-void RenodeAgent::tick(bool countEnable, unsigned long steps)
+void RenodeAgent::tick(bool countEnable, uint64_t steps)
 {
     for(BaseBus* b : interfaces)
         b->tick(countEnable, steps);

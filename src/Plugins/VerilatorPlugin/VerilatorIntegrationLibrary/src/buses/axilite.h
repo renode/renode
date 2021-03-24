@@ -10,34 +10,34 @@
 
 struct AxiLite : public BaseBus
 {
-    virtual void tick(bool countEnable, unsigned long long steps);
-    virtual void write(unsigned long long addr, unsigned long long value);
-    virtual unsigned long read(unsigned long long addr);
+    virtual void tick(bool countEnable, uint64_t steps);
+    virtual void write(uint64_t addr, uint64_t value);
+    virtual uint64_t read(uint64_t addr);
     virtual void reset();
     void timeoutTick(bool condition, int timeout);
 
-    unsigned char *clk;
-    unsigned char *rst;
-    unsigned char *rxd;
-    unsigned char *txd;
-    unsigned char *awvalid;
-    unsigned char *awready;
-    unsigned char *awprot;
-    unsigned char *wstrb;
-    unsigned char *wvalid;
-    unsigned char *wready;
-    unsigned char *bresp;
-    unsigned char *bvalid;
-    unsigned char *bready;
-    unsigned char *arvalid;
-    unsigned char *arready;
-    unsigned char *arprot;
-    unsigned char *rresp;
-    unsigned char *rvalid;
-    unsigned char *rready;
-    unsigned long long *awaddr;
-    unsigned long long *wdata;
-    unsigned long long *araddr;
-    unsigned long long *rdata;
+    uint8_t  *clk;
+    uint8_t  *rst;
+    uint8_t  *rxd;
+    uint8_t  *txd;
+    uint8_t  *awvalid;
+    uint8_t  *awready;
+    uint8_t  *awprot;
+    uint8_t  *wstrb;
+    uint8_t  *wvalid;
+    uint8_t  *wready;
+    uint8_t  *bresp;
+    uint8_t  *bvalid;
+    uint8_t  *bready;
+    uint8_t  *arvalid;
+    uint8_t  *arready;
+    uint8_t  *arprot;
+    uint8_t  *rresp;
+    uint8_t  *rvalid;
+    uint8_t  *rready;
+    uint64_t *awaddr;
+    uint64_t *wdata;
+    uint64_t *araddr;
+    uint64_t *rdata;
 };
 #endif

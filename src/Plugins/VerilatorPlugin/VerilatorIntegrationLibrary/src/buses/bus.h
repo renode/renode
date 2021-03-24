@@ -7,15 +7,17 @@
 #ifndef BaseBus_H
 #define BaseBus_H
 
+#include <cstdint>
+
 struct BaseBus
 {
     public:
-    virtual void tick(bool countEnable, unsigned long long steps) = 0;
-    virtual void write(unsigned long long addr, unsigned long long value) = 0;
-    virtual unsigned long read(unsigned long long addr) = 0;
+    virtual void tick(bool countEnable, uint64_t steps) = 0;
+    virtual void write(uint64_t addr, uint64_t value) = 0;
+    virtual uint64_t read(uint64_t addr) = 0;
     virtual void reset() = 0;
     void (*evaluateModel)();
-    unsigned long tickCounter;
+    uint64_t tickCounter;
 };
 
 #endif

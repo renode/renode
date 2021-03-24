@@ -8,17 +8,16 @@
 #define AxiSlave_H
 #include "axi.h"
 #include <src/renode.h>
-#include <cstdint>
 
 enum class AxiReadState  {AR, R};
 enum class AxiWriteState {AW, W, B};
 
 struct AxiSlave : public Axi
 {
-    AxiSlave(unsigned int dataWidth, unsigned int addrWidth);
-    virtual void tick(bool countEnable, unsigned long long steps);
-    virtual void write(unsigned long long addr, unsigned long long value);
-    virtual unsigned long read(unsigned long long addr);
+    AxiSlave(uint32_t dataWidth, uint32_t addrWidth);
+    virtual void tick(bool countEnable, uint64_t steps);
+    virtual void write(uint64_t addr, uint64_t value);
+    virtual uint64_t read(uint64_t addr);
     virtual void reset();
 
     void readWord(uint64_t addr);
@@ -32,14 +31,14 @@ struct AxiSlave : public Axi
     AxiWriteState writeState;
     AxiReadState  readState;
 
-    unsigned char awready_new;
-    unsigned char wready_new;
-    unsigned char bvalid_new;
+    uint8_t awready_new;
+    uint8_t wready_new;
+    uint8_t bvalid_new;
 
-    unsigned char arready_new;
-    unsigned char rvalid_new;
-    unsigned char rlast_new;
-    unsigned long rdata_new;
+    uint8_t arready_new;
+    uint8_t rvalid_new;
+    uint8_t rlast_new;
+    uint64_t rdata_new;
 
     AxiBurstType  writeBurstType;
     uint64_t      writeAddr;

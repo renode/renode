@@ -8,82 +8,81 @@
 #define Axi_H
 #include "bus.h"
 #include <src/renode.h>
-#include <cstdint>
 
 enum class AxiBurstType  {FIXED = 0, INCR = 1, WRAP = 2, RESERVED = 3};
 
 struct Axi : public BaseBus
 {
-    Axi(unsigned int dataWidth, unsigned int addrWidth);
-    virtual void tick(bool countEnable, unsigned long long steps);
-    virtual void write(unsigned long long addr, unsigned long long value);
-    virtual unsigned long read(unsigned long long addr);
+    Axi(uint32_t dataWidth, uint32_t addrWidth);
+    virtual void tick(bool countEnable, uint64_t steps);
+    virtual void write(uint64_t addr, uint64_t value);
+    virtual uint64_t read(uint64_t addr);
     virtual void reset();
 
-    void timeoutTick(unsigned char *signal, unsigned char value, int timeout = 20);
+    void timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20);
 
     void setAgent(RenodeAgent* agent);
     RenodeAgent* agent;
 
-    unsigned int  dataWidth;
-    unsigned int  addrWidth;
+    uint32_t dataWidth;
+    uint32_t addrWidth;
 
     // Global AXI Signals
-    unsigned char *aclk;
-    unsigned char *aresetn;
+    uint8_t  *aclk;
+    uint8_t  *aresetn;
 
     // Write Address Channel Signals
-    unsigned char *awid;
-    uint32_t      *awaddr;
-    uint8_t       *awlen;
-    unsigned char *awsize;
-    unsigned char *awburst;
-    unsigned char *awlock;
-    unsigned char *awcache;
-    unsigned char *awprot;
-    unsigned char *awqos;
-    unsigned char *awregion;
-    unsigned char *awuser;
-    unsigned char *awvalid;
-    unsigned char *awready;
+    uint8_t  *awid;
+    uint32_t *awaddr;
+    uint8_t  *awlen;
+    uint8_t  *awsize;
+    uint8_t  *awburst;
+    uint8_t  *awlock;
+    uint8_t  *awcache;
+    uint8_t  *awprot;
+    uint8_t  *awqos;
+    uint8_t  *awregion;
+    uint8_t  *awuser;
+    uint8_t  *awvalid;
+    uint8_t  *awready;
 
     // Write Data Channel Signals
-    uint32_t      *wdata;
-    unsigned char *wstrb;
-    unsigned char *wlast;
-    unsigned char *wuser;
-    unsigned char *wvalid;
-    unsigned char *wready;
+    uint32_t *wdata;
+    uint8_t  *wstrb;
+    uint8_t  *wlast;
+    uint8_t  *wuser;
+    uint8_t  *wvalid;
+    uint8_t  *wready;
 
     // Write Response Channel Signals
-    unsigned char *bid;
-    unsigned char *bresp;
-    unsigned char *buser;
-    unsigned char *bvalid;
-    unsigned char *bready;
+    uint8_t  *bid;
+    uint8_t  *bresp;
+    uint8_t  *buser;
+    uint8_t  *bvalid;
+    uint8_t  *bready;
 
     // Read Address Channel Signals
-    unsigned char *arid;
-    uint32_t      *araddr;
-    uint8_t       *arlen;
-    unsigned char *arsize;
-    unsigned char *arburst;
-    unsigned char *arlock;
-    unsigned char *arcache;
-    unsigned char *arprot;
-    unsigned char *arqos;
-    unsigned char *arregion;
-    unsigned char *aruser;
-    unsigned char *arvalid;
-    unsigned char *arready;
+    uint8_t  *arid;
+    uint32_t *araddr;
+    uint8_t  *arlen;
+    uint8_t  *arsize;
+    uint8_t  *arburst;
+    uint8_t  *arlock;
+    uint8_t  *arcache;
+    uint8_t  *arprot;
+    uint8_t  *arqos;
+    uint8_t  *arregion;
+    uint8_t  *aruser;
+    uint8_t  *arvalid;
+    uint8_t  *arready;
 
     // Read Data Channel Signals
-    unsigned char *rid;
-    uint32_t      *rdata;
-    unsigned char *rresp;
-    unsigned char *rlast;
-    unsigned char *ruser;
-    unsigned char *rvalid;
-    unsigned char *rready;
+    uint8_t  *rid;
+    uint32_t *rdata;
+    uint8_t  *rresp;
+    uint8_t  *rlast;
+    uint8_t  *ruser;
+    uint8_t  *rvalid;
+    uint8_t  *rready;
 };
 #endif

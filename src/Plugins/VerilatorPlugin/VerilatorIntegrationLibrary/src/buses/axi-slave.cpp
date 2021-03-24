@@ -7,8 +7,9 @@
 #include "axi-slave.h"
 #include <src/renode.h>
 #include <cmath>
+#include <cinttypes>
 
-AxiSlave::AxiSlave(unsigned int dataWidth, unsigned int addrWidth) : Axi(dataWidth, addrWidth)
+AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : Axi(dataWidth, addrWidth)
 {
     writeState = AxiWriteState::AW;
     readState = AxiReadState::AR;
@@ -23,9 +24,9 @@ AxiSlave::AxiSlave(unsigned int dataWidth, unsigned int addrWidth) : Axi(dataWid
     bvalid_new = 0;
 }
 
-void AxiSlave::tick(bool countEnable, unsigned long long steps = 1)
+void AxiSlave::tick(bool countEnable, uint64_t steps = 1)
 {
-    for(unsigned long long i = 0; i < steps; i++) {
+    for(uint64_t i = 0; i < steps; i++) {
         readHandler();
         writeHandler();
         *aclk = 1;
@@ -79,7 +80,7 @@ void AxiSlave::updateSignals()
 
 void AxiSlave::readWord(uint64_t addr)
 {
-    sprintf(buffer, "Axi read from: 0x%llX", addr);
+    sprintf(buffer, "Axi read from: 0x%" PRIX64, addr);
     this->agent->log(0, buffer);
     rdata_new = this->agent->requestFromAgent(addr);
 }
@@ -139,7 +140,7 @@ void AxiSlave::readHandler()
 
 void AxiSlave::writeWord(uint64_t addr, uint32_t data, uint8_t strb)
 {
-    sprintf(buffer, "Axi write to: 0x%llX, data: 0x%X", addr, data);
+    sprintf(buffer, "Axi write to: 0x%" PRIX64 ", data: 0x%X", addr, data);
     this->agent->log(0, buffer);
     this->agent->pushToAgent(writeAddr, *wdata);
 }
@@ -206,12 +207,12 @@ void AxiSlave::reset()
 }
 
 // You can't read/write using slave bus
-void AxiSlave::write(unsigned long long addr, unsigned long long value)
+void AxiSlave::write(uint64_t addr, uint64_t value)
 {
     throw "Unsupported";
 }
 
-unsigned long AxiSlave::read(unsigned long long addr)
+uint64_t AxiSlave::read(uint64_t addr)
 {
     throw "Unsupported";
 }

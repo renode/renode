@@ -15,7 +15,7 @@
 #pragma pack(push, 1)
 struct Protocol
 {
-  Protocol(int actionId, unsigned long long addr, unsigned long long value)
+  Protocol(int actionId, uint64_t addr, uint64_t value)
   {
     this->actionId = actionId;
     this->addr = addr;
@@ -23,8 +23,8 @@ struct Protocol
   }
 
   int actionId;
-  unsigned long long addr;
-  unsigned long long value;
+  uint64_t addr;
+  uint64_t value;
 };
 #pragma pack(pop)
 
@@ -53,13 +53,13 @@ public:
   void simulate(int receiverPort, int senderPort);
   void log(int logLevel, const char* data);
   void addBus(BaseBus* bus);
-  virtual void pushToAgent(unsigned long addr, unsigned long value);
-  virtual unsigned long requestFromAgent(unsigned long addr);
+  virtual void pushToAgent(uint64_t addr, uint64_t value);
+  virtual uint64_t requestFromAgent(uint64_t addr);
 protected:
-  virtual void tick(bool countEnable, unsigned long steps);
+  virtual void tick(bool countEnable, uint64_t steps);
   virtual void reset();
-  virtual void writeToBus(unsigned long long addr, unsigned long long value);
-  virtual void readFromBus(unsigned long long addr);
+  virtual void writeToBus(uint64_t addr, uint64_t value);
+  virtual void readFromBus(uint64_t addr);
   void mainSocketSend(Protocol message);
   void senderSocketSend(Protocol request);
   void senderSocketSend(const char* text);

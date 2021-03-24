@@ -6,9 +6,9 @@
 //
 #include "wishbone.h"
 
-void Wishbone::tick(bool countEnable, unsigned long long steps = 1)
+void Wishbone::tick(bool countEnable, uint64_t steps = 1)
 {
-    for(unsigned int i = 0; i < steps; i++) {
+    for(uint32_t i = 0; i < steps; i++) {
         *wb_clk = 1;
         evaluateModel();
         *wb_clk = 0;
@@ -33,7 +33,7 @@ void Wishbone::timeoutTick(bool condition, int timeout = 20)
     }
 }
 
-void Wishbone::write(unsigned long long addr, unsigned long long value)
+void Wishbone::write(uint64_t addr, uint64_t value)
 {
     *wb_we = 1;
     *wb_sel = 0xF;
@@ -56,7 +56,7 @@ void Wishbone::write(unsigned long long addr, unsigned long long value)
     tick(true);
 }
 
-unsigned long Wishbone::read(unsigned long long addr)
+uint64_t Wishbone::read(uint64_t addr)
 {
     *wb_we = 0;
     *wb_sel = 0xF;
@@ -66,7 +66,7 @@ unsigned long Wishbone::read(unsigned long long addr)
 
     timeoutTick(*wb_ack == 1);
     tick(true);
-    unsigned long result = *wb_rd_dat;
+    uint64_t result = *wb_rd_dat;
 
     *wb_cyc = 0;
     *wb_stb = 0;

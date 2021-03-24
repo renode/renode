@@ -7,7 +7,7 @@
 #include "uart.h"
 #include <bitset>
 
-UART::UART(BaseBus* bus, unsigned char* txd, unsigned char* rxd, unsigned int prescaler, unsigned int tx_reg_addr, unsigned char* irq) : RenodeAgent(bus) {
+UART::UART(BaseBus* bus, uint8_t* txd, uint8_t* rxd, uint32_t prescaler, uint32_t tx_reg_addr, uint8_t* irq) : RenodeAgent(bus) {
     this->txd = txd;
     this->rxd = rxd;
     this->irq = irq;
@@ -45,7 +45,7 @@ void UART::Txd() {
     senderSocketSend(Protocol(Protocol(txdRequest, 0, buffer.to_ulong())));
 }
 
-void UART::Rxd(unsigned char value) {
+void UART::Rxd(uint8_t value) {
     std::bitset<8> buffer(value);
     *rxd = 0;
     tick(true, prescaler * 8);
@@ -65,7 +65,7 @@ void UART::handleCustomRequestType(Protocol* message) {
     }
 }
 
-void UART::writeToBus(unsigned long long addr, unsigned long long value) {
+void UART::writeToBus(uint64_t addr, uint64_t value) {
     RenodeAgent::writeToBus(addr, value);
     if(addr == tx_reg_addr) {
         Txd();

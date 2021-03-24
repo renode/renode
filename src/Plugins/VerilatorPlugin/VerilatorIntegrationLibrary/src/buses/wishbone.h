@@ -10,21 +10,21 @@
 
 struct Wishbone : public BaseBus
 {
-    virtual void tick(bool countEnable, unsigned long long steps);
-    virtual void write(unsigned long long addr, unsigned long long value);
-    virtual unsigned long read(unsigned long long addr);
+    virtual void tick(bool countEnable, uint64_t steps);
+    virtual void write(uint64_t addr, uint64_t value);
+    virtual uint64_t read(uint64_t addr);
     virtual void reset();
     void timeoutTick(bool condition, int timeout);
 
-    unsigned char *wb_clk;
-    unsigned char *wb_rst;
-    unsigned long *wb_addr;
-    unsigned long *wb_rd_dat;
-    unsigned long *wb_wr_dat;
-    unsigned char *wb_we;
-    unsigned char *wb_sel;
-    unsigned char *wb_stb;
-    unsigned char *wb_ack;
-    unsigned char *wb_cyc;
+    uint8_t  *wb_clk;
+    uint8_t  *wb_rst;
+    uint64_t *wb_addr;
+    uint64_t *wb_rd_dat;
+    uint64_t *wb_wr_dat;
+    uint8_t  *wb_we;
+    uint8_t  *wb_sel;
+    uint8_t  *wb_stb;
+    uint8_t  *wb_ack;
+    uint8_t  *wb_cyc;
 };
 #endif
