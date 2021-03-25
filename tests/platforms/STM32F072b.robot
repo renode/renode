@@ -57,7 +57,9 @@ Should Run Zephyr Button Sample
 
     Start Emulation
     
-    Execute Command          ${BUTTON} PressAndRelease
+    Execute Command          ${BUTTON} Press
+    Sleep                    0.3
+    Execute Command          ${BUTTON} Release
     Wait For Line On Uart    Button pressed at   
 
     # LED blinks when the button is held
