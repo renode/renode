@@ -2,6 +2,8 @@
 Renode
 ======
 
+Copyright (c) 2010-2021 `Antmicro <https://www.antmicro.com>`_
+
 What is Renode?
 ---------------
 
