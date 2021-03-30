@@ -37,3 +37,7 @@ Should Overflow Buffer
     Should Not Contain        ${logs}  Test-0-Log
     Should Contain            ${logs}  Test-1-Log
     Should Contain            ${logs}  Test-1000-Log
+
+Should Load Python Standard Library
+    ${result} =               Execute Command  python "import SimpleHTTPServer"
+    Should Not Contain        ${result}  No module named
