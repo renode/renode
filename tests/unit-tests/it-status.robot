@@ -216,7 +216,7 @@ Create Machine
             Execute Command     sysbus LoadELF ${URI}/${elf}
             Execute Command     cpu PC 0x08000044
             Execute Command     cpu SP 0x08200000
-            Execute Command     cpu ExecutionMode SingleStep
+            Execute Command     cpu ExecutionMode SingleStepBlocking
 
 *** Test Cases ***
 Should Return Corrrect IT_STATUS Value

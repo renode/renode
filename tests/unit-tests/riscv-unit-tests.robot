@@ -47,7 +47,7 @@ Should Handle LB
     # lb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00558503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -62,7 +62,7 @@ Should Handle LH
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -77,7 +77,7 @@ Should Fail LH
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -95,7 +95,7 @@ Should Handle LW
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -110,7 +110,7 @@ Should Fail LW
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -128,7 +128,7 @@ Should Handle LD
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -143,7 +143,7 @@ Should Fail LD
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -161,7 +161,7 @@ Should Handle SB
     # sb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a582a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -176,7 +176,7 @@ Should Handle SH
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -191,7 +191,7 @@ Should Fail SH
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -209,7 +209,7 @@ Should Handle SW
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -224,7 +224,7 @@ Should Fail SW
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -242,7 +242,7 @@ Should Handle SD
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 
@@ -257,7 +257,7 @@ Should Fail SD
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
 
-    Execute Command                 cpu ExecutionMode SingleStep
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Execute Command                 s
     Execute Command                 cpu Step
 

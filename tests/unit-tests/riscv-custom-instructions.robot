@@ -28,7 +28,7 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imac\\"; timeProvider: empty }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
 
-    Execute Command                             sysbus.cpu ExecutionMode SingleStep
+    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
     Execute Command                             sysbus.cpu PC 0x0
 
 Load Code To Memory

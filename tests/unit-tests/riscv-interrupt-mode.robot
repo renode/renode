@@ -18,7 +18,7 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty; privilegeArchitecture: PrivilegeArchitecture.Priv1_10; interruptMode: InterruptMode.${interruptMode} }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000000 }"
 
-    Execute Command                             cpu ExecutionMode SingleStep
+    Execute Command                             cpu ExecutionMode SingleStepBlocking
     Execute Command                             cpu TbCacheEnabled false
 
 
