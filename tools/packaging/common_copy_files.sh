@@ -37,7 +37,7 @@ function copy_bash_tests_scripts() {
     cp -r $BASE/tools/common.sh $DIR/tests
     $SED_COMMAND 's#tools/##' $DIR/tests/test.sh
     $SED_COMMAND 's#tests/run_tests.py#run_tests.py#' $DIR/tests/test.sh
-    $SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r . "$@"#' $DIR/tests/test.sh
+    $SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r $(pwd) "$@"#' $DIR/tests/test.sh
     $SED_COMMAND 's#^ROOT_PATH=".*#ROOT_PATH="'$INSTALL_DIR'/tests"#g' $DIR/tests/test.sh
     $SED_COMMAND '/TESTS_FILE/d' $DIR/tests/test.sh
     $SED_COMMAND '/TESTS_RESULTS/d' $DIR/tests/test.sh

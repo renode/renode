@@ -31,7 +31,7 @@ sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
 sed -i 's#tools/##' $DESTINATION/test.sh
 sed -i 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DESTINATION/test.sh
 sed -i 's#ROOT_PATH}/common.sh#TEST_PATH}/common.sh#' $DESTINATION/test.sh
-sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory=$ROOT_PATH --robot-framework-remote-server-name=renode --css-file=$TEST_PATH/robot.css --runner=none -r . "$@"#' $DESTINATION/test.sh
+sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory=$ROOT_PATH --robot-framework-remote-server-name=renode --css-file=$TEST_PATH/robot.css --runner=none -r $(pwd) "$@"#' $DESTINATION/test.sh
 sed -i '/^ROOT_PATH=.*/a TEST_PATH=$ROOT_PATH/tests' $DESTINATION/test.sh
 sed -i '/TESTS_FILE/d' $DESTINATION/test.sh
 sed -i '/TESTS_RESULTS/d' $DESTINATION/test.sh
