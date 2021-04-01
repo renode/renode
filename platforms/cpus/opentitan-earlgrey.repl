@@ -32,4 +32,10 @@ clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
     [0,1] -> cpu@[3,7]
     frequency: 62000000
 
+timer: Timers.OpenTitan_Timer@ sysbus 0x40080000
+    frequency: 24000000
+    numberOfTargets: 1
+    numberOfTimers: 1
+    0 -> cpu@7
+
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x30000000
