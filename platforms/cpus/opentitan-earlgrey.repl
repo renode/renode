@@ -25,7 +25,7 @@ gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
 
 plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x40090000
     0 -> cpu@11
-    numberOfSources: 84
+    numberOfSources: 96
     numberOfTargets: 1
 
 clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
@@ -39,3 +39,5 @@ timer: Timers.OpenTitan_Timer@ sysbus 0x40080000
     0 -> cpu@7
 
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x30000000
+
+pwrmgr: Miscellaneous.OpenTitan_PowerManager@ sysbus 0x400A0000
