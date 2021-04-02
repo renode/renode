@@ -1,43 +1,77 @@
 rom: Memory.MappedMemory @ sysbus 0x8000
     size: 0x4000
 
-main_ram: Memory.MappedMemory @ sysbus 0x10000000
-    size: 0x10000
+ram_main: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x20000
 
-flash: Memory.MappedMemory @ sysbus 0x20000000
+ram_ret: Memory.MappedMemory @ sysbus 0x40600000
+    size: 0x1000
+
+eflash: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x100000
 
-cpu: CPU.IbexRiscV32 @ sysbus
-    timeProvider: clint
+cpu0: CPU.IbexRiscV32 @ sysbus
+    hartId: 0
+    timeProvider: empty
 
-uart: UART.OpenTitan_UART @ sysbus 0x40000000
-    TxWatermarkIRQ -> plic@33
-    RxWatermarkIRQ -> plic@34
-    TxEmptyIRQ -> plic@35
-    RxOverflowIRQ -> plic@36
-    RxFrameErrorIRQ -> plic@37
-    RxBreakErrorIRQ -> plic@38
-    RxTimeoutIRQ -> plic@39
-    RxParityErrorIRQ -> plic@40
+uart0: UART.OpenTitan_UART @ sysbus 0x40000000
+    TxWatermarkIRQ -> plic@1
+    RxWatermarkIRQ -> plic@2
+    TxEmptyIRQ -> plic@3
+    RxOverflowIRQ -> plic@4
+    RxFrameErrorIRQ -> plic@5
+    RxBreakErrorIRQ -> plic@6
+    RxTimeoutIRQ -> plic@7
+    RxParityErrorIRQ -> plic@8
 
-gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40010000
-    IRQ -> plic@1
+uart1: UART.OpenTitan_UART @ sysbus 0x40010000
+    TxWatermarkIRQ -> plic@9
+    RxWatermarkIRQ -> plic@10
+    TxEmptyIRQ -> plic@11
+    RxOverflowIRQ -> plic@12
+    RxFrameErrorIRQ -> plic@13
+    RxBreakErrorIRQ -> plic@14
+    RxTimeoutIRQ -> plic@15
+    RxParityErrorIRQ -> plic@16
 
-plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x40090000
-    0 -> cpu@11
-    numberOfSources: 96
+uart2: UART.OpenTitan_UART @ sysbus 0x40020000
+    TxWatermarkIRQ -> plic@17
+    RxWatermarkIRQ -> plic@18
+    TxEmptyIRQ -> plic@19
+    RxOverflowIRQ -> plic@20
+    RxFrameErrorIRQ -> plic@21
+    RxBreakErrorIRQ -> plic@22
+    RxTimeoutIRQ -> plic@23
+    RxParityErrorIRQ -> plic@24
+
+uart3: UART.OpenTitan_UART @ sysbus 0x40030000
+    TxWatermarkIRQ -> plic@25
+    RxWatermarkIRQ -> plic@26
+    TxEmptyIRQ -> plic@27
+    RxOverflowIRQ -> plic@28
+    RxFrameErrorIRQ -> plic@29
+    RxBreakErrorIRQ -> plic@30
+    RxTimeoutIRQ -> plic@31
+    RxParityErrorIRQ -> plic@32
+
+gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
+    IRQ -> plic@33
+
+plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x41010000
+    0 -> cpu0@11
+    numberOfSources: 176
     numberOfTargets: 1
 
 clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
-    [0,1] -> cpu@[3,7]
-    frequency: 62000000
+    [0,1] -> cpu0@[3,7]
+    frequency: 24000000
 
-timer: Timers.OpenTitan_Timer@ sysbus 0x40080000
+timer: Timers.OpenTitan_Timer@ sysbus 0x40100000
     frequency: 24000000
     numberOfTargets: 1
     numberOfTimers: 1
-    0 -> cpu@7
+    0 -> cpu0@7
 
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x30000000
 
-pwrmgr: Miscellaneous.OpenTitan_PowerManager@ sysbus 0x400A0000
+pwrmgr: Miscellaneous.OpenTitan_PowerManager@ sysbus 0x40400000
