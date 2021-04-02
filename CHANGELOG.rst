@@ -3,6 +3,75 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.12.0 - 2021.04.02
+-------------------
+
+Added:
+
+* STM32F072 platform, with the STM32F072b Discovery board
+* i.MX RT1064 platform
+* NRF52840 platform, with Arduino Nano 33 BLE Sense board
+* OpenTitan EarlGrey RISC-V platform with a range of OpenTitan peripherals
+* CV32E40P-based RISC-V platform with many PULP peripherals
+* LiteX with RISC-V Ibex CPU platform support
+* CrossLink-NX evaluation board
+* ice40up5k-mdp-evn board
+* Zephyr-based test suite for QuickLogic QuickFeather with EOS S3
+* Tock demo on LiteX/VexRiscv and STM32F4
+* Mbed demo on STM32F7
+* integration with Arduino IDE and Arduino CLI
+* Python Standard Library, to be used with Python hooks and scripts in Renode
+* support for images in the Monitor, along with possibility to take framebuffer screenshots. This also works with certain terminal emulators, like iTerm2, when in headless mode
+* option to connect UART to the running console, improving headless capabilities
+* option to run Renode Monitor directly in console, overlapped with logs, using the ``--console`` command line switch
+* support for virtual addressing in GDB
+* option to combine multiple interrupt or GPIO signals into one, using logical OR, directly in REPL files
+* multi-bus support and AXI4 support (both as an initiator and a receiver) in co-simulation with Verilator
+* ability to send synthetic network frames in Robot tests
+* various sensor models: MC3635, LSM330, LSM303DLHC, LSM9DS1, LIS2DS12, BMP180
+* seven-segment display model
+* support for camera interfaces for nRF52840 and other platforms, along with a basic HM01B camera model
+* support for sound data via PDM and I2S interfaces in nRF52840 and EOS S3
+* 32-bit CSR versions of various LiteX peripherals
+* ``window-height`` and ``window-width`` Renode config file options
+
+Changed:
+
+* ad hoc C# compilation now uses the same, bundled compiler on all OSes, also allowing for compilation in the portable Linux package
+* bumped the officially supported Ubuntu version to 20.04
+* added execution metrics analyzer to all Renode packages
+* verilated peripherals can now also be used on Windows and on macOS
+* verilated UART peripherals have updated protocol message numbers, requiring them to be recompiled to work with the latest Renode version
+* moved to use openlibm instead of libm on Linux, improving portability
+* GDB can now access memory across pages in a single access
+* switched the unit testing framework from NUnit2 to NUnit3
+* reduced the number of transitions between the C and C# code, improving performance
+* improved performance of peripheral writes
+* tests print the run summary at the end of the output, making it easier to spot errors
+* revamped handling of the vectored interrupt mode for RISC-V cores
+* RISC-V CPUs can now optionally allow for unaligned memory accesses
+* updated the default privileged architecture version for VexRiscv CPU
+* VexRiscv can now use standard RISC-V interrupt model
+* changed the flow of NVIC interrupt handling, significantly improving performance
+* STM32F7 DMA2D and LTDC now support more pixel blending modes
+* reimplemented and modernized several STM32 peripherals
+* improved the model of K6xF Ethernet controller
+* LiteSDCard model now supports DMA interface
+* EXTI controller now has a configurable number of output lines
+* improved handling of dummy bytes in MPFS QSPI
+
+Fixed:
+
+* tests running from installed Renode packages creating output files in forbidden locations
+* serialization of NetworkInterfaceTester and UARTBackend
+* possible non-deterministic behavior of UART backend in tests
+* occasional file sharing violation in PosixFileLocker
+* Renode printing out colors when in plain mode
+* non-determinism in the button model
+* time drift caused by unreported virtual ticks and improper instruction counting
+* crash in TermsharpProvider when running on Windows
+* invalid default frequency for STM32L1
+
 1.11.0 - 2020.10.22
 -------------------
 
