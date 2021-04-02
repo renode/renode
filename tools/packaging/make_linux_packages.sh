@@ -98,4 +98,5 @@ echo "Created an Arch package in $PACKAGES/$arch"
 if $REMOVE_WORKDIR
 then
     rm -rf $DIR
+    rm $COMMAND_SCRIPT
 fi
