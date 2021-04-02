@@ -53,7 +53,7 @@ dcdc: Python.PythonPeripheral @ sysbus 0x40080000
 gpTimer1: Python.PythonPeripheral @ sysbus 0x401EC000
     size: 0x4000
     initable: true
-    filename: "scripts/pydev/ticker.py"
+    filename: "scripts/pydev/fast-ticker.py"
 
 lpuart1: UART.LowPower_UART @ sysbus 0x40184000
     IRQ -> nvic@20
