@@ -22,14 +22,16 @@ namespace Antmicro.Renode
         {
             AppDomain.CurrentDomain.ProcessExit += (_, __) => Emulator.Exit();
 
-            ConfigureEnvironment();
+            var options = new Options();
+            var optionsParser = new OptionsParser.OptionsParser();
+            var optionsParsed = optionsParser.Parse(options, args);
+
+            ConfigureEnvironment(options);
             var thread = new Thread(() =>
             {
-                var options = new Options();
-                var optionsParser = new OptionsParser.OptionsParser();
                 try
                 {
-                    if(optionsParser.Parse(options, args))
+                    if(optionsParsed)
                     {
                         Antmicro.Renode.UI.CommandLineInterface.Run(options, (context) =>
                         {
@@ -51,12 +53,17 @@ namespace Antmicro.Renode
             Emulator.ExecuteAsMainThread();
         }
 
-        private static void ConfigureEnvironment()
+        private static void ConfigureEnvironment(Options options)
         {
             ConsoleBackend.Instance.WindowTitle = "Renode";
 
             string configFile = null;
-            if(Misc.TryGetRootDirectory(out var rootDir))
+
+            if(options.ConfigFile != null)
+            {
+                configFile = options.ConfigFile;
+            }
+            else if(Misc.TryGetRootDirectory(out var rootDir))
             {
                 var localConfig = Path.Combine(rootDir, "renode.config");
                 if(File.Exists(localConfig))
