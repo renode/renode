@@ -10,7 +10,7 @@ ${URI}                              @https://dl.antmicro.com/projects/renode
 ${LOCAL_FILENAME}                   uartlite
 ${UART}                             sysbus.uart
 ${UARTLITE_SCRIPT}                  scripts/single-node/riscv_verilated_uartlite.resc
-${LOG_TIMEOUT}                      15000
+${LOG_TIMEOUT}                      1  # virtual seconds
 
 *** Test Cases ***
 Should Run UARTLite Binary
