@@ -8,8 +8,8 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/litex_vexriscv_verilated_liteuart.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/zephyr--verilated_liteuart--shell.elf-s_864780-63c7e83fb01451ac6683434997f6f03c6a8f9079
-$uartLinux?=@https://dl.antmicro.com/projects/renode/liteuart_vtop-s_248736-aaabe880a4352c4916d52e47c9df8f1590dc5724
-$uartWindows?=@https://dl.antmicro.com/projects/renode/liteuart_vtop.exe-s_1179248-0473f80ec8b2981737dd6b1238745263cc582a06
+$uartLinux?=@https://dl.antmicro.com/projects/renode/Vliteuart-linux-x86_64-33843-s_1521120-f23fce4ccae3937d661a59f1ce31609dd43e844b
+$uartWindows?=@https://dl.antmicro.com/projects/renode/Vliteuart-windows-33757.exe-s_3191914-84508cb4840c3044f4c4faa4da53b01bdd284a51
 
 showAnalyzer uart
 
