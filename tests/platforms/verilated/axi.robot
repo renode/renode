@@ -13,15 +13,15 @@ Create Machine
     Execute Command                             using sysbus
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString 'cpu: CPU.RiscV32 @ sysbus { cpuType: "rv32imaf"; timeProvider: empty }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 100000; timeout: 10 }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 100000; timeout: 10 }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 100000; timeout: 10000 }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 100000; timeout: 10000 }'
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000
-    Execute Command                             dma SimulationFilePathLinux ${URI}/VDMATop-s_269080-93368781745a8c9f1784ea8270acba20dd13f8d5
-    Execute Command                             dma SimulationFilePathWindows ${URI}/VDMATop.exe-s_1222075-9d070008ee63358b84ff356e137f0d544a3db817
-    Execute Command                             mem SimulationFilePathLinux ${URI}/Vaxi_ram-s_243384-6aa796a28cbe3fe89e19c0f01b3e8df4b77aa89f
-    Execute Command                             mem SimulationFilePathWindows ${URI}/Vaxi_ram.exe-s_1170346-a9e68ab0d037c4625d72b9e4f6e35652a23158fd
+    Execute Command                             dma SimulationFilePathLinux ${URI}/Vfastvdma-linux-x86_64-33843-s_1533472-4da07087141d72145b472bb4637ac403831242b1
+    Execute Command                             dma SimulationFilePathWindows ${URI}/Vfastvdma-windows-33757.exe-s_3205278-360e78fa3043d77853df4d9b9cdb900469d5d3a8
+    Execute Command                             mem SimulationFilePathLinux ${URI}/Vram-linux-x86_64-33843-s_1521224-2ce6b863da53df60a95cf548bdbac302b9451f92
+    Execute Command                             mem SimulationFilePathWindows ${URI}/Vram-windows-33757.exe-s_3191350-fd973b70dbe5d956a00d0f5a5f053c64ce149436
 
 
 Transaction Should Finish
@@ -98,7 +98,7 @@ Memory Should Contain
 
 *** Test Cases ***
 Should Read Write Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine
 
     Ensure Memory Is Clear                      mem
@@ -110,7 +110,7 @@ Should Read Write Verilated Memory
 
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine
 
     Prepare Data                                0xA1000000
@@ -119,14 +119,14 @@ Should Run DMA Transaction From Mapped Memory to Mapped Memory
 
     Ensure Memory Is Clear                      ram
 
-    Execute Command                             emulation RunFor "00:00:05.000000"
+    Execute Command                             emulation RunFor "00:00:10.000000"
     Transaction Should Finish
 
     Ensure Memory Is Written                    ram
 
 
 Should Run DMA Transaction From Mapped Memory to Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine
 
     Prepare Data                                0xA1000000
@@ -135,14 +135,14 @@ Should Run DMA Transaction From Mapped Memory to Verilated Memory
 
     Ensure Memory Is Clear                      mem
 
-    Execute Command                             emulation RunFor "00:00:05.000000"
+    Execute Command                             emulation RunFor "00:00:10.000000"
     Transaction Should Finish
 
     Ensure Memory Is Written                    mem
 
 
 Should Run DMA Transaction From Verilated Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine
 
     Prepare Data                                0x20080000
@@ -151,14 +151,14 @@ Should Run DMA Transaction From Verilated Memory to Mapped Memory
 
     Ensure Memory Is Clear                      ram
 
-    Execute Command                             emulation RunFor "00:00:05.000000"
+    Execute Command                             emulation RunFor "00:00:10.000000"
     Transaction Should Finish
 
     Ensure Memory Is Written                    ram
 
 
 Should Run DMA Transaction From Verilated Memory to Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine
 
     Prepare Data                                0x20080000
@@ -167,7 +167,7 @@ Should Run DMA Transaction From Verilated Memory to Verilated Memory
 
     Ensure Memory Is Clear                      mem
 
-    Execute Command                             emulation RunFor "00:00:05.000000"
+    Execute Command                             emulation RunFor "00:00:10.000000"
     Transaction Should Finish
 
     Ensure Memory Is Written                    mem
