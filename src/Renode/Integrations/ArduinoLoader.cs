@@ -181,6 +181,9 @@ namespace Antmicro.Renode.Integrations
                         case (char)Command.GetSWVersion:
                         case (char)Command.EraseFlash:
                         case (char)Command.ExecuteLoadedApp:
+                        case (char)Command.WriteByte:
+                        case (char)Command.WriteWord:
+                        case (char)Command.WriteDoubleWord:
                             command = (Command)d[i];
                             break;
 
@@ -250,6 +253,18 @@ namespace Antmicro.Renode.Integrations
                 case Command.EraseFlash:
                     Array.Clear(flashBuffer, 0, flashBuffer.Length);
                     SendResponse("X");
+                    break;
+
+                case Command.WriteByte:
+                    machine.SystemBus.WriteByte(arg0, (byte)arg1); 
+                    break;
+
+                case Command.WriteWord:
+                    machine.SystemBus.WriteWord(arg0, (ushort)arg1); 
+                    break;
+
+                case Command.WriteDoubleWord:
+                    machine.SystemBus.WriteDoubleWord(arg0, arg1); 
                     break;
 
                 default:
@@ -336,6 +351,9 @@ namespace Antmicro.Renode.Integrations
             GetSWVersion = (byte)'V',
             EraseFlash = (byte)'X',
             ExecuteLoadedApp = (byte)'K',
+            WriteByte = (byte)'O',
+            WriteWord = (byte)'H',
+            WriteDoubleWord = (byte)'W',
         }
     }
 }
