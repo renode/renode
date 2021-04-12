@@ -41,6 +41,7 @@ namespace Antmicro.Renode.Integrations
             USBEndpoint interruptEndpoint = null;
 
             this.cpu = cpu;
+            this.machine = cpu.GetMachine();
             this.binaryLoadAddress = binaryLoadAddress;
 
             USBCore = new USBDeviceCore(this,
@@ -106,7 +107,7 @@ namespace Antmicro.Renode.Integrations
                 throw new RecoverableException("Received no binary in the selected time window!");
             }
 
-            cpu.GetMachine().SystemBus.WriteBytes(flashBuffer, binaryLoadAddress, binaryLength);
+            machine.SystemBus.WriteBytes(flashBuffer, binaryLoadAddress, binaryLength);
             cpu.VectorTableOffset = (uint)binaryLoadAddress;
 
             return $"Binary of size {binaryLength} bytes loaded at 0x{binaryLoadAddress:X}";
@@ -319,6 +320,7 @@ namespace Antmicro.Renode.Integrations
 
         private readonly AutoResetEvent binarySync;
         private readonly CortexM cpu;
+        private readonly Machine machine;
         private readonly ulong binaryLoadAddress;
 
         private const int BufferSize = 0xf0000;
