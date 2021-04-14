@@ -93,6 +93,12 @@ def install_cli_arguments(parser):
                         action="append",
                         help="Path to additional progress listener (can be provided many times)")
 
+    parser.add_argument("--renode-config",
+                        dest="renode_config",
+                        action="store",
+                        default=None,
+                        help="Path to the Renode config file")
+
 
 def verify_cli_arguments(options):
     # port is not available on Windows
@@ -198,6 +204,9 @@ class RobotTestSuite(object):
             args.append('--disable-xwt')
         if options.debug_on_error:
             args.append('--robot-debug-on-error')
+        if options.renode_config:
+            args.append('--config')
+            args.append(options.renode_config)
 
         if options.runner == 'mono':
             args.insert(0, 'mono')
