@@ -110,7 +110,7 @@ Should Read Write Verilated Memory
 
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  non_critical
     Create Machine
 
     Prepare Data                                0xA1000000
@@ -126,7 +126,7 @@ Should Run DMA Transaction From Mapped Memory to Mapped Memory
 
 
 Should Run DMA Transaction From Mapped Memory to Verilated Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  non_critical
     Create Machine
 
     Prepare Data                                0xA1000000
@@ -142,7 +142,7 @@ Should Run DMA Transaction From Mapped Memory to Verilated Memory
 
 
 Should Run DMA Transaction From Verilated Memory to Mapped Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  non_critical
     Create Machine
 
     Prepare Data                                0x20080000
@@ -158,7 +158,7 @@ Should Run DMA Transaction From Verilated Memory to Mapped Memory
 
 
 Should Run DMA Transaction From Verilated Memory to Verilated Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  non_critical
     Create Machine
 
     Prepare Data                                0x20080000
