@@ -10,8 +10,15 @@ cp -r $BASE/tools/metrics_analyzer $DIR/tools
 #copy the test instrastructure and update the paths
 cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DIR/tests
 cp -r $BASE/tests/platforms $DIR/tests/platforms
+cp -r $BASE/tests/peripherals $DIR/tests/peripherals
+cp -r $BASE/tests/unit-tests $DIR/tests/unit-tests
 $SED_COMMAND '/nunit/d' $DIR/tests/run_tests.py
 $SED_COMMAND 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $DIR/tests/robot_tests_provider.py
+
+pushd $DIR/tests &> /dev/null
+# `tests.yaml` should only list files from subdirectories. This prevents us from including examples and misc files like `renode-keywords.robot`
+find . -mindepth 2 -name '*robot' -exec echo {} \; | sed 's|^\.|- tests|g' > tests.yaml
+popd &> /dev/null
 
 cp -r $BASE/src/Renode/RobotFrameworkEngine/*.{py,robot} $DIR/tests
 #sed has different parameters on osx/linux so the command must be defined by scripts including this one

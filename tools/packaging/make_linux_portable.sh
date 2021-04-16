@@ -41,6 +41,11 @@ cp -r $RENODE_ROOT_DIR/tests/platforms $DESTINATION/tests/platforms
 cp -r $RENODE_ROOT_DIR/tests/peripherals $DESTINATION/tests/peripherals
 cp -r $RENODE_ROOT_DIR/tests/unit-tests $DESTINATION/tests/unit-tests
 
+pushd $DESTINATION/tests &> /dev/null
+# `tests.yaml` should only list files from subdirectories. This prevents us from including examples and misc files like `renode-keywords.robot`
+find . -mindepth 2 -name '*robot' -exec echo {} \; | sed 's/^\./- tests/g' > tests.yaml
+popd &> /dev/null
+
 mkdir -p $WORKDIR
 rm -rf $WORKDIR/*
 
