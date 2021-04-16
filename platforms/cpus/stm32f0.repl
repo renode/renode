@@ -26,6 +26,12 @@ cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m0"
     nvic: nvic
 
+dma: DMA.STM32F0_DMA @ sysbus 0x40020000
+    numberOfChannels: 7
+    Irq1 -> nvic@9
+    Irq2_3 -> nvic@10
+    Irq4_7 -> nvic@11
+
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     -> nvic@27
 
@@ -95,6 +101,8 @@ timer1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
 timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
     frequency: 10000000
     initialLimit: 0xFFFFFFFF
+    dmaChannel: 5
+    dmaPeripheral: dma
     -> nvic@15
 
 timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
@@ -134,8 +142,14 @@ timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
 can: CAN.STMCAN @ sysbus <0x40006400, +0x400>
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
-    // missing TamperIRQ, TimeStampIRQ, WakeupEventIRQ 
+    // missing TamperIRQ, TimeStampIRQ, WakeupEventIRQ
     AlarmIRQ -> exti@17
+
+adc: Analog.STM32F0_ADC @ sysbus 0x40012400
+    externalEventFrequency: 10000
+    referenceVoltage: 5.0
+    dmaPeripheral: dma
+    dmaChannel: 1
 
 rcc: Python.PythonPeripheral @ sysbus 0x40021000
     size: 0x400
@@ -157,15 +171,6 @@ elif request.isRead:
 self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.type), request.offset, request.value))
 '''
 
-DMA: Python.PythonPeripheral @ sysbus 0x40020000
-    size: 0x400
-    script: '''
-if request.isWrite and request.offset in (0x10, 0x24, 0x38):
-    # writing base address - we write some positive value there in case initialization awaits output
-    sysbus.WriteDoubleWord(request.value, 0x40E33333)
-    self.NoisyLog("0x%x written with value 0x40E33333" % request.value)
-'''
-    
 sysbus:
     init:
         Tag <0x40002C00, 0x40002FFF> "WWDG"
@@ -177,7 +182,6 @@ sysbus:
         Tag <0x40007400, 0x400077FF> "DAC"
         Tag <0x40007800, 0x40007BFF> "CEC"
         Tag <0x40010000, 0x400103FF> "SYSCFGCOMP"
-        Tag <0x40012400, 0x400127FF> "ADC"
         Tag <0x40015800, 0x40015BFF> "DBGMCU"
         Tag <0x40020000, 0x400203FF> "DMA"
         Tag <0x40020400, 0x400207FF> "DMA2"
