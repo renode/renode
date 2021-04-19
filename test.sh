@@ -2,7 +2,8 @@
 set -e
 set -u
 
-ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
+ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
+
 TESTS_FILE="$ROOT_PATH/tests/tests.yaml"
 TESTS_RESULTS="$ROOT_PATH/output/tests"
 

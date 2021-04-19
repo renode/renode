@@ -3,11 +3,10 @@
 set -u
 set -e
 
-UPDATE_SUBMODULES=false
-
-export ROOT_PATH="`dirname \"\`realpath "$0"\`\"`"
+export ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
 
+UPDATE_SUBMODULES=false
 CONFIGURATION="Release"
 CLEAN=false
 PACKAGES=false

@@ -1,8 +1,7 @@
 #!/bin/sh
 
 #get the bundle's MacOS directory full path
-BIN=$(realpath "$0")
-DIR=$(dirname "$BIN")
+DIR=`dirname $0`
 
 EXE_PATH="$DIR/bin/Renode.exe"
 PROCESS_NAME=appname

@@ -3,7 +3,6 @@
 set -x
 
 if [[ "$(uname)" == 'Linux' ]]; then
-    install -D /usr/bin/realpath $BUILD_PREFIX/bin/realpath
     install -D /bin/sed $BUILD_PREFIX/bin/sed
 
     # Install gtk-sharp2

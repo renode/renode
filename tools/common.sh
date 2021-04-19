@@ -42,7 +42,6 @@ function clone_if_necessary() {
     BRANCH="$3"
     TARGET_DIR="$4"
     GUARD="$5"
-    WORKDIR="$6"
    
     if [ -e "$GUARD" ]
     then
@@ -70,7 +69,7 @@ function clone_if_necessary() {
     fi
 
     rm -rf "$TARGET_DIR"
-    git clone -b $BRANCH $REMOTE "`realpath --relative-to="$WORKDIR" "$TARGET_DIR"`"
+    git clone -b $BRANCH $REMOTE $(get_path "$TARGET_DIR")
 }
 
 function add_path_property {
