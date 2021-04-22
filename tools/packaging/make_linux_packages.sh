@@ -7,8 +7,6 @@ set -u
 cd "${0%/*}"
 . common_make_packages.sh
 
-RPM_MIN_DIST="f23"
-
 if ! is_dep_available gem
 then
     exit 1
@@ -80,7 +78,6 @@ echo "Created a Debian package in $PACKAGES/$deb"
 #redhat-rpm-config is apparently required for GCC to work in Docker images
 fpm -s dir -t rpm\
     -d "mono-complete >= $MONOVERSION" -d gcc -d redhat-rpm-config -d python3-devel -d python3-pip -d gtk-sharp2 -d screen -d beesu -d zeromq\
-    --rpm-dist $RPM_MIN_DIST \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 rpm=(renode*rpm)
