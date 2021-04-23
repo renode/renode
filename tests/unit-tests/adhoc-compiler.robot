@@ -13,7 +13,7 @@ ${PLATFORM}=     SEPARATOR=
 
 *** Test Cases ***
 Should Compile Simple Peripheral
-        Execute Command          include @${CURDIR}/SimplePeripheral.cs
+        Execute Command          include @${CURDIR}${/}SimplePeripheral.cs
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${PLATFORM}

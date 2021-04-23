@@ -6,7 +6,7 @@ Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
-@{cpus_path}=		      ${CURDIR}/../../platforms/cpus
+@{cpus_path}=		      ${CURDIR}${/}..${/}..${/}platforms${/}cpus
 @{pattern}= 		      *.repl
 
 *** Keywords ***

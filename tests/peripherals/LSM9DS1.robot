@@ -21,7 +21,7 @@ Should Detect RING Motion
     Create Machine
     Create Terminal Tester    ${UART}
 
-    Execute Command           sysbus.twi0.lsm9ds1_imu FeedAccelerationSample @${CURDIR}/circle_rotated.data
+    Execute Command           sysbus.twi0.lsm9ds1_imu FeedAccelerationSample @${CURDIR}${/}circle_rotated.data
 
     Start Emulation
     Wait For Line On Uart     Magic starts
@@ -31,7 +31,7 @@ Should Detect SLOPE Motion
     Create Machine
     Create Terminal Tester    ${UART}
 
-    Execute Command           sysbus.twi0.lsm9ds1_imu FeedAccelerationSample @${CURDIR}/angle_rotated.data
+    Execute Command           sysbus.twi0.lsm9ds1_imu FeedAccelerationSample @${CURDIR}${/}angle_rotated.data
 
     Start Emulation
     Wait For Line On Uart     Magic starts
