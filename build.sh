@@ -14,21 +14,23 @@ PACKAGES=false
 NIGHTLY=false
 PORTABLE=false
 HEADLESS=false
+SKIP_FETCH=false
 PARAMS=()
 CUSTOM_PROP=
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch]"
   echo ""
-  echo "-c           clean instead of building"
-  echo "-d           build Debug configuration"
-  echo "-v           verbose output"
-  echo "-p           create packages after building"
-  echo "-n           create nightly packages after building"
-  echo "-t           create a portable package (experimental, Linux only)"
-  echo "-s           update submodules"
-  echo "-b           custom build properties file"
-  echo "--no-gui     build with GUI disabled"
+  echo "-c             clean instead of building"
+  echo "-d             build Debug configuration"
+  echo "-v             verbose output"
+  echo "-p             create packages after building"
+  echo "-n             create nightly packages after building"
+  echo "-t             create a portable package (experimental, Linux only)"
+  echo "-s             update submodules"
+  echo "-b             custom build properties file"
+  echo "--skip-fetch   skip fetching submodules and additional resources"
+  echo "--no-gui       build with GUI disabled"
 }
 
 while getopts "cdvpnstb:-:" opt
@@ -64,6 +66,9 @@ do
         "no-gui")
           HEADLESS=true
           ;;
+        "skip-fetch")
+          SKIP_FETCH=true
+          ;;
         *)
           print_help
           exit 1
@@ -89,18 +94,28 @@ git submodule status --recursive | grep -q "^+"
 SUBMODULES_NOT_CLEAN=$?
 set -e
 
-if $UPDATE_SUBMODULES || [ $SUBMODULES_NOT_INITED -eq 0 ]
+if $SKIP_FETCH
 then
-    echo "Updating submodules..."
-    git submodule update --init --recursive
-elif [ $SUBMODULES_NOT_CLEAN -eq 0 ]
-then
-    echo "Submodules are not updated. Use -s to force update."
+  echo "Skipping init/update of submodules"
+else
+  if $UPDATE_SUBMODULES || [ $SUBMODULES_NOT_INITED -eq 0 ]
+  then
+      echo "Updating submodules..."
+      git submodule update --init --recursive
+  elif [ $SUBMODULES_NOT_CLEAN -eq 0 ]
+  then
+      echo "Submodules are not updated. Use -s to force update."
+  fi
 fi
 
 . "${ROOT_PATH}/tools/common.sh"
 
-"${ROOT_PATH}"/tools/building/fetch_libraries.sh
+if $SKIP_FETCH
+then
+  echo "Skipping library fetch"
+else
+  "${ROOT_PATH}"/tools/building/fetch_libraries.sh
+fi
 
 if $HEADLESS
 then
