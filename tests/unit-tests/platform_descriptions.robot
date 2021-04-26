@@ -12,7 +12,8 @@ Resource                      ${RENODEKEYWORDS}
 *** Keywords ***
 Get Test Cases
     Setup
-    @{platforms}=  List Files In Directory Recursively	@{cpus_path}	@{pattern}
+    # This line must use the "path" notation to handle paths with spaces
+    @{platforms}=  List Files In Directory Recursively	"{cpus_path}"	@{pattern}
     Set Suite Variable        @{platforms}
 
 Run Test Case

@@ -13,7 +13,9 @@ ${PLATFORM}=     SEPARATOR=
 
 *** Test Cases ***
 Should Compile Simple Peripheral
-        Execute Command          include @${CURDIR}${/}SimplePeripheral.cs
+        # Escape space in windows path
+        ${TEST_DIR}=             Evaluate  r"${CURDIR}".replace(" ", "\\ ")
+        Execute Command          include @${TEST_DIR}${/}SimplePeripheral.cs
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${PLATFORM}
