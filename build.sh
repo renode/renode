@@ -83,6 +83,19 @@ do
 done
 shift "$((OPTIND-1))"
 
+if [ -n "${PLATFORM:-}" ]
+then
+    echo "PLATFORM environment variable is currently set to: >>$PLATFORM<<"
+    echo "This might cause problems during the build."
+    echo "Please clear it with:"
+    echo ""
+    echo "    unset PLATFORM"
+    echo ""
+    echo " and run the build script again."
+
+    exit 1
+fi
+
 # Update submodules if not initialized or if requested by the user
 # Warn if not updating, but unclean
 # Disabling -e to allow grep to fail
