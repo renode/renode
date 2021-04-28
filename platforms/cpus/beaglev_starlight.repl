@@ -1,0 +1,147 @@
+U74_2: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 1
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+U74_1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 0
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+dtim: Memory.MappedMemory @sysbus 0x0100000
+    size: 0x2000
+
+itim0: Memory.MappedMemory @sysbus 0x01808000
+    size: 0x8000
+
+itim1: Memory.MappedMemory @sysbus 0x01820000
+    size: 0x8000
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
+    frequency: 6250000
+    numberOfTargets: 2
+    [0, 1] -> U74_1@[3, 7]
+    [2, 3] -> U74_2@[3, 7]
+
+L2LIM: Memory.MappedMemory @sysbus 0x08000000
+    size: 0x200000
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0c000000
+    [0, 1] -> U74_1@[11, 9]
+    [2, 3] -> U74_2@[11, 9]
+    numberOfSources: 127
+    numberOfContexts: 4
+    prioritiesEnabled : true
+
+rstgen: Python.PythonPeripheral @ sysbus 0x11840000
+    size: 0x20
+    initable: true
+    script: '''
+if request.isInit:
+    regs=[0xffffffff,
+          0xffffffff,
+          0xffffffff,
+          0xffffffff]
+    mask=[0xfffff3fb,
+          0xffffffe7,
+          0xfffffffe,
+          0xffffffff]
+elif request.isRead:
+    offset = (request.offset//4) & 0x7
+    if offset & 4 == 0:
+        request.value = regs[offset & 0x3] & 0xffffffff
+    else:
+        request.value = (regs[offset & 0x3] ^ mask[offset & 0x3]) & 0xffffffff
+elif request.isWrite:
+    offset = (request.offset//4) & 0x3
+    regs[offset] = request.value
+'''
+
+audiorstgen: Python.PythonPeripheral @ sysbus 0x10490000
+    size: 0x8
+    initable: true
+    script: '''
+if request.isInit:
+    reg = 0xffffffff
+elif request.isRead:
+    offset = request.offset//4
+    if offset == 0:
+        request.value = reg & 0xffffffff
+    else:
+        request.value = ~reg & 0xffffffff
+elif request.isWrite:
+    reg = request.value
+'''
+
+voutsysrstgen: Python.PythonPeripheral @ sysbus 0x12250000
+    size: 0x8
+    initable: true
+    script: '''
+if request.isInit:
+    reg = 0xffffffff
+elif request.isRead:
+    offset = request.offset//4
+    if offset == 0:
+        request.value = reg & 0xffffffff
+    else:
+        request.value = ~reg & 0xffffffff
+elif request.isWrite:
+    reg = request.value
+'''
+
+uart0: UART.NS16550@sysbus 0x11870000
+    wideRegisters: true
+    IRQ -> plic@92
+
+uart1: UART.NS16550@sysbus 0x11880000
+    wideRegisters: true
+    IRQ -> plic@93
+
+uart2: UART.NS16550@sysbus 0x12430000
+    wideRegisters: true
+    IRQ -> plic@72
+
+uart3: UART.NS16550@sysbus 0x12440000
+    wideRegisters: true
+    IRQ -> plic@73
+
+pwm0: HiFive_PWM @sysbus 0x12490000
+
+gpio: GPIOPort.SiFive_GPIO @sysbus 0x1191000
+
+SoCSRAM: Memory.MappedMemory @sysbus 0x18000000
+    size: 0x20000
+
+ddr: Memory.MappedMemory @sysbus 0x80000000
+    size: 0x200000000
+
+ethernet: Network.SynopsysEthernetMAC @sysbus 0x10020000
+    IRQ -> plic@6
+
+phy: Network.EthernetPhysicalLayer @ethernet 7
+    BasicControl: 0x0880
+    Id1: 0x0022
+    Id2: 0x1620
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x0000
+
+sysbus:
+    init:
+        SilenceRange <0x02010000 0x1000>
+        Tag <0x10000000 0x10000> "SDIO"
+        Tag <0x104C0000 0x40000> "USB30"
+        Tag <0x11860000 0x10000> "QSPI"
+        Tag <0x118B0000 0x10000> "I2C0"
+        Tag <0x118C0000 0x10000> "I2C1"
+        Tag <0x12450000 0x10000> "I2C1"
+        Tag <0x100b0000 0x10000> "sgdam2"
+        Tag <0x10500000 0x10000> "sgdam1"
+        Tag <0x11910000 0x10000> "GPIO"
+        Tag <0x11800000 0x10000> "CLKGEN_CSR"
+        Tag <0x11850000 0x10000> "SYSCTRL"
+        Tag <0x118D0000 0x10000> "TRNG"
+        Tag <0x10480000 0x30000> "DOM_AUDIO"
+        Tag <0x12240000 0x30000> "VOUT"
+
