@@ -1,0 +1,28 @@
+
+# This script runs OpenSBI, U-Boot and Linux on the Antmicro's ARVSOM platform in Renode
+
+$name?="ARVSOM"
+
+$bin?=@https://dl.antmicro.com/projects/renode/arvsom--fw_payload.elf-s_1218880-55f2d87dc1257f8e490cb4bdada2131d2b10d636
+$uboot?=@https://dl.antmicro.com/projects/renode/arvsom--u-boot-s_5095752-2cf964e876967f92065b012bd826e9f04ebea9d7
+$linux?=@https://dl.antmicro.com/projects/renode/arvsom--vmlinux-s_13244120-1fca14926a0b891b58bb716a9422dbbbca6543d2
+$fit?=@https://dl.antmicro.com/projects/renode/arvsom--image.fit-s_83025501-3c24fa8a3dd087ac05f6a17399ff2f44f673e1c4
+
+emulation SetSeed 0x1
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/arvsom.repl
+emulation SetGlobalSerialExecution True
+
+showAnalyzer uart3
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    sysbus LoadSymbolsFrom $uboot
+    sysbus LoadSymbolsFrom $linux
+    sysbus LoadBinary $fit 0xa0000000
+"""
+runMacro $reset
+
