@@ -33,52 +33,49 @@ void AxiLite::timeoutTick(uint8_t *condition, int timeout = 20)
     }
 }
 
+// VALID/READY handshake process (as a source)
+void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, uint64_t value)
+{
+    *channel = value;
+    *valid = 1;
+    // Don't wait if `ready` signal has been set (READY before VALID handshake)
+    if(*ready != 1)
+    {
+        timeoutTick(ready);
+    }
+
+    // The transfer occurs in the cycle AFTER the one with both ready and valid set
+    tick(true);
+
+    // Clear the data and valid signal
+    *channel = 0;
+    *valid = 0;
+}
+
 void AxiLite::write(uint64_t addr, uint64_t value)
 {
-    *awvalid = 1;
-    *awaddr = addr;
+    // Set write address and data
+    handshake_src(awready, awvalid, awaddr, addr);
+    handshake_src(wready, wvalid, wdata, value);
 
-    timeoutTick(awready);
-
-    tick(true);
-    *awaddr = 0;
-    *awvalid = 0;
-    tick(true);
-    *wvalid = 1;
-    *wdata = value;
-
-    timeoutTick(wready);
-
-    tick(true);
-    *wvalid = 0;
-    *wdata = 0;
-    tick(true);
+    // Wait for the write response
     *bready = 1;
-
     timeoutTick(bvalid);
-
     tick(true);
     *bready = 0;
-    tick(true);
 }
 
 uint64_t AxiLite::read(uint64_t addr)
 {
-    *araddr = addr;
-    *arvalid = 1;
+    // Set read address
+    handshake_src(arready, arvalid, araddr, addr);
 
-    timeoutTick(arready);
-
-    tick(true);
+    // Read data
     *rready = 1;
-    *arvalid = 0;
-
     timeoutTick(rvalid);
-
     uint64_t result = *rdata; // we have to fetch data before transaction end
     tick(true);
     *rready = 0;
-    tick(true);
     return result;
 }
 
