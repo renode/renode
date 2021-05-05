@@ -12,7 +12,7 @@ emulation SetSeed 0x1
 
 using sysbus
 mach create $name
-machine LoadPlatformDescription @platforms/cpus/arvsom.repl
+machine LoadPlatformDescription @platforms/boards/arvsom.repl
 emulation SetGlobalSerialExecution True
 
 showAnalyzer uart3
