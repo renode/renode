@@ -12,7 +12,7 @@ emulation SetSeed 0x1
 
 using sysbus
 mach create $name
-machine LoadPlatformDescription @platforms/cpus/beaglev_starlight.repl
+machine LoadPlatformDescription @platforms/boards/beaglev_starlight.repl
 emulation SetGlobalSerialExecution True
 
 showAnalyzer uart3
