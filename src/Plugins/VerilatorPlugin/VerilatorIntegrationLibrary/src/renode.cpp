@@ -107,6 +107,7 @@ void RenodeAgent::simulate(int receiverPort, int senderPort)
                     tick(false, ticks);
                 }
                 interfaces[0]->tickCounter = 0;
+                senderSocketSend(Protocol(tickClock, 0, 0));
                 break;
             case writeRequest:
                 writeToBus(result->addr, result->value);

@@ -29,6 +29,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             this.machine = machine;
             pauseMRES = new ManualResetEventSlim(initialState: true);
+            allTicksProcessedARE = new AutoResetEvent(initialState: false);
             mainSocket = new CommunicationChannel(this, timeout);
             asyncEventsSocket = new CommunicationChannel(this, Timeout.Infinite);
             receiveThread = new Thread(ReceiveLoop)
@@ -40,6 +41,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
             timer.LimitReached += () =>
             {
                 Send(ActionType.TickClock, 0, limitBuffer);
+                this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
+                allTicksProcessedARE.WaitOne();
+                this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
             };
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
@@ -291,6 +295,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     var data = machine.SystemBus.ReadDoubleWord(message.Address);
                     Send(ActionType.WriteToBus, 0, data);
                     break;
+                case ActionType.TickClock:
+                    allTicksProcessedARE.Set();
+                    break;
                 default:
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
                         message.ActionId, message.Address, message.Data);
@@ -388,6 +395,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private bool disposeInitiated;
         private Process verilatedProcess;
         private string simulationFilePath;
+        private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
         private readonly CommunicationChannel mainSocket;
         private readonly CommunicationChannel asyncEventsSocket;
