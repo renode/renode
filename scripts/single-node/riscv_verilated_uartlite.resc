@@ -8,8 +8,8 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/riscv_verilated_uartlite.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
-$uartLinux?=@https://dl.antmicro.com/projects/renode/Vuartlite-linux-x86_64-33843-s_1521056-b5a082c7c788c6761802434529daf741c78091ac
-$uartWindows?=@https://dl.antmicro.com/projects/renode/Vuartlite-windows-33757.exe-s_3190318-182aee388141925862dfa8636ad228656fc99ca5
+$uartLinux?=@https://dl.antmicro.com/projects/renode/Vuartlite-Linux-x86_64-813952320-s_1588208-03aa9ad82b2d5b3f7b55a78bd88fc38b028f68c5
+$uartWindows?=@https://dl.antmicro.com/projects/renode/Vuartlite-Windows-x86_64-813952320.exe-s_3190226-d5621499892e547603a78a2debc7f392e3fc8ccb
 
 showAnalyzer uart
 

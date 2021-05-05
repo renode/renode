@@ -18,10 +18,10 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000
-    Execute Command                             dma SimulationFilePathLinux ${URI}/Vfastvdma-linux-x86_64-33843-s_1533472-4da07087141d72145b472bb4637ac403831242b1
-    Execute Command                             dma SimulationFilePathWindows ${URI}/Vfastvdma-windows-33757.exe-s_3205278-360e78fa3043d77853df4d9b9cdb900469d5d3a8
-    Execute Command                             mem SimulationFilePathLinux ${URI}/Vram-linux-x86_64-33843-s_1521224-2ce6b863da53df60a95cf548bdbac302b9451f92
-    Execute Command                             mem SimulationFilePathWindows ${URI}/Vram-windows-33757.exe-s_3191350-fd973b70dbe5d956a00d0f5a5f053c64ce149436
+    Execute Command                             dma SimulationFilePathLinux ${URI}/Vfastvdma-Linux-x86_64-813952320-s_1604720-2dc57e7b9422f875076a80752dfaef205c9573c8
+    Execute Command                             dma SimulationFilePathWindows ${URI}/Vfastvdma-Windows-x86_64-813952320.exe-s_3205186-fef3c2634022de443b4d36474428a91ddf3c62fc
+    Execute Command                             mem SimulationFilePathLinux ${URI}/Vram-Linux-x86_64-813952320-s_1588376-006c577beb357cbc1cf587aad8cd4cb85c1ed57e
+    Execute Command                             mem SimulationFilePathWindows ${URI}/Vram-Windows-x86_64-813952320.exe-s_3191258-76cc682adb9bc0c08210554ff5406397ee5759b1
 
 
 Transaction Should Finish

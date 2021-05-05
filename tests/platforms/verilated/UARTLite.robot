@@ -15,8 +15,8 @@ ${LOG_TIMEOUT}                      1  # virtual seconds
 *** Test Cases ***
 Should Run UARTLite Binary
     [Tags]                          skip_osx
-    Execute Command                 $uartLinux = ${URI}/Vuartlite-linux-x86_64-33843-s_1521056-b5a082c7c788c6761802434529daf741c78091ac
-    Execute Command                 $uartWindows = ${URI}/Vuartlite-windows-33757.exe-s_3190318-182aee388141925862dfa8636ad228656fc99ca5
+    Execute Command                 $uartLinux = ${URI}/Vuartlite-Linux-x86_64-813952320-s_1588208-03aa9ad82b2d5b3f7b55a78bd88fc38b028f68c5
+    Execute Command                 $uartWindows = ${URI}/Vuartlite-Windows-x86_64-813952320.exe-s_3190226-d5621499892e547603a78a2debc7f392e3fc8ccb
     Execute Script                  ${UARTLITE_SCRIPT}
     Start Emulation
     Create Terminal Tester          ${UART}
@@ -26,8 +26,8 @@ Should Run UARTLite Binary
 Should Handle Connection Timeout
     [Tags]                          skip_osx
 
-    Execute Command                 $uartLinux = ${URI}/Vsleep-after-1000-iters-linux-x86_64-33843-s_1521104-de0fc618f54204dac233f9ebcadbd663da212d30
-    Execute Command                 $uartWindows = ${URI}/Vsleep-after-1000-iters-windows-33757.exe-s_3191846-9a828c3c90fc50d4c97ab7059ee2341c5c09a34e
+    Execute Command                 $uartLinux = ${URI}/Vsleep-after-1000-iters-Linux-x86_64-813952320-s_1588248-2898f398242dfe43d8ad215ca61fccc25d70f465
+    Execute Command                 $uartWindows = ${URI}/Vsleep-after-1000-iters-Windows-x86_64-813952320.exe-s_3191754-184419c4133fc8ffe6f88fe548284a91bc6d4fcf
     Execute Script                  ${UARTLITE_SCRIPT}
     Create Terminal Tester          ${UART}
     Create Log Tester               ${LOG_TIMEOUT}
@@ -39,8 +39,8 @@ Should Handle Connection Timeout
 Should Handle UARTLite Binary Not Connecting
     [Tags]                          skip_osx
 
-    Execute Command                 $uartLinux = ${URI}/Vwrong-ports-linux-x86_64-33843-s_1521056-f60e1b069eff601d3e93344d5d04ed1bc9d161a7
-    Execute Command                 $uartWindows = ${URI}/Vwrong-ports-windows-33757.exe-s_3190318-cd2d3148a9243907b5350705db35dc19b1c46c22
+    Execute Command                 $uartLinux = ${URI}/Vwrong-ports-Linux-x86_64-813952320-s_1588208-bd9e027db686fc0aac56807ab3802d31c24bf644
+    Execute Command                 $uartWindows = ${URI}/Vwrong-ports-Windows-x86_64-813952320.exe-s_3190226-ae586de412a9ea66134e8909ae777a5712670dfa
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Execute Script  ${UARTLITE_SCRIPT}
 
@@ -48,8 +48,8 @@ Should Handle UARTLite Binary Not Connecting
 Should Handle UARTLite Binary Partly Connecting
     [Tags]                          skip_osx
 
-    Execute Command                 $uartLinux = ${URI}/Vwrong-second-port-linux-x86_64-33843-s_1521056-80641f5b7726636227ae531ae92f99004fb16d23
-    Execute Command                 $uartWindows = ${URI}/Vwrong-second-port-windows-33757.exe-s_3190318-69ed9baa4919bd6d64e154db775b57f46baa5855
+    Execute Command                 $uartLinux = ${URI}/Vwrong-second-port-Linux-x86_64-813952320-s_1588208-fe328bc3c97f00ac28762b85f94c3ad37832bf5e
+    Execute Command                 $uartWindows = ${URI}/Vwrong-second-port-Windows-x86_64-813952320.exe-s_3190226-91b879f230b52764df49b285b0315a6868c0fd99
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Execute Script  ${UARTLITE_SCRIPT}
 
