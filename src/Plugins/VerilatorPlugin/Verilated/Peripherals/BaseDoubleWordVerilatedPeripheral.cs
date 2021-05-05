@@ -291,6 +291,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     var data = machine.SystemBus.ReadDoubleWord(message.Address);
                     Send(ActionType.WriteToBus, 0, data);
                     break;
+                default:
+                    this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
+                        message.ActionId, message.Address, message.Data);
+                    break;
             }
         }
 
