@@ -39,7 +39,7 @@ intrCtrl: IRQControllers.EOSS3_IntrCtrl @ {
 
 adc: Analog.EOSS3_ADC @ sysbus 0x40005A00
 
-spi: SPI.EOSS3_SPIMaster @ sysbus 0x40007000
+spi: SPI.DesignWare_SPI @ sysbus 0x40007000
     transmitDepth: 128
     receiveDepth: 128
     -> dmaSpi@0
