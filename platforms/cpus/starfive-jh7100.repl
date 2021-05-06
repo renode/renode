@@ -114,6 +114,11 @@ gpio: GPIOPort.SiFive_GPIO @sysbus 0x1191000
 SoCSRAM: Memory.MappedMemory @sysbus 0x18000000
     size: 0x20000
 
+spi2: SPI.DesignWare_SPI@sysbus 0x12410000
+    transmitDepth: 128
+    receiveDepth: 128
+    IRQ -> plic@70
+
 ethernet: Network.SynopsysEthernetMAC @sysbus 0x10020000
     IRQ -> plic@6
 
