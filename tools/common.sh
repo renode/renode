@@ -70,7 +70,10 @@ function clone_if_necessary() {
     fi
 
     rm -rf "$TARGET_DIR"
-    git clone -b $BRANCH $REMOTE "`realpath --relative-to="$WORKDIR" "$TARGET_DIR"`"
+    case `uname` in
+    Linux) git clone -b $BRANCH $REMOTE "`realpath --relative-to="$WORKDIR" "$TARGET_DIR"`" ;;
+    *)     git clone -b $BRANCH $REMOTE "$TARGET_DIR" ;;
+    esac
 }
 
 function add_path_property {

@@ -8,7 +8,10 @@ BRANCH=master
 CURRENT_PATH="`dirname \"\`realpath "$0"\`\"`"
 LIB_DIR="$CURRENT_PATH/../../lib"
 DIR="$LIB_DIR/resources"
-GUARD=`realpath --relative-to="$ROOT_PATH" "$CURRENT_PATH/../../.renode_libs_fetched"`
+case `uname` in
+  Linux) GUARD=`realpath --relative-to="$ROOT_PATH" "$CURRENT_PATH/../../.renode_libs_fetched"` ;;
+  *)     GUARD="$CURRENT_PATH/../../.renode_libs_fetched" ;;
+esac
 
 mkdir -p "$LIB_DIR"
 
