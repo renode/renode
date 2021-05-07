@@ -3,6 +3,7 @@ from __future__ import print_function
 from sys import platform
 import os
 import sys
+import socket
 import fnmatch
 import subprocess
 import psutil
@@ -121,8 +122,18 @@ def is_process_running(pid):
     # docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
+def is_port_available(port):
+    port_handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    available = False
+    try:
+        port_handle.bind(("localhost", port))
+        port_handle.close()
+        available = True
+    except:
+        available = can_be_freed_by_killing_other_job(port)
+    return available
 
-def check_if_port_available(port):
+def can_be_freed_by_killing_other_job(port):
     if not sys.stdin.isatty():
         return
     try:
@@ -135,10 +146,12 @@ def check_if_port_available(port):
                 result = input('Do you want me to kill it? [y/N] ')
                 if result in ['Y', 'y']:
                     proc.kill()
+                    return True
                 break
     except Exception:
         # do nothing here
         pass
+    return False
 
 
 class RobotTestSuite(object):
@@ -146,18 +159,31 @@ class RobotTestSuite(object):
     robot_frontend_process = None
     hotspot_action = ['None', 'Pause', 'Serialize']
     log_files = []
+    last_port_offset = -1
 
     def __init__(self, path):
         self.path = path
         self._dependencies_met = set()
         self.remote_server_directory = None
+        self.port_offset = 0
 
     def check(self, options, number_of_runs):
-        for i in range(0, number_of_runs):
-            check_if_port_available(options.remote_server_port + i)
+        # Checking if there are no other jobs is moved to `prepare` as it is now possible to skip used ports
+        pass
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
+
+        # Never try to use a port lower than the one used in last job
+        if RobotTestSuite.last_port_offset < 0:
+            self.port_offset = 0
+        else:
+            self.port_offset = RobotTestSuite.last_port_offset + 1;
+        # Skip port if it is already in use
+        while not is_port_available(options.remote_server_port + self.port_offset):
+            self.port_offset += 1
+
+        RobotTestSuite.last_port_offset = self.port_offset
 
         file_name = os.path.splitext(os.path.basename(self.path))[0]
 
@@ -218,7 +244,6 @@ class RobotTestSuite(object):
             elif options.debug_mode:
                 args.insert(1, '--debug')
 
-        check_if_port_available(options.remote_server_port + port_offset)
 
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
@@ -249,17 +274,17 @@ class RobotTestSuite(object):
         # in non-parallel runs there is only one Renode process for all runs
         # see: prepare
         if options.jobs != 1:
-            proc = self._run_remote_server(options, port_offset=run_id)
+            proc = self._run_remote_server(options, port_offset=self.port_offset)
         else:
             proc = None
 
         if any(self.tests_without_hotspots):
-            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options, port_offset=run_id)
+            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options, port_offset=self.port_offset)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=run_id)
+                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=self.port_offset)
 
         self._close_remote_server(proc, options)
         return result
