@@ -66,7 +66,7 @@ GENERAL_FLAGS=(\
 
 ### create debian package
 fpm -s dir -t deb\
-    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d policykit-1 -d libc6-dev -d gcc -d python3 -d python3-pip -d libzmq5 \
+    -d "mono-complete >= $MONOVERSION" -d gtk-sharp2 -d screen -d policykit-1 -d libc6-dev -d gcc -d python3 -d python3-pip \
     --deb-no-default-config-files \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
@@ -77,7 +77,7 @@ echo "Created a Debian package in $PACKAGES/$deb"
 ### create rpm package
 #redhat-rpm-config is apparently required for GCC to work in Docker images
 fpm -s dir -t rpm\
-    -d "mono-complete >= $MONOVERSION" -d gcc -d redhat-rpm-config -d python3-devel -d python3-pip -d gtk-sharp2 -d screen -d beesu -d zeromq\
+    -d "mono-complete >= $MONOVERSION" -d gcc -d redhat-rpm-config -d python3-devel -d python3-pip -d gtk-sharp2 -d screen -d beesu \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 rpm=(renode*rpm)
@@ -85,7 +85,7 @@ mv $rpm $OUTPUT
 echo "Created a Fedora package in $PACKAGES/$rpm"
 ### create arch package
 fpm -s dir -t pacman\
-    -d mono -d gtk-sharp-2 -d screen -d polkit -d gcc -d python3 -d python-pip -d zeromq \
+    -d mono -d gtk-sharp-2 -d screen -d polkit -d gcc -d python3 -d python-pip \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 arch=(renode*.pkg.tar.xz)
