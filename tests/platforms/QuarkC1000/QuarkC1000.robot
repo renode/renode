@@ -39,16 +39,18 @@ Should Run Hello World With Sleep
     ${l}=               Create List
     ${MAX_SLEEP_TIME}=  Evaluate  ${SLEEP_TIME} + ${SLEEP_TOLERANCE}
 
-    :FOR  ${i}  IN RANGE  0  ${REPEATS}
-    \     ${r}        Wait For Line On Uart     Hello World! x86
-    \              Append To List            ${l}  ${r.timestamp}
+    FOR  ${i}  IN RANGE  0  ${REPEATS}
+         ${r}        Wait For Line On Uart     Hello World! x86
+                     Append To List            ${l}  ${r.timestamp}
+    END
 
-    :FOR  ${i}  IN RANGE  1  ${REPEATS}
-    \     ${i1}=  Get From List   ${l}                       ${i - 1}
-    \     ${i2}=  Get From List   ${l}                       ${i}
-    \     ${d}=   Evaluate        ${i2} - ${i1}
-    \             Should Be True  ${d} >= ${SLEEP_TIME}      Too short sleep detected between entries ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
-    \             Should Be True  ${d} <= ${MAX_SLEEP_TIME}  Too long sleep detected between entires ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+    FOR  ${i}  IN RANGE  1  ${REPEATS}
+         ${i1}=  Get From List   ${l}                       ${i - 1}
+         ${i2}=  Get From List   ${l}                       ${i}
+         ${d}=   Evaluate        ${i2} - ${i1}
+                 Should Be True  ${d} >= ${SLEEP_TIME}      Too short sleep detected between entries ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+                 Should Be True  ${d} <= ${MAX_SLEEP_TIME}  Too long sleep detected between entires ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+    END
 
 Should Run Shell
     [Documentation]           Runs Zephyr's 'shell' sample on Quark C1000 platform.
@@ -124,27 +126,27 @@ Should Talk Over Network Using Ethernet
 
     Start Emulation
 
-    :FOR  ${i}  IN RANGE  1  ${REPEATS}
+    FOR  ${i}  IN RANGE  1  ${REPEATS}
+        ${r}=  Evaluate  random.randint(1, 50)  modules=random
+        RepeatKeyword  ${r}
+        ...    Wait For Next Line On Uart  testerId=${mach0_tester}
+    
+        ${p}=  Wait For Line On Uart       build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
+        ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
+    
+        Should Contain  ${n.line}  pkt_sent: Sent ${p.groups[0]} bytes
+    END
 
-    \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}
-    \    ...  Wait For Next Line On Uart  testerId=${mach0_tester}
-    \
-    \    ${p}=  Wait For Line On Uart     build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
-    \    ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
-    \
-    \    Should Contain  ${n.line}  pkt_sent: Sent ${p.groups[0]} bytes
-
-    :FOR  ${i}  IN RANGE  1  ${REPEATS}
-
-    \    ${r}=  Evaluate  random.randint(1, 50)  modules=random
-    \    RepeatKeyword  ${r}
-    \    ...  Wait For Next Line On Uart  testerId=${mach1_tester}
-    \
-    \    ${p}=  Wait For Line On Uart     udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
-    \    ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
-    \
-    \    Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
+    FOR  ${i}  IN RANGE  1  ${REPEATS}
+        ${r}=  Evaluate  random.randint(1, 50)  modules=random
+        RepeatKeyword  ${r}
+        ...    Wait For Next Line On Uart  testerId=${mach1_tester}
+    
+        ${p}=  Wait For Line On Uart       udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
+        ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
+    
+        Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
+    END
 
 Should Serve Webpage Using Tap
     [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.

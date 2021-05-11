@@ -22,10 +22,11 @@ Pause At
     Execute Command           cpu AddHook ${address} "cpu.Pause()"
     Start Emulation
 
-    :FOR  ${i}  IN RANGE  0  ${continues}
-    \   Wait For Pause        5
-    \   Execute Command       cpu Step 1
-    \   Execute Command       cpu ExecutionMode Continuous
+    FOR  ${i}  IN RANGE  0  ${continues}
+        Wait For Pause        5
+        Execute Command       cpu Step 1
+        Execute Command       cpu ExecutionMode Continuous
+    END
 
     Wait For Pause            5
 
@@ -48,4 +49,5 @@ Translate Address Should Be Able To Map Address
           Requires                  unmapped_address
 
   ${pa}=  Execute Command           cpu TranslateAddress 0x800100000 InstructionFetch   # would not cause page fault
-          Should Contain            ${pa}       0x0000000000100000
+          Should Contain            ${pa}       0x0000000000100000 
+ 

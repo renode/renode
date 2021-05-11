@@ -22,8 +22,9 @@ Load Script
 
 *** Test Cases ***
 Should Load Demos
-    :FOR  ${script}  IN  @{scripts}
-    \	  Load Script  ${script}
-    \     Reset Emulation 
-	
+    FOR  ${script}  IN  @{scripts}
+        Load Script  ${script}
+        Reset Emulation 
+    END
+    
 

@@ -6,8 +6,8 @@ Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
-@{cpus_path}=		      ${CURDIR}${/}..${/}..${/}platforms${/}cpus
-@{pattern}= 		      *.repl
+@{cpus_path}=		          ${CURDIR}${/}..${/}..${/}platforms${/}cpus
+@{pattern}= 		          *.repl
 
 *** Keywords ***
 Get Test Cases
@@ -17,12 +17,13 @@ Get Test Cases
     Set Suite Variable        @{platforms}
 
 Run Test Case
-    [Arguments]		      ${repl}
+    [Arguments]               ${repl}
     Execute Command           mach create
     Execute Command           machine LoadPlatformDescription @${repl}
 
 *** Test Cases ***
 Should Load Repls
-    :FOR  ${test}  IN  @{platforms}
-    \	  Run Test Case       ${test}
-    \     Reset Emulation
+    FOR  ${test}  IN  @{platforms}
+        Run Test Case         ${test}
+        Reset Emulation
+    END

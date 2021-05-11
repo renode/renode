@@ -60,16 +60,18 @@ Should Print to UART Using a Timer
     ${l}=               Create List
     ${MAX_SLEEP_TIME}=  Evaluate  ${SLEEP_TIME} + ${SLEEP_TOLERANCE}
 
-    :FOR  ${i}  IN RANGE  0  ${REPEATS}
-    \     ${r}        Wait For Line On Uart     Entered user handler
-    \              Append To List            ${l}  ${r.timestamp}
+    FOR  ${i}  IN RANGE  0  ${REPEATS}
+         ${r}        Wait For Line On Uart     Entered user handler
+                     Append To List            ${l}  ${r.timestamp}
+    END
 
-    :FOR  ${i}  IN RANGE  1  ${REPEATS}
-    \     ${i1}=  Get From List   ${l}                       ${i - 1}
-    \     ${i2}=  Get From List   ${l}                       ${i}
-    \     ${d}=   Evaluate        ${i2} - ${i1}
-    \             Should Be True  ${d} >= ${SLEEP_TIME}      Too short sleep detected between entries ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
-    \             Should Be True  ${d} <= ${MAX_SLEEP_TIME}  Too long sleep detected between entires ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+    FOR  ${i}  IN RANGE  1  ${REPEATS}
+         ${i1}=  Get From List   ${l}                       ${i - 1}
+         ${i2}=  Get From List   ${l}                       ${i}
+         ${d}=   Evaluate        ${i2} - ${i1}
+                 Should Be True  ${d} >= ${SLEEP_TIME}      Too short sleep detected between entries ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+                 Should Be True  ${d} <= ${MAX_SLEEP_TIME}  Too long sleep detected between entires ${i} and ${i + 1}: expected ${SLEEP_TIME}, got ${d}
+    END
 
 Should Echo Characters on UART
     Create Machine            arnold-pulp-echo-s_387788-cf79547cd654f7ebad125546dd2c98e58b47731e
@@ -200,8 +202,9 @@ SPI Should Receive Bytes
     ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A804
     Should Contain                   ${res}      0x00000000
 
-    :FOR  ${i}  IN RANGE  0  16
-    \    Execute Command             sysbus.spi.dummySlave EnqueueValue ${i}
+    FOR  ${i}  IN RANGE  0  16
+        Execute Command              sysbus.spi.dummySlave EnqueueValue ${i}
+    END
 
     Start Emulation
 
