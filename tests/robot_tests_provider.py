@@ -153,6 +153,38 @@ def can_be_freed_by_killing_other_job(port):
         pass
     return False
 
+class KeywordsFinder(robot.model.SuiteVisitor):
+    def __init__(self, keyword):
+        self.keyword = keyword
+        self.occurences = 0
+        self.arguments = []
+
+    def visit_keyword(self, keyword):
+        if keyword.name == self.keyword:
+            self.occurences += 1
+            arguments = keyword.args
+            self.arguments.append(arguments)
+
+    def got_results(self):
+        return self.occurences > 0
+
+class TestsFinder(robot.model.SuiteVisitor):
+    def __init__(self, keyword):
+        self.keyword = keyword
+        self.tests_matching = []
+        self.tests_not_matching = []
+
+    def isMatching(self, test):
+        finder = KeywordsFinder(self.keyword)
+        test.visit(finder)
+        return finder.got_results()
+
+    def visit_test(self, test):
+        if self.isMatching(test):
+            self.tests_matching.append(test)
+        else:
+            self.tests_not_matching.append(test)
+
 
 class RobotTestSuite(object):
     instances_count = 0
@@ -166,6 +198,9 @@ class RobotTestSuite(object):
         self._dependencies_met = set()
         self.remote_server_directory = None
         self.port_offset = 0
+
+        self.tests_with_hotspots = []
+        self.tests_without_hotspots = []
 
     def check(self, options, number_of_runs):
         # Checking if there are no other jobs is moved to `prepare` as it is now possible to skip used ports
@@ -187,14 +222,13 @@ class RobotTestSuite(object):
 
         file_name = os.path.splitext(os.path.basename(self.path))[0]
 
-        self.tests_with_hotspots = []
-        self.tests_without_hotspots = []
-        _suite = robot.parsing.model.TestData(source=self.path)
-        for test in _suite.testcase_table.tests:
-            if any(hasattr(step, 'name') and step.name == 'Hot Spot' for step in test.steps):
-                self.tests_with_hotspots.append(test.name)
-            else:
-                self.tests_without_hotspots.append(test.name)
+        hotSpotTestFinder = TestsFinder(keyword="Handle Hot Spot")
+        suiteBuilder = robot.running.builder.TestSuiteBuilder()
+        suite = suiteBuilder.build(self.path)
+        suite.visit(hotSpotTestFinder)
+        
+        self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
+        self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
 
         if any(self.tests_without_hotspots):
             log_file = os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name))
@@ -290,14 +324,16 @@ class RobotTestSuite(object):
         return result
 
     def _get_dependencies(self, test_case):
-        _suite = robot.parsing.model.TestData(source=self.path)
-        test = next(t for t in _suite.testcase_table.tests if hasattr(t, 'name') and t.name == test_case)
+
+        suiteBuilder = robot.running.builder.TestSuiteBuilder()
+        suite = suiteBuilder.build(self.path)
+        test = next(t for t in suite.testcase_table.tests if hasattr(t, 'name') and t.name == test_case)
         requirements = [s.args[0] for s in test.steps if hasattr(s, 'name') and s.name == 'Requires']
         if len(requirements) == 0:
             return set()
         if len(requirements) > 1:
             raise Exception('Too many requirements for a single test. At most one is allowed.')
-        providers = [t for t in _suite.testcase_table.tests if any(hasattr(s, 'name') and s.name == 'Provides' and s.args[0] == requirements[0] for s in t.steps)]
+        providers = [t for t in suite.testcase_table.tests if any(hasattr(s, 'name') and s.name == 'Provides' and s.args[0] == requirements[0] for s in t.steps)]
         if len(providers) > 1:
             raise Exception('Too many providers for state {0} found: {1}'.format(requirements[0], ', '.join(providers.name)))
         if len(providers) == 0:
