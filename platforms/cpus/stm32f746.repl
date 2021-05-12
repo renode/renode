@@ -8,6 +8,7 @@ flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x200000
 
 usart1: UART.STM32F7_USART @ sysbus 0x40011000
+    frequency: 200000000
     -> nvic@37
 
 can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
