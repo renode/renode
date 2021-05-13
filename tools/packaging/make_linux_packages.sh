@@ -84,7 +84,7 @@ rpm=(renode*rpm)
 mv $rpm $OUTPUT
 echo "Created a Fedora package in $PACKAGES/$rpm"
 ### create arch package
-fpm -s dir -t pacman\
+fpm -s dir -t pacman --pacman-compression xz \
     -d mono -d gtk-sharp-2 -d screen -d polkit -d gcc -d python3 -d python-pip \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
