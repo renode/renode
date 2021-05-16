@@ -23,13 +23,10 @@ rtc2: Timers.NRF52840_RTC @ sysbus 0x40024000
     -> nvic@36
 
 flash: Memory.MappedMemory @ sysbus 0x0
-    size: 0x20000000
+    size: 0x100000
 
-sram: Memory.MappedMemory @ sysbus 0x20000000
-    size: 0x20000000
-
-ram: Memory.MappedMemory @ sysbus 0x60000000
-    size: 0x40000000
+ram: Memory.MappedMemory @ { sysbus 0x800000; sysbus 0x20000000 }
+    size: 0x40000
 
 clock: Miscellaneous.NRF52840_CLOCK @ sysbus 0x40000000
     -> nvic@0
@@ -61,3 +58,4 @@ pdm: Sound.NRF52840_PDM @ sysbus 0x4001D000
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz
+        Tag <0x10001200, 0x10001203> "PSELRESET"
