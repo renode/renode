@@ -118,7 +118,7 @@ namespace Antmicro.Renode.Network
                         ethernetResponse.PayloadPacket = arpResponse;
 
                         this.Log(LogLevel.Noisy, "Sending response: {0}", ethernetResponse);
-                        EthernetFrame.TryCreateEthernetFrame(ethernetResponse.Bytes, false, out var response);
+                        EthernetFrame.TryCreateEthernetFrame(ethernetResponse.Bytes, true, out var response);
                         FrameReady?.Invoke(response);
                     }
                     break;
@@ -181,7 +181,7 @@ namespace Antmicro.Renode.Network
 
             this.Log(LogLevel.Noisy, "Sending UDP response: {0}", response);
 
-            EthernetFrame.TryCreateEthernetFrame(ethernetPacket.Bytes, false, out var ethernetFrame);
+            EthernetFrame.TryCreateEthernetFrame(ethernetPacket.Bytes, true, out var ethernetFrame);
             FrameReady?.Invoke(ethernetFrame);
         }
 
