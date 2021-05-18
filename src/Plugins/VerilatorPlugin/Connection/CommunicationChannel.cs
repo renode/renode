@@ -55,7 +55,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
                 // There's no other way to reset listener's connection queue
                 CloseListener();
-                CreateListenerAndStartListening(ListenerPort);
+                ListenerPort = CreateListenerAndStartListening();
             }
         }
 
@@ -106,12 +106,12 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         }
 
         public bool Connected => socket.Connected;
-        public readonly int ListenerPort;
+        public int ListenerPort { get; private set; }
 
-        private int CreateListenerAndStartListening(int port = 0)
+        private int CreateListenerAndStartListening()
         {
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listener.Bind(new IPEndPoint(IPAddress.Parse(Address), port));
+            listener.Bind(new IPEndPoint(IPAddress.Parse(Address), 0));
 
             listener.Listen(MaxPendingConnections);
             return (listener.LocalEndPoint as IPEndPoint).Port;
