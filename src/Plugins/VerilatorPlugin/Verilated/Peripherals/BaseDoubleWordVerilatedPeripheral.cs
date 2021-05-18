@@ -28,9 +28,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
         {
             this.machine = machine;
+            this.msTimeout = timeout;
             pauseMRES = new ManualResetEventSlim(initialState: true);
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
-            mainSocket = new CommunicationChannel(this, timeout);
+            mainSocket = new CommunicationChannel(this, msTimeout);
             asyncEventsSocket = new CommunicationChannel(this, Timeout.Infinite);
             receiveThread = new Thread(ReceiveLoop)
             {
@@ -220,8 +221,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
 #endif
                     InitVerilatedProcess(value, mainSocket.ListenerPort, asyncEventsSocket.ListenerPort);
 
-                    if(!mainSocket.AcceptConnection(DefaultTimeout)
-                        || !asyncEventsSocket.AcceptConnection(DefaultTimeout)
+                    if(!mainSocket.AcceptConnection(msTimeout)
+                        || !asyncEventsSocket.AcceptConnection(msTimeout)
                         || !TryHandshake())
                     {
                         mainSocket.ResetConnections();
@@ -402,6 +403,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private readonly Thread receiveThread;
         private readonly Machine machine;
         private readonly ManualResetEventSlim pauseMRES;
+        private readonly int msTimeout;
 
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
