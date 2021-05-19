@@ -27,7 +27,10 @@ INSTALL_DIR=/opt/renode
 
 SED_COMMAND="sed -i"
 . common_copy_files.sh
-copy_bash_tests_scripts
+
+COMMON_SCRIPT=$DIR/tests/common.sh
+TEST_SCRIPT=linux/renode-test.sh
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT
 
 COMMAND_SCRIPT=linux/renode.sh
 echo "#!/bin/sh" > $COMMAND_SCRIPT
@@ -52,7 +55,7 @@ GENERAL_FLAGS=(\
     --after-remove linux/update_icon_cache.sh\
     --license MIT\
     $DIR/=$INSTALL_DIR\
-    $DIR/tests/test.sh=/usr/bin/renode-test\
+    $TEST_SCRIPT=/usr/bin/renode-test\
     $COMMAND_SCRIPT=/usr/bin/renode\
     linux/Renode.desktop=/usr/share/applications/Renode.desktop\
     linux/icons/128x128/apps/renode.png=/usr/share/icons/hicolor/128x128/apps/renode.png
@@ -96,4 +99,5 @@ if $REMOVE_WORKDIR
 then
     rm -rf $DIR
     rm $COMMAND_SCRIPT
+    rm $TEST_SCRIPT
 fi
