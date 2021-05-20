@@ -144,10 +144,12 @@ TARGET="`get_path \"$PWD/Renode.sln\"`"
 
 # Update references to Xwt
 TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
-if [ -e "$TERMSHARP_PROJECT" ]
+TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
+if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
 then
-    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT"
-    rm "$TERMSHARP_PROJECT.bak"
+    cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
+    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
+    rm "$TERMSHARP_PROJECT_COPY.bak"
 fi
 
 # Verify Mono and mcs version on Linux and macOS
