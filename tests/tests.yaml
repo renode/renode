@@ -62,3 +62,4 @@
 - tests/platforms/STM32F072b.robot
 - tests/platforms/BeagleV-StarLight.robot
 - tests/unit-tests/arm-cortex-m-fpu.robot
+- tests/unit-tests/log-tests.robot
