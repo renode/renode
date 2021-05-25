@@ -16,5 +16,5 @@ Should Pass Zephyr FPU Sharing Generic Tests
     Execute Command             sysbus LoadELF ${ZEPHYR_GENERIC_BIN}
 
     Start Emulation
-    ${result}=                  Wait For Prompt On Uart  PROJECT EXECUTION  timeout=32
+    ${result}=                  Wait For Line On Uart  PROJECT EXECUTION (SUCCESSFUL|FAILED)  timeout=32  treatAsRegex=true
     Should Contain              ${result.line}  SUCCESSFUL
