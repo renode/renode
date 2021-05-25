@@ -72,3 +72,18 @@ Should Run Zephyr Button Sample
     Execute Command          led_tester AssertState true ${LED_DELAY}
     Execute Command          ${BUTTON} Release
 
+Should Read ADC
+    Create Machine           stm32f072b--zephyr-adc.elf-s_567632-591075b4dc78decfb7ccab1d7a2477a78edc710e
+
+    Create Terminal Tester   ${UART}
+
+    Start Emulation
+    
+    Wait For Line On Uart    Booting Zephyr
+
+    Execute Command          sysbus.adc SetDefaultValue 600
+    Wait For Line On Uart    ADC reading: 745
+
+    Execute Command          sysbus.adc SetDefaultValue 1200
+    Wait For Line On Uart    ADC reading: 1489
+

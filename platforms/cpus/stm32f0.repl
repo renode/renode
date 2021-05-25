@@ -172,6 +172,11 @@ if request.isWrite and request.offset in (0x10, 0x24, 0x38):
     sysbus.WriteDoubleWord(request.value, 0x40E33333)
     self.NoisyLog("0x%x written with value 0x40E33333" % request.value)
 '''
+
+adc: Analog.STM32F0_ADC @ sysbus 0x40012400
+    referenceVoltage: 3.3
+    externalEventFrequency: 1000
+    -> nvic@12
     
 sysbus:
     init:
@@ -184,7 +189,6 @@ sysbus:
         Tag <0x40007400, 0x400077FF> "DAC"
         Tag <0x40007800, 0x40007BFF> "CEC"
         Tag <0x40010000, 0x400103FF> "SYSCFGCOMP"
-        Tag <0x40012400, 0x400127FF> "ADC"
         Tag <0x40015800, 0x40015BFF> "DBGMCU"
         Tag <0x40020000, 0x400203FF> "DMA"
         Tag <0x40020400, 0x400207FF> "DMA2"
