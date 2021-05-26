@@ -65,7 +65,7 @@ function clone_if_necessary() {
             echo "Required $NAME repository already downloaded. To repeat the process remove $GUARD file."
             exit
         fi
-        echo "Required $NAME respoitory is available in a new version. It will be redownloaded..."
+        echo "Required $NAME repository is available in a new version. It will be redownloaded..."
     fi
 
     rm -rf "$TARGET_DIR"
