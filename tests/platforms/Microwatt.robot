@@ -41,7 +41,6 @@ Should Start MicroPython
 Should Perform Simple Mathematical Operation in MicroPython
     Create Machine            ${MICROPYTHON}
     Create Terminal Tester    ${UART}
-    Write Char Delay          0.7
 
     Execute Command           sysbus.cpu NIP 0
     Start Emulation
@@ -54,7 +53,6 @@ Should Perform Simple Mathematical Operation in MicroPython
 Should Define And Execute Function in MicroPython
     Create Machine            ${MICROPYTHON}
     Create Terminal Tester    ${UART}
-    Write Char Delay          0.7
 
     Execute Command           sysbus.cpu NIP 0
     Start Emulation
