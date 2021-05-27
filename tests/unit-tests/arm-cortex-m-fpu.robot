@@ -9,7 +9,6 @@ ${ZEPHYR_GENERIC_BIN}           @https://dl.antmicro.com/projects/renode/frdm_k6
 
 *** Test Cases ***
 Should Pass Zephyr FPU Sharing Generic Tests
-    [Tags]                      non_critical
     Execute Command             mach create
     Execute Command             machine LoadPlatformDescription @platforms/cpus/nxp-k6xf.repl
     Create Terminal Tester      sysbus.uart0
