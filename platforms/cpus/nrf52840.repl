@@ -14,13 +14,18 @@ uart1: UART.NRF52840_UART @ sysbus 0x40028000
     -> nvic@40
 
 rtc0: Timers.NRF52840_RTC @ sysbus 0x4000B000
+    numberOfEvents: 3
     -> nvic@11
 
 rtc1: Timers.NRF52840_RTC @ sysbus 0x40011000
+    numberOfEvents: 3
     -> nvic@17
 
 rtc2: Timers.NRF52840_RTC @ sysbus 0x40024000
+    numberOfEvents: 4
     -> nvic@36
+
+ppi: Miscellaneous.NRF52840_PPI @ sysbus 0x4001F000
 
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x100000
@@ -46,8 +51,25 @@ gpiote: GPIOPort.NRF52840_GPIOTasksEvents @ sysbus 0x40006000
 twi1: I2C.NRF52840_I2C @ sysbus 0x40004000
     -> nvic@4
 
+timer0: Timers.NRF52840_Timer @ sysbus 0x40008000
+    numberOfEvents: 4
+    -> nvic@8
+
 timer1: Timers.NRF52840_Timer @ sysbus 0x40009000
+    numberOfEvents: 4
     -> nvic@9
+
+timer2: Timers.NRF52840_Timer @ sysbus 0x4000A000
+    numberOfEvents: 4
+    -> nvic@10
+
+timer3: Timers.NRF52840_Timer @ sysbus 0x4001A000
+    numberOfEvents: 6
+    -> nvic@26
+
+timer4: Timers.NRF52840_Timer @ sysbus 0x4001B000
+    numberOfEvents: 6
+    -> nvic@27
 
 i2s: Sound.NRF52840_I2S @ sysbus 0x40025000
     -> nvic@37
@@ -55,7 +77,16 @@ i2s: Sound.NRF52840_I2S @ sysbus 0x40025000
 pdm: Sound.NRF52840_PDM @ sysbus 0x4001D000
     -> nvic@29
 
+radio: Wireless.NRF52840_Radio @ sysbus 0x40001000
+    -> nvic@1
+
+rng: Miscellaneous.NRF52840_RNG @ sysbus 0x4000D000
+    -> nvic@13
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz
+        Tag <0x10000000, 0x10000FFF> "FICR"
+        Tag <0x100000a0, 0x100000a3> "DEVICEADDRTYPE" 0x1 # random address
+        Tag <0x100000a4, 0x100000a7> "DEVICEADDR[0]" 0xAABBCCDD
         Tag <0x10001200, 0x10001203> "PSELRESET"
