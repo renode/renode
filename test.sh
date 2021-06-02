@@ -13,6 +13,7 @@ set +e
 STTY_CONFIG=`stty -g 2>/dev/null`
 $PYTHON_RUNNER -u "`get_path "$ROOT_PATH/tests/run_tests.py"`" --exclude "skip_${DETECTED_OS}" --properties-file "`get_path "$ROOT_PATH/output/properties.csproj"`" -r "`get_path "$TESTS_RESULTS"`" -t "`get_path "$TESTS_FILE"`" "$@"
 RESULT_CODE=$?
+
 set -e
 if [ -n "${STTY_CONFIG:-}" ]
 then
