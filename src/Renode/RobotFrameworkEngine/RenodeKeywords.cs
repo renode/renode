@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -275,6 +275,36 @@ namespace Antmicro.Renode.RobotFramework
             Emulator.CloseGUI();
         }
 
+        [RobotFrameworkKeyword]
+        public void EnableLoggingToCache()
+        {
+            cachedLogFilePath = TemporaryFilesManager.Instance.GetTemporaryFile("log");
+            Logger.AddBackend(new FileBackend(cachedLogFilePath, false), CachedLogBackendName, true);
+        }
+
+        [RobotFrameworkKeyword]
+        public void SaveCachedLog(string filePath)
+        {
+            if(cachedLogFilePath == null)
+            {
+                throw new KeywordException($"Cannot save cached log, cached logging has not been enabled.");
+            }
+
+            (Logger.GetBackends()[CachedLogBackendName] as FileBackend).Flush();
+            System.IO.File.Copy(cachedLogFilePath, filePath, true);
+        }
+
+        [RobotFrameworkKeyword]
+        public void ClearCachedLog()
+        {
+            if(cachedLogFilePath != null)
+            {
+                var previousFilePath = cachedLogFilePath;
+                EnableLoggingToCache();
+                System.IO.File.Delete(previousFilePath);
+            }
+        }
+
         private void CheckLogTester()
         {
             if(logTester == null)
@@ -284,8 +314,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private LogTester logTester;
+        private string cachedLogFilePath;
 
         private readonly Monitor monitor;
+
+        private const string CachedLogBackendName = "cache";
     }
 }
 

@@ -18,6 +18,7 @@ ${HOTSPOT_ACTION}           None
 ${DISABLE_XWT}              False
 ${DEFAULT_UART_TIMEOUT}     8
 ${CREATE_SNAPSHOT_ON_FAIL}  True
+${SAVE_LOG_ON_FAIL}         True
 ${HOLD_ON_ERROR}            False
 
 *** Keywords ***
@@ -66,6 +67,9 @@ Setup
 
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
+    Run Keyword If  ${SAVE_LOG_ON_FAIL}
+    ...   Enable Logging To Cache
+
     Reset Emulation
 
 Teardown
@@ -88,10 +92,27 @@ Create Snapshot Of Failed Test
     Execute Command  Save ${snapshot_path}
     Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
 
+Save Log Of Failed Test
+    Return From Keyword If   'skipped' in @{TEST TAGS}
+
+    ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}
+    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+
+    ${logs_dir}=       Set Variable  ${RESULTS_DIRECTORY}/logs
+    Create Directory   ${logs_dir}
+
+    ${log_path}=       Set Variable  ${logs_dir}/${test_name}.log
+    Log To Console     !!!!! Log saved to "${log_path}"
+    Save Cached Log    ${log_path}
+
 Test Teardown
     Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
     ...   Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
+
+    Run Keyword If  ${SAVE_LOG_ON_FAIL}
+    ...   Run Keyword If Test Failed
+          ...   Save Log Of Failed Test
 
     ${res}=  Run Keyword And Ignore Error
           ...    Import Library  Dialogs
@@ -103,6 +124,7 @@ Test Teardown
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Pause Execution    Test failed. Press OK once done debugging.
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Close GUI
     Reset Emulation
+    Clear Cached Log
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
