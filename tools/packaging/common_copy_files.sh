@@ -3,6 +3,7 @@ mkdir -p $DIR/{bin,licenses,tests,tools}
 
 #copy the main content
 cp -r $BASE/output/bin/$TARGET/*.{dll,exe} $DIR/bin
+cp -r $BASE/output/bin/$TARGET/libllvm-disas.* $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 cp -r $BASE/tools/metrics_analyzer $DIR/tools
