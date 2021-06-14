@@ -407,6 +407,8 @@ Should Save and Restore State of IT Block Correctly
            Execute Command     Save @${tmp_file}
            Execute Command     Load @${tmp_file}
            Execute Command     mach set 0
+
+           Execute Command     cpu ExecutionMode SingleStepBlocking
            Start Emulation
   ${new}=  Execute Command     cpu GetItState
            Should Be Equal     ${old}  ${new}
