@@ -270,6 +270,9 @@ def run_test_group(args):
             if not suite.run(options, run_id=test_id if options.jobs != 1 else 0):
                 tests_failed = True
 
+        if options.stop_on_error and tests_failed:
+            break
+
     options.output.flush()
     return tests_failed
 
