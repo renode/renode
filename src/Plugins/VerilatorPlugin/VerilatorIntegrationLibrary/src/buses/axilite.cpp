@@ -20,15 +20,15 @@ void AxiLite::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void AxiLite::timeoutTick(bool condition, int timeout = 20)
+void AxiLite::timeoutTick(uint8_t *condition, int timeout = 20)
 {
     do {
         tick(true);
         timeout--;
     }
-    while(condition && timeout > 0);
+    while(!*condition && timeout > 0);
 
-    if(timeout < 0) {
+    if(timeout <= 0) {
         throw "Operation timeout";
     }
 }
@@ -38,7 +38,7 @@ void AxiLite::write(uint64_t addr, uint64_t value)
     *awvalid = 1;
     *awaddr = addr;
 
-    timeoutTick(*awready == 0);
+    timeoutTick(awready);
 
     tick(true);
     *awaddr = 0;
@@ -47,7 +47,7 @@ void AxiLite::write(uint64_t addr, uint64_t value)
     *wvalid = 1;
     *wdata = value;
 
-    timeoutTick(*wready == 0);
+    timeoutTick(wready);
 
     tick(true);
     *wvalid = 0;
@@ -55,7 +55,7 @@ void AxiLite::write(uint64_t addr, uint64_t value)
     tick(true);
     *bready = 1;
 
-    timeoutTick(*bvalid == 0);
+    timeoutTick(bvalid);
 
     tick(true);
     *bready = 0;
@@ -67,13 +67,13 @@ uint64_t AxiLite::read(uint64_t addr)
     *araddr = addr;
     *arvalid = 1;
 
-    timeoutTick(*arready == 0);
+    timeoutTick(arready);
 
     tick(true);
     *rready = 1;
     *arvalid = 0;
 
-    timeoutTick(*rvalid== 0);
+    timeoutTick(rvalid);
 
     uint64_t result = *rdata; // we have to fetch data before transaction end
     tick(true);
