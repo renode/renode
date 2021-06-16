@@ -321,7 +321,10 @@ def run():
 
     for group in options.tests:
         for suite in options.tests[group]:
-            suite.prepare(options)
+            res = suite.prepare(options)
+            if res is not None and res != 0:
+                print("Build failure, not running tests.")
+                return
 
     print("Starting suites")
 
