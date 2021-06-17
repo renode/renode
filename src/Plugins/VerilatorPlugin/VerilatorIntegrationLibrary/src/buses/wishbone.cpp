@@ -28,6 +28,14 @@ void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20)
     }
     while(*signal != value && timeout > 0);
 
+// This additional tick prevents Wishbone controller from reacting instantly
+// after the signal is set, as the change should be recognized after the next
+// rising edge (`tick` function returns right before the rising edge). It's only
+// an option because it may break communication with LiteX-generated IP cores.
+#ifdef WISHBONE_EXTRA_WAIT_TICK
+    tick(true);
+#endif
+
     if(timeout == 0) {
         throw "Operation timeout";
     }
