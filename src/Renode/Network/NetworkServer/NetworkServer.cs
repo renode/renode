@@ -1,25 +1,20 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Collections.Generic;
-
-using PacketDotNet;
-
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Core.Structure;
-using Antmicro.Renode.Peripherals.Network;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
-
-using System.Linq;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Network;
+using PacketDotNet;
 
 namespace Antmicro.Renode.Network
 {
