@@ -125,6 +125,7 @@ phy: Network.EthernetPhysicalLayer @ {
         mac1 9;
         mac1 16
     }
+    BasicStatus: 0x62A4
     Id1: 0x0007
     Id2: 0x0660
     AutoNegotiationAdvertisement: 0x1e1
