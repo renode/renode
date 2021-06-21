@@ -166,8 +166,9 @@ namespace Antmicro.Renode.Network
                 return;
             }
 
-            var src = new IPEndPoint(((IPv4Packet)packet.ParentPacket).SourceAddress, packet.SourcePort); 
-            module.HandleUdp(src, packet, (s, r) => HandleUdpResponse(s, r));
+            var src = new IPEndPoint(((IPv4Packet)packet.ParentPacket).SourceAddress, packet.SourcePort);
+            ((IUdpServerModule)module).HandleUdp(src, packet,
+                (s, r) => HandleUdpResponse(s, r));
         }
 
         private void HandleUdpResponse(IPEndPoint source, UdpPacket response)
