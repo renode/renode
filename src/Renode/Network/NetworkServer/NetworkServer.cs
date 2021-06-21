@@ -60,6 +60,8 @@ namespace Antmicro.Renode.Network
             modules = new Dictionary<int, IServerModule>();
             modulesNames = new Dictionary<string, int>();
 
+            icmpModule = new IcmpServerModule(this, IP, MAC);
+
             this.Log(LogLevel.Info, "Network server started at IP {0}", IP);
         }
 
@@ -137,7 +139,6 @@ namespace Antmicro.Renode.Network
 
         public MACAddress MAC { get; set; }
         public IPAddress IP { get; set; }
-
         public event Action<EthernetFrame> FrameReady;
 
         private void HandleIPv4(IPv4Packet packet)
@@ -149,11 +150,24 @@ namespace Antmicro.Renode.Network
                 case PacketDotNet.IPProtocolType.UDP:
                     HandleUdp((UdpPacket)packet.PayloadPacket);
                     break;
+                case PacketDotNet.IPProtocolType.ICMP:
+                    HandleIcmp(packet);
+                    break;
 
                 default:
                     this.Log(LogLevel.Warning, "Unsupported protocol: {0}", packet.Protocol);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Handles the ICMP protocol with HandleIcmp method from the IcmpServerModule class
+        /// </summary>
+        /// <param name="packet">Ipv4 packet with the ICMP request</param>
+        private void HandleIcmp(IPv4Packet packet)
+        {
+            this.Log(LogLevel.Info, "Handle ICMPv4 request: {0}", packet.ToString());
+            icmpModule.HandleIcmpPacket(FrameReady, packet, arpTable[packet.SourceAddress]);
         }
 
         private void HandleUdp(UdpPacket packet)
@@ -215,6 +229,7 @@ namespace Antmicro.Renode.Network
             return true;
         }
 
+        private readonly IcmpServerModule icmpModule;
         private readonly Dictionary<int, IServerModule> modules;
         private readonly Dictionary<string, int> modulesNames;
         private readonly Dictionary<IPAddress, PhysicalAddress> arpTable;
