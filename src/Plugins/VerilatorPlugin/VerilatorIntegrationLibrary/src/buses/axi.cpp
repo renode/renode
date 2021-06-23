@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "axi.h"
-#include <src/renode.h>
 #include <cmath>
 
 Axi::Axi(uint32_t dataWidth, uint32_t addrWidth)

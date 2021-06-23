@@ -8,13 +8,28 @@
 #define Renode_H
 #include <string>
 #include <vector>
+#include <stdlib.h>
 #include "buses/bus.h"
 #include "../libs/socket-cpp/Socket/TCPClient.h"
+#include "../../../Infrastructure/src/Emulator/Cores/renode/include/renode_imports.h"
+
+class RenodeAgent;
+struct Protocol;
+
+extern RenodeAgent* Init(void); //definition has to be provided in sim_main.cpp of verilated peripheral
+
+extern "C"
+{
+  void initialize_native();
+  void handle_request(Protocol* request);
+  void reset_peripheral();
+}
 
 // Protocol must be in sync with Renode's ProtocolMessage
 #pragma pack(push, 1)
 struct Protocol
 {
+  Protocol() = default;
   Protocol(int actionId, uint64_t addr, uint64_t value)
   {
     this->actionId = actionId;
@@ -46,31 +61,80 @@ enum Action
   getData = 12
 };
 
+enum LogLevel
+{
+  LOG_LEVEL_NOISY   = -1,
+  LOG_LEVEL_DEBUG   = 0,
+  LOG_LEVEL_INFO    = 1,
+  LOG_LEVEL_WARNING = 2,
+  LOG_LEVEL_ERROR   = 3
+};
+
+class CommunicationChannel
+{
+public:
+  virtual void sendMain(const Protocol message) = 0;
+  virtual void sendSender(const Protocol message) = 0;
+  virtual void log(int logLevel, const char* data) = 0;
+  virtual Protocol* receive() = 0;
+};
+
 class RenodeAgent
 {
 public:
   RenodeAgent(BaseBus* bus);
-  void simulate(int receiverPort, int senderPort);
-  void log(int logLevel, const char* data);
-  void addBus(BaseBus* bus);
-  virtual void pushToAgent(uint64_t addr, uint64_t value);
-  virtual uint64_t requestFromAgent(uint64_t addr);
-protected:
-  virtual void tick(bool countEnable, uint64_t steps);
-  virtual void reset();
+  virtual void addBus(BaseBus* bus);
   virtual void writeToBus(uint64_t addr, uint64_t value);
   virtual void readFromBus(uint64_t addr);
-  void mainSocketSend(Protocol message);
-  void senderSocketSend(Protocol request);
-  void senderSocketSend(const char* text);
+  virtual void pushToAgent(uint64_t addr, uint64_t value);
+  virtual uint64_t requestFromAgent(uint64_t addr);
+  virtual void tick(bool countEnable, uint64_t steps);
+  virtual void reset();
   virtual void handleCustomRequestType(Protocol* message);
+  virtual void log(int level, const char* fmt, ...);
+  virtual struct Protocol* receive();
+
+  virtual void simulate(int receiverPort, int senderPort, const char* address);
+
   std::vector<BaseBus*> interfaces;
 
+protected:
+  CommunicationChannel* communicationChannel;
+
 private:
+  friend void ::handle_request(Protocol* request);
+  friend void ::initialize_native(void);
+  friend void ::reset_peripheral(void);
+};
+
+class SocketCommunicationChannel : public CommunicationChannel
+{
+public:
+  SocketCommunicationChannel();
+  void sendMain(const Protocol message) override;
+  void sendSender(const Protocol message) override;
+  void log(int logLevel, const char* data) override;
+  Protocol* receive() override;
+
+private:
+  void handshakeValid();
+  void connect(int receiverPort, int senderPort, const char* address);
+  
   std::unique_ptr<CTCPClient> mainSocket;
   std::unique_ptr<CTCPClient> senderSocket;
   bool isConnected;
-  void handshakeValid();
-  struct Protocol* receive();
+
+  friend void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address);
 };
+
+class NativeCommunicationChannel : public CommunicationChannel
+{
+public:
+  NativeCommunicationChannel() = default;
+  void sendMain(const Protocol message) override;
+  void sendSender(const Protocol message) override;
+  void log(int logLevel, const char* data) override;
+  Protocol* receive() override;
+};
+
 #endif

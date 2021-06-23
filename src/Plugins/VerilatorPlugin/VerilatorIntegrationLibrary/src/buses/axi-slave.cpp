@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "axi-slave.h"
-#include <src/renode.h>
 #include <cmath>
 #include <cinttypes>
 

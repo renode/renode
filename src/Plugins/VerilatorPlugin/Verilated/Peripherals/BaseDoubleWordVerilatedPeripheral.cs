@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Diagnostics;
 using System.Threading;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
@@ -15,37 +14,37 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
-using Antmicro.Renode.Time;
-#if !PLATFORM_WINDOWS
-using Mono.Unix.Native;
-#endif
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable, IHasOwnLife
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null)
         {
             this.machine = machine;
-            this.msTimeout = timeout;
-            pauseMRES = new ManualResetEventSlim(initialState: true);
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
-            mainSocket = new CommunicationChannel(this, msTimeout);
-            asyncEventsSocket = new CommunicationChannel(this, Timeout.Infinite);
-            receiveThread = new Thread(ReceiveLoop)
+            if(address != null)
             {
-                IsBackground = true,
-                Name = "Verilated.Receiver"
-            };
+                verilatedPeripheral = new SocketBasedVerilatedPeripheral(this, timeout, HandleReceived, address);
+            }
+            else
+            {
+                verilatedPeripheral = new DLLBasedVerilatedPeripheral(this, timeout, HandleReceived);
+            }
+
             timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
-                Send(ActionType.TickClock, 0, limitBuffer);
+                if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                {
+                    AbortAndLogError("Send error!");
+                }
                 this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
                 allTicksProcessedARE.WaitOne();
                 this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
             };
+
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
             SimulationFilePathMacOS = simulationFilePathMacOS;
@@ -66,28 +65,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
             CheckValidation(Receive());
         }
 
-        public void ReceiveLoop()
-        {
-            while(!disposeInitiated && asyncEventsSocket.Connected)
-            {
-                if(asyncEventsSocket.ReceiveMessage(out var message))
-                {
-                    pauseMRES.Wait();
-                    if(!disposeInitiated)
-                    {
-                        HandleReceived(message);
-                    }
-                }
-                else
-                {
-                    AbortAndLogError("Connection error!");
-                }
-
-                // Pause in ReceiveLoop() has to be handled manually
-                pauseMRES.Wait();
-            }
-        }
-
         public void Reset()
         {
             Send(ActionType.ResetPeripheral, 0, 0);
@@ -97,59 +74,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public void Dispose()
         {
             disposeInitiated = true;
-            asyncEventsSocket.CancelCommunication();
-
-            if(receiveThread.IsAlive)
-            {
-                if(!receiveThread.Join(500))
-                {
-                    this.NoisyLog("ReceiveLoop didn't join, will be aborted...");
-                    receiveThread.Abort();
-                }
-            }
-            pauseMRES.Dispose();
-
-            if(verilatedProcess != null)
-            {
-                // Ask verilatedProcess to close, kill if it doesn't
-                if(!verilatedProcess.HasExited)
-                {
-                    this.DebugLog($"Verilated peripheral '{simulationFilePath}' is still working...");
-                    var exited = false;
-
-                    if(mainSocket.Connected)
-                    {
-                        this.DebugLog("Trying to close it gracefully by sending 'Disconnect' message...");
-                        mainSocket.SendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
-                        mainSocket.CancelCommunication();
-                        exited = verilatedProcess.WaitForExit(500);
-                    }
-
-                    if(exited)
-                    {
-                        this.DebugLog("Verilated peripheral exited gracefully.");
-                    }
-                    else
-                    {
-                        KillVerilatedProcess();
-                        this.Log(LogLevel.Warning, "Verilated peripheral had to be killed.");
-                    }
-                }
-                verilatedProcess.Dispose();
-            }
-
-            mainSocket.Dispose();
-            asyncEventsSocket.Dispose();
+            verilatedPeripheral.Dispose();
         }
 
         public void Pause()
         {
-            pauseMRES.Reset();
+            verilatedPeripheral.Pause();
         }
 
         public void Resume()
         {
-            pauseMRES.Set();
+            verilatedPeripheral.Resume();
         }
 
         public string SimulationFilePathLinux
@@ -213,35 +148,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
                 if(!String.IsNullOrWhiteSpace(value))
                 {
-                    this.Log(LogLevel.Debug,
-                        "Trying to run and connect to the verilated peripheral '{0}' through ports {1} and {2}...",
-                        value, mainSocket.ListenerPort, asyncEventsSocket.ListenerPort);
-#if !PLATFORM_WINDOWS
-                    Mono.Unix.Native.Syscall.chmod(value, FilePermissions.S_IRWXU); //setting permissions to 0x700
-#endif
-                    InitVerilatedProcess(value, mainSocket.ListenerPort, asyncEventsSocket.ListenerPort);
-
-                    if(!mainSocket.AcceptConnection(msTimeout)
-                        || !asyncEventsSocket.AcceptConnection(msTimeout)
-                        || !TryHandshake())
-                    {
-                        mainSocket.ResetConnections();
-                        asyncEventsSocket.ResetConnections();
-                        KillVerilatedProcess();
-
-                        LogAndThrowRE($"Connection to the verilated peripheral ({value}) failed!");
-                    }
-                    else
-                    {
-                        // If connected succesfully, listening sockets can be closed
-                        mainSocket.CloseListener();
-                        asyncEventsSocket.CloseListener();
-
-                        timer.Enabled = true;
-
-                        this.Log(LogLevel.Debug, "Connected to the verilated peripheral!");
-                        simulationFilePath = value;
-                    }
+                    verilatedPeripheral.SimulationFilePath = value;
+                    simulationFilePath = value;
+                    timer.Enabled = true;
                 }
             }
         }
@@ -252,15 +161,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
             }
-            else
-            {
-                receiveThread.Start();
-            }
+            verilatedPeripheral.Start();
         }
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!mainSocket.SendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Send error!");
             }
@@ -272,17 +178,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 case ActionType.InvalidAction:
                     this.Log(LogLevel.Warning, "Invalid action received");
-                    break;
-                case ActionType.LogMessage:
-                    // message.Address is used to transfer log length
-                    if(asyncEventsSocket.ReceiveString(out var log, (int)message.Address))
-                    {
-                        this.Log((LogLevel)(int)message.Data, $"Verilated peripheral: {log}");
-                    }
-                    else
-                    {
-                        this.Log(LogLevel.Warning, "Failed to receive log message!");
-                    }
                     break;
                 case ActionType.Interrupt:
                     HandleInterrupt(message);
@@ -322,31 +217,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
         protected const ulong LimitBuffer = 1000000;
         protected const int DefaultTimeout = 3000;
 
-        private void InitVerilatedProcess(string filePath, int mainPort, int receiverPort)
-        {
-            try
-            {
-                verilatedProcess = new Process
-                {
-                    StartInfo = new ProcessStartInfo(filePath)
-                    {
-                        UseShellExecute = false,
-                        Arguments = $"{mainPort} {receiverPort}"
-                    }
-                };
-
-                verilatedProcess.Start();
-            }
-            catch(Exception)
-            {
-                verilatedProcess = null;
-                LogAndThrowRE($"Error starting verilated peripheral!");
-            }
-        }
-
         private ProtocolMessage Receive()
         {
-            if(!mainSocket.ReceiveMessage(out var message))
+            if(!verilatedPeripheral.TryReceiveMessage(out var message))
             {
                 AbortAndLogError("Receive error!");
             }
@@ -361,23 +234,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 return;
             }
             this.Log(LogLevel.Error, message);
-
-            receiveThread.Abort();
-            KillVerilatedProcess();
+            verilatedPeripheral.Abort();
+            
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
-        }
-
-        private void KillVerilatedProcess()
-        {
-            try
-            {
-                verilatedProcess?.Kill();
-            }
-            catch
-            {
-                return;
-            }
         }
 
         private void LogAndThrowRE(string info)
@@ -386,24 +246,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
             throw new RecoverableException(info);
         }
 
-        private bool TryHandshake()
-        {
-            return mainSocket.SendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0))
-                   && mainSocket.ReceiveMessage(out var result)
-                   && result.ActionId == ActionType.Handshake;
-        }
-
         private bool disposeInitiated;
-        private Process verilatedProcess;
         private string simulationFilePath;
+        private IVerilatedPeripheral verilatedPeripheral;
         private readonly AutoResetEvent allTicksProcessedARE;
-        private readonly LimitTimer timer;
-        private readonly CommunicationChannel mainSocket;
-        private readonly CommunicationChannel asyncEventsSocket;
-        private readonly Thread receiveThread;
         private readonly Machine machine;
-        private readonly ManualResetEventSlim pauseMRES;
-        private readonly int msTimeout;
+        private readonly LimitTimer timer;
 
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }

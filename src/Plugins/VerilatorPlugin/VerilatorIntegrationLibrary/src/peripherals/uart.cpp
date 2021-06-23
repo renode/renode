@@ -23,11 +23,11 @@ UART::UART(BaseBus* bus, uint8_t* txd, uint8_t* rxd, uint32_t prescaler, uint32_
 void UART::eval() {
     if (irq != nullptr) {
         if (*irq == 1 && prev_irq == 0) {
-            senderSocketSend(Protocol(interrupt, 1, 1));
+            communicationChannel->sendSender(Protocol(interrupt, 1, 1));
         }
 
         if (*irq == 0 && prev_irq == 1) {
-            senderSocketSend(Protocol(interrupt, 1, 0));
+            communicationChannel->sendSender(Protocol(interrupt, 1, 0));
         }
         prev_irq = *irq;
     }
@@ -42,7 +42,7 @@ void UART::Txd() {
         tick(true, prescaler * 8);
     }
     tick(true, prescaler * 8);
-    senderSocketSend(Protocol(Protocol(txdRequest, 0, buffer.to_ulong())));
+    communicationChannel->sendSender(Protocol(txdRequest, 0, buffer.to_ulong()));
 }
 
 void UART::Rxd(uint8_t value) {
