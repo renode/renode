@@ -327,8 +327,8 @@ class RobotTestSuite(object):
 
         suiteBuilder = robot.running.builder.TestSuiteBuilder()
         suite = suiteBuilder.build(self.path)
-        test = next(t for t in suite.testcase_table.tests if hasattr(t, 'name') and t.name == test_case)
-        requirements = [s.args[0] for s in test.steps if hasattr(s, 'name') and s.name == 'Requires']
+        test = next(t for t in suite.tests if hasattr(t, 'name') and t.name == test_case)
+        requirements = [s.args[0] for s in test.body if hasattr(s, 'name') and s.name == 'Requires']
         if len(requirements) == 0:
             return set()
         if len(requirements) > 1:
