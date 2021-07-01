@@ -8,6 +8,16 @@ phy: Network.EthernetPhysicalLayer @ gem0 0
 
 flash: MTD.DummySPIFlash @ qspi
 
+gpio:
+    61 -> led0@0
+    62 -> led1@0
+    63 -> led2@0
+    64 -> led3@0
+    65 -> led4@0
+    66 -> led5@0
+    67 -> led6@0
+    68 -> led7@0
+
 led0: Miscellaneous.LED @ gpio 61
 
 led1: Miscellaneous.LED @ gpio 62
