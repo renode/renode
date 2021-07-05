@@ -27,5 +27,4 @@ timer0: Timers.LiteX_Timer @ {
 
 uart: Verilated.VerilatedUART @ sysbus <0xE0001000, +0x1000>
     frequency: 100000000
-    address: "127.0.0.1"
     -> cpu@2

@@ -8,13 +8,15 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/riscv_verilated_uartlite.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
-$uartLinux?=@https://dl.antmicro.com/projects/renode/Vuartlite-Linux-x86_64-813952320-s_1588208-03aa9ad82b2d5b3f7b55a78bd88fc38b028f68c5
-$uartWindows?=@https://dl.antmicro.com/projects/renode/Vuartlite-Windows-x86_64-813952320.exe-s_3190226-d5621499892e547603a78a2debc7f392e3fc8ccb
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVuartlite-Linux-x86_64-1004737087.so-s_2035360-2f2027cfc652b9caba9f14dbe4a122b9fc7042d3
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVuartlite-Windows-x86_64-1004737087.dll-s_14818961-4f31f0a0bec7ea85c704f9e3ae3d5e84981e9940
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVuartlite-macOS-x86_64-1004737087.dylib-s_212992-7550ccfebd1e16294edad99e89158608c489bd73
 
 showAnalyzer uart
 
 uart SimulationFilePathLinux $uartLinux
 uart SimulationFilePathWindows $uartWindows
+# uart SimulationFilePathMacOS $uartMacOS
 
 macro reset
 """
