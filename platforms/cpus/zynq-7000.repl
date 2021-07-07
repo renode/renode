@@ -38,7 +38,7 @@ ttc0: Timers.CadenceTTC @ sysbus <0xF8001000, +0x1000>
     [0-2] -> gic@[10-12]
 
 ttc1: Timers.CadenceTTC @ sysbus <0xF8002000, +0x1000>
-    [0-2] -> gic@[69-71]
+    [0-2] -> gic@[37-39]
 
 privateTimer: Timers.CortexAPrivateTimer @ sysbus <0xF8F00600, +0x200>
     -> gic#0@29
