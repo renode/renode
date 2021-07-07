@@ -73,6 +73,7 @@ uint64_t AxiLite::read(uint64_t addr)
     // Read data
     *rready = 1;
     timeoutTick(rvalid);
+    tick(true, 3);
     uint64_t result = *rdata; // we have to fetch data before transaction end
     tick(true);
     *rready = 0;
