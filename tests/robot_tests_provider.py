@@ -388,7 +388,7 @@ class RobotTestSuite(object):
 
         test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
         if fixture:
-            test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], fixture)]
+            test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], '*' + fixture + '*')]
             if len(test_cases) == 0:
                 return True
             deps = set()
