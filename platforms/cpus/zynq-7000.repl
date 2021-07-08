@@ -53,6 +53,7 @@ gic: IRQControllers.GIC @ {
     }
     0 -> cpu@0
     numberOfCPUs: 1
+    CpuInterfaceImplementer: 0x3901243B
 
 scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
 
