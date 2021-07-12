@@ -1,0 +1,12 @@
+phy: Network.EthernetPhysicalLayer @ eth 0
+    Id1: 0x0141
+    Id2: 0x0e40
+    AutoNegotiationAdvertisement: 0x1e1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x1e1
+    MasterSlaveControl: 0x300
+    MasterSlaveStatus: 0x3000
+
+gpio:
+    0 -> led@0
+
+led: Miscellaneous.LED @ gpio 0
