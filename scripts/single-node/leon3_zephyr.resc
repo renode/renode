@@ -1,0 +1,19 @@
+:name: Leon3 Zephyr shell
+:description: This script runs the Zephyr shell_module demo on Leon3
+
+using sysbus
+$name?="Leon3"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/leon3.repl
+
+$image?=@https://dl.antmicro.com/projects/renode/leon3--zephyr-shell_module.elf-s_1050200-adf77267f6bf09b11856aafa524c77624a18656d
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+    sysbus LoadELF $image
+"""
+
+runMacro $reset
