@@ -109,6 +109,28 @@ enet2: Network.K6xF_Ethernet @ sysbus 0x402D4000
     [TxIRQ, RxIRQ, MiscIRQ, PtpIRQ] -> enet2IRQs@[0-3]
     TimerIRQ -> nvic@153
 
+flex_spi: SPI.IMXRT_FlexSPI @ { 
+    sysbus 0x402A8000;
+    sysbus new Bus.BusMultiRegistration { address: 0x60000000; size: 0xF000000; region: "ciphertext" }
+}
+
+flex_spi2: SPI.IMXRT_FlexSPI @ sysbus 0x402A4000
+
+// alternative way of defining flex_spi2 is presented below:
+// in this configuration all reads/writes to the ciphertext region are translated into commands;
+// it might not be possible to execute code (XIP) in this setup
+// -------------------------------
+// flex_spi2: SPI.IMXRT_FlexSPI @ { 
+//     sysbus 0x402A4000;
+//     sysbus new Bus.BusMultiRegistration { address: 0x70000000; size: 0xF000000; region: "ciphertext" }
+// }
+
+// size is limited from 0xF000000 to 0x1000000 to match micron's constructor requirements;
+// using MappedMemory allows to execute code directly from flash (XIP)
+ciphertext_mem: Memory.MappedMemory @ sysbus 0x70000000 { size: 0x1000000 }
+
+ciphertext_flash: SPI.Micron_MT25Q @ flex_spi2 { underlyingMemory: ciphertext_mem }
+
 sysbus:
     init:
         Tag <0x41400000, 0x414FFFFF> "cpu configuration port"
@@ -171,11 +193,6 @@ sysbus:
         Tag <0x402BC000, 0x402BFFFF> "CSI"
         Tag <0x402B8000, 0x402BBFFF> "LCDIF"
         Tag <0x402B4000, 0x402B7FFF> "PXP"
-        Tag <0x402A8000, 0x402ABFFF> "FlexSPI"
-        Tag <0x402A4000, 0x402A7FFF> "FlexSPI2"
-        Tag <0x402A40F0, 0x402A40F3> "FlexSPI2-f0" 0xffffffff
-        Tag <0x402A40E0, 0x402A40E3> "FlexSPI2-status0" 0x3
-        Tag <0x402A4014, 0x402A4017> "FlexSPI2-interrupt" 0x40
         Tag <0x4027C000, 0x4027FFFF> "AIPS-3 Configuration"
         Tag <0x403FC000, 0x403FFFFF> "LPI2C4"
         Tag <0x403F8000, 0x403FBFFF> "LPI2C3"
@@ -211,5 +228,3 @@ sysbus:
         Tag <0x7F800000, 0x7FBFFFFF> "FlexSPI TX FIFO"
         Tag <0x7F400000, 0x7F7FFFFF> "FlexSPI2 RX FIFO"
         Tag <0x7F000000, 0x7F3FFFFF> "FlexSPI2 TX FIFO"
-        Tag <0x70000000, 0x7EFFFFFF> "FlexSPI2/FlexSPI2 ciphertext"
-        Tag <0x60000000, 0x6FFFFFFF> "FlexSPI/FlexSPI ciphertext"
