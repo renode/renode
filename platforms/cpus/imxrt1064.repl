@@ -131,6 +131,18 @@ ciphertext_mem: Memory.MappedMemory @ sysbus 0x70000000 { size: 0x1000000 }
 
 ciphertext_flash: SPI.Micron_MT25Q @ flex_spi2 { underlyingMemory: ciphertext_mem }
 
+lpspi1 : SPI.IMXRT_LPSPI @ sysbus 0x40394000
+external_adc1: Sensors.GenericSPISensor @ lpspi1
+
+lpspi2 : SPI.IMXRT_LPSPI @ sysbus 0x40398000
+external_adc2: Sensors.GenericSPISensor @ lpspi2
+
+lpspi3 : SPI.IMXRT_LPSPI @ sysbus 0x4039C000
+external_adc3: Sensors.GenericSPISensor @ lpspi3
+
+lpspi4 : SPI.IMXRT_LPSPI @ sysbus 0x403A0000
+external_adc4: Sensors.GenericSPISensor @ lpspi4
+
 sysbus:
     init:
         Tag <0x41400000, 0x414FFFFF> "cpu configuration port"
@@ -213,11 +225,6 @@ sysbus:
         Tag <0x403B8000, 0x403BBFFF> "AOI2"
         Tag <0x403B4000, 0x403B7FFF> "AOI1"
         Tag <0x403B0000, 0x403B3FFF> "ADC_ETC"
-        Tag <0x403A0000, 0x403A3FFF> "LPSPI4"
-        Tag <0x403A0014, 0x403A0017> "LPSPI4.StatusFlags" 0x400
-        Tag <0x4039C000, 0x4039FFFF> "LPSPI3"
-        Tag <0x40398000, 0x4039BFFF> "LPSPI2"
-        Tag <0x40394000, 0x40397FFF> "LPSPI1"
         Tag <0x4038C000, 0x4038FFFF> "SAI3"
         Tag <0x40388000, 0x4038BFFF> "SAI2"
         Tag <0x40384000, 0x40387FFF> "SAI1"
