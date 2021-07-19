@@ -126,6 +126,7 @@
     <Compile Include="Network\NetworkServer\NetworkServer.cs" />
     <Compile Include="Network\NetworkServer\IServerModule.cs" />
     <Compile Include="Network\NetworkServer\Modules\TftpServerModule.cs" />
+    <Compile Include="Network\NetworkServer\Modules\IcmpServerModule.cs" />
     <Compile Include="Integrations\ArduinoLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

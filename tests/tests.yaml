@@ -34,6 +34,7 @@
 - tests/platforms/LiteX/LiteX_VexRiscv_SMP.robot
 - tests/platforms/LiteX/LiteX_Microwatt.robot
 - tests/network-server/NetworkServer.robot
+- tests/network-server/ICMP/zedboard_icmp.robot
 - tests/platforms/LiteX/LiteX_VexRiscv_Linux_SDCard.robot
 - tests/platforms/LiteX/LiteX_VexRiscv_I2S.robot
 - tests/platforms/NXP-K64F.robot

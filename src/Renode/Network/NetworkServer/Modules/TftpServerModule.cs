@@ -32,7 +32,7 @@ namespace Antmicro.Renode.Network
         }
     }
 
-    public class TftpServerModule : IServerModule, IEmulationElement
+    public class TftpServerModule : IUdpServerModule, IEmulationElement
     {
         public TftpServerModule(int port)
         {
