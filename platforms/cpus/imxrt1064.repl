@@ -144,6 +144,21 @@ external_adc3: Sensors.GenericSPISensor @ lpspi3
 lpspi4 : SPI.IMXRT_LPSPI @ sysbus 0x403A0000
 external_adc4: Sensors.GenericSPISensor @ lpspi4
 
+adc1: Analog.IMXRT_ADC @ sysbus 0x400C4000
+    -> nvic@67
+
+adc2: Analog.IMXRT_ADC @ sysbus 0x400C8000
+    -> nvic@68
+
+pwm1: Timers.IMXRT_PWM @ sysbus 0x403DC000
+
+pwm2: Timers.IMXRT_PWM @ sysbus 0x403E0000
+    -> nvic@137
+
+pwm3: Timers.IMXRT_PWM @ sysbus 0x403E4000
+
+pwm4: Timers.IMXRT_PWM @ sysbus 0x403E8000
+ 
 sysbus:
     init:
         Tag <0x41400000, 0x414FFFFF> "cpu configuration port"
@@ -168,8 +183,6 @@ sysbus:
         Tag <0x400D4000, 0x400D7FFF> "SNVS_HP"
         Tag <0x400D0000, 0x400D3FFF> "WDOG2"
         Tag <0x400CC000, 0x400CFFFF> "TRNG"
-        Tag <0x400C8000, 0x400CBFFF> "ADC2"
-        Tag <0x400C4000, 0x400C7FFF> "ADC1"
         Tag <0x400BC000, 0x400BFFFF> "WDOG3"
         Tag <0x400B8000, 0x400BBFFF> "WDOG1"
         Tag <0x400B4000, 0x400B7FFF> "EWM"
@@ -212,10 +225,6 @@ sysbus:
         Tag <0x403F4000, 0x403F7FFF> "LPI2C2"
         Tag <0x403F0000, 0x403F3FFF> "LPI2C1"
         Tag <0x403EC000, 0x403EFFFF> "BEE"
-        Tag <0x403E8000, 0x403EBFFF> "FLEXPWM4"
-        Tag <0x403E4000, 0x403E7FFF> "FLEXPWM3"
-        Tag <0x403E0000, 0x403E3FFF> "FLEXPWM2"
-        Tag <0x403DC000, 0x403DFFFF> "FLEXPWM1"
         Tag <0x403D4000, 0x403D7FFF> "ENC4"
         Tag <0x403D0000, 0x403D3FFF> "ENC3"
         Tag <0x403CC000, 0x403CFFFF> "ENC2"
