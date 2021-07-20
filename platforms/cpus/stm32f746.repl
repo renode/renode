@@ -11,15 +11,29 @@ usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
     -> nvic@37
 
+usart2: UART.STM32F7_USART @ sysbus 0x40044000
+    frequency: 200000000
+    -> nvic@38
+
+usart3: UART.STM32F7_USART @ sysbus 0x40048000
+    frequency: 200000000
+    -> nvic@39
+
+usart6: UART.STM32F7_USART @ sysbus 0x40011400
+    frequency: 200000000
+    -> nvic@71
+
 can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
     [0-3] -> nvic@[19-22]
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
-    systickFrequency: 72000000
+    priorityMask: 0xF0
+    systickFrequency: 216000000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
+    PerformanceInMips: 462
     nvic: nvic
 
 exti: IRQControllers.EXTI @ sysbus 0x40013C00
@@ -70,19 +84,19 @@ rom: Memory.MappedMemory @ sysbus 0x1FFF0000
     size: 0x10000
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    -> nvic@35
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    -> nvic@36
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    -> nvic@51
 
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
 dma2: DMA.STM32DMA @ sysbus 0x40026400
     [0-7] -> nvic@[56-60,68-70]
-    
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
-    -> nvic@80    
 
 ltdc: Video.STM32LTDC @ sysbus 0x40016800
     -> nvic@88
@@ -114,22 +128,14 @@ lptim1Isr: Python.PythonPeripheral @ sysbus 0x40002400
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
-rcc: Python.PythonPeripheral @ sysbus 0x40023800
-    size: 0x400
-    initable: true
-    script: '''
-if request.isInit:
-    lastVal = 0     
-else:               
-    if request.offset != 0x8 :
-        lastVal = 1 - lastVal
-        request.value = lastVal * 0xFFFFFFFF
-    else:
-        lastVal = 1 - lastVal
-        request.value = lastVal * 0xFFFFFFFA
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> nvic@41
 
-self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.type), request.offset, request.value))
-'''
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
+    rtcPeripheral: rtc
+
+rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
+    -> nvic@80
 
 pwrCr1: Python.PythonPeripheral @ sysbus 0x40007000
     size: 0x4
@@ -146,16 +152,20 @@ sdMmcSta: Python.PythonPeripheral @ sysbus 0x40012C34
     initable: true
     filename: "scripts/pydev/flipflop.py"
   
-flash_regs: Python.PythonPeripheral @ sysbus 0x40023C00
+flash_regs: Memory.MappedMemory @ sysbus 0x40023C00
     size: 0x400
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
 
 tim5: Python.PythonPeripheral @ sysbus 0x40000C24
     size: 0x4
     initable: true
     filename: "scripts/pydev/ticker.py"
 
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    -> nvic@54
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
 sysbus:
     init:
+        Tag <0xE0001000, 0xE0001FFF> "M4_DWT" 
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
