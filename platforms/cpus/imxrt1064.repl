@@ -130,6 +130,7 @@ flex_spi2: SPI.IMXRT_FlexSPI @ sysbus 0x402A4000
 ciphertext_mem: Memory.MappedMemory @ sysbus 0x70000000 { size: 0x1000000 }
 
 ciphertext_flash: SPI.Micron_MT25Q @ flex_spi2 { underlyingMemory: ciphertext_mem }
+ciphertext_flash2: SPI.Micron_MT25Q @ flex_spi { underlyingMemory: ciphertext_mem }
 
 lpspi1 : SPI.IMXRT_LPSPI @ sysbus 0x40394000
 external_adc1: Sensors.GenericSPISensor @ lpspi1
