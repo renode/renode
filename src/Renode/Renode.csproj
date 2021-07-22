@@ -108,6 +108,7 @@
     <Compile Include="RobotFrameworkEngine\XmlRpcServer.cs" />
     <Compile Include="RobotFrameworkEngine\HelperExtensions.cs" />
     <Compile Include="RobotFrameworkEngine\LogTester.cs" />
+    <Compile Include="RobotFrameworkEngine\CpuKeywords.cs" />
     <Compile Include="Network\RangeLossMediumFunction.cs" />
     <Compile Include="Network\RangeMediumFunction.cs" />
     <Compile Include="Backends\Terminals\UartPtyTerminal.cs" />
