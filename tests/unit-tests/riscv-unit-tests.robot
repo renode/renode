@@ -273,5 +273,4 @@ Should Fail On Setting X0 register
     ${msg}=     		    Run Keyword And Expect Error        *   Execute Command       cpu SetRegisterUnsafe ${register_0} 0x00000001
     Should Contain      	    ${msg}      value is not writable
 
-    ${val}=     		    Execute Command     cpu GetRegisterUnsafe 0
-    Should Be Equal As Numbers	    ${val}   0x0
+    Register Should Be Equal        0  0x0

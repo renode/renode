@@ -16,17 +16,10 @@ Prepare Machine
 
     Create Terminal Tester    ${UART}
 
-PC Should Be Equal
-    [Arguments]  ${expected}
-
-    ${actual}=                  Execute Command  cpu PC
-    Should Be Equal As Numbers  ${actual}  ${expected}  ignore_case=True
-
 ASR18 Should Be Equal
     [Arguments]  ${expected}
 
-    ${actual}=                  Execute Command  cpu GetRegisterUnsafe 39
-    Should Be Equal As Numbers  ${actual}  ${expected}  ignore_case=True
+    Register Should Be Equal  39  ${expected}
 
 *** Test Cases ***
 Should Boot Zephyr
