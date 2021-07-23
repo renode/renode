@@ -67,3 +67,4 @@
 - tests/unit-tests/arm-cortex-m-fpu.robot
 - tests/unit-tests/log-tests.robot
 - tests/unit-tests/hex.robot
+- tests/unit-tests/big-endian-watchpoint.robot
