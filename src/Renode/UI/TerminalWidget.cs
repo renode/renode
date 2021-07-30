@@ -89,6 +89,15 @@ namespace Antmicro.Renode.UI
                 IOSource.HandleInput(x);
             });
 
+            terminal.ButtonPressed += (s, a) =>
+            {
+                if(a.Button == PointerButton.Middle)
+                {
+                    a.Handled = true;
+                    PastePrimarySelection();
+                }
+            };
+
             terminal.KeyPressed += (s, a) =>
             {
                 a.Handled = true;

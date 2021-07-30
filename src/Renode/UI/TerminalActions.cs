@@ -17,9 +17,8 @@ namespace Antmicro.Renode.UI
             Clipboard.SetText(terminal.CollectClipboardData().Text);
         }
 
-        private void PasteMarkedField()
+        private void PasteText(string text)
         {
-            var text = Clipboard.GetText();
             if(string.IsNullOrEmpty(text))
             {
                 return;
@@ -29,6 +28,16 @@ namespace Antmicro.Renode.UI
             {
                 IOSource.HandleInput(b);
             }
+        }
+
+        private void PasteMarkedField()
+        {
+            PasteText(Clipboard.GetText());
+        }
+
+        private void PastePrimarySelection()
+        {
+            PasteText(Clipboard.GetPrimaryText());
         }
 
         private void FontSizeUp()
