@@ -14,7 +14,7 @@ struct Wishbone : public BaseBus
     virtual void write(uint64_t addr, uint64_t value);
     virtual uint64_t read(uint64_t addr);
     virtual void reset();
-    void timeoutTick(bool condition, int timeout);
+    void timeoutTick(uint8_t *signal, uint8_t value, int timeout);
 
     uint8_t  *wb_clk;
     uint8_t  *wb_rst;
