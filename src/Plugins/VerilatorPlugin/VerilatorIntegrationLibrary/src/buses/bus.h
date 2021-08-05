@@ -13,6 +13,7 @@ struct BaseBus
 {
     public:
     virtual void tick(bool countEnable, uint64_t steps) = 0;
+    virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout) = 0;
     virtual void write(uint64_t addr, uint64_t value) = 0;
     virtual uint64_t read(uint64_t addr) = 0;
     virtual void reset() = 0;
