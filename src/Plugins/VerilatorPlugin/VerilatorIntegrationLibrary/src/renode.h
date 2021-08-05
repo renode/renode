@@ -89,6 +89,7 @@ public:
   virtual void pushToAgent(uint64_t addr, uint64_t value);
   virtual uint64_t requestFromAgent(uint64_t addr);
   virtual void tick(bool countEnable, uint64_t steps);
+  virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000);
   virtual void reset();
   virtual void handleCustomRequestType(Protocol* message);
   virtual void log(int level, const char* fmt, ...);
