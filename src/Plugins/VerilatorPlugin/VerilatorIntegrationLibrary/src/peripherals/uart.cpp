@@ -68,6 +68,9 @@ void UART::handleCustomRequestType(Protocol* message) {
 void UART::writeToBus(uint64_t addr, uint64_t value) {
     RenodeAgent::writeToBus(addr, value);
     if(addr == tx_reg_addr) {
+        // We are waiting for low state on txd line, which indicates beginning of a transmission.
+        // Invalid data can be read otherwise.
+        timeoutTick(txd, 0);
         Txd();
     }
 }
