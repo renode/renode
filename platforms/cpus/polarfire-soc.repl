@@ -260,11 +260,6 @@ DDR_PHY: Miscellaneous.MPFS_DDRMock @ sysbus 0x20007000
 SCB_DDR_PLL: Miscellaneous.MPFS_DDRMock @ sysbus 0x3e010000
 DDRCFG: Miscellaneous.MPFS_DDRMock @ sysbus 0x20080000
 
-pydev: Python.PythonPeripheral @ sysbus 0x20007c20
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
 sysbus:
     init:
         Tag <0x200020B8, 0x200020BB> "SYSREG:MESH_SEED_CR" 0xFF
