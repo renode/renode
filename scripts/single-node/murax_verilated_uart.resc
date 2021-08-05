@@ -1,0 +1,31 @@
+:name: Murax SoC with VexRiscv
+:description: This script runs an echo demo using a verilated UART.
+
+$name?="APB3UART"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/verilated/murax_vexriscv_verilated_uart.repl
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-1116123840.so-s_2049920-1bca4e9cf7f3465907cea32e2be7a176b78d97f3
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-1116123840.dll-s_14829076-0f58c94cf875cf6ebe442dbe24426c9308eef3e7
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-1116123840.dylib-s_214864-267618c5da753aa7c1629db0a518aea39fdf6ad0
+
+showAnalyzer uart
+
+uart SimulationFilePathLinux $uartLinux
+uart SimulationFilePathWindows $uartWindows
+# uart SimulationFilePathMacOS $uartMacOS
+
+macro reset
+"""
+    sysbus LoadELF @https://dl.antmicro.com/projects/renode/murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
+    sysbus.cpu MTVEC 0x80000020
+"""
+
+runMacro $reset
+
+# this is a hack to allow handling interrupts at all; this should be after #13326
+cpu SetMachineIrqMask 0xffffffff
+
+## set frame length in the FrameCongfig register (0xC)
+sysbus WriteDoubleWord 0xF001000C 0x000F
