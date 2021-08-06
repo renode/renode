@@ -65,6 +65,9 @@ qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
 
 gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
 
+xadc: Analog.Xilinx_XADC @ sysbus 0xF8007100
+    -> gic@7
+
 armPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000100
     size: 0x4
     initable: false
@@ -116,11 +119,6 @@ clk261True: Python.PythonPeripheral @ sysbus 0xF80001C4
     script: "request.value = 1"
 
 nand: Python.PythonPeripheral @ sysbus 0xE000E000
-    size: 0x4
-    initable: false
-    script: "request.value = 0xFFFFFFFF"
-
-xadcHack: Python.PythonPeripheral @ sysbus 0xF800710C
     size: 0x4
     initable: false
     script: "request.value = 0xFFFFFFFF"
