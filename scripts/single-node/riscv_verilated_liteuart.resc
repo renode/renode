@@ -8,9 +8,9 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/litex_vexriscv_verilated_liteuart.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/zephyr--verilated_liteuart--shell.elf-s_864780-63c7e83fb01451ac6683434997f6f03c6a8f9079
-$uartLinux?=@https://dl.antmicro.com/projects/renode/libVliteuart-Linux-x86_64-1004737087.so-s_2039584-b07a61d01d148f3652bf850337bb457f33c86ce6
-$uartWindows?=@https://dl.antmicro.com/projects/renode/libVliteuart-Windows-x86_64-1004737087.dll-s_14821087-5303e98f355934dbedfb43b529ec5288a289baaf
-$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVliteuart-macOS-x86_64-1004737087.dylib-s_213112-ea1d03d03731da5e8e968e4a89a8d3689d4bf47e
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVliteuart-Linux-x86_64-1116123840.so-s_2040888-d31aa31e74329fc50e5e36ca0540de2571b8e3de
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVliteuart-Windows-x86_64-1116123840.dll-s_14824753-d84d662cba6d457d55ac8b17bc6cd473d6d553ca
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVliteuart-macOS-x86_64-1116123840.dylib-s_213784-da6594d7f7a5ef6fd3d52a9a64d6fcfe3d91d935
 
 showAnalyzer uart
 

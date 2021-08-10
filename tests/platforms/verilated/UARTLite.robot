@@ -84,9 +84,9 @@ Should Handle Nonexistent UARTLite Binary
 # Following tests use socket based communication
 
 Should Run UARTLite Binary Using Socket
-    Set Test Variable               ${uartLinux}    ${URI}/Vuartlite-Linux-x86_64-1004737087-s_1598528-2cdf75f092fd56012d3acd8020310ddf006b4719
-    Set Test Variable               ${uartWindows}  ${URI}/Vuartlite-Windows-x86_64-1004737087.exe-s_14815636-e0f6234ce90eda767289f542e5f1022568eaf5ac
-    Set Test Variable               ${uartMacOS}    ${URI}/Vuartlite-macOS-x86_64-1004737087-s_213064-0a6ebb5e43f9bb98342b586587a7f90a64211d41
+    Set Test Variable               ${uartLinux}    ${URI}/Vuartlite-Linux-x86_64-1116123840-s_1599680-83f742bb0978fd3b9baf62e0374f155a739d51bd
+    Set Test Variable               ${uartWindows}  ${URI}/Vuartlite-Windows-x86_64-1116123840.exe-s_14818278-68fb417a3d93d490c2e123530e6554e4f424303a
+    Set Test Variable               ${uartMacOS}    ${URI}/Vuartlite-macOS-x86_64-1116123840-s_213728-7c628488f7e7a6f2dcf191f205d64faca8840d3d
     Create Machine With Socket Based Communication  ${uartLinux}    ${uartWindows}      ${uartMacOS}
     Create Terminal Tester          ${UART}
     Start Emulation
@@ -94,9 +94,9 @@ Should Run UARTLite Binary Using Socket
 
 # Sleep after 1000 iterations in "simulate" loop (renode.cpp)
 Should Handle Connection Timeout
-    Set Test Variable               ${uartLinux}    ${URI}/Vsleep-after-1000-iters-Linux-x86_64-1004737087-s_1598568-e6e953774e934707416d0a896ebc0dd0d791f6c3
-    Set Test Variable               ${uartWindows}  ${URI}/Vsleep-after-1000-iters-Windows-x86_64-1004737087.exe-s_14817164-5008b1ff8394b6602c2609178bae67b01ca438c5
-    Set Test Variable               ${uartMacOS}    ${URI}/Vsleep-after-1000-iters-macOS-x86_64-1004737087-s_213104-abe2f6a1f9681d1a6654781be4ffd24ef432bbf7
+    Set Test Variable               ${uartLinux}    ${URI}/Vsleep-after-1000-iters-Linux-x86_64-1116123840-s_1599728-51e984c3a45d741d27dfdd811596842ec4f89860
+    Set Test Variable               ${uartWindows}  ${URI}/Vsleep-after-1000-iters-Windows-x86_64-1116123840.exe-s_14819806-cfff9b1d2afe880551d9324ecbe8592419ec2686
+    Set Test Variable               ${uartMacOS}    ${URI}/Vsleep-after-1000-iters-macOS-x86_64-1116123840-s_213760-7bd8e951887e91e3dbd8067ab503ae1d49cea65e
     Create Machine With Socket Based Communication  ${uartLinux}    ${uartWindows}      ${uartMacOS}
     Create Log Tester               ${LOG_TIMEOUT}
     Create Terminal Tester          ${UART}
@@ -106,17 +106,17 @@ Should Handle Connection Timeout
 
 # Both ports wrong when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Not Connecting
-    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-ports-Linux-x86_64-1004737087-s_1598528-22840f0f99c9f46ce964300c94119c4d5594365d
-    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-ports-Windows-x86_64-1004737087.exe-s_14815636-cfbfcf17dc6e3568b667649226736cc29b353964
-    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-ports-macOS-x86_64-1004737087-s_213064-1fe5488d2059797593a6e3be943e5d40db0416c0
+    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-ports-Linux-x86_64-1116123840-s_1599680-0469cc78da4e7c471b0b2aa8b5043ae067cddc38
+    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-ports-Windows-x86_64-1116123840.exe-s_14818278-8eef4d621983ba0488432b211531b986919d07b5
+    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-ports-macOS-x86_64-1116123840-s_213728-86dca75acae23752583ae12a28bede927eba1434
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Wrong "second" port when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Partly Connecting
-    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-second-port-Linux-x86_64-1004737087-s_1598528-ff16a918d22a9933d998a7a8d460a0e3acc5e480
-    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-second-port-Windows-x86_64-1004737087.exe-s_14815636-b635f35a5a7c79beaf27a82cb89e426dd2621332
-    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-second-port-macOS-x86_64-1004737087-s_213064-8937d3450aafadf8aa2e25abebbb0c447e24d4a2
+    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-second-port-Linux-x86_64-1116123840-s_1599680-2641eb4ae0d6a5b3ef09ad1d4b0e8c3797c08d47
+    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-second-port-Windows-x86_64-1116123840.exe-s_14818278-e2c4f51c6e0a0ffafbb8ad36e03b5afca4566f12
+    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-second-port-macOS-x86_64-1116123840-s_213728-4c921bbdb3fabf4f3b7a74848f92adf8e56bc225
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 

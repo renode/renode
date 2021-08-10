@@ -8,9 +8,9 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/riscv_verilated_uartlite.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
-$uartLinux?=@https://dl.antmicro.com/projects/renode/libVuartlite-Linux-x86_64-1004737087.so-s_2035360-2f2027cfc652b9caba9f14dbe4a122b9fc7042d3
-$uartWindows?=@https://dl.antmicro.com/projects/renode/libVuartlite-Windows-x86_64-1004737087.dll-s_14818961-4f31f0a0bec7ea85c704f9e3ae3d5e84981e9940
-$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVuartlite-macOS-x86_64-1004737087.dylib-s_212992-7550ccfebd1e16294edad99e89158608c489bd73
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVuartlite-Linux-x86_64-1116123840.so-s_2040800-8a1cee032fa31d047728fdc16fb6d974e2951e21
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVuartlite-Windows-x86_64-1116123840.dll-s_14823139-b2d9892dbd5dd990ae3510c6563446567b897db9
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVuartlite-macOS-x86_64-1116123840.dylib-s_213664-5794ca7de5a8119640732bfba3f90ce3d6c9163c
 
 showAnalyzer uart
 
