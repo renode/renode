@@ -20,15 +20,16 @@ void AxiLite::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void AxiLite::timeoutTick(uint8_t *condition, int timeout = 20)
+void AxiLite::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000)
 {
-    do {
+    do
+    {
         tick(true);
         timeout--;
     }
-    while(!*condition && timeout > 0);
+    while((*signal != expectedValue) && timeout > 0);
 
-    if(timeout <= 0) {
+    if(timeout == 0) {
         throw "Operation timeout";
     }
 }
@@ -41,7 +42,7 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
     // Don't wait if `ready` signal has been set (READY before VALID handshake)
     if(*ready != 1)
     {
-        timeoutTick(ready);
+        timeoutTick(ready, 1);
     }
 
     // The transfer occurs in the cycle AFTER the one with both ready and valid set
@@ -60,7 +61,7 @@ void AxiLite::write(uint64_t addr, uint64_t value)
 
     // Wait for the write response
     *bready = 1;
-    timeoutTick(bvalid);
+    timeoutTick(bvalid, 1);
     tick(true);
     *bready = 0;
 }
@@ -72,7 +73,7 @@ uint64_t AxiLite::read(uint64_t addr)
 
     // Read data
     *rready = 1;
-    timeoutTick(rvalid);
+    timeoutTick(rvalid, 1);
     uint64_t result = *rdata; // we have to fetch data before transaction end
     tick(true);
     *rready = 0;

@@ -15,7 +15,7 @@ struct AxiLite : public BaseBus
     virtual uint64_t read(uint64_t addr);
     virtual void reset();
     void handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, uint64_t value);
-    void timeoutTick(uint8_t *condition, int timeout);
+    void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
 
     uint8_t  *clk;
     uint8_t  *rst;
