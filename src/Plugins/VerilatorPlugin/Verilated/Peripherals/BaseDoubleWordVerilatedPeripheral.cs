@@ -158,7 +158,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void Start()
         {
-            if(simulationFilePath == null)
+            if(String.IsNullOrWhiteSpace(simulationFilePath))
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
             }
