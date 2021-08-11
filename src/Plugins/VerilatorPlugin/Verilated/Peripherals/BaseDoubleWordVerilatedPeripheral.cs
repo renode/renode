@@ -139,6 +139,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 if(String.IsNullOrWhiteSpace(value))
                 {
+                    this.Log(LogLevel.Warning, "SimulationFilePath not set!");
                     return;
                 }
                 if(!String.IsNullOrWhiteSpace(simulationFilePath))
