@@ -52,6 +52,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public uint ReadDoubleWord(long offset)
         {
+            if(String.IsNullOrWhiteSpace(simulationFilePath))
+            {
+                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath first!");
+                return 0;
+            }
             Send(ActionType.ReadFromBus, (ulong)offset, 0);
             var result = Receive();
             CheckValidation(result);
@@ -61,6 +66,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void WriteDoubleWord(long offset, uint value)
         {
+            if(String.IsNullOrWhiteSpace(simulationFilePath))
+            {
+                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath first!");
+                return;
+            }
             Send(ActionType.WriteToBus, (ulong)offset, value);
             CheckValidation(Receive());
         }
