@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
     <Compile Include="Connection\IVerilatedPeripheral.cs" />
     <Compile Include="Connection\SocketBasedVerilatedPeripheral.cs" />
@@ -69,6 +70,7 @@
       <Project>{5F87C357-09FB-4F53-BE37-41FE5BD88957}</Project>
       <Name>Migrant</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Cores\cores-riscv.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Connection\" />
