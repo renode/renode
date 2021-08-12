@@ -1,0 +1,33 @@
+mem: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus 0x80000000 // shadow
+    }
+    size: 0x00040000
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x10000000;
+        sysbus 0x90000000 // shadow
+    }
+    size: 0x00040000
+
+ram: Memory.MappedMemory @ {
+        sysbus 0x40000000;
+        sysbus 0xc0000000 // shadow
+    }
+    size: 0x10000000
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32im"
+
+uart: UART.LiteX_UART @ {
+        sysbus 0xf0003000
+    }
+    -> cpu@0
+
+timer0: Timers.LiteX_Timer @ {
+        sysbus 0xf0002800
+    }
+    frequency: 100000000
+    -> cpu@1
+
+cfu0: Verilated.CFUVerilatedPeripheral @ cpu 0

@@ -1,0 +1,22 @@
+:name: VexRiscv platform with a verilated CFU
+:description: This script runs CFU-Playground software using a verilated Custom Function Unit.
+
+$name?="CFU"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/verilated/litex_vexriscv_verilated_cfu.repl
+
+$bin?=@https://dl.antmicro.com/projects/renode/verilated-cfu-test-software.elf-s_10743196-2f7b9466850db88e32a3e5198bb99cd9f03773c5
+$cfuLinux?=@https://dl.antmicro.com/projects/renode/verilated-cfu-libVtop.so-s_526608-eee09e5856e09ac7e08d0d22020891f2a3920201
+
+showAnalyzer uart
+
+cpu.cfu0 SimulationFilePathLinux $cfuLinux
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
