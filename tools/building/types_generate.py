@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Maximum number of parameters in function
-max_params = 3
+max_params = 4
 
 # Dictionary: key is the C# type, value - a C one
 types = {}
