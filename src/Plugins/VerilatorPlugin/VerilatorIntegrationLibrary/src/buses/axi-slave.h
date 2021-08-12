@@ -7,7 +7,7 @@
 #ifndef AxiSlave_H
 #define AxiSlave_H
 #include "axi.h"
-#include <src/renode.h>
+#include <src/renode_bus.h>
 
 enum class AxiReadState  {AR, R};
 enum class AxiWriteState {AW, W, B};

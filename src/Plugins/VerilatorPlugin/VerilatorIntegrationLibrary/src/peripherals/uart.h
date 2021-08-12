@@ -4,7 +4,7 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-#include "../renode.h"
+#include "../renode_bus.h"
 #include "../buses/bus.h"
 
 // UARTAction must be in sync with Renode's protocol

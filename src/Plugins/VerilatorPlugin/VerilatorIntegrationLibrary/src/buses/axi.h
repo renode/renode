@@ -7,7 +7,7 @@
 #ifndef Axi_H
 #define Axi_H
 #include "bus.h"
-#include <src/renode.h>
+#include <src/renode_bus.h>
 
 enum class AxiBurstType  {FIXED = 0, INCR = 1, WRAP = 2, RESERVED = 3};
 
