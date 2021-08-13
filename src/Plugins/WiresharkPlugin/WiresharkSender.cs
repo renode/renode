@@ -38,9 +38,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
     {
         public WiresharkSender(string pipeName, uint pcapNetId, string wiresharkPath)
         {
-            // Mono is using the "/var/tmp" prefix for pipes by default.
-            // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
-            this.pipeName = $"{namedPipePrefix}{pipeName}";
+            this.pipeName = pipeName;
             this.pcapNetId = pcapNetId;
             this.wiresharkPath = wiresharkPath;
         }
@@ -65,12 +63,19 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
             lastReportedFrame = null;
 
+#if !PLATFORM_WINDOWS
+            // Mono is using the "/var/tmp" prefix for pipes by default.
+            // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
+            wiresharkPipe = new NamedPipeServerStream(GetPrefixedPipeName(), PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
+#else
+            // Windows does not let you override the prefix with the trick above, and as such it requires a prefixless
+            // name for the named pipe to work, while Wireshark needs the prefixed name as the argument.
             wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
-
+#endif
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
 
-            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, $"-ni {pipeName} -k")
+            wiresharkProces.StartInfo = new ProcessStartInfo(wiresharkPath, $"-ni {GetPrefixedPipeName()} -k")
             {
                 UseShellExecute = false,
                 RedirectStandardError = true,
@@ -132,6 +137,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 SendToWireshark(buffer, 0, buffer.Length);
                 lastProcessedFrame = buffer;
             }
+        }
+
+        private string GetPrefixedPipeName()
+        {
+            // Mono is using the "/var/tmp" prefix for pipes by default.
+            // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
+            return $"{namedPipePrefix}{pipeName}";
         }
 
         private void SendWiresharkGlobalHeader()
