@@ -209,16 +209,20 @@ class RobotTestSuite(object):
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
 
-        # Never try to use a port lower than the one used in last job
-        if RobotTestSuite.last_port_offset < 0:
-            self.port_offset = 0
-        else:
-            self.port_offset = RobotTestSuite.last_port_offset + 1;
-        # Skip port if it is already in use
-        while not is_port_available(options.remote_server_port + self.port_offset):
-            self.port_offset += 1
+        # Only do port changes if we're running in parallel or the Renode process is not already running
+        if options.jobs != 1 or not RobotTestSuite._is_frontend_running():
+            # Never try to use a port lower than the one used in last job
+            if RobotTestSuite.last_port_offset < 0:
+                self.port_offset = 0
+            else:
+                self.port_offset = RobotTestSuite.last_port_offset + 1
+            # Skip port if it is already in use
+            while not is_port_available(options.remote_server_port + self.port_offset):
+                self.port_offset += 1
 
-        RobotTestSuite.last_port_offset = self.port_offset
+            RobotTestSuite.last_port_offset = self.port_offset
+        elif options.jobs == 1: # When not running in parallel, always use the last port
+            self.port_offset = RobotTestSuite.last_port_offset
 
         file_name = os.path.splitext(os.path.basename(self.path))[0]
 
@@ -242,8 +246,12 @@ class RobotTestSuite(object):
 
         # in parallel runs each parallel group starts it's own Renode process
         # see: run
-        if options.jobs == 1 and (RobotTestSuite.robot_frontend_process is None or not is_process_running(RobotTestSuite.robot_frontend_process.pid)):
-            RobotTestSuite.robot_frontend_process = self._run_remote_server(options)
+        if options.jobs == 1 and not RobotTestSuite._is_frontend_running():
+            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, port_offset=self.port_offset)
+
+    @classmethod
+    def _is_frontend_running(cls):
+        return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
 
     def _run_remote_server(self, options, port_offset=0):
         if options.remote_server_full_directory is not None:
