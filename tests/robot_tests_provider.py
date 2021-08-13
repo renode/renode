@@ -226,7 +226,7 @@ class RobotTestSuite(object):
         suiteBuilder = robot.running.builder.TestSuiteBuilder()
         suite = suiteBuilder.build(self.path)
         suite.visit(hotSpotTestFinder)
-        
+
         self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
         self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
 
@@ -429,7 +429,7 @@ class RobotTestSuite(object):
                         ret['non_critical'].append(testname + "." + name)
                     else:
                         ret['mandatory'].append(testname + "." + name)
-            
+
         if not ret['mandatory'] and not ret['non_critical']:
             return None
         return ret
