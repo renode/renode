@@ -182,6 +182,8 @@ namespace Antmicro.Renode.Network
             this.Log(LogLevel.Noisy, "Sending UDP response: {0}", response);
 
             EthernetFrame.TryCreateEthernetFrame(ethernetPacket.Bytes, true, out var ethernetFrame);
+            ethernetFrame.FillWithChecksums(new EtherType[] { EtherType.IpV4 }, new [] { IPProtocolType.UDP });
+
             FrameReady?.Invoke(ethernetFrame);
         }
 
