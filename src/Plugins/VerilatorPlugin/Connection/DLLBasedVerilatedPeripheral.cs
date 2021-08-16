@@ -151,6 +151,10 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public string SimulationFilePath
         {
+            get
+            {
+                return simulationFilePath;
+            }
             set
             {
                 if(value == null)
@@ -161,6 +165,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                 {
                     try
                     {
+                        simulationFilePath = value;
                         binder = new NativeBinder(this, value);
                         initializeNative();
                         mainResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
@@ -216,6 +221,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         }
 
         private int receiveThreadId;
+        private string simulationFilePath;
         private NativeBinder binder;
         private IntPtr mainResponsePointer;
         private IntPtr senderResponsePointer;
