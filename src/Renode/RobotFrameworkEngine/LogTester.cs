@@ -1,6 +1,14 @@
+//
+// Copyright (c) 2010-2021 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
+//
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Text.RegularExpressions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Testing;
 using Antmicro.Renode.Core;
@@ -34,13 +42,15 @@ namespace Antmicro.Renode.RobotFramework
             lineEvent.Set();
         }
 
-        public string WaitForEntry(string pattern, float? timeout = null, bool keep = false)
+        public string WaitForEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
             var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
+            var regex = treatAsRegex ? new Regex(pattern) : null;
+            var predicate = treatAsRegex ? (Predicate<string>)(x => regex.IsMatch(x)) : (Predicate<string>)(x => x.Contains(pattern));
             do
             {
-                if(TryFind(pattern, keep, out var result))
+                if(TryFind(predicate, keep, out var result))
                 {
                     return result;
                 }
@@ -52,11 +62,11 @@ namespace Antmicro.Renode.RobotFramework
             return null;
         }
 
-        private bool TryFind(string pattern, bool keep, out string result)
+        private bool TryFind(Predicate<string> predicate, bool keep, out string result)
         {
             lock(messages)
             {
-                var idx = messages.FindIndex(x => x.Contains(pattern));
+                var idx = messages.FindIndex(predicate);
                 if(idx != -1)
                 {
                     result = messages[idx];

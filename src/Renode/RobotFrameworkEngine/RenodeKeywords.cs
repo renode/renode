@@ -233,11 +233,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false)
+        public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, timeout, keep);
+            var result = logTester.WaitForEntry(pattern, timeout, keep, treatAsRegex);
             if(result == null)
             {
                 throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log");
@@ -246,11 +246,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void ShouldNotBeInLog(String pattern, float? timeout = null)
+        public void ShouldNotBeInLog(String pattern, float? timeout = null, bool treatAsRegex = false)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, timeout, true);
+            var result = logTester.WaitForEntry(pattern, timeout, true, treatAsRegex);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
