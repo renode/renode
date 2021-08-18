@@ -125,24 +125,13 @@ flex_spi2: SPI.IMXRT_FlexSPI @ sysbus 0x402A4000
 //     sysbus new Bus.BusMultiRegistration { address: 0x70000000; size: 0xF000000; region: "ciphertext" }
 // }
 
-// size is limited from 0xF000000 to 0x1000000 to match micron's constructor requirements;
-// using MappedMemory allows to execute code directly from flash (XIP)
-ciphertext_mem: Memory.MappedMemory @ sysbus 0x70000000 { size: 0x1000000 }
-
-ciphertext_flash: SPI.Micron_MT25Q @ flex_spi2 { underlyingMemory: ciphertext_mem }
-ciphertext_flash2: SPI.Micron_MT25Q @ flex_spi { underlyingMemory: ciphertext_mem }
-
 lpspi1 : SPI.IMXRT_LPSPI @ sysbus 0x40394000
-external_adc1: Sensors.GenericSPISensor @ lpspi1
 
 lpspi2 : SPI.IMXRT_LPSPI @ sysbus 0x40398000
-external_adc2: Sensors.GenericSPISensor @ lpspi2
 
 lpspi3 : SPI.IMXRT_LPSPI @ sysbus 0x4039C000
-external_adc3: Sensors.GenericSPISensor @ lpspi3
 
 lpspi4 : SPI.IMXRT_LPSPI @ sysbus 0x403A0000
-external_adc4: Sensors.GenericSPISensor @ lpspi4
 
 adc1: Analog.IMXRT_ADC @ sysbus 0x400C4000
     -> nvic@67
