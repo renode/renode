@@ -9,9 +9,9 @@ machine LoadPlatformDescription @platforms/boards/zedboard.repl
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
-$bin?=@https://dl.antmicro.com/projects/renode/zedboard-console--vmlinux-zedboard--f85b95c95b7c8c2e34db859d255d9632fd15a8c9
-$rootfs?=@https://dl.antmicro.com/projects/renode/zedboard-console--ramdisk8M.image-s_3699347-af6ba178f389fff0ecba89170124abf99f58f904
-$dtb?=@https://dl.antmicro.com/projects/renode/zedboard-console--devicetree-zedboard.dtb--7f202b8521d5c0e1b2120e07e677591b8917c788
+$bin?=@https://dl.antmicro.com/projects/renode/zynq--vmlinux-s_13611036-985e132f953222e5d0329f550905a70544301929
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq--rootfs.ext2.gz-s_1874646-592c62e37a3fa5deea2577bafe086c4e96dc935a
+$dtb?=@https://dl.antmicro.com/projects/renode/zynq-zed.dtb-s_11875-26effbd397b80938366bd18eddb1e89f56599c1d
 ### create externals ###
 
 showAnalyzer sysbus.uart1
@@ -38,7 +38,7 @@ macro reset
     ### load binaries ###
 
     sysbus LoadELF $bin
-    sysbus LoadBinary $dtb 0x100
+    sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1f645000,8M" false
     sysbus ZeroRange 0x1f645000 0x800000
     sysbus LoadBinary $rootfs 0x1f645000
 """

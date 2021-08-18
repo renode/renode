@@ -10,13 +10,14 @@ ${SCRIPT}                     ${CURDIR}/../../scripts/single-node/zedboard.resc
 ${UART}                       sysbus.uart1
 ${PROMPT}                     zynq>
 ${GPIO_PERIPHERAL}            gpio.led0
-${GPIO_FILE}                  /sys/class/gpio/gpio61/value
+${GPIO_FILE}                  /sys/class/gpio/gpio967/value
 
 *** Keywords ***
 Prepare Machine
     Execute Script            ${SCRIPT}
 
     Execute Command           emulation CreateLEDTester "led0" ${GPIO_PERIPHERAL}
+    Set Default Uart Timeout  20
     Create Terminal Tester    ${UART}
 
 *** Test Cases ***
