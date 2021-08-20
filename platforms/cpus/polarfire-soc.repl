@@ -244,6 +244,12 @@ pseFlash: SPI.Micron_MT25Q @ qspi
 flash_mem: Memory.MappedMemory
     size: 0x00800000
 
+sysServices: Miscellaneous.MPFS_SystemServices @ sysbus 0x37020000
+    flashMemory: flash_mem
+    SerialNumberLower: 0x0123456789ABCDEF
+    SerialNumberUpper: 0x0123456789ABCDEF
+    IRQ -> plic@96
+
 // There are 8 BootRom registers covering range from 0x20003120 to 0x2000313F,
 // but because of Renode's memory alignment limitations they are mapped as a single memory
 sysregScbBootRom: Memory.MappedMemory @ sysbus 0x20003000
