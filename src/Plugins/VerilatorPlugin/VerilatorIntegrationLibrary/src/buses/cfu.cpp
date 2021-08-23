@@ -23,16 +23,16 @@ void Cfu::tick(bool countEnable, uint64_t steps = 1)
 
 void Cfu::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000)
 {
-    do
-    {
-        tick(true);
-        timeout--;
-    }
-    while((*signal != expectedValue) && timeout > 0);
+  do
+  {
+    tick(true);
+    timeout--;
+  }
+  while((*signal != expectedValue) && timeout > 0);
 
-    if(timeout == 0) {
-        throw "Operation timeout";
-    }
+  if(timeout == 0) {
+    throw "Operation timeout";
+  }
 }
 
 uint64_t Cfu::execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* error)

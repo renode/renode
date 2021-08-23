@@ -73,7 +73,6 @@ void initialize_native()
 
 void handle_request(Protocol* request)
 {
-    long ticks;
     switch(request->actionId) {
         case invalidAction:
             break;
