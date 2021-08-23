@@ -204,7 +204,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             this.Log(LogLevel.Error, message);
             verilatedPeripheral.Abort();
-            
+
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
@@ -250,17 +250,24 @@ namespace Antmicro.Renode.Peripherals.Verilated
             UInt32 rs2Value = Convert.ToUInt32(connectedCpu.GetRegisterUnsafe(rs2).RawValue);
             UInt32 functionID = Convert.ToUInt32(BitHelper.GetValue(opcode, 12, 3));
             UInt64 result = 0UL;
-
             result = execute(functionID, rs1Value, rs2Value, errorPointer);
-            int error = Marshal.ReadInt32(errorPointer);
 
-            if(error != 0)
+            CfuStatus status = (CfuStatus)Marshal.ReadInt32(errorPointer);
+
+            switch(status)
             {
-                this.Log(LogLevel.Error, "CFU custom instruction error, opcode: 0x{0:x}, error: {1}", opcode, error);
-            }
-            else
-            {
-                connectedCpu.SetRegisterUnsafe(rD, result);
+                case CfuStatus.CfuOk:
+                    connectedCpu.SetRegisterUnsafe(rD, result);
+                    break;
+                case CfuStatus.CfuFail:
+                    this.Log(LogLevel.Error, "CFU custom instruction error, opcode: 0x{0:x}, error: {1}", opcode, status);
+                    break;
+                case CfuStatus.CfuTimeout:
+                    this.Log(LogLevel.Error, "CFU operation timeout, opcode: 0x{0:x}, error: {1}", opcode, status);
+                    break;
+                default:
+                    this.Log(LogLevel.Error, "CFU unknown error, opcode: 0x{0:x}, error: {1}", opcode, status);
+                    break;
             }
         }
 
@@ -275,5 +282,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
         [Import]
         private FuncUInt64UInt32UInt32UInt32IntPtr execute;
 #pragma warning restore 649
+
+        private enum CfuStatus
+        {
+            CfuOk = 0,
+            CfuFail = 1,
+            CfuTimeout = 2
+        }
     }
 }
