@@ -248,7 +248,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
             UInt32 rs1Value = Convert.ToUInt32(connectedCpu.GetRegisterUnsafe(rs1).RawValue);
             int rs2 = (int)BitHelper.GetValue(opcode, 20, 5);
             UInt32 rs2Value = Convert.ToUInt32(connectedCpu.GetRegisterUnsafe(rs2).RawValue);
-            UInt32 functionID = Convert.ToUInt32(BitHelper.GetValue(opcode, 12, 3));
+            UInt32 funct3 = Convert.ToUInt32(BitHelper.GetValue(opcode, 12, 3));
+            UInt32 funct7 = Convert.ToUInt32(BitHelper.GetValue(opcode, 25, 7));
+            UInt32 functionID = (funct7 << 3) + funct3;
+
             UInt64 result = 0UL;
             result = execute(functionID, rs1Value, rs2Value, errorPointer);
 
