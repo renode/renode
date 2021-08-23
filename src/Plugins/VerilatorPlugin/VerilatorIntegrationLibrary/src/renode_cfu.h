@@ -14,6 +14,13 @@
 class RenodeAgent;
 struct Protocol;
 
+enum CfuStatus
+{
+  CFU_OK      = 0,
+  CFU_FAIL    = 1,
+  CFU_TIMEOUT = 2,
+};
+
 extern RenodeAgent *Init(void); //definition has to be provided in sim_main.cpp of verilated CFU
 
 extern "C"

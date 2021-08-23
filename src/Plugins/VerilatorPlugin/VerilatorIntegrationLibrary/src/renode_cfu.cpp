@@ -25,7 +25,20 @@ void RenodeAgent::reset()
 
 uint64_t RenodeAgent::execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* error)
 {
-    return cfu->execute(functionID, data0, data1, error);
+    uint64_t result = 0;
+
+    try {
+        result = cfu->execute(functionID, data0, data1, error);
+        *error = CFU_OK;
+    }
+    catch(const char* msg) {
+        if (msg == "Operation timeout") {
+            *error = CFU_TIMEOUT;
+        } else {
+            *error = CFU_FAIL;
+        }
+    }
+    return result;
 }
 
 void RenodeAgent::handleCustomRequestType(Protocol* message)
