@@ -154,7 +154,7 @@ Should Serve Webpage Using Tap
     Set Test Variable         ${TAP_INTERFACE}     tap0
     Set Test Variable         ${TAP_INTERFACE_IP}  192.0.2.1
     Set Test Variable         ${SERVER_IP}         192.0.2.2
-    Set Test Variable         ${SERVER_PORT}       80
+    Set Test Variable         ${SERVER_PORT}       8000
 
     Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
 
@@ -163,14 +163,15 @@ Should Serve Webpage Using Tap
     Execute Command           emulation CreateTap "tap0" "tap"
     Execute Command           connector Connect host.tap switch
 
-    Execute Command           $bin = ${URI}/http_server.elf-s_831660-df4e7a424882a5eb4883dddb3988971760732f78
+    Execute Command           $bin = ${URI}/http_server-s_819052-7ddc5a39c953a6330ca4971bd99bda1ea2a5beca
     Execute Script            ${SCRIPT}
     Execute Command           connector Connect spi1.ethernet switch
     Create Terminal Tester    ${UART}
 
     Start Emulation
-
     Wait For Line On Uart     Address: ${SERVER_IP}, port: ${SERVER_PORT}
+    Execute Command           spi0.lm74 Temperature 32.5
+
     ${resp}=                  Get Request  http://${SERVER_IP}:${SERVER_PORT}/index.html
     Should Contain            ${resp.text}  It Works!
-    Should Contain            ${resp.text}  Temperature: 0.000
+    Should Contain            ${resp.text}  Temperature: 32.500
