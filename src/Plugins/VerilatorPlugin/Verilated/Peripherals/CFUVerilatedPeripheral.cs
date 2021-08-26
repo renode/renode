@@ -13,6 +13,7 @@ using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.CFU;
+using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection;
 using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 using Antmicro.Renode.Utilities;
@@ -23,9 +24,23 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class CFUVerilatedPeripheral : ICFU, IDisposable, IHasOwnLife
     {
-        public CFUVerilatedPeripheral(Machine machine, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
+        public CFUVerilatedPeripheral(Machine machine, long frequency, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
         {
+            allTicksProcessedARE = new AutoResetEvent(initialState: false);
+
             verilatedPeripheral = new DLLBasedVerilatedPeripheral(this, timeout, HandleReceived);
+
+            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
+            timer.LimitReached += () =>
+            {
+                if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                {
+                    AbortAndLogError("Send error!");
+                }
+                this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
+                allTicksProcessedARE.WaitOne();
+                this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
+            };
 
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
@@ -35,6 +50,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public void Reset()
         {
             Send(ActionType.ResetPeripheral, 0, 0);
+            timer.Reset();
         }
 
         public void Dispose()
@@ -133,6 +149,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
                         verilatedPeripheral.SimulationFilePath = value;
+                        timer.Enabled = true;
                     }
                     catch(Exception e)
                     {
@@ -180,6 +197,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 case ActionType.InvalidAction:
                     this.Log(LogLevel.Warning, "Invalid action received");
+                    break;
+                case ActionType.TickClock:
+                    allTicksProcessedARE.Set();
                     break;
                 default:
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
@@ -274,12 +294,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
+        protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
         private bool disposeInitiated;
         private readonly DLLBasedVerilatedPeripheral verilatedPeripheral;
         private NativeBinder executeBinder;
         private VexRiscv connectedCpu;
         private IntPtr errorPointer;
+        private readonly AutoResetEvent allTicksProcessedARE;
+        private readonly LimitTimer timer;
+
+        private const string LimitTimerName = "CFUClock";
 
 #pragma warning disable 649
         [Import]
