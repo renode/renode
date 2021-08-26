@@ -35,7 +35,9 @@ public:
 class RenodeAgent
 {
 public:
+  RenodeAgent(BaseInitiatorBus* bus);
   RenodeAgent(BaseTargetBus* bus);
+  virtual void addBus(BaseInitiatorBus* bus);
   virtual void addBus(BaseTargetBus* bus);
   virtual void writeToBus(uint64_t addr, uint64_t value);
   virtual void readFromBus(uint64_t addr);
@@ -53,6 +55,7 @@ public:
   virtual void handleRequest(Protocol* request);
 
   std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
+  std::vector<std::unique_ptr<BaseInitiatorBus>> initatorInterfaces;
 
 protected:
   struct Interrupt {
