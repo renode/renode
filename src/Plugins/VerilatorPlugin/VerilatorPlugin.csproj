@@ -44,8 +44,8 @@
     <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
     <Compile Include="Connection\IVerilatedPeripheral.cs" />
-    <Compile Include="Connection\SocketBasedVerilatedPeripheral.cs" />
-    <Compile Include="Connection\DLLBasedVerilatedPeripheral.cs" />
+    <Compile Include="Connection\SocketVerilatorConnection.cs" />
+    <Compile Include="Connection\LibraryVerilatorConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionType.cs" />
   </ItemGroup>

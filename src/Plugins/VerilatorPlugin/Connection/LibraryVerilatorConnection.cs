@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -16,9 +16,9 @@ using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 {
-    public class DLLBasedVerilatedPeripheral : IVerilatedPeripheral, IEmulationElement
+    public class LibraryVerilatorConnection: IVerilatorConnection, IEmulationElement
     {
-        public DLLBasedVerilatedPeripheral(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
+        public LibraryVerilatorConnection(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
         {
             this.parentElement = parentElement;
             this.timeout = timeout;
