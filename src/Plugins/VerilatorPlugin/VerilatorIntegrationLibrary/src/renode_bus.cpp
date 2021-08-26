@@ -129,43 +129,54 @@ void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address
     communicationChannel = channel;
     channel->connect(receiverPort, senderPort, address);
     Protocol* result;
-    long ticks;
     reset();
 
     while(channel->isConnected) {
         result = receive();
-        switch(result->actionId) {
-            case invalidAction:
-                break;
-            case tickClock:
-                ticks = result->value - interfaces[0]->tickCounter;
-                if(ticks < 0) {
-                    interfaces[0]->tickCounter -= result->value;
-                }
-                else {
-                    tick(false, ticks);
-                }
-                interfaces[0]->tickCounter = 0;
-                communicationChannel->sendSender(Protocol(tickClock, 0, 0));
-                break;
-            case writeRequest:
-                writeToBus(result->addr, result->value);
-                break;
-            case readRequest:
-                readFromBus(result->addr);
-                break;
-            case resetPeripheral:
-                reset();
-                break;
-            case disconnect:
+        handleRequest(result);
+        delete result;
+    }
+}
+
+void RenodeAgent::handleRequest(Protocol* request)
+{
+    switch(request->actionId) {
+        case invalidAction:
+            break;
+        case tickClock:
+        {
+            long ticks = request->value - firstInterface->tickCounter;
+            if(ticks < 0) {
+                firstInterface->tickCounter -= request->value;
+            }
+            else {
+                tick(false, ticks);
+            }
+            firstInterface->tickCounter = 0;
+            communicationChannel->sendSender(Protocol(tickClock, 0, 0));
+        }
+            break;
+        case writeRequest:
+            writeToBus(request->addr, request->value);
+            break;
+        case readRequest:
+            readFromBus(request->addr);
+            break;
+        case resetPeripheral:
+            reset();
+            break;
+        case disconnect:
+        {
+            SocketCommunicationChannel* channel;
+            if((channel = dynamic_cast<SocketCommunicationChannel*>(communicationChannel)) != nullptr) {
                 communicationChannel->sendSender(Protocol(ok, 0, 0));
                 channel->isConnected = false;
-                break;
-            default:
-                handleCustomRequestType(result);
-                break;
+            }
+            break;
         }
-        delete result;
+        default:
+            handleCustomRequestType(request);
+            break;
     }
 }
 
@@ -278,34 +289,7 @@ void initialize_native()
 
 void handle_request(Protocol* request)
 {
-    long ticks;
-    switch(request->actionId) {
-        case invalidAction:
-            break;
-        case tickClock:
-            ticks = request->value - renodeAgent->interfaces[0]->tickCounter;
-            if(ticks < 0) {
-                renodeAgent->interfaces[0]->tickCounter -= request->value;
-            }
-            else {
-                renodeAgent->tick(false, ticks);
-            }
-            renodeAgent->interfaces[0]->tickCounter = 0;
-            renodeAgent->communicationChannel->sendSender(Protocol(tickClock, 0, 0));
-            break;
-        case writeRequest:
-            renodeAgent->writeToBus(request->addr, request->value);
-            break;
-        case readRequest:
-            renodeAgent->readFromBus(request->addr);
-            break;
-        case resetPeripheral:
-            renodeAgent->reset();
-            break;
-        default:
-            renodeAgent->handleCustomRequestType(request);
-            break;
-    }
+    renodeAgent->handleRequest(request);
 }
 
 void reset_peripheral()
