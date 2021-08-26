@@ -50,6 +50,7 @@ public:
   virtual void registerInterrupt(uint8_t *irq, uint8_t irq_addr);
   virtual void handleInterrupts(void);
   virtual void simulate(int receiverPort, int senderPort, const char* address);
+  virtual void handleRequest(Protocol* request);
 
   std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
 
@@ -88,6 +89,7 @@ private:
   bool isConnected;
 
   friend void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address);
+  friend void RenodeAgent::handleRequest(Protocol* request);
 };
 
 class NativeCommunicationChannel : public CommunicationChannel
