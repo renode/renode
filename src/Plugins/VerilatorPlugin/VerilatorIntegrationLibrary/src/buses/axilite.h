@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,7 +8,7 @@
 #define AxiLite_H
 #include "bus.h"
 
-struct AxiLite : public BaseBus
+struct AxiLite : public BaseTargetBus
 {
     virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(uint64_t addr, uint64_t value);

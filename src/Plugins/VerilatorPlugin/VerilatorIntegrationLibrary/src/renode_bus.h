@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -35,8 +35,8 @@ public:
 class RenodeAgent
 {
 public:
-  RenodeAgent(BaseBus* bus);
-  virtual void addBus(BaseBus* bus);
+  RenodeAgent(BaseTargetBus* bus);
+  virtual void addBus(BaseTargetBus* bus);
   virtual void writeToBus(uint64_t addr, uint64_t value);
   virtual void readFromBus(uint64_t addr);
   virtual void pushToAgent(uint64_t addr, uint64_t value);
@@ -51,7 +51,7 @@ public:
   virtual void handleInterrupts(void);
   virtual void simulate(int receiverPort, int senderPort, const char* address);
 
-  std::vector<BaseBus*> interfaces;
+  std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
 
 protected:
   struct Interrupt {
@@ -62,6 +62,7 @@ protected:
 
   std::vector<Interrupt> interrupts;
   CommunicationChannel* communicationChannel;
+  BaseBus* firstInterface;
 
 private:
   friend void ::handle_request(Protocol* request);
