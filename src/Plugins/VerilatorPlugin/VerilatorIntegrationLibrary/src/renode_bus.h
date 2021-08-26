@@ -41,6 +41,10 @@ public:
   virtual void addBus(BaseTargetBus* bus);
   virtual void writeToBus(uint64_t addr, uint64_t value);
   virtual void readFromBus(uint64_t addr);
+  virtual void pushByteToAgent(uint64_t addr, uint8_t value);
+  virtual void pushWordToAgent(uint64_t addr, uint16_t value);
+  virtual void pushDoubleWordToAgent(uint64_t addr, uint32_t value);
+  virtual uint64_t requestDoubleWordFromAgent(uint64_t addr);
   virtual void pushToAgent(uint64_t addr, uint64_t value);
   virtual uint64_t requestFromAgent(uint64_t addr);
   virtual void tick(bool countEnable, uint64_t steps);
