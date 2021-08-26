@@ -27,17 +27,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
             if(address != null)
             {
-                verilatedPeripheral = new SocketBasedVerilatedPeripheral(this, timeout, HandleReceived, address);
+                verilatorConnection = new SocketVerilatorConnection(this, timeout, HandleReceived, address);
             }
             else
             {
-                verilatedPeripheral = new DLLBasedVerilatedPeripheral(this, timeout, HandleReceived);
+                verilatorConnection = new LibraryVerilatorConnection(this, timeout, HandleReceived);
             }
 
             timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
-                if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                if(!verilatorConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
                 {
                     AbortAndLogError("Send error!");
                 }
@@ -93,17 +93,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public void Dispose()
         {
             disposeInitiated = true;
-            verilatedPeripheral.Dispose();
+            verilatorConnection.Dispose();
         }
 
         public void Pause()
         {
-            verilatedPeripheral.Pause();
+            verilatorConnection.Pause();
         }
 
         public void Resume()
         {
-            verilatedPeripheral.Resume();
+            verilatorConnection.Resume();
         }
 
         public string SimulationFilePathLinux
@@ -168,7 +168,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
                 if(!String.IsNullOrWhiteSpace(value))
                 {
-                    verilatedPeripheral.SimulationFilePath = value;
+                    verilatorConnection.SimulationFilePath = value;
                     simulationFilePath = value;
                     timer.Enabled = true;
                 }
@@ -181,14 +181,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
             }
-            verilatedPeripheral.Start();
+            verilatorConnection.Start();
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!verilatorConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Send error!");
             }
@@ -247,7 +247,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private ProtocolMessage Receive()
         {
-            if(!verilatedPeripheral.TryReceiveMessage(out var message))
+            if(!verilatorConnection.TryReceiveMessage(out var message))
             {
                 AbortAndLogError("Receive error!");
             }
@@ -262,7 +262,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 return;
             }
             this.Log(LogLevel.Error, message);
-            verilatedPeripheral.Abort();
+            verilatorConnection.Abort();
 
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
@@ -276,7 +276,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private bool disposeInitiated;
         private string simulationFilePath;
-        private IVerilatedPeripheral verilatedPeripheral;
+        private IVerilatorConnection verilatorConnection;
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly Machine machine;
         private readonly LimitTimer timer;

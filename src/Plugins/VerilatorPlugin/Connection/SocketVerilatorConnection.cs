@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -25,9 +25,9 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 {
-    public class SocketBasedVerilatedPeripheral : IVerilatedPeripheral, IDisposable
+    public class SocketVerilatorConnection : IVerilatorConnection, IDisposable
     {
-        public SocketBasedVerilatedPeripheral(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketVerilatorConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
