@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -11,15 +11,9 @@
 
 enum class AxiBurstType  {FIXED = 0, INCR = 1, WRAP = 2, RESERVED = 3};
 
-struct Axi : public BaseBus
+struct BaseAxi
 {
-    Axi(uint32_t dataWidth, uint32_t addrWidth);
-    virtual void tick(bool countEnable, uint64_t steps);
-    virtual void write(uint64_t addr, uint64_t value);
-    virtual uint64_t read(uint64_t addr);
-    virtual void reset();
-
-    void timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20);
+    BaseAxi(uint32_t dataWidth, uint32_t addrWidth);
 
     void setAgent(RenodeAgent* agent);
     RenodeAgent* agent;
@@ -84,5 +78,16 @@ struct Axi : public BaseBus
     uint8_t  *ruser;
     uint8_t  *rvalid;
     uint8_t  *rready;
+};
+
+struct Axi : public BaseAxi, public BaseTargetBus
+{
+    Axi(uint32_t dataWidth, uint32_t addrWidth);
+    virtual void tick(bool countEnable, uint64_t steps);
+    virtual void write(uint64_t addr, uint64_t value);
+    virtual uint64_t read(uint64_t addr);
+    virtual void reset();
+
+    void timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20);
 };
 #endif

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -13,21 +13,22 @@ static RenodeAgent* renodeAgent;
 // RenodeAgent
 //=================================================
 
-RenodeAgent::RenodeAgent(BaseBus* bus)
+RenodeAgent::RenodeAgent(BaseTargetBus* bus)
 {
-    interfaces.push_back(bus);
-    interfaces[0]->tickCounter = 0;
+    targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
+    targetInterfaces[0]->tickCounter = 0;
+    firstInterface = bus;
 }
 
-void RenodeAgent::addBus(BaseBus* bus)
+void RenodeAgent::addBus(BaseTargetBus* bus)
 {
-    interfaces.push_back(bus);
+    targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
 }
 
 void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)
 {
     try {
-        interfaces[0]->write(addr, value);
+        targetInterfaces[0]->write(addr, value);
         communicationChannel->sendMain(Protocol(ok, 0, 0));
     }
     catch(const char* msg) {
@@ -39,7 +40,7 @@ void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)
 void RenodeAgent::readFromBus(uint64_t addr)
 {
     try {
-        uint64_t readValue = interfaces[0]->read(addr);
+        uint64_t readValue = targetInterfaces[0]->read(addr);
         communicationChannel->sendMain(Protocol(readRequest, addr, readValue));
     }
     catch(const char* msg) {
@@ -62,19 +63,19 @@ uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
 
 void RenodeAgent::tick(bool countEnable, uint64_t steps)
 {
-    for(BaseBus* b : interfaces)
+    for(auto& b : targetInterfaces)
         b->tick(countEnable, steps);
 }
 
 void RenodeAgent::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
 {
-    for(BaseBus* b : interfaces)
+    for(auto& b : targetInterfaces)
         b->timeoutTick(signal, expectedValue, timeout);
 }
 
 void RenodeAgent::reset()
 {
-    for(BaseBus* b : interfaces)
+    for(auto& b : targetInterfaces)
         b->reset();
 }
 

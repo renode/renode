@@ -7,7 +7,7 @@
 #include "axi.h"
 #include <cmath>
 
-Axi::Axi(uint32_t dataWidth, uint32_t addrWidth)
+BaseAxi::BaseAxi(uint32_t dataWidth, uint32_t addrWidth)
 {
     if(dataWidth != 32)
         throw "Unsupported AXI data width";
@@ -18,6 +18,10 @@ Axi::Axi(uint32_t dataWidth, uint32_t addrWidth)
         throw "Unsupported AXI address width";
 
     this->addrWidth = addrWidth;
+}
+
+Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
+{
 }
 
 void Axi::setAgent(RenodeAgent* agent)

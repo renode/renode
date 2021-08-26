@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cinttypes>
 
-AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : Axi(dataWidth, addrWidth)
+AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
 {
     writeState = AxiWriteState::AW;
     readState = AxiReadState::AR;
