@@ -23,5 +23,14 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         Handshake,
         PushDoubleWord,
         GetDoubleWord,
+        PushWord,
+        GetWord,
+        PushByte,
+        GetByte,
+        IsHalted,
+        RegisterGet,
+        RegisterSet,
+        SingleStepMode,
+        Step = 100 //all custom action type numbers must not fall in this range
     }
 }
