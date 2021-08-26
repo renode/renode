@@ -26,6 +26,19 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             Send((ActionType)UARTActionNumber.UARTRxd, 0, value);
         }
+        
+        public override void HandleReceivedMessage(ProtocolMessage message)
+        {
+            switch(message.ActionId)
+            {
+                case (ActionType)UARTActionNumber.UARTTxd:
+                    CharReceived?.Invoke((byte)message.Data);
+                    break;
+                default:
+                    base.HandleReceivedMessage(message);
+                    break;
+            }
+        }
 
         // StopBits, ParityBit and BaudRate are not in sync with the verilated model
         public Bits StopBits { get { return Bits.One; } }
@@ -35,19 +48,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public event Action<byte> CharReceived;
 
         public GPIO IRQ { get; private set; }
-
-        protected override void HandleReceived(ProtocolMessage message)
-        {
-            switch(message.ActionId)
-            {
-                case (ActionType)UARTActionNumber.UARTTxd:
-                    CharReceived?.Invoke((byte)message.Data);
-                    break;
-                default:
-                    base.HandleReceived(message);
-                    break;
-            }
-        }
 
         protected override void HandleInterrupt(ProtocolMessage interrupt)
         {
