@@ -16,6 +16,7 @@ struct AxiSlave : public Axi
 {
     AxiSlave(uint32_t dataWidth, uint32_t addrWidth);
     virtual void tick(bool countEnable, uint64_t steps);
+    virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
     virtual void write(uint64_t addr, uint64_t value);
     virtual uint64_t read(uint64_t addr);
     virtual void reset();

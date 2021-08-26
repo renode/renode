@@ -46,6 +46,20 @@ void AxiSlave::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
+void AxiSlave::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
+{
+    do
+    {
+        tick(true);
+        timeout--;
+    }
+    while((*signal != expectedValue) && timeout > 0);
+
+    if(timeout == 0) {
+        throw "Operation timeout";
+    }
+}
+
 // Clear signals when leaving tick
 
 void AxiSlave::clearSignals()
