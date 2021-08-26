@@ -45,6 +45,9 @@
     <Compile Include="Verilated\Peripherals\BaseVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
+    <Compile Include="Verilated\Peripherals\VerilatedCPU.cs" />
+    <Compile Include="Verilated\Peripherals\VerilatedRiscV32.cs" />
+    <Compile Include="Verilated\Peripherals\VerilatedRiscV32Registers.cs" />
     <Compile Include="Connection\IVerilatedPeripheral.cs" />
     <Compile Include="Connection\SocketVerilatorConnection.cs" />
     <Compile Include="Connection\LibraryVerilatorConnection.cs" />
@@ -75,6 +78,10 @@
     <ProjectReference Include="..\..\Infrastructure\src\Emulator\Cores\cores-riscv.csproj">
       <Project>{63222124-707C-5EFD-8289-2728351FB7E9}</Project>
       <Name>cores-riscv</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\lib\ELFSharp\ELFSharp\ELFSharp.csproj">
+      <Project>{CF944E09-7C14-433C-A185-161848E989B3}</Project>
+      <Name>ELFSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
