@@ -21,6 +21,7 @@ public:
     uint8_t  *wb_stb;
     uint8_t  *wb_ack;
     uint8_t  *wb_cyc;
+    uint8_t  *wb_stall;
 };
 
 class Wishbone : public WishboneBase, public BaseTargetBus
