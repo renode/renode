@@ -45,6 +45,15 @@ enum Action
   handshake = 10,
   pushDoubleWord = 11,
   getDoubleWord = 12,
+  pushWord = 13,
+  getWord = 14,
+  pushByte = 15,
+  getByte = 16,
+  isHalted = 17,
+  registerGet = 18,
+  registerSet = 19,
+  singleStepMode = 20,
+  step = 100,
 };
 
 enum LogLevel
