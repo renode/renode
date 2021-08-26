@@ -21,9 +21,23 @@ RenodeAgent::RenodeAgent(BaseTargetBus* bus)
     bus->setAgent(this);
 }
 
+RenodeAgent::RenodeAgent(BaseInitiatorBus* bus)
+{
+    initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
+    initatorInterfaces[0]->tickCounter = 0;
+    firstInterface = bus;
+    bus->setAgent(this);
+}
+
 void RenodeAgent::addBus(BaseTargetBus* bus)
 {
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
+    bus->setAgent(this);
+}
+
+void RenodeAgent::addBus(BaseInitiatorBus* bus)
+{
+    initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
     bus->setAgent(this);
 }
 
@@ -67,17 +81,23 @@ void RenodeAgent::tick(bool countEnable, uint64_t steps)
 {
     for(auto& b : targetInterfaces)
         b->tick(countEnable, steps);
+    for(auto& b : initatorInterfaces)
+        b->tick(countEnable, steps);
 }
 
 void RenodeAgent::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
 {
     for(auto& b : targetInterfaces)
         b->timeoutTick(signal, expectedValue, timeout);
+    for(auto& b : initatorInterfaces)
+        b->timeoutTick(signal, expectedValue, timeout);
 }
 
 void RenodeAgent::reset()
 {
     for(auto& b : targetInterfaces)
+        b->reset();
+    for(auto& b : initatorInterfaces)
         b->reset();
 }
 
