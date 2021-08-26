@@ -1,0 +1,24 @@
+:name: Verilated Ibex
+:description: This script runs LiteX BIOS on the verilated Ibex CPU.
+
+$name?="Verilated Ibex"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/verilated/verilated_ibex.repl
+
+$bios?=@https://dl.antmicro.com/projects/renode/litex_ibex--bios.bin-s_20712-80d064cf8ab28801b78c0e5a63cac4830016f6c8
+$cpuLinux?=@https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
+
+showAnalyzer sysbus.uart
+
+cpu SimulationFilePathLinux $cpuLinux
+
+macro reset
+"""
+    sysbus LoadBinary $bios 0x0
+    sysbus.cpu PC 0x0
+"""
+
+runMacro $reset
+
