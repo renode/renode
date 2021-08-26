@@ -9,13 +9,23 @@
 
 #include <cstdint>
 
+class RenodeAgent;
+
 class BaseBus
 {
 public:
+    BaseBus() : agent(nullptr), tickCounter(0) {}
     virtual void tick(bool countEnable, uint64_t steps) = 0;
     virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout) = 0;
     virtual void reset() = 0;
     void (*evaluateModel)();
+    virtual void setAgent(RenodeAgent *newAgent)
+    {
+        agent = newAgent;
+    }
+protected:
+    friend class RenodeAgent;
+    RenodeAgent *agent;
     uint64_t tickCounter;
 };
 

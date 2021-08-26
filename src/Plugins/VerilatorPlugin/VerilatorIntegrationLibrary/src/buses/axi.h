@@ -15,9 +15,6 @@ struct BaseAxi
 {
     BaseAxi(uint32_t dataWidth, uint32_t addrWidth);
 
-    void setAgent(RenodeAgent* agent);
-    RenodeAgent* agent;
-
     uint32_t dataWidth;
     uint32_t addrWidth;
 

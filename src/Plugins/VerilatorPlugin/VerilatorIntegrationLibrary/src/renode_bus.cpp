@@ -18,11 +18,13 @@ RenodeAgent::RenodeAgent(BaseTargetBus* bus)
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
     targetInterfaces[0]->tickCounter = 0;
     firstInterface = bus;
+    bus->setAgent(this);
 }
 
 void RenodeAgent::addBus(BaseTargetBus* bus)
 {
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
+    bus->setAgent(this);
 }
 
 void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)

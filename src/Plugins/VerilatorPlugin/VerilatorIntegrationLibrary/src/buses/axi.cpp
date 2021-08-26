@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -22,11 +22,6 @@ BaseAxi::BaseAxi(uint32_t dataWidth, uint32_t addrWidth)
 
 Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
 {
-}
-
-void Axi::setAgent(RenodeAgent* agent)
-{
-    this->agent = agent;
 }
 
 void Axi::tick(bool countEnable, uint64_t steps = 1)
