@@ -36,4 +36,15 @@ public:
     virtual uint64_t read(uint64_t addr) = 0;
 };
 
+class BaseInitiatorBus : public BaseBus
+{
+public:
+    virtual void readWord(uint64_t addr, uint8_t sel) = 0;
+    virtual void writeWord(uint64_t addr, uint64_t data, uint8_t sel) = 0;
+    virtual void readHandler() = 0;
+    virtual void writeHandler() = 0;
+    virtual void clearSignals() = 0;
+    virtual bool hasSpecifiedAdress() = 0;
+    virtual uint64_t getSpecifiedAdress() = 0;
+};
 #endif
