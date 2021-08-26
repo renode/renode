@@ -8,7 +8,8 @@ Resource                      ${RENODEKEYWORDS}
 *** Variables ***
 @{scripts_path}=              ${CURDIR}/../../scripts
 @{pattern}=                   *.resc
-@{excludes}=                  complex
+# verilated_ibex.resc is currenlty supported on Linux only
+@{excludes}=                  complex single-node/verilated_ibex.resc
 
 *** Keywords ***
 Get Test Cases
