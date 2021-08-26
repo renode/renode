@@ -1,0 +1,59 @@
+bootprom: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x1000
+
+extprom: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x1000000
+
+spi0: Memory.MappedMemory @ sysbus 0x02000000
+    size: 0x2000000
+
+spi1: Memory.MappedMemory @ sysbus 0x04000000
+    size: 0x2000000
+
+ram: Memory.MappedMemory @ sysbus 0x30000000
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x31000000
+    size: 0x20000
+
+extram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+cpu: CPU.Sparc @ sysbus
+    cpuType: "gr716"
+
+mic: IRQControllers.GaislerMIC @ sysbus <0x80002000, +0x400>
+    0 -> cpu@0 | cpu@1 | cpu@2
+
+uart: UART.GaislerUART @ sysbus <0x80300000, +0x100>
+    -> mic@24
+
+uart1: UART.GaislerUART @ sysbus <0x80301000, +0x100>
+    -> mic@25
+
+uart2: UART.GaislerUART @ sysbus <0x80302000, +0x100>
+    -> mic@3
+
+uart3: UART.GaislerUART @ sysbus <0x80303000, +0x100>
+    -> mic@5
+
+uart4: UART.GaislerUART @ sysbus <0x80304000, +0x100>
+    -> mic@6
+
+uart5: UART.GaislerUART @ sysbus <0x80305000, +0x100>
+    -> mic@7
+
+timer0: Timers.GaislerGPTimer @ sysbus <0x80003000, +0x100>
+    0 -> mic@9
+    timersNumber: 2
+    frequency: 1000000
+
+gpio0: GPIOPort.GaislerGPIO @ sysbus <0x8030C000, +0x100>
+    -> mic@17
+    numberOfPorts: 32
+    numberOfInterrupts: 1
+
+gpio1: GPIOPort.GaislerGPIO @ sysbus <0x8030D000, +0x100>
+    -> mic@38
+    numberOfPorts: 32
+    numberOfInterrupts: 1

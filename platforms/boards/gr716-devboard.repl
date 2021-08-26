@@ -1,0 +1,13 @@
+using "platforms/cpus/gr716.repl"
+
+switch0: Miscellaneous.Button @ gpio0 0
+    -> gpio0@0
+
+switch1: Miscellaneous.Button @ gpio0 17
+    -> gpio0@17
+
+switch2: Miscellaneous.Button @ gpio1 30
+    -> gpio1@30
+
+switch3: Miscellaneous.Button @ gpio1 31
+    -> gpio1@31
