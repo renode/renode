@@ -91,7 +91,7 @@ void AxiSlave::updateSignals()
 
 // Sample signals before rising edge in handlers
 
-void AxiSlave::readWord(uint64_t addr)
+void AxiSlave::readWord(uint64_t addr, uint8_t sel = 0)
 {
     sprintf(buffer, "Axi read from: 0x%" PRIX64, addr);
     this->agent->log(0, buffer);
@@ -151,9 +151,9 @@ void AxiSlave::readHandler()
     }
 }
 
-void AxiSlave::writeWord(uint64_t addr, uint32_t data, uint8_t strb)
+void AxiSlave::writeWord(uint64_t addr, uint64_t data, uint8_t strb)
 {
-    sprintf(buffer, "Axi write to: 0x%" PRIX64 ", data: 0x%X", addr, data);
+    sprintf(buffer, "Axi write to: 0x%" PRIX64 ", data: 0x%" PRIX64 "", addr, data);
     this->agent->log(0, buffer);
     this->agent->pushToAgent(writeAddr, *wdata);
 }
