@@ -1,12 +1,13 @@
 ﻿//
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
 //
 namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
 {
-    // ActionType must be in sync with the Verilator integration library
+    // ActionType must be in sync with the Verilator integration library.
+    // Append new actions to the end to preserve compatibility.
     public enum ActionType
     {
         InvalidAction = 0,
@@ -20,7 +21,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         Error,
         OK,
         Handshake,
-        PushData,
-        GetData = 12 //all custom action type numbers must not fall in this range
+        PushDoubleWord,
+        GetDoubleWord,
     }
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -28,7 +28,8 @@ struct Protocol
 };
 #pragma pack(pop)
 
-// Action must be in sync with Renode's ActionType
+// Action must be in sync with Renode's ActionType.
+// Append new actions to the end to preserve compatibility.
 enum Action
 {
   invalidAction = 0,
@@ -42,8 +43,8 @@ enum Action
   error = 8,
   ok = 9,
   handshake = 10,
-  pushData = 11,
-  getData = 12
+  pushDoubleWord = 11,
+  getDoubleWord = 12,
 };
 
 enum LogLevel

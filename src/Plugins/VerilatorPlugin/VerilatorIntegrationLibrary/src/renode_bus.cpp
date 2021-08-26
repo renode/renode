@@ -50,12 +50,12 @@ void RenodeAgent::readFromBus(uint64_t addr)
 
 void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value)
 {
-    communicationChannel->sendSender(Protocol(pushData, addr, value));
+    communicationChannel->sendSender(Protocol(pushDoubleWord, addr, value));
 }
 
 uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
 {
-    communicationChannel->sendSender(Protocol(getData, addr, 0));
+    communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
     Protocol* received = communicationChannel->receive();
     return received->value;
 }
