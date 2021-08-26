@@ -13,7 +13,9 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
     public interface IVerilatorConnection : IDisposable, IHasOwnLife
     {
         bool TrySendMessage(ProtocolMessage message);
+        bool TryRespond(ProtocolMessage message);
         bool TryReceiveMessage(out ProtocolMessage message);
+        void HandleMessage();
 
         void Abort();
         string SimulationFilePath { set; }

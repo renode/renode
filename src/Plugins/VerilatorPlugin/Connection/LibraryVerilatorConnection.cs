@@ -24,15 +24,9 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             this.timeout = timeout;
             receivedHandler = receiveAction;
             mainReceived = new AutoResetEvent(initialState: false);
-            senderMessages = new BlockingCollection<ProtocolMessage>();
             receiveQueue = new BlockingCollection<ProtocolMessage>();
             senderData = new BlockingCollection<string>();
             peripheralActive = new CancellationTokenSource();
-            receiveSenderThread = new Thread(ReceiveLoop)
-            {
-                IsBackground = true,
-                Name = "Verilated.Receiver"
-            };
             nativeLock = new object();
         }
 
@@ -46,25 +40,25 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public bool TrySendMessage(ProtocolMessage message)
         {
-            if(Thread.CurrentThread.ManagedThreadId == receiveThreadId)
+            lock(nativeLock)
             {
-                try
-                {
-                    receiveQueue.Add(message, peripheralActive.Token);
-                }
-                catch(OperationCanceledException)
-                {
-                    return false;
-                }
+                Marshal.StructureToPtr(message, mainResponsePointer, true);
+                handleRequest(mainResponsePointer);
             }
-            else
+            return true;
+        }
+
+        public bool TryRespond(ProtocolMessage message)
+        {
+            try
             {
-                lock(nativeLock)
-                {
-                    Marshal.StructureToPtr(message, mainResponsePointer, true);
-                    handleRequest(mainResponsePointer);
-                }
+                receiveQueue.Add(message, peripheralActive.Token);
             }
+            catch(OperationCanceledException)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -82,6 +76,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             return false;
         }
 
+        public void HandleMessage()
+        {
+            // intentionally left empty
+        }
+
         public void Abort()
         {
             peripheralActive.Cancel();
@@ -89,7 +88,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public void Start()
         {
-            receiveSenderThread.Start();
+            // intentionally left empty
         }
 
         public void Pause()
@@ -127,7 +126,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                     senderData.Add(Marshal.PtrToStringAuto((IntPtr)message.Data, (int)message.Address), peripheralActive.Token);
                     return;
                 }
-                senderMessages.Add(message, peripheralActive.Token);
+                HandleReceived(message);
             }
             catch(OperationCanceledException)
             {
@@ -182,23 +181,6 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
-        private void ReceiveLoop()
-        {
-            receiveThreadId = Thread.CurrentThread.ManagedThreadId;
-            try
-            {
-                while(!peripheralActive.Token.IsCancellationRequested)
-                {
-                    var message = senderMessages.Take(peripheralActive.Token);
-                    HandleReceived(message);
-                }
-            }
-            catch(OperationCanceledException)
-            {
-                return;
-            }
-        }
-
         private void HandleReceived(ProtocolMessage message)
         {
             switch(message.ActionId)
@@ -220,7 +202,6 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
-        private int receiveThreadId;
         private string simulationFilePath;
         private NativeBinder binder;
         private IntPtr mainResponsePointer;
@@ -231,10 +212,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         private readonly AutoResetEvent mainReceived;
         private readonly CancellationTokenSource peripheralActive;
-        private readonly BlockingCollection<ProtocolMessage> senderMessages;
         private readonly BlockingCollection<ProtocolMessage> receiveQueue;
         private readonly BlockingCollection<string> senderData;
-        private readonly Thread receiveSenderThread;
         private readonly int timeout;
         private readonly object nativeLock;
 

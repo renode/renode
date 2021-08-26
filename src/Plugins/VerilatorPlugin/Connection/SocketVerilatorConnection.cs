@@ -88,9 +88,18 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             return mainSocketComunicator.TrySendMessage(message);
         }
 
+        public bool TryRespond(ProtocolMessage message)
+        {
+            return TrySendMessage(message);
+        }
+
         public bool TryReceiveMessage(out ProtocolMessage message)
         {
             return mainSocketComunicator.TryReceiveMessage(out message);
+        }
+
+        public void HandleMessage()
+        {
         }
 
         public void Abort()
