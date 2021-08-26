@@ -6,10 +6,10 @@ usbEhci: USBDeprecated.EHCIHostController @ sysbus <0xE0002000, +0x1000>
 
 pl310: Cache.PL310 @ sysbus <0xF8F02000, +0x1000>
 
-gem0: Network.ZynqEthernet @ sysbus <0xE000B000, +0x1000>
+gem0: Network.CadenceGEM @ sysbus <0xE000B000, +0x1000>
     -> gic@22
 
-gem1: Network.ZynqEthernet @ sysbus <0xE000C000, +0x1000>
+gem1: Network.CadenceGEM @ sysbus <0xE000C000, +0x1000>
     -> gic@45
 
 uart0: UART.CadenceUart @ sysbus <0xE0000000, +0x1000>
