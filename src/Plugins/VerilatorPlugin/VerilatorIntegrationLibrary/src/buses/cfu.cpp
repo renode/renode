@@ -42,18 +42,30 @@ uint64_t Cfu::execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* 
   *req_data0 = data0;
   *req_data1 = data1;
   *req_valid = 1;
+  *resp_ready = 1;
 
-  /* Wait for CFU to accept request */
-  timeoutTick(resp_valid, 1);
-  
-  /* CFU operation finished so deassert req_valid */
+  /* Wait for CFU to accept a command */
+  timeoutTick(req_ready, 1);
+
+  /* CPU passed a command so deassert req_valid */
   *req_valid = 0;
+
+  /* Check if CFU finished operation and wait for it if it's not finished */
+  if(*resp_valid != 1) {
+    timeoutTick(resp_valid, 1);
+  }
+
+  /* Save output from CFU */
   result = *resp_data;
+
+  /* CFU operation finished so deassert resp_ready */
+  *resp_ready = 0;
+
+  /* Apply all signals with additional tick */
+  tick(true);
 
   /* Error signal is not supported by CFU yet so set it to 0 */
   *error = 0;
-
-  tick(true);
 
   return result;
 }
