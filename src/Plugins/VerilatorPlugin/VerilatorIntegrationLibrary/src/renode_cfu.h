@@ -35,6 +35,7 @@ class NativeCommunicationChannel
 {
 public:
   NativeCommunicationChannel() = default;
+  void sendSender(const Protocol message);
   void log(int logLevel, const char* data);
   Protocol* receive();
 };
@@ -47,6 +48,7 @@ public:
   virtual uint64_t execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* error);
   virtual void handleCustomRequestType(Protocol* message);
   virtual void log(int level, const char* fmt, ...);
+  virtual void tick(bool countEnable, uint64_t steps);
 
   Cfu *cfu;
 

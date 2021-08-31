@@ -18,6 +18,11 @@ RenodeAgent::RenodeAgent(Cfu *_cfu) {
     cfu->tickCounter = 0;
 }
 
+void RenodeAgent::tick(bool countEnable, uint64_t steps)
+{
+    cfu->tick(countEnable, steps);
+}
+
 void RenodeAgent::reset()
 {
     cfu->reset();
@@ -63,6 +68,11 @@ void RenodeAgent::log(int level, const char* fmt, ...)
 extern void handleSenderMessage(void* ptr);
 EXTERNAL_AS(action_intptr, HandleSenderMessage, handleSenderMessage);
 
+void NativeCommunicationChannel::sendSender(const Protocol message)
+{
+    handleSenderMessage(new Protocol(message));
+}
+
 void NativeCommunicationChannel::log(int logLevel, const char* data)
 {
     handleSenderMessage(new Protocol(logMessage, strlen(data) + 1, (uint64_t)data));
@@ -86,8 +96,17 @@ void initialize_native()
 
 void handle_request(Protocol* request)
 {
+    long ticks;
     switch(request->actionId) {
         case invalidAction:
+            break;
+        case tickClock:
+            ticks = request->value - renodeAgent->cfu->tickCounter;
+            if(ticks > 0) {
+                renodeAgent->tick(false, ticks);
+            }
+            renodeAgent->cfu->tickCounter = 0;
+            renodeAgent->communicationChannel->sendSender(Protocol(tickClock, 0, 0));
             break;
         case resetPeripheral:
             renodeAgent->reset();
