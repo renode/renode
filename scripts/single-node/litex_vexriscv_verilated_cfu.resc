@@ -40,3 +40,9 @@ macro reset
 """
 
 runMacro $reset
+
+echo "Software loaded. It is the `example_cfu` from CFU-Playground (https://github.com/google/CFU-Playground)."
+echo "You can test it by running `Functional CFU Test` (2) menu option."
+echo ""
+echo "To test a more advanced CFU you can use `cfu_mnv2` from https://github.com/antmicro/renode-verilator-integration/tree/master/samples/cfu_mnv2 with `mnv2_first` software from https://github.com/google/CFU-Playground/tree/main/proj/mnv2_first."
+echo "MobileNetv2 CFU will let you test models with `TfLM Models menu` (1) or `Project menu` (3)."
