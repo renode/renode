@@ -14,6 +14,26 @@ showAnalyzer uart
 
 cpu.cfu0 SimulationFilePathLinux $cfuLinux
 
+# These CSR registers are mocked here to match the CPU used by the CFU-Playground project.
+cpu RegisterCustomCSR "BPM" 0xB04  User
+cpu RegisterCustomCSR "BPM" 0xB05  User
+cpu RegisterCustomCSR "BPM" 0xB06  User
+cpu RegisterCustomCSR "BPM" 0xB07  User
+cpu RegisterCustomCSR "BPM" 0xB08  User
+cpu RegisterCustomCSR "BPM" 0xB09  User
+cpu RegisterCustomCSR "BPM" 0xB0A  User
+cpu RegisterCustomCSR "BPM" 0xB0B  User
+cpu RegisterCustomCSR "BPM" 0xB0C  User
+cpu RegisterCustomCSR "BPM" 0xB0D  User
+cpu RegisterCustomCSR "BPM" 0xB0E  User
+cpu RegisterCustomCSR "BPM" 0xB0F  User
+cpu RegisterCustomCSR "BPM" 0xB10  User
+cpu RegisterCustomCSR "BPM" 0xB11  User
+cpu RegisterCustomCSR "BPM" 0xB12  User
+cpu RegisterCustomCSR "BPM" 0xB13  User
+cpu RegisterCustomCSR "BPM" 0xB14  User
+cpu RegisterCustomCSR "BPM" 0xB15  User
+
 macro reset
 """
     sysbus LoadELF $bin
