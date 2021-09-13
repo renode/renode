@@ -1,33 +1,28 @@
 import subprocess
 import fnmatch
 import os
+import psutil
+import socket
 
-try:
-    import netifaces
+def network_interface_should_exist(name):
+    if name not in psutil.net_if_addrs():
+        raise Exception('Network interface {} not found.'.format(name))
 
-    def network_interface_should_exist(name):
-        if name not in netifaces.interfaces():
-            raise Exception('Network interface {} not found.'.format(name))
+def network_interface_should_be_up(name):
+    network_interface_should_exist(name)
+    if not (name in psutil.net_if_stats() and psutil.net_if_stats()[name].isup):
+        raise Exception('Network interface {} is not up.'.format(name))
 
-    def network_interface_should_be_up(name):
-        proc = subprocess.Popen(['ip', 'addr', 'show', name, 'up'], stdout=subprocess.PIPE)
-        (output, err) = proc.communicate()
-        exit_code = proc.wait()
-        if exit_code != 0 or len(output) == 0:
-            raise Exception('Network interface {} is not up.'.format(name))
-
-    def network_interface_should_have_address(name, address):
-        network_interface_should_exist(name)
-        network_interface_should_be_up(name)
-        ifaddresses = netifaces.ifaddresses(name)
-        addresses = []
-        if netifaces.AF_INET in ifaddresses:
-            addresses = [a['addr'] for a in ifaddresses[netifaces.AF_INET]]
-        if address not in addresses:
-            raise Exception('Network interface {0} does not have address {1}.'.format(name, address))
-except:
-    # netifaces is not required on Windows
-    pass
+def network_interface_should_have_address(name, address):
+    network_interface_should_exist(name)
+    network_interface_should_be_up(name)
+    ifaddresses = psutil.net_if_addrs()[name]
+    addresses = []
+    for addr in ifaddresses:
+        if addr.family == socket.AF_INET2:
+            addresses.append(addr.address)
+    if address not in addresses:
+        raise Exception('Network interface {0} does not have address {1}.'.format(name, address))
 
 def list_files_in_directory_recursively(directory_name, pattern, excludes=None):
     files = []

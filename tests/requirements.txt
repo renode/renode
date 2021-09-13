@@ -1,5 +1,4 @@
 robotframework==4.0.1
-netifaces; platform_system != "Windows"
 requests
 psutil
 pyyaml
