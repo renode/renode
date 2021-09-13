@@ -1,0 +1,126 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 32000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic
+
+// Missing interrupt lines for SPIs
+spi1: SPI.STM32SPI @ sysbus 0x40013000
+
+spi2: SPI.STM32SPI @ sysbus 0x40003800
+
+spi3: SPI.STM32SPI @ sysbus 0x40003C00
+
+exti: IRQControllers.EXTI @ sysbus 0x4002F400
+    [0-15,17] -> nvic@[11-26,2]
+    numberOfOutputLines: 43
+
+sram1: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x30000
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x80000
+
+// frequency to be verified
+usart1: UART.STM32F7_USART @ sysbus 0x40013800
+    frequency: 200000000
+    -> nvic@61
+
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
+    frequency: 200000000
+    -> nvic@62
+
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 200000000
+    -> nvic@63
+
+uart4: UART.STM32F7_USART @ sysbus 0x40004C00
+    frequency: 200000000
+    -> nvic@64
+
+uart5: UART.STM32F7_USART @ sysbus 0x40005000
+    frequency: 200000000
+    -> nvic@65
+
+lpuart: UART.STM32F7_USART @ sysbus 0x40008000
+    frequency: 200000000
+    -> nvic@66
+
+dma1: DMA.STM32LDMA @ sysbus 0x40020000
+    [0-7] -> nvic@[29-36]
+
+i2c1: I2C.STM32F4_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@55
+    ErrorInterrupt -> nvic@56
+
+rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
+    -> exti@17
+
+// frequency to be verified
+timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    -> nvic@28
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+
+timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    -> nvic@29
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer4: Timers.STM32_Timer @ sysbus <0x40000800, +0x400>
+    -> nvic@30
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer5: Timers.STM32_Timer @ sysbus <0x40000C00, +0x400>
+    -> nvic@45
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    -> nvic@43
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+    -> nvic@44
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
+    -> nvic@25
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+    -> nvic@26
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+    -> nvic@27
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+sysbus:
+    init:
+        // Hard set all oscillator RDY bits
+        Tag <0x40021000 4> "RCC_CR" 0x2A020402
+        
+        // Hard set HSI16 oscillator as system clock
+        Tag <0x40021008 4> "RCC_CFGR" 0x4
+
+        Tag <0x42020000 0x400> "gpioPortA"
+        Tag <0x42020400 0x400> "gpioPortB"
+        Tag <0x42020800 0x400> "gpioPortC"
+        Tag <0x42020C00 0x400> "gpioPortD"
+        Tag <0x42021000 0x400> "gpioPortE"
+        Tag <0x42021400 0x400> "gpioPortF"
+        Tag <0x42021800 0x400> "gpioPortG"
+        Tag <0x42021C00 0x400> "gpioPortH"
+
+        Tag <0x40007000 0x400> "PWR"
+        Tag <0xE0001000 0xffb> "DWT"
