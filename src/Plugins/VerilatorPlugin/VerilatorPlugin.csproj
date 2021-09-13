@@ -43,7 +43,6 @@
     <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
-    <Compile Include="Verilated\Peripherals\VerilatedFastVDMA.cs" />
     <Compile Include="Connection\IVerilatedPeripheral.cs" />
     <Compile Include="Connection\SocketBasedVerilatedPeripheral.cs" />
     <Compile Include="Connection\DLLBasedVerilatedPeripheral.cs" />
