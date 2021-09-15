@@ -291,6 +291,8 @@ class RobotTestSuite(object):
             args.append('--disable-xwt')
         if options.debug_on_error:
             args.append('--robot-debug-on-error')
+        if options.keep_temps:
+            args.append('--keep-temporary-files')
         if options.renode_config:
             args.append('--config')
             args.append(options.renode_config)

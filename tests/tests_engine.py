@@ -121,6 +121,11 @@ def prepare_parser():
                         default=1,
                         type=int,
                         help="Maximum number of parallel tests")
+    parser.add_argument("--keep-temporary-files",
+                        dest="keep_temps",
+                        action="store_true",
+                        default=False,
+                        help="Don't clean temporary files on exit")
 
     if platform != "win32":
         parser.add_argument("-p", "--port",
