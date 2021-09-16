@@ -263,7 +263,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             this.Log(LogLevel.Error, message);
             verilatedPeripheral.Abort();
-            
+
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
