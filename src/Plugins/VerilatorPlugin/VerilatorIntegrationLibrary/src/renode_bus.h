@@ -47,12 +47,20 @@ public:
   virtual void handleCustomRequestType(Protocol* message);
   virtual void log(int level, const char* fmt, ...);
   virtual struct Protocol* receive();
-
+  virtual void registerInterrupt(uint8_t *irq, uint8_t irq_addr);
+  virtual void handleInterrupts(void);
   virtual void simulate(int receiverPort, int senderPort, const char* address);
 
   std::vector<BaseBus*> interfaces;
 
 protected:
+  struct Interrupt {
+    uint8_t* irq;
+    uint8_t prev_irq;
+    uint8_t irq_addr;
+  };
+
+  std::vector<Interrupt> interrupts;
   CommunicationChannel* communicationChannel;
 
 private:

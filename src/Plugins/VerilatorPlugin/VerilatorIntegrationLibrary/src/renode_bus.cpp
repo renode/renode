@@ -98,6 +98,27 @@ Protocol* RenodeAgent::receive()
     return communicationChannel->receive();
 }
 
+void RenodeAgent::registerInterrupt(uint8_t *irq, uint8_t irq_addr)
+{
+    if (irq == nullptr) {
+        log(LOG_LEVEL_ERROR, "The irq address cannot be null");
+        communicationChannel->sendMain(Protocol(error, 0, 0));
+        return;
+    }
+
+    interrupts.push_back({irq, 0, irq_addr});
+}
+
+void RenodeAgent::handleInterrupts(void)
+{
+    for (unsigned long i = 0; i < interrupts.size(); i++) {
+        if (*interrupts[i].irq != interrupts[i].prev_irq) {
+            communicationChannel->sendSender(Protocol(interrupt, interrupts[i].irq_addr, *interrupts[i].irq));
+            interrupts[i].prev_irq = *interrupts[i].irq;
+        }
+    }
+}
+
 void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address)
 {
     renodeAgent = this;
