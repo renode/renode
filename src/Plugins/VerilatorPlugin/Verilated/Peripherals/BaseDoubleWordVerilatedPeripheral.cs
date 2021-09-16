@@ -6,6 +6,8 @@
 //
 using System;
 using System.Threading;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
@@ -17,10 +19,9 @@ using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable, IHasOwnLife
+    public class BaseDoubleWordVerilatedPeripheral : IDoubleWordPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput
     {
-        public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null)
+        public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
         {
             this.machine = machine;
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
@@ -48,6 +49,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
             SimulationFilePathMacOS = simulationFilePathMacOS;
+
+            var innerConnections = new Dictionary<int, IGPIO>();
+            for(int i = 0; i < numberOfInterrupts; i++)
+            {
+                innerConnections[i] = new GPIO();
+            }
+
+            Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
         }
 
         public uint ReadDoubleWord(long offset)
@@ -175,6 +184,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             verilatedPeripheral.Start();
         }
 
+        public IReadOnlyDictionary<int, IGPIO> Connections { get; }
+
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
             if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
@@ -214,7 +225,13 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected virtual void HandleInterrupt(ProtocolMessage interrupt)
         {
-            this.Log(LogLevel.Info, "Unhandled interrupt: '{0}'", interrupt.Address);
+            if (!Connections.TryGetValue((int)interrupt.Address, out var connection))
+            {
+                this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", interrupt.Address);
+                return;
+            }
+
+            connection.Set(interrupt.Data != 0);
         }
 
         protected void CheckValidation(ProtocolMessage message)
