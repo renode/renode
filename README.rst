@@ -49,8 +49,6 @@ To use it from any location enter the created directory and add it to the system
 Follow the 'Additional Prerequisites' section if you wish to use Robot framework for testing.
 Otherwise you are ready to go to the 'Running Renode' section.
 
-Please note that on the fly compilation of ``*.cs`` files is not supported in the portable version.
-
 Installing dependencies
 +++++++++++++++++++++++
 
@@ -101,6 +99,14 @@ Building from source (advanced)
 +++++++++++++++++++++++++++++++
 
 For information on building Renode from source see `the documentation <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
+
+Nightly packages
+++++++++++++++++
+
+Nightly builds of Renode for all systems are available at `builds.renode.io <https://builds.renode.io>`_.
+Please note that these packages are not stable releases.
+
+Latest builds are always available as ``renode-latest.*`` packages.
 
 Running Renode
 --------------
