@@ -1,6 +1,7 @@
 import subprocess
 import fnmatch
 import os
+import sys
 import psutil
 import socket
 
@@ -15,7 +16,13 @@ def network_interface_should_be_up(name):
 
 def network_interface_should_have_address(name, address):
     network_interface_should_exist(name)
-    network_interface_should_be_up(name)
+    if not (sys.platform == "win32" or sys.platform == "cygwin"):
+        # On Windows, the status of TAP interface depends on the
+        # signals sent to the device file using the DeviceIoControl
+        # function from Win32 API. For this reason it is the Renode
+        # that sets the up/down status instead - and as such for the
+        # automated testing this check is skipped on Windows.
+        network_interface_should_be_up(name)
     ifaddresses = psutil.net_if_addrs()[name]
     addresses = []
     for addr in ifaddresses:
