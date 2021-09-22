@@ -173,10 +173,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 }
                 else
                 {
-                    connectedCpu = value as VexRiscv;
+                    connectedCpu = value as BaseRiscV;
                     if(connectedCpu == null)
                     {
-                        LogAndThrowRE("CFU is supported for VexRiscv CPU only!");
+                        LogAndThrowRE("CFU is supported for RISCV-V CPUs only!");
                     }
                     RegisterCFU();
                 }
@@ -299,7 +299,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private bool disposeInitiated;
         private readonly DLLBasedVerilatedPeripheral verilatedPeripheral;
         private NativeBinder executeBinder;
-        private VexRiscv connectedCpu;
+        private BaseRiscV connectedCpu;
         private IntPtr errorPointer;
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
