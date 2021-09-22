@@ -45,7 +45,7 @@ uart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 200000000
     -> nvic@65
 
-lpuart: UART.STM32F7_USART @ sysbus 0x40008000
+lpuart1: UART.STM32F7_USART @ sysbus 0x40008000
     frequency: 200000000
     -> nvic@66
 
