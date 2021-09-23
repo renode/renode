@@ -1,0 +1,16 @@
+using "platforms/cpus/imxrt1064.repl"
+
+sdram0: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x2000000
+
+user_button: Miscellaneous.Button @ gpio5
+    invert: true
+    -> gpio5@0
+
+green_led: Miscellaneous.LED @ gpio1 9
+    invert: true
+
+flex_spi: @ sysbus 0x402A8000
+
+flash_mem: Memory.MappedMemory @ sysbus 0x70000000
+    size: 0x400000
