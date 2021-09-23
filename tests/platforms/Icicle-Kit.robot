@@ -16,16 +16,14 @@ Prepare Machine
     Execute Script            ${SCRIPT}
     Set Default Uart Timeout  300
 
-# These tests have some code duplication (before the `Requires` keywords) to alleviate the problem related
-# to non-idempotent behavior of `CreateTerminalTester`. This duplication should be removed when we address
-# this issue.
 *** Test Cases ***
 Should Boot HSS
     [Documentation]           Boots Hart Software Services on Icicle Kit with PolarFire SoC
     [Tags]                    bootloader  uart  ddr  sd
     Prepare Machine
+
     ${hss}=                   Create Terminal Tester          ${UART_HSS}
-    ${uart}=                  Create Terminal Tester          ${UART}
+
     Start Emulation
 
     Wait For Line On Uart     Timeout in (\\d+) seconds       testerId=${hss}  treatAsRegex=true
@@ -39,11 +37,9 @@ Should Boot HSS
 Should Boot U-Boot
     [Documentation]           Boots U-Boot from SD card on Icicle Kit with PolarFire SoC
     [Tags]                    bootloader  uart
-    Prepare Machine
-    ${hss}=                   Create Terminal Tester          ${UART_HSS}
+    Requires                  booted-hss
+
     ${uart}=                  Create Terminal Tester          ${UART}
-    Start Emulation
-    #Requires                  booted-hss
 
     Wait For Prompt On Uart   Hit any key to stop autoboot    testerId=${uart}  treatAsRegex=true
     Wait For Line On Uart     Loading kernel from FIT Image   testerId=${uart}  treatAsRegex=true
@@ -56,11 +52,9 @@ Should Boot U-Boot
 Should Boot Linux
     [Documentation]           Boots Linux on Icicle Kit with PolarFire SoC.
     [Tags]                    linux  uart  interrupts
-    Prepare Machine
-    ${hss}=                   Create Terminal Tester        ${UART_HSS}
-    ${uart}=                  Create Terminal Tester        ${UART}
-    Start Emulation
-    #Requires                  booted-uboot
+    Requires                  booted-uboot
+
+    ${uart}=                  Create Terminal Tester          ${UART}
 
     Wait For Prompt On Uart   buildroot login:  testerId=${uart}
     Write Line To Uart        root              testerId=${uart}
@@ -73,16 +67,9 @@ Should Boot Linux
 Should Ls
     [Documentation]           Tests shell responsiveness in Linux on Icicle Kit
     [Tags]                    linux  uart  interrupts
-    Prepare Machine
-    ${hss}=                   Create Terminal Tester        ${UART_HSS}
-    ${uart}=                  Create Terminal Tester        ${UART}
-    Start Emulation
-    Wait For Prompt On Uart   buildroot login:  testerId=${uart}
-    Write Line To Uart        root              testerId=${uart}
-    Wait For Prompt On Uart   Password          testerId=${uart}
-    Write Line To Uart        root              testerId=${uart}  waitForEcho=false
-    Wait For Prompt On Uart   \#                testerId=${uart}
-    #Requires                  booted-linux
+    Requires                  booted-linux
+
+    ${uart}=                  Create Terminal Tester          ${UART}
 
     Write Line To Uart        ls /              testerId=${uart}
     Wait For Line On Uart     proc              testerId=${uart}
