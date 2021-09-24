@@ -35,7 +35,7 @@ for PATH_WEAK in $PATHS_WEAK
 do
   PATH_IMPLEMENTATION=`first $PATHS_IMPLEMENTATION`
   PATHS_IMPLEMENTATION=`next $PATHS_IMPLEMENTATION`
-  gcc -I tlib/include -E $PATH_WEAK | grep weak | grep -o tlib[_A-Za-z]* | sort | uniq > $WEAKS
+  ${CC:-gcc} -I tlib/include -E $PATH_WEAK | grep weak | grep -o tlib[_A-Za-z]* | sort | uniq > $WEAKS
   cat $PATH_IMPLEMENTATION | grep -o tlib[_A-Za-z]* | sort | uniq > $IMPLEMENTATIONS
   if grep -vwF -f $IMPLEMENTATIONS $WEAKS
   then
