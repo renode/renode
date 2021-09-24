@@ -147,13 +147,13 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
         public void Provides(string state)
         {
             Recorder.Instance.SaveCurrentState(state);
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
         public void Requires(string state)
         {
             List<Recorder.Event> events;
