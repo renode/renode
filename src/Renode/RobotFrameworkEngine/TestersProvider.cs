@@ -17,7 +17,7 @@ namespace Antmicro.Renode.RobotFramework
         public TestersProvider()
         {
             testers = new Dictionary<int, TTester>();
-            peripheralsWithTesters = new HashSet<TPeripheral>();
+            peripheralsWithTesters = new List<TPeripheral>();
             EmulationManager.Instance.EmulationChanged += () =>
             {
                 lock(testers)
@@ -66,16 +66,18 @@ namespace Antmicro.Renode.RobotFramework
                             string.Join(", ", machineObject.GetAllNames()));
                 }
 
-                if(peripheralsWithTesters.Contains(peripheral))
+                var testerId = peripheralsWithTesters.IndexOf(peripheral);
+                if(testerId != -1)
                 {
-                    throw new KeywordException("Tester for peripheral '{0}' in machine '{1}' already exists", peripheralName, machine);
+                    return testerId;
                 }
 
                 var tester = creator(peripheral);
                 peripheralsWithTesters.Add(peripheral);
-                testers.Add(peripheralsWithTesters.Count, tester);
+                testers.Add(peripheralsWithTesters.Count - 1, tester);
+                
+                return peripheralsWithTesters.Count - 1;
             }
-            return peripheralsWithTesters.Count;
         }
 
         protected TTester GetTesterOrThrowException(int? testerId)
@@ -100,6 +102,6 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private readonly Dictionary<int, TTester> testers;
-        private readonly HashSet<TPeripheral> peripheralsWithTesters;
+        private readonly List<TPeripheral> peripheralsWithTesters;
     }
 }
