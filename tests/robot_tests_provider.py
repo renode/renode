@@ -341,7 +341,7 @@ class RobotTestSuite(object):
             return set()
         if len(requirements) > 1:
             raise Exception('Too many requirements for a single test. At most one is allowed.')
-        providers = [t for t in suite.testcase_table.tests if any(hasattr(s, 'name') and s.name == 'Provides' and s.args[0] == requirements[0] for s in t.steps)]
+        providers = [t for t in suite.tests if any(hasattr(s, 'name') and s.name == 'Provides' and s.args[0] == requirements[0] for s in t.body)]
         if len(providers) > 1:
             raise Exception('Too many providers for state {0} found: {1}'.format(requirements[0], ', '.join(providers.name)))
         if len(providers) == 0:
