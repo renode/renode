@@ -6,7 +6,7 @@ machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPo
 
 $bin?=@https://dl.antmicro.com/projects/renode/zephyr-stm32f103-button.elf-s_276760-1bf32c99bbb3c01d81e13ca68118eaf08b2a815f
 
-showAnalyzer uart2
+showAnalyzer usart2
 
 macro reset
 """

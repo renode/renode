@@ -25,13 +25,13 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size:0x60000
 
-uart1: UART.STM32_UART @ sysbus <0x40013800, +0x100>
+usart1: UART.STM32_UART @ sysbus <0x40013800, +0x100>
     -> nvic@37
 
-uart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
+usart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
     -> nvic@38
 
-uart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
+usart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
     -> nvic@39
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>

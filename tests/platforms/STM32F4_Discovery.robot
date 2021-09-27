@@ -6,7 +6,7 @@ Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
-${UART}                       sysbus.uart2
+${UART}                       sysbus.usart2
 
 *** Test Cases ***
 Run Zephyr Hello World
@@ -58,7 +58,7 @@ Should Fire Update Event When Counting Up
     Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
     Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-timer-upcount.elf-g2d98d1b-s_1021132-961284be838516abea9db8302c9af2dcb67b482a
 
-    Create Terminal Tester  sysbus.uart2
+    Create Terminal Tester  sysbus.usart2
 
     Start Emulation
 
@@ -74,7 +74,7 @@ Should Fire Update Event When Counting Down
     Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
     Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-timer-downcount.elf-g2d98d1b-s_1021136-4995992fa219c49c38d7163da1381104c26c823a
 
-    Create Terminal Tester  sysbus.uart2
+    Create Terminal Tester  sysbus.usart2
 
     Start Emulation
 
