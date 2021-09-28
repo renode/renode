@@ -91,3 +91,11 @@ Should Display Output on GPIO
     Execute Command             led5 AssertState false 0.2
     Execute Command             led6 AssertState true 0.2
     Execute Command             led7 AssertState false 0.2
+
+Should Pass AES Smoketest
+    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--aes_smoketest_nexysvideo.elf-s_207660-1fb62c51b483c11563ef2796e11e3d03e9382ee6
+    Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
+

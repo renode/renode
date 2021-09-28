@@ -80,6 +80,8 @@ flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     // TODO setup interrupts for GPIO requires modification to renode model.
 
+aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
+
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
 
 // Timers
