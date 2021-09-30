@@ -24,23 +24,26 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class CFUVerilatedPeripheral : ICFU, IDisposable, IHasOwnLife
     {
-        public CFUVerilatedPeripheral(Machine machine, long frequency, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
+        public CFUVerilatedPeripheral(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
         {
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
 
             verilatedPeripheral = new DLLBasedVerilatedPeripheral(this, timeout, HandleReceived);
 
-            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
-            timer.LimitReached += () =>
+            if(frequency != 0)
             {
-                if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
+                timer.LimitReached += () =>
                 {
-                    AbortAndLogError("Send error!");
-                }
-                this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
-                allTicksProcessedARE.WaitOne();
-                this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
-            };
+                    if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                    {
+                        AbortAndLogError("Send error!");
+                    }
+                    this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
+                    allTicksProcessedARE.WaitOne();
+                    this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
+                };
+            }
 
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
@@ -149,7 +152,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
                         verilatedPeripheral.SimulationFilePath = value;
-                        timer.Enabled = true;
+
+                        if(timer != null)
+                        {
+                            timer.Enabled = true;
+                        }
                     }
                     catch(Exception e)
                     {
