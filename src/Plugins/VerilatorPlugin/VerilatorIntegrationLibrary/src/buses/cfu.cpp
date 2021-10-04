@@ -9,6 +9,8 @@
 
 void Cfu::tick(bool countEnable, uint64_t steps = 1)
 {
+  *clk = 0;
+  evaluateModel();
   for(uint64_t i = 0; i < steps; i++) {
     *clk = 1;
     evaluateModel();
@@ -42,10 +44,14 @@ uint64_t Cfu::execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* 
   *req_data0 = data0;
   *req_data1 = data1;
   *req_valid = 1;
-  *resp_ready = 1;
+  *resp_ready = 0;
 
   /* Wait for CFU to accept a command */
-  timeoutTick(req_ready, 1);
+  if(*req_ready != 1) {
+    timeoutTick(req_ready, 1);
+  } else {
+    tick(true);
+  }
 
   /* CPU passed a command so deassert req_valid */
   *req_valid = 0;
@@ -55,14 +61,12 @@ uint64_t Cfu::execute(uint32_t functionID, uint32_t data0, uint32_t data1, int* 
     timeoutTick(resp_valid, 1);
   }
 
-  /* Save output from CFU */
+  /* Indicate receive and save output from CFU */
+  *resp_ready = 1;
   result = *resp_data;
 
-  /* CFU operation finished so deassert resp_ready */
-  *resp_ready = 0;
-
-  /* Apply all signals with additional tick */
-  tick(true);
+  /* Tick until CFU is ready for next request */
+  timeoutTick(req_ready, 1);
 
   /* Error signal is not supported by CFU yet so set it to 0 */
   *error = 0;
