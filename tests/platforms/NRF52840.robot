@@ -229,3 +229,12 @@ Should Run Zephyr's kernel.interrupt Test
 
     Start Emulation
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
+
+Should Run Zephyr's cmsis_dps.transform.rq15 Test
+    [Documentation]           Tests if QADD16, QSUB16, QASX and QSAX intructions are working properly
+    [Tags]                    zephyr
+    Create Machine            ${STANDARD}    nrf52840--zephyr-cmsis_transform_rq15.elf-s_1115276-3e1fb95c3d1283d1fe22acf4b8ef887d05455fdf
+    Create Terminal Tester    ${UART}
+
+    Start Emulation
+    Wait for Line On Uart     PROJECT EXECUTION SUCCESSFUL
