@@ -43,5 +43,6 @@ macro reset
 """
 dma SimulationFilePathLinux @https://dl.antmicro.com/projects/renode/zynq-fastvdma_libVfastvdma-Linux-x86_64-1246779523.so-s_2057616-93e755f7d67bc4d5ca33cce6c88bbe8ea8b3bd31
 dma SimulationFilePathWindows @https://dl.antmicro.com/projects/renode/zynq-fastvdma_libVfastvdma-Windows-x86_64-1246779523.dll-s_14839852-62f85c68c37d34f17b10d39c5861780856d1698e
+dma SimulationFilePathMacOS @https://dl.antmicro.com/projects/renode/libVfastvdma-macOS-x86_64-1246779523.dylib-s_230304-6c7a97c3b3adddf60bfb769e751403e85092c3b8
 
 runMacro $reset
