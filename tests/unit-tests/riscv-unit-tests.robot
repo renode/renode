@@ -11,9 +11,13 @@ ${a1}                         0xb
 ${starting_pc}                0x2000
 ${next_instruction}           0x2004
 ${mtvec}                      0x1010
+${illegal_instruction}        0x2
 ${load_misaligned}            0x4
 ${store_misaligned}           0x6
 ${register_0}                 0x0
+${illegal_opcode}             0x00008000
+${illegal_csr}                0xf120d073
+${nonexisting_csr}            0xfff0d073
 
 
 *** Keywords ***
@@ -274,3 +278,109 @@ Should Fail On Setting X0 register
     Should Contain      	    ${msg}      value is not writable
 
     Register Should Be Equal        0  0x0
+
+Should Set MEPC on Illegal Instruction
+    Create Machine 32
+
+    # j .
+    Execute Command                 sysbus WriteDoubleWord 0x1010 0x0000006f
+
+    # j 0x4000
+    Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
+    # nop
+    Execute Command                 sysbus WriteDoubleWord 0x4000 0x00000013
+    # ILLEGAL INSTRUCTION
+    Execute Command                 sysbus WriteDoubleWord 0x4004 ${illegal_opcode}
+
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
+    Execute Command                 s
+    Execute Command                 cpu Step 3
+
+    PC Should Be Equal              0x1010
+
+    ${mcause}=                      Execute Command     cpu MCAUSE
+    Should Be Equal As Numbers      ${mcause}  ${illegal_instruction}
+    ${mtval}=                       Execute Command     cpu MTVAL
+    Should Be Equal As Numbers      ${mtval}   ${illegal_opcode}
+    ${mepc}=                        Execute Command     cpu MEPC
+    Should Be Equal As Numbers      ${mepc}    0x4004
+
+Should Set MEPC on Illegal CSR access
+    Create Machine 32
+    Execute Command   cpu CSRValidation Full
+
+    # j .
+    Execute Command                 sysbus WriteDoubleWord 0x1010 0x0000006f
+
+    # j 0x4000
+    Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
+    # nop
+    Execute Command                 sysbus WriteDoubleWord 0x4000 0x00000013
+    # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
+    Execute Command                 sysbus WriteDoubleWord 0x4004 ${illegal_csr}
+
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
+    Execute Command                 s
+    Execute Command                 cpu Step 3
+
+    PC Should Be Equal              0x1010
+
+    ${mcause}=                      Execute Command     cpu MCAUSE
+    Should Be Equal As Numbers      ${mcause}  ${illegal_instruction}
+    ${mtval}=                       Execute Command     cpu MTVAL
+    Should Be Equal As Numbers      ${mtval}   ${illegal_csr}
+    ${mepc}=                        Execute Command     cpu MEPC
+    Should Be Equal As Numbers      ${mepc}    0x4004
+
+Should Set MEPC on Non-Existing CSR access
+    Create Machine 32
+
+    # j .
+    Execute Command                 sysbus WriteDoubleWord 0x1010 0x0000006f
+
+    # j 0x4000
+    Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
+    # nop
+    Execute Command                 sysbus WriteDoubleWord 0x4000 0x00000013
+    # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
+    Execute Command                 sysbus WriteDoubleWord 0x4004 ${nonexisting_csr}
+
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
+    Execute Command                 s
+    Execute Command                 cpu Step 3
+
+    PC Should Be Equal              0x1010
+
+    ${mcause}=                      Execute Command     cpu MCAUSE
+    Should Be Equal As Numbers      ${mcause}  ${illegal_instruction}
+    ${mtval}=                       Execute Command     cpu MTVAL
+    Should Be Equal As Numbers      ${mtval}   ${nonexisting_csr}
+    ${mepc}=                        Execute Command     cpu MEPC
+    Should Be Equal As Numbers      ${mepc}    0x4004
+
+Should Set MEPC on Wrong SRET
+    Create Machine 32
+
+    # j .
+    Execute Command                 sysbus WriteDoubleWord 0x1010 0x0000006f
+
+    # j 0x4000
+    Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
+    # nop
+    Execute Command                 sysbus WriteDoubleWord 0x4000 0x00000013
+    # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
+    Execute Command                 sysbus WriteDoubleWord 0x4004 0x10200073
+
+    Execute Command                 cpu ExecutionMode SingleStepBlocking
+    Execute Command                 s
+    Execute Command                 cpu Step 3
+
+    PC Should Be Equal              0x1010
+
+    ${mcause}=                      Execute Command     cpu MCAUSE
+    Should Be Equal As Numbers      ${mcause}  ${illegal_instruction}
+    ${mtval}=                       Execute Command     cpu MTVAL
+    Should Be Equal As Numbers      ${mtval}   0x10200073
+    ${mepc}=                        Execute Command     cpu MEPC
+    Should Be Equal As Numbers      ${mepc}    0x4004
+
