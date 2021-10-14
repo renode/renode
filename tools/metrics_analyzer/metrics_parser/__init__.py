@@ -58,8 +58,9 @@ class MetricsParser:
         peripherals = {}
         numberOfCpus = self._read('i', f)[0]
         for x in range(numberOfCpus):
+            cpuId = self._read('i', f)[0]
             cpuNameLength = self._read('i', f)[0]
-            cpus[x] = self._read('{}s'.format(cpuNameLength), f)[0].decode()
+            cpus[cpuId] = self._read('{}s'.format(cpuNameLength), f)[0].decode()
         numberOfPeripherals = self._read('i', f)[0]
         for x in range(numberOfPeripherals):
             peripheralNameLength = self._read('i', f)[0]
