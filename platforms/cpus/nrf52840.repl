@@ -25,6 +25,9 @@ rtc2: Timers.NRF52840_RTC @ sysbus 0x40024000
     numberOfEvents: 4
     -> nvic@36
 
+wdt: Timers.NRF52840_Watchdog @ sysbus 0x40010000
+    -> nvic@16
+
 ppi: Miscellaneous.NRF52840_PPI @ sysbus 0x4001F000
 
 flash: Memory.MappedMemory @ sysbus 0x0

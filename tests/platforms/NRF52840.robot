@@ -238,3 +238,16 @@ Should Run Zephyr's cmsis_dps.transform.rq15 Test
 
     Start Emulation
     Wait for Line On Uart     PROJECT EXECUTION SUCCESSFUL
+
+Should Restart After Watchdog Timeout
+    [Tags]                    zephyr
+    Create Machine            ${STANDARD}    nrf52840--zephyr-watchdog.elf-s_889852-75a696a301c8439400645e646a322039963d74c8
+    Create Terminal Tester    ${UART}
+    Execute Command           sysbus.cpu PerformanceInMips 1
+    # Zephyr is busy-waiting for watchdog timeout to trigger, which causes
+    # virtual-time to flow _very slowly_ with higher PerformanceInMips.
+    # This workarounds this issue by changing PerformanceInMips to lower value
+
+    Start Emulation
+    Wait for Line On Uart     Watchdog sample application
+    Wait for Line On Uart     Watchdog sample application
