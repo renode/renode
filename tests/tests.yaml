@@ -71,3 +71,4 @@
 - tests/unit-tests/big-endian-watchpoint.robot
 - tests/peripherals/VirtIO.robot
 - tests/unit-tests/memory-invalidation.robot
+- tests/unit-tests/spi-connector.robot
