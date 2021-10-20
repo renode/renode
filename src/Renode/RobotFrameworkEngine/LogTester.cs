@@ -45,9 +45,21 @@ namespace Antmicro.Renode.RobotFramework
         public string WaitForEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
-            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
             var regex = treatAsRegex ? new Regex(pattern) : null;
             var predicate = treatAsRegex ? (Predicate<string>)(x => regex.IsMatch(x)) : (Predicate<string>)(x => x.Contains(pattern));
+            
+            if(timeout.HasValue && timeout.Value == 0)
+            {
+                emulation.CurrentLogger.Flush();
+                
+                if(TryFind(predicate, keep, out var result))
+                {
+                    return result;
+                }
+                return null;
+            }
+            
+            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
             do
             {
                 if(TryFind(predicate, keep, out var result))
