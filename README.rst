@@ -103,7 +103,7 @@ For information on building Renode from source see `the documentation <https://r
 Nightly packages
 ++++++++++++++++
 
-Nightly builds of Renode for all systems are available at `builds.renode.io <https://builds.renode.io>`_.
+Nightly builds of Renode for all systems are available at `builds.renode.io <https://builds.renode.io?C=M;O=D>`_.
 Please note that these packages are not stable releases.
 
 Latest builds are always available as ``renode-latest.*`` packages.
