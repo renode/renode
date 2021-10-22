@@ -27,6 +27,15 @@ namespace Antmicro.Renode
             var optionsParsed = optionsParser.Parse(options, args);
 
             ConfigureEnvironment(options);
+
+            /* 
+                We noticed that the static constructors' initialization chain breaks non-deterministically on some Mono versions crashing Renode with NullReferenceException.
+                In the current version, EmulationManager's static constructor calls TypeManager that in turn uses Logger; Logger however requires EmulationManager to be functional.
+                This circular dependency seems to be a problem.
+                Here we explicitly initialize EmulationManager as this seems to resolve the problem. This is just a workaround, until we refactor the code of the initialization phase.
+            */
+            Core.EmulationManager.RebuildInstance();
+
             var thread = new Thread(() =>
             {
                 try
