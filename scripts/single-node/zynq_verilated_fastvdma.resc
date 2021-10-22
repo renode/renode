@@ -10,8 +10,8 @@ machine LoadPlatformDescriptionFromString 'dma: Verilated.BaseDoubleWordVerilate
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
-$bin?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma_vmlinux-s_13609916-a6c9805bd78a8e5dce4e925e40052258fa2729eb
-$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma_rootfs.ext2-s_33554432-f2b853e7f4a6d0409f4bbc21fe618cafe235d984
+$bin?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma_vmlinux-s_13611036-802d102e9341668636631447e99389f79043c18d
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma_rootfs.ext2-s_33554432-7a53506ed3e6cdaf247280ad7025ff1aa4cb98c5
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma.dtb-s_12284-4f3a630a9bce9e0984151b95e9efa581ef7525bf
 
 ### create externals ###
