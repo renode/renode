@@ -26,6 +26,7 @@
 - tests/platforms/verilated/UARTLite.robot
 - tests/platforms/verilated/axi.robot
 - tests/platforms/verilated/MuraxAPB3.robot
+- tests/platforms/verilated/zynq_verilated_fastvdma.robot
 - tests/platforms/CC2538/cc2538_rpl-udp.robot
 - tests/platforms/CC2538/cc2538_flash_controller.robot
 - tests/platforms/CC2538/cc2538_single-node.robot
