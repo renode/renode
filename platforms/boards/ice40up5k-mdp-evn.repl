@@ -5,7 +5,7 @@ i2c: I2C.LiteX_I2C @ {
     sysbus 0xe0007800 // shadow
 }
 
-bmp180: I2C.BMP180 @ i2c 0x77
+bmp180: Sensors.BMP180 @ i2c 0x77
 
 lsm330_a: Sensors.LSM330_Accelerometer @ i2c 0x18
 
