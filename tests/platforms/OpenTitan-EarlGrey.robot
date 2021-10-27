@@ -6,7 +6,7 @@ Test Teardown                   Test Teardown
 Resource                        ${RENODEKEYWORDS}
 
 *** Variables ***
-${UART}                         sysbus.uart
+${UART}                         sysbus.uart0
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
