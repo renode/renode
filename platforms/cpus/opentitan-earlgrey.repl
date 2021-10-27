@@ -67,6 +67,15 @@ uart3: UART.OpenTitan_UART @ sysbus 0x40030000
     RxTimeoutIRQ -> rv_plic@31
     RxParityErrorIRQ -> rv_plic@32
 
+flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
+    flash: flash
+    ProgramEmptyIRQ -> rv_plic@155
+    ProgramLevelIRQ -> rv_plic@156
+    ReadFullIRQ -> rv_plic@157
+    ReadLevelIRQ -> rv_plic@158
+    OperationDoneIRQ -> rv_plic@159
+    CorrectableErrorIRQ -> rv_plic@160
+
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     // TODO setup interrupts for GPIO requires modification to renode model.
