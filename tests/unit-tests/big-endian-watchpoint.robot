@@ -108,3 +108,19 @@ Should Write Big-Endian Value With Watchpoint
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014
     Memory Should Be Equal    0x40000104  0x78563412
+
+Write Watchpoint Should See Correct Value
+    Prepare Machine
+    Create Log Tester         0
+    Load Writer Program
+
+    # Watch the address that gets accessed
+    Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
+
+    Start Emulation
+    PC Should Be Equal        0x00000000
+    Memory Should Be Equal    0x40000104  0x00000000
+
+    Execute Command           cpu Step 6
+    PC Should Be Equal        0x00000014
+    Wait For Log Entry        Watchpoint saw 0x78563412L
