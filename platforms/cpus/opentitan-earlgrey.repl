@@ -8,8 +8,14 @@ cpu0: CPU.IbexRiscV32 @ sysbus
     timeProvider: empty
 
 // Memory
-rom_ctrl: Memory.MappedMemory @ sysbus 0x00008000
-    size: 0x4000
+rom: Memory.MappedMemory @ sysbus 0x00008000
+    size: 0x8000
+
+rom_ctrl: MemoryControllers.OpenTitan_ROMController @ sysbus 0x411E0000
+    rom: rom
+    nonce: 0xebad9424ae5e2cf
+    keyLow: 0x260058176d17f366
+    keyHigh: 0x1893c0ce9e8e5600
 
 //FLASH
 flash: Memory.MappedMemory @ {sysbus 0x20000000; sysbus 0x80000000}

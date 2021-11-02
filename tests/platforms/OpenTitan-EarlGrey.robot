@@ -7,6 +7,11 @@ Resource                        ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                         sysbus.uart0
+${URL}                          @https://dl.antmicro.com/projects/renode
+${AES_BIN}                      ${URL}/open_titan-earlgrey--aes_smoketest_nexysvideo.elf-s_207660-1fb62c51b483c11563ef2796e11e3d03e9382ee6
+${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_nexysvideo.elf-s_121984-63522893fc29a7f1ff84c46eddaa0f6d7113b492
+${HMAC_BIN}                     ${URL}/open_titan-earlgrey--hmac_smoketest_nexysvideo.elf-s_171588-dcdba7d2a7d94596eda5ede6d63985a2893678c9
+${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_nexysvideo.elf-s_158084-30b89ad8c33a73c5e1b169f3a5681a1447fe9210
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -34,6 +39,18 @@ ${LEDS}=    SEPARATOR=
 Setup Machine
     Execute Command             include @scripts/single-node/opentitan-earlgrey.resc
     Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
+
+    Create Terminal Tester      ${UART}
+    Set Default Uart Timeout    1
+
+Setup Machine With Scrambled Boot ROM
+    Execute Command             $boot?=${URL}/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
+    Execute Command             mach create
+    Execute Command             machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
+    Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
+    Execute Command             sysbus LoadELF $bin
+    Execute Command             rom_ctrl Load $boot
+    Execute Command             cpu0 PC 0x00008084
 
     Create Terminal Tester      ${UART}
     Set Default Uart Timeout    1
@@ -93,29 +110,57 @@ Should Display Output on GPIO
     Execute Command             led7 AssertState false 0.2
 
 Should Pass AES Smoketest
-    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--aes_smoketest_nexysvideo.elf-s_207660-1fb62c51b483c11563ef2796e11e3d03e9382ee6
+    Execute Command             $bin=${AES_BIN}
     Setup Machine
     Start Emulation
 
     Wait For Line On UART       PASS
 
 Should Pass UART Smoketest
-    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--uart_smoketest_nexysvideo.elf-s_121984-63522893fc29a7f1ff84c46eddaa0f6d7113b492
+    Execute Command             $bin=${UART_BIN}
     Setup Machine
     Start Emulation
 
     Wait For Line On UART       PASS
 
 Should Pass HMAC Smoketest
-    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hmac_smoketest_nexysvideo.elf-s_171588-dcdba7d2a7d94596eda5ede6d63985a2893678c9
+    Execute Command             $bin=${HMAC_BIN}
     Setup Machine
     Start Emulation
 
     Wait For Line On UART       PASS
 
 Should Pass Flash Smoketest
-    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--flash_ctrl_test_nexysvideo.elf-s_158084-30b89ad8c33a73c5e1b169f3a5681a1447fe9210
+    Execute Command             $bin=${FLASH_CTRL_BIN}
     Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass AES Smoketest With Scrambled Boot ROM
+    Execute Command             $bin=${AES_BIN}
+    Setup Machine With Scrambled Boot ROM
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass UART Smoketest With Scrambled Boot ROM
+    Execute Command             $bin=${UART_BIN}
+    Setup Machine With Scrambled Boot ROM
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass HMAC Smoketest With Scrambled Boot ROM
+    Execute Command             $bin=${HMAC_BIN}
+    Setup Machine With Scrambled Boot ROM
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass Flash Smoketest With Scrambled Boot ROM
+    Execute Command             $bin=${FLASH_CTRL_BIN}
+    Setup Machine With Scrambled Boot ROM
     Start Emulation
 
     Wait For Line On UART       PASS
