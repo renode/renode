@@ -99,3 +99,23 @@ Should Pass AES Smoketest
 
     Wait For Line On UART       PASS
 
+Should Pass UART Smoketest
+    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--uart_smoketest_nexysvideo.elf-s_121984-63522893fc29a7f1ff84c46eddaa0f6d7113b492
+    Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass HMAC Smoketest
+    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hmac_smoketest_nexysvideo.elf-s_171588-dcdba7d2a7d94596eda5ede6d63985a2893678c9
+    Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Should Pass Flash Smoketest
+    Execute Command             $bin=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--flash_ctrl_test_nexysvideo.elf-s_158084-30b89ad8c33a73c5e1b169f3a5681a1447fe9210
+    Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
