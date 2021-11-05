@@ -11,11 +11,11 @@ usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
     -> nvic@37
 
-usart2: UART.STM32F7_USART @ sysbus 0x40044000
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     -> nvic@38
 
-usart3: UART.STM32F7_USART @ sysbus 0x40048000
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
     -> nvic@39
 
