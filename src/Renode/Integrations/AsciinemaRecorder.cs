@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Antmicro.Migrant;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Peripherals.UART;
@@ -34,6 +35,7 @@ namespace Antmicro.Renode.Integrations
         }
     }
 
+    [Transient]
     public class AsciinemaRecorder: IConnectable<IUART>, IDisposable, IExternal
     {
         public AsciinemaRecorder(string filePath, Machine machine, string name, bool useVirtualTimeStamps, int width, int height)
