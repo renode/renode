@@ -67,6 +67,7 @@
 - tests/platforms/Leon3.robot
 - tests/platforms/GR716.robot
 - tests/platforms/MPC5567.robot
+- tests/platforms/xtensa.robot
 - tests/unit-tests/arm-cortex-m-fpu.robot
 - tests/unit-tests/log-tests.robot
 - tests/unit-tests/hex.robot

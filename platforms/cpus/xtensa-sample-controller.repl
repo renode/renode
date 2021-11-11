@@ -1,0 +1,23 @@
+// instram0, dataram0 and dataram1 are defined in 'core-isa.h'.
+instram0: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x20000
+
+dataram0: Memory.MappedMemory @ sysbus 0x3FFE0000
+    size: 0x20000
+
+dataram1: Memory.MappedMemory @ sysbus 0x3FFC0000
+    size: 0x20000
+
+// The reset vector points to 0x50000000.
+rom: Memory.MappedMemory @ sysbus 0x50000000
+    size: 0x4000000
+
+ram: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x8000000
+
+cpu: CPU.Xtensa @ sysbus
+    cpuType: "sample_controller"
+    frequency: 100000000
+
+uartSemihosting: UART.SemihostingUart @ cpu
+
