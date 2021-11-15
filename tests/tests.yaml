@@ -72,3 +72,4 @@
 - tests/unit-tests/hex.robot
 - tests/unit-tests/big-endian-watchpoint.robot
 - tests/unit-tests/memory-invalidation.robot
+- tests/unit-tests/opcodes-counting.robot
