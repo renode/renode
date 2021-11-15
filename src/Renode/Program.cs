@@ -55,6 +55,8 @@ namespace Antmicro.Renode
 
         private static void ConfigureEnvironment(Options options)
         {
+            //Plain mode must be set before the window title
+            ConsoleBackend.Instance.PlainMode = options.Plain;
             ConsoleBackend.Instance.WindowTitle = "Renode";
 
             string configFile = null;
