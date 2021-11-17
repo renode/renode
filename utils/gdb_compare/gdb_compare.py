@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import asyncio
 import argparse
 import pexpect
 import psutil
@@ -107,61 +107,51 @@ class GDBInstance:
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
         self.process = pexpect.spawn(f"{gdb_binary} --silent --nx --nh", timeout=10)
         self.process.timeout = 120
-        self.run_command("clear")
-        self.run_command("set pagination off")
-        self.run_command(f"file {debug_binary}")
-        self.run_command(f"target remote :{port}")
+        self.run_command("clear", async_=False)
+        self.run_command("set pagination off", async_=False)
+        self.run_command(f"file {debug_binary}", async_=False)
+        self.run_command(f"target remote :{port}", async_=False)
 
     def __del__(self):
-        self.run_command("quit", dont_wait_for_output=True)
+        self.run_command("quit", dont_wait_for_output=True, async_=False)
 
     def progress_by(self, delta, type="stepi"):
         adjusted_timeout = max(120, int(delta)/5)
-        self.start_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
+        self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
     def get_symbol_at(self, addr):
-        self.start_command(f"info symbol {addr}")
-        return self.await_output().splitlines()[1]
+        self.run_command(f"info symbol {addr}", async_=False)
+        return self.output().splitlines()[1]
 
-    def jump_to_break_at(self, address, count):
-        self.start_command(f"break *{address}")
-        self.await_output()
-        for x in range(count):
-            self.run_command("continue", timeout=120)
-
-    def delete_breakpoint(self):
-        self.run_command("clear")
+    def delete_breakpoints(self):
+        self.run_command("clear", async_=False)
 
     def get_pc(self):
-        self.run_command("p/x $pc")
+        self.run_command("p/x $pc", async_=False)
         pc_match = re.search(r'0x[0-9A-Fa-f]*', self.last_output)
         if pc_match is not None:
             return pc_match[0]
         else:
             raise TypeError
 
-    def start_command(self, command, timeout=10):
-        self.command_execution = Process(target=self.run_command(command, timeout))
-        self.command_execution.start()
-
-    def await_output(self):
-        self.command_execution.join()
+    def output(self):
+        self.last_output = self.process.match[0].decode().strip("\r")
         return self.last_output
 
-    def run_command(self, command, timeout=10, confirm=False, dont_wait_for_output=False):
+    def run_command(self, command, timeout=10, confirm=False, dont_wait_for_output=False, async_=True):
         self.process.write(command + "\n")
         if dont_wait_for_output:
             return
         try:
             # Escape regex special characters
             command = command.replace("$", "\\$").replace("+", "\\+").replace("*", "\\*")
-            expected_output = command + "\r\n.*(?=[(]gdb[)])"
+            expected_output = command + "(\r?\n.*)+(?=[(]gdb[)])"
             if not confirm:
-                self.process.expect(expected_output, timeout)
+                self.task = self.process.expect(expected_output, timeout, async_=async_)
             else:
                 self.process.expect("[(]y or n[)]")
                 self.process.writelines("y")
-                self.process.expect("[(]gdb[)]")
+                self.task = self.process.expect("[(]gdb[)]", async_=async_)
         except pexpect.TIMEOUT:
             print(f"!!! {self.name} GDB: Command '{command}' timed out!")
             print("Buffer:")
@@ -169,7 +159,8 @@ class GDBInstance:
             self.last_output = None
             raise pexpect.TIMEOUT("")
             return
-        self.last_output = self.process.match[0].decode().strip("\r")
+        if not async_:
+            self.last_output = self.process.match[0].decode().strip("\r")
 
 
 def setup_processes():
@@ -179,24 +170,23 @@ def setup_processes():
     renode.command(f"machine StartGdbServer {RENODE_GDB_PORT}", expected_log=f"started on port :{RENODE_GDB_PORT}")
     renode_gdb = GDBInstance(args.gdb_path, RENODE_GDB_PORT, args.debug_binary, "Renode")
     reference_gdb = GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference")
+    renode.command("logLevel 3")
     renode.command("start")
 
     return renode, reference, renode_gdb, reference_gdb
 
 
 def print_state(gdb_instance):
-    gdb_instance.run_command(f"x/i {previous_pc}")
+    gdb_instance.run_command(f"x/i {previous_pc}", async_=False)
     print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command(f"x/x {previous_pc}")
+    gdb_instance.run_command(f"x/x {previous_pc}", async_=False)
     print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command("frame")
+    gdb_instance.run_command("frame", async_=False)
     print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command("info all-registers")
+    gdb_instance.run_command("info all-registers", async_=False)
     print(">> " + gdb_instance.last_output)
 
-
-if __name__ == "__main__":
-
+async def main():
     print(SECTION_SEPARATOR)
     time_of_start = time()
     previous_pc = "Unknown"
@@ -222,25 +212,30 @@ if __name__ == "__main__":
         if len(stack) != 0:
             for address, count in stack:
                 print("Recreating stack; jumping to breakpoint at " + address + ", " + str(count) +" occurence" )
-                renode_gdb.jump_to_break_at(address, count)
-                reference_gdb.jump_to_break_at(address, count)
-                reference_gdb.await_output()
-                renode_gdb.await_output()
-                renode_gdb.delete_breakpoint()
-                reference_gdb.delete_breakpoint()
+                renode_gdb.run_command(f"break *{address}")
+                reference_gdb.run_command(f"break *{address}")
+                await asyncio.gather(renode_gdb.task, reference_gdb.task)
+
+                for _ in range(count):
+                    renode_gdb.run_command("continue", timeout=120)
+                    reference_gdb.run_command("continue", timeout=120)
+                    await asyncio.gather(renode_gdb.task, reference_gdb.task)
+
+                renode_gdb.delete_breakpoints()
+                reference_gdb.delete_breakpoints()
             print("Stepping single instruction")
             renode_gdb.progress_by(1, "stepi")
             reference_gdb.progress_by(1, "stepi")
+            await asyncio.gather(renode_gdb.task, reference_gdb.task)
 
         exec_count = {}
-        print("Starting stepping"), RENODE_TELNET_PORT
+        print("Starting stepping")
         while True:
             renode_gdb.progress_by(1, "nexti")
             reference_gdb.progress_by(1, "nexti")
+            await asyncio.gather(renode_gdb.task, reference_gdb.task)
             steps_count += 1
 
-            reference_gdb.await_output()
-            renode_gdb.await_output()
             pc = reference_gdb.get_pc()
             ren_pc = renode_gdb.get_pc()
             if pc != ren_pc:
@@ -253,11 +248,13 @@ if __name__ == "__main__":
             else:
                 exec_count[pc] = 1
 
-            renode_gdb.start_command(args.command)
-            reference_gdb.start_command(args.command)
+            renode_gdb.run_command(args.command)
+            reference_gdb.run_command(args.command)
 
-            output_reference = reference_gdb.await_output().splitlines()
-            output_ren = renode_gdb.await_output().splitlines()
+            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+
+            output_reference = reference_gdb.output().splitlines()
+            output_ren = renode_gdb.output().splitlines()
 
             for line in range(len(output_ren)):
                 if output_ren[line] != output_reference[line]:
@@ -301,4 +298,7 @@ if __name__ == "__main__":
             del renode
             del reference
             break
+
+if __name__ == "__main__":
+    asyncio.run(main())
     exit(0)
