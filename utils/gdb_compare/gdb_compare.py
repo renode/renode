@@ -9,6 +9,9 @@ from time import time
 from os import path
 from multiprocessing import Process
 
+RENODE_GDB_PORT = 2222
+RENODE_TELNET_PORT = 12348
+
 parser = argparse.ArgumentParser(
     description="Compare Renode execution with hardware/other simulator state using GDB")
 parser.add_argument("-r",
@@ -32,6 +35,16 @@ parser.add_argument("-p", "--reference-gdb-port",
                     action="store",
                     required=True,
                     help="Port on which the reference GDB server can be reached")
+parser.add_argument("--renode-gdb-port",
+                    dest="renode_gdb_port",
+                    action="store",
+                    default=RENODE_GDB_PORT,
+                    help="Port on which Renode will comunicate with GDB server")
+parser.add_argument("-P", "--renode-telnet-port",
+                    dest="renode_telnet_port",
+                    action="store",
+                    default=RENODE_TELNET_PORT,
+                    help="Port on which Renode will comunicate with telnet")
 parser.add_argument("-b", "--binary",
                     dest="debug_binary",
                     action="store",
@@ -54,10 +67,13 @@ parser.add_argument("-f", "--start-frame",
                     action="store",
                     default=None,
                     help="Sequence of jumps to reach target frame. Formated as 'addr, occurence', separated with ';'. Eg. '_start,1;printf,7'")
+parser.add_argument("-S", "--stop-address",
+                    dest="stop_address",
+                    action="store",
+                    default=None,
+                    help="Stop condition, if reached script will stop")
 
 SECTION_SEPARATOR = "=================================================="
-RENODE_GDB_PORT = 2222
-RENODE_TELNET_PORT = 12348
 args = parser.parse_args()
 
 
@@ -165,10 +181,10 @@ class GDBInstance:
 
 def setup_processes():
     reference = pexpect.spawn(args.reference_command, timeout=10)
-    renode = Renode(args.renode_path, RENODE_TELNET_PORT)
+    renode = Renode(args.renode_path, args.renode_telnet_port)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
-    renode.command(f"machine StartGdbServer {RENODE_GDB_PORT}", expected_log=f"started on port :{RENODE_GDB_PORT}")
-    renode_gdb = GDBInstance(args.gdb_path, RENODE_GDB_PORT, args.debug_binary, "Renode")
+    renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
+    renode_gdb = GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode")
     reference_gdb = GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference")
     renode.command("logLevel 3")
     renode.command("start")
@@ -205,6 +221,11 @@ async def main():
 
     insn_found = False
 
+    if args.stop_address:
+        args.stop_address = int(args.stop_address, 16)
+    else:
+        args.stop_address = 0
+
     while not insn_found:
         iterations_count += 1
         print("Preparing processes for iteration number " + str(iterations_count))
@@ -228,6 +249,16 @@ async def main():
             reference_gdb.progress_by(1, "stepi")
             await asyncio.gather(renode_gdb.task, reference_gdb.task)
 
+        for pc in [args.stop_address]:
+            cmd = f"br *{hex(pc)}"
+            renode_gdb.run_command(cmd)
+            reference_gdb.run_command(cmd)
+            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+            cmd = f"br *{hex(pc+4)}"
+            renode_gdb.run_command(cmd)
+            reference_gdb.run_command(cmd)
+            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+
         exec_count = {}
         print("Starting stepping")
         while True:
@@ -247,6 +278,10 @@ async def main():
                 exec_count[pc] += 1
             else:
                 exec_count[pc] = 1
+
+            if int(ren_pc, 16) == args.stop_address:
+                print("stop address reached")
+                return
 
             renode_gdb.run_command(args.command)
             reference_gdb.run_command(args.command)
