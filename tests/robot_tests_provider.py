@@ -99,6 +99,12 @@ def install_cli_arguments(parser):
                         action="store",
                         default=None,
                         help="Path to the Renode config file")
+    
+    parser.add_argument("--kill-stale-renode-instances",
+                        dest="autokill_renode",
+                        action="store_true",
+                        default=False,
+                        help="Automatically kill stale Renode instances without asking")
 
 
 def verify_cli_arguments(options):
@@ -122,7 +128,7 @@ def is_process_running(pid):
     # docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
-def is_port_available(port):
+def is_port_available(port, autokill):
     port_handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     available = False
     try:
@@ -130,10 +136,10 @@ def is_port_available(port):
         port_handle.close()
         available = True
     except:
-        available = can_be_freed_by_killing_other_job(port)
+        available = can_be_freed_by_killing_other_job(port, autokill)
     return available
 
-def can_be_freed_by_killing_other_job(port):
+def can_be_freed_by_killing_other_job(port, autokill):
     if not sys.stdin.isatty():
         return
     try:
@@ -142,8 +148,13 @@ def can_be_freed_by_killing_other_job(port):
                 if not is_process_running(proc.pid):
                     # process is zombie
                     continue
-                print('It seems that Robot process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), port))
-                result = input('Do you want me to kill it? [y/N] ')
+
+                if autokill:
+                    result = 'y'
+                else:
+                    print('It seems that Renode process (pid {}, name {}) is currently running on port {}'.format(proc.pid, proc.name(), port))
+                    result = input('Do you want me to kill it? [y/N] ')
+
                 if result in ['Y', 'y']:
                     proc.kill()
                     return True
@@ -217,7 +228,7 @@ class RobotTestSuite(object):
             else:
                 self.port_offset = RobotTestSuite.last_port_offset + 1
             # Skip port if it is already in use
-            while not is_port_available(options.remote_server_port + self.port_offset):
+            while not is_port_available(options.remote_server_port + self.port_offset, options.autokill_renode):
                 self.port_offset += 1
 
             RobotTestSuite.last_port_offset = self.port_offset
