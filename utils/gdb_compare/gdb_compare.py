@@ -68,6 +68,11 @@ parser.add_argument("-f", "--start-frame",
                     action="store",
                     default=None,
                     help="Sequence of jumps to reach target frame. Formated as 'addr, occurence', separated with ';'. Eg. '_start,1;printf,7'")
+parser.add_argument("-i", "--interest-points",
+                    dest="ips",
+                    action="store",
+                    default=None,
+                    help="Sequence of address, interest points, after which state will be compared. Formated as ';' spearated list of hexadecimal addresses. Eg. '0x8000;0x340eba3c'")
 parser.add_argument("-S", "--stop-address",
                     dest="stop_address",
                     action="store",
@@ -75,7 +80,6 @@ parser.add_argument("-S", "--stop-address",
                     help="Stop condition, if reached script will stop")
 
 SECTION_SEPARATOR = "=================================================="
-args = parser.parse_args()
 
 
 class Renode:
@@ -231,14 +235,13 @@ class GDBInstance:
             print("Different values:")
             print(output_different)
 
-def setup_processes():
+def setup_processes(args):
     reference = pexpect.spawn(args.reference_command, timeout=10)
     renode = Renode(args.renode_path, args.renode_telnet_port)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
     renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
     renode_gdb = GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode")
     reference_gdb = GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference")
-    renode.command("logLevel 3")
     renode.command("start")
 
     return renode, reference, renode_gdb, reference_gdb
@@ -300,11 +303,89 @@ def string_compare(renode_string, reference_string):
             s1_insertions += 1
     return f"Renode:    {renode_string}\nReference: {reference_string}"
 
+class CheckStatus:
+    STOP = 1
+    CONTINUE = 2
+    FOUND = 3
+    MISMATCH = 4
+
+async def check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args):
+    pc = reference_gdb.get_pc()
+    ren_pc = renode_gdb.get_pc()
+    pc_mismatch = False
+    if pc != ren_pc:
+        print("Renode and reference PC differs!")
+        print(string_compare(ren_pc, pc))
+        print(f"\tPrevious PC: {previous_pc}")
+        pc_mismatch = True
+    if pc in exec_count:
+        exec_count[pc] += 1
+    else:
+        exec_count[pc] = 1
+
+    if args.stop_address and int(ren_pc, 16) == args.stop_address:
+        print("stop address reached")
+        return previous_pc, previous_output, CheckStatus.STOP
+
+    if not pc_mismatch:
+        renode_gdb.run_command(args.command)
+        reference_gdb.run_command(args.command)
+        await asyncio.gather(renode_gdb.task, reference_gdb.task)
+
+        output_reference = reference_gdb.output().splitlines()
+        output_ren = renode_gdb.output().splitlines()
+
+        for line in range(len(output_ren)):
+            if output_ren[line] != output_reference[line]:
+                print(SECTION_SEPARATOR)
+                print(f"!!! Difference in line {line + 1} of output:")
+                print(string_compare(output_ren[line], output_reference[line]))
+                print(f"Previous:  {previous_output}")
+                break
+        else:
+            if steps_count % 10 == 0:
+                print(f"{steps_count} steps; current pc = {pc} {reference_gdb.get_symbol_at(pc)}")
+            previous_pc = pc
+            previous_output = "\n".join(output_ren[1:])
+            return previous_pc, previous_output, CheckStatus.CONTINUE
+
+    if pc_mismatch or (len(stack) > 0 and previous_pc == stack[-1][0]):
+        print(SECTION_SEPARATOR)
+        print("Found faulting insn at " + previous_pc + " " + reference_gdb.get_symbol_at(previous_pc))
+        elapsed_time = time() - time_of_start
+        print(f"Took {elapsed_time:.2f} seconds [~ {elapsed_time/steps_count:.2f} steps/sec]")
+        print(SECTION_SEPARATOR)
+        print("*** Stack:")
+        print_stack(stack, renode_gdb)
+        print("*** Gdb command:")
+        print(args.command)
+        print(SECTION_SEPARATOR)
+        print("Gdb instances comparision:")
+        await GDBInstance.compare_instances(renode_gdb, reference_gdb, previous_pc)
+
+        return previous_pc, previous_output, CheckStatus.FOUND
+
+    if not previous_pc in exec_count:
+        previous_pc = pc
+    print("Found point after which state is different. Adding to `stack` for later iterations")
+    occurence = exec_count[previous_pc]
+    print(f"\tAddress: {previous_pc}\n\tOccurence: {occurence}")
+    stack.append((previous_pc, occurence))
+    exec_count = {}
+    print(SECTION_SEPARATOR)
+
+    return previous_pc, previous_output, CheckStatus.MISMATCH
 
 async def main():
-    pcs = [
-    ]
-    execution_cmd = "continue" if pcs else "nexti"
+    args = parser.parse_args()
+    if args.stop_address:
+        args.stop_address = int(args.stop_address, 16)
+
+    pcs = [ args.stop_address ] if args.stop_address else []
+    if args.ips:
+        pcs += [ pc for pc in args.ips.split(';') ]
+
+    execution_cmd = "continue" if args.ips else "nexti"
     print(SECTION_SEPARATOR)
     time_of_start = time()
     previous_pc = "Unknown"
@@ -323,15 +404,10 @@ async def main():
 
     insn_found = False
 
-    if args.stop_address:
-        args.stop_address = int(args.stop_address, 16)
-    else:
-        args.stop_address = 0
-
     while not insn_found:
         iterations_count += 1
         print("Preparing processes for iteration number " + str(iterations_count))
-        renode, reference, renode_gdb, reference_gdb = setup_processes()
+        renode, reference, renode_gdb, reference_gdb = setup_processes(args)
         if len(stack) != 0:
             print("Recreating stack; jumping to breakpoint at:")
             for address, count in stack:
@@ -352,8 +428,8 @@ async def main():
             reference_gdb.progress_by(1, "stepi")
             await asyncio.gather(renode_gdb.task, reference_gdb.task)
 
-        for pc in pcs + [args.stop_address-4]:
-            cmd = f"br *{hex(pc+4)}"
+        for pc in pcs:
+            cmd = f"br *{pc}"
             renode_gdb.run_command(cmd)
             reference_gdb.run_command(cmd)
             await asyncio.gather(renode_gdb.task, reference_gdb.task)
@@ -367,80 +443,33 @@ async def main():
             await asyncio.gather(renode_gdb.task, reference_gdb.task)
             steps_count += 1
 
-            pc = reference_gdb.get_pc()
-            ren_pc = renode_gdb.get_pc()
-            pc_mismatch = False
-            if pc != ren_pc:
-                print("Renode and reference PC differs!")
-                print(string_compare(ren_pc, pc))
-                print(f"\tPrevious PC: {previous_pc}")
-                pc_mismatch = True
-            if pc in exec_count:
-                exec_count[pc] += 1
-            else:
-                exec_count[pc] = 1
-            if int(pc, 16) == 0x340abe3c:
-                if0x340abe3c += 1
-                print(f"if0x340abe3c {if0x340abe3c}")
+            previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
 
-            if int(ren_pc, 16) == args.stop_address:
-                print("stop address reached")
-                return
+            if status == CheckStatus.CONTINUE and execution_cmd == "continue":
+                renode_gdb.run_command("stepi")
+                reference_gdb.run_command("stepi")
 
-            if not pc_mismatch:
-                renode_gdb.run_command(args.command)
-                reference_gdb.run_command(args.command)
                 await asyncio.gather(renode_gdb.task, reference_gdb.task)
+                steps_count += 1
 
-                output_reference = reference_gdb.output().splitlines()
-                output_ren = renode_gdb.output().splitlines()
+                previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
 
-                for line in range(len(output_ren)):
-                    if output_ren[line] != output_reference[line]:
-                        print(SECTION_SEPARATOR)
-                        print(f"!!! Difference in line {line + 1} of output:")
-                        print(string_compare(output_ren[line], output_reference[line]))
-                        print(f"Previous:  {previous_output}")
-                        break
-                else:
-                    if steps_count % 10 == 0:
-                        print(f"{steps_count} steps; current pc = {pc} {reference_gdb.get_symbol_at(pc)}")
-                    previous_pc = pc
-                    previous_output = "\n".join(output_ren[1:])
-                    continue
-
-            if pc_mismatch or (len(stack) > 0 and previous_pc == stack[-1][0]):
-                print(SECTION_SEPARATOR)
-                print("Found faulting insn at " + previous_pc + " " + reference_gdb.get_symbol_at(previous_pc))
-                elapsed_time = time() - time_of_start
-                print(f"Took {elapsed_time:.2f} seconds [~ {elapsed_time/steps_count:.2f} steps/sec]")
-                print(SECTION_SEPARATOR)
-                print("*** Stack:")
-                print_stack(stack, renode_gdb)
-                print("*** Gdb command:")
-                print(args.command)
-                print(SECTION_SEPARATOR)
-                print("Gdb instances comparision:")
-                await GDBInstance.compare_instances(renode_gdb, reference_gdb, previous_pc)
-
+            if status == CheckStatus.STOP:
+                return
+            elif status == CheckStatus.CONTINUE:
+                continue
+            elif status == CheckStatus.FOUND:
                 insn_found = True
-                execution_cmd = "nexti"
                 break
-
-            if not previous_pc in exec_count:
-                previous_pc = pc
-            print("Found point after which state is different. Adding to `stack` for later iterations")
-            occurence = exec_count[previous_pc]
-            print(f"\tAddress: {previous_pc}\n\tOccurence: {occurence}")
-            stack.append((previous_pc, occurence))
-            exec_count = {}
-            print(SECTION_SEPARATOR)
-
-            del renode_gdb
-            del reference_gdb
-            del renode
-            del reference
-            break
+            elif status == CheckStatus.MISMATCH:
+                execution_cmd = "nexti"
+                del renode_gdb
+                del reference_gdb
+                del renode
+                del reference
+                break
+            else:
+                exit(1)
 
 if __name__ == "__main__":
     asyncio.run(main())
