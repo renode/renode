@@ -1,0 +1,20 @@
+
+#
+# This file contains opcode specifications for the RISC-V
+# Scalar Cryptographic instruction set extension.
+# These instructions appear in _both_ RV32 and RV64.
+# ------------------------------------------------------------
+
+# Scalar SM4 - RV32, RV64
+sm4ed         rd rs1 rs2 bs 29..25=0b11000 14..12=0 6..0=0x33
+sm4ks         rd rs1 rs2 bs 29..25=0b11010 14..12=0 6..0=0x33
+
+# Scalar SM3 - RV32, RV64
+sm3p0         rd rs1 31..30=0 29..25=0b01000 24..20=0b01000 14..12=1 6..0=0x13
+sm3p1         rd rs1 31..30=0 29..25=0b01000 24..20=0b01001 14..12=1 6..0=0x13
+
+# Scalar SHA256 - RV32/RV64
+sha256sum0    rd rs1 31..30=0 29..25=0b01000 24..20=0b00000 14..12=1 6..0=0x13
+sha256sum1    rd rs1 31..30=0 29..25=0b01000 24..20=0b00001 14..12=1 6..0=0x13
+sha256sig0    rd rs1 31..30=0 29..25=0b01000 24..20=0b00010 14..12=1 6..0=0x13
+sha256sig1    rd rs1 31..30=0 29..25=0b01000 24..20=0b00011 14..12=1 6..0=0x13

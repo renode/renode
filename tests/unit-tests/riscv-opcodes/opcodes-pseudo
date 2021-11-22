@@ -1,0 +1,32 @@
+# Instructions that differ slightly between rv32 and rv64
+@slli.rv32 rd rs1 31..25=0  shamtw  14..12=1 6..2=0x04 1..0=3
+@srli.rv32 rd rs1 31..25=0  shamtw  14..12=5 6..2=0x04 1..0=3
+@srai.rv32 rd rs1 31..25=32 shamtw  14..12=5 6..2=0x04 1..0=3
+
+# SYSTEM pseudo-instructions that map to csr*
+@frflags    rd 19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3
+@fsflags    rd rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3
+@fsflagsi   rd zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3
+@frrm       rd 19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3
+@fsrm       rd rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3
+@fsrmi      rd zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3
+@fscsr      rd rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3
+@frcsr      rd 19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3
+@rdcycle    rd 19..15=0 31..20=0xC00 14..12=2 6..2=0x1C 1..0=3
+@rdtime     rd 19..15=0 31..20=0xC01 14..12=2 6..2=0x1C 1..0=3
+@rdinstret  rd 19..15=0 31..20=0xC02 14..12=2 6..2=0x1C 1..0=3
+@rdcycleh   rd 19..15=0 31..20=0xC80 14..12=2 6..2=0x1C 1..0=3
+@rdtimeh    rd 19..15=0 31..20=0xC81 14..12=2 6..2=0x1C 1..0=3
+@rdinstreth rd 19..15=0 31..20=0xC82 14..12=2 6..2=0x1C 1..0=3
+
+# Old names for ecall/ebreak
+@scall     11..7=0 19..15=0 31..20=0x000 14..12=0 6..2=0x1C 1..0=3
+@sbreak    11..7=0 19..15=0 31..20=0x001 14..12=0 6..2=0x1C 1..0=3
+
+# Old names for fmv.x.w/fmv.w.x
+@fmv.x.s   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3
+@fmv.s.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3
+
+# specialized fences
+@fence.tso 31..28=8 27..24=3 23..20=3 19..15=ignore 14..12=0 11..7=ignore 6..2=0x03 1..0=3
+@pause     31..28=0 27..24=1 23..20=0 19..15=0      14..12=0 11..7=0      6..2=0x03 1..0=3

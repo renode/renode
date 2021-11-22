@@ -1,0 +1,46 @@
+# compressed instructions
+
+# these aren't really pseudo-ops, but they overlay other encodings,
+# so they are here to prevent parse_opcodes from barfing
+
+@c.nop      1..0=1 15..13=0 12=0      11..7=0      6..2=0
+@c.addi16sp 1..0=1 15..13=3 12=ignore 11..7=2      6..2=ignore
+@c.jr       1..0=2 15..13=4 12=0      11..7=ignore 6..2=0
+@c.jalr     1..0=2 15..13=4 12=1      11..7=ignore 6..2=0
+@c.ebreak   1..0=2 15..13=4 12=1      11..7=0      6..2=0
+
+# C0 encoding space
+c.addi4spn 1..0=0 15..13=0 12=ignore 11..2=ignore
+c.fld      1..0=0 15..13=1 12=ignore 11..2=ignore # c.lq for RV128
+c.lw       1..0=0 15..13=2 12=ignore 11..2=ignore
+c.flw      1..0=0 15..13=3 12=ignore 11..2=ignore # c.ld for RV64
+c.fsd      1..0=0 15..13=5 12=ignore 11..2=ignore # c.sq for RV128
+c.sw       1..0=0 15..13=6 12=ignore 11..2=ignore
+c.fsw      1..0=0 15..13=7 12=ignore 11..2=ignore # c.sd for RV64
+
+# C1 encoding space
+c.addi     1..0=1 15..13=0 12=ignore 11..2=ignore
+c.jal      1..0=1 15..13=1 12=ignore 11..2=ignore # c.addiw for RV64
+c.li       1..0=1 15..13=2 12=ignore 11..2=ignore
+c.lui      1..0=1 15..13=3 12=ignore 11..2=ignore # c.addi16sp when rd=2
+c.srli     1..0=1 15..13=4 12=ignore 11..10=0 9..2=ignore
+c.srai     1..0=1 15..13=4 12=ignore 11..10=1 9..2=ignore
+c.andi     1..0=1 15..13=4 12=ignore 11..10=2 9..2=ignore
+c.sub      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=0 4..2=ignore
+c.xor      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=1 4..2=ignore
+c.or       1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=2 4..2=ignore
+c.and      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=3 4..2=ignore
+c.j        1..0=1 15..13=5 12=ignore 11..2=ignore
+c.beqz     1..0=1 15..13=6 12=ignore 11..2=ignore
+c.bnez     1..0=1 15..13=7 12=ignore 11..2=ignore
+
+# C2 encoding space
+c.slli     1..0=2 15..13=0 12=ignore 11..2=ignore
+c.fldsp    1..0=2 15..13=1 12=ignore 11..2=ignore # c.lqsp for RV128
+c.lwsp     1..0=2 15..13=2 12=ignore 11..2=ignore
+c.flwsp    1..0=2 15..13=3 12=ignore 11..2=ignore # c.ldsp for RV64
+c.mv       1..0=2 15..13=4 12=0      11..2=ignore # !rs2 = c.jr
+c.add      1..0=2 15..13=4 12=1      11..2=ignore # !rs1 = c.ebreak; !rs2=c.jalr
+c.fsdsp    1..0=2 15..13=5 12=ignore 11..2=ignore # c.sqsp for RV128
+c.swsp     1..0=2 15..13=6 12=ignore 11..2=ignore
+c.fswsp    1..0=2 15..13=7 12=ignore 11..2=ignore # c.sdsp for RV64

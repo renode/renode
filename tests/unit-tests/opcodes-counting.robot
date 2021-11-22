@@ -96,3 +96,41 @@ Should Count RVV Opcode
     ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "vlm.v"
     Should Be Equal As Numbers                  ${c}  1
 
+Should Parse RISC-V Opcodes
+    Create Machine
+
+    @{files}=  List Files In Directory          ${CURDIR}${/}riscv-opcodes
+    FOR  ${file}  IN  @{files}
+        Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}${file}"
+    END
+
+    ${r}=  Execute Command                      sysbus.cpu GetAllOpcodesCounters
+    Should Contain                              ${r}  \@custom0
+    Should Contain                              ${r}  wfi
+
+Should Count RISC-V Opcodes
+    Create Machine
+
+    Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}opcodes-rv32i"
+    Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}opcodes-system"
+
+    # auipc
+    Execute Command                             sysbus WriteDoubleWord 0x0 0x00000297            
+    # addi
+    Execute Command                             sysbus WriteDoubleWord 0x4 0x01028293            
+    # csrw
+    Execute Command                             sysbus WriteDoubleWord 0x8 0x30529073            
+    # j
+    Execute Command                             sysbus WriteDoubleWord 0xC 0x0000006f            
+
+    Start Emulation
+    Execute Command                             sysbus.cpu Step 4
+
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "jal"
+    Should Be Equal As Numbers                  ${c}  1
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "auipc"
+    Should Be Equal As Numbers                  ${c}  1
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "addi"
+    Should Be Equal As Numbers                  ${c}  1
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "csrrw"
+    Should Be Equal As Numbers                  ${c}  1

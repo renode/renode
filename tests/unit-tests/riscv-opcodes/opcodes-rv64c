@@ -1,0 +1,14 @@
+# RV64C additions to RVC
+
+# C0 encoding space
+@c.ld      1..0=0 15..13=3 12=ignore 11..2=ignore # c.flw for RV32
+@c.sd      1..0=0 15..13=7 12=ignore 11..2=ignore # c.fsw for RV32
+
+# C1 encoding space
+c.subw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=0 4..2=ignore
+c.addw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=1 4..2=ignore
+@c.addiw   1..0=1 15..13=1 12=ignore 11..2=ignore # c.jal for RV32
+
+# C2 encoding space
+@c.ldsp    1..0=2 15..13=3 12=ignore 11..2=ignore # c.flwsp for RV32
+@c.sdsp    1..0=2 15..13=7 12=ignore 11..2=ignore # c.fswsp for RV32

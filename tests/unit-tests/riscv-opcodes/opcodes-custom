@@ -1,0 +1,27 @@
+@custom0            rd rs1 imm12 14..12=0 6..2=0x02 1..0=3
+@custom0.rs1        rd rs1 imm12 14..12=2 6..2=0x02 1..0=3
+@custom0.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x02 1..0=3
+@custom0.rd         rd rs1 imm12 14..12=4 6..2=0x02 1..0=3
+@custom0.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x02 1..0=3
+@custom0.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x02 1..0=3
+
+@custom1            rd rs1 imm12 14..12=0 6..2=0x0A 1..0=3
+@custom1.rs1        rd rs1 imm12 14..12=2 6..2=0x0A 1..0=3
+@custom1.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x0A 1..0=3
+@custom1.rd         rd rs1 imm12 14..12=4 6..2=0x0A 1..0=3
+@custom1.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x0A 1..0=3
+@custom1.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x0A 1..0=3
+
+@custom2            rd rs1 imm12 14..12=0 6..2=0x16 1..0=3
+@custom2.rs1        rd rs1 imm12 14..12=2 6..2=0x16 1..0=3
+@custom2.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x16 1..0=3
+@custom2.rd         rd rs1 imm12 14..12=4 6..2=0x16 1..0=3
+@custom2.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x16 1..0=3
+@custom2.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x16 1..0=3
+
+@custom3            rd rs1 imm12 14..12=0 6..2=0x1E 1..0=3
+@custom3.rs1        rd rs1 imm12 14..12=2 6..2=0x1E 1..0=3
+@custom3.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x1E 1..0=3
+@custom3.rd         rd rs1 imm12 14..12=4 6..2=0x1E 1..0=3
+@custom3.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x1E 1..0=3
+@custom3.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x1E 1..0=3

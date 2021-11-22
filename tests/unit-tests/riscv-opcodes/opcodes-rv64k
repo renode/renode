@@ -1,0 +1,21 @@
+
+#
+# This file contains opcode specifications for the RISC-V
+# Scalar Cryptographic instruction set extension.
+# These instructions appear _only_ in RV64.
+# ------------------------------------------------------------
+
+# Scalar AES - RV64
+aes64ks1i  rd rs1 rnum 31..30=0 29..25=0b11000 24=1     14..12=0b001 6..0=0x13
+aes64im    rd rs1      31..30=0 29..25=0b11000 24..20=0b0000 14..12=0b001 6..0=0x13
+aes64ks2   rd rs1 rs2  31..30=1 29..25=0b11111          14..12=0b000 6..0=0x33
+aes64esm   rd rs1 rs2  31..30=0 29..25=0b11011          14..12=0b000 6..0=0x33
+aes64es    rd rs1 rs2  31..30=0 29..25=0b11001          14..12=0b000 6..0=0x33
+aes64dsm   rd rs1 rs2  31..30=0 29..25=0b11111          14..12=0b000 6..0=0x33
+aes64ds    rd rs1 rs2  31..30=0 29..25=0b11101          14..12=0b000 6..0=0x33
+
+# Scalar SHA512 - RV64
+sha512sum0 rd rs1  31..30=0 29..25=0b01000 24..20=0b00100 14..12=1 6..0=0x13
+sha512sum1 rd rs1  31..30=0 29..25=0b01000 24..20=0b00101 14..12=1 6..0=0x13
+sha512sig0 rd rs1  31..30=0 29..25=0b01000 24..20=0b00110 14..12=1 6..0=0x13
+sha512sig1 rd rs1  31..30=0 29..25=0b01000 24..20=0b00111 14..12=1 6..0=0x13
