@@ -142,7 +142,7 @@ class GDBInstance:
 
     def get_symbol_at(self, addr):
         self.run_command(f"info symbol {addr}", async_=False)
-        return self.output().splitlines()[1]
+        return self.last_output.splitlines()[1]
 
     def delete_breakpoints(self):
         self.run_command("clear", async_=False)
@@ -155,9 +155,15 @@ class GDBInstance:
         else:
             raise TypeError
 
-    def output(self):
-        self.last_output = self.process.match[0].decode().strip("\r")
-        return self.last_output
+    async def expect(self, timeout=10):
+        await self.task
+        line = self.process.match[0].decode().strip("\r")
+        self.last_output = ""
+        while "(gdb)" not in line:
+            self.last_output += line
+            self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
+            await self.task
+            line = self.process.match[0].decode().strip("\r")
 
     def run_command(self, command, timeout=10, confirm=False, dont_wait_for_output=False, async_=True):
         self.process.write(command + "\n")
@@ -166,29 +172,34 @@ class GDBInstance:
         try:
             # Escape regex special characters
             command = command.replace("$", "\\$").replace("+", "\\+").replace("*", "\\*")
-            expected_output = command + "(\r?\n.*)+(?=[(]gdb[)])"
             if not confirm:
-                self.task = self.process.expect(expected_output, timeout, async_=async_)
+                self.task = self.process.expect(command + r".+\n", timeout, async_=async_)
+                if not async_:
+                    self.last_output = ""
+                    line = self.process.match[0].decode().strip("\r")
+                    while "(gdb)" not in line:
+                        self.last_output += line
+                        self.process.expect([r".+\n", r"\(gdb\)"], timeout)
+                        line = self.process.match[0].decode().strip("\r")
             else:
                 self.process.expect("[(]y or n[)]")
                 self.process.writelines("y")
                 self.task = self.process.expect("[(]gdb[)]", async_=async_)
+                self.last_output = self.process.match[0].decode().strip("\r")
+
         except pexpect.TIMEOUT:
             print(f"!!! {self.name} GDB: Command '{command}' timed out!")
             print("Buffer:")
             print(self.process.buffer.decode().replace('\\r\\n', '\n'))
             self.last_output = None
             raise pexpect.TIMEOUT("")
-            return
-        if not async_:
-            self.last_output = self.process.match[0].decode().strip("\r")
 
     @staticmethod
     async def compare_instances(some, other, previous_pc):
         for name, command in [("Opcode at previous pc", f"x/i {previous_pc}"), ("Frame", "frame"), ("Registers", "info registers all")]:
             some.run_command(command)
             other.run_command(command)
-            await asyncio.gather(some.task, other.task)
+            await asyncio.gather(some.expect(), other.expect())
             self_output = some.last_output
             other_output = other.last_output
             print("*** " + name + ":")
@@ -330,10 +341,10 @@ async def check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, 
     if not pc_mismatch:
         renode_gdb.run_command(args.command)
         reference_gdb.run_command(args.command)
-        await asyncio.gather(renode_gdb.task, reference_gdb.task)
+        await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
 
-        output_reference = reference_gdb.output().splitlines()
-        output_ren = renode_gdb.output().splitlines()
+        output_reference = reference_gdb.last_output.splitlines()
+        output_ren = renode_gdb.last_output.splitlines()
 
         for line in range(len(output_ren)):
             if output_ren[line] != output_reference[line]:
@@ -414,25 +425,25 @@ async def main():
                 print("\t" + address + ", " + str(count) +" occurence" )
                 renode_gdb.run_command(f"break *{address}")
                 reference_gdb.run_command(f"break *{address}")
-                await asyncio.gather(renode_gdb.task, reference_gdb.task)
+                await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
 
                 for _ in range(count):
                     renode_gdb.run_command("continue", timeout=120)
                     reference_gdb.run_command("continue", timeout=120)
-                    await asyncio.gather(renode_gdb.task, reference_gdb.task)
+                    await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
 
                 renode_gdb.delete_breakpoints()
                 reference_gdb.delete_breakpoints()
             print("Stepping single instruction")
             renode_gdb.progress_by(1, "stepi")
             reference_gdb.progress_by(1, "stepi")
-            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
 
         for pc in pcs:
             cmd = f"br *{pc}"
             renode_gdb.run_command(cmd)
             reference_gdb.run_command(cmd)
-            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
 
         exec_count = {}
         print("Starting execution")
@@ -440,7 +451,7 @@ async def main():
             renode_gdb.run_command(execution_cmd)
             reference_gdb.run_command(execution_cmd)
 
-            await asyncio.gather(renode_gdb.task, reference_gdb.task)
+            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
             steps_count += 1
 
             previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
@@ -449,7 +460,7 @@ async def main():
                 renode_gdb.run_command("stepi")
                 reference_gdb.run_command("stepi")
 
-                await asyncio.gather(renode_gdb.task, reference_gdb.task)
+                await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
                 steps_count += 1
 
                 previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
