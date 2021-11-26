@@ -367,7 +367,7 @@ class RobotTestSuite(object):
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
             if len(RobotTestSuite.log_files) > 0:
                 print("Aggregating all robot results")
-                robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', outputdir=options.results_directory, output='robot_output.xml')
+                robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', loglevel="TRACE:INFO", outputdir=options.results_directory, output='robot_output.xml')
             if options.css_file:
                 with open(options.css_file) as style:
                     style_content = style.read()
