@@ -422,7 +422,7 @@ class RobotTestSuite(object):
 
         metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
         log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-        return robot.run(self.path, console='none', listener=listeners, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, noncritical=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
+        return robot.run(self.path, console='none', listener=listeners, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, skiponfailure=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
