@@ -101,7 +101,9 @@ Should Parse RISC-V Opcodes
 
     @{files}=  List Files In Directory          ${CURDIR}${/}riscv-opcodes
     FOR  ${file}  IN  @{files}
-        Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}${file}"
+        IF  '${file}' != 'README'
+            Execute Command                     sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}${file}"
+        END  
     END
 
     ${r}=  Execute Command                      sysbus.cpu GetAllOpcodesCounters
