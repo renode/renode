@@ -74,8 +74,8 @@ DisasTest Core
     Execute Command              sysbus WriteDoubleWord 0x${hex_addr} 0x${code_write}
     ${res}=                      Execute Command    sysbus.cpu DisassembleBlock 0x${hex_addr} ${code_size}
 
-    # expect empty output if "$mnemonic" and "$operands" (without curly brackets!) are empty
-    Run Keyword And Return If    $mnemonic == '' and $operands == ''        Should Match Regexp    ${res}    ^\n$
+    # expect error if "$mnemonic" and "$operands" (without curly brackets!) are empty
+    Run Keyword And Return If    $mnemonic == '' and $operands == ''        Should Match Regexp    ${res}    Disassembly error detected
 
     # compare DisassembleBlock output with the expected one; "(?i)" prefix causes ignoring case difference
     ${escaped_mnem}=             Regexp Escape      ${mnemonic}
@@ -237,5 +237,5 @@ Should Handle Disassembly From Invalid Address
     # test with the valid address
     DisasTest LE           02051613    slli    a2, a0, 32    hex_addr=1234
 
-    # check whether the output is empty if we only change the address to be outside "mem"
-    Run Keyword And Expect Error    \'\n\n\' does not match *           DisasTest LE    02051613    slli    a2, a0, 32    hex_addr=02000000
+    # check whether the output contains error if we only change the address to be outside "mem"
+    Run Keyword And Expect Error    'Disassembly error detected*      DisasTest LE    02051613    slli    a2, a0, 32    hex_addr=02000000

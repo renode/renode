@@ -210,7 +210,7 @@ PARAMS+=(/p:Configuration=${CONFIGURATION}${BUILD_TARGET} /p:GenerateFullPaths=t
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
 
 # copy llvm library
-cp src/Infrastructure/src/Emulator/LLVMDisassembler/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
+cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
 
 # build packages after successful compilation
 params=""
