@@ -86,6 +86,8 @@ radio: Wireless.NRF52840_Radio @ sysbus 0x40001000
 rng: Miscellaneous.NRF52840_RNG @ sysbus 0x4000D000
     -> nvic@13
 
+ecb: Miscellaneous.NRF52840_ECB @ sysbus 0x4000E000
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz
