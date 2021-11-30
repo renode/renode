@@ -89,7 +89,23 @@ gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
 aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
 
 key_mgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41130000
+    aes: aes
+    romController: rom_ctrl
+    deviceId: "0xfa53b8058e157cb69f1f413e87242971b6b52a656a1cab7febf21e5bf1f45edd"
+    lifeCycleDiversificationConstant: "0x6faf88f22bccd612d1c09f5c02b2c8d1"
+    creatorKey: "0x9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47"
+    ownerKey: "0xfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78"
+    rootKey: "0xefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a10256d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37"
+    softOutputSeed: "0xdf273097a573a411332efd86009bd0a175f08814ecc17ab02cc1e3404e1cd8bf"
+    hardOutputSeed: "0x69582e71443c8be0fc00de9d9734c3fe7f4266d10a752de74814f2a3079f69a3"
+    destinationAesSeed: "0x73e5bc251b143b74476e576754125d61930d203f199a87c123c074e020fd5028"
+    destinationKmacSeed: "0xce44cbff5e09e6dd3ae54e9e45da6e662fb69c3aab936b415a0d6e7185eaa2e0"
+    destinationOtbnSeed: "0xfcc581b66ae11d33f678e7d227881bcfe58a331208f189de6265edc8fde06db0"
+    destinationNoneSeed: "0xb76a8aff9e4da0e3ff9f3036fd9c13ac08496db56fbc4894d38bd8674f4b542d"
     revisionSeed: "0x17a9838dd4cd7f1bdce673b937a6d75202fedbf893bf7d52c8a744ad83d2630b"
+    creatorIdentitySeed: "0xc20c05a20251023541544776930be76bfbb22e1d8aaa4783f2b5e094e3e8d3f8"
+    ownerIntermediateIdentitySeed: "0x93cdb1d9a6a60050ef0d8a166d91200dc6757907237df4401908799dfa1fe8f2"
+    ownerIdentitySeed: "0xa88601ca1695a7c8c5d32486aac4e086628d6c8ca138f65d25dfa5f9c912f354"
     OperationDoneIRQ -> rv_plic@168
 
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
