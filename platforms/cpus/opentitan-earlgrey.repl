@@ -84,9 +84,13 @@ flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
 
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
-    // TODO setup interrupts for GPIO requires modification to renode model.
+    IRQ -> rv_plic@1
 
 aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
+
+key_mgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41130000
+    revisionSeed: "0x17a9838dd4cd7f1bdce673b937a6d75202fedbf893bf7d52c8a744ad83d2630b"
+    OperationDoneIRQ -> rv_plic@168
 
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
 
