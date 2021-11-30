@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2021 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using CookComputing.XmlRpc;
 using Antmicro.Renode.Core;
@@ -74,7 +75,11 @@ namespace Antmicro.Renode.RobotFramework
             var result = new StringBuilder();
             while(e != null)
             {
-                result.AppendFormat("{0}: {1}\n", e.GetType().Name, generator(e));
+                if(!(e is TargetInvocationException))
+                {
+                    // TargetInvocationException is only a container, it does not provide valuable information
+                    result.AppendFormat("{0}: {1}\n", e.GetType().Name, generator(e));
+                }
                 e = e.InnerException;
             }
 
