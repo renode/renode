@@ -90,6 +90,7 @@ aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
 
 key_mgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41130000
     aes: aes
+    kmac: kmac
     romController: rom_ctrl
     deviceId: "0xfa53b8058e157cb69f1f413e87242971b6b52a656a1cab7febf21e5bf1f45edd"
     lifeCycleDiversificationConstant: "0x6faf88f22bccd612d1c09f5c02b2c8d1"
@@ -109,6 +110,11 @@ key_mgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41130000
     OperationDoneIRQ -> rv_plic@168
 
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
+
+kmac: Miscellaneous.OpenTitan_KMAC @ sysbus 0x41120000
+    KmacDoneIRQ -> rv_plic@168
+    FifoEmptyIRQ -> rv_plic@169
+    KmacErrorIRQ -> rv_plic@170
 
 // Timers
 rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
@@ -163,7 +169,6 @@ sysbus:
         Tag <0x48000000 0x8000000> "OPENTITAN_EARLGREY_DEV_RV_PLIC"
         Tag <0x41100000 0x1000> "OPENTITAN_EARLGREY_DEV_AES"
         Tag <0x41110000 0x1000> "OPENTITAN_EARLGREY_DEV_HMAC"
-        Tag <0x41120000 0x1000> "OPENTITAN_EARLGREY_DEV_KMAC"
         Tag <0x41130000 0x1000> "OPENTITAN_EARLGREY_DEV_KEYMGR"
         Tag <0x41150000 0x1000> "OPENTITAN_EARLGREY_DEV_CSRNG"
         Tag <0x41160000 0x1000> "OPENTITAN_EARLGREY_DEV_ENTROPY_SRC"
