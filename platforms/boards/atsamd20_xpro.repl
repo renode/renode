@@ -1,0 +1,46 @@
+
+using "platforms/cpus/sam_d20.repl"
+
+
+// **** SERCOM 
+uart0: UART.SAMD20_UART @ sysbus 0x42000800
+    IRQ -> nvic@7
+
+uart1: UART.SAMD20_UART @ sysbus 0x42000C00
+    IRQ -> nvic@8
+
+uart2: I2C.SAMD20_I2C_Master @ sysbus 0x42001000
+    IRQ -> nvic@9
+
+uart3: UART.SAMD20_UART @ sysbus 0x42001400
+    IRQ -> nvic@10
+
+uart4: UART.SAMD20_UART @ sysbus 0x42001800
+    IRQ -> nvic@11
+
+// **** TIMER 
+tc0: Timers.SAMD20_Timer @ sysbus 0x42002000
+    frequency: 32000000
+    IRQ -> nvic@13
+
+// **** AD CONVERTER 
+adc: Analog.SAMD20_ADC @ sysbus 0x42004000
+    IRQ -> nvic@21
+
+// **** GPIO 
+gpio: GPIOPort.SAMD20_GPIO @ sysbus 0x41004400
+    14 -> led@0
+
+// **** GPIO peripherals 
+led: Miscellaneous.LED @ gpio
+
+
+button: Miscellaneous.Button @ gpio
+    invert: false
+    -> gpio@15
+
+
+sysbus:
+    init:
+        ApplySVD @C:\renode_ask\PLT2010V2/ATSAMD20J18.svd
+        Tag <0x4000080C, 0x4000080F> "SYSCTRL_PCLKSR" 0x000000D6

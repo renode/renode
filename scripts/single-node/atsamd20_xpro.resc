@@ -1,0 +1,25 @@
+#create machine
+using sysbus
+$name?="ATSAMD20_XPRO"
+mach create $name
+machine LoadPlatformDescription @platforms/boards/atsamd20_xpro.repl
+
+$bin?=@C:/zephyr_ws/atsamd20_xpro-zephyr-shell_module.elf
+
+# select logging level
+logLevel 3 
+
+#machine StartGdbServer 3333
+#sysbus.cpu DisableInterruptsWhileStepping true
+
+# show console for UART3
+showAnalyzer sysbus.uart3
+
+
+#define macro for reset
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset

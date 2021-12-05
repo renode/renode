@@ -1,0 +1,22 @@
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m0+"
+    PerformanceInMips: 32
+
+// **** INTERRUPTCONTROLLER 
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    IRQ -> cpu@0
+    systickFrequency: 32000000
+
+
+// **** Memory 
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x00008000
+
+flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x00040000
+
+
+
+
+
