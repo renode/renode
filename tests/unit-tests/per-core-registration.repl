@@ -1,0 +1,37 @@
+ram: Memory.MappedMemory @ {
+        sysbus 0x80000000;
+        sysbus 0x0
+    }
+    size: 0x2000000
+
+cpu1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64imacfd"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 0
+
+cpu2: CPU.RiscV64 @ sysbus
+    cpuType: "rv64imafdc"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 1
+
+uart: UART.SiFive_UART @ sysbus 0x50230000
+
+core1_mem: Memory.MappedMemory @ { 
+    sysbus 0x2010000; 
+    sysbus new Bus.BusPerCorePointRegistration {
+        address: 0x3000000; 
+        cpu: cpu1 
+    } 
+} 
+    size: 0x1000 
+
+core2_mem: Memory.MappedMemory @ { 
+    sysbus 0x2020000; 
+    sysbus new Bus.BusPerCorePointRegistration {
+        address: 0x3000000; 
+        cpu: cpu2 
+    } 
+}
+    size: 0x1000
