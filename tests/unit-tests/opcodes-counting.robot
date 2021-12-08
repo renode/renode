@@ -96,14 +96,17 @@ Should Count RVV Opcode
     ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "vlm.v"
     Should Be Equal As Numbers                  ${c}  1
 
-Should Parse RISC-V Opcodes
+Should Parse All Embedded RISC-V Opcodes
     Create Machine
 
-    @{files}=  List Files In Directory          ${CURDIR}${/}riscv-opcodes
-    FOR  ${file}  IN  @{files}
-        IF  '${file}' != 'README'
-            Execute Command                     sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}${file}"
-        END  
+    ${names}=  Execute Command                  sysbus.cpu GetRiscvOpcodesEmbeddedResourceNames
+    ${names}=  Remove String                    ${names}  [  ]  \n  ${SPACE}
+    # remove the dangling `,` produced by the Monitor
+    ${names}=  Evaluate                         '${names}'.rstrip(',')
+    @{names}=  Split String                     ${names}  ,
+
+    FOR  ${name}  IN  @{names}
+        Execute Command                         sysbus.cpu EnableRiscvOpcodesCountingFromEmbeddedResource "${name}"
     END
 
     ${r}=  Execute Command                      sysbus.cpu GetAllOpcodesCounters
@@ -113,8 +116,8 @@ Should Parse RISC-V Opcodes
 Should Count RISC-V Opcodes
     Create Machine
 
-    Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}opcodes-rv32i"
-    Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting "${CURDIR}${/}riscv-opcodes${/}opcodes-system"
+    # this should enable all opcodes supported by the simulated core
+    Execute Command                             sysbus.cpu EnableRiscvOpcodesCounting
 
     # auipc
     Execute Command                             sysbus WriteDoubleWord 0x0 0x00000297            
