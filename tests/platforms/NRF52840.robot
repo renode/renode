@@ -57,6 +57,7 @@ ${BUTTON_LED}=     SEPARATOR=
 ...  ${SPACE*4}13 -> led@0                   ${\n}
 ...                                          ${\n}
 ...  button: Miscellaneous.Button @ gpio0 11 ${\n} 
+...  ${SPACE*4}invert: true                  ${\n}
 ...  ${SPACE*4}-> gpio0@11                   ${\n}
 ...                                          ${\n}
 ...  led: Miscellaneous.LED @ gpio0 13       ${\n}
@@ -119,14 +120,14 @@ Should Handle LED and Button
     Wait For Line On Uart     Booting Zephyr OS
     Wait For Line On Uart     Press the button
 
-    Execute Command           lt AssertState False 0
+    Execute Command           lt AssertState True 0
     Execute Command           sysbus.gpio0.button Press
     Sleep           1s
-    Execute Command           lt AssertState True 0
+    Execute Command           lt AssertState False 0
     Execute Command           sysbus.gpio0.button Release
     Sleep           1s
     # TODO: those sleeps shouldn't be necessary!
-    Execute Command           lt AssertState False 0
+    Execute Command           lt AssertState True 0
 
 Should Handle SPI
     Create Machine            ${ADXL_SPI}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173
