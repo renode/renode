@@ -12,6 +12,8 @@ ${AES_BIN}                      ${URL}/open_titan-earlgrey--aes_smoketest_nexysv
 ${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_nexysvideo.elf-s_121984-63522893fc29a7f1ff84c46eddaa0f6d7113b492
 ${HMAC_BIN}                     ${URL}/open_titan-earlgrey--hmac_smoketest_nexysvideo.elf-s_171588-dcdba7d2a7d94596eda5ede6d63985a2893678c9
 ${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_nexysvideo.elf-s_158084-30b89ad8c33a73c5e1b169f3a5681a1447fe9210
+${BOOT_ROM_SCR_BIN}             ${URL}/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
+${BOOT_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--boot_rom_fpga_nexysvideo.scr.39.vmem-s_103772-a1083d2181af6fd00fe8a7fd45e918420d54e9a4
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -43,17 +45,48 @@ Setup Machine
     Create Terminal Tester      ${UART}
     Set Default Uart Timeout    1
 
-Setup Machine With Scrambled Boot ROM
-    Execute Command             $boot?=${URL}/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
+Setup Machine Without Boot ROM
     Execute Command             mach create
     Execute Command             machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
     Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
     Execute Command             sysbus LoadELF $bin
-    Execute Command             rom_ctrl Load $boot
-    Execute Command             cpu0 PC 0x00008084
 
     Create Terminal Tester      ${UART}
     Set Default Uart Timeout    1
+
+Load Scrambled Boot ROM Binary
+    Execute Command             rom_ctrl LoadBinary ${BOOT_ROM_SCR_BIN}
+    Execute Command             cpu0 PC 0x00008084
+
+Load Scrambled Boot ROM Vmem
+    Execute Command             rom_ctrl LoadVmem ${BOOT_ROM_SCR_VMEM}
+    Execute Command             cpu0 PC 0x00008084
+
+Run Smoketest
+    [Arguments]                 ${bin}
+    Execute Command             $bin=${bin}
+    Setup Machine
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Run Smoketest With Scrambled Boot ROM Binary
+    [Arguments]                 ${bin}
+    Execute Command             $bin=${bin}
+    Setup Machine Without Boot ROM
+    Load Scrambled Boot ROM Binary
+    Start Emulation
+
+    Wait For Line On UART       PASS
+
+Run Smoketest With Scrambled Boot ROM Vmem
+    [Arguments]                 ${bin}
+    Execute Command             $bin=${bin}
+    Setup Machine Without Boot ROM
+    Load Scrambled Boot ROM Vmem
+    Start Emulation
+
+    Wait For Line On UART       PASS
 
 *** Test Cases ***
 Should Print To Uart
@@ -110,57 +143,37 @@ Should Display Output on GPIO
     Execute Command             led7 AssertState false 0.2
 
 Should Pass AES Smoketest
-    Execute Command             $bin=${AES_BIN}
-    Setup Machine
-    Start Emulation
-
-    Wait For Line On UART       PASS
+    Run Smoketest               ${AES_BIN}
 
 Should Pass UART Smoketest
-    Execute Command             $bin=${UART_BIN}
-    Setup Machine
-    Start Emulation
-
-    Wait For Line On UART       PASS
+    Run Smoketest               ${UART_BIN}
 
 Should Pass HMAC Smoketest
-    Execute Command             $bin=${HMAC_BIN}
-    Setup Machine
-    Start Emulation
-
-    Wait For Line On UART       PASS
+    Run Smoketest               ${HMAC_BIN}
 
 Should Pass Flash Smoketest
-    Execute Command             $bin=${FLASH_CTRL_BIN}
-    Setup Machine
-    Start Emulation
+    Run Smoketest               ${FLASH_CTRL_BIN}
 
-    Wait For Line On UART       PASS
+Should Pass AES Smoketest With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${AES_BIN}
 
-Should Pass AES Smoketest With Scrambled Boot ROM
-    Execute Command             $bin=${AES_BIN}
-    Setup Machine With Scrambled Boot ROM
-    Start Emulation
+Should Pass UART Smoketest With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${UART_BIN}
 
-    Wait For Line On UART       PASS
+Should Pass HMAC Smoketest With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${HMAC_BIN}
 
-Should Pass UART Smoketest With Scrambled Boot ROM
-    Execute Command             $bin=${UART_BIN}
-    Setup Machine With Scrambled Boot ROM
-    Start Emulation
+Should Pass Flash Smoketest With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${FLASH_CTRL_BIN}
 
-    Wait For Line On UART       PASS
+Should Pass AES Smoketest With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${AES_BIN}
 
-Should Pass HMAC Smoketest With Scrambled Boot ROM
-    Execute Command             $bin=${HMAC_BIN}
-    Setup Machine With Scrambled Boot ROM
-    Start Emulation
+Should Pass UART Smoketest With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${UART_BIN}
 
-    Wait For Line On UART       PASS
+Should Pass HMAC Smoketest With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${HMAC_BIN}
 
-Should Pass Flash Smoketest With Scrambled Boot ROM
-    Execute Command             $bin=${FLASH_CTRL_BIN}
-    Setup Machine With Scrambled Boot ROM
-    Start Emulation
-
-    Wait For Line On UART       PASS
+Should Pass Flash Smoketest With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${FLASH_CTRL_BIN}

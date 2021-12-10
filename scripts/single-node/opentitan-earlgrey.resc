@@ -9,16 +9,18 @@ machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
 
 showAnalyzer sysbus.uart0
 
-# Default boot rom is an elf for ease of debugging, but you can use the commented alternative (setting the boot varaible and loading boot in reset macro) to get the actual boot flow
+# Default boot rom is an elf for ease of debugging, but you can use the commented alternatives in reset macro to get the actual boot flow
 $boot?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_nexysvideo.elf-s_253832-2b6b82029ebf834357770756f4ecc60168ed7648
-# $boot?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
+$boot_binary?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
+$boot_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_fpga_nexysvideo.scr.39.vmem-s_103772-a1083d2181af6fd00fe8a7fd45e918420d54e9a4
 $bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_nexysvideo.elf-s_218784-333535966968de132c1bd5713899064f825af32c
 
 macro reset
 """ 
     sysbus LoadELF $bin
     sysbus LoadELF $boot
-    # rom_ctrl Load $boot
+    # rom_ctrl LoadBinary $boot_binary
+    # rom_ctrl LoadVmem $boot_vmem
     # cpu0 PC 0x00008084
 """ 
 
