@@ -38,3 +38,6 @@
 	path = lib/BigGustave
 	url = https://github.com/antmicro/BigGustave.git
 	branch = renode-build
+[submodule "lib/bc-csharp"]
+	path = lib/bc-csharp
+	url = https://github.com/antmicro/bc-csharp.git
