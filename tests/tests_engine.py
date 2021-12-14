@@ -324,7 +324,7 @@ def run():
             res = suite.prepare(options)
             if res is not None and res != 0:
                 print("Build failure, not running tests.")
-                return
+                sys.exit(res)
 
     print("Starting suites")
 
