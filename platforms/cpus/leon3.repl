@@ -25,7 +25,7 @@ uart: UART.GaislerUART @ sysbus <0x80000100, +0x100>
 timer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>
     0 -> mic@8
     timersNumber: 2
-    frequency: 1000000
+    frequency: 50000000
 
 eth: Network.GaislerEth @ sysbus 0x80000B00
     -> mic@12
