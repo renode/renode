@@ -20,7 +20,7 @@ namespace Antmicro.Renode.RobotFramework
         {
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public void SetDefaultUartTimeout(float timeout)
         {
             globalTimeout = timeout;
@@ -32,7 +32,7 @@ namespace Antmicro.Renode.RobotFramework
             return GetTesterOrThrowException(testerId).GetReport();
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null)
         {
             return CreateNewTester(uartObject =>

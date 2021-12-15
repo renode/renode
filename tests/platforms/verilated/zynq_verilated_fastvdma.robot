@@ -42,7 +42,7 @@ Should Boot Linux
     Start Emulation
     Wait For Prompt On Uart              ${PROMPT}  timeout=300
 
-    Provides                             booted-linux
+    Provides                             booted-linux  Reexecution
 
 Should Load Drivers
     [Documentation]                      Loads fastvdma.ko and fastvdma-demo.ko and performs image transfer via FastVDMA.
@@ -63,7 +63,7 @@ Should Load Drivers
     Write Line To Uart                   ./demo
     Wait For Prompt On Uart              ${PROMPT}
 
-    Provides                             output
+    Provides                             output  Reexecution
 
 Verify Image
     [Documentation]                      Verifies whether the image has been transferred correctly.

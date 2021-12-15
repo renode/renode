@@ -67,9 +67,9 @@ namespace Antmicro.Renode.RobotFramework
             {
                 return KeywordLookupResult.ArgumentsNotMatched;
             }
-            if(!keyword.ShouldNotBeReplayed)
+            if(keyword.ReplayMode != Replay.Never)
             {
-                Recorder.Instance.RecordEvent(keywordName, arguments);
+                Recorder.Instance.RecordEvent(keywordName, arguments, keyword.ReplayMode);
             }
             keywordResult = keyword.Execute(parsedArguments);
             return KeywordLookupResult.Success;

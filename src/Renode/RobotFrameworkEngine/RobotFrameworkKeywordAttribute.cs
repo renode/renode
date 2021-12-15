@@ -10,14 +10,23 @@ namespace Antmicro.Renode.RobotFramework
 {
     public class RobotFrameworkKeywordAttribute : Attribute
     {
-        public RobotFrameworkKeywordAttribute(string name = null, bool shouldNotBeReplayed = false)
+        public RobotFrameworkKeywordAttribute(string name = null, bool shouldNotBeReplayed = false, Replay replayMode = Replay.InReexecutionMode)
         {
             Name = name;
-            ShouldNotBeReplayed = shouldNotBeReplayed;
+            ReplayMode = replayMode;
         }
 
         public string Name { get; private set; }
-        public bool ShouldNotBeReplayed { get; private set; }
+
+        public Replay ReplayMode { get; private set; }
+    }
+
+    public enum Replay
+    {
+        Always,
+        Never,
+        InReexecutionMode,
+        InSerializationMode,
     }
 }
 

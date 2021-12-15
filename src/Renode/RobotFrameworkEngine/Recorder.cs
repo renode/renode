@@ -17,9 +17,9 @@ namespace Antmicro.Renode.RobotFramework
 
         public static Recorder Instance { get; private set; }
 
-        public void RecordEvent(string name, string[] args)
+        public void RecordEvent(string name, string[] args, Replay replayMode = Replay.InReexecutionMode)
         {
-            events.Add(new Event { Name = name, Arguments = args });
+            events.Add(new Event { Name = name, Arguments = args, ReplayMode = replayMode});
         }
 
         public void SaveCurrentState(string name)
@@ -51,6 +51,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             public string Name { get; set; }
             public string[] Arguments { get; set; }
+            public Replay ReplayMode { get; set; }
         }
     }
 }

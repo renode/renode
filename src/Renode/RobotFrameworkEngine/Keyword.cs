@@ -48,12 +48,12 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        public bool ShouldNotBeReplayed
+        public Replay ReplayMode
         {
             get
             {
                 var attr = methodInfo.GetCustomAttributes<RobotFrameworkKeywordAttribute>().Single();
-                return attr.ShouldNotBeReplayed;
+                return attr.ReplayMode;
             }
         }
 
@@ -144,7 +144,6 @@ namespace Antmicro.Renode.RobotFramework
         {
             public bool IsParsed;
             public object Value;
-
         }
     }
 }

@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.UserInterface;
@@ -18,6 +19,7 @@ namespace Antmicro.Renode.RobotFramework
         public RenodeKeywords()
         {
             monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+            savepoints = new Dictionary<string, Savepoint>();
             if(!(monitor.Interaction is CommandInteractionWrapper))
             {
                 monitor.Interaction = new CommandInteractionWrapper(monitor.Interaction);
@@ -38,7 +40,7 @@ namespace Antmicro.Renode.RobotFramework
             Recorder.Instance.ClearEvents();
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public void StartEmulation()
         {
             EmulationManager.Instance.CurrentEmulation.StartAll();
@@ -54,7 +56,6 @@ namespace Antmicro.Renode.RobotFramework
                 if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out var machobj))
                 {
                     throw new KeywordException("Could not find machine named {0} in the emulation", machine);
-
                 }
                 monitor.Machine = machobj;
             }
@@ -101,7 +102,7 @@ namespace Antmicro.Renode.RobotFramework
             return interaction.GetContents();
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public void StopRemoteServer()
         {
             var robotFrontendEngine = (RobotFrameworkEngine)ObjectCreator.Instance.GetSurrogate(typeof(RobotFrameworkEngine));
@@ -147,13 +148,20 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
-        public void Provides(string state)
+        [RobotFrameworkKeyword(replayMode: Replay.Never)]
+        public void Provides(string state, ProviderType type = ProviderType.Serialization)
         {
+            if(type == ProviderType.Serialization)
+            {
+                var tempfileName = AllocateTemporaryFile();
+                EmulationManager.Instance.CurrentEmulation.TryGetEmulationElementName(monitor.Machine, out var currentMachine);
+                EmulationManager.Instance.Save(tempfileName);
+                savepoints[state] = new Savepoint(currentMachine, tempfileName);
+            }
             Recorder.Instance.SaveCurrentState(state);
         }
 
-        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
+        [RobotFrameworkKeyword(replayMode: Replay.Never)]
         public void Requires(string state)
         {
             List<Recorder.Event> events;
@@ -163,7 +171,21 @@ namespace Antmicro.Renode.RobotFramework
             }
             ResetEmulation();
             var robotFrontendEngine = (RobotFrameworkEngine)ObjectCreator.Instance.GetSurrogate(typeof(RobotFrameworkEngine));
-            foreach(var e in events)
+
+            IEnumerable<Recorder.Event> eventsToExecute = events;
+            var isSerialized = savepoints.TryGetValue(state, out var savepoint);
+
+            if(isSerialized)
+            {
+                EmulationManager.Instance.Load(savepoint.Filename);
+                if(savepoint.SelectedMachine!= null)
+                {
+                    ExecuteCommand($"mach set \"{savepoint.SelectedMachine}\"");
+                }
+                eventsToExecute = eventsToExecute.Where(x => (x.ReplayMode == Replay.Always || x.ReplayMode == Replay.InSerializationMode));
+            }
+
+            foreach(var e in eventsToExecute)
             {
                 robotFrontendEngine.ExecuteKeyword(e.Name, e.Arguments);
             }
@@ -202,7 +224,7 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public string AllocateTemporaryFile()
         {
             return TemporaryFilesManager.Instance.GetTemporaryFile();
@@ -225,7 +247,7 @@ namespace Antmicro.Renode.RobotFramework
             return result;
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public void CreateLogTester(float timeout)
         {
             logTester = new LogTester(timeout);
@@ -257,7 +279,7 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        [RobotFrameworkKeyword(shouldNotBeReplayed: true)]
+        [RobotFrameworkKeyword(replayMode: Replay.Never)]
         public void LogToFile(string filePath, bool flushAfterEveryWrite = false)
         {
             Logger.AddBackend(new FileBackend(filePath, flushAfterEveryWrite), "file", true);
@@ -313,12 +335,32 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        private readonly Dictionary<string, Savepoint> savepoints;
+
         private LogTester logTester;
         private string cachedLogFilePath;
 
         private readonly Monitor monitor;
 
         private const string CachedLogBackendName = "cache";
+
+        private struct Savepoint
+        {
+            public Savepoint(string selectedMachine, string filename)
+            {
+                SelectedMachine = selectedMachine;
+                Filename = filename;
+            }
+
+            public string SelectedMachine { get; }
+            public string Filename { get; }
+        }
+
+        public enum ProviderType
+        {
+            Serialization = 0,
+            Reexecution = 1,
+        }
     }
 }
 

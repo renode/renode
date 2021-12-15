@@ -17,7 +17,7 @@ namespace Antmicro.Renode.RobotFramework
         {
         }
 
-        [RobotFrameworkKeyword]
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateNetworkInterfaceTester(string networkInterface, string machine = null)
         {
             return CreateNewTester(p => {
