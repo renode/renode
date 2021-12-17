@@ -33,6 +33,10 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public override string ToString()
         {
+            if(Sources == null)
+            {
+                return "";
+            }
             return $"{Sources.Select(x => x.ToString()).Aggregate((x, y) => x + "," + y)} -> {PrettyPrintDestinations(Destinations)}";
         }
 
