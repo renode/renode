@@ -5,6 +5,7 @@ set -e
 
 export ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
+EXPORT_DIRECTORY=""
 
 UPDATE_SUBMODULES=false
 CONFIGURATION="Release"
@@ -28,11 +29,12 @@ function print_help() {
   echo "-t             create a portable package (experimental, Linux only)"
   echo "-s             update submodules"
   echo "-b             custom build properties file"
+  echo "-o             custom output directory"
   echo "--skip-fetch   skip fetching submodules and additional resources"
   echo "--no-gui       build with GUI disabled"
 }
 
-while getopts "cdvpnstb:-:" opt
+while getopts "cdvpnstbo:-:" opt
 do
   case $opt in
     c)
@@ -59,6 +61,10 @@ do
       ;;
     b)
       CUSTOM_PROP=$OPTARG
+      ;;
+    o)
+      EXPORT_DIRECTORY=$OPTARG
+      echo "Setting the output directory to $EXPORT_DIRECTORY"
       ;;
     -)
       case $OPTARG in
@@ -218,6 +224,18 @@ params=""
 if [ $CONFIGURATION == "Debug" ]
 then
     params="$params -d"
+fi
+
+if [ -n "$EXPORT_DIRECTORY" ]
+then
+    if [ "${DETECTED_OS}" != "linux" ]
+    then
+        echo "Custom output directory is currently available on Linux only"
+        exit 1
+    fi
+
+    $ROOT_PATH/tools/packaging/export_${DETECTED_OS}_workdir.sh $EXPORT_DIRECTORY $params
+    echo "Renode built to $EXPORT_DIRECTORY"
 fi
 
 if $PACKAGES
