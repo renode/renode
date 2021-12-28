@@ -112,7 +112,7 @@ hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
 
 // Timers
 rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
-    0 -> cpu0@11
+    0 -> cpu0@7
     numberOfHarts: 1
     timersPerHart: 1
 
