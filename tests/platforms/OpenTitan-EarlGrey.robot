@@ -42,8 +42,8 @@ Setup Machine
     Execute Command             include @scripts/single-node/opentitan-earlgrey.resc
     Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
 
-    Create Terminal Tester      ${UART}
     Set Default Uart Timeout    1
+    Create Terminal Tester      ${UART}
 
 Setup Machine Without Boot ROM
     Execute Command             mach create
