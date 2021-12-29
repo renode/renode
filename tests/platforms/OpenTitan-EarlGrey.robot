@@ -96,7 +96,9 @@ Should Print To Uart
 
     Wait For Line On Uart       The LEDs show the ASCII code of the last character.
 
-    Provides                    initialization
+    # Cannot use serialization to store state as there is a problem with serialization of previously deserialized platforms
+    # We use reexecution to make it possible to use the serialization method in later tests
+    Provides                    initialization  Reexecution
 
 Should Echo On Uart
     Requires                    initialization

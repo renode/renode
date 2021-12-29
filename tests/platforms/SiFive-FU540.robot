@@ -41,7 +41,8 @@ Should Boot Linux
     Write Line To Uart        root             waitForEcho=false
     Wait For Prompt On Uart   \#
 
-    Provides                  booted-linux
+    # This platform must use an old approach as it fails to deserialize on Windows and macOS
+    Provides                  booted-linux  Reexecution
 
 Should Ls
     [Documentation]           Tests shell responsiveness in Linux on SiFive Freedom U540 platform.

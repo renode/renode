@@ -32,7 +32,9 @@ Should Boot HSS
     Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
     Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
 
-    Provides                  booted-hss
+    # Cannot use serialization to store state as there is a problem with serialization of previously deserialized platforms
+    # We use reexecution to make it possible to use the serialization method in later tests
+    Provides                  booted-hss  Reexecution
 
 Should Boot U-Boot
     [Documentation]           Boots U-Boot from SD card on Icicle Kit with PolarFire SoC
@@ -47,7 +49,9 @@ Should Boot U-Boot
     Wait For Line On Uart     Loading fdt from FIT Image      testerId=${uart}  treatAsRegex=true
     Wait For Line On Uart     Starting kernel ...             testerId=${uart}  treatAsRegex=true
 
-    Provides                  booted-uboot
+    # Cannot use serialization to store state as there is a problem with serialization of previously deserialized platforms
+    # We use reexecution to make it possible to use the serialization method in later tests
+    Provides                  booted-uboot  Reexecution
 
 Should Boot Linux
     [Documentation]           Boots Linux on Icicle Kit with PolarFire SoC.

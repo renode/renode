@@ -19,7 +19,7 @@ ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drive
 
 *** Keywords ***
 Create Machine
-    Execute Script	                 ${SCRIPT}
+    Execute Script                       ${SCRIPT}
     Create Terminal Tester               ${UART}
 
 Compare Parts Of Images
@@ -42,6 +42,7 @@ Should Boot Linux
     Start Emulation
     Wait For Prompt On Uart              ${PROMPT}  timeout=300
 
+    # Serialization on verilated platforms isn't working porperly at the moment. We use the old method instead
     Provides                             booted-linux  Reexecution
 
 Should Load Drivers
@@ -63,6 +64,7 @@ Should Load Drivers
     Write Line To Uart                   ./demo
     Wait For Prompt On Uart              ${PROMPT}
 
+    # Serialization on verilated platforms isn't working porperly at the moment. We use the old method instead
     Provides                             output  Reexecution
 
 Verify Image
