@@ -36,6 +36,8 @@ cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m4"
     nvic: nvic
 
+pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
+
 exti: IRQControllers.EXTI @ sysbus 0x40013C00
     [0-6] -> nvic@[6-10, 23, 40]
 
