@@ -107,7 +107,7 @@ namespace Antmicro.Renode.Integrations
                 throw new RecoverableException("Received no binary in the selected time window!");
             }
 
-            machine.SystemBus.WriteBytes(flashBuffer, binaryLoadAddress, binaryLength);
+            machine.SystemBus.WriteBytes(flashBuffer, binaryLoadAddress, binaryLength, context: cpu);
             cpu.VectorTableOffset = (uint)binaryLoadAddress;
 
             return $"Binary of size {binaryLength} bytes loaded at 0x{binaryLoadAddress:X}";

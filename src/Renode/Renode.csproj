@@ -250,6 +250,10 @@
       <Project>{55ABBA4C-AAF9-4726-A592-0C92436CEC92}</Project>
       <Name>PacketDotNet</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-xtensa.csproj">
+      <Project>{28F22125-F07D-5EF2-8289-4998351FBAA4}</Project>
+      <Name>cores-xtensa</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlatformDescription\" />

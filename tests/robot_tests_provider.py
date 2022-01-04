@@ -116,9 +116,14 @@ def verify_cli_arguments(options):
         if options.port is not None and options.jobs != 1:
             print("Debug port cannot be used in parallel runs")
             sys.exit(1)
-    if options.css_file and not os.path.isfile(options.css_file):
-        print("Unable to find provided CSS file: {0}.".format(options.css_file))
-        sys.exit(1)
+            
+    if options.css_file:
+        if not os.path.isabs(options.css_file):
+            options.css_file = os.path.join(this_path, options.css_file)
+
+        if not os.path.isfile(options.css_file):
+            print("Unable to find provided CSS file: {0}.".format(options.css_file))
+            sys.exit(1)
 
 
 def is_process_running(pid):
@@ -266,6 +271,9 @@ class RobotTestSuite(object):
 
     def _run_remote_server(self, options, port_offset=0):
         if options.remote_server_full_directory is not None:
+            if not os.path.isabs(options.remote_server_full_directory):
+                options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
+                
             self.remote_server_directory = options.remote_server_full_directory
         else:
             self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)

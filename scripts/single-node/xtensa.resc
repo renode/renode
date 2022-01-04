@@ -1,0 +1,16 @@
+using sysbus
+
+# create the platform
+mach create
+machine LoadPlatformDescription @platforms/cpus/xtensa-sample-controller.repl
+
+# display the UART analyzer window
+showAnalyzer cpu.uartSemihosting
+
+# load the ELF file
+macro reset
+"""
+    sysbus LoadELF @https://dl.antmicro.com/projects/renode/xtensa-sample-controller-zephyr-hello-world.elf-s_293544-4be60f8a3891e70c30e1e8a471df4ad12ab08144
+"""
+runMacro $reset
+
