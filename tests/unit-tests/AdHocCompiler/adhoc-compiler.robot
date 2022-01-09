@@ -16,15 +16,8 @@ ${COMPLEX_PLATFORM}=     SEPARATOR=
 ...  simple: ReferencingPeripheral @ sysbus 0x0                 ${\n}
 ...  """
 
-*** Test Cases ***
-Should Compile Simple Peripheral
-        # Escape space in windows path
-        ${TEST_DIR}=             Evaluate  r"${CURDIR}".replace(" ", "\\ ")
-        Execute Command          include @${TEST_DIR}${/}SimplePeripheral.cs
-
-        Execute Command          mach create
-        Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM}
-
+*** Keywords ***
+Use Peripheral
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
         Should Be Equal As Numbers   ${r}  0x0
 
@@ -38,6 +31,17 @@ Should Compile Simple Peripheral
 
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x8
         Should Be Equal As Numbers   ${r}  5
+
+*** Test Cases ***
+Should Compile Simple Peripheral
+        # Escape space in windows path
+        ${TEST_DIR}=             Evaluate  r"${CURDIR}".replace(" ", "\\ ")
+        Execute Command          include @${TEST_DIR}${/}SimplePeripheral.cs
+
+        Execute Command          mach create
+        Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM}
+
+        Use Peripheral
 
 Should Compile Multiple Files Referencing Each Other
         # Escape space in windows path
@@ -49,16 +53,4 @@ Should Compile Multiple Files Referencing Each Other
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${COMPLEX_PLATFORM}
 
-        ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
-        Should Be Equal As Numbers   ${r}  0x0
-
-        ${r}=  Execute Command   sysbus ReadDoubleWord 0x8
-        Should Be Equal As Numbers   ${r}  0x0
-
-        Execute Command          sysbus WriteDoubleWord 0x0 0x147
-
-        ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
-        Should Be Equal As Numbers   ${r}  0x28e
-
-        ${r}=  Execute Command   sysbus ReadDoubleWord 0x8
-        Should Be Equal As Numbers   ${r}  5
+        Use Peripheral
