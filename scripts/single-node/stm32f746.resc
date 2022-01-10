@@ -7,6 +7,8 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/boards/stm32f7_discovery-bb.repl
 
+ltdc FramesPerVirtualSecond 100
+
 showAnalyzer usart1
 showAnalyzer ltdc
 
