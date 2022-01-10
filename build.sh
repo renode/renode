@@ -163,6 +163,7 @@ if ! $ON_WINDOWS
 then
     if ! [ -x "$(command -v mcs)" ]
     then
+        MINIMUM_MONO=`get_min_mono_version`
         echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi

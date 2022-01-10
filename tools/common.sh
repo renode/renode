@@ -78,9 +78,12 @@ function add_path_property {
 </PropertyGroup>#' "$1"
 }
 
-function verify_mono_version {
-    MINIMUM_MONO=`cat $ROOT_PATH/tools/mono_version`
+function get_min_mono_version {
+    cat $ROOT_PATH/tools/mono_version
+}
 
+function verify_mono_version {
+    MINIMUM_MONO=`get_min_mono_version`
     if ! [ -x "$(command -v $LAUNCHER)" ]
     then
         echo "$LAUNCHER not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
