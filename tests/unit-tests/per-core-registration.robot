@@ -16,7 +16,7 @@ ${TEST_ELF}                              ${URI}/multibus_test.elf-s_3718712-8ec6
 
 ${CONFLICTING_MEMORY}=     SEPARATOR=
 ...  """                                                                             ${\n}
-...  shadow_mem: Memory.ArrayMemory @ sysbus new Bus.BusPerCorePointRegistration {   ${\n}
+...  shadow_mem: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration {          ${\n}
 ...  ${SPACE*4}address: 0x0;                                                         ${\n}
 ...  ${SPACE*4}cpu: cpu1                                                             ${\n}
 ...  }                                                                               ${\n}

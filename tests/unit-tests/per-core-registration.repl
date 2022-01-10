@@ -20,7 +20,7 @@ uart: UART.SiFive_UART @ sysbus 0x50230000
 
 core1_mem: Memory.MappedMemory @ { 
     sysbus 0x2010000; 
-    sysbus new Bus.BusPerCorePointRegistration {
+    sysbus new Bus.BusPointRegistration {
         address: 0x3000000; 
         cpu: cpu1 
     } 
@@ -29,7 +29,7 @@ core1_mem: Memory.MappedMemory @ {
 
 core2_mem: Memory.MappedMemory @ { 
     sysbus 0x2020000; 
-    sysbus new Bus.BusPerCorePointRegistration {
+    sysbus new Bus.BusPointRegistration {
         address: 0x3000000; 
         cpu: cpu2 
     } 
