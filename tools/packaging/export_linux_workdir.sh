@@ -25,7 +25,7 @@ cp -r $BASE/tools/common.sh $DIR/tests/common.sh
 cp -r $BASE/test.sh $TEST_SCRIPT
 
 $SED_COMMAND 's#tools/#tests/#' $TEST_SCRIPT
-$SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory=../bin --css-file=robot.css -r $(pwd) "$@"#' $TEST_SCRIPT
+$SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory=${ROOT_PATH}/bin --css-file=${ROOT_PATH}/tests/robot.css -r $(pwd) "$@"#' $TEST_SCRIPT
 $SED_COMMAND '/TESTS_FILE/d' $TEST_SCRIPT
 $SED_COMMAND '/TESTS_RESULTS/d' $TEST_SCRIPT
 
