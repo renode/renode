@@ -85,7 +85,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptionsParserTests", "lib\o
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigGustave", "lib\BigGustave\src\BigGustave\BigGustave.csproj", "{959D076C-8127-4FEE-9737-0F8FDE5A0E09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "crypto", "lib\bc-csharp\crypto\crypto.Net45.csproj", "{45473847-8AF8-4BAF-B768-442C6875B8CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "crypto", "lib\bc-csharp\crypto\crypto.Net45.expanded.csproj", "{45473847-8AF8-4BAF-B768-442C6875B8CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
