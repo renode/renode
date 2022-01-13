@@ -6,7 +6,7 @@ This directory contains script comparing Renode execution with a given reference
 
 To install required python packages run:
 ```
-    python3 -m pip install -r utils/gdb_compare/requirements.txt
+    python3 -m pip install -r tools/gdb_compare/requirements.txt
 ```
 
 ### Usage
