@@ -38,7 +38,7 @@ requirements:
         - pango          [not win]
         - atk            [not win]
         - fontconfig     [not win]
-        - robotframework 3.1
+        - robotframework 4.0.1
         - netifaces
         - requests
         - psutil
