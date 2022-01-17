@@ -90,6 +90,7 @@ rng: Miscellaneous.NRF52840_RNG @ sysbus 0x4000D000
     -> nvic@13
 
 ecb: Miscellaneous.NRF52840_ECB @ sysbus 0x4000E000
+    -> nvic@14
 
 sysbus:
     init:
