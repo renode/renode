@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 // Copyright (c) 2020-2021 Microsoft
 //
 // This file is licensed under the MIT License.
@@ -14,11 +14,10 @@ using Xwt;
 
 namespace Antmicro.Renode.UI
 {
-    public class TermsharpProvider : IConsoleBackendAnalyzerProvider
+    public class TermsharpProvider : IConsoleBackendAnalyzerProvider, IDisposable
     {
         public bool TryOpen(string consoleName, out IIOSource ioSource, bool isMonitorWindow = false)
         {
-            TerminalWidget terminalWidget = null;
             ApplicationExtensions.InvokeInUIThreadAndWait(() =>
             {
                 terminalWidget = new TerminalWidget(() => window?.HasFocus ?? false, isMonitorWindow);
@@ -56,6 +55,7 @@ namespace Antmicro.Renode.UI
 
         public void Close()
         {
+            terminalWidget.Close();
             var w = window;
             if(w != null)
             {
@@ -68,7 +68,14 @@ namespace Antmicro.Renode.UI
             }
         }
 
+        public void Dispose()
+        {
+            OnClose = null;
+        }
+
         public event Action OnClose;
+
+        private TerminalWidget terminalWidget;
 
         private void InnerOnClose()
         {

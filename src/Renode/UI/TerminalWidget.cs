@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -147,9 +147,9 @@ namespace Antmicro.Renode.UI
             }
         }
 
-        protected override void Dispose(bool disposing)
+        public void Close()
         {
-            base.Dispose(disposing);
+            base.Dispose(true);
 
             if(IOSource != null)
             {
