@@ -82,7 +82,7 @@ Go to `the releases section <https://github.com/renode/renode/releases/latest>`_
    :delim: |
 
    **Linux** | Install Renode as normal with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
-   **macOS** | Use the provided ``*.dmg`` as normal. Additionally, to be able to use Renode from the command line on macOS, create an appropriate aliases. If you're using Bash, you can do it by adding ``alias renode='mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe'`` and ``alias renode-test='/Applications/Renode.app/Contents/MacOS/tests/test.sh'`` to your ``.bashrc`` file.
+   **macOS** | Use the provided ``*.dmg`` as normal. Additionally, to be able to use Renode from the command line on macOS, create an appropriate aliases. If you're using Bash, you can do it by adding ``alias renode='mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe'`` and ``alias renode-test='/Applications/Renode.app/Contents/MacOS/tests/renode-test'`` to your ``.bashrc`` file.
    **Windows** | Install Renode from the provided ``*.msi`` file. The installer will allow you to add icons to your Desktop and/or Start Menu and an entry to your PATH.
 
 Additional prerequisites (for Robot framework testing)

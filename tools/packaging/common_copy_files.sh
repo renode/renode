@@ -44,7 +44,7 @@ function copy_bash_tests_scripts() {
     TEST_SCRIPT=$1
     COMMON_SCRIPT=$2
 
-    cp -r $BASE/test.sh $TEST_SCRIPT
+    cp -r $BASE/renode-test $TEST_SCRIPT
     $SED_COMMAND 's#tools/##' $TEST_SCRIPT
     $SED_COMMAND 's#tests/run_tests.py#run_tests.py#' $TEST_SCRIPT
     $SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r $(pwd) "$@"#' $TEST_SCRIPT
