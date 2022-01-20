@@ -21,6 +21,8 @@ wdog1: Python.PythonPeripheral @ sysbus 0x400B8000
     initable: true
     filename: "scripts/pydev/ticker.py"
 
+trng: Miscellaneous.IMX_TRNG @ sysbus 0x400CC000
+
 wdog2: Python.PythonPeripheral @ sysbus 0x400D0000 
     size: 0x4000
     initable: true
@@ -147,7 +149,7 @@ pwm2: Timers.IMXRT_PWM @ sysbus 0x403E0000
 pwm3: Timers.IMXRT_PWM @ sysbus 0x403E4000
 
 pwm4: Timers.IMXRT_PWM @ sysbus 0x403E8000
- 
+
 sysbus:
     init:
         Tag <0x41400000, 0x414FFFFF> "cpu configuration port"
@@ -171,7 +173,6 @@ sysbus:
         Tag <0x400D8030, 0x400D8033> "analog02" 0x80002001
         Tag <0x400D4000, 0x400D7FFF> "SNVS_HP"
         Tag <0x400D0000, 0x400D3FFF> "WDOG2"
-        Tag <0x400CC000, 0x400CFFFF> "TRNG"
         Tag <0x400BC000, 0x400BFFFF> "WDOG3"
         Tag <0x400B8000, 0x400BBFFF> "WDOG1"
         Tag <0x400B4000, 0x400B7FFF> "EWM"
