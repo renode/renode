@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -10,6 +10,7 @@ using Antmicro.Renode.Exceptions;
 using System;
 using Antmicro.Renode.Utilities;
 using AntShell.Terminal;
+using Antmicro.Migrant;
 using Mono.Unix;
 using System.IO;
 #endif
@@ -33,15 +34,11 @@ namespace Antmicro.Renode.Backends.Terminals
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
         {
-            ptyStream = new PtyUnixStream();
 
             this.linkName = linkName;
             this.forceCreate = forceCreate;
 
-            io = new IOProvider { Backend = new StreamIOSource(ptyStream) };
-            io.ByteRead += b => CallCharReceived((byte)b);
-
-            CreateSymlink();
+            Initialize();
         }
 
         public void Dispose()
@@ -63,6 +60,15 @@ namespace Antmicro.Renode.Backends.Terminals
         }
 
         [Migrant.Hooks.PostDeserialization]
+        private void Initialize()
+        {
+            ptyStream = new PtyUnixStream();
+            io = new IOProvider { Backend = new StreamIOSource(ptyStream) };
+            io.ByteRead += b => CallCharReceived((byte)b);
+
+            CreateSymlink();
+        }
+
         private void CreateSymlink()
         {
             if(File.Exists(linkName))
@@ -96,8 +102,10 @@ namespace Antmicro.Renode.Backends.Terminals
 
         private readonly bool forceCreate;
         private readonly string linkName;
-        private readonly IOProvider io;
-        private readonly PtyUnixStream ptyStream;
+        [Transient]
+        private PtyUnixStream ptyStream;
+        [Transient]
+        private IOProvider io;
     }
 #endif
 }
