@@ -118,9 +118,7 @@ kmac: Miscellaneous.OpenTitan_KMAC @ sysbus 0x41120000
 
 // Timers
 rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
-    0 -> cpu0@7
-    numberOfHarts: 1
-    timersPerHart: 1
+    -> cpu0@7
 
 // Power Manager
 pwrmgr_aon: Miscellaneous.OpenTitan_PowerManager @ sysbus 0x40400000
