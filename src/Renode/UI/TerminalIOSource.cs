@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -31,6 +31,16 @@ namespace Antmicro.Renode.UI
         public void Flush()
         {
             // do nothing
+        }
+
+        public void Pause()
+        {
+            // Required by IActiveIOSource interface
+        }
+
+        public void Resume()
+        {
+            // Required by IActiveIOSource interface
         }
 
         public void Write(byte b)

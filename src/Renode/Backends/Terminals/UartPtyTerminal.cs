@@ -8,6 +8,7 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 #if !PLATFORM_WINDOWS
 using System;
+using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Utilities;
 using AntShell.Terminal;
 using Antmicro.Migrant;
@@ -57,6 +58,19 @@ namespace Antmicro.Renode.Backends.Terminals
         public override void WriteChar(byte value)
         {
             io.Write(value);
+        }
+
+        public override void BufferStateChanged(BufferState state)
+        {
+            base.BufferStateChanged(state);
+            if(state == BufferState.Full)
+            {
+                io.Pause();
+            }
+            else if(state == BufferState.Empty)
+            {
+                io.Resume();
+            }
         }
 
         [Migrant.Hooks.PostDeserialization]
