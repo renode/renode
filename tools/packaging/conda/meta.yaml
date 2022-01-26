@@ -13,6 +13,8 @@ build:
     missing_dso_whitelist:
         # This library comes with .NET
         - "$SYSROOT/System32/mscoree.dll" [win]
+    number: {{ environ.get('DATE_NUM', 0) }} 
+    string: {{ environ.get('DATE_STR', 'unknown') }}
 
 requirements:
     build:
