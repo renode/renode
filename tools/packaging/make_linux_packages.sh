@@ -92,8 +92,36 @@ fpm -s dir -t pacman --pacman-compression xz \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 arch=(renode*.pkg.tar.xz)
-mv $arch $OUTPUT
-echo "Created an Arch package in $PACKAGES/$arch"
+# Rationale:
+# As a result of the following commit:
+# https://github.com/jordansissel/fpm/commit/ca3477b67ba6bc9adc1cbe97e560061a739a12fc
+# packages generated with `--pacman-compression xz` have an invalid extension: `.zst`
+# instead of `.xz`. Versions from 1.12.0 to 1.14.1 (at the moment of writing this)
+# are affected.
+#
+# This is a workaround - if the user will generate packages with an
+# older fpm (<1.12.0), the file will remain unchanged. If an affected version of fpm
+# will be used - it will be renamed to have the expected file extension.
+ZST=(renode*.pkg.tar.zst)
+if [ -f "$arch" ]
+then
+    mv $arch $OUTPUT
+    echo "Created an Arch package in $PACKAGES/$arch"
+elif [ -f "$ZST" ]
+then
+    file $ZST | grep "XZ compressed data" >> /dev/null
+    if [ $? -eq 0 ]
+    then
+        mv "$ZST" "${ZST%.zst}.xz"
+        arch=(renode*.pkg.tar.xz)
+        mv $arch $OUTPUT
+        echo "Warning: .zst file was detected during the process and was renamed to .xz manually. \
+Please upgrade fpm above version 1.14.1, if possible."
+        echo "Created an Arch package in $PACKAGES/$arch"
+    else
+        echo "Could not create Arch package"
+    fi
+fi
 #cleanup unless user requests otherwise
 if $REMOVE_WORKDIR
 then
