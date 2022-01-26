@@ -2,7 +2,7 @@
 Renode
 ======
 
-Copyright (c) 2010-2021 `Antmicro <https://www.antmicro.com>`_
+Copyright (c) 2010-2022 `Antmicro <https://www.antmicro.com>`_
 
 What is Renode?
 ---------------
