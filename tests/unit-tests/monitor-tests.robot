@@ -41,3 +41,11 @@ Should Overflow Buffer
 Should Load Python Standard Library
     ${result} =               Execute Command  python "import SimpleHTTPServer"
     Should Not Contain        ${result}  No module named
+
+Should Set Proper Types To Variables
+
+    Execute Command           \$var1=1234
+    Execute Command           set var2 2345
+
+    Execute Command           emulation SetSeed $var1
+    Execute Command           emulation SetSeed $var2
