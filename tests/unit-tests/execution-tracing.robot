@@ -9,7 +9,12 @@ Resource                                        ${RENODEKEYWORDS}
 Create Machine
     Execute Command                             using sysbus
     Execute Command                             include @scripts/single-node/versatile.resc
-    Execute Command                             cpu ExecutionMode SingleStepBlocking
+
+    Execute Command                             cpu PerformanceInMips 1
+    # the value of quantum is selected here to generate several blocks
+    # of multiple instructions to check if the execution tracer can
+    # disassemble blocks correctly
+    Execute Command                             emulation SetGlobalQuantum "0.000004"
 
 *** Test Cases ***
 Should Dump PCs
@@ -17,8 +22,8 @@ Should Dump PCs
     ${FILE}=                                    Allocate Temporary File
 
     Execute Command                             cpu EnableExecutionTracing @${FILE} PC
-    Start Emulation
-    Execute Command                             cpu Step 16
+    # exactly the amount of virtual time to execute 16 instructions
+    Execute Command                             emulation RunFor "0.000016"
 
     # wait for the file to populate
     Sleep  3s
@@ -39,8 +44,8 @@ Should Dump Opcodes
     ${FILE}=                                    Allocate Temporary File
 
     Execute Command                             cpu EnableExecutionTracing @${FILE} Opcode
-    Start Emulation
-    Execute Command                             cpu Step 16
+    # exactly the amount of virtual time to execute 16 instructions
+    Execute Command                             emulation RunFor "0.000016"
 
     # wait for the file to populate
     Sleep  3s
@@ -61,8 +66,8 @@ Should Dump PC And Opcodes
     ${FILE}=                                    Allocate Temporary File
 
     Execute Command                             cpu EnableExecutionTracing @${FILE} PCAndOpcode
-    Start Emulation
-    Execute Command                             cpu Step 16
+    # exactly the amount of virtual time to execute 16 instructions
+    Execute Command                             emulation RunFor "0.000016"
 
     # wait for the file to populate
     Sleep  3s
