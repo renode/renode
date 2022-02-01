@@ -95,6 +95,9 @@ i2c3: I2C.STM32F4_I2C @ sysbus 0x40005C00
     EventInterrupt -> nvic@72
     ErrorInterrupt -> nvic@73
 
+iwdg: Timers.STM32F4_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
+
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     AlarmIRQ -> nvic@41
 
