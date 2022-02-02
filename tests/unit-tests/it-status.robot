@@ -263,6 +263,9 @@ Should Evaluate Condition Codes Properly
   ${al1}=   Execute Command     cpu EvaluateConditionCode 14  # AL
             Should Contain      ${al1}    True
 
+  #NZCV, T=1
+            Register Should Be Equal  25  0x81000000
+
   #Flags: Z=1, N=0, C=1, V=0
             Execute Command     cpu Step 1                      # After CMP 125,125
   ${eq2}=   Execute Command     cpu EvaluateConditionCode 0  # EQ
@@ -281,6 +284,9 @@ Should Evaluate Condition Codes Properly
             Should Contain      ${gt2}    False
   ${al2}=   Execute Command     cpu EvaluateConditionCode 14  # AL
             Should Contain      ${al2}    True
+
+  #NZCV, T=1
+            Register Should Be Equal  25  0x61000000
 
   #Flags: Z=0, N=0, C=1, V=0
             Execute Command     cpu Step 1                      # After CMP 125,124
@@ -301,6 +307,9 @@ Should Evaluate Condition Codes Properly
   ${al3}=   Execute Command     cpu EvaluateConditionCode 14  # AL
             Should Contain      ${al3}    True
 
+  #NZCV, T=1
+            Register Should Be Equal  25  0x21000000
+
   #Flags: Z=1, N=0, C=1, V=1
             Execute Command     cpu Step 3                      # After ADD 2^31, 2^31
   ${eq4}=   Execute Command     cpu EvaluateConditionCode 0  # EQ
@@ -319,6 +328,9 @@ Should Evaluate Condition Codes Properly
             Should Contain      ${gt4}    False
   ${al4}=   Execute Command     cpu EvaluateConditionCode 14  # AL
             Should Contain      ${al4}    True
+
+  #NZCV, T=1
+            Register Should Be Equal  25  0x71000000
 
 Should Shift State Bits After Every IT Block Instruction
 
