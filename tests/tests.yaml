@@ -78,3 +78,4 @@
 - tests/unit-tests/per-core-registration.robot
 - tests/unit-tests/it-status.robot
 - tests/unit-tests/arm-thumb.robot
+- tests/unit-tests/emulation-mode.robot
