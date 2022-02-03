@@ -76,3 +76,4 @@
 - tests/unit-tests/opcodes-counting.robot
 - tests/unit-tests/execution-tracing.robot
 - tests/unit-tests/per-core-registration.robot
+- tests/unit-tests/it-status.robot
