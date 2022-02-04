@@ -18,6 +18,8 @@ ${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_nexy
 ${BOOT_ROM_SCR_BIN}             ${URL}/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
 ${BOOT_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--boot_rom_fpga_nexysvideo.scr.39.vmem-s_103772-a1083d2181af6fd00fe8a7fd45e918420d54e9a4
 ${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_fpga_nexysvideo.elf-s_168792-0dc77e4f0beab190acd0660e6fe32e8193b0fa79
+${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_fpga_nexysvideo.elf-s_130232-622f82a8b22083c29c38abed25985e427bbaf83a
+${SW_RESET_BIN}                 ${URL}/open_titan-earlgrey--rstmgr_sw_req_test_fpga_nexysvideo.elf-s_133012-6ce97eafa18abb7c81e1c0a1c552938435daf2ab
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -170,6 +172,12 @@ Should Pass KMAC CSHAKE Mode
 Should Pass KMAC KMAC Mode
     Run Smoketest               ${KMAC_KMAC_BIN}
 
+Should Pass Reset Smoketest
+    Run Smoketest               ${RESET_BIN}
+
+Should Pass Software Reset Test
+    Run Smoketest               ${SW_RESET_BIN}
+
 Should Pass AES Smoketest With Scrambled Boot ROM Binary
     Run Smoketest With Scrambled Boot ROM Binary    ${AES_BIN}
 
@@ -191,6 +199,12 @@ Should Pass KMAC CSHAKE Mode With Scrambled Boot ROM Binary
 Should Pass KMAC KMAC Mode With Scrambled Boot ROM Binary
     Run Smoketest With Scrambled Boot ROM Binary    ${KMAC_KMAC_BIN}
 
+Should Pass Reset Smoketest With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${RESET_BIN}
+
+Should Pass Software Reset Test With Scrambled Boot ROM Binary
+    Run Smoketest With Scrambled Boot ROM Binary    ${SW_RESET_BIN}
+
 Should Pass AES Smoketest With Scrambled Boot ROM Vmem
     Run Smoketest With Scrambled Boot ROM Vmem      ${AES_BIN}
 
@@ -211,3 +225,9 @@ Should Pass KMAC CSHAKE Mode With Scrambled Boot ROM Vmem
 
 Should Pass KMAC KMAC Mode With Scrambled Boot ROM Vmem
     Run Smoketest With Scrambled Boot ROM Vmem      ${KMAC_KMAC_BIN}
+
+Should Pass Reset Smoketest With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${RESET_BIN}
+
+Should Pass Software Reset Test With Scrambled Boot ROM Vmem
+    Run Smoketest With Scrambled Boot ROM Vmem      ${SW_RESET_BIN}
