@@ -198,3 +198,47 @@ Should Trace Consecutive Blocks
     Should Be Equal                             ${pcs[354]}  0x20C
     Should Be Equal                             ${pcs[355]}  0x210
     Should Be Equal                             ${pcs[356]}  0x300
+
+Should Trace In ARM and Thumb State
+    Execute Command                             mach create
+
+    Execute Command                             machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.Arm @ sysbus { cpuType: \\"cortex-a9\\" }"
+
+    # nop (ARM)
+    Execute Command                             sysbus WriteDoubleWord 0x00000000 0xe1a00000
+    # blx 0x10 (ARM)
+    Execute Command                             sysbus WriteDoubleWord 0x00000004 0xfa000001
+    # nop (ARM)
+    Execute Command                             sysbus WriteDoubleWord 0x00000008 0xe1a00000
+    # wfi (ARM)
+    Execute Command                             sysbus WriteDoubleWord 0x0000000c 0xe320f003
+    # 2x nop (Thumb)
+    Execute Command                             sysbus WriteDoubleWord 0x00000010 0x46c046c0
+    # bx lr; nop (Thumb)
+    Execute Command                             sysbus WriteDoubleWord 0x00000014 0x46c04770
+
+    Execute Command                             sysbus.cpu PC 0x0
+
+    ${FILE}=                                    Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing @${FILE} PC
+
+    Execute Command                             emulation RunFor "0.0001"
+
+    # should reach the end of the execution
+    PC Should Be Equal                          0x10
+
+    # wait for the file to populate
+    Sleep  3s
+
+    ${content}=  Get File  ${FILE}
+    @{pcs}=  Split To Lines  ${content}
+
+    Length Should Be                            ${pcs}      7
+    Should Be Equal                             ${pcs[0]}   0x0
+    Should Be Equal                             ${pcs[1]}   0x4
+    Should Be Equal                             ${pcs[2]}   0x10
+    Should Be Equal                             ${pcs[3]}   0x12
+    Should Be Equal                             ${pcs[4]}   0x14
+    Should Be Equal                             ${pcs[5]}   0x8
+    Should Be Equal                             ${pcs[6]}   0xC
