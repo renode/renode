@@ -9,7 +9,7 @@
 #
 ######################################################################
 
-emulation CreateWirelessMedium "wireless"
+emulation CreateIEEE802_15_4Medium "wireless"
 
 # The radio is using a range-based medium (with the `Range` set to `11`)
 # If not set, the default SimpleMediumFunction will be used (where range is not relevant)

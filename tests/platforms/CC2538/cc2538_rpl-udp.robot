@@ -38,7 +38,7 @@ Create Machine
 Should Talk Over Wireless Network
     Set Test Variable           ${REPEATS}      3
 
-    Execute Command             emulation CreateWirelessMedium "wireless"
+    Execute Command             emulation CreateIEEE802_15_4Medium "wireless"
     Execute Command             wireless SetRangeWirelessFunction 11
 
     Create Machine              @https://dl.antmicro.com/projects/renode/udp-server.elf-s_173732-a2aefb896d521a8fdc2a052cac1933c68cc39bf5       "server"      1

@@ -254,7 +254,7 @@ Should Restart After Watchdog Timeout
     Wait for Line On Uart     Watchdog sample application
 
 Should Run Bluetooth sample
-    Execute Command           emulation CreateWirelessMedium "wireless"
+    Execute Command           emulation CreateIEEE802_15_4Medium "wireless"
 
     Execute Command           mach add "central"
     Execute Command           machine LoadPlatformDescription @platforms/cpus/nrf52840.repl

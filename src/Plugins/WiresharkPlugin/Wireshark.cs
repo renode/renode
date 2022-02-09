@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -77,20 +77,14 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
             lock(innerLock)
             {
-                if(mediumToLinkLayer[typeOfInterface] == layer)
+                if(linkLayerToMedium[layer] == typeOfInterface)
                 {
                     return true;
                 }
 
             }
-            if(layer == LinkLayer.Wireless_802_15_4)
-            {
-                throw new RecoverableException("Cannot log ethernet traffic to wireless-configured Wireshark.");
-            }
-            else
-            {
-                throw new RecoverableException("Cannot log wireless traffic to ethernet-configured Wireshark.");
-            }
+            
+            throw new RecoverableException($"Cannot log {typeOfInterface.Name} traffic to {layer}-configured Wireshark.");
         }
 
         private void DetachMedium(INetworkLog<INetworkInterface> reporter)
@@ -264,10 +258,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private LinkLayer layer;
         private Emulation currentEmulation;
 
-        private Dictionary<Type, LinkLayer> mediumToLinkLayer = new Dictionary<Type, LinkLayer>
+        private readonly Dictionary<LinkLayer, Type> linkLayerToMedium = new Dictionary<LinkLayer, Type>
         {
-            {typeof(Switch), LinkLayer.Ethernet},
-            {typeof(WirelessMedium), LinkLayer.Wireless_802_15_4},
+            {LinkLayer.Ethernet, typeof(Switch)},
+            {LinkLayer.IEEE802_15_4, typeof(IEEE802_15_4Medium)}, 
+            {LinkLayer.Bluetooth_LE, typeof(BLEMedium)},
         };
     }
 }

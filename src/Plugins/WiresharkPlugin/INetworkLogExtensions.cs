@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -18,9 +18,14 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 {
     public static class INetworkLogExtensions
     {
-        public static void CreateWiresharkForWireless(this Emulation emulation, string name)
+        public static void CreateWiresharkForBLE(this Emulation emulation, string name)
         {
-            CreateWirelessConfiguredWireshark(emulation, name);
+            CreateBLEConfiguredWireshark(emulation, name);
+        }
+        
+        public static void CreateWiresharkForIEEE802_15_4(this Emulation emulation, string name)
+        {
+            CreateIEEE802_15_4ConfiguredWireshark(emulation, name);
         }
 
         public static void CreateWiresharkForEthernet(this Emulation emulation, string name)
@@ -38,16 +43,27 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             GetConfiguredWireshark(emulation, reporter, GetName(reporter)).LogToWireshark(reporter);
         }
 
-        public static void LogWirelessTraffic(this Emulation emulation)
+        public static void LogBLETraffic(this Emulation emulation)
         {
-            var result = CreateWirelessConfiguredWireshark(emulation, WirelessLogName);
-            var externals = emulation.ExternalsManager.Externals;
-            foreach(var wireless in externals)
+            var result = CreateBLEConfiguredWireshark(emulation, BLELogName);
+            foreach(var BLE in emulation.ExternalsManager.GetExternalsOfType<BLEMedium>())
             {
-                if(wireless is WirelessMedium)
-                {
-                    result.LogToWireshark((INetworkLog<INetworkInterface>)wireless);
-                }
+                result.LogToWireshark((INetworkLog<INetworkInterface>)BLE);
+            }
+
+            //We detach the event before reattaching it to ensure that we are connected only once.
+            //This manouver allows us not to use an additional variable, which would be difficult
+            //to reset, as it is a static class.
+            emulation.ExternalsManager.ExternalsChanged -= AddExternal;
+            emulation.ExternalsManager.ExternalsChanged += AddExternal;
+        }
+        
+        public static void LogIEEE802_15_4Traffic(this Emulation emulation)
+        {
+            var result = CreateIEEE802_15_4ConfiguredWireshark(emulation, IEEE802_15_4LogName);
+            foreach(var IEEE802_15_4 in emulation.ExternalsManager.GetExternalsOfType<IEEE802_15_4Medium>())
+            {
+                result.LogToWireshark((INetworkLog<INetworkInterface>)IEEE802_15_4);
             }
 
             //We detach the event before reattaching it to ensure that we are connected only once.
@@ -60,13 +76,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         public static void LogEthernetTraffic(this Emulation emulation)
         {
             var result = CreateEthernetConfiguredWireshark(emulation, EthernetLogName);
-            var externals = emulation.ExternalsManager.Externals;
-            foreach(var ethernet in externals)
+            foreach(var ethernet in emulation.ExternalsManager.GetExternalsOfType<Switch>())
             {
-                if(ethernet is Switch)
-                {
-                    result.LogToWireshark((INetworkLog<INetworkInterface>)ethernet);
-                }
+                result.LogToWireshark((INetworkLog<INetworkInterface>)ethernet);
             }
 
             //We detach the event before reattaching it to ensure that we are connected only once.
@@ -79,14 +91,18 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private static void AddExternal(ExternalsManager.ExternalsChangedEventArgs reporter)
         {
             var external = reporter.External;
-            bool wirelessWiresharkFound;
-            bool ethernetWiresharkFound;
-            var wirelessResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(WirelessLogName, out wirelessWiresharkFound);
-            var ethernetResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(EthernetLogName, out ethernetWiresharkFound);
+            var BLEResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(BLELogName, out var BLEWiresharkFound);
+            var IEEE802_15_4Result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(IEEE802_15_4LogName, out var IEEE802_15_4WiresharkFound);
+            var ethernetResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(EthernetLogName, out var ethernetWiresharkFound);
 
-            if(wirelessWiresharkFound && external is WirelessMedium)
+            if(IEEE802_15_4WiresharkFound && external is IEEE802_15_4Medium)
             {
-                wirelessResult.LogToWireshark((WirelessMedium)external);
+                IEEE802_15_4Result.LogToWireshark((IEEE802_15_4Medium)external);
+            }
+            
+            if(BLEWiresharkFound && external is BLEMedium)
+            {
+                BLEResult.LogToWireshark((BLEMedium)external);
             }
 
             if(ethernetWiresharkFound && external is Switch)
@@ -97,9 +113,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
         private static Wireshark GetConfiguredWireshark(Emulation emulation, INetworkLog<INetworkInterface> reporter, string hostName)
         {
-            if(reporter is WirelessMedium)
+            if(reporter is IEEE802_15_4Medium)
             {
-                return CreateWirelessConfiguredWireshark(emulation, hostName);
+                return CreateIEEE802_15_4ConfiguredWireshark(emulation, hostName);
+            }
+            else if(reporter is BLEMedium)
+            {
+                return CreateBLEConfiguredWireshark(emulation, hostName);
             }
             else if(reporter is Switch)
             {
@@ -107,27 +127,37 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
             else
             {
-                throw new ArgumentException("Expected Switch or WirelessMedium.");
+                throw new ArgumentException("Expected Switch, BLEMedium or IEEE802_15_4Medium.");
             }
         }
 
-        private static Wireshark CreateWirelessConfiguredWireshark(Emulation emulation, string name)
+        private static Wireshark CreateBLEConfiguredWireshark(Emulation emulation, string name)
         {
-            bool wirelessWiresharkFound;
-            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out wirelessWiresharkFound);
+            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out var BLEWiresharkFound);
+
+            if(BLEWiresharkFound)
+            {
+                return result;
+            }
+
+            return CreateWireshark(emulation, name, LinkLayer.Bluetooth_LE);
+        }
+
+        private static Wireshark CreateIEEE802_15_4ConfiguredWireshark(Emulation emulation, string name)
+        {
+            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out var wirelessWiresharkFound);
 
             if(wirelessWiresharkFound)
             {
                 return result;
             }
 
-            return CreateWireshark(emulation, name, LinkLayer.Wireless_802_15_4);
+            return CreateWireshark(emulation, name, LinkLayer.IEEE802_15_4);
         }
 
         private static Wireshark CreateEthernetConfiguredWireshark(Emulation emulation, string name)
         {
-            bool ethernetWiresharkFound;
-            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out ethernetWiresharkFound);
+            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out var ethernetWiresharkFound);
 
             if(ethernetWiresharkFound)
             {
@@ -172,7 +202,8 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         }
 
         private const string WiresharkExternalPrefix = "wireshark";
-        private const string WirelessLogName = WiresharkExternalPrefix + "-" + "allWirelessTraffic";
+        private const string BLELogName = WiresharkExternalPrefix + "-" + "allBLETraffic";
+        private const string IEEE802_15_4LogName = WiresharkExternalPrefix + "-" + "allIEEE802_15_4Traffic";
         private const string EthernetLogName = WiresharkExternalPrefix + "-" + "allEthernetTraffic";
 #if PLATFORM_WINDOWS
         private const string WiresharkPath = @"c:\Program Files\Wireshark\Wireshark.exe";
