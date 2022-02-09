@@ -1,0 +1,56 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch - Debug",
+            "preLaunchTask": "Build - Debug",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/output/bin/Debug/Renode.exe",
+            "cwd": "${workspaceRoot}",
+        },
+        {
+            "name": "Launch - Release",
+            "preLaunchTask": "Build - Release",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/output/bin/Release/Renode.exe",
+            "cwd": "${workspaceRoot}"
+        },
+        {
+            "name": "Attach",
+            "internalConsoleOptions": "openOnSessionStart",
+            "type": "mono",
+            "request": "attach",
+            "address": "localhost",
+            "port": 55555
+        },
+        {
+            "name": "(gdb) Tlib Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceRoot}/output/bin/Debug/Renode.exe",
+            "processId": "${command:pickProcess}",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "text": "set breakpoint pending on"
+                },
+                {
+                    "text": "handle SIGXCPU SIG33 SIG35 SIG36 SIG37 SIGPWR nostop noprint"
+                },
+                {
+                    "text": "set architecture i386:x86-64"
+                }
+            ]
+        }
+    ]
+}

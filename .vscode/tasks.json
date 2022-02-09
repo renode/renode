@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build - Debug",
+            "problemMatcher": "$msCompile",
+            "type": "shell",
+            "command": "./build.sh -d",
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Build - Release",
+            "problemMatcher": "$msCompile",
+            "type": "shell",
+            "command": "./build.sh",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}
