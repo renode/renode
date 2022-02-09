@@ -1,0 +1,56 @@
+:name: nRF52840 BLE on Zephyr
+
+# This script runs Zephyr BLE HR demo on nRF52840. It creates 2 machines: `central` and `peripheral`.
+# `central` looks for active heart-rate monitors using BLE and establishes 
+# a connection to the first device with the strongest signal.
+# `peripheral` works as such a monitor and generates dummy heart-rate values.
+# Having established the connection, `central` will report heart-rate readings from `peripheral``.
+
+# The `using` command allows the user to omit a prefix when referring to a peripheral.
+# Here `using sysbus` allows to refer to `uart0` instead of `sysbus.uart0`. 
+using sysbus
+
+# Lines below declare binary files for Zephyr BLE devices. One for central device and one for peripheral device.
+# Binaries used here are defaults and can be replaced by changing variables below before running this script.
+$central_bin?=@https://dl.antmicro.com/projects/renode/nrf52840--zephyr-bluetooth_central_hr.elf-s_3380332-316e27f81dcda3c2b0e7f2c3516001e7b27ad051
+$peripheral_bin?=@https://dl.antmicro.com/projects/renode/nrf52840--zephyr-bluetooth_peripheral_hr.elf-s_3217940-7b59adc9629f8be90067b131e663a13d2d4bb711
+
+# Create a wireless medium for communication.
+emulation CreateWirelessMedium "wireless"
+
+# Create a machine named "central" based on the nRF52840 platform and set it as active.
+mach create "central"
+machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
+connector Connect sysbus.radio wireless
+
+# Create a UART analyzer for the "central" machine. 
+# UART analyzer is a window which will pop-up after starting the emulation.
+# In general it works as an I/O interface for the user to communicate with the running machine.
+# In this script both analyzers just print output from the machines.
+showAnalyzer uart0 
+
+# Create a machine named "peripheral" based on the nRF52840 platform and set it as active.
+mach create "peripheral"
+machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
+connector Connect sysbus.radio wireless
+
+# Create a UART analyzer for the "peripheral" machine.
+showAnalyzer uart0 
+
+# Set Quantum value for CPUs. This is required by BLE stack.
+# Moreover, it allows better synchronisation between machines.
+emulation SetGlobalQuantum "0.00001"
+
+# The following series of commands is executed everytime the machine is reset.
+macro reset
+"""
+    mach set "central"
+    sysbus LoadELF $central_bin
+
+    mach set "peripheral"
+    sysbus LoadELF $peripheral_bin 
+"""
+runMacro $reset
+
+echo "Script loaded. Now start with with the 'start' command."
+echo ""
