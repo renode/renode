@@ -85,7 +85,7 @@ Should Dump PC And Opcodes
 
 Should Trace Consecutive Blocks
     Execute Command                             mach create
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32g\\"; timeProvider: empty }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32gc\\"; timeProvider: empty }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000 }"
 
     # "li x1, 0"
@@ -99,8 +99,11 @@ Should Trace Consecutive Blocks
     # "j 0x300"
     Execute Command                             sysbus WriteDoubleWord 0x210 0x0f00006f
 
+    # "c.nop"s (compressed)
+    Execute Command                             sysbus WriteDoubleWord 0x214 0x01
+    Execute Command                             sysbus WriteDoubleWord 0x216 0x01
+
     # "nop"s
-    Execute Command                             sysbus WriteDoubleWord 0x214 0x13
     Execute Command                             sysbus WriteDoubleWord 0x218 0x13
     Execute Command                             sysbus WriteDoubleWord 0x21C 0x13
     Execute Command                             sysbus WriteDoubleWord 0x220 0x13
@@ -177,18 +180,21 @@ Should Trace Consecutive Blocks
     Should Be Equal                             ${pcs[3]}   0x20C
     # here we skip a jump to 0x300 (it should fire at the very end)
     Should Be Equal                             ${pcs[4]}   0x214
+    Should Be Equal                             ${pcs[5]}   0x216
+    Should Be Equal                             ${pcs[6]}   0x218
+    Should Be Equal                             ${pcs[7]}   0x21C
     # first iteration of the loop
-    Should Be Equal                             ${pcs[39]}  0x2A0
-    Should Be Equal                             ${pcs[40]}  0x208
+    Should Be Equal                             ${pcs[40]}  0x2A0
+    Should Be Equal                             ${pcs[41]}  0x208
     # another iteration of the loop
-    Should Be Equal                             ${pcs[77]}  0x2A0
-    Should Be Equal                             ${pcs[78]}  0x208
+    Should Be Equal                             ${pcs[79]}  0x2A0
+    Should Be Equal                             ${pcs[80]}  0x208
     # and another
-    Should Be Equal                             ${pcs[115]}  0x2A0
-    Should Be Equal                             ${pcs[116]}  0x208
+    Should Be Equal                             ${pcs[118]}  0x2A0
+    Should Be Equal                             ${pcs[119]}  0x208
     # and the last one
-    Should Be Equal                             ${pcs[343]}  0x2A0
-    Should Be Equal                             ${pcs[344]}  0x208
-    Should Be Equal                             ${pcs[345]}  0x20C
-    Should Be Equal                             ${pcs[346]}  0x210
-    Should Be Equal                             ${pcs[347]}  0x300
+    Should Be Equal                             ${pcs[352]}  0x2A0
+    Should Be Equal                             ${pcs[353]}  0x208
+    Should Be Equal                             ${pcs[354]}  0x20C
+    Should Be Equal                             ${pcs[355]}  0x210
+    Should Be Equal                             ${pcs[356]}  0x300
