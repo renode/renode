@@ -41,7 +41,6 @@
 - tests/platforms/NXP-K64F.robot
 - tests/platforms/STM32F4_Discovery.robot
 - tests/platforms/NRF52840.robot
-- tests/platforms/Icicle-Kit.robot
 - tests/unit-tests/riscv-custom-instructions.robot
 - tests/metrics-analyzer/metrics-analyzer.robot
 - tests/platforms/STM32W108.robot
@@ -62,7 +61,6 @@
 - tests/platforms/LiteX/LiteX_Ibex.robot
 - tests/platforms/QuickFeather.robot
 - tests/platforms/STM32F072b.robot
-- tests/platforms/BeagleV-StarLight.robot
 - tests/platforms/Zedboard.robot
 - tests/platforms/Leon3.robot
 - tests/platforms/GR716.robot
