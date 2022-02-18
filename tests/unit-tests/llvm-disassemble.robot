@@ -226,13 +226,13 @@ Should Disassemble X86
     DisasTest BE           0f011d5e00fc00      lidtl     16515166                  7    abd
 
 Should Handle Illegal Instruction
-    Create Machine         RiscV64     generic-rv64
+    Create Machine         RiscV64     rv64g
 
     DisasTest LE           0
     DisasTest LE           0000
 
 Should Handle Disassembly From Invalid Address
-    Create Machine         RiscV64     generic-rv64
+    Create Machine         RiscV64     rv64g
 
     # test with the valid address
     DisasTest LE           02051613    slli    a2, a0, 32    hex_addr=1234
