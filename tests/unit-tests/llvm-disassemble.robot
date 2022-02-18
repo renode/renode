@@ -127,6 +127,11 @@ Disassemble RV64FD
     DisasTest LE           d0312353    fcvt.s.lu        ft6, sp, rdn            # rv64f
     DisasTest LE           d2312353    fcvt.d.lu        ft6, sp, rdn            # rv64d
 
+Disassemble RVV
+    DisasTest LE           00057757    vsetvli          a4, a0, e8, m1, tu, mu 
+    DisasTest LE           03058407    vle8ff.v         v8, (a1)
+    DisasTest LE           4218a757    vfirst.m         a4, v1
+
 
 *** Test Cases ***
 
@@ -174,6 +179,11 @@ Should Disassemble RISCV32GC
     Disassemble RV32FD
     Disassemble RV32C
 
+Should Disassemble RISCV32GV
+    Create Machine         RiscV32     rv32gv
+    Disassemble RV32IMA
+    Disassemble RVV
+
 Should Disassemble RISCV64IMAC
     Create Machine         RiscV64     rv64imac
     Disassemble RV32IMA
@@ -192,6 +202,11 @@ Should Disassemble RISCV64GC
     Disassemble RV32FD
     Disassemble RV64IMAC
     Disassemble RV64FD
+
+Should Disassemble RISCV64GCV
+    Create Machine         RiscV64     rv64gcv
+    Disassemble RV64IMAC
+    Disassemble RVV
 
 Should Disassemble PPC
     Create Machine         PowerPc     e200z6
