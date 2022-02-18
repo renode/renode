@@ -142,7 +142,7 @@ class GDBInstance:
 
     def get_symbol_at(self, addr):
         self.run_command(f"info symbol {addr}", async_=False)
-        return self.last_output.splitlines()[1]
+        return self.last_output.splitlines()[-1]
 
     def delete_breakpoints(self):
         self.run_command("clear", async_=False)
