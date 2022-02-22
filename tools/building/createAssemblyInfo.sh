@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Create AssemblyInfo.cs but only when the file does not exists or has different version information
 FILE_NAME="AssemblyInfo"

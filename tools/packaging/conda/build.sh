@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 set -x
 
@@ -82,13 +82,13 @@ rm $PREFIX/opt/renode/tests/robot_tests_provider.py.bak
 mkdir -p $PREFIX/bin/
 
 cat > $PREFIX/bin/renode <<"EOF"
-#!/bin/bash
+#!/usr/bin/env bash
 
 mono $MONO_OPTIONS $CONDA_PREFIX/opt/renode/bin/Renode.exe "$@"
 EOF
 
 cat > $PREFIX/bin/renode-test <<"EOF"
-#!/bin/bash
+#!/usr/bin/env bash
 
 STTY_CONFIG=`stty -g 2>/dev/null`
 python3 $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-server-full-directory $CONDA_PREFIX/opt/renode/bin "$@"
