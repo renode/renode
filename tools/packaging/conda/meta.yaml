@@ -18,6 +18,9 @@ build:
 
 requirements:
     build:
+        skip_compile_pyc:
+            - "*/renode/scripts/*.py"
+            - "*/renode/scripts/pydev/*.py"
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
         - git
