@@ -15,12 +15,12 @@ build:
         - "$SYSROOT/System32/mscoree.dll" [win]
     number: {{ environ.get('DATE_NUM', 0) }} 
     string: {{ environ.get('DATE_STR', 'unknown') }}
+    skip_compile_pyc:
+        - '*/scripts/pydev/*.py'
+        - '*/scripts/*.py'
 
 requirements:
     build:
-        skip_compile_pyc:
-            - "*/renode/scripts/*.py"
-            - "*/renode/scripts/pydev/*.py"
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
         - git
