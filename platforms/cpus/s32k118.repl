@@ -1,0 +1,66 @@
+program: Memory.MappedMemory @ sysbus 0x0
+    size: 0x00040000
+
+
+flexnvm: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00008000
+
+
+// Should be 0x800 + 0x80 for CSE_PRAM, but internal
+// limitations require us to align regions to 0x400
+flexram: Memory.MappedMemory @ sysbus 0x14000000
+    size: 0x00000800
+
+
+sram_l: Memory.MappedMemory @ sysbus 0x1C000000
+    size: 0x4000000
+
+
+sram_u: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x5800
+
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0+"
+    nvic: nvic
+
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 48000000
+
+
+lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x4002C000
+
+
+lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4002D000
+
+
+lpuart0: UART.LowPower_UART @ sysbus 0x4006A000
+    IRQ -> nvic@29
+
+
+lpuart1: UART.LowPower_UART @ sysbus 0x4006B000
+    IRQ -> nvic@30
+
+
+can0_mcr: Python.PythonPeripheral @ sysbus 0x40024000
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+
+sysbus:
+    init:
+        ApplySVD @https://dl.antmicro.com/projects/renode/S32K118.svd-s_4356973-8b6f35da75a942816cd0d662d28a690e8b3484e3
+        Tag <0x40064100, 0x40064103> "SCG:SOCCCSR" 0x1000000
+        Tag <0x40064104, 0x40064107> "SCG:SOSCDIV" 0x101
+        Tag <0x40024000, 0x40024003> "CAN0:MCR" 0x0
+        Tag <0x40038000, 0x40038003> "FTM0:SC" 0x1
+        Tag <0x400650DC, 0x400650DF> "PPC:PPC_LPIT" 0xF9FFFFFF
+        Tag <0x400651AC, 0x400651AF> "PPC:PPC_UART" 0xF9FFFFFF
