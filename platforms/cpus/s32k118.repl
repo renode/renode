@@ -42,7 +42,7 @@ lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4002D000
 
 
 lpuart0: UART.LowPower_UART @ sysbus 0x4006A000
-    IRQ -> nvic@29
+    IRQ -> nvic@31
 
 
 lpuart1: UART.LowPower_UART @ sysbus 0x4006B000
