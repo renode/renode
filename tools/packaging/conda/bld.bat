@@ -4,7 +4,8 @@ set PATH=C:\cygwin64\bin\;%PATH%
 set PLATFORM=Any CPU
 for /r %%i in (*.sh) do  CALL :convert_to_unix_newline %%i
 
-call bash build.sh
+call bash -lc build.sh
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 REM Need to use call for all functions outside of script, otherwise label handling go crazy
 call mkdir %LIBRARY_PREFIX%\renode\exec
