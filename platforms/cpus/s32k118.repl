@@ -55,11 +55,12 @@ can0_mcr: Python.PythonPeripheral @ sysbus 0x40024000
     filename: "scripts/pydev/flipflop.py"
 
 
+scg: Miscellaneous.S32K_SCG @ sysbus 0x40064000
+
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/S32K118.svd-s_4356973-8b6f35da75a942816cd0d662d28a690e8b3484e3
-        Tag <0x40064100, 0x40064103> "SCG:SOCCCSR" 0x1000000
-        Tag <0x40064104, 0x40064107> "SCG:SOSCDIV" 0x101
         Tag <0x40024000, 0x40024003> "CAN0:MCR" 0x0
         Tag <0x40038000, 0x40038003> "FTM0:SC" 0x1
         Tag <0x400650DC, 0x400650DF> "PPC:PPC_LPIT" 0xF9FFFFFF
