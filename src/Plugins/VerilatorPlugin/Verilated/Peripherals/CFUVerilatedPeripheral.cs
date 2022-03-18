@@ -314,7 +314,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private const string LimitTimerName = "CFUClock";
 
 #pragma warning disable 649
-        [Import]
+        [Import(UseExceptionWrapper = false)]
         private FuncUInt64UInt32UInt32UInt32IntPtr execute;
 #pragma warning restore 649
 

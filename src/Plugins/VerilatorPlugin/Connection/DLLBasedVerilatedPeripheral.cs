@@ -239,11 +239,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         private readonly object nativeLock;
 
 #pragma warning disable 649
-        [Import]
+        [Import(UseExceptionWrapper = false)]
         private ActionIntPtr handleRequest;
-        [Import]
+        [Import(UseExceptionWrapper = false)]
         private Action initializeNative;
-        [Import]
+        [Import(UseExceptionWrapper = false)]
         public Action resetPeripheral;
 #pragma warning restore 649
     }
