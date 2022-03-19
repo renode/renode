@@ -55,6 +55,47 @@ can0_mcr: Python.PythonPeripheral @ sysbus 0x40024000
     filename: "scripts/pydev/flipflop.py"
 
 
+portGPIO: Miscellaneous.CombinedInput
+    numberOfInputs: 5
+    -> nvic@9
+
+
+portA: GPIOPort.NXPGPIOPort @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x400FF000; size: 0x40; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40049000; size: 0xD0; region: "port" }
+    }
+    numberOfPins: 12
+    -> portGPIO@0
+
+
+portB: GPIOPort.NXPGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF040; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004A000; size: 0xD0; region: "port" }}
+    numberOfPins: 10
+    -> portGPIO@1
+
+
+portC: GPIOPort.NXPGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF080; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004B000; size: 0xD0; region: "port" }}
+    numberOfPins: 14
+    -> portGPIO@2
+
+
+portD: GPIOPort.NXPGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF0C0; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004C000; size: 0xD0; region: "port" }}
+    numberOfPins: 10
+    -> portGPIO@3
+
+
+portE: GPIOPort.NXPGPIOPort @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x400FF100; size: 0x40; region: "gpio" };
+    sysbus new Bus.BusMultiRegistration { address: 0x4004D000; size: 0xD0; region: "port" }}
+    numberOfPins: 12
+    -> portGPIO@4
+
+
 scg: Miscellaneous.S32K_SCG @ sysbus 0x40064000
 
 
