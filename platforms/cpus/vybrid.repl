@@ -56,27 +56,32 @@ cpuM4: CPU.CortexM @ sysbus
     nvic: nvic
     IsHalted: true
 
-gpio0: GPIOPort.VybridGPIOPort @ {
+gpio0: GPIOPort.NXPGPIOPort @ {
         sysbus new Bus.BusMultiRegistration { address: 0x400FF000; size: 0x40; region: "gpio" };
         sysbus new Bus.BusMultiRegistration { address: 0x40049000; size: 0xD0; region: "port" }
     }
+    numberOfPins: 32
     -> gic@0x6B
 
-gpio1: GPIOPort.VybridGPIOPort @ {
+gpio1: GPIOPort.NXPGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF040; size: 0x40; region: "gpio" };
     sysbus new Bus.BusMultiRegistration { address: 0x4004A000; size: 0xD0; region: "port" }}
+    numberOfPins: 32
 
-gpio2: GPIOPort.VybridGPIOPort @ {
+gpio2: GPIOPort.NXPGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF080; size: 0x40; region: "gpio" };
     sysbus new Bus.BusMultiRegistration { address: 0x4004B000; size: 0xD0; region: "port" }}
+    numberOfPins: 32
 
-gpio3: GPIOPort.VybridGPIOPort @ {
+gpio3: GPIOPort.NXPGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF0C0; size: 0x40; region: "gpio" };
     sysbus new Bus.BusMultiRegistration { address: 0x4004C000; size: 0xD0; region: "port" }}
+    numberOfPins: 32
 
-gpio4: GPIOPort.VybridGPIOPort @ {
+gpio4: GPIOPort.NXPGPIOPort @ {
     sysbus new Bus.BusMultiRegistration { address: 0x400FF100; size: 0x40; region: "gpio" };
     sysbus new Bus.BusMultiRegistration { address: 0x4004D000; size: 0xD0; region: "port" }}
+    numberOfPins: 32
 
 mscm: IRQControllers.MSCM @ sysbus 0x40001000
     [0-111, 224-227] -> gic@[8-119, 0-3]
