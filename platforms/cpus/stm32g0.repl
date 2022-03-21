@@ -1,0 +1,245 @@
+// Main Flash memory
+// Upper size:
+// STM32G0B1xx and STM32G0C1xx: 0x0807 FFFF; STM32G071xx and STM32G081xx: 0x0801 FFFF; STM32G051xx and
+// STM32G061xx, STM32G031xx and STM32G041xx: 0x0800 FFFF.
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x20000
+
+ram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0xC000
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+exti: IRQControllers.EXTI @ sysbus 0x40021800
+    numberOfOutputLines: 34
+    [0, 1] -> nvicInput5@[0, 1]
+    [2, 3] -> nvicInput6@[0, 1]
+    [4-15] -> nvicInput7@[0-11]
+    [23] -> nvic@[23]
+    [32, 33] -> nvicInput8@[0, 1]
+    [17, 18] -> nvicInput12@[0, 1]
+
+nvicInput8: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@8
+
+nvicInput12: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@12
+
+nvicInput5: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@5
+
+nvicInput6: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@6
+
+nvicInput7: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 12
+    -> nvic@7
+
+nvicInput29: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 4
+    -> nvic@29
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0"
+    nvic: nvic
+
+usart1: UART.STM32F7_USART @ sysbus 0x40013800
+    frequency: 200000000
+    -> nvic@27
+
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
+    frequency: 200000000
+    -> nvic@28
+
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 200000000
+    -> nvicInput29@0
+
+usart4: UART.STM32F7_USART @ sysbus 0x40004C00
+    frequency: 200000000
+    -> nvicInput29@1
+
+usart5: UART.STM32F7_USART @ sysbus 0x40005000
+    frequency: 200000000
+    -> nvicInput29@2
+
+usart6: UART.STM32F7_USART @ sysbus 0x40013C00
+    frequency: 200000000
+    -> nvicInput29@3
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x50000000, +0x400>
+    modeResetValue: 0xEBFFFFFF
+    pullUpPullDownResetValue: 0x24000000
+    [0-15] -> exti@[0-15]
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x50000400, +0x400>
+    modeResetValue: 0xFFFFFFFF
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x50000800, +0x400>
+    modeResetValue: 0xFFFFFFFF
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x50000C00, +0x400>
+    modeResetValue: 0xFFFFFFFF
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x50001000, +0x400>
+    modeResetValue:0xFFFFFFFF
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x50001400, +0x400>
+    modeResetValue: 0xFFFFFFFF
+    pullUpPullDownResetValue: 0x00000000
+    [0-15] -> exti@[0-15]
+
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+    EventInterrupt -> exti@23
+
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+    EventInterrupt -> exti@22
+
+spi1: SPI.STM32SPI @ sysbus 0x40013000
+    -> nvic@25
+
+spi2: SPI.STM32SPI @ sysbus 0x40003800
+    -> nvic@26
+
+spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    -> nvic@26
+
+timer1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@14
+
+timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFFFFFF
+    -> nvic@15
+
+timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@16
+
+timer4: Timers.STM32_Timer @ sysbus <0x40000800, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@16
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@18
+
+timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@19
+
+timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@20
+
+timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@21
+
+timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    -> nvic@22
+
+fdcan1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
+fdcan2: CAN.STMCAN @ sysbus <0x40006800, +0x400>
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> exti@19
+
+rcc: Python.PythonPeripheral @ sysbus 0x40021000
+    size: 0x400
+    initable: true
+    script: '''
+if request.isInit:
+   lastVal = 0
+   data = {'hsion': 0, 'pllon': 0, 'sw': 0}
+self.NoisyLog("%s on FLIPFLOP at offset 0x%x, value 0x%x, length %d, %s" % (str(request.type), request.offset, request.value, request.length, str(data)))
+
+if request.isWrite:
+    if request.offset == 0x0:
+        # HSION [doc = "Bit 8 - HSI16 clock enable"]
+        data['hsion'] = (request.value >> 8) & 0x1
+        # PLLON [doc = "Bit 24 - PLL enable"]
+        data['pllon'] = (request.value >> 24) & 0x1
+    elif request.offset == 0x8:
+        # SW_W [doc = "Bits 0:2 - System clock switch"]
+        data['sw'] = request.value & 0x7
+elif request.isRead:
+    lastVal = 1 - lastVal
+    if request.offset == 0x0:
+        # request.value = lastVal * 0x83
+
+        # RCC_CR [doc = "0x00 - Clock control register"]
+        # HSIRDY_R [doc = "Bit 10 - HSI16 clock ready flag"]
+        # PLLRDY [doc = "Bit 25 - PLL clock ready flag"]
+        request.value = (data['hsion'] << 10) | (data['pllon'] << 25)
+    elif request.offset == 0x4:
+        request.value = lastVal * 0xFFFFFFF8
+    elif request.offset == 0x24:
+        request.value = 0x0
+    else:
+        # RCC_CFGR [doc = "0x08 - Clock configuration register"]
+        # SWS_R [doc = "Bits 3:5 - System clock switch status"]
+        # request.value = lastVal * 0xFFFFFFFF
+        request.value = data['sw'] << 3
+
+self.NoisyLog("  0x%x (%s)" % (request.value, str(data)))
+'''
+
+DMA: Python.PythonPeripheral @ sysbus 0x40020000
+    size: 0x400
+    script: '''
+if request.isWrite and request.offset in (0x10, 0x24, 0x38):
+    # writing base address - we write some positive value there in case initialization awaits output
+    sysbus.WriteDoubleWord(request.value, 0x40E33333)
+    self.NoisyLog("0x%x written with value 0x40E33333" % request.value)
+'''
+
+adc: Analog.STM32F0_ADC @ sysbus 0x40012400
+    referenceVoltage: 3.3
+    externalEventFrequency: 1000
+    -> nvic@12
+
+sysbus:
+    init:
+        Tag <0x40002C00, 0x40002FFF> "WWDG"
+        Tag <0x40003000, 0x400033FF> "IWDG"
+        Tag <0x40005C00, 0x40005FFF> "USB "
+        Tag <0x40006C00, 0x40006FFF> "CRS"
+        Tag <0x40007000, 0x400073FF> "PWR"
+        Tag <0x40007400, 0x400077FF> "DAC"
+        Tag <0x40007800, 0x40007BFF> "CEC"
+        Tag <0x40010000, 0x400103FF> "SYSCFG"
+        Tag <0x40015800, 0x40015BFF> "DBG"
+        Tag <0x40020000, 0x400203FF> "DMA"
+        Tag <0x40020400, 0x400207FF> "DMA2"
+        Tag <0x40022000, 0x400223FF> "FLASH_INTERFACE"
+        Tag <0x40023000, 0x400233FF> "CRC"
