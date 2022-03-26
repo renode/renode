@@ -316,13 +316,16 @@ class RobotTestSuite(object):
     def _close_remote_server(self, proc, options):
         if proc:
             print('Closing Renode pid {}'.format(proc.pid))
-            process = psutil.Process(proc.pid)
-            os.kill(proc.pid, 2)
             try:
+                process = psutil.Process(proc.pid)
+                os.kill(proc.pid, 2)
                 process.wait(timeout=options.cleanup_timeout)
             except psutil.TimeoutExpired:
                 process.kill()
                 process.wait()
+            except psutil.NoSuchProcess:
+                #evidently closed by other means
+                pass
 
     def run(self, options, run_id=0):
         if self.path.endswith('renode-keywords.robot'):
