@@ -1,0 +1,21 @@
+dram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x80000000
+
+uart0: UART.NS16550 @ sysbus 0x10000000
+    IRQ -> plic@3
+
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imac"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+    hartId: 0
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000
+    0 -> cpu@11
+    numberOfSources: 52
+    numberOfContexts: 1
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
+    [0,1] -> cpu@[3,7]
+    frequency: 10000000
+
