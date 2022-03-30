@@ -151,8 +151,8 @@ gcc \
     -Wl,--wrap=logf  \
     -Wl,--wrap=expf  \
     -Wl,--wrap=getrandom  \
-    -Wl,--wrap=dlopen \
-    -Wl,--wrap=dlsym \
+    -Wl,--wrap=mono_dl_open_file \
+    -Wl,--wrap=mono_dl_lookup_symbol \
     -Wl,--wrap=__shm_directory \
     -fvisibility=hidden \
     -Wl,--export-dynamic \

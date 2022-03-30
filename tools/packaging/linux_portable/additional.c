@@ -24,9 +24,6 @@ void __wrap_expf() {
     printf("!!!! expf!\n"); // TODO
 }
 
-extern void* __libc_dlopen_mode(const char* filename, int flag);
-extern void* __libc_dlsym(void* handle, const char* symbol);
-
 #define LIST_LENGTH 2048
 #define MAX_FILENAME_LENGTH 4096
 
@@ -64,74 +61,56 @@ const char * __wrap___shm_directory(size_t *len) {
     return SHM;
 }
 
-void* __wrap_dlopen(const char* _filename, int flag) {
-        if (_filename == NULL) {
-            return NULL;
-        }
-
-	char filename[MAX_FILENAME_LENGTH];
-	int l = snprintf(filename, MAX_FILENAME_LENGTH, "%s", _filename);
-	if (l < 0 || l >= MAX_FILENAME_LENGTH)
-	{
-    	       error_print(">>> dlopen: error while configuring the filename: %s\n", filename);
-    	       return NULL;
-	}
-
-	debug_print(">>> dlopen: %s\n", filename);
-
-        // skip .dll.so calls.
-	if (strstr(filename, ".dll.so") != 0) {
-            debug_print(">>> dlopen: ignoring %s as it is .dll.so\n", filename);
-    	    return NULL;
-	}
-
-	// patch current directory
-	if (strlen(filename) >= 2
-    	    && filename[0] == '.'
-    	    && filename[1] == '/') {
-               // +2 to skip the initial './'
-               int l = snprintf(filename, MAX_FILENAME_LENGTH, "%s%s", binary_path, _filename + 2);
-               if (l < 0 || l >= MAX_FILENAME_LENGTH) {
-        	       error_print(">>> dlopen: error while patching the filename\n");
-        	       return NULL;
-               }
-	       debug_print(">>> dlopen: filename patched to %s\n", filename);
-	}
-
-	void* result = __libc_dlopen_mode(
-           	(strcmp(filename, "__Internal") == 0) ? "" : filename,
-        	flag);
-
-        debug_print(">>> dlopen: result is %p; filename was %s, flag was %d\n", result, filename, flag);
-        if (result != NULL) {
-            list_ptrs[list_counter] = result;
-            list_names[list_counter] = strdup(basename(filename));
-
-            debug_print(">>> dlopen: %s returns %p\n", list_names[list_counter], result);
-            list_counter = (list_counter + 1) % LIST_LENGTH;
-        } else {
-            debug_print(">>> dlopen: result is null: %s\n", dlerror());
-        }
-
-	return result;
+void *__wrap_mono_dl_lookup_symbol(void **module_handle, const char *name) {
+    debug_print("mono_dl_lookup_symbol(%p, %s)\n", *module_handle, name);
+    debug_print(">>> dlsym: looking for symbol '%s' in %p [%s]\n", name, *module_handle, get_name(*module_handle));
+    return dlsym(*module_handle, name);
 }
 
-void* __wrap_dlsym(void* ptr, char* symbol_name) {
-    debug_print(">>> dlsym: looking for symbol '%s' in %p [%s]\n", symbol_name, ptr, get_name(ptr));
-
-    if (strcmp(symbol_name, "dlopen") == 0) {
-        return (void*)__wrap_dlopen;
-    }
-    if (strcmp(symbol_name, "dlsym") == 0) {
-        return (void*)__wrap_dlsym;
-    }
-    if (strcmp(symbol_name, "memset") == 0) {
-        // the `memset` symbol returned from `__libc_dlsym` is in fact an indirect function
-        // so it cannot be used directly and must be treated in a special way
-        return (void*)memset;
+void *__wrap_mono_dl_open_file(const char *name, int flags) {
+    debug_print("mono_dl_open_file(%s, %d)\n", name, flags);
+    if (name == NULL) {
+        return NULL;
     }
 
-    return __libc_dlsym(ptr, symbol_name);
+    char filename[MAX_FILENAME_LENGTH];
+    int l = snprintf(filename, MAX_FILENAME_LENGTH, "%s", name);
+    if (l < 0 || l >= MAX_FILENAME_LENGTH) {
+        error_print(">>> dlopen: error while configuring the filename: %s\n", filename);
+        return NULL;
+    }
+
+    debug_print(">>> dlopen: %s\n", filename);
+
+    // skip .dll.so calls.
+    if (strstr(filename, ".dll.so") != 0) {
+        debug_print(">>> dlopen: ignoring %s as it is .dll.so\n", filename);
+        return NULL;
+    }
+
+    // patch current directory
+    if (strlen(filename) >= 2 && filename[0] == '.' && filename[1] == '/') {
+        // +2 to skip the initial './'
+        int l = snprintf(filename, MAX_FILENAME_LENGTH, "%s%s", binary_path, name + 2);
+        if (l < 0 || l >= MAX_FILENAME_LENGTH) {
+            error_print(">>> dlopen: error while patching the filename\n");
+            return NULL;
+        }
+        debug_print(">>> dlopen: filename patched to %s\n", filename);
+    }
+
+    void* result = dlopen((strcmp(filename, "__Internal") == 0) ? "" : filename, flags);
+    debug_print(">>> dlopen: result is %p; filename was %s, flag was %d\n", result, filename, flags);
+    if (result != NULL) {
+        list_ptrs[list_counter] = result;
+        list_names[list_counter] = strdup(basename(filename));
+        debug_print(">>> dlopen: %s returns %p\n", list_names[list_counter], result);
+        list_counter = (list_counter + 1) % LIST_LENGTH;
+    } else {
+        debug_print(">>> dlopen: result is null: %s\n", dlerror());
+    }
+
+    return result;
 }
 
 // import MonoPosixHelper functions so that they're exported
