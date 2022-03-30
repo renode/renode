@@ -58,6 +58,12 @@ static char* get_name(void* ptr) {
   #define error_print(...)
 #endif
 
+#define SHM "/dev/shm/"
+const char * __wrap___shm_directory(size_t *len) {
+    *len = sizeof(SHM);
+    return SHM;
+}
+
 void* __wrap_dlopen(const char* _filename, int flag) {
         if (_filename == NULL) {
             return NULL;

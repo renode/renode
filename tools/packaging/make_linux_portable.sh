@@ -153,6 +153,7 @@ gcc \
     -Wl,--wrap=getrandom  \
     -Wl,--wrap=dlopen \
     -Wl,--wrap=dlsym \
+    -Wl,--wrap=__shm_directory \
     -fvisibility=hidden \
     -Wl,--export-dynamic \
     $WRAPPER_SOURCE_FILE  \
