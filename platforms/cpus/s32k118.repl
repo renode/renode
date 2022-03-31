@@ -36,9 +36,11 @@ dwt: Miscellaneous.DWT @ sysbus 0xE0001000
 
 
 lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x4002C000
+    -> nvic@26
 
 
 lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4002D000
+    -> nvic@27
 
 
 lpuart0: UART.LowPower_UART @ sysbus 0x4006A000
