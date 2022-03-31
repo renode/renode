@@ -62,6 +62,11 @@ lpit: Timers.S32K_LPIT @ sysbus 0x40037000
     IRQ -> nvic@20
 
 
+lptmr: Timers.S32K_LPTMR @ sysbus 0x40040000
+    -> nvic@8
+    frequency: 80000000
+
+
 portGPIO: Miscellaneous.CombinedInput
     numberOfInputs: 5
     -> nvic@9
