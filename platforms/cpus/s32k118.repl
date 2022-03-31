@@ -57,6 +57,11 @@ can0_mcr: Python.PythonPeripheral @ sysbus 0x40024000
     filename: "scripts/pydev/flipflop.py"
 
 
+lpit: Timers.S32K_LPIT @ sysbus 0x40037000
+    frequency: 5000
+    IRQ -> nvic@20
+
+
 portGPIO: Miscellaneous.CombinedInput
     numberOfInputs: 5
     -> nvic@9
