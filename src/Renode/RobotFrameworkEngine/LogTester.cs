@@ -1,10 +1,11 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -42,21 +43,15 @@ namespace Antmicro.Renode.RobotFramework
             lineEvent.Set();
         }
 
-        public string WaitForEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false)
+        public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, float? timeout = null, bool keep = false, bool treatAsRegex = false)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
             var regex = treatAsRegex ? new Regex(pattern) : null;
             var predicate = treatAsRegex ? (Predicate<string>)(x => regex.IsMatch(x)) : (Predicate<string>)(x => x.Contains(pattern));
-            
+
             if(timeout.HasValue && timeout.Value == 0)
             {
-                emulation.CurrentLogger.Flush();
-                
-                if(TryFind(predicate, keep, out var result))
-                {
-                    return result;
-                }
-                return null;
+                return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
             }
             
             var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
@@ -64,14 +59,32 @@ namespace Antmicro.Renode.RobotFramework
             {
                 if(TryFind(predicate, keep, out var result))
                 {
+                    bufferedMessages = null;
                     return result;
                 }
 
                 WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, lineEvent });
             }
             while(!timeoutEvent.IsTriggered);
+            
+            // let's check for the last time and lock any incoming messages
+            return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
+        }
 
-            return null;
+        private string FlushAndCheckLocked(Emulation emulation, Predicate<string> predicate, bool keep, out IEnumerable<string> bufferedMessages)
+        {
+            emulation.CurrentLogger.Flush();
+            lock(messages)
+            {
+                if(TryFind(predicate, keep, out var result))
+                {
+                    bufferedMessages = null;
+                    return result;
+                }
+
+                bufferedMessages = messages.ToList();
+                return null;
+            }
         }
 
         private bool TryFind(Predicate<string> predicate, bool keep, out string result)

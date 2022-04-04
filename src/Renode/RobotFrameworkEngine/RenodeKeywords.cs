@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -259,10 +259,11 @@ namespace Antmicro.Renode.RobotFramework
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, timeout, keep, treatAsRegex);
+            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex);
             if(result == null)
             {
-                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log");
+                var logMessages = string.Join("\n ", bufferedMessages);
+                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\nBuffered log messages are: \n {logMessages}");
             }
             return result;
         }
@@ -272,7 +273,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, timeout, true, treatAsRegex);
+            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
