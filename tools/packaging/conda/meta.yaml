@@ -24,25 +24,25 @@ requirements:
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
         - git
-        - python 2.7.*   [not win]
-        - python         [win]
-        - automake       [not win]
-        - autoconf       [not win]
-        - libtool        [not win]
-        - mono           [not win]
-        - gtk2           [not win]
-        - vc >=10        [win]
+        - python >=3.6,<4.0.0a0 [not win]
+        - python                [win]
+        - automake              [not win]
+        - autoconf              [not win]
+        - libtool               [not win]
+        - mono                  [not win]
+        - gtk2                  [not win]
+        - vc >=10               [win]
     run:
-        - python 2.7.*   [not win]
-        - python         [win]
-        - glib           [not win]
-        - mono           [not win]
-        - gtk2           [not win]
-        - pcre           [not win]
-        - cairo          [not win]
-        - pango          [not win]
-        - atk            [not win]
-        - fontconfig     [not win]
+        - python >=3.6,<4.0.0a0 [not win]
+        - python                [win]
+        - glib                  [not win]
+        - mono                  [not win]
+        - gtk2                  [not win]
+        - pcre                  [not win]
+        - cairo                 [not win]
+        - pango                 [not win]
+        - atk                   [not win]
+        - fontconfig            [not win]
         - robotframework 4.0.1
         - netifaces
         - requests
