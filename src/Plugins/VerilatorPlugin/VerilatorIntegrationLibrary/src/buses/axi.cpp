@@ -110,7 +110,6 @@ uint64_t Axi::read(uint64_t addr)
     *rready = 1;
 
     timeoutTick(rvalid, 1);
-    tick(true);
     result = *rdata;
     *rready = 0;
     tick(true);
