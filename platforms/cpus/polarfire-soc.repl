@@ -250,6 +250,8 @@ sysServices: Miscellaneous.MPFS_SystemServices @ sysbus 0x37020000
     SerialNumberUpper: 0x0123456789ABCDEF
     IRQ -> plic@96
 
+athena: Miscellaneous.AthenaX5200 @ sysbus 0x22000000
+
 // There are 8 BootRom registers covering range from 0x20003120 to 0x2000313F,
 // but because of Renode's memory alignment limitations they are mapped as a single memory
 sysregScbBootRom: Memory.MappedMemory @ sysbus 0x20003000
