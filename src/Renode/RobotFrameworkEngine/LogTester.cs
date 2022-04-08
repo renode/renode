@@ -38,7 +38,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             lock(messages)
             {
-                messages.Add(entry.Message);
+                messages.Add($"{entry.ObjectName}: {entry.Message}");
             }
             lineEvent.Set();
         }
