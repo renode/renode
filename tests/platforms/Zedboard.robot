@@ -91,11 +91,18 @@ Should Ping
 
     Wait For Prompt On Uart   ${PROMPT}  testerId=${tester1}
     Write Line To Uart        ifconfig eth0 up 192.168.1.1  testerId=${tester1}
+    Wait For Line On Uart     eth0: link becomes ready  testerId=${tester1}
 
     Wait For Prompt On Uart   ${PROMPT}  testerId=${tester2}
     Write Line To Uart        ifconfig eth0 up 192.168.1.2  testerId=${tester2}
+    Wait For Line On Uart     eth0: link becomes ready  testerId=${tester2}
 
+    # press enter to force printing of the prompt
+    Send Key To Uart          10         testerId=${tester1}
     Wait For Prompt On Uart   ${PROMPT}  testerId=${tester1}
+
+    # press enter to force printing of the prompt
+    Send Key To Uart          10         testerId=${tester2}
     Wait For Prompt On Uart   ${PROMPT}  testerId=${tester2}
 
     Write Line To Uart        ping -c 5 192.168.1.2  testerId=${tester1}
