@@ -15,7 +15,6 @@ ${KMAC_BIN}                     ${URL}/open_titan-earlgrey--kmac_smoketest_fpga_
 ${KMAC_CSHAKE_BIN}              ${URL}/open_titan-earlgrey--kmac_mode_cshake_test_fpga_nexysvideo.elf-s_172064-53522273c3ba99942ffa8314f27f3441fed4a6bb
 ${KMAC_KMAC_BIN}                ${URL}/open_titan-earlgrey--kmac_mode_kmac_test_fpga_nexysvideo.elf-s_170660-1885b754ffe20df3bb5fd4421a0169a4ec08c1b2
 ${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_nexysvideo.elf-s_158084-30b89ad8c33a73c5e1b169f3a5681a1447fe9210
-${BOOT_ROM_SCR_BIN}             ${URL}/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
 ${BOOT_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--boot_rom_fpga_nexysvideo.scr.39.vmem-s_103772-a1083d2181af6fd00fe8a7fd45e918420d54e9a4
 ${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_fpga_nexysvideo.elf-s_168792-0dc77e4f0beab190acd0660e6fe32e8193b0fa79
 ${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_fpga_nexysvideo.elf-s_130232-622f82a8b22083c29c38abed25985e427bbaf83a
@@ -59,10 +58,6 @@ Setup Machine Without Boot ROM
 
     Create Terminal Tester      ${UART}
     Set Default Uart Timeout    1
-
-Load Scrambled Boot ROM Binary
-    Execute Command             rom_ctrl LoadBinary ${BOOT_ROM_SCR_BIN}
-    Execute Command             cpu0 PC 0x00008084
 
 Load Scrambled Boot ROM Vmem
     Execute Command             rom_ctrl LoadVmem ${BOOT_ROM_SCR_VMEM}
@@ -177,33 +172,6 @@ Should Pass Reset Smoketest
 
 Should Pass Software Reset Test
     Run Smoketest               ${SW_RESET_BIN}
-
-Should Pass AES Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${AES_BIN}
-
-Should Pass UART Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${UART_BIN}
-
-Should Pass HMAC Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${HMAC_BIN}
-
-Should Pass Flash Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${FLASH_CTRL_BIN}
-
-Should Pass KMAC Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${KMAC_BIN}
-
-Should Pass KMAC CSHAKE Mode With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${KMAC_CSHAKE_BIN}
-
-Should Pass KMAC KMAC Mode With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${KMAC_KMAC_BIN}
-
-Should Pass Reset Smoketest With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${RESET_BIN}
-
-Should Pass Software Reset Test With Scrambled Boot ROM Binary
-    Run Smoketest With Scrambled Boot ROM Binary    ${SW_RESET_BIN}
 
 Should Pass AES Smoketest With Scrambled Boot ROM Vmem
     Run Smoketest With Scrambled Boot ROM Vmem      ${AES_BIN}
