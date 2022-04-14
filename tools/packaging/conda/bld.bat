@@ -53,6 +53,14 @@ call copy tools\packaging\windows\winpthreads-license %LIBRARY_PREFIX%\renode\li
 REM Add activation script to append renode dir to PATH
 if not exist %PREFIX%\etc\conda\activate.d call mkdir %PREFIX%\etc\conda\activate.d
 call copy %RECIPE_DIR%\activate.bat %PREFIX%\etc\conda\activate.d\%PKG_NAME%_activate.bat
+call copy %RECIPE_DIR%\activate-win.sh %PREFIX%\etc\conda\activate.d\%PKG_NAME%_activate.sh
+
+if not exist %PREFIX%\etc\conda\deactivate.d call mkdir %PREFIX%\etc\conda\deactivate.d
+call copy %RECIPE_DIR%\deactivate-win.sh %PREFIX%\etc\conda\deactivate.d\%PKG_NAME%_deactivate.sh
+
+REM PS1 scripts can't modify PATH so put a PowerShell script running Renode in PATH.
+if not exist %PREFIX%\Library\bin call mkdir %PREFIX%\Library\bin
+call copy %RECIPE_DIR%\Renode.ps1 %PREFIX%\Library\bin\Renode.ps1
 
 EXIT /B 0
 
