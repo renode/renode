@@ -20,15 +20,15 @@ namespace Antmicro.Renode.Debug
 {
     public static class SeL4Extensions
     {
-        public static void CreateSeL4(this ICpuSupportingGdb @this)
+        public static void CreateSeL4(this ICpuSupportingGdb @this, ulong? debugThreadNameSyscallId = null)
         {
-            EmulationManager.Instance.CurrentEmulation.ExternalsManager.AddExternal(new SeL4DebugHelper(@this), "seL4");
+            EmulationManager.Instance.CurrentEmulation.ExternalsManager.AddExternal(new SeL4DebugHelper(@this, debugThreadNameSyscallId), "seL4");
         }
     }
 
     public class SeL4DebugHelper : IExternal
     {
-        public SeL4DebugHelper(ICpuSupportingGdb cpu)
+        public SeL4DebugHelper(ICpuSupportingGdb cpu, ulong? debugThreadNameSyscallId)
         {
             if(cpu is Arm)
             {
@@ -42,6 +42,8 @@ namespace Antmicro.Renode.Debug
             {
                 throw new RecoverableException("Only ARM and RV32 based platforms are supported by the seL4 extension");
             }
+
+            this.debugThreadNameSyscall = debugThreadNameSyscallId ?? DefaultDebugThreadNameSyscall;
 
             this.cpu = cpu;
             this.mapping = new Dictionary<ulong, string>();
@@ -210,7 +212,7 @@ namespace Antmicro.Renode.Debug
         private void HandleUnknownSyscall(ICpuSupportingGdb cpu, ulong address)
         {
             // Check if seL4_DebugThreadName was called
-            if((callingConvention.FirstArgument & 0xFFFFFFFF) != DebugThreadNameSyscall)
+            if((callingConvention.FirstArgument & 0xFFFFFFFF) != debugThreadNameSyscall)
             {
                 return;
             }
@@ -547,7 +549,7 @@ namespace Antmicro.Renode.Debug
             Always,
         }
 
-        private const uint DebugThreadNameSyscall = 0xfffffff2;
+        private const uint DefaultDebugThreadNameSyscall = 0xfffffff2;
         private const string AnyThreadName = "<any>";
         private const uint WildcardAddress = 0x00000000;
         private const uint MaximumMessageLength = 120;
@@ -557,6 +559,7 @@ namespace Antmicro.Renode.Debug
         private readonly Dictionary<ulong, string> mapping;
         private readonly ICpuSupportingGdb cpu;
         private readonly ICallingConvention callingConvention;
+        private readonly ulong debugThreadNameSyscall;
 
         private bool exitUserspacePending;
         private ExitUserspaceMode exitUserspaceMode;
