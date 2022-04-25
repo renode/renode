@@ -3,7 +3,6 @@ uDma: DMA.UDMA @ sysbus 0x400FF000
 
 uart0: UART.PL011 @ sysbus 0x4000C000
     -> nvic@5
-    size: 0x1000
 
 watchdog: Timers.CC2538Watchdog @ sysbus 0x400D5000
     periodInMs: 500

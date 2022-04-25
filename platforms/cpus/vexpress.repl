@@ -1,18 +1,14 @@
 uart0: UART.PL011 @ sysbus 0x10009000
     -> gic@5
-    size: 0x1000
 
 uart1: UART.PL011 @ sysbus 0x1000A000
     -> gic@6
-    size: 0x1000
 
 uart2: UART.PL011 @ sysbus 0x1000B000
     -> gic@7
-    size: 0x1000
 
 uart3: UART.PL011 @ sysbus 0x1000C000
     -> gic@8
-    size: 0x1000
 
 memory: Memory.MappedMemory @ {
         sysbus 0x80000000;

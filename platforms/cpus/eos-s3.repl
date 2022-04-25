@@ -9,7 +9,6 @@ cpu: CPU.CortexM @ sysbus
 
 uart: UART.PL011 @ sysbus 0x40010000
     -> intrCtrl@7
-    size: 0x1000
 
 dwt: Miscellaneous.DWT @ sysbus 0xE0001000
     frequency: 72000000

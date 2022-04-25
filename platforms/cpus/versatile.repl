@@ -1,10 +1,8 @@
 uart0: UART.PL011 @ sysbus 0x101F1000
     -> pic@12
-    size: 0x1000
 
 uart1: UART.PL011 @ sysbus 0x101F2000
     -> pic@13
-    size: 0x1000
 
 pci: PCI.VersatilePCI @ {
         sysbus new Bus.BusMultiRegistration { address: 0x41000000; size: 0x100000; region: "config" };
