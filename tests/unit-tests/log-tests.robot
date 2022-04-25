@@ -74,3 +74,21 @@ Should Log Unhandled Write From Software To Tagged Area
     Start Emulation
 
     Wait For Log Entry        [cpu: 0x1000] (tag: 'tagged_region') WriteDoubleWord to non existing peripheral at 0x4, value 0x0
+
+Should Log From Subobject
+    [Tags]                    skip_windows
+    # there are problems with Windows package test as it uses whitespaces in the path; to be resolved later
+
+    Create Log Tester         1
+    Create Machine
+    Execute Command           include @${CURDIR}${/}SubobjectTester.cs
+    Execute Command           EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.Dynamic.SubobjectTester"
+
+    Execute Command           machine LoadPlatformDescriptionFromString "tester: Dynamic.SubobjectTester @ sysbus 0xf0000000"
+
+    Start Emulation
+
+    Execute Command           logLevel -1 sysbus.tester
+    Execute Command           sysbus WriteDoubleWord 0xf0000000 0x1
+    Wait For Log Entry        Hello from object
+    Wait For Log Entry        Hello from sub-object
