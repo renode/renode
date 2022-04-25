@@ -41,10 +41,15 @@ namespace Antmicro.Renode.Connectors
 
         public void OnGPIO(int number, bool value)
         {
+            if(!TimeDomainsManager.Instance.TryGetVirtualTimeStamp(out var vts))
+            {
+                vts = new TimeStamp(default(TimeInterval), EmulationManager.ExternalWorld);
+            }
+            
             var endpoints = connectorPin.Endpoints;
             for(var i = 0; i < endpoints.Count; i++)
             {
-                endpoints[i].Receiver.GetMachine().HandleTimeDomainEvent(connectorPin.Set, value, TimeDomainsManager.Instance.VirtualTimeStamp);
+                endpoints[i].Receiver.GetMachine().HandleTimeDomainEvent(connectorPin.Set, value, vts);
             }
         }
 
