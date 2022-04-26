@@ -155,7 +155,7 @@ Throws On Ranges Unaligned To The Page Size
 Permissions Are Respected
     Create Platform
     Create Log Tester               0
-    Execute Command                 logLevel -1 cpu
+    Execute Command                 logLevel -1
     Define Window Using CPU API     0x0000  0x1000  0x0  ${PRIV_ALL}
     Define Window Using CPU API     0x1000  0x2000  0x100  ${PRIV_EXEC_ONLY}
     Write Range With Doublewords    0x1000  0x1FF  0xFFFFFFFF
@@ -165,7 +165,7 @@ Permissions Are Respected
 Fault Callback Works Only When Enabled
     Create Platform
     Create Log Tester               0.0001
-    Execute Command                 logLevel -1 cpu
+    Execute Command                 logLevel 0 cpu
     Expect Value Read From Address  0x1100  0x0
     Should Not Be In Log            External MMU fault at 0x1100
 
@@ -184,7 +184,6 @@ Peripheral Can Be Configured Using The Registers Inteface
 
 CPU Can Have Two MMUs
     Create Platform
-    Execute Command                 logLevel -1
     Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 2}"
     Execute Command                 machine LoadPlatformDescriptionFromString "mmu2: Miscellaneous.ExternalWindowMMU @ sysbus 0x47001000 {cpu: cpu; startAddress: 0x1000; windowSize: 0x1000; numberOfWindows: 2}"
     Define Window In Peripheral     mmu1  0  0x0  0x1000  0x0  ${PRIV_EXEC_ONLY}
@@ -195,7 +194,7 @@ Peripheral Throws Fault On Illegal Data Access
     Requires                        SingleMMU
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_ALL}
     Define Window In Peripheral     mmu1  2  0x1000  0x2000  0x0000  ${PRIV_NONE}
-    Execute Command                 logLevel -1 mmu1
+    Execute Command                 logLevel 0 mmu1
 
     Expect Value Read From Address  0x1100  0x0
     Wait For Log Entry              mmu1: MMU fault occured
@@ -204,13 +203,16 @@ Peripheal Throws On Illegal Instruction Fetch
     Create Platform
     Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 4}"
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_WRITE_ONLY}
-    Execute Command                 logLevel -1 mmu1
+    Execute Command                 logLevel 0 mmu1
 
     Expect Value Read From Address  0x2000  0x0
     Wait For Log Entry              mmu1: MMU fault occured
 
 First MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+
+    Execute Command                 logLevel 0 mmu1
+    Execute Command                 logLevel 0 mmu2
 
     Define Window In Peripheral     mmu1  1  0x1000  0x2000  0x0000  ${PRIV_NONE}
     Execute Command                 sysbus WriteWord 0x1000 0x0124
@@ -221,6 +223,9 @@ First MMU Throws On Fault In Its Window
 
 Second MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+
+    Execute Command                 logLevel 0 mmu1
+    Execute Command                 logLevel 0 mmu2
 
     Define Window In Peripheral     mmu2  1  0x2000  0x3000  0x1000  ${PRIV_WRITE_ONLY}
     Execute Command                 sysbus WriteWord 0x2000 0x0124

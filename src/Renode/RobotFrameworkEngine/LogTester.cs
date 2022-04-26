@@ -36,6 +36,11 @@ namespace Antmicro.Renode.RobotFramework
 
         public override void Log(LogEntry entry)
         {
+            if(!ShouldBeLogged(entry))
+            {
+                return;
+            }
+            
             lock(messages)
             {
                 messages.Add($"{entry.ObjectName}: {entry.Message}");

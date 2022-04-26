@@ -116,6 +116,7 @@ Write Watchpoint Should See Correct Value
 
     # Watch the address that gets accessed
     Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
+    Execute Command           logLevel 0
 
     Start Emulation
     PC Should Be Equal        0x00000000

@@ -511,6 +511,7 @@ Should Work in BlockBeginHooks
             Start Emulation
             Execute Command     cpu Step 3
             Execute Command     cpu SetHookAtBlockBegin "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
+            Execute Command     logLevel 0
             Execute Command     cpu Step
             Wait For Log Entry  Checking IT_STATE, while not in IT block
             Wait For Log Entry  PC 0x800004a;IT_state 0x0
@@ -535,6 +536,7 @@ Should Work in BlockEndHooks
             Start Emulation                     #PC = 0x8000044
             Execute Command     cpu Step 3      #PC = 0x8000048
             Execute Command     cpu SetHookAtBlockEnd "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
+            Execute Command     logLevel 0
             Execute Command     cpu Step        #PC = 0x800004a
             Wait For Log Entry  PC 0x800004c;IT_state 0x5
             Execute Command     cpu Step

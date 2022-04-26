@@ -47,6 +47,7 @@ Should Install Custom 16-bit Instruction
     Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             logLevel 0
     Execute Command                             sysbus WriteWord 0x0 0xb38f
 
     Execute Command                             log "--- start ---"
@@ -54,15 +55,16 @@ Should Install Custom 16-bit Instruction
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
-    Wait For LogEntry                           --- start ---
-    Wait For LogEntry                           custom instruction executed! 
-    Wait For LogEntry                           --- stop ---
+    Wait For Log Entry                          --- start ---
+    Wait For Log Entry                          custom instruction executed! 
+    Wait For Log Entry                          --- stop ---
 
 Should Install Custom 32-bit Instruction
     Create Machine
     Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             logLevel 0
     Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
 
     Execute Command                             log "--- start ---"
@@ -70,15 +72,16 @@ Should Install Custom 32-bit Instruction
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
-    Wait For LogEntry                           --- start ---
-    Wait For LogEntry                           custom instruction executed! 
-    Wait For LogEntry                           --- stop ---
+    Wait For Log Entry                          --- start ---
+    Wait For Log Entry                          custom instruction executed! 
+    Wait For Log Entry                          --- stop ---
 
 Should Install Custom 64-bit Instruction
     Create Machine
     Create Log Tester                           1
 
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             logLevel 0
     Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
     Execute Command                             sysbus WriteDoubleWord 0x4 0xb38f0f82
 
@@ -87,9 +90,9 @@ Should Install Custom 64-bit Instruction
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
-    Wait For LogEntry                           --- start ---
-    Wait For LogEntry                           custom instruction executed! 
-    Wait For LogEntry                           --- stop ---
+    Wait For Log Entry                          --- start ---
+    Wait For Log Entry                          custom instruction executed! 
+    Wait For Log Entry                          --- stop ---
 
 Should Override An Existing 32-bit Instruction
     Create Machine
@@ -98,6 +101,7 @@ Should Override An Existing 32-bit Instruction
     # normally this instruction means "li x1, 0x147"
     # but we override it with a custom implementation
     Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "00010100011100000000000010010011" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             logLevel 0
     Execute Command                             sysbus WriteDoubleWord 0x0 0x14700093
 
     Register Should Be Equal                    1  0x0
@@ -109,9 +113,9 @@ Should Override An Existing 32-bit Instruction
 
     Register Should Be Equal                    1  0x0
 
-    Wait For LogEntry                           --- start ---
-    Wait For LogEntry                           custom instruction executed! 
-    Wait For LogEntry                           --- stop ---
+    Wait For Log Entry                          --- start ---
+    Wait For Log Entry                          custom instruction executed! 
+    Wait For Log Entry                          --- stop ---
 
 Should Install Custom 32-bit Instructions Sharing State
     Create Machine
@@ -176,6 +180,7 @@ Should Register Custom CSR
 
     Execute Command                             sysbus.cpu CSRValidation 0
     Execute Command                             sysbus.cpu RegisterCSRHandlerFromString 0xf0d "${csr_script}"
+    Execute Command                             logLevel 0
 
     Load Code To Memory
 
@@ -188,5 +193,5 @@ Should Register Custom CSR
     Register Should Be Equal                    1  0x147
     Register Should Be Equal                    2  0x147
 
-    Wait For LogEntry                           CSR written: 0x147L! 
-    Wait For LogEntry                           CSR read! 
+    Wait For Log Entry                          CSR written: 0x147L! 
+    Wait For Log Entry                          CSR read! 
