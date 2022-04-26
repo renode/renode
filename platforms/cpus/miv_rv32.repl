@@ -1,0 +1,33 @@
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imc"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_09
+    timeProvider: clint
+
+tcm: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x4000000
+
+// Power/Reset/Clock/Interrupt
+clint: IRQControllers.MiV_CoreLevelInterruptor  @ sysbus 0x02000000
+    frequency: 50000000
+    prescaler: 100
+    [0, 1] -> cpu@[3, 7]
+
+flash: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x40000
+
+uart: UART.MiV_CoreUART @ sysbus 0x70001000
+    clockFrequency: 50000000
+
+gpioInputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70002000
+
+timer0: Timers.MiV_CoreTimer @ sysbus 0x70003000
+    clockFrequency: 50000000
+
+timer1: Timers.MiV_CoreTimer @ sysbus 0x70004000
+    clockFrequency: 50000000
+
+gpioOutputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70005000
+
+sysbus:
+    init:
+        Tag <0x00006000, 0x00006FFF> "OPSRV"
