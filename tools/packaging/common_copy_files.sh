@@ -7,6 +7,7 @@ cp -r $BASE/output/bin/$TARGET/libllvm-disas.* $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 cp -r $BASE/tools/metrics_analyzer $DIR/tools
+cp -r $BASE/tools/sel4_extensions $DIR/tools
 
 #copy the test instrastructure and update the paths
 cp -r $BASE/tests/peripherals $DIR/tests/peripherals
