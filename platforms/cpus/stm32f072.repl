@@ -6,3 +6,5 @@ flash: Memory.MappedMemory @ sysbus 0x08000000
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x4000
 
+crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+    configurablePoly: true
