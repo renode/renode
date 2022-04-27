@@ -10,7 +10,7 @@ Resource                          ${RENODEKEYWORDS}
 Download File Over TFTP
     Execute Command             using sysbus
     Execute Command             mach create "litex-vexriscv"
-    Execute Command             machine LoadPlatformDescription @${CURDIR}/litex_vexriscv.repl
+    Execute Command             machine LoadPlatformDescription "${CURDIR}/litex_vexriscv.repl"
     Execute Command             sysbus LoadBinary @https://dl.antmicro.com/projects/renode/bios.bin-s_27076-9b28166a445deb24d5d3547871ae0de8365ba4d0 0x0
     Execute Command             cpu PC 0x0
 
