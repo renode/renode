@@ -8,16 +8,20 @@ Resource                      ${RENODEKEYWORDS}
 
 *** Test Cases ***
 Should Pause Renode
-    ${pauselimit}=            Convert Time                 1
-    Execute Command           i @scripts/single-node/miv.resc
-    Execute Command           cpu PerformanceInMips 1
-    Execute Command           emulation SetGlobalQuantum "10"
-    Execute Command           s
-    ${date} =                 Get Current Date	
-    Execute Command           p
-    ${date2} =                Get Current Date	
-    ${elapsed_time}=          Subtract Date From Date      ${date2}     ${date}
-    Should Be True            ${elapsed_time} < ${pauselimit}
+    # we test if pausing can interrupt the execution before the end of the quantum (hence testing against a value lower than 10)
+    ${pause_limit}=           Convert Time           9
+                              Execute Command        i @scripts/single-node/miv.resc
+                              Execute Command        cpu PerformanceInMips 1
+                              Execute Command        emulation SetGlobalQuantum "10"
+    # we assume that starting/pausing of the simulation happens during the same quantum;
+    # it seems to be a resonable expectation for the quantum value of 10 virtual seconds
+                              Execute Command        s
+                              Execute Command        p
+    ${time_source_info}=      Execute Command        emulation GetTimeSourceInfo
+    ${elapsed_matches}=       Get Regexp Matches     ${time_source_info}    Elapsed Virtual Time: ([0-9:.]+)    1
+    ${elapsed}=               Convert Time           ${elapsed_matches[0]}
+
+    Should Be True            ${elapsed} < ${pause_limit}
 
 Should Print Last Logs
     Execute Command           i @scripts/single-node/miv.resc        
