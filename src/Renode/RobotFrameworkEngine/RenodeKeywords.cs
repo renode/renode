@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Antmicro.Renode.Core;
@@ -301,8 +302,13 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public void EnableLoggingToCache()
         {
-            cachedLogFilePath = TemporaryFilesManager.Instance.GetTemporaryFile("log");
-            Logger.AddBackend(new FileBackend(cachedLogFilePath, false), CachedLogBackendName, true);
+            if(cachedLogFilePath == null)
+            {
+                cachedLogFilePath = Path.Combine(
+                        TemporaryFilesManager.Instance.EmulatorTemporaryPath,
+                        "renode-robot.log");
+                Logger.AddBackend(new FileBackend(cachedLogFilePath, false), CachedLogBackendName, true);
+            }
         }
 
         [RobotFrameworkKeyword]
@@ -322,9 +328,10 @@ namespace Antmicro.Renode.RobotFramework
         {
             if(cachedLogFilePath != null)
             {
-                var previousFilePath = cachedLogFilePath;
+                Logger.RemoveBackend(Logger.GetBackends()[CachedLogBackendName]);
+                System.IO.File.Delete(cachedLogFilePath);
+                cachedLogFilePath = null;
                 EnableLoggingToCache();
-                System.IO.File.Delete(previousFilePath);
             }
         }
 
