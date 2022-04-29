@@ -34,6 +34,16 @@ Create Machine
 
     Create Terminal Tester               ${UART}
 
+
+Create Machine With Hex File
+    [Arguments]  ${cpu}
+
+    Execute Command                      mach create
+    Execute Command                      machine LoadPlatformDescription "${CURDIR}${/}per-core-registration-hex.repl"
+
+    Execute Command                      sysbus LoadHEX @https://dl.antmicro.com/projects/renode/stm32f072b_disco--zephyr-hello_world.hex-s_34851-4e97c68491cf652d0becd549526cd3df56e8ae66 ${cpu}
+
+
 *** Test Cases ***
 Fail On Shadowing Other Registration
            Create Machine                ${TEST_ELF}
@@ -119,3 +129,14 @@ Disassemble Code From Per Core Memory
   ${out}=  Execute Command               sysbus.cpu2 DisassembleBlock ${PER_CORE_MEMORY} 2
            Should Contain                ${out}    lw
 
+
+Should Not Load Hex To Invalid Core Specific Memory
+           Create Log Tester             0    # no need for additional timeout, we're only testing synchronous operations
+           Create Machine With Hex File  sysbus.cpu1
+           Wait For Log Entry            Tried to access bytes at non-existing peripheral
+
+
+Should Load Hex To Core Specific Memory
+           Create Log Tester             0    # no need for additional timeout, we're only testing synchronous operations
+           Create Machine With Hex File  sysbus.cpu2
+           Should Not Be In Log          Tried to access bytes at non-existing peripheral
