@@ -3,6 +3,244 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.13.0 - 2022.04.29
+-------------------
+
+Added platforms:
+
+* Xtensa sample controller stub
+* MIMXRT1064-EVK
+* STM32L552
+* ARVSOM
+* BeagleV StarLight
+* Sparc GR716
+* RISC-V virt
+* S32K118 with LPIT, LPTMR, GPIO, Clock generator mock
+* STM32G0
+* STM32F412
+* STM32H743
+* MIV_RV32
+
+Added models:
+
+* new models for i.MX RT 1064: PWM, timer, ADC, LPSPI, Flex SPI, TRNG
+* new models for nRF52840: RNG, Radio, Watchdog, ECB, PPI infrastructure
+* new models for STM32: ADC, slave CAN, PWR, watchdog
+* new models for OpenTitan: flash controller, timer, PLIC, HMAC, AES, KMAC, ROM controller, Key manager, Reset manager
+* new models for Polarfire SoC: system services, user crypto features (RNG and RSA), Mustein GPU and various fixes to platform description
+* new model for Zynq 7000: XADC
+* new generic models:
+   * generic SPISensor
+   * HostCamera device
+   * TrivialUart
+   * HPSHostController - fake I2C host master device for communicating with simulated devices
+   * GigaDevice_GD25LQ - initial model
+   * VirtIO block device model
+
+Added demos:
+
+* Murax SoC with verilated UART with simple echo demo
+* LiteX with verilated CFU running CFU Playground demo
+* Zynq with verilated FastVDMA running Linux
+* NRF52840 BLE demo running Zephyr ``central_hr`` and ``peripheral_hr`` samples
+* Leon3 running Zephyr shell
+* GR716 running Zephyr shell
+* Xtensa sample controller running Zephyr “Hello World" sample
+
+Added core features:
+
+* RISC-V: vector extension 1.0 support
+* Xtensa architecture support
+* RISC-V: access to proper set of registers + custom registers from GDB
+* RISC-V: support for Custom Function Unit extensions
+* WFE support on ARM cores
+* uninterruptible debugging option to all architectures
+* floating point support to Cortex-M platforms
+* basic support for ARM 64-bit registers
+* Cortex-M33 stub
+* Sparc: added CSR register and exposed FSR register
+
+Added features:
+
+* primary selection copy support in TermSharp
+* support for asciinema UART dumps
+* support for native library communication in verilated peripherals
+* APB3 bus implementation for VerilatorIntegrationLibrary
+* support for loading HEX files
+* video capture mechanism with host camera integration
+* startup parameter for specifying the config file
+* register access keywords for Robot Framework integration
+* support VideoAnalyzer on Windows
+* option to stop on first error when running tests
+* option to save failed test logs
+* opcodes counting mechanism, along with RISC-V opcodes files parser
+* execution tracing mechanism
+* Wireshark support on Windows
+* seL4-aware GDB debug support
+* BLE wireless medium including Wireshark support
+* gdb_compare script allowing to compare execution of two GDB instances, for example one connected to Renode and one to hardware
+* support for vector registers in GDB
+* CPU Id parameter in ARM cores
+* option to control timestamp format and visibility in LoggingUartAnalyzer
+* option to skip library fetch during build
+* option to flush terminal history when connecting via socket
+* support for external, bus-connected MMU
+
+Changed:
+
+* bumped Robot Framework version to ``4.0.1``
+* RobotFramework: log entries keywords now accept regex patterns
+* STM: renamed some UART ports to USART
+* ZynqEthernet: removed and replaced with CadenceGEM
+* Zedboard: updated demo to Linux 5.10
+* reworked CPU halting
+* added CRC to packets sent by NetworkServer
+* RISC-V: added logs on unhandled CSR accesses
+* improved build time by changes to TermSharp project organization
+* various updates to STM32F746 CPU definition
+* added limit to displayed command history in AntShell
+* moved output of Robot tests to current directory when running on Windows
+* XWT events are now queued in GTK engine
+* added option to reconnect to SocketServerProvider
+* explicitly used XZ compression with pacman
+* added option to limit function names logging to unique entries, vastly improving performance
+* removed dependency to realpath from build and run scripts
+* removed dependency to ZeroMQ
+* renamed EOSS3_SPIMaster to DesignWare_SPI
+* dropped Fedora version indicator from packages
+* optimized RISC-V PMP handling
+* reworked PlatformLevelInterruptController to operate on contexts instead of targets
+* added O/H/W write commands to ArduinoLoader
+* enabled TLS 1.1 and TLS 1.2 in CachingFileFetcher
+* improved multicore debugging support in GDB
+* allowed to reuse testers in Robot tests
+* added option to safely include the same C# file multiple times during one Renode run
+* added ``tests.yaml``, containing all Robot tests, to all packages
+* add debug mode for all architectures disabling interrupts when stepping over guest code
+* simplified fixture selection when running tests
+* allowed unaligned memory access by default in IbexRiscV32
+* added GBD support for VS bits in MSTATUS register
+* added interrupts support in verilated peripherals
+* added support for CPU registers wider than 64-bits in Renode (C# part, not tlibs)
+* improved and unified the --plain mode handling
+* refactored the disassembly handling subsystem
+* improved GDB packets handling performance
+* added option to control serialization mode in the configuration file
+* added optional compiled files cache
+* improved handling of exceptions at the C/C# boundary
+* flattened the TimeFramework structure to increase performance
+* improved performance of handling of truncated translation blocks
+* improved performance of TermSharp height map calculations and row handling
+* added several tlib performance optimizations
+* added the synchronized timers emulation mode
+* added support for the flow control in UART
+* added support for bright colors to TermSharp
+* added basic VSCode launch configurations for Renode on Mono
+* unified ``renode`` and ``renode-test`` scripts names across all packages
+* added support for per-core peripheral registration
+* added option to the build script to export the build directory
+* improved performance of ELF reloading
+* updated Conda build scripts to better work with the latest Renode, improved Windows support
+* added option to configure step for clock entries
+* improved startup performance by skipping analysis of uninteresting assemblies in TypeManager
+* tied the AutoRepaintingVideo refresh frequency to the virtual time flow
+* enabled passing the -e parameter to Renode even when providing a script file parameter
+* added option to preserve temporary files from Robot tests
+* added a source of a log message to the log tester
+* Provides and Requires keywords now use state snapshots
+
+Fixed:
+
+* CPU endianness handling in GDB register accesses
+* SPARC WRASR and CASA instructions
+* SPARC registers handling in GDB
+* memory invalidation on writes in MappedMemory
+* ARM instructions: ASX, SAX, SUB16 and UQSUB
+* symbol name mangling on MacOS
+* updating PC before raising MMU exception on RISC-V
+* unaligned ld_phys handling, resolves problems of possible memory corruption
+* possible race conditions in TerminalTester
+* IO access path selection in tlib
+* support for big-endian peripherals
+* running tests in sequential mode
+* HiFive Unleashed platform description including PHY advertisement and RAM size
+* Ethernet PHY advertisement on the Zedboard platform
+* cross-endian bus accesses
+* endian conversion wrappers for untranslated accesses
+* registers mapping of fflags/frm/fcsr, resolving GDB registers XML generation
+* running tests when the build phase failed
+* it-status unit test
+* added LibLLVM to all packages
+* whitespace handling in resc scripts on Windows
+* occasional assertion fail when loading ELF files
+* setting breakpoints on virtual addresses
+* MicroPython tests
+* installation on Linux with a separate /opt mount point
+* demangling symbols from the anonymous namespace
+* SoftFloat's type conversion functions
+* illegal instruction exception on wrong CSR access on RISC-V
+* support for quad words access on the system bus
+* possible memory leak in tlib
+* improved precision of calculations in BasicClockSource and ComparingTimer Fixed
+* support for various versions of standard libraries on Linux hosts (libdl, libutil, etc)
+* libc dependencies for the Renode portable package
+* invalidation of translation blocks on writes
+* handling big offsets in MappedMemory
+* ARM-M PRIMASK and xPSR handling
+* PowerPC registers listing in GDB
+* improved tlib debugging by not omitting the frame pointer on debug build
+* fixed sfence.vma instruction implementation for RISC-V
+* potential math errors (underflows/overflows) when handling the virtual time
+* handling input redirected from file in the console mode
+* prevented GdbStub from sending telnet config bytes on new connections
+* serialization of paused state
+* ad-hoc compiler support in the portable package
+* flushing of log tester
+* UartPtyTerminal serialization
+* reporting the exit code in renode-test
+* RISC-V custom CSRs handling
+* resetting of a machine from the context of another machine
+* thread-safety of interrupt handling mechanism
+* occasional dependency fail on static constructors
+
+Improvements in peripherals:
+
+* CoreLevelInterruptor
+* PlatformLevelInterruptController
+* NVIC
+* CortexAPrivateTimer
+* BMA180
+* CC1200
+* Micron_MT25Q
+* SynopsysEthernetMAC
+* K6xF_Ethernet
+* CadenceGEM
+* OV2640
+* GaislerMIC
+* PL011
+* EFR32_USART
+* LowPower_UART
+* OpenTitan_UART
+* OpenTitan_GPIO
+* IMXRT_ADC
+* IMXRT_LPSPI
+* LPUART
+* STM32F7_I2C
+* STM32_UART
+* STM32 RTC
+* STM32_TIMER
+* STM32DMA
+* STMCAN
+* EXTI
+* NRF52840_CLOCK
+* NRF52840_Timer
+* NRF52840 GPIO
+* LiteX_I2S
+* Litex_GPIO
+* MPFS_PDMA
+* MPFS_DDRMock
+* Gaisler_GPTimer
+
 1.12.0 - 2021.04.02
 -------------------
 
@@ -22,8 +260,8 @@ Added:
 * integration with Arduino IDE and Arduino CLI
 * Python Standard Library, to be used with Python hooks and scripts in Renode
 * support for images in the Monitor, along with possibility to take framebuffer screenshots. This also works with certain terminal emulators, like iTerm2, when in headless mode
-* option to connect UART to the running console, improving headless capabilities
-* option to run Renode Monitor directly in console, overlapped with logs, using the ``--console`` command line switch
+  * option to connect UART to the running console, improving headless capabilities
+    * option to run Renode Monitor directly in console, overlapped with logs, using the ``--console`` command line switch
 * support for virtual addressing in GDB
 * option to combine multiple interrupt or GPIO signals into one, using logical OR, directly in REPL files
 * multi-bus support and AXI4 support (both as an initiator and a receiver) in co-simulation with Verilator
