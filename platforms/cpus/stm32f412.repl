@@ -14,7 +14,7 @@ dma2: DMA.STM32DMA @ sysbus 0x40026400
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
-rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023C00
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
 
 gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x40021C00, +0x400>
