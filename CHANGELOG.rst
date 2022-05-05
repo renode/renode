@@ -30,12 +30,13 @@ Added models:
 * new models for Polarfire SoC: system services, user crypto features (RNG and RSA), Mustein GPU and various fixes to platform description
 * new model for Zynq 7000: XADC
 * new generic models:
-   * generic SPISensor
-   * HostCamera device
-   * TrivialUart
-   * HPSHostController - fake I2C host master device for communicating with simulated devices
-   * GigaDevice_GD25LQ - initial model
-   * VirtIO block device model
+
+  * generic SPISensor
+  * HostCamera device
+  * TrivialUart
+  * HPSHostController - fake I2C host master device for communicating with simulated devices
+  * GigaDevice_GD25LQ - initial model
+  * VirtIO block device model
 
 Added demos:
 
@@ -45,7 +46,7 @@ Added demos:
 * NRF52840 BLE demo running Zephyr ``central_hr`` and ``peripheral_hr`` samples
 * Leon3 running Zephyr shell
 * GR716 running Zephyr shell
-* Xtensa sample controller running Zephyr “Hello World" sample
+* Xtensa sample controller running Zephyr "Hello World" sample
 
 Added core features:
 
@@ -119,7 +120,7 @@ Changed:
 * add debug mode for all architectures disabling interrupts when stepping over guest code
 * simplified fixture selection when running tests
 * allowed unaligned memory access by default in IbexRiscV32
-* added GBD support for VS bits in MSTATUS register
+* added GDB support for VS bits in MSTATUS register
 * added interrupts support in verilated peripherals
 * added support for CPU registers wider than 64-bits in Renode (C# part, not tlibs)
 * improved and unified the --plain mode handling
@@ -260,8 +261,11 @@ Added:
 * integration with Arduino IDE and Arduino CLI
 * Python Standard Library, to be used with Python hooks and scripts in Renode
 * support for images in the Monitor, along with possibility to take framebuffer screenshots. This also works with certain terminal emulators, like iTerm2, when in headless mode
+
   * option to connect UART to the running console, improving headless capabilities
+
     * option to run Renode Monitor directly in console, overlapped with logs, using the ``--console`` command line switch
+
 * support for virtual addressing in GDB
 * option to combine multiple interrupt or GPIO signals into one, using logical OR, directly in REPL files
 * multi-bus support and AXI4 support (both as an initiator and a receiver) in co-simulation with Verilator
@@ -436,7 +440,7 @@ Fixed:
 * invalid disposal of the SD card model, possibly leading to filesystem sharing violations
 * some cursor manipulation commands in TermSharp
 * performance issues when hitting breakpoints with GDB
-* on the fly compilation of “*.cs” files in the portable Renode package
+* on the fly compilation of "*.cs" files in the portable Renode package
 * Mono Framework version detection
 * upgrading Renode version on Windows when installed using the ``msi`` package
 * error message when quitting Renode on Windows
