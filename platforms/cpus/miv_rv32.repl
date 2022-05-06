@@ -4,7 +4,7 @@ cpu: CPU.RiscV32 @ sysbus
     timeProvider: clint
 
 tcm: Memory.MappedMemory @ sysbus 0x40000000
-    size: 0x4000000
+    size: 0x40000
 
 // Power/Reset/Clock/Interrupt
 clint: IRQControllers.MiV_CoreLevelInterruptor  @ sysbus 0x02000000
