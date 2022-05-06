@@ -150,17 +150,17 @@ Should Talk Over Network Using Ethernet
 
 Should Serve Webpage Using Tap
     [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.
-    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  skip_osx  non_critical
+    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  non_critical
     Set Test Variable         ${TAP_INTERFACE}     tap0
     Set Test Variable         ${TAP_INTERFACE_IP}  192.0.2.1
     Set Test Variable         ${SERVER_IP}         192.0.2.2
     Set Test Variable         ${SERVER_PORT}       8000
 
-    Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
-
     Execute Command           emulation CreateSwitch "switch"
 
-    Execute Command           emulation CreateTap "tap0" "tap"
+    Execute Command           emulation CreateTap "${TAP_INTERFACE}" "tap"
+    Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
+
     Execute Command           connector Connect host.tap switch
 
     Execute Command           $bin = ${URI}/http_server-s_819052-7ddc5a39c953a6330ca4971bd99bda1ea2a5beca
