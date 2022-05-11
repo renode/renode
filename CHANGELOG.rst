@@ -71,7 +71,7 @@ Added features:
 * video capture mechanism with host camera integration
 * startup parameter for specifying the config file
 * register access keywords for Robot Framework integration
-* support VideoAnalyzer on Windows
+* keyboard input in VideoAnalyzer on Windows
 * option to stop on first error when running tests
 * option to save failed test logs
 * opcodes counting mechanism, along with RISC-V opcodes files parser
