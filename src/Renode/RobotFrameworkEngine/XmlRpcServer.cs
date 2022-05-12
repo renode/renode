@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using CookComputing.XmlRpc;
 using Antmicro.Renode.Core;
 
@@ -39,6 +40,10 @@ namespace Antmicro.Renode.RobotFramework
                 {
                     if(keywordResult != null)
                     {
+                        if(keywordResult is string resultString)
+                        {
+                            keywordResult = Regex.Replace(resultString, "(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", RegexOptions.Compiled);
+                        }
                         result.Add(KeywordResultValue, keywordResult);
                     }
                     result.Add(KeywordResultStatus, KeywordResultPass);
