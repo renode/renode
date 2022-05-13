@@ -26,7 +26,7 @@ def network_interface_should_have_address(name, address):
     ifaddresses = psutil.net_if_addrs()[name]
     addresses = []
     for addr in ifaddresses:
-        if addr.family == socket.AF_INET2:
+        if addr.family == socket.AF_INET:
             addresses.append(addr.address)
     if address not in addresses:
         raise Exception('Network interface {0} does not have address {1}.'.format(name, address))
