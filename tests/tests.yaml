@@ -81,3 +81,4 @@
 - tests/tools/sel4_extensions.robot
 - tests/unit-tests/host-uart.robot
 - tests/unit-tests/external-mmu.robot
+- tests/unit-tests/file-paths.robot
