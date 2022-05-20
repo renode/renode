@@ -13,6 +13,7 @@ Custom Suite Setup
     Setup
 
 Custom Suite Teardown
+    Execute Command           Clear
     Remove Directory          ${DIRNAME}                      true
     Teardown
 
@@ -34,4 +35,13 @@ Should Create Uart Backend
 
     ${next_file}=             Join Path                       ${DIRNAME}      file.1
     Execute Command           uart CreateFileBackend @${base_file}
+    File Should Exist         ${next_file}
+
+Should Create Subsequent Log Files
+    ${base_file}=             Join Path                       ${DIRNAME}      logfile
+    Execute Command           logFile @${base_file}
+    File Should Exist         ${base_file}
+
+    ${next_file}=             Join Path                       ${DIRNAME}      logfile.1
+    Execute Command           logFile @${base_file}
     File Should Exist         ${next_file}
