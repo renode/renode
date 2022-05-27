@@ -38,6 +38,8 @@ Should Create Uart Backend
     File Should Exist         ${next_file}
 
 Should Create Subsequent Log Files
+    [Tags]                    skip_windows
+
     ${base_file}=             Join Path                       ${DIRNAME}      logfile
     Execute Command           logFile @${base_file}
     File Should Exist         ${base_file}
