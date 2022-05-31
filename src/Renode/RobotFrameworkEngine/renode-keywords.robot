@@ -6,20 +6,21 @@ Library         OperatingSystem
 Library         helper.py
 
 *** Variables ***
-${SERVER_REMOTE_DEBUG}      False
-${SERVER_REMOTE_PORT}       12345
-${SERVER_REMOTE_SUSPEND}    y
-${SKIP_RUNNING_SERVER}      False
-${CONFIGURATION}            Release
-${PORT_NUMBER}              9999
-${DIRECTORY}                ${CURDIR}/../../../output/bin/${CONFIGURATION}
-${BINARY_NAME}              Renode.exe
-${HOTSPOT_ACTION}           None
-${DISABLE_XWT}              False
-${DEFAULT_UART_TIMEOUT}     8
-${CREATE_SNAPSHOT_ON_FAIL}  True
-${SAVE_LOG_ON_FAIL}         True
-${HOLD_ON_ERROR}            False
+${SERVER_REMOTE_DEBUG}       False
+${SERVER_REMOTE_PORT}        12345
+${SERVER_REMOTE_SUSPEND}     y
+${SKIP_RUNNING_SERVER}       False
+${CONFIGURATION}             Release
+${PORT_NUMBER}               9999
+${DIRECTORY}                 ${CURDIR}/../../../output/bin/${CONFIGURATION}
+${BINARY_NAME}               Renode.exe
+${HOTSPOT_ACTION}            None
+${DISABLE_XWT}               False
+${DEFAULT_UART_TIMEOUT}      8
+${CREATE_SNAPSHOT_ON_FAIL}   True
+${SAVE_LOG_ON_FAIL}          True
+${HOLD_ON_ERROR}             False
+${CREATE_EXECUTION_METRICS}  False
 
 *** Keywords ***
 Setup
@@ -69,6 +70,15 @@ Setup
 
     Run Keyword If  ${SAVE_LOG_ON_FAIL}
     ...   Enable Logging To Cache
+
+    ${allowed_chars}=   Set Variable                 abcdefghijklmnopqrstuvwxyz01234567890_-
+    ${metrics_fname}=   Convert To Lower Case        ${SUITE_NAME}
+    ${metrics_fname}=   Replace String               ${metrics_fname}      ${SPACE}              _
+    ${metrics_fname}=   Replace String Using Regexp  ${metrics_fname}      [^${allowed_chars}]+  ${EMPTY}
+    ${metrics_path}=    Join Path                    ${RESULTS_DIRECTORY}  profiler-${metrics_fname}
+
+    Run Keyword If      ${CREATE_EXECUTION_METRICS}
+    ...   Execute Command    EnableProfilerGlobally "${metrics_path}"
 
     Reset Emulation
 

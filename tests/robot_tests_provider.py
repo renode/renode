@@ -106,6 +106,12 @@ def install_cli_arguments(parser):
                         default=False,
                         help="Automatically kill stale Renode instances without asking")
 
+    parser.add_argument("--gather-execution-metrics",
+                        dest="execution_metrics",
+                        action="store_true",
+                        default=False,
+                        help="Gather execution metrics for each suite")
+
 
 def verify_cli_arguments(options):
     # port is not available on Windows
@@ -414,6 +420,8 @@ class RobotTestSuite(object):
             variables.append('CONFIGURATION:Debug')
         if options.debug_on_error:
             variables.append('HOLD_ON_ERROR:True')
+        if options.execution_metrics:
+            variables.append('CREATE_EXECUTION_METRICS:True')
 
         if options.variables:
             variables += options.variables
