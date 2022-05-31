@@ -82,3 +82,4 @@
 - tests/unit-tests/host-uart.robot
 - tests/unit-tests/external-mmu.robot
 - tests/unit-tests/file-paths.robot
+- tests/platforms/PolarFireSoC.robot
