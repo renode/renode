@@ -87,3 +87,12 @@ Should Read ADC
     Execute Command          sysbus.adc SetDefaultValue 1200
     Wait For Line On Uart    ADC reading: 1489
 
+Should Run stm32f0-crc-test Application
+    Execute Command          mach create
+    Execute Command          machine LoadPlatformDescription @platforms/boards/stm32f072b_discovery.repl
+    Execute Command          sysbus LoadELF @https://github.com/Pagten/stm32f0-crc-test/releases/download/v1.0.0/stm32f0-crc-test
+    Create Terminal Tester   ${UART}
+
+    Start Emulation
+
+    Wait For Line On Uart    test result: ok. 840 passed; 0 failed
