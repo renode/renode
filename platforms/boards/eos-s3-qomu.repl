@@ -11,4 +11,6 @@ ledG: Miscellaneous.LED @ intrCtrl 1
 
 ledR: Miscellaneous.LED @ intrCtrl 0
 
+uart: @ none
 
+usbserial: UART.USBSerialPort_S3B @ { sysbus 0x40020000 }
