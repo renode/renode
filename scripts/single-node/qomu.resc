@@ -1,0 +1,19 @@
+:name: QuickLogic Qomu
+:description: This script runs Zephyr RTOS "Shell module" sample on a Qomu board.
+
+$name?="Qomu"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/boards/eos-s3-qomu.repl
+
+$bin?=@https://dl.antmicro.com/projects/renode/qomu-zephyr-shell_module.elf-s_1308464-0145a02415710ad2c6aafd2482ffcba857dd28b3
+
+showAnalyzer usbserial
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
+
