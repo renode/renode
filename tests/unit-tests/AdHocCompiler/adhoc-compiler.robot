@@ -54,3 +54,7 @@ Should Compile Multiple Files Referencing Each Other
         Execute Command          machine LoadPlatformDescriptionFromString ${COMPLEX_PLATFORM}
 
         Use Peripheral
+
+EnsureTypeIsLoaded Should Throw Type Not Found
+        ${TEST_TYPE}             SetVariable    Antmicro.NotExistingType
+        Run Keyword And Expect Error    *Given type ${TEST_TYPE} was not found*    Execute Command         EnsureTypeIsLoaded "${TEST_TYPE}"
