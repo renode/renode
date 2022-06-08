@@ -26,6 +26,8 @@ cp $RENODE_ROOT_DIR/src/Renode/RobotFrameworkEngine/*.{py,robot} $DESTINATION/te
 cp $RENODE_ROOT_DIR/lib/resources/styles/robot.css $DESTINATION/tests/robot.css
 cp $RENODE_ROOT_DIR/tools/common.sh $DESTINATION/tests
 cp -r $RENODE_ROOT_DIR/tools/metrics_analyzer $DESTINATION/tools
+cp -r $RENODE_ROOT_DIR/tools/gdb_compare $DESTINATION/tools
+cp -r $RENODE_ROOT_DIR/tools/sel4_extensions $DESTINATION/tools
 
 sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
 sed -i 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DESTINATION/renode-test
