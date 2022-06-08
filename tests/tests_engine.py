@@ -97,6 +97,7 @@ def prepare_parser():
                         dest="results_directory",
                         action="store",
                         default=os.path.join(this_path, 'tests'),
+                        type=os.path.abspath,
                         help="Location where test results should be stored.")
 
     parser.add_argument("--run-gdb",
