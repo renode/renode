@@ -48,6 +48,7 @@ mkdir -p $PREFIX/opt/renode/bin
 mkdir -p $PREFIX/opt/renode/scripts
 mkdir -p $PREFIX/opt/renode/platforms
 mkdir -p $PREFIX/opt/renode/tests
+mkdir -p $PREFIX/opt/renode/tools
 mkdir -p $PREFIX/opt/renode/licenses
 
 
@@ -56,6 +57,9 @@ cp -r output/bin/Release/* $PREFIX/opt/renode/bin/
 cp -r scripts/* $PREFIX/opt/renode/scripts/
 cp -r platforms/* $PREFIX/opt/renode/platforms/
 cp -r tests/* $PREFIX/opt/renode/tests/
+cp -r tools/metrics_analyzer $PREFIX/opt/renode/tools
+cp -r tools/gdb_compare $PREFIX/opt/renode/tools
+cp -r tools/sel4_extensions $PREFIX/opt/renode/tools
 
 cp lib/resources/styles/robot.css $PREFIX/opt/renode/tests
 cp tests/requirements.txt $PREFIX/opt/renode/tests
