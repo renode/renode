@@ -133,6 +133,9 @@ rstmgr_aon: Miscellaneous.OpenTitan_ResetManager @ sysbus 0x40410000
         MarkAsSkippedOnSystemReset sysbus.pwrmgr_aon
         MarkAsSkippedOnSystemReset sysbus.flash_ctrl
 
+// One Time Programmable Memory Controller
+otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0x40130000
+
 // PLIC with 180 sources
 rv_plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x48000000
     0 -> cpu0@11
