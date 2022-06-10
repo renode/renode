@@ -109,6 +109,12 @@ key_mgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41130000
     ownerIdentitySeed: "0xa88601ca1695a7c8c5d32486aac4e086628d6c8ca138f65d25dfa5f9c912f354"
     OperationDoneIRQ -> rv_plic@168
 
+csrng: Miscellaneous.OpenTitan_CSRNG @ sysbus 0x41150000
+    RequestCompletedIRQ -> rv_plic@169
+    EntropyeRequestedIRQ -> rv_plic@170
+    HardwareInstanceIRQ -> rv_plic@171
+    FatalErrorIRQ -> rv_plic@172
+
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
 
 kmac: Miscellaneous.OpenTitan_KMAC @ sysbus 0x41120000
