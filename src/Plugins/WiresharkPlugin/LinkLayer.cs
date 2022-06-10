@@ -11,6 +11,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
     {
         Ethernet = 1,
         IEEE802_15_4 = 195,
-        Bluetooth_LE = 251
+        Bluetooth_LE = 256
     }
 }
