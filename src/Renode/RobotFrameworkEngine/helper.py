@@ -11,8 +11,15 @@ def network_interface_should_exist(name):
 
 def network_interface_should_be_up(name):
     network_interface_should_exist(name)
-    if not (name in psutil.net_if_stats() and psutil.net_if_stats()[name].isup):
-        raise Exception('Network interface {} is not up.'.format(name))
+    if sys.platform == "linux": # psutil marks tap interface as down, erroneously
+        proc = subprocess.Popen(['ip', 'addr', 'show', name, 'up'], stdout=subprocess.PIPE)
+        (output, err) = proc.communicate()
+        exit_code = proc.wait()
+        if exit_code != 0 or len(output) == 0:
+            raise Exception('Network interface {} is not up.'.format(name))
+    else:
+        if not (name in psutil.net_if_stats() and psutil.net_if_stats()[name].isup):
+            raise Exception('Network interface {} is not up.'.format(name))
 
 def network_interface_should_have_address(name, address):
     network_interface_should_exist(name)
