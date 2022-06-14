@@ -212,9 +212,11 @@ u54Hart4ITim: Memory.MappedMemory @ sysbus 0x01820000
 
 ddr: Memory.MappedMemory @ {
         sysbus 0x80000000;
+        sysbus <0xC0000000, +0x10000000>;
+        sysbus <0xD0000000, +0x10000000>;
         sysbus 0x1000000000;
-        sysbus 0xC0000000;
-        sysbus 0x1400000000
+        sysbus 0x1400000000;
+        sysbus 0x1800000000
     }
     size: 0x40000000
 
