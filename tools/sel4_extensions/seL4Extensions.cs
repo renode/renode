@@ -80,25 +80,21 @@ namespace Antmicro.Renode.Debug
 
         public void BreakOnExittingUserspace(ExitUserspaceMode mode)
         {
-            exitUserspaceMode = mode;
-
-            // Guard, so we won't create hook more than once
-            if(exitUserspacePending)
+            if(mode == exitUserspaceMode)
             {
-                if(mode == ExitUserspaceMode.Never)
-                {
-                    cpu.RemoveHook(exitUserspaceAddress, HandleExitUserspace);
-                }
                 return;
             }
 
-            if(callingConvention.PrivilegeMode == PrivilegeMode.Userspace)
+            if(exitUserspaceMode == ExitUserspaceMode.Never)
             {
-                // We are currently in userspace, just create hook
-                exitUserspacePending = true;
-                exitUserspaceAddress = callingConvention.SyscallTrapAddress;
-                cpu.AddHook(exitUserspaceAddress, HandleExitUserspace);
+                cpu.AddHook(callingConvention.SyscallTrapAddress, HandleExitUserspace);
             }
+            else if(mode == ExitUserspaceMode.Never)
+            {
+                cpu.RemoveHook(callingConvention.SyscallTrapAddress, HandleExitUserspace);
+            }
+
+            exitUserspaceMode = mode;
         }
 
         // Sets the breakpoint on given address in chosen thread
@@ -185,6 +181,10 @@ namespace Antmicro.Renode.Debug
                     x => x.Thread == AnyThreadName ? "any" : x.Thread,
                     x => x.Address == WildcardAddress ? "any" : "0x{0:X}".FormatWith(x.Address),
                     x => x.Temporary.ToString());
+            if(exitUserspaceMode != ExitUserspaceMode.Never)
+            {
+                table.AddRow("kernel", "any", (exitUserspaceMode == ExitUserspaceMode.Once).ToString());
+            }
             return table.ToArray();
         }
 
@@ -274,8 +274,6 @@ namespace Antmicro.Renode.Debug
 
         private void HandleThreadSwitch(ICpuSupportingGdb cpu, ulong address)
         {
-            UpdateExitUserspaceBreakpoint();
-
             var threadName = CurrentThread();
             // Remove temporary breakpoint if exists
             ClearTemporaryBreakpoint(WildcardAddress, threadName);
@@ -287,8 +285,6 @@ namespace Antmicro.Renode.Debug
 
         private void HandleBreakpoint(ICpuSupportingGdb cpu, ulong address)
         {
-            UpdateExitUserspaceBreakpoint();
-
             var threadName = CurrentThread();
             if(!DoBreakpointExists(address, threadName))
             {
@@ -307,14 +303,11 @@ namespace Antmicro.Renode.Debug
                 return;
             }
 
-            // We changed context, remove this hook as we don't need it anymore
-            cpu.RemoveHook(address, HandleExitUserspace);
             cpu.Pause();
             cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu.Id, address, BreakpointType.MemoryBreakpoint), true);
-            exitUserspacePending = false;
-            exitUserspaceAddress = 0x0;
             if(exitUserspaceMode == ExitUserspaceMode.Once)
             {
+                cpu.RemoveHook(address, HandleExitUserspace);
                 exitUserspaceMode = ExitUserspaceMode.Never;
             }
         }
@@ -522,16 +515,6 @@ namespace Antmicro.Renode.Debug
             return !(address == 0x00000000 || address == 0xFFFFFFFF);
         }
 
-        private void UpdateExitUserspaceBreakpoint()
-        {
-            exitUserspaceAddress = callingConvention.SyscallTrapAddress;
-            if(exitUserspaceMode != ExitUserspaceMode.Never && !exitUserspacePending)
-            {
-                exitUserspacePending = true;
-                cpu.AddHook(exitUserspaceAddress, HandleExitUserspace);
-            }
-        }
-
         private string CurrentThreadUnsafe()
         {
             var tcb = cpu.Bus.ReadDoubleWord(this.ksCurThreadPhysAddress, context: cpu);
@@ -561,9 +544,7 @@ namespace Antmicro.Renode.Debug
         private readonly ICallingConvention callingConvention;
         private readonly ulong debugThreadNameSyscall;
 
-        private bool exitUserspacePending;
         private ExitUserspaceMode exitUserspaceMode;
-        private ulong exitUserspaceAddress;
         private bool breakpointsEnabled;
         private ulong ksCurThreadPhysAddress;
         private ulong restoreUserContextAddress;
@@ -592,12 +573,14 @@ namespace Antmicro.Renode.Debug
             public RiscVCallingConvention(ICpuSupportingGdb cpu)
             {
                 this.cpu = cpu;
+                // Assumes that symbols for kernel are loaded
+                syscallTrapAddress = cpu.Bus.GetSymbolAddress("trap_entry");
             }
 
             public ulong FirstArgument => cpu.A[0];
             public ulong ReturnValue => cpu.A[0];
             public ulong ReturnAddress => cpu.RA;
-            public ulong SyscallTrapAddress => cpu.STVEC;
+            public ulong SyscallTrapAddress => syscallTrapAddress;
             public PrivilegeMode PrivilegeMode
             {
                 get
@@ -614,6 +597,8 @@ namespace Antmicro.Renode.Debug
                 }
             }
             public ulong TCBNextPCOffset => 34 * 4;
+
+            private readonly ulong syscallTrapAddress;
             private readonly dynamic cpu;
         }
 
