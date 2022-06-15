@@ -27,6 +27,7 @@ def get_envvar(name):
         return os.environ[name]
 
 
+SYMBOL_AUTOSWITCHING = True
 SOURCE_DIR = get_envvar('SOURCE_DIR')
 sys.path.append(os.path.join(SOURCE_DIR, 'projects', 'capdl', 'python-capdl-tool'))
 
@@ -133,7 +134,10 @@ class seL4SwitchSymbols(gdb.Command):
         return list(component for component in components if component.startswith(text))
 
     def invoke(self, arg, from_tty):
-        if not arg or arg == 'kernel':
+        if not arg:
+            thread = get_current_thread()
+            switch_symbols(thread, verbose=True)
+        elif arg == 'kernel':
             switch_symbols(verbose=True)
         else:
             switch_symbols(arg, fallback=False, verbose=True)
@@ -334,6 +338,35 @@ class seL4Ready(gdb.Command):
 
     def invoke(self, arg, from_tty):
         gdb.execute('mon seL4 Ready')
+
+
+@source
+class seL4SymbolAutoswitching(gdb.Command):
+    """Enables or disables symbol file autoswitching"""
+
+    def __init__(self):
+        super(self.__class__, self).__init__('sel4 symbol-autoswitching', gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        global SYMBOL_AUTOSWITCHING
+
+        if not arg:
+            print('Symbol autoswitching is {}'.format('enabled' if SYMBOL_AUTOSWITCHING else 'disabled'))
+            return
+
+        if arg.isdigit():
+            arg = bool(int(arg))
+        elif arg in ['True', 'true']:
+            arg = True
+        elif arg in ['False', 'false']:
+            arg = False
+        else:
+            raise gdb.GdbError('{} is invalid argument for sel4 symbol-autoswitching'.format(arg))
+
+        SYMBOL_AUTOSWITCHING = arg
+        print('Symbol autoswitching is now {}'.format('enabled' if SYMBOL_AUTOSWITCHING else 'disabled'))
+
+
 @source
 def find_binaries():
     global BINARIES, DEFAULT_BINARY
@@ -385,17 +418,7 @@ def get_threads():
     return threads
 
 
-def switch_symbols(thread=None, fallback=True, verbose=False):
-    """Switch symbol-file to the file corresponding to the given thread
-
-    If fallback is set to true and the given thread is not found, it will set
-    symbol-file to DEFAULT_BINARY (def. kernel.elf).
-    If verbose is set to true, symbol-file command will be run in interactive
-    mode and information of switching symbol file will be shown"""
-    global BINARIES, DEFAULT_BINARY
-
-    current_symbol_files = [obj.username for obj in gdb.objfiles()]
-
+def resolve_symbol_file(thread, fallback=True):
     if thread is None:
         image_path = DEFAULT_BINARY
     else:
@@ -405,18 +428,35 @@ def switch_symbols(thread=None, fallback=True, verbose=False):
         elif image_name is None and fallback:
             image_path = DEFAULT_BINARY
         else:
-            raise gdb.GdbError("no symbol-file found for thread/component {}".format(thread))
+            return None
+    return image_path
 
-    if image_path not in current_symbol_files:
-        gdb.execute('symbol-file {}'.format(image_path), from_tty=verbose)
+
+def switch_symbols(thread=None, fallback=True, verbose=False):
+    """Switch symbol-file to the file corresponding to the given thread
+
+    If fallback is set to true and the given thread is not found, it will set
+    symbol-file to DEFAULT_BINARY (def. kernel.elf).
+    If verbose is set to true, symbol-file command will be run in interactive
+    mode and information of switching symbol file will be shown"""
+    global BINARIES, DEFAULT_BINARY
+
+    image_path = resolve_symbol_file(thread, fallback)
+
+    if image_path is None:
+        raise gdb.GdbError("no symbol-file found for thread/component {}".format(thread))
+
+    gdb.execute('symbol-file {}'.format(image_path), from_tty=verbose)
 
 
 def stop_handler(event):
     if not isinstance(event, gdb.StopEvent):
         return
 
-    thread = get_current_thread()
-    switch_symbols(thread)
+    global SYMBOL_AUTOSWITCHING
 
+    if SYMBOL_AUTOSWITCHING:
+        thread = get_current_thread()
+        switch_symbols(thread)
 
 gdb.events.stop.connect(stop_handler)
