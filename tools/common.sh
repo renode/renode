@@ -69,7 +69,7 @@ function clone_if_necessary() {
     fi
 
     rm -rf "$TARGET_DIR"
-    git clone -b $BRANCH $REMOTE $(get_path "$TARGET_DIR")
+    git clone --depth=1 --single-branch --branch=$BRANCH $REMOTE $(get_path "$TARGET_DIR")
 }
 
 function add_path_property {
