@@ -159,6 +159,8 @@ Should Serve Webpage Using Tap
     Execute Command           emulation CreateSwitch "switch"
 
     Execute Command           emulation CreateTap "${TAP_INTERFACE}" "tap"
+
+    Preconfigure Macos        tap0  ${TAP_INTERFACE_IP}  255.255.255.0
     Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
 
     Execute Command           connector Connect host.tap switch
