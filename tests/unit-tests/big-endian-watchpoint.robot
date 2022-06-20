@@ -40,8 +40,8 @@ Load Writer Program
     Execute Command           sysbus WriteDoubleWord 0x0000000c 0x78a21084
     # st  %g2, [ %g1 ]
     Execute Command           sysbus WriteDoubleWord 0x00000010 0x004020c4
-    # b .
-    Execute Command           sysbus WriteDoubleWord 0x00000014 0x00008010
+    # b .-4  # We jump back to the st instruction to be able to test watchpoints multiple times
+    Execute Command           sysbus WriteDoubleWord 0x00000014 0xffffbf10
     # nop
     Execute Command           sysbus WriteDoubleWord 0x00000018 0x00000001
 
@@ -125,3 +125,45 @@ Write Watchpoint Should See Correct Value
     Execute Command           cpu Step 6
     PC Should Be Equal        0x00000014
     Wait For Log Entry        Watchpoint saw 0x78563412L
+
+Write Watchpoint Should Work Multiple Times
+    Prepare Machine
+    Create Log Tester         0
+    Load Writer Program
+
+    # Watch the address that gets accessed
+    Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
+    Execute Command           logLevel 0
+
+    PC Should Be Equal        0x00000000
+    Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
+
+    Execute Command           cpu ExecutionMode Continuous
+    Execute Command           start
+
+    FOR    ${i}    IN RANGE    32
+        Wait For Log Entry        Watchpoint saw 0x78563412L    timeout=1
+    END
+
+Abort Should Work After Watchpoint Hit
+    Prepare Machine
+    Create Log Tester         0
+    Load Writer Program
+
+    # Overwrite branch with illegal instruction
+    Execute Command           sysbus WriteDoubleWord 0x00000014 0xffffffff
+
+    # Watch the address that gets accessed
+    Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
+    Execute Command           logLevel 0
+
+    PC Should Be Equal        0x00000000
+    Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
+
+    Execute Command           cpu ExecutionMode Continuous
+    Execute Command           start
+
+    Wait For Log Entry        Watchpoint saw 0x78563412L    timeout=1
+    Wait For Log Entry        CPU abort [PC=0x14]: Trap 0x02 while interrupts disabled    timeout=1
