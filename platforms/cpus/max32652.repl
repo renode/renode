@@ -1,0 +1,85 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu@0
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+flash: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x300000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x100000
+
+bitbandPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000
+
+bitbandSram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x2000000>
+    peripheralBase: 0x20000000
+
+
+sysbus:
+    init:
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/MAX32650.svd.gz
+
+        Tag <0x40000000 0x0400> "Global Control Registers"
+        Tag <0x40000400 0x0400> "SI Registers"
+        Tag <0x40000800 0x0400> "Function Control Registers"
+        Tag <0x40001000 0x1000> "TPU, AES, MAA, SHA"
+        Tag <0x40003000 0x0400> "Watchdog Timer 0"
+        Tag <0x40003400 0x0400> "Watchdog Timer 1"
+        Tag <0x40004000 0x0400> "Security Monitor"
+        Tag <0x40005000 0x0400> "AES Keys"
+        Tag <0x40005800 0x0400> "SIR HyperBus/Xccela Bus"
+        Tag <0x40006000 0x0400> "RTC"
+        Tag <0x40006800 0x0400> "Power Sequencer"
+        Tag <0x40008000 0x1000> "GPIO Port 0"
+        Tag <0x40009000 0x1000> "GPIO Port 1"
+        Tag <0x4000A000 0x1000> "GPIO Port 2"
+        Tag <0x4000B000 0x1000> "GPIO Port 3"
+        Tag <0x40010000 0x1000> "Timer 0"
+        Tag <0x40011000 0x1000> "Timer 1"
+        Tag <0x40012000 0x1000> "Timer 2"
+        Tag <0x40013000 0x1000> "Timer 3"
+        Tag <0x40014000 0x1000> "Timer 4"
+        Tag <0x40015000 0x1000> "Timer 5"
+        Tag <0x40018000 0x1000> "I2S"
+        Tag <0x4001D000 0x1000> "I2C 0"
+        Tag <0x4001E000 0x1000> "I2C 1"
+        Tag <0x40026000 0x1000> "SPIXF Master"
+        Tag <0x40027000 0x1000> "SPIXF Master Controller"
+        Tag <0x40028000 0x1000> "Standard DMA"
+        Tag <0x40029000 0x0400> "Flash Controller"
+        Tag <0x4002A000 0x1000> "I-Cache Controller 0"
+        Tag <0x4002A100 0x4> "ICC0_CACHE_CTRL" 0x10001
+        Tag <0x4002F000 0x1000> "I-Cache Controller 1"
+        Tag <0x4002F100 0x4> "ICC1_CACHE_CTRL" 0x10001
+        Tag <0x40031000 0x1000> "Color LCD Controller"
+        Tag <0x40033000 0x1000> "D-Cache Controller"
+        Tag <0x40034000 0x1000> "ADC"
+        Tag <0x40036000 0x1000> "Smart DMA"
+        Tag <0x40037000 0x1000> "SD/SDIO/SDHC/MMC Controller"
+        Tag <0x40039000 0x1000> "HyperBus/Xccela Bus Controller"
+        Tag <0x4003A000 0x1000> "SPIXR Master Controller"
+        Tag <0x4003C000 0x1000> "Pulse Trains"
+        Tag <0x4003D000 0x1000> "1-Wire"
+        Tag <0x4003E000 0x1000> "Semaphores"
+        Tag <0x40042000 0x1000> "UART 0"
+        Tag <0x40043000 0x1000> "UART 1"
+        Tag <0x40044000 0x1000> "UART 2"
+        Tag <0x40046000 0x1000> "SPI 0"
+        Tag <0x40047000 0x1000> "SPI 1"
+        Tag <0x40048000 0x1000> "SPI 2"
+        Tag <0x400B1000 0x1000> "USB 2.0 High Speed"
+        Tag <0x400B5000 0x1000> "True Random Number Generator"
+        Tag <0x400B6000 0x1000> "SD/SDIO/SDHC/MMC Controller"
+        Tag <0x400BC000 0x1000> "SPIXF Master Controller FIFO"
+        Tag <0x400BE000 0x1000> "SPI 3"
+
+
+        Tag <0x08000000 0x08000000> "External SPI Flash"
+        Tag <0x60000000 0x20000000> "External HyperBus/Xccela Bus Memory"
+        Tag <0x80000000 0x20000000> "External SPI SRAM"
