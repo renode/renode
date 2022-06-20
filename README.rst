@@ -4,6 +4,9 @@ Renode
 
 Copyright (c) 2010-2022 `Antmicro <https://www.antmicro.com>`_
 
+.. image:: https://img.shields.io/badge/View%20on-Antmicro%20Open%20Source%20Portal-332d37?style=flat-square
+   :target: https://opensource.antmicro.com/projects/renode
+
 What is Renode?
 ---------------
 
