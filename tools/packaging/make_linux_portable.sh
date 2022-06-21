@@ -54,7 +54,7 @@ sed '/csproj$/d' $BASE/tests/tests.yaml > $DESTINATION/tests/tests.yaml
 find $RENODE_ROOT_DIR/src/Infrastructure/src/Emulator $RENODE_ROOT_DIR/lib -iname "*-license" -exec cp {} $DESTINATION/licenses/ \;
 
 #others will need a parent directory name.
-find $RENODE_ROOT_DIR/{src/Infrastructure,lib} -iname "license" -print0 |\
+find $RENODE_ROOT_DIR/{src/Infrastructure,lib} -iname "license*" -type f -print0 |\
     while IFS= read -r -d $'\0' file
     do
         full_dirname=${file%/*}
