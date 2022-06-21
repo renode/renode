@@ -81,7 +81,7 @@ Should Log Error If Some Of Reserved Bits Have Wrong Value
     Start Emulation
 
     Execute Command           ${MC3635} RegisterWrite 0x20 0x00
-    Wait For Log Entry        Invalid value written to offset 0x20 reserved bits. Allowed values = 0b0000xx10
+    Wait For Log Entry        Invalid value written to offset 0x20 reserved bits. Allowed values = 0b0000xx01
     Execute Command           ${MC3635} RegisterWrite 0x21 0x00
     Wait For Log Entry        Invalid value written to offset 0x21 reserved bits. Allowed values = 0b1000xx00
     Execute Command           ${MC3635} RegisterWrite 0x22 0x01
