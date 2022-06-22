@@ -37,11 +37,11 @@ find $BASE/src/Infrastructure/src/Emulator $BASE/lib  $BASE/tools/packaging/maco
 #others will need a parent directory name.
 find $BASE/{src/Infrastructure,lib} -iname "license" -print0 |\
     while IFS= read -r -d $'\0' file
-do
-    full_dirname=${file%/*}
-    dirname=${full_dirname##*/}
-    cp $file $DIR/licenses/$dirname-license
-done
+    do
+        full_dirname=${file%/*}
+        dirname=${full_dirname##*/}
+        cp $file $DIR/licenses/$dirname-license
+    done
 
 function copy_bash_tests_scripts() {
     TEST_SCRIPT=$1
