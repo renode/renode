@@ -16,6 +16,7 @@ shift
 cd "${0%/*}"
 . common_make_packages.sh
 
+OS_NAME=linux
 SED_COMMAND="sed -i"
 . common_copy_files.sh
 

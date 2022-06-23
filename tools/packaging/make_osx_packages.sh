@@ -16,13 +16,13 @@ INSTALL_DIR=/Applications/Renode.app/Contents/MacOS
 
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
+OS_NAME=macos
 # OSX version of sed requires backup appendix when in-place editing, backups are removed later on
 SED_COMMAND="sed -i.sed_backup"
 . common_copy_files.sh
 copy_bash_tests_scripts $DIR/tests/renode-test $DIR/tests/common.sh
 
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
-cp macos/macos_run.command-license $MACOS_APP_DIR/Contents/MacOS
 cp macos/Info.plist $MACOS_APP_DIR/Contents/
 cp macos/renode.icns $MACOS_APP_DIR/Contents/Resources #Made with png2icns
 

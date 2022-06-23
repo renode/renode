@@ -25,6 +25,7 @@ fi
 DIR=renode_$VERSION
 INSTALL_DIR=/opt/renode
 
+OS_NAME=linux
 SED_COMMAND="sed -i"
 . common_copy_files.sh
 

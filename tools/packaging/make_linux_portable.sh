@@ -49,18 +49,7 @@ cp -r $RENODE_ROOT_DIR/tests/tools $DESTINATION/tests/tools
 # `tests.yaml` should only list robot files included in the original tests.yaml
 sed '/csproj$/d' $BASE/tests/tests.yaml > $DESTINATION/tests/tests.yaml
 
-#copy the licenses
-#some files already include the library name
-find $RENODE_ROOT_DIR/src/Infrastructure/src/Emulator $RENODE_ROOT_DIR/lib -iname "*-license" -exec cp {} $DESTINATION/licenses/ \;
-
-#others will need a parent directory name.
-find $RENODE_ROOT_DIR/{src/Infrastructure,lib} -iname "license*" -type f -print0 |\
-    while IFS= read -r -d $'\0' file
-    do
-        full_dirname=${file%/*}
-        dirname=${full_dirname##*/}
-        cp $file $DESTINATION/licenses/$dirname-license
-    done
+$BASE/tools/packaging/common_copy_licenses.sh $DESTINATION/licenses linux
 
 mkdir -p $WORKDIR
 rm -rf $WORKDIR/*

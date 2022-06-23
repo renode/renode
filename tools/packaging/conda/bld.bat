@@ -19,45 +19,10 @@ call robocopy platforms\ %LIBRARY_PREFIX%\renode\platforms /njh /njs /ndl /S
 call robocopy .\ %LIBRARY_PREFIX%\renode\ .renode-root
 call robocopy .\ %LIBRARY_PREFIX%\renode\ LICENSE
 
-REM copy all licenses
-call copy lib\AntShell\LICENSE %LIBRARY_PREFIX%\renode\licenses\AntShell-license
-call copy lib\BigGustave\LICENSE %LIBRARY_PREFIX%\renode\licenses\BigGustave-license
-call copy lib\CxxDemangler\LICENSE %LIBRARY_PREFIX%\renode\licenses\CxxDemangler-license
-call copy lib\ELFSharp\LICENSE %LIBRARY_PREFIX%\renode\licenses\ELFSharp-license
-call copy lib\FdtSharp\LICENCE %LIBRARY_PREFIX%\renode\licenses\FdtSharp-license
-call copy lib\InpliTftpServer\LICENSE.txt %LIBRARY_PREFIX%\renode\licenses\InpliTftpServer-license
-call copy lib\Migrant\LICENSE %LIBRARY_PREFIX%\renode\licenses\Migrant-license
-call copy lib\Packet.Net\LICENSE %LIBRARY_PREFIX%\renode\licenses\Packet.Net-license
-call copy lib\bc-csharp\crypto\License.html %LIBRARY_PREFIX%\renode\licenses\bc-csharp-license
-call copy lib\options-parser\LICENSE %LIBRARY_PREFIX%\renode\licenses\options-parser-license
-call copy lib\resources\fonts\RobotoMono-Regular-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\BitMiracle.LibJpeg.NET-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\CookComputing.XmlRpcV2-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Dynamitey-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\IronPython-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\LZ4-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Lucene.Net-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Microsoft.Dynamic-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Microsoft.Scripting-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Microsoft.Scripting.Metadata-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Mono.Cecil-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Mono.Linq.Expressions-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Mono.TextTemplating-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Moq-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Nini-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\Sprache-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\libopenlibm-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\libraries\mcs-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\llvm\libllvm-disas-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\llvm\llvm-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\resources\tools\nunit-license %LIBRARY_PREFIX%\renode\licenses\
-call copy lib\termsharp\LICENSE %LIBRARY_PREFIX%\renode\licenses\termsharp-license
-call copy lib\xwt\LICENSE.txt %LIBRARY_PREFIX%\renode\licenses\xwt-license
-call copy src\Infrastructure\src\Emulator\Cores\tlib\LICENSE %LIBRARY_PREFIX%\renode\licenses\tlib-license
-call copy src\Infrastructure\src\Emulator\Cores\tlib\tcg\LICENSE %LIBRARY_PREFIX%\renode\licenses\tcg-license
-call copy tools\packaging\macos\macos_run.command-license %LIBRARY_PREFIX%\renode\licenses\
-call copy tools\packaging\windows\mingw-license %LIBRARY_PREFIX%\renode\licenses\mingw-license
-call copy tools\packaging\windows\winpthreads-license %LIBRARY_PREFIX%\renode\licenses\winpthreads-license
+REM Copy all licenses. LIBRARY_PREFIX has to be converted to the Unix format first.
+FOR /F "delims=" %%i IN ('cygpath.exe -u "%LIBRARY_PREFIX%"') DO set "UNIX_LIBRARY_PREFIX=%%i"
+call bash -lc "tools/packaging/common_copy_licenses.sh $UNIX_LIBRARY_PREFIX/renode/licenses windows"
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 
 REM Add activation script to append renode dir to PATH

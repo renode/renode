@@ -3,6 +3,8 @@
 set -x
 
 if [[ "$(uname)" == 'Linux' ]]; then
+    _os_name=linux
+
     install -D /bin/sed $BUILD_PREFIX/bin/sed
 
     # Install gtk-sharp2
@@ -28,6 +30,8 @@ if [[ "$(uname)" == 'Linux' ]]; then
 
     sed -i 's/\/usr\/lib\/cli\/.*-sharp-2.0\///g' $PREFIX/opt/renode/bin/*.dll.config
 else
+    _os_name=macos
+
     cp /Library/Frameworks/Mono.framework/Libraries/libatksharpglue-2* $PREFIX/lib/
     cp /Library/Frameworks/Mono.framework/Libraries/libgtksharpglue-2* $PREFIX/lib/
     cp /Library/Frameworks/Mono.framework/Libraries/libgdksharpglue-2* $PREFIX/lib/
@@ -66,18 +70,9 @@ cp tests/requirements.txt $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/renode-keywords.robot $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/helper.py $PREFIX/opt/renode/tests
 
-#copy the licenses
-#some files already include the library name
-find ./src/Infrastructure/src/Emulator ./lib ./tools/packaging/macos -iname "*-license" -exec cp {} $PREFIX/opt/renode/licenses/ \;
 
-#others will need a parent directory name.
-find ./src/Infrastructure ./lib/resources -iname "license" -print0 |\
-    while IFS= read -r -d $'\0' file
-do
-    full_dirname=${file%/*}
-    dirname=${full_dirname##*/}
-    cp $file $PREFIX/opt/renode/licenses/$dirname-license
-done
+tools/packaging/common_copy_licenses.sh $PREFIX/opt/renode/licenses $_os_name
+
 
 sed -i.bak 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $PREFIX/opt/renode/tests/robot_tests_provider.py
 sed -i.bak "s#os\.path\.join(this_path, '\.\./lib/resources/styles/robot\.css')#os.path.join(this_path,'robot.css')#g" $PREFIX/opt/renode/tests/robot_tests_provider.py

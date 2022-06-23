@@ -30,18 +30,7 @@ $SED_COMMAND 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DI
 cp $BASE/lib/resources/styles/robot.css $DIR/tests/robot.css
 cp $BASE/tests/requirements.txt $DIR/tests/requirements.txt
 
-#copy the licenses
-#some files already include the library name
-find $BASE/src/Infrastructure/src/Emulator $BASE/lib  $BASE/tools/packaging/macos -iname "*-license" -exec cp {} $DIR/licenses \;
-
-#others will need a parent directory name.
-find $BASE/{src/Infrastructure,lib} -iname "license*" -type f -print0 |\
-    while IFS= read -r -d $'\0' file
-    do
-        full_dirname=${file%/*}
-        dirname=${full_dirname##*/}
-        cp $file $DIR/licenses/$dirname-license
-    done
+$BASE/tools/packaging/common_copy_licenses.sh $DIR/licenses $OS_NAME
 
 function copy_bash_tests_scripts() {
     TEST_SCRIPT=$1

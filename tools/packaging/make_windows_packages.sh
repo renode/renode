@@ -16,6 +16,7 @@ DIR=renode_$VERSION
 ZIP=$DIR.zip
 MSI=$DIR.msi
 
+OS_NAME=windows
 SED_COMMAND="sed -i"
 . common_copy_files.sh
 
@@ -34,10 +35,6 @@ cat >> $DIR/bin/renode-test.bat << EOL
 set test_script=%~dp0%..\tests\test.bat
 call "%test_script%" %*
 EOL
-
-### copy licenses
-cp windows/mingw-license $DIR/licenses
-cp windows/winpthreads-license $DIR/licenses
 
 mkdir -p $OUTPUT
 
