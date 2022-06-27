@@ -76,6 +76,10 @@
       <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
       <Name>AntShell</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Peripherals\Peripherals.csproj">
+      <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
+      <Name>Peripherals</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlatformDescription\" />

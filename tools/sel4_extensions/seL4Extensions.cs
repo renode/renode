@@ -209,6 +209,15 @@ namespace Antmicro.Renode.Debug
 
         public bool Ready { get; private set; }
 
+        private ulong TryTranslateAddress(ICpuSupportingGdb cpu, ulong virtualAddress)
+        {
+            if(cpu is ICPUWithMMU cpuWithMmu)
+            {
+                virtualAddress = cpuWithMmu.TranslateAddress(virtualAddress, MpuAccess.Read);
+            }
+            return virtualAddress;
+        }
+
         private void HandleUnknownSyscall(ICpuSupportingGdb cpu, ulong address)
         {
             // Check if seL4_DebugThreadName was called
@@ -234,7 +243,8 @@ namespace Antmicro.Renode.Debug
             // will resolve properly. Therefore we can translate virtual address to physical address
             // and use it to read memory. That allow us to check current TCB no matter in which
             // context/privilege mode we are currently in, ignoring MMU completely.
-            ksCurThreadPhysAddress = cpu.TranslateAddress(ksCurThreadAddress, MpuAccess.Read);
+            ksCurThreadPhysAddress = TryTranslateAddress(cpu, ksCurThreadAddress);
+            
             cpu.AddHook(lookupCapAndSlotAddress, HandleLookupCapAndSlotAddress);
             cpu.AddHook(lookupIPCBufferAddress, HandleLookupIPCBuffer);
         }
@@ -261,7 +271,8 @@ namespace Antmicro.Renode.Debug
                 return;
             }
 
-            var nextPCAddress = cpu.TranslateAddress(tcbAddress + callingConvention.TCBNextPCOffset, MpuAccess.Read);
+            var nextPCAddress = TryTranslateAddress(cpu, tcbAddress + callingConvention.TCBNextPCOffset);
+           
             if(!IsValidAddress(nextPCAddress))
             {
                 this.Log(LogLevel.Debug, "NextPC address in TCB is invalid, skipping");
@@ -325,7 +336,7 @@ namespace Antmicro.Renode.Debug
             // with size of two machine words. We are interested in second value
             // which is address of the capability (in this case TCB)
             var luRet = callingConvention.ReturnValue;
-            var paddr = cpu.TranslateAddress(luRet + 0x4UL, MpuAccess.Read);
+            var paddr = TryTranslateAddress(cpu, luRet + 0x4UL);
             var underlying = cpu.Bus.ReadDoubleWord(paddr, context: cpu);
             currentTCB = underlying & 0xffffffffffffff00;
         }
@@ -342,7 +353,7 @@ namespace Antmicro.Renode.Debug
             // In A0 register address to IPC buffer is returned.
             // As seL4_DebugThreadName saves pointer to the string in IPC buffer,
             // we can now just recover and read it.
-            var paddr = cpu.TranslateAddress(callingConvention.ReturnValue + 0x4UL, MpuAccess.Read);
+            var paddr = TryTranslateAddress(cpu, callingConvention.ReturnValue + 0x4UL);
             var buffer = new List<byte>();
 
             // Maximum string size is MaximumMesageLength * size of machine word - 1

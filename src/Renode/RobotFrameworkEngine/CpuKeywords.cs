@@ -35,13 +35,13 @@ namespace Antmicro.Renode.RobotFramework
         {
             var machineObj = GetMachineByNameOrSingle(machine);
 
-            var controllableCpu = GetCPU(machineObj, cpuId) as IControllableCPU;
-            if(controllableCpu == null)
+            var cpu = GetCPU(machineObj, cpuId) as ICPUWithRegisters;
+            if(cpu == null)
             {
-                throw new KeywordException("This CPU is not a controllable CPU.");
+                throw new KeywordException("This CPU does not allow to access registers");
             }
 
-            var actual = controllableCpu.GetRegisterUnsafe(register).RawValue;
+            var actual = cpu.GetRegisterUnsafe(register).RawValue;
 
             if(actual != value)
             {
