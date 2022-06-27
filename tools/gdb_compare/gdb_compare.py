@@ -111,8 +111,8 @@ class Renode:
                 print(SECTION_SEPARATOR)
                 print(f"Renode command '{input}' failed!")
                 print(f"Expected regex '{expected_log}' was not found")
-                print("Buffer:")
-                print(buffer.decode().replace('\\r\\n', '\n'))
+                print("Process:")
+                print(str(self.proc))
                 print(SECTION_SEPARATOR)
                 print(f"{err=} ; {type(err)=}")
                 exit(1)
@@ -189,8 +189,8 @@ class GDBInstance:
 
         except pexpect.TIMEOUT:
             print(f"!!! {self.name} GDB: Command '{command}' timed out!")
-            print("Buffer:")
-            print(self.process.buffer.decode().replace('\\r\\n', '\n'))
+            print("Process:")
+            print(str(self.process))
             self.last_output = None
             raise pexpect.TIMEOUT("")
 
