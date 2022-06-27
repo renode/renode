@@ -148,7 +148,7 @@ class GDBInstance:
         self.run_command("clear", async_=False)
 
     def get_pc(self):
-        self.run_command("p/x $pc", async_=False)
+        self.run_command("i r pc", async_=False)
         pc_match = re.search(r'0x[0-9A-Fa-f]*', self.last_output)
         if pc_match is not None:
             return pc_match[0]
