@@ -12,6 +12,7 @@ from multiprocessing import Process
 
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
+RE_HEX = re.compile(r'0x[0-9A-Fa-f]+')
 
 parser = argparse.ArgumentParser(
     description="Compare Renode execution with hardware/other simulator state using GDB")
@@ -98,7 +99,7 @@ class Renode:
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
         self.command("echo 'Connected to GDB comparer'")
 
-    def __del__(self):
+    def close(self):
         self.command("quit", expected_log="Disposed")
 
     def command(self, input, expected_log=""):
@@ -109,7 +110,7 @@ class Renode:
                 self.proc.expect([expected_log.encode()])
             except pexpect.TIMEOUT as err:
                 print(SECTION_SEPARATOR)
-                print(f"Renode command '{input}' failed!")
+                print(f"Renode command '{input.strip()}' failed!")
                 print(f"Expected regex '{expected_log}' was not found")
                 print("Process:")
                 print(str(self.proc))
@@ -133,7 +134,7 @@ class GDBInstance:
         self.run_command(f"file {debug_binary}", async_=False)
         self.run_command(f"target remote :{port}", async_=False)
 
-    def __del__(self):
+    def close(self):
         self.run_command("quit", dont_wait_for_output=True, async_=False)
 
     def progress_by(self, delta, type="stepi"):
@@ -147,9 +148,10 @@ class GDBInstance:
     def delete_breakpoints(self):
         self.run_command("clear", async_=False)
 
-    def get_pc(self):
-        self.run_command("i r pc", async_=False)
-        pc_match = re.search(r'0x[0-9A-Fa-f]*', self.last_output)
+    async def get_pc(self):
+        self.run_command("i r pc")
+        await self.expect()
+        pc_match = RE_HEX.search(self.last_output)
         if pc_match is not None:
             return pc_match[0]
         else:
@@ -194,35 +196,66 @@ class GDBInstance:
             self.last_output = None
             raise pexpect.TIMEOUT("")
 
-    @staticmethod
-    async def compare_instances(some, other, previous_pc):
+    def print_state(self, previous_pc):
+        for cmd in [f"x/i {previous_pc}", f"x/x {previous_pc}", "frame", "info all-registers"]:
+            self.run_command(cmd, async_=False)
+            print(">> " + self.last_output)
+
+    def print_stack(self, stack):
+        print("Address\t\tOccurence\t\tSymbol")
+        for address, occurence in stack:
+            print(f"{address}\t{occurence}\t{self.get_symbol_at(address)}")
+
+
+class GDBComparator:
+    def __init__(self, args):
+        self.instances = [
+            GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode"),
+            GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference"),
+        ]
+        self.cmd = args.command
+
+    def close(self):
+        for i in self.instances:
+            i.close()
+
+    async def run_command(self, cmd=None, **kwargs):
+        cmd = cmd if cmd else self.cmd
+        for i in self.instances:
+            i.run_command(cmd, **kwargs)
+        await asyncio.gather(*[i.expect(**kwargs) for i in self.instances])
+        return [i.last_output for i in self.instances]
+
+    async def get_pcs(self):
+        return await asyncio.gather(*[i.get_pc() for i in self.instances])
+
+    def delete_breakpoints(self):
+        for i in self.instances:
+            i.delete_breakpoints()
+
+    async def progress_by(self, delta, type="stepi"):
+        adjusted_timeout = max(120, int(delta)/5)
+        await self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
+
+    async def compare_instances(self, previous_pc):
         for name, command in [("Opcode at previous pc", f"x/i {previous_pc}"), ("Frame", "frame"), ("Registers", "info registers all")]:
-            some.run_command(command)
-            other.run_command(command)
-            await asyncio.gather(some.expect(), other.expect())
-            self_output = some.last_output
-            other_output = other.last_output
             print("*** " + name + ":")
-            GDBInstance.compare_outputs(self_output, other_output)
+            GDBComparator.compare_outputs(await self.run_command(command))
 
     @staticmethod
-    def compare_outputs(output1, output2):
-        # Drop command repl
-        output1 = output1.split("\n")[1:]
-        output2 = output2.split("\n")[1:]
+    def compare_outputs(outputs):
+        assert(len(outputs) == 2)
         output1_dict = {}
         output2_dict = {}
 
-        for x in output1:
-            end_of_name = x.strip().find(" ")
-            name = x[:end_of_name].strip()
-            rest = x[end_of_name:].strip()
-            output1_dict[name] = rest
-        for x in output2:
-            end_of_name = x.strip().find(" ")
-            name = x[:end_of_name].strip()
-            rest = x[end_of_name:].strip()
-            output2_dict[name] = rest
+        for (output, output_dict) in zip(outputs,[output1_dict, output2_dict]):
+            # Drop command repl
+            output = output.split("\n")[1:]
+            for x in output:
+                end_of_name = x.strip().find(" ")
+                name = x[:end_of_name].strip()
+                rest = x[end_of_name:].strip()
+                output_dict[name] = rest
 
         output_same = ""
         output_different = ""
@@ -246,31 +279,21 @@ class GDBInstance:
             print("Different values:")
             print(output_different)
 
+    def get_symbol_at(self, addr):
+        return self.instances[0].get_symbol_at(addr)
+
+    def print_stack(self, stack):
+        return self.instances[0].print_stack(stack)
+
+
 def setup_processes(args):
     reference = pexpect.spawn(args.reference_command, timeout=10)
     renode = Renode(args.renode_path, args.renode_telnet_port)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
     renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
-    renode_gdb = GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode")
-    reference_gdb = GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference")
+    gdb_comparator = GDBComparator(args)
     renode.command("start")
-
-    return renode, reference, renode_gdb, reference_gdb
-
-def print_state(gdb_instance):
-    gdb_instance.run_command(f"x/i {previous_pc}", async_=False)
-    print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command(f"x/x {previous_pc}", async_=False)
-    print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command("frame", async_=False)
-    print(">> " + gdb_instance.last_output)
-    gdb_instance.run_command("info all-registers", async_=False)
-    print(">> " + gdb_instance.last_output)
-
-def print_stack(stack, gdbInstance):
-    print("Address\t\tOccurence\t\tSymbol")
-    for address, occurence in stack:
-        print(f"{address}\t{occurence}\t{gdbInstance.get_symbol_at(address)}")
+    return renode, reference, gdb_comparator
 
 def string_compare(renode_string, reference_string):
     BOLD = '\033[1m'
@@ -314,15 +337,16 @@ def string_compare(renode_string, reference_string):
             s1_insertions += 1
     return f"Renode:    {renode_string}\nReference: {reference_string}"
 
+
 class CheckStatus:
     STOP = 1
     CONTINUE = 2
     FOUND = 3
     MISMATCH = 4
 
-async def check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args):
-    pc = reference_gdb.get_pc()
-    ren_pc = renode_gdb.get_pc()
+
+async def check(stack, gdb_comparator, previous_pc, previous_output, steps_count, exec_count, time_of_start, args):
+    ren_pc, pc = await gdb_comparator.get_pcs()
     pc_mismatch = False
     if pc != ren_pc:
         print("Renode and reference PC differs!")
@@ -339,12 +363,7 @@ async def check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, 
         return previous_pc, previous_output, CheckStatus.STOP
 
     if not pc_mismatch:
-        renode_gdb.run_command(args.command)
-        reference_gdb.run_command(args.command)
-        await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
-
-        output_reference = reference_gdb.last_output.splitlines()
-        output_ren = renode_gdb.last_output.splitlines()
+        output_ren, output_reference = map(lambda s: s.splitlines(), await gdb_comparator.run_command())
 
         for line in range(len(output_ren)):
             if output_ren[line] != output_reference[line]:
@@ -355,24 +374,24 @@ async def check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, 
                 break
         else:
             if steps_count % 10 == 0:
-                print(f"{steps_count} steps; current pc = {pc} {reference_gdb.get_symbol_at(pc)}")
+                print(f"{steps_count} steps; current pc = {pc} {gdb_comparator.get_symbol_at(pc)}")
             previous_pc = pc
             previous_output = "\n".join(output_ren[1:])
             return previous_pc, previous_output, CheckStatus.CONTINUE
 
     if pc_mismatch or (len(stack) > 0 and previous_pc == stack[-1][0]):
         print(SECTION_SEPARATOR)
-        print("Found faulting insn at " + previous_pc + " " + reference_gdb.get_symbol_at(previous_pc))
+        print("Found faulting insn at " + previous_pc + " " + gdb_comparator.get_symbol_at(previous_pc))
         elapsed_time = time() - time_of_start
         print(f"Took {elapsed_time:.2f} seconds [~ {elapsed_time/steps_count:.2f} steps/sec]")
         print(SECTION_SEPARATOR)
         print("*** Stack:")
-        print_stack(stack, renode_gdb)
+        gdb_comparator.print_stack(stack)
         print("*** Gdb command:")
         print(args.command)
         print(SECTION_SEPARATOR)
         print("Gdb instances comparision:")
-        await GDBInstance.compare_instances(renode_gdb, reference_gdb, previous_pc)
+        await gdb_comparator.compare_instances(previous_pc)
 
         return previous_pc, previous_output, CheckStatus.FOUND
 
@@ -418,52 +437,36 @@ async def main():
     while not insn_found:
         iterations_count += 1
         print("Preparing processes for iteration number " + str(iterations_count))
-        renode, reference, renode_gdb, reference_gdb = setup_processes(args)
+        renode, reference, gdb_comparator = setup_processes(args)
         if len(stack) != 0:
             print("Recreating stack; jumping to breakpoint at:")
             for address, count in stack:
                 print("\t" + address + ", " + str(count) +" occurence" )
-                renode_gdb.run_command(f"break *{address}")
-                reference_gdb.run_command(f"break *{address}")
-                await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+                await gdb_comparator.run_command(f"break *{address}")
 
                 for _ in range(count):
-                    renode_gdb.run_command("continue", timeout=120)
-                    reference_gdb.run_command("continue", timeout=120)
-                    await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+                    await gdb_comparator.run_command("continue", timeout=120)
 
-                renode_gdb.delete_breakpoints()
-                reference_gdb.delete_breakpoints()
+                gdb_comparator.delete_breakpoints()
             print("Stepping single instruction")
-            renode_gdb.progress_by(1, "stepi")
-            reference_gdb.progress_by(1, "stepi")
-            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+            await gdb_comparator.progress_by(1)
 
         for pc in pcs:
-            cmd = f"br *{pc}"
-            renode_gdb.run_command(cmd)
-            reference_gdb.run_command(cmd)
-            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+            await gdb_comparator.run_command(f"br *{pc}")
 
         exec_count = {}
         print("Starting execution")
         while True:
-            renode_gdb.run_command(execution_cmd)
-            reference_gdb.run_command(execution_cmd)
-
-            await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+            await gdb_comparator.run_command(execution_cmd)
             steps_count += 1
 
-            previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
+            previous_pc, previous_output, status = await check(stack, gdb_comparator, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
 
             if status == CheckStatus.CONTINUE and execution_cmd == "continue":
-                renode_gdb.run_command("stepi")
-                reference_gdb.run_command("stepi")
-
-                await asyncio.gather(renode_gdb.expect(), reference_gdb.expect())
+                await gdb_comparator.run_command("stepi")
                 steps_count += 1
 
-                previous_pc, previous_output, status = await check(stack, reference_gdb, renode_gdb, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
+                previous_pc, previous_output, status = await check(stack, gdb_comparator, previous_pc, previous_output, steps_count, exec_count, time_of_start, args)
 
             if status == CheckStatus.STOP:
                 return
@@ -474,10 +477,9 @@ async def main():
                 break
             elif status == CheckStatus.MISMATCH:
                 execution_cmd = "nexti"
-                del renode_gdb
-                del reference_gdb
-                del renode
-                del reference
+                gdb_comparator.close()
+                renode.close()
+                reference.close(force=True)
                 break
             else:
                 exit(1)
