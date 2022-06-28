@@ -13,19 +13,28 @@ from multiprocessing import Process
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
 RE_HEX = re.compile(r'0x[0-9A-Fa-f]+')
+RE_VEC = re.compile(r'v\d+')
 
 parser = argparse.ArgumentParser(
     description="Compare Renode execution with hardware/other simulator state using GDB")
+
+cmp_parser = parser.add_mutually_exclusive_group(required=True)
+cmp_parser.add_argument("-c", "--gdb-command",
+                    dest="command",
+                    default=None,
+                    help="GDB command to run on both instances after each instruction. Outputs of these commands are compared against each other.")
+cmp_parser.add_argument("-R", "--register-list",
+                    dest="registers",
+                    action="store",
+                    default=None,
+                    help="Sequence of register names to compare. Formated as ';' spearated list of register names. Eg. 'pc;ra'")
+
 parser.add_argument("-r",
                     "--reference-command",
                     dest="reference_command",
                     action="store",
                     required=True,
                     help="Command used to run the GDB server provider used as a reference")
-parser.add_argument("-c", "--gdb-command",
-                    dest="command",
-                    required=True,
-                    help="GDB command to run on both instances after each instruction. Outputs of these commands are compared against each other.")
 parser.add_argument("-s",
                     "--renode-script",
                     dest="renode_script",
@@ -208,16 +217,56 @@ class GDBInstance:
 
 
 class GDBComparator:
+    COMMAND_NAME = "gdb_compare__print_registers"
+    COMMANDS = None
+
+    # [(tester of register name, commands builder for register group)]
+    # List<Tuple<str -> bool, List<str> -> List<str>>>
+    REGISTER_CASES = [
+        (lambda reg: RE_VEC.fullmatch(reg), lambda regs:[f"p/x (char[])${reg}.b" for reg in regs]),
+        (lambda _: True, lambda regs: ["printf \"" + ":  0x%x\\n".join(regs) + ":  0x%x\\n\",$" + ",$".join(regs)]),
+    ]
+
     def __init__(self, args):
         self.instances = [
             GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode"),
             GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference"),
         ]
-        self.cmd = args.command
+        self.cmd = args.command if args.command else self.build_command_from_register_list(args.registers)
 
     def close(self):
         for i in self.instances:
             i.close()
+
+    def build_command_from_register_list(self, regs):
+        regs = regs.split(';')
+        if GDBComparator.COMMANDS is None:
+            reg_groups = {}
+            for reg in regs:
+                for (test, cmds_builder) in GDBComparator.REGISTER_CASES:
+                    if test(reg):
+                        reg_groups.setdefault(cmds_builder, []).append(reg)
+                        break
+            GDBComparator.COMMANDS = [
+                f"define {GDBComparator.COMMAND_NAME}",
+                *[cmd for cmds_builder, reg_group in reg_groups.items() for cmd in cmds_builder(reg_group)],
+                "end"
+            ]
+
+            for i in self.instances:
+                i.run_command("i r all", async_=False)
+                reported_regs = list(map(lambda x: x.split()[0], i.last_output.split("\n")[1:-1]))
+                not_found = list(filter(lambda reg: not reg in reported_regs, regs))
+                if not_found:
+                    print("WARNING: " + ", ".join(not_found) + " register[s] not found when executing 'info registers all' for " + i.name)
+        commands = GDBComparator.COMMANDS
+
+        for i in self.instances:
+            for cmd in commands[:-1]:
+                i.run_command(cmd, dont_wait_for_output=True, async_=False)
+            i.run_command(commands[-1], async_=False)
+
+        return GDBComparator.COMMAND_NAME
 
     async def run_command(self, cmd=None, **kwargs):
         cmd = cmd if cmd else self.cmd
