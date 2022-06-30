@@ -177,6 +177,9 @@ adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     -> nvic@12
+
+crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+    configurablePoly: false // Only STM32F07x and STM32F09x implements configurablePoly: true
     
 sysbus:
     init:

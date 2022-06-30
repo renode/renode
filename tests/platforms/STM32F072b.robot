@@ -90,7 +90,7 @@ Should Read ADC
 Should Run stm32f0-crc-test Application
     Execute Command          mach create
     Execute Command          machine LoadPlatformDescription @platforms/boards/stm32f072b_discovery.repl
-    Execute Command          sysbus LoadELF @https://github.com/Pagten/stm32f0-crc-test/releases/download/v1.0.0/stm32f0-crc-test
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f0-crc-test.elf-s_915148-a4b6b448dca6f24df573f23cd05224d11f9d83ff
     Create Terminal Tester   ${UART}
 
     Start Emulation
