@@ -1,4 +1,3 @@
-@echo off
 setlocal EnableDelayedExpansion
 set PATH=C:\cygwin64\bin\;%PATH%
 set PLATFORM=Any CPU
