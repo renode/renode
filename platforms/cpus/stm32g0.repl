@@ -26,6 +26,14 @@ nvicInput8: Miscellaneous.CombinedInput @ none
     numberOfInputs: 2
     -> nvic@8
 
+nvicInput10: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@10
+
+nvicInput11: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 9
+    -> nvic@11
+
 nvicInput12: Miscellaneous.CombinedInput @ none
     numberOfInputs: 2
     -> nvic@12
@@ -214,14 +222,15 @@ elif request.isRead:
 self.NoisyLog("  0x%x (%s)" % (request.value, str(data)))
 '''
 
-DMA: Python.PythonPeripheral @ sysbus 0x40020000
-    size: 0x400
-    script: '''
-if request.isWrite and request.offset in (0x10, 0x24, 0x38):
-    # writing base address - we write some positive value there in case initialization awaits output
-    sysbus.WriteDoubleWord(request.value, 0x40E33333)
-    self.NoisyLog("0x%x written with value 0x40E33333" % request.value)
-'''
+dma1: DMA.STM32G0DMA @ sysbus 0x40020000
+    numberOfChannels: 7
+    0 -> nvic@9
+    [1, 2] -> nvicInput10@[0, 1]
+    [3-6] -> nvicInput11@[0-3]
+
+dma2: DMA.STM32G0DMA @ sysbus 0x40020400
+    numberOfChannels: 5
+    [0-4] -> nvicInput11@[4-8]
 
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
@@ -239,7 +248,5 @@ sysbus:
         Tag <0x40007800, 0x40007BFF> "CEC"
         Tag <0x40010000, 0x400103FF> "SYSCFG"
         Tag <0x40015800, 0x40015BFF> "DBG"
-        Tag <0x40020000, 0x400203FF> "DMA"
-        Tag <0x40020400, 0x400207FF> "DMA2"
         Tag <0x40022000, 0x400223FF> "FLASH_INTERFACE"
         Tag <0x40023000, 0x400233FF> "CRC"
