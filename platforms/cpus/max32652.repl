@@ -19,6 +19,12 @@ uart2: UART.MAX32650_UART @ sysbus 0x40044000
     gcr: gcr
     -> nvic@34
 
+rtc: Timers.MAX32650_RTC @ sysbus 0x40006000
+    -> nvic@3
+
+pwrseq: Miscellaneous.MAX32650_PWRSEQ @ sysbus 0x40006800
+    rtc: rtc
+
 dwt: Miscellaneous.DWT @ sysbus 0xE0001000
     frequency: 72000000
 
@@ -46,8 +52,6 @@ sysbus:
         Tag <0x40004000 0x0400> "Security Monitor"
         Tag <0x40005000 0x0400> "AES Keys"
         Tag <0x40005800 0x0400> "SIR HyperBus/Xccela Bus"
-        Tag <0x40006000 0x0400> "RTC"
-        Tag <0x40006800 0x0400> "Power Sequencer"
         Tag <0x40008000 0x1000> "GPIO Port 0"
         Tag <0x40009000 0x1000> "GPIO Port 1"
         Tag <0x4000A000 0x1000> "GPIO Port 2"
