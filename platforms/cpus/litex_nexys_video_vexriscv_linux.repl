@@ -1,0 +1,59 @@
+rom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x2000
+
+main_ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x20000000
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0xf0010000
+    frequency: 100000000
+    [0, 1] -> cpu@[101, 100]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf0c00000
+    [0, 1] -> cpu@[11, 9]
+    numberOfSources: 31
+    numberOfContexts: 2
+    prioritiesEnabled: false
+
+cpu: CPU.VexRiscv @ sysbus
+
+    cpuType: "rv32ima"
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+
+    timeProvider: clint
+
+ctrl: Miscellaneous.LiteX_SoC_Controller_CSR32 @ { sysbus 0xf0000000 }
+
+sysbus:
+    init add:
+        SilenceRange <0xf0000800 0x200> # ddrphy
+
+uart: UART.LiteX_UART @ { sysbus 0xf0001000 }
+    -> cpu@0
+
+timer0: Timers.LiteX_Timer_CSR32 @ { sysbus 0xf0001800 }
+    -> cpu@1
+    frequency: 100000000
+
+mmc_controller: SD.LiteSDCard_CSR32 @ {
+    sysbus 0xf0005000; // phy
+    sysbus new Bus.BusMultiRegistration { address: 0xf0003800; size: 0x100; region: "core" };
+    sysbus new Bus.BusMultiRegistration { address: 0xf0003000; size: 0x100; region: "reader" };
+    sysbus new Bus.BusMultiRegistration { address: 0xf0004800; size: 0x100; region: "writer" }
+}
+
+sysbus:
+    init add:
+        SilenceRange <0xf0005800 0x200> # sdram
+
+litex_video: Video.LiteX_Framebuffer_CSR32 @ {
+    sysbus new Bus.BusMultiRegistration { address: 0xf0006000; size: 0xc; region: "dma" };
+    sysbus new Bus.BusMultiRegistration { address: 0xf0006800; size: 0x24; region: "vtg" }
+}
+    format: PixelFormat.XBGR8888
+    memory: main_ram
+    offset: 0x00c00000
+    hres: 800
+    vres: 600

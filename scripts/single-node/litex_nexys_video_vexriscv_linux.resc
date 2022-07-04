@@ -1,0 +1,23 @@
+:name: LiteX VexRiscv on Nexys Video
+:description: This script runs Linux with framebuffer support on LiteX/VexRiscv
+
+$name?="LiteX"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/litex_nexys_video_vexriscv_linux.repl
+
+$bios?=@https://dl.antmicro.com/projects/renode/litex_vexriscv--bios.elf-s_470352-c4396f1891658b4892aeb80fb15b32f627f84eef
+$sdcard?=@https://dl.antmicro.com/projects/renode/litex_vexriscv--linux-sdcard.img-s_12582912-84441f39e3481b461f3ec70b1477d0838a4ae0f0
+
+machine SdCardFromFile $sdcard mmc_controller False
+
+showAnalyzer sysbus.uart
+showAnalyzer sysbus.litex_video
+
+macro reset
+"""
+    sysbus LoadELF $bios
+"""
+
+runMacro $reset
