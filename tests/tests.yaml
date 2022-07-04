@@ -30,7 +30,7 @@
 - tests/platforms/CC2538/cc2538_rpl-udp.robot
 - tests/platforms/CC2538/cc2538_flash_controller.robot
 - tests/platforms/CC2538/cc2538_single-node.robot
-- tests/platforms/LiteX/Netv_LiteX_VexRiscv.robot
+- tests/platforms/LiteX/Nexys_Video_LiteX_VexRiscv.robot
 - tests/platforms/LiteX/Nexys4DDR_LiteX_VexRiscv.robot
 - tests/platforms/Microwatt.robot
 - tests/platforms/LiteX/LiteX_VexRiscv_SMP.robot
