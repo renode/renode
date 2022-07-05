@@ -112,3 +112,4 @@
 - tests/platforms/xilinx_zynqmp_r5.robot
 - tests/unit-tests/uart-tester.robot
 - tests/platforms/ARMv8A-Linux.robot
+- tests/unit-tests/virtual-watchpoint.robot
