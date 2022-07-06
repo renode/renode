@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${UART}                       sysbus.sercom3
 ${ELF}                        @https://dl.antmicro.com/projects/renode/adafruit_itsybitsy_m4_express-zephyr-shell_module.elf-s_1174688-96ba3690738a878b9f1d47e5ac677592a42c9040

@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${SCRIPT}                     ${CURDIR}/../../scripts/single-node/mpc5567.resc
 ${UART}                       sysbus.uart

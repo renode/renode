@@ -1,9 +1,5 @@
 *** Settings ***
 Documentation                 Testing the NXP K64F platform
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                       sysbus.uart0

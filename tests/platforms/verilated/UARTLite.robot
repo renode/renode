@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${URI}                              @https://dl.antmicro.com/projects/renode
 ${BIN}                              uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912

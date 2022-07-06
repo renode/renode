@@ -1,9 +1,5 @@
 *** Settings ***
 Library                       Process
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 # RISC-V registers

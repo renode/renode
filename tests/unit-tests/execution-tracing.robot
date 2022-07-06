@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                                     Setup
-Suite Teardown                                  Teardown
-Test Setup                                      Reset Emulation
-Test Teardown                                   Test Teardown
-Resource                                        ${RENODEKEYWORDS}
-
 *** Variables ***
 ${bin_out_signature}=                           ReTrace\x02
 ${triple_and_model}=                            riscv32 rv32imacv

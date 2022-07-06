@@ -1,8 +1,6 @@
 *** Settings ***
 Suite Setup                   Custom Suite Setup
 Suite Teardown                Custom Suite Teardown
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
 
 *** Keywords ***
 Custom Suite Setup

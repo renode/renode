@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                     Setup
-Suite Teardown                  Teardown
-Test Setup                      Reset Emulation
-Test Teardown                   Test Teardown
-Resource                        ${RENODEKEYWORDS}
-
 *** Variables ***
 ${UART}                         sysbus.uart0
 ${DRIVE}                        https://dl.antmicro.com/projects/renode/empty-ext4-filesystem.img-s_33554432-1eb65a808612389cc35a69b81178fbad5708a863

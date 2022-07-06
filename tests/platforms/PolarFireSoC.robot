@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${UART}                         sysbus.mmuart0
 ${SCRIPT}                       ${CURDIR}/../../scripts/single-node/polarfire-soc.resc

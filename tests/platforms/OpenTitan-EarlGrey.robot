@@ -1,11 +1,5 @@
 *** Comments ***
 Tests for OpenTitan at commit 1e86ba2a238dc26c2111d325ee7645b0e65058e5
-*** Settings ***
-Suite Setup                     Setup
-Suite Teardown                  Teardown
-Test Setup                      Reset Emulation
-Test Teardown                   Test Teardown
-Resource                        ${RENODEKEYWORDS}
 
 *** Variables ***
 ${UART}                         sysbus.uart0

@@ -1,9 +1,5 @@
 *** Settings ***
 Library                       Process
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
 
 *** Variables ***
 ${AUDIO_INPUT}                https://dl.antmicro.com/projects/renode/sine440_with_beep_aligned.pcm_s24le_44100_stereo.raw-s_793344-b37432aad6a22f36cb5c1e239c9bce4adbcd15fb

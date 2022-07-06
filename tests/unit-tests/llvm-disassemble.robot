@@ -1,9 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Keywords ***
 
 # WriteDoubleWord: 	reversed bytes

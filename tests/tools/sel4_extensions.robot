@@ -1,8 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Keywords **
 
 Prepare Platform

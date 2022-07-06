@@ -1,10 +1,6 @@
 *** Settings ***
 Library                       Process
 Library                       DateTime
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
 
 *** Test Cases ***
 Should Pause Renode

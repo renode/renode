@@ -1,9 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${UART}                       sysbus.uart
 ${URI}                        @https://dl.antmicro.com/projects/renode

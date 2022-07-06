@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                                     Setup
-Suite Teardown                                  Teardown
-Test Setup                                      Reset Emulation
-Test Teardown                                   Test Teardown
-Resource                                        ${RENODEKEYWORDS}
-
 *** Variables ***
 &{mtvec_write_opcodes}                          0x10=0x30585073  0x11=0x3058d073  0x12=0x30595073  0x13=0x3059d073  0x14=0x305a5073
 &{stvec_write_opcodes}                          0x10=0x10585073  0x11=0x1058d073  0x12=0x10595073  0x13=0x1059d073  0x14=0x105a5073

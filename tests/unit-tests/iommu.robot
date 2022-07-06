@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                         Setup
-Suite Teardown                      Teardown
-Test Setup                          Reset Emulation
-Test Teardown                       Test Teardown
-Resource                            ${RENODEKEYWORDS}
-
 *** Variables ***
 ${PRIV_ALL}                         0x3
 ${PRIV_WRITE}                       0x2

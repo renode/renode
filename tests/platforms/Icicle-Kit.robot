@@ -1,10 +1,3 @@
-*** Settings ***
-Suite Setup                   Setup
-Suite Teardown                Teardown
-Test Setup                    Reset Emulation
-Test Teardown                 Test Teardown
-Resource                      ${RENODEKEYWORDS}
-
 *** Variables ***
 ${SCRIPT}                     ${CURDIR}/../../scripts/single-node/icicle-kit.resc
 ${UART_HSS}                   sysbus.mmuart0
