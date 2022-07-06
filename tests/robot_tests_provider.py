@@ -435,8 +435,6 @@ class RobotTestSuite(object):
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
         variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port + port_offset), 'RESULTS_DIRECTORY:{}'.format(options.results_directory)]
-        path = os.path.abspath(os.path.join(this_path, "../src/Renode/RobotFrameworkEngine/renode-keywords.robot"))
-        variables.append('RENODEKEYWORDS:{}'.format(path))
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
@@ -471,10 +469,33 @@ class RobotTestSuite(object):
         if options.listener:
             listeners += options.listener
 
-        metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
+        metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
         log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
         self.startTimestamp = monotonic()
-        return robot.run(self.path, console='none', listener=listeners, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, skiponfailure=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
+
+        keywords_path = os.path.abspath(os.path.join(this_path, "../src/Renode/RobotFrameworkEngine/renode-keywords.robot"))
+        keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
+        suite_builder = robot.running.builder.TestSuiteBuilder()
+        suite = suite_builder.build(self.path)
+        suite.resource.imports.create(type="Resource", name=keywords_path)
+
+        suite.configure(exclude_tags=options.exclude, include_tests=[t[1] for t in test_cases],
+                        metadata=metadata, name=suite_name, empty_suite_ok=True)
+
+        # Provide default values for {Suite,Test}{Setup,Teardown}
+        if not suite.setup:
+            suite.setup.config(name="Setup")
+        if not suite.teardown:
+            suite.teardown.config(name="Teardown")
+
+        for test in suite.tests:
+            if not test.setup:
+                test.setup.config(name="Reset Emulation")
+            if not test.teardown:
+                test.teardown.config(name="Test Teardown")
+
+        result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
+        return result.return_code == 0
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
