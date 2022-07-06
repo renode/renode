@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Variables ***
 ${URI}                              @https://dl.antmicro.com/projects/renode
 ${BIN}                              murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629

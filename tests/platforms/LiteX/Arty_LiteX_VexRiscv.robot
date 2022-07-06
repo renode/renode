@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Variables ***
 ${PROMPT}                      H2U
 

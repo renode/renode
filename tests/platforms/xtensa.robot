@@ -1,6 +1,3 @@
-*** Settings ***
-Library                           Process
-
 *** Variables ***
 ${UART}                           sysbus.cpu.uartSemihosting
 

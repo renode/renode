@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Keywords ***
 Create Platform
     Execute Command           using sysbus

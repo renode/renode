@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Variables ***
 ${UART}                       sysbus.uart0
 ${URI}                        https://dl.antmicro.com/projects/renode

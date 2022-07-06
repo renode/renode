@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Keywords ***
 Create Murax
     Execute Command            mach create

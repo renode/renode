@@ -1,6 +1,3 @@
-*** Settings ***
-Library                         Process
-
 *** Test Cases ***
 Should Run Tock
     Execute Command             include @scripts/single-node/litex_vexriscv_tock.resc

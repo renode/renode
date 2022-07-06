@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       Process
-
 *** Variables ***
 # RISC-V registers
 ${a0}                         0xa

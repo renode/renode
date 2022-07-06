@@ -1,5 +1,4 @@
 *** Settings ***
-Library                       Process
 Library                       DateTime
 
 *** Test Cases ***

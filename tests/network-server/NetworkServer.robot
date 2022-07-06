@@ -1,6 +1,3 @@
-*** Settings ***
-Library                           Process
-
 *** Test Cases ***
 Download File Over TFTP
     Execute Command             using sysbus

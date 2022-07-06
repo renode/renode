@@ -1,6 +1,3 @@
-*** Settings ***
-Library                           Process
-
 *** Keywords ***
 Write To Uart And Wait
     [Arguments]            ${input}            ${expected_output}
