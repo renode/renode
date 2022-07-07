@@ -1,0 +1,7 @@
+using "platforms/cpus/silabs/efr32/efr32mg12.repl"
+
+flash:
+    size: 0x200000
+
+spiflash: SPI.Micron_MT25Q @ usart2
+    underlyingMemory: flash

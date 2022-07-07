@@ -57,6 +57,16 @@ wtimer1: Timers.EFR32_Timer @ sysbus 0x4001a400
 deviceInformation:
     deviceFamily: DeviceFamily.EFR32MG12P
 
+emu_pwrcfg: Python.PythonPeripheral @ sysbus 0x400E3038 
+    size: 0x8
+    initable: true
+    filename: "scripts/pydev/repeater.py"
+
+emu_if: Python.PythonPeripheral @ sysbus 0x400E3024 
+    size: 0x4
+    initable: true
+    script: "request.value = 0xffffffff"
+
 sysbus:
     init add:
         Tag <0x400f0000,0x400f03ff> "CRYPTO0"
@@ -70,3 +80,57 @@ sysbus:
         Tag <0x4001d000,0x4001d3ff> "TRNG0"
         Tag <0x4001d004 0x4> "FIFOLEVEL" 0x40
         Tag <0x40002038 0x4> "IF" 0x1 #single conversion finished
+
+sysbus:
+    init:
+        Tag <0xe00ff000, 0xe00fffff> "CM4_ROM_Table"
+        Tag <0xe0041000, 0xe0041fff> "ETM"
+        Tag <0xe0040000, 0xe0040fff> "TPIU"
+        Tag <0xe000e000, 0xe000efff> "System_Control_Space"
+        Tag <0xe0002000, 0xe0002fff> "FPB"
+        Tag <0xe0001000, 0xe0001fff> "DWT"
+        Tag <0xe0000000, 0xe0000fff> "ITM"
+        Tag <0x46000000, 0x460f03ff> "Bit_Set"
+        Tag <0x44000000, 0x440f03ff> "Bit_Clear"
+        Tag <0x42000000, 0x43e07fff> "Bit-Band"
+        Tag <0x400f0000, 0x400f03ff> "CRYPTO0"
+        Tag <0x400e6000, 0x400e63ff> "PRS"
+        Tag <0x400e5000, 0x400e53ff> "RMU"
+        Tag <0x400e4000, 0x400e43ff> "CMU"
+        Tag <0x400e3000, 0x400e33ff> "EMU"
+        Tag <0x400e2000, 0x400e23ff> "LDMA"
+        Tag <0x400e1000, 0x400e13ff> "FPUEH"
+        Tag <0x400e0000, 0x400e07ff> "MSC"
+        Tag <0x40055000, 0x400553ff> "LESENSE"
+        Tag <0x40052400, 0x400527ff> "WDOG1"
+        Tag <0x40052000, 0x400523ff> "WDOG0"
+        Tag <0x4004e800, 0x4004ebff> "PCNT2"
+        Tag <0x4004e400, 0x4004e7ff> "PCNT1"
+        Tag <0x4004e000, 0x4004e3ff> "PCNT0"
+        Tag <0x4004a000, 0x4004a3ff> "LEUART0"
+        Tag <0x40046000, 0x400463ff> "LETIMER0"
+        Tag <0x40042000, 0x400423ff> "RTCC"
+        Tag <0x40022000, 0x400223ff> "SMU"
+        Tag <0x4001f000, 0x4001f3ff> "CSEN"
+        Tag <0x4001e000, 0x4001e3ff> "CRYPTOTIMER"
+        Tag <0x4001d000, 0x4001d3ff> "TRNG0"
+        Tag <0x4001c000, 0x4001c3ff> "GPCRC"
+        Tag <0x4001a400, 0x4001a7ff> "WTIMER1"
+        Tag <0x4001a000, 0x4001a3ff> "WTIMER0"
+        Tag <0x40018400, 0x400187ff> "TIMER1"
+        Tag <0x40018000, 0x400183ff> "TIMER0"
+        Tag <0x40010c00, 0x40010fff> "USART3"
+        Tag <0x40010800, 0x40010bff> "USART2"
+        Tag <0x40010400, 0x400107ff> "USART1"
+        Tag <0x40010000, 0x400103ff> "USART0"
+        Tag <0x4000c400, 0x4000c7ff> "I2C1"
+        Tag <0x4000c000, 0x4000c3ff> "I2C0"
+        Tag <0x4000a000, 0x4000afff> "GPIO"
+        Tag <0x40008000, 0x400083ff> "VDAC0"
+        Tag <0x40006000, 0x400063ff> "IDAC0"
+        Tag <0x40002000, 0x400023ff> "ADC0"
+        Tag <0x40000400, 0x400007ff> "ACMP1"
+        Tag <0x40000000, 0x400003ff> "ACMP0"
+        Tag <0x0fe08000, 0x0fe083ff> "Chip_config"
+        Tag <0x0fe04000, 0x0fe047ff> "Lock_bits"
+        Tag <0x0fe00000, 0x0fe007ff> "User_Data"

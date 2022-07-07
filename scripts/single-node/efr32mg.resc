@@ -10,9 +10,6 @@ machine LoadPlatformDescription @platforms/cpus/silabs/efr32/efr32mg12.repl
 $bin?=@https://dl.antmicro.com/projects/renode/zephyr.elf-s_408460-78d9cb6ba6a067f86d437cf4f9ef2672bec39c15
 sysbus Tag <0x40080000 0x400> "RADIO"
 
-# osc hack - push the initialization forward
-machine PyDevFromFile @scripts/pydev/flipflop.py 0x400E4090 4 true "CMU_STATUS"
-
 set SET
 """
 if request.isWrite:

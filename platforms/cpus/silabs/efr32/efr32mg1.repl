@@ -52,12 +52,13 @@ timer1: Timers.EFR32_Timer @ sysbus 0x40018400
     width: TimerWidth.Bit16
     -> nvic@18
 
+cmu: Miscellaneous.EFR32_CMU @ sysbus 0x400e4000
+
 sysbus:
     init:
         Tag <0x400e0000,0x400e07ff> "MSC"
         Tag <0x400e3000,0x400e33ff> "EMU"
         Tag <0x400e5000,0x400e53ff> "RMU"
-        Tag <0x400e4000,0x400e43ff> "CMU"
         Tag <0x400e6000,0x400e63ff> "PRS"
         Tag <0x400e2000,0x400e2fff> "LDMA"
         Tag <0x400e1000,0x400e13ff> "FPUEH"
