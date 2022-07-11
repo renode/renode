@@ -35,3 +35,10 @@ Frame Buffer Test
 
     Write Line To Uart         cat /etc/motd > /dev/tty0
     Execute Command            fb_tester WaitForFrame @https://dl.antmicro.com/projects/renode/screenshots/penguin_with_litex_logo.png-s_13404-8664342616adc3edda335db849dd1f5cd1805596
+    Provides                   first_test_pass
+
+Frame Buffer with ROI Test
+    [Tags]                     non_critical
+
+    Requires                   first_test_pass
+    Execute Command            fb_tester WaitForFrameROI @https://dl.antmicro.com/projects/renode/penguin_logo.png-s_14782-2e0fc81dbcd56b3ed9c86790fe8d390a935395c5 0 0 75 80
