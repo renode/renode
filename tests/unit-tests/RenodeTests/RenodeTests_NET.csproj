@@ -1,0 +1,26 @@
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <AssemblyName>RenodeTests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Antmicro.Renode.Core.Range" Alias="Range" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" /> 
+    <PackageReference Include="Moq" Version="4.18.1" />
+    <Reference Include="Sprache">
+      <HintPath>..\..\..\lib\resources\libraries\Sprache.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Renode\Renode_NET.csproj"/>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Tests\UnitTests\UnitTests_NET.csproj"/>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Extensions\Extensions_NET.csproj"/>
+    <ProjectReference Include="..\..\..\lib\AntShell\AntShell\AntShell_NET.csproj"/>
+  </ItemGroup>
+</Project>

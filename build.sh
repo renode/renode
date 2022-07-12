@@ -154,16 +154,35 @@ else
     BUILD_TARGET=Mono
 fi
 
-TARGET="`get_path \"$PWD/Renode.sln\"`"
-
-# Update references to Xwt
-TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
-TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
-if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+if $NET
 then
-    cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
-    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
-    rm "$TERMSHARP_PROJECT_COPY.bak"
+  CS_COMPILER="dotnet build"
+  TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
+else
+  TARGET="`get_path \"$PWD/Renode.sln\"`"
+fi
+
+  # Update references to Xwt
+if $NET
+then
+  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp_NET.csproj"
+  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy_NET.csproj"
+  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+  then
+      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
+      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt_NET.csproj"/' "$TERMSHARP_PROJECT_COPY"
+      rm "$TERMSHARP_PROJECT_COPY.bak"
+  fi
+else
+  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
+  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
+  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+  then
+      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
+      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
+      rm "$TERMSHARP_PROJECT_COPY.bak"
+  fi
+fi
 fi
 
 # Verify Mono and mcs version on Linux and macOS

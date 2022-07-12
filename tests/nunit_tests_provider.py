@@ -65,6 +65,21 @@ class NUnitTestSuite(object):
         project_file = os.path.split(self.path)[1]
         output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(project_file))
 
+        if options.dotnettest:
+            print('Using native dotnet test runner -' + self.path)
+            args = ['dotnet', 'test', "--verbosity", "quiet", "--logger", "console;verbosity=detailed" , '--configuration', 'debug', '/p:NET=true', self.path]
+            process = subprocess.Popen(args)
+            print('dotnet test runner PID is {}'.format(process.pid))
+            process.wait()
+            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                if 'dotnet' in (proc.info['name'] or ''):
+                    flat_cmdline = ' '.join(proc.info['cmdline'] or [])
+                    if 'dotnet test' in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
+                        # let's kill it
+                        print('KILLING A DANGLING dotnet test process {}'.format(proc.info['pid']))
+                        os.kill(proc.info['pid'], signal.SIGTERM)
+            return process.returncode == 0
+
         args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
         if options.stop_on_error:
             args.append('--stoponerror')
