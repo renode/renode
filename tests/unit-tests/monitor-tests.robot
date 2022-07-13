@@ -53,3 +53,18 @@ Should Set Proper Types To Variables
 
     Execute Command           emulation SetSeed $var1
     Execute Command           emulation SetSeed $var2
+
+Should Not Call Conditional Set
+
+    Execute Command           \$var1=1234
+    Execute Command           \$var1?=5678
+
+    ${res}=  Execute Command  echo $\var1
+    Should Be Equal           ${res.strip()}   1234
+
+Should Call Conditional Set
+
+    Execute Command           \$var1?=5678
+
+    ${res}=  Execute Command  echo $\var1
+    Should Be Equal           ${res.strip()}   5678
