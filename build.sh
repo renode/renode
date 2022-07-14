@@ -186,11 +186,10 @@ else
       PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
     fi
 fi
+
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
-
 # Build CCTask in Release configuration
-$CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" > /dev/null
-
+$CS_COMPILER -p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" > /dev/null
 # clean instead of building
 if $CLEAN
 then
@@ -211,7 +210,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:Configuration=${CONFIGURATION}${BUILD_TARGET} /p:GenerateFullPaths=true)
+PARAMS+=(-p:Configuration=${CONFIGURATION}${BUILD_TARGET} -p:GenerateFullPaths=true)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"

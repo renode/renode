@@ -38,7 +38,7 @@ EOL
 
 mkdir -p $OUTPUT
 
-MSBuild.exe /t:Clean,Build windows/RenodeSetup/SetupProject.wixproj /p:version=${VERSION%\+*} /p:installer_name=$DIR
+MSBuild.exe -t:Clean,Build windows/RenodeSetup/SetupProject.wixproj -p:version=${VERSION%\+*} -p:installer_name=$DIR
 
 ### create windows package
 if $REMOVE_WORKDIR
