@@ -7,6 +7,30 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 
 gcr: Miscellaneous.MAX32650_GCR @ sysbus 0x40000000
 
+timer0: Timers.MAX32650_Timer @ sysbus 0x40010000
+    gcr: gcr
+    -> nvic@5
+
+timer1: Timers.MAX32650_Timer @ sysbus 0x40011000
+    gcr: gcr
+    -> nvic@6
+
+timer2: Timers.MAX32650_Timer @ sysbus 0x40012000
+    gcr: gcr
+    -> nvic@7
+
+timer3: Timers.MAX32650_Timer @ sysbus 0x40013000
+    gcr: gcr
+    -> nvic@8
+
+timer4: Timers.MAX32650_Timer @ sysbus 0x40014000
+    gcr: gcr
+    -> nvic@9
+
+timer5: Timers.MAX32650_Timer @ sysbus 0x40015000
+    gcr: gcr
+    -> nvic@10
+
 uart0: UART.MAX32650_UART @ sysbus 0x40042000
     gcr: gcr
     -> nvic@14
@@ -56,12 +80,6 @@ sysbus:
         Tag <0x40009000 0x1000> "GPIO Port 1"
         Tag <0x4000A000 0x1000> "GPIO Port 2"
         Tag <0x4000B000 0x1000> "GPIO Port 3"
-        Tag <0x40010000 0x1000> "Timer 0"
-        Tag <0x40011000 0x1000> "Timer 1"
-        Tag <0x40012000 0x1000> "Timer 2"
-        Tag <0x40013000 0x1000> "Timer 3"
-        Tag <0x40014000 0x1000> "Timer 4"
-        Tag <0x40015000 0x1000> "Timer 5"
         Tag <0x40018000 0x1000> "I2S"
         Tag <0x4001D000 0x1000> "I2C 0"
         Tag <0x4001E000 0x1000> "I2C 1"
