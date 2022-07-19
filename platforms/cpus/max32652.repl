@@ -43,6 +43,22 @@ uart2: UART.MAX32650_UART @ sysbus 0x40044000
     gcr: gcr
     -> nvic@34
 
+gpio0: GPIOPort.MAX32650_GPIO @ sysbus 0x40008000
+    numberOfPins: 32
+    -> nvic@24
+
+gpio1: GPIOPort.MAX32650_GPIO @ sysbus 0x40009000
+    numberOfPins: 32
+    -> nvic@25
+
+gpio2: GPIOPort.MAX32650_GPIO @ sysbus 0x4000A000
+    numberOfPins: 32
+    -> nvic@26
+
+gpio3: GPIOPort.MAX32650_GPIO @ sysbus 0x4000B000
+    numberOfPins: 10
+    -> nvic@27
+
 rtc: Timers.MAX32650_RTC @ sysbus 0x40006000
     -> nvic@3
 

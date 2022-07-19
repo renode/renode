@@ -1,0 +1,18 @@
+using "platforms/cpus/max32652.repl"
+
+button0: Miscellaneous.Button @ gpio2
+    invert: true
+    -> gpio2@28
+
+button1: Miscellaneous.Button @ gpio2
+    invert: true
+    -> gpio2@30
+
+led0: Miscellaneous.LED @ gpio2 25
+    invert: true
+
+led1: Miscellaneous.LED @ gpio2 26
+
+gpio2:
+    25 -> led0@0
+    26 -> led1@0
