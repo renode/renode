@@ -14,6 +14,7 @@ ${PRIV_WRITE_ONLY}                  2
 ${PRIV_EXEC_ONLY}                   4
 ${PRIV_NONE}                        0
 ${START_PC}                         0x0
+${-1u64}                            0xFFFFFFFFFFFFFFFF
 
 *** Keywords ***
 Create Platform
@@ -198,6 +199,17 @@ Peripheral Throws Fault On Illegal Data Access
 
     Expect Value Read From Address  0x1100  0x0
     Wait For Log Entry              mmu1: MMU fault occured
+
+Peripheral Does Not Throw When no_page_fault Is Set
+    Requires                        SingleMMU
+    Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_ALL}
+    Define Window In Peripheral     mmu1  2  0x1000  0x2000  0x0000  ${PRIV_NONE}
+    Execute Command                 logLevel 0 mmu1
+
+    # cpu TranslateAddress uses the cpu_handle_mmu_fault with no_page_fault set to 1
+    ${returned value}=              Execute Command  cpu TranslateAddress 0x1100 Read
+    Should Be Equal As Integers     ${returned value}    ${-1u64}
+    Should Not Be In Log            mmu1: MMU fault occured
 
 Peripheal Throws On Illegal Instruction Fetch
     Create Platform
