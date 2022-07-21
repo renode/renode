@@ -28,6 +28,9 @@ flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
     ReadLevelIRQ -> rv_plic@158
     OperationDoneIRQ -> rv_plic@159
     CorrectableErrorIRQ -> rv_plic@160
+    RecoverableAlert -> alert_handler@33
+    FatalStandardAlert -> alert_handler@34
+    FatalAlert -> alert_handler@35
 
 //RAM
 ram_ret_aon: Memory.MappedMemory @ sysbus 0x40600000
@@ -46,6 +49,7 @@ uart0: UART.OpenTitan_UART @ sysbus 0x40000000
     RxBreakErrorIRQ -> rv_plic@6
     RxTimeoutIRQ -> rv_plic@7
     RxParityErrorIRQ -> rv_plic@8
+    FatalAlert -> alert_handler@0
 
 uart1: UART.OpenTitan_UART @ sysbus 0x40010000
     TxWatermarkIRQ -> rv_plic@9
@@ -56,6 +60,7 @@ uart1: UART.OpenTitan_UART @ sysbus 0x40010000
     RxBreakErrorIRQ -> rv_plic@14
     RxTimeoutIRQ -> rv_plic@15
     RxParityErrorIRQ -> rv_plic@16
+    FatalAlert -> alert_handler@1
 
 uart2: UART.OpenTitan_UART @ sysbus 0x40020000
     TxWatermarkIRQ -> rv_plic@17
@@ -66,6 +71,7 @@ uart2: UART.OpenTitan_UART @ sysbus 0x40020000
     RxBreakErrorIRQ -> rv_plic@22
     RxTimeoutIRQ -> rv_plic@23
     RxParityErrorIRQ -> rv_plic@24
+    FatalAlert -> alert_handler@2
 
 uart3: UART.OpenTitan_UART @ sysbus 0x40030000
     TxWatermarkIRQ -> rv_plic@25
@@ -76,13 +82,17 @@ uart3: UART.OpenTitan_UART @ sysbus 0x40030000
     RxBreakErrorIRQ -> rv_plic@30
     RxTimeoutIRQ -> rv_plic@31
     RxParityErrorIRQ -> rv_plic@32
+    FatalAlert -> alert_handler@3
 
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     IRQ -> rv_plic@1
+    FatalAlert -> alert_handler@4
 
 // AES
 aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
+    UpdateErrorAlert -> alert_handler@38
+    FatalFaultAlert -> alert_handler@39
 
 // Key Manager
 keymgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41140000
@@ -112,26 +122,35 @@ csrng: Miscellaneous.OpenTitan_CSRNG @ sysbus 0x41150000
     EntropyeRequestedIRQ -> rv_plic@170
     HardwareInstanceIRQ -> rv_plic@171
     FatalErrorIRQ -> rv_plic@172
+    RecoverableAlert -> alert_handler@47
+    FatalAlert -> alert_handler@48
 
 // HMAC
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
+    FatalAlert -> alert_handler@40
 
 // KMAC
 kmac: Miscellaneous.OpenTitan_KMAC @ sysbus 0x41120000
     KmacDoneIRQ -> rv_plic@168
     FifoEmptyIRQ -> rv_plic@169
     KmacErrorIRQ -> rv_plic@170
+    RecoverableAlert -> alert_handler@41
+    FatalAlert -> alert_handler@42
 
 // Timers
 rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
-    -> cpu0@7
+    FatalAlert -> alert_handler@10
+    IRQ -> cpu0@7
 
 // Power Manager
 pwrmgr_aon: Miscellaneous.OpenTitan_PowerManager @ sysbus 0x40400000
+    FatalAlert -> alert_handler@20
 
 // Reset Manager
 rstmgr_aon: Miscellaneous.OpenTitan_ResetManager @ sysbus 0x40410000
     resetPC: 0x00008084
+    FatalAlert -> alert_handler@21
+    FatalConsistencyAlert -> alert_handler@22
     init:
         MarkAsSkippedOnLifeCycleReset sysbus.rstmgr_aon
         MarkAsSkippedOnLifeCycleReset sysbus.pwrmgr_aon
@@ -141,6 +160,9 @@ rstmgr_aon: Miscellaneous.OpenTitan_ResetManager @ sysbus 0x40410000
 
 // One Time Programmable Memory Controller
 otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0x40130000
+    FatalMacroAlert -> alert_handler@11
+    FatalCheckErrorAlert -> alert_handler@12
+    FatalBusAlert -> alert_handler@13
     AValuesChain: "8638C62621EC19E8966416165252225F03B9C97821B7B107381030AB3D20AB124694BF85E417495A"
     BValuesChain: "E679DF6E77EDDBECDE74B677DFF23AFFC3BFFB79B5FFFD87F930B4FB3F6BFF9A5F97BFD7FCBFE9FF"
     CValuesChain: "0C1B73141BA20D421FD124302E8F443DE02C272E2CEEC1138DAD07CBD24A18F583A34D51A42A1E702A7E90F05A81D12E"
@@ -148,6 +170,9 @@ otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0
 
 // Life Cycle Controller
 lc_ctrl: Miscellaneous.OpenTitan_LifeCycleController @ sysbus 0x40140000
+    FatalProgAlert -> alert_handler@14
+    FatalStateAlert -> alert_handler@15
+    FatalBusAlert -> alert_handler@16
     resetManager: rstmgr_aon
     otpController: otp_ctrl
     DeviceId: "BF5EA92044DAC540CFD1A00105568DFA97D9C35EA0407D71320B5E0434DB637F"
@@ -163,6 +188,12 @@ rv_plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x48
 
 // Simulated SRAM used to indicate test status to simulator
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x411f0080
+
+alert_handler: Miscellaneous.OpenTitan_AlertHandler @ sysbus 0x40150000
+    ClassAInterrupt -> rv_plic@130
+    ClassBInterrupt -> rv_plic@131
+    ClassCInterrupt -> rv_plic@132
+    ClassDInterrupt -> rv_plic@133
 
 sysbus:
     init:

@@ -26,6 +26,8 @@ ${TEST_ROM}                     ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.
 ${TEST_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-d4cc5690aaf9072e5e1df0ac8f656947ce82064b
 ${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_prog_fpga_cw310.elf-s_216444-a25e86fd436ce2f31e4db677400f3a933f09624d
 ${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_fpga_cw310.elf-s_186516-b5f11e2b9112f9857fe47518c2a812c2cedc1f8b
+${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310.elf-s_369840-399ce38d67f780df3e7624b01c217dfac1641c0e
+${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310.elf-s_372064-5e6b4ee5a3f8f10656d18970bde37aad6f494732
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -165,3 +167,9 @@ Should Pass CSRNG Smoketest
 
 Should Pass GPIO Smoketest
     Run Test               ${GPIO_BIN}
+
+Should Pass Alert Handler Smoketest
+    Run Test              ${ALERT_HANDLER}
+
+Should Pass Alert Handler Ping Smoketest
+    Run Test              ${ALERT_HANDLER_PING}
