@@ -83,3 +83,4 @@
 - tests/unit-tests/external-mmu.robot
 - tests/unit-tests/file-paths.robot
 - tests/platforms/PolarFireSoC.robot
+- tests/platforms/SLTB004A.robot

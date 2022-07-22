@@ -1,0 +1,19 @@
+
+# This script runs the Gecko SDK baremetal CLI sample on the SLTB004A platform in Renode
+
+$name?="sltb004a"
+
+$bin?=@https://dl.antmicro.com/projects/renode/sltb004a--gecko_sdk-cli_baremetal.out-s_705812-380134bce0235a1277d0568d55b3be97d91daf02
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/boards/sltb004a.repl
+
+showAnalyzer usart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
+
