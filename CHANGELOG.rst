@@ -3,6 +3,95 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.13.1 - 2022.07.23
+-------------------
+
+Added platforms:
+
+* MAX32652 with UART, GPIO, Timer, PWRSEQ, GCR and RTC
+* Thunderboard Sense 2 (SLTB004A) based on EFR32MG12
+
+Added models:
+
+* STM32G0 DMA controller
+* OpenTitan CSRNG
+* OpenTitan OTP controller
+* OpenTitan Life Cycle controller
+* USBserialport_S3B model for Qomu
+* SAMD5 UART
+* SAMD20 UART
+* AES and Message Authentication cores for AthenaX5200
+* LiteX MMCM controller in the 32-bit CSR width configuration
+* LiteX Framebuffer in the 32-bit CSR width configuration
+
+Added demos:
+
+* Qomu running Zephyr shell
+* SLTB004A running Gecko SDK baremetal CLI sample
+
+Added features:
+
+* guest-application profiling support
+* TAP integration on Windows
+* interrupt end hooks for RV64
+* option for gathering execution metrics when running tests
+* tests for logging from a sub-object
+* PolarFireSoC Watchdog tests
+* the disassembly output format to the Execution Tracer module
+* option for filtering messages by log level in the log tester
+
+Changed:
+
+* improved support for ARMv8-M registers
+* added option to compare raw values of selected registers in the gdb_compare script
+* implemented generation of guest-host PC mappings info on block translation
+* added `Frequency` property to ComparingTimer
+* monitor-tests: Use virtual time in the pause test
+* added static flushing to the logger
+* included missing tools (like gdb_compare, sel4_extensions) in all packages
+* added precompilation of Python scripts before running (to detect errors early)
+* added user-specified file paths handling
+* added filtering of ANSI escape codes from Robot tests keyword results
+* added option to enable profiler globally in EmulationManager
+* added command to disable automatic symbol switching in seL4 GDB extensions
+* improved RISC-V kernel breakpoints support in seL4 GDB extensions
+* code generator is now compiled with more aggressive optimizations
+* changed the CPU class structure, allowing for core implementations not based on translation libraries
+* updated the Nexys Video platform description and demo binaries
+
+Fixed:
+
+* 'Should Output Voice Data' test for QuickFeather
+* various RISC-V vector instructions
+* register values accessing in RISC-V
+* help button behavior in AdvancedLoggerViewer
+* concurrent access to Pixel Manipulation Tools
+* clock residuum handling, e.g. improving the behavior of the BLE demo
+* serialization of externals and GDB stub
+* stacktrace reporting when exception is rethrown on the native-managed boundary
+* packaging of license files from dependency projects
+* exception handling on EnsureTypeIsLoaded
+* various fixes in file handling layer
+* improved handling of variables assigned to variables in the Monitor
+* handling of multiple CPUs with different configurations in GDB
+* STM32F413 RCC address
+* DDR mapping in PolarFire SoC
+* TCM memory size in miv_rv32
+
+Improvements in peripherals:
+
+* NVIC
+* STM32F4_RCC
+* STM32_ADC
+* STM32_GPIOPort
+* MiV_CoreGPIO
+* GigaDevice_GD25LQ
+* MC3635
+* SynopsysEthernetMAC
+* LiteSDCard_CSR32
+* ResetPin
+* HPSHostController
+
 1.13.0 - 2022.04.29
 -------------------
 
