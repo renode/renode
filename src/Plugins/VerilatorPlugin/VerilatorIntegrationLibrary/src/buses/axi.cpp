@@ -53,7 +53,6 @@ void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout)
 
 void Axi::write(uint64_t addr, uint64_t value)
 {
-    *awvalid = 1;
     *awlen   = 0; // TODO: Variable write length
     *awsize  = 2; // TODO: Variable write width
     *awburst = static_cast<uint8_t>(AxiBurstType::INCR);
@@ -61,10 +60,11 @@ void Axi::write(uint64_t addr, uint64_t value)
 
     this->agent->log(0, "Axi write - AW");
 
-    timeoutTick(awready, 1);
+    *awvalid = 1;
+    if (*awready != 1)
+        timeoutTick(awready, 1);
     tick(true);
     *awvalid = 0;
-    tick(true);
 
     this->agent->log(0, "Axi write - W");
 
@@ -73,10 +73,10 @@ void Axi::write(uint64_t addr, uint64_t value)
     *wstrb = 0xF; // TODO: Byte selects
     *wlast = 1; // TODO: Variable write length
 
-    timeoutTick(wready, 1);
+    if (*wready != 1)
+        timeoutTick(wready, 1);
     tick(true);
     *wvalid = 0;
-    tick(true);
 
     this->agent->log(0, "Axi write - B");
 
@@ -85,7 +85,6 @@ void Axi::write(uint64_t addr, uint64_t value)
     timeoutTick(bvalid, 1);
     tick(true);
     *bready = 0;
-    tick(true);
 }
 
 uint64_t Axi::read(uint64_t addr)
@@ -100,10 +99,10 @@ uint64_t Axi::read(uint64_t addr)
 
     this->agent->log(0, "Axi read - AR");
 
-    timeoutTick(arready, 1);
+    if (*arready != 1)
+        timeoutTick(arready, 1);
     tick(true);
     *arvalid = 0;
-    tick(true);
 
     this->agent->log(0, "Axi read - R");
 
@@ -111,8 +110,8 @@ uint64_t Axi::read(uint64_t addr)
 
     timeoutTick(rvalid, 1);
     result = *rdata;
-    *rready = 0;
     tick(true);
+    *rready = 0;
 
     return result;
 }
