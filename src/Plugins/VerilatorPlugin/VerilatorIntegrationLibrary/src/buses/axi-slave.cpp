@@ -152,7 +152,6 @@ void AxiSlave::writeHandler()
             if(*awready == 1 && *awvalid == 1) {
                 awready_new    = 0;
 
-                writeLen       = *awlen;
                 writeNumBytes  = pow(2, *awsize);
                 writeState     = AxiWriteState::W;
                 writeBurstType = static_cast<AxiBurstType>(*awburst);
@@ -174,11 +173,10 @@ void AxiSlave::writeHandler()
             wready_new = 1;
             if(*wready == 1 && *wvalid == 1) {
                 writeWord(writeAddr, *wdata, *wstrb);
-                if(writeLen == 0) {
+                if(*wlast) {
                     writeState = AxiWriteState::B;
                     wready_new = 0;
                 } else {
-                    writeLen--;
                     writeAddr += int(dataWidth/8); // TODO: make data width configurable
                 }
             }

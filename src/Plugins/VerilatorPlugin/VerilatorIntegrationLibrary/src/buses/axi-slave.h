@@ -42,7 +42,6 @@ struct AxiSlave : public Axi
 
     AxiBurstType  writeBurstType;
     uint64_t      writeAddr;
-    uint8_t       writeLen;
     uint8_t       writeNumBytes;
 
     AxiBurstType  readBurstType;
