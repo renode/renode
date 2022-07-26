@@ -31,6 +31,9 @@ timer5: Timers.MAX32650_Timer @ sysbus 0x40015000
     gcr: gcr
     -> nvic@10
 
+adc: Analog.MAX32650_ADC @ sysbus 0x40034000
+    -> nvic@20
+
 uart0: UART.MAX32650_UART @ sysbus 0x40042000
     gcr: gcr
     -> nvic@14
@@ -109,7 +112,6 @@ sysbus:
         Tag <0x4002F100 0x4> "ICC1_CACHE_CTRL" 0x10001
         Tag <0x40031000 0x1000> "Color LCD Controller"
         Tag <0x40033000 0x1000> "D-Cache Controller"
-        Tag <0x40034000 0x1000> "ADC"
         Tag <0x40036000 0x1000> "Smart DMA"
         Tag <0x40037000 0x1000> "SD/SDIO/SDHC/MMC Controller"
         Tag <0x40039000 0x1000> "HyperBus/Xccela Bus Controller"
