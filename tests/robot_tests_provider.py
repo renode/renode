@@ -53,6 +53,12 @@ def install_cli_arguments(parser):
                         default=False,
                         help="Display log messages in console (might corrupt robot summary output).")
 
+    parser.add_argument("--verbose",
+                        dest="verbose",
+                        action="store_true",
+                        default=False,
+                        help="Print verbose info from Robot Framework.")
+
     parser.add_argument("--hot-spot",
                         dest="hotspot",
                         action="store",
@@ -437,7 +443,8 @@ class RobotTestSuite(object):
             if not self._run_dependencies(deps, options):
                 return False
 
-        listeners = [os.path.join(this_path, 'robot_output_formatter.py')]
+        output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
+        listeners = [os.path.join(this_path, output_formatter)]
         if options.listener:
             listeners += options.listener
 
