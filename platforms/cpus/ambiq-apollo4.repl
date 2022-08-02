@@ -1,0 +1,163 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+    PerformanceInMips: 96
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu@0
+
+// Memory
+
+// Renode-only helper peripheral placed in reserved address space.
+// The error is logged with an unimplemented function's name if a valid
+// LR value is written to the peripheral's address.
+bootrom_logger: Miscellaneous.AmbiqApollo4_BootromLogger @ sysbus 0x07FFFFFC
+    bootromBaseAddress: 0x08000000
+
+bootrom: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x1000
+    init:
+        // Bootrom in Ambiq Apollo4b contains functions which are used by SDK.
+        // Since the actual bootrom code isn't currently available even as a blob,
+        // these simple implementations for necessary functions are provided:
+        // * read_word
+        WriteWord 0x74 0x6800  // asm: ldr r0, [r0, #0]
+        WriteWord 0x76 0x4770  // asm: bx lr
+
+        // * delay -- called with a number of iterations in 'r0' (see 'am_hal_delay_us' in
+        //              SDK's 'mcu/apollo4p/hal/mcu/am_hal_utils.c'). 15 iterations are added
+        //              because in hardware equivalent time is spent on checking burst mode
+        //              and adjusting to it. It's safe to do so -- with AmbiqSuite v4.2 the
+        //              number of iterations passed will always be lower than '2^32 - 1 - 15'.
+        WriteWord 0x9C 0x300F  // asm: adds r0, #15  // add 15 iterations
+        WriteWord 0x9E 0x3801  // asm: subs r0, #1   // decrement number of iterations
+        WriteWord 0xA0 0x2800  // asm: cmp  r0, #0   // compare with 0
+        WriteWord 0xA2 0xd1fc  // asm: bne.n 0x9E    // jump to 0x9E if not equal
+        WriteWord 0xA4 0x4770  // asm: bx lr         // return
+
+        // A handler which prevents silent usage of unimplemented functions:
+        // 1. the address of the caller (LR) is written to the 'bootrom_logger'
+        //    (see above) which logs an error with the name of the function,
+        // 2. the jump to the 'logger_address' is performed, which aborts the
+        //    simulation because it isn't a MappedMemory.
+        WriteDoubleWord 0x30 0x3014f8df  // asm: ldr r3, logger_address
+        WriteDoubleWord 0x34 0xe000f8c3  // asm: str lr, [r3]
+        WriteWord 0x38 0x4718            // asm: bx r3
+        WriteDoubleWord 0x48 0x07fffffc  // logger_address
+
+        // Unimplemented functions jump to the handler (asm: bl handler).
+        WriteDoubleWord 0x4C 0xfff0f7ff  // mass_erase
+        WriteDoubleWord 0x50 0xffeef7ff  // page_erase
+        WriteDoubleWord 0x54 0xffecf7ff  // program_main
+        WriteDoubleWord 0x58 0xffeaf7ff  // program_info_area
+        WriteDoubleWord 0x6C 0xffe0f7ff  // program_main2
+        WriteDoubleWord 0x78 0xffdaf7ff  // write
+        WriteDoubleWord 0x80 0xffd6f7ff  // info_erase
+        WriteDoubleWord 0x98 0xffcaf7ff  // recovery
+
+mcu_mram: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x200000
+
+mcu_tcm: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x60000
+
+shared_sram: Memory.MappedMemory @ sysbus 0x10060000
+    size: 0x100000
+
+// Other peripherals
+
+adc: Analog.AmbiqApollo4_ADC @ sysbus 0x40038000
+    // The last 6 bits contain the fraction part in measurement averages computed from multiple samples.
+    Channel0Data: 0x40  // Min value for the integer part.
+    Channel1Data: 0xAAAA
+    Channel2Data: 0x15555
+    Channel3Data: 0x1FFFF
+    Channel4Data: 0x2AAAA
+    Channel5Data: 0x35555
+    Channel6Data: 0x3FFC0  // Max value for the integer part.
+    -> nvic@19
+
+gpio: GPIOPort.AmbiqApollo4_GPIO @ sysbus 0x40010000
+    McuN0IrqBank0 -> nvic@56
+    McuN0IrqBank1 -> nvic@57
+    McuN0IrqBank2 -> nvic@58
+    McuN0IrqBank3 -> nvic@59
+    McuN1IrqBank0 -> nvic@60
+    McuN1IrqBank1 -> nvic@61
+    McuN1IrqBank2 -> nvic@62
+    McuN1IrqBank3 -> nvic@63
+
+iom0: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40050000
+    -> nvic@6
+
+iom1: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40051000
+    -> nvic@7
+
+iom2: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40052000
+    -> nvic@8
+
+iom3: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40053000
+    -> nvic@9
+
+iom4: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40054000
+    -> nvic@10
+
+iom5: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40055000
+    -> nvic@11
+
+iom6: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40056000
+    -> nvic@12
+
+iom7: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40057000
+    -> nvic@13
+
+rtc: Timers.AmbiqApollo4_RTC @ sysbus 0x40004800
+    -> nvic@2
+
+stimer: Timers.AmbiqApollo4_SystemTimer @ sysbus 0x40008800
+    IRQA -> nvic@32
+    IRQB -> nvic@33
+    IRQC -> nvic@34
+    IRQD -> nvic@35
+    IRQE -> nvic@36
+    IRQF -> nvic@37
+    IRQG -> nvic@38
+    IRQH -> nvic@39
+    IRQI -> nvic@40
+
+uart0: UART.PL011 @ sysbus 0x4001C000
+    -> nvic@15
+
+uart1: UART.PL011 @ sysbus 0x4001D000
+    -> nvic@16
+
+uart2: UART.PL011 @ sysbus 0x4001E000
+    -> nvic@17
+
+uart3: UART.PL011 @ sysbus 0x4001F000
+    -> nvic@18
+
+pwrctrl: Miscellaneous.AmbiqApollo4_PowerController @ sysbus 0x40021000
+
+security: Miscellaneous.AmbiqApollo4_Security @ sysbus 0x40030000
+
+sysbus:
+    init:
+        Tag <0x0800004D,0x0800009F> "CPU_BOOTROM"
+        Tag <0x40004000,0x40004FFF> "CLKGEN"
+        Tag <0x40008000,0x400087FF> "TIMER"
+        Tag <0x40014000,0x40014FFF> "MRAM"
+        Tag <0x40020000,0x40020FFF> "MCUCTRL"
+
+        Tag <0x400C0000,0x400C3FFF> "CRYPTO"
+        Tag <0x400C2000,0x400C3FFF> "OTP"
+
+        Tag <0x42000000,0x4200FFFF> "NVM_OTP"
+        Tag <0x42000000,0x42000067> "INFO0"
+        Tag <0x42002000,0x4200332F> "INFO1"
+
+        Tag <0x48000000,0x48000FFF> "CPU"
+        Tag <0x48000050,0x48000050> "DAXI_CONFIG"
+        Tag <0x48000054,0x48000054> "DAXI_CONTROL" 0x4  // DAXIREADY set.
+        Tag <0xE0000000,0xE0000FFF> "ITM"
+        Tag <0xF0000000,0xF0000FFF> "JEDEC"

@@ -1,0 +1,17 @@
+:name: Ambiq Apollo 4
+:description: This script runs the Ambiq Suite's Hello World Uart example on Ambiq Apollo 4.
+
+using sysbus
+$name?="Ambiq Apollo 4"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/ambiq-apollo4.repl
+showAnalyzer uart2
+
+$bin?=@https://dl.antmicro.com/projects/renode/hello_world_uart.axf-s_307540-9b8a9e6ac6a01eec8ff4cccf9aa28961cde23262
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
