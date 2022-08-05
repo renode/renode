@@ -44,7 +44,7 @@ do
       CONFIGURATION="Debug"
       ;;
     v)
-      PARAMS+=(/verbosity:detailed)
+      PARAMS+=(-verbosity:detailed)
       ;;
     p)
       PACKAGES=true
@@ -138,7 +138,7 @@ fi
 if $HEADLESS
 then
     BUILD_TARGET=Headless
-    PARAMS+=(/p:GUI_DISABLED=true)
+    PARAMS+=(-p:GUI_DISABLED=true)
 elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
@@ -191,7 +191,7 @@ cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 # Build CCTask in Release configuration
 CCTASK_OUTPUT=`mktemp`
 set +e
-$CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+$CS_COMPILER -p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
 if [ $? -ne 0 ]; then
     cat $CCTASK_OUTPUT
     rm $CCTASK_OUTPUT
@@ -203,12 +203,12 @@ set -e
 # clean instead of building
 if $CLEAN
 then
-    PARAMS+=(/t:Clean)
+    PARAMS+=(-t:Clean)
     for conf in Debug Release
     do
         for build_target in Windows Mono Headless
         do
-            $CS_COMPILER "${PARAMS[@]}" /p:Configuration=${conf}${build_target} "$TARGET"
+            $CS_COMPILER "${PARAMS[@]}" -p:Configuration=${conf}${build_target} "$TARGET"
         done
         rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
@@ -220,7 +220,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(/p:Configuration=${CONFIGURATION}${BUILD_TARGET} /p:GenerateFullPaths=true)
+PARAMS+=(-p:Configuration=${CONFIGURATION}${BUILD_TARGET} -p:GenerateFullPaths=true)
 
 # build
 $CS_COMPILER "${PARAMS[@]}" "$TARGET"
