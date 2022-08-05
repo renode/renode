@@ -189,7 +189,16 @@ fi
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 
 # Build CCTask in Release configuration
-$CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" > /dev/null
+CCTASK_OUTPUT=`mktemp`
+set +e
+$CS_COMPILER /p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+if [ $? -ne 0 ]; then
+    cat $CCTASK_OUTPUT
+    rm $CCTASK_OUTPUT
+    exit 1
+fi
+rm $CCTASK_OUTPUT
+set -e
 
 # clean instead of building
 if $CLEAN
