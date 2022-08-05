@@ -18,6 +18,14 @@ gpioPort: GPIOPort.EFR32_GPIOPort @ sysbus 0x4000a000
 bitband_peripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
     peripheralBase: 0x40000000
 
+bitclear: Miscellaneous.BitAccess @ sysbus <0x44000000, +0xf0400>
+    address: 0x40000000
+    mode: BitAccessMode.Clear
+
+bitset: Miscellaneous.BitAccess @ sysbus <0x46000000, +0xf0400>
+    address: 0x40000000
+    mode: BitAccessMode.Set
+
 bitband_sram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x2000000>
     peripheralBase: 0x20000000
 

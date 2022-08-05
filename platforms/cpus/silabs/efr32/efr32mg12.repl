@@ -67,6 +67,10 @@ emu_if: Python.PythonPeripheral @ sysbus 0x400E3024
     initable: true
     script: "request.value = 0xffffffff"
 
+bitclear: @ sysbus <0x44000000, +0x1000000>
+
+bitset: @ sysbus <0x46000000, +0x1000000>
+
 sysbus:
     init add:
         Tag <0x400f0000,0x400f03ff> "CRYPTO0"
@@ -90,9 +94,6 @@ sysbus:
         Tag <0xe0002000, 0xe0002fff> "FPB"
         Tag <0xe0001000, 0xe0001fff> "DWT"
         Tag <0xe0000000, 0xe0000fff> "ITM"
-        Tag <0x46000000, 0x460f03ff> "Bit_Set"
-        Tag <0x44000000, 0x440f03ff> "Bit_Clear"
-        Tag <0x42000000, 0x43e07fff> "Bit-Band"
         Tag <0x400f0000, 0x400f03ff> "CRYPTO0"
         Tag <0x400e6000, 0x400e63ff> "PRS"
         Tag <0x400e5000, 0x400e53ff> "RMU"
