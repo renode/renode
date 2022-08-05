@@ -57,12 +57,12 @@ wtimer1: Timers.EFR32_Timer @ sysbus 0x4001a400
 deviceInformation:
     deviceFamily: DeviceFamily.EFR32MG12P
 
-emu_pwrcfg: Python.PythonPeripheral @ sysbus 0x400E3038 
+emu_pwrcfg: Python.PythonPeripheral @ sysbus 0x400E3038
     size: 0x8
     initable: true
     filename: "scripts/pydev/repeater.py"
 
-emu_if: Python.PythonPeripheral @ sysbus 0x400E3024 
+emu_if: Python.PythonPeripheral @ sysbus 0x400E3024
     size: 0x4
     initable: true
     script: "request.value = 0xffffffff"
