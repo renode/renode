@@ -102,7 +102,9 @@ class NUnitTestSuite(object):
                     print('KILLING A DANGLING nunit-agent.exe process {}'.format(proc.info['pid']))
                     os.kill(proc.info['pid'], signal.SIGTERM)
 
-        return process.returncode == 0
+        result = process.returncode == 0
+        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!'))
+        return result
 
     def cleanup(self, options):
         pass

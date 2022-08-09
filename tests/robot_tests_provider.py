@@ -364,6 +364,7 @@ class RobotTestSuite(object):
                     continue
                 result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=self.port_offset)
 
+        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!'))
         self._close_remote_server(proc, options)
         return result
 
