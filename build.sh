@@ -17,21 +17,23 @@ HEADLESS=false
 SKIP_FETCH=false
 PARAMS=()
 CUSTOM_PROP=
+NET_FRAMEWORK_VER=
 
 function print_help() {
   echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch]"
   echo ""
-  echo "-c             clean instead of building"
-  echo "-d             build Debug configuration"
-  echo "-v             verbose output"
-  echo "-p             create packages after building"
-  echo "-n             create nightly packages after building"
-  echo "-t             create a portable package (experimental, Linux only)"
-  echo "-s             update submodules"
-  echo "-b             custom build properties file"
-  echo "-o             custom output directory"
-  echo "--skip-fetch   skip fetching submodules and additional resources"
-  echo "--no-gui       build with GUI disabled"
+  echo "-c                                clean instead of building"
+  echo "-d                                build Debug configuration"
+  echo "-v                                verbose output"
+  echo "-p                                create packages after building"
+  echo "-n                                create nightly packages after building"
+  echo "-t                                create a portable package (experimental, Linux only)"
+  echo "-s                                update submodules"
+  echo "-b                                custom build properties file"
+  echo "-o                                custom output directory"
+  echo "--skip-fetch                      skip fetching submodules and additional resources"
+  echo "--no-gui                          build with GUI disabled"
+  echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
 }
 
 while getopts "cdvpnstbo:-:" opt
@@ -44,7 +46,7 @@ do
       CONFIGURATION="Debug"
       ;;
     v)
-      PARAMS+=(-verbosity:detailed)
+      PARAMS+=(verbosity:detailed)
       ;;
     p)
       PACKAGES=true
@@ -73,6 +75,12 @@ do
           ;;
         "skip-fetch")
           SKIP_FETCH=true
+          ;;
+        "force-net-framework-version")
+          shift $((OPTIND-1))
+          NET_FRAMEWORK_VER=p:TargetFrameworkVersion=v$1
+          PARAMS+=($NET_FRAMEWORK_VER)
+          OPTIND=2
           ;;
         *)
           print_help
@@ -138,7 +146,7 @@ fi
 if $HEADLESS
 then
     BUILD_TARGET=Headless
-    PARAMS+=(-p:GUI_DISABLED=true)
+    PARAMS+=(p:GUI_DISABLED=true)
 elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
@@ -191,7 +199,7 @@ cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 # Build CCTask in Release configuration
 CCTASK_OUTPUT=`mktemp`
 set +e
-$CS_COMPILER -p:Configuration=Release "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+$CS_COMPILER $(build_args_helper $NET_FRAMEWORK_VER) $(build_args_helper p:Configuration=Release) "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
 if [ $? -ne 0 ]; then
     cat $CCTASK_OUTPUT
     rm $CCTASK_OUTPUT
@@ -203,12 +211,12 @@ set -e
 # clean instead of building
 if $CLEAN
 then
-    PARAMS+=(-t:Clean)
+    PARAMS+=(t:Clean)
     for conf in Debug Release
     do
         for build_target in Windows Mono Headless
         do
-            $CS_COMPILER "${PARAMS[@]}" -p:Configuration=${conf}${build_target} "$TARGET"
+            $CS_COMPILER $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
         done
         rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
@@ -220,10 +228,10 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(-p:Configuration=${CONFIGURATION}${BUILD_TARGET} -p:GenerateFullPaths=true)
+PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true)
 
 # build
-$CS_COMPILER "${PARAMS[@]}" "$TARGET"
+$CS_COMPILER $(build_args_helper ${PARAMS[@]}) "$TARGET"
 
 # copy llvm library
 cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION

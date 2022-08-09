@@ -104,3 +104,16 @@ function verify_mono_version {
         exit 1
     fi
 }
+
+# NOTE: if we switch to using msbuild on all platforms, we can get rid of this function and only use the '-' prefix
+function build_args_helper() {
+    local retStr=""
+    for p in "$@" ; do
+        if [ "$CS_COMPILER" = 'xbuild' ] ; then
+            retStr="${retStr} /$p"
+        else
+            retStr="${retStr} -$p"
+        fi
+    done
+    echo ${retStr}
+}
