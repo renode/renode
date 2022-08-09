@@ -41,6 +41,7 @@
     <Compile Include="WiresharkSender.cs" />
     <Compile Include="INetworkLogExtensions.cs" />
     <Compile Include="Wireshark.cs" />
+    <Compile Include="BLESniffer.cs" />
     <Compile Include="LinkLayer.cs" />
   </ItemGroup>
   <ItemGroup>

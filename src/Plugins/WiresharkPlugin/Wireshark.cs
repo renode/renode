@@ -24,6 +24,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             EmulationManager.Instance.EmulationChanged += ClearLog;
             currentEmulation.MachineRemoved += OnMachineRemoved;
             wiresharkSinkName = sinkName;
+            bleSniffer = new BLESniffer();
             wiresharkSender = new WiresharkSender(wiresharkSinkName, (uint)layer, wiresharkPath);
             this.layer = layer;
         }
@@ -222,6 +223,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         {
             lock(innerLock)
             {
+                if(linkLayerToMedium[layer] == typeof(BLEMedium))
+                {
+                    buffer = bleSniffer.InsertHeaderToPacket((IRadio)sender, buffer);
+                }
                 wiresharkSender.SendProcessedFrames(buffer);
             }
         }
@@ -250,6 +255,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         }
 
         private readonly object innerLock = new object();
+        private readonly BLESniffer bleSniffer;
         private WiresharkSender wiresharkSender;
         private string wiresharkSinkName;
         private Dictionary<IExternal, List<INetworkInterface>> observedInterfaces = new Dictionary<IExternal, List<INetworkInterface>>();
