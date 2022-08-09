@@ -14,6 +14,7 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 def install_cli_arguments(parser):
     parser.add_argument("--properties-file", action="store", help="Location of properties file.")
     parser.add_argument("--skip-building", action="store_true", help="Do not build tests before run.")
+    parser.add_argument("--force-net-framework-version", action="store", dest="framework_ver_override", help="Override target .NET Framework version when building tests.")
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit3/nunit3-console.exe')
@@ -25,14 +26,30 @@ class NUnitTestSuite(object):
     def check(self, options, number_of_runs): #API requires this method 
         pass 
 
+    # NOTE: if we switch to using msbuild on all platforms, we can get rid of this function and only use the '-' prefix
+    def build_params(self, *params):
+        def __decorate_build_param(p):
+            if self.builder == 'xbuild':
+                return '/' + p
+            else:
+                return '-' + p
+
+        ret = []
+        for i in params:
+            ret += [__decorate_build_param(i)]
+        return ret
+
     def prepare(self, options):
         if not options.skip_building:
             print("Building {0}".format(self.path))
             if platform == "win32":
-                builder = 'MSBuild.exe'
+                self.builder = 'MSBuild.exe'
             else:
-                builder = 'xbuild'
-            result = subprocess.call([builder, '/p:PropertiesLocation={0}'.format(options.properties_file), '/p:OutputPath={0}'.format(options.results_directory), '/nologo', '/verbosity:quiet', '/p:OutputDir=tests_output', '/p:Configuration={0}'.format(options.configuration), self.path])
+                self.builder = 'xbuild'
+            params = self.build_params('p:PropertiesLocation={0}'.format(options.properties_file), 'p:OutputPath={0}'.format(options.results_directory), 'nologo', 'verbosity:quiet', 'p:OutputDir=tests_output', 'p:Configuration={0}'.format(options.configuration))
+            if options.framework_ver_override:
+                params += self.build_params(f'p:TargetFrameworkVersion=v{options.framework_ver_override}')
+            result = subprocess.call([self.builder, *params, self.path])
             if result != 0:
                 print("Building project `{}` failed with error code: {}".format(self.path, result))
                 return result
