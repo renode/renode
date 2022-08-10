@@ -22,23 +22,18 @@ Should Break On Rootserver Thread And Then Exit To Kernel
                   Prepare Platform
 
                   Execute Command        seL4 BreakOnNamingThread "rootserver"
-                  Start Emulation
-                  # We have to sleep as BreakOnNamingThread doesn't block
-                  Sleep                  2s
+                  Run Until Breakpoint   1
     ${thread}=    Execute Command        seL4 CurrentThread
                   Should Contain         ${thread}        kernel
-                  Execute Command        cpu Step
 
                   Execute Command        seL4 SetTemporaryBreakpoint "rootserver"
                   Execute Command        cpu ExecutionMode Continuous
-                  Sleep                  1s
+                  Run Until Breakpoint   1
     ${thread}=    Execute Command        seL4 CurrentThread
                   Should Contain         ${thread}        rootserver
-                  Execute Command        cpu Step
 
                   Execute Command        seL4 BreakOnExittingUserspace Once
                   Execute Command        cpu ExecutionMode Continuous
-                  # We have to sleep as BreakOnExittingUserspace doesn't block
-                  Sleep                  1s
+                  Run Until Breakpoint   1
     ${thread}=    Execute Command        seL4 CurrentThread
                   Should Contain         ${thread}        kernel
