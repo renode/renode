@@ -22,7 +22,7 @@ else
     ON_WINDOWS=true
     ON_OSX=false
     ON_LINUX=false
-    CS_COMPILER=msbuild.exe
+    CS_COMPILER=MSBuild.exe
     LAUNCHER=""
     PYTHON_RUNNER="py -3"
 fi
