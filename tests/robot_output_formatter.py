@@ -33,7 +33,8 @@ def decorate(text):
         + u"\n".encode() + initial_spacing + box_lower_corner + horizontal_line).decode()
 
 def start_test(data, result):
-    print("+++++ Starting test '{}'".format(data.longname))
+    # we have to flush manually, as the '-u' switch that should guarantee unbuffered output does not work on Windows
+    print("+++++ Starting test '{}'".format(data.longname), flush=True)
     _x_start_time[data.longname] = time.time()
 
 
@@ -52,7 +53,7 @@ def end_test(data, result):
     duration = time.time() - _x_start_time[data.longname]
     del _x_start_time[data.longname]
 
-    print("+++++ Finished test '{0}' in {1:.2f} seconds with status {2}".format(data.longname, duration, status))
+    print("+++++ Finished test '{0}' in {1:.2f} seconds with status {2}".format(data.longname, duration, status), flush=True)
 
     if not result.passed:
         print(decorate(result.message))
