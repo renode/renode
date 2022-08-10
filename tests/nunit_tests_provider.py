@@ -5,6 +5,7 @@ import os
 import signal
 import psutil
 import subprocess
+from time import monotonic
 
 import xml.etree.ElementTree as ET
 import glob
@@ -90,6 +91,7 @@ class NUnitTestSuite(object):
         if options.run_gdb:
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
 
+        startTimestamp = monotonic()
         process = subprocess.Popen(args, cwd=options.results_directory)
         print('NUnit3 runner PID is {}'.format(process.pid))
         process.wait()
@@ -103,7 +105,8 @@ class NUnitTestSuite(object):
                     os.kill(proc.info['pid'], signal.SIGTERM)
 
         result = process.returncode == 0
-        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!'))
+        endTimestamp = monotonic()
+        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(endTimestamp - startTimestamp, 2)) + ' seconds.', flush=True)
         return result
 
     def cleanup(self, options):

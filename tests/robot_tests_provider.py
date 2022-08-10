@@ -7,6 +7,7 @@ import socket
 import fnmatch
 import subprocess
 import psutil
+from time import monotonic
 
 import robot
 import xml.etree.ElementTree as ET
@@ -364,7 +365,8 @@ class RobotTestSuite(object):
                     continue
                 result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=self.port_offset)
 
-        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!'))
+        endTimestamp = monotonic()
+        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(endTimestamp - self.startTimestamp, 2)) + ' seconds.', flush=True)
         self._close_remote_server(proc, options)
         return result
 
@@ -451,6 +453,7 @@ class RobotTestSuite(object):
 
         metadata = 'HotSpot_Action:{0}'.format(hotspot if hotspot else '-')
         log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+        self.startTimestamp = monotonic()
         return robot.run(self.path, console='none', listener=listeners, exitonfailure=options.stop_on_error, runemptysuite=True, output=log_file, log=None, loglevel='TRACE', report=None, metadata=metadata, name=suite_name, variable=variables, skiponfailure=['non_critical', 'skipped'], exclude=options.exclude, test=[t[1] for t in test_cases]) == 0
 
     @staticmethod
