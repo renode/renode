@@ -4,10 +4,12 @@
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
 //
+using System;
 using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.RobotFramework;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -46,6 +48,48 @@ namespace Antmicro.Renode.RobotFramework
             if(actual != value)
             {
                 throw new KeywordException($"Register {register} value assertion failed, actual: 0x{actual:x}, expected: 0x{value:x}");
+            }
+        }
+
+        [RobotFrameworkKeyword]
+        public void RunUntilBreakpoint(float timeout, string machine = null, int? cpuId = null, ulong? address = null)
+        {
+            var machineObj = GetMachineByNameOrSingle(machine);
+            var cpu = GetCPU(machineObj, cpuId) as BaseCPU;
+
+            var masterTimeSource = EmulationManager.Instance.CurrentEmulation.MasterTimeSource;
+
+            var mre = new System.Threading.ManualResetEvent(false);
+            var callback = (Action<HaltArguments>)((HaltArguments args) =>
+            {
+                if(address.HasValue && args.Address != address)
+                {
+                    return;
+                }
+
+                if(args.Reason == HaltReason.Breakpoint)
+                {
+                    mre.Set();
+                }
+            });
+
+            var timeoutEvent = masterTimeSource.EnqueueTimeoutEvent((uint)(timeout * 1000));
+
+            try
+            {
+                cpu.Halted += callback;
+                EmulationManager.Instance.CurrentEmulation.StartAll();
+                System.Threading.WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, mre });
+                EmulationManager.Instance.CurrentEmulation.PauseAll();
+
+                if(timeoutEvent.IsTriggered)
+                {
+                    throw new KeywordException($"Breakpoint hasn't been hit in excepted time of {timeout} seconds.");
+                }
+            }
+            finally
+            {
+                cpu.Halted -= callback;
             }
         }
 
