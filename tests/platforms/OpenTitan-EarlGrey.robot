@@ -20,7 +20,6 @@ ${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_f
 ${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_fpga_nexysvideo.elf-s_130232-622f82a8b22083c29c38abed25985e427bbaf83a
 ${SW_RESET_BIN}                 ${URL}/open_titan-earlgrey--rstmgr_sw_req_test_fpga_nexysvideo.elf-s_133012-6ce97eafa18abb7c81e1c0a1c552938435daf2ab
 ${CSRNG_BIN}                    ${URL}/open_titan-earlgrey--csrng_smoketest_fpga_nexysvideo.elf-s_150920-b1e22ef7376b9831febc527d7b0076b764bc16f0
-# To be added from: https://dev.antmicro.com/git/repositories/shodan--opentitan-renode/-/jobs/222852/artifacts/browse/upload/
 ${OTP_VMEM}                     ${URL}/open_titan-earlgrey--otp-img.vmem-s_44772-4e36b9e345c26e52ab8bf9095cf361c1e458d2d5
 ${LC_TRANSITION}                ${URL}/open_titan-earlgrey--lc_ctrl_transition_test_fpga_nexysvideo.elf-s_133300-11da0308c7b4a356043cbef482245612e0c8e0c9
 ${LC_OTP_CFG}                   ${URL}/open_titan-earlgrey--lc_ctrl_otp_hw_cfg_test_fpga_nexysvideo.elf-s_175696-13ae2bce6f776ea36cef183b4387e0f3ed728560
