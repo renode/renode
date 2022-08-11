@@ -16,11 +16,13 @@ We also use an internal issue tracker, so it is possible that some referenced is
 
 Please create an issue even if you plan to fix it (instead of creating a merge request directly - see below).
 
-If you are reporting a bug, in the description of the issue try to focus on clearly stating the steps necessary to reproduce the problem - this will make it easier to trace and fix the bug and prevent unnecessary frustration and delays.
+If you are reporting a bug, the best way to ensure it's reproducible is by using Renode's `Issue reproduction template <https://github.com/renode/renode-issue-reproduction-template>`_.
+Use this repo template to create a setup that reproduces your use cases and fails a test.
+This will ensure we're able to understand the bug you're experiencing and will help us react faster.
 
 If you'd like to file a feature request, then just carefully describe what you need - the more background and precise suggestions you provide, the higher the chance that someone will be able to implement it.
 
-A good issue will include:
+If, for some reason, it's impossible to create a reproduction repo for your issue, please ensure you provide all of the following:
 
 * the platform you are using (MacOS, Windows, Linux, what distro/version?)
 * the Renode version you are using
@@ -43,7 +45,8 @@ To do that, you need to:
 
   ``NUMBER_OF_TICKET-short_name_of_the_issue``, for example ``1234-invalid_instruction_wfi``;
 * write and commit your code (see sections below);
-* create the pull request to our repository on that branch.
+* if your pull request is about to fix an issue or add a new feature, use Renode's `Issue reproduction template <https://github.com/renode/renode-issue-reproduction-template>`_ and try to prepare two branches - one that fails a test and one that includes your fix and passes the same test;
+* create the pull request to our Renode repository with the proposed fix.
 
 What happens then?
 
