@@ -123,7 +123,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             {
                 throw new RecoverableException("Wireshark doesn't contain this interface");
             }
-
         }
 
         private void AddMedium(INetworkLog<INetworkInterface> reporter)
