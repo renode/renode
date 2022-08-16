@@ -92,6 +92,24 @@ rng: Miscellaneous.NRF52840_RNG @ sysbus 0x4000D000
 ecb: Miscellaneous.NRF52840_ECB @ sysbus 0x4000E000
     -> nvic@14
 
+egu0 : Miscellaneous.NRF52840_EGU @ sysbus 0x40014000
+    -> nvic@20
+
+egu1 : Miscellaneous.NRF52840_EGU @ sysbus 0x40015000
+    -> nvic@21
+    
+egu2 : Miscellaneous.NRF52840_EGU @ sysbus 0x40016000
+    -> nvic@22
+
+egu3 : Miscellaneous.NRF52840_EGU @ sysbus 0x40017000
+    -> nvic@23
+
+egu4 : Miscellaneous.NRF52840_EGU @ sysbus 0x40018000
+    -> nvic@24
+
+egu5 : Miscellaneous.NRF52840_EGU @ sysbus 0x40019000
+    -> nvic@25
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/NRF52840.svd.gz
