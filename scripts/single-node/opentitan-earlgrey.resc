@@ -1,5 +1,5 @@
-:name: OpenTitan
-:description: This script runs hello world example on OpenTitan Earl Grey
+:name: OpenTitan Earlgrey
+:description: This script runs hello world example on OpenTitan Earl Grey at commit 1e86ba2a238dc26c2111d325ee7645b0e65058e5
 
 $name?="EarlGrey"
 
@@ -9,19 +9,21 @@ machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
 
 showAnalyzer sysbus.uart0
 
-# Default boot rom is an elf for ease of debugging, but you can use the commented alternatives in reset macro to get the actual boot flow
-$boot?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_nexysvideo.elf-s_253832-2b6b82029ebf834357770756f4ecc60168ed7648
-$boot_binary?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_nexysvideo.scr.bin-s_40960-bf580ad9eb4814cd7b8cedf81751b9c54fc690a1
-$boot_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--boot_rom_fpga_nexysvideo.scr.39.vmem-s_103772-a1083d2181af6fd00fe8a7fd45e918420d54e9a4
-$bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_nexysvideo.elf-s_218784-333535966968de132c1bd5713899064f825af32c
+$boot?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--test_rom_fpga_cw310.elf-s_377516-685e95a3d1b9e190f6538a3f60d99f95cce5aa70
+$boot_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-d4cc5690aaf9072e5e1df0ac8f656947ce82064b
+$otp_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--otp-img.24.vmem-s_44628-e17dede45d7e0509540343e52fe6fce1454c5339
+$bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_fpga_cw310.elf-s_314192-a6472b68ee773ee813d11851b0db30fa50cb1c51
 
 macro reset
-""" 
+"""
     sysbus LoadELF $bin
     sysbus LoadELF $boot
-    # rom_ctrl LoadBinary $boot_binary
-    # rom_ctrl LoadVmem $boot_vmem
-    # cpu0 PC 0x00008084
-""" 
+    rom_ctrl LoadVmem $boot_vmem
+    otp_ctrl LoadVmem $otp_vmem
+"""
+
+# Silence the logs on the SPI adresses - the binary polls this range generating a lot of logs
+sysbus SilenceRange <0x40050000 0x2000>
 
 runMacro $reset
+
