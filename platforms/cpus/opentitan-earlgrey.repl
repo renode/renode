@@ -84,6 +84,16 @@ uart3: UART.OpenTitan_UART @ sysbus 0x40030000
     RxParityErrorIRQ -> rv_plic@32
     FatalAlert -> alert_handler@3
 
+// I2Cs
+i2c0: I2C.OpenTitan_I2C @ sysbus 0x40080000
+    FatalAlert -> alert_handler@6
+
+i2c1: I2C.OpenTitan_I2C @ sysbus 0x40090000
+    FatalAlert -> alert_handler@7
+
+i2c2: I2C.OpenTitan_I2C @ sysbus 0x400A0000
+    FatalAlert -> alert_handler@8
+
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     IRQ -> rv_plic@1
