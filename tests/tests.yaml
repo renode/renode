@@ -88,3 +88,4 @@
 - tests/platforms/SLTB004A.robot
 - tests/platforms/ambiq-apollo4.robot
 - tests/unit-tests/non-blockng-step.robot
+- tests/platforms/STM32L072.robot

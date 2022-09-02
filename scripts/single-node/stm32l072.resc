@@ -1,0 +1,19 @@
+:name: STM32L072
+:description: This script runs the Zephyr shell_module sample on STM32L0 Discovery (B-L072Z-LRWAN1).
+
+using sysbus
+$name?="STM32L072"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/stm32l072.repl
+
+showAnalyzer usart2
+
+$bin ?= @https://dl.antmicro.com/projects/renode/stm32l07--zephyr-shell_module.elf-s_1195760-e9474da710aca88c89c7bddd362f7adb4b0c4b70
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
