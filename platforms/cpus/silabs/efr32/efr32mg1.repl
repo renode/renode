@@ -42,12 +42,6 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
     cpuType: "cortex-m4f"
 
-deviceInformation: Miscellaneous.SiLabs.EFR32DeviceInformation @ sysbus 0x0fe081b0
-    deviceFamily: DeviceFamily.EFR32MG1P
-    deviceNumber: 1
-    flashDevice: flash
-    sramDevice: sram
-
 gpcrc: Miscellaneous.SiLabs.EFR32_GPCRC @ sysbus 0x4001c000
 
 timer0: Timers.EFR32_Timer @ sysbus 0x40018000

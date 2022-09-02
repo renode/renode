@@ -57,8 +57,11 @@ wtimer1: Timers.EFR32_Timer @ sysbus 0x4001a400
     width: TimerWidth.Bit32
     -> nvic@37
 
-deviceInformation:
+deviceInformation: Miscellaneous.SiLabs.EFR32xG12DeviceInformation @ sysbus 0x0FE081B0
     deviceFamily: DeviceFamily.EFR32MG12P
+    deviceNumber: 0x1
+    flashDevice: flash
+    sramDevice: sram
 
 emu_pwrcfg: Python.PythonPeripheral @ sysbus 0x400E3038
     size: 0x8

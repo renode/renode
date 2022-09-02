@@ -9,5 +9,8 @@ button1: Miscellaneous.Button @ gpioPort 65
 si7021: Sensors.SI70xx @ i2c0 0x80
     model: Model.SI7021
 
-deviceInformation:
+deviceInformation: Miscellaneous.SiLabs.EFR32DeviceInformation @ sysbus 0x0fe081b0
+    deviceFamily: DeviceFamily.EFR32MG1P
     deviceNumber: 132
+    flashDevice: flash
+    sramDevice: sram

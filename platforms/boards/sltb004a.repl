@@ -6,6 +6,10 @@ flash:
 spiflash: SPI.Micron_MT25Q @ usart2
     underlyingMemory: flash
 
+deviceInformation:
+    init:
+        EUI48 0xEEEEEEEEEEEE
+
 sysbus:
     init add:
         Tag <0xE00FFFE0 0x4> "PID0" 0x01
