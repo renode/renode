@@ -87,3 +87,4 @@
 - tests/platforms/PolarFireSoC.robot
 - tests/platforms/SLTB004A.robot
 - tests/platforms/ambiq-apollo4.robot
+- tests/unit-tests/non-blockng-step.robot
