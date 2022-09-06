@@ -5,7 +5,6 @@ using sysbus
 
 mach create
 machine LoadPlatformDescription @platforms/boards/max32652-evkit.repl
-cpu PerformanceInMips 120
 
 $bin?=@https://dl.antmicro.com/projects/renode/max32650--sdk-hello_world.elf-s_1032052-8c2f0faf29fc435e8e113885ce22f32984a40bef
 
