@@ -25,11 +25,10 @@ Should Dump PCs
     # exactly the amount of virtual time to execute 16 instructions
     Execute Command                             emulation RunFor "0.000016"
 
-    # wait for the file to populate
-    Sleep  3s
+    Execute Command                             cpu DisableExecutionTracing
 
-    ${content}=  Get File  ${FILE}
-    @{pcs}=  Split To Lines  ${content}
+    ${content}=                                 Get File  ${FILE}
+    @{pcs}=                                     Split To Lines  ${content}
 
     Length Should Be                            ${pcs}      16
     Should Be Equal                             ${pcs[0]}   0x8000
@@ -47,11 +46,10 @@ Should Dump Opcodes
     # exactly the amount of virtual time to execute 16 instructions
     Execute Command                             emulation RunFor "0.000016"
 
-    # wait for the file to populate
-    Sleep  3s
+    Execute Command                             cpu DisableExecutionTracing
 
-    ${content}=  Get File  ${FILE}
-    @{pcs}=  Split To Lines  ${content}
+    ${content}=                                 Get File  ${FILE}
+    @{pcs}=                                     Split To Lines  ${content}
 
     Length Should Be                            ${pcs}      16
     Should Be Equal                             ${pcs[0]}   0xE321F0D3
@@ -61,7 +59,7 @@ Should Dump Opcodes
     Should Be Equal                             ${pcs[14]}  0x0A0D470D
     Should Be Equal                             ${pcs[15]}  0xE28F302C
 
-Should Dump PC And Opcodes
+Should Dump PCs And Opcodes
     Create Machine
     ${FILE}=                                    Allocate Temporary File
 
@@ -69,11 +67,10 @@ Should Dump PC And Opcodes
     # exactly the amount of virtual time to execute 16 instructions
     Execute Command                             emulation RunFor "0.000016"
 
-    # wait for the file to populate
-    Sleep  3s
+    Execute Command                             cpu DisableExecutionTracing
 
-    ${content}=  Get File  ${FILE}
-    @{pcs}=  Split To Lines  ${content}
+    ${content}=                                 Get File  ${FILE}
+    @{pcs}=                                     Split To Lines  ${content}
 
     Length Should Be                            ${pcs}      16
     Should Be Equal                             ${pcs[0]}   0x8000: 0xE321F0D3
@@ -164,14 +161,13 @@ Should Trace Consecutive Blocks
     Execute Command                             emulation RunFor "0.000400"
 
     # should reach the end of the execution
-    ${pc}=  Execute Command                     sysbus.cpu PC
-    Should Contain                              ${pc}   0x300
+    ${pc}=                                      Execute Command  sysbus.cpu PC
+    Should Contain                              ${pc}  0x300
 
-    # wait for the file to populate
-    Sleep  3s
+    Execute Command                             cpu DisableExecutionTracing
 
-    ${content}=  Get File  ${FILE}
-    @{pcs}=  Split To Lines  ${content}
+    ${content}=                                 Get File  ${FILE}
+    @{pcs}=                                     Split To Lines  ${content}
 
     Length Should Be                            ${pcs}      400
     Should Be Equal                             ${pcs[0]}   0x200
@@ -228,11 +224,10 @@ Should Trace In ARM and Thumb State
     # should reach the end of the execution
     PC Should Be Equal                          0x10
 
-    # wait for the file to populate
-    Sleep  3s
+    Execute Command                             cpu DisableExecutionTracing
 
-    ${content}=  Get File  ${FILE}
-    @{pcs}=  Split To Lines  ${content}
+    ${content}=                                 Get File  ${FILE}
+    @{pcs}=                                     Split To Lines  ${content}
 
     Length Should Be                            ${pcs}      7
     Should Be Equal                             ${pcs[0]}   0x0
