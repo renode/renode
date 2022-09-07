@@ -5,6 +5,9 @@ Test Setup                                      Reset Emulation
 Test Teardown                                   Test Teardown
 Resource                                        ${RENODEKEYWORDS}
 
+*** Variables ***
+${bin_out_signature}=                           ReTrace\x01
+
 *** Keywords ***
 Create Machine
     Execute Command                             using sysbus
@@ -15,6 +18,39 @@ Create Machine
     # of multiple instructions to check if the execution tracer can
     # disassemble blocks correctly
     Execute Command                             emulation SetGlobalQuantum "0.000004"
+
+Create Machine RISC-V 64-bit
+    [Arguments]                                 ${pc_hex}
+    Execute Command                             mach create
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacv\\"; timeProvider: empty }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+
+    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
+    Execute Command                             sysbus.cpu PC ${pc_hex}
+
+Create Machine RISC-V 32-bit
+    [Arguments]                                 ${pc_hex}
+    Execute Command                             mach create
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imacv\\"; timeProvider: empty }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+
+    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
+    Execute Command                             sysbus.cpu PC ${pc_hex}
+
+Execute Simple RISC-V Program
+    [Arguments]                                 ${pc_hex}
+    ${pc}=                                      Convert To Integer  ${pc_hex}
+    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x00000013  # nop
+    Execute Command                             sysbus WriteWord ${pc+4} 0x0001            # nop
+    Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x00310093  # addi x1, x2, 003
+
+    Start Emulation
+    Execute Command                             sysbus.cpu Step 3
+
+Should Be Equal As Bytes
+    [Arguments]                                 ${bytes}  ${str}
+    ${str_bytes}                                Convert To Bytes  ${str}
+    Should Be Equal                             ${bytes}  ${str_bytes}  formatter=repr
 
 *** Test Cases ***
 Should Dump PCs
@@ -79,6 +115,115 @@ Should Dump PCs And Opcodes
     Should Be Equal                             ${pcs[3]}   0x359C08: 0xE28F3030
     Should Be Equal                             ${pcs[14]}  0x8010: 0x0A0D470D
     Should Be Equal                             ${pcs[15]}  0x8014: 0xE28F302C
+
+Should Dump 64-bit PCs
+    Create Machine RISC-V 64-bit                0x2000000000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" PC
+    Execute Simple RISC-V Program               0x2000000000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get File  ${trace_filepath}
+    ${output_lines}=                            Split To Lines  ${output_file}
+    Should Contain                              ${output_lines}[0]  0x2000000000
+    Should Contain                              ${output_lines}[1]  0x2000000004
+    Should Contain                              ${output_lines}[2]  0x2000000006
+
+Should Dump Disassembly
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" Disassembly
+    Execute Simple RISC-V Program               0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get File  ${trace_filepath}
+    ${output_lines}=                            Split To Lines  ${output_file}
+    Should Contain                              ${output_lines}[0]  nop
+    Should Contain                              ${output_lines}[1]  nop
+    Should Contain                              ${output_lines}[2]  addi
+
+Should Dump 64-bit PCs As Binary
+    Create Machine RISC-V 64-bit                0x2000000000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" PC true
+    Execute Simple RISC-V Program               0x2000000000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get Binary File  ${trace_filepath}
+    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${output_file}[08:10]  \x08\x00
+
+    Should Be Equal As Bytes                    ${output_file}[10:18]  \x00\x00\x00\x00\x20\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[18:26]  \x04\x00\x00\x00\x20\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[26:34]  \x06\x00\x00\x00\x20\x00\x00\x00
+
+    Length Should Be                            ${output_file}  34
+
+Should Dump 32-bit PCs As Binary
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" PC true
+    Execute Simple RISC-V Program               0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get Binary File  ${trace_filepath}
+    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x00
+
+    Should Be Equal As Bytes                    ${output_file}[10:14]  \x00\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[14:18]  \x04\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[18:22]  \x06\x20\x00\x00
+
+    Length Should Be                            ${output_file}  22
+
+Should Dump Opcodes As Binary
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" Opcode true
+    Execute Simple RISC-V Program               0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get Binary File  ${trace_filepath}
+    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${output_file}[08:10]  \x00\x01
+
+    Should Be Equal As Bytes                    ${output_file}[10:15]  \x04\x13\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[15:18]  \x02\x01\x00
+    Should Be Equal As Bytes                    ${output_file}[18:23]  \x04\x93\x00\x31\x00
+
+    Length Should Be                            ${output_file}  23
+
+Should Dump PCs And Opcodes As Binary
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu EnableExecutionTracing "${trace_filepath}" PCAndOpcode true
+    Execute Simple RISC-V Program               0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    ${output_file}=                             Get Binary File  ${trace_filepath}
+    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+
+    Should Be Equal As Bytes                    ${output_file}[10:14]  \x00\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[14:19]  \x04\x13\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[19:23]  \x04\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[23:26]  \x02\x01\x00\
+    Should Be Equal As Bytes                    ${output_file}[26:30]  \x06\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[30:35]  \x04\x93\x00\x31\x00
+
+    Length Should Be                            ${output_file}  35
+
+Should Show Error When Format Is Incorrect
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Run Keyword And Expect Error                *don't support binary output file with the*formatting*  Execute Command  sysbus.cpu EnableExecutionTracing "${trace_filepath}" Disassembly true
 
 Should Trace Consecutive Blocks
     Execute Command                             mach create
