@@ -62,14 +62,14 @@ Should Run Zephyr Button Sample
     Execute Command          ${BUTTON} Release
     Wait For Line On Uart    Button pressed at   
 
-    # LED blinks when the button is held
+    # LED matches button state and should not change until after the button is pressed/released
     Execute Command          emulation CreateLEDTester "led_tester" ${LED}
     Execute Command          ${BUTTON} Press
-    Execute Command          led_tester AssertState true ${LED_DELAY}
-    Execute Command          led_tester AssertState false ${LED_DELAY}
-    Execute Command          led_tester AssertState true ${LED_DELAY}
-    Execute Command          led_tester AssertState false ${LED_DELAY}
-    Execute Command          led_tester AssertState true ${LED_DELAY}
+    Execute Command          led_tester AssertAndHoldState false ${LED_DELAY} ${LED_DELAY}
+    Execute Command          ${BUTTON} Release
+    Execute Command          led_tester AssertAndHoldState true ${LED_DELAY} ${LED_DELAY}
+    Execute Command          ${BUTTON} Press
+    Execute Command          led_tester AssertAndHoldState false ${LED_DELAY} ${LED_DELAY}
     Execute Command          ${BUTTON} Release
 
 Should Read ADC
