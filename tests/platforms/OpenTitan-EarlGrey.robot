@@ -10,24 +10,24 @@ Resource                        ${RENODEKEYWORDS}
 *** Variables ***
 ${UART}                         sysbus.uart0
 ${URL}                          @https://dl.antmicro.com/projects/renode
-${AES_BIN}                      ${URL}/open_titan-earlgrey--aes_smoketest_prog_fpga_cw310.elf-s_233880-672047d2d70823d371047235e5cb583ff085dd25
-${CSRNG_BIN}                    ${URL}/open_titan-earlgrey--csrng_smoketest_prog_fpga_cw310.elf-s_228852-021bfba38094e461409eaa49712a7bcfbb2afb3a
-${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_prog_fpga_cw310.elf-s_322896-9035eb9fb3c7d9481ce9eea1f1cb135cfe42d664
-${GPIO_BIN}                     ${URL}/open_titan-earlgrey--gpio_smoketest_prog_fpga_cw310.elf-s_208428-be957af5f6649b9b669f464972f3bcb43c31c39d
-${HMAC_BIN}                     ${URL}/open_titan-earlgrey--hmac_smoketest_prog_fpga_cw310.elf-s_242548-ddc819c8d575de209826fdfdcb9f3264288df870
-${KMAC_BIN}                     ${URL}/open_titan-earlgrey--kmac_smoketest_prog_fpga_cw310.elf-s_249568-ab3eaf65a6399d112bd2ea3e8bed330102879bc5
-${KMAC_CSHAKE_BIN}              ${URL}/open_titan-earlgrey--kmac_mode_cshake_test_prog_fpga_cw310.elf-s_236788-6a524618d49a81e5739457b87e6b443c99e11ced
-${KMAC_KMAC_BIN}                ${URL}/open_titan-earlgrey--kmac_mode_kmac_test_prog_fpga_cw310.elf-s_237320-4e70346ed8860d934d426721271c94363c076a24
-${LC_OTP_CFG}                   ${URL}/open_titan-earlgrey--lc_ctrl_otp_hw_cfg_test_prog_fpga_cw310.elf-s_254312-6613af5fc5ed9e8be5f38d1446d11bacb99e8b4f
+${AES_BIN}                      ${URL}/open_titan-earlgrey--aes_smoketest_prog_fpga_cw310-s_239912-3506f84053745f5f37f35209531866ad9fa16228
+${CSRNG_BIN}                    ${URL}/open_titan-earlgrey--csrng_smoketest_prog_fpga_cw310-s_232820-b81d41f67bebe52fba2042742eaf4e81c576ac22
+${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_prog_fpga_cw310-s_328552-1354f2e7304a48b3ed84c270d301211cd32df71d
+${GPIO_BIN}                     ${URL}/open_titan-earlgrey--gpio_smoketest_prog_fpga_cw310-s_214060-09246e86755f6f3e49e5210fc57cbce51f1789af
+${HMAC_BIN}                     ${URL}/open_titan-earlgrey--hmac_smoketest_prog_fpga_cw310-s_248932-0243e4d66a15c6931b578bd4a81b862071bbe4c8
+${KMAC_BIN}                     ${URL}/open_titan-earlgrey--kmac_smoketest_prog_fpga_cw310-s_257184-ae5908214fd1438d8b8ec5ad3e0cfe9c602a1a26
+${KMAC_CSHAKE_BIN}              ${URL}/open_titan-earlgrey--kmac_mode_cshake_test_prog_fpga_cw310-s_243804-f61a86af163541e5bfc54ca81333691d6b08df70
+${KMAC_KMAC_BIN}                ${URL}/open_titan-earlgrey--kmac_mode_kmac_test_prog_fpga_cw310-s_241792-8366dde2c380e0fe7636aa650e0396028a7d2c55
+${LC_OTP_CFG}                   ${URL}/open_titan-earlgrey--lc_ctrl_otp_hw_cfg_test_prog_fpga_cw310-s_258160-70f63dede541716e44a1f7a55129c389c6cd4da3
 ${OTP_VMEM}                     ${URL}/open_titan-earlgrey--otp-img.24.vmem-s_44628-e17dede45d7e0509540343e52fe6fce1454c5339
-${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_prog_fpga_cw310.elf-s_198176-3c438b9e1c074bb08afe188db29e8beac1fd72af
-${SW_RESET_BIN}                 ${URL}/open_titan-earlgrey--rstmgr_sw_req_test_prog_fpga_cw310.elf-s_211576-c6e862c60f11b2f121d4f9396f79c65d7320028b
-${TEST_ROM}                     ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.elf-s_377516-685e95a3d1b9e190f6538a3f60d99f95cce5aa70
-${TEST_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-d4cc5690aaf9072e5e1df0ac8f656947ce82064b
-${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_prog_fpga_cw310.elf-s_216444-a25e86fd436ce2f31e4db677400f3a933f09624d
-${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_fpga_cw310.elf-s_186516-b5f11e2b9112f9857fe47518c2a812c2cedc1f8b
-${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310.elf-s_369840-399ce38d67f780df3e7624b01c217dfac1641c0e
-${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310.elf-s_372064-5e6b4ee5a3f8f10656d18970bde37aad6f494732
+${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_prog_fpga_cw310-s_204336-fc60c0258f0295d4357a3ee0c4031a49f846663b
+${SW_RESET_BIN}                 ${URL}/open_titan-earlgrey--rstmgr_sw_req_test_prog_fpga_cw310-s_217432-d32e3a98fe09f6779787543c86d2d96ac08111cd
+${TEST_ROM}                     ${URL}/open_titan-earlgrey--test_rom_fpga_cw310-s_388132-dab4120064720bf159b577e3cc416c460f6acac4
+${TEST_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-f29ed3b389d4867ff6f8b6fb8d0d2dba9e505585
+${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_prog_fpga_cw310-s_223716-30dd409c881d36937e11280cdd08fc69beb805b6
+${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_fpga_cw310-s_191756-0189d97d3cb70d8b3fce74becf77f359a028f807
+${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310-s_374976-f05e93d928220c226dbedf137f0da8b879ce023c
+${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310-s_378000-e43931d2c469fe986331931ad6abbe20bf10900a
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
