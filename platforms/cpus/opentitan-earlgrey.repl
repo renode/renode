@@ -94,6 +94,19 @@ i2c1: I2C.OpenTitan_I2C @ sysbus 0x40090000
 i2c2: I2C.OpenTitan_I2C @ sysbus 0x400A0000
     FatalAlert -> alert_handler@8
 
+// SPI
+spi_host0: SPI.OpenTitan_SpiHost @ sysbus 0x40300000
+    FatalAlert -> alert_handler@17
+    Error -> rv_plic@134
+    SpiEvent -> rv_plic@135
+    numberOfCSLines: 32
+
+spi_host1: SPI.OpenTitan_SpiHost @ sysbus 0x40310000
+    FatalAlert -> alert_handler@18
+    Error -> rv_plic@136
+    SpiEvent -> rv_plic@137
+    numberOfCSLines: 32
+
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     IRQ -> rv_plic@1

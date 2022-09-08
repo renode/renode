@@ -28,6 +28,7 @@ ${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_p
 ${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_fpga_cw310-s_191756-0189d97d3cb70d8b3fce74becf77f359a028f807
 ${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310-s_374976-f05e93d928220c226dbedf137f0da8b879ce023c
 ${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310-s_378000-e43931d2c469fe986331931ad6abbe20bf10900a
+${SPI_HOST}                     ${URL}/open_titan-earlgrey--spi_host_smoketest_prog_fpga_cw310-s_230244-b03d7d09dc842797261f0e790a68644b84bb8e35
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -51,10 +52,20 @@ ${LEDS}=    SEPARATOR=
 ...  led7: Miscellaneous.LED @ gpio 15       ${\n}
 ...  """
 
+${SPI_FLASH}=    SEPARATOR=
+...  """                                     ${\n}
+...  spi_flash: Memory.MappedMemory          ${\n}
+...  ${SPACE*4}size: 0x1000000               ${\n}
+...                                          ${\n}
+...  mt25q: SPI.Micron_MT25Q @ spi_host0 0   ${\n}
+...  ${SPACE*4}underlyingMemory: spi_flash   ${\n}
+...  """
+
 *** Keywords ***
 Setup Machine
     Execute Command             include @scripts/single-node/opentitan-earlgrey.resc
     Execute Command             machine LoadPlatformDescriptionFromString ${LEDS}
+    Execute Command             machine LoadPlatformDescriptionFromString ${SPI_FLASH}
     Execute Command             sysbus.otp_ctrl LoadVmem ${OTP_VMEM}
     Execute Command             rom_ctrl LoadVmem ${TEST_ROM_SCR_VMEM}
     Execute Command             cpu0 PC 0x00008084
@@ -173,3 +184,6 @@ Should Pass Alert Handler Smoketest
 
 Should Pass Alert Handler Ping Smoketest
     Run Test              ${ALERT_HANDLER_PING}
+
+Should Pass SPI Host Smoketest
+    Run Test              ${SPI_HOST}
