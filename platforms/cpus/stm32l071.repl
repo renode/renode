@@ -25,8 +25,8 @@ flash0: Memory.MappedMemory @ sysbus 0x8000000
 
 rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
 
-rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
-    ->nvic@2
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ->nvic@2
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
