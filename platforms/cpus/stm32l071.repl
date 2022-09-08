@@ -8,6 +8,9 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 sram0: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x5000
 
+adc1: Analog.STM32_ADC @ sysbus 0x40012400
+    IRQ->nvic@12
+
 gpioa: GPIOPort.STM32_GPIOPort @ sysbus <0x50000000, +0x400>
 
 gpiob: GPIOPort.STM32_GPIOPort @ sysbus <0x50000400, +0x400>
@@ -20,6 +23,12 @@ gpioh: GPIOPort.STM32_GPIOPort @ sysbus <0x50001C00, +0x400>
 
 gpioe: GPIOPort.STM32_GPIOPort @ sysbus <0x50001000, +0x400>
 
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+
+i2c3: I2C.STM32F7_I2C @ sysbus 0x40007800
+
 flash0: Memory.MappedMemory @ sysbus 0x8000000
     size: 0x30000
 
@@ -28,6 +37,42 @@ rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     AlarmIRQ->nvic@2
 
+spi1: SPI.STM32SPI @ sysbus 0x40013000
+    ->nvic@25
+
+spi2: SPI.STM32SPI @ sysbus 0x40003800
+    ->nvic@26
+
+timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@15
+
+timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@16
+
+timer21: Timers.STM32_Timer @ sysbus <0x40010800, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@20
+
+timer22: Timers.STM32_Timer @ sysbus <0x40011400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@22
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@17
+
+timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+    frequency: 10000000
+    initialLimit: 0xFFFF
+    ->nvic@18
+
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     ->nvic@28
@@ -35,6 +80,9 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
     ->nvic@27
+
+iwdg: Timers.STM32F4_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
 
 sysbus:
     init:
