@@ -20,7 +20,7 @@ gpioh: GPIOPort.STM32_GPIOPort @ sysbus <0x50001C00, +0x400>
 
 gpioe: GPIOPort.STM32_GPIOPort @ sysbus <0x50001000, +0x400>
 
-flash0: Memory.MappedMemory @ sysbus <0x8000000, +0x30000>
+flash0: Memory.MappedMemory @ sysbus 0x8000000
     size: 0x30000
 
 rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
@@ -28,11 +28,11 @@ rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
 rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
     ->nvic@2
 
-usart2: UART.STM32F7_USART @ sysbus <0x40004400, +0x400>
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     ->nvic@28
 
-usart1: UART.STM32F7_USART @ sysbus <0x40013800, +0x400>
+usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
     ->nvic@27
 
