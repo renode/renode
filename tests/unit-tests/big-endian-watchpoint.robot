@@ -58,8 +58,8 @@ Should Read Big-Endian Value Without Watchpoint
     # Little-endian write
     Execute Command           sysbus WriteDoubleWord 0x40000104 0x78563412
 
-    Start Emulation
     PC Should Be Equal        0x00000000
+    Start Emulation
 
     Execute Command           cpu Step 3
     PC Should Be Equal        0x0000000c
@@ -75,8 +75,8 @@ Should Read Big-Endian Value With Watchpoint
     # Same page as the value that gets accessed, not same address
     Execute Command           sysbus AddWatchpointHook 0x40000200 4 2 "pass"
 
-    Start Emulation
     PC Should Be Equal        0x00000000
+    Start Emulation
 
     Execute Command           cpu Step 3
     PC Should Be Equal        0x0000000c
@@ -86,9 +86,9 @@ Should Write Big-Endian Value Without Watchpoint
     Prepare Machine
     Load Writer Program
 
-    Start Emulation
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
 
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014
@@ -101,9 +101,9 @@ Should Write Big-Endian Value With Watchpoint
     # Same page as the value that gets accessed, not same address
     Execute Command           sysbus AddWatchpointHook 0x40000200 4 2 "pass"
 
-    Start Emulation
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
 
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014
@@ -118,9 +118,9 @@ Write Watchpoint Should See Correct Value
     Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
     Execute Command           logLevel 0
 
-    Start Emulation
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
 
     Execute Command           cpu Step 6
     PC Should Be Equal        0x00000014
