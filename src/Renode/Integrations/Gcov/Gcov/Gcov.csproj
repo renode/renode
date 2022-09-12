@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProductVersion>8.0.30703</ProductVersion>
+        <SchemaVersion>2.0</SchemaVersion>
+        <ProjectGuid>{46c3c820-dab7-4598-aedd-bb5498df9398}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <RootNamespace>Antmicro.Renode.Integrations.Gcov</RootNamespace>
+        <AssemblyName>Gcov</AssemblyName>
+        <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug</OutputPath>
+        <DefineConstants>DEBUG;</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <ExternalConsole>true</ExternalConsole>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release</OutputPath>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <ExternalConsole>true</ExternalConsole>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="System" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Branch.cs" />
+        <Compile Include="BranchFlags.cs" />
+        <Compile Include="File.cs" />
+        <Compile Include="Function.cs" />
+        <Compile Include="FunctionExecution.cs" />
+        <Compile Include="GcdaTagId.cs" />
+        <Compile Include="GcnoTagId.cs" />
+        <Compile Include="Parser.cs" />
+        <Compile Include="Writer.cs" />
+        <Compile Include="IGcnoWriter.cs" />
+        <Compile Include="IGcdaWriter.cs" />
+        <Compile Include="Record.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Infrastructure\src\Emulator\Main\Emulator.csproj">
+            <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
+            <Name>Emulator</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\..\..\..\lib\ELFSharp\ELFSharp\ELFSharp.csproj">
+            <Project>{CF944E09-7C14-433C-A185-161848E989B3}</Project>
+            <Name>ELFSharp</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\..\..\..\lib\ELFSharp\DWARF\DWARF.csproj">
+            <Project>{039C1D3F-9E52-4EBF-AB37-E6315DD8AC56}</Project>
+            <Name>DWARF</Name>
+        </ProjectReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
+
