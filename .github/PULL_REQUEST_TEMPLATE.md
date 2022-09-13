@@ -6,16 +6,16 @@ Please note that all contributions to Renode require you to sign a [Contributor 
 
 Before merging your code to our upstream repositories it will be reviewed by the engineering team working on the project, who will most likely ask you to adapt your code to meet Renode's requirements.
 
-# Related issue
+### Related issue
 
 Please provide the number of the issue that is addressed by this PR in the #number format.
 
-# Description
+### Description
 
 A clear and concise description of what the PR is about.
 Please clearly state if it's a bug fix or a new feature/improvement.
 
-# Usage example
+### Usage example
 
 We provide an [Issue reproduction template repository](https://github.com/renode/renode-issue-reproduction-template), which is the best way to show us how your PR addresses an issue or adds a feature.
 
@@ -27,6 +27,6 @@ In most cases this should be a fairly straightforward process and provide full r
 If you find it difficult to create such a repository, please provide all the necessary details in the text of this PR.
 Please keep in mind that this route may require more back-and-forth communication to verify your contribution.
 
-# Additional information
+### Additional information
 
 Please add all information you feel to be relevant and are not clearly visible in the reproduction repo.
