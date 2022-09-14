@@ -186,56 +186,46 @@ Test DMA Transaction From Verilated Memory to Verilated Memory
 
 *** Test Cases ***
 Should Read Write Verilated Memory Using Socket
-    [Tags]              skip_windows
-
     Create Machine      True
     Test Read Write Verilated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory Using Socket
-    [Tags]              skip_windows
-
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Verilated Memory Using Socket
-    [Tags]              skip_windows
-
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Verilated Memory
 
 Should Run DMA Transaction From Verilated Memory to Mapped Memory Using Socket
-    [Tags]              skip_windows
-
     Create Machine      True
     Test DMA Transaction From Verilated Memory to Mapped Memory
 
 Should Run DMA Transaction From Verilated Memory to Verilated Memory Using Socket
-    [Tags]              skip_windows
-
     Create Machine      True
     Test DMA Transaction From Verilated Memory to Verilated Memory
 
 Should Read Write Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine      False
     Test Read Write Verilated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Verilated Memory
 
 Should Run DMA Transaction From Verilated Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine      False
     Test DMA Transaction From Verilated Memory to Mapped Memory
 
 Should Run DMA Transaction From Verilated Memory to Verilated Memory
-    [Tags]                          skip_osx  skip_windows
+    [Tags]                          skip_osx
     Create Machine      False
     Test DMA Transaction From Verilated Memory to Verilated Memory
