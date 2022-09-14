@@ -9,10 +9,14 @@ machine LoadPlatformDescription @platforms/cpus/verilated/verilated_ibex.repl
 
 $bios?=@https://dl.antmicro.com/projects/renode/litex_ibex--bios.bin-s_20712-80d064cf8ab28801b78c0e5a63cac4830016f6c8
 $cpuLinux?=@https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
+$cpuWindows?=@https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dll-s_3253532-6f580a2d9bf4f525d5e5e6432d0cb1ff4efa9c75
+$cpuMacOS?=@https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dylib-s_329984-1446a5b2d8a92b894bf1b78d16c30cd443c28527
 
 showAnalyzer sysbus.uart
 
 cpu SimulationFilePathLinux $cpuLinux
+cpu SimulationFilePathWindows $cpuWindows
+cpu SimulationFilePathMacOS $cpuMacOS
 
 macro reset
 """

@@ -14,6 +14,8 @@ Create Machine
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/verilated/verilated_ibex.repl
     Execute Command                 sysbus.cpu SimulationFilePathLinux @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
+    Execute Command                 sysbus.cpu SimulationFilePathWindows @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dll-s_3253532-6f580a2d9bf4f525d5e5e6432d0cb1ff4efa9c75
+    Execute Command                 sysbus.cpu SimulationFilePathMacOS @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dylib-s_329984-1446a5b2d8a92b894bf1b78d16c30cd443c28527
     Execute Command                 logLevel 3
     Execute Command                 $bios=@https://dl.antmicro.com/projects/renode/litex_ibex--bios.bin-s_20712-80d064cf8ab28801b78c0e5a63cac4830016f6c8
     Execute Command                 showAnalyzer ${UART}
@@ -39,8 +41,6 @@ Sleep And Measure
 
 *** Test Cases ***
 Should Pause And Resume
-    # For now we build verilated Ibex only for Linux
-    [Tags]                      skip_osx  skip_windows
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -50,8 +50,6 @@ Should Pause And Resume
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Pause And Resume Cpu
-    # For now we build verilated Ibex only for Linux
-    [Tags]                      skip_osx  skip_windows
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -61,8 +59,6 @@ Should Pause And Resume Cpu
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Enter Single Step Blocking
-    # For now we build verilated Ibex only for Linux
-    [Tags]                      skip_osx  skip_windows
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -72,8 +68,6 @@ Should Enter Single Step Blocking
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Enter Single Step Non Blocking
-    # For now we build verilated Ibex only for Linux
-    [Tags]                      skip_osx  skip_windows
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -86,8 +80,6 @@ Should Enter Single Step Non Blocking
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Reset
-    # For now we build verilated Ibex only for Linux
-    [Tags]                      skip_osx  skip_windows
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!

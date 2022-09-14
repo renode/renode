@@ -10,9 +10,6 @@ ${UART}                        sysbus.uart
 
 *** Test Cases ***
 Should Boot
-    # For now we build verilated Ibex only for Linux
-    [Tags]                     skip_osx  skip_windows
-
     Execute Command            i @scripts/single-node/verilated_ibex.resc
     Create Terminal Tester     ${UART}
 
