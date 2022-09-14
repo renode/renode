@@ -25,23 +25,18 @@ namespace Antmicro.Renode.Peripherals.Verilated
             : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, timeout, address)
         {
             this.machine = machine;
+            allTicksProcessedARE = new AutoResetEvent(initialState: false);
             this.OnReceive = HandleReceivedMessage;
 
             timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
-                allTicksProcessed = false;
                 if(!verilatorConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
                 {
                     AbortAndLogError("Send error!");
                 }
                 this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
-                
-                while(!allTicksProcessed)
-                {
-                    verilatorConnection.HandleMessage();
-                }
-                
+                allTicksProcessedARE.WaitOne();
                 this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
             };
 
@@ -90,7 +85,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     Respond(ActionType.WriteToBus, 0, data);
                     break;
                 case ActionType.TickClock:
-                    allTicksProcessed = true;
+                    allTicksProcessedARE.Set();
                     break;
                 default:
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
@@ -116,7 +111,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected const ulong LimitBuffer = 1000000;
 
-        private bool allTicksProcessed;
+        private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
