@@ -11,31 +11,78 @@ OUTPUT_PATH="$ROOT_PATH/output/bin"
 
 TARGET="Release"
 QUIET=false
+TRACE=false
+NET=false
 
 PARAMS=()
-for ARG in "$@"
+while [[ "$#" -gt 0 ]]
 do
-    if [ "$ARG" == "-d" ]
-    then
+    case $1 in
+    -d|--debug)
         TARGET="Debug"
         if $ON_LINUX
         then
             LAUNCHER="$LAUNCHER --debug"
         fi
-    elif [ "$ARG" == "-q" ]
-    then
+        ;;
+    -q|--quiet)
         QUIET=true
-    else
-        PARAMS+=("$ARG")
-    fi
+        ;;
+    --net)
+        NET=true
+        ;;
+    --trace)
+        TRACE=true
+        TRACE_FORMAT=${2:-}
+        case $TRACE_FORMAT in
+            Chromium|chromium)
+                TRACE_FORMAT="Chromium"
+                shift
+                ;;
+            Speedscope|speedscope)
+                TRACE_FORMAT="Speedscope"
+                shift
+                ;;
+            Nettrace|nettrace)
+                TRACE_FORMAT="Nettrace"
+                shift
+                ;;
+            *)
+                # No format specified - use default, don't shift argument list
+                TRACE_FORMAT="Nettrace"
+                ;;
+        esac
+        ;;
+    *)
+        PARAMS+=("$1")
+        ;;
+    esac
+    shift
 done
 
-if ! $ON_WINDOWS
+if ! $NET && $TRACE
+then
+    echo "Tracing is available only on the dotnet target"
+    exit 1
+fi
+
+if [ "$TARGET" == "Release" ] && $TRACE
+then
+    echo "Tracing is available only with the debug target"
+    exit 1
+fi
+
+if $ON_WINDOWS && $TRACE
+then
+    echo "Tracing is not available on the Windows platform"
+fi
+
+if ! $ON_WINDOWS && ! $NET
 then
     verify_mono_version
 fi
 
-if ${REMOTE:-false}
+if ${REMOTE:-false} && ! $NET
 then
     LAUNCHER="$LAUNCHER --debugger-agent=transport=dt_socket,address=0.0.0.0:${REMOTE_PORT:=9876},server=y"
     echo "Waiting for a debugger at port $REMOTE_PORT..."
@@ -46,9 +93,27 @@ then
     exec 2>/dev/null
 fi
 
-if $ON_WINDOWS
+if $NET
 then
-    "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
+    if $ON_WINDOWS
+    then
+        TFM="net6.0-windows10.0.17763.0"
+        "${OUTPUT_PATH}/${TARGET}/${TFM}/Renode.exe" "${PARAMS[@]:-}"
+    else
+        if ! $TRACE
+        then
+            TRACE_COMMAND=""
+        else
+            TRACE_COMMAND="dotnet-trace collect --format ${TRACE_FORMAT} --"
+        fi
+        TFM="net6.0"
+        ${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/${TFM}/Renode.dll" "${PARAMS[@]:-}"
+    fi
 else
-    $LAUNCHER "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
+    if $ON_WINDOWS
+    then
+        "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
+    else
+        $LAUNCHER "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
+    fi
 fi

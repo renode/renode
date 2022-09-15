@@ -16,6 +16,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--properties-file", action="store", help="Location of properties file.")
     parser.add_argument("--skip-building", action="store_true", help="Do not build tests before run.")
     parser.add_argument("--force-net-framework-version", action="store", dest="framework_ver_override", help="Override target .NET Framework version when building tests.")
+    parser.add_argument("--dotnet-test", action="store_true", help="Use native dotnet test runner.")
 
 class NUnitTestSuite(object):
     nunit_path = os.path.join(this_path, './../lib/resources/tools/nunit3/nunit3-console.exe')
@@ -41,6 +42,9 @@ class NUnitTestSuite(object):
         return ret
 
     def prepare(self, options):
+        if options.dotnet_test:
+            return 0
+
         if not options.skip_building:
             print("Building {0}".format(self.path))
             if platform == "win32":
@@ -65,9 +69,9 @@ class NUnitTestSuite(object):
         project_file = os.path.split(self.path)[1]
         output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(project_file))
 
-        if options.dotnettest:
+        if options.dotnet_test:
             print('Using native dotnet test runner -' + self.path)
-            args = ['dotnet', 'test', "--verbosity", "quiet", "--logger", "console;verbosity=detailed" , '--configuration', 'debug', '/p:NET=true', self.path]
+            args = ['dotnet', 'test', "--verbosity", "quiet", "--logger", "console;verbosity=detailed" , '--configuration', options.configuration, '/p:NET=true', self.path]
             process = subprocess.Popen(args)
             print('dotnet test runner PID is {}'.format(process.pid))
             process.wait()
