@@ -12,7 +12,7 @@ using sysbus
 mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/litex_linux_vexriscv_sdcard.repl
-machine SdCardFromFile $rootfs mmc_controller False
+machine SdCardFromFile $rootfs mmc_controller 0x20000000 False
 
 showAnalyzer uart
 

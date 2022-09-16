@@ -28,7 +28,7 @@ Create Platform
 
     Execute Command            cpu PC 0x40f00000
 
-    Execute Command            machine SdCardFromFile @https://dl.antmicro.com/projects/renode/${sdcard_image} mmc_controller False
+    Execute Command            machine SdCardFromFile @https://dl.antmicro.com/projects/renode/${sdcard_image} mmc_controller 0x4000000 False
 
 Load Rootfs To Ram
     Execute Command            set rootfs @https://dl.antmicro.com/projects/renode/litex_vexriscv-sdcard--rootfs.cpio-s_4064768-3107c4884136bce0fccb40193416da6b179fd8cd
@@ -48,7 +48,7 @@ Should Mount Filesystem From SD Card
     Wait For Line On Uart      mmc0: new SD card at address 0000
     Wait For Line On Uart      blk_queue_max_hw_sectors: set to minimum 8
     Wait For Line On Uart      blk_queue_max_segment_size: set to minimum 4096
-    Wait For Line On Uart      mmcblk0: mmc0:0000 RENOD 61.0 MiB 
+    Wait For Line On Uart      mmcblk0: mmc0:0000 RENOD 64.0 MiB 
     Wait For Line On Uart      mmcblk0: p1
 
     Wait For Prompt On Uart    buildroot login:
