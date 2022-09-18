@@ -21,7 +21,7 @@ void APB3::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void APB3::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000)
+void APB3::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
 {
     do
     {

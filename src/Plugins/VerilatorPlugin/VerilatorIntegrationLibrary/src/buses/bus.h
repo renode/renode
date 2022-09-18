@@ -9,6 +9,10 @@
 
 #include <cstdint>
 
+#ifndef DEFAULT_TIMEOUT
+#define DEFAULT_TIMEOUT 2000
+#endif
+
 class RenodeAgent;
 
 class BaseBus
