@@ -19,7 +19,7 @@ using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class BaseDoubleWordVerilatedPeripheral : VerilatedPeripheral, IDoubleWordPeripheral
+    public class BaseDoubleWordVerilatedPeripheral : VerilatedPeripheral, IDoubleWordPeripheral, IAbsoluteAddressAware
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
             : base(machine, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address, numberOfInterrupts)
@@ -33,7 +33,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath first!");
                 return 0;
             }
-            Send(ActionType.ReadFromBus, (ulong)offset, 0);
+            Send(ActionType.ReadFromBus, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, 0);
             var result = Receive();
             CheckValidation(result);
 
@@ -47,8 +47,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath first!");
                 return;
             }
-            Send(ActionType.WriteToBus, (ulong)offset, value);
+            Send(ActionType.WriteToBus, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, value);
             CheckValidation(Receive());
         }
+
+        public void SetAbsoluteAddress(ulong address)
+        {
+            this.absoluteAddress = address;
+        }
+
+        public bool UseAbsoluteAddress { get; set; }
+
+        private ulong absoluteAddress;
     }
 }
