@@ -46,7 +46,7 @@ void AxiSlave::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void AxiSlave::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
+void AxiSlave::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
 {
     do
     {

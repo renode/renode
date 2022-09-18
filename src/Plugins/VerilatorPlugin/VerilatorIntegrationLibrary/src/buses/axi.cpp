@@ -38,7 +38,7 @@ void Axi::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout)
+void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout = DEFAULT_TIMEOUT)
 {
     do {
         tick(true);

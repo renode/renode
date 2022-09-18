@@ -85,6 +85,6 @@ struct Axi : public BaseAxi, public BaseTargetBus
     virtual uint64_t read(uint64_t addr);
     virtual void reset();
 
-    void timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20);
+    void timeoutTick(uint8_t *signal, uint8_t value, int timeout);
 };
 #endif

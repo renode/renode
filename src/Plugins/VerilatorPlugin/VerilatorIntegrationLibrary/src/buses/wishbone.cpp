@@ -20,7 +20,7 @@ void Wishbone::tick(bool countEnable, uint64_t steps = 1)
     }
 }
 
-void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20)
+void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = DEFAULT_TIMEOUT)
 {
     do {
         tick(true);
@@ -32,7 +32,7 @@ void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20)
 // after the signal is set, as the change should be recognized after the next
 // rising edge (`tick` function returns right before the rising edge). It's only
 // an option because it may break communication with LiteX-generated IP cores.
-#ifdef WISHBONE_EXTRA_WAIT_TICK
+#ifdef WISHBONE_EXTRA_WAIT_TICK 
     tick(true);
 #endif
 
@@ -49,7 +49,7 @@ void Wishbone::write(uint64_t addr, uint64_t value)
     *wb_stb = 1;
 //  According to Wishbone B4 spec when using 32 bit bus with byte granularity
 //  we drop 2 youngest bits
-    *wb_addr = addr >> 2;
+    *wb_addr = (addr >> 2) << 2;
     *wb_wr_dat = value;
 
     timeoutTick(wb_ack, 1);
@@ -68,7 +68,7 @@ uint64_t Wishbone::read(uint64_t addr)
     *wb_sel = 0xF;
     *wb_cyc = 1;
     *wb_stb = 1;
-    *wb_addr = addr >> 2;
+    *wb_addr = (addr >> 2) << 2;
 
     timeoutTick(wb_ack, 1);
     uint64_t result = *wb_rd_dat;
