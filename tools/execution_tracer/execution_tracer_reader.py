@@ -93,13 +93,18 @@ class InvalidFileFormatException(Exception):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
-    parser.add_argument("file", type=argparse.FileType("rb"), help="binary file")
+    parser.add_argument("file", help="binary file")
 
     args = parser.parse_args()
 
     try:
-        trace_data = read_file(args.file)
-        for entry in trace_data:
-            print(trace_data.format_entry(entry))
+        with open(args.file, "rb") as file:
+            trace_data = read_file(file)
+            for entry in trace_data:
+                print(trace_data.format_entry(entry))
     except InvalidFileFormatException as err:
         sys.exit(f"Error: {err}")
+    except KeyboardInterrupt:
+        sys.exit(1)
+    except Exception as err:
+        sys.exit(err)
