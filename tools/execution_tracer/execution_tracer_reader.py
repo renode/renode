@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-import sys
+import sys, os
+import gzip
 
 FILE_SIGNATURE = b"ReTrace"
 FILE_VERSION = b"\x01"
@@ -94,11 +95,20 @@ class InvalidFileFormatException(Exception):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
     parser.add_argument("file", help="binary file")
+    parser.add_argument("-d", action="store_true", default=False,
+        help="decompress file, without the flag decompression is enabled based on a file extension")
+    parser.add_argument("--force-disable-decompression", action="store_true", default=False)
 
     args = parser.parse_args()
 
-    try:
-        with open(args.file, "rb") as file:
+    try:        
+        filename, file_extension = os.path.splitext(args.file)        
+        if (args.d or file_extension == ".gz") and not args.force_disable_decompression:
+            file_open = gzip.open
+        else:
+            file_open = open
+
+        with file_open(args.file, "rb") as file:
             trace_data = read_file(file)
             for entry in trace_data:
                 print(trace_data.format_entry(entry))
