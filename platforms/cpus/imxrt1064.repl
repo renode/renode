@@ -53,12 +53,8 @@ dcdc: Python.PythonPeripheral @ sysbus 0x40080000
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
-gpTimer1: Python.PythonPeripheral @ sysbus 0x401EC000
-    size: 0x4000
-    initable: true
-    filename: "scripts/pydev/ticker.py"
-    init:
-        ControlWrite 2 100 // set timer step to 100
+gpTimer1: Timers.IMX_GPTimer @ sysbus 0x401EC000
+    IRQ -> nvic@100
 
 lpuart1: UART.LowPower_UART @ sysbus 0x40184000
     IRQ -> nvic@20
