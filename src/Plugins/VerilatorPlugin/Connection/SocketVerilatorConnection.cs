@@ -266,7 +266,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         }
 
         private bool abort;
-        private bool disposeInitiated;
+        private volatile bool disposeInitiated;
         private string simulationFilePath;
         private Process verilatedProcess;
         private SocketComunicator mainSocketComunicator;
