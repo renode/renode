@@ -1,0 +1,77 @@
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	  <Deterministic>false</Deterministic>
+    <OutputPath>..\..\output\bin\$(Configuration)</OutputPath>
+    <OutputType>Exe</OutputType>
+    <StartupObject>Antmicro.Renode.Program</StartupObject>
+    <AssemblyName>Renode</AssemblyName>
+    <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
+  </PropertyGroup>
+  <Import Project="$(PropertiesLocation)" />
+  <ItemGroup>
+    <Using Include="Antmicro.Renode.Core.Range" Alias="Range" />
+  </ItemGroup>
+  <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
+    <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" Condition=" $(OS) != 'Windows_NT'" />
+    <PackageReference Include="IronPython.StdLib" Version="2.7.11" />
+    <Reference Include="Sprache">
+      <HintPath>..\..\lib\resources\libraries\Sprache.dll</HintPath>
+    </Reference>
+    <Reference Include="CookComputing.XmlRpcV2">
+      <HintPath>..\..\lib\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\src\UI\UI_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\AntShell\AntShell\AntShell_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\Migrant\Migrant\Migrant_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Extensions\Extensions_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\options-parser\OptionsParser_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\xwt\Xwt\Xwt_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj" Condition=" $(OS) != 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
+    <ProjectReference Include="..\..\lib\xwt\Xwt.WPF\Xwt.WPF_NET.csproj" Condition=" $(OS) == 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
+    <ProjectReference Include="..\..\lib\termsharp\TermSharp-working_copy_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin_NET.csproj" Condition=" $(GUI_DISABLED) != 'true' "/>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Plugins\TracePlugin\TracePlugin_NET.csproj"/>
+    <ProjectReference Include="..\Plugins\WiresharkPlugin\WiresharkPlugin_NET.csproj"/>
+    <ProjectReference Include="..\Plugins\VerilatorPlugin\VerilatorPlugin_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\Packet.Net\PacketDotNet\PacketDotNet_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-xtensa_NET.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\lib\resources\images\windows_setup\renode_nobg.ico">
+      <Link>Resources\renode_nobg.ico</Link>
+      <LogicalName>renode_nobg.ico</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\lib\resources\images\Renode-logo.png">
+      <Link>Resources\logo.png</Link>
+      <LogicalName>logo.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\RobotoMono-Regular.ttf">
+      <LogicalName>RobotoMono-Regular.ttf</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
+    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(OS) != 'Windows_NT'" />
+    <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
+    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(OS) == 'Windows_NT'" />
+  </Target>
+</Project>

@@ -64,7 +64,7 @@ namespace Antmicro.Renode.RobotFramework
             Logger.Log(LogLevel.Info, "Robot Framework remote servers listener thread stopped");
         }
 
-        private bool quit;
+        private volatile bool quit;
         private readonly HttpListener listener;
         private readonly Thread listenerThread;
         private readonly XmlRpcServer xmlRpcServer;

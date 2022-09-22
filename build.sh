@@ -15,6 +15,8 @@ NIGHTLY=false
 PORTABLE=false
 HEADLESS=false
 SKIP_FETCH=false
+NET=false
+TFM="net6.0"
 PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
@@ -34,6 +36,7 @@ function print_help() {
   echo "--skip-fetch                      skip fetching submodules and additional resources"
   echo "--no-gui                          build with GUI disabled"
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
+  echo "--net                             build with dotnet"
 }
 
 while getopts "cdvpnstbo:-:" opt
@@ -81,6 +84,10 @@ do
           NET_FRAMEWORK_VER=p:TargetFrameworkVersion=v$1
           PARAMS+=($NET_FRAMEWORK_VER)
           OPTIND=2
+          ;;
+        "net")
+          NET=true
+          PARAMS+=(p:NET=true)
           ;;
         *)
           print_help
@@ -150,24 +157,43 @@ then
 elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
+    TFM="net6.0-windows10.0.17763.0"
 else
     BUILD_TARGET=Mono
 fi
 
-TARGET="`get_path \"$PWD/Renode.sln\"`"
+if $NET
+then
+  CS_COMPILER="dotnet build"
+  TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
+else
+  TARGET="`get_path \"$PWD/Renode.sln\"`"
+fi
 
 # Update references to Xwt
-TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
-TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
-if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+if $NET
 then
-    cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
-    sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
-    rm "$TERMSHARP_PROJECT_COPY.bak"
+  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp_NET.csproj"
+  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy_NET.csproj"
+  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+  then
+      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
+      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt_NET.csproj"/' "$TERMSHARP_PROJECT_COPY"
+      rm "$TERMSHARP_PROJECT_COPY.bak"
+  fi
+else
+  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
+  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
+  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
+  then
+      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
+      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
+      rm "$TERMSHARP_PROJECT_COPY.bak"
+  fi
 fi
 
 # Verify Mono and mcs version on Linux and macOS
-if ! $ON_WINDOWS
+if ! $ON_WINDOWS && ! $NET
 then
     if ! [ -x "$(command -v mcs)" ]
     then
@@ -199,7 +225,12 @@ cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 # Build CCTask in Release configuration
 CCTASK_OUTPUT=`mktemp`
 set +e
+if $NET
+then
+$CS_COMPILER $(build_args_helper $NET_FRAMEWORK_VER) $(build_args_helper p:Configuration=Release) $(build_args_helper p:NET=true) "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+else
 $CS_COMPILER $(build_args_helper $NET_FRAMEWORK_VER) $(build_args_helper p:Configuration=Release) "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+fi
 if [ $? -ne 0 ]; then
     cat $CCTASK_OUTPUT
     rm $CCTASK_OUTPUT
@@ -211,14 +242,22 @@ set -e
 # clean instead of building
 if $CLEAN
 then
-    PARAMS+=(t:Clean)
+    if ! $NET
+    then
+      PARAMS+=(t:Clean)
+    fi
     for conf in Debug Release
     do
-        for build_target in Windows Mono Headless
-        do
+      for build_target in Windows Mono Headless
+      do
+        if $NET
+        then
+            dotnet clean $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
+        else
             $CS_COMPILER $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
-        done
-        rm -fr $OUTPUT_DIRECTORY/bin/$conf
+        fi
+      done
+      rm -fr $OUTPUT_DIRECTORY/bin/$conf
     done
     exit 0
 fi
@@ -234,7 +273,12 @@ PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=tru
 $CS_COMPILER $(build_args_helper ${PARAMS[@]}) "$TARGET"
 
 # copy llvm library
-cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
+if $NET
+then
+  cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/$TFM/libllvm-disas.* output/bin/$CONFIGURATION/$TFM
+else
+  cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
+fi
 
 # build packages after successful compilation
 params=""
@@ -256,7 +300,7 @@ then
     echo "Renode built to $EXPORT_DIRECTORY"
 fi
 
-if $PACKAGES
+if $PACKAGES && ! $NET
 then
     if $NIGHTLY
     then
@@ -267,7 +311,7 @@ then
 fi
 
 
-if $PORTABLE
+if $PORTABLE && ! $NET
 then
     if $ON_LINUX
     then

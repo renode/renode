@@ -21,6 +21,8 @@ ${CREATE_SNAPSHOT_ON_FAIL}   True
 ${SAVE_LOG_ON_FAIL}          True
 ${HOLD_ON_ERROR}             False
 ${CREATE_EXECUTION_METRICS}  False
+${NET_PLATFORM}              False
+${PROFILER_PROCESS}          None
 
 *** Keywords ***
 Setup
@@ -41,15 +43,20 @@ Setup
     ...   File Should Exist    ${DIRECTORY}/${BINARY_NAME}  msg=Robot Framework remote server binary not found (${DIRECTORY}/${BINARY_NAME}). Did you forget to build it in ${CONFIGURATION} configuration?
 
     # this handles starting on Linux/macOS using mono launcher
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows'
+    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
     ...   Start Process  mono  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
 
     # this handles starting on Windows without an explicit launcher
     # we use 'shell=true' to execute process from current working directory
     Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
     ...   Start Process  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
+    
+    # this handles starting on all platforms with dotnet launcher
+    # we use 'shell=true' to execute process from current working directory
+    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and ${NET_PLATFORM}
+    ...   Start Process  dotnet ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
 
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows'
+    Run Keyword If       not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
     ...   Start Process  mono
           ...            --debug
           ...            --debugger-agent\=transport\=dt_socket,address\=0.0.0.0:${SERVER_REMOTE_PORT},server\=y,suspend\=${SERVER_REMOTE_SUSPEND}
@@ -115,7 +122,13 @@ Save Log Of Failed Test
     Log To Console     !!!!! Log saved to "${log_path}"
     Save Cached Log    ${log_path}
 
+Test Setup
+    Run Keyword If  'profiling' in @{TEST TAGS}
+    ...   Start Profiler
+
 Test Teardown
+    Stop Profiler
+
     Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
     ...   Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
@@ -138,3 +151,32 @@ Test Teardown
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
+
+Start Profiler Or Skip
+    Run Keyword If              not ${NET_PLATFORM}
+    ...  Fail                   Failed to run profiler. Available only for .NET platform.  skipped
+
+    Start Profiler
+
+Start Profiler
+    Run Keyword If              not ${NET_PLATFORM}
+    ...  Fail                   Failed to run profiler. Available only for .NET platform.
+
+    ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
+    ${test_name}=               Replace String  ${test_name}  ${SPACE}  _
+
+    ${traces_dir}=              Set Variable  ${RESULTS_DIRECTORY}/traces
+    Create Directory            ${traces_dir}
+
+    ${trace_path}=              Set Variable  ${traces_dir}/${test_name}
+    Log To Console              !!!!! Writing nettrace to "${trace_path}.nettrace"
+    Log To Console              !!!!! Writing speedscope trace to "${trace_path}.speedscope.json"
+    # note that those logs may not be bundled with log and snapshot saving info
+
+    ${proc}=                    Start Process  dotnet  trace  collect  -p  ${RENODE_PID}  --format  Speedscope  -o  ${trace_path}.nettrace
+    Set Test Variable           ${PROFILER_PROCESS}  ${proc}
+
+Stop Profiler
+    Run Keyword If  ${PROFILER_PROCESS}  Run Keywords
+    ...         Terminate Process           ${PROFILER_PROCESS}
+    ...   AND   Set Test Variable           ${PROFILER_PROCESS}  None
