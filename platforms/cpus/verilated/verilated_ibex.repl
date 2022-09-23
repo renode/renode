@@ -1,13 +1,13 @@
-rom: Memory.MappedMemory @ sysbus 0x0
+rom: Memory.ArrayMemory @ sysbus 0x0
     size: 0x8000
 
-sram: Memory.MappedMemory @ sysbus 0x1000000
+sram: Memory.ArrayMemory @ sysbus 0x1000000
     size: 0x2000
 
-main_ram: Memory.MappedMemory @ sysbus 0x40000000
+main_ram: Memory.ArrayMemory @ sysbus 0x40000000
     size: 0x10000000
 
-stack: Memory.MappedMemory @ sysbus 0xF0000000
+stack: Memory.ArrayMemory @ sysbus 0xF0000000
     size: 0x10000000
 
 cpu: Verilated.VerilatedRiscV32 @ sysbus
