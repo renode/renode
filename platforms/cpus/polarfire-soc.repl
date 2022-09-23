@@ -192,6 +192,9 @@ usb: USB.MPFS_USB @ sysbus 0x20201000
 l2Lim: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x02000000
 
+l2ZeroDevice: Memory.MappedMemory @ sysbus 0x0A000000
+    size: 0x02000000
+
 e51DTim: Memory.MappedMemory @ sysbus 0x01000000
     size: 0x2000
 
