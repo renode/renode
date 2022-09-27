@@ -57,10 +57,10 @@ Should Successfully Run stimer Example
 
 Should Successfully Run rtc_print Example
     Create Machine
-    Start Example             rtc_print.axf-s_259852-79ff69aa1f56b0b8a8cae65684b9d73ecd4e9fc3
+    Start Example             rtc_print.axf-s_259852-abb4ec53fd71107857a6b0a60994e81cda77d4d5
 
-    # The time printed is taken during compilation from GCC's '__TIME__'.
-    Wait For Line On Uart     It is now 9 : 00 : 00.00 Sunday April 26, 2022    includeUnfinishedLine=true
+    # A fixed time set in the test instead of the compilation time.
+    Wait For Line On Uart     It is now 9 : 00 : 00.00 Tuesday April 26, 2022    includeUnfinishedLine=true
 
     # Check RTC setting and progress.
     Execute Command           pause
