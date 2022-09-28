@@ -116,21 +116,27 @@ then
     exit 1
 fi
 
-# Update submodules if not initialized or if requested by the user
-# Warn if not updating, but unclean
-# Disabling -e to allow grep to fail
-set +e
-git submodule status --recursive | grep -q "^-"
-SUBMODULES_NOT_INITED=$?
-
-git submodule status --recursive | grep -q "^+"
-SUBMODULES_NOT_CLEAN=$?
-set -e
+# We can only update parts of this repository if Renode is built from within the git tree
+if [ ! -e .git ]
+then
+  SKIP_FETCH=true
+  UPDATE_SUBMODULES=false
+fi
 
 if $SKIP_FETCH
 then
   echo "Skipping init/update of submodules"
 else
+  # Update submodules if not initialized or if requested by the user
+  # Warn if not updating, but unclean
+  # Disabling -e to allow grep to fail
+  set +e
+  git submodule status --recursive | grep -q "^-"
+  SUBMODULES_NOT_INITED=$?
+
+  git submodule status --recursive | grep -q "^+"
+  SUBMODULES_NOT_CLEAN=$?
+  set -e
   if $UPDATE_SUBMODULES || [ $SUBMODULES_NOT_INITED -eq 0 ]
   then
       echo "Updating submodules..."
