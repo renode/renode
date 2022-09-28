@@ -84,6 +84,21 @@ usart1: UART.STM32F7_USART @ sysbus 0x40013800
 iwdg: Timers.STM32F4_IndependentWatchdog @ sysbus 0x40003000
     frequency: 32000
 
+nvicInput10: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@10
+
+nvicInput11: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 4
+    -> nvic@11
+
+dma1: DMA.STM32G0DMA @ sysbus 0x40020000
+    numberOfChannels: 7
+    0 -> nvic@9
+    [1, 2] -> nvicInput10@[0, 1]
+    [3-6] -> nvicInput11@[0-3]
+
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L0x1.svd
