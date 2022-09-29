@@ -212,7 +212,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
 
-        private static readonly DateTime localEpoch = new DateTime(1970, 1, 1).ToLocalTime();
+        private static readonly DateTime localEpoch = Misc.UnixEpoch.ToLocalTime();
 
 #if !PLATFORM_WINDOWS
         private string namedPipePrefix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
