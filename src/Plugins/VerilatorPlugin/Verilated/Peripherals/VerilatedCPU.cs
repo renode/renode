@@ -35,10 +35,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             verilatedPeripheral = new BaseVerilatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, BaseVerilatedPeripheral.DefaultTimeout, address);
             verilatedPeripheral.OnReceive = HandleReceived;
-            CyclesPerInstruction = 1;
 
-            singleStepSynchronizer = new Synchronizer();
-            
             InitializeRegisters();
         }
 
@@ -166,48 +163,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
-        protected override void UpdateHaltedState(bool ignoreExecutionMode = false)
-        {
-            var shouldBeHalted = (isHaltedRequested || (executionMode == ExecutionMode.SingleStepNonBlocking && !ignoreExecutionMode));
-
-            if(shouldBeHalted == currentHaltedState)
-            {
-                return;
-            }
-
-            lock(pauseLock)
-            {
-                this.Trace();
-                currentHaltedState = shouldBeHalted;
-                if(TimeHandle != null)
-                {
-                    this.Trace();
-                    TimeHandle.DeferredEnabled = !shouldBeHalted;
-                }
-            }
-        }
-
         public override ulong ExecutedInstructions => totalExecutedInstructions;
-
-        protected override void RequestPause()
-        {
-            lock(pauseLock)
-            {
-                isPaused = true;
-                this.Trace("Requesting pause");
-                sleeper.Interrupt();
-            }
-        }
-
-        protected override void InnerPause(bool onCpuThread, bool checkPauseGuard)
-        {
-            RequestPause();
-
-            if(onCpuThread)
-            {
-                TimeHandle.Interrupt();
-            }
-        }
 
         protected override ExecutionResult ExecuteInstructions(ulong numberOfInstructionsToExecute, out ulong numberOfExecutedInstructions)
         { 
@@ -232,7 +188,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     else
                     {
                         ticksProcessed = false;
-                        verilatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute * (ulong)CyclesPerInstruction);
+                        verilatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
                         while(!ticksProcessed)
                         {
                             verilatedPeripheral.HandleMessage();
