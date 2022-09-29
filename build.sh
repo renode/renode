@@ -314,6 +314,7 @@ then
     fi
 
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+    $ROOT_PATH/tools/packaging/make_source_package.sh $params
 fi
 
 
