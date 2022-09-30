@@ -81,6 +81,11 @@ usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
     ->nvic@27
 
+lpuart1: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 200000000
+    lowPowerMode: true
+    ->nvic@29
+
 iwdg: Timers.STM32F4_IndependentWatchdog @ sysbus 0x40003000
     frequency: 32000
 
