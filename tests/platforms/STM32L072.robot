@@ -5,6 +5,12 @@ Test Setup                    Reset Emulation
 Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
+*** Keywords ***
+Check Zephyr Version
+    Wait For Prompt On Uart  $
+    Write Line To Uart       version
+    Wait For Line On Uart    Zephyr version 2.6.99
+
 *** Test Cases ***
 Should Handle Version Command In Zephyr Shell
     Execute Command          include @scripts/single-node/stm32l072.resc
@@ -13,9 +19,17 @@ Should Handle Version Command In Zephyr Shell
 
     Start Emulation
 
-    Wait For Prompt On Uart  $
-    Write Line To Uart       version
-    Wait For Line On Uart    Zephyr version 2.6.99
+    Check Zephyr Version
+
+Should Handle Version Command In Zephyr Shell On Lpuart
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/bl072z_lrwan1--zephyr-shell_module_lpuart.elf-s_1197384-aea9caa07fddc35583bd09cb47563a11a2f90935
+
+    Create Terminal Tester   sysbus.lpuart1
+
+    Start Emulation
+
+    Check Zephyr Version
 
 Should Handle DMA Memory To Memory Transfer
     Execute Command          include @scripts/single-node/stm32l072.resc
