@@ -85,3 +85,15 @@ Should Fire Update Event When Counting Down
     Wait For Line On Uart   period elapsed callback
     Wait For Line On Uart   period elapsed callback
 
+Should Print Hello World When Built With STM32CubeMX
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4--cube_mx-hello_world.elf-s_625976-606092c29de896f3bd83a4e981f2c7f3a6ed3142
+
+    Create Terminal Tester  sysbus.usart2
+
+    Start Emulation
+    
+    Wait For Line On Uart   Hello World!
+    Wait For Line On Uart   Hello World!
+    Wait For Line On Uart   Hello World!
