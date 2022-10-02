@@ -62,15 +62,7 @@ namespace Antmicro.Renode.Connectors
             {
                 throw new RecoverableException("Peripheral {0} has no GPIO with number: {1}".FormatWith(source, pinNumber));
             }
-            if(sourcePin != null)
-            {
-                sourcePin.Disconnect();
-            }
             sourcePin = tempPin ?? throw new RecoverableException("Source PIN cannot be selected.");
-            if(sourcePin.IsConnected)
-            {
-                this.Log(LogLevel.Warning, "Overwriting source PIN connection.");
-            }
             sourcePin.Connect(this, 0);
         }
 
