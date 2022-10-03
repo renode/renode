@@ -3,6 +3,105 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.13.2 - 2022.10.03
+-------------------
+
+Added platforms:
+
+* Ambiq Apollo4 with ADC, GPIO, IO Master, System Timer, RTC, UART and other peripherals
+* STM32L07x with ADC, GPIO, I2C ,RTC, SPI, Timer, USART, IWDG, DMA and other peripherals (RCC)
+* verilated Ibex core with the rest of the platform natively in Renode
+
+Added models:
+
+* MAX32650 TPU with CRC32 support
+* basic support for MAX32650 ADC
+* MAX32650 SPI
+* MAX32650 Watchdog
+* LSM6DSO IMU
+* EFR32xG12DeviceInformation
+* External CPU stub as a base for integration of other CPU simulators
+* OpenTitan SPI host
+* OpenTitan I2C host
+* OpenTitan Alert Handler, along with updates to other OpenTitan peripherals with alert functionality
+* new algorithms and cores in AthenaX5200
+* EFR32MG1 BitAccess
+* i.MX RT GPTimer
+
+Added demos and tests:
+
+* STM32L072 Zephyr shell_module demo and test
+* Ambiq Apollo4 Hello World example from Ambiq Suite and various peripheral tests
+* MAX32652 EVKIT Hello World example from MAX32652 SDK
+* FPGA ISP co-simulation demo and test
+
+Added features:
+
+* experimental support for .NET 6 framework
+* guest-application profiling for ARM
+* Interrupt hooks for ARM
+* BLE sniffer support for Wireshark
+* Perfetto profiler format support in guest-application profiling, along with process detection on RISC-V
+* binary output format of execution tracer, along with a Python helper script to decode data
+* new Run Until Breakpoint keyword for Robot tests
+* verbose mode in Robot tester
+* region of interest support in FrameBufferTester
+* framework for providing timestamped sensor data
+* WishboneInitiator bus in Verilator support
+* nightly “sources” package with the whole content required for building Renode offline
+
+Organizational improvements:
+
+* added GitHub issue and PR templates, along with an `issue reproduction repository <https://github.com/renode/renode-issue-reproduction-template>`_
+updated contributing instructions
+
+Changed:
+
+* added mapping for l2ZeroDevice in PolarFire SoC
+* added caching of canvas bounds in TermSharp for improved performance
+* restructured height map storage in TermSharp
+* updated descriptions of SLTB004A and EFR32MG12 targets
+* restructured CPU-related class hierarchy
+* disabled TCG optimizations and liveness analysis for improved performance
+* updated OpenTitan supported version, changing a range of OpenTitan peripherals
+* major refactor of VerilatorIntegrationLibrary, with new interfaces and code restructuration
+* updated symbol exclusion rules not to include $x symbol names in SymbolLookup
+* disabled TLB flushing in RISC-V on mode change for improved performance
+* allowed more than one page permission at a time in RISC-V, reducing the number of address translations
+* improved output of Robot tests with timestamps and explicit test results after each suite
+* SD card controller now supports more card types
+
+Fixed:
+
+* PMP implementation for RISC-V
+* several RISC-V vector instructions including floating-point vector instructions
+* 'Take Screenshot' button in VideoAnalyzer
+* non-blocking CPU stepping
+* crash when loading file without sufficient permissions
+* external MMU not respecting the `no_page_fault` flag
+* issues with concurrent creation of config file
+* indeterminism of sel4_extensions test
+* GDB Stub not issuing an error when trying to add zero-sized watchpoint
+* handling of watchpoints on big-endian platforms
+* portability of MSBuild calls across different host systems
+* PolarFire SoC Watchdog test
+* serialization of FrameBufferTester
+* translation cache flushing after reset
+
+Improvements in peripherals:
+
+* Cortex-M NVIC
+* HPSHostController
+* NRF52840 Watchdog
+* BMC050 accelerometer
+* MAX32650 RTC
+* MAX32650 GCR
+* STM32F7 I2C
+* STM32G0 DMA
+* Micron MT25Q
+* i.MX RT GPIO
+
+
 1.13.1 - 2022.07.23
 -------------------
 
