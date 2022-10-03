@@ -36,7 +36,7 @@ def show_peripheral_access(metricsParser, options, twoPlotFigureSize, fontSize):
     set_legend_picker(fig, writeLines, writeLegend)
     set_legend_picker(fig, readLines, readLegend)
 
-    x_label = '{} time in miliseconds'.format('Real' if options.real_time else 'Virtual')
+    x_label = '{} time [ms]'.format('Real' if options.real_time else 'Virtual')
     writesAx.set_xlabel(x_label)
     readsAx.set_xlabel(x_label)
     writesAx.set_ylabel('Write operations')

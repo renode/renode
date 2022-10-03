@@ -18,7 +18,7 @@ def show_memory_access(metricsParser, options, onePlotFigureSize, fontSize):
     handles, labels = ax.get_legend_handles_labels()
     legend = fig.legend(handles, labels, loc='upper left')
     set_legend_picker(fig, lines, legend)
-    ax.set_xlabel('{} time in miliseconds'.format('Real' if options.real_time else 'Virtual'))
+    ax.set_xlabel('{} time [ms]'.format('Real' if options.real_time else 'Virtual'))
     
     save_fig(fig, 'memory.png', options)
 

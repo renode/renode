@@ -14,7 +14,7 @@ def show_exceptions(metricsParser, options, onePlotFigureSize, fontSize):
 
     fig.suptitle('Exceptions', fontsize=fontSize)
     ax.set_ylabel('Exception operations')
-    ax.set_xlabel('{} time in miliseconds'.format('Real' if options.real_time else 'Virtual'))
+    ax.set_xlabel('{} time [ms]'.format('Real' if options.real_time else 'Virtual'))
 
     handles, labels = ax.get_legend_handles_labels()
     legend = fig.legend(handles, labels, loc='upper left')

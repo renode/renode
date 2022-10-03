@@ -16,7 +16,7 @@ def show_executed_instructions(metricsParser, options, onePlotFigureSize, fontSi
     legend = fig.legend(handles, labels, loc='upper left')
 
     fig.suptitle('Executed instructions', fontsize=fontSize)
-    ax.set_xlabel('{} time in miliseconds'.format('Real' if options.real_time else 'Virtual'))
+    ax.set_xlabel('{} time [ms]'.format('Real' if options.real_time else 'Virtual'))
     ax.set_ylabel('Number of instructions')
 
     set_legend_picker(fig, instructionLines, legend)
