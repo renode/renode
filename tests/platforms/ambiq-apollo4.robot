@@ -65,9 +65,9 @@ Should Successfully Run rtc_print Example
     # Check RTC setting and progress.
     Execute Command           pause
     Execute Command           rtc SetDateTime 2022 12 31 23 59 59 15
-    ${res}=  Execute Command  rtc PrintCurrentDateTime
+    ${res}=  Execute Command  rtc PrintPreciseCurrentDateTime
     Should Contain            ${res}  2022-12-31T23:59:59.1500000
-    ${res}=  Execute Command  emulation RunFor '00:00:00.12'; rtc PrintCurrentDateTime
+    ${res}=  Execute Command  emulation RunFor '00:00:00.12'; rtc PrintPreciseCurrentDateTime
     Should Contain            ${res}  2022-12-31T23:59:59.2700000
 
     # Set the alarm to every second.
@@ -82,14 +82,14 @@ Should Successfully Run rtc_print Example
     Should Contain            ${res}  0x00000000
 
     # Progress the timer and stop before the event
-    ${res}=  Execute Command  emulation RunFor '00:00:00.03'; rtc PrintCurrentDateTime
+    ${res}=  Execute Command  emulation RunFor '00:00:00.03'; rtc PrintPreciseCurrentDateTime
     Should Contain            ${res}  2022-12-31T23:59:59.3000000
     # Check the interrupt status.
     ${res}=  Execute Command  rtc ReadDoubleWord 0x204
     Should Contain            ${res}  0x00000000
 
     # Progress the timer - this time the event should trigger
-    ${res}=  Execute Command  emulation RunFor '00:00:00.01'; rtc PrintCurrentDateTime
+    ${res}=  Execute Command  emulation RunFor '00:00:00.01'; rtc PrintPreciseCurrentDateTime
     Should Contain            ${res}  2022-12-31T23:59:59.3100000
     # Check the interrupt status.
     ${res}=  Execute Command  rtc ReadDoubleWord 0x204
@@ -101,7 +101,7 @@ Should Successfully Run rtc_print Example
     ${res}=  Execute Command  rtc WriteDoubleWord 0x208 0x1; rtc ReadDoubleWord 0x204
     Should Contain            ${res}  0x00000000
     # Progress the timer to the next year.
-    ${res}=  Execute Command  emulation RunFor '00:00:01.00'; rtc PrintCurrentDateTime
+    ${res}=  Execute Command  emulation RunFor '00:00:01.00'; rtc PrintPreciseCurrentDateTime
     Should Contain            ${res}  2023-01-01T00:00:00.3100000
     # Check the interrupt status.
     ${res}=  Execute Command  rtc ReadDoubleWord 0x204
