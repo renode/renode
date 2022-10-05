@@ -225,7 +225,7 @@ Should Read Frames From Camera
     Create Machine           arnold-pulp-camera-s_391968-f3ac0d1bcaf06ba5811c3e5c333aeac8286c5bdc
     Execute Command          machine LoadPlatformDescriptionFromString "himax: Sensors.HiMaxHM01B0 @ camera_controller"
 
-    Execute Command          sysbus.camera_controller.himax ImageSource ${URI}/images/person_image_0.jpg-s_3853-7f2125e28423fa117a1079d84785b17c9b70f62d
+    Execute Command          sysbus.camera_controller.himax AddFrame ${URI}/images/person_image_0.jpg-s_3853-7f2125e28423fa117a1079d84785b17c9b70f62d
 
     Create Terminal Tester   ${UART}
     Start Emulation
