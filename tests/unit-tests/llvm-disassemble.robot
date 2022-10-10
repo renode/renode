@@ -19,10 +19,10 @@ DisasTest BE
     ${b4}=              Get Substring      ${hex_code}    6    8
 
     ${b_write}=         Set Variable       ${b4}${b3}${b2}${b1}
-    ${b_disas}=         Set Variable       ${b1} ${b2} ${b3} ${b4}
+    ${b_disas}=         Set Variable       ${b1}${b2}${b3}${b4}
 
     ${b_disas_4B+}=     Run Keyword If     ${code_size} > 4        Write Extra Bytes BE And Return Their Expected Output    ${hex_addr}    ${hex_code}
-    ${b_disas}=         Set Variable If    ${code_size} > 4        ${b_disas} ${b_disas_4B+}    ${b_disas}
+    ${b_disas}=         Set Variable If    ${code_size} > 4        ${b_disas}${b_disas_4B+}    ${b_disas}
 
     DisasTest Core      ${hex_addr}    ${b_write}    ${b_disas}    ${mnemonic}    ${operands}    ${code_size}
 
@@ -41,7 +41,7 @@ Write Extra Bytes BE And Return Their Expected Output
 
     Execute Command        sysbus WriteDoubleWord 0x${adjusted_addr} 0x${b8}${b7}${b6}${b5}
 
-    Return From Keyword    ${b5} ${b6} ${b7} ${b8}
+    Return From Keyword    ${b5}${b6}${b7}${b8}
 
 
 # WriteDoubleWord:	reversed words
@@ -55,7 +55,7 @@ DisasTest Thumb
     ${w2}=            Get Substring     ${hex_code}    4
 
     ${b_write}=       Set Variable      ${w2}${w1}
-    ${b_disas}=       Set Variable      ${w1} ${w2}
+    ${b_disas}=       Set Variable      ${w1}${w2}
 
     DisasTest Core    ${hex_addr}    ${b_write}    ${b_disas}    ${mnemonic}    ${operands}    ${code_size}
 

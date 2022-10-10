@@ -2,10 +2,25 @@
 import argparse
 import sys, os
 import gzip
+from enum import Enum
 
 FILE_SIGNATURE = b"ReTrace"
-FILE_VERSION = b"\x01"
+FILE_VERSION = b"\x02"
 HEADER_LENGTH = 10
+MEMORY_ACCESS_LENGTH = 9
+
+
+class AdditionalDataType(Enum):
+    Empty = 0
+    MemoryAccess = 1
+
+
+class MemoryAccessType(Enum):
+    MemoryIORead = 0
+    MemoryIOWrite = 1
+    MemoryRead = 2
+    MemoryWrite = 3
+    InsnFetch = 4
 
 
 def read_header(file):
@@ -36,7 +51,7 @@ def read_file(file):
 
 def bytes_to_hex(bytes):
     integer = int.from_bytes(bytes, byteorder="little", signed=False)
-    return "0x{0:0{width}x}".format(integer, width=len(bytes)*2)
+    return "0x{0:0{width}X}".format(integer, width=len(bytes)*2)
 
 
 class TraceData:
@@ -54,10 +69,13 @@ class TraceData:
         return self
 
     def __next__(self):
+        additional_data = []
+
         pc = self.file.read(self.pc_length)
-        opcode_length = self.file.read(int(self.has_opcodes))
-        if not pc and not opcode_length:
+        if len(pc) == 0:
             raise StopIteration
+
+        opcode_length = self.file.read(int(self.has_opcodes))
         if len(pc) != self.pc_length or len(opcode_length) != int(self.has_opcodes):
             raise InvalidFileFormatException("Unexpected end of file")
 
@@ -69,23 +87,46 @@ class TraceData:
         else:
             opcode = b""
 
-        return (pc, opcode)
+        additional_data_type = AdditionalDataType(self.file.read(1)[0])
+        while (additional_data_type is not AdditionalDataType.Empty):
+            if additional_data_type is AdditionalDataType.MemoryAccess:
+                additional_data.append(self.parse_memory_access_data())
+
+            try:
+                additional_data_type = AdditionalDataType(self.file.read(1)[0])
+            except IndexError:
+                break
+        return (pc, opcode, additional_data)
+
+    def parse_memory_access_data(self):
+        data = self.file.read(MEMORY_ACCESS_LENGTH)
+        if len(data) != MEMORY_ACCESS_LENGTH:
+            raise InvalidFileFormatException("Unexpected end of file")
+        type = MemoryAccessType(data[0])
+        address = bytes_to_hex(data[1:])
+
+        return f"{type.name} with address {address}"
 
     def format_entry(self, entry):
-        (pc, opcode) = entry
+        (pc, opcode, additional_data) = entry
         if self.pc_length:
             pc_str = bytes_to_hex(pc)
         if self.has_opcodes:
             opcode_str = bytes_to_hex(opcode)
-
+        output = ""
         if self.pc_length and self.has_opcodes:
-            return f"{pc_str}: {opcode_str}"
+            output = f"{pc_str}: {opcode_str}"
         elif self.pc_length:
-            return pc_str
+            output = pc_str
         elif self.has_opcodes:
-            return opcode_str
+            output = opcode_str
         else:
-            return ""
+            output = ""
+
+        if len(additional_data) > 0:
+            output += "\n" + "\n".join(additional_data)
+
+        return output
 
 
 class InvalidFileFormatException(Exception):
