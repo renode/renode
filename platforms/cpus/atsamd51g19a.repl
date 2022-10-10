@@ -1,0 +1,33 @@
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu0@0
+
+sercom3: UART.SAMD5_UART @ sysbus 0x41014000
+    ->nvic@58
+
+sram0: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x30000
+
+flash0: Memory.MappedMemory @ sysbus 0x0
+    size: 0x80000
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+gclk_phctrl1: Python.PythonPeripheral @ sysbus 0x40001c84
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+pac_intflag: Python.PythonPeripheral @ sysbus 0x40001010
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+pac_status: Python.PythonPeripheral @ sysbus 0x40001040
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/counter.py"
