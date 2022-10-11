@@ -41,6 +41,12 @@ timer5: Timers.MAX32650_Timer @ sysbus 0x40015000
     gcr: gcr
     -> nvic@10
 
+i2c0: I2C.MAX32650_I2C @ sysbus 0x4001D000
+    -> nvic@13
+
+i2c1: I2C.MAX32650_I2C @ sysbus 0x4001E000
+    -> nvic@36
+
 adc: Analog.MAX32650_ADC @ sysbus 0x40034000
     -> nvic@20
 
