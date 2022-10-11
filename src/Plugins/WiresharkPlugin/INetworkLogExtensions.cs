@@ -177,7 +177,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
             else
             {
-                throw new RecoverableException("Wireshark is not installed or is not available in the default path. Please adjust the path in Renode configuration.");
+                throw new RecoverableException($"Wireshark is not installed or is not available in the default path. Please adjust the path in the Renode configuration file ({ConfigurationManager.Instance.FilePath}).");
             }
 
             emulation.HostMachine.AddHostMachineElement(result, name);
