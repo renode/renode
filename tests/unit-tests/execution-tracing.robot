@@ -47,6 +47,18 @@ Run Simple RISC-V Program
     Start Emulation
     Execute Command                             sysbus.cpu Step 3
 
+Run RISC-V Program With Vcfg Instruction
+    [Arguments]                                 ${pc_hex}
+    Execute Command                             sysbus.cpu MSTATUS 0x600
+    ${pc}=                                      Convert To Integer  ${pc_hex}
+    Execute Command                             sysbus.cpu PC ${pc}
+    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x00000013  # nop
+    Execute Command                             sysbus WriteWord ${pc+4} 0x0001            # nop
+    Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x04007057  # vsetvli zero, zero, e8, m1, ta, mu
+
+    Start Emulation
+    Execute Command                             sysbus.cpu Step 3
+
 Run RISC-V Program With Memory Access
     [Arguments]                                 ${pc_hex}
     ${pc}=                                      Convert To Integer  ${pc_hex}
@@ -428,3 +440,46 @@ Should Trace In ARM and Thumb State
     Should Be Equal                             ${pcs[4]}   0x14
     Should Be Equal                             ${pcs[5]}   0x8
     Should Be Equal                             ${pcs[6]}   0xC
+    
+Should trace the RISC-V Vector Configuration
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" Disassembly
+    Execute Command                             trace_name TrackVectorConfiguration
+    Run RISC-V Program With Vcfg Instruction    0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+
+    ${output_file}=                             Get File  ${trace_filepath}
+    Log                                         ${output_file}
+    ${output_lines}=                            Split To Lines  ${output_file}
+    Length Should Be                            ${output_lines}  4
+    Should Contain                              ${output_lines}[0]  nop
+    Should Contain                              ${output_lines}[1]  nop
+    Should Contain                              ${output_lines}[2]  vsetvli zero, zero, e8, m1, ta, mu
+    Should Contain                              ${output_lines}[3]  Vector configured to VL: 0x0, VTYPE: 0x0
+
+Should Be Able To Add Vector Configuration To The Trace In Binary Format
+    Create Machine RISC-V 32-bit                0x2000
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" PCAndOpcode true
+    Execute Command                             trace_name TrackVectorConfiguration
+    Run RISC-V Program With Vcfg Instruction    0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+
+    ${output_file}=                             Get Binary File  ${trace_filepath}
+    Length Should Be                            ${output_file}  55
+
+    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+
+                                                # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
+    Should Be Equal As Bytes                    ${output_file}[10:20]  \x00\x20\x00\x00\x04\x13\x00\x00\x00\x00
+                                                # [0:4]: pc; [4]: opcode_length; [5:7]: opcode; [8]: additional_data_type = None  
+    Should Be Equal As Bytes                    ${output_file}[20:28]  \x04\x20\x00\x00\x02\x01\x00\x00
+                                                # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = VectorConfiguration
+    Should Be Equal As Bytes                    ${output_file}[28:38]  \x06\x20\x00\x00\x04\x57\x70\x00\x04\x02
+                                                # [0:8]: vl; [8:16]: vtype; [16]: additional_data_type = None
+    Should Be Equal As Bytes                    ${output_file}[38:55]  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
+

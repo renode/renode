@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-import sys, os
+import sys
+import os
 import gzip
 from enum import Enum
 
@@ -8,11 +9,13 @@ FILE_SIGNATURE = b"ReTrace"
 FILE_VERSION = b"\x02"
 HEADER_LENGTH = 10
 MEMORY_ACCESS_LENGTH = 9
+RISCV_VECTOR_CONFIGURATION_LENGTH = 16
 
 
 class AdditionalDataType(Enum):
     Empty = 0
     MemoryAccess = 1
+    RiscVVectorConfiguration = 2
 
 
 class MemoryAccessType(Enum):
@@ -48,10 +51,10 @@ def read_file(file):
     (pc_length, has_opcodes) = read_header(file)
     return TraceData(file, pc_length, has_opcodes)
 
-
-def bytes_to_hex(bytes):
+def bytes_to_hex(bytes, zero_padded=True):
     integer = int.from_bytes(bytes, byteorder="little", signed=False)
-    return "0x{0:0{width}X}".format(integer, width=len(bytes)*2)
+    format_string =  "0{}X".format(len(bytes)*2) if zero_padded else "X"
+    return "0x{0:{fmt}}".format(integer, fmt=format_string)
 
 
 class TraceData:
@@ -91,6 +94,8 @@ class TraceData:
         while (additional_data_type is not AdditionalDataType.Empty):
             if additional_data_type is AdditionalDataType.MemoryAccess:
                 additional_data.append(self.parse_memory_access_data())
+            elif additional_data_type is AdditionalDataType.RiscVVectorConfiguration:
+                additional_data.append(self.parse_riscv_vector_configuration_data())
 
             try:
                 additional_data_type = AdditionalDataType(self.file.read(1)[0])
@@ -106,6 +111,14 @@ class TraceData:
         address = bytes_to_hex(data[1:])
 
         return f"{type.name} with address {address}"
+
+    def parse_riscv_vector_configuration_data(self):
+        data = self.file.read(RISCV_VECTOR_CONFIGURATION_LENGTH)
+        if len(data) != RISCV_VECTOR_CONFIGURATION_LENGTH:
+            raise InvalidFileFormatException("Unexpected end of file")
+        vl = bytes_to_hex(data[0:8], zero_padded=False)
+        vtype = bytes_to_hex(data[8:16], zero_padded=False)
+        return f"Vector configured to VL: {vl}, VTYPE: {vtype}"
 
     def format_entry(self, entry):
         (pc, opcode, additional_data) = entry
