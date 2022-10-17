@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -29,8 +29,9 @@ namespace Antmicro.Renode.Integrations
                 throw new RecoverableException("Could not find machine for the given UART");
             }
             var name = machine.GetAnyNameOrTypeName(uart);
+            var machineName = emulation[machine];
             var recorder = new AsciinemaRecorder(filePath, machine, name, useVirtualTimeStamps, width, height);
-            emulation.ExternalsManager.AddExternal(recorder, $"{name}-recorder");
+            emulation.ExternalsManager.AddExternal(recorder, $"{machineName}-{name}-recorder");
             emulation.Connector.Connect(uart, recorder);
         }
     }
