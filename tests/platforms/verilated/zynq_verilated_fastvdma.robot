@@ -29,10 +29,14 @@ Compare Parts Of Images
     Wait For Prompt On Uart              ${PROMPT}
     Write Line To Uart                   dd if=${img1} of=otest bs=128 count=${count} skip=${skip}
     Wait For Prompt On Uart              ${PROMPT}
+
     Write Line To Uart                   cmp test otest
+    Wait For Prompt On Uart              ${PROMPT}
+
 # Check if exit status is 0 (the input files are the same)
     Write Line To Uart                   echo $?
     Wait For Line On Uart                0
+    Wait For Prompt On Uart              ${PROMPT}
 
 *** Test Cases ***
 Should Boot Linux
@@ -48,6 +52,9 @@ Should Boot Linux
 Should Load Drivers
     [Documentation]                      Loads fastvdma.ko and fastvdma-demo.ko and performs image transfer via FastVDMA.
     Requires                             booted-linux
+
+# Suppress messages from kernel space
+    Write Line To Uart                   echo 0 > /proc/sys/kernel/printk
 
 # Write Line To Uart for some reason breaks this line into two.
     Write To Uart                        insmod ${FASTVDMA_DRIVER} ${\n}
@@ -70,9 +77,6 @@ Should Load Drivers
 Verify Image
     [Documentation]                      Verifies whether the image has been transferred correctly.
     Requires                             output
-
-# Suppress messages from kernel space so it doesn't affect dd and cmp outputs
-    Write Line To Uart                   echo 0 > /proc/sys/kernel/printk
 
 # The output image (out.rgba) should consist of img1.rgba (256x256px) in the middle of img0.rgba (512x512px)
 # Verify if that's correct by comparing corresponding bytes.
