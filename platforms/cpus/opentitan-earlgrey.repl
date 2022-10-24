@@ -217,6 +217,11 @@ alert_handler: Miscellaneous.OpenTitan_AlertHandler @ sysbus 0x40150000
     ClassBInterrupt -> rv_plic@131
     ClassCInterrupt -> rv_plic@132
     ClassDInterrupt -> rv_plic@133
+    
+otbn_mock: Miscellaneous.OpenTitan_BigNumberAcceleratorMock @ sysbus 0x41130000
+    DoneIRQ -> rv_plic@174
+    FatalAlert -> alert_handler@43
+    RecoverableAlert -> alert_handler@44
 
 sysbus:
     init:
@@ -254,7 +259,6 @@ sysbus:
         Tag <0x41100000 0x1000> "OPENTITAN_EARLGREY_DEV_AES" 0
         Tag <0x41110000 0x1000> "OPENTITAN_EARLGREY_DEV_HMAC" 0
         Tag <0x41120000 0x1000> "OPENTITAN_EARLGREY_DEV_KMAC" 0
-        Tag <0x41130000 0x10000> "OPENTITAN_EARLGREY_DEV_OTBN" 0
         Tag <0x41140000 0x1000> "OPENTITAN_EARLGREY_DEV_KEYMGR" 0
         Tag <0x41150000 0x1000> "OPENTITAN_EARLGREY_DEV_CSRNG" 0
         Tag <0x41160000 0x1000> "OPENTITAN_EARLGREY_DEV_ENTROPY_SRC" 0
