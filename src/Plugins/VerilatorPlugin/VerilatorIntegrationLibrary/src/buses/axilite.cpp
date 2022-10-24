@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -82,8 +82,17 @@ uint64_t AxiLite::read(uint64_t addr)
 
 void AxiLite::reset()
 {
-    *rst = 1;
+    uint8_t reset_active = 0;
+
+// This parameter provides compability with old verilator-renode-integration 
+// samples that used previous reset implementation
+
+#ifdef INVERT_RESET
+    reset_active = 1;
+#endif
+    
+    *rst = reset_active;
     tick(true, 2); // it's model feature to tick twice
-    *rst = 0;
+    *rst = !reset_active;
     tick(true);
 }
