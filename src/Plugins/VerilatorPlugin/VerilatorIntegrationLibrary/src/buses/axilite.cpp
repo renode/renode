@@ -55,9 +55,11 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
 
 void AxiLite::write(uint64_t addr, uint64_t value)
 {
+    *wstrb = 0xF;
     // Set write address and data
     handshake_src(awready, awvalid, awaddr, addr);
     handshake_src(wready, wvalid, wdata, value);
+    *wstrb = 0;
 
     // Wait for the write response
     *bready = 1;
