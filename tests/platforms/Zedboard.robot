@@ -30,6 +30,7 @@ Should Boot Linux
 
     Start Emulation
 
+    Wait For Line On Uart     Booting Linux on physical CPU 0x0
     Wait For Prompt On Uart   ${PROMPT}
 
     Provides                  booted-linux
