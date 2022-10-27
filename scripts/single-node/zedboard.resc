@@ -31,6 +31,7 @@ macro reset
     cpu SetRegisterUnsafe 0 0x000
     cpu SetRegisterUnsafe 1 0xD32 # board id
     cpu SetRegisterUnsafe 2 0x100 # device tree address
+    sysbus.uart1 WriteDoubleWord 0x0 0x114 # force enable uart1 Tx and Rx
 
     ### load binaries ###
 
