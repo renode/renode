@@ -20,6 +20,13 @@ bootrom: Memory.MappedMemory @ sysbus 0x08000000
         // Bootrom in Ambiq Apollo4b contains functions which are used by SDK.
         // Since the actual bootrom code isn't currently available even as a blob,
         // these simple implementations for necessary functions are provided:
+
+        // * program_main2
+        WriteWord 0x6C 0x2900  // asm: cmp r1, #0    // compare arg1
+        WriteWord 0x6E 0xD000  // asm: beq 0x72      // jump to 0x72 if equal
+        WriteWord 0x70 0xE0D6  // asm: b   0x220     // jump to 0x220
+        WriteWord 0x72 0xE0C5  // asm: b   0x200     // jump to 0x200
+
         // * read_word
         WriteWord 0x74 0x6800  // asm: ldr r0, [r0, #0]
         WriteWord 0x76 0x4770  // asm: bx lr
@@ -50,10 +57,32 @@ bootrom: Memory.MappedMemory @ sysbus 0x08000000
         WriteDoubleWord 0x50 0xffeef7ff  // page_erase
         WriteDoubleWord 0x54 0xffecf7ff  // program_main
         WriteDoubleWord 0x58 0xffeaf7ff  // program_info_area
-        WriteDoubleWord 0x6C 0xffe0f7ff  // program_main2
         WriteDoubleWord 0x78 0xffdaf7ff  // write
         WriteDoubleWord 0x80 0xffd6f7ff  // info_erase
         WriteDoubleWord 0x98 0xffcaf7ff  // recovery
+
+        // * program_main2 -- with parm1 == 0, assuming that numWords is not 0
+        WriteWord 0x200 0x9E00  // adm: ldr  r6, [sp]      // load numWords from stack
+        WriteWord 0x202 0x00B6  // adm: lsl  r6, r6, #2    // multiply numWords by 4 (to get number of bytes)
+        WriteWord 0x204 0x009B  // adm: lsl  r3, r3, #2    // multiply dst to get the actual address
+        WriteWord 0x206 0x519A  // adm: str  r2, [r3, r6]  // store r2 to dst + numWords
+        WriteWord 0x208 0x3E04  // adm: subs r6, #4        // decrease numWords
+        WriteWord 0x20A 0x2E00  // adm: cmp  r6, #0        // compare numWords with 0
+        WriteWord 0x20C 0xDAFB  // adm: bge  0x206         // jump to 0x206 if not negative
+        WriteWord 0x20E 0x2000  // adm: movs r0, #0        // set return value to OK
+        WriteWord 0x210 0x4770  // adm: asm: bx lr         // return
+        
+        // * program_main2 -- with parm1 == 1, assuming that numWords is not 0
+        WriteWord 0x220 0x9E00  // asm: ldr  r6, [sp]      // load numWords from stack
+        WriteWord 0x222 0x00B6  // asm: lsl  r6, r6, #2    // multiply numWords by 4 (to get number of bytes)
+        WriteWord 0x224 0x009B  // asm: lsl  r3, r3, #2    // multiply dst to get the actual address
+        WriteWord 0x226 0x5995  // asm: ldr  r5, [r2, r6]  // load src + numWords to r5
+        WriteWord 0x228 0x519D  // asm: str  r5, [r3, r6]  // store r5 to dst + numWords
+        WriteWord 0x22A 0x3E04  // asm: subs r6, #4        // decrease numWords
+        WriteWord 0x22C 0x2E00  // asm: cmp  r6, #0        // compare numWords with 0
+        WriteWord 0x22E 0xDAFA  // asm: bge  0x226         // jump to 0x226 if not negative
+        WriteWord 0x230 0x2000  // asm: movs r0, #0        // set return value to OK
+        WriteWord 0x232 0x4770  // asm: asm: bx lr         // return
 
 mcu_mram: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x200000
