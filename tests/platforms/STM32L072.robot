@@ -11,6 +11,26 @@ Check Zephyr Version
     Write Line To Uart       version
     Wait For Line On Uart    Zephyr version 2.6.99
 
+Should Be Equal Within Range
+    [Arguments]              ${value0}  ${value1}  ${range}
+
+    ${diff}=                 Evaluate  abs(${value0} - ${value1})
+
+    Should Be True           ${diff} <= ${range}
+
+Set PWM And Check Duty
+    [Arguments]              ${pwm}  ${channel}  ${period}  ${pulse}  ${expected_duty}
+
+    Write Line To Uart       pwm cycles ${pwm} ${channel} ${period} ${pulse}
+    Execute Command          timer2.pt Reset
+    Execute Command          pause
+    Execute Command          emulation RunFor "5"
+    # Go back to continuous running so the next iteration can run UART commands
+    Start Emulation
+    ${hp}=  Execute Command  timer2.pt HighPercentage
+    ${hpn}=  Convert To Number  ${hp}
+    Should Be Equal Within Range  ${expected_duty}  ${hpn}  10
+
 *** Test Cases ***
 Should Handle Version Command In Zephyr Shell
     Execute Command          include @scripts/single-node/stm32l072.resc
@@ -78,3 +98,23 @@ Independent Watchdog Should Trigger Reset
     Start Emulation
 
     Wait For Line On Uart    PROJECT EXECUTION SUCCESSFUL
+
+PWM Should Support GPIO Output
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_shell_pwm.elf-s_884872-f36f63ef9435aaf89f37922d3c78428c52be1320
+
+    # create gpio analyzer and connect pwm0 to it
+    Execute Command          machine LoadPlatformDescriptionFromString "pt: PWMTester @ timer2 0"
+    Execute Command          machine LoadPlatformDescriptionFromString "timer2: { 0 -> pt@0 }"
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true
+    ${pwm}=  Set Variable    ${pwm.groups[0]}
+
+    Set PWM And Check Duty   ${pwm}  1  256    5    0
+    Set PWM And Check Duty   ${pwm}  1  256   85   33
+    Set PWM And Check Duty   ${pwm}  1  256  127   50
+    Set PWM And Check Duty   ${pwm}  1  256  250  100
