@@ -150,8 +150,10 @@ nvicInput14: Miscellaneous.CombinedInput
     numberOfInputs: 2
     -> nvic@14
 
-iwdg: Timers.STM32F4_IndependentWatchdog @ sysbus 0x40003000
+iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
     frequency: 32000
+    windowOption: true
+    defaultPrescaler: 0x0
 
 nvicInput10: Miscellaneous.CombinedInput
     numberOfInputs: 2
