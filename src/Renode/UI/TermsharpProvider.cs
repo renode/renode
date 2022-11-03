@@ -55,17 +55,16 @@ namespace Antmicro.Renode.UI
 
         public void Close()
         {
-            terminalWidget.Close();
             var w = window;
-            if(w != null)
+            ApplicationExtensions.InvokeInUIThreadAndWait(() =>
             {
-                ApplicationExtensions.InvokeInUIThreadAndWait(() =>
+                terminalWidget.Close();
+                if(w != null)
                 {
                     w.Hide();
-                });
-                w = null;
-                return;
-            }
+                }
+            });
+            w = null;
         }
 
         public void Dispose()
