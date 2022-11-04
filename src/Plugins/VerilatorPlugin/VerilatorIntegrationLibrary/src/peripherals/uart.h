@@ -27,7 +27,7 @@ struct UART : RenodeAgent
     uint8_t prev_irq;
 
     private:
-    void writeToBus(uint64_t addr, uint64_t value) override;
+    void writeToBus(int width, uint64_t addr, uint64_t value) override;
     void handleCustomRequestType(Protocol* message) override;
     void Txd();
     void Rxd(uint8_t value);

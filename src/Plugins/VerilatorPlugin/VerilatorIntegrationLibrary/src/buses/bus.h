@@ -32,8 +32,8 @@ protected:
 class BaseTargetBus : public BaseBus
 {
 public:
-    virtual void write(uint64_t addr, uint64_t value) = 0;
-    virtual uint64_t read(uint64_t addr) = 0;
+    virtual void write(int width, uint64_t addr, uint64_t value) = 0;
+    virtual uint64_t read(int width, uint64_t addr) = 0;
 };
 
 class BaseInitiatorBus : public BaseBus

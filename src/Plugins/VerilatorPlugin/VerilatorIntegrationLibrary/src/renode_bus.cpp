@@ -41,10 +41,10 @@ void RenodeAgent::addBus(BaseInitiatorBus* bus)
     bus->setAgent(this);
 }
 
-void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)
+void RenodeAgent::writeToBus(int width, uint64_t addr, uint64_t value)
 {
     try {
-        targetInterfaces[0]->write(addr, value);
+        targetInterfaces[0]->write(width, addr, value);
         communicationChannel->sendMain(Protocol(ok, 0, 0));
     }
     catch(const char* msg) {
@@ -53,10 +53,10 @@ void RenodeAgent::writeToBus(uint64_t addr, uint64_t value)
     }
 }
 
-void RenodeAgent::readFromBus(uint64_t addr)
+void RenodeAgent::readFromBus(int width, uint64_t addr)
 {
     try {
-        uint64_t readValue = targetInterfaces[0]->read(addr);
+        uint64_t readValue = targetInterfaces[0]->read(width, addr);
         communicationChannel->sendMain(Protocol(readRequest, addr, readValue));
     }
     catch(const char* msg) {
@@ -206,11 +206,31 @@ void RenodeAgent::handleRequest(Protocol* request)
             communicationChannel->sendSender(Protocol(tickClock, 0, 0));
         }
             break;
-        case writeRequest:
-            writeToBus(request->addr, request->value);
+        case writeRequestByte:
+            writeToBus(1, request->addr, request->value);
             break;
-        case readRequest:
-            readFromBus(request->addr);
+        case writeRequestWord:
+            writeToBus(2, request->addr, request->value);
+            break;
+        case writeRequest: // due to historical reasons, writeRequest defaults to 32bits
+        case writeRequestDoubleWord:
+            writeToBus(4, request->addr, request->value);
+            break;
+        case writeRequestQuadWord:
+            writeToBus(8, request->addr, request->value);
+            break;
+        case readRequestByte:
+            readFromBus(1, request->addr);
+            break;
+        case readRequestWord:
+            readFromBus(2, request->addr);
+            break;
+        case readRequest: // due to historical reasons, writeRequest defaults to 32bits
+        case readRequestDoubleWord:
+            readFromBus(4, request->addr);
+            break;
+        case readRequestQuadWord:
+            readFromBus(8, request->addr);
             break;
         case resetPeripheral:
             reset();

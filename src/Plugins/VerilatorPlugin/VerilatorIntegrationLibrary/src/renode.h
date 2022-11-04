@@ -53,6 +53,14 @@ enum Action
   registerGet = 18,
   registerSet = 19,
   singleStepMode = 20,
+  readRequestByte = 21,
+  readRequestWord = 22,
+  readRequestDoubleWord = 23,
+  readRequestQuadWord = 24,
+  writeRequestByte = 25,
+  writeRequestWord = 26,
+  writeRequestDoubleWord = 27,
+  writeRequestQuadWord = 28,
   step = 100,
 };
 

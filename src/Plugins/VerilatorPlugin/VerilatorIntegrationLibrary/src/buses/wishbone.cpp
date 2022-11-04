@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "wishbone.h"
+#include <cstdio>
 
 void Wishbone::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -41,8 +42,13 @@ void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = 20)
     }
 }
 
-void Wishbone::write(uint64_t addr, uint64_t value)
+void Wishbone::write(int width, uint64_t addr, uint64_t value)
 {
+    if(width != 4) {
+        char msg[] = "Unexpected write width %d"; // we sprintf to self, because width is never longer than 2 digits
+        sprintf(msg, msg, width);
+        throw msg;
+    }
     *wb_we = 1;
     *wb_sel = 0xF;
     *wb_cyc = 1;
@@ -62,8 +68,13 @@ void Wishbone::write(uint64_t addr, uint64_t value)
     timeoutTick(wb_ack, 0);
 }
 
-uint64_t Wishbone::read(uint64_t addr)
+uint64_t Wishbone::read(int width, uint64_t addr)
 {
+    if(width != 4) {
+        char msg[] = "Unexpected read width %d"; // we sprintf to self, because width is never longer than 2 digits
+        sprintf(msg, msg, width);
+        throw msg;
+    }
     *wb_we = 0;
     *wb_sel = 0xF;
     *wb_cyc = 1;

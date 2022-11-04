@@ -50,7 +50,7 @@ void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout)
     }
 }
 
-void Axi::write(uint64_t addr, uint64_t value)
+void Axi::write(int width, uint64_t addr, uint64_t value)
 {
     *awlen   = 0; // TODO: Variable write length
     *awsize  = 2; // TODO: Variable write width
@@ -69,7 +69,7 @@ void Axi::write(uint64_t addr, uint64_t value)
 
     *wvalid = 1;
     *wdata = value;
-    *wstrb = 0xF; // TODO: Byte selects
+    *wstrb = (1 << width) - 1; // TODO: Byte selects
     *wlast = 1; // TODO: Variable write length
 
     if (*wready != 1)
@@ -86,7 +86,7 @@ void Axi::write(uint64_t addr, uint64_t value)
     *bready = 0;
 }
 
-uint64_t Axi::read(uint64_t addr)
+uint64_t Axi::read(int width, uint64_t addr)
 {
     uint64_t result;
 

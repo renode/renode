@@ -12,8 +12,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
     {
         InvalidAction = 0,
         TickClock,
-        WriteToBus,
-        ReadFromBus,
+        WriteToBus, //obsolete
+        ReadFromBus, //obsolete
         ResetPeripheral,
         LogMessage,
         Interrupt,
@@ -31,6 +31,14 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         RegisterGet,
         RegisterSet,
         SingleStepMode,
-        Step = 100 //all custom action type numbers must not fall in this range
+        ReadFromBusByte,
+        ReadFromBusWord,
+        ReadFromBusDoubleWord,
+        ReadFromBusQuadWord,
+        WriteToBusByte,
+        WriteToBusWord,
+        WriteToBusDoubleWord,
+        WriteToBusQuadWord,
+        Step = 100, //all custom action type numbers must not fall in this range
     }
 }

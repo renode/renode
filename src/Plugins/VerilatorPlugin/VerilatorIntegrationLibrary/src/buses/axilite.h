@@ -11,8 +11,8 @@
 struct AxiLite : public BaseTargetBus
 {
     virtual void tick(bool countEnable, uint64_t steps);
-    virtual void write(uint64_t addr, uint64_t value);
-    virtual uint64_t read(uint64_t addr);
+    virtual void write(int width, uint64_t addr, uint64_t value);
+    virtual uint64_t read(int width, uint64_t addr);
     virtual void reset();
     void handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, uint64_t value);
     void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);

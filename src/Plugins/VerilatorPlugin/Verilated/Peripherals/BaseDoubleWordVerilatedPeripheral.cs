@@ -22,11 +22,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class BaseDoubleWordVerilatedPeripheral : VerilatedPeripheral, IDoubleWordPeripheral
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
-            : base(machine, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address, numberOfInterrupts)
+            : base(machine, frequency, 32, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address, numberOfInterrupts)
         {
         }
 
-        public uint ReadDoubleWord(long offset)
+        public override uint ReadDoubleWord(long offset)
         {
             if(String.IsNullOrWhiteSpace(simulationFilePath))
             {
@@ -40,7 +40,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             return (uint)result.Data;
         }
 
-        public void WriteDoubleWord(long offset, uint value)
+        public override void WriteDoubleWord(long offset, uint value)
         {
             if(String.IsNullOrWhiteSpace(simulationFilePath))
             {

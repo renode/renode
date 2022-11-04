@@ -53,9 +53,9 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
     *valid = 0;
 }
 
-void AxiLite::write(uint64_t addr, uint64_t value)
+void AxiLite::write(int width, uint64_t addr, uint64_t value)
 {
-    *wstrb = 0xF;
+    *wstrb = (1 << width) - 1;
     // Set write address and data
     handshake_src(awready, awvalid, awaddr, addr);
     handshake_src(wready, wvalid, wdata, value);
@@ -68,7 +68,7 @@ void AxiLite::write(uint64_t addr, uint64_t value)
     *bready = 0;
 }
 
-uint64_t AxiLite::read(uint64_t addr)
+uint64_t AxiLite::read(int width, uint64_t addr)
 {
     // Set read address
     handshake_src(arready, arvalid, araddr, addr);
