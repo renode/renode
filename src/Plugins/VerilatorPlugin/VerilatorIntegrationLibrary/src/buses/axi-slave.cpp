@@ -109,7 +109,7 @@ void AxiSlave::readHandler()
                 readLen       = *arlen;
                 readNumBytes  = pow(2, *arsize);
                 readState     = AxiReadState::R;
-                readBurstType = static_cast<AxiBurstType>(*awburst);
+                readBurstType = static_cast<AxiBurstType>(*arburst);
                 readAddr      = uint64_t((*araddr)/readNumBytes) * readNumBytes;
 
                 rlast_new     = (readLen == 0);
