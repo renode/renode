@@ -204,67 +204,72 @@ void RenodeAgent::simulate(int receiverPort, int senderPort, const char *address
 
 void RenodeAgent::handleRequest(Protocol *request)
 {
-    switch (request->actionId) {
-    case invalidAction:
-        break;
-    case tickClock:
-    {
-        long ticks = request->value - firstInterface->tickCounter;
-        if (ticks < 0) {
-            firstInterface->tickCounter -= request->value;
-        } else {
-            tick(false, ticks);
+    try{
+        switch (request->actionId) {
+        case invalidAction:
+            break;
+        case tickClock:
+        {
+            long ticks = request->value - firstInterface->tickCounter;
+            if (ticks < 0) {
+                firstInterface->tickCounter -= request->value;
+            } else {
+                tick(false, ticks);
+            }
+            firstInterface->tickCounter = 0;
+            communicationChannel->sendSender(Protocol(tickClock, 0, 0));
         }
-        firstInterface->tickCounter = 0;
-        communicationChannel->sendSender(Protocol(tickClock, 0, 0));
-    }
-    break;
-    case writeRequestByte:
-        writeToBus(1, request->addr, request->value);
-        break;
-    case writeRequestWord:
-        writeToBus(2, request->addr, request->value);
-        break;
-    case writeRequest:     // due to historical reasons, writeRequest defaults to 32bits
-    case writeRequestDoubleWord:
-        writeToBus(4, request->addr, request->value);
-        break;
-    case writeRequestQuadWord:
-        writeToBus(8, request->addr, request->value);
-        break;
-    case readRequestByte:
-        readFromBus(1, request->addr);
-        break;
-    case readRequestWord:
-        readFromBus(2, request->addr);
-        break;
-    case readRequest:     // due to historical reasons, writeRequest defaults to 32bits
-    case readRequestDoubleWord:
-        readFromBus(4, request->addr);
-        break;
-    case readRequestQuadWord:
-        readFromBus(8, request->addr);
-        break;
-    case resetPeripheral:
-        reset();
-        break;
-    case setAccessAlignment:
-        // todo: handle unaligned alignment
-        setBusWidth((int)request->value);
-        break;
-    case disconnect:
-    {
-        SocketCommunicationChannel *channel;
-        if ((channel = dynamic_cast<SocketCommunicationChannel *>(communicationChannel)) != nullptr) {
-            communicationChannel->sendSender(Protocol(ok, 0, 0));
-            channel->disconnect();
+            break;
+        case writeRequestByte:
+            writeToBus(1, request->addr, request->value);
+            break;
+        case writeRequestWord:
+            writeToBus(2, request->addr, request->value);
+            break;
+        case writeRequest: // due to historical reasons, writeRequest defaults to 32bits
+        case writeRequestDoubleWord:
+            writeToBus(4, request->addr, request->value);
+            break;
+        case writeRequestQuadWord:
+            writeToBus(8, request->addr, request->value);
+            break;
+        case readRequestByte:
+            readFromBus(1, request->addr);
+            break;
+        case readRequestWord:
+            readFromBus(2, request->addr);
+            break;
+        case readRequest: // due to historical reasons, writeRequest defaults to 32bits
+        case readRequestDoubleWord:
+            readFromBus(4, request->addr);
+            break;
+        case readRequestQuadWord:
+            readFromBus(8, request->addr);
+            break;
+        case resetPeripheral:
+            reset();
+            break;
+        case setAccessAlignment:
+            // todo: handle unaligned alignment
+            setBusWidth((int)request->value);
+            break;
+        case disconnect:
+        {
+            SocketCommunicationChannel *channel;
+            if ((channel = dynamic_cast<SocketCommunicationChannel *>(communicationChannel)) != nullptr) {
+                communicationChannel->sendSender(Protocol(ok, 0, 0));
+                channel->disconnect();
+            }
+            break;
         }
-        break;
+        default:
+            handleCustomRequestType(request);
+            break;
+        }
     }
-    break;
-    default:
-        handleCustomRequestType(request);
-        break;
+    catch (const char *msg) {
+        log(LOG_LEVEL_ERROR, msg);
+        communicationChannel->sendMain(Protocol(error, 0, 0));
     }
 }
 
