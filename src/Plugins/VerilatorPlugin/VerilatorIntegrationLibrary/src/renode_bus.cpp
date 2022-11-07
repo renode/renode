@@ -6,7 +6,7 @@
 //
 #include "renode_bus.h"
 #include "communication/socket_channel.h"
-static RenodeAgent* renodeAgent;
+static RenodeAgent *renodeAgent;
 
 #define IO_THREADS 1
 
@@ -14,7 +14,7 @@ static RenodeAgent* renodeAgent;
 // RenodeAgent
 //=================================================
 
-RenodeAgent::RenodeAgent(BaseTargetBus* bus)
+RenodeAgent::RenodeAgent(BaseTargetBus *bus)
 {
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
     targetInterfaces[0]->tickCounter = 0;
@@ -22,7 +22,7 @@ RenodeAgent::RenodeAgent(BaseTargetBus* bus)
     bus->setAgent(this);
 }
 
-RenodeAgent::RenodeAgent(BaseInitiatorBus* bus)
+RenodeAgent::RenodeAgent(BaseInitiatorBus *bus)
 {
     initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
     initatorInterfaces[0]->tickCounter = 0;
@@ -30,13 +30,13 @@ RenodeAgent::RenodeAgent(BaseInitiatorBus* bus)
     bus->setAgent(this);
 }
 
-void RenodeAgent::addBus(BaseTargetBus* bus)
+void RenodeAgent::addBus(BaseTargetBus *bus)
 {
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
     bus->setAgent(this);
 }
 
-void RenodeAgent::addBus(BaseInitiatorBus* bus)
+void RenodeAgent::addBus(BaseInitiatorBus *bus)
 {
     initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
     bus->setAgent(this);
@@ -48,7 +48,7 @@ void RenodeAgent::writeToBus(int width, uint64_t addr, uint64_t value)
         targetInterfaces[0]->write(width, addr, value);
         communicationChannel->sendMain(Protocol(ok, 0, 0));
     }
-    catch(const char* msg) {
+    catch (const char *msg) {
         log(LOG_LEVEL_ERROR, msg);
         communicationChannel->sendMain(Protocol(error, 0, 0));
     }
@@ -60,7 +60,7 @@ void RenodeAgent::readFromBus(int width, uint64_t addr)
         uint64_t readValue = targetInterfaces[0]->read(width, addr);
         communicationChannel->sendMain(Protocol(readRequest, addr, readValue));
     }
-    catch(const char* msg) {
+    catch (const char *msg) {
         log(LOG_LEVEL_ERROR, msg);
         communicationChannel->sendMain(Protocol(error, 0, 0));
     }
@@ -84,9 +84,8 @@ void RenodeAgent::pushDoubleWordToAgent(uint64_t addr, uint32_t value)
 uint64_t RenodeAgent::requestDoubleWordFromAgent(uint64_t addr)
 {
     communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
-    Protocol* received = communicationChannel->receive();
-    while (received->actionId != writeRequest)
-    {
+    Protocol *received = communicationChannel->receive();
+    while (received->actionId != writeRequest) {
         handleRequest(received);
         delete received;
         received = communicationChannel->receive();
@@ -104,24 +103,28 @@ void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value)
 uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
 {
     communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
-    Protocol* received = communicationChannel->receive();
+    Protocol *received = communicationChannel->receive();
     return received->value;
 }
 
 void RenodeAgent::tick(bool countEnable, uint64_t steps)
 {
-    for(auto& b : targetInterfaces)
+    for (auto &b : targetInterfaces) {
         b->tick(countEnable, steps);
-    for(auto& b : initatorInterfaces)
+    }
+    for (auto &b : initatorInterfaces) {
         b->tick(countEnable, steps);
+    }
 }
 
-void RenodeAgent::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
+void RenodeAgent::timeoutTick(uint8_t *signal, uint8_t expectedValue, int timeout)
 {
-    for(auto& b : targetInterfaces)
+    for (auto &b : targetInterfaces) {
         b->timeoutTick(signal, expectedValue, timeout);
-    for(auto& b : initatorInterfaces)
+    }
+    for (auto &b : initatorInterfaces) {
         b->timeoutTick(signal, expectedValue, timeout);
+    }
 }
 
 void RenodeAgent::setBusWidth(int width)
@@ -134,18 +137,20 @@ void RenodeAgent::setBusWidth(int width)
 
 void RenodeAgent::reset()
 {
-    for(auto& b : targetInterfaces)
+    for (auto &b : targetInterfaces) {
         b->reset();
-    for(auto& b : initatorInterfaces)
+    }
+    for (auto &b : initatorInterfaces) {
         b->reset();
+    }
 }
 
-void RenodeAgent::handleCustomRequestType(Protocol* message)
+void RenodeAgent::handleCustomRequestType(Protocol *message)
 {
     log(LOG_LEVEL_WARNING, "Unhandled request type: %d", message->actionId);
 }
 
-void RenodeAgent::log(int level, const char* fmt, ...)
+void RenodeAgent::log(int level, const char *fmt, ...)
 {
     char s[1024];
     va_list ap;
@@ -155,7 +160,7 @@ void RenodeAgent::log(int level, const char* fmt, ...)
     va_end(ap);
 }
 
-Protocol* RenodeAgent::receive()
+Protocol * RenodeAgent::receive()
 {
     return communicationChannel->receive();
 }
@@ -181,13 +186,13 @@ void RenodeAgent::handleInterrupts(void)
     }
 }
 
-void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address)
+void RenodeAgent::simulate(int receiverPort, int senderPort, const char *address)
 {
     renodeAgent = this;
-    SocketCommunicationChannel* channel = new SocketCommunicationChannel();
+    SocketCommunicationChannel *channel = new SocketCommunicationChannel();
     communicationChannel = channel;
     channel->connect(receiverPort, senderPort, address);
-    Protocol* result;
+    Protocol *result;
     reset();
 
     while(channel->getIsConnected()) {
@@ -197,69 +202,69 @@ void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address
     }
 }
 
-void RenodeAgent::handleRequest(Protocol* request)
+void RenodeAgent::handleRequest(Protocol *request)
 {
-    switch(request->actionId) {
-        case invalidAction:
-            break;
-        case tickClock:
-        {
-            long ticks = request->value - firstInterface->tickCounter;
-            if(ticks < 0) {
-                firstInterface->tickCounter -= request->value;
-            }
-            else {
-                tick(false, ticks);
-            }
-            firstInterface->tickCounter = 0;
-            communicationChannel->sendSender(Protocol(tickClock, 0, 0));
+    switch (request->actionId) {
+    case invalidAction:
+        break;
+    case tickClock:
+    {
+        long ticks = request->value - firstInterface->tickCounter;
+        if (ticks < 0) {
+            firstInterface->tickCounter -= request->value;
+        } else {
+            tick(false, ticks);
         }
-            break;
-        case writeRequestByte:
-            writeToBus(1, request->addr, request->value);
-            break;
-        case writeRequestWord:
-            writeToBus(2, request->addr, request->value);
-            break;
-        case writeRequest: // due to historical reasons, writeRequest defaults to 32bits
-        case writeRequestDoubleWord:
-            writeToBus(4, request->addr, request->value);
-            break;
-        case writeRequestQuadWord:
-            writeToBus(8, request->addr, request->value);
-            break;
-        case readRequestByte:
-            readFromBus(1, request->addr);
-            break;
-        case readRequestWord:
-            readFromBus(2, request->addr);
-            break;
-        case readRequest: // due to historical reasons, writeRequest defaults to 32bits
-        case readRequestDoubleWord:
-            readFromBus(4, request->addr);
-            break;
-        case readRequestQuadWord:
-            readFromBus(8, request->addr);
-            break;
-        case resetPeripheral:
-            reset();
-            break;
-        case setAccessAlignment:
-            // todo: handle unaligned alignment
-            setBusWidth((int)request->value);
-            break;
-        case disconnect:
-        {
-            SocketCommunicationChannel* channel;
-            if((channel = dynamic_cast<SocketCommunicationChannel*>(communicationChannel)) != nullptr) {
-                communicationChannel->sendSender(Protocol(ok, 0, 0));
-                channel->disconnect();
-            }
-            break;
+        firstInterface->tickCounter = 0;
+        communicationChannel->sendSender(Protocol(tickClock, 0, 0));
+    }
+    break;
+    case writeRequestByte:
+        writeToBus(1, request->addr, request->value);
+        break;
+    case writeRequestWord:
+        writeToBus(2, request->addr, request->value);
+        break;
+    case writeRequest:     // due to historical reasons, writeRequest defaults to 32bits
+    case writeRequestDoubleWord:
+        writeToBus(4, request->addr, request->value);
+        break;
+    case writeRequestQuadWord:
+        writeToBus(8, request->addr, request->value);
+        break;
+    case readRequestByte:
+        readFromBus(1, request->addr);
+        break;
+    case readRequestWord:
+        readFromBus(2, request->addr);
+        break;
+    case readRequest:     // due to historical reasons, writeRequest defaults to 32bits
+    case readRequestDoubleWord:
+        readFromBus(4, request->addr);
+        break;
+    case readRequestQuadWord:
+        readFromBus(8, request->addr);
+        break;
+    case resetPeripheral:
+        reset();
+        break;
+    case setAccessAlignment:
+        // todo: handle unaligned alignment
+        setBusWidth((int)request->value);
+        break;
+    case disconnect:
+    {
+        SocketCommunicationChannel *channel;
+        if ((channel = dynamic_cast<SocketCommunicationChannel *>(communicationChannel)) != nullptr) {
+            communicationChannel->sendSender(Protocol(ok, 0, 0));
+            channel->disconnect();
         }
-        default:
-            handleCustomRequestType(request);
-            break;
+        break;
+    }
+    break;
+    default:
+        handleCustomRequestType(request);
+        break;
     }
 }
 
@@ -267,9 +272,9 @@ void RenodeAgent::handleRequest(Protocol* request)
 // NativeCommunicationChannel
 //=================================================
 
-extern void handleMainMessage(void* ptr);
-extern void handleSenderMessage(void* ptr);
-extern void receive(void* ptr);
+extern void handleMainMessage(void *ptr);
+extern void handleSenderMessage(void *ptr);
+extern void receive(void *ptr);
 
 EXTERNAL_AS(action_intptr, HandleMainMessage, handleMainMessage);
 EXTERNAL_AS(action_intptr, HandleSenderMessage, handleSenderMessage);
@@ -285,15 +290,15 @@ void NativeCommunicationChannel::sendSender(const Protocol message)
     handleSenderMessage(new Protocol(message));
 }
 
-void NativeCommunicationChannel::log(int logLevel, const char* data)
+void NativeCommunicationChannel::log(int logLevel, const char *data)
 {
     handleSenderMessage(new Protocol(logMessage, strlen(data) + 1, (uint64_t)data));
     handleSenderMessage(new Protocol(logMessage, 0, logLevel));
 }
 
-Protocol* NativeCommunicationChannel::receive()
+Protocol * NativeCommunicationChannel::receive()
 {
-    Protocol* message = new Protocol;
+    Protocol *message = new Protocol;
     ::receive(message);
     return message;
 }
@@ -308,7 +313,7 @@ void initialize_native()
     renodeAgent->communicationChannel = new NativeCommunicationChannel();
 }
 
-void handle_request(Protocol* request)
+void handle_request(Protocol *request)
 {
     renodeAgent->handleRequest(request);
 }
