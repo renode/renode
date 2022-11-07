@@ -4,9 +4,23 @@ i2c0: I2C.EFR32_I2CController @ sysbus <0x4000c000, +0x400>
 usart0: UART.EFR32_USART @ sysbus <0x40010000, +0x400>
     ReceiveIRQ -> nvic@11
     TransmitIRQ -> nvic@12
+    RxDataAvailableRequest -> ldma@0x00c0
+    RxDataAvailableSingleRequest -> ldma@0x10c0
+    TxBufferLowRequest -> ldma@0x00c1
+    TxBufferLowSingleRequest -> ldma@0x10c1
+    TxEmptyRequest -> ldma@0x00c2
 usart1: UART.EFR32_USART @ sysbus <0x40010400, +0x400>
     ReceiveIRQ -> nvic@19
     TransmitIRQ -> nvic@20
+    RxDataAvailableRequest -> ldma@0x00d0
+    RxDataAvailableSingleRequest -> ldma@0x10d0
+    TxBufferLowRequest -> ldma@0x00d1
+    TxBufferLowSingleRequest -> ldma@0x10d1
+    TxEmptyRequest -> ldma@0x00d2
+    RxDataAvailableRightRequest -> ldma@0x00d3
+    RxDataAvailableRightSingleRequest -> ldma@0x10d3
+    TxBufferLowRightRequest -> ldma@0x00d4
+    TxBufferLowRightSingleRequest -> ldma@0x10d4
 
 leUart0: UART.LEUART @ sysbus <0x4004a000, +0x400>
     -> nvic@21
@@ -56,13 +70,15 @@ timer1: Timers.EFR32_Timer @ sysbus 0x40018400
 
 cmu: Miscellaneous.EFR32_CMU @ sysbus 0x400e4000
 
+ldma: DMA.EFR32MG12_LDMA @ sysbus 0x400e2000
+    -> nvic@9
+
 sysbus:
     init:
         Tag <0x400e0000,0x400e07ff> "MSC"
         Tag <0x400e3000,0x400e33ff> "EMU"
         Tag <0x400e5000,0x400e53ff> "RMU"
         Tag <0x400e6000,0x400e63ff> "PRS"
-        Tag <0x400e2000,0x400e2fff> "LDMA"
         Tag <0x400e1000,0x400e13ff> "FPUEH"
         Tag <0x40046000,0x400463ff> "LETIMER0"
         Tag <0x4001e000,0x4001e3ff> "CRYOTIMER"
