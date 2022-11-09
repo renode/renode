@@ -29,6 +29,10 @@ ${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_
 ${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310-s_374976-f05e93d928220c226dbedf137f0da8b879ce023c
 ${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310-s_378000-e43931d2c469fe986331931ad6abbe20bf10900a
 ${SPI_HOST}                     ${URL}/open_titan-earlgrey--spi_host_smoketest_prog_fpga_cw310-s_230244-b03d7d09dc842797261f0e790a68644b84bb8e35
+${AON_TIMER_IRQ_BIN}            ${URL}/open_titan-earlgrey--aon_timer_irq_test_prog_fpga_cw310-s_305976-926ff9f281003a1f1460f6bc061419fb107cbbfb
+${AON_TIMER_WDOG_SLEEP_BIN}     ${URL}/open_titan-earlgrey--aon_timer_sleep_wdog_sleep_pause_test_prog_fpga_cw310-s_279904-95929d5df5ba4fa6ea9a23d485c0b5d8679f488f
+${AON_TIMER_BIN}                ${URL}/open_titan-earlgrey--aon_timer_smoketest_prog_fpga_cw310-s_227460-d7bc8e5a474bdee575ecb7b678cc9e2a76ad2382
+${AON_TIMER_WDOG_BITE_BIN}      ${URL}/open_titan-earlgrey--aon_timer_wdog_bite_reset_test_prog_fpga_cw310-s_278528-6590a9d265d83137fb1821fa3d3c8d0444fa7cb6
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -187,3 +191,15 @@ Should Pass Alert Handler Ping Smoketest
 
 Should Pass SPI Host Smoketest
     Run Test              ${SPI_HOST}
+
+Should Pass Aon Timer Interrupt Smoketest
+    Run Test               ${AON_TIMER_IRQ_BIN}
+
+Should Pass Aon Timer Watchdog Sleep Pause Smoketest
+    Run Test               ${AON_TIMER_WDOG_SLEEP_BIN}
+
+Should Pass Aon Timer Smoketest
+    Run Test               ${AON_TIMER_BIN}
+
+Should Pass Aon Timer Watchdog Bite Reset Smoketest
+    Run Test               ${AON_TIMER_WDOG_BITE_BIN}

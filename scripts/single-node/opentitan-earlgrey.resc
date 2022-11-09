@@ -5,7 +5,7 @@ $name?="EarlGrey"
 
 using sysbus
 mach create $name
-machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey.repl
+machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey-cw310.repl
 
 showAnalyzer sysbus.uart0
 

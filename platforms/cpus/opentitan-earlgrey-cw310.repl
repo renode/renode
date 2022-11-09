@@ -1,0 +1,12 @@
+// fpga_cw310 target uses different clock frequencies
+// https://github.com/lowRISC/opentitan/blob/2fb276797e0dcda96195b1e4617f2aac82a925f0/sw/device/lib/arch/device_fpga_cw310.c
+using "platforms/cpus/opentitan-earlgrey.repl"
+
+cpu0:
+    PerformanceInMips: 10
+
+rv_timer:
+    frequency: 2500000
+
+timer_aon:
+    frequency: 250000

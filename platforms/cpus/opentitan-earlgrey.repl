@@ -165,6 +165,13 @@ rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
     FatalAlert -> alert_handler@10
     IRQ -> cpu0@7
 
+timer_aon: Timers.OpenTitan_AonTimer @ sysbus 0x40470000
+    powerManager: pwrmgr_aon
+    resetManager: rstmgr_aon
+    FatalAlert -> alert_handler@31
+    WakeupTimerExpired -> rv_plic@158
+    WatchdogTimerBark -> rv_plic@159
+
 // Power Manager
 pwrmgr_aon: Miscellaneous.OpenTitan_PowerManager @ sysbus 0x40400000
     FatalAlert -> alert_handler@20
