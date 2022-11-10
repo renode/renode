@@ -12,10 +12,10 @@ gem0: Network.CadenceGEM @ sysbus <0xE000B000, +0x1000>
 gem1: Network.CadenceGEM @ sysbus <0xE000C000, +0x1000>
     -> gic@45
 
-uart0: UART.Cadence_UART @ sysbus <0xE0000000, +0x1000>
+uart0: UART.Cadence_UART @ sysbus 0xE0000000
     -> gic@27
 
-uart1: UART.Cadence_UART @ sysbus <0xE0001000, +0x1000>
+uart1: UART.Cadence_UART @ sysbus 0xE0001000
     -> gic@50
 
 i2c1: I2C.XIIC @ sysbus <0xE0005000, +0x1000>
