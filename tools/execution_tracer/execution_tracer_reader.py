@@ -66,6 +66,7 @@ class TraceData:
     def __init__(self, file, pc_length, has_opcodes):
         self.file = file
         self.pc_length = int(pc_length)
+        self.has_pc = (self.pc_length != 0)
         self.has_opcodes = bool(has_opcodes)
 
     def __iter__(self):
@@ -76,12 +77,17 @@ class TraceData:
         additional_data = []
 
         pc = self.file.read(self.pc_length)
-        if len(pc) == 0:
-            raise StopIteration
-
         opcode_length = self.file.read(int(self.has_opcodes))
-        if len(pc) != self.pc_length or len(opcode_length) != int(self.has_opcodes):
-            raise InvalidFileFormatException("Unexpected end of file")
+
+        if self.pc_length != len(pc):
+            # No more data frames to read
+            raise StopIteration
+        if self.has_opcodes and len(opcode_length) == 0:
+            if self.has_pc:
+                raise InvalidFileFormatException("Unexpected end of file")
+            else:
+                # No more data frames to read
+                raise StopIteration
 
         if self.has_opcodes:
             opcode_length = opcode_length[0]
