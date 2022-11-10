@@ -24,6 +24,12 @@ i2c1: I2C.XIIC @ sysbus <0xE0005000, +0x1000>
 i2c0: I2C.XIIC @ sysbus <0xE0004000, +0x1000>
     -> gic@25
 
+spi0: SPI.Cadence_SPI @ sysbus 0xE0006000
+    -> gic@26
+
+spi1: SPI.Cadence_SPI @ sysbus 0xE0007000
+    -> gic@49
+
 sdhci0: SD.SDHCI @ sysbus <0xE0100000, +0x1000>
 
 sdhci1: SD.SDHCI @ sysbus <0xE0101000, +0x1000>
