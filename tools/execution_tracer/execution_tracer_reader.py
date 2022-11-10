@@ -51,9 +51,10 @@ def read_file(file):
     (pc_length, has_opcodes) = read_header(file)
     return TraceData(file, pc_length, has_opcodes)
 
+
 def bytes_to_hex(bytes, zero_padded=True):
     integer = int.from_bytes(bytes, byteorder="little", signed=False)
-    format_string =  "0{}X".format(len(bytes)*2) if zero_padded else "X"
+    format_string = "0{}X".format(len(bytes)*2) if zero_padded else "X"
     return "0x{0:{fmt}}".format(integer, fmt=format_string)
 
 
