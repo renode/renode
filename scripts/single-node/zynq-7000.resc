@@ -1,0 +1,32 @@
+:name: Zynq-7000 SoC
+:description: This script runs Linux on Zynq-7000 SoC.
+
+using sysbus
+$name?="Zynq"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/zynq-7000.repl
+showAnalyzer uart0
+sysbus Redirect 0xC0000000 0x0 0x10000000
+
+$bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_13788008-80822890cfd116a805bf7c0c479f1a5dfd267e00
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ext2-s_16777216-ead0ff992c8d961121a0c1ca61aff9922937cec9
+$dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests.dtb-s_11526-61ac00c14dda922e5f9b2ebf9d5e70b2ff532a4e
+
+# Set timer frequency
+ttc0 SetFrequency 0 33333333
+ttc0 SetFrequency 1 33333333
+ttc0 SetFrequency 2 33333333
+ttc1 SetFrequency 0 33333333
+ttc1 SetFrequency 1 33333333
+ttc1 SetFrequency 2 33333333
+
+# Set registers
+cpu SetRegisterUnsafe 0 0x000
+cpu SetRegisterUnsafe 1 0xD32 # processor variant (cortex-a9)
+cpu SetRegisterUnsafe 2 0x100 # device tree address
+
+sysbus LoadELF $bin
+sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,16M" false
+sysbus ZeroRange 0x1a000000 0x800000
+sysbus LoadBinary $rootfs 0x1a000000
