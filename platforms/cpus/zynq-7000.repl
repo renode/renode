@@ -18,10 +18,10 @@ uart0: UART.Cadence_UART @ sysbus 0xE0000000
 uart1: UART.Cadence_UART @ sysbus 0xE0001000
     -> gic@50
 
-i2c1: I2C.XIIC @ sysbus <0xE0005000, +0x1000>
+i2c1: I2C.Cadence_I2C @ sysbus 0xE0005000
     -> gic@48
 
-i2c0: I2C.XIIC @ sysbus <0xE0004000, +0x1000>
+i2c0: I2C.Cadence_I2C @ sysbus 0xE0004000
     -> gic@25
 
 spi0: SPI.Cadence_SPI @ sysbus 0xE0006000
