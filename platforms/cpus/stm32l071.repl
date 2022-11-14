@@ -96,6 +96,7 @@ flashController: MTD.STM32L0_FlashController @ {
 
 rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
     rtc: rtc
+    lptimer: lptim1
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     AlarmIRQ -> exti@17
@@ -184,6 +185,10 @@ dma1: DMA.STM32G0DMA @ sysbus 0x40020000
 pwr: Miscellaneous.STM32L0_PWR @ sysbus 0x40007000
     -> exti@16
 
+lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
+    frequency: 0x1000000
+    -> nvic@13
+
 sysbus:
     init:
         Tag <0x40026000, 0x400263FF> "AES"
@@ -191,6 +196,5 @@ sysbus:
         Tag <0x40015800, 0x40015BFF> "DBGMCU"
         Tag <0x40011C00, 0x40011FFF> "Firewall"
         Tag <0x40010000, 0x400103FF> "SYSCFG"
-        Tag <0x40007C00, 0x40007FFF> "LPTIM1"
         Tag <0x40002C00, 0x40002FFF> "WWDG"
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L0x1.svd
