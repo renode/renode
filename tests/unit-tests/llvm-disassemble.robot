@@ -21,7 +21,11 @@ DisasTest BE
     ${b_write}=         Set Variable       ${b4}${b3}${b2}${b1}
     ${b_disas}=         Set Variable       ${b1}${b2}${b3}${b4}
 
-    ${b_disas_4B+}=     Run Keyword If     ${code_size} > 4        Write Extra Bytes BE And Return Their Expected Output    ${hex_addr}    ${hex_code}
+    IF  ${code_size} > 4
+        ${b_disas_4B+}=    Write Extra Bytes BE And Return Their Expected Output    ${hex_addr}    ${hex_code}
+    ELSE
+        ${b_disas_4B+}=    Set Variable    ${None}
+    END
     ${b_disas}=         Set Variable If    ${code_size} > 4        ${b_disas}${b_disas_4B+}    ${b_disas}
 
     DisasTest Core      ${hex_addr}    ${b_write}    ${b_disas}    ${mnemonic}    ${operands}    ${code_size}

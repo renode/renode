@@ -36,47 +36,58 @@ Setup
     # http://robotframework.org/robotframework/latest/libraries/Process.html#Standard%20output%20and%20error%20streams
     @{PARAMS}=           Create List  --robot-server-port  ${PORT_NUMBER}  --hide-log
 
-    Run Keyword If        ${DISABLE_XWT}
-    ...    Insert Into List  ${PARAMS}  0  --disable-xwt
+    IF  ${DISABLE_XWT}
+        Insert Into List  ${PARAMS}  0  --disable-xwt
+    END
 
-    Run Keyword If       not ${SKIP_RUNNING_SERVER}
-    ...   File Should Exist    ${DIRECTORY}/${BINARY_NAME}  msg=Robot Framework remote server binary not found (${DIRECTORY}/${BINARY_NAME}). Did you forget to build it in ${CONFIGURATION} configuration?
+    IF  not ${SKIP_RUNNING_SERVER}
+        File Should Exist    ${DIRECTORY}/${BINARY_NAME}  msg=Robot Framework remote server binary not found (${DIRECTORY}/${BINARY_NAME}). Did you forget to build it in ${CONFIGURATION} configuration?
+    END
 
     # this handles starting on Linux/macOS using mono launcher
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
-    ...   Start Process  mono  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
+    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
+        Start Process  mono  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
+    END
 
     # this handles starting on Windows without an explicit launcher
     # we use 'shell=true' to execute process from current working directory
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
-    ...   Start Process  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
+    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
+        Start Process  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
+    END
     
     # this handles starting on all platforms with dotnet launcher
     # we use 'shell=true' to execute process from current working directory
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and ${NET_PLATFORM}
-    ...   Start Process  dotnet ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
+    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and ${NET_PLATFORM}
+        Start Process  dotnet ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
+    END
 
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
-    ...   Start Process  mono
+    IF  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
+        Start Process  mono
           ...            --debug
           ...            --debugger-agent\=transport\=dt_socket,address\=0.0.0.0:${SERVER_REMOTE_PORT},server\=y,suspend\=${SERVER_REMOTE_SUSPEND}
           ...            ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
+    END
 
-    Run Keyword If       not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
-    ...    Fatal Error  Windows doesn't support server remote debug option.
+    IF  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
+         Fatal Error  Windows doesn't support server remote debug option.
+    END
 
     #The distinction between operating systems is because localhost is not universally understood on Linux and 127.0.0.1 is not always available on Windows.
-    Run Keyword If       not '${SYSTEM}' == 'Windows'
-    ...   Wait Until Keyword Succeeds  60s  1s
+    IF  not '${SYSTEM}' == 'Windows'
+        Wait Until Keyword Succeeds  60s  1s
           ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/
-    Run Keyword If       '${SYSTEM}' == 'Windows'
-    ...   Wait Until Keyword Succeeds  60s  1s
+    END
+
+    IF  '${SYSTEM}' == 'Windows'
+        Wait Until Keyword Succeeds  60s  1s
           ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/
+    END
 
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
-    Run Keyword If  ${SAVE_LOG_ON_FAIL}
-    ...   Enable Logging To Cache
+    IF  ${SAVE_LOG_ON_FAIL}
+        Enable Logging To Cache
+    END
 
     ${allowed_chars}=   Set Variable                 abcdefghijklmnopqrstuvwxyz01234567890_-
     ${metrics_fname}=   Convert To Lower Case        ${SUITE_NAME}
@@ -84,17 +95,20 @@ Setup
     ${metrics_fname}=   Replace String Using Regexp  ${metrics_fname}      [^${allowed_chars}]+  ${EMPTY}
     ${metrics_path}=    Join Path                    ${RESULTS_DIRECTORY}  profiler-${metrics_fname}
 
-    Run Keyword If      ${CREATE_EXECUTION_METRICS}
-    ...   Execute Command    EnableProfilerGlobally "${metrics_path}"
+    IF      ${CREATE_EXECUTION_METRICS}
+        Execute Command    EnableProfilerGlobally "${metrics_path}"
+    END
 
     Reset Emulation
 
 Teardown
-    Run Keyword Unless  ${SKIP_RUNNING_SERVER}
-    ...   Stop Remote Server
+    IF  not ${SKIP_RUNNING_SERVER}
+        Stop Remote Server
+    END
 
-    Run Keyword Unless  ${SKIP_RUNNING_SERVER}
-    ...   Wait For Process
+    IF  not ${SKIP_RUNNING_SERVER}
+        Wait For Process
+    END
 
 Create Snapshot Of Failed Test
     Return From Keyword If   'skipped' in @{TEST TAGS}
@@ -123,29 +137,34 @@ Save Log Of Failed Test
     Save Cached Log    ${log_path}
 
 Test Setup
-    Run Keyword If  'profiling' in @{TEST TAGS}
-    ...   Start Profiler
+    IF  'profiling' in @{TEST TAGS}
+        Start Profiler
+    END
 
 Test Teardown
     Stop Profiler
 
-    Run Keyword If  ${CREATE_SNAPSHOT_ON_FAIL}
-    ...   Run Keyword If Test Failed
+    IF  ${CREATE_SNAPSHOT_ON_FAIL}
+        Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
+    END
 
-    Run Keyword If  ${SAVE_LOG_ON_FAIL}
-    ...   Run Keyword If Test Failed
+    IF  ${SAVE_LOG_ON_FAIL}
+        Run Keyword If Test Failed
           ...   Save Log Of Failed Test
+    END
 
     ${res}=  Run Keyword And Ignore Error
           ...    Import Library  Dialogs
 
-    Run Keyword If      ${HOLD_ON_ERROR}
-    ...   Run Keyword If Test Failed  Run Keywords
+    IF  ${HOLD_ON_ERROR}
+        Run Keyword If Test Failed  Run Keywords
         ...         Run Keyword If    '${res[0]}' == 'FAIL'    Log                Couldn't load the Dialogs library - interactive debugging is not possible    console=True
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Open GUI
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Pause Execution    Test failed. Press OK once done debugging.
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Close GUI
+    END
+
     Reset Emulation
     Clear Cached Log
 
@@ -153,14 +172,16 @@ Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
 
 Start Profiler Or Skip
-    Run Keyword If              not ${NET_PLATFORM}
-    ...  Fail                   Failed to run profiler. Available only for .NET platform.  skipped
+    IF  not ${NET_PLATFORM}
+        Fail                   Failed to run profiler. Available only for .NET platform.  skipped
+    END
 
     Start Profiler
 
 Start Profiler
-    Run Keyword If              not ${NET_PLATFORM}
-    ...  Fail                   Failed to run profiler. Available only for .NET platform.
+    IF  not ${NET_PLATFORM}
+        Fail                   Failed to run profiler. Available only for .NET platform.
+    END
 
     ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
     ${test_name}=               Replace String  ${test_name}  ${SPACE}  _
@@ -177,6 +198,7 @@ Start Profiler
     Set Test Variable           ${PROFILER_PROCESS}  ${proc}
 
 Stop Profiler
-    Run Keyword If  ${PROFILER_PROCESS}  Run Keywords
-    ...         Terminate Process           ${PROFILER_PROCESS}
-    ...   AND   Set Test Variable           ${PROFILER_PROCESS}  None
+    IF  ${PROFILER_PROCESS}
+        Terminate Process           ${PROFILER_PROCESS}
+        Set Test Variable           ${PROFILER_PROCESS}  None
+    END
