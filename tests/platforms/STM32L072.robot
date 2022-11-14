@@ -159,3 +159,20 @@ Should Handle Flash Operations
     Flash Should Contain     0x0002f0a0  0x00000000
     Flash Should Contain     0x0002f0fc  0x00000000
     Flash Should Contain     0x0002f120  0x23222120
+
+Should Handle EEPROM Operations
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-eeprom.elf-s_526436-c574c036e4003e7b79923c7a3076809baa645826
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart    PASS - test_size
+    Wait For Line On Uart    PASS - test_out_of_bounds
+    Wait For Line On Uart    PASS - test_write_rewrite
+    Wait For Line On Uart    PASS - test_write_at_fixed_address
+    Wait For Line On Uart    PASS - test_write_byte
+    Wait For Line On Uart    PASS - test_write_at_increasing_address
+    Wait For Line On Uart    PASS - test_zero_length_write
+    Wait For Line On Uart    PROJECT EXECUTION SUCCESSFUL
