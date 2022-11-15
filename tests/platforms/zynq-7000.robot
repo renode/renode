@@ -39,6 +39,14 @@ Execute Linux Command
     Wait For Prompt On Uart     ${PROMPT}    timeout=${timeout}
     Check Exit Code
 
+Get Linux Elapsed Seconds
+    Write Line To Uart          date +%s
+    ${date}=                    Wait For Line On Uart    ^([0-9]+)$    treatAsRegex=true
+    Wait For Prompt On Uart     ${PROMPT}
+    Check Exit Code
+    ${seconds}=                 Convert To Integer    ${date.line}
+    [return]                    ${seconds}
+
 *** Test Cases ***
 Should Boot And Login
     Boot And Login
@@ -85,3 +93,11 @@ Should Access SPI Flash Memory
     Wait For Line On Uart       0
     Wait For Prompt On Uart     ${PROMPT}
     Check Exit Code
+
+Time Should Elapse
+    Requires                    logged-in
+
+    ${seconds_before}=          Get Linux Elapsed Seconds
+    Execute Linux Command       sleep 2
+    ${seconds}=                 Get Linux Elapsed Seconds
+    Should Be True              ${seconds_before} < ${seconds}
