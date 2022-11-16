@@ -176,3 +176,18 @@ Should Handle EEPROM Operations
     Wait For Line On Uart    PASS - test_write_at_increasing_address
     Wait For Line On Uart    PASS - test_zero_length_write
     Wait For Line On Uart    PROJECT EXECUTION SUCCESSFUL
+
+RTC Should Support Alarms
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-alarm.elf-s_457324-fab62a573e2ce5b6cad2dfccfd6931021319cadc
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart    Set alarm in 2 sec (2 ticks)
+    Wait For Line On Uart    !!! Alarm !!!
+    # This output seems off by one but it is correct
+    # See https://github.com/zephyrproject-rtos/zephyr/commit/55594306544cddb5077923758485503fd723d2ae
+    # and https://github.com/zephyrproject-rtos/zephyr/commit/507ebecffc325c2234419907884b3164950056d2
+    Wait For Line On Uart    Now: 3
