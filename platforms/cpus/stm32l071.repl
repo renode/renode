@@ -14,8 +14,8 @@ exti: IRQControllers.EXTI @ sysbus 0x40010400
     numberOfOutputLines: 30
     [0, 1] -> nvicInput5@[0, 1]
     [2, 3] -> nvicInput6@[0, 1]
-    [4-6,9-15] -> nvicInput7@[0-9]
-    [8,17,19,20] -> nvicInput2@[0-3]
+    [4-6,9-10,12-15] -> nvicInput7@[0-8]
+    [8,11,17,19,20] -> nvicInput2@[0-4]
     [21,22] -> nvicInput12@[0-1]
     [7, 29, 23, 25, 26, 28] -> nvic@[1, 13, 23, 27, 28, 29]
 
@@ -28,11 +28,11 @@ nvicInput6: Miscellaneous.CombinedInput
     -> nvic@6
 
 nvicInput7: Miscellaneous.CombinedInput
-    numberOfInputs: 10
+    numberOfInputs: 9
     -> nvic@7
 
 nvicInput2: Miscellaneous.CombinedInput
-    numberOfInputs: 4
+    numberOfInputs: 5
     -> nvic@2
 
 nvicInput12: Miscellaneous.CombinedInput
