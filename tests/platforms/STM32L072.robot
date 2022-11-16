@@ -191,3 +191,26 @@ RTC Should Support Alarms
     # See https://github.com/zephyrproject-rtos/zephyr/commit/55594306544cddb5077923758485503fd723d2ae
     # and https://github.com/zephyrproject-rtos/zephyr/commit/507ebecffc325c2234419907884b3164950056d2
     Wait For Line On Uart    Now: 3
+
+RTC Should Support Wakeup
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_rtc_wakeup.elf-s_429944-651fc94949b1394d82e39733fabba0d502136478
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    # This sample configures the RTC wakeup in 4 different ways, one after another:
+    # - prescaler /2, autoreload 410
+    # - prescaler /16, autoreload 410
+    # - prescaler /16, autoreload 10
+    # - 1Hz clock, autoreload 1
+    # and expects the correct time to pass before the next time the wakeup callback
+    # is triggered after each configuration. The wakeup callback prints the time
+    # since the previous call in milliseconds.
+    # The autoreload value of 410 comes from 25 ms * (32768 Hz / 2) = 409.6
+    Wait For Line On Uart    RTC configured, waiting for wakeup interrupt
+    Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=25
+    Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=200
+    Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=5
+    Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=1000
