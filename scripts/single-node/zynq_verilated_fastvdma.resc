@@ -19,13 +19,9 @@ $dtb?=@https://dl.antmicro.com/projects/renode/zynq-fastvdma.dtb-s_12284-4f3a630
 showAnalyzer sysbus.uart1
 
 ## set timer frequency ##
+ttc0 Frequency 33333333
+ttc1 Frequency 33333333
 
-ttc0 SetFrequency 0 33333333
-ttc0 SetFrequency 1 33333333
-ttc0 SetFrequency 2 33333333
-ttc1 SetFrequency 0 33333333
-ttc1 SetFrequency 1 33333333
-ttc1 SetFrequency 2 33333333
 macro reset
 """
     ### set registers ###

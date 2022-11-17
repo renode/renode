@@ -16,12 +16,8 @@ $rootfs?=@https://dl.antmicro.com/projects/renode/zynq-verilated-fpga-isp--rootf
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-verilated-fpga-isp--video-board.dtb-s_13451-bdb696327471e2247f811b03f37be84df994379a
 
 ## set timer frequency ##
-ttc0 SetFrequency 0 33333333
-ttc0 SetFrequency 1 33333333
-ttc0 SetFrequency 2 33333333
-ttc1 SetFrequency 0 33333333
-ttc1 SetFrequency 1 33333333
-ttc1 SetFrequency 2 33333333
+ttc0 Frequency 33333333
+ttc1 Frequency 33333333
 
 ### create externals ###
 showAnalyzer sysbus.uart0

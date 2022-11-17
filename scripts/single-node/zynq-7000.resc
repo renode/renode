@@ -14,12 +14,8 @@ $rootfs?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ex
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests.dtb-s_11526-61ac00c14dda922e5f9b2ebf9d5e70b2ff532a4e
 
 # Set timer frequency
-ttc0 SetFrequency 0 33333333
-ttc0 SetFrequency 1 33333333
-ttc0 SetFrequency 2 33333333
-ttc1 SetFrequency 0 33333333
-ttc1 SetFrequency 1 33333333
-ttc1 SetFrequency 2 33333333
+ttc0 Frequency 33333333
+ttc1 Frequency 33333333
 
 # Set registers
 cpu SetRegisterUnsafe 0 0x000
