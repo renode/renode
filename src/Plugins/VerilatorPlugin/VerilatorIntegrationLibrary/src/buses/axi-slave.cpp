@@ -64,14 +64,21 @@ void AxiSlave::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
 
 void AxiSlave::clearSignals()
 {
+    arready_new = *arready;
+    rvalid_new = *rvalid;
+    rdata_new = *rdata;
+    awready_new = *awready;
+    wready_new = *wready;
+    bvalid_new = *bvalid;
+
     // Read
-    *arready = arready_new = 0;
-    *rvalid  = rvalid_new  = 0;
-    *rdata   = rdata_new   = 0;
+    *arready = 0;
+    *rvalid = 0;
+    *rdata = 0;
     // Write
-    *awready = awready_new = 0;
-    *wready  = wready_new  = 0;
-    *bvalid  = bvalid_new  = 0;
+    *awready = 0;
+    *wready  = 0;
+    *bvalid  = 0;
 }
 
 // Update signals after rising edge
