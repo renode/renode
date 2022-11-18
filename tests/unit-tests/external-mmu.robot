@@ -10,6 +10,7 @@ ${a0}                               0xa
 ${a1}                               0xb
 ${a2}                               0xc
 ${PRIV_ALL}                         7
+${PRIV_READWRITE}                   3
 ${PRIV_WRITE_ONLY}                  2
 ${PRIV_EXEC_ONLY}                   4
 ${PRIV_NONE}                        0
@@ -51,7 +52,17 @@ Write Range With Doublewords
 Define Window Using CPU API
     [Arguments]                     ${start_addr}  ${end_addr}  ${addend}  ${priv}
     Execute Command                 cpu EnableExternalWindowMmu true
-    ${window_index}=                Execute Command  cpu AcquireExternalMmuWindow
+    ${window_index}=                Execute Command  cpu AcquireExternalMmuWindow ${PRIV_ALL}
+    Execute Command                 cpu SetMmuWindowStart ${window_index} ${start_addr}
+    Execute Command                 cpu SetMmuWindowEnd ${window_index} ${end_addr}
+    Execute Command                 cpu SetMmuWindowAddend ${window_index} ${addend}
+    Execute Command                 cpu SetMmuWindowPrivileges ${window_index} ${priv}
+    Return From Keyword             ${window_index}
+
+Define Typed Window Using CPU API
+    [Arguments]                     ${start_addr}  ${end_addr}  ${addend}  ${priv}  ${type}
+    Execute Command                 cpu EnableExternalWindowMmu true
+    ${window_index}=                Execute Command  cpu AcquireExternalMmuWindow ${type}
     Execute Command                 cpu SetMmuWindowStart ${window_index} ${start_addr}
     Execute Command                 cpu SetMmuWindowEnd ${window_index} ${end_addr}
     Execute Command                 cpu SetMmuWindowAddend ${window_index} ${addend}
@@ -89,6 +100,15 @@ Read/Write From Address Outside The Defined MMU Windows Throws
     Execute Command                 sysbus WriteWord 0x2000 0x1234
     Expect Value Read From Address  0x10000  0x0
     Wait For Log Entry              MMU fault - the address 0x0 is not specified in any of the existing ranges
+    
+Window Can Handle Only One Type Of Access
+    Create Platform
+    Execute Command                 cpu EnableExternalWindowMmu true
+    Create Log Tester               0
+    Define Typed Window Using CPU API    0x0000  0x1000  0x0  ${PRIV_EXEC_ONLY}  ${PRIV_EXEC_ONLY}
+    Define Typed Window Using CPU API    0x0000  0x1000  0x1000  ${PRIV_READWRITE}  ${PRIV_READWRITE}
+    Execute Command                 sysbus WriteWord 0x1000 0x0124
+    Expect Value Read From Address  0x0  0x0124    
 
 Is Able To Retrive The Properties
     Create Platform
