@@ -228,6 +228,16 @@ else
 fi
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
 
+if ! $NET
+then
+  # Assets files are not deleted during `dotnet clean`, as it would confuse intellisense per comment in https://github.com/NuGet/Home/issues/7368#issuecomment-457411014, 
+  # but we need to delete them to build Renode again for .NETFramework since `project.assets.json` doesn't play well if project files share the same directory.
+  # If `Renode_NET.sln` is picked for OmniSharp, it will trigger reanalysis of the project after removing assets files.
+  # We don't remove these files as part of `clean` target, because other intermediate files are well separated between .NET and .NETFramework 
+  # and enforcing `clean` every time before rebuilding would slow down the build process on both frameworks.
+  find $ROOT_PATH -type f -name 'project.assets.json' -delete
+fi
+
 # Build CCTask in Release configuration
 CCTASK_OUTPUT=`mktemp`
 set +e
