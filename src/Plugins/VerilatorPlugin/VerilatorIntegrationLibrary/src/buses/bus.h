@@ -27,6 +27,12 @@ protected:
     friend class RenodeAgent;
     RenodeAgent *agent;
     uint64_t tickCounter;
+    template<typename T>
+    void setSignal(T* signal, T value)
+    {
+        *signal = value;
+        evaluateModel();
+    }
 };
 
 class BaseTargetBus : public BaseBus
