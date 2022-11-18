@@ -171,9 +171,9 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                         senderResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
                         resetPeripheral();
                     }
-                    catch
+                    catch(Exception e)
                     {
-                        var info = "Error starting verilated peripheral!";
+                        var info = "Error starting verilated peripheral!\n" + e.Message;
                         parentElement.Log(LogLevel.Error, info);
                         throw new RecoverableException(info);
                     }

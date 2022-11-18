@@ -199,10 +199,10 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
                 verilatedProcess.Start();
             }
-            catch(Exception)
+            catch(Exception e)
             {
                 verilatedProcess = null;
-                LogAndThrowRE($"Error starting verilated peripheral!");
+                LogAndThrowRE($"Error starting verilated peripheral!\n{e.Message}");
             }
         }
 
