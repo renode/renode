@@ -143,6 +143,28 @@ iom7: SPI.AmbiqApollo4_IOMaster @ sysbus 0x40057000
 rtc: Timers.AmbiqApollo4_RTC @ sysbus 0x40004800
     -> nvic@2
 
+timerIRQ: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 16
+    -> nvic@14
+
+timer: Timers.AmbiqApollo4_Timer @ sysbus 0x40008000
+    0 -> timerIRQ@0 | nvic@67
+    1 -> timerIRQ@1 | nvic@68
+    2 -> timerIRQ@2 | nvic@69
+    3 -> timerIRQ@3 | nvic@70
+    4 -> timerIRQ@4 | nvic@71
+    5 -> timerIRQ@5 | nvic@72
+    6 -> timerIRQ@6 | nvic@73
+    7 -> timerIRQ@7 | nvic@74
+    8 -> timerIRQ@8 | nvic@75
+    9 -> timerIRQ@9 | nvic@76
+    10 -> timerIRQ@10 | nvic@77
+    11 -> timerIRQ@11 | nvic@78
+    12 -> timerIRQ@12 | nvic@79
+    13 -> timerIRQ@13 | nvic@80
+    14 -> timerIRQ@14 | nvic@81
+    15 -> timerIRQ@15 | nvic@82
+
 stimer: Timers.AmbiqApollo4_SystemTimer @ sysbus 0x40008800
     IRQA -> nvic@32
     IRQB -> nvic@33
