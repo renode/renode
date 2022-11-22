@@ -1,6 +1,10 @@
 
 # This script runs OpenSBI, U-Boot and Linux on the BeagleV StarLight platform in Renode
 
+# Linux login
+# user: root
+# pswd: starfive
+
 $name?="BeagleV"
 
 $bin?=@https://dl.antmicro.com/projects/renode/beaglev--fw_payload.elf-s_1218880-55f2d87dc1257f8e490cb4bdada2131d2b10d636
