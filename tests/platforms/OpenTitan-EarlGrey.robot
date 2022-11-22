@@ -203,3 +203,12 @@ Should Pass Aon Timer Smoketest
 
 Should Pass Aon Timer Watchdog Bite Reset Smoketest
     Run Test               ${AON_TIMER_WDOG_BITE_BIN}
+    
+Should Try To Reset On The System Reset Control Combo 
+    Setup Machine
+    Create Log Tester      0
+    Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x54 0x8   # Set combo0 to just pwrButton
+    Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x74 0x8   # Set combo0 action to rstReq
+    Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x30 0x40  # Invert the pwrButton input
+    # Expect error as this should work only when done by CPU
+    Wait For Log Entry     Couldn't find the cpu requesting reset.
