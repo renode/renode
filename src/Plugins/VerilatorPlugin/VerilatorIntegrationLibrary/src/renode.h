@@ -61,6 +61,7 @@ enum Action
   writeRequestWord = 26,
   writeRequestDoubleWord = 27,
   writeRequestQuadWord = 28,
+  setAccessAlignment = 29,
   step = 100,
 };
 
