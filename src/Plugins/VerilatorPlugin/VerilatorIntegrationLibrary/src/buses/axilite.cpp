@@ -53,7 +53,12 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
 
 void AxiLite::write(int width, uint64_t addr, uint64_t value)
 {
-    setSignal<uint8_t>(wstrb, (1 << width) - 1);
+    auto modulo = addr & (busWidth - 1);
+    auto strobe = ((1 << width) - 1) << modulo;
+    value <<= modulo * 8;
+    addr &= ~(busWidth - 1);
+
+    setSignal<uint8_t>(wstrb, strobe);
     // Set write address and data
     handshake_src(awready, awvalid, awaddr, addr);
     handshake_src(wready, wvalid, wdata, value);
@@ -71,6 +76,9 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
 
 uint64_t AxiLite::read(int width, uint64_t addr)
 {
+    auto modulo = addr & (busWidth - 1);
+    addr &= ~(busWidth - 1);
+
     // Set read address
     handshake_src(arready, arvalid, araddr, addr);
 
@@ -80,9 +88,10 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     {
         timeoutTick(rvalid, 1);
     }
-    uint64_t result = *rdata; // we have to fetch data before transaction end
+    uint64_t result = *rdata; // we have to fetch data before transaction ends
     tick(true);
     setSignal<uint8_t>(rready, 0);
+    result >>= modulo * 8;
     return result;
 }
 
