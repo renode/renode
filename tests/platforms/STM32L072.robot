@@ -214,3 +214,15 @@ RTC Should Support Wakeup
     Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=200
     Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=5
     Wait For Line On Uart    RTC wakeup callback triggered, wakeup flag is set, ticks=1000
+
+Should Run Philosophers Demo On LpTimer
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-philosophers_lptimer.elf-s_579864-a8786745129b9aa4431c85138c0dcc65bd0543e4
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart    Philosopher 5.*THINKING    treatAsRegex=true
+    Wait For Line On Uart    Philosopher 5.*HOLDING     treatAsRegex=true
+    Wait For Line On Uart    Philosopher 5.*EATING      treatAsRegex=true
