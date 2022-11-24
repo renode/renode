@@ -22,33 +22,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class BaseDoubleWordVerilatedPeripheral : VerilatedPeripheral, IDoubleWordPeripheral
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
-            : base(machine, frequency, 32, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address, numberOfInterrupts)
+            : base(machine, frequency, 4, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address, numberOfInterrupts)
         {
-        }
-
-        public override uint ReadDoubleWord(long offset)
-        {
-            if(String.IsNullOrWhiteSpace(simulationFilePath))
-            {
-                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath first!");
-                return 0;
-            }
-            Send(ActionType.ReadFromBus, (ulong)offset, 0);
-            var result = Receive();
-            CheckValidation(result);
-
-            return (uint)result.Data;
-        }
-
-        public override void WriteDoubleWord(long offset, uint value)
-        {
-            if(String.IsNullOrWhiteSpace(simulationFilePath))
-            {
-                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath first!");
-                return;
-            }
-            Send(ActionType.WriteToBus, (ulong)offset, value);
-            CheckValidation(Receive());
         }
     }
 }
