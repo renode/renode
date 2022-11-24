@@ -27,9 +27,14 @@ public:
     {
         agent = newAgent;
     }
+    virtual void setWidth(int width)
+    {
+        busWidth = width;
+    }
 protected:
     friend class RenodeAgent;
     RenodeAgent *agent;
+    int busWidth;
     uint64_t tickCounter;
     template<typename T>
     void setSignal(T* signal, T value)

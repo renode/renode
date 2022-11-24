@@ -124,6 +124,14 @@ void RenodeAgent::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeou
         b->timeoutTick(signal, expectedValue, timeout);
 }
 
+void RenodeAgent::setBusWidth(int width)
+{
+    for(auto& b : targetInterfaces)
+        b->setWidth(width);
+    for(auto& b : initatorInterfaces)
+        b->setWidth(width);
+}
+
 void RenodeAgent::reset()
 {
     for(auto& b : targetInterfaces)
@@ -235,6 +243,10 @@ void RenodeAgent::handleRequest(Protocol* request)
             break;
         case resetPeripheral:
             reset();
+            break;
+        case setAccessAlignment:
+            // todo: handle unaligned alignment
+            setBusWidth((int)request->value);
             break;
         case disconnect:
         {

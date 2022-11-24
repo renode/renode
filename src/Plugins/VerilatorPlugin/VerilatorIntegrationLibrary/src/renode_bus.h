@@ -49,6 +49,7 @@ public:
   virtual void handleInterrupts(void);
   virtual void simulate(int receiverPort, int senderPort, const char* address);
   virtual void handleRequest(Protocol* request);
+  virtual void setBusWidth(int width);
 
   std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
   std::vector<std::unique_ptr<BaseInitiatorBus>> initatorInterfaces;
