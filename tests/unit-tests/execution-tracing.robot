@@ -7,6 +7,7 @@ Resource                                        ${RENODEKEYWORDS}
 
 *** Variables ***
 ${bin_out_signature}=                           ReTrace\x02
+${triple_and_model}=                            riscv32 rv32imacv
 
 *** Keywords ***
 Create Machine
@@ -193,18 +194,21 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format
     Execute Command                             sysbus.cpu DisableExecutionTracing
 
     ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  50
+    Length Should Be                            ${output_file}  69
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
                                                 # [0]: pc_width; [1]: include_opcode
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
-    Should Be Equal As Bytes                    ${output_file}[10:20]  \x00\x20\x00\x00\x04\xb7\x05\x03\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[20:30]  \x04\x20\x00\x00\x04\x37\xe5\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[29:39]  \x00\x20\x00\x00\x04\xb7\x05\x03\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[39:49]  \x04\x20\x00\x00\x04\x37\xe5\x00\x00\x00
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = MemoryAccess
-    Should Be Equal As Bytes                    ${output_file}[30:40]  \x08\x20\x00\x00\x04\x23\x20\xb5\x00\x01
+    Should Be Equal As Bytes                    ${output_file}[49:59]  \x08\x20\x00\x00\x04\x23\x20\xb5\x00\x01
                                                 # [0]: access_type; [1-9]: access_address; [10]: additional_data_type = None
-    Should Be Equal As Bytes                    ${output_file}[40:50]  \x03\x00\xe0\x00\x00\x00\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[59:69]  \x03\x00\xe0\x00\x00\x00\x00\x00\x00\x00
 
 Should Dump 64-bit PCs As Binary
     Create Machine RISC-V 64-bit                0x2000000000
@@ -249,13 +253,16 @@ Should Dump Opcodes As Binary
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  26
+    Length Should Be                            ${output_file}  45
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x00\x01
+                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
 
-    Should Be Equal As Bytes                    ${output_file}[10:16]  \x04\x13\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[16:20]  \x02\x01\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[20:26]  \x04\x93\x00\x31\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[29:35]  \x04\x13\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[35:39]  \x02\x01\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[39:45]  \x04\x93\x00\x31\x00\x00
 
 Should Dump PCs And Opcodes As Binary
     Create Machine RISC-V 32-bit                0x2000
@@ -266,16 +273,19 @@ Should Dump PCs And Opcodes As Binary
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  38
+    Length Should Be                            ${output_file}  57
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
 
-    Should Be Equal As Bytes                    ${output_file}[10:14]  \x00\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[14:20]  \x04\x13\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[20:24]  \x04\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[24:28]  \x02\x01\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[28:32]  \x06\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[32:38]  \x04\x93\x00\x31\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[29:33]  \x00\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[33:39]  \x04\x13\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[39:43]  \x04\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[43:47]  \x02\x01\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[47:51]  \x06\x20\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[51:57]  \x04\x93\x00\x31\x00\x00
 
 Should Show Error When Format Is Incorrect
     Create Machine RISC-V 32-bit                0x2000
@@ -469,17 +479,20 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
     Execute Command                             sysbus.cpu DisableExecutionTracing
 
     ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  55
+    Length Should Be                            ${output_file}  74
 
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
-    Should Be Equal As Bytes                    ${output_file}[10:20]  \x00\x20\x00\x00\x04\x13\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[29:39]  \x00\x20\x00\x00\x04\x13\x00\x00\x00\x00
                                                 # [0:4]: pc; [4]: opcode_length; [5:7]: opcode; [8]: additional_data_type = None  
-    Should Be Equal As Bytes                    ${output_file}[20:28]  \x04\x20\x00\x00\x02\x01\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[39:47]  \x04\x20\x00\x00\x02\x01\x00\x00
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = VectorConfiguration
-    Should Be Equal As Bytes                    ${output_file}[28:38]  \x06\x20\x00\x00\x04\x57\x70\x00\x04\x02
+    Should Be Equal As Bytes                    ${output_file}[47:57]  \x06\x20\x00\x00\x04\x57\x70\x00\x04\x02
                                                 # [0:8]: vl; [8:16]: vtype; [16]: additional_data_type = None
-    Should Be Equal As Bytes                    ${output_file}[38:55]  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[57:74]  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 
