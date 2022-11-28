@@ -226,6 +226,8 @@ flash1: Memory.MappedMemory @ sysbus 0x08000000
 itcm: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x10000
 
+rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
+
 sysbus:
     init:
         Tag <0x58027000, 0x580273FF> "RAMECC3"
@@ -233,7 +235,6 @@ sysbus:
         Tag <0x58025800, 0x58025BFF> "DMAMUX2"
         Tag <0x58024C00, 0x58024FFF> "CRC"
         Tag <0x58024800, 0x58024BFF> "PWR"
-        Tag <0x58024400, 0x580247FF> "RCC"
         Tag <0x58005400, 0x580057FF> "SAI4"
         Tag <0x58004800, 0x58004BFF> "IWDG1"
         Tag <0x58003C00, 0x58003FFF> "VREF"
