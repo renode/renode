@@ -6,11 +6,16 @@
 //
 #include "axilite.h"
 
+extern void updateTime();
 void AxiLite::tick(bool countEnable, uint64_t steps = 1)
 {
     for(uint64_t i = 0; i < steps; i++) {
-        setSignal<uint8_t>(clk, 1);
-        setSignal<uint8_t>(clk, 0);
+        *clk = 1;
+        evaluateModel();
+        updateTime();
+        *clk = 0;
+        evaluateModel();
+        updateTime();
     }
 
     if(countEnable) {
@@ -35,8 +40,9 @@ void AxiLite::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 
 // VALID/READY handshake process (as a source)
 void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, uint64_t value)
 {
-    setSignal<uint64_t>(channel, value);
-    setSignal<uint8_t>(valid, 1);
+    *channel = value;
+    *valid = 1;
+    tick(true);
     // Don't wait if `ready` signal has been set (READY before VALID handshake)
     if(*ready != 1)
     {
@@ -47,8 +53,9 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
     tick(true);
 
     // Clear the data and valid signal
-    setSignal<uint64_t>(channel, 0);
-    setSignal<uint8_t>(valid, 0);
+    *channel = 0;
+    *valid = 0;
+    tick(true);
 }
 
 void AxiLite::write(int width, uint64_t addr, uint64_t value)
@@ -58,20 +65,20 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
     value <<= modulo * 8;
     addr &= ~(busWidth - 1);
 
-    setSignal<uint8_t>(wstrb, strobe);
     // Set write address and data
     handshake_src(awready, awvalid, awaddr, addr);
+    *wstrb = strobe;
     handshake_src(wready, wvalid, wdata, value);
-    setSignal<uint8_t>(wstrb, 0);
+    *wstrb = 0;
 
 
     // Wait for the write response
-    setSignal<uint8_t>(bready, 1);
+    *bready = 1;
     if(*bvalid != 1) {
         timeoutTick(bvalid, 1);
     }
     tick(true);
-    setSignal<uint8_t>(bready, 0);
+    *bready = 0;
 }
 
 uint64_t AxiLite::read(int width, uint64_t addr)
@@ -83,14 +90,14 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     handshake_src(arready, arvalid, araddr, addr);
 
     // Read data
-    setSignal<uint8_t>(rready, 1);
+    *rready = 1;
     if(*rvalid != 1)
     {
         timeoutTick(rvalid, 1);
     }
     uint64_t result = *rdata; // we have to fetch data before transaction ends
     tick(true);
-    setSignal<uint8_t>(rready, 0);
+    *rready = 0;
     result >>= modulo * 8;
     return result;
 }
@@ -105,8 +112,8 @@ void AxiLite::reset()
 #ifdef INVERT_RESET
     reset_active = 1;
 #endif
-    setSignal<uint8_t>(rst, reset_active);
+    *rst = reset_active;
     tick(true, 2); // it's model feature to tick twice
-    setSignal<uint8_t>(rst, !reset_active);
+    *rst = !reset_active;
     tick(true);
 }
