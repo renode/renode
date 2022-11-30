@@ -87,7 +87,10 @@ flash0: Memory.MappedMemory @ sysbus 0x08000000
 eeprom: Memory.MappedMemory @ sysbus 0x08080000
     size: 0x1800
 
-flashController: MTD.STM32L0_FlashController @ sysbus 0x40022000
+flashController: MTD.STM32L0_FlashController @ {
+        sysbus 0x40022000;
+        sysbus new Bus.BusMultiRegistration { address: 0x1FF80000; size: 0x100; region: "signature" }
+    }
     flash: flash0
     eeprom: eeprom
 
