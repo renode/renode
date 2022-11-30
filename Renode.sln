@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "src\Infrastructure\sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-arm", "src\Infrastructure\src\Emulator\Cores\cores-arm.csproj", "{13222124-707C-5EFD-8289-2728351FB7E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-arm64", "src\Infrastructure\src\Emulator\Cores\cores-arm64.csproj", "{D3F10ED0-2A3F-45D5-8524-0D562905778B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-ppc", "src\Infrastructure\src\Emulator\Cores\cores-ppc.csproj", "{23222114-707C-4EFD-8289-2728351FB7E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-ppc64", "src\Infrastructure\src\Emulator\Cores\cores-ppc64.csproj", "{44422114-707C-4EFD-8289-2728351FB7E9}"
@@ -543,6 +545,19 @@ Global
 		{28F22125-F07D-5EF2-8289-4998351FBAA4}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 		{28F22125-F07D-5EF2-8289-4998351FBAA4}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
 		{28F22125-F07D-5EF2-8289-4998351FBAA4}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
+
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0D9CF6E9-AFB0-4558-8DA5-24FDBAF856F0} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
@@ -578,5 +593,6 @@ Global
 		{69B08E08-10DC-473C-BCB7-3B0C398F63CF} = {CD9D4CF9-BD98-4D57-A5EF-EA5C3C75CB0C}
 		{959D076C-8127-4FEE-9737-0F8FDE5A0E09} = {CA585D43-7DF3-4486-B9B5-8DAA812716C3}
 		{28F22125-F07D-5EF2-8289-4998351FBAA4} = {4671F602-D5E2-4F4E-B942-3357C33C92E2}
+		{D3F10ED0-2A3F-45D5-8524-0D562905778B} = {4671F602-D5E2-4F4E-B942-3357C33C92E2}
 	EndGlobalSection
 EndGlobal

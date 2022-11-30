@@ -254,6 +254,10 @@
       <Project>{28F22125-F07D-5EF2-8289-4998351FBAA4}</Project>
       <Name>cores-xtensa</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm64.csproj">
+      <Project>{D3F10ED0-2A3F-45D5-8524-0D562905778B}</Project>
+      <Name>cores-arm64</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlatformDescription\" />

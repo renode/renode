@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt_NET.csproj"/>
     <ProjectReference Include="..\..\lib\Packet.Net\PacketDotNet\PacketDotNet_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-xtensa_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm64_NET.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\lib\resources\images\windows_setup\renode_nobg.ico">
