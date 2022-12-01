@@ -11,9 +11,6 @@ ${URI}                                   @https://dl.antmicro.com/projects/renod
 ${PROMPT}                                zynq>
 ${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/zynq_verilated_fastvdma.resc
 ${UART}                                  sysbus.uart1
-${BIN}                                   ${URI}zynq-fastvdma_vmlinux-s_13611036-802d102e9341668636631447e99389f79043c18d
-${DTB}                                   ${URI}zynq-fastvdma.dtb-s_12284-4f3a630a9bce9e0984151b95e9efa581ef7525bf
-${ROOTFS}                                ${URI}zynq-fastvdma_rootfs.ext2-s_33554432-7a53506ed3e6cdaf247280ad7025ff1aa4cb98c5
 ${FASTVDMA_DRIVER}                       /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma.ko
 ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma-demo.ko
 
