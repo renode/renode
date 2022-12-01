@@ -26,12 +26,16 @@ void AxiLite::tick(bool countEnable, uint64_t steps = 1)
 
 void AxiLite::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
 {
-    do
+    while((*signal != expectedValue) && timeout > 0)
     {
-        tick(true);
+        *clk = 1;
+        evaluateModel();
+        updateTime();
+        *clk = 0;
+        evaluateModel();
+        updateTime();
         timeout--;
     }
-    while((*signal != expectedValue) && timeout > 0);
 
     if(timeout == 0) {
         throw "Operation timeout";
@@ -43,20 +47,15 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
 {
     *channel = value;
     *valid = 1;
-    tick(true);
-    // Don't wait if `ready` signal has been set (READY before VALID handshake)
-    if(*ready != 1)
-    {
+    if(*ready == 0) {
         timeoutTick(ready, 1);
     }
-
     // The transfer occurs in the cycle AFTER the one with both ready and valid set
     tick(true);
 
     // Clear the data and valid signal
-    *channel = 0;
     *valid = 0;
-    tick(true);
+    *channel = 0;
 }
 
 void AxiLite::write(int width, uint64_t addr, uint64_t value)
@@ -71,6 +70,7 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
     *wstrb = strobe;
     handshake_src(wready, wvalid, wdata, value);
     *wstrb = 0;
+    tick(true);
 
 
     // Wait for the write response
@@ -86,6 +86,7 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
     }
     tick(true);
     *bready = 0;
+    tick(true);
 }
 
 uint64_t AxiLite::read(int width, uint64_t addr)
@@ -98,12 +99,12 @@ uint64_t AxiLite::read(int width, uint64_t addr)
 
     // Read data
     *rready = 1;
-    if(*rvalid != 1)
-    {
+    if(*rvalid != 1) {
         timeoutTick(rvalid, 1);
+    } else {
+        tick(true);
     }
     uint64_t result = *rdata; // we have to fetch data before transaction ends
-    tick(true);
     if(*rresp != 0) {
         char msg[200];
         snprintf(msg, 200, "Transaction failed while reading 0x%lX (%d bytes) from 0x%lX - rresp equal to 0x%X",
@@ -112,6 +113,7 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     }
     *rready = 0;
     result >>= modulo * 8;
+    tick(true);
     return result;
 }
 
@@ -128,5 +130,5 @@ void AxiLite::reset()
     *rst = reset_active;
     tick(true, 2); // it's model feature to tick twice
     *rst = !reset_active;
-    tick(true);
+    tick(true, 10);
 }
