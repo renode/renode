@@ -4,6 +4,7 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
+#include <cstdio>
 #include "axilite.h"
 
 extern void updateTime();
@@ -77,6 +78,12 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
     if(*bvalid != 1) {
         timeoutTick(bvalid, 1);
     }
+    if(*bresp != 0) {
+        char msg[200];
+        snprintf(msg, 200, "Transaction failed while writing 0x%lX (%d bytes with strobe 0x%X) to 0x%lX - bresp equal to 0x%X",
+            value, width, strobe, addr, *bresp);
+        this->agent->log(LOG_LEVEL_ERROR, msg);
+    }
     tick(true);
     *bready = 0;
 }
@@ -97,6 +104,12 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     }
     uint64_t result = *rdata; // we have to fetch data before transaction ends
     tick(true);
+    if(*rresp != 0) {
+        char msg[200];
+        snprintf(msg, 200, "Transaction failed while reading 0x%lX (%d bytes) from 0x%lX - rresp equal to 0x%X",
+            result, width, addr, *bresp);
+        this->agent->log(LOG_LEVEL_ERROR, msg);
+    }
     *rready = 0;
     result >>= modulo * 8;
     return result;
