@@ -7,6 +7,7 @@
 #ifndef AxiLite_H
 #define AxiLite_H
 #include "bus.h"
+#include <src/renode_bus.h>
 
 struct AxiLite : public BaseTargetBus
 {
