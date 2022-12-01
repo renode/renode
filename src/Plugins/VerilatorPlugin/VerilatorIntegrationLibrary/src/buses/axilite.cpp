@@ -13,10 +13,8 @@ void AxiLite::tick(bool countEnable, uint64_t steps = 1)
     for(uint64_t i = 0; i < steps; i++) {
         *clk = 1;
         evaluateModel();
-        updateTime();
         *clk = 0;
         evaluateModel();
-        updateTime();
     }
 
     if(countEnable) {
@@ -30,10 +28,8 @@ void AxiLite::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 
     {
         *clk = 1;
         evaluateModel();
-        updateTime();
         *clk = 0;
         evaluateModel();
-        updateTime();
         timeout--;
     }
 
