@@ -36,6 +36,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             binder?.Dispose();
             Marshal.FreeHGlobal(mainResponsePointer);
             Marshal.FreeHGlobal(senderResponsePointer);
+            mainReceived.Set();
         }
 
         public bool TrySendMessage(ProtocolMessage message)
@@ -66,10 +67,13 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         {
             if(mainReceived.WaitOne(timeout))
             {
-                DebugHelper.Assert(receivedMessage.HasValue);
-                message = receivedMessage.Value;
-                receivedMessage = null;
-                return true;
+                if(!peripheralActive.IsCancellationRequested)
+                {
+                    DebugHelper.Assert(receivedMessage.HasValue);
+                    message = receivedMessage.Value;
+                    receivedMessage = null;
+                    return true;
+                }
             }
 
             message = default(ProtocolMessage);
