@@ -36,11 +36,13 @@ public:
   virtual void pushByteToAgent(uint64_t addr, uint8_t value);
   virtual void pushWordToAgent(uint64_t addr, uint16_t value);
   virtual void pushDoubleWordToAgent(uint64_t addr, uint32_t value);
+  virtual void pushQuadWordToAgent(uint64_t addr, uint64_t value);
   virtual uint64_t requestDoubleWordFromAgent(uint64_t addr);
-  virtual void pushToAgent(uint64_t addr, uint64_t value);
-  virtual uint64_t requestFromAgent(uint64_t addr);
+  virtual uint64_t requestQuadWordFromAgent(uint64_t addr);
+  virtual void pushToAgent(uint64_t addr, uint64_t value, int width);
+  virtual uint64_t requestFromAgent(uint64_t addr, int width);
   virtual void tick(bool countEnable, uint64_t steps);
-  virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000);
+  virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT);
   virtual void reset();
   virtual void handleCustomRequestType(Protocol* message);
   virtual void log(int level, const char* fmt, ...);
@@ -50,6 +52,7 @@ public:
   virtual void simulate(int receiverPort, int senderPort, const char* address);
   virtual void handleRequest(Protocol* request);
   virtual void setBusWidth(int width);
+  void (*evaluateModel)();
 
   std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
   std::vector<std::unique_ptr<BaseInitiatorBus>> initatorInterfaces;

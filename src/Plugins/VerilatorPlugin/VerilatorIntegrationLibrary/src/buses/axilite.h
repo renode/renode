@@ -11,12 +11,16 @@
 
 struct AxiLite : public BaseTargetBus
 {
-    virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
-    virtual void reset();
+    virtual void onResetAction();
     void handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, uint64_t value);
-    void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
+
+    void prePosedgeTick();
+    void posedgeTick();
+    void negedgeTick();
+    void setClock(uint8_t value);
+    void setReset(uint8_t value);
 
     uint8_t  *clk;
     uint8_t  *rst;
@@ -41,5 +45,12 @@ struct AxiLite : public BaseTargetBus
     uint64_t *wdata;
     uint64_t *araddr;
     uint64_t *rdata;
+
+// Used to allow some of the tests to be executed
+#ifdef INVERT_RESET
+    uint8_t reset_active = 1;
+#else 
+    uint8_t reset_active = 0;
+#endif
 };
 #endif

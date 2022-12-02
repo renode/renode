@@ -8,34 +8,21 @@
 #include "axilite.h"
 
 extern void updateTime();
-void AxiLite::tick(bool countEnable, uint64_t steps = 1)
-{
-    for(uint64_t i = 0; i < steps; i++) {
-        *clk = 1;
-        evaluateModel();
-        *clk = 0;
-        evaluateModel();
-    }
 
-    if(countEnable) {
-        tickCounter += steps;
-    }
+void AxiLite::setClock(uint8_t value) {
+    *clk = value;
 }
 
-void AxiLite::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
+void AxiLite::prePosedgeTick()
 {
-    while((*signal != expectedValue) && timeout > 0)
-    {
-        *clk = 1;
-        evaluateModel();
-        *clk = 0;
-        evaluateModel();
-        timeout--;
-    }
+}
 
-    if(timeout == 0) {
-        throw "Operation timeout";
-    }
+void AxiLite::posedgeTick()
+{
+}
+
+void AxiLite::negedgeTick()
+{
 }
 
 // VALID/READY handshake process (as a source)
@@ -44,10 +31,10 @@ void AxiLite::handshake_src(uint8_t* ready, uint8_t* valid, uint64_t* channel, u
     *channel = value;
     *valid = 1;
     if(*ready == 0) {
-        timeoutTick(ready, 1);
+        this->agent->timeoutTick(ready, 1);
     }
     // The transfer occurs in the cycle AFTER the one with both ready and valid set
-    tick(true);
+    this->agent->tick(true, 1);
 
     // Clear the data and valid signal
     *valid = 0;
@@ -66,13 +53,13 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
     *wstrb = strobe;
     handshake_src(wready, wvalid, wdata, value);
     *wstrb = 0;
-    tick(true);
+    this->agent->tick(true, 1);
 
 
     // Wait for the write response
     *bready = 1;
     if(*bvalid != 1) {
-        timeoutTick(bvalid, 1);
+        this->agent->timeoutTick(bvalid, 1);
     }
     if(*bresp != 0) {
         char msg[200];
@@ -80,9 +67,9 @@ void AxiLite::write(int width, uint64_t addr, uint64_t value)
             value, width, strobe, addr, *bresp);
         this->agent->log(LOG_LEVEL_ERROR, msg);
     }
-    tick(true);
+    this->agent->tick(true, 1);
     *bready = 0;
-    tick(true);
+    this->agent->tick(true, 1);
 }
 
 uint64_t AxiLite::read(int width, uint64_t addr)
@@ -96,10 +83,9 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     // Read data
     *rready = 1;
     if(*rvalid != 1) {
-        timeoutTick(rvalid, 1);
-    } else {
-        tick(true);
+        this->agent->timeoutTick(rvalid, 1);
     }
+    this->agent->tick(true, 1);
     uint64_t result = *rdata; // we have to fetch data before transaction ends
     if(*rresp != 0) {
         char msg[200];
@@ -109,22 +95,14 @@ uint64_t AxiLite::read(int width, uint64_t addr)
     }
     *rready = 0;
     result >>= modulo * 8;
-    tick(true);
+    this->agent->tick(true, 1);
     return result;
 }
 
-void AxiLite::reset()
+void AxiLite::setReset(uint8_t value) {
+    *rst = value;
+}
+
+void AxiLite::onResetAction()
 {
-    uint8_t reset_active = 0;
-
-// This parameter provides compability with old verilator-renode-integration 
-// samples that used previous reset implementation
-
-#ifdef INVERT_RESET
-    reset_active = 1;
-#endif
-    *rst = reset_active;
-    tick(true, 2); // it's model feature to tick twice
-    *rst = !reset_active;
-    tick(true, 10);
 }

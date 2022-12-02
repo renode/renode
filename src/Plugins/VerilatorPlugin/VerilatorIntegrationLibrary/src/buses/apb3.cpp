@@ -7,32 +7,20 @@
 #include "apb3.h"
 #include <cstdio>
 
-void APB3::tick(bool countEnable, uint64_t steps = 1)
-{
-    for(uint64_t i = 0; i < steps; i++) {
-        *pclk = 1;
-        evaluateModel();
-        *pclk = 0;
-        evaluateModel();
-    }
-
-    if(countEnable) {
-        tickCounter += steps;
-    }
+void APB3::setClock(uint8_t value) {
+    *pclk = value;
 }
 
-void APB3::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
+void APB3::prePosedgeTick()
 {
-    do
-    {
-        tick(true);
-        timeout--;
-    }
-    while((*signal != expectedValue) && timeout > 0);
+}
 
-    if(timeout == 0) {
-        throw "Operation timeout";
-    }
+void APB3::posedgeTick()
+{
+}
+
+void APB3::negedgeTick()
+{
 }
 
 void APB3::write(int width, uint64_t addr, uint64_t value)
@@ -47,16 +35,16 @@ void APB3::write(int width, uint64_t addr, uint64_t value)
     *paddr = addr;
     *pwdata = value;
 
-    timeoutTick(pready, 1);
+    this->agent->timeoutTick(pready, 1);
 
     *penable = 1;
 
-    tick(true);
+    this->agent->tick(true, 1);
 
     *psel = 0;
     *penable = 0;
 
-    tick(true);
+    this->agent->tick(true, 1);
 }
 
 uint64_t APB3::read(int width, uint64_t addr)
@@ -70,26 +58,26 @@ uint64_t APB3::read(int width, uint64_t addr)
     *pwrite = 0;
     *paddr = addr;
 
-    timeoutTick(pready, 1);
+    this->agent->timeoutTick(pready, 1);
 
     *penable = 1;
 
-    tick(true);
+    this->agent->tick(true, 1);
 
     uint64_t result = *prdata;
 
     *psel = 0;
     *penable = 0;
 
-    tick(true);
+    this->agent->tick(true, 1);
 
     return result;
 }
 
-void APB3::reset()
+void APB3::setReset(uint8_t value) {
+    *prst = value;
+}
+
+void APB3::onResetAction()
 {
-    *prst = 1;
-    tick(true);
-    *prst = 0;
-    tick(true);
 }

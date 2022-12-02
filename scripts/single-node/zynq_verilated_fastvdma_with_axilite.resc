@@ -1,0 +1,46 @@
+:name: FastVDMA Cosimulation on Zynq
+:description: This script runs Linux with built in FastVDMA driver on Zedboard.
+
+using sysbus
+$name?="Zynq-FastVDMA"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/zedboard.repl
+machine LoadPlatformDescriptionFromString 'virtio: Storage.VirtIOBlockDevice @ sysbus 0x400d0000 { IRQ->gic@32 }'
+machine LoadPlatformDescriptionFromString 'dma: Verilated.VerilatedPeripheral @ sysbus <0x43c20000, +0x100> { frequency: 100000; maxWidth: 4; limitBuffer: 100000; timeout: 10000; 0 -> gic@31; numberOfInterrupts: 1}'
+
+sysbus Redirect 0xC0000000 0x0 0x10000000
+
+$bin?=@../../../../fastvdma/fastvdma-linux-ci/out/vmlinux
+$rootfs?=@../../../../fastvdma/fastvdma-linux-ci/out/rootfs.ext2
+$dtb?=@../../../../fastvdma/fastvdma-linux-ci/out/fastvdma-zedboard.dtb
+
+### create externals ###
+
+showAnalyzer sysbus.uart1
+
+## set timer frequency ##
+ttc0 Frequency 33333333
+ttc1 Frequency 33333333
+
+macro reset
+"""
+    ### set registers ###
+
+    cpu SetRegisterUnsafe 0 0x000
+    cpu SetRegisterUnsafe 1 0xD32 # board id
+    cpu SetRegisterUnsafe 2 0x100 # device tree address
+
+    ### load binaries ###
+
+    sysbus LoadELF $bin
+    sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1a000000,32M" false
+    sysbus ZeroRange 0x1a000000 0x800000
+    sysbus LoadBinary $rootfs 0x1a000000
+"""
+dma SimulationFilePathLinux @../../../renode-verilator-integration/artifacts/libVfastvdma-axilite-Linux-x86_64-.so
+
+runMacro $reset
+
+$virtio?=@empty.ext2
+virtio LoadImage $virtio true

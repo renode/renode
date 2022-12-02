@@ -28,6 +28,7 @@
 - tests/platforms/verilated/axi.robot
 - tests/platforms/verilated/MuraxAPB3.robot
 - tests/platforms/verilated/zynq_verilated_fastvdma.robot
+- tests/platforms/verilated/zynq_verilated_fastvdma_with_axilite.robot
 - tests/platforms/verilated/zynq_verilated_fpga_isp.robot
 - tests/platforms/verilated/verilated_ibex_litex_bios.robot
 - tests/platforms/verilated/verilated_ibex_interrupts.robot

@@ -23,64 +23,6 @@ AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, 
     bvalid_new = 0;
 }
 
-void AxiSlave::tick(bool countEnable, uint64_t steps = 1)
-{
-    for(uint64_t i = 0; i < steps; i++) {
-        readHandler();
-        writeHandler();
-        *aclk = 1;
-        evaluateModel();
-        updateSignals();
-        *aclk = 0;
-        evaluateModel();
-    }
-
-    // Since we can run out of steps during an AXI transaction we must let
-    // the AXI master know that we can't accept more data at the moment.
-    // To do that we set all handshake signals to 0 and readHandler/writeHandler
-    // will handle resuming the transaction once tick is called again.
-    clearSignals();
-
-    if(countEnable) {
-        tickCounter += steps;
-    }
-}
-
-void AxiSlave::timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = DEFAULT_TIMEOUT)
-{
-    do
-    {
-        tick(true);
-        timeout--;
-    }
-    while((*signal != expectedValue) && timeout > 0);
-
-    if(timeout == 0) {
-        throw "Operation timeout";
-    }
-}
-
-// Clear signals when leaving tick
-
-void AxiSlave::clearSignals()
-{
-    arready_new = *arready;
-    rvalid_new = *rvalid;
-    rdata_new = *rdata;
-    awready_new = *awready;
-    wready_new = *wready;
-    bvalid_new = *bvalid;
-
-    // Read
-    *arready = 0;
-    *rvalid = 0;
-    *rdata = 0;
-    // Write
-    *awready = 0;
-    *wready  = 0;
-    *bvalid  = 0;
-}
-
 // Update signals after rising edge
 
 void AxiSlave::updateSignals()
@@ -96,13 +38,31 @@ void AxiSlave::updateSignals()
     *bvalid  = bvalid_new;
 }
 
+void AxiSlave::setClock(uint8_t value) {
+    *aclk = value;
+}
+
+void AxiSlave::prePosedgeTick()
+{
+    readHandler();
+    writeHandler();
+}
+
+void AxiSlave::posedgeTick()
+{
+    updateSignals();
+}
+
+void AxiSlave::negedgeTick()
+{
+}
 // Sample signals before rising edge in handlers
 
 void AxiSlave::readWord(uint64_t addr, uint8_t sel = 0)
 {
     sprintf(buffer, "Axi read from: 0x%" PRIX64, addr);
     this->agent->log(0, buffer);
-    rdata_new = this->agent->requestFromAgent(addr);
+    rdata_new = this->agent->requestFromAgent(addr, busWidth);
 }
 
 void AxiSlave::readHandler()
@@ -162,7 +122,7 @@ void AxiSlave::writeWord(uint64_t addr, uint64_t data, uint8_t strb)
 {
     sprintf(buffer, "Axi write to: 0x%" PRIX64 ", data: 0x%" PRIX64 "", addr, data);
     this->agent->log(0, buffer);
-    this->agent->pushToAgent(writeAddr, *wdata);
+    this->agent->pushToAgent(writeAddr, *wdata, busWidth);
 }
 
 void AxiSlave::writeHandler()
@@ -215,13 +175,12 @@ void AxiSlave::writeHandler()
             break;
     }
 }
+void AxiSlave::setReset(uint8_t value) {
+    *aresetn = value;
+}
 
-void AxiSlave::reset()
+void AxiSlave::onResetAction()
 {
-    *aresetn = 1;
-    tick(true);
-    *aresetn = 0;
-    tick(true);
 }
 
 // You can't read/write using slave bus

@@ -75,16 +75,26 @@ struct BaseAxi
     uint8_t  *ruser;
     uint8_t  *rvalid;
     uint8_t  *rready;
+
+// Used to allow some of the tests to be executed
+#ifdef INVERT_RESET
+    uint8_t reset_active = 1;
+#else 
+    uint8_t reset_active = 0;
+#endif
 };
 
 struct Axi : public BaseAxi, public BaseTargetBus
 {
     Axi(uint32_t dataWidth, uint32_t addrWidth);
-    virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
-    virtual void reset();
+    virtual void onResetAction();
 
-    void timeoutTick(uint8_t *signal, uint8_t value, int timeout);
+    void prePosedgeTick();
+    void posedgeTick();
+    void negedgeTick();
+    void setClock(uint8_t value);
+    void setReset(uint8_t value);
 };
 #endif

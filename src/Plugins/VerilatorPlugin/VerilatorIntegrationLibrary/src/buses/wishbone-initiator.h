@@ -43,6 +43,26 @@ public:
         throw "Unsupported operation";
     }
 
+    void WishboneInitiator::setClock(uint8_t value) {
+        *wb_clk = value;
+    }
+
+    void WishboneInitiator::prePosedgeTick()
+    {
+        readHandler();
+        writeHandler();
+    }
+
+    void WishboneInitiator::posedgeTick()
+    {
+        evaluateModel();
+    }
+
+    void WishboneInitiator::negedgeTick()
+    {
+        evaluateModel();
+    }
+
     void readWord(uint64_t addr, uint8_t sel)
     {
 #ifdef DEBUG

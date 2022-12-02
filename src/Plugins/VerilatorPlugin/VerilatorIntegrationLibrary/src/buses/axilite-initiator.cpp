@@ -8,47 +8,6 @@
 #include "axilite-initiator.h"
 #include "../renode_bus.h"
 
-// Tick and tick related functions are implemented with future enhancements in mind
-void AxiLiteInitiator::tick(bool countEnable, uint64_t steps = 1)
-{
-    for (uint64_t i = 0; i < steps; i++) {
-        prePosedgeTick();
-        *clk = 1;
-        posedgeTick();
-        *clk = 0;
-        negedgeTick();
-    }
-
-    // Since we don't handle all interfaces at once and evaluation can be called from
-    // the different interface we need to set ready/valid signals low after executing
-    // all the available steps
-    clearSignals();
-
-    if (countEnable) {
-        tickCounter += steps;
-    }
-}
-
-void AxiLiteInitiator::clearSignals()
-{
-    arready_new = *arready;
-    rvalid_new = *rvalid;
-    rdata_new = *rdata;
-    awready_new = *awready;
-    wready_new = *wready;
-    bvalid_new = *bvalid;
-
-    // Read
-    *arready = 0;
-    *rvalid = 0;
-    *rdata = 0;
-
-    // Write
-    *awready = 0;
-    *wready = 0;
-    *bvalid = 0;
-}
-
 void AxiLiteInitiator::updateSignals()
 {
     *arready = arready_new;
@@ -60,6 +19,10 @@ void AxiLiteInitiator::updateSignals()
     *bvalid = bvalid_new;
 }
 
+void AxiLiteInitiator::setClock(uint8_t value) {
+    *clk = value;
+}
+
 void AxiLiteInitiator::prePosedgeTick()
 {
     readHandler();
@@ -68,45 +31,51 @@ void AxiLiteInitiator::prePosedgeTick()
 
 void AxiLiteInitiator::posedgeTick()
 {
-    evaluateModel();
     updateSignals();
 }
 
 void AxiLiteInitiator::negedgeTick()
 {
-    evaluateModel();
 }
 
 void AxiLiteInitiator::readWord(uint64_t addr, uint8_t sel = 0)
 {
     this->agent->log(0, "[AxiLiteInitiator] Read word from: %x", addr);
-    rdata_new = this->agent->requestFromAgent(addr);
+    rdata_new = this->agent->requestFromAgent(addr, busWidth);
+}
+
+bool isStrobeValid(uint8_t strobe)
+{
+    std::vector<int> valid_strobes = {0x1, 0x2, 0x3, 0x4, 0x8, 0xc, 0xf, 0x10, 0x20, 0x30, 0x40, 0x80, 0xc0, 0xf0, 0xff};
+
+    for (const auto strb: valid_strobes)
+        if (strobe == strb)
+            return true;
+    return false;
 }
 
 void AxiLiteInitiator::writeWord(uint64_t addr, uint64_t data, uint8_t strb)
 {
     this->agent->log(0, "[AxiLiteInitiator] Write word: addr: %x data: %x strb: %d", addr, data, strb);
 
+    if (!isStrobeValid(strb)) {
+        //todo log error
+        return;
+    }
     // In case of a full write
     if (strb == ((1 << busWidth) - 1)) {
-        this->agent->pushToAgent(addr, data);
+        this->agent->pushToAgent(addr, data, busWidth);
         return;
     }
 
     uint64_t bytes_to_write = __builtin_popcount(strb);
-    // We support only consecutive bytes transfers, therefore,
-    // the valid data can be accessed with a mask of consecutive 0xff
-    uint64_t valid_data_mask = ((uint64_t)1 << (bytes_to_write << 3)) - 1;
+
+    uint64_t valid_data_mask = ((uint64_t)1 << (bytes_to_write * 8)) - 1;
 
     // Find the first set LSB of strb to calculate the valid data offset
-    uint32_t data_offset = __builtin_popcount((strb & ~(strb - 1)) - 1);
+    uint32_t data_shift = __builtin_ctz(strb);
 
-    // If valid bytes are not consecutive throw exception
-    if ((((1 << bytes_to_write) - 1) << data_offset) != strb) {
-        throw "Unsupported write strobe value";
-    }
-
-    this->agent->pushToAgent(addr, (data >> data_offset) & valid_data_mask);
+    this->agent->pushToAgent(addr, (data >> data_shift) & valid_data_mask, bytes_to_write);
 
 }
 
@@ -126,6 +95,7 @@ void AxiLiteInitiator::readHandler()
     case AxiLiteReadState::R:
         rvalid_new = 1;
         if (*rvalid == 1 && *rready == 1) {
+            // rresp is always 0
             this->agent->log(0, "[AxiLiteInitiator] Read end");
             rvalid_new = 0;
             readState = AxiLiteReadState::AR;
@@ -164,6 +134,7 @@ void AxiLiteInitiator::writeHandler()
     case AxiLiteWriteState::B:
         bvalid_new = 1;
         if (*bvalid == 1 && *bready == 1) {
+            // bresp is always 0
             this->agent->log(0, "[AxiLiteInitiator] Write end");
             bvalid_new = 0;
             writeState = AxiLiteWriteState::AW;
@@ -176,34 +147,16 @@ void AxiLiteInitiator::writeHandler()
     }
 }
 
-void AxiLiteInitiator::timeoutTick(uint8_t *signal, uint8_t expectedValue, int timeout)
-{
-    do {
-        tick(true);
-        timeout -= 1;
-    } while ((*signal != expectedValue) && timeout > 0);
-
-    if (timeout == 0) {
-        throw "Operation timeout";
-    }
+void AxiLiteInitiator::setReset(uint8_t value) {
+    *rst = value;
 }
 
-void AxiLiteInitiator::reset()
+void AxiLiteInitiator::onResetAction()
 {
-    uint8_t reset_active = 0;
-// Used to allow some of the tests to be executed
-#ifdef INVERT_RESET
-    reset_active = 1;
-#endif
-
-    *rst = reset_active;
     // It is required from the AxiInitiator to drive rvalid and bvalid signals
     // low during the reset
     *rvalid = 0;
     *bvalid = 0;
-    tick(true, 1);
-    *rst = !reset_active;
-    tick(true);
 }
 
 uint64_t AxiLiteInitiator::getSpecifiedAdress()
