@@ -49,14 +49,20 @@ struct AxiLiteInitiator : public BaseInitiatorBus
     uint64_t *rdata;
     uint8_t  *rresp;
 
-    virtual void tick(bool countEnable, uint64_t steps);
-    virtual void timeoutTick(uint8_t *signal, uint8_t expectedValue, int timeout);
+// Used to allow some of the tests to be executed
+#ifdef INVERT_RESET
+    uint8_t reset_active = 1;
+#else 
+    uint8_t reset_active = 0;
+#endif
+
     void prePosedgeTick();
     void posedgeTick();
     void negedgeTick();
+    void setClock(uint8_t value);
+    void setReset(uint8_t value);
 
-    virtual void reset();
-    void clearSignals();
+    virtual void onResetAction();
     void updateSignals();
 
     void readHandler();

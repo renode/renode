@@ -7,6 +7,7 @@
 #ifndef Wishbone_H
 #define Wishbone_H
 #include "bus.h"
+#include <src/renode_bus.h>
 
 class WishboneBase
 {
@@ -29,10 +30,14 @@ public:
 class Wishbone : public WishboneBase, public BaseTargetBus
 {
 public:
-    virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
-    virtual void reset();
-    void timeoutTick(uint8_t *signal, uint8_t value, int timeout);
+    virtual void onResetAction();
+
+    void prePosedgeTick();
+    void posedgeTick();
+    void negedgeTick();
+    void setClock(uint8_t value);
+    void setReset(uint8_t value);
 };
 #endif

@@ -7,14 +7,19 @@
 #ifndef APB3_H
 #define APB3_H
 #include "bus.h"
+#include <src/renode_bus.h>
 
 struct APB3 : public BaseTargetBus
 {
-    virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
-    virtual void reset();
-    void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
+    virtual void onResetAction();
+
+    void prePosedgeTick();
+    void posedgeTick();
+    void negedgeTick();
+    void setClock(uint8_t value);
+    void setReset(uint8_t value);
 
     uint8_t  *pclk;
     uint8_t  *prst;
