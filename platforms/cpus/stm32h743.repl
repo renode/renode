@@ -3,6 +3,7 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    numberOfMPURegions: 16
     -> cpu@0
 
 // May be reserved
