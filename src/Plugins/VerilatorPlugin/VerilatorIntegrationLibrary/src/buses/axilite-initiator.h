@@ -66,16 +66,15 @@ struct AxiLiteInitiator : public BaseInitiatorBus
     void writeWord(uint64_t addr, uint64_t data, uint8_t strb);
 
     AxiLiteWriteState writeState = AxiLiteWriteState::AW;
-    uint32_t writeAddr = 0;
-    uint32_t writeData = 0;
+    uint64_t writeAddr = 0;
+    uint64_t writeData = 0;
 
     AxiLiteReadState readState = AxiLiteReadState::AR;
-    uint32_t readAddr = 0;
 
     // Signals to be updated post rising edge evaluation
     uint8_t arready_new = 0;
     uint8_t rvalid_new = 0;
-    uint32_t rdata_new = 0;
+    uint64_t rdata_new = 0;
 
     uint8_t awready_new = 0;
     uint8_t wready_new = 0;
