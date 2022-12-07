@@ -87,9 +87,6 @@ void AxiLiteInitiator::writeWord(uint64_t addr, uint64_t data, uint8_t strb)
 {
     this->agent->log(0, "[AxiLiteInitiator] Write word: addr: %x data: %x strb: %d", addr, data, strb);
 
-    // Added temporary; can be removed when verilator-width changes are merged
-    uint64_t busWidth = 8;
-
     // In case of a full write
     if (strb == ((1 << busWidth) - 1)) {
         this->agent->pushToAgent(addr, data);
@@ -121,8 +118,7 @@ void AxiLiteInitiator::readHandler()
         if (*arready == 1 && *arvalid == 1) {
             this->agent->log(0, "[AxiLiteInitiator] Read start");
             arready_new = 0;
-            readAddr = *araddr;
-            readWord(readAddr);
+            readWord(*araddr);
             readState = AxiLiteReadState::R;
         }
         break;
