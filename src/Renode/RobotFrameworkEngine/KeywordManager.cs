@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -26,19 +27,17 @@ namespace Antmicro.Renode.RobotFramework
                 return;
             }
 
-            foreach(var method in t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            foreach(var methodAttr in t.GetMethodsWithAttribute<RobotFrameworkKeywordAttribute>())
             {
-                var attr = method.GetCustomAttributes<RobotFrameworkKeywordAttribute>().SingleOrDefault();
-                if(attr != null)
+                var method = methodAttr.Method;
+                var attr = methodAttr.Attribute;
+                var keyword = attr.Name ?? method.Name;
+                if(!keywords.ContainsKey(keyword))
                 {
-                    var keyword = attr.Name ?? method.Name;
-                    if(!keywords.ContainsKey(keyword))
-                    {
-                        keywords.Add(keyword, new List<Keyword>());
-                    }
-
-                    keywords[keyword].Add(new Keyword(this, method));
+                    keywords.Add(keyword, new List<Keyword>());
                 }
+
+                keywords[keyword].Add(new Keyword(this, method));
             }
         }
 
