@@ -22,6 +22,8 @@ public:
     uint8_t  *wb_ack;
     uint8_t  *wb_cyc;
     uint8_t  *wb_stall;
+    uint8_t   granularity;
+    uint8_t   addr_lines;
 };
 
 class Wishbone : public WishboneBase, public BaseTargetBus

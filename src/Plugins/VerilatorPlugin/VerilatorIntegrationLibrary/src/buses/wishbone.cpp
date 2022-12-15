@@ -44,18 +44,17 @@ void Wishbone::timeoutTick(uint8_t *signal, uint8_t value, int timeout = DEFAULT
 
 void Wishbone::write(int width, uint64_t addr, uint64_t value)
 {
-    if(width != 4) {
+    if(width < granularity ) {
         char msg[] = "Unexpected write width %d"; // we sprintf to self, because width is never longer than 2 digits
         sprintf(msg, msg, width);
         throw msg;
     }
     *wb_we = 1;
-    *wb_sel = 0xF;
+    *wb_sel = (uint8_t)((1 << width) - 1);
     *wb_cyc = 1;
     *wb_stb = 1;
-//  According to Wishbone B4 spec when using 32 bit bus with byte granularity
-//  we drop 2 youngest bits
-    *wb_addr = (addr >> 2) << 2;
+
+    *wb_addr = (addr >> (32 - addr_lines));
     *wb_wr_dat = value;
 
     timeoutTick(wb_ack, 1);
@@ -70,16 +69,16 @@ void Wishbone::write(int width, uint64_t addr, uint64_t value)
 
 uint64_t Wishbone::read(int width, uint64_t addr)
 {
-    if(width != 4) {
+    if(width < granularity) {
         char msg[] = "Unexpected read width %d"; // we sprintf to self, because width is never longer than 2 digits
         sprintf(msg, msg, width);
         throw msg;
     }
     *wb_we = 0;
-    *wb_sel = 0xF;
+    *wb_sel = (uint8_t)((1 << width) - 1);
     *wb_cyc = 1;
     *wb_stb = 1;
-    *wb_addr = (addr >> 2) << 2;
+    *wb_addr = (addr >> (32 - addr_lines));
 
     timeoutTick(wb_ack, 1);
     uint64_t result = *wb_rd_dat;
