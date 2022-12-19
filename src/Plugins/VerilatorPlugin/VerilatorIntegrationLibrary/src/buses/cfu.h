@@ -7,7 +7,7 @@
 #ifndef CFU_H
 #define CFU_H
 #include <cstdint>
-
+#include "bus.h"
 
 struct Cfu
 {
