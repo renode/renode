@@ -5,6 +5,19 @@ Test Setup                    Reset Emulation
 Test Teardown                 Test Teardown
 Resource                      ${RENODEKEYWORDS}
 
+*** Variables ***
+${SPI_FLASH}=    SEPARATOR=
+...  """                                         ${\n}
+...  spiFlashMemory: Memory.MappedMemory         ${\n}
+...  ${SPACE*4}size: 0x100000                    ${\n}
+...                                              ${\n}
+...  spiFlash: SPI.Micron_MT25Q @ spi2           ${\n}
+...  ${SPACE*4}underlyingMemory: spiFlashMemory  ${\n}
+...                                              ${\n}
+...  gpiob:                                      ${\n}
+...  ${SPACE*4}12 -> spiFlash@0                  ${\n}
+...  """
+
 *** Keywords ***
 Check Zephyr Version
     Wait For Prompt On Uart  $
@@ -226,3 +239,15 @@ Should Run Philosophers Demo On LpTimer
     Wait For Line On Uart    Philosopher 5.*THINKING    treatAsRegex=true
     Wait For Line On Uart    Philosopher 5.*HOLDING     treatAsRegex=true
     Wait For Line On Uart    Philosopher 5.*EATING      treatAsRegex=true
+
+SPI Should Work In Interrupt-Driven Mode
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          machine LoadPlatformDescriptionFromString ${SPI_FLASH}
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-spi_flash.elf-s_540832-09b987ec67ea619d0330963ef9d35ab561d04430
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart    Flash erase succeeded!
+    Wait For Line On Uart    Data read matches data written. Good!!
