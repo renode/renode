@@ -141,6 +141,7 @@ keymgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41140000
 
 // CSRNG
 csrng: Miscellaneous.OpenTitan_CSRNG @ sysbus 0x41150000
+    entropySource: entropy_src
     RequestCompletedIRQ -> rv_plic@169
     EntropyeRequestedIRQ -> rv_plic@170
     HardwareInstanceIRQ -> rv_plic@171
@@ -218,6 +219,14 @@ rv_plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x48
 
 // Simulated SRAM used to indicate test status to simulator
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x411f0080
+
+entropy_src: Miscellaneous.OpenTitan_EntropySource @ sysbus 0x41160000
+    RecoverableAlert -> alert_handler@49
+    FatalAlert -> alert_handler@50
+    EsEntropyValidIRQ -> rv_plic@180
+    EsHealthTestFailedIRQ -> rv_plic@181
+    EsObserveFifoReadyIRQ -> rv_plic@182
+    EsFatalErrIRQ -> rv_plic@183
 
 alert_handler: Miscellaneous.OpenTitan_AlertHandler @ sysbus 0x40150000
     ClassAInterrupt -> rv_plic@130

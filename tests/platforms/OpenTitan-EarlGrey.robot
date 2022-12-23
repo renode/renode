@@ -33,6 +33,9 @@ ${AON_TIMER_IRQ_BIN}            ${URL}/open_titan-earlgrey--aon_timer_irq_test_p
 ${AON_TIMER_WDOG_SLEEP_BIN}     ${URL}/open_titan-earlgrey--aon_timer_sleep_wdog_sleep_pause_test_prog_fpga_cw310-s_279904-95929d5df5ba4fa6ea9a23d485c0b5d8679f488f
 ${AON_TIMER_BIN}                ${URL}/open_titan-earlgrey--aon_timer_smoketest_prog_fpga_cw310-s_227460-d7bc8e5a474bdee575ecb7b678cc9e2a76ad2382
 ${AON_TIMER_WDOG_BITE_BIN}      ${URL}/open_titan-earlgrey--aon_timer_wdog_bite_reset_test_prog_fpga_cw310-s_278528-6590a9d265d83137fb1821fa3d3c8d0444fa7cb6
+${ENTROPY_SRC_AST_REQ_BIN}      ${URL}/open_titan-earlgrey--entropy_src_ast_rng_req_test_prog_fpga_cw310-s_223760-41abb796785237e76a0114d76d578d34fbeed0b4
+${ENTROPY_SRC_FW_OVR_BIN}       ${URL}/open_titan-earlgrey--entropy_src_fw_ovr_test_prog_fpga_cw310-s_228724-297058e2f646201161ab762ffb3c789c9fe318f3
+${ENTROPY_SRC_KAT_BIN}          ${URL}/open_titan-earlgrey--entropy_src_kat_test_prog_fpga_cw310-s_227200-5d1e4dc69a9991f4dd106249d599c8f0c59f5198
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -212,3 +215,12 @@ Should Try To Reset On The System Reset Control Combo
     Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x30 0x40  # Invert the pwrButton input
     # Expect error as this should work only when done by CPU
     Wait For Log Entry     Couldn't find the cpu requesting reset.
+
+Should Pass Entropy Source Analog Sensor Top Request Smoketest
+    Run Test               ${ENTROPY_SRC_AST_REQ_BIN}
+
+Should Pass Entropy Source Firmware Override Smoketest
+    Run Test               ${ENTROPY_SRC_FW_OVR_BIN}
+
+Should Pass Entropy Source Known Answer Test Smoketest
+    Run Test               ${ENTROPY_SRC_KAT_BIN}
