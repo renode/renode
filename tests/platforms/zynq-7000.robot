@@ -3,23 +3,20 @@ ${UART}                             sysbus.uart0
 ${PROMPT}                           \#${SPACE}
 ${I2C_ECHO_ADDRESS}                 0x10
 ${I2C_SENSOR_ADDRESS}               0x31
-${FLASH0_PATH}                      /mnt/spi_flash0
+${FLASH_MOUNT}                      /mnt/spi_flash
+${SAMPLE_FILENAME}                  data.bin
 ${MTD0_DEV}                         /dev/mtd0
 ${MTD0_BLOCK_DEV}                   /dev/mtdblock0
-${SAMPLE_FILENAME}                  data.bin
 
 *** Keywords ***
 Create Machine
     Execute Command                 include @scripts/single-node/zynq-7000.resc
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cEcho: Mocks.EchoI2CDevice @ i2c0 ${I2C_ECHO_ADDRESS}"
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cSensor: Sensors.MAX30208 @ i2c0 ${I2C_SENSOR_ADDRESS}"
-    Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: flashMemory }; flashMemory: Memory.MappedMemory { size: 0x800000 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory }; spi0FlashMemory: Memory.MappedMemory { size: 0x800000 }"
     Create Terminal Tester          ${UART}
 
 Boot And Login
-    Create Machine
-    Start Emulation
-
     Wait For Line On Uart           Booting Linux on physical CPU 0x0
     Wait For Prompt On Uart         buildroot login:  timeout=25
     Write Line To Uart              root
@@ -44,8 +41,44 @@ Get Linux Elapsed Seconds
     ${seconds}=                     Convert To Integer  ${date.line}
     [return]                        ${seconds}
 
+Generate Random File
+    [Arguments]                     ${filename}  ${size_kilobytes}
+    Execute Linux Command           dd if=/dev/urandom of=./${filename} bs=1024 count=${size_kilobytes}
+
+Should Mount Flash Memory And Write File
+    [Arguments]                     ${mtd_dev}  ${mtd_block_dev}  ${mount_path}  ${random_filename}
+    Execute Linux Command           flash_erase --jffs2 -N ${mtd_dev} 0 0
+    Execute Linux Command           mkdir ${mount_path}
+    Execute Linux Command           mount -t jffs2 ${mtd_block_dev} ${mount_path}
+    Execute Linux Command           cp ./${random_filename} ${mount_path}
+
+    Write Line To Uart              ls --color=never -1 ${mount_path}
+    Wait For Line On Uart           ${random_filename}
+    Wait For Prompt On Uart         ${PROMPT}
+    Check Exit Code
+    Execute Linux Command           umount ${mount_path}
+
+Should Mount Flash Memory And Compare Files
+    [Arguments]                     ${mtd_block_dev}  ${mount_path}  ${random_filename}
+    Execute Linux Command           mount -t jffs2 ${mtd_block_dev} ${mount_path}
+    Execute Linux Command           cmp ${mount_path}/${random_filename} ./${random_filename}
+    Execute Linux Command           umount ${mount_path}
+
+Should Erase Flash Memory
+    [Arguments]                     ${mtd_dev}  ${mtd_block_dev}  ${mount_path}
+    Execute Linux Command           flash_erase --jffs2 -N ${mtd_dev} 0 0
+    Execute Linux Command           mount -t jffs2 ${mtd_block_dev} ${mount_path}
+    Write Line To Uart              ls -1 ${mount_path} | wc -l
+    Wait For Line On Uart           0
+    Wait For Prompt On Uart         ${PROMPT}
+    Check Exit Code
+    Execute Linux Command           umount ${mount_path}
+
 *** Test Cases ***
 Should Boot And Login
+    Create Machine
+    Start Emulation
+
     Boot And Login
     # Suppress messages from the kernel space
     Execute Linux Command           echo 0 > /proc/sys/kernel/printk
@@ -116,32 +149,11 @@ Should Communicate With MAX30208 Peripheral
 
 Should Access SPI Flash Memory
     Requires                        logged-in
+    Generate Random File            ${SAMPLE_FILENAME}  5
 
-    # Format flash to the JFFS2 file system and write a randomly generated file
-    Execute Linux Command           flash_erase --jffs2 -N ${MTD0_DEV} 0 0
-    Execute Linux Command           mkdir ${FLASH0_PATH}
-    Execute Linux Command           mount -t jffs2 ${MTD0_BLOCK_DEV} ${FLASH0_PATH}
-    Execute Linux Command           dd if=/dev/urandom of=./${SAMPLE_FILENAME} bs=1024 count=5
-    Execute Linux Command           cp ./${SAMPLE_FILENAME} ${FLASH0_PATH}
-
-    Write Line To Uart              ls --color=never -1 ${FLASH0_PATH}
-    Wait For Line On Uart           ${SAMPLE_FILENAME}
-    Wait For Prompt On Uart         ${PROMPT}
-    Check Exit Code
-
-    # Check is file correctly written
-    Execute Linux Command           umount ${FLASH0_PATH}
-    Execute Linux Command           mount -t jffs2 ${MTD0_BLOCK_DEV} ${FLASH0_PATH}
-    Execute Linux Command           cmp ${FLASH0_PATH}/${SAMPLE_FILENAME} ./${SAMPLE_FILENAME}
-
-    # Check flash erasing
-    Execute Linux Command           umount ${FLASH0_PATH}
-    Execute Linux Command           flash_erase --jffs2 -N ${MTD0_DEV} 0 0
-    Execute Linux Command           mount -t jffs2 ${MTD0_BLOCK_DEV} ${FLASH0_PATH}
-    Write Line To Uart              ls -1 ${FLASH0_PATH} | wc -l
-    Wait For Line On Uart           0
-    Wait For Prompt On Uart         ${PROMPT}
-    Check Exit Code
+    Should Mount Flash Memory And Write File  ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Mount Flash Memory And Compare Files  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Erase Flash Memory       ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}
 
 Time Should Elapse
     Requires                        logged-in
