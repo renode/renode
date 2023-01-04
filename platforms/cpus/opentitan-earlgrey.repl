@@ -16,6 +16,9 @@ rom_ctrl: MemoryControllers.OpenTitan_ROMController @ sysbus 0x411e0000
     nonce: "5360CDF714F75BAE"
     key: "96990EB046B67B2CBB2A1859C5C6A54A"
 
+sram_ctrl: MemoryControllers.OpenTitan_SRAMController @ sysbus 0x411c0000
+    FatalError -> alert_handler@55
+
 //FLASH
 flash: Memory.MappedMemory @ {sysbus 0x20000000; sysbus 0x80000000}
     size: 0x100000

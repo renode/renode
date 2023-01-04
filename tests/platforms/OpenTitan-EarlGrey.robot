@@ -36,6 +36,7 @@ ${AON_TIMER_WDOG_BITE_BIN}      ${URL}/open_titan-earlgrey--aon_timer_wdog_bite_
 ${ENTROPY_SRC_AST_REQ_BIN}      ${URL}/open_titan-earlgrey--entropy_src_ast_rng_req_test_prog_fpga_cw310-s_223760-41abb796785237e76a0114d76d578d34fbeed0b4
 ${ENTROPY_SRC_FW_OVR_BIN}       ${URL}/open_titan-earlgrey--entropy_src_fw_ovr_test_prog_fpga_cw310-s_228724-297058e2f646201161ab762ffb3c789c9fe318f3
 ${ENTROPY_SRC_KAT_BIN}          ${URL}/open_titan-earlgrey--entropy_src_kat_test_prog_fpga_cw310-s_227200-5d1e4dc69a9991f4dd106249d599c8f0c59f5198
+${SRAM_CTRL_BIN}                ${URL}/open_titan-earlgrey--sram_ctrl_smoketest_prog_fpga_cw310-s_201048-b0d2ad0e519756861521926f26f7aca0ba088470
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
@@ -224,3 +225,6 @@ Should Pass Entropy Source Firmware Override Smoketest
 
 Should Pass Entropy Source Known Answer Test Smoketest
     Run Test               ${ENTROPY_SRC_KAT_BIN}
+
+Should Pass SRAM Controller Smoketest
+    Run Test               ${SRAM_CTRL_BIN}
