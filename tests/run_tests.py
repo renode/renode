@@ -43,3 +43,4 @@ try:
 
 except ImportError as e:
     print("{}\nPlease install required dependencies with `pip install -r {}`".format(str(e), os.path.abspath(requirements)), file=sys.stderr)
+    sys.exit(1)
