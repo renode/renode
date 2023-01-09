@@ -40,7 +40,18 @@ i2c2: I2C.STM32F4_I2C @ sysbus 0x40005800
     ErrorInterrupt -> nvic@34
 
 exti: IRQControllers.EXTI @ sysbus 0x40010400
-    [0-6] -> nvic@[6-10, 23, 40]
+    numberOfOutputLines: 19
+    [0-4] -> nvic@[6-10]
+    [5-9] -> nvicInput23@[0-4]
+    [10-15] -> nvicInput40@[0-5]
+
+nvicInput23: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 5
+    -> nvic@23
+
+nvicInput40: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@40
 
 gpioPortA: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010800, +0x400>
     [0-15] -> exti@[0-15]

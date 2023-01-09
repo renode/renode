@@ -39,7 +39,18 @@ cpu: CPU.CortexM @ sysbus
 pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
 
 exti: IRQControllers.EXTI @ sysbus 0x40013C00
-    [0-6] -> nvic@[6-10, 23, 40]
+    numberOfOutputLines: 24
+    [0-4] -> nvic@[6-10]
+    [5-9] -> nvicInput23@[0-4]
+    [10-15] -> nvicInput40@[0-5]
+
+nvicInput23: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 5
+    -> nvic@23
+
+nvicInput40: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@40
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
     modeResetValue: 0xA8000000
