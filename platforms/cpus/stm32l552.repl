@@ -17,6 +17,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 exti: IRQControllers.EXTI @ sysbus 0x4002F400
     [0-15,17] -> nvic@[11-26,2]
     numberOfOutputLines: 43
+    firstDirectLine: 17
 
 sram1: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x30000
