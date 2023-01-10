@@ -44,9 +44,9 @@ Set PWM And Check Duty
     ${hpn}=  Convert To Number  ${hp}
     Should Be Equal Within Range  ${expected_duty}  ${hpn}  10
 
-Run Flash Command
+Run Command
     [Arguments]  ${command}
-    Write Line To Uart       flash ${command}
+    Write Line To Uart       ${command}
     Wait For Prompt On Uart  $
 
 Flash Should Contain
@@ -152,20 +152,20 @@ Should Handle Flash Operations
 
     # Page 1504 (0x0002f000) and the surrounding area is empty so we can use it
     Flash Should Contain     0x0002f000  0x00000000
-    Run Flash Command        write 0x0002f000 0x11 0x22 0x33 0x44
+    Run Command              flash write 0x0002f000 0x11 0x22 0x33 0x44
     Flash Should Contain     0x0002f000  0x44332211
 
-    Run Flash Command        page_erase 1504
+    Run Command              flash page_erase 1504
     Flash Should Contain     0x0002f000  0x00000000
 
     # Pages are 128 bytes long, so this pattern will cover 3 pages
-    Run Flash Command        write_pattern 0x0002f000 384
+    Run Command              flash write_pattern 0x0002f000 384
     Flash Should Contain     0x0002f020  0x23222120
     Flash Should Contain     0x0002f0a0  0xa3a2a1a0
     Flash Should Contain     0x0002f120  0x23222120
 
     # Erasing a page should set the whole page to 0 but not affect adjacent pages
-    Run Flash Command        page_erase 1505
+    Run Command              flash page_erase 1505
     Flash Should Contain     0x0002f020  0x23222120
     # Check the first word of the page, a word within it and the last word of the page
     Flash Should Contain     0x0002f080  0x00000000
