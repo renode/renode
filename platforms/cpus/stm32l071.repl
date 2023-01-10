@@ -74,7 +74,7 @@ gpioe: GPIOPort.STM32_GPIOPort @ sysbus <0x50001000, +0x400>
     [0-15] -> exti@[0-15]
 
 i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
-    EventInterrupt -> nvic@23
+    EventInterrupt -> exti@23
 
 i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
     EventInterrupt -> nvic@24
@@ -143,16 +143,16 @@ timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    ->nvic@28
+    ->exti@26
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    ->nvic@27
+    ->exti@25
 
 lpuart1: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
     lowPowerMode: true
-    ->nvic@29
+    ->exti@28
 
 usart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
@@ -190,7 +190,7 @@ pwr: Miscellaneous.STM32L0_PWR @ sysbus 0x40007000
 
 lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
     frequency: 0x1000000
-    -> nvic@13
+    -> exti@29
 
 sysbus:
     init:
