@@ -251,3 +251,15 @@ SPI Should Work In Interrupt-Driven Mode
 
     Wait For Line On Uart    Flash erase succeeded!
     Wait For Line On Uart    Data read matches data written. Good!!
+
+PVD Should Fire Interrupt
+    Execute Command          include @scripts/single-node/stm32l072.resc
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1-zephyr-custom_pwr_pvd.elf-s_871128-6822cb7346d2171c2b170b74701144d59b36199c
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Run Command              pvd configure 3.1 rising
+    Execute Command          pwr Voltage 2.9
+    Wait For Line On Uart    PVD callback triggered, PVDO is set
