@@ -8,7 +8,11 @@ exti: IRQControllers.EXTI @ sysbus 0x40010400
     [0, 1] -> nvicInput5@[0, 1]
     [2, 3] -> nvicInput6@[0, 1]
     [4-15] -> nvicInput7@[0-11]
-    [18, 23, 25, 26, 27, 28] -> nvic@[31, 23, 27, 28, 30, 29]
+    [21, 22] -> nvicInput12@[0, 1]
+    [25] -> nvicInput27@[0]
+    [26] -> nvicInput28@[0]
+    [28] -> nvicInput29@[0]
+    [18, 23, 27] -> nvic@[31, 23, 30]
 
 nvicInput5: Miscellaneous.CombinedInput @ none
     numberOfInputs: 2
@@ -22,37 +26,53 @@ nvicInput7: Miscellaneous.CombinedInput @ none
     numberOfInputs: 12
     -> nvic@7
 
+nvicInput12: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 3
+    -> nvic@12
+
+nvicInput27: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@27
+
+nvicInput28: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@28
+
+nvicInput29: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 7
+    -> nvic@29
+
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m0"
     nvic: nvic
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    -> nvic@27
+    -> nvicInput27@1
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    -> nvic@28
+    -> nvicInput28@1
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
-    -> nvic@29
+    -> nvicInput29@1
 
 usart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
-    -> nvic@29
+    -> nvicInput29@2
 
 usart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 200000000
-    -> nvic@29
+    -> nvicInput29@3
 
 usart6: UART.STM32F7_USART @ sysbus 0x40011400
     frequency: 200000000
-    -> nvic@29
+    -> nvicInput29@4
 
 usart7: UART.STM32F7_USART @ sysbus 0x40011800
     frequency: 200000000
-    -> nvic@29
+    -> nvicInput29@5
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x48000000, +0x400>
     modeResetValue: 0x28000000
@@ -176,7 +196,7 @@ if request.isWrite and request.offset in (0x10, 0x24, 0x38):
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    -> nvic@12
+    -> nvicInput12@2
 
 crc: CRC.STM32F0_CRC @ sysbus 0x40023000
     configurablePoly: false // Only STM32F07x and STM32F09x implements configurablePoly: true
