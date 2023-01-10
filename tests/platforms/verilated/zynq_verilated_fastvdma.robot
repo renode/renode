@@ -76,6 +76,8 @@ Should Load Drivers
 
 Verify Image
     [Documentation]                      Verifies whether the image has been transferred correctly.
+# On CI we observed deadlocks when targeting dotnet, skip this test until it's resolved
+    [Tags]                               skip_dotnet
     Requires                             output
 
 # The output image (out.rgba) should consist of img1.rgba (256x256px) in the middle of img0.rgba (512x512px)
