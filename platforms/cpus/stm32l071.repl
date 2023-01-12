@@ -103,9 +103,11 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     WakeupIRQ -> exti@20
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    bufferCapacity: 1
     ->nvic@25
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    bufferCapacity: 1
     ->nvic@26
 
 timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
