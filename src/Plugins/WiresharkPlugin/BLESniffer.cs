@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -97,7 +97,16 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
                     // Extract an accessAddress for connection from PDU payload.
                     var newAccessAddress = BitHelper.ToUInt32(originalPacket, 18, 4, true);
-                    mastersInConnections.Add(newAccessAddress, sender);
+                    if(mastersInConnections.ContainsKey(newAccessAddress))
+                    {
+                        // connection with this access address already exists, so we override it
+                        sender.Log(LogLevel.Warning, "There is already a connection associated with access address: 0x{0:X}. Overriding old connection.", newAccessAddress);
+                        mastersInConnections[newAccessAddress] = sender;
+                    }
+                    else
+                    {
+                        mastersInConnections.Add(newAccessAddress, sender);
+                    }
                 }
                 
                 // Sniffer just sets an appropriate flag in header to indicate that it's auxiliary advertisement packet.
