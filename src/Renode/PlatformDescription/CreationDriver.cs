@@ -109,6 +109,7 @@ namespace Antmicro.Renode.PlatformDescription
                 usingsBeingProcessed.Clear();
                 PrepareVariables();
             }
+            machine.PostCreationActions();
         }
 
         private void ValidatePreMerge(string file, string source, string prefix)
