@@ -1,5 +1,12 @@
 *** Variables ***
 ${UART}                       sysbus.usart2
+${RTC_32KHZ}=  SEPARATOR=
+...  """                                      ${\n}
+...  using "platforms/cpus/stm32f4.repl"      ${\n}
+...                                           ${\n}
+...  rtc:                                     ${\n}
+...  ${SPACE*4}wakeupTimerFrequency: 32000    ${\n}
+...  """
 
 *** Test Cases ***
 Run Zephyr Hello World
@@ -15,8 +22,10 @@ Run Zephyr Hello World
     Wait For Line On Uart     Hello World! stm32f4_disco
 
 Configure RTC Alarm
-    Execute Command           set bin @https://dl.antmicro.com/projects/renode/stm32f4_discovery--riot-tests_periph_rtc.elf-s_1249644-ca2effb6a0a8bcde39496b99bcb8b160a4ed292e
-    Execute Command           include @scripts/single-node/stm32f4_discovery.resc
+    Execute Command           mach create
+    # Use an RTC frequency of exactly 32 kHz as expected by the test binary
+    Execute Command           machine LoadPlatformDescriptionFromString ${RTC_32KHZ}
+    Execute Command           sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4_discovery--riot-tests_periph_rtc.elf-s_1249644-ca2effb6a0a8bcde39496b99bcb8b160a4ed292e
 
     Execute Command           showAnalyzer ${UART}
     Create Terminal Tester    ${UART}
