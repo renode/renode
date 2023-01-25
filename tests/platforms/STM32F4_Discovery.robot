@@ -30,6 +30,7 @@ Configure RTC Alarm
     Wait For Line On Uart     RIOT RTC low-level driver test
     Wait For Line On Uart     This test will display 'Alarm!' every 2 seconds for 4 times
 
+    # "Alarm!" should be printed every 2 seconds, 4 times in total
     Wait For Line On Uart     Alarm!
     ${timeInfo}=              Execute Command    emulation GetTimeSourceInfo
     Should Contain            ${timeInfo}        Elapsed Virtual Time: 00:00:02
@@ -45,6 +46,9 @@ Configure RTC Alarm
     Wait For Line On Uart     Alarm!
     ${timeInfo}=              Execute Command    emulation GetTimeSourceInfo
     Should Contain            ${timeInfo}        Elapsed Virtual Time: 00:00:08
+
+    # There should be no more alarms after the expected 4
+    Test If Uart Is Idle      3
 
 Should Fire Update Event When Counting Up
     Execute Command         mach create
