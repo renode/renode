@@ -192,10 +192,12 @@ lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
     frequency: 0x1000000
     -> exti@29
 
+crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+    configurablePoly: true
+
 sysbus:
     init:
         Tag <0x40026000, 0x400263FF> "AES"
-        Tag <0x40023000, 0x400233FF> "CRC"
         Tag <0x40015800, 0x40015BFF> "DBGMCU"
         Tag <0x40011C00, 0x40011FFF> "Firewall"
         Tag <0x40010000, 0x400103FF> "SYSCFG"
