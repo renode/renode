@@ -23,31 +23,31 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             if(originalPacket.Length < MinimalBLEPacketLength)
             {
                 sender.Log(LogLevel.Error, "BLE packet size is {0} bytes. Expected at least {1} bytes.", originalPacket.Length, MinimalBLEPacketLength);
-                FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes); 
+                FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes);
                 return completePacket;
             }
 
             if(!channelToWiresharkIndex.TryGetValue(sender.Channel, out var wiresharkIndex))
             {
                 sender.Log(LogLevel.Error, "Channel number {0} doesn't exist in bluetooth specification.", sender.Channel);
-                FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes); 
+                FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes);
                 return completePacket;
             }
-            
+
             completePacket[0] = wiresharkIndex;
-            
+
             // Signal Power
-            completePacket[1] = 0x0; 
-            
+            completePacket[1] = 0x0;
+
             // Noise Power
-            completePacket[2] = 0x0; 
-            
+            completePacket[2] = 0x0;
+
             // Access Address Offenses
-            completePacket[3] = 0x0; 
-            
+            completePacket[3] = 0x0;
+
             // Reference Access Address
-            completePacket[4] = originalPacket[0]; 
-            completePacket[5] = originalPacket[1]; 
+            completePacket[4] = originalPacket[0];
+            completePacket[5] = originalPacket[1];
             completePacket[6] = originalPacket[2];
             completePacket[7] = originalPacket[3];
 
@@ -60,13 +60,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             // Here we check whether we have an advertisement packet or data packet. We're using access address embedded in packet.
             if(accessAddress != AdvertisementAccessAddress)
             {
-                // If an accessAddress is a key in the dictionary then we know that sender belongs to this connection. 
+                // If an accessAddress is a key in the dictionary then we know that sender belongs to this connection.
                 // There is an assumption that data packets are sent after advertisement packets. If there is no key that matches access address then something went wrong.
                 // If sender is a value for this key then it's a master, otherwise it's a slave.
                 if(!mastersInConnections.TryGetValue(accessAddress, out var masterRadio))
                 {
                     sender.Log(LogLevel.Error, "There is no connection associated with accessAddress: 0x{0:X}.", accessAddress);
-                    FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes); 
+                    FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes);
                     return completePacket;
                 }
 
@@ -81,9 +81,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
             else
             {
-                flags |= (short)PDUTypeNumbers.Advertisement; 
+                flags |= (short)PDUTypeNumbers.Advertisement;
 
-                // When CONNECT_IND packet (PDU type 5) is sent we can read from PDU payload what access address will be used for this connection. 
+                // When CONNECT_IND packet (PDU type 5) is sent we can read from PDU payload what access address will be used for this connection.
                 // This way we can save connection's access address and which radio is a master for this connection.
                 var pduType = originalPacket[4] & 0xF;
                 if(pduType == ConnectPDUType)
@@ -91,7 +91,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                     if(originalPacket.Length < ConnectBLEPacketLength)
                     {
                         sender.Log(LogLevel.Error, "Connect packet size is {0} bytes. Expected at least {1} bytes.", originalPacket.Length, ConnectBLEPacketLength);
-                        FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes); 
+                        FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes);
                         return completePacket;
                     }
 
@@ -108,19 +108,19 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                         mastersInConnections.Add(newAccessAddress, sender);
                     }
                 }
-                
+
                 // Sniffer just sets an appropriate flag in header to indicate that it's auxiliary advertisement packet.
                 else if(pduType == AuxiliaryAdvertisementPDUType)
                 {
                     flags |= (short)PDUTypeNumbers.AuxiliaryAdvertisement;
-                } 
+                }
             }
-            
-            // Embed flags to the packet. 
+
+            // Embed flags to the packet.
             completePacket[8] = (byte)flags;
             completePacket[9] = (byte)(flags >> 8);
-            
-            FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes); 
+
+            FillRestOfData(originalPacket, completePacket, SnifferMetadataSizeInBytes);
             return completePacket;
         }
 
@@ -138,10 +138,10 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private const uint AdvertisementAccessAddress = 0x8e89bed6;
         private const byte ConnectPDUType = 5;
         private const byte AuxiliaryAdvertisementPDUType = 7;
-        
+
         // Wireshark indexes channels from 0 to 39 basing on the frequency meanwhile in reality channels 37, 38 and 39
         // are in different places of frequency spectrum. This is why we have to remap channel numbers to indexed for Wireshark.
-        private readonly Dictionary<int, byte> channelToWiresharkIndex = new Dictionary<int, byte>() 
+        private readonly Dictionary<int, byte> channelToWiresharkIndex = new Dictionary<int, byte>()
         {
             { 37, 0 },
             { 0, 1 },
@@ -184,7 +184,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             { 36, 38 },
             { 39, 39 },
         };
-        
+
         // This dictionary holds an information about all connections. Each connection is identified by an access address
         // and there is only one master device associated with each access address. Other devices associated with access addressses
         // are considered to be slaves.
