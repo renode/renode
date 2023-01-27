@@ -11,9 +11,6 @@
     <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
   </PropertyGroup>
   <Import Project="$(PropertiesLocation)" />
-  <ItemGroup>
-    <Using Include="Antmicro.Renode.Core.Range" Alias="Range" />
-  </ItemGroup>
   <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
   </PropertyGroup>
