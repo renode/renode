@@ -67,7 +67,6 @@ cp -r tools/gdb_compare $PREFIX/opt/renode/tools
 cp -r tools/sel4_extensions $PREFIX/opt/renode/tools
 
 cp lib/resources/styles/robot.css $PREFIX/opt/renode/tests
-cp tests/requirements.txt $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/renode-keywords.robot $PREFIX/opt/renode/tests
 cp src/Renode/RobotFrameworkEngine/helper.py $PREFIX/opt/renode/tests
 
