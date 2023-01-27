@@ -12,7 +12,7 @@ ${SERVER_REMOTE_SUSPEND}     y
 ${SKIP_RUNNING_SERVER}       False
 ${CONFIGURATION}             Release
 ${PORT_NUMBER}               9999
-${DIRECTORY}                 ${CURDIR}/../../../output/bin/${CONFIGURATION}
+${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
 ${BINARY_NAME}               Renode.exe
 ${HOTSPOT_ACTION}            None
 ${DISABLE_XWT}               False
