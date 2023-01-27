@@ -67,14 +67,11 @@ cp -r tools/gdb_compare $PREFIX/opt/renode/tools
 cp -r tools/sel4_extensions $PREFIX/opt/renode/tools
 
 cp lib/resources/styles/robot.css $PREFIX/opt/renode/tests
-cp src/Renode/RobotFrameworkEngine/renode-keywords.robot $PREFIX/opt/renode/tests
-cp src/Renode/RobotFrameworkEngine/helper.py $PREFIX/opt/renode/tests
 
 
 tools/packaging/common_copy_licenses.sh $PREFIX/opt/renode/licenses $_os_name
 
 
-sed -i.bak 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $PREFIX/opt/renode/tests/robot_tests_provider.py
 sed -i.bak "s#os\.path\.join(this_path, '\.\./lib/resources/styles/robot\.css')#os.path.join(this_path,'robot.css')#g" $PREFIX/opt/renode/tests/robot_tests_provider.py
 rm $PREFIX/opt/renode/tests/robot_tests_provider.py.bak
 

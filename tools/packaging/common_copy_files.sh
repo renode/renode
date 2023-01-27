@@ -16,18 +16,15 @@ cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer
 cp -r $BASE/tests/network-server $DIR/tests/network-server
 cp -r $BASE/tests/peripherals $DIR/tests/peripherals
 cp -r $BASE/tests/platforms $DIR/tests/platforms
-cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DIR/tests
+cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,helper}.py $DIR/tests
+cp -r $BASE/tests/{renode-keywords,example}.robot $DIR/tests
 cp -r $BASE/tests/tools $DIR/tests/tools
 cp -r $BASE/tests/unit-tests $DIR/tests/unit-tests
 $SED_COMMAND '/nunit/d' $DIR/tests/run_tests.py
-$SED_COMMAND 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $DIR/tests/robot_tests_provider.py
 
 # `tests.yaml` should only list robot files included in the original tests.yaml
 sed '/csproj$/d' $BASE/tests/tests.yaml > $DIR/tests/tests.yaml
 
-cp -r $BASE/src/Renode/RobotFrameworkEngine/*.{py,robot} $DIR/tests
-#sed has different parameters on osx/linux so the command must be defined by scripts including this one
-$SED_COMMAND 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DIR/tests/renode-keywords.robot
 cp $BASE/lib/resources/styles/robot.css $DIR/tests/robot.css
 cp $BASE/tests/requirements.txt $DIR/tests/requirements.txt
 

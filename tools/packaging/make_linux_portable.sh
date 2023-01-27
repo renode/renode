@@ -20,9 +20,9 @@ rm -rf $DESTINATION/*
 
 mkdir $DESTINATION/{licenses,tests,tools}
 cp $RENODE_ROOT_DIR/renode-test $DESTINATION
-cp $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter}.py $DESTINATION/tests
+cp $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,helper}.py $DESTINATION/tests
+cp $RENODE_ROOT_DIR/tests/{renode-keywords,example}.robot $DESTINATION/tests
 cp $RENODE_ROOT_DIR/tests/requirements.txt $DESTINATION/tests
-cp $RENODE_ROOT_DIR/src/Renode/RobotFrameworkEngine/*.{py,robot} $DESTINATION/tests
 cp $RENODE_ROOT_DIR/lib/resources/styles/robot.css $DESTINATION/tests/robot.css
 cp $RENODE_ROOT_DIR/tools/common.sh $DESTINATION/tests
 cp -r $RENODE_ROOT_DIR/tools/metrics_analyzer $DESTINATION/tools
@@ -37,8 +37,6 @@ sed -i 's#--properties-file.*#--robot-framework-remote-server-full-directory=$RO
 sed -i '/^ROOT_PATH=.*/a TEST_PATH=$ROOT_PATH/tests' $DESTINATION/renode-test
 sed -i '/TESTS_FILE/d' $DESTINATION/renode-test
 sed -i '/TESTS_RESULTS/d' $DESTINATION/renode-test
-sed -i 's#os\.path\.join(this_path, "\.\./src/Renode/RobotFrameworkEngine/renode-keywords\.robot")#os.path.join(this_path,"renode-keywords.robot")#g' $DESTINATION/tests/robot_tests_provider.py
-sed -i 's#^${DIRECTORY}.*#${DIRECTORY}              ${CURDIR}/../bin#' $DESTINATION/tests/renode-keywords.robot
 
 cp -r $RENODE_ROOT_DIR/tests/platforms $DESTINATION/tests/platforms
 cp -r $RENODE_ROOT_DIR/tests/peripherals $DESTINATION/tests/peripherals
