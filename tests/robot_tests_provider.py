@@ -473,7 +473,7 @@ class RobotTestSuite(object):
         log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
         self.startTimestamp = monotonic()
 
-        keywords_path = os.path.abspath(os.path.join(this_path, "../src/Renode/RobotFrameworkEngine/renode-keywords.robot"))
+        keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
         keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
         suite_builder = robot.running.builder.TestSuiteBuilder()
         suite = suite_builder.build(self.path)
