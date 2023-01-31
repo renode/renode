@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -18,16 +18,16 @@ namespace Antmicro.Renode.Peripherals.Dynamic
             subobject = new Subobject(this);
 
             Registers.Control.Define(this)
-                .WithValueField(0, 32, writeCallback: (_, value) => HandleWrite(value))
+                .WithValueField(0, 32, writeCallback: (_, __) => HandleWrite())
             ;
         }
 
         public long Size => 0x4;
 
-        private void HandleWrite(uint value)
+        private void HandleWrite()
         {
             this.Log(LogLevel.Noisy, "Hello from object");
-            subobject.Write(value);
+            subobject.Write();
         }
 
         private readonly Subobject subobject;
@@ -44,7 +44,7 @@ namespace Antmicro.Renode.Peripherals.Dynamic
                 this.parent = parent;
             }
 
-            public void Write(uint value)
+            public void Write()
             {
                 parent.Log(LogLevel.Noisy, "Hello from sub-object");
             }
