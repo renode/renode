@@ -10,6 +10,27 @@ ${MTD0_BLOCK_DEV}                   /dev/mtdblock0
 ${CADENCE_XSPI_BIN}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-vmlinux-s_14143972-449b7a25d689a4b6e2adc9ae4c3abbf375ccc70c
 ${CADENCE_XSPI_ROOTFS}              @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-d1dabbf627ba4846963c97db8d27f5d4f454e72b
 ${CADENCE_XSPI_DTB}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi.dtb-s_11045-f5e1772bb1d19234ce6f0b8ec77c2f970660c7bb
+${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
+...                                 """
+...                                 xspi: SPI.Cadence_xSPI @ {
+...                                 sysbus 0xE0102000;
+...                                 sysbus new Bus.BusMultiRegistration {
+...                                 address: 0xe0104000; size: 0x100; region: "auxiliary"
+...                                 };
+...                                 sysbus new Bus.BusMultiRegistration {
+...                                 address: 0xe0200000; size: 0x1000; region: "dma"
+...                                 }
+...                                 }
+...                                 ${SPACE*4}IRQ -> gic@63
+...
+...                                 xspiFlash: SPI.Micron_MT25Q @ xspi 0 {
+...                                 underlyingMemory: xspiFlashMemory
+...                                 }
+...
+...                                 xspiFlashMemory: Memory.MappedMemory {
+...                                 size:  0x800000
+...                                 }
+...                                 """
 
 *** Keywords ***
 Create Machine
@@ -165,3 +186,27 @@ Time Should Elapse
     Execute Linux Command           sleep 2
     ${seconds}=                     Get Linux Elapsed Seconds
     Should Be True                  ${seconds_before} < ${seconds}
+
+Should Access SPI Flash Memory Via Additional Cadence xSPI IP
+    Execute Command                 $bin=${CADENCE_XSPI_BIN}
+    Execute Command                 $rootfs=${CADENCE_XSPI_ROOTFS}
+    Execute Command                 $dtb=${CADENCE_XSPI_DTB}
+
+    Create Machine
+    Start Emulation
+    Execute Command                 machine LoadPlatformDescriptionFromString ${CADENCE_XSPI_PERIPHERAL}
+
+    Boot And Login
+    # Suppress messages from the kernel space
+    Execute Linux Command           echo 0 > /proc/sys/kernel/printk
+
+    Write Line To Uart              ls --color=never -1 /dev/
+    Wait For Line On Uart           mtd0
+    Wait For Prompt On Uart         ${PROMPT}
+    Check Exit Code
+
+    Generate Random File            ${SAMPLE_FILENAME}  5
+
+    Should Mount Flash Memory And Write File  ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Mount Flash Memory And Compare Files  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Erase Flash Memory       ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}
