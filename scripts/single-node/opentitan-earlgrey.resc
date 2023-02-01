@@ -22,8 +22,5 @@ macro reset
     otp_ctrl LoadVmem $otp_vmem
 """
 
-# Silence the logs on the SPI adresses - the binary polls this range generating a lot of logs
-sysbus SilenceRange <0x40050000 0x2000>
-
 runMacro $reset
 

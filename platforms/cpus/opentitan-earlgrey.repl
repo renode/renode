@@ -110,6 +110,8 @@ spi_host1: SPI.OpenTitan_SpiHost @ sysbus 0x40310000
     SpiEvent -> rv_plic@137
     numberOfCSLines: 32
 
+spi_device: SPI.OpenTitan_SpiDevice @ sysbus 0x40050000
+
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
     IRQ -> rv_plic@1
@@ -269,7 +271,6 @@ sysbus:
         Tag <0x40020000 0x1000> "OPENTITAN_EARLGREY_DEV_UART2" 0
         Tag <0x40030000 0x1000> "OPENTITAN_EARLGREY_DEV_UART3" 0
         Tag <0x40040000 0x1000> "OPENTITAN_EARLGREY_DEV_GPIO" 0
-        Tag <0x40050000 0x2000> "OPENTITAN_EARLGREY_DEV_SPI_DEVICE" 0
         Tag <0x40080000 0x1000> "OPENTITAN_EARLGREY_DEV_I2C0" 0
         Tag <0x40090000 0x1000> "OPENTITAN_EARLGREY_DEV_I2C1" 0
         Tag <0x400A0000 0x1000> "OPENTITAN_EARLGREY_DEV_I2C2" 0
