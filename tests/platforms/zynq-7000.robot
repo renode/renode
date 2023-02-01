@@ -7,6 +7,9 @@ ${FLASH_MOUNT}                      /mnt/spi_flash
 ${SAMPLE_FILENAME}                  data.bin
 ${MTD0_DEV}                         /dev/mtd0
 ${MTD0_BLOCK_DEV}                   /dev/mtdblock0
+${CADENCE_XSPI_BIN}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-vmlinux-s_14143972-449b7a25d689a4b6e2adc9ae4c3abbf375ccc70c
+${CADENCE_XSPI_ROOTFS}              @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-d1dabbf627ba4846963c97db8d27f5d4f454e72b
+${CADENCE_XSPI_DTB}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi.dtb-s_11045-f5e1772bb1d19234ce6f0b8ec77c2f970660c7bb
 
 *** Keywords ***
 Create Machine
