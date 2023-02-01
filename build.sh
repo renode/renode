@@ -9,6 +9,7 @@ EXPORT_DIRECTORY=""
 
 UPDATE_SUBMODULES=false
 CONFIGURATION="Release"
+BUILD_PLATFORM="Any CPU"
 CLEAN=false
 PACKAGES=false
 NIGHTLY=false
@@ -240,13 +241,14 @@ fi
 
 # Build CCTask in Release configuration
 CCTASK_OUTPUT=`mktemp`
+CCTASK_BUILD_ARGS=($NET_FRAMEWORK_VER p:Configuration=Release p:Platform="\"$BUILD_PLATFORM\"")
 set +e
 if $NET
 then
-$CS_COMPILER $(build_args_helper $NET_FRAMEWORK_VER) $(build_args_helper p:Configuration=Release) $(build_args_helper p:NET=true) "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
-else
-$CS_COMPILER $(build_args_helper $NET_FRAMEWORK_VER) $(build_args_helper p:Configuration=Release) "`get_path \"$ROOT_PATH/lib/cctask/CCTask.sln\"`" 2>&1 > $CCTASK_OUTPUT
+    CCTASK_BUILD_ARGS+=(p:NET=true)
 fi
+eval "$CS_COMPILER $(build_args_helper "${CCTASK_BUILD_ARGS[@]}") $(get_path $ROOT_PATH/lib/cctask/CCTask.sln)" 2>&1 > $CCTASK_OUTPUT
+
 if [ $? -ne 0 ]; then
     cat $CCTASK_OUTPUT
     rm $CCTASK_OUTPUT
@@ -283,10 +285,10 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true)
+PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
 
 # build
-$CS_COMPILER $(build_args_helper ${PARAMS[@]}) "$TARGET"
+eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
 
 # copy llvm library
 if $NET
