@@ -200,7 +200,7 @@ RTC Should Support Alarms
 
 RTC Should Support Wakeup
     Execute Command          include @scripts/single-node/stm32l072.resc
-    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_rtc_wakeup.elf-s_429944-651fc94949b1394d82e39733fabba0d502136478
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_rtc_wakeup.elf-s_430288-2ea254c15a8a91fd67154fc0800823f8b6e187c2
 
     Create Terminal Tester   sysbus.usart2
 
