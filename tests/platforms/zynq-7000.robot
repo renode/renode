@@ -24,11 +24,12 @@ ${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
 ...                                 ${SPACE*4}IRQ -> gic@63
 ...
 ...                                 xspiFlash: SPI.Micron_MT25Q @ xspi 0 {
-...                                 underlyingMemory: xspiFlashMemory
+...                                 underlyingMemory: xspiFlashMemory;
+...                                 extendedDeviceId: 0x44
 ...                                 }
 ...
 ...                                 xspiFlashMemory: Memory.MappedMemory {
-...                                 size:  0x800000
+...                                 size:  0x2000000
 ...                                 }
 ...                                 """
 
@@ -37,7 +38,7 @@ Create Machine
     Execute Command                 include @scripts/single-node/zynq-7000.resc
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cEcho: Mocks.EchoI2CDevice @ i2c0 ${I2C_ECHO_ADDRESS}"
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cSensor: Sensors.MAX30208 @ i2c0 ${I2C_SENSOR_ADDRESS}"
-    Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory }; spi0FlashMemory: Memory.MappedMemory { size: 0x800000 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory; extendedDeviceId: 0x44 }; spi0FlashMemory: Memory.MappedMemory { size: 0x2000000 }"
     Create Terminal Tester          ${UART}
 
 Boot And Login
