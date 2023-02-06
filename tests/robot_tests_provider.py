@@ -475,6 +475,8 @@ class RobotTestSuite(object):
 
         keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
         keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
+        # This variable is provided for compatibility with Robot files that use Resource ${RENODEKEYWORDS}
+        variables.append('RENODEKEYWORDS:{}'.format(keywords_path))
         suite_builder = robot.running.builder.TestSuiteBuilder()
         suite = suite_builder.build(self.path)
         suite.resource.imports.create(type="Resource", name=keywords_path)
