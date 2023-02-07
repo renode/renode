@@ -185,7 +185,7 @@ then
   if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
   then
       cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
-      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt_NET.csproj"/' "$TERMSHARP_PROJECT_COPY"
+      sed -i.bak 's/"xwt\\Xwt\\Xwt_NET.csproj"/"..\\xwt\\Xwt\\Xwt_NET.csproj"/' "$TERMSHARP_PROJECT_COPY"
       rm "$TERMSHARP_PROJECT_COPY.bak"
   fi
 else
@@ -243,11 +243,12 @@ fi
 CCTASK_OUTPUT=`mktemp`
 CCTASK_BUILD_ARGS=($NET_FRAMEWORK_VER p:Configuration=Release p:Platform="\"$BUILD_PLATFORM\"")
 set +e
+CCTASK_SLN=CCTask.sln
 if $NET
 then
-    CCTASK_BUILD_ARGS+=(p:NET=true)
+    CCTASK_SLN=CCTask_NET.sln
 fi
-eval "$CS_COMPILER $(build_args_helper "${CCTASK_BUILD_ARGS[@]}") $(get_path $ROOT_PATH/lib/cctask/CCTask.sln)" 2>&1 > $CCTASK_OUTPUT
+eval "$CS_COMPILER $(build_args_helper "${CCTASK_BUILD_ARGS[@]}") $(get_path $ROOT_PATH/lib/cctask/$CCTASK_SLN)" 2>&1 > $CCTASK_OUTPUT
 
 if [ $? -ne 0 ]; then
     cat $CCTASK_OUTPUT
