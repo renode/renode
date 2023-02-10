@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-riscv64_NET", "src\In
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-sparc_NET", "src\Infrastructure\src\Emulator\Cores\cores-sparc_NET.csproj", "{77B2EB1F-CF1A-4404-B8C4-A5C1039323E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-xtensa_NET", "src\Infrastructure\src\Emulator\Cores\cores-xtensa_NET.csproj", "{B83F88C1-35CB-4A41-A1B2-3EA252300C11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-xtensa_NET", "src\Infrastructure\src\Emulator\Cores\cores-xtensa_NET.csproj", "{B83F88C1-35CB-4A41-A1B2-3EA252300C11}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions_NET", "src\Infrastructure\src\Emulator\Extensions\Extensions_NET.csproj", "{F3128741-9E90-4FAD-B164-1799FF15CBF5}"
 EndProject
@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntShell", "lib\AntShell\An
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigGustave", "lib\BigGustave\src\BigGustave\BigGustave_NET.csproj", "{4EF28705-CE68-4377-821B-80388FEEC687}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "crypto", "lib\bc-csharp\crypto\crypto_NET.csproj", "{45473847-8AF8-4BAF-B768-442C6875B8CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "crypto", "lib\bc-csharp\crypto\crypto_NET.csproj", "{45473847-8AF8-4BAF-B768-442C6875B8CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxxDemangler", "lib\CxxDemangler\CxxDemangler\CxxDemangler_NET.csproj", "{CC3857B3-1CE3-4ABF-BC07-6445F9269DA1}"
 EndProject
