@@ -20,7 +20,7 @@ rm -rf $DESTINATION/*
 
 mkdir $DESTINATION/{licenses,tests,tools}
 cp $RENODE_ROOT_DIR/renode-test $DESTINATION
-cp $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,helper}.py $DESTINATION/tests
+cp $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,robot_output_formatter_verbose,helper}.py $DESTINATION/tests
 cp $RENODE_ROOT_DIR/tests/{renode-keywords,example}.robot $DESTINATION/tests
 cp $RENODE_ROOT_DIR/tests/requirements.txt $DESTINATION/tests
 cp $RENODE_ROOT_DIR/lib/resources/styles/robot.css $DESTINATION/tests/robot.css
