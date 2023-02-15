@@ -194,8 +194,8 @@ Should Access SPI Flash Memory Via Additional Cadence xSPI IP
     Execute Command                 $dtb=${CADENCE_XSPI_DTB}
 
     Create Machine
-    Start Emulation
     Execute Command                 machine LoadPlatformDescriptionFromString ${CADENCE_XSPI_PERIPHERAL}
+    Start Emulation
 
     Boot And Login
     # Suppress messages from the kernel space
