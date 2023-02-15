@@ -37,6 +37,7 @@ ${OTBN_SCRAMBLE_BIN}            ${URL}/open_titan-earlgrey--otbn_mem_scramble_te
 ${OTBN_RAND_BIN}                ${URL}/open_titan-earlgrey--otbn_randomness_test_prog_fpga_cw310-s_382412-af2e53e5aa15fcdbccdbd02e7743b9b9a7e6c4ed
 ${OTBN_SMOKETEST_BIN}           ${URL}/open_titan-earlgrey--otbn_smoketest_prog_fpga_cw310-s_324520-4bab1e9ac4a35a6ab9c27df407aad8e9a68ace94
 ${OTBN_RSA_BIN}                 ${URL}/open_titan-earlgrey--otbn_rsa_test_prog_fpga_cw310-s_329844-075a4b23640dba0a2e34c030b65c79b553a70942
+# this binary is built from https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645/hw/ip/otbn/dv/smoke/smoke_test.s
 ${OTBN_SIMPLE_SMOKETEST_BIN}    ${URL}/open_titan-earlgrey--otbn_simple_smoketest.elf-s_9180-eafc18be3506e30cc6c255942156b35e4cbda0d9
 
 ${LEDS}=    SEPARATOR=
