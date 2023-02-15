@@ -9,9 +9,9 @@ machine LoadPlatformDescription @platforms/cpus/zynq-7000.repl
 showAnalyzer uart0
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
-$bin?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests-vmlinux-s_13786812-358d50a2341a6aa3cf77a76785eb0d85da155584
-$rootfs?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-fee8570fbbf8a0036e7398e637cc996e16e634ca
-$dtb?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests.dtb-s_11584-259c5615d3cf747b4d5420f69a20a0d7f374a9bf
+$bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_14142952-ab5cd7445f31414fcbf8c79d49d737c669034ef2
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ext2-s_16777216-a08ef98709fb96de6662ed492eb45e95eb2127b3
+$dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests.dtb-s_11724-984776b955e46b2d8f4426552a4c1ae91d063e4b
 
 # Set timer frequency
 ttc0 Frequency 33333333

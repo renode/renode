@@ -7,6 +7,8 @@ ${FLASH_MOUNT}                      /mnt/spi_flash
 ${SAMPLE_FILENAME}                  data.bin
 ${MTD0_DEV}                         /dev/mtd0
 ${MTD0_BLOCK_DEV}                   /dev/mtdblock0
+${MTD1_DEV}                         /dev/mtd1
+${MTD1_BLOCK_DEV}                   /dev/mtdblock1
 ${CADENCE_XSPI_BIN}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-vmlinux-s_14143972-449b7a25d689a4b6e2adc9ae4c3abbf375ccc70c
 ${CADENCE_XSPI_ROOTFS}              @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-d1dabbf627ba4846963c97db8d27f5d4f454e72b
 ${CADENCE_XSPI_DTB}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi.dtb-s_11045-f5e1772bb1d19234ce6f0b8ec77c2f970660c7bb
@@ -23,12 +25,12 @@ ${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
 ...                                 }
 ...                                 ${SPACE*4}IRQ -> gic@63
 ...
-...                                 xspiFlash: SPI.Micron_MT25Q @ xspi 0 {
-...                                 underlyingMemory: xspiFlashMemory;
+...                                 xspiFlash0: SPI.Micron_MT25Q @ xspi 0 {
+...                                 underlyingMemory: xspiFlashMemory0;
 ...                                 extendedDeviceId: 0x44
 ...                                 }
 ...
-...                                 xspiFlashMemory: Memory.MappedMemory {
+...                                 xspiFlashMemory0: Memory.MappedMemory {
 ...                                 size:  0x2000000
 ...                                 }
 ...                                 """
@@ -39,6 +41,7 @@ Create Machine
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cEcho: Mocks.EchoI2CDevice @ i2c0 ${I2C_ECHO_ADDRESS}"
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cSensor: Sensors.MAX30208 @ i2c0 ${I2C_SENSOR_ADDRESS}"
     Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory; extendedDeviceId: 0x44 }; spi0FlashMemory: Memory.MappedMemory { size: 0x2000000 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash1: SPI.Cypress_S25H @ spi0 1 { underlyingMemory: spi1FlashMemory }; spi1FlashMemory: Memory.MappedMemory { size: 0x4000000 }"
     Create Terminal Tester          ${UART}
 
 Boot And Login
@@ -116,6 +119,7 @@ Should List Expected Devices
     Write Line To Uart              ls --color=never -1 /dev/
     Wait For Line On Uart           i2c-0
     Wait For Line On Uart           mtd0
+    Wait For Line On Uart           mtd1
     Wait For Line On Uart           ttyPS0
     Wait For Prompt On Uart         ${PROMPT}
     Check Exit Code
@@ -172,13 +176,21 @@ Should Communicate With MAX30208 Peripheral
     Wait For Prompt On Uart         ${PROMPT}
     Check Exit Code
 
-Should Access SPI Flash Memory
+Should Access Micron SPI Flash Memory
     Requires                        logged-in
     Generate Random File            ${SAMPLE_FILENAME}  5
 
     Should Mount Flash Memory And Write File  ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
     Should Mount Flash Memory And Compare Files  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
     Should Erase Flash Memory       ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}
+
+Should Access Cypress SPI Flash Memory
+    Requires                        logged-in
+    Generate Random File            ${SAMPLE_FILENAME}  5
+
+    Should Mount Flash Memory And Write File  ${MTD1_DEV}  ${MTD1_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Mount Flash Memory And Compare Files  ${MTD1_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Erase Flash Memory       ${MTD1_DEV}  ${MTD1_BLOCK_DEV}  ${FLASH_MOUNT}
 
 Time Should Elapse
     Requires                        logged-in
@@ -188,7 +200,7 @@ Time Should Elapse
     ${seconds}=                     Get Linux Elapsed Seconds
     Should Be True                  ${seconds_before} < ${seconds}
 
-Should Access SPI Flash Memory Via Additional Cadence xSPI IP
+Should Access Micron SPI Flash Memory Via Additional Cadence xSPI IP
     Execute Command                 $bin=${CADENCE_XSPI_BIN}
     Execute Command                 $rootfs=${CADENCE_XSPI_ROOTFS}
     Execute Command                 $dtb=${CADENCE_XSPI_DTB}
