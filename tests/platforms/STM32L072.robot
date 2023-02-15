@@ -256,3 +256,13 @@ PVD Should Fire Interrupt
     Run Command              pvd configure 3.1 rising
     Execute Command          pwr Voltage 2.9
     Wait For Line On Uart    PVD callback triggered, PVDO is set
+
+DMA Transfer Should Write To UART
+    Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_dma_hello_world.elf-s_591108-c4351f75c230563f429aadffb53f294fa7738406
+    Execute Command          include @scripts/single-node/stm32l072.resc
+
+    Create Terminal Tester   sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart    Hello world from DMA!
