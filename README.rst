@@ -129,7 +129,7 @@ The script allows several optional flags, most useful of which are presented bel
 
    -d            debug mode (requires prior build in debug configuration) - only available when built from source
    -e COMMAND    execute command on startup (does not allow the [file] argument)
-   -p            remove steering codes (e.g., colours) from output
+   -p            remove ANSI escape codes (e.g., colours) from output
    -P PORT       listen on a port for monitor commands instead of opening a window
    -v            prints the version number
    -h            help & usage
