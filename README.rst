@@ -21,6 +21,7 @@ Supported architectures include:
 * RISC-V
 * SPARC
 * POWER
+* Xtensa
 
 Why use Renode?
 ---------------
