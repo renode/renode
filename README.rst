@@ -154,15 +154,6 @@ To run the image in console mode without X server passthrough, run::
 
 To mount your own directories, add more ``-v`` switches to the command.
 
-The Docker image contains sources of Renode in the ``~/renode`` directory.
-To compile and use a custom version of your choice you can run::
-
-   cd renode
-   git fetch
-   git checkout <commit>
-   ./build.sh -p
-   sudo apt install -y ./output/packages/renode*deb
-
 For more information and the underlying Dockerfile, visit the `repository on GitHub <https://github.com/renode/renode-docker>`_.
 
 Documentation
