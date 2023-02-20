@@ -10,7 +10,7 @@ Copyright (c) 2010-2023 `Antmicro <https://www.antmicro.com>`_
 What is Renode?
 ---------------
 
-Renode was created by Antmicro as a virtual development tool for multinode embedded networks (both wired and wireless) and is intended to enable a scalable workflow for creating effective, tested and secure IoT systems.
+Renode was created by Antmicro as a virtual development tool for multi-node embedded networks (both wired and wireless) and is intended to enable a scalable workflow for creating effective, tested and secure IoT systems.
 
 With Renode, developing, testing, debugging and simulating unmodified software for IoT devices is fast, cost-effective and reliable.
 
@@ -26,13 +26,13 @@ Supported architectures include:
 Why use Renode?
 ---------------
 
-Renode was created based on many years of experience with the development of software for embedded systems - both for gateways, on-board computers as well as sensor nodes and microcontrollers.
+Renode was created based on many years of experience with the development of software for embedded systems - both for gateways, on-board computers, as well as sensor nodes and microcontrollers.
 
-Testing and developing physical embedded systems is difficult due to poor reproducibility and lack of insight into the current state of a system, especially in multinode scenarios.
+Testing and developing physical embedded systems is difficult due to poor reproducibility and lack of insight into the current state of a system, especially in multi-node scenarios.
 
-Renode addresses this issue by letting you run unmodified binaries, identical to the ones that you would normally flash onto their target hardware, on a virtual board or system of boards.
+Renode addresses this issue by letting you run unmodified binaries identical to the ones you would normally flash onto their target hardware on a virtual board or system of boards.
 
-One important aspect of the tool is that it simulates not only CPUs but entire SoCs (including e.g. heterogeneous multicore SoCs and various peripherals) as well as the wired or wireless connections between them, which allows users to address complex scenarios and test real production software.
+One important aspect of the tool is that it simulates not only CPUs but entire SoCs (e.g., heterogeneous multicore SoCs and various peripherals) as well as the wired or wireless connections between them, allowing users to address complex scenarios and test real production software.
 
 Installation
 ------------
@@ -45,13 +45,13 @@ If you are a Linux user, the easiest way to use Renode is to download the latest
    mkdir renode_portable
    tar xf  renode-*.linux-portable.tar.gz -C renode_portable --strip-components=1
 
-To use it from any location enter the created directory and add it to the system path::
+To use it from any location, enter the created directory and add it to the system path::
 
    cd renode_portable
    export PATH="`pwd`:$PATH"
 
-Follow the 'Additional Prerequisites' section if you wish to use Robot framework for testing.
-Otherwise you are ready to go to the 'Running Renode' section.
+Follow the 'Additional Prerequisites' section if you wish to use the Robot framework for testing.
+Otherwise, you are ready to go to the 'Running Renode' section.
 
 Installing dependencies
 +++++++++++++++++++++++
@@ -64,9 +64,9 @@ Renode requires Mono >= 5.20 (Linux, macOS) or .NET >= 4.7 (Windows).
 .. csv-table::
    :delim: |
 
-   **Linux** | Install the ``mono-complete`` package as per the installation instructions for various Linux distributions which can be found on `the Mono project website <https://www.mono-project.com/download/stable/#download-lin>`_.
+   **Linux** | Install the ``mono-complete`` package as per the installation instructions for various Linux distributions, which can be found on `the Mono project website <https://www.mono-project.com/download/stable/#download-lin>`_.
    **macOS** | On macOS, the Mono package can be downloaded directly from `the Mono project website <https://download.mono-project.com/archive/mdk-latest-stable.pkg>`_.
-   **Windows** | On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_. Windows 10 ships with .NET by default, so no action is required there.
+   **Windows** | On Windows 7, download and install `.NET Framework 4.7 <https://www.microsoft.com/net/download/dotnet-framework-runtime>`_. Windows 10 ships with .NET by default, so no action is required.
 
 Other dependencies (Linux only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,8 +85,8 @@ Go to `the releases section <https://github.com/renode/renode/releases/latest>`_
 .. csv-table::
    :delim: |
 
-   **Linux** | Install Renode as normal with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
-   **macOS** | Use the provided ``*.dmg`` as normal. Additionally, to be able to use Renode from the command line on macOS, create an appropriate aliases. If you're using Bash, you can do it by adding ``alias renode='mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe'`` and ``alias renode-test='/Applications/Renode.app/Contents/MacOS/tests/renode-test'`` to your ``.bashrc`` file.
+   **Linux** | Install Renode with your preferred package manager using the provided ``*.deb``, ``*.rpm`` or ``*.pkg.tar.xz`` packages.
+   **macOS** | Use the provided ``*.dmg`` as normal. Additionally, to use Renode from the command line on macOS, create appropriate aliases. You can add ``alias renode='mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe'`` and ``alias renode-test='/Applications/Renode.app/Contents/MacOS/tests/renode-test'`` to your ``.bashrc`` or ``.zshrc`` file, depending on the shell you're using.
    **Windows** | Install Renode from the provided ``*.msi`` file. The installer will allow you to add icons to your Desktop and/or Start Menu and an entry to your PATH.
 
 Additional prerequisites (for Robot framework testing)
@@ -102,7 +102,7 @@ Once you have Python 3 and ``pip``, install some additional modules::
 Building from source (advanced)
 +++++++++++++++++++++++++++++++
 
-For information on building Renode from source see `the documentation <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
+For information on building Renode from source, see `the documentation <https://renode.readthedocs.io/en/latest/advanced/building_from_sources.html>`_.
 
 Nightly packages
 ++++++++++++++++
@@ -110,7 +110,7 @@ Nightly packages
 Nightly builds of Renode for all systems are available at `builds.renode.io <https://builds.renode.io>`_.
 Please note that these packages are not stable releases.
 
-Latest builds are always available as ``renode-latest.*`` packages.
+The latest builds are always available as ``renode-latest.*`` packages.
 
 Running Renode
 --------------
@@ -125,22 +125,22 @@ If you built it from source, navigate to the relevant directory and use::
 
 The optional ``[file]`` argument allows you to provide the path to a script to be run on startup.
 
-The script allows several optional flags, most useful of which are presented below::
+The script allows several optional flags, the most useful of which are presented below::
 
    -d            debug mode (requires prior build in debug configuration) - only available when built from source
-   -e COMMAND    execute command on startup (executed after the [file] argument)
-   -p            remove ANSI escape codes (e.g., colours) from output
+   -e COMMAND    execute a command on startup (executed after the [file] argument)
+   -p            remove ANSI escape codes (e.g., colors) from the output
    -P PORT       listen on a port for Monitor commands instead of opening a window
-   --console     run the Monitor in the console instead of separate window
+   --console     run the Monitor in the console instead of a separate window
    -v            prints the version number
    -h            help & usage
 
-On Windows systems Renode can be run by starting Renode.exe with a similar set of optional flags.
+Renode can be run on Windows systems by starting Renode.exe with a similar set of optional flags.
 
 Running Renode in a Docker container
 ------------------------------------
 
-If you want to run Renode in Docker you can use a prebuilt image available on Docker Hub.
+If you want to run Renode in Docker, you can use a prebuilt image available on Docker Hub.
 
 To start it in interactive mode on Linux, assuming you have installed Docker on your system, run::
 
@@ -153,7 +153,7 @@ To run the image in console mode without X server passthrough, run::
 
    docker run -ti antmicro/renode bash
 
-To mount your own directories, add more ``-v`` switches to the command.
+You can add more ``-v`` switches to the command to mount your own directories.
 
 For more information and the underlying Dockerfile, visit the `repository on GitHub <https://github.com/renode/renode-docker>`_.
 
@@ -168,7 +168,7 @@ License & contributions
 Renode is released under the permissive MIT license.
 For details, see the `<LICENSE>`_ file.
 
-We’re happy to accept bug reports, feature requests and contributions via GitHub pull requests / issues.
+We're happy to accept bug reports, feature requests, and contributions via GitHub pull requests / issues.
 For details, see the `<CONTRIBUTING.rst>`_ file.
 
 Commercial support
@@ -176,6 +176,6 @@ Commercial support
 
 Commercial support for Renode is provided by `Antmicro <https://antmicro.com>`_, a company specializing in helping its clients to adopt new embedded technologies and modern development methodologies.
 
-Antmicro created and maintains the Renode framework and related tooling, and is happy to provide services such as adding new platforms, integrations, plugins and tools.
+Antmicro created and maintains the Renode framework and related tooling and is happy to provide services such as adding new platforms, integrations, plugins, and tools.
 
 To inquire about our services, contact us at support@renode.io.
