@@ -130,7 +130,8 @@ The script allows several optional flags, most useful of which are presented bel
    -d            debug mode (requires prior build in debug configuration) - only available when built from source
    -e COMMAND    execute command on startup (executed after the [file] argument)
    -p            remove ANSI escape codes (e.g., colours) from output
-   -P PORT       listen on a port for monitor commands instead of opening a window
+   -P PORT       listen on a port for Monitor commands instead of opening a window
+   --console     run the Monitor in the console instead of separate window
    -v            prints the version number
    -h            help & usage
 
