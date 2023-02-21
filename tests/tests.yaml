@@ -99,3 +99,4 @@
 - tests/platforms/MAX32650.robot
 - tests/unit-tests/pmp.robot
 - tests/peripherals/SPIMultiplexer.robot
+- tests/unit-tests/hooks.robot
