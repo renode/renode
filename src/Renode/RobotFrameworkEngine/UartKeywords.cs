@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -54,13 +54,15 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, float? timeout = null, bool treatAsRegex = false)
+        public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, float? timeout = null, bool treatAsRegex = false,
+            bool pauseEmulation = false)
         {
-            return WaitForLineOnUart(prompt, timeout, testerId, treatAsRegex, true);
+            return WaitForLineOnUart(prompt, timeout, testerId, treatAsRegex, true, pauseEmulation);
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false, bool includeUnfinishedLine = false)
+        public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
+            bool includeUnfinishedLine = false, bool pauseEmulation = false)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -69,7 +71,7 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, pauseEmulation);
             if(result == null)
             {
                 OperationFail(tester);
@@ -78,7 +80,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null)
+        public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null, bool pauseEmulation = false)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -87,7 +89,7 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.NextLine(timeInterval);
+            var result = tester.NextLine(timeInterval, pauseEmulation);
             if(result == null)
             {
                 OperationFail(tester);
