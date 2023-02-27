@@ -7,7 +7,8 @@ import socket
 import fnmatch
 import subprocess
 import psutil
-from time import monotonic
+import tempfile
+from time import monotonic, sleep
 
 import robot
 import xml.etree.ElementTree as ET
@@ -38,9 +39,9 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-port", "-P",
                         dest="remote_server_port",
                         action="store",
-                        default=9999,
+                        default=0,
                         type=int,
-                        help="Port of robot framework remote server binary.")
+                        help="Port of robot framework remote server binary. Use '0' to automatically select any unused private port")
 
     parser.add_argument("--enable-xwt",
                         dest="enable_xwt",
@@ -138,6 +139,10 @@ def verify_cli_arguments(options):
             print("Unable to find provided CSS file: {0}.".format(options.css_file))
             sys.exit(1)
 
+    if options.remote_server_port != 0 and options.jobs != 1:
+        print("Parallel execution and fixed Robot port number options cannot be used together")
+        sys.exit(1)
+
 
 def is_process_running(pid):
     if not psutil.pid_exists(pid):
@@ -228,15 +233,16 @@ class RobotTestSuite(object):
     robot_frontend_process = None
     hotspot_action = ['None', 'Pause', 'Serialize']
     log_files = []
-    last_port_offset = -1
+    # Used to share the port between all suites when running sequentially
+    remote_server_port = -1
 
 
     def __init__(self, path):
         self.path = path
         self._dependencies_met = set()
         self.remote_server_directory = None
-        self.port_offset = 0
         self.renode_pid = -1
+        self.remote_server_port = -1
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
@@ -249,21 +255,6 @@ class RobotTestSuite(object):
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
-
-        # Only do port changes if we're running in parallel or the Renode process is not already running
-        if options.jobs != 1 or not RobotTestSuite._is_frontend_running():
-            # Never try to use a port lower than the one used in last job
-            if RobotTestSuite.last_port_offset < 0:
-                self.port_offset = 0
-            else:
-                self.port_offset = RobotTestSuite.last_port_offset + 1
-            # Skip port if it is already in use
-            while not is_port_available(options.remote_server_port + self.port_offset, options.autokill_renode):
-                self.port_offset += 1
-
-            RobotTestSuite.last_port_offset = self.port_offset
-        elif options.jobs == 1: # When not running in parallel, always use the last port
-            self.port_offset = RobotTestSuite.last_port_offset
 
         file_name = os.path.splitext(os.path.basename(self.path))[0]
 
@@ -287,8 +278,14 @@ class RobotTestSuite(object):
 
         # in parallel runs each parallel group starts it's own Renode process
         # see: run
-        if options.jobs == 1 and not RobotTestSuite._is_frontend_running():
-            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, port_offset=self.port_offset)
+        if options.jobs == 1:
+            if not RobotTestSuite._is_frontend_running():
+                RobotTestSuite.robot_frontend_process = self._run_remote_server(options)
+                # Save port to reuse when running sequentially
+                RobotTestSuite.remote_server_port = self.remote_server_port
+            else:
+                # Restore port allocated by a previous suite
+                self.remote_server_port = RobotTestSuite.remote_server_port
 
 
     @classmethod
@@ -296,7 +293,7 @@ class RobotTestSuite(object):
         return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
 
 
-    def _run_remote_server(self, options, port_offset=0):
+    def _run_remote_server(self, options):
         if options.remote_server_full_directory is not None:
             if not os.path.isabs(options.remote_server_full_directory):
                 options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
@@ -319,7 +316,11 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
             sys.exit(1)
 
-        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port + port_offset)]
+        if options.remote_server_port != 0 and not is_port_available(options.remote_server_port, options.autokill_renode):
+            print("The selected port {} is not available".format(options.remote_server_port))
+            sys.exit(1)
+
+        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
         if not options.show_log:
             args.append('--hide-log')
         if not options.enable_xwt:
@@ -349,9 +350,31 @@ class RobotTestSuite(object):
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
 
+        # start Renode
         p = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
         self.renode_pid = p.pid
-        print('Started Renode instance on port {}; pid {}'.format(options.remote_server_port + port_offset, p.pid))
+
+        countdown = 120
+        temp_dir = tempfile.gettempdir()
+        renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
+        while countdown > 0:
+            try:
+                with open(renode_port_file) as f:
+                    port_num = f.readline()
+                    if port_num == '':
+                        continue
+                    self.remote_server_port = int(port_num)
+                break
+            except:
+                sleep(0.5)
+                countdown -= 1
+
+        if countdown == 0:
+            print("Couldn't access port file for Renode instance pid {}".format(self.renode_pid))
+            self._close_remote_server(p, options)
+            return None
+
+        print('Started Renode instance on port {}; pid {}'.format(self.remote_server_port, self.renode_pid))
         return p
 
 
@@ -381,17 +404,17 @@ class RobotTestSuite(object):
         # in non-parallel runs there is only one Renode process for all runs
         # see: prepare
         if options.jobs != 1:
-            proc = self._run_remote_server(options, port_offset=self.port_offset)
+            proc = self._run_remote_server(options)
         else:
             proc = None
 
         if any(self.tests_without_hotspots):
-            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options, port_offset=self.port_offset)
+            result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options, port_offset=self.port_offset)
+                result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
 
         endTimestamp = monotonic()
         print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(endTimestamp - self.startTimestamp, 2)) + ' seconds.', flush=True)
@@ -449,11 +472,11 @@ class RobotTestSuite(object):
         return self._run_inner(None, None, test_cases_names, options)
 
 
-    def _run_inner(self, fixture, hotspot, test_cases_names, options, port_offset=0):
+    def _run_inner(self, fixture, hotspot, test_cases_names, options):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(options.remote_server_port + port_offset), 'RESULTS_DIRECTORY:{}'.format(options.results_directory)]
+        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(self.remote_server_port), 'RESULTS_DIRECTORY:{}'.format(options.results_directory)]
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
