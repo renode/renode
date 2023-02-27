@@ -129,7 +129,7 @@ def verify_cli_arguments(options):
         if options.port is not None and options.jobs != 1:
             print("Debug port cannot be used in parallel runs")
             sys.exit(1)
-            
+
     if options.css_file:
         if not os.path.isabs(options.css_file):
             options.css_file = os.path.join(this_path, options.css_file)
@@ -146,6 +146,7 @@ def is_process_running(pid):
     # docs note: is_running() will return True also if the process is a zombie (p.status() == psutil.STATUS_ZOMBIE)
     return proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE
 
+
 def is_port_available(port, autokill):
     port_handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     available = False
@@ -156,6 +157,7 @@ def is_port_available(port, autokill):
     except:
         available = can_be_freed_by_killing_other_job(port, autokill)
     return available
+
 
 def can_be_freed_by_killing_other_job(port, autokill):
     if not sys.stdin.isatty():
@@ -182,11 +184,13 @@ def can_be_freed_by_killing_other_job(port, autokill):
         pass
     return False
 
+
 class KeywordsFinder(robot.model.SuiteVisitor):
     def __init__(self, keyword):
         self.keyword = keyword
         self.occurences = 0
         self.arguments = []
+
 
     def visit_keyword(self, keyword):
         if keyword.name == self.keyword:
@@ -194,8 +198,10 @@ class KeywordsFinder(robot.model.SuiteVisitor):
             arguments = keyword.args
             self.arguments.append(arguments)
 
+
     def got_results(self):
         return self.occurences > 0
+
 
 class TestsFinder(robot.model.SuiteVisitor):
     def __init__(self, keyword):
@@ -203,10 +209,12 @@ class TestsFinder(robot.model.SuiteVisitor):
         self.tests_matching = []
         self.tests_not_matching = []
 
+
     def isMatching(self, test):
         finder = KeywordsFinder(self.keyword)
         test.visit(finder)
         return finder.got_results()
+
 
     def visit_test(self, test):
         if self.isMatching(test):
@@ -222,6 +230,7 @@ class RobotTestSuite(object):
     log_files = []
     last_port_offset = -1
 
+
     def __init__(self, path):
         self.path = path
         self._dependencies_met = set()
@@ -232,9 +241,11 @@ class RobotTestSuite(object):
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
 
+
     def check(self, options, number_of_runs):
         # Checking if there are no other jobs is moved to `prepare` as it is now possible to skip used ports
         pass
+
 
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
@@ -279,15 +290,17 @@ class RobotTestSuite(object):
         if options.jobs == 1 and not RobotTestSuite._is_frontend_running():
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, port_offset=self.port_offset)
 
+
     @classmethod
     def _is_frontend_running(cls):
         return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
+
 
     def _run_remote_server(self, options, port_offset=0):
         if options.remote_server_full_directory is not None:
             if not os.path.isabs(options.remote_server_full_directory):
                 options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
-                
+
             self.remote_server_directory = options.remote_server_full_directory
         else:
             self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
@@ -333,7 +346,6 @@ class RobotTestSuite(object):
             args.insert(0, 'dotnet')
             options.exclude.append('skip_dotnet')
 
-
         if options.run_gdb:
             args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
 
@@ -341,6 +353,7 @@ class RobotTestSuite(object):
         self.renode_pid = p.pid
         print('Started Renode instance on port {}; pid {}'.format(options.remote_server_port + port_offset, p.pid))
         return p
+
 
     def _close_remote_server(self, proc, options):
         if proc:
@@ -355,6 +368,7 @@ class RobotTestSuite(object):
             except psutil.NoSuchProcess:
                 #evidently closed by other means
                 pass
+
 
     def run(self, options, run_id=0):
         if self.path.endswith('renode-keywords.robot'):
@@ -384,6 +398,7 @@ class RobotTestSuite(object):
         self._close_remote_server(proc, options)
         return result
 
+
     def _get_dependencies(self, test_case):
 
         suiteBuilder = robot.running.builder.TestSuiteBuilder()
@@ -403,6 +418,7 @@ class RobotTestSuite(object):
         res.add(providers[0].name)
         return res
 
+
     def cleanup(self, options):
         RobotTestSuite.instances_count -= 1
         if RobotTestSuite.instances_count == 0:
@@ -419,9 +435,11 @@ class RobotTestSuite(object):
                             report.write(style_content)
                             report.write("</style>")
 
+
     @staticmethod
     def _create_suite_name(test_name, hotspot):
         return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
+
 
     def _run_dependencies(self, test_cases_names, options):
         test_cases_names.difference_update(self._dependencies_met)
@@ -429,6 +447,7 @@ class RobotTestSuite(object):
             return True
         self._dependencies_met.update(test_cases_names)
         return self._run_inner(None, None, test_cases_names, options)
+
 
     def _run_inner(self, fixture, hotspot, test_cases_names, options, port_offset=0):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
@@ -448,7 +467,7 @@ class RobotTestSuite(object):
             variables.append('RENODE_PID:{}'.format(self.renode_pid))
             variables.append('NET_PLATFORM:True')
         else:
-            options.exclude.append('profiling')   
+            options.exclude.append('profiling')
 
         if options.variables:
             variables += options.variables
@@ -498,6 +517,7 @@ class RobotTestSuite(object):
 
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
         return result.return_code == 0
+
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
