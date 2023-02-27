@@ -136,7 +136,7 @@ def verify_cli_arguments(options):
 
         if not os.path.isfile(options.css_file):
             print("Unable to find provided CSS file: {0}.".format(options.css_file))
-            # sys.exit(1)
+            sys.exit(1)
 
 
 def is_process_running(pid):
