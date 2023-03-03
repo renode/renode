@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2010-2023 Antmicro
+#
+# This file is licensed under the MIT License.
+# Full license text is available in 'licenses/MIT.txt'.
+#
 
 # This script provides convenience functions for debugging user-space seL4 applications.
 # All of the commands are available under `sel4` prefix, e.g. `sel4 break`, `sel4 thread`, etc.
