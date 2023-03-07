@@ -231,6 +231,20 @@ entropy_src: Miscellaneous.OpenTitan_EntropySource @ sysbus 0x41160000
     EsObserveFifoReadyIRQ -> rv_plic@182
     EsFatalErrIRQ -> rv_plic@183
 
+edn0: Miscellaneous.OpenTitan_EntropyDistributionNetwork @ sysbus 0x41170000
+    cryptoRandomGenerator: csrng
+    RecoverableAlert -> alert_handler@51
+    FatalAlert -> alert_handler@52
+    CommandRequestDone -> rv_plic@184
+    FatalError -> rv_plic@185
+
+edn1: Miscellaneous.OpenTitan_EntropyDistributionNetwork @ sysbus 0x41180000
+    cryptoRandomGenerator: csrng
+    RecoverableAlert -> alert_handler@53
+    FatalAlert -> alert_handler@54
+    CommandRequestDone -> rv_plic@186
+    FatalError -> rv_plic@187
+
 alert_handler: Miscellaneous.OpenTitan_AlertHandler @ sysbus 0x40150000
     ClassAInterrupt -> rv_plic@130
     ClassBInterrupt -> rv_plic@131
