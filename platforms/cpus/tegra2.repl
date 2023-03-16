@@ -46,7 +46,7 @@ pl310: Cache.PL310 @ sysbus <0x50043000, +0x1000>
 
 scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
 
-cpu: CPU.Arm @ sysbus
+cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
 
 usbEhci1: USBDeprecated.EHCIHostController @ sysbus <0xC5000000, +0x1000>

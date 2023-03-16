@@ -58,9 +58,13 @@ gic: IRQControllers.GIC @ {
     0 -> cpu@0
     numberOfCPUs: 1
 
-cpu: CPU.CortexA7 @ sysbus
-    genericTimerCompareValue: 2000000
-    gic: gic
+// The cpuType, the frequency of the timer and the timer interrupt id are extracted from the legacy CPU.CortexA7 class
+cpu: CPU.ARMv7A @ sysbus
+    cpuType: "cortex-a15"
+
+timer: Timers.ARM_GenericTimer @ cpu
+    frequency: 24000000
+    VirtualTimerIRQ -> gic#0@1
 
 uartSemihosting: UART.SemihostingUart @ cpu
 

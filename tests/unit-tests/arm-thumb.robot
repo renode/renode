@@ -4,7 +4,7 @@ Prepare Machine
     Execute Command           mach create "ARM"
 
     Execute Command           machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.Arm @ sysbus { cpuType: \\"cortex-a9\\" }"
+    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
 
     Execute Command           cpu PC 0x0
     Execute Command           cpu ExecutionMode SingleStepBlocking

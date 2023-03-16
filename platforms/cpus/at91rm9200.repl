@@ -18,7 +18,7 @@ aic: IRQControllers.AIC @ sysbus 0xFFFFF000
 systemTimer: Timers.Atmel91SystemTimer @ sysbus 0xFFFFFD00
     -> aic@1
 
-cpu: CPU.Arm @ sysbus
+cpu: CPU.ARMv7A @ sysbus
     cpuType: "arm926"
     init:
         ID 0x41009200

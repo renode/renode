@@ -405,7 +405,7 @@ Should Trace In ARM and Thumb State
     Execute Command                             mach create
 
     Execute Command                             machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.Arm @ sysbus { cpuType: \\"cortex-a9\\" }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
 
     # nop (ARM)
     Execute Command                             sysbus WriteDoubleWord 0x00000000 0xe1a00000

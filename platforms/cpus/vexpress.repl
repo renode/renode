@@ -50,7 +50,7 @@ gic: IRQControllers.GIC @ {
     itLinesNumber: 2
     numberOfCPUs: 1
 
-cpu: CPU.Arm @ sysbus
+cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
 
 sysbus:
