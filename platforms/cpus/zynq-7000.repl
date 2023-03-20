@@ -58,15 +58,17 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xF8F00100; size: 0x100; region: "cpuInterface" }
     }
     0 -> cpu@0
-    productIdentifier: 0x390
-    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
-    cpuInterfaceRevision: 0x2
-    cpuInterfaceImplementer: 0x43B
+    supportsTwoSecurityStates: false
+    ProductIdentifier: 0x390
+    ArchitectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+    CPUInterfaceRevision: 0x2
+    CPUInterfaceImplementer: 0x43B
 
 scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
 
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
+    genericInterruptController: gic
 
 qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
     -> gic@19

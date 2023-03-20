@@ -56,10 +56,12 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x1C82000; size: 0x100; region: "cpuInterface" }
     }
     0 -> cpu@0
+    supportsTwoSecurityStates: false
 
 // The cpuType, the frequency of the timer and the timer interrupt id are extracted from the legacy CPU.CortexA7 class
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a15"
+    genericInterruptController: gic
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 24000000
