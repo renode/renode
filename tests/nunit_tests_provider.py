@@ -41,18 +41,19 @@ class NUnitTestSuite(object):
         return ret
 
     def prepare(self, options):
-        if options.runner == 'dotnet':
-            return 0
-
         if not options.skip_building:
             print("Building {0}".format(self.path))
-            if platform == "win32":
-                self.builder = 'MSBuild.exe'
+            if options.runner == 'dotnet':
+                self.builder = 'dotnet'
+                params = ['build', '--verbosity', 'quiet', '--configuration', options.configuration, '/p:NET=true']
             else:
-                self.builder = 'xbuild'
-            params = self.build_params('p:PropertiesLocation={0}'.format(options.properties_file), 'p:OutputPath={0}'.format(options.results_directory), 'nologo', 'verbosity:quiet', 'p:OutputDir=tests_output', 'p:Configuration={0}'.format(options.configuration))
-            if options.framework_ver_override:
-                params += self.build_params(f'p:TargetFrameworkVersion=v{options.framework_ver_override}')
+                if platform == "win32":
+                    self.builder = 'MSBuild.exe'
+                else:
+                    self.builder = 'xbuild'
+                params = self.build_params('p:PropertiesLocation={0}'.format(options.properties_file), 'p:OutputPath={0}'.format(options.results_directory), 'nologo', 'verbosity:quiet', 'p:OutputDir=tests_output', 'p:Configuration={0}'.format(options.configuration))
+                if options.framework_ver_override:
+                    params += self.build_params(f'p:TargetFrameworkVersion=v{options.framework_ver_override}')
             result = subprocess.call([self.builder, *params, self.path])
             if result != 0:
                 print("Building project `{}` failed with error code: {}".format(self.path, result))
@@ -69,10 +70,12 @@ class NUnitTestSuite(object):
         output_file = os.path.join(options.results_directory, 'results-{}.xml'.format(project_file))
 
         if options.runner == 'dotnet':
-            print('Using native dotnet test runner -' + self.path)
-            args = ['dotnet', 'test', "--verbosity", "quiet", "--logger", "console;verbosity=detailed" , '--configuration', options.configuration, '/p:NET=true', self.path]
+            print('Using native dotnet test runner -' + self.path, flush=True)
+            # we don't build here - we had problems with concurrently occurring builds when copying files to one output directory
+            # so we run test with --no-build and build tests in previous stage
+            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", '--configuration', options.configuration, self.path]
             process = subprocess.Popen(args)
-            print('dotnet test runner PID is {}'.format(process.pid))
+            print('dotnet test runner PID is {}'.format(process.pid), flush=True)
             process.wait()
             for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                 if 'dotnet' in (proc.info['name'] or ''):
