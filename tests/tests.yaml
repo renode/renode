@@ -101,3 +101,4 @@
 - tests/unit-tests/pmp.robot
 - tests/peripherals/SPIMultiplexer.robot
 - tests/unit-tests/hooks.robot
+- tests/unit-tests/riscv-ebreak.robot
