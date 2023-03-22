@@ -41,7 +41,7 @@ namespace Antmicro.Renode.Network
             callbacks = new Dictionary<IPEndPoint, Action<IPEndPoint, UdpPacket>>();
             files = new Dictionary<string, string>();
             directories = new List<string>();
-            
+
             server = TftpServer.Instance;
 
             server.Log = HandleLog;
@@ -154,28 +154,28 @@ namespace Antmicro.Renode.Network
             {
                 this.Log(LogLevel.Warning, "There was an error when reading {0} file: {1}", path, e.Message);
             }
-}
+        }
 
-            private string FindFile(string filename)
+        private string FindFile(string filename)
+        {
+            // first check list of files
+            if(!files.TryGetValue(filename, out var result))
             {
-                // first check list of files
-                if(!files.TryGetValue(filename, out var result))
+                // if not found, scan all the directories
+                foreach(var dir in directories)
                 {
-                    // if not found, scan all the directories
-                    foreach(var dir in directories)
+                    foreach(var file in Directory.GetFiles(dir))
                     {
-                        foreach(var file in Directory.GetFiles(dir))
+                        if(file.Substring(dir.Length + 1) == filename)
                         {
-                            if(file.Substring(dir.Length + 1) == filename)
-                            {
-                                result = file;
-                                break;
-                            }
+                            result = file;
+                            break;
                         }
                     }
                 }
-                return result;
             }
+            return result;
+        }
 
         private readonly Dictionary<string, string> files;
         private readonly List<string> directories;
