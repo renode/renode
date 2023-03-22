@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -54,11 +54,20 @@ namespace Antmicro.Renode.Network
 
         public void ServeFile(string path, string name = null)
         {
-            files.Add(name ?? Path.GetFileName(path), path);
+            name = name ?? Path.GetFileName(path);
+            if(files.ContainsKey(name))
+            {
+                throw new RecoverableException($"File named \"{name}\" is already being served.");
+            }
+            files.Add(name, path);
         }
 
         public void ServeDirectory(string directory)
         {
+            if(directories.Contains(directory))
+            {
+                throw new RecoverableException($"Directory \"{directory}\" is already being served.");
+            }
             directories.Add(directory);
         }
 
