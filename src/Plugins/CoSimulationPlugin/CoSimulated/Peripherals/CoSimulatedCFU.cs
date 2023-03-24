@@ -280,7 +280,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
-        private FuncUInt64UInt32UInt32UInt32IntPtr execute;
+        private Func<uint, uint, uint, IntPtr, ulong> execute;
 #pragma warning restore 649
 
         private enum CfuStatus

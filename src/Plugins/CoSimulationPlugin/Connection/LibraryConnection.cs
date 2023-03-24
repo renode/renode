@@ -237,9 +237,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
-        private ActionIntPtr handleRequest;
+        private Action<IntPtr> handleRequest;
         [Import(UseExceptionWrapper = false, Optional = true)]
-        private ActionIntPtr initializeContext;
+        private Action<IntPtr> initializeContext;
         [Import(UseExceptionWrapper = false)]
         private Action initializeNative;
         [Import(UseExceptionWrapper = false)]
