@@ -460,7 +460,7 @@ Should trace the RISC-V Vector Configuration
     Should Contain                              ${output_lines}[0]  nop
     Should Contain                              ${output_lines}[1]  nop
     Should Contain                              ${output_lines}[2]  vsetvli zero, zero, e8, m1, ta, mu
-    Should Contain                              ${output_lines}[3]  Vector configured to VL: 0x0, VTYPE: 0x0
+    Should Contain                              ${output_lines}[3]  Vector configured to VL: 0x0, VTYPE: 0x40
 
 Should Be Able To Add Vector Configuration To The Trace In Binary Format
     Create Machine RISC-V 32-bit                0x2000
@@ -487,5 +487,5 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = VectorConfiguration
     Should Be Equal As Bytes                    ${output_file}[47:57]  \x06\x20\x00\x00\x04\x57\x70\x00\x04\x02
                                                 # [0:8]: vl; [8:16]: vtype; [16]: additional_data_type = None
-    Should Be Equal As Bytes                    ${output_file}[57:74]  \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${output_file}[57:74]  \x00\x00\x00\x00\x00\x00\x00\x00\x40\x00\x00\x00\x00\x00\x00\x00\x00
 
