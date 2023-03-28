@@ -53,3 +53,15 @@ Should Run Dartino
     Wait For Line On Uart     Setup dartino
     Wait For Line On Uart     Reading dartino snapshot
     Wait For Line On Uart     Run dartino program
+
+Should Run Zephyr Echo Client With Quectel BG96 Modem
+    Execute Command           include @scripts/single-node/stm32f746_modem.resc
+    Create Terminal Tester    ${UART}
+
+    Start Emulation
+
+    Wait For Line On Uart     Network is ready  timeout=15
+
+    FOR  ${i}  IN RANGE  3
+        Wait For Line On Uart     IPv4 TCP: Received and compared \\d+ bytes, all ok  treatAsRegex=true
+    END
