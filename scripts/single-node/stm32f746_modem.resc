@@ -1,0 +1,33 @@
+:name: STM32F746
+:description: This script runs the Zephyr echo_client sample with the Quectel BG96 modem on STM32F7 Discovery.
+
+using sysbus
+$name?="STM32F746"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/stm32f7_discovery-bb.repl
+
+machine LoadPlatformDescriptionFromString "bg96: Network.Quectel_BG96 @ usart2"
+# PWRKEY
+machine LoadPlatformDescriptionFromString "gpioPortA: { 6 -> bg96@0 }"
+# RESET
+machine LoadPlatformDescriptionFromString "gpioPortA: { 7 -> bg96@1 }"
+
+emulation CreateEmulatedNetworkService "netEcho" "Antmicro.Renode.Peripherals.Network.EchoService" "192.0.2.1" 4242 ""
+
+# Apply modem/SIM settings
+usart2.bg96 NetworkRegistrationState RegisteredHomeNetwork
+
+showAnalyzer usart1
+
+# The binary used here has part of https://github.com/ycsin/zephyr/commit/34a778eee5b447c03495a268e98b6373e206734d applied
+# to fix data reception in the Zephyr driver for the BG96.
+# For more information, see https://github.com/zephyrproject-rtos/zephyr/issues/38654
+$bin ?= @https://dl.antmicro.com/projects/renode/stm32f746g_disco--zephyr-quectel_bg9x_echo_client.elf-s_3388084-ce2702bb742bd3e5653a60ef2ea564adad9620e6
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
