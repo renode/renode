@@ -34,6 +34,29 @@ Create Machine 64
 
     Execute Command           cpu PC ${starting_pc}
 
+Write Opcode To
+    [Arguments]                         ${adress}   ${opcode}
+    Execute Command                     sysbus WriteDoubleWord ${adress} ${opcode}
+
+Load Program With Invalid Instruction
+    [Arguments]                         ${address}
+    ${addi_opcode}                      Set Variable  0x00050593  #addi        x11 x10 0
+    ${vector_opcode}                    Set Variable  0x00000057  #vadd.vv     v0, v0, v0, v0.t
+    ${fvf_vector_opcode}                Set Variable  0x00005057  #vfadd.vf    v0, v0, ft0, v0.t
+    ${start_pc}=                        Convert To Integer  ${address}
+
+    # Depending on the fact if vector extension is enabled or not, the program will cause
+    # invalid instruction exception at ${vector_opcode} or ${fvf_vector_opcode}.
+    Write Opcode To  ${start_pc}     ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+4}   ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+8}   ${vector_opcode}          #vadd.vv v0, v0, v0, v0.t
+    Write Opcode To  ${start_pc+12}  ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+16}  ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+20}  ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+24}  ${fvf_vector_opcode}      #vfadd.vf v0, v0, ft0, v0.t
+    Write Opcode To  ${start_pc+28}  ${addi_opcode}            #addi x11 x10 0
+    Write Opcode To  ${start_pc+32}  ${vector_opcode}          #vadd.vv v0, v0, v0, v0.t
+    Write Opcode To  ${start_pc+36}  ${addi_opcode}            #addi x11 x10 0
 
 *** Test Cases ***
 Should Handle LB
@@ -377,3 +400,25 @@ Should Set MEPC on Wrong SRET
     ${mepc}=                        Execute Command     cpu MEPC
     Should Be Equal As Numbers      ${mepc}    0x4004
 
+Should Exit Translation Block After Invalid Instruction And Report Single Error
+    Create Machine 32
+    Load Program With Invalid Instruction               ${starting_pc}
+    Create Log Tester               3
+
+    ${start_pc}=                    Convert To Integer  ${starting_pc}
+    ${illegal_opcode_1_pc}          Set Variable        ${start_pc+8}
+    ${illegal_opcode_1_pc_hex}=     Convert To Hex      ${illegal_opcode_1_pc}
+
+    ${illegal_opcode_2_pc}          Set Variable        ${start_pc+24}
+    ${illegal_opcode_2_pc_hex}=     Convert To Hex      ${illegal_opcode_2_pc}
+
+    ${illegal_opcode_3_pc}          Set Variable        ${start_pc+32}
+    ${illegal_opcode_3_pc_hex}=     Convert To Hex      ${illegal_opcode_3_pc}
+
+    # It doesn't use single stepping on purpose, as it would cause translation blocks of size 1.
+    Execute Command                 cpu PerformanceInMips 1
+    Execute Command                 emulation SetGlobalQuantum "0.000020"
+    Execute Command                 emulation RunFor "0.000010"
+    Wait For Log Entry              instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_1_pc_hex}
+    Should Not Be In Log            instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_2_pc_hex}   0
+    Should Not Be In Log            instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_3_pc_hex}   0
