@@ -279,9 +279,9 @@ extern void handleMainMessage(void* ptr);
 extern void handleSenderMessage(void* ptr);
 extern void receive(void* ptr);
 
-EXTERNAL_AS(action_intptr, HandleMainMessage, handleMainMessage);
-EXTERNAL_AS(action_intptr, HandleSenderMessage, handleSenderMessage);
-EXTERNAL_AS(action_intptr, Receive, receive);
+EXTERNAL_AS(void, HandleMainMessage, handleMainMessage, voidptr);
+EXTERNAL_AS(void, HandleSenderMessage, handleSenderMessage, voidptr);
+EXTERNAL_AS(void, Receive, receive, voidptr);
 
 void NativeCommunicationChannel::sendMain(const Protocol message)
 {
