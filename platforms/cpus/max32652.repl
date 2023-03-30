@@ -76,19 +76,23 @@ spi2: SPI.MAX32650_SPI @ sysbus 0x40048000
 
 gpio0: GPIOPort.MAX32650_GPIO @ sysbus 0x40008000
     numberOfPins: 32
-    -> nvic@24
+    IRQ -> nvic@24
+    WakeUpIRQ -> nvic@54
 
 gpio1: GPIOPort.MAX32650_GPIO @ sysbus 0x40009000
     numberOfPins: 32
-    -> nvic@25
+    IRQ -> nvic@25
+    WakeUpIRQ -> nvic@54
 
 gpio2: GPIOPort.MAX32650_GPIO @ sysbus 0x4000A000
     numberOfPins: 32
-    -> nvic@26
+    IRQ -> nvic@26
+    WakeUpIRQ -> nvic@54
 
 gpio3: GPIOPort.MAX32650_GPIO @ sysbus 0x4000B000
     numberOfPins: 10
-    -> nvic@27
+    IRQ -> nvic@27
+    WakeUpIRQ -> nvic@54
 
 spi3: SPI.MAX32650_SPI @ sysbus 0x400BE000
     numberOfSlaves: 4
