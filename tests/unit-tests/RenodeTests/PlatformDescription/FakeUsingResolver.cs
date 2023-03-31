@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -27,7 +27,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
             return this;
         }
 
-        string IUsingResolver.Resolve(string argument)
+        string IUsingResolver.Resolve(string argument, string includingFile)
         {
             string result;
             if(resultsCache.TryGetValue(argument, out result))

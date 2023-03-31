@@ -119,7 +119,7 @@ namespace Antmicro.Renode.PlatformDescription
 
             foreach(var usingEntry in parsedDescription.Usings)
             {
-                ProcessUsing(usingEntry, prefix);
+                ProcessUsing(usingEntry, prefix, file);
             }
 
             variableStore.CurrentScope = file;
@@ -163,9 +163,9 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private void ProcessUsing(UsingEntry usingEntry, string parentPrefix)
+        private void ProcessUsing(UsingEntry usingEntry, string parentPrefix, string includingFile)
         {
-            var filePath = usingResolver.Resolve(usingEntry.Path);
+            var filePath = usingResolver.Resolve(usingEntry.Path, includingFile);
             if(!File.Exists(filePath))
             {
                 HandleError(ParsingError.UsingFileNotFound, usingEntry.Path,
