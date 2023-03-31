@@ -6,6 +6,7 @@
 //
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.UserInterface;
 
@@ -32,6 +33,22 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
 
             public string Resolve(string argument, string includingFile)
             {
+                // Handle absolute paths
+                if(Path.IsPathRooted(argument))
+                {
+                    return Path.GetFullPath(argument); // No existence check, but resolve "a/../b" and the like
+                }
+
+                // Handle relative paths
+                var components = argument.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var firstComponent = components.FirstOrDefault();
+                if(firstComponent == "." || firstComponent == "..")
+                {
+                    var includingFileDirectory = Path.GetDirectoryName(includingFile);
+                    var relativePath = Path.Combine(includingFileDirectory, argument);
+                    return Path.GetFullPath(relativePath); // No existence check, the path was resolved
+                }
+
                 foreach (var prefix in pathPrefixes)
                 {
                     var fullPath = Path.GetFullPath(Path.Combine(prefix, argument));
