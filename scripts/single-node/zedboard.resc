@@ -1,20 +1,17 @@
 :name: Zedboard
-:description: This script runs Linux on Zedboard.
+:description: This script runs Linux on Zedboard (Zynq-7000 SoC).
 
 using sysbus
 $name?="Zedboard"
 mach create $name
 
 machine LoadPlatformDescription @platforms/boards/zedboard.repl
-
+showAnalyzer uart0
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
-$bin?=@https://dl.antmicro.com/projects/renode/zynq--vmlinux-s_13611036-985e132f953222e5d0329f550905a70544301929
-$rootfs?=@https://dl.antmicro.com/projects/renode/zynq--rootfs.ext2.gz-s_1874646-592c62e37a3fa5deea2577bafe086c4e96dc935a
-$dtb?=@https://dl.antmicro.com/projects/renode/zynq-zed.dtb-s_11875-26effbd397b80938366bd18eddb1e89f56599c1d
-### create externals ###
-
-showAnalyzer sysbus.uart1
+$bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_14142952-ab5cd7445f31414fcbf8c79d49d737c669034ef2
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ext2-s_16777216-a08ef98709fb96de6662ed492eb45e95eb2127b3
+$dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-gem0.dtb-s_11724-f0dec8ffadea47891dfe2441215401f09f7242fa
 
 ## set timer frequency ##
 ttc0 Frequency 33333333
@@ -22,19 +19,16 @@ ttc1 Frequency 33333333
 
 macro reset
 """
-    ### set registers ###
-
+    ## set registers ##
     cpu SetRegisterUnsafe 0 0x000
-    cpu SetRegisterUnsafe 1 0xD32 # board id
+    cpu SetRegisterUnsafe 1 0xD32 # processor variant (cortex-a9)
     cpu SetRegisterUnsafe 2 0x100 # device tree address
-    sysbus.uart1 WriteDoubleWord 0x0 0x114 # force enable uart1 Tx and Rx
 
-    ### load binaries ###
-
+    ## load binaries ##
     sysbus LoadELF $bin
-    sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1f645000,8M" false
-    sysbus ZeroRange 0x1f645000 0x800000
-    sysbus LoadBinary $rootfs 0x1f645000
+    sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,16M" false
+    sysbus ZeroRange 0x1a000000 0x1600000
+    sysbus LoadBinary $rootfs 0x1a000000
 """
 
 runMacro $reset

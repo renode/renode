@@ -55,7 +55,7 @@ Create Zynq Machine
     Execute Command           $bin=${ZYNQ_MCAN_BIN}
     Execute Command           $rootfs=${ZYNQ_MCAN_ROOTFS}
     Execute Command           $dtb=${ZYNQ_MCAN_DTB}
-    Execute Command           include @scripts/single-node/zynq-7000.resc
+    Execute Command           include @scripts/single-node/zedboard.resc
     Execute Command           machine LoadPlatformDescriptionFromString ${ZYNQ_MCAN_PERIPHERALS}
     Execute Command           connector Connect ${ZYNQ_CAN} ${CAN_HUB}
 
