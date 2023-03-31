@@ -1,0 +1,16 @@
+cpu: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+
+timer: Timers.ARM_GenericTimer @ cpu
+    frequency: 62500000
+
+flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x08000000
+
+bl31: Memory.MappedMemory @ sysbus 0x0e000000
+    size: 0x01000000
+
+ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x80000000
+
+uart0: UART.PL011 @ sysbus 0x09000000
