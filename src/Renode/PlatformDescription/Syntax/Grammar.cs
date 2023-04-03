@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -51,6 +51,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<char> QuotationMark = Parse.Char('"');
 
         public static readonly Parser<string> MultiQuotationMark = Parse.String("'''").Text(); 
+
+        public static readonly Parser<char> EscapeCharacter = Parse.Char('\\');
 
         public static readonly Parser<string> RightArrow = Parse.String("->").Text().Token().Named("arrow");
 
@@ -117,11 +119,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from rest in Parse.Char('.').Then(x => Identifier).XMany()
              select new StringWithPosition(rest.Aggregate(first, (x, y) => x + '.' + y))).Positioned();
 
-        public const char EscapeChatacter = '\\';
+        public static readonly Parser<char> QuotedStringElement = EscapeCharacter.Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
 
-        public static readonly Parser<char> QuotedStringElement = Parse.Char(EscapeChatacter).Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
-
-        public static readonly Parser<string> MultiQuotedStringElement = Parse.String(EscapeChatacter.ToString()).Then(x => MultiQuotationMark).XOr(Parse.AnyChar.Except(MultiQuotationMark).Select(x => x.ToString()));
+        public static readonly Parser<string> MultiQuotedStringElement = EscapeCharacter.Then(x => MultiQuotationMark).XOr(Parse.AnyChar.Except(MultiQuotationMark).Select(x => x.ToString()));
 
         public static readonly Parser<string> SingleLineQuotedString =
             (from openingQuote in QuotationMark
