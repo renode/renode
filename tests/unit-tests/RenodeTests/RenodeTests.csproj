@@ -10,7 +10,9 @@
     <RootNamespace>Antmicro.Renode.UnitTests</RootNamespace>
     <AssemblyName>RenodeTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
   </PropertyGroup>
+  <Import Project="$(PropertiesLocation)" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <LangVersion>7</LangVersion>
     <DebugSymbols>true</DebugSymbols>
