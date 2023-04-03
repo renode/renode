@@ -119,7 +119,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from rest in Parse.Char('.').Then(x => Identifier).XMany()
              select new StringWithPosition(rest.Aggregate(first, (x, y) => x + '.' + y))).Positioned();
 
-        public static readonly Parser<char> QuotedStringElement = EscapeCharacter.Then(x => QuotationMark).XOr(Parse.CharExcept('"'));
+        public static readonly Parser<char> QuotedStringElement = EscapeCharacter.Then(x => QuotationMark.XOr(EscapeCharacter)).XOr(Parse.CharExcept('"'));
 
         public static readonly Parser<string> MultiQuotedStringElement = EscapeCharacter.Then(x => MultiQuotationMark).XOr(Parse.AnyChar.Except(MultiQuotationMark).Select(x => x.ToString()));
 
