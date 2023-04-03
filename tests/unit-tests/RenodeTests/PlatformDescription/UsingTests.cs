@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,6 +8,7 @@ using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.PlatformDescription;
 using NUnit.Framework;
+using static Antmicro.Renode.PlatformDescription.UserInterface.PlatformDescriptionMachineExtensions;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -170,6 +171,62 @@ using ""A""";
             Assert.AreEqual(ParsingError.UsingFileNotFound, exception.Error);
         }
 
+#if PLATFORM_WINDOWS
+        [Test]
+        public void ShouldHandleAbsolutePath()
+        {
+            // On Windows, both \ and / should work as path component separators in the path to be resolved
+            // and the returned path should always use the preferred \ separator
+            Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@"C:\tmp\platform.repl", @"C:\tmp\includer.repl"));
+            Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@"C:/tmp/platform.repl", @"C:\tmp\includer.repl"));
+        }
+
+        [Test]
+        public void ShouldHandleRelativePathInSameDirectory()
+        {
+            Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@".\platform.repl", @"C:\tmp\includer.repl"));
+            Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@"./platform.repl", @"C:\tmp\includer.repl"));
+        }
+
+        [Test]
+        public void ShouldHandleRelativePathInParentDirectory()
+        {
+            Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"..\abc\platform.repl", @"C:\tmp\includer.repl"));
+            Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"../abc/platform.repl", @"C:\tmp\includer.repl"));
+        }
+#else
+        [Test]
+        public void ShouldHandleAbsolutePath()
+        {
+            Assert.AreEqual("/tmp/platform.repl", ResolvePath("/tmp/platform.repl", "/tmp/includer.repl"));
+        }
+
+        [Test]
+        public void ShouldHandleRelativePathInSameDirectory()
+        {
+            Assert.AreEqual("/tmp/platform.repl", ResolvePath("./platform.repl", "/tmp/includer.repl"));
+        }
+
+        [Test]
+        public void ShouldHandleRelativePathInParentDirectory()
+        {
+            Assert.AreEqual("/abc/platform.repl", ResolvePath("../abc/platform.repl", "/tmp/includer.repl"));
+        }
+
+        [Test]
+        public void BackslashShouldNotBePathSeparatorOnUnix()
+        {
+            // Backslashes are a valid filename character on Unix
+            Assert.AreEqual(@"/tmp/plat\form.repl", ResolvePath(@"./plat\form.repl", "/tmp/includer.repl"));
+        }
+#endif
+
+        [SetUp]
+        public void SetUp()
+        {
+            resolver = new UsingResolver(Enumerable.Empty<string>());
+        }
+
         private static void ProcessSource(params string[] sources)
         {
             var letters = Enumerable.Range(0, sources.Length - 1).Select(x => (char)('A' + x)).ToArray();
@@ -181,5 +238,12 @@ using ""A""";
             var creationDriver = new CreationDriver(new Machine(), usingResolver, new FakeInitHandler());
         	creationDriver.ProcessDescription(sources[0]);
         }
+
+        private string ResolvePath(string path, string includingPath)
+        {
+            return resolver.Resolve(path, includingPath);
+        }
+
+        private UsingResolver resolver;
     }
 }
