@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -525,6 +525,25 @@ device: Something @ somewhere
 
             var result = Grammar.Description(GetInputFromString(source.ToString()));
             Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldParseStringWithEscapedBackslashes()
+        {
+            var source = @"
+uart:
+    string: ""\\escaped backslash: \\, two in a row: \\\\, before quote: \\\"", and one at the end: \\""
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            Assert.AreEqual("uart", entry.VariableName);
+            Assert.IsNull(entry.Type);
+
+            var attribute = (ConstructorOrPropertyAttribute)entry.Attributes.Single();
+            Assert.AreEqual("string", attribute.Name);
+            Assert.AreEqual(@"\escaped backslash: \, two in a row: \\, before quote: \"", and one at the end: \", ((StringValue)attribute.Value).Value);
         }
 
         private static IInput GetInputFromString(string source)
