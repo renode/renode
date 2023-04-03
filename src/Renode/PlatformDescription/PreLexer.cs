@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -167,7 +167,7 @@ finish:
                                 throw GetException(ParsingError.SyntaxError, lineNo, originalLine.Length - 1, originalLine, "Unterminated string.", path);
                             }
                             // if this is escaped quote, just ignore it
-                            if(line[currentIndex - 2] != '\\')
+                            if(!IsEscapedPosition(line, currentIndex - 1))
                             {
                                 break;
                             }
@@ -367,11 +367,22 @@ finish:
                 {
                     braceLevel += element == '{' ? 1 : element == '}' ? -1 : 0;
                 }
-                if(line[i] == '"' && (i == 0 || line[i - 1] != '\\'))
+                if(line[i] == '"' && !IsEscapedPosition(line, i))
                 {
                     inString = !inString;
                 }
             }
+        }
+
+        private static bool IsEscapedPosition(string str, int position)
+        {
+            int numEscapes = 0;
+            while(position - 1 - numEscapes >= 0 && str[position - 1 - numEscapes] == '\\')
+            {
+                numEscapes++;
+            }
+            // if there's an odd number of backslashes before this position, it is escaped
+            return numEscapes % 2 == 1;
         }
 
         private const int SpacesPerIndent = 4;
