@@ -1,8 +1,19 @@
 cpu: CPU.ARMv8A @ sysbus
     cpuType: "cortex-a53"
+    genericInterruptController: gic
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 62500000
+    PhysicalTimerIRQ -> gic#0@30 
+    VirtualTimerIRQ -> gic#0@27 
+    NonSecurePhysicalTimerIRQ -> gic#0@26 
+    HypervisorPhysicalTimerIRQ -> gic#0@29 
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0x80a0000; size: 0x0f6000; region: "redistributor" }
+    }
+    0 -> cpu@0
 
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x08000000
