@@ -16,10 +16,11 @@ Create Test File
     [Arguments]              ${file}
     ${string} =              Set Variable   ${EMPTY}
     FOR  ${index}  IN RANGE  128
-         ${byte}=            Convert To Bytes  ${index}  int
-         ${string}=          Catenate  SEPARATOR=  ${string}  \x00  ${byte}
+         ${string}=          Catenate  ${string}  00  ${index}
     END
-    Create Binary File       ${file}  ${string}
+
+    ${bytes}=                Convert To Bytes  ${string}  int
+    Create Binary File       ${file}  ${bytes}
 
 *** Test Cases ***
 Should Print Hello to UART
