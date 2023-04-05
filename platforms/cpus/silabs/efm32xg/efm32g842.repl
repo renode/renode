@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efm32xg/efm32g232.repl"
+using "./efm32g232.repl"
 
 deviceInformation:
     deviceNumber: 842

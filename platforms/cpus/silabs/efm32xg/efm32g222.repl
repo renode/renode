@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efm32xg/efm32g210.repl"
+using "./efm32g210.repl"
 
 timer2: Timers.Efm32Timer @ sysbus <0x40010800, +0x400>
     -> nvic@11

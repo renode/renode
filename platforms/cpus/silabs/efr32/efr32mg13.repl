@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efr32/efr32mg12.repl"
+using "./efr32mg12.repl"
 
 rtcc:
     -> nvic@31

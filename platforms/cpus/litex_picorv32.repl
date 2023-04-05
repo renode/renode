@@ -1,4 +1,4 @@
-using "platforms/cpus/litex_common.repl"
+using "./litex_common.repl"
 
 cpu: CPU.PicoRV32 @ sysbus
     cpuType: "rv32imc"

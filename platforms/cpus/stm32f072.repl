@@ -1,4 +1,4 @@
-using "platforms/cpus/stm32f0.repl"
+using "./stm32f0.repl"
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x20000

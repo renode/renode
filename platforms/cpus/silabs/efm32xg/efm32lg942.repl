@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efm32xg/efm32gg942.repl"
+using "./efm32gg942.repl"
 
 sram:
     size: 0x00008000

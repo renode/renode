@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efm32xg/efm32g222.repl"
+using "./efm32g222.repl"
 
 usart2: UART.EFM32_UART @ sysbus <0x4000c800, +0x400>
     ReceiveIRQ -> nvic@14

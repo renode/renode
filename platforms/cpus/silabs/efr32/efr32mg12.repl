@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efr32/efr32mg1.repl"
+using "./efr32mg1.repl"
 
 rtcc: Timers.EFR32_RTCC @ sysbus 0x40042000
     frequency: 32768

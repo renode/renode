@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/ezr32/ezr32lg330.repl"
+using "./ezr32lg330.repl"
 
 cpu:
     cpuType: "cortex-m4f"
