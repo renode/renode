@@ -42,13 +42,11 @@ kmi0: Input.PL050 @ sysbus <0x10006000, +0x1000>
 kmi1: Input.PL050 @ sysbus <0x10007000, +0x1000>
     -> gic@13
 
-gic: IRQControllers.GIC @ {
+gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x1E001000; size: 0x1000; region: "distributor"};
         sysbus new Bus.BusMultiRegistration { address: 0x1E000100; size: 0x100; region: "cpuInterface"}
     }
     0 -> cpu@0
-    itLinesNumber: 2
-    numberOfCPUs: 1
 
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"

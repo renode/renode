@@ -21,12 +21,11 @@ iRam: Memory.MappedMemory @ sysbus 0x40000000
 privateTimer: Timers.CortexAPrivateTimer @ sysbus <0x50040600, +0x200>
     -> gic#0@29
 
-gic: IRQControllers.GIC @ {
+gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x50041000; size: 0x1000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0x50040100; size: 0x100; region: "cpuInterface" }
     }
     0 -> cpu@0
-    numberOfCPUs: 1
 
 tmr1: Timers.TegraTimer @ sysbus 0x60005000
     -> gic@0
