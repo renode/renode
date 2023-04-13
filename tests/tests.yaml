@@ -103,3 +103,4 @@
 - tests/unit-tests/hooks.robot
 - tests/unit-tests/riscv-ebreak.robot
 - tests/platforms/ARMv8A.robot
+- tests/peripherals/NRF52840_GPIO.robot
