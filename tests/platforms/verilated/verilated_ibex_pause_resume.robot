@@ -36,8 +36,7 @@ Sleep And Measure
 Should Pause And Resume
     Create Machine
 
-    Wait For Line On Uart       Build your hardware, easily!
-    Execute Command             pause
+    Wait For Line On Uart       Build your hardware, easily!  pauseEmulation=true
     Sleep And Measure
     Execute Command             start
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true

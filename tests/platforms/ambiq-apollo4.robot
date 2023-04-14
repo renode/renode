@@ -37,8 +37,7 @@ Should Successfully Run stimer Example
     Create Machine
     Start Example             stimer.axf-s_252512-bd594169c2dce5d6771bb426a479fc622b1c6182
 
-    Wait For Line On Uart     SUCCESS!
-    Execute Command           pause
+    Wait For Line On Uart     SUCCESS!  pauseEmulation=true
 
     Execute Command           emulation RunFor '00:00:02.5000'
     # A single "SUCCESS!" line should be printed each second (approximately) so check if there are two such lines.
