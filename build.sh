@@ -21,6 +21,7 @@ TFM="net6.0"
 PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
+RID="linux-x64"
 
 function print_help() {
   echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch]"
@@ -38,9 +39,10 @@ function print_help() {
   echo "--no-gui                          build with GUI disabled"
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
+  echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
 }
 
-while getopts "cdvpnstbo:-:" opt
+while getopts "cdvpnstbo:B:-:" opt
 do
   case $opt in
     c)
@@ -71,6 +73,9 @@ do
     o)
       EXPORT_DIRECTORY=$OPTARG
       echo "Setting the output directory to $EXPORT_DIRECTORY"
+      ;;
+    B)
+      RID=$OPTARG
       ;;
     -)
       case $OPTARG in
@@ -330,11 +335,18 @@ then
     $ROOT_PATH/tools/packaging/make_source_package.sh $params
 fi
 
-if $PORTABLE && ! $NET
+if $PORTABLE
 then
     if $ON_LINUX
     then
-      $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+      if $NET
+      then
+          eval "dotnet publish -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
+          export RID TFM
+          $ROOT_PATH/tools/packaging/make_linux_portable_dotnet.sh $params
+      else
+          $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+      fi
     else
       echo "Portable packages are only available on Linux. Exiting!"
       exit 1
