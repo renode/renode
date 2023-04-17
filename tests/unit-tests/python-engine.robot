@@ -14,6 +14,12 @@ Should Throw Python Syntax Exception
              ...                      Execute Command          ${command}
              Should Contain           ${out}      [FatalError] unexpected EOF while parsing (Line 1, Column 9)
 
+Read Should Be Equal
+             [Arguments]    ${type}    ${address}    ${value}
+
+    ${res}=  Execute Command              sysbus Read${type} ${address}
+             Should Be Equal As Integers  ${res}  ${value}
+
 *** Test Cases ***
 
 Should Return Syntax Error
@@ -62,3 +68,28 @@ Should Abort On Runtime Error
              Execute Command          cpu Step
              Wait For Log Entry       Python runtime error: name 'b' is not defined
              Wait For Log Entry       CPU abort detected, halting.
+
+PyDev Should Handle QuadWord Accesses
+             Execute Command          mach create
+             Execute Command          numbersMode Hexadecimal
+
+    ${init_value} =     Set Variable  0x1234567890abcdef
+    ${init_value_32} =  Evaluate      ${init_value} & 0xFFFFFFFF
+    ${pydev_script} =   Catenate      SEPARATOR=\n
+             ...                      """
+             ...                      if request.isInit:
+             ...                      \ \ value = ${init_value}
+             ...                      elif request.isRead:
+             ...                      \ \ request.value = value
+             ...                      elif request.isWrite:
+             ...                      \ \ value = request.value
+             ...                      """
+    ${pydev_address} =  Set Variable  0x8
+
+             Execute Command          machine PyDevFromString ${pydev_script} ${pydev_address} 8 True
+             Read Should Be Equal     QuadWord  ${pydev_address}  ${init_value}
+             Read Should Be Equal     DoubleWord  ${pydev_address}  ${init_value_32}
+
+    ${new_value} =      Set Variable  0xfedcba0987654321
+             Execute Command          sysbus WriteQuadWord ${pydev_address} ${new_value}
+             Read Should Be Equal     QuadWord  ${pydev_address}  ${new_value}
