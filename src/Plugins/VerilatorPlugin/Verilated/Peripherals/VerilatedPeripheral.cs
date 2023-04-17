@@ -29,7 +29,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             this.OnReceive = HandleReceivedMessage;
             this.maxWidth = maxWidth;
 
-            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
+            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: true, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
                 if(!verilatorConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
@@ -40,8 +40,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 allTicksProcessedARE.WaitOne();
                 this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
             };
-
-            timer.Enabled = true;
 
             var innerConnections = new Dictionary<int, IGPIO>();
             for(int i = 0; i < numberOfInterrupts; i++)
