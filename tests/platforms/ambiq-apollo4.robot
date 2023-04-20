@@ -148,24 +148,24 @@ Should Successfully Run binary_counter Example
     Execute Command           machine LoadPlatformDescriptionFromString 'gpio: { 30 -> led30@0; 90 -> led90@0; 91 -> led91@0 }; led30: Miscellaneous.LED @ gpio 30; led90: Miscellaneous.LED @ gpio 90; led91: Miscellaneous.LED @ gpio 91'
     Load Example              binary_counter.axf-s_264304-49508d8e17aeaaa88845426e007dde2ce4416892
 
-    Execute Command           emulation CreateLEDTester "led30_tester" sysbus.gpio.led30
-    Execute Command           emulation CreateLEDTester "led90_tester" sysbus.gpio.led90
-    Execute Command           emulation CreateLEDTester "led91_tester" sysbus.gpio.led91
+    ${led30_tester}=          Create LED Tester  sysbus.gpio.led30  defaultTimeout=0
+    ${led90_tester}=          Create LED Tester  sysbus.gpio.led90  defaultTimeout=0
+    ${led91_tester}=          Create LED Tester  sysbus.gpio.led91  defaultTimeout=0
 
     Execute Command           emulation RunFor "1"
 
-    Execute Command           led30_tester AssertState false 0
-    Execute Command           led90_tester AssertState false 0
-    Execute Command           led91_tester AssertState false 0
+    Assert LED State          false  testerId=${led30_tester}
+    Assert LED State          false  testerId=${led90_tester}
+    Assert LED State          false  testerId=${led91_tester}
 
     # this simulates an IRQ from the timer
     Execute Command           nvic OnGPIO 14 true; nvic OnGPIO 14 false
 
     Execute Command           emulation RunFor "1"
 
-    Execute Command           led30_tester AssertState true 0
-    Execute Command           led90_tester AssertState true 0
-    Execute Command           led91_tester AssertState true 0
+    Assert LED State          true  testerId=${led30_tester}
+    Assert LED State          true  testerId=${led90_tester}
+    Assert LED State          true  testerId=${led91_tester}
 
 Test Calling Unimplemented Bootrom Function
     Create Machine

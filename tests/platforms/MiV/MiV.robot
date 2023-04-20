@@ -17,42 +17,42 @@ Should Blink Led Using Systick
     Create Machine            riscv-systick-blinky.elf-s_125004-59e1fa0a46f86e8ccad8b5bbb4d92b8dfa009af3
     Create Terminal Tester    ${UART}
 
-    Execute Command           emulation CreateLEDTester "led0_tester" sysbus.gpioOutputs.led0
+    Create LED Tester         sysbus.gpioOutputs.led0  defaultTimeout=${LED_DELAY}
 
     Start Emulation
 
     Wait For Line On Uart      System timer Blinky Example.
 
     # because of very fast LED switching this ends very soon
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
 
 Should Blink Led Using CoreTimer
     Create Machine            riscv-interrupt-blinky.elf-s_135504-4fe164958c1fe3e89790f8d7d2824ba16182fa75
     Create Terminal Tester    ${UART}
 
-    Execute Command           emulation CreateLEDTester "led0_tester" sysbus.gpioOutputs.led0
+    Create LED Tester         sysbus.gpioOutputs.led0  defaultTimeout=${LED_DELAY}
 
     Start Emulation
 
     Wait For Line On Uart      CoreTIMER and external Interrupt Example.
 
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
-    Execute Command            led0_tester AssertState true ${LED_DELAY}
-    Execute Command            led0_tester AssertState false ${LED_DELAY}
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
+    Assert LED State           true
+    Assert LED State           false
 
 Should Run FreeRTOS Sample
     Create Machine            riscv-freertos-sample.elf-s_208404-40208b240e2d718e999a533e084f022628aec5d6

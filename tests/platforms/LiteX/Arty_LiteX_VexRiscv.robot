@@ -23,50 +23,50 @@ Should Boot
 Should Control LEDs
     Requires                   booted-image
 
-    Execute Command            emulation CreateLEDTester "led0_tester" cas.led0
-    Execute Command            emulation CreateLEDTester "led1_tester" cas.led1
-    Execute Command            emulation CreateLEDTester "led2_tester" cas.led2
-    Execute Command            emulation CreateLEDTester "led3_tester" cas.led3
+    ${led0_tester}=            Create LED Tester  sysbus.cas.led0
+    ${led1_tester}=            Create LED Tester  sysbus.cas.led1
+    ${led2_tester}=            Create LED Tester  sysbus.cas.led2
+    ${led3_tester}=            Create LED Tester  sysbus.cas.led3
 
-    Execute Command            led0_tester AssertState false
-    Execute Command            led1_tester AssertState false
-    Execute Command            led2_tester AssertState false
-    Execute Command            led3_tester AssertState false
+    Assert LED State           false  testerId=${led0_tester}
+    Assert LED State           false  testerId=${led1_tester}
+    Assert LED State           false  testerId=${led2_tester}
+    Assert LED State           false  testerId=${led3_tester}
 
     Write Line To Uart         debug cas leds 1
     Wait For Prompt On Uart    ${PROMPT}
-    Execute Command            led0_tester AssertState true
-    Execute Command            led1_tester AssertState false
-    Execute Command            led2_tester AssertState false
-    Execute Command            led3_tester AssertState false
+    Assert LED State           true   testerId=${led0_tester}
+    Assert LED State           false  testerId=${led1_tester}
+    Assert LED State           false  testerId=${led2_tester}
+    Assert LED State           false  testerId=${led3_tester}
 
     Write Line To Uart         debug cas leds 3
     Wait For Prompt On Uart    ${PROMPT}
-    Execute Command            led0_tester AssertState true
-    Execute Command            led1_tester AssertState true
-    Execute Command            led2_tester AssertState false
-    Execute Command            led3_tester AssertState false
+    Assert LED State           true  testerId=${led0_tester}
+    Assert LED State           true  testerId=${led1_tester}
+    Assert LED State           false  testerId=${led2_tester}
+    Assert LED State           false  testerId=${led3_tester}
 
     Write Line To Uart         debug cas leds 7
     Wait For Prompt On Uart    ${PROMPT}
-    Execute Command            led0_tester AssertState true
-    Execute Command            led1_tester AssertState true
-    Execute Command            led2_tester AssertState true
-    Execute Command            led3_tester AssertState false
+    Assert LED State           true  testerId=${led0_tester}
+    Assert LED State           true  testerId=${led1_tester}
+    Assert LED State           true  testerId=${led2_tester}
+    Assert LED State           false  testerId=${led3_tester}
 
     Write Line To Uart         debug cas leds 15
     Wait For Prompt On Uart    ${PROMPT}
-    Execute Command            led0_tester AssertState true
-    Execute Command            led1_tester AssertState true
-    Execute Command            led2_tester AssertState true
-    Execute Command            led3_tester AssertState true
+    Assert LED State           true  testerId=${led0_tester}
+    Assert LED State           true  testerId=${led1_tester}
+    Assert LED State           true  testerId=${led2_tester}
+    Assert LED State           true  testerId=${led3_tester}
 
     Write Line To Uart         debug cas leds 0
     Wait For Prompt On Uart    ${PROMPT}
-    Execute Command            led0_tester AssertState false
-    Execute Command            led1_tester AssertState false
-    Execute Command            led2_tester AssertState false
-    Execute Command            led3_tester AssertState false
+    Assert LED State           false  testerId=${led0_tester}
+    Assert LED State           false  testerId=${led1_tester}
+    Assert LED State           false  testerId=${led2_tester}
+    Assert LED State           false  testerId=${led3_tester}
 
 Should Read Switches
     Requires                   booted-image

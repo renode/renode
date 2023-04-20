@@ -107,20 +107,20 @@ Should Handle LED and Button
     Create Machine            ${BUTTON_LED}  nrf52840--zephyr_button.elf-s_660440-50c3b674193c8105624dae389420904e2036f9c0
     Create Terminal Tester    ${UART}
 
-    Execute Command           emulation CreateLEDTester "lt" sysbus.gpio0.led
+    Create LED Tester         sysbus.gpio0.led  defaultTimeout=0
 
     Start Emulation
     Wait For Line On Uart     Booting Zephyr OS
     Wait For Line On Uart     Press the button
 
-    Execute Command           lt AssertState True 0
+    Assert LED State          true
     Execute Command           sysbus.gpio0.button Press
     Sleep           1s
-    Execute Command           lt AssertState False 0
+    Assert LED State          false
     Execute Command           sysbus.gpio0.button Release
     Sleep           1s
     # TODO: those sleeps shouldn't be necessary!
-    Execute Command           lt AssertState True 0
+    Assert LED State          true
 
 Should Handle SPI
     Create Machine            ${ADXL_SPI}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173

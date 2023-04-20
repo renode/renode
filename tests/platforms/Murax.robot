@@ -28,17 +28,17 @@ Timer Blinking Led
     [Tags]                     non_critical
     Create Murax
     Execute Command            machine LoadPlatformDescriptionFromString "gpioA: { 7 -> led@0 }; led: Miscellaneous.LED @ gpioA 7"
-    Execute Command            emulation CreateLEDTester "lt" sysbus.gpioA.led
+    Create LED Tester          sysbus.gpioA.led  defaultTimeout=1
 
-    Execute Command            lt AssertState False
+    Assert LED State           false  0
 
     Start Emulation
 
-    Execute Command            lt AssertState True 1
+    Assert LED State           true
     ${ts}=  Execute Command    machine GetTimeSourceInfo
     Should Contain             ${ts}      Elapsed Virtual Time: 00:00:01.
 
-    Execute Command            lt AssertState False 1
+    Assert LED State           false
     ${ts}=  Execute Command    machine GetTimeSourceInfo
     Should Contain             ${ts}      Elapsed Virtual Time: 00:00:02.
 

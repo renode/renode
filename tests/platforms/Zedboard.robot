@@ -2,7 +2,7 @@
 ${SCRIPT}                     ${CURDIR}/../../scripts/single-node/zedboard.resc
 ${UART}                       sysbus.uart1
 ${PROMPT}                     zynq>
-${GPIO_PERIPHERAL}            gpio.led0
+${GPIO_PERIPHERAL}            sysbus.gpio.led0
 ${GPIO_FILE}                  /sys/class/gpio/gpio967/value
 ${UART_TIMEOUT}               20
 
@@ -56,15 +56,15 @@ Should Expose GPIO State
     [Documentation]           Tests whether the GPIO seen by the simulator matches Linux's view.
     [Tags]                    linux  uart  gpio
     Requires                  booted-linux
-    Execute Command           emulation CreateLEDTester "led0" ${GPIO_PERIPHERAL}
+    Create LED Tester         ${GPIO_PERIPHERAL}  defaultTimeout=0
 
     Write Line To Uart        echo 1 > ${GPIO_FILE}
     Wait For Prompt On Uart   ${PROMPT}
-    Execute Command           led0 AssertState true 0
+    Assert LED State          true
 
     Write Line To Uart        echo 0 > ${GPIO_FILE}
     Wait For Prompt On Uart   ${PROMPT}
-    Execute Command           led0 AssertState false 0
+    Assert LED State          false
 
 Should Ping
     [Documentation]           Tests whether Ethernet works on the Zedboard platform.

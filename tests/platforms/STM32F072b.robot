@@ -34,15 +34,15 @@ Should Run Zephyr Console Echo Sample
 Should Run Zephyr Blinky Sample
     Create Machine           stm32f072b_disco--zephyr-blinky.elf-s_460516-9452135ae6af4492bb284a6f88b196b1314909c8
 
-    Execute Command          emulation CreateLEDTester "led_tester" ${LED}
+    Create LED Tester        ${LED}  defaultTimeout=${LED_DELAY}
 
     Start Emulation
-    Execute Command          led_tester AssertState true ${LED_DELAY}
-    Execute Command          led_tester AssertState false ${LED_DELAY}
-    Execute Command          led_tester AssertState true ${LED_DELAY}
-    Execute Command          led_tester AssertState false ${LED_DELAY}
-    Execute Command          led_tester AssertState true ${LED_DELAY}
-    Execute Command          led_tester AssertState false ${LED_DELAY}
+    Assert LED State         true
+    Assert LED State         false
+    Assert LED State         true
+    Assert LED State         false
+    Assert LED State         true
+    Assert LED State         false
 
 Should Run Zephyr Button Sample
     Create Machine           stm32f072b_disco--zephyr-button.elf-s_466084-bd8983bad3182e3a36ca6120a629093bd24426c8
@@ -56,13 +56,13 @@ Should Run Zephyr Button Sample
     Wait For Line On Uart    Button pressed at   
 
     # LED matches button state and should not change until after the button is pressed/released
-    Execute Command          emulation CreateLEDTester "led_tester" ${LED}
+    Create LED Tester        ${LED}
     Execute Command          ${BUTTON} Press
-    Execute Command          led_tester AssertAndHoldState false ${LED_DELAY} ${LED_DELAY}
+    Assert And Hold LED State  false  ${LED_DELAY}  ${LED_DELAY}
     Execute Command          ${BUTTON} Release
-    Execute Command          led_tester AssertAndHoldState true ${LED_DELAY} ${LED_DELAY}
+    Assert And Hold LED State  true  ${LED_DELAY}  ${LED_DELAY}
     Execute Command          ${BUTTON} Press
-    Execute Command          led_tester AssertAndHoldState false ${LED_DELAY} ${LED_DELAY}
+    Assert And Hold LED State  false  ${LED_DELAY}  ${LED_DELAY}
     Execute Command          ${BUTTON} Release
 
 Should Read ADC

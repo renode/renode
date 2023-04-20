@@ -40,8 +40,8 @@ Should Boot
 Should Control LED
     Requires                   booted-image
 
-    Execute Command            emulation CreateLEDTester "led_tester" gpio_out.led
-    Execute Command            led_tester AssertState false
+    Create LED Tester          sysbus.gpio_out.led
+    Assert LED State           false
 
     Write Line To Uart         cd /sys/class/gpio
     Wait For Prompt On Uart    ${SHELL_PROMPT}
@@ -50,14 +50,14 @@ Should Control LED
     Write Line To Uart         cd gpio508
     Wait For Prompt On Uart    ${SHELL_PROMPT}
 
-    Execute Command            led_tester AssertState false
+    Assert LED State           false
     Write Line To Uart         echo 1 > value
     Wait For Prompt On Uart    ${SHELL_PROMPT}
-    Execute Command            led_tester AssertState true
+    Assert LED State           true
 
     Write Line To Uart         echo 0 > value
     Wait For Prompt On Uart    ${SHELL_PROMPT}
-    Execute Command            led_tester AssertState false
+    Assert LED State           false
 
 Should Read Button
     Requires                   booted-image

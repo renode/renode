@@ -133,40 +133,40 @@ Should Display Output on GPIO
     [Tags]                      skipped
     Requires                    working-uart
 
-    Execute Command             emulation CreateLEDTester "led0" sysbus.gpio.led0
-    Execute Command             emulation CreateLEDTester "led1" sysbus.gpio.led1
-    Execute Command             emulation CreateLEDTester "led2" sysbus.gpio.led2
-    Execute Command             emulation CreateLEDTester "led3" sysbus.gpio.led3
+    ${led0}=                    Create LED Tester  sysbus.gpio.led0  defaultTimeout=0.2
+    ${led1}=                    Create LED Tester  sysbus.gpio.led1  defaultTimeout=0.2
+    ${led2}=                    Create LED Tester  sysbus.gpio.led2  defaultTimeout=0.2
+    ${led3}=                    Create LED Tester  sysbus.gpio.led3  defaultTimeout=0.2
 
-    Execute Command             emulation CreateLEDTester "led4" sysbus.gpio.led4
-    Execute Command             emulation CreateLEDTester "led5" sysbus.gpio.led5
-    Execute Command             emulation CreateLEDTester "led6" sysbus.gpio.led6
-    Execute Command             emulation CreateLEDTester "led7" sysbus.gpio.led7
+    ${led4}=                    Create LED Tester  sysbus.gpio.led4  defaultTimeout=0.2
+    ${led5}=                    Create LED Tester  sysbus.gpio.led5  defaultTimeout=0.2
+    ${led6}=                    Create LED Tester  sysbus.gpio.led6  defaultTimeout=0.2
+    ${led7}=                    Create LED Tester  sysbus.gpio.led7  defaultTimeout=0.2
 
     Send Key To Uart            0x0
 
-    Execute Command             led0 AssertState false 0.2
-    Execute Command             led1 AssertState false 0.2
-    Execute Command             led2 AssertState false 0.2
-    Execute Command             led3 AssertState false 0.2
+    Assert LED State            false  testerId=${led0}
+    Assert LED State            false  testerId=${led1}
+    Assert LED State            false  testerId=${led2}
+    Assert LED State            false  testerId=${led3}
 
-    Execute Command             led4 AssertState false 0.2
-    Execute Command             led5 AssertState false 0.2
-    Execute Command             led6 AssertState false 0.2
-    Execute Command             led7 AssertState false 0.2
+    Assert LED State            false  testerId=${led4}
+    Assert LED State            false  testerId=${led5}
+    Assert LED State            false  testerId=${led6}
+    Assert LED State            false  testerId=${led7}
 
     Write Char On Uart          B
     # B is 0100 0010
 
-    Execute Command             led0 AssertState false 0.2
-    Execute Command             led1 AssertState true 0.2
-    Execute Command             led2 AssertState false 0.2
-    Execute Command             led3 AssertState false 0.2
+    Assert LED State            false  testerId=${led0}
+    Assert LED State            true  testerId=${led1}
+    Assert LED State            false  testerId=${led2}
+    Assert LED State            false  testerId=${led3}
 
-    Execute Command             led4 AssertState false 0.2
-    Execute Command             led5 AssertState false 0.2
-    Execute Command             led6 AssertState true 0.2
-    Execute Command             led7 AssertState false 0.2
+    Assert LED State            false  testerId=${led4}
+    Assert LED State            false  testerId=${led5}
+    Assert LED State            true  testerId=${led6}
+    Assert LED State            false  testerId=${led7}
 
 Should Pass AES Smoketest
     Run Test               ${AES_BIN}

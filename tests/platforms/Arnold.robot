@@ -35,11 +35,11 @@ Should Set GPIO Output to High
     Create Machine           arnold-pulp-gpio-s_380728-f9f273e2063a3ea7d4f9607cce4d7f12ea10bf63
     Execute Command          machine LoadPlatformDescriptionFromString "gpio: { 5 -> led@0 }; led: Miscellaneous.LED @ gpio 5"
 
-    Execute Command          emulation CreateLEDTester "lt" sysbus.gpio.led
+    Create LED Tester        sysbus.gpio.led
 
     Start Emulation
 
-    Execute Command          lt AssertState True 1
+    Assert LED State         true  1
 
 Should Print to UART Using a Timer
     Create Machine            arnold-pulp-timer-s_365004-fc268eecd231afb88a571748c864b6c3ab0bcb5d
