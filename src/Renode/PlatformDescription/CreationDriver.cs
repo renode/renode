@@ -25,6 +25,8 @@ using Range = Antmicro.Renode.Core.Range;
 
 namespace Antmicro.Renode.PlatformDescription
 {
+    using DependencyGraph = Dictionary<Entry, Dictionary<Entry, ReferenceValue>>;
+
     public sealed class CreationDriver
     {
         public CreationDriver(Machine machine, IUsingResolver usingResolver, IInitHandler initHandler)
@@ -208,7 +210,7 @@ namespace Antmicro.Renode.PlatformDescription
             return result;
         }
 
-        private void WalkGraph(Entry entry, Dictionary<Entry, Dictionary<Entry, ReferenceValue>> graph, ReferenceValueStack referenceValueStack,
+        private void WalkGraph(Entry entry, DependencyGraph graph, ReferenceValueStack referenceValueStack,
                                HashSet<Entry> stackVisited, List<Entry> result, HashSet<Entry> toVisit)
         {
             if(!toVisit.Contains(entry))
@@ -255,9 +257,9 @@ namespace Antmicro.Renode.PlatformDescription
         // it is incidence dictionary, so that if a depends on b, then we have entry in the dictionary
         // for a and this is another dictionary in which there is an entry for b and the value of such entry
         // is a syntax element (ReferenceValue) that states such dependency
-        private Dictionary<Entry, Dictionary<Entry, ReferenceValue>> BuildDependencyGraph(IEnumerable<Entry> source)
+        private DependencyGraph BuildDependencyGraph(IEnumerable<Entry> source)
         {
-            var result = new Dictionary<Entry, Dictionary<Entry, ReferenceValue>>();
+            var result = new DependencyGraph();
             foreach(var from in source)
             {
                 var localDictionary = new Dictionary<Entry, ReferenceValue>();
