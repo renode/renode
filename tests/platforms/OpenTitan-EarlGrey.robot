@@ -235,7 +235,8 @@ Should Try To Reset On The System Reset Control Combo
     Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x74 0x8   # Set combo0 action to rstReq
     Execute Command        sysbus.sysrst_ctrl WriteDoubleWord 0x30 0x40  # Invert the pwrButton input
     # Expect error as this should work only when done by CPU
-    Wait For Log Entry     Couldn't find the cpu requesting reset.
+    Wait For Log Entry     Couldn't find the CPU requesting translation block restart.
+    Wait For Log Entry     Software reset failed.
 
 Should Pass Entropy Source Analog Sensor Top Request Smoketest
     Run Test               ${ENTROPY_SRC_AST_REQ_BIN}
