@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2020 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -683,6 +683,48 @@ newCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus 2
             MockCPU otherMockCpu;
             Assert.IsTrue(machine.TryGetByName("sysbus.newCpu", out otherMockCpu));
             Assert.AreEqual(cpu, otherMockCpu.OtherCpu);
+        }
+
+        [Test]
+        public void  ShouldNotDetectCycleInPerCoreRegistration()
+        {
+            var source = @"
+core1_nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { 
+    address: 0xE000E000;
+    cpu: cpu1
+}
+
+core2_nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+    address: 0xE000E000;
+    cpu: cpu2
+}
+
+cpu1: CPU.CortexM @ sysbus
+    cpuType: ""cortex-m0""
+    nvic: core1_nvic
+
+cpu2: CPU.CortexM @ sysbus
+    cpuType: ""cortex-m0""
+    nvic: core2_nvic";
+
+            ProcessSource(source);
+        }
+
+        [Test]
+        public void  ShouldNotDetectCycleInSignalConnection()
+        {
+            var source = @"
+clint: IRQControllers.CoreLevelInterruptor @ {
+        sysbus new Bus.BusPointRegistration { address: 0x002000000; cpu: cpu_rv }
+    }
+    [0,1] -> cpu_rv@[3,7]
+    frequency: 10000000
+
+cpu_rv: CPU.RiscV32 @ sysbus
+    cpuType: ""rv32ima""
+    timeProvider: clint";
+
+            ProcessSource(source);
         }
 
         [Test]

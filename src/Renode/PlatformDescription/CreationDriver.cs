@@ -68,19 +68,21 @@ namespace Antmicro.Renode.PlatformDescription
                 {
                     ValidateEntryPostMerge(entry);
                 }
-                var sortedEntries = SortEntries(mergedEntries);
-                foreach(var entry in sortedEntries)
+
+                var sortedForCreation = SortEntriesForCreation(mergedEntries);
+                foreach(var entry in sortedForCreation)
                 {
                     CreateFromEntry(entry);
                 }
 
-                foreach(var entry in sortedEntries)
+                foreach(var entry in sortedForCreation)
                 {
                     SetPropertiesAndConnectInterrupts(entry.Variable.Value, entry.Attributes);
                 }
                 UpdatePropertiesAndInterruptsOnUpdateQueue();
 
-                var entriesToRegister = sortedEntries.Where(x => x.RegistrationInfos != null);
+                var sortedForRegistration = SortEntriesForRegistration(mergedEntries);
+                var entriesToRegister = sortedForRegistration.Where(x => x.RegistrationInfos != null);
                 do
                 {
                     entriesToRegister = RegisterFromEntries(entriesToRegister);
@@ -92,7 +94,7 @@ namespace Antmicro.Renode.PlatformDescription
                     initHandler.Execute(objectValue, objectValue.Attributes.OfType<InitAttribute>().Single().Lines,
                                         x => HandleInitableError(x, objectValue));
                 }
-                foreach(var entry in sortedEntries)
+                foreach(var entry in sortedForRegistration)
                 {
                     var initAttribute = entry.Attributes.OfType<InitAttribute>().SingleOrDefault();
                     if(initAttribute == null)
@@ -195,23 +197,33 @@ namespace Antmicro.Renode.PlatformDescription
             usingsBeingProcessed.Pop();
         }
 
-        private List<Entry> SortEntries(IEnumerable<Entry> entries)
+        private List<Entry> SortEntriesForCreation(IEnumerable<Entry> entries)
         {
-            var graph = BuildDependencyGraph(entries);
+            var graph = BuildDependencyGraph(entries, entryObjectsToSkip: typeof(Antmicro.Renode.PlatformDescription.Syntax.RegistrationInfo));
+            return SortEntries(entries, graph, ParsingError.CreationOrderCycle);
+        }
 
+        private List<Entry> SortEntriesForRegistration(IEnumerable<Entry> entries)
+        {
+            var graph = BuildDependencyGraph(entries, entryObjectsToSkip: typeof(Antmicro.Renode.PlatformDescription.Syntax.ConstructorOrPropertyAttribute));
+            return SortEntries(entries, graph, ParsingError.RegistrationOrderCycle);
+        }
+
+        private List<Entry> SortEntries(IEnumerable<Entry> entries, DependencyGraph graph, ParsingError cycleErrorType)
+        {
             var result = new List<Entry>();
             var toVisit = new HashSet<Entry>(entries);
             var stackVisited = new HashSet<Entry>();
             while(toVisit.Count > 0)
             {
                 var element = toVisit.First();
-                WalkGraph(element, graph, new ReferenceValueStack(null, null, element), stackVisited, result, toVisit);
+                WalkGraph(element, graph, new ReferenceValueStack(null, null, element), stackVisited, result, toVisit, cycleErrorType);
             }
             return result;
         }
 
         private void WalkGraph(Entry entry, DependencyGraph graph, ReferenceValueStack referenceValueStack,
-                               HashSet<Entry> stackVisited, List<Entry> result, HashSet<Entry> toVisit)
+                               HashSet<Entry> stackVisited, List<Entry> result, HashSet<Entry> toVisit, ParsingError cycleErrorType)
         {
             if(!toVisit.Contains(entry))
             {
@@ -231,7 +243,7 @@ namespace Antmicro.Renode.PlatformDescription
                 }
 
                 var message = new StringBuilder();
-                message.Append("Creation dependency cycle has been found. The path is as follows:");
+                message.Append("Dependency cycle has been found. The path is as follows:");
                 ReferenceValueStack pathElement = null;
                 while(path.Count > 0)
                 {
@@ -241,12 +253,12 @@ namespace Antmicro.Renode.PlatformDescription
                                          pathElement.Previous.Entry.VariableName, GetFormattedPosition(pathElement.Previous.Entry.Type),
                                          pathElement.Value.Value, GetFormattedPosition(pathElement.Value));                    
                 }
-                HandleError(ParsingError.CreationOrderCycle, pathElement.Entry, message.ToString(), false);
+                HandleError(cycleErrorType, pathElement.Entry, message.ToString(), false);
             }
             var edgesTo = graph[entry];
             foreach(var edgeTo in edgesTo)
             {
-                WalkGraph(edgeTo.Key, graph, new ReferenceValueStack(referenceValueStack, edgeTo.Value, edgeTo.Key), stackVisited, result, toVisit);
+                WalkGraph(edgeTo.Key, graph, new ReferenceValueStack(referenceValueStack, edgeTo.Value, edgeTo.Key), stackVisited, result, toVisit, cycleErrorType);
             }
             stackVisited.Remove(entry);
             result.Add(entry);
@@ -257,14 +269,14 @@ namespace Antmicro.Renode.PlatformDescription
         // it is incidence dictionary, so that if a depends on b, then we have entry in the dictionary
         // for a and this is another dictionary in which there is an entry for b and the value of such entry
         // is a syntax element (ReferenceValue) that states such dependency
-        private DependencyGraph BuildDependencyGraph(IEnumerable<Entry> source)
+        private DependencyGraph BuildDependencyGraph(IEnumerable<Entry> source, Type entryObjectsToSkip)
         {
             var result = new DependencyGraph();
             foreach(var from in source)
             {
                 var localDictionary = new Dictionary<Entry, ReferenceValue>();
                 result.Add(from, localDictionary);
-                SyntaxTreeHelpers.VisitSyntaxTree<ConstructorOrPropertyAttribute, ConstructorOrPropertyAttribute>(from, ctorAttribute =>
+                SyntaxTreeHelpers.VisitSyntaxTree<ConstructorOrPropertyAttribute>(from, ctorAttribute =>
                 {
                     if(ctorAttribute.IsPropertyAttribute)
                     {
@@ -287,9 +299,13 @@ namespace Antmicro.Renode.PlatformDescription
                         // this way we favour shorter paths when tracking dependency
                         localDictionary.Add(to, referenceValue);
                     }
-                }, ctorOrProperty =>
+                }, (obj, isChildOfEntry) =>
                 {
-                    return !ctorOrProperty.IsPropertyAttribute;
+                    var objAsPropertyOrAttribute = (obj as ConstructorOrPropertyAttribute);
+
+                    var isNotProperty = (objAsPropertyOrAttribute == null) || !objAsPropertyOrAttribute.IsPropertyAttribute;
+                    var isNotOfSkippedType = !(isChildOfEntry && (obj.GetType() == entryObjectsToSkip));
+                    return isNotProperty && isNotOfSkippedType;
                 });
             }
             return result;

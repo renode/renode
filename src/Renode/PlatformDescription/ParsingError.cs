@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -53,6 +53,7 @@ namespace Antmicro.Renode.PlatformDescription
         NameSettingException = 41,
         CastException = 42,
         IrqSourcePinDoesNotExist = 43,
-        UninitializedSourceIrqObject = 44
+        UninitializedSourceIrqObject = 44,
+        RegistrationOrderCycle = 45,
     }
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -25,15 +25,15 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static void VisitSyntaxTree<TValue>(object root, Action<TValue> visitorAction) where TValue : class
         {
-            VisitSyntaxTreeInner<TValue, object>(root, visitorAction, null);
+            VisitSyntaxTreeInner<TValue>(root, visitorAction, null);
         }
 
-        public static void VisitSyntaxTree<TValue, TFilter>(object root, Action<TValue> visitorAction, Func<TFilter, bool> filter) where TValue : class where TFilter : class
+        public static void VisitSyntaxTree<TValue>(object root, Action<TValue> visitorAction, Func<object, bool, bool> filter) where TValue : class 
         {
             VisitSyntaxTreeInner(root, visitorAction, filter);
         }
 
-        private static void VisitSyntaxTreeInner<TValue, TFilter>(object objectToVisit, Action<TValue> visitorAction, Func<TFilter, bool> filter) where TValue : class where TFilter : class
+        private static void VisitSyntaxTreeInner<TValue>(object objectToVisit, Action<TValue> visitorAction, Func<object, bool, bool> filter) where TValue : class
         {
             var objectAsValue = objectToVisit as TValue;
             if(objectAsValue != null)
@@ -41,12 +41,14 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                 visitorAction(objectAsValue);
             }
 
+            var objectIsEntry = objectToVisit.GetType() == typeof(Antmicro.Renode.PlatformDescription.Syntax.Entry);
+
             var objectAsVisitable = objectToVisit as IVisitable;
             if(objectAsVisitable != null)
             {
                 foreach(var element in objectAsVisitable.Visit())
                 {
-                    if(element != null && ApplyFilter(element, filter))
+                    if(element != null && ApplyFilter(element, objectIsEntry, filter))
                     {
                         VisitSyntaxTreeInner(element, visitorAction, filter);
                     }
@@ -67,7 +69,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                     {
                         foreach(var element in ((System.Collections.IEnumerable)propertyValue))
                         {
-                            if(ApplyFilter(element, filter))
+                            if(ApplyFilter(element, objectIsEntry, filter))
                             {
                                 VisitSyntaxTreeInner(element, visitorAction, filter);
                             }
@@ -75,7 +77,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                     }
                     else if(typeOfValue.Namespace.StartsWith(OurNamespace, StringComparison.InvariantCulture))
                     {
-                        if(ApplyFilter(propertyValue, filter))
+                        if(ApplyFilter(propertyValue, objectIsEntry, filter))
                         {
                             VisitSyntaxTreeInner(propertyValue, visitorAction, filter);
                         }
@@ -84,14 +86,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             }
         }
 
-        private static bool ApplyFilter<T>(object obj, Func<T, bool> filter) where T : class
+        private static bool ApplyFilter(object obj, bool isEntryChild, Func<object, bool, bool> filter)
         {
-            var objAsT = obj as T;
-            if(filter == null || objAsT == null)
-            {
-                return true;
-            }
-            return filter(objAsT);
+            return filter == null ? true : filter(obj, isEntryChild);
         }
 
         private static readonly string OurNamespace = typeof(SyntaxTreeHelpers).Namespace;
