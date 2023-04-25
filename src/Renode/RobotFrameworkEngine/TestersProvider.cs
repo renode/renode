@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -89,7 +89,9 @@ namespace Antmicro.Renode.RobotFramework
                 {
                     if(testers.Count != 1)
                     {
-                        throw new KeywordException("There is more than one tester available - please specify ID of the desired tester.");
+                        throw new KeywordException(testers.Count == 0
+                            ? "There are no testers available."
+                            : "There is more than one tester available - please specify ID of the desired tester.");
                     }
                     tester = testers.Single().Value;
                 }
