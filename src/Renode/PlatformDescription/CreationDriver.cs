@@ -835,7 +835,7 @@ namespace Antmicro.Renode.PlatformDescription
                 if(registerAsPeripheral == null)
                 {
                     HandleError(ParsingError.CastException, registrationInfo.Register,
-                                string.Format("Exception was thrown during registration of '{0} in '{1}':{2}'{1}' does not implement IPeripheral.",
+                                string.Format("Exception was thrown during registration of '{0}' in '{1}':{2}'{1}' does not implement IPeripheral.",
                                               entry.VariableName, registrationInfo.Register.Value, Environment.NewLine), false);
                 }
                 if(!machine.IsRegistered((IPeripheral)register))
@@ -917,7 +917,7 @@ namespace Antmicro.Renode.PlatformDescription
                         throw;
                     }
                     HandleError(ParsingError.RegistrationException, registrationInfo.Register,
-                                string.Format("Exception was thrown during registration of '{0} in '{1}':{2}{3}",
+                                string.Format("Exception was thrown during registration of '{0}' in '{1}':{2}{3}",
                                               entry.VariableName, registrationInfo.Register.Value, Environment.NewLine, recoverableException.Message), false);
                 }
             }
