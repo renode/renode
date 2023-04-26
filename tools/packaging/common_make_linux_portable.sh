@@ -26,8 +26,15 @@ cp -r $RENODE_ROOT_DIR/tests/platforms $DESTINATION/tests/platforms
 cp -r $RENODE_ROOT_DIR/tests/peripherals $DESTINATION/tests/peripherals
 cp -r $RENODE_ROOT_DIR/tests/metrics-analyzer $DESTINATION/tests/metrics-analyzer
 cp -r $RENODE_ROOT_DIR/tests/network-server $DESTINATION/tests/network-server
-cp -r $RENODE_ROOT_DIR/tests/unit-tests $DESTINATION/tests/unit-tests
 cp -r $RENODE_ROOT_DIR/tests/tools $DESTINATION/tests/tools
+
+# Don't copy RenodeTests directory
+mkdir $DESTINATION/tests/unit-tests
+find $RENODE_ROOT_DIR/tests/unit-tests \
+    -not -path "$RENODE_ROOT_DIR/tests/unit-tests" \
+    -not -path "$RENODE_ROOT_DIR/tests/unit-tests/RenodeTests" \
+    -not -path "$RENODE_ROOT_DIR/tests/unit-tests/RenodeTests/*" \
+    -exec cp -r "{}" "$DESTINATION/tests/unit-tests/" \;
 
 # `tests.yaml` should only list robot files included in the original tests.yaml
 sed '/csproj$/d' $BASE/tests/tests.yaml > $DESTINATION/tests/tests.yaml
