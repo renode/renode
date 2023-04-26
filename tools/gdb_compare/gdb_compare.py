@@ -15,7 +15,6 @@ import telnetlib
 import difflib
 from time import time
 from os import path
-from multiprocessing import Process
 
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
@@ -27,14 +26,14 @@ parser = argparse.ArgumentParser(
 
 cmp_parser = parser.add_mutually_exclusive_group(required=True)
 cmp_parser.add_argument("-c", "--gdb-command",
-                    dest="command",
-                    default=None,
-                    help="GDB command to run on both instances after each instruction. Outputs of these commands are compared against each other.")
+                        dest="command",
+                        default=None,
+                        help="GDB command to run on both instances after each instruction. Outputs of these commands are compared against each other.")
 cmp_parser.add_argument("-R", "--register-list",
-                    dest="registers",
-                    action="store",
-                    default=None,
-                    help="Sequence of register names to compare. Formated as ';' spearated list of register names. Eg. 'pc;ra'")
+                        dest="registers",
+                        action="store",
+                        default=None,
+                        help="Sequence of register names to compare. Formated as ';' spearated list of register names. Eg. 'pc;ra'")
 
 parser.add_argument("-r",
                     "--reference-command",
@@ -154,7 +153,7 @@ class GDBInstance:
         self.run_command("quit", dont_wait_for_output=True, async_=False)
 
     def progress_by(self, delta, type="stepi"):
-        adjusted_timeout = max(120, int(delta)/5)
+        adjusted_timeout = max(120, int(delta) / 5)
         self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
     def get_symbol_at(self, addr):
@@ -263,7 +262,7 @@ class GDBComparator:
             for i in self.instances:
                 i.run_command("i r all", async_=False)
                 reported_regs = list(map(lambda x: x.split()[0], i.last_output.split("\n")[1:-1]))
-                not_found = list(filter(lambda reg: not reg in reported_regs, regs))
+                not_found = list(filter(lambda reg: reg not in reported_regs, regs))
                 if not_found:
                     print("WARNING: " + ", ".join(not_found) + " register[s] not found when executing 'info registers all' for " + i.name)
         commands = GDBComparator.COMMANDS
@@ -290,7 +289,7 @@ class GDBComparator:
             i.delete_breakpoints()
 
     async def progress_by(self, delta, type="stepi"):
-        adjusted_timeout = max(120, int(delta)/5)
+        adjusted_timeout = max(120, int(delta) / 5)
         await self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
     async def compare_instances(self, previous_pc):
@@ -300,11 +299,11 @@ class GDBComparator:
 
     @staticmethod
     def compare_outputs(outputs):
-        assert(len(outputs) == 2)
+        assert len(outputs) == 2
         output1_dict = {}
         output2_dict = {}
 
-        for (output, output_dict) in zip(outputs,[output1_dict, output2_dict]):
+        for (output, output_dict) in zip(outputs, [output1_dict, output2_dict]):
             # Drop command repl
             output = output.split("\n")[1:]
             for x in output:
@@ -360,8 +359,8 @@ def string_compare(renode_string, reference_string):
     renode_string = re.sub(r"\x1b\[[0-9]*m", "", renode_string)
     reference_string = re.sub(r"\x1b\[[0-9]*m", "", reference_string)
 
-    assert(len(RED) == len(GREEN))
-    formatting_length = len(BOLD+RED+END)
+    assert len(RED) == len(GREEN)
+    formatting_length = len(BOLD + RED + END)
 
     s1_insertions = 0
     s2_insertions = 0
@@ -451,7 +450,7 @@ async def check(stack, gdb_comparator, previous_pc, previous_output, steps_count
 
         return previous_pc, previous_output, CheckStatus.FOUND
 
-    if not previous_pc in exec_count:
+    if previous_pc not in exec_count:
         previous_pc = pc
     print("Found point after which state is different. Adding to `stack` for later iterations")
     occurence = exec_count[previous_pc]
@@ -467,9 +466,9 @@ async def main():
     if args.stop_address:
         args.stop_address = int(args.stop_address, 16)
 
-    pcs = [ args.stop_address ] if args.stop_address else []
+    pcs = [args.stop_address] if args.stop_address else []
     if args.ips:
-        pcs += [ pc for pc in args.ips.split(';') ]
+        pcs += [pc for pc in args.ips.split(';')]
 
     execution_cmd = "continue" if args.ips else "nexti"
     print(SECTION_SEPARATOR)
@@ -497,7 +496,7 @@ async def main():
         if len(stack) != 0:
             print("Recreating stack; jumping to breakpoint at:")
             for address, count in stack:
-                print("\t" + address + ", " + str(count) +" occurence" )
+                print("\t" + address + ", " + str(count) + " occurence")
                 await gdb_comparator.run_command(f"break *{address}")
 
                 for _ in range(count):
