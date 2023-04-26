@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2021 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -29,7 +29,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [XmlRpcMethod("run_keyword")]
-        public XmlRpcStruct RunKeyword(string keywordName, string[] arguments)
+        public XmlRpcStruct RunKeyword(string keywordName, object[] arguments)
         {
             var result = new XmlRpcStruct();
             KeywordManager.KeywordLookupResult lookupResult = default(KeywordManager.KeywordLookupResult);

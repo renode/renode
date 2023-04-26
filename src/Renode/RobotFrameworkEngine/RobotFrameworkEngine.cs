@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2010-2023 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
+//
 using System;
 using System.Threading.Tasks;
 using Antmicro.Renode;
@@ -35,7 +41,7 @@ namespace Antmicro.Renode.RobotFramework
             });
         }
 
-        public void ExecuteKeyword(string name, string[] arguments)
+        public void ExecuteKeyword(string name, object[] arguments)
         {
             if(keywordManager.TryExecuteKeyword(name, arguments, out var _) != KeywordManager.KeywordLookupResult.Success)
             {

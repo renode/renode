@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -21,13 +21,14 @@ namespace Antmicro.Renode.RobotFramework
             methodInfo = info;
         }
 
-        public bool TryMatchArguments(string[] arguments, out object[] parsedArguments)
+        public bool TryMatchArguments(object[] arguments, out object[] parsedArguments)
         {
             var parameters = methodInfo.GetParameters();
 
-            if(parameters.Length == 1 && parameters[0].ParameterType == typeof(string[]))
+            if(parameters.Length == 1 && parameters[0].ParameterType == typeof(string[])
+                && arguments.All(a => a is string))
             {
-                parsedArguments = new object[] { arguments };
+                parsedArguments = new object[] { arguments.Select(a => (string)a).ToArray() };
                 return true;
             }
 
@@ -57,7 +58,7 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        private bool TryParseArguments(ParameterInfo[] parameters, string[] arguments, out object[] parsedArguments)
+        private bool TryParseArguments(ParameterInfo[] parameters, object[] arguments, out object[] parsedArguments)
         {
             parsedArguments = null;
             if(arguments.Length > parameters.Length)
@@ -70,10 +71,21 @@ namespace Antmicro.Renode.RobotFramework
             var positionalArgumentIndex = 0;
             var namedArgumentDetected = false;
             var pattern = new Regex(@"^([a-zA-Z0-9_]+)=(.+)");
-            foreach(var argument in arguments)
+            foreach(var argumentObj in arguments)
             {
-                object result;
                 int position;
+
+                if(!(argumentObj is string))
+                {
+                    // Non-string arguments can only be positional
+                    position = positionalArgumentIndex++;
+                    args[position].IsParsed = true;
+                    args[position].Value = argumentObj;
+                    continue;
+                }
+
+                var argument = (string)argumentObj;
+                object result;
                 string valueToParse;
                 // check if it's a named argument
                 var m = pattern.Match(argument);

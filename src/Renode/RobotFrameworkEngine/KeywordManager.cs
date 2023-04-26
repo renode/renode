@@ -53,7 +53,7 @@ namespace Antmicro.Renode.RobotFramework
             return result;
         }
 
-        public KeywordLookupResult TryExecuteKeyword(string keywordName, string[] arguments, out object keywordResult)
+        public KeywordLookupResult TryExecuteKeyword(string keywordName, object[] arguments, out object keywordResult)
         {
             keywordResult = null;
             if(!keywords.TryGetValue(keywordName, out var candidates))

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -17,7 +17,7 @@ namespace Antmicro.Renode.RobotFramework
 
         public static Recorder Instance { get; private set; }
 
-        public void RecordEvent(string name, string[] args, Replay replayMode = Replay.InReexecutionMode)
+        public void RecordEvent(string name, object[] args, Replay replayMode = Replay.InReexecutionMode)
         {
             events.Add(new Event { Name = name, Arguments = args, ReplayMode = replayMode});
         }
@@ -50,7 +50,7 @@ namespace Antmicro.Renode.RobotFramework
         public struct Event
         {
             public string Name { get; set; }
-            public string[] Arguments { get; set; }
+            public object[] Arguments { get; set; }
             public Replay ReplayMode { get; set; }
         }
     }
