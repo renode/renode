@@ -80,7 +80,9 @@ namespace Antmicro.Renode.RobotFramework
                     // Non-string arguments can only be positional
                     position = positionalArgumentIndex++;
                     args[position].IsParsed = true;
-                    args[position].Value = argumentObj;
+                    // Allow type conversions of non-string arguments to allow calling methods that
+                    // take a float with a Python float which becomes a double on the C# side
+                    args[position].Value = Convert.ChangeType(argumentObj, parameters[position].ParameterType);
                     continue;
                 }
 
