@@ -1,0 +1,26 @@
+cpu: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xAF100000; size: 0x200000; region: "redistributor" }
+    }
+    [0,1] -> cpu@[0,1]
+    numberOfCPUs: 1
+    supportsTwoSecurityStates: false
+
+timer: Timers.ARM_GenericTimer @ cpu
+    frequency: 1000000000
+    PhysicalTimerIRQ -> gic#0@30
+    VirtualTimerIRQ -> gic#0@27
+    NonSecurePhysicalTimerIRQ -> gic#0@26
+    HypervisorPhysicalTimerIRQ -> gic#0@29
+
+dram0: Memory.MappedMemory @ sysbus 0x0
+    size: 0x08000000
+
+flash0: Memory.MappedMemory @ sysbus 0x88000000
+    size: 0x04000000
+
+uart0: UART.PL011 @ sysbus 0x9c090000
