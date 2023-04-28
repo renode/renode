@@ -122,7 +122,7 @@ class Renode:
         self.proc.expect("Monitor available in telnet mode on port")
         self.connection = telnetlib.Telnet("localhost", port)
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
-        self.command("echo 'Connected to GDB comparer'")
+        self.command("echo 'Connected to GDB comparator'")
 
     def close(self) -> None:
         """Closes the underlying Renode instance."""
