@@ -324,13 +324,13 @@ then
     echo "Renode built to $EXPORT_DIRECTORY"
 fi
 
+if $PACKAGES && $NIGHTLY
+then
+    params="$params -n"
+fi
+
 if $PACKAGES && ! $NET
 then
-    if $NIGHTLY
-    then
-      params="$params -n"
-    fi
-
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
     $ROOT_PATH/tools/packaging/make_source_package.sh $params
 fi

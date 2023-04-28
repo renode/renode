@@ -20,9 +20,9 @@ cp $RENODE_OUTPUT_DIR/../libllvm-disas.so $DESTINATION
 
 # Create tar
 mkdir -p ../../output/packages
-tar -czf ../../output/packages/renode-$VERSION-dotnet.linux-portable.tar.gz $DESTINATION
+tar -czf ../../output/packages/renode-$VERSION.linux-portable-dotnet.tar.gz $DESTINATION
 
-echo "Created a dotnet portable package in output/packages/renode-$VERSION-dotnet.linux-portable.tar.gz"
+echo "Created a dotnet portable package in output/packages/renode-$VERSION.linux-portable-dotnet.tar.gz"
 
 # Cleanup
 
