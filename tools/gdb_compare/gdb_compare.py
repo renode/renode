@@ -15,6 +15,7 @@ import telnetlib
 import difflib
 from time import time
 from os import path
+from typing import Any, Optional, Callable
 
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
@@ -99,7 +100,9 @@ SECTION_SEPARATOR = "=================================================="
 
 
 class Renode:
-    def __init__(self, binary, port):
+    """A class for communicating with a remote instance of Renode."""
+    def __init__(self, binary: str, port: int):
+        """Spawns a new instance of Renode and connects to it through Telnet."""
         print(f"* Starting Renode instance on telnet port {port}")
         # making sure there is only one instance of Renode on this port
         for p in psutil.process_iter():
@@ -114,10 +117,12 @@ class Renode:
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
         self.command("echo 'Connected to GDB comparer'")
 
-    def close(self):
+    def close(self) -> None:
+        """Closes the underlying Renode instance."""
         self.command("quit", expected_log="Disposed")
 
-    def command(self, input, expected_log=""):
+    def command(self, input: str, expected_log: str = "") -> None:
+        """Sends an arbitrary command to the underlying Renode instance."""
         input = input + "\n"
         self.connection.write(input.encode())
         if expected_log != "":
@@ -133,12 +138,15 @@ class Renode:
                 print(f"{err=} ; {type(err)=}")
                 exit(1)
 
-    def get_output(self):
+    def get_output(self) -> bytes:
+        """Reads all output from the Telnet connection."""
         return self.connection.read_all()
 
 
 class GDBInstance:
-    def __init__(self, gdb_binary, port, debug_binary, name):
+    """A class for controlling a remote GDB instance."""
+    def __init__(self, gdb_binary: str, port: int, debug_binary: str, name: str):
+        """Spawns a new GDB instance and connects to it."""
         self.name = name
         self.last_output = ""
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
@@ -149,21 +157,26 @@ class GDBInstance:
         self.run_command(f"file {debug_binary}", async_=False)
         self.run_command(f"target remote :{port}", async_=False)
 
-    def close(self):
+    def close(self) -> None:
+        """Closes the underlying GDB instance."""
         self.run_command("quit", dont_wait_for_output=True, async_=False)
 
-    def progress_by(self, delta, type="stepi"):
+    def progress_by(self, delta: int, type: str = "stepi") -> None:
+        """Steps `delta` times."""
         adjusted_timeout = max(120, int(delta) / 5)
         self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
-    def get_symbol_at(self, addr):
+    def get_symbol_at(self, addr: str) -> str:
+        """Returns the name of the symbol which is stored at `addr` (`info symbol`)."""
         self.run_command(f"info symbol {addr}", async_=False)
         return self.last_output.splitlines()[-1]
 
-    def delete_breakpoints(self):
+    def delete_breakpoints(self) -> None:
+        """Deletes all breakpoints."""
         self.run_command("clear", async_=False)
 
-    async def get_pc(self):
+    async def get_pc(self) -> str:
+        """Returns the value of the PC register, as a hex string."""
         self.run_command("i r pc")
         await self.expect()
         pc_match = RE_HEX.search(self.last_output)
@@ -172,7 +185,8 @@ class GDBInstance:
         else:
             raise TypeError
 
-    async def expect(self, timeout=10):
+    async def expect(self, timeout: float = 10) -> None:
+        """Await execution of the last command to finish and update `self.last_output`."""
         await self.task
         line = self.process.match[0].decode().strip("\r")
         self.last_output = ""
@@ -182,7 +196,8 @@ class GDBInstance:
             await self.task
             line = self.process.match[0].decode().strip("\r")
 
-    def run_command(self, command, timeout=10, confirm=False, dont_wait_for_output=False, async_=True):
+    def run_command(self, command: str, timeout: float = 10, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
+        """Send an arbitrary command to the underlying GDB instance."""
         self.process.write(command + "\n")
         if dont_wait_for_output:
             return
@@ -216,38 +231,46 @@ class GDBInstance:
             self.run_command(cmd, async_=False)
             print(">> " + self.last_output)
 
-    def print_stack(self, stack):
+    def print_stack(self, stack: list[tuple[str, int]]) -> None:
+        """Prints a stack."""
         print("Address\t\tOccurence\t\tSymbol")
         for address, occurence in stack:
             print(f"{address}\t{occurence}\t{self.get_symbol_at(address)}")
 
 
 class GDBComparator:
+    """A helper class to aggregate control over 2 `GDBInstance` objects."""
+
     COMMAND_NAME = "gdb_compare__print_registers"
     COMMANDS = None
 
     # [(tester of register name, commands builder for register group)]
     # List<Tuple<str -> bool, List<str> -> List<str>>>
-    REGISTER_CASES = [
-        (lambda reg: RE_VEC.fullmatch(reg), lambda regs:[f"p/x (char[])${reg}.b" for reg in regs]),
+    RegNameTester = Callable[[str], bool]               # condition_func type
+    CommandsBuilder = Callable[[list[str]], list[str]]  # cmd_builder_func type
+    REGISTER_CASES: list[tuple[RegNameTester, CommandsBuilder]] = [
+        (lambda reg: RE_VEC.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}.b" for reg in regs]),
         (lambda _: True, lambda regs: ["printf \"" + ":  0x%x\\n".join(regs) + ":  0x%x\\n\",$" + ",$".join(regs)]),
     ]
 
-    def __init__(self, args):
+    def __init__(self, args: argparse.Namespace):
+        """Creates 2 `GDBInstance` objects, one expecting to connect on port `args.renode_gdb_port` and the other on `args.reference_gdb_port`."""
         self.instances = [
             GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode"),
             GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference"),
         ]
         self.cmd = args.command if args.command else self.build_command_from_register_list(args.registers)
 
-    def close(self):
+    def close(self) -> None:
+        """Closes all owned instances."""
         for i in self.instances:
             i.close()
 
-    def build_command_from_register_list(self, regs):
+    def build_command_from_register_list(self, regs: str) -> str:
+        """Defines a custom gdb command for pretty-printing all registers and returns its name."""
         regs = regs.split(';')
         if GDBComparator.COMMANDS is None:
-            reg_groups = {}
+            reg_groups: dict[GDBComparator.CommandsBuilder, list[str]] = {}
             for reg in regs:
                 for (test, cmds_builder) in GDBComparator.REGISTER_CASES:
                     if test(reg):
@@ -274,34 +297,40 @@ class GDBComparator:
 
         return GDBComparator.COMMAND_NAME
 
-    async def run_command(self, cmd=None, **kwargs):
+    async def run_command(self, cmd: Optional[str] = None, **kwargs: Any) -> list[str]:
+        """Sends an arbitrary command to all owned instances and returns a list of outputs."""
         cmd = cmd if cmd else self.cmd
         for i in self.instances:
             i.run_command(cmd, **kwargs)
         await asyncio.gather(*[i.expect(**kwargs) for i in self.instances])
         return [i.last_output for i in self.instances]
 
-    async def get_pcs(self):
+    async def get_pcs(self) -> list[str]:
+        """Returns a list containing the values of PC registers of all owned instances, as hex strings."""
         return await asyncio.gather(*[i.get_pc() for i in self.instances])
 
-    def delete_breakpoints(self):
+    def delete_breakpoints(self) -> None:
+        """Deletes all breakpoints in all owned instances."""
         for i in self.instances:
             i.delete_breakpoints()
 
-    async def progress_by(self, delta, type="stepi"):
+    async def progress_by(self, delta: int, type: str = "stepi") -> None:
+        """Steps `delta` times in all owned instances."""
         adjusted_timeout = max(120, int(delta) / 5)
         await self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
-    async def compare_instances(self, previous_pc):
+    async def compare_instances(self, previous_pc: str) -> None:
+        """Compares the execution states of all owned instances. `previous_pc` must refer to the previous value of PC; it does not offer a choice."""
         for name, command in [("Opcode at previous pc", f"x/i {previous_pc}"), ("Frame", "frame"), ("Registers", "info registers all")]:
             print("*** " + name + ":")
             GDBComparator.compare_outputs(await self.run_command(command))
 
     @staticmethod
-    def compare_outputs(outputs):
+    def compare_outputs(outputs: list[str]) -> None:
+        """Prints a comparison of two output strings (same & different values)."""
         assert len(outputs) == 2
-        output1_dict = {}
-        output2_dict = {}
+        output1_dict: dict[str, str] = {}
+        output2_dict: dict[str, str] = {}
 
         for (output, output_dict) in zip(outputs, [output1_dict, output2_dict]):
             # Drop command repl
@@ -334,14 +363,17 @@ class GDBComparator:
             print("Different values:")
             print(output_different)
 
-    def get_symbol_at(self, addr):
+    def get_symbol_at(self, addr: str) -> str:
+        """Returns the name of the symbol which is stored at `addr` (`info symbol`)."""
         return self.instances[0].get_symbol_at(addr)
 
-    def print_stack(self, stack):
+    def print_stack(self, stack: list[tuple[str, int]]) -> None:
+        """Prints a stack."""
         return self.instances[0].print_stack(stack)
 
 
-def setup_processes(args):
+def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GDBComparator]:
+    """Spawns Renode, the reference process, `GDBComparator` and returns their handles (in that order)."""
     reference = pexpect.spawn(args.reference_command, timeout=10)
     renode = Renode(args.renode_path, args.renode_telnet_port)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
@@ -350,7 +382,8 @@ def setup_processes(args):
     renode.command("start")
     return renode, reference, gdb_comparator
 
-def string_compare(renode_string, reference_string):
+def string_compare(renode_string: str, reference_string: str) -> str:
+    """Returns a pretty diff of two single-line strings."""
     BOLD = '\033[1m'
     END = '\033[0m'
     RED = '\033[91m'
@@ -394,13 +427,15 @@ def string_compare(renode_string, reference_string):
 
 
 class CheckStatus:
+    """This class serves as an enum for possible outcomes of the `check` function."""
     STOP = 1
     CONTINUE = 2
     FOUND = 3
     MISMATCH = 4
 
 
-async def check(stack, gdb_comparator, previous_pc, previous_output, steps_count, exec_count, time_of_start, args):
+async def check(stack: list[tuple[str, int]], gdb_comparator: GDBComparator, previous_pc: str, previous_output: str, steps_count: int, exec_count: dict[str, int], time_of_start: float, args: argparse.Namespace) -> tuple[str, str, int]:
+    """Executes the next `gdb_comparator` instruction, compares the outputs and returns the new PC value, output and `CheckStatus`."""
     ren_pc, pc = await gdb_comparator.get_pcs()
     pc_mismatch = False
     if pc != ren_pc:
@@ -461,7 +496,8 @@ async def check(stack, gdb_comparator, previous_pc, previous_output, steps_count
 
     return previous_pc, previous_output, CheckStatus.MISMATCH
 
-async def main():
+async def main() -> None:
+    """Script entry point."""
     args = parser.parse_args()
     if args.stop_address:
         args.stop_address = int(args.stop_address, 16)
@@ -509,7 +545,7 @@ async def main():
         for pc in pcs:
             await gdb_comparator.run_command(f"br *{pc}")
 
-        exec_count = {}
+        exec_count: dict[str, int] = {}
         print("Starting execution")
         while True:
             await gdb_comparator.run_command(execution_cmd)
