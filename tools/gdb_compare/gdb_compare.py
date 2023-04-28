@@ -183,27 +183,6 @@ class GDBInstance:
         """Deletes all breakpoints."""
         self.run_command("clear", async_=False)
 
-    async def get_pc(self) -> str:
-        """Returns the value of the PC register, as a hex string."""
-        self.run_command("i r pc")
-        await self.expect()
-        pc_match = RE_HEX.search(self.last_output)
-        if pc_match is not None:
-            return pc_match[0]
-        else:
-            raise TypeError
-
-    async def expect(self, timeout: float = 10) -> None:
-        """Await execution of the last command to finish and update `self.last_output`."""
-        await self.task
-        line = self.process.match[0].decode().strip("\r")
-        self.last_output = ""
-        while "(gdb)" not in line:
-            self.last_output += line
-            self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
-            await self.task
-            line = self.process.match[0].decode().strip("\r")
-
     def run_command(self, command: str, timeout: float = 10, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
         """Send an arbitrary command to the underlying GDB instance."""
         self.process.write(command + "\n")
@@ -241,6 +220,27 @@ class GDBInstance:
         print("Address\t\tOccurence\t\tSymbol")
         for address, occurence in stack:
             print(f"{address}\t{occurence}\t{self.get_symbol_at(address)}")
+
+    async def get_pc(self) -> str:
+        """Returns the value of the PC register, as a hex string."""
+        self.run_command("i r pc")
+        await self.expect()
+        pc_match = RE_HEX.search(self.last_output)
+        if pc_match is not None:
+            return pc_match[0]
+        else:
+            raise TypeError
+
+    async def expect(self, timeout: float = 10) -> None:
+        """Await execution of the last command to finish and update `self.last_output`."""
+        await self.task
+        line = self.process.match[0].decode().strip("\r")
+        self.last_output = ""
+        while "(gdb)" not in line:
+            self.last_output += line
+            self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
+            await self.task
+            line = self.process.match[0].decode().strip("\r")
 
 
 class GDBComparator:
@@ -312,6 +312,19 @@ class GDBComparator:
 
         return GDBComparator.COMMAND_NAME
 
+    def delete_breakpoints(self) -> None:
+        """Deletes all breakpoints in all owned instances."""
+        for i in self.instances:
+            i.delete_breakpoints()
+
+    def get_symbol_at(self, addr: str) -> str:
+        """Returns the name of the symbol which is stored at `addr` (`info symbol`)."""
+        return self.instances[0].get_symbol_at(addr)
+
+    def print_stack(self, stack: Stack) -> None:
+        """Prints a stack."""
+        return self.instances[0].print_stack(stack)
+
     async def run_command(self, cmd: Optional[str] = None, **kwargs: Any) -> list[str]:
         """Sends an arbitrary command to all owned instances and returns a list of outputs."""
         cmd = cmd if cmd else self.cmd
@@ -323,11 +336,6 @@ class GDBComparator:
     async def get_pcs(self) -> list[str]:
         """Returns a list containing the values of PC registers of all owned instances, as hex strings."""
         return await asyncio.gather(*[i.get_pc() for i in self.instances])
-
-    def delete_breakpoints(self) -> None:
-        """Deletes all breakpoints in all owned instances."""
-        for i in self.instances:
-            i.delete_breakpoints()
 
     async def progress_by(self, delta: int, type: str = "stepi") -> None:
         """Steps `delta` times in all owned instances."""
@@ -376,14 +384,6 @@ class GDBComparator:
             print(output_same)
             print("Different values:")
             print(output_different)
-
-    def get_symbol_at(self, addr: str) -> str:
-        """Returns the name of the symbol which is stored at `addr` (`info symbol`)."""
-        return self.instances[0].get_symbol_at(addr)
-
-    def print_stack(self, stack: Stack) -> None:
-        """Prints a stack."""
-        return self.instances[0].print_stack(stack)
 
 
 def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GDBComparator]:
