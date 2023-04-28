@@ -19,8 +19,8 @@ from typing import Any, Optional, Callable, Awaitable
 
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
-RE_HEX = re.compile(r'0x[0-9A-Fa-f]+')
-RE_VEC = re.compile(r'v\d+')
+RE_HEX = re.compile(r"0x[0-9A-Fa-f]+")
+RE_VEC = re.compile(r"v\d+")
 
 parser = argparse.ArgumentParser(
     description="Compare Renode execution with hardware/other simulator state using GDB")
@@ -271,7 +271,7 @@ class GDBComparator:
 
     def build_command_from_register_list(self, regs: str) -> str:
         """Defines a custom gdb command for pretty-printing all registers and returns its name."""
-        regs = regs.split(';')
+        regs = regs.split(";")
         if GDBComparator.COMMANDS is None:
             # Assign registers to groups based on the RegNameTester functions
             reg_groups: dict[GDBComparator.CommandsBuilder, list[str]] = {}
@@ -393,10 +393,10 @@ def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GD
 
 def string_compare(renode_string: str, reference_string: str) -> str:
     """Returns a pretty diff of two single-line strings."""
-    BOLD = '\033[1m'
-    END = '\033[0m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
+    BOLD = "\033[1m"
+    END = "\033[0m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
 
     renode_string = re.sub(r"\x1b\[[0-9]*m", "", renode_string)
     reference_string = re.sub(r"\x1b\[[0-9]*m", "", reference_string)
@@ -409,7 +409,7 @@ def string_compare(renode_string: str, reference_string: str) -> str:
     diff = difflib.SequenceMatcher(None, renode_string, reference_string)
 
     for type, s1_start, s1_end, s2_start, s2_end in diff.get_opcodes():
-        if type == 'equal':
+        if type == "equal":
             continue
         elif type == "replace":
             s1_start += s1_insertions * formatting_length
@@ -513,7 +513,7 @@ async def main() -> None:
 
     pcs = [args.stop_address] if args.stop_address else []
     if args.ips:
-        pcs += [pc for pc in args.ips.split(';')]
+        pcs += [pc for pc in args.ips.split(";")]
 
     execution_cmd = "continue" if args.ips else "nexti"
     print(SECTION_SEPARATOR)
@@ -527,7 +527,7 @@ async def main() -> None:
     if args.start_frame is not None:
         jumps = args.start_frame.split(";")
         for jump in jumps:
-            addr, occur = jump.split(',')
+            addr, occur = jump.split(",")
             address = addr.strip()
             occurence = int(occur.strip())
             stack.append((address, occurence))
