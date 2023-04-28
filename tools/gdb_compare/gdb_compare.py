@@ -262,16 +262,15 @@ class GDBComparator:
             GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode"),
             GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference"),
         ]
-        self.cmd = args.command if args.command else self.build_command_from_register_list(args.registers)
+        self.cmd = args.command if args.command else self.build_command_from_register_list(args.registers.split(";"))
 
     def close(self) -> None:
         """Closes all owned instances."""
         for i in self.instances:
             i.close()
 
-    def build_command_from_register_list(self, regs: str) -> str:
+    def build_command_from_register_list(self, regs: list[str]) -> str:
         """Defines a custom gdb command for pretty-printing all registers and returns its name."""
-        regs = regs.split(";")
         if GDBComparator.COMMANDS is None:
             # Assign registers to groups based on the RegNameTester functions
             reg_groups: dict[GDBComparator.CommandsBuilder, list[str]] = {}
@@ -341,9 +340,8 @@ class GDBComparator:
         output1_dict: dict[str, str] = {}
         output2_dict: dict[str, str] = {}
 
-        for (output, output_dict) in zip(outputs, [output1_dict, output2_dict]):
-            # Drop command repl
-            output = output.split("\n")[1:]
+        # Truncate 1st elements in outputs, because it's the repl
+        for output, output_dict in zip([x.split("\n")[1:] for x in outputs], [output1_dict, output2_dict]):
             for x in output:
                 end_of_name = x.strip().find(" ")
                 name = x[:end_of_name].strip()
@@ -452,10 +450,9 @@ async def check(stack: list[tuple[str, int]], gdb_comparator: GDBComparator, pre
         print(string_compare(ren_pc, pc))
         print(f"\tPrevious PC: {previous_pc}")
         pc_mismatch = True
-    if pc in exec_count:
-        exec_count[pc] += 1
-    else:
-        exec_count[pc] = 1
+    if pc not in exec_count:
+        exec_count[pc] = 0
+    exec_count[pc] += 1
 
     if args.stop_address and int(ren_pc, 16) == args.stop_address:
         print("stop address reached")
