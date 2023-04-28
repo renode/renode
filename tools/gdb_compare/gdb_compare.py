@@ -15,7 +15,7 @@ import telnetlib
 import difflib
 from time import time
 from os import path
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, Awaitable
 
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
@@ -149,6 +149,7 @@ class GDBInstance:
         """Spawns a new GDB instance and connects to it."""
         self.name = name
         self.last_output = ""
+        self.task: Awaitable[Any]
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
         self.process = pexpect.spawn(f"{gdb_binary} --silent --nx --nh", timeout=10)
         self.process.timeout = 120
@@ -205,7 +206,8 @@ class GDBInstance:
             # Escape regex special characters
             command = command.replace("$", "\\$").replace("+", "\\+").replace("*", "\\*")
             if not confirm:
-                self.task = self.process.expect(command + r".+\n", timeout, async_=async_)
+                result = self.process.expect(command + r".+\n", timeout, async_=async_)
+                self.task = result if async_ else None
                 if not async_:
                     self.last_output = ""
                     line = self.process.match[0].decode().strip("\r")
@@ -216,7 +218,8 @@ class GDBInstance:
             else:
                 self.process.expect("[(]y or n[)]")
                 self.process.writelines("y")
-                self.task = self.process.expect("[(]gdb[)]", async_=async_)
+                result = self.process.expect("[(]gdb[)]", async_=async_)
+                self.task = result if async_ else None
                 self.last_output = self.process.match[0].decode().strip("\r")
 
         except pexpect.TIMEOUT:
