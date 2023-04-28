@@ -98,6 +98,13 @@ parser.add_argument("-S", "--stop-address",
 
 SECTION_SEPARATOR = "=================================================="
 
+# A stack is a list of (address, nth_occurrence) tuples.
+# `address` is a PC value, as a hex string, e.g. "0x00f24710".
+# `nth_occurrence` is the number of times `address` was reached since the start of execution.
+# Therefore, assuming deterministic runtime, an arbitrary program state can be reached
+# by setting a breakpoint at `address` and continuing `nth_occurrence` times.
+Stack = list[tuple[str, int]]
+
 
 class Renode:
     """A class for communicating with a remote instance of Renode."""
@@ -229,7 +236,7 @@ class GDBInstance:
             self.last_output = None
             raise pexpect.TIMEOUT("")
 
-    def print_stack(self, stack: list[tuple[str, int]]) -> None:
+    def print_stack(self, stack: Stack) -> None:
         """Prints a stack."""
         print("Address\t\tOccurence\t\tSymbol")
         for address, occurence in stack:
@@ -374,7 +381,7 @@ class GDBComparator:
         """Returns the name of the symbol which is stored at `addr` (`info symbol`)."""
         return self.instances[0].get_symbol_at(addr)
 
-    def print_stack(self, stack: list[tuple[str, int]]) -> None:
+    def print_stack(self, stack: Stack) -> None:
         """Prints a stack."""
         return self.instances[0].print_stack(stack)
 
@@ -441,7 +448,7 @@ class CheckStatus:
     MISMATCH = 4
 
 
-async def check(stack: list[tuple[str, int]], gdb_comparator: GDBComparator, previous_pc: str, previous_output: str, steps_count: int, exec_count: dict[str, int], time_of_start: float, args: argparse.Namespace) -> tuple[str, str, int]:
+async def check(stack: Stack, gdb_comparator: GDBComparator, previous_pc: str, previous_output: str, steps_count: int, exec_count: dict[str, int], time_of_start: float, args: argparse.Namespace) -> tuple[str, str, int]:
     """Executes the next `gdb_comparator` instruction, compares the outputs and returns the new PC value, output and `CheckStatus`."""
     ren_pc, pc = await gdb_comparator.get_pcs()
     pc_mismatch = False
