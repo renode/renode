@@ -103,3 +103,21 @@ Should Print Hello World When Built With STM32CubeMX
     Wait For Line On Uart   Hello World!
     Wait For Line On Uart   Hello World!
     Wait For Line On Uart   Hello World!
+
+Should Block Timer Interrupt When Faultmask Is Set
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-faultmask.elf-s_434744-080256edf201b1e2f7c67bf15000ba1ffa031990
+
+    Create Terminal Tester  sysbus.usart2
+
+    Start Emulation
+
+    Wait For Line On Uart   Setting FAULTMASK to 1
+    Wait For Line On Uart   Timer IRQ enabled
+    Wait For Line On Uart   Sleeping
+    Test If Uart Is Idle    1
+    Wait For Line On Uart   Setting FAULTMASK to 0
+    Wait For Line On Uart   Timer interrupt
+    Wait For Line On Uart   Timer interrupt
+    Wait For Line On Uart   Timer interrupt
