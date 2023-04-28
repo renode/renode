@@ -239,8 +239,13 @@ class GDBComparator:
     COMMAND_NAME = "gdb_compare__print_registers"
     COMMANDS = None
 
-    # [(tester of register name, commands builder for register group)]
-    # List<Tuple<str -> bool, List<str> -> List<str>>>
+    # REGISTER_CASES is an ordered list of (condition_func, cmd_builder_func) tuples.
+    # It is used to assign registers to groups based on their type, and for each such group
+    # have a dedicated function that constructs a gdb command to pretty-print those registers.
+    # Each tuple in REGISTER_CASES represents a group of registers. condition_func is used to
+    # determine whether a register belongs to the group. cmd_builder_func intakes a list of
+    # registers belonging to the group and returns a GDB command to print all their values.
+    # The order of tuples matters - only the first match is used.
     RegNameTester = Callable[[str], bool]               # condition_func type
     CommandsBuilder = Callable[[list[str]], list[str]]  # cmd_builder_func type
     REGISTER_CASES: list[tuple[RegNameTester, CommandsBuilder]] = [
@@ -265,26 +270,32 @@ class GDBComparator:
         """Defines a custom gdb command for pretty-printing all registers and returns its name."""
         regs = regs.split(';')
         if GDBComparator.COMMANDS is None:
+            # Assign registers to groups based on the RegNameTester functions
             reg_groups: dict[GDBComparator.CommandsBuilder, list[str]] = {}
             for reg in regs:
-                for (test, cmds_builder) in GDBComparator.REGISTER_CASES:
+                for test, cmds_builder in GDBComparator.REGISTER_CASES:
                     if test(reg):
                         reg_groups.setdefault(cmds_builder, []).append(reg)
                         break
+
+            # Compose a gdb script that defines a custom command for printing all groups of registers
             GDBComparator.COMMANDS = [
                 f"define {GDBComparator.COMMAND_NAME}",
                 *[cmd for cmds_builder, reg_group in reg_groups.items() for cmd in cmds_builder(reg_group)],
                 "end"
             ]
 
+            # Warn if for any GDBInstance there is a register that was requested by the user
+            # but does not appear in the output of "info registers all"
             for i in self.instances:
                 i.run_command("i r all", async_=False)
                 reported_regs = list(map(lambda x: x.split()[0], i.last_output.split("\n")[1:-1]))
                 not_found = list(filter(lambda reg: reg not in reported_regs, regs))
                 if not_found:
                     print("WARNING: " + ", ".join(not_found) + " register[s] not found when executing 'info registers all' for " + i.name)
-        commands = GDBComparator.COMMANDS
 
+        # Define the custom command
+        commands = GDBComparator.COMMANDS
         for i in self.instances:
             for cmd in commands[:-1]:
                 i.run_command(cmd, dont_wait_for_output=True, async_=False)
