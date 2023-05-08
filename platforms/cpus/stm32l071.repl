@@ -4,7 +4,7 @@ cpu0: CPU.CortexM @ sysbus
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
-    systickFrequency: 72000000
+    systickFrequency: 32000000
     IRQ -> cpu0@0
 
 sram0: Memory.MappedMemory @ sysbus 0x20000000

@@ -71,9 +71,8 @@ Should Handle DMA Memory To Memory Transfer
     Execute Command          include @scripts/single-node/stm32l072.resc
     Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-chan_blen_transfer.elf-s_669628-623c4f2b14cad8e52db12d8b1b46effd1a89b644
 
-    Create Terminal Tester   sysbus.usart2
-
-    Start Emulation
+    # The test takes 8 seconds virtual time
+    Create Terminal Tester   sysbus.usart2  timeout=10
 
     Wait For Line On Uart    PASS - [dma_m2m.test_dma_m2m_chan0_burst16]
     Wait For Line On Uart    PASS - [dma_m2m.test_dma_m2m_chan0_burst8]
@@ -200,7 +199,7 @@ RTC Should Support Alarms
 
 RTC Should Support Wakeup
     Execute Command          include @scripts/single-node/stm32l072.resc
-    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_rtc_wakeup.elf-s_430288-2ea254c15a8a91fd67154fc0800823f8b6e187c2
+    Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_rtc_wakeup.elf-s_430288-709ea60e0de053b3d693718d80fd3afb9e090221
 
     Create Terminal Tester   sysbus.usart2
 
