@@ -21,6 +21,14 @@ RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
 RE_HEX = re.compile(r"0x[0-9A-Fa-f]+")
 RE_VEC = re.compile(r"v\d+")
+RE_GDB_ERRORS = (
+    re.compile(r"\bUndefined .*?\.", re.MULTILINE),
+    re.compile(r"\bThe \"remote\" target does not support \".*?\"\.", re.MULTILINE),
+    re.compile(r"\bNo symbol \".*?\".*?\.", re.MULTILINE),
+    re.compile(r"\bCannot .*$", re.MULTILINE),
+    re.compile(r"\bRemote communication error\..*$", re.MULTILINE),
+    re.compile(r"\bRemote connection closed", re.MULTILINE),
+)
 
 parser = argparse.ArgumentParser(
     description="Compare Renode execution with hardware/other simulator state using GDB")
@@ -155,6 +163,7 @@ class GDBInstance:
     def __init__(self, gdb_binary: str, port: int, debug_binary: str, name: str):
         """Spawns a new GDB instance and connects to it."""
         self.name = name
+        self.last_cmd = ""
         self.last_output = ""
         self.task: Awaitable[Any]
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
@@ -185,6 +194,7 @@ class GDBInstance:
 
     def run_command(self, command: str, timeout: float = 10, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
         """Send an arbitrary command to the underlying GDB instance."""
+        self.last_cmd = command
         self.process.write(command + "\n")
         if dont_wait_for_output:
             return
@@ -201,6 +211,7 @@ class GDBInstance:
                         self.last_output += line
                         self.process.expect([r".+\n", r"\(gdb\)"], timeout)
                         line = self.process.match[0].decode().strip("\r")
+                    self.validate_response(self.last_output)
             else:
                 self.process.expect("[(]y or n[)]")
                 self.process.writelines("y")
@@ -220,6 +231,17 @@ class GDBInstance:
         print("Address\t\tOccurence\t\tSymbol")
         for address, occurence in stack:
             print(f"{address}\t{occurence}\t{self.get_symbol_at(address)}")
+
+    def validate_response(self, response: str) -> None:
+        """Scans a GDB response for common error messages."""
+        for regex in RE_GDB_ERRORS:
+            err_match = regex.search(response)
+            if err_match is not None:
+                print(f"!!! {self.name} GDB: {err_match[0]} (last command: \"{self.last_cmd}\")")
+                # Assuming we correctly identified a GDB error, this would be
+                # the right place to terminate execution. However, there is
+                # a risk of a false positive, so it's safer not to (if it is
+                # a critical error, it will most likely cause a timeout anyway).
 
     async def get_pc(self) -> str:
         """Returns the value of the PC register, as a hex string."""
@@ -241,6 +263,7 @@ class GDBInstance:
             self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
             await self.task
             line = self.process.match[0].decode().strip("\r")
+        self.validate_response(self.last_output)
 
 
 class GDBComparator:
