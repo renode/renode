@@ -28,6 +28,7 @@ RE_GDB_ERRORS = (
     re.compile(r"\bCannot .*$", re.MULTILINE),
     re.compile(r"\bRemote communication error\..*$", re.MULTILINE),
     re.compile(r"\bRemote connection closed", re.MULTILINE),
+    re.compile(r"\bThe program has no registers.*?\.", re.MULTILINE),
 )
 
 parser = argparse.ArgumentParser(
