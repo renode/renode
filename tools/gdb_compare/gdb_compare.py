@@ -224,7 +224,7 @@ class GDBInstance:
             print(f"!!! {self.name} GDB: Command '{command}' timed out!")
             print("Process:")
             print(str(self.process))
-            self.last_output = None
+            self.last_output = ""
             raise pexpect.TIMEOUT("")
 
     def print_stack(self, stack: Stack) -> None:
