@@ -523,8 +523,9 @@ class RobotTestSuite(object):
         suite = suite_builder.build(self.path)
         suite.resource.imports.create(type="Resource", name=keywords_path)
 
-        suite.configure(exclude_tags=options.exclude, include_tests=[t[1] for t in test_cases],
-                        metadata=metadata, name=suite_name, empty_suite_ok=True)
+        suite.configure(include_tags=options.include, exclude_tags=options.exclude,
+                        include_tests=[t[1] for t in test_cases], metadata=metadata,
+                        name=suite_name, empty_suite_ok=True)
 
         # Provide default values for {Suite,Test}{Setup,Teardown}
         if not suite.setup:

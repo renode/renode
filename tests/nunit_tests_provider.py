@@ -102,9 +102,13 @@ class NUnitTestSuite(object):
         where_conditions = []
         if options.fixture:
             where_conditions.append('test =~ .*{}.*'.format(options.fixture))
+
         if options.exclude:
             for category in options.exclude:
                 where_conditions.append('cat != {}'.format(category))
+        if options.include:
+            for category in options.include:
+                where_conditions.append('cat == {}'.format(category))
 
         if where_conditions:
             args.append('--where= ' + ' and '.join(['({})'.format(x) for x in where_conditions]))

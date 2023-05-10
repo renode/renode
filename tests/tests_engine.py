@@ -105,6 +105,11 @@ def prepare_parser():
                         action="store_true",
                         help="Run tests under GDB control.")
 
+    parser.add_argument("--include",
+                        default=None,
+                        action="append",
+                        help="Run only tests marked with a tag.")
+
     parser.add_argument("--exclude",
                         default=['skipped'],
                         action="append",
