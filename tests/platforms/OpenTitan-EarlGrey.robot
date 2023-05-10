@@ -12,14 +12,14 @@ ${KMAC_BIN}                     @https://dl.antmicro.com/projects/renode/kmac_sm
 ${KMAC_CSHAKE_BIN}              @https://dl.antmicro.com/projects/renode/kmac_mode_cshake_test_prog_fpga_cw310.elf-s_334036-371c0b874622b5468d391bf76c2d4494a2621020
 ${KMAC_KMAC_BIN}                @https://dl.antmicro.com/projects/renode/kmac_mode_kmac_test_prog_fpga_cw310.elf-s_336072-7200324f9eb2f9feba7b3c9d0a99e8faaf0b118c
 ${LC_OTP_CFG}                   @https://dl.antmicro.com/projects/renode/lc_ctrl_otp_hw_cfg_test_prog_fpga_cw310.elf-s_351476-97168d00236be711f39cd24ec343b8ee593852ef
-${OTP_VMEM}                     @https://dl.antmicro.com/projects/renode/otp_img_fpga_cw310.vmem-s_42301-a3a9eeda04cf69c8dd78455fb962011b5fc294aa
+${OTP_VMEM}                     @https://dl.antmicro.com/projects/renode/otp_img_fpga_cw310.vmem-s_49520-971ccda1d11a9f0c690f4f32b72f1b5f3b458059
 ${RESET_BIN}                    @https://dl.antmicro.com/projects/renode/rstmgr_smoketest_prog_fpga_cw310.elf-s_288244-c3d023ac96dc447e626ead042e1d8337d5ceaee6
 ${SW_RESET_BIN}                 @https://dl.antmicro.com/projects/renode/rstmgr_sw_req_test_prog_fpga_cw310.elf-s_306308-2cc96fe5320d0c1b54153ddc6506e09d90133917
 ${TEST_ROM}                     @https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.elf-s_447072-1cdfd7b2a98b0c09f158d8267c5e9fbbf34dd33b
 ${TEST_ROM_SCR_VMEM}            @https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.39.scr.vmem-s_103772-d3a8f17879eedbcbf18e554bfd7871ccd992414e
 ${TIMER_BIN}                    @https://dl.antmicro.com/projects/renode/rv_timer_smoketest_prog_fpga_cw310.elf-s_310476-ace649750b26ef6ae36c099bf777fe280212ef21
 ${UART_BIN}                     @https://dl.antmicro.com/projects/renode/uart_smoketest_prog_fpga_cw310.elf-s_282560-87570a6fcb3684b126ef3c0ca9bfd53a0dc68936
-${ALERT_HANDLER}                @https://dl.antmicro.com/projects/renode/alert_test_prog_fpga_cw310.elf-s_711972-a31f8ea65df9256e36cbd8702d609b565d99c1f5
+${ALERT_HANDLER}                @https://dl.antmicro.com/projects/renode/alert_test_prog_fpga_cw310.elf-s_681764-d7203f6da5d986ce9a57d641ff1261a450a4c63d
 ${ALERT_HANDLER_PING}           @https://dl.antmicro.com/projects/renode/alert_handler_ping_timeout_test_prog_fpga_cw310.elf-s_484472-9abdc0b5e973cde8b9746d2e8ec8a997dbc8d0ba
 ${SPI_HOST}                     @https://dl.antmicro.com/projects/renode/spi_host_smoketest_prog_fpga_cw310.elf-s_321216-41ad0ca0446549371d07b4d8209ddfbc08c8be33
 ${AON_TIMER_IRQ_BIN}            @https://dl.antmicro.com/projects/renode/aon_timer_irq_test_prog_fpga_cw310.elf-s_388756-3411f90c38a58858140ae754bc06d7b6c2c2eff5
@@ -172,8 +172,8 @@ Should Pass AES Smoketest
 Should Pass UART Smoketest
     Run Test               ${UART_BIN}
 
-# Should Pass HMAC Smoketest
-#     Run Test               ${HMAC_BIN}
+Should Pass HMAC Smoketest
+    Run Test               ${HMAC_BIN}
 
 Should Pass Flash Smoketest
     Run Test               ${FLASH_CTRL_BIN}
@@ -196,8 +196,8 @@ Should Pass Reset Smoketest
 Should Pass Software Reset Test
     Run Test               ${SW_RESET_BIN}
 
-# Should Pass Life Cycle Smoketest
-#     Run Test               ${LC_OTP_CFG}
+Should Pass Life Cycle Smoketest
+    Run Test               ${LC_OTP_CFG}
 
 Should Pass CSRNG Smoketest
     Run Test               ${CSRNG_BIN}
@@ -205,8 +205,8 @@ Should Pass CSRNG Smoketest
 Should Pass GPIO Smoketest
     Run Test               ${GPIO_BIN}
 
-# Should Pass Alert Handler Smoketest
-#     Run Test              ${ALERT_HANDLER}
+Should Pass Alert Handler Smoketest
+    Run Test              ${ALERT_HANDLER}
 
 Should Pass Alert Handler Ping Smoketest
     Run Test              ${ALERT_HANDLER_PING}

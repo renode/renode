@@ -15,6 +15,7 @@ rom_ctrl: MemoryControllers.OpenTitan_ROMController @ sysbus 0x411e0000
     rom: rom
     nonce: "755CF00BD7432C3F"
     key: "8CD4E7EFF1B9EC59CE812447C5714595"
+    FatalAlert -> alert_handler@60
 
 sram_ctrl: MemoryControllers.OpenTitan_SRAMController @ sysbus 0x411c0000
     FatalError -> alert_handler@59
@@ -34,6 +35,8 @@ flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
     RecoverableAlert -> alert_handler@35
     FatalStandardAlert -> alert_handler@36
     FatalAlert -> alert_handler@37
+    FatalPrimitiveFlashAlert -> alert_handler@38
+    RecoverablePrimitiveFlashAlert -> alert_handler@39
 
 //RAM
 ram_ret_aon: Memory.MappedMemory @ sysbus 0x40600000
@@ -111,6 +114,7 @@ spi_host1: SPI.OpenTitan_SpiHost@ sysbus 0x40310000
     numberOfCSLines: 32
 
 spi_device: SPI.OpenTitan_SpiDevice @ sysbus 0x40050000
+    FatalAlert -> alert_handler@5
 
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
@@ -201,6 +205,8 @@ otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0
     FatalMacroAlert -> alert_handler@11
     FatalCheckErrorAlert -> alert_handler@12
     FatalBusAlert -> alert_handler@13
+    FatalPrimitiveOtpAlert -> alert_handler@14
+    RecoverablePrimitiveOtpAlert -> alert_handler@15
     AValuesChain: "8638C62621EC19E8966416165252225F03B9C97821B7B107381030AB3D20AB124694BF85E417495A"
     BValuesChain: "E679DF6E77EDDBECDE74B677DFF23AFFC3BFFB79B5FFFD87F930B4FB3F6BFF9A5F97BFD7FCBFE9FF"
     CValuesChain: "0C1B73141BA20D421FD124302E8F443DE02C272E2CEEC1138DAD07CBD24A18F583A34D51A42A1E702A7E90F05A81D12E"
@@ -221,6 +227,7 @@ lc_ctrl: Miscellaneous.OpenTitan_LifeCycleController @ sysbus 0x40140000
 // PLIC with 187 sources
 rv_plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x48000000
     0 -> cpu0@11
+    FatalAlert -> alert_handler@41
     numberOfSources: 184
     numberOfContexts: 1
 
@@ -262,9 +269,15 @@ otbn: Miscellaneous.OpenTitan_BigNumberAccelerator @ sysbus 0x41130000
 
 sysrst_ctrl: Miscellaneous.OpenTitan_SystemResetControl @ sysbus 0x40430000
     resetManager: rstmgr_aon
+    FatalFault -> alert_handler@27
 
 clock_manager: Miscellaneous.OpenTitan_ClockManager @ sysbus 0x40420000
     otbn: otbn
+
+RV_CORE_IBEX_RND_DATA: Python.PythonPeripheral @ sysbus 0x411F0058
+    size: 0x4
+    initable: true
+    script: "import random; rand = int(random.random()*2**32); request.value = rand"
 
 sysbus:
     init:
@@ -308,6 +321,5 @@ sysbus:
         Tag <0x411C0000 0x1000> "OPENTITAN_EARLGREY_DEV_SRAM_CTRL_MAIN" 0
         Tag <0x00008000 0x1000> "OPENTITAN_EARLGREY_DEV_ROM_CTRL" 0
         Tag <0x411F0000 0x1000> "OPENTITAN_EARLGREY_DEV_RV_CORE_IBEX" 0
-        Tag <0x411F0058 0x4> "OPENTITAN_EARLGREY_DEV_RV_CORE_IBEX_RND_DATA" 1
         Tag <0x411F005C 0x4> "OPENTITAN_EARLGREY_DEV_RV_CORE_IBEX_RND_STATUS" 1
 
