@@ -256,15 +256,23 @@ class GDBInstance:
 
     async def expect(self, timeout: float = 10) -> None:
         """Await execution of the last command to finish and update `self.last_output`."""
-        await self.task
-        line = self.process.match[0].decode().strip("\r")
-        self.last_output = ""
-        while "(gdb)" not in line:
-            self.last_output += line
-            self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
+        try:
             await self.task
             line = self.process.match[0].decode().strip("\r")
-        self.validate_response(self.last_output)
+            self.last_output = ""
+            while "(gdb)" not in line:
+                self.last_output += line
+                self.task = self.process.expect([r".+\n", r"\(gdb\)"], timeout, async_=True)
+                await self.task
+                line = self.process.match[0].decode().strip("\r")
+            self.validate_response(self.last_output)
+
+        except pexpect.TIMEOUT:
+            print(f"!!! {self.name} GDB: Command '{self.last_cmd}' timed out!")
+            print("Process:")
+            print(str(self.process))
+            self.last_output = ""
+            raise pexpect.TIMEOUT("")
 
 
 class GDBComparator:
