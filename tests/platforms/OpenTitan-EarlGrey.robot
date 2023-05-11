@@ -86,7 +86,7 @@ Setup Machine
 Prepare Test
     [Arguments]                 ${bin}
     Execute Command             $bin=${bin}
-    Execute Command             $bool=${TEST_ROM}
+    Execute Command             $boot=${TEST_ROM}
     Setup Machine
 
 Execute Test
