@@ -63,6 +63,7 @@ do
       ;;
     t)
       PORTABLE=true
+      PARAMS+=(p:PORTABLE=true)
       ;;
     s)
       UPDATE_SUBMODULES=true
