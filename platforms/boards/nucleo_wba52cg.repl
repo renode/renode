@@ -1,0 +1,21 @@
+using "platforms/cpus/stm32wba52.repl"
+
+UserButton1: Miscellaneous.Button @ gpioPortC
+    -> gpioPortC@13
+
+UserButton2: Miscellaneous.Button @ gpioPortB
+    -> gpioPortB@6
+
+UserButton3: Miscellaneous.Button @ gpioPortB
+    -> gpioPortB@7
+
+BlueLED: Miscellaneous.LED @ gpioPortB
+
+RedLED: Miscellaneous.LED @ gpioPortB
+
+GreenLED: Miscellaneous.LED @ gpioPortB
+
+gpioPortB:
+    4 -> BlueLED@0
+    8 -> RedLED@0
+    11 -> GreenLED@0

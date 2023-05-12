@@ -1,0 +1,149 @@
+fsmcBank1: Memory.MappedMemory @ sysbus 0xC0000000
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x20000
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x100000
+
+usart1: UART.STM32F7_USART @ sysbus 0x40013800
+    frequency: 200000000
+    -> nvic@46
+
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
+    frequency: 200000000
+    -> nvic@47
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    // # without any divider on the way the base clock is still divided by 8
+    systickFrequency: 16000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x42020000, +0x400>
+    modeResetValue: 0xABFFFFFF
+    outputSpeedResetValue: 0x08000000
+    pullUpPullDownResetValue: 0x64000000
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x42020400, +0x400>
+    modeResetValue: 0xFFFFFEBF
+    outputSpeedResetValue: 0x00000080
+    pullUpPullDownResetValue: 0x00000100
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x42020800, +0x400>
+    modeResetValue: 0xFC000000
+
+gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x42021C00, +0x400>
+    modeResetValue: 0x000000C0
+
+rom: Memory.MappedMemory @ sysbus 0x1FFF0000
+    size: 0x10000
+
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@43
+    ErrorInterrupt -> nvic@44
+
+i2c3: I2C.STM32F7_I2C @ sysbus 0x46002800
+    EventInterrupt -> nvic@54
+    ErrorInterrupt -> nvic@55
+
+tim1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    IRQ -> nvic@40
+
+tim2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    IRQ -> nvic@41
+
+tim3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    IRQ -> nvic@42
+
+tim16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    IRQ -> nvic@51
+
+tim17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    IRQ -> nvic@52
+
+iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
+    windowOption: true
+    defaultPrescaler: 0
+
+lptim1: Timers.STM32L0_LpTimer @ sysbus 0x46004400
+    frequency: 0x1000000
+    -> nvic@49
+
+lptim2: Timers.STM32L0_LpTimer @ sysbus 0x40009400
+    frequency: 0x1000000
+    -> nvic@50
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x46007800
+
+pwr: Python.PythonPeripheral @ sysbus 0x46020800
+    size: 0x400
+    initable: true
+    filename: "scripts/pydev/rolling-bit.py"
+
+flash_ctrl: Python.PythonPeripheral @ sysbus 0x40022000
+    size: 0x400
+    initable: true
+    script: '''
+if request.isInit:
+    lastVal = 0
+elif request.isWrite:
+    lastVal = request.value
+else:
+    request.value = lastVal
+'''
+
+rcc: Python.PythonPeripheral @ sysbus 0x46020C00
+    size: 0x400
+    initable: true
+    script: '''
+if request.isInit:
+    lastVal = 0
+    justWritten = False
+elif request.isWrite:
+    lastVal = request.value
+    justWritten = True
+elif request.isRead:
+    if justWritten:
+       # just return the previously written value
+       justWritten = False
+    elif request.offset == 0:
+        # RCC_CR: All ON and RDY flags set - blink
+        lastVal = 0x31B0700 if lastVal == 0 else 0
+    elif request.offset == 0x1C:
+        # RCC_CFGR1: Brute force all values
+        lastVal = 0 if lastVal == 0xFFFFFFFF else lastVal + 1
+    elif request.offset == 0x28:
+        # RCC_PLL1CFGR: All EN and RDY flags set
+        lastVal = 0xFFFFFFF
+    elif request.offset == 0xA0:
+        # RCC_APB1ENR2: LPTIM2EN
+        lastVal = 0x20
+    elif request.offset == 0xE0:
+        # RCC_CCIPR1: Setting the USART1SEL to HSI16
+        lastVal = 0b10
+    elif request.offset == 0xF0:
+        # RCC_BDCR1: All ON and RDY flags set - blink
+        lastVal = 0 if lastVal == 0xC00FFEF else 0xC00FFEF
+
+    request.value = lastVal
+'''
+sysbus:
+    init:
+        Tag <0xE0001004, 0xE0001008> "DWT_CYCCNT" 100
