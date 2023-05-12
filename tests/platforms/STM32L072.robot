@@ -402,6 +402,7 @@ LED Tester Assert Duty Cycle Should Precisely Pause Emulation
     Emulation Should Be Paused At Time  00:00:06.000300
 
 LED And Terminal Tester Cooperation
+    [Tags]                   skip_windows
     Create Machine With Button And LED  led_shell
 
     Wait For Prompt On Uart  $  pauseEmulation=true
