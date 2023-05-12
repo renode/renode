@@ -29,6 +29,9 @@ RE_GDB_ERRORS = (
     re.compile(r"\bRemote communication error\..*$", re.MULTILINE),
     re.compile(r"\bRemote connection closed", re.MULTILINE),
     re.compile(r"\bThe program has no registers.*?\.", re.MULTILINE),
+    re.compile(r"\bThe program is not being run.*?\.", re.MULTILINE),
+    re.compile(r"\b.*: cannot resolve name.*$", re.MULTILINE),
+    re.compile(r"\b.*: no such file or directory\.", re.MULTILINE),
 )
 
 parser = argparse.ArgumentParser(
@@ -258,7 +261,7 @@ class GDBInstance:
         for regex in RE_GDB_ERRORS:
             err_match = regex.search(response)
             if err_match is not None:
-                print(f"!!! {self.name} GDB: {err_match[0]} (last command: \"{self.last_cmd}\")")
+                print(f"!!! {self.name} GDB: {err_match[0].strip()} (last command: \"{self.last_cmd}\")")
                 # Assuming we correctly identified a GDB error, this would be
                 # the right place to terminate execution. However, there is
                 # a risk of a false positive, so it's safer not to (if it is
