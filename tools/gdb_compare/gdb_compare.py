@@ -139,6 +139,12 @@ class Renode:
 
     def command(self, input: str, expected_log: str = "") -> None:
         """Sends an arbitrary command to the underlying Renode instance."""
+        if not self.proc.isalive():
+            print("!!! Renode has died!")
+            print("Process:")
+            print(str(self.proc))
+            raise RuntimeError
+
         input = input + "\n"
         self.connection.write(input.encode())
         if expected_log != "":
@@ -161,12 +167,13 @@ class Renode:
 
 class GDBInstance:
     """A class for controlling a remote GDB instance."""
-    def __init__(self, gdb_binary: str, port: int, debug_binary: str, name: str):
+    def __init__(self, gdb_binary: str, port: int, debug_binary: str, name: str, target_process: pexpect.spawn):
         """Spawns a new GDB instance and connects to it."""
         self.name = name
         self.last_cmd = ""
         self.last_output = ""
         self.task: Awaitable[Any]
+        self.target_process = target_process
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
         self.process = pexpect.spawn(f"{gdb_binary} --silent --nx --nh", timeout=10)
         self.process.timeout = 120
@@ -195,6 +202,19 @@ class GDBInstance:
 
     def run_command(self, command: str, timeout: float = 10, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
         """Send an arbitrary command to the underlying GDB instance."""
+        if not self.process.isalive():
+            print(f"!!! The {self.name} GDB process has died!")
+            print("Process:")
+            print(str(self.process))
+            self.last_output = ""
+            raise RuntimeError
+        if not self.target_process.isalive():
+            print(f"!!! {self.name} GDB's target has died!")
+            print("Target process:")
+            print(str(self.target_process))
+            self.last_output = ""
+            raise RuntimeError
+
         self.last_cmd = command
         self.process.write(command + "\n")
         if dont_wait_for_output:
@@ -295,11 +315,11 @@ class GDBComparator:
         (lambda _: True, lambda regs: ["printf \"" + ":  0x%x\\n".join(regs) + ":  0x%x\\n\",$" + ",$".join(regs)]),
     ]
 
-    def __init__(self, args: argparse.Namespace):
+    def __init__(self, args: argparse.Namespace, renode_proc: pexpect.spawn, ref_proc: pexpect.spawn):
         """Creates 2 `GDBInstance` objects, one expecting to connect on port `args.renode_gdb_port` and the other on `args.reference_gdb_port`."""
         self.instances = [
-            GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode"),
-            GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference"),
+            GDBInstance(args.gdb_path, args.renode_gdb_port, args.debug_binary, "Renode", renode_proc),
+            GDBInstance(args.gdb_path, args.reference_gdb_port, args.debug_binary, "Reference", ref_proc),
         ]
         self.cmd = args.command if args.command else self.build_command_from_register_list(args.registers.split(";"))
 
@@ -424,7 +444,7 @@ def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GD
     renode = Renode(args.renode_path, args.renode_telnet_port)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
     renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
-    gdb_comparator = GDBComparator(args)
+    gdb_comparator = GDBComparator(args, renode.proc, reference)
     renode.command("start")
     return renode, reference, gdb_comparator
 
