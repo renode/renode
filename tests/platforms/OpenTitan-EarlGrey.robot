@@ -41,23 +41,15 @@ ${OTBN_RSA_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_rs
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
 ...  gpio:                                   ${\n}
-...  ${SPACE*4}8 -> led0@0                   ${\n}
-...  ${SPACE*4}9 -> led1@0                   ${\n}
-...  ${SPACE*4}10 -> led2@0                  ${\n}
-...  ${SPACE*4}11 -> led3@0                  ${\n}
-...  ${SPACE*4}12 -> led4@0                  ${\n}
-...  ${SPACE*4}13 -> led5@0                  ${\n}
-...  ${SPACE*4}14 -> led6@0                  ${\n}
-...  ${SPACE*4}15 -> led7@0                  ${\n}
+...  ${SPACE*4}0 -> led0@0                   ${\n}
+...  ${SPACE*4}1 -> led1@0                   ${\n}
+...  ${SPACE*4}2 -> led2@0                   ${\n}
+...  ${SPACE*4}3 -> led3@0                   ${\n}
 ...                                          ${\n}
-...  led0: Miscellaneous.LED @ gpio 8        ${\n}
-...  led1: Miscellaneous.LED @ gpio 9        ${\n}
-...  led2: Miscellaneous.LED @ gpio 10       ${\n}
-...  led3: Miscellaneous.LED @ gpio 11       ${\n}
-...  led4: Miscellaneous.LED @ gpio 12       ${\n}
-...  led5: Miscellaneous.LED @ gpio 13       ${\n}
-...  led6: Miscellaneous.LED @ gpio 14       ${\n}
-...  led7: Miscellaneous.LED @ gpio 15       ${\n}
+...  led0: Miscellaneous.LED @ gpio 0        ${\n}
+...  led1: Miscellaneous.LED @ gpio 1        ${\n}
+...  led2: Miscellaneous.LED @ gpio 2        ${\n}
+...  led3: Miscellaneous.LED @ gpio 3        ${\n}
 ...  """
 
 ${SPI_FLASH}=    SEPARATOR=
@@ -113,7 +105,7 @@ Should Print To Uart
     Setup Machine
     Start Emulation
 
-    Wait For Line On Uart       The LEDs show the ASCII code of the last character.
+    Wait For Line On Uart       The LEDs show the lower nibble of the ASCII code of the last character.
 
     Provides                    initialization
 
@@ -124,22 +116,13 @@ Should Echo On Uart
 
     Provides                    working-uart
 
-# This test is currently broken as the GPIO is misconfigured.
-# Output pins are configured to 0x00FF: https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645b0e65058e5/sw/device/examples/hello_world/hello_world.c#L66 ,
-# while chars are outputed to 0xFF00: https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645b0e65058e5/sw/device/examples/demos.c#L88
 Should Display Output on GPIO
-    [Tags]                      skipped
     Requires                    working-uart
 
     Execute Command             emulation CreateLEDTester "led0" sysbus.gpio.led0
     Execute Command             emulation CreateLEDTester "led1" sysbus.gpio.led1
     Execute Command             emulation CreateLEDTester "led2" sysbus.gpio.led2
     Execute Command             emulation CreateLEDTester "led3" sysbus.gpio.led3
-
-    Execute Command             emulation CreateLEDTester "led4" sysbus.gpio.led4
-    Execute Command             emulation CreateLEDTester "led5" sysbus.gpio.led5
-    Execute Command             emulation CreateLEDTester "led6" sysbus.gpio.led6
-    Execute Command             emulation CreateLEDTester "led7" sysbus.gpio.led7
 
     Send Key To Uart            0x0
 
@@ -148,23 +131,13 @@ Should Display Output on GPIO
     Execute Command             led2 AssertState false 0.2
     Execute Command             led3 AssertState false 0.2
 
-    Execute Command             led4 AssertState false 0.2
-    Execute Command             led5 AssertState false 0.2
-    Execute Command             led6 AssertState false 0.2
-    Execute Command             led7 AssertState false 0.2
-
     Write Char On Uart          B
-    # B is 0100 0010
+    # B is 0100 0010. Take the lower 4 bits.
 
     Execute Command             led0 AssertState false 0.2
     Execute Command             led1 AssertState true 0.2
     Execute Command             led2 AssertState false 0.2
     Execute Command             led3 AssertState false 0.2
-
-    Execute Command             led4 AssertState false 0.2
-    Execute Command             led5 AssertState false 0.2
-    Execute Command             led6 AssertState true 0.2
-    Execute Command             led7 AssertState false 0.2
 
 Should Pass AES Smoketest
     Run Test               ${AES_BIN}
