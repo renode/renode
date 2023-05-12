@@ -32,7 +32,7 @@ ${ENTROPY_SRC_KAT_BIN}          @https://dl.antmicro.com/projects/renode/entropy
 ${SRAM_CTRL_BIN}                @https://dl.antmicro.com/projects/renode/sram_ctrl_smoketest_prog_fpga_cw310.elf-s_291188-63360ab9786db3a84da77b8766e458d119227dd5
 ${OTBN_ECDSA_BIN}               @https://dl.antmicro.com/projects/renode/otbn_ecdsa_op_irq_test_prog_fpga_cw310.elf-s_460328-d9b26904a2e79a6df89bda0d74c267351d839a2d
 ${OTBN_IRQ_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_irq_test_prog_fpga_cw310.elf-s_445860-54133c6721deb5c0ac8713a06da7f93253276f7e
-${OTBN_SCRAMBLE_BIN}            @https://dl.antmicro.com/projects/renode/otbn_mem_scramble_test_prog_fpga_cw310.elf-s_357976-17001e15e1ccc12075ff0bb108b0bc8fa0a96427gh
+${OTBN_SCRAMBLE_BIN}            @https://dl.antmicro.com/projects/renode/otbn_mem_scramble_test_prog_fpga_cw310.elf-s_357976-17001e15e1ccc12075ff0bb108b0bc8fa0a96427
 ${OTBN_RAND_BIN}                @https://dl.antmicro.com/projects/renode/otbn_randomness_test_prog_fpga_cw310.elf-s_481904-c61657cd5db42f70c7814644b436405610850e33
 ${OTBN_SMOKETEST_BIN}           @https://dl.antmicro.com/projects/renode/otbn_smoketest_prog_fpga_cw310.elf-s_444776-8169ee20540f64f867206d17a18e8de5e6270f8e
 ${OTBN_RSA_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_rsa_test_prog_fpga_cw310.elf-s_446140-6d6a4c0197d9fcc54c44cbe68db0003d7cb44783
