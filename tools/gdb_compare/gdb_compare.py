@@ -61,16 +61,19 @@ parser.add_argument("-s",
                     required=True,
                     help="Path to the '.resc' script")
 parser.add_argument("-p", "--reference-gdb-port",
+                    type=int,
                     dest="reference_gdb_port",
                     action="store",
                     required=True,
                     help="Port on which the reference GDB server can be reached")
 parser.add_argument("--renode-gdb-port",
+                    type=int,
                     dest="renode_gdb_port",
                     action="store",
                     default=RENODE_GDB_PORT,
                     help="Port on which Renode will comunicate with GDB server")
 parser.add_argument("-P", "--renode-telnet-port",
+                    type=int,
                     dest="renode_telnet_port",
                     action="store",
                     default=RENODE_TELNET_PORT,
@@ -567,6 +570,10 @@ async def check(stack: Stack, gdb_comparator: GDBComparator, previous_pc: str, p
 async def main() -> None:
     """Script entry point."""
     args = parser.parse_args()
+    assert 0 <= args.reference_gdb_port <= 65535, "Illegal reference GDB port"
+    assert 0 <= args.renode_gdb_port <= 65535, "Illegal Renode GDB port"
+    assert 0 <= args.renode_telnet_port <= 65535, "Illegal Renode Telnet port"
+    assert args.reference_gdb_port != args.renode_gdb_port != args.renode_telnet_port, "Overlapping port numbers"
     if args.stop_address:
         args.stop_address = int(args.stop_address, 16)
 
