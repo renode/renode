@@ -299,7 +299,6 @@ DMA Transfer Should Write To UART
     Wait For Line On Uart    Hello world from DMA!
 
 Terminal Tester Assert Should Start Emulation
-    [Tags]                   skip_windows
     Create Machine With Button And LED  button
 
     Emulation Should Be Paused
@@ -309,7 +308,6 @@ Terminal Tester Assert Should Start Emulation
     Emulation Should Not Be Paused
 
 Terminal Tester Assert Should Not Start Emulation If Matching String Has Already Been Printed
-    [Tags]                   skip_windows
     Create Machine With Button And LED  button
 
     # Give the sample plenty of virtual time to print the string
@@ -322,7 +320,6 @@ Terminal Tester Assert Should Not Start Emulation If Matching String Has Already
     Emulation Should Be Paused At Time  00:00:00.100000
 
 Terminal Tester Assert Should Precisely Pause Emulation
-    [Tags]                   skip_windows
     Create Machine With Button And LED  button
 
     Wait For Line On Uart    Press the button  pauseEmulation=true
@@ -336,7 +333,6 @@ Terminal Tester Assert Should Precisely Pause Emulation
     PC Should Be Equal       0x8002c08  # this is the STR that writes to TDR in LL_USART_TransmitData8
 
 Quantum Should Not Impact Tester Pause PC
-    [Tags]                   skip_windows
     Create Machine With Button And LED  button
     Execute Command          emulation SetGlobalQuantum "0.010000"
 
@@ -349,7 +345,6 @@ Quantum Should Not Impact Tester Pause PC
     PC Should Be Equal       0x8002c08
 
 LED Tester Assert Should Start Emulation Unless The State Already Matches
-    [Tags]                   skip_windows
     Create Machine With Button And LED  blinky
 
     # The LED state is false by default on reset because it is not inverted, so this assert
@@ -362,7 +357,6 @@ LED Tester Assert Should Start Emulation Unless The State Already Matches
     Emulation Should Not Be Paused
 
 LED Tester Assert Should Not Start Emulation With Timeout 0
-    [Tags]                   skip_windows
     Create Machine With Button And LED  blinky
 
     # The LED state is false by default, so this assert should fail immediately without
@@ -372,7 +366,6 @@ LED Tester Assert Should Not Start Emulation With Timeout 0
     Emulation Should Be Paused At Time  00:00:00.000000
 
 LED Tester Assert Should Precisely Pause Emulation
-    [Tags]                   skip_windows
     Create Machine With Button And LED  blinky
 
     Assert LED State         true  pauseEmulation=true
@@ -386,7 +379,6 @@ LED Tester Assert Should Precisely Pause Emulation
     Provides                 synced-blinky
 
 LED Tester Assert And Hold Should Precisely Pause Emulation
-    [Tags]                   skip_windows
     Requires                 synced-blinky
 
     # The expected times have 3 decimal places because the default quantum is 0.000100
@@ -398,21 +390,18 @@ LED Tester Assert And Hold Should Precisely Pause Emulation
     END
 
 LED Tester Assert Is Blinking Should Precisely Pause Emulation
-    [Tags]                   skip_windows
     Requires                 synced-blinky
 
     Assert LED Is Blinking   testDuration=5  onDuration=1  offDuration=1  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:06.000300
 
 LED Tester Assert Duty Cycle Should Precisely Pause Emulation
-    [Tags]                   skip_windows
     Requires                 synced-blinky
 
     Assert LED Duty Cycle    testDuration=5  expectedDutyCycle=0.5  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:06.000300
 
 LED And Terminal Tester Cooperation
-    [Tags]                   skip_windows
     Create Machine With Button And LED  led_shell
 
     Wait For Prompt On Uart  $  pauseEmulation=true
