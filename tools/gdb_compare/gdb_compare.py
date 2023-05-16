@@ -134,7 +134,7 @@ class Renode:
             self.proc.stripcr = True
             self.proc.expect("Monitor available in telnet mode on port")
         except pexpect.exceptions.EOF as err:
-            print(f"!!! Renode failed to start telnet server! (is port {port} available?)")
+            print("!!! Renode failed to start telnet server! (is --renode-path correct? is --renode-telnet-port available?)")
             raise err
         self.connection = telnetlib.Telnet("localhost", port)
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
@@ -253,6 +253,12 @@ class GDBInstance:
             print(str(self.process))
             self.last_output = ""
             raise pexpect.TIMEOUT("")
+        except pexpect.exceptions.EOF as err:
+            print(f"!!! {self.name} GDB: pexpect encountered an unexpected EOF (is --gdb-path correct?)")
+            print("Process:")
+            print(str(self.process))
+            self.last_output = ""
+            raise err
 
     def print_stack(self, stack: Stack) -> None:
         """Prints a stack."""
