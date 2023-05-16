@@ -247,12 +247,12 @@ class GDBInstance:
                 self.task = result if async_ else None
                 self.last_output = self.process.match[0].decode().strip("\r")
 
-        except pexpect.TIMEOUT:
+        except pexpect.TIMEOUT as err:
             print(f"!!! {self.name} GDB: Command '{command}' timed out!")
             print("Process:")
             print(str(self.process))
             self.last_output = ""
-            raise pexpect.TIMEOUT("")
+            raise err
         except pexpect.exceptions.EOF as err:
             print(f"!!! {self.name} GDB: pexpect encountered an unexpected EOF (is --gdb-path correct?)")
             print("Process:")
@@ -300,12 +300,12 @@ class GDBInstance:
                 line = self.process.match[0].decode().strip("\r")
             self.validate_response(self.last_output)
 
-        except pexpect.TIMEOUT:
+        except pexpect.TIMEOUT as err:
             print(f"!!! {self.name} GDB: Command '{self.last_cmd}' timed out!")
             print("Process:")
             print(str(self.process))
             self.last_output = ""
-            raise pexpect.TIMEOUT("")
+            raise err
 
 
 class GDBComparator:
