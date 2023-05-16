@@ -128,9 +128,13 @@ class Renode:
             if "renode" in process_name and str(port) in process_name:
                 print("!!! Found another instance of Renode running on the same port. Killing it before proceeding")
                 p.kill()
-        self.proc = pexpect.spawn(f"{binary} --disable-xwt --plain --port {port}", timeout=20)
-        self.proc.stripcr = True
-        self.proc.expect("Monitor available in telnet mode on port")
+        try:
+            self.proc = pexpect.spawn(f"{binary} --disable-xwt --plain --port {port}", timeout=20)
+            self.proc.stripcr = True
+            self.proc.expect("Monitor available in telnet mode on port")
+        except pexpect.exceptions.EOF as err:
+            print(f"!!! Renode failed to start telnet server! (is port {port} available?)")
+            raise err
         self.connection = telnetlib.Telnet("localhost", port)
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
         self.command("echo 'Connected to GDB comparator'")
