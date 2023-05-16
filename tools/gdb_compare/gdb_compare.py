@@ -32,6 +32,7 @@ RE_GDB_ERRORS = (
     re.compile(r"\bThe program is not being run.*?\.", re.MULTILINE),
     re.compile(r"\b.*: cannot resolve name.*$", re.MULTILINE),
     re.compile(r"\b.*: no such file or directory\.", re.MULTILINE),
+    re.compile(r"\bArgument required.*?\.", re.MULTILINE),
 )
 
 parser = argparse.ArgumentParser(
