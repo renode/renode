@@ -6,6 +6,8 @@ ${ZEPHYR_HELLO_WORLD_ELF}         ${URI}/cortex_a53-zephyr-hello_world.elf-s_340
 ${ZEPHYR_SYNCHRONIZATION_ELF}     ${URI}/virt-a53--zephyr-synchronization.elf-s_582816-bb556dc10df7f09918db3c5d1f298cdd3f3290f3
 ${ZEPHYR_PHILOSOPHERS_ELF}        ${URI}/zephyr_philosophers_a53.elf-s_731440-e6e5bd1c2151b7e5d38d272b01108493e8ef88b4
 
+${SEL4_ADDER_ELF}                 ${URI}/camkes_adder_elfloader_aarch64-s_3408064-4385f32dd7a3235af3905c0a473598fc90853b7a
+
 *** Keywords ***
 Create Machine
     [Arguments]    ${gic_version}=3
@@ -78,3 +80,19 @@ Test Running the Zephyr Philosophers Sample
     Wait For Line On Uart         Philosopher 5.*HOLDING ONE FORK  treatAsRegex=true
     Wait For Line On Uart         Philosopher 5.*EATING  treatAsRegex=true
     Wait For Line On Uart         Philosopher 5.*THINKING  treatAsRegex=true
+
+Test Running the seL4 Adder Sample
+    Create Machine                gic_version=2
+    Execute Command               sysbus LoadELF ${SEL4_ADDER_ELF}
+    # seL4 expects to be at most in EL2
+    Execute Command               cpu SetAvailableExceptionLevels true false
+    # Initialize UART since we don't have a bootloader
+    Execute Command               ${UART} WriteDoubleWord 0x30 0x301
+    # Set 7-bit word length to hush the warning that 5-bit WLEN is unsupported.
+    Execute Command               ${UART} WriteDoubleWord 0x2c 0x40  #b10 << 5
+
+    Start Emulation
+
+    Wait For Line On Uart         Booting all finished, dropped to user space
+    Wait For Line On Uart         client: what's the answer to 342 + 74 + 283 + 37 + 534 ?
+    Wait For Line On Uart         client: result was 1270
