@@ -33,6 +33,8 @@ RE_GDB_ERRORS = (
     re.compile(r"\b.*: cannot resolve name.*$", re.MULTILINE),
     re.compile(r"\b.*: no such file or directory\.", re.MULTILINE),
     re.compile(r"\bArgument required.*?\.", re.MULTILINE),
+    re.compile(r'\b.*: .*(not in executable format|file format not recognized)', re.MULTILINE),
+    re.compile(r"\bNo symbol table is loaded\.", re.MULTILINE),
 )
 
 parser = argparse.ArgumentParser(
