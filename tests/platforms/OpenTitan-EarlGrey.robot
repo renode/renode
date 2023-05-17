@@ -36,6 +36,7 @@ ${OTBN_SCRAMBLE_BIN}            @https://dl.antmicro.com/projects/renode/otbn_me
 ${OTBN_RAND_BIN}                @https://dl.antmicro.com/projects/renode/otbn_randomness_test_prog_fpga_cw310.elf-s_481904-c61657cd5db42f70c7814644b436405610850e33
 ${OTBN_SMOKETEST_BIN}           @https://dl.antmicro.com/projects/renode/otbn_smoketest_prog_fpga_cw310.elf-s_444776-8169ee20540f64f867206d17a18e8de5e6270f8e
 ${OTBN_RSA_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_rsa_test_prog_fpga_cw310.elf-s_446140-6d6a4c0197d9fcc54c44cbe68db0003d7cb44783
+${OTBN_SIMPLE_SMOKETEST_BIN}    @https://dl.antmicro.com/projects/renode/open_titan-earlgrey--otbn_simple_smoketest.elf-s_9164-5362a0be6d650280b2f732460e786a8d7263126b
 
 
 ${LEDS}=    SEPARATOR=
@@ -246,89 +247,88 @@ Should Pass OTBN RSA Test
 Should Pass OTBN Smoketest Test
     Run Test              ${OTBN_SMOKETEST_BIN}
 
-### binary not re-built yet
-# Should Pass OTBN Simple Smoketest Test
-#     Create Log Tester               3
-#     Execute Command                 include @scripts/single-node/opentitan-earlgrey.resc
-#     Execute Command                 sysbus.otbn FixedRandomPattern "0xAAAAAAAA99999999AAAAAAAA99999999AAAAAAAA99999999AAAAAAAA99999999"
-# 
-#     Execute Command                 sysbus.otbn KeyShare0 "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF"
-#     Execute Command                 sysbus.otbn KeyShare1 "0xBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00D"
-# 
-#     Execute Command                 logLevel -1 sysbus.otbn
-# 
-#     # load program directly to OTBN
-#     Execute Command                 sysbus.otbn LoadELF ${OTBN_SIMPLE_SMOKETEST_BIN}
-# 
-#     # trigger execution of the program
-#     Execute Command                 allowPrivates true
-#     Execute Command                 sysbus.otbn HandleCommand 0xd8
-# 
-#     # wait for the program to end
-#     Wait For Log Entry              Execution finished
-# 
-#     # verify final state of registers
-#     Core Register Should Be Equal   2   0xd0beb513
-#     Core Register Should Be Equal   3   0xa0be911a
-#     Core Register Should Be Equal   4   0x717d462d
-#     Core Register Should Be Equal   5   0xcfffdc07
-#     Core Register Should Be Equal   6   0xf0beb51b
-#     Core Register Should Be Equal   7   0x80be9112
-#     Core Register Should Be Equal   8   0x70002409
-#     Core Register Should Be Equal   9   0xd0beb533
-#     Core Register Should Be Equal   10  0x00000510
-#     Core Register Should Be Equal   11  0xd0beb169
-#     Core Register Should Be Equal   12  0xfad44c00
-#     Core Register Should Be Equal   13  0x000685f5
-#     Core Register Should Be Equal   14  0xffa17d6a
-#     Core Register Should Be Equal   15  0x4c000000
-#     Core Register Should Be Equal   16  0x00000034
-#     Core Register Should Be Equal   17  0xfffffff4
-#     Core Register Should Be Equal   18  0xfacefeed
-#     Core Register Should Be Equal   19  0xd0beb533
-#     Core Register Should Be Equal   20  0x00000123
-#     Core Register Should Be Equal   21  0x00000123
-#     Core Register Should Be Equal   22  0xcafef010
-#     Core Register Should Be Equal   23  0x89c9b54f
-#     Core Register Should Be Equal   24  0x00000052
-#     Core Register Should Be Equal   25  0x00000020
-#     Core Register Should Be Equal   26  0x00000016
-#     Core Register Should Be Equal   27  0x0000001a
-#     Core Register Should Be Equal   28  0x00400000
-#     Core Register Should Be Equal   29  0x00018000
-#     Core Register Should Be Equal   30  0x00000000
-#     Core Register Should Be Equal   31  0x00000804
-# 
-#     Wide Register Should Be Equal   0   0x37adadaef9dbff5e738800755466a52c67a8c2216978ad1b257694340f09b7c8
-#     Wide Register Should Be Equal   1   0x00000000000000000000000000000000baadf00dbaadf00dbaadf00dbaadf00d
-#     Wide Register Should Be Equal   2   0x440659a832f54897440659a832f54898dd6208a5cc50f794dd6208a5cc50f791
-#     Wide Register Should Be Equal   3   0x23a776b0bbc2837034745ffa22168ae87245a2d00357f208431165e5ed103473
-#     Wide Register Should Be Equal   4   0xce52215b888f503cdf1f0aa4eee357b51cf04d7ad024bed4edbc1090b9dd0141
-#     Wide Register Should Be Equal   5   0xfafeeeaebbb9f9dfabebbfef99fdf9dfefbafaaff9bfd9ffbaeebbbbdbff9bdb
-#     Wide Register Should Be Equal   6   0x28a88802000889908888a00a88189108828aa820099818088822aa2a11109898
-#     Wide Register Should Be Equal   7   0xd25666acbbb1704f23631fe511e568d76d30528ff027c1f732cc1191caef0343
-#     Wide Register Should Be Equal   8   0x870333f9ddd7162976364ab077830eb1386507da9641a791679944c4ac896525
-#     Wide Register Should Be Equal   9   0xd7c12b4df2c374c335d9da9bb4d6d555555554cccccccd55555554cccccccd55
-#     Wide Register Should Be Equal   10  0x050111511112d2ed5414401032ced2ed1045054fd30cf2cd45114443f0cd30f0
-#     Wide Register Should Be Equal   11  0xd75777fdccc4433c77775ff544b43bc47d7557dfc334b4c477dd55d5bbbc3433
-#     Wide Register Should Be Equal   12  0x2caccd53332aa9a2ccccb54aab1aa22ad2caad35299b1b2acd32ab2b22229a9a
-#     Wide Register Should Be Equal   13  0xa1a554085564a69a1252555a43c8b58a4a25a045a689a3aa2089656597ba66a7
-#     Wide Register Should Be Equal   14  0x5ec45f47d09a8aecac10254c2c59e4068dba5ca7630e74e6bcee99917956327a
-#     Wide Register Should Be Equal   15  0xdc58894eddd71629cb8ba00577830eb18dba5d2f9641a791bcee9a19ac896524
-#     Wide Register Should Be Equal   16  0xce52215b888f503cdf1f0aa4eee357b51cf04d7ad024bed4edbc1090b9dd0141
-#     Wide Register Should Be Equal   17  0x5555555533333333555555553333333355555555333333335555555533333331
-#     Wide Register Should Be Equal   18  0x23a7769fbbc2838134745fe922168a4ec79af82569be586e9866bb3b53769ada
-#     Wide Register Should Be Equal   19  0x28a88800000889828888a0098818910a828aa801099818000000000000000000
-#     Wide Register Should Be Equal   20  0x78fccc062228e9d689c9b54f887cf14ec79af82569be57c3edbc10a1b9dd0130
-#     Wide Register Should Be Equal   21  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9bfa
-#     Wide Register Should Be Equal   22  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9db7
-#     Wide Register Should Be Equal   23  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff99f3
-#     Wide Register Should Be Equal   24  0xccccccccbbbbbbbbaaaaaaaafacefeeddeadbeefcafed00dd0beb5331234abcd
-#     Wide Register Should Be Equal   25  0xccccccccbbbbbbbbaaaaaaaafacefeeddeadbeefcafed00dd0beb5331234abcd
-#     Wide Register Should Be Equal   26  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9bfa
-#     Wide Register Should Be Equal   27  0x28a88802000889908888a00a88189108828aa820099818088822aa2a11109898
-#     Wide Register Should Be Equal   28  0xd25666acbbb1704f23631fe511e568d76d30528ff027c1f732cc1191caef0343
-#     Wide Register Should Be Equal   29  0x4f0d4b819f24f0c164341d3c26628bdb5763bcdf63388709e0654fefeb0953c2
-#     Wide Register Should Be Equal   30  0x2167f87de9ee7ac7ffa3d88bab123192aee492924efa2ec9b55098e068ba2fa1
-#     Wide Register Should Be Equal   31  0x37adadaef9dbff5e738800755466a52c67a8c2216978ad1b257694340f09b7c8
+Should Pass OTBN Simple Smoketest Test
+    Create Log Tester               3
+    Execute Command                 include @scripts/single-node/opentitan-earlgrey.resc
+    Execute Command                 sysbus.otbn FixedRandomPattern "0xAAAAAAAA99999999AAAAAAAA99999999AAAAAAAA99999999AAAAAAAA99999999"
+
+    Execute Command                 sysbus.otbn KeyShare0 "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF"
+    Execute Command                 sysbus.otbn KeyShare1 "0xBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00D"
+
+    Execute Command                 logLevel -1 sysbus.otbn
+
+    # load program directly to OTBN
+    Execute Command                 sysbus.otbn LoadELF ${OTBN_SIMPLE_SMOKETEST_BIN}
+
+    # trigger execution of the program
+    Execute Command                 allowPrivates true
+    Execute Command                 sysbus.otbn HandleCommand 0xd8
+
+    # wait for the program to end
+    Wait For Log Entry              Execution finished
+
+    # verify final state of registers
+    Core Register Should Be Equal   2   0xd0beb513
+    Core Register Should Be Equal   3   0xa0be911a
+    Core Register Should Be Equal   4   0x717d462d
+    Core Register Should Be Equal   5   0xcfffdc07
+    Core Register Should Be Equal   6   0xf0beb51b
+    Core Register Should Be Equal   7   0x80be9112
+    Core Register Should Be Equal   8   0x70002409
+    Core Register Should Be Equal   9   0xd0beb533
+    Core Register Should Be Equal   10  0x00000510
+    Core Register Should Be Equal   11  0xd0beb169
+    Core Register Should Be Equal   12  0xfad44c00
+    Core Register Should Be Equal   13  0x000685f5
+    Core Register Should Be Equal   14  0xffa17d6a
+    Core Register Should Be Equal   15  0x4c000000
+    Core Register Should Be Equal   16  0x00000034
+    Core Register Should Be Equal   17  0xfffffff4
+    Core Register Should Be Equal   18  0xfacefeed
+    Core Register Should Be Equal   19  0xd0beb533
+    Core Register Should Be Equal   20  0x00000123
+    Core Register Should Be Equal   21  0x00000123
+    Core Register Should Be Equal   22  0xcafef010
+    Core Register Should Be Equal   23  0x89c9b54f
+    Core Register Should Be Equal   24  0x00000052
+    Core Register Should Be Equal   25  0x00000020
+    Core Register Should Be Equal   26  0x00000016
+    Core Register Should Be Equal   27  0x0000001a
+    Core Register Should Be Equal   28  0x00400000
+    Core Register Should Be Equal   29  0x00018000
+    Core Register Should Be Equal   30  0x00000000
+    Core Register Should Be Equal   31  0x00000804
+
+    Wide Register Should Be Equal   0   0x37adadaef9dbff5e738800755466a52c67a8c2216978ad1b257694340f09b7c8
+    Wide Register Should Be Equal   1   0x00000000000000000000000000000000baadf00dbaadf00dbaadf00dbaadf00d
+    Wide Register Should Be Equal   2   0x440659a832f54897440659a832f54898dd6208a5cc50f794dd6208a5cc50f791
+    Wide Register Should Be Equal   3   0x23a776b0bbc2837034745ffa22168ae87245a2d00357f208431165e5ed103473
+    Wide Register Should Be Equal   4   0xce52215b888f503cdf1f0aa4eee357b51cf04d7ad024bed4edbc1090b9dd0141
+    Wide Register Should Be Equal   5   0xfafeeeaebbb9f9dfabebbfef99fdf9dfefbafaaff9bfd9ffbaeebbbbdbff9bdb
+    Wide Register Should Be Equal   6   0x28a88802000889908888a00a88189108828aa820099818088822aa2a11109898
+    Wide Register Should Be Equal   7   0xd25666acbbb1704f23631fe511e568d76d30528ff027c1f732cc1191caef0343
+    Wide Register Should Be Equal   8   0x870333f9ddd7162976364ab077830eb1386507da9641a791679944c4ac896525
+    Wide Register Should Be Equal   9   0xd7c12b4df2c374c335d9da9bb4d6d555555554cccccccd55555554cccccccd55
+    Wide Register Should Be Equal   10  0x050111511112d2ed5414401032ced2ed1045054fd30cf2cd45114443f0cd30f0
+    Wide Register Should Be Equal   11  0xd75777fdccc4433c77775ff544b43bc47d7557dfc334b4c477dd55d5bbbc3433
+    Wide Register Should Be Equal   12  0x2caccd53332aa9a2ccccb54aab1aa22ad2caad35299b1b2acd32ab2b22229a9a
+    Wide Register Should Be Equal   13  0xa1a554085564a69a1252555a43c8b58a4a25a045a689a3aa2089656597ba66a7
+    Wide Register Should Be Equal   14  0x5ec45f47d09a8aecac10254c2c59e4068dba5ca7630e74e6bcee99917956327a
+    Wide Register Should Be Equal   15  0xdc58894eddd71629cb8ba00577830eb18dba5d2f9641a791bcee9a19ac896524
+    Wide Register Should Be Equal   16  0xce52215b888f503cdf1f0aa4eee357b51cf04d7ad024bed4edbc1090b9dd0141
+    Wide Register Should Be Equal   17  0x5555555533333333555555553333333355555555333333335555555533333331
+    Wide Register Should Be Equal   18  0x23a7769fbbc2838134745fe922168a4ec79af82569be586e9866bb3b53769ada
+    Wide Register Should Be Equal   19  0x28a88800000889828888a0098818910a828aa801099818000000000000000000
+    Wide Register Should Be Equal   20  0x78fccc062228e9d689c9b54f887cf14ec79af82569be57c3edbc10a1b9dd0130
+    Wide Register Should Be Equal   21  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9bfa
+    Wide Register Should Be Equal   22  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9db7
+    Wide Register Should Be Equal   23  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff99f3
+    Wide Register Should Be Equal   24  0xccccccccbbbbbbbbaaaaaaaafacefeeddeadbeefcafed00dd0beb5331234abcd
+    Wide Register Should Be Equal   25  0xccccccccbbbbbbbbaaaaaaaafacefeeddeadbeefcafed00dd0beb5331234abcd
+    Wide Register Should Be Equal   26  0x78fccc062228e9d689c9b54f887cf1eeefbafabdf9bfd9eebaeebbbbdbff9bfa
+    Wide Register Should Be Equal   27  0x28a88802000889908888a00a88189108828aa820099818088822aa2a11109898
+    Wide Register Should Be Equal   28  0xd25666acbbb1704f23631fe511e568d76d30528ff027c1f732cc1191caef0343
+    Wide Register Should Be Equal   29  0x4f0d4b819f24f0c164341d3c26628bdb5763bcdf63388709e0654fefeb0953c2
+    Wide Register Should Be Equal   30  0x2167f87de9ee7ac7ffa3d88bab123192aee492924efa2ec9b55098e068ba2fa1
+    Wide Register Should Be Equal   31  0x37adadaef9dbff5e738800755466a52c67a8c2216978ad1b257694340f09b7c8
 
