@@ -21,6 +21,8 @@ optional arguments:
   -h, --help            show this help message and exit
   -r REFERENCE_COMMAND, --reference-command REFERENCE_COMMAND
                         Command used to run the GDB server provider used as a reference
+  -R REGISTERS, --register-list REGISTERS
+                        Sequence of register names to compare. Formated as ';' separated list of register names. Eg. 'pc;ra'
   -c COMMAND, --gdb-command COMMAND
                         GDB command to run on both instances after each instruction. Outputs of these commands are compared against each other.
   -s RENODE_SCRIPT, --renode-script RENODE_SCRIPT
@@ -46,7 +48,43 @@ optional arguments:
                         Stop condition, if reached script will stop
 ```
 
-Example:
+#### Examples
+
+##### Comparing Renode with QEMU
+
 ```
-python gdb_compare.py -r 'openocd -f my_board.cfg' -c 'info registers' -s my_board.resc -p 3333 -b firmware.elf -g `arm-zephyr-eabi-gdb` -f 'main,1;printf,5'
+python gdb_compare.py \
+    -r 'qemu-system-riscv64 -nographic -M my_board -kernel firmware.elf -s -S' \
+    -c 'info registers' \
+    -s my_board.resc \
+    -p 1234 \
+    -b firmware.elf \
+    -g riscv64-zephyr-elf-gdb \
+    -f 'main,1;printf,5'
+```
+
+##### Comparing Renode with OpenOCD
+
+```
+python gdb_compare.py \
+    -r 'openocd -f my_board.cfg' \
+    -c 'info registers' \
+    -s my_board.resc \
+    -p 3333 \
+    -b firmware.elf \
+    -g arm-zephyr-eabi-gdb \
+    -f 'main,1;printf,5'
+```
+
+##### Comparing Renode with Renode
+
+```
+python gdb_compare.py \
+    -r 'renode my_board.resc --console --disable-xwt -e "machine StartGdbServer 1234"' \
+    -c 'info registers' \
+    -s my_board.resc \
+    -p 1234 \
+    -b firmware.elf \
+    -g arm-zephyr-eabi-gdb \
+    -f 'main,1;printf,5'
 ```
