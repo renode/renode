@@ -104,7 +104,7 @@ namespace Antmicro.Renode.Network
         {
             var ethernetPacket = frame.UnderlyingPacket;
 
-            this.Log(LogLevel.Noisy, "Ethernet packet details: {0}", ethernetPacket);
+            this.Log(LogLevel.Noisy, "Ethernet packet details: {0}", frame);
 #if DEBUG_PACKETS
             this.Log(LogLevel.Noisy, Misc.PrettyPrintCollectionHex(frame.Bytes));
 #endif
@@ -142,7 +142,7 @@ namespace Antmicro.Renode.Network
 
         private void HandleIPv4(IPv4Packet packet)
         {
-            this.Log(LogLevel.Noisy, "Handling IPv4 packet: {0}", packet);
+            this.Log(LogLevel.Noisy, "Handling IPv4 packet: {0}", PacketToString(packet));
 
             switch(packet.Protocol)
             {
@@ -158,7 +158,7 @@ namespace Antmicro.Renode.Network
 
         private void HandleUdp(UdpPacket packet)
         {
-            this.Log(LogLevel.Noisy, "Handling UDP packet: {0}", packet);
+            this.Log(LogLevel.Noisy, "Handling UDP packet: {0}", PacketToString(packet));
 
             if(!modules.TryGetValue(packet.DestinationPort, out var module))
             {
@@ -190,12 +190,12 @@ namespace Antmicro.Renode.Network
         private bool TryHandleArp(ARPPacket packet, out ARPPacket response)
         {
             response = null;
-
-            this.Log(LogLevel.Noisy, "Handling ARP packet: {0}", packet);
+            var packetString = PacketToString(packet);
+            this.Log(LogLevel.Noisy, "Handling ARP packet: {0}", packetString);
 
             if(packet.Operation != ARPOperation.Request)
             {
-                this.Log(LogLevel.Warning, "Unsupported ARP packet: {0}", packet);
+                this.Log(LogLevel.Warning, "Unsupported ARP packet: {0}", packetString);
                 return false;
             }
 
@@ -214,6 +214,18 @@ namespace Antmicro.Renode.Network
 
             this.Log(LogLevel.Noisy, "Sending ARP response");
             return true;
+        }
+
+        private string PacketToString(Packet packet)
+        {
+            try
+            {
+                return packet.ToString();
+            }
+            catch
+            {
+                return "<failed to decode packet>";
+            }
         }
 
         private readonly Dictionary<int, IServerModule> modules;
