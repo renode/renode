@@ -49,7 +49,7 @@ cmp_parser.add_argument("-R", "--register-list",
                         dest="registers",
                         action="store",
                         default=None,
-                        help="Sequence of register names to compare. Formated as ';' spearated list of register names. Eg. 'pc;ra'")
+                        help="Sequence of register names to compare. Formated as ';' separated list of register names, e.g. 'pc;ra'")
 
 parser.add_argument("-r", "--reference-command",
                     dest="reference_command",
@@ -98,12 +98,12 @@ parser.add_argument("-f", "--start-frame",
                     dest="start_frame",
                     action="store",
                     default=None,
-                    help="Sequence of jumps to reach target frame. Formated as 'addr, occurence', separated with ';'. Eg. '_start,1;printf,7'")
+                    help="Sequence of jumps to reach target frame. Formated as 'addr, occurrence', separated with ';', e.g. '_start,1;printf,7'")
 parser.add_argument("-i", "--interest-points",
                     dest="ips",
                     action="store",
                     default=None,
-                    help="Sequence of address, interest points, after which state will be compared. Formated as ';' spearated list of hexadecimal addresses. Eg. '0x8000;0x340eba3c'")
+                    help="Sequence of address, interest points, after which state will be compared. Formatted as ';' spearated list of hexadecimal addresses, e.g. '0x8000;0x340eba3c'")
 parser.add_argument("-S", "--stop-address",
                     dest="stop_address",
                     action="store",
@@ -264,9 +264,9 @@ class GDBInstance:
 
     def print_stack(self, stack: Stack) -> None:
         """Prints a stack."""
-        print("Address\t\tOccurence\t\tSymbol")
-        for address, occurence in stack:
-            print(f"{address}\t{occurence}\t{self.get_symbol_at(address)}")
+        print("Address\t\tOccurrence\t\tSymbol")
+        for address, occurrence in stack:
+            print(f"{address}\t{occurrence}\t{self.get_symbol_at(address)}")
 
     def validate_response(self, response: str) -> None:
         """Scans a GDB response for common error messages."""
@@ -568,9 +568,9 @@ async def check(stack: Stack, gdb_comparator: GDBComparator, previous_pc: str, p
     if previous_pc not in exec_count:
         previous_pc = pc
     print("Found point after which state is different. Adding to `stack` for later iterations")
-    occurence = exec_count[previous_pc]
-    print(f"\tAddress: {previous_pc}\n\tOccurence: {occurence}")
-    stack.append((previous_pc, occurence))
+    occurrence = exec_count[previous_pc]
+    print(f"\tAddress: {previous_pc}\n\tOccurrence: {occurrence}")
+    stack.append((previous_pc, occurrence))
     exec_count = {}
     print(SECTION_SEPARATOR)
 
@@ -604,8 +604,8 @@ async def main() -> None:
         for jump in jumps:
             addr, occur = jump.split(",")
             address = addr.strip()
-            occurence = int(occur.strip())
-            stack.append((address, occurence))
+            occurrence = int(occur.strip())
+            stack.append((address, occurrence))
 
     insn_found = False
 
@@ -616,7 +616,7 @@ async def main() -> None:
         if len(stack) != 0:
             print("Recreating stack; jumping to breakpoint at:")
             for address, count in stack:
-                print("\t" + address + ", " + str(count) + " occurence")
+                print("\t" + address + ", " + str(count) + " occurrence")
                 await gdb_comparator.run_command(f"break *{address}")
 
                 for _ in range(count):
