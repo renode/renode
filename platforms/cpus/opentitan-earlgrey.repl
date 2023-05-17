@@ -1,4 +1,4 @@
-// Auto-generated renode platform config for OpenTitan at commit 1e86ba2a238dc26c2111d325ee7645b0e65058e5
+// Auto-generated renode platform config for OpenTitan at commit f243e6802143374741739d2c164c4f2f61697669
 // OpenTitan variant earlgrey
 
 //CPUs
@@ -13,11 +13,12 @@ rom: Memory.MappedMemory @ sysbus 0x00008000
 
 rom_ctrl: MemoryControllers.OpenTitan_ROMController @ sysbus 0x411e0000
     rom: rom
-    nonce: "5360CDF714F75BAE"
-    key: "96990EB046B67B2CBB2A1859C5C6A54A"
+    nonce: "755CF00BD7432C3F"
+    key: "8CD4E7EFF1B9EC59CE812447C5714595"
+    FatalAlert -> alert_handler@60
 
 sram_ctrl: MemoryControllers.OpenTitan_SRAMController @ sysbus 0x411c0000
-    FatalError -> alert_handler@55
+    FatalError -> alert_handler@59
 
 //FLASH
 flash: Memory.MappedMemory @ {sysbus 0x20000000; sysbus 0x80000000}
@@ -25,15 +26,17 @@ flash: Memory.MappedMemory @ {sysbus 0x20000000; sysbus 0x80000000}
 
 flash_ctrl: MTD.OpenTitan_FlashController @ sysbus 0x41000000
     flash: flash
-    ProgramEmptyIRQ -> rv_plic@155
-    ProgramLevelIRQ -> rv_plic@156
-    ReadFullIRQ -> rv_plic@157
-    ReadLevelIRQ -> rv_plic@158
-    OperationDoneIRQ -> rv_plic@159
-    CorrectableErrorIRQ -> rv_plic@160
-    RecoverableAlert -> alert_handler@33
-    FatalStandardAlert -> alert_handler@34
-    FatalAlert -> alert_handler@35
+    ProgramEmptyIRQ -> rv_plic@159
+    ProgramLevelIRQ -> rv_plic@160
+    ReadFullIRQ -> rv_plic@161
+    ReadLevelIRQ -> rv_plic@162
+    OperationDoneIRQ -> rv_plic@163
+    CorrectableErrorIRQ -> rv_plic@164
+    RecoverableAlert -> alert_handler@35
+    FatalStandardAlert -> alert_handler@36
+    FatalAlert -> alert_handler@37
+    FatalPrimitiveFlashAlert -> alert_handler@38
+    RecoverablePrimitiveFlashAlert -> alert_handler@39
 
 //RAM
 ram_ret_aon: Memory.MappedMemory @ sysbus 0x40600000
@@ -98,29 +101,30 @@ i2c2: I2C.OpenTitan_I2C @ sysbus 0x400A0000
     FatalAlert -> alert_handler@8
 
 // SPI
-spi_host0: SPI.OpenTitan_SpiHost @ sysbus 0x40300000
-    FatalAlert -> alert_handler@17
-    Error -> rv_plic@134
-    SpiEvent -> rv_plic@135
+spi_host0: SPI.OpenTitan_SpiHost@ sysbus 0x40300000
+    FatalAlert -> alert_handler@19
+    Error -> rv_plic@131
+    SpiEvent -> rv_plic@132
     numberOfCSLines: 32
 
-spi_host1: SPI.OpenTitan_SpiHost @ sysbus 0x40310000
-    FatalAlert -> alert_handler@18
-    Error -> rv_plic@136
-    SpiEvent -> rv_plic@137
+spi_host1: SPI.OpenTitan_SpiHost@ sysbus 0x40310000
+    FatalAlert -> alert_handler@20
+    Error -> rv_plic@133
+    SpiEvent -> rv_plic@134
     numberOfCSLines: 32
 
 spi_device: SPI.OpenTitan_SpiDevice @ sysbus 0x40050000
+    FatalAlert -> alert_handler@5
 
 // GPIOs
 gpio: GPIOPort.OpenTitan_GPIO @ sysbus 0x40040000
-    IRQ -> rv_plic@1
+    IRQ -> rv_plic@33
     FatalAlert -> alert_handler@4
 
 // AES
 aes: Miscellaneous.OpenTitan_AES @ sysbus 0x41100000
-    UpdateErrorAlert -> alert_handler@38
-    FatalFaultAlert -> alert_handler@39
+    UpdateErrorAlert -> alert_handler@42
+    FatalFaultAlert -> alert_handler@43
 
 // Key Manager
 keymgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41140000
@@ -128,65 +132,67 @@ keymgr: Miscellaneous.OpenTitan_KeyManager @ sysbus 0x41140000
     kmac: kmac
     romController: rom_ctrl
     deviceId: "BF5EA92044DAC540CFD1A00105568DFA97D9C35EA0407D71320B5E0434DB637F"
-    lifeCycleDiversificationConstant: "03A0B091DC41D062DD10CA2D7B93136F"
+    lifeCycleDiversificationConstant: "2F1A43C03DD4FF9B887AB7521CA6CBD8"
     creatorKey: "9152E32C9380A4BCC3E0AB263581E6B0E8825186E1E445631646E8BEF8C45D47"
     ownerKey: "FA365DF52DA48CD752FB3A026A8E608F0098CFE5FA9810494829D0CD9479EB78"
     rootKey: "EFB7EA7EE90093CF4AFFD9AAA2D6C0EC446CFDF5F2D5A0BFD7E2D93EDC63A10256D24A00181DE99E0F690B447A8DDE2A1FFB8BC306707107AA6E2410F15CFC37"
-    softOutputSeed: "203BEB21B48E13B127FA42A14CEB82B6610A5457BBF1CAF507098F7022B6F355"
-    hardOutputSeed: "0C00998FE5D2429B122499F398D73409C6CE2E8C4CC7AB13C648D6F3AEAC01E3"
-    destinationAesSeed: "25552FD110DE6F185A80F3AE276DB2416FC002D04B77C626E56477E3DB8EC31E"
-    destinationKmacSeed: "28F496819267FC8761BE9C1AB36495FD7C0CB3ABFF6A4FC7F10263B08FF69923"
-    destinationOtbnSeed: "F5D3781CDC459FE1C6AC6343A98F8F32E989297C02610693700D68B4716EB94C"
-    destinationNoneSeed: "011D8AD4C0195D90AE1582AD51E12EB525C2E74DE16A934681A42F3C72492F96"
-    revisionSeed: "B46FC99AE645F3DD8F3EAD31DF20485CEC3B1975D7E78D34474B8A3E1EBD40F2"
-    creatorIdentitySeed: "81F213FAF8A2D8E27D0E00D2BFF0AC380A5BDE7E8AB3461A9B86823818D0FFD7"
-    ownerIntermediateIdentitySeed: "66C33522317DB4910816E9F35A99F403273CDFF3AD3389C1708A2A7A6DA271BF"
-    ownerIdentitySeed: "A2CB8F24F7E8BB0A0439B0CD362939BB2E0D30A49D0522E9A5B96197D6349A22"
-    OperationDoneIRQ -> rv_plic@168
+    softOutputSeed: "3DAAEF20E285FA658FDD1B426C037151B16C8D444C444F396F4479CB795CF94B"
+    hardOutputSeed: "9E409D18381BD5D56821E2985E47997105C4900F255574675985B210E1A968E4"
+    destinationAesSeed: "5E5B35E460FDAF1FF382AB0195E33689D99BCEBF2B79B6839264EDF4DE2B39F3"
+    destinationKmacSeed: "94059891A38BD1D16C763BBD90347E58152D7FCA9938036525AAA3F89E3DE8F1"
+    destinationOtbnSeed: "278645E11D7CAC76310205E19CD3F2ED294A279F3C6D0649A905CC9B10A67A16"
+    destinationNoneSeed: "7A9E0F6E3D591A7FD8C7BA264AF78F28AEE0D28E4D638D95D1806E870336CD96"
+    revisionSeed: "414C190AD0A09D144FFC0C0FEA081CEF945B641F096B9F3E9A494BA35FCFEF0D"
+    creatorIdentitySeed: "FB223E8AB704F249EE3FA822276C45E588ED40CF52C8FAE2D054A71149771822"
+    ownerIntermediateIdentitySeed: "2EC37360E23D4DDA559ADABCF099937FEBBF048FAC328BA1BDEE0CACA987BE4A"
+    ownerIdentitySeed: "4ABF486B16740B20BC32B13FF07A13FF21CE605E0AC019858F73D707CD0EC1D3"
+    OperationDoneIRQ -> rv_plic@172
+    RecoverableAlert -> alert_handler@49
+    FatalAlert -> alert_handler@50
 
 // CSRNG
 csrng: Miscellaneous.OpenTitan_CSRNG @ sysbus 0x41150000
     entropySource: entropy_src
-    RequestCompletedIRQ -> rv_plic@169
-    EntropyeRequestedIRQ -> rv_plic@170
-    HardwareInstanceIRQ -> rv_plic@171
-    FatalErrorIRQ -> rv_plic@172
-    RecoverableAlert -> alert_handler@47
-    FatalAlert -> alert_handler@48
+    RequestCompletedIRQ -> rv_plic@173
+    EntropyeRequestedIRQ -> rv_plic@174
+    HardwareInstanceIRQ -> rv_plic@175
+    FatalErrorIRQ -> rv_plic@176
+    RecoverableAlert -> alert_handler@51
+    FatalAlert -> alert_handler@52
 
 // HMAC
 hmac: Miscellaneous.OpenTitan_HMAC @ sysbus 0x41110000
-    FatalAlert -> alert_handler@40
+    FatalAlert -> alert_handler@44
 
 // KMAC
 kmac: Miscellaneous.OpenTitan_KMAC @ sysbus 0x41120000
     KmacDoneIRQ -> rv_plic@168
     FifoEmptyIRQ -> rv_plic@169
     KmacErrorIRQ -> rv_plic@170
-    RecoverableAlert -> alert_handler@41
-    FatalAlert -> alert_handler@42
+    RecoverableAlert -> alert_handler@45
+    FatalAlert -> alert_handler@46
 
 // Timers
 rv_timer: Timers.OpenTitan_Timer @ sysbus 0x40100000
-    FatalAlert -> alert_handler@10
     IRQ -> cpu0@7
+    FatalAlert -> alert_handler@10
 
 timer_aon: Timers.OpenTitan_AonTimer @ sysbus 0x40470000
     powerManager: pwrmgr_aon
     resetManager: rstmgr_aon
-    FatalAlert -> alert_handler@29
-    WakeupTimerExpired -> rv_plic@158
-    WatchdogTimerBark -> rv_plic@159
+    FatalAlert -> alert_handler@31
+    WakeupTimerExpired -> rv_plic@155
+    WatchdogTimerBark -> rv_plic@156
 
 // Power Manager
 pwrmgr_aon: Miscellaneous.OpenTitan_PowerManager @ sysbus 0x40400000
-    FatalAlert -> alert_handler@20
+    FatalAlert -> alert_handler@22
 
 // Reset Manager
 rstmgr_aon: Miscellaneous.OpenTitan_ResetManager @ sysbus 0x40410000
     resetPC: 0x00008084
-    FatalAlert -> alert_handler@21
-    FatalConsistencyAlert -> alert_handler@22
+    FatalAlert -> alert_handler@23
+    FatalConsistencyAlert -> alert_handler@24
     init:
         MarkAsSkippedOnLifeCycleReset sysbus.rstmgr_aon
         MarkAsSkippedOnLifeCycleReset sysbus.pwrmgr_aon
@@ -199,6 +205,8 @@ otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0
     FatalMacroAlert -> alert_handler@11
     FatalCheckErrorAlert -> alert_handler@12
     FatalBusAlert -> alert_handler@13
+    FatalPrimitiveOtpAlert -> alert_handler@14
+    RecoverablePrimitiveOtpAlert -> alert_handler@15
     AValuesChain: "8638C62621EC19E8966416165252225F03B9C97821B7B107381030AB3D20AB124694BF85E417495A"
     BValuesChain: "E679DF6E77EDDBECDE74B677DFF23AFFC3BFFB79B5FFFD87F930B4FB3F6BFF9A5F97BFD7FCBFE9FF"
     CValuesChain: "0C1B73141BA20D421FD124302E8F443DE02C272E2CEEC1138DAD07CBD24A18F583A34D51A42A1E702A7E90F05A81D12E"
@@ -206,11 +214,11 @@ otp_ctrl: Miscellaneous.OpenTitan_OneTimeProgrammableMemoryController @ sysbus 0
 
 // Life Cycle Controller
 lc_ctrl: Miscellaneous.OpenTitan_LifeCycleController @ sysbus 0x40140000
-    FatalProgAlert -> alert_handler@14
-    FatalStateAlert -> alert_handler@15
-    FatalBusAlert -> alert_handler@16
     resetManager: rstmgr_aon
     otpController: otp_ctrl
+    FatalProgAlert -> alert_handler@16
+    FatalStateAlert -> alert_handler@17
+    FatalBusAlert -> alert_handler@18
     DeviceId: "BF5EA92044DAC540CFD1A00105568DFA97D9C35EA0407D71320B5E0434DB637F"
     TestExitToken: "000102030405060708090A0B0C0D0E0F"
     TestUnlockToken: "79DEF38F41A9B895F6BDF341BEADA9B6"
@@ -219,50 +227,57 @@ lc_ctrl: Miscellaneous.OpenTitan_LifeCycleController @ sysbus 0x40140000
 // PLIC with 187 sources
 rv_plic: IRQControllers.OpenTitan_PlatformLevelInterruptController @ sysbus 0x48000000
     0 -> cpu0@11
-    numberOfSources: 187
+    FatalAlert -> alert_handler@41
+    numberOfSources: 184
     numberOfContexts: 1
 
 // Simulated SRAM used to indicate test status to simulator
 swteststatus: Miscellaneous.OpenTitan_VerilatorSwTestStatus @ sysbus 0x411f0080
 
 entropy_src: Miscellaneous.OpenTitan_EntropySource @ sysbus 0x41160000
-    RecoverableAlert -> alert_handler@49
-    FatalAlert -> alert_handler@50
-    EsEntropyValidIRQ -> rv_plic@180
-    EsHealthTestFailedIRQ -> rv_plic@181
-    EsObserveFifoReadyIRQ -> rv_plic@182
-    EsFatalErrIRQ -> rv_plic@183
+    RecoverableAlert -> alert_handler@53
+    FatalAlert -> alert_handler@54
+    EsEntropyValidIRQ -> rv_plic@177
+    EsHealthTestFailedIRQ -> rv_plic@178
+    EsObserveFifoReadyIRQ -> rv_plic@179
+    EsFatalErrIRQ -> rv_plic@180
 
 edn0: Miscellaneous.OpenTitan_EntropyDistributionNetwork @ sysbus 0x41170000
     cryptoRandomGenerator: csrng
-    RecoverableAlert -> alert_handler@51
-    FatalAlert -> alert_handler@52
-    CommandRequestDone -> rv_plic@184
-    FatalError -> rv_plic@185
+    RecoverableAlert -> alert_handler@55
+    FatalAlert -> alert_handler@56
+    CommandRequestDone -> rv_plic@181
+    FatalError -> rv_plic@182
 
 edn1: Miscellaneous.OpenTitan_EntropyDistributionNetwork @ sysbus 0x41180000
     cryptoRandomGenerator: csrng
-    RecoverableAlert -> alert_handler@53
-    FatalAlert -> alert_handler@54
-    CommandRequestDone -> rv_plic@186
-    FatalError -> rv_plic@187
+    RecoverableAlert -> alert_handler@57
+    FatalAlert -> alert_handler@58
+    CommandRequestDone -> rv_plic@183
+    FatalError -> rv_plic@184
 
 alert_handler: Miscellaneous.OpenTitan_AlertHandler @ sysbus 0x40150000
-    ClassAInterrupt -> rv_plic@130
-    ClassBInterrupt -> rv_plic@131
-    ClassCInterrupt -> rv_plic@132
-    ClassDInterrupt -> rv_plic@133
+    ClassAInterrupt -> rv_plic@127
+    ClassBInterrupt -> rv_plic@128
+    ClassCInterrupt -> rv_plic@129
+    ClassDInterrupt -> rv_plic@130
 
 otbn: Miscellaneous.OpenTitan_BigNumberAccelerator @ sysbus 0x41130000
-    DoneIRQ -> rv_plic@174
-    FatalAlert -> alert_handler@43
-    RecoverableAlert -> alert_handler@44
+    DoneIRQ -> rv_plic@171
+    FatalAlert -> alert_handler@47
+    RecoverableAlert -> alert_handler@48
 
 sysrst_ctrl: Miscellaneous.OpenTitan_SystemResetControl @ sysbus 0x40430000
     resetManager: rstmgr_aon
+    FatalFault -> alert_handler@27
 
 clock_manager: Miscellaneous.OpenTitan_ClockManager @ sysbus 0x40420000
     otbn: otbn
+
+RV_CORE_IBEX_RND_DATA: Python.PythonPeripheral @ sysbus 0x411F0058
+    size: 0x4
+    initable: true
+    script: "import random; rand = int(random.random()*2**32); request.value = rand"
 
 sysbus:
     init:
@@ -306,4 +321,5 @@ sysbus:
         Tag <0x411C0000 0x1000> "OPENTITAN_EARLGREY_DEV_SRAM_CTRL_MAIN" 0
         Tag <0x00008000 0x1000> "OPENTITAN_EARLGREY_DEV_ROM_CTRL" 0
         Tag <0x411F0000 0x1000> "OPENTITAN_EARLGREY_DEV_RV_CORE_IBEX" 0
+        Tag <0x411F005C 0x4> "OPENTITAN_EARLGREY_DEV_RV_CORE_IBEX_RND_STATUS" 1
 

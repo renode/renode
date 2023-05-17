@@ -3,63 +3,54 @@ Tests for OpenTitan at commit 1e86ba2a238dc26c2111d325ee7645b0e65058e5
 
 *** Variables ***
 ${UART}                         sysbus.uart0
-${URL}                          @https://dl.antmicro.com/projects/renode
-${AES_BIN}                      ${URL}/open_titan-earlgrey--aes_smoketest_prog_fpga_cw310-s_239912-3506f84053745f5f37f35209531866ad9fa16228
-${CSRNG_BIN}                    ${URL}/open_titan-earlgrey--csrng_smoketest_prog_fpga_cw310-s_232820-b81d41f67bebe52fba2042742eaf4e81c576ac22
-${FLASH_CTRL_BIN}               ${URL}/open_titan-earlgrey--flash_ctrl_test_prog_fpga_cw310-s_328552-1354f2e7304a48b3ed84c270d301211cd32df71d
-${GPIO_BIN}                     ${URL}/open_titan-earlgrey--gpio_smoketest_prog_fpga_cw310-s_214060-09246e86755f6f3e49e5210fc57cbce51f1789af
-${HMAC_BIN}                     ${URL}/open_titan-earlgrey--hmac_smoketest_prog_fpga_cw310-s_248932-0243e4d66a15c6931b578bd4a81b862071bbe4c8
-${KMAC_BIN}                     ${URL}/open_titan-earlgrey--kmac_smoketest_prog_fpga_cw310-s_257184-ae5908214fd1438d8b8ec5ad3e0cfe9c602a1a26
-${KMAC_CSHAKE_BIN}              ${URL}/open_titan-earlgrey--kmac_mode_cshake_test_prog_fpga_cw310-s_243804-f61a86af163541e5bfc54ca81333691d6b08df70
-${KMAC_KMAC_BIN}                ${URL}/open_titan-earlgrey--kmac_mode_kmac_test_prog_fpga_cw310-s_241792-8366dde2c380e0fe7636aa650e0396028a7d2c55
-${LC_OTP_CFG}                   ${URL}/open_titan-earlgrey--lc_ctrl_otp_hw_cfg_test_prog_fpga_cw310-s_258160-70f63dede541716e44a1f7a55129c389c6cd4da3
-${OTP_VMEM}                     ${URL}/open_titan-earlgrey--otp-img.24.vmem-s_44628-e17dede45d7e0509540343e52fe6fce1454c5339
-${RESET_BIN}                    ${URL}/open_titan-earlgrey--rstmgr_smoketest_prog_fpga_cw310-s_204336-fc60c0258f0295d4357a3ee0c4031a49f846663b
-${SW_RESET_BIN}                 ${URL}/open_titan-earlgrey--rstmgr_sw_req_test_prog_fpga_cw310-s_217432-d32e3a98fe09f6779787543c86d2d96ac08111cd
-${TEST_ROM}                     ${URL}/open_titan-earlgrey--test_rom_fpga_cw310-s_388132-dab4120064720bf159b577e3cc416c460f6acac4
-${TEST_ROM_SCR_VMEM}            ${URL}/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-f29ed3b389d4867ff6f8b6fb8d0d2dba9e505585
-${TIMER_BIN}                    ${URL}/open_titan-earlgrey--rv_timer_smoketest_prog_fpga_cw310-s_223716-30dd409c881d36937e11280cdd08fc69beb805b6
-${UART_BIN}                     ${URL}/open_titan-earlgrey--uart_smoketest_prog_fpga_cw310-s_191756-0189d97d3cb70d8b3fce74becf77f359a028f807
-${ALERT_HANDLER}                ${URL}/open_titan-earlgrey--alert_test_prog_fpga_cw310-s_374976-f05e93d928220c226dbedf137f0da8b879ce023c
-${ALERT_HANDLER_PING}           ${URL}/open_titan-earlgrey--alert_handler_ping_timeout_test_prog_fpga_cw310-s_378000-e43931d2c469fe986331931ad6abbe20bf10900a
-${SPI_HOST}                     ${URL}/open_titan-earlgrey--spi_host_smoketest_prog_fpga_cw310-s_230244-b03d7d09dc842797261f0e790a68644b84bb8e35
-${AON_TIMER_IRQ_BIN}            ${URL}/open_titan-earlgrey--aon_timer_irq_test_prog_fpga_cw310-s_305976-926ff9f281003a1f1460f6bc061419fb107cbbfb
-${AON_TIMER_WDOG_SLEEP_BIN}     ${URL}/open_titan-earlgrey--aon_timer_sleep_wdog_sleep_pause_test_prog_fpga_cw310-s_279904-95929d5df5ba4fa6ea9a23d485c0b5d8679f488f
-${AON_TIMER_BIN}                ${URL}/open_titan-earlgrey--aon_timer_smoketest_prog_fpga_cw310-s_227460-d7bc8e5a474bdee575ecb7b678cc9e2a76ad2382
-${AON_TIMER_WDOG_BITE_BIN}      ${URL}/open_titan-earlgrey--aon_timer_wdog_bite_reset_test_prog_fpga_cw310-s_278528-6590a9d265d83137fb1821fa3d3c8d0444fa7cb6
-${ENTROPY_SRC_AST_REQ_BIN}      ${URL}/open_titan-earlgrey--entropy_src_ast_rng_req_test_prog_fpga_cw310-s_223760-41abb796785237e76a0114d76d578d34fbeed0b4
-${ENTROPY_SRC_FW_OVR_BIN}       ${URL}/open_titan-earlgrey--entropy_src_fw_ovr_test_prog_fpga_cw310-s_228724-297058e2f646201161ab762ffb3c789c9fe318f3
-${ENTROPY_SRC_KAT_BIN}          ${URL}/open_titan-earlgrey--entropy_src_kat_test_prog_fpga_cw310-s_227200-5d1e4dc69a9991f4dd106249d599c8f0c59f5198
-${SRAM_CTRL_BIN}                ${URL}/open_titan-earlgrey--sram_ctrl_smoketest_prog_fpga_cw310-s_201048-b0d2ad0e519756861521926f26f7aca0ba088470
-${OTBN_ECDSA_BIN}               ${URL}/open_titan-earlgrey--otbn_ecdsa_op_irq_test_prog_fpga_cw310-s_375840-210c2433647cc21bf96477cf2eabc2cab76ebbff
-${OTBN_IRQ_BIN}                 ${URL}/open_titan-earlgrey--otbn_irq_test_prog_fpga_cw310-s_348100-30dceef18bf2ac2cd9793e6b833ed9e66b305338
-${OTBN_SCRAMBLE_BIN}            ${URL}/open_titan-earlgrey--otbn_mem_scramble_test_prog_fpga_cw310-s_245136-7caf31999f17c5ccf5f69c7023b639cbda1b0acd
-${OTBN_RAND_BIN}                ${URL}/open_titan-earlgrey--otbn_randomness_test_prog_fpga_cw310-s_382412-af2e53e5aa15fcdbccdbd02e7743b9b9a7e6c4ed
-${OTBN_SMOKETEST_BIN}           ${URL}/open_titan-earlgrey--otbn_smoketest_prog_fpga_cw310-s_324520-4bab1e9ac4a35a6ab9c27df407aad8e9a68ace94
-${OTBN_RSA_BIN}                 ${URL}/open_titan-earlgrey--otbn_rsa_test_prog_fpga_cw310-s_329844-075a4b23640dba0a2e34c030b65c79b553a70942
-# this binary is built from https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645/hw/ip/otbn/dv/smoke/smoke_test.s
-${OTBN_SIMPLE_SMOKETEST_BIN}    ${URL}/open_titan-earlgrey--otbn_simple_smoketest.elf-s_9180-eafc18be3506e30cc6c255942156b35e4cbda0d9
+${AES_BIN}                      @https://dl.antmicro.com/projects/renode/aes_smoketest_prog_fpga_cw310.elf-s_325384-ef59f6e8ac7f56e8f3ee0f151652464a95023ad7
+${CSRNG_BIN}                    @https://dl.antmicro.com/projects/renode/csrng_smoketest_prog_fpga_cw310.elf-s_336108-1a49396335efc0975ac5d4d99241028bb4711419
+${FLASH_CTRL_BIN}               @https://dl.antmicro.com/projects/renode/flash_ctrl_test_prog_fpga_cw310.elf-s_424784-c8fa392bab21661e29224b2ee8678076502aa242
+${GPIO_BIN}                     @https://dl.antmicro.com/projects/renode/gpio_smoketest_prog_fpga_cw310.elf-s_362872-de8f5853a07e44dd8ba55651d5293bd33f9b66d6
+${HMAC_BIN}                     @https://dl.antmicro.com/projects/renode/hmac_smoketest_prog_fpga_cw310.elf-s_323008-274f6dd2f28ca66f6baa1be5304497c0ce7b6201
+${KMAC_BIN}                     @https://dl.antmicro.com/projects/renode/kmac_smoketest_prog_fpga_cw310.elf-s_347412-b12dd1cc85f45d1e3256613441c41afe2ed127f0
+${KMAC_CSHAKE_BIN}              @https://dl.antmicro.com/projects/renode/kmac_mode_cshake_test_prog_fpga_cw310.elf-s_334036-371c0b874622b5468d391bf76c2d4494a2621020
+${KMAC_KMAC_BIN}                @https://dl.antmicro.com/projects/renode/kmac_mode_kmac_test_prog_fpga_cw310.elf-s_336072-7200324f9eb2f9feba7b3c9d0a99e8faaf0b118c
+${LC_OTP_CFG}                   @https://dl.antmicro.com/projects/renode/lc_ctrl_otp_hw_cfg_test_prog_fpga_cw310.elf-s_351476-97168d00236be711f39cd24ec343b8ee593852ef
+${OTP_VMEM}                     @https://dl.antmicro.com/projects/renode/otp_img_fpga_cw310.vmem-s_49520-971ccda1d11a9f0c690f4f32b72f1b5f3b458059
+${RESET_BIN}                    @https://dl.antmicro.com/projects/renode/rstmgr_smoketest_prog_fpga_cw310.elf-s_288244-c3d023ac96dc447e626ead042e1d8337d5ceaee6
+${SW_RESET_BIN}                 @https://dl.antmicro.com/projects/renode/rstmgr_sw_req_test_prog_fpga_cw310.elf-s_306308-2cc96fe5320d0c1b54153ddc6506e09d90133917
+${TEST_ROM}                     @https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.elf-s_447072-1cdfd7b2a98b0c09f158d8267c5e9fbbf34dd33b
+${TEST_ROM_SCR_VMEM}            @https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.39.scr.vmem-s_103772-d3a8f17879eedbcbf18e554bfd7871ccd992414e
+${TIMER_BIN}                    @https://dl.antmicro.com/projects/renode/rv_timer_smoketest_prog_fpga_cw310.elf-s_310476-ace649750b26ef6ae36c099bf777fe280212ef21
+${UART_BIN}                     @https://dl.antmicro.com/projects/renode/uart_smoketest_prog_fpga_cw310.elf-s_282560-87570a6fcb3684b126ef3c0ca9bfd53a0dc68936
+${ALERT_HANDLER}                @https://dl.antmicro.com/projects/renode/alert_test_prog_fpga_cw310.elf-s_681764-d7203f6da5d986ce9a57d641ff1261a450a4c63d
+${ALERT_HANDLER_PING}           @https://dl.antmicro.com/projects/renode/alert_handler_ping_timeout_test_prog_fpga_cw310.elf-s_484472-9abdc0b5e973cde8b9746d2e8ec8a997dbc8d0ba
+${SPI_HOST}                     @https://dl.antmicro.com/projects/renode/spi_host_smoketest_prog_fpga_cw310.elf-s_321216-41ad0ca0446549371d07b4d8209ddfbc08c8be33
+${AON_TIMER_IRQ_BIN}            @https://dl.antmicro.com/projects/renode/aon_timer_irq_test_prog_fpga_cw310.elf-s_388756-3411f90c38a58858140ae754bc06d7b6c2c2eff5
+${AON_TIMER_WDOG_SLEEP_BIN}     @https://dl.antmicro.com/projects/renode/aon_timer_sleep_wdog_sleep_pause_test_prog_fpga_cw310.elf-s_373448-c0d65458130e457165e7575712a0ccb66ad27f80
+${AON_TIMER_BIN}                @https://dl.antmicro.com/projects/renode/aon_timer_smoketest_prog_fpga_cw310.elf-s_317844-46f92ea7a8772be2afcf695e7fdb9df44216c852
+${AON_TIMER_WDOG_BITE_BIN}      @https://dl.antmicro.com/projects/renode/aon_timer_wdog_bite_reset_test_prog_fpga_cw310.elf-s_371232-16ea5f84891ef4973add5fcf42b3e7fb9eb236d2
+${ENTROPY_SRC_AST_REQ_BIN}      @https://dl.antmicro.com/projects/renode/entropy_src_ast_rng_req_test_prog_fpga_cw310.elf-s_322228-5d384e67d50472d80b8d66cf180ceb3b71e5ab15
+${ENTROPY_SRC_FW_OVR_BIN}       @https://dl.antmicro.com/projects/renode/entropy_src_fw_ovr_test_prog_fpga_cw310.elf-s_347200-0e9636ca3c57e66a7a471143a0c48012d2c3753f
+${ENTROPY_SRC_KAT_BIN}          @https://dl.antmicro.com/projects/renode/entropy_src_kat_test_prog_fpga_cw310.elf-s_391260-76d830cb1746909c033f1f8930cae428855b4b24
+${SRAM_CTRL_BIN}                @https://dl.antmicro.com/projects/renode/sram_ctrl_smoketest_prog_fpga_cw310.elf-s_291188-63360ab9786db3a84da77b8766e458d119227dd5
+${OTBN_ECDSA_BIN}               @https://dl.antmicro.com/projects/renode/otbn_ecdsa_op_irq_test_prog_fpga_cw310.elf-s_460328-d9b26904a2e79a6df89bda0d74c267351d839a2d
+${OTBN_IRQ_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_irq_test_prog_fpga_cw310.elf-s_445860-54133c6721deb5c0ac8713a06da7f93253276f7e
+${OTBN_SCRAMBLE_BIN}            @https://dl.antmicro.com/projects/renode/otbn_mem_scramble_test_prog_fpga_cw310.elf-s_357976-17001e15e1ccc12075ff0bb108b0bc8fa0a96427gh
+${OTBN_RAND_BIN}                @https://dl.antmicro.com/projects/renode/otbn_randomness_test_prog_fpga_cw310.elf-s_481904-c61657cd5db42f70c7814644b436405610850e33
+${OTBN_SMOKETEST_BIN}           @https://dl.antmicro.com/projects/renode/otbn_smoketest_prog_fpga_cw310.elf-s_444776-8169ee20540f64f867206d17a18e8de5e6270f8e
+${OTBN_RSA_BIN}                 @https://dl.antmicro.com/projects/renode/otbn_rsa_test_prog_fpga_cw310.elf-s_446140-6d6a4c0197d9fcc54c44cbe68db0003d7cb44783
+${OTBN_SIMPLE_SMOKETEST_BIN}    @https://dl.antmicro.com/projects/renode/open_titan-earlgrey--otbn_simple_smoketest.elf-s_9164-5362a0be6d650280b2f732460e786a8d7263126b
+
 
 ${LEDS}=    SEPARATOR=
 ...  """                                     ${\n}
 ...  gpio:                                   ${\n}
-...  ${SPACE*4}8 -> led0@0                   ${\n}
-...  ${SPACE*4}9 -> led1@0                   ${\n}
-...  ${SPACE*4}10 -> led2@0                  ${\n}
-...  ${SPACE*4}11 -> led3@0                  ${\n}
-...  ${SPACE*4}12 -> led4@0                  ${\n}
-...  ${SPACE*4}13 -> led5@0                  ${\n}
-...  ${SPACE*4}14 -> led6@0                  ${\n}
-...  ${SPACE*4}15 -> led7@0                  ${\n}
+...  ${SPACE*4}0 -> led0@0                   ${\n}
+...  ${SPACE*4}1 -> led1@0                   ${\n}
+...  ${SPACE*4}2 -> led2@0                   ${\n}
+...  ${SPACE*4}3 -> led3@0                   ${\n}
 ...                                          ${\n}
-...  led0: Miscellaneous.LED @ gpio 8        ${\n}
-...  led1: Miscellaneous.LED @ gpio 9        ${\n}
-...  led2: Miscellaneous.LED @ gpio 10       ${\n}
-...  led3: Miscellaneous.LED @ gpio 11       ${\n}
-...  led4: Miscellaneous.LED @ gpio 12       ${\n}
-...  led5: Miscellaneous.LED @ gpio 13       ${\n}
-...  led6: Miscellaneous.LED @ gpio 14       ${\n}
-...  led7: Miscellaneous.LED @ gpio 15       ${\n}
+...  led0: Miscellaneous.LED @ gpio 0        ${\n}
+...  led1: Miscellaneous.LED @ gpio 1        ${\n}
+...  led2: Miscellaneous.LED @ gpio 2        ${\n}
+...  led3: Miscellaneous.LED @ gpio 3        ${\n}
 ...  """
 
 ${SPI_FLASH}=    SEPARATOR=
@@ -115,7 +106,7 @@ Should Print To Uart
     Setup Machine
     Start Emulation
 
-    Wait For Line On Uart       The LEDs show the ASCII code of the last character.
+    Wait For Line On Uart       The LEDs show the lower nibble of the ASCII code of the last character.
 
     Provides                    initialization
 
@@ -126,22 +117,13 @@ Should Echo On Uart
 
     Provides                    working-uart
 
-# This test is currently broken as the GPIO is misconfigured.
-# Output pins are configured to 0x00FF: https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645b0e65058e5/sw/device/examples/hello_world/hello_world.c#L66 ,
-# while chars are outputed to 0xFF00: https://github.com/lowRISC/opentitan/blob/1e86ba2a238dc26c2111d325ee7645b0e65058e5/sw/device/examples/demos.c#L88
 Should Display Output on GPIO
-    [Tags]                      skipped
     Requires                    working-uart
 
     ${led0}=                    Create LED Tester  sysbus.gpio.led0  defaultTimeout=0.2
     ${led1}=                    Create LED Tester  sysbus.gpio.led1  defaultTimeout=0.2
     ${led2}=                    Create LED Tester  sysbus.gpio.led2  defaultTimeout=0.2
     ${led3}=                    Create LED Tester  sysbus.gpio.led3  defaultTimeout=0.2
-
-    ${led4}=                    Create LED Tester  sysbus.gpio.led4  defaultTimeout=0.2
-    ${led5}=                    Create LED Tester  sysbus.gpio.led5  defaultTimeout=0.2
-    ${led6}=                    Create LED Tester  sysbus.gpio.led6  defaultTimeout=0.2
-    ${led7}=                    Create LED Tester  sysbus.gpio.led7  defaultTimeout=0.2
 
     Send Key To Uart            0x0
 
@@ -150,23 +132,13 @@ Should Display Output on GPIO
     Assert LED State            false  testerId=${led2}
     Assert LED State            false  testerId=${led3}
 
-    Assert LED State            false  testerId=${led4}
-    Assert LED State            false  testerId=${led5}
-    Assert LED State            false  testerId=${led6}
-    Assert LED State            false  testerId=${led7}
-
     Write Char On Uart          B
-    # B is 0100 0010
+    # B is 0100 0010. Take the lower 4 bits.
 
     Assert LED State            false  testerId=${led0}
     Assert LED State            true  testerId=${led1}
     Assert LED State            false  testerId=${led2}
     Assert LED State            false  testerId=${led3}
-
-    Assert LED State            false  testerId=${led4}
-    Assert LED State            false  testerId=${led5}
-    Assert LED State            true  testerId=${led6}
-    Assert LED State            false  testerId=${led7}
 
 Should Pass AES Smoketest
     Run Test               ${AES_BIN}
@@ -219,7 +191,10 @@ Should Pass SPI Host Smoketest
 Should Pass Aon Timer Interrupt Smoketest
     Run Test               ${AON_TIMER_IRQ_BIN}
 
+# Test is marked as broken: https://github.com/lowRISC/opentitan/blob/f243e6802143374741739d2c164c4f2f61697669/sw/device/tests/BUILD#L384-L390
+# rv_plic is not configured in the software so interrupts are not handled.
 Should Pass Aon Timer Watchdog Sleep Pause Smoketest
+    [Tags]                 skipped
     Run Test               ${AON_TIMER_WDOG_SLEEP_BIN}
 
 Should Pass Aon Timer Smoketest
@@ -250,14 +225,16 @@ Should Pass Entropy Source Known Answer Test Smoketest
 Should Pass SRAM Controller Smoketest
     Run Test               ${SRAM_CTRL_BIN}
 
-Should Pass OTBN ECDSA Test
-    Prepare Test            ${OTBN_ECDSA_BIN}
-    Execute Test
+# Should Pass OTBN ECDSA Test
+#     Prepare Test            ${OTBN_ECDSA_BIN}
+#     Execute Test
 
 Should Pass OTBN IRQ Test
     Run Test              ${OTBN_IRQ_BIN}
 
+# Test is marked as broken: https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/BUILD#L1411-L1416
 Should Pass OTBN Memory Scramble Test
+    [Tags]                skipped
     Prepare Test          ${OTBN_SCRAMBLE_BIN}
     Execute Command       cpu0 MaximumBlockSize 1
     Execute Test

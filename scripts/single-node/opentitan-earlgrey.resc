@@ -9,10 +9,10 @@ machine LoadPlatformDescription @platforms/cpus/opentitan-earlgrey-cw310.repl
 
 showAnalyzer sysbus.uart0
 
-$boot?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--test_rom_fpga_cw310.elf-s_377516-685e95a3d1b9e190f6538a3f60d99f95cce5aa70
-$boot_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--test_rom_fpga_cw310.scr.39.vmem-s_103772-d4cc5690aaf9072e5e1df0ac8f656947ce82064b
+$boot?=@https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.elf-s_447072-1cdfd7b2a98b0c09f158d8267c5e9fbbf34dd33b
+$boot_vmem?=@https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.39.scr.vmem-s_103772-d3a8f17879eedbcbf18e554bfd7871ccd992414e
 $otp_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--otp-img.24.vmem-s_44628-e17dede45d7e0509540343e52fe6fce1454c5339
-$bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_fpga_cw310.elf-s_314192-a6472b68ee773ee813d11851b0db30fa50cb1c51
+$bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_fpga_cw310.elf-s_376640-48103e09bc133bb823f56b2768ae9f55fc0cc01e
 
 macro reset
 """
