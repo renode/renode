@@ -191,10 +191,7 @@ Should Pass SPI Host Smoketest
 Should Pass Aon Timer Interrupt Smoketest
     Run Test               ${AON_TIMER_IRQ_BIN}
 
-# Test is marked as broken: https://github.com/lowRISC/opentitan/blob/f243e6802143374741739d2c164c4f2f61697669/sw/device/tests/BUILD#L384-L390
-# rv_plic is not configured in the software so interrupts are not handled.
 Should Pass Aon Timer Watchdog Sleep Pause Smoketest
-    [Tags]                 skipped
     Run Test               ${AON_TIMER_WDOG_SLEEP_BIN}
 
 Should Pass Aon Timer Smoketest
