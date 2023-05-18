@@ -6,16 +6,19 @@
 //
 
 using System;
-using System.Net;
 using System.Collections.Generic;
-
+using System.Net;
 using PacketDotNet;
 
 namespace Antmicro.Renode.Network
 {
     public interface IServerModule
     {
-        void HandleUdp(IPEndPoint source, UdpPacket packet, Action<IPEndPoint, UdpPacket> callback);
+    }
+
+    public interface IUdpServerModule : IServerModule
+    {
+        void HandleUdp(IPEndPoint source, UdpPacket packet,
+            Action<IPEndPoint, UdpPacket> callback);
     }
 }
-
