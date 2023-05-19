@@ -4,10 +4,10 @@ cpu: CPU.ARMv8A @ sysbus
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 62500000
-    PhysicalTimerIRQ -> gic#0@30 
-    VirtualTimerIRQ -> gic#0@27 
-    NonSecurePhysicalTimerIRQ -> gic#0@26 
-    HypervisorPhysicalTimerIRQ -> gic#0@29 
+    PhysicalTimerIRQ -> gic#0@29
+    NonSecurePhysicalTimerIRQ -> gic#0@30
+    VirtualTimerIRQ -> gic#0@27
+    HypervisorPhysicalTimerIRQ -> gic#0@26
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: "distributor" };
