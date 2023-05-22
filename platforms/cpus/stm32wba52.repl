@@ -97,17 +97,9 @@ pwr: Python.PythonPeripheral @ sysbus 0x46020800
     initable: true
     filename: "scripts/pydev/rolling-bit.py"
 
-flash_ctrl: Python.PythonPeripheral @ sysbus 0x40022000
-    size: 0x400
-    initable: true
-    script: '''
-if request.isInit:
-    lastVal = 0
-elif request.isWrite:
-    lastVal = request.value
-else:
-    request.value = lastVal
-'''
+flash_ctrl: MTD.STM32WBA_FlashController @ sysbus 0x40022000
+    flash: flash
+    // TODO: connect interrupt
 
 rcc: Python.PythonPeripheral @ sysbus 0x46020C00
     size: 0x400
