@@ -14,7 +14,36 @@ Create Machine
 
     Create Terminal Tester        ${UART}
 
+Step And Verify Accumulator
+    [Arguments]    ${expected_value}
+
+    Execute Command               cpu Step
+    ${acc} =  Execute Command     cpu GetRegisterUnsafe 0
+    Should Be Equal As Integers   ${acc}  ${expected_value}  base=16
+
 *** Test Cases ***
+Test CRC32X
+    Create Machine
+    Execute Command               cpu ExecutionMode SingleStepBlocking
+    Start Emulation
+
+    Execute Command               sysbus WriteDoubleWord 0x0 0x9ac34c00  # crc32x  w0, w0, x3
+    Execute Command               sysbus WriteDoubleWord 0x4 0x9ac44c00  # crc32x  w0, w0, x4
+
+    # Set the initial accumulator value.
+    Execute Command               cpu SetRegisterUnsafeUlong 0 0xcafebee
+
+    # Set source registers.
+    Execute Command               cpu SetRegisterUnsafeUlong 3 0x1234567890abcdef
+    Execute Command               cpu SetRegisterUnsafeUlong 4 0xfedcba0987654321
+
+    # CRC has many caveats with conversions done on input/output/accumulator.
+    # Let's make sure a proper version is used. Mono used to overwrite tlib's
+    # implementation with zlib's crc32 which internally converts accumulator
+    # and output and then the results here are 0x4ab0398 and 0xf77db35e.
+    Step And Verify Accumulator   0x6189dcf1
+    Step And Verify Accumulator   0x1bc6f80b
+
 Test Running the Hello World Zephyr Sample
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_HELLO_WORLD_ELF}
