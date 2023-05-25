@@ -1,0 +1,112 @@
+s7: CPU.RiscV64 @ sysbus
+    cpuType: "rv64imac"
+    hartId: 0
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+u74_1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 1
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+u74_2: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 2
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+u74_3: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 3
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+u74_4: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc"
+    hartId: 4
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+debug: Memory.MappedMemory @sysbus 0x0
+    size: 0x1000
+
+s7DTim: Memory.MappedMemory @ sysbus 0x01000000
+    size: 0x2000
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
+    frequency: 1000000
+    numberOfTargets: 5
+    [0, 1] -> s7@[3, 7]
+    [2, 3] -> u74_1@[3, 7]
+    [4, 5] -> u74_2@[3, 7]
+    [6, 7] -> u74_3@[3, 7]
+    [8, 9] -> u74_4@[3, 7]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0c000000
+    0 -> s7@11
+    [1,2] -> u74_1@[11,9]
+    [3,4] -> u74_2@[11,9]
+    [5,6] -> u74_3@[11,9]
+    [7,8] -> u74_4@[11,9]
+    numberOfSources: 69
+    numberOfContexts: 9
+    prioritiesEnabled : false
+
+uart0: UART.SiFive_UART @ sysbus 0x10010000
+    IRQ -> plic@39
+
+uart1: UART.SiFive_UART @ sysbus 0x10011000
+    IRQ -> plic@40
+
+pwm0: HiFive_PWM @ sysbus 0x10020000
+    IRQ -> plic@44
+
+pwm1: HiFive_PWM @ sysbus 0x10021000
+    IRQ -> plic@48
+
+i2c1: I2C.OpenCoresI2C @ sysbus 0x10030000
+    // our model does not support interrupts yet, but if it did:
+    // IRQ -> plic@52
+
+i2c2: I2C.OpenCoresI2C @ sysbus 0x10031000
+
+qspi0: SPI.HiFive_SPI @ sysbus 0x10040000
+    IRQ -> plic@41
+    numberOfSupportedSlaves: 1
+
+qspi1: SPI.HiFive_SPI @ sysbus 0x10041000
+    IRQ -> plic@42
+    numberOfSupportedSlaves: 4
+
+qspi2: SPI.HiFive_SPI @ sysbus 0x10050000
+    IRQ -> plic@43
+    numberOfSupportedSlaves: 1
+
+gpio: GPIOPort.SiFive_GPIO @ sysbus 0x10060000
+
+ethernet: Network.CadenceGEM @ sysbus 0x10090000
+    moduleRevision: 0x0109
+    moduleId: 0x1007
+    IRQ -> plic@55
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    Id1: 0x0141
+    Id2: 0x0e40
+    BasicStatus: 0x62A4
+    AutoNegotiationAdvertisement: 0x1e1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x1e1
+    MasterSlaveControl: 0x300
+    MasterSlaveStatus: 0x3000
+
+l2Cache: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x200000
+
+ddr: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x200000000
+
+sysbus:
+    init:
+        Tag <0x10000004 0x4> "PRCI:core_pllcfg"   0xFFFFFFFF
+        Tag <0x1000000C 0x4> "PRCI:ddr_pllcfg"    0xFFFFFFFF
+        Tag <0x10000050 0x4> "PRCI:hfpclk_pllcfg" 0xFFFFFFFF

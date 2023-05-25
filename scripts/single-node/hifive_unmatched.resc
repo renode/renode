@@ -1,0 +1,15 @@
+$name?="hifive-unmatched"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/sifive-fu740.repl
+
+showAnalyzer uart0
+
+$bin?=@https://dl.antmicro.com/projects/renode/hifive_unmatched--zephyr-shell_module.elf-s_1146984-4c34239d50f7b61dc2ee074a0135a7e299e21768
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
