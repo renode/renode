@@ -6,15 +6,40 @@
 
 #include "Socket.h"
 
+#include <iostream>
 #include <vector>
 
-// Static members initialization
-volatile int    ASocket::s_iSocketCount = 0;
-std::mutex      ASocket::s_mtxCount;
-
-#ifdef _WIN32
-WSADATA         ASocket::s_wsaData;
+#ifdef WINDOWS
+WSADATA ASocket::s_wsaData;
 #endif
+
+ASocket::SocketGlobalInitializer& ASocket::SocketGlobalInitializer::instance()
+{
+   static SocketGlobalInitializer inst{};
+   return inst;
+}
+
+ASocket::SocketGlobalInitializer::SocketGlobalInitializer()
+{
+   // In windows, this will init the winsock DLL stuff
+#ifdef WINDOWS
+   // MAKEWORD(2,2) version 2.2 of Winsock
+   int iWinSockInitResult = WSAStartup(MAKEWORD(2, 2), &s_wsaData);
+
+   if (iWinSockInitResult != 0)
+   {
+      std::cerr << ASocket::StringFormat("[TCPClient][Error] WSAStartup failed : %d", iWinSockInitResult);
+   }
+#endif
+}
+
+ASocket::SocketGlobalInitializer::~SocketGlobalInitializer()
+{
+#ifdef WINDOWS
+   /* call WSACleanup when done using the Winsock dll */
+   WSACleanup();
+#endif
+}
 
 /**
 * @brief constructor of the Socket
@@ -25,24 +50,10 @@ WSADATA         ASocket::s_wsaData;
 ASocket::ASocket(const LogFnCallback& oLogger,
                  const SettingsFlag eSettings /*= ALL_FLAGS*/) :
    m_oLog(oLogger),
-   m_eSettingsFlags(eSettings)
+   m_eSettingsFlags(eSettings),
+   m_globalInitializer(SocketGlobalInitializer::instance())
 {
-   s_mtxCount.lock();
-   if (s_iSocketCount++ == 0)
-   {
-      // In _WIN32, this will init the winsock DLL stuff
-#ifdef _WIN32
-      int iWinSockInitResult = WSAStartup(MAKEWORD(2, 2), &s_wsaData);
-      
-      // MAKEWORD(2,2) version 2.2 of Winsock
-      if (iWinSockInitResult != 0)
-      {
-         if (m_eSettingsFlags & ENABLE_LOG)
-            m_oLog(StringFormat("[TCPClient][Error] WSAStartup failed : %d", iWinSockInitResult));
-      }
-#endif
-   }
-   s_mtxCount.unlock();
+
 }
 
 /**
@@ -53,15 +64,7 @@ ASocket::ASocket(const LogFnCallback& oLogger,
 */
 ASocket::~ASocket()
 {
-   s_mtxCount.lock();
-   if (--s_iSocketCount <= 0)
-   {
-#ifdef _WIN32
-      /* call WSACleanup when done using the Winsock dll */
-      WSACleanup();
-#endif
-   }
-   s_mtxCount.unlock();
+
 }
 
 /**
@@ -164,14 +167,10 @@ int ASocket::SelectSockets(const ASocket::Socket* pSocketsToSelect, const size_t
    {
       FD_SET(pSocketsToSelect[i], &rset);
 
-#ifndef _WIN32
-      // on Windows this code causes warnings as Socket is unsigned but
-      // 1st param is ignored by winsock2's select so max_fd can be -1
       if (pSocketsToSelect[i] > max_fd)
       {
          max_fd = pSocketsToSelect[i];
       }
-#endif
    }
 
    // block until one socket is ready to read.

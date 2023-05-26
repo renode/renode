@@ -13,11 +13,10 @@
 #include <exception>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <stdarg.h>       // va_start, etc.
 #include <stdexcept>
 
-#ifdef _WIN32
+#ifdef WINDOWS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -32,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -49,7 +48,7 @@ public:
    typedef std::function<void(const std::string&)>                   LogFnCallback;
 
    // socket file descriptor id
-   #ifdef _WIN32
+   #ifdef WINDOWS
    typedef SOCKET Socket;
    #else
    typedef int Socket;
@@ -69,31 +68,44 @@ public:
                     const SettingsFlag eSettings = ALL_FLAGS);
    virtual ~ASocket() = 0;
 
-   inline static int GetSocketCount() { return s_iSocketCount; }
-
    static int SelectSockets(const Socket* pSocketsToSelect, const size_t count,
                             const size_t msec, size_t& selectedIndex);
 
-   int SelectSocket(const Socket sd, const size_t msec);
+   static int SelectSocket(const Socket sd, const size_t msec);
 
    static struct timeval TimevalFromMsec(unsigned int time_msec);
 
-protected:
    // String Helpers
    static std::string StringFormat(const std::string strFormat, ...);
 
+protected:
    // Log printer callback
    /*mutable*/const LogFnCallback         m_oLog;
 
    SettingsFlag         m_eSettingsFlags;
 
-   #ifdef _WIN32
+   #ifdef WINDOWS
    static WSADATA s_wsaData;
    #endif
 
 private:
-   volatile static int   s_iSocketCount;  // Count of the actual socket sessions
-   static std::mutex     s_mtxCount;      // mutex used to sync API global operations
+   friend class SocketGlobalInitializer;
+   class SocketGlobalInitializer {
+   public:
+      static SocketGlobalInitializer& instance();
+
+      SocketGlobalInitializer(SocketGlobalInitializer const&) = delete;
+      SocketGlobalInitializer(SocketGlobalInitializer&&) = delete;
+
+      SocketGlobalInitializer& operator=(SocketGlobalInitializer const&) = delete;
+      SocketGlobalInitializer& operator=(SocketGlobalInitializer&&) = delete;
+
+      ~SocketGlobalInitializer();
+
+   private:
+      SocketGlobalInitializer();
+   };
+   SocketGlobalInitializer& m_globalInitializer;
 };
 
 class EResolveError : public std::logic_error

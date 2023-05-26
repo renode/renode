@@ -55,13 +55,19 @@ public:
    bool Send(const std::vector<char>& Data) const;
    int  Receive(char* pData, const size_t uSize, bool bReadFully = true) const;
 
+   // To disable timeout, set msec_timeout to 0.
    bool SetRcvTimeout(unsigned int msec_timeout);
-   bool SetRcvTimeout(struct timeval Timeout);
    bool SetSndTimeout(unsigned int msec_timeout);
+
+#ifndef WINDOWS
+   bool SetRcvTimeout(struct timeval Timeout);
    bool SetSndTimeout(struct timeval Timeout);
+#endif
 
    bool IsConnected() const { return m_eStatus == CONNECTED; }
-	
+
+   Socket GetSocketDescriptor() const { return m_ConnectSocket; }
+
 protected:
    enum SocketStatus
    {

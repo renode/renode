@@ -15,6 +15,8 @@ Compilation has been tested with:
 - GCC 5.4.0 (GNU/Linux Ubuntu 16.04 LTS)
 - Microsoft Visual Studio 2015 (Windows 10)
 
+Windows Users : vcpkg (Microsoft C++ Library Manager) can be used to easily install OpenSSL and generate the Visual Studio solution with CMake. With vcpkg, no need to manually copy the DLL in the output directory, vcpkg handles all that ! Look at "Building under Windows via Visual Studio" section, for instructions.
+
 ## Usage
 Create a server or client object and provide to its constructor a callable object (for log printing)
 having this signature :
@@ -97,6 +99,32 @@ To disconnect from server or client side :
 m_pTCPClient->Disconnect();
 
 m_pTCPServer->Disconnect(ConnectedClient);
+```
+
+A client socket can be polled to ensure that a receive operation won't block indefinitely if a timeout has not been defined :
+
+```cpp
+// client
+int ret = ASocket::SelectSocket(tcpClient->GetSocketDescriptor(), 300); // poll for 300 ms
+if (ret > 0)
+{
+    int readCount = m_pTCPClient->Receive(RcvBuffer.data() + readBytes, chunkSize);
+    
+    //...
+}
+
+// client socket managed by a server
+int ret = ASocket::SelectSocket(ConnectedClient, 50);
+```
+
+Or you can define a recevive (or send) timeout value :
+
+```cpp
+ASSERT_TRUE(m_pTCPClient->SetRcvTimeout(250));
+
+m_pTCPServer->SetRcvTimeout(ConnectedClient, 250);
+
+// Set timeout value to zero to disable timeout
 ```
 
 Before using SSL/TLS secured classes, compile both library and the test program with the preprocessor macro OPENSSL.

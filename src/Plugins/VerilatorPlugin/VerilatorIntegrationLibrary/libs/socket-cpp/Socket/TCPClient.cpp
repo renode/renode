@@ -10,8 +10,8 @@ CTCPClient::CTCPClient(const LogFnCallback oLogger,
                        const SettingsFlag eSettings /*= ALL_FLAGS*/) :
    ASocket(oLogger, eSettings),
    m_eStatus(DISCONNECTED),
-   m_ConnectSocket(INVALID_SOCKET),
-   m_pResultAddrInfo(nullptr)
+   m_pResultAddrInfo(nullptr),
+   m_ConnectSocket(INVALID_SOCKET)
    //m_uRetryCount(0),
    //m_uRetryPeriod(0)
 {
@@ -20,11 +20,27 @@ CTCPClient::CTCPClient(const LogFnCallback oLogger,
 
 // Method for setting receive timeout. Can be called after Connect
 bool CTCPClient::SetRcvTimeout(unsigned int msec_timeout) {
+#ifndef WINDOWS
 	struct timeval t = ASocket::TimevalFromMsec(msec_timeout);
 
 	return this->SetRcvTimeout(t);
+#else
+    int iErr;
+
+    // it's expecting an int but it doesn't matter...
+    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&msec_timeout, sizeof(struct timeval));
+    if (iErr < 0) {
+        if (m_eSettingsFlags & ENABLE_LOG)
+            m_oLog("[TCPServer][Error] CTCPClient::SetRcvTimeout : Socket error in SO_RCVTIMEO call to setsockopt.");
+
+        return false;
+    }
+
+    return true;
+#endif
 }
 
+#ifndef WINDOWS
 bool CTCPClient::SetRcvTimeout(struct timeval timeout) {
 	int iErr;
 
@@ -33,21 +49,36 @@ bool CTCPClient::SetRcvTimeout(struct timeval timeout) {
 		if (m_eSettingsFlags & ENABLE_LOG)
 			m_oLog("[TCPServer][Error] CTCPClient::SetRcvTimeout : Socket error in SO_RCVTIMEO call to setsockopt.");
 
-		Disconnect();
-
 		return false;
 	}
 
 	return true;
 }
+#endif
 
 // Method for setting send timeout. Can be called after Connect
 bool CTCPClient::SetSndTimeout(unsigned int msec_timeout) {
+#ifndef WINDOWS
 	struct timeval t = ASocket::TimevalFromMsec(msec_timeout);
 
 	return this->SetSndTimeout(t);
+#else
+    int iErr;
+
+    // it's expecting an int but it doesn't matter...
+    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&msec_timeout, sizeof(struct timeval));
+    if (iErr < 0) {
+        if (m_eSettingsFlags & ENABLE_LOG)
+            m_oLog("[TCPServer][Error] CTCPClient::SetSndTimeout : Socket error in SO_SNDTIMEO call to setsockopt.");
+
+        return false;
+    }
+
+    return true;
+#endif
 }
 
+#ifndef WINDOWS
 bool CTCPClient::SetSndTimeout(struct timeval timeout) {
 	int iErr;
 
@@ -56,13 +87,12 @@ bool CTCPClient::SetSndTimeout(struct timeval timeout) {
 		if (m_eSettingsFlags & ENABLE_LOG)
 			m_oLog("[TCPServer][Error] CTCPClient::SetSndTimeout : Socket error in SO_SNDTIMEO call to setsockopt.");
 
-		Disconnect();
-
 		return false;
 	}
 
 	return true;
 }
+#endif
 
 // Connexion au serveur
 bool CTCPClient::Connect(const std::string& strServer, const std::string& strPort)
@@ -74,7 +104,7 @@ bool CTCPClient::Connect(const std::string& strServer, const std::string& strPor
          m_oLog("[TCPClient][Warning] Opening a new connexion. The last one was automatically closed.");
    }
 
-   #ifdef _WIN32
+   #ifdef WINDOWS
    ZeroMemory(&m_HintsAddrInfo, sizeof(m_HintsAddrInfo));
    /* AF_INET is used to specify the IPv4 address family. */
    m_HintsAddrInfo.ai_family = AF_INET;			
@@ -114,12 +144,12 @@ bool CTCPClient::Connect(const std::string& strServer, const std::string& strPor
       return false;
    }
 
-   // Fixes _WIN32 0.2 second delay sending (buffering) data.
+   // Fixes windows 0.2 second delay sending (buffering) data.
    int on = 1;
    int iErr;
    
    iErr = setsockopt(m_ConnectSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&on, sizeof(on));
-   if (iErr == SOCKET_ERROR)
+   if (iErr == INVALID_SOCKET)
    {
       if (m_eSettingsFlags & ENABLE_LOG)
          m_oLog("[TCPClient][Error] Socket error in call to setsockopt");
@@ -265,7 +295,7 @@ bool CTCPClient::Send(const char* pData, const size_t uSize) const
       return false;
    }
 
-   size_t total = 0;
+   int total = 0;
    do
    {
       const int flags = 0;
@@ -303,7 +333,7 @@ bool CTCPClient::Send(const std::vector<char>& Data) const
 int CTCPClient::Receive(char* pData, const size_t uSize, bool bReadFully /*= true*/) const
 {
    if (!pData || !uSize)
-      return false;
+      return -2;
 
    if (m_eStatus != CONNECTED)
    {
@@ -313,11 +343,11 @@ int CTCPClient::Receive(char* pData, const size_t uSize, bool bReadFully /*= tru
       return -1;
    }
 
-   #ifdef _WIN32
+   #ifdef WINDOWS
    int tries = 0;
    #endif
 
-   size_t total = 0;
+   int total = 0;
    do
    {
       int nRecvd = recv(m_ConnectSocket, pData + total, uSize - total, 0);
@@ -328,10 +358,10 @@ int CTCPClient::Receive(char* pData, const size_t uSize, bool bReadFully /*= tru
          break;
       }
       
-      #ifdef _WIN32
+      #ifdef WINDOWS
       if ((nRecvd < 0) && (WSAGetLastError() == WSAENOBUFS))
       {
-         // On long messages, _WIN32 recv sometimes fails with WSAENOBUFS, but
+         // On long messages, Windows recv sometimes fails with WSAENOBUFS, but
          // will work if you try again.
          if ((tries++ < 1000))
          {
@@ -360,7 +390,7 @@ bool CTCPClient::Disconnect()
 
    m_eStatus = DISCONNECTED;
 
-   #ifdef _WIN32
+   #ifdef WINDOWS
    // shutdown the connection since no more data will be sent
    int iResult = shutdown(m_ConnectSocket, SD_SEND);
    if (iResult == SOCKET_ERROR)
