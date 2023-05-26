@@ -31,8 +31,8 @@ try:
 
         if robot_version != required_version:
             print(f"Required `robotframework` version is `{required_version}`, while the one available in your system is `{robot_version}`. " + \
+                "Tests may still work, but this version of Robot is not officially supported. " + \
                 f"Please install the required version using `pip install robotframework=={required_version}` before running the tests")
-            sys.exit(1)
 
     if __name__ == '__main__':
         check_robot_version()
