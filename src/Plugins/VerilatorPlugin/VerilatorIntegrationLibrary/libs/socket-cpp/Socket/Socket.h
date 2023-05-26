@@ -9,6 +9,10 @@
 #ifndef INCLUDE_ASOCKET_H_
 #define INCLUDE_ASOCKET_H_
 
+#if defined (_WIN32) && !defined (WINDOWS)
+#define WINDOWS
+#endif
+
 #include <cstdio>         // snprintf
 #include <exception>
 #include <functional>
