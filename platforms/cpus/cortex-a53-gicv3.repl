@@ -14,6 +14,8 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x80a0000; size: 0x0f6000; region: "redistributor" }
     }
     [0-1] -> cpu@[0-1]
+    ArchitectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
+    supportsTwoSecurityStates: true
 
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x08000000

@@ -8,9 +8,11 @@ ${ZEPHYR_PHILOSOPHERS_ELF}        ${URI}/zephyr_philosophers_a53.elf-s_731440-e6
 
 *** Keywords ***
 Create Machine
+    [Arguments]    ${gic_version}=3
+
     Execute Command               using sysbus
     Execute Command               mach create
-    Execute Command               machine LoadPlatformDescription @platforms/cpus/cortex-a53.repl
+    Execute Command               machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv${gic_version}.repl
 
     Create Terminal Tester        ${UART}
 
