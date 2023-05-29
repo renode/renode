@@ -10,7 +10,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 sram0: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x5000
 
-exti: IRQControllers.EXTI @ sysbus 0x40010400
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 30
     firstDirectLine: 23
     [0, 1] -> nvicInput5@[0, 1]

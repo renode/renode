@@ -39,7 +39,7 @@ i2c2: I2C.STM32F4_I2C @ sysbus 0x40005800
     EventInterrupt -> nvic@33
     ErrorInterrupt -> nvic@34
 
-exti: IRQControllers.EXTI @ sysbus 0x40010400
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 19
     [0-4] -> nvic@[6-10]
     [5-9] -> nvicInput23@[0-4]

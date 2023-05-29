@@ -16,7 +16,7 @@ spi2: SPI.STM32SPI @ sysbus 0x40003800
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
-exti: IRQControllers.EXTI @ sysbus 0x40010400
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 24
     [0-4] -> nvic@[6-10]
     [5-9] -> nvicInput23@[0-4]

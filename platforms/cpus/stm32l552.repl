@@ -16,7 +16,7 @@ spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
 // This model's registers are not compatible with the EXTI in this MCU,
 // it is currently here to support direct interrupts
-exti: IRQControllers.EXTI @ sysbus 0x4002F400
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x4002F400
     [0-15,17] -> nvic@[11-26,2]
     numberOfOutputLines: 43
     firstDirectLine: 17

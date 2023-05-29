@@ -59,7 +59,7 @@ timer9: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
     frequency: 100000000
     -> nvic@24
 
-exti: IRQControllers.EXTI @ sysbus 0x40013C00
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
     numberOfOutputLines: 24
     [0-4] -> nvic@[6-10]
     [5-9] -> nvicInput23@[0-4]

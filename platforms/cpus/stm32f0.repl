@@ -3,7 +3,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     systickFrequency: 72000000
     IRQ -> cpu@0
 
-exti: IRQControllers.EXTI @ sysbus 0x40010400
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 32
     [0, 1] -> nvicInput5@[0, 1]
     [2, 3] -> nvicInput6@[0, 1]

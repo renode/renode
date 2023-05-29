@@ -38,7 +38,7 @@ cpu: CPU.CortexM @ sysbus
 
 pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
 
-exti: IRQControllers.EXTI @ sysbus 0x40013C00
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
     numberOfOutputLines: 24
     [0-4] -> nvic@[6-10]
     [5-9] -> nvicInput23@[0-4]

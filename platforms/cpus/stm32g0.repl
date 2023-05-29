@@ -15,7 +15,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 
 // This model's registers are not compatible with the EXTI in this MCU,
 // it is currently here to support direct interrupts
-exti: IRQControllers.EXTI @ sysbus 0x40021800
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40021800
     numberOfOutputLines: 34
     firstDirectLine: 19
     [0, 1] -> nvicInput5@[0, 1]
