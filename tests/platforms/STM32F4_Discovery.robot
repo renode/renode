@@ -121,3 +121,19 @@ Should Block Timer Interrupt When Faultmask Is Set
     Wait For Line On Uart   Timer interrupt
     Wait For Line On Uart   Timer interrupt
     Wait For Line On Uart   Timer interrupt
+
+Should Clear FAULTMASK On Exception Exit
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-faultmask-noclearing.elf-s_433676-802f85357028150b4586bb3a54a5e44e7a3c2ec5
+
+    Create Terminal Tester  sysbus.usart2
+
+    Start Emulation
+
+    # Each timer interrupt sets FAULTMASK, so if the field is not cleared by exception exit
+    # then this message would be only printed once
+    Wait For Line On Uart   Timer interrupt
+    Wait For Line On Uart   Timer interrupt
+    Wait For Line On Uart   Timer interrupt
+    Wait For Line On Uart   Timer interrupt
