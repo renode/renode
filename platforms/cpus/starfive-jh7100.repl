@@ -122,10 +122,14 @@ spi2: SPI.DesignWare_SPI@sysbus 0x12410000
 ethernet: Network.SynopsysEthernetMAC @sysbus 0x10020000
     IRQ -> plic@6
 
-phy: Network.EthernetPhysicalLayer @ethernet 7
+phy: Network.EthernetPhysicalLayer @ {
+        ethernet 0;
+        ethernet 7
+    }
+    BasicStatus: 0x62A4
     BasicControl: 0x0880
-    Id1: 0x0022
-    Id2: 0x1620
+    Id1: 0x4F51
+    Id2: 0x751B
     AutoNegotiationAdvertisement: 0x00A1
     AutoNegotiationLinkPartnerBasePageAbility: 0x0000
 
