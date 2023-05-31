@@ -15,6 +15,12 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     -> nvic@47
 
+spi1: SPI.STM32WBA_SPI @ sysbus 0x40013000
+    IRQ -> nvic@45
+
+spi3: SPI.STM32WBA_SPI @ sysbus 0x46002000
+    IRQ -> nvic@63
+
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     // without any divider on the way the base clock is still divided by 8
