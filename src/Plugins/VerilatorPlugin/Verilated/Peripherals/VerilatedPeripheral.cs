@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2010-2022 Antmicro
 //
 // This file is licensed under the MIT License.
@@ -18,7 +18,7 @@ using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class VerilatedPeripheral : BaseVerilatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput
+    public class VerilatedPeripheral : BaseVerilatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IAbsoluteAddressAware
     {
         public VerilatedPeripheral(Machine machine, long frequency, int maxWidth, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
@@ -161,6 +161,13 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
+        public void SetAbsoluteAddress(ulong address)
+        {
+            this.absoluteAddress = address;
+        }
+
+        public bool UseAbsoluteAddress { get; set; }
+
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
         protected bool VerifyLength(int length, long offset, ulong? value = null)
@@ -186,7 +193,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath first!");
                 return;
             }
-            Send(type, (ulong)offset, value);
+            Send(type, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, value);
             CheckValidation(Receive());
         }
 
@@ -197,7 +204,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath first!");
                 return 0;
             }
-            Send(type, (ulong)offset, 0);
+            Send(type, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, 0);
             var result = Receive();
             CheckValidation(result);
 
@@ -222,6 +229,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
+        private ulong absoluteAddress;
         private const string LimitTimerName = "VerilatorIntegrationClock";
     }
 }
