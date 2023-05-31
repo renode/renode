@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
@@ -23,43 +23,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
     {
         public BaseDoubleWordVerilatedPeripheral(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
-            : base(machine, 32, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+            : base(machine, 4, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                 simulationContextLinux, simulationContextWindows, simulationContextMacOS, limitBuffer, timeout, address, numberOfInterrupts)
         {
         }
-
-        public override uint ReadDoubleWord(long offset)
-        {
-            if(!IsConnected)
-            {
-                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath or connect to a simulator first!");
-                return 0;
-            }
-            Send(ActionType.ReadFromBus, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, 0);
-            var result = Receive();
-            CheckValidation(result);
-
-            return (uint)result.Data;
-        }
-
-        public override void WriteDoubleWord(long offset, uint value)
-        {
-            if(!IsConnected)
-            {
-                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath or connect to a simulator first!");
-                return;
-            }
-            Send(ActionType.WriteToBus, UseAbsoluteAddress ? absoluteAddress : (ulong)offset, value);
-            CheckValidation(Receive());
-        }
-
-        public void SetAbsoluteAddress(ulong address)
-        {
-            this.absoluteAddress = address;
-        }
-
-        public bool UseAbsoluteAddress { get; set; }
-
-        private ulong absoluteAddress;
     }
 }
