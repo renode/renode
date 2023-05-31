@@ -1,0 +1,18 @@
+:name: Cortex-R52
+:description: This script runs the Zephyr philosophers sample on a 32-bit ARM Cortex-R52.
+
+$bin?=@https://dl.antmicro.com/projects/renode/fvp_baser_aemv8r_aarch32--zephyr-philosophers.elf-s_500280-b9bbb31c64dec3f3273535be657b8e4d7ca182f9
+$name?="ARM Cortex-R52"
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/cortex-r52.repl
+
+showAnalyzer uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
