@@ -1,19 +1,25 @@
 using "platforms/cpus/stm32wba52.repl"
 
 UserButton1: Miscellaneous.Button @ gpioPortC
+    invert: true
     -> gpioPortC@13
 
 UserButton2: Miscellaneous.Button @ gpioPortB
+    invert: true
     -> gpioPortB@6
 
 UserButton3: Miscellaneous.Button @ gpioPortB
+    invert: true
     -> gpioPortB@7
 
 BlueLED: Miscellaneous.LED @ gpioPortB
+    invert: true
 
 RedLED: Miscellaneous.LED @ gpioPortB
+    invert: true
 
 GreenLED: Miscellaneous.LED @ gpioPortB
+    invert: true
 
 gpioPortB:
     4 -> BlueLED@0
