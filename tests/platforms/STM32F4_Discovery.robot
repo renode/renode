@@ -104,6 +104,19 @@ Should Print Hello World When Built With STM32CubeMX
     Wait For Line On Uart   Hello World!
     Wait For Line On Uart   Hello World!
 
+Should Print Hello World With Custom Flash Latency
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4--cube_mx-hello_world.elf-s_625992-119d2b1d81ef6bb85498d1024c61736bb53cee4c
+
+    Create Terminal Tester  sysbus.usart2
+
+    Start Emulation
+    
+    Wait For Line On Uart   Hello World!
+    Wait For Line On Uart   Hello World!
+    Wait For Line On Uart   Hello World!
+
 Should Block Timer Interrupt When Faultmask Is Set
     Execute Command         mach create
     Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
