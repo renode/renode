@@ -229,10 +229,8 @@ class GDBInstance:
         if dont_wait_for_output:
             return
         try:
-            # Escape regex special characters
-            command = command.replace("$", "\\$").replace("+", "\\+").replace("*", "\\*")
             if not confirm:
-                result = self.process.expect(command + r".+\n", timeout, async_=async_)
+                result = self.process.expect(re.escape(command) + r".+\n", timeout, async_=async_)
                 self.task = result if async_ else None
                 if not async_:
                     self.last_output = ""
