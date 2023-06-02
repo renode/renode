@@ -20,7 +20,8 @@ from typing import Any, Optional, Callable, Awaitable
 RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
 RE_HEX = re.compile(r"0x[0-9A-Fa-f]+")
-RE_VEC = re.compile(r"v\d+")
+RE_VEC_REGNAME = re.compile(r"v\d+")
+RE_FLOAT_REGNAME = re.compile(r"f[tsa]\d+")
 RE_GDB_ERRORS = (
     re.compile(r"\bUndefined .*?\.", re.MULTILINE),
     re.compile(r"\bThe \"remote\" target does not support \".*?\"\.", re.MULTILINE),
@@ -324,7 +325,8 @@ class GDBComparator:
     RegNameTester = Callable[[str], bool]               # condition_func type
     CommandsBuilder = Callable[[list[str]], list[str]]  # cmd_builder_func type
     REGISTER_CASES: list[tuple[RegNameTester, CommandsBuilder]] = [
-        (lambda reg: RE_VEC.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}.b" for reg in regs]),
+        (lambda reg: RE_VEC_REGNAME.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}.b" for reg in regs]),
+        (lambda reg: RE_FLOAT_REGNAME.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}" for reg in regs]),
         (lambda _: True, lambda regs: ["printf \"" + ":  0x%x\\n".join(regs) + ":  0x%x\\n\",$" + ",$".join(regs)]),
     ]
 
