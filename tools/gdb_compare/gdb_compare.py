@@ -179,13 +179,14 @@ class GDBInstance:
     """A class for controlling a remote GDB instance."""
     def __init__(self, gdb_binary: str, port: int, debug_binary: str, name: str, target_process: pexpect.spawn):
         """Spawns a new GDB instance and connects to it."""
+        self.dimensions = (0, 4096)
         self.name = name
         self.last_cmd = ""
         self.last_output = ""
         self.task: Awaitable[Any]
         self.target_process = target_process
         print(f"* Connecting {self.name} GDB instance to target on port {port}")
-        self.process = pexpect.spawn(f"{gdb_binary} --silent --nx --nh", timeout=10)
+        self.process = pexpect.spawn(f"{gdb_binary} --silent --nx --nh", timeout=10, dimensions=self.dimensions)
         self.process.timeout = 120
         self.run_command("clear", async_=False)
         self.run_command("set pagination off", async_=False)
