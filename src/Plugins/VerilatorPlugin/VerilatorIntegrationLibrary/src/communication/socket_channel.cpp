@@ -21,6 +21,15 @@ void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const
     handshakeValid();
 }
 
+void SocketCommunicationChannel::disconnect()
+{
+    isConnected = false;
+}
+
+bool SocketCommunicationChannel::getIsConnected()
+{
+    return isConnected;
+}
 
 void SocketCommunicationChannel::handshakeValid()
 {

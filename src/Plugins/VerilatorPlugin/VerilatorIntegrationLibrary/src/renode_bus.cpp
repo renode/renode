@@ -182,7 +182,7 @@ void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address
     Protocol* result;
     reset();
 
-    while(channel->isConnected) {
+    while(channel->getIsConnected()) {
         result = receive();
         handleRequest(result);
         delete result;
@@ -241,7 +241,7 @@ void RenodeAgent::handleRequest(Protocol* request)
             SocketCommunicationChannel* channel;
             if((channel = dynamic_cast<SocketCommunicationChannel*>(communicationChannel)) != nullptr) {
                 communicationChannel->sendSender(Protocol(ok, 0, 0));
-                channel->isConnected = false;
+                channel->disconnect();
             }
             break;
         }

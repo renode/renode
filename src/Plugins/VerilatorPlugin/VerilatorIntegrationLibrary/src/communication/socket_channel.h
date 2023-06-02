@@ -14,6 +14,8 @@ class SocketCommunicationChannel : public CommunicationChannel
 public:
   SocketCommunicationChannel();
   void connect(int receiverPort, int senderPort, const char* address);
+  void disconnect();
+  bool getIsConnected();
   void handshakeValid();
   void log(int logLevel, const char* data) override;
   Protocol* receive() override;
