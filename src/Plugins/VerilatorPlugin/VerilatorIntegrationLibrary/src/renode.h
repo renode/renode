@@ -28,40 +28,9 @@ struct Protocol
 };
 #pragma pack(pop)
 
-// Action must be in sync with Renode's ActionType.
-// Append new actions to the end to preserve compatibility.
 enum Action
 {
-  invalidAction = 0,
-  tickClock = 1,
-  writeRequest = 2,
-  readRequest = 3,
-  resetPeripheral = 4,
-  logMessage = 5,
-  interrupt = 6,
-  disconnect = 7,
-  error = 8,
-  ok = 9,
-  handshake = 10,
-  pushDoubleWord = 11,
-  getDoubleWord = 12,
-  pushWord = 13,
-  getWord = 14,
-  pushByte = 15,
-  getByte = 16,
-  isHalted = 17,
-  registerGet = 18,
-  registerSet = 19,
-  singleStepMode = 20,
-  readRequestByte = 21,
-  readRequestWord = 22,
-  readRequestDoubleWord = 23,
-  readRequestQuadWord = 24,
-  writeRequestByte = 25,
-  writeRequestWord = 26,
-  writeRequestDoubleWord = 27,
-  writeRequestQuadWord = 28,
-  step = 100,
+#include "renode_action_enumerators.txt"
 };
 
 enum LogLevel
