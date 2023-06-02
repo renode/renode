@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 rm -rf $DESTINATION
-mkdir -p $DESTINATION/{licenses,tests,tools}
+mkdir -p $DESTINATION/{licenses,tests,tools,plugins}
 
 cp $RENODE_ROOT_DIR/renode-test $DESTINATION
 cp $RENODE_ROOT_DIR/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,robot_output_formatter_verbose,helper}.py $DESTINATION/tests
@@ -13,6 +13,7 @@ cp -r $RENODE_ROOT_DIR/tools/metrics_analyzer $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/execution_tracer $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/gdb_compare $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/sel4_extensions $DESTINATION/tools
+cp -r $RENODE_ROOT_DIR/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DESTINATION/plugins
 
 sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
 sed -i 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DESTINATION/renode-test

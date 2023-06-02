@@ -1,5 +1,5 @@
 rm -rf $DIR
-mkdir -p $DIR/{bin,licenses,tests,tools}
+mkdir -p $DIR/{bin,licenses,tests,tools,plugins}
 
 #copy the main content
 cp -r $BASE/output/bin/$TARGET/*.{dll,exe} $DIR/bin
@@ -10,6 +10,7 @@ cp -r $BASE/tools/execution_tracer $DIR/tools
 cp -r $BASE/tools/gdb_compare $DIR/tools
 cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
+cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
 
 #copy the test instrastructure and update the paths
 cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer
