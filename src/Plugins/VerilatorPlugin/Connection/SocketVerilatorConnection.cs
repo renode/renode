@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -50,23 +50,21 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
             asyncSocketComunicator.CancelCommunication();
             pauseMRES?.Dispose();
+
+            if(IsConnected)
+            {
+                parentElement.DebugLog("Sending 'Disconnect' message to close peripheral gracefully...");
+                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                mainSocketComunicator.CancelCommunication();
+            }
+
             if(verilatedProcess != null)
             {
                 // Ask verilatedProcess to close, kill if it doesn't
                 if(!verilatedProcess.HasExited)
                 {
                     parentElement.DebugLog($"Verilated peripheral '{simulationFilePath}' is still working...");
-                    var exited = false;
-
-                    if(mainSocketComunicator.Connected)
-                    {
-                        parentElement.DebugLog("Trying to close it gracefully by sending 'Disconnect' message...");
-                        TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
-                        mainSocketComunicator.CancelCommunication();
-                        exited = verilatedProcess.WaitForExit(500);
-                    }
-
-                    if(exited)
+                    if(verilatedProcess.WaitForExit(500))
                     {
                         parentElement.DebugLog("Verilated peripheral exited gracefully.");
                     }
@@ -83,18 +81,53 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             asyncSocketComunicator.Dispose();
         }
 
+        public void Connect()
+        {
+            if(!mainSocketComunicator.AcceptConnection(timeout)
+                || !asyncSocketComunicator.AcceptConnection(timeout)
+                || !TryHandshake())
+            {
+                mainSocketComunicator.ResetConnections();
+                asyncSocketComunicator.ResetConnections();
+                KillVerilatedProcess();
+
+                LogAndThrowRE($"Connection to the verilated peripheral failed!");
+            }
+            else
+            {
+                // If connected succesfully, listening sockets can be closed
+                mainSocketComunicator.CloseListener();
+                asyncSocketComunicator.CloseListener();
+
+                parentElement.Log(LogLevel.Debug, "Connected to the verilated peripheral!");
+            }
+        }
+
         public bool TrySendMessage(ProtocolMessage message)
         {
+            if(!IsConnected)
+            {
+                return false;
+            }
             return mainSocketComunicator.TrySendMessage(message);
         }
 
         public bool TryRespond(ProtocolMessage message)
         {
+            if(!IsConnected)
+            {
+                return false;
+            }
             return TrySendMessage(message);
         }
 
         public bool TryReceiveMessage(out ProtocolMessage message)
         {
+            if(!IsConnected)
+            {
+                message = default(ProtocolMessage);
+                return false;
+            }
             return mainSocketComunicator.TryReceiveMessage(out message);
         }
 
@@ -124,6 +157,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             pauseMRES.Set();
         }
 
+        public bool IsConnected => mainSocketComunicator.Connected;
+
         public string SimulationFilePath
         {
             set
@@ -135,28 +170,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 #if !PLATFORM_WINDOWS
                 Mono.Unix.Native.Syscall.chmod(value, FilePermissions.S_IRWXU); //setting permissions to 0x700
 #endif
-                InitVerilatedProcess(value, mainSocketComunicator.ListenerPort, asyncSocketComunicator.ListenerPort);
-
-                if(!mainSocketComunicator.AcceptConnection(timeout)
-                    || !asyncSocketComunicator.AcceptConnection(timeout)
-                    || !TryHandshake())
-                {
-                    mainSocketComunicator.ResetConnections();
-                    asyncSocketComunicator.ResetConnections();
-                    KillVerilatedProcess();
-
-                    LogAndThrowRE($"Connection to the verilated peripheral ({value}) failed!");
-                }
-                else
-                {
-                    // If connected succesfully, listening sockets can be closed
-                    mainSocketComunicator.CloseListener();
-                    asyncSocketComunicator.CloseListener();
-
-                    parentElement.Log(LogLevel.Debug, "Connected to the verilated peripheral!");
-                }
+                InitVerilatedProcess(value);
             }
         }
+
+        public string ConnectionParameters => $"{mainSocketComunicator.ListenerPort} {asyncSocketComunicator.ListenerPort} {address}"; 
 
         private void ReceiveLoop()
         {
@@ -184,7 +202,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
-        private void InitVerilatedProcess(string filePath, int mainPort, int receiverPort)
+        private void InitVerilatedProcess(string filePath)
         {
             try
             {
@@ -193,7 +211,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                     StartInfo = new ProcessStartInfo(filePath)
                     {
                         UseShellExecute = false,
-                        Arguments = $"{mainPort} {receiverPort} {address}"
+                        Arguments = ConnectionParameters
                     }
                 };
 
@@ -388,7 +406,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
 
             public int ListenerPort { get; private set; }
-            public bool Connected => socket.Connected;
+            public bool Connected => socket?.Connected ?? false;
 
             private int CreateListenerAndStartListening()
             {

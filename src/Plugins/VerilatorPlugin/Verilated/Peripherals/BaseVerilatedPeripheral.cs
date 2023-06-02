@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -44,6 +44,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
             Send(ActionType.ResetPeripheral, 0, 0);
         }
 
+        public void Connect()
+        {
+            verilatorConnection.Connect();
+        }
+
         public void Dispose()
         {
             disposeInitiated = true;
@@ -59,6 +64,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             verilatorConnection.Resume();
         }
+
+        public bool IsConnected => verilatorConnection.IsConnected;
 
         public string SimulationFilePathLinux
         {
@@ -123,9 +130,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 {
                     verilatorConnection.SimulationFilePath = value;
                     simulationFilePath = value;
+                    Connect();
                 }
             }
         }
+
+        public string ConnectionParameters => (verilatorConnection as SocketVerilatorConnection)?.ConnectionParameters ?? "";
 
         public void Start()
         {
@@ -134,9 +144,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 return;
             }
             started = true;
-            if(simulationFilePath == null)
+            if(!IsConnected)
             {
-                throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
+                throw new RecoverableException("Cannot start emulation. Set SimulationFilePath or connect to a simulator first!");
             }
             verilatorConnection.Start();
         }

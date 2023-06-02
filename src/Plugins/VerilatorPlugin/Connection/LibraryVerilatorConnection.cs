@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -32,7 +32,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public void Dispose()
         {
-            peripheralActive.Cancel();
+            Abort();
             binder?.Dispose();
             Marshal.FreeHGlobal(mainResponsePointer);
             Marshal.FreeHGlobal(senderResponsePointer);
@@ -76,6 +76,11 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             return false;
         }
 
+        public void Connect()
+        {
+            // intentionally left empty
+        }
+
         public void HandleMessage()
         {
             // intentionally left empty
@@ -84,6 +89,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         public void Abort()
         {
             peripheralActive.Cancel();
+            IsConnected = false;
         }
 
         public void Start()
@@ -148,6 +154,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
+        public bool IsConnected { get; private set; }
+
         public string SimulationFilePath
         {
             get
@@ -169,6 +177,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                         initializeNative();
                         mainResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
                         senderResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
+                        IsConnected = true;
                         resetPeripheral();
                     }
                     catch(Exception e)
