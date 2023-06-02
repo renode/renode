@@ -17,7 +17,7 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
-    // # without any divider on the way the base clock is still divided by 8
+    // without any divider on the way the base clock is still divided by 8
     systickFrequency: 16000000
     IRQ -> cpu@0
 
