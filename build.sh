@@ -24,7 +24,7 @@ NET_FRAMEWORK_VER=
 RID="linux-x64"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build]"
   echo ""
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -40,6 +40,7 @@ function print_help() {
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
+  echo "--profile-build                   build optimized for tlib profiling"
 }
 
 while getopts "cdvpnstbo:B:-:" opt
@@ -95,6 +96,9 @@ do
         "net")
           NET=true
           PARAMS+=(p:NET=true)
+          ;;
+        "profile-build")
+          PARAMS+=('p:TlibProfilingBuild=true')
           ;;
         *)
           print_help
