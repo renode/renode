@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -10,6 +10,7 @@
 #include "buses/bus.h"
 #include "../libs/socket-cpp/Socket/TCPClient.h"
 #include "renode.h"
+#include "communication/socket_channel.h"
 
 class RenodeAgent;
 struct Protocol;
@@ -22,15 +23,6 @@ extern "C"
   void handle_request(Protocol* request);
   void reset_peripheral();
 }
-
-class CommunicationChannel
-{
-public:
-  virtual void sendMain(const Protocol message) = 0;
-  virtual void sendSender(const Protocol message) = 0;
-  virtual void log(int logLevel, const char* data) = 0;
-  virtual Protocol* receive() = 0;
-};
 
 class RenodeAgent
 {
@@ -76,27 +68,6 @@ private:
   friend void ::handle_request(Protocol* request);
   friend void ::initialize_native(void);
   friend void ::reset_peripheral(void);
-};
-
-class SocketCommunicationChannel : public CommunicationChannel
-{
-public:
-  SocketCommunicationChannel();
-  void sendMain(const Protocol message) override;
-  void sendSender(const Protocol message) override;
-  void log(int logLevel, const char* data) override;
-  Protocol* receive() override;
-
-private:
-  void handshakeValid();
-  void connect(int receiverPort, int senderPort, const char* address);
-  
-  std::unique_ptr<CTCPClient> mainSocket;
-  std::unique_ptr<CTCPClient> senderSocket;
-  bool isConnected;
-
-  friend void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address);
-  friend void RenodeAgent::handleRequest(Protocol* request);
 };
 
 class NativeCommunicationChannel : public CommunicationChannel
