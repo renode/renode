@@ -1,14 +1,14 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #ifndef RENODE_H
 #define RENODE_H
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../../../../Infrastructure/src/Emulator/Cores/renode/include/renode_imports.h"
 
 // Protocol must be in sync with Renode's ProtocolMessage
 #pragma pack(push, 1)

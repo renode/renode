@@ -8,7 +8,7 @@
 #define RENODE_BUS_H
 #include <vector>
 #include "buses/bus.h"
-#include "../libs/socket-cpp/Socket/TCPClient.h"
+#include "../../../../Infrastructure/src/Emulator/Cores/renode/include/renode_imports.h"
 #include "renode.h"
 #include "communication/socket_channel.h"
 
