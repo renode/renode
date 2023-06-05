@@ -229,10 +229,11 @@ itcm: Memory.MappedMemory @ sysbus 0x00000000
 
 rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
 
+hsem: Miscellaneous.STM32H7_HardwareSemaphore @ sysbus 0x58026400
+
 sysbus:
     init:
         Tag <0x58027000, 0x580273FF> "RAMECC3"
-        Tag <0x58026400, 0x580267FF> "HSEM"
         Tag <0x58025800, 0x58025BFF> "DMAMUX2"
         Tag <0x58024C00, 0x58024FFF> "CRC"
         Tag <0x58024800, 0x58024BFF> "PWR"
