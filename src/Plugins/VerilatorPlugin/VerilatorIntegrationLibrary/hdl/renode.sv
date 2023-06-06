@@ -8,6 +8,8 @@
 `ifndef RENODE_PKG_VH_
 `define RENODE_PKG_VH_
 
+timeunit 1ns;
+
 package renode;
   typedef longint address_t;
   typedef longint data_t;

@@ -1,5 +1,5 @@
-﻿//
-// Copyright (c) 2010-2022 Antmicro
+//
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -20,7 +20,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public class VerilatedPeripheral : BaseVerilatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput
     {
-        public VerilatedPeripheral(Machine machine, long frequency, int maxWidth, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+        public VerilatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
             : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, timeout, address)
         {
@@ -223,5 +223,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
         private const string LimitTimerName = "VerilatorIntegrationClock";
+
+        // The following constant should be in sync with a time unit defined in the `renode` SystemVerilog module.
+        // It allows using simulation time instead of a number of clock ticks.
+        private const long VerilogTimeunitFrequency = 1000000000;
     }
 }
