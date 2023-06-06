@@ -5,6 +5,7 @@ ${URI}                            @https://dl.antmicro.com/projects/renode
 ${ZEPHYR_HELLO_WORLD_ELF}         ${URI}/cortex_a53-zephyr-hello_world.elf-s_34096-272b1e50f90c8240d875daf679223f2d769e77dd
 ${ZEPHYR_SYNCHRONIZATION_ELF}     ${URI}/virt-a53--zephyr-synchronization.elf-s_582816-bb556dc10df7f09918db3c5d1f298cdd3f3290f3
 ${ZEPHYR_PHILOSOPHERS_ELF}        ${URI}/zephyr_philosophers_a53.elf-s_731440-e6e5bd1c2151b7e5d38d272b01108493e8ef88b4
+${ZEPHYR_FPU_SHARING_ELF}         ${URI}/zephyr_tests_kernel_fpu_sharing_generic_qemu_cortex_a53.elf-s_763936-8839da556c9913ed1817fc213a79c60de8f0d8e2
 
 ${SEL4_ADDER_ELF}                 ${URI}/camkes_adder_elfloader_aarch64-s_3408064-4385f32dd7a3235af3905c0a473598fc90853b7a
 
@@ -80,6 +81,25 @@ Test Running the Zephyr Philosophers Sample
     Wait For Line On Uart         Philosopher 5.*HOLDING ONE FORK  treatAsRegex=true
     Wait For Line On Uart         Philosopher 5.*EATING  treatAsRegex=true
     Wait For Line On Uart         Philosopher 5.*THINKING  treatAsRegex=true
+
+Test Running the Zephyr Kernel FPU Sharing Generic Test
+    Create Machine
+    Execute Command               sysbus LoadELF ${ZEPHYR_FPU_SHARING_ELF}
+
+    Start Emulation
+
+    Wait For Line On Uart         Booting Zephyr OS
+    Wait For Line On Uart         Running TESTSUITE fpu_sharing_generic
+
+    # The PASS line is currently printed after about 10.1 virtual seconds from the start.
+    Wait For Line On Uart         START - test_load_store
+    Wait For Line On Uart         PASS - test_load_store  timeout=12
+
+    # The test prints 5 "Pi calculation OK after X (high) + Y (low) tests" lines.
+    # Let's finish testing after the first one. It takes about 5 virtual seconds to
+    # reach it from the start and the whole test takes about 50 virtual seconds.
+    Wait For Line On Uart         START - test_pi
+    Wait For Line On Uart         Pi calculation OK
 
 Test Running the seL4 Adder Sample
     Create Machine                gic_version=2
