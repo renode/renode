@@ -39,6 +39,8 @@ Create Machine With Button And LED
         Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-blinky.elf-s_395652-4d2c6106335435629d3611d2a732e37ca9f17eeb
     ELSE IF  "${firmware}" == "led_shell"
         Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-led_shell.elf-s_1471160-5398b2ac0ab1c71ec144eba55f4840d86ddb921a
+    ELSE IF  "${firmware}" == "usart_txrx_dma"
+        Execute Command          $bin = @https://dl.antmicro.com/projects/renode/stm32l073--cubemx-USART_Communication_TxRx_DMA.elf-s_179016-cae1f7f14ab8ddb7db17cc1e8a8ee2826bc0da81
     ELSE
         Fail                     Unknown firmware '${firmware}'
     END
@@ -297,6 +299,21 @@ DMA Transfer Should Write To UART
     Start Emulation
 
     Wait For Line On Uart    Hello world from DMA!
+
+DMA Transfer Should Write To And Read From UART
+    Create Machine With Button And LED  usart_txrx_dma  usart=2  button_port=C  button_pin=13  led_port=A  led_pin=5
+    Execute Command          machine LoadPlatformDescriptionFromString "usart2: { ReceiveDmaRequest -> dma1@6 }"
+
+    Assert LED State         true  pauseEmulation=true
+
+    Execute Command          gpioPortC.button Press
+    Assert LED State         false  pauseEmulation=true
+    Wait For Line On Uart    STM32L0xx USART LL API Example : TX/RX in DMA mode  pauseEmulation=true
+    Wait For Line On Uart    Configuration UART 115200 bps, 8 data bit/1 stop bit/No parity/No HW flow control  pauseEmulation=true
+    Wait For Line On Uart    Please enter 'END' string ...  pauseEmulation=true
+
+    Write Line To Uart       END  waitForEcho=false
+    Assert And Hold LED State  true  timeoutAssert=0.1  timeoutHold=2
 
 Terminal Tester Assert Should Start Emulation
     Create Machine With Button And LED  button
