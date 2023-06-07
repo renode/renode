@@ -32,7 +32,7 @@ Emulation Should Not Be Paused
     Should Contain           ${st}  True
 
 Create Machine With Button And LED
-    [Arguments]              ${firmware}
+    [Arguments]              ${firmware}  ${usart}=2  ${button_port}=B  ${button_pin}=2  ${led_port}=A  ${led_pin}=5
     IF  "${firmware}" == "button"
         Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-button.elf-s_402204-2343dc7268dedc253893a84300f3dbd02bc63a2a
     ELSE IF  "${firmware}" == "blinky"
@@ -43,11 +43,11 @@ Create Machine With Button And LED
         Fail                     Unknown firmware '${firmware}'
     END
     Execute Command          include @scripts/single-node/stm32l072.resc
-    Execute Command          machine LoadPlatformDescriptionFromString "gpioPortA: { 5 -> led@0 }; led: Miscellaneous.LED @ gpioPortA 5"
-    Execute Command          machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 2 { invert: true; -> gpioPortB@2 }"
+    Execute Command          machine LoadPlatformDescriptionFromString "gpioPort${led_port}: { ${led_pin} -> led@0 }; led: Miscellaneous.LED @ gpioPort${led_port} ${led_pin}"
+    Execute Command          machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPort${button_port} ${button_pin} { invert: true; -> gpioPort${button_port}@${button_pin} }"
 
-    Create Terminal Tester   sysbus.usart2
-    Create LED Tester        sysbus.gpioPortA.led  defaultTimeout=2
+    Create Terminal Tester   sysbus.usart${usart}
+    Create LED Tester        sysbus.gpioPort${led_port}.led  defaultTimeout=2
 
 Should Be Equal Within Range
     [Arguments]              ${value0}  ${value1}  ${range}
