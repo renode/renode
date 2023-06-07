@@ -9,11 +9,11 @@ flash: Memory.MappedMemory @ sysbus 0x08000000
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    -> nvic@46
+    IRQ -> nvic@46
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    -> nvic@47
+    IRQ -> nvic@47
 
 spi1: SPI.STM32WBA_SPI @ sysbus 0x40013000
     IRQ -> nvic@45

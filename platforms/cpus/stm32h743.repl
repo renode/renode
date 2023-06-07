@@ -61,7 +61,7 @@ i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
 
 lpuart1: UART.STM32F7_USART @ sysbus 0x58000C00
     frequency: 125000000
-    -> nvic@142
+    IRQ -> nvic@142
 
 syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x58000400
 
@@ -102,11 +102,11 @@ timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
 
 usart6: UART.STM32F7_USART @ sysbus 0x40011400
     frequency: 200000000
-    -> nvic@71
+    IRQ -> nvic@71
 
 usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
-    -> nvic@37
+    IRQ -> nvic@37
 
 timer8: Timers.STM32_Timer @ sysbus <0x40010400, +0x400>
     initialLimit: 0xffff
@@ -118,11 +118,11 @@ timer1: Timers.STM32_Timer @ sysbus <0x40010000, +0x400>
 
 uart8: UART.STM32F7_USART @ sysbus 0x40007C00
     frequency: 125000000
-    -> nvic@83
+    IRQ -> nvic@83
 
 uart7: UART.STM32F7_USART @ sysbus 0x40007800
     frequency: 125000000
-    -> nvic@82
+    IRQ -> nvic@82
 
 i2c3: I2C.STM32F7_I2C @ sysbus 0x40005C00
     EventInterrupt -> nvic@72
@@ -138,19 +138,19 @@ i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
 
 uart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 125000000
-    -> nvic@53
+    IRQ -> nvic@53
 
 uart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 125000000
-    -> nvic@52
+    IRQ -> nvic@52
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 125000000
-    -> nvic@39
+    IRQ -> nvic@39
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 125000000
-    -> nvic@38
+    IRQ -> nvic@38
 
 timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
     initialLimit: 0xffff

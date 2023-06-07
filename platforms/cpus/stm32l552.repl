@@ -30,27 +30,27 @@ flash: Memory.MappedMemory @ sysbus 0x08000000
 // frequency to be verified
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    -> nvic@61
+    IRQ -> nvic@61
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    -> nvic@62
+    IRQ -> nvic@62
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
-    -> nvic@63
+    IRQ -> nvic@63
 
 uart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
-    -> nvic@64
+    IRQ -> nvic@64
 
 uart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 200000000
-    -> nvic@65
+    IRQ -> nvic@65
 
 lpuart1: UART.STM32F7_USART @ sysbus 0x40008000
     frequency: 200000000
-    -> nvic@66
+    IRQ -> nvic@66
 
 dma1: DMA.STM32LDMA @ sysbus 0x40020000
     [0-7] -> nvic@[29-36]

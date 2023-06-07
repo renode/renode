@@ -9,19 +9,19 @@ flash: Memory.MappedMemory @ sysbus 0x08000000
 
 usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
-    -> nvic@37
+    IRQ -> nvic@37
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    -> nvic@38
+    IRQ -> nvic@38
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
-    -> nvic@39
+    IRQ -> nvic@39
 
 usart6: UART.STM32F7_USART @ sysbus 0x40011400
     frequency: 200000000
-    -> nvic@71
+    IRQ -> nvic@71
 
 can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
     [0-3] -> nvic@[19-22]

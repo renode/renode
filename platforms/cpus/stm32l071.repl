@@ -143,24 +143,24 @@ timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    ->exti@26
+    IRQ -> exti@26
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    ->exti@25
+    IRQ -> exti@25
 
 lpuart1: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
     lowPowerMode: true
-    ->exti@28
+    IRQ -> exti@28
 
 usart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
-    -> nvicInput14@0
+    IRQ -> nvicInput14@0
 
 usart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 200000000
-    -> nvicInput14@1
+    IRQ -> nvicInput14@1
 
 nvicInput14: Miscellaneous.CombinedInput
     numberOfInputs: 2
