@@ -309,7 +309,7 @@ def print_failed_tests(options):
         handler_obj = handler['creator']
         failed = handler_obj.find_failed_tests(options.results_directory)
 
-        if failed != None:
+        if failed is not None:
             def _print_helper(what):
                 for i, fail in enumerate(failed[what]):
                     print("\t{0}. {1}".format(i + 1, fail))
