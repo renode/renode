@@ -49,12 +49,12 @@ def prepare_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("tests",
-                        help="List of test files",
+                        help="List of test files.",
                         nargs='*')
 
     parser.add_argument("-f", "--fixture",
                         dest="fixture",
-                        help="Fixture to test",
+                        help="Fixture to test.",
                         metavar="FIXTURE")
 
     parser.add_argument("-n", "--repeat",
@@ -63,13 +63,13 @@ def prepare_parser():
                         type=int,
                         const=0,
                         default=1,
-                        help="Repeat tests a number of times (no-flag: 1, no-value: infinite)")
+                        help="Repeat tests a number of times (no-flag: 1, no-value: infinite).")
 
     parser.add_argument("-d", "--debug",
                         dest="debug_mode",
                         action="store_true",
                         default=False,
-                        help="Debug mode")
+                        help="Debug mode.")
 
     parser.add_argument("-o", "--output",
                         dest="output_file",
@@ -93,7 +93,7 @@ def prepare_parser():
                         dest="test_type",
                         action="store",
                         default="all",
-                        help="Type of test to execute (all by default)")
+                        help="Type of test to execute (all by default).")
 
     parser.add_argument("-r", "--results-dir",
                         dest="results_directory",
@@ -121,19 +121,19 @@ def prepare_parser():
                         dest="stop_on_error",
                         action="store_true",
                         default=False,
-                        help="Terminate immediately on the first test failure")
+                        help="Terminate immediately on the first test failure.")
 
     parser.add_argument("-j", "--jobs",
                         dest="jobs",
                         action="store",
                         default=1,
                         type=int,
-                        help="Maximum number of parallel tests")
+                        help="Maximum number of parallel tests.")
     parser.add_argument("--keep-temporary-files",
                         dest="keep_temps",
                         action="store_true",
                         default=False,
-                        help="Don't clean temporary files on exit")
+                        help="Don't clean temporary files on exit.")
 
     parser.add_argument("--save-logs",
                         choices=("onfail", "always"),

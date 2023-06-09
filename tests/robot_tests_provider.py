@@ -46,7 +46,7 @@ def install_cli_arguments(parser):
                         action="store",
                         default=0,
                         type=int,
-                        help="Port of robot framework remote server binary. Use '0' to automatically select any unused private port")
+                        help="Port of robot framework remote server binary. Use '0' to automatically select any unused private port.")
 
     parser.add_argument("--enable-xwt",
                         dest="enable_xwt",
@@ -88,42 +88,42 @@ def install_cli_arguments(parser):
                         dest="runner",
                         action="store",
                         default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
-                        help=".NET runner")
+                        help=".NET runner.")
 
     parser.add_argument("--debug-on-error",
                         dest="debug_on_error",
                         action="store_true",
                         default=False,
-                        help="Enables the Renode User Interface when test fails")
+                        help="Enables the Renode User Interface when test fails.")
 
     parser.add_argument("--cleanup-timeout",
                         dest="cleanup_timeout",
                         action="store",
                         default=3,
                         type=int,
-                        help="Robot frontend process cleanup timeout")
+                        help="Robot frontend process cleanup timeout.")
 
     parser.add_argument("--listener",
                         action="append",
-                        help="Path to additional progress listener (can be provided many times)")
+                        help="Path to additional progress listener (can be provided many times).")
 
     parser.add_argument("--renode-config",
                         dest="renode_config",
                         action="store",
                         default=None,
-                        help="Path to the Renode config file")
-    
+                        help="Path to the Renode config file.")
+
     parser.add_argument("--kill-stale-renode-instances",
                         dest="autokill_renode",
                         action="store_true",
                         default=False,
-                        help="Automatically kill stale Renode instances without asking")
+                        help="Automatically kill stale Renode instances without asking.")
 
     parser.add_argument("--gather-execution-metrics",
                         dest="execution_metrics",
                         action="store_true",
                         default=False,
-                        help="Gather execution metrics for each suite")
+                        help="Gather execution metrics for each suite.")
 
 
 def verify_cli_arguments(options):
