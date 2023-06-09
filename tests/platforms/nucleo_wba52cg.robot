@@ -1,6 +1,6 @@
 *** Variables ***
 ${UART}                             sysbus.usart1
-${USER_LED}                         sysbus.gpioPortB.BlueLED
+${BLUE_LED}                         sysbus.gpioPortB.BlueLED
 ${USER_BUTTON}                      sysbus.gpioPortC.UserButton1
 ${PROJECT_URL}                      @https://dl.antmicro.com/projects/renode
 ${UART_PRINTF}                      ${PROJECT_URL}/stm32wba--cube_mx_UART_Printf.elf-s_414528-276b355f13e0fc82007222130810179e374d275e
@@ -29,7 +29,7 @@ Should Have Working UART
 
 Should have Working EXTI
     Create Machine                 ${EXTI_TogglelED}
-    Create LED Tester              ${USER_LED}  defaultTimeout=0.1
+    Create LED Tester              ${BLUE_LED}  defaultTimeout=0.1
 
     Start Emulation
 
