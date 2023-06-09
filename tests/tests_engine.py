@@ -148,7 +148,7 @@ def prepare_parser():
     parser.add_argument("--save-logs",
                         choices=("onfail", "always"),
                         default="onfail",
-                        help="When to save Renode logs. Defaults to 'onfail'.")
+                        help="When to save Renode logs. Defaults to 'onfail'. This also affects --keep-renode-output, if enabled.")
 
     parser.add_argument("--perf-output-path",
                         dest="perf_output_path",
