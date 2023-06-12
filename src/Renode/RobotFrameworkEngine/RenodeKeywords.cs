@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -256,11 +256,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false)
+        public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false, bool pauseEmulation = false)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex);
+            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex, pauseEmulation);
             if(result == null)
             {
                 var logMessages = string.Join("\n ", bufferedMessages);
