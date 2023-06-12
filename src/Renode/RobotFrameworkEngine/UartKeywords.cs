@@ -118,11 +118,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true)
+        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true, bool pauseEmulation = false)
         {
             var tester = GetTesterOrThrowException(testerId);
             tester.WriteLine(content);
-            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true) == null)
+            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true, pauseEmulation: pauseEmulation) == null)
             {
                 OperationFail(tester);
             }
