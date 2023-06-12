@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -40,7 +40,7 @@ namespace Antmicro.Renode.RobotFramework
             {
                 return;
             }
-            
+
             lock(messages)
             {
                 messages.Add($"{entry.ObjectName}: {entry.Message}");
@@ -58,7 +58,7 @@ namespace Antmicro.Renode.RobotFramework
             {
                 return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
             }
-            
+
             var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
             do
             {
@@ -71,7 +71,7 @@ namespace Antmicro.Renode.RobotFramework
                 WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, lineEvent });
             }
             while(!timeoutEvent.IsTriggered);
-            
+
             // let's check for the last time and lock any incoming messages
             return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
         }
