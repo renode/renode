@@ -21,9 +21,12 @@ namespace Antmicro.Renode.RobotFramework
     {
         public LogTester(float virtualSecondsTimeout)
         {
+            // we need to use synchronous logging in order to pause the emulation precisely
+            EmulationManager.Instance.CurrentEmulation.CurrentLogger.SynchronousLogging = true;
+
             this.defaultTimeout = virtualSecondsTimeout;
             messages = new List<string>();
-            lineEvent = new AutoResetEvent(false);
+            predicateEvent = new AutoResetEvent(false);
         }
 
         public override void Dispose()
@@ -44,33 +47,77 @@ namespace Antmicro.Renode.RobotFramework
             lock(messages)
             {
                 messages.Add($"{entry.ObjectName}: {entry.Message}");
+
+                if(predicate == null)
+                {
+                    // we are currently not waiting for any message
+                    return;
+                }
+
+                if(!TryFind(predicate, keep: true, result: out var _))
+                {
+                    // not found anything interesting
+                    return;
+                }
+
+                if(pauseEmulation)
+                {
+                    if(!EmulationManager.Instance.CurrentEmulation.TryGetExecutionContext(out var machine, out var __))
+                    {
+                        // we are not on a CPU thread so we can issue a global pause
+                        EmulationManager.Instance.CurrentEmulation.PauseAll();
+                    }
+                    else
+                    {
+                        // mind that we don't use precise pausing as there is no guarantee this code is being executed from a CPU thread with a pause guard
+                        // it is still deterministic though
+                        machine.PauseAndRequestEmulationPause(precise: false);
+                    }
+                    pauseEmulation = false;
+                }
+
+                predicate = null;
+                predicateEvent.Set();
             }
-            lineEvent.Set();
         }
 
-        public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, float? timeout = null, bool keep = false, bool treatAsRegex = false)
+        public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, float? timeout = null, bool keep = false, bool treatAsRegex = false, bool pauseEmulation = false)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
             var regex = treatAsRegex ? new Regex(pattern) : null;
             var predicate = treatAsRegex ? (Predicate<string>)(x => regex.IsMatch(x)) : (Predicate<string>)(x => x.Contains(pattern));
+            var effectiveTimeout = timeout ?? defaultTimeout;
 
-            if(timeout.HasValue && timeout.Value == 0)
+            lock(messages)
             {
-                return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
-            }
-
-            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)((timeout ?? defaultTimeout) * 1000));
-            do
-            {
-                if(TryFind(predicate, keep, out var result))
+                var entry = FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
+                if(entry != null || (effectiveTimeout == 0))
                 {
-                    bufferedMessages = null;
-                    return result;
+                    return entry;
                 }
 
-                WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, lineEvent });
+                this.pauseEmulation = pauseEmulation;
+                this.predicate = predicate;
+                this.predicateEvent.Reset();
             }
-            while(!timeoutEvent.IsTriggered);
+
+            var emulationPausedEvent = emulation.GetStartedStateChangedEvent(false);
+            if(!emulation.IsStarted)
+            {
+                emulation.StartAll();
+            }
+
+            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)(effectiveTimeout * 1000));
+            var eventId = WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, predicateEvent });
+
+            if(eventId == 1)
+            {
+                // predicate event; we know the machine is paused, now we need to check for the rest of the emulation to stop
+                if(pauseEmulation)
+                {
+                    emulationPausedEvent.WaitOne();
+                }
+            }
 
             // let's check for the last time and lock any incoming messages
             return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
@@ -112,7 +159,10 @@ namespace Antmicro.Renode.RobotFramework
             return false;
         }
 
-        private readonly AutoResetEvent lineEvent;
+        private bool pauseEmulation;
+        private Predicate<string> predicate;
+
+        private readonly AutoResetEvent predicateEvent;
         private readonly List<string> messages;
         private readonly float defaultTimeout;
     }
