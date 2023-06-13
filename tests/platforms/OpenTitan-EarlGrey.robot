@@ -1,5 +1,5 @@
 *** Comments ***
-Tests for OpenTitan at commit 1e86ba2a238dc26c2111d325ee7645b0e65058e5
+Tests for OpenTitan at commit f243e6802143374741739d2c164c4f2f61697669
 
 *** Variables ***
 ${UART}                         sysbus.uart0
