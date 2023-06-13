@@ -11,9 +11,11 @@ gcr: Miscellaneous.MAX32650_GCR @ sysbus 0x40000000
 
 wdt0: Timers.MAX32650_WDT @ sysbus 0x40003000
     gcr: gcr
+    -> nvic@1
 
 wdt1: Timers.MAX32650_WDT @ sysbus 0x40003400
     gcr: gcr
+    -> nvic@57
 
 timer0: Timers.MAX32650_Timer @ sysbus 0x40010000
     gcr: gcr
