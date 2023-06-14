@@ -14,6 +14,11 @@ $boot_vmem?=@https://dl.antmicro.com/projects/renode/test_rom_fpga_cw310.39.scr.
 $otp_vmem?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--otp-img.24.vmem-s_44628-e17dede45d7e0509540343e52fe6fce1454c5339
 $bin?=@https://dl.antmicro.com/projects/renode/open_titan-earlgrey--hello_world_fpga_cw310.elf-s_376640-48103e09bc133bb823f56b2768ae9f55fc0cc01e
 
+# NMI vector address for Ibex CPU is relative to MTVEC value: https://github.com/lowRISC/ibex/blob/97df7a5b10a1baf25633771a385aff59cea8b0fa/doc/03_reference/exception_interrupts.rst?plain=1#L57
+# MTVEC is set by a bootloader and is not known upfront. Used test rom sets MTVEC to address 0x20000401 (vectored interrupt handler) and we hardcode NMI vector address below.
+cpu0 NMIVectorAddress 0x2000047c
+cpu0 NMIVectorLength 1
+
 macro reset
 """
     sysbus LoadELF $bin

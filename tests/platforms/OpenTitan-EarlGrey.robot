@@ -228,12 +228,8 @@ Should Pass OTBN ECDSA Test
 Should Pass OTBN IRQ Test
     Run Test              ${OTBN_IRQ_BIN}
 
-# Test is marked as broken: https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/BUILD#L1411-L1416
 Should Pass OTBN Memory Scramble Test
-    [Tags]                skipped
-    Prepare Test          ${OTBN_SCRAMBLE_BIN}
-    Execute Command       cpu0 MaximumBlockSize 1
-    Execute Test
+    Run Test              ${OTBN_SCRAMBLE_BIN}
 
 Should Pass OTBN Randomness Test
     Run Test              ${OTBN_RAND_BIN}
