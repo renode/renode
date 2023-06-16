@@ -358,7 +358,7 @@ namespace Antmicro.Renode.PlatformDescription
                     if(updatingCtorAttribute != null)
                     {
                         var position = GetFormattedPosition(updatingCtorAttribute);
-                        Logger.Log(LogLevel.Warning, "At {0}: updating constructors of the entry declared earlier.", position);
+                        Logger.Log(LogLevel.Debug, "At {0}: updating constructors of the entry declared earlier.", position);
                     }
                 }
             }
