@@ -7,7 +7,7 @@ ${SPI_FLASH}=    SEPARATOR=
 ...  spiFlash: SPI.Micron_MT25Q @ spi2           ${\n}
 ...  ${SPACE*4}underlyingMemory: spiFlashMemory  ${\n}
 ...                                              ${\n}
-...  gpiob:                                      ${\n}
+...  gpioPortB:                                  ${\n}
 ...  ${SPACE*4}12 -> spiFlash@0                  ${\n}
 ...  """
 
@@ -43,11 +43,11 @@ Create Machine With Button And LED
         Fail                     Unknown firmware '${firmware}'
     END
     Execute Command          include @scripts/single-node/stm32l072.resc
-    Execute Command          machine LoadPlatformDescriptionFromString "gpioa: { 5 -> led@0 }; led: Miscellaneous.LED @ gpioa 5"
-    Execute Command          machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpiob 2 { invert: true; -> gpiob@2 }"
+    Execute Command          machine LoadPlatformDescriptionFromString "gpioPortA: { 5 -> led@0 }; led: Miscellaneous.LED @ gpioPortA 5"
+    Execute Command          machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 2 { invert: true; -> gpioPortB@2 }"
 
     Create Terminal Tester   sysbus.usart2
-    Create LED Tester        sysbus.gpioa.led  defaultTimeout=2
+    Create LED Tester        sysbus.gpioPortA.led  defaultTimeout=2
 
 Should Be Equal Within Range
     [Arguments]              ${value0}  ${value1}  ${range}
@@ -76,7 +76,7 @@ Run Command
 
 Flash Should Contain
     [Arguments]  ${address}  ${value}
-    ${res}=  Execute Command  flash0 ReadDoubleWord ${address}
+    ${res}=  Execute Command  flash ReadDoubleWord ${address}
     Should Be Equal As Numbers  ${res}  ${value}
 
 *** Test Cases ***
@@ -138,7 +138,7 @@ Independent Watchdog Should Trigger Reset
     ${pc}=  Execute Command      sysbus GetSymbolAddress "z_arm_reset"
     ${sp}=  Execute Command      sysbus GetSymbolAddress "z_idle_stacks"
 
-    Execute Command          macro reset "cpu0 PC ${pc}; cpu0 SP ${sp}"
+    Execute Command          macro reset "cpu PC ${pc}; cpu SP ${sp}"
 
     Create Terminal Tester   sysbus.usart2
 
@@ -324,7 +324,7 @@ Terminal Tester Assert Should Precisely Pause Emulation
 
     Wait For Line On Uart    Press the button  pauseEmulation=true
 
-    Execute Command          gpiob.button Press
+    Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
     Should Be Equal          ${l.groups[0]}  6401
@@ -338,7 +338,7 @@ Quantum Should Not Impact Tester Pause PC
 
     Wait For Line On Uart    Press the button  pauseEmulation=true
 
-    Execute Command          gpiob.button Press
+    Execute Command          gpioPortB.button Press
 
     Wait For Line On Uart    Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
 
