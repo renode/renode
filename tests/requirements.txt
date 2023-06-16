@@ -1,4 +1,5 @@
 robotframework==6.0.2
+robotframework-retryfailed==0.2.0
 requests==2.27.1
 psutil==5.9.3
 pyyaml==6.0

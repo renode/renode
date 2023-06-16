@@ -29,6 +29,13 @@ class NUnitTestSuite(object):
     def check(self, options, number_of_runs): #API requires this method 
         pass 
 
+
+    def get_output_dir(self, options, iteration_index, suite_retry_index):
+        # Unused mechanism, this exists to keep a uniform interface with
+        # robot_tests_provider.py.
+        return options.results_directory
+
+
     # NOTE: if we switch to using msbuild on all platforms, we can get rid of this function and only use the '-' prefix
     def build_params(self, *params):
         def __decorate_build_param(p):
@@ -74,7 +81,9 @@ class NUnitTestSuite(object):
                     print('KILLING A DANGLING {} test process {}'.format(test_agent_name, proc.info['pid']))
                     os.kill(proc.info['pid'], signal.SIGTERM)
 
-    def run(self, options, run_id):
+    def run(self, options, run_id, iteration_index=1, suite_retry_index=0):
+        # The iteration_index and suite_retry_index arguments are not implemented.
+        # They exist for the sake of a uniform interface with robot_tests_provider.
         print('Running ' + self.path)
 
         project_file = os.path.split(self.path)[1]
@@ -151,6 +160,13 @@ class NUnitTestSuite(object):
 
     def cleanup(self, options):
         pass
+
+
+    def should_retry_suite(self, options, iteration_index, suite_retry_index):
+        # Unused mechanism, this exists to keep a uniform interface with
+        # robot_tests_provider.py.
+        return False
+
 
     @staticmethod
     def find_failed_tests(path, files_pattern='*.csproj.xml'):

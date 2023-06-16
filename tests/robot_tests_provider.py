@@ -10,7 +10,10 @@ import psutil
 import shutil
 import tempfile
 import uuid
+import re
+from collections import defaultdict
 from time import monotonic, sleep
+from typing import List, Dict, Tuple, Set
 
 import robot
 import xml.etree.ElementTree as ET
@@ -236,10 +239,12 @@ class RobotTestSuite(object):
     instances_count = 0
     robot_frontend_process = None
     hotspot_action = ['None', 'Pause', 'Serialize']
-    log_files = []
     # Used to share the port between all suites when running sequentially
     remote_server_port = -1
-
+    retry_suite_regex = re.compile(r"|".join((
+            r"\[Errno \d+\] Connection refused",
+            r"Connection to remote server broken: \[WinError \d+\]",
+    )))
 
     def __init__(self, path):
         self.path = path
@@ -247,6 +252,8 @@ class RobotTestSuite(object):
         self.remote_server_directory = None
         self.renode_pid = -1
         self.remote_server_port = -1
+        # Subset of RobotTestSuite.log_files which are "owned" by the running instance
+        self.suite_log_files = None
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
@@ -255,6 +262,14 @@ class RobotTestSuite(object):
     def check(self, options, number_of_runs):
         # Checking if there are no other jobs is moved to `prepare` as it is now possible to skip used ports
         pass
+
+
+    def get_output_dir(self, options, iteration_index, suite_retry_index):
+        return os.path.join(
+            options.results_directory,
+            f"iteration{iteration_index}" if options.iteration_count > 1 else "",
+            f"retry{suite_retry_index}" if options.retry_count > 1 else "",
+        )
 
 
     def prepare(self, options):
@@ -439,7 +454,7 @@ class RobotTestSuite(object):
                 proc.stdout.close()
 
 
-    def run(self, options, run_id=0):
+    def run(self, options, run_id=0, iteration_index=1, suite_retry_index=0):
         if self.path.endswith('renode-keywords.robot'):
             print('Ignoring helper file: {}'.format(self.path))
             return True
@@ -460,12 +475,22 @@ class RobotTestSuite(object):
         start_timestamp = monotonic()
 
         if any(self.tests_without_hotspots):
-            result = get_result().ok and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
+            result = get_result().ok and self._run_inner(options.fixture,
+                                                         None,
+                                                         self.tests_without_hotspots,
+                                                         options,
+                                                         iteration_index,
+                                                         suite_retry_index)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = get_result().ok and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
+                result = get_result().ok and self._run_inner(options.fixture,
+                                                             hotspot,
+                                                             self.tests_with_hotspots,
+                                                             options,
+                                                             iteration_index,
+                                                             suite_retry_index)
 
         end_timestamp = monotonic()
 
@@ -510,20 +535,63 @@ class RobotTestSuite(object):
 
 
     def cleanup(self, options):
+        assert hasattr(RobotTestSuite, "log_files"), "tests_engine.py did not assign RobotTestSuite.log_files"
         RobotTestSuite.instances_count -= 1
         if RobotTestSuite.instances_count == 0:
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
-            if len(RobotTestSuite.log_files) > 0:
-                print("Aggregating all robot results")
-                robot.rebot(*RobotTestSuite.log_files, processemptysuite=True, name='Test Suite', loglevel="TRACE:INFO", outputdir=options.results_directory, output='robot_output.xml')
-            if options.css_file:
-                with open(options.css_file) as style:
-                    style_content = style.read()
-                    for report_name in ("report.html", "log.html"):
-                        with open(os.path.join(options.results_directory, report_name), "a") as report:
-                            report.write("<style media=\"all\" type=\"text/css\">")
-                            report.write(style_content)
-                            report.write("</style>")
+            print("Aggregating all robot results")
+            grouped_log_files = self.group_log_paths(RobotTestSuite.log_files)
+            for iteration in range(1, options.iteration_count + 1):
+                for retry in range(options.retry_count):
+                    output_dir = self.get_output_dir(options, iteration, retry)
+                    log_files = grouped_log_files[(iteration, retry)]
+
+                    # An output_dir can be missing for suite retries that were never "used"
+                    if not os.path.isdir(output_dir) or not log_files:
+                        continue
+
+                    robot.rebot(
+                        *log_files,
+                        processemptysuite=True,
+                        name='Test Suite',
+                        loglevel="TRACE:INFO",
+                        outputdir=output_dir,
+                        output='robot_output.xml'
+                    )
+                    for file in set(log_files):
+                        os.remove(file)
+                    if options.css_file:
+                        with open(options.css_file) as style:
+                            style_content = style.read()
+                            for report_name in ("report.html", "log.html"):
+                                with open(os.path.join(output_dir, report_name), "a") as report:
+                                    report.write("<style media=\"all\" type=\"text/css\">")
+                                    report.write(style_content)
+                                    report.write("</style>")
+
+
+    def should_retry_suite(self, options, iteration_index, suite_retry_index):
+        tree = None
+        assert self.suite_log_files is not None, "The suite has not yet been run."
+        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
+        for log_file in self.suite_log_files:
+            try:
+                tree = ET.parse(os.path.join(output_dir, log_file))
+            except FileNotFoundError as e:
+                raise e
+
+            root = tree.getroot()
+            for suite in root.iter('suite'):
+                if not suite.get('source', False):
+                    continue # it is a tag used to group other suites without meaning on its own
+                for test in suite.iter('test'):
+                    status = test.find('status') # only finds immediate children - important requirement
+                    if status.text is not None and self.retry_suite_regex.search(status.text):
+                        return True
+                    for msg in test.iter("msg"):
+                        if self.retry_suite_regex.search(msg.text):
+                            return True
+        return False
 
 
     @staticmethod
@@ -531,19 +599,25 @@ class RobotTestSuite(object):
         return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
 
 
-    def _run_dependencies(self, test_cases_names, options):
+    def _run_dependencies(self, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         test_cases_names.difference_update(self._dependencies_met)
         if not any(test_cases_names):
             return True
         self._dependencies_met.update(test_cases_names)
-        return self._run_inner(None, None, test_cases_names, options)
+        return self._run_inner(None, None, test_cases_names, options, iteration_index, suite_retry_index)
 
 
-    def _run_inner(self, fixture, hotspot, test_cases_names, options):
+    def _run_inner(self, fixture, hotspot, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-        variables = ['SKIP_RUNNING_SERVER:True', 'DIRECTORY:{}'.format(self.remote_server_directory), 'PORT_NUMBER:{}'.format(self.remote_server_port), 'RESULTS_DIRECTORY:{}'.format(options.results_directory)]
+        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
+        variables = [
+            'SKIP_RUNNING_SERVER:True',
+            'DIRECTORY:{}'.format(self.remote_server_directory),
+            'PORT_NUMBER:{}'.format(self.remote_server_port),
+            'RESULTS_DIRECTORY:{}'.format(output_dir),
+        ]
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
@@ -572,16 +646,18 @@ class RobotTestSuite(object):
             deps = set()
             for test_name in (t[0] for t in test_cases):
                 deps.update(self._get_dependencies(test_name))
-            if not self._run_dependencies(deps, options):
+            if not self._run_dependencies(deps, options, iteration_index, suite_retry_index):
                 return False
 
         output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
         listeners = [os.path.join(this_path, output_formatter)]
         if options.listener:
             listeners += options.listener
+        if options.retry_count > 1:
+            listeners += [f'RetryFailed:{options.retry_count - 1}']
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
-        log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+        log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
 
         keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
         keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
@@ -612,44 +688,81 @@ class RobotTestSuite(object):
 
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
 
-        log_files = []
+        self.suite_log_files = []
         file_name = os.path.splitext(os.path.basename(self.path))[0]
+        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
         if any(self.tests_without_hotspots):
-            log_files.append(os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name)))
+            log_file = os.path.join(output_dir, 'results-{0}.robot.xml'.format(file_name))
+            if os.path.isfile(log_file):
+                self.suite_log_files.append(log_file)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                log_files.append(os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else '')))
+                log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+                if os.path.isfile(log_file):
+                    self.suite_log_files.append(log_file)
 
-        return TestResult(result.return_code == 0, log_files)
+        return TestResult(result.return_code == 0, self.suite_log_files)
 
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
-        tree = None
-        try:
-            tree = ET.parse(os.path.join(path, file))
-        except FileNotFoundError:
-            return None
+        ret = {'mandatory': set(), 'non_critical': set()}
 
-        root = tree.getroot()
-        ret = {'mandatory': [], 'non_critical': []}
-        for suite in root.iter('suite'):
-            if not suite.get('source', False):
-                continue # it is a tag used to group other suites without meaning on its own
-            for test in suite.iter('test'):
-                status = test.find('status') # only finds immediate children - important requirement
-                if status.attrib['status'] == 'FAIL':
-                    name = test.attrib['name']
-                    testname = suite.attrib['name']
-                    if test.find("./tags/[tag='skipped']"):
-                        continue # skipped test should not be classified as fail
-                    if test.find("./tags/[tag='non_critical']"):
-                        ret['non_critical'].append(testname + "." + name)
-                    else:
-                        ret['mandatory'].append(testname + "." + name)
+        # Aggregate failed tests from all report files (can be multiple if iterations or retries were used)
+        for dirpath, _, fnames in os.walk(path):
+            for fname in filter(lambda x: x == file, fnames):
+                tree = ET.parse(os.path.join(dirpath, fname))
+                root = tree.getroot()
+                for suite in root.iter('suite'):
+                    if not suite.get('source', False):
+                        continue # it is a tag used to group other suites without meaning on its own
+                    for test in suite.iter('test'):
+                        status = test.find('status') # only finds immediate children - important requirement
+                        if status.attrib['status'] == 'FAIL':
+                            test_name = test.attrib['name']
+                            suite_name = suite.attrib['name']
+                            if suite_name == "Test Suite":
+                                # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
+                                # instead of wrapping in a new top-level Test Suite. A workaround is to extract
+                                # the suite name from the *.robot file name.
+                                suite_name = os.path.basename(suite.attrib["source"]).strip(".robot")
+                            if test.find("./tags/[tag='skipped']"):
+                                continue # skipped test should not be classified as fail
+                            if test.find("./tags/[tag='non_critical']"):
+                                ret['non_critical'].add(f"{suite_name}.{test_name}")
+                            else:
+                                ret['mandatory'].add(f"{suite_name}.{test_name}")
 
         if not ret['mandatory'] and not ret['non_critical']:
             return None
+        return ret
+
+
+    @staticmethod
+    def group_log_paths(paths: List[str]) -> Dict[Tuple[int, int], Set[str]]:
+        """Breaks a list of log paths into subsets grouped by (iteration, suite_retry) pairs."""
+        re_path_indices_patterns = (
+            re.compile(r"\biteration(?P<iteration>\d+)/retry(?P<suite_retry>\d+)/"),
+            re.compile(r"\bretry(?P<suite_retry>\d+)/"),
+            re.compile(r"\biteration(?P<iteration>\d+)/"),
+        )
+        ret = defaultdict(lambda: set())
+        for path in paths:
+            iteration = 1
+            suite_retry = 0
+            for pattern in re_path_indices_patterns:
+                match = pattern.search(path)
+                if match is None:
+                    continue
+                try:
+                    iteration = int(match.group("iteration"))
+                except IndexError:
+                    pass
+                try:
+                    suite_retry = int(match.group("suite_retry"))
+                except IndexError:
+                    pass
+            ret[(iteration, suite_retry)].add(path)
         return ret

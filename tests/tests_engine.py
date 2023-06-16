@@ -46,7 +46,11 @@ IncludeLoader.add_constructor('!include', IncludeLoader.include)
 
 
 def prepare_parser():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        epilog="""The -n/--repeat and -N/--retry options are not mutually exclusive.
+        For example, "-n2 -N5" would repeat twice running the test(s) with a "tolerance"
+        of up to 4 failures each. This means each test case would run from 2 to 10 times."""
+    )
 
     parser.add_argument("tests",
                         help="List of test files.",
@@ -64,6 +68,12 @@ def prepare_parser():
                         const=0,
                         default=1,
                         help="Repeat tests a number of times (no-flag: 1, no-value: infinite).")
+
+    parser.add_argument("-N", "--retry",
+                        dest="retry_count",
+                        type=int,
+                        default=1,
+                        help="Run tests up to a number of times (like -n, but stops on success; must be >0)")
 
     parser.add_argument("-d", "--debug",
                         dest="debug_mode",
@@ -291,12 +301,30 @@ def run_test_group(args):
             print("Running tests iteration {}...".format(iteration_counter))
 
         for suite in group:
-            # we need to collect log files here instead of appending to a global list
-            # in each suite runner because this function will be called in a multiprocessing
-            # context when using the --jobs argument, as mentioned above
-            ok, suite_log_files = suite.run(options, run_id=test_id if options.jobs != 1 else 0)
-            tests_failed |= not ok
-            log_files.update((type(suite), log_file) for log_file in suite_log_files)
+            retry_suites_counter = 0
+            should_retry_suite = True
+            while should_retry_suite and retry_suites_counter < options.retry_count:
+                retry_suites_counter += 1
+
+                if retry_suites_counter > 1:
+                    print("Retrying suite, attempt {} of {}...".format(retry_suites_counter, options.retry_count))
+
+                # we need to collect log files here instead of appending to a global list
+                # in each suite runner because this function will be called in a multiprocessing
+                # context when using the --jobs argument, as mentioned above
+                ok, suite_log_files = suite.run(options,
+                                                run_id=test_id if options.jobs != 1 else 0,
+                                                iteration_index=iteration_counter,
+                                                suite_retry_index=retry_suites_counter - 1)
+                log_files.update((type(suite), log_file) for log_file in suite_log_files)
+                if ok:
+                    tests_failed = False
+                    should_retry_suite = False
+                else:
+                    tests_failed = True
+                    should_retry_suite = suite.should_retry_suite(options, iteration_counter, retry_suites_counter - 1)
+                    if options.retry_count > 1 and not should_retry_suite:
+                        print("No Robot<->Renode connection issues were detected to warrant a suite retry - giving up.")
 
         if options.stop_on_error and tests_failed:
             break
