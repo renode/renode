@@ -26,7 +26,63 @@ Step And Verify Accumulator
     ${acc} =  Execute Command     cpu GetRegisterUnsafe 0
     Should Be Equal As Integers   ${acc}  ${expected_value}  base=16
 
+Verify Timer Register
+    [Arguments]    ${system_register_name}    ${timer_register_name}
+
+    Execute Command               cpu GetSystemRegisterValue "${system_register_name}"
+    Wait For Log Entry            Read from ${timer_register_name}
+
 *** Test Cases ***
+Test Accessing ARM Generic Timer Registers Through AArch64 System Registers
+    Create Machine
+    Create Log Tester             0
+    Execute Command               logLevel 0 cpu.timer
+
+    # Read logs for '*Count' registers are disabled by default because they tend to be read very often.
+    Execute Command               cpu.timer EnableCountReadLogs true
+
+    # AArch64 system register reads go through tlib and are handled by ARM Generic Timer which prints a DEBUG access log.
+    # The log line is used to verify that a proper peripheral register is connected to the given AArch64 system register.
+    Verify Timer Register         CNTFRQ_EL0         Frequency
+    Verify Timer Register         CNTHCTL_EL2        HypervisorControl
+    Verify Timer Register         CNTKCTL_EL1        KernelControl
+
+    Verify Timer Register         CNTPCT_EL0         PhysicalCount
+    Verify Timer Register         CNTPCTSS_EL0       PhysicalSelfSynchronizedCount
+    Verify Timer Register         CNTPOFF_EL2        PhysicalOffset
+
+    Verify Timer Register         CNTVCT_EL0         VirtualCount
+    Verify Timer Register         CNTVCTSS_EL0       VirtualSelfSynchronizedCount
+    Verify Timer Register         CNTVOFF_EL2        VirtualOffset
+
+    Verify Timer Register         CNTHP_CTL_EL2      NonSecureEL2PhysicalTimerControl
+    Verify Timer Register         CNTHP_CVAL_EL2     NonSecureEL2PhysicalTimerCompareValue
+    Verify Timer Register         CNTHP_TVAL_EL2     NonSecureEL2PhysicalTimerValue
+
+    Verify Timer Register         CNTHPS_CTL_EL2     SecureEL2PhysicalTimerControl
+    Verify Timer Register         CNTHPS_CVAL_EL2    SecureEL2PhysicalTimerCompareValue
+    Verify Timer Register         CNTHPS_TVAL_EL2    SecureEL2PhysicalTimerValue
+
+    Verify Timer Register         CNTHV_CTL_EL2      NonSecureEL2VirtualTimerControl
+    Verify Timer Register         CNTHV_CVAL_EL2     NonSecureEL2VirtualTimerCompareValue
+    Verify Timer Register         CNTHV_TVAL_EL2     NonSecureEL2VirtualTimerValue
+
+    Verify Timer Register         CNTHVS_CTL_EL2     SecureEL2VirtualTimerControl
+    Verify Timer Register         CNTHVS_CVAL_EL2    SecureEL2VirtualTimerCompareValue
+    Verify Timer Register         CNTHVS_TVAL_EL2    SecureEL2VirtualTimerValue
+
+    Verify Timer Register         CNTP_CTL_EL0       EL1PhysicalTimerControl
+    Verify Timer Register         CNTP_CVAL_EL0      EL1PhysicalTimerCompareValue
+    Verify Timer Register         CNTP_TVAL_EL0      EL1PhysicalTimerValue
+
+    Verify Timer Register         CNTPS_CTL_EL1      EL3PhysicalTimerControl
+    Verify Timer Register         CNTPS_CVAL_EL1     EL3PhysicalTimerCompareValue
+    Verify Timer Register         CNTPS_TVAL_EL1     EL3PhysicalTimerValue
+
+    Verify Timer Register         CNTV_CTL_EL0       EL1VirtualTimerControl
+    Verify Timer Register         CNTV_CVAL_EL0      EL1VirtualTimerCompareValue
+    Verify Timer Register         CNTV_TVAL_EL0      EL1VirtualTimerValue
+
 Test CRC32X
     Create Machine
     Execute Command               cpu ExecutionMode SingleStepBlocking
