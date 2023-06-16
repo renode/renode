@@ -20,47 +20,23 @@ public:
     {
     }
 
-    void tick(bool countEnable, uint64_t steps) override
-    {
-        for (size_t i = 0; i < steps; i++)
-        {
-            readHandler();
-            writeHandler();
-            *wb_clk = high;
-            evaluateModel();
-            *wb_clk = low;
-            evaluateModel();
-        }
-
-        clearSignals();
-
-        if (countEnable)
-            tickCounter += steps;
-    }
-
-    void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout)
-    {
-        throw "Unsupported operation";
-    }
-
-    void WishboneInitiator::setClock(uint8_t value) {
+    void setClock(uint8_t value) {
         *wb_clk = value;
     }
 
-    void WishboneInitiator::prePosedgeTick()
+    void prePosedgeTick()
     {
         readHandler();
         writeHandler();
     }
 
-    void WishboneInitiator::posedgeTick()
+    void posedgeTick()
     {
-        evaluateModel();
     }
 
-    void WishboneInitiator::negedgeTick()
+    void negedgeTick()
     {
-        evaluateModel();
+        clearSignals();
     }
 
     void readWord(uint64_t addr, uint8_t sel)
@@ -176,12 +152,13 @@ public:
         *wb_ack = low;
     }
 
-    void reset()
+    void setReset(uint8_t value)
     {
-        *wb_rst = 1;
-        tick(true, 1);
-        *wb_rst = 0;
-        tick(true, 1);
+        *wb_rst = value;
+    }
+
+    void onResetAction()
+    {
     }
 
     bool hasSpecifiedAdress() override

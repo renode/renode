@@ -28,16 +28,22 @@ public:
         {
             for (auto &bus : initatorInterfaces)
             {
-                bus->readHandler();
-                bus->writeHandler();
+                bus->prePosedgeTick();
             }
+
             cpu->clkHigh();
             cpu->evaluateModel();
+            for (auto &bus : initatorInterfaces)
+            {
+                bus->posedgeTick();
+            }
+
             cpu->clkLow();
             cpu->evaluateModel();
-
             for (auto &bus : initatorInterfaces)
-                bus->clearSignals();
+            {
+                bus->negedgeTick();
+            }
         }
         if (countEnable)
             tickCounter += steps;
