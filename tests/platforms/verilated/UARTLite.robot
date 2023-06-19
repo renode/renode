@@ -1,6 +1,21 @@
 *** Variables ***
 ${URI}                              @https://dl.antmicro.com/projects/renode
 ${BIN}                              uartlite--custom_uart_demo--zephyr.elf-s_184340-129eb92404f437a466cd8700f6743b1c5b0da912
+${UARTLITE_NATIVE_LINUX}            ${URI}/libVuartlite-Linux-x86_64-6585534489.so-s_2065712-ad517d8e2b23842752ef0312a4ef91f84d760c29
+${UARTLITE_SOCKET_LINUX}            ${URI}/Vuartlite-Linux-x86_64-6585534489-s_1615536-258c6921413c4d0231a86b30779e38ebd485e44d
+${UARTLITE_NATIVE_WINDOWS}          ${URI}/libVuartlite-Windows-x86_64-6585534489.dll-s_3120162-a9f05d5b5c8c4a28dbb5a7dea4cb568287c2cf5a
+${UARTLITE_SOCKET_WINDOWS}          ${URI}/Vuartlite-Windows-x86_64-6585534489.exe-s_3111169-de391155b540aa0f35986c1bf98c3504b8e87ee5
+${UARTLITE_NATIVE_MACOS}            ${URI}/libVuartlite-macOS-x86_64-6585534489.dylib-s_216728-0ac50938c9b43c97f133372ffe3842a28a047dcb
+${UARTLITE_SOCKET_MACOS}            ${URI}/Vuartlite-macOS-x86_64-6585534489-s_217568-53c098deb3bb84f0fc614448f514754a2069fd67
+${UARTLITE_WRONG_PORTS_LINUX}       ${URI}/Vuartlite_wrong_ports-Linux-x86_64-6585534489-s_1615536-b31bc852d5c35f75a7b26fa04da2d5cb657275e7
+${UARTLITE_WRONG_PORTS_WINDOWS}     ${URI}/Vuartlite_wrong_ports-Windows-x86_64-6585534489.exe-s_3111169-54324bde16d2d6d59f77509fc8dac9d402489e65
+${UARTLITE_WRONG_PORTS_MACOS}       ${URI}/Vuartlite_wrong_ports-macOS-x86_64-6585534489-s_217568-5e35e2180a043dc077490ff1c702b64e124c6314
+${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_LINUX}  ${URI}/Vuartlite_sleep_after_1000_iters-Linux-x86_64-6585534489-s_1615576-5650af9b947560e121f07a62ca50bd8b1ce68a05
+${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_WINDOWS}  ${URI}/Vuartlite_sleep_after_1000_iters-Windows-x86_64-6585534489.exe-s_3114269-bfcb0661daa31b57c77ed3674fdee980acf487d6
+${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_MACOS}  ${URI}/Vuartlite_sleep_after_1000_iters-macOS-x86_64-6585534489-s_217608-f620f1032858cfd72a2886886e5844c3fcd623ea
+${UARTLITE_WRONG_SECOND_PORT_LINUX}  ${URI}/Vuartlite_wrong_second_port-Linux-x86_64-6585534489-s_1615536-572eff3c2886bd192a47a86969210362f3f97e04
+${UARTLITE_WRONG_SECOND_PORT_WINDOWS}  ${URI}/Vuartlite_wrong_second_port-Windows-x86_64-6585534489.exe-s_3111169-87d77ac7a42ff87038f1abaf74519b1b9db15638
+${UARTLITE_WRONG_SECOND_PORT_MACOS}  ${URI}/Vuartlite_wrong_second_port-macOS-x86_64-6585534489-s_217568-db79061d6a865807f5bb569fa9879384e2d717f4
 ${LOCAL_FILENAME}                   uartlite
 ${UART}                             sysbus.uart
 ${UARTLITE_SCRIPT}                  scripts/single-node/riscv_verilated_uartlite.resc
@@ -48,6 +63,8 @@ Create Machine With Socket Based Communication
 Should Run UARTLite Binary From Script
     [Tags]                          skip_osx
 
+    Execute Command                 \$uartLinux?=${UARTLITE_NATIVE_LINUX}
+    Execute Command                 \$uartWindows?=${UARTLITE_NATIVE_WINDOWS}
     Execute Script                  ${UARTLITE_SCRIPT}
     Create Terminal Tester          ${UART}
     Start Emulation
@@ -77,19 +94,16 @@ Should Handle Nonexistent UARTLite Binary
 # Following tests use socket based communication
 
 Should Run UARTLite Binary Using Socket
-    Set Test Variable               ${uartLinux}    ${URI}/Vuartlite-Linux-x86_64-1116123840-s_1599680-83f742bb0978fd3b9baf62e0374f155a739d51bd
-    Set Test Variable               ${uartWindows}  ${URI}/Vuartlite-Windows-x86_64-1116123840.exe-s_14818278-68fb417a3d93d490c2e123530e6554e4f424303a
-    Set Test Variable               ${uartMacOS}    ${URI}/Vuartlite-macOS-x86_64-1116123840-s_213728-7c628488f7e7a6f2dcf191f205d64faca8840d3d
-    Create Machine With Socket Based Communication  ${uartLinux}    ${uartWindows}      ${uartMacOS}
+    Create Machine With Socket Based Communication  ${UARTLITE_SOCKET_LINUX}  ${UARTLITE_SOCKET_WINDOWS}  ${UARTLITE_SOCKET_MACOS}
     Create Terminal Tester          ${UART}
     Start Emulation
     Wait For Line On Uart           I'm alive! counter = 10
 
 # Sleep after 1000 iterations in "simulate" loop (renode.cpp)
 Should Handle Connection Timeout
-    Set Test Variable               ${uartLinux}    ${URI}/Vsleep-after-1000-iters-Linux-x86_64-1116123840-s_1599728-51e984c3a45d741d27dfdd811596842ec4f89860
-    Set Test Variable               ${uartWindows}  ${URI}/Vsleep-after-1000-iters-Windows-x86_64-1116123840.exe-s_14819806-cfff9b1d2afe880551d9324ecbe8592419ec2686
-    Set Test Variable               ${uartMacOS}    ${URI}/Vsleep-after-1000-iters-macOS-x86_64-1116123840-s_213760-7bd8e951887e91e3dbd8067ab503ae1d49cea65e
+    Set Test Variable               ${uartLinux}    ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_LINUX}
+    Set Test Variable               ${uartWindows}  ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_WINDOWS}
+    Set Test Variable               ${uartMacOS}    ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_MACOS}
     Create Machine With Socket Based Communication  ${uartLinux}    ${uartWindows}      ${uartMacOS}
     Create Log Tester               ${LOG_TIMEOUT}
     Create Terminal Tester          ${UART}
@@ -99,17 +113,17 @@ Should Handle Connection Timeout
 
 # Both ports wrong when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Not Connecting
-    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-ports-Linux-x86_64-1116123840-s_1599680-0469cc78da4e7c471b0b2aa8b5043ae067cddc38
-    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-ports-Windows-x86_64-1116123840.exe-s_14818278-8eef4d621983ba0488432b211531b986919d07b5
-    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-ports-macOS-x86_64-1116123840-s_213728-86dca75acae23752583ae12a28bede927eba1434
+    Set Test Variable               ${uartLinux}    ${UARTLITE_WRONG_PORTS_LINUX}
+    Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_PORTS_WINDOWS}
+    Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_PORTS_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Wrong "second" port when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Partly Connecting
-    Set Test Variable               ${uartLinux}    ${URI}/Vwrong-second-port-Linux-x86_64-1116123840-s_1599680-2641eb4ae0d6a5b3ef09ad1d4b0e8c3797c08d47
-    Set Test Variable               ${uartWindows}  ${URI}/Vwrong-second-port-Windows-x86_64-1116123840.exe-s_14818278-e2c4f51c6e0a0ffafbb8ad36e03b5afca4566f12
-    Set Test Variable               ${uartMacOS}    ${URI}/Vwrong-second-port-macOS-x86_64-1116123840-s_213728-4c921bbdb3fabf4f3b7a74848f92adf8e56bc225
+    Set Test Variable               ${uartLinux}    ${UARTLITE_WRONG_SECOND_PORT_LINUX}
+    Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_SECOND_PORT_WINDOWS}
+    Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_SECOND_PORT_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
     Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 

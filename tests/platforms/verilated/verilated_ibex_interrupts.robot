@@ -1,14 +1,17 @@
 *** Variables ***
 ${UART}                             sysbus.uart
+${CPU_IBEX_NATIVE_LINUX}            @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
+${CPU_IBEX_NATIVE_WINDOWS}          @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dll-s_3253532-6f580a2d9bf4f525d5e5e6432d0cb1ff4efa9c75
+${CPU_IBEX_NATIVE_MACOS}            @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dylib-s_329984-1446a5b2d8a92b894bf1b78d16c30cd443c28527
 
 *** Keywords ***
 Create Machine
     Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/verilated/verilated_ibex.repl
-    Execute Command                 sysbus.cpu SimulationFilePathLinux @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
-    Execute Command                 sysbus.cpu SimulationFilePathWindows @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dll-s_3253532-6f580a2d9bf4f525d5e5e6432d0cb1ff4efa9c75
-    Execute Command                 sysbus.cpu SimulationFilePathMacOS @https://dl.antmicro.com/projects/renode/verilated-ibex--libVtop.dylib-s_329984-1446a5b2d8a92b894bf1b78d16c30cd443c28527
+    Execute Command                 sysbus.cpu SimulationFilePathLinux ${CPU_IBEX_NATIVE_LINUX}
+    Execute Command                 sysbus.cpu SimulationFilePathWindows ${CPU_IBEX_NATIVE_WINDOWS}
+    Execute Command                 sysbus.cpu SimulationFilePathMacOS ${CPU_IBEX_NATIVE_MACOS}
     Execute Command                 logLevel 3
     Execute Command                 $c_example=@https://dl.antmicro.com/projects/renode/verilated-ibex--c_example.elf-s_5956-ea5ae45679b4070cd21933b9602bbcfd80302c93
     Execute Command                 showAnalyzer ${UART}
