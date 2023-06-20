@@ -197,9 +197,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected void Write(ActionType type, long offset, ulong value)
         {
-            if(String.IsNullOrWhiteSpace(simulationFilePath))
+            if(!IsConnected)
             {
-                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath first!");
+                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath or connect to a simulator first!");
                 return;
             }
             if(!alignmentInitialized)
@@ -213,9 +213,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected ulong Read(ActionType type, long offset)
         {
-            if(String.IsNullOrWhiteSpace(simulationFilePath))
+            if(!IsConnected)
             {
-                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath first!");
+                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath or connect to a simulator first!");
                 return 0;
             }
             if(!alignmentInitialized)
