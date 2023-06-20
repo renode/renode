@@ -206,6 +206,7 @@ CPU Can Have Two MMUs
 
 Peripheral Throws Fault On Illegal Data Access
     Requires                        SingleMMU
+    Create Log Tester               0
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_ALL}
     Define Window In Peripheral     mmu1  2  0x1000  0x2000  0x0000  ${PRIV_NONE}
     Execute Command                 logLevel 0 mmu1
@@ -215,6 +216,7 @@ Peripheral Throws Fault On Illegal Data Access
 
 Peripheral Does Not Throw When no_page_fault Is Set
     Requires                        SingleMMU
+    Create Log Tester               0
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_ALL}
     Define Window In Peripheral     mmu1  2  0x1000  0x2000  0x0000  ${PRIV_NONE}
     Execute Command                 logLevel 0 mmu1
@@ -226,6 +228,7 @@ Peripheral Does Not Throw When no_page_fault Is Set
 
 Peripheal Throws On Illegal Instruction Fetch
     Create Platform
+    Create Log Tester               0
     Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 4}"
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_WRITE_ONLY}
     Execute Command                 logLevel 0 mmu1
@@ -235,6 +238,7 @@ Peripheal Throws On Illegal Instruction Fetch
 
 First MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+    Create Log Tester               0
 
     Execute Command                 logLevel 0 mmu1
     Execute Command                 logLevel 0 mmu2
@@ -248,6 +252,7 @@ First MMU Throws On Fault In Its Window
 
 Second MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+    Create Log Tester               0
 
     Execute Command                 logLevel 0 mmu1
     Execute Command                 logLevel 0 mmu2
