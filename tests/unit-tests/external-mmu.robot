@@ -93,7 +93,7 @@ Read/Write From Address Outside The Defined MMU Windows Throws
     Execute Command                 sysbus WriteWord 0x2000 0x1234
     Expect Value Read From Address  0x10000  0x0
     Wait For Log Entry              MMU fault - the address 0x0 is not specified in any of the existing ranges
-    
+
 Window Can Handle Only One Type Of Access
     Create Platform
     Execute Command                 cpu EnableExternalWindowMmu true
@@ -101,7 +101,7 @@ Window Can Handle Only One Type Of Access
     Define Typed Window Using CPU API    0x0000  0x1000  0x0  ${PRIV_EXEC_ONLY}  ${PRIV_EXEC_ONLY}
     Define Typed Window Using CPU API    0x0000  0x1000  0x1000  ${PRIV_READWRITE}  ${PRIV_READWRITE}
     Execute Command                 sysbus WriteWord 0x1000 0x0124
-    Expect Value Read From Address  0x0  0x0124    
+    Expect Value Read From Address  0x0  0x0124
 
 Is Able To Retrive The Properties
     Create Platform
