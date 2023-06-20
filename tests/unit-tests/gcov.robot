@@ -46,7 +46,7 @@ Should Run Test1 Application
     Prepare Machine           @${elf_location}/${elf_name}
 
     Execute Command           gcov start @${elf_location}/${elf_name}
-    Execute Command           gcov add-source-prefix "builds/git/renode-demo-sources/repositories/kendryte-standalone-sdk/src/test1/"
+    Execute Command           gcov add-source-prefix "/builds/git/renode-demo-sources/repositories/kendryte-standalone-sdk/src/test1/"
 
     Execute Command           emulation RunFor "0.007"
 
@@ -78,7 +78,7 @@ Should Run Test2 Application
     Prepare Machine           @${elf_location}/${elf_name}
 
     Execute Command           gcov start @${elf_location}/${elf_name}
-    Execute Command           gcov add-source-prefix "builds/git/renode-demo-sources/repositories/kendryte-standalone-sdk/src/test2/"
+    Execute Command           gcov add-source-prefix "/builds/git/renode-demo-sources/repositories/kendryte-standalone-sdk/src/test2/"
     Execute Command           emulation RunFor "0.017"
 
     Execute Command           gcov stop
