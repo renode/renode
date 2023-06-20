@@ -87,7 +87,7 @@ Should Handle Empty UARTLite Binary
     Execute Command                 showAnalyzer sysbus.uart
     Execute Command                 sysbus LoadELF ${URI}/${BIN}
     Execute Command                 sysbus.cpu PC `sysbus GetSymbolAddress "vinit"`
-    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath first!*    Start Emulation
+    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath or connect to a simulator first!*    Start Emulation
 
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary
@@ -126,7 +126,7 @@ Should Handle UARTLite Binary Not Connecting
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_PORTS_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_PORTS_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
+    Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Wrong "second" port when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Partly Connecting
@@ -134,7 +134,7 @@ Should Handle UARTLite Binary Partly Connecting
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_SECOND_PORT_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_SECOND_PORT_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Connection to the verilated peripheral (*) failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
+    Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Starting emulation without SimulationFilePath(Linux|MacOS|Windows) set
 Should Handle Empty UARTLite Binary With Socket Based Communication
@@ -143,7 +143,7 @@ Should Handle Empty UARTLite Binary With Socket Based Communication
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLATFORM}
     Execute Command                 sysbus LoadELF ${URI}/${BIN}
     Execute Command                 sysbus.cpu PC `sysbus GetSymbolAddress "vinit"`
-    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath first!*    Start Emulation
+    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath or connect to a simulator first!*    Start Emulation
 
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary With Socket Based Communication
