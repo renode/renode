@@ -12,10 +12,9 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 1000000000
-    PhysicalTimerIRQ -> gic#0@30
-    VirtualTimerIRQ -> gic#0@27
-    NonSecurePhysicalTimerIRQ -> gic#0@26
-    HypervisorPhysicalTimerIRQ -> gic#0@29
+    EL1PhysicalTimerIRQ -> gic#0@30
+    EL1VirtualTimerIRQ -> gic#0@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#0@26
 
 dram0: Memory.MappedMemory @ sysbus 0x0
     size: 0x08000000
