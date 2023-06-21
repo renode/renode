@@ -79,7 +79,7 @@ Should Refresh Watchdog By Writing Refresh Key Into Forbidden Region When Forbid
 
     Wait For Line On Uart       The system will reset after WD0 Times out.
 
-    Wait For Log Entry          Switching state to ForbiddenRegion.
+    Wait For Log Entry          Switching state to ForbiddenRegion.   timeout=3
     Should Not Be In Log        Switching state to RefreshRegion.
 
 
@@ -95,7 +95,7 @@ Should Refresh Watchdog By Writing Refresh Key Into Refresh Region When Forbidde
     Wait For Line On Uart       H0 MVRP PLIC
     Wait For Line On Uart       H0 MVRP Local
 
-    Wait For Log Entry          Refreshing watchdog.
+    Wait For Log Entry          Refreshing watchdog.   timeout=3
     Should Not Be In Log        Watchdog reset triggered!
 
 
