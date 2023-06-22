@@ -44,6 +44,10 @@ namespace Antmicro.Renode.RobotFramework
                         {
                             keywordResult = Regex.Replace(resultString, "(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]", "", RegexOptions.Compiled);
                         }
+                        else if(keywordResult is IList<object> list)
+                        {
+                            keywordResult = list.ToArray();
+                        }
                         result.Add(KeywordResultValue, keywordResult);
                     }
                     result.Add(KeywordResultStatus, KeywordResultPass);
