@@ -32,3 +32,29 @@ Should Allow Passing Python String As Argument
     # (so in the typical case)
     ${str}=                         Evaluate  str(1)
     Create Log Tester               ${str}
+
+Should Return Python Int
+    ${res}=                         Execute Python  1 + 2
+    # This doesn't really get the type of the returned value, but rather the type of the
+    # result of evaluating `type(<returned value as a string>)`. There doesn't seem to be
+    # a way to get the type of a variable itself without this stringifying and evaluation
+    ${type}=                        Evaluate  type(${res}).__name__
+    Should Be Equal                 ${type}  int
+    Should Be Equal                 ${res}  ${3}
+
+Should Return Python String
+    ${res}=                         Execute Python  "{}bcd".format("a")
+    ${type}=                        Evaluate  type("${res}").__name__
+    Should Be Equal                 ${type}  str
+    Should Be Equal                 ${res}  abcd
+
+Should Return Python List
+    ${expected}=                    Create List  ${0}  ${1}  ${2}  ${3}  ${4}
+    ${res}=                         Execute Python  list(range(5))
+    Lists Should Be Equal           ${res}  ${expected}
+
+Should Propagate Python Exception
+    Run Keyword And Expect Error    ValueErrorException*  Execute Python  raise ValueError()
+
+Should Fail On Python Syntax Error
+    Run Keyword And Expect Error    SyntaxErrorException*  Execute Python  "a
