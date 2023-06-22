@@ -12,6 +12,8 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.UserInterface;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Logging;
+using Antmicro.Renode.Exceptions;
+using System.Runtime.ExceptionServices;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -66,6 +68,23 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             return interaction.GetContents();
+        }
+
+        [RobotFrameworkKeyword]
+        public object ExecutePython(string command, string machine = null)
+        {
+            SetMonitorMachine(machine);
+
+            try
+            {
+                return monitor.ExecutePythonCommand(command);
+            }
+            catch(RecoverableException ex)
+            {
+                // Rethrow the inner exception preserving the stack trace, the return is unreachable
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                return null;
+            }
         }
 
         [RobotFrameworkKeyword]
