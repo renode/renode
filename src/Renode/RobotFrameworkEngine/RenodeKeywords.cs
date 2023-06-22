@@ -52,14 +52,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             interaction.Clear();
-            if(!string.IsNullOrWhiteSpace(machine))
-            {
-                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out var machobj))
-                {
-                    throw new KeywordException("Could not find machine named {0} in the emulation", machine);
-                }
-                monitor.Machine = machobj;
-            }
+            SetMonitorMachine(machine);
 
             if(!monitor.Parse(command))
             {
@@ -340,6 +333,18 @@ namespace Antmicro.Renode.RobotFramework
             if(logTester == null)
             {
                 throw new KeywordException("Log tester is not available. Create it with the `CreateLogTester` keyword");
+            }
+        }
+
+        private void SetMonitorMachine(string machine)
+        {
+            if(!string.IsNullOrWhiteSpace(machine))
+            {
+                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out var machobj))
+                {
+                    throw new KeywordException("Could not find machine named {0} in the emulation", machine);
+                }
+                monitor.Machine = machobj;
             }
         }
 
