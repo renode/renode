@@ -18,6 +18,9 @@ DESTINATION=renode_${VERSION}-dotnet_portable
 cp $RENODE_OUTPUT_BINARY $DESTINATION/renode
 cp $RENODE_OUTPUT_DIR/../libllvm-disas.so $DESTINATION
 
+# Handle a very rare case where the binary doesn't have the execute permission after building.
+chmod +x $DESTINATION/renode
+
 # Create tar
 mkdir -p ../../output/packages
 tar -czf ../../output/packages/renode-$VERSION.linux-portable-dotnet.tar.gz $DESTINATION
