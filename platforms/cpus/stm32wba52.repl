@@ -115,41 +115,11 @@ flash_ctrl: MTD.STM32WBA_FlashController @ sysbus 0x40022000
     flash: flash
     // TODO: connect interrupt
 
-rcc: Python.PythonPeripheral @ sysbus 0x46020C00
-    size: 0x400
-    initable: true
-    script: '''
-if request.isInit:
-    lastVal = 0
-    justWritten = False
-elif request.isWrite:
-    lastVal = request.value
-    justWritten = True
-elif request.isRead:
-    if justWritten:
-       # just return the previously written value
-       justWritten = False
-    elif request.offset == 0:
-        # RCC_CR: All ON and RDY flags set - blink
-        lastVal = 0x31B0700 if lastVal == 0 else 0
-    elif request.offset == 0x1C:
-        # RCC_CFGR1: Brute force all values
-        lastVal = 0 if lastVal == 0xFFFFFFFF else lastVal + 1
-    elif request.offset == 0x28:
-        # RCC_PLL1CFGR: All EN and RDY flags set
-        lastVal = 0xFFFFFFF
-    elif request.offset == 0xA0:
-        # RCC_APB1ENR2: LPTIM2EN
-        lastVal = 0x20
-    elif request.offset == 0xE0:
-        # RCC_CCIPR1: Setting the USART1SEL to HSI16
-        lastVal = 0b10
-    elif request.offset == 0xF0:
-        # RCC_BDCR1: All ON and RDY flags set - blink
-        lastVal = 0 if lastVal == 0xC00FFEF else 0xC00FFEF
+rcc: Miscellaneous.STM32WBA_RCC @ sysbus 0x46020C00
+    nvic: nvic
+    lptim1: lptim1
+    lptim2: lptim2
 
-    request.value = lastVal
-'''
 sysbus:
     init:
         Tag <0xE0001004, 0xE0001008> "DWT_CYCCNT" 100
