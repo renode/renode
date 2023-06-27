@@ -32,6 +32,12 @@ namespace Antmicro.Renode.RobotFramework
             return GetTesterOrThrowException(testerId).GetReport();
         }
 
+        [RobotFrameworkKeyword]
+        public void ClearTerminalTesterReport(int? testerId = null)
+        {
+            GetTesterOrThrowException(testerId).ClearReport();
+        }
+
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null)
         {
@@ -130,10 +136,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(float timeout, int? testerId = null)
+        public void TestIfUartIsIdle(float timeout, int? testerId = null, bool pauseEmulation = false)
         {
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.IsIdle(TimeInterval.FromSeconds(timeout));
+            var result = tester.IsIdle(TimeInterval.FromSeconds(timeout), pauseEmulation);
             if(!result)
             {
                 OperationFail(tester);
