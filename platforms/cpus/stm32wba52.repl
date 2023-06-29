@@ -97,11 +97,11 @@ iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
     defaultPrescaler: 0
 
 lptim1: Timers.STM32L0_LpTimer @ sysbus 0x46004400
-    frequency: 0x1000000
+    frequency: 16000000
     -> nvic@49
 
 lptim2: Timers.STM32L0_LpTimer @ sysbus 0x40009400
-    frequency: 0x1000000
+    frequency: 16000000
     -> nvic@50
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x46007800
