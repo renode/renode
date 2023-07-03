@@ -477,6 +477,15 @@ class RobotTestSuite(object):
             print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
 
         self._close_remote_server(proc, options)
+
+        # make sure renode is still alive when a non-parallel run depends on it
+        if options.jobs == 1:
+            if not self._is_frontend_running():
+                print("Renode has unexpectedly died when running sequentially! Trying to respawn before continuing...")
+                RobotTestSuite.robot_frontend_process = self._run_remote_server(options)
+                # Save port to reuse when running sequentially
+                RobotTestSuite.remote_server_port = self.remote_server_port
+
         return get_result()
 
 
