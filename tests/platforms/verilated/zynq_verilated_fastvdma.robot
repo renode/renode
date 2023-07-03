@@ -2,14 +2,36 @@
 ${URI}                                   @https://dl.antmicro.com/projects/renode/
 
 ${PROMPT}                                zynq>
-${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/zynq_verilated_fastvdma.resc
 ${UART}                                  sysbus.uart1
+${VM_BIN}                                ${URI}zynq-fastvdma_vmlinux-s_13611036-802d102e9341668636631447e99389f79043c18d
+${DTB}                                   ${URI}zynq-fastvdma.dtb-s_12284-4f3a630a9bce9e0984151b95e9efa581ef7525bf
+${ROOTFS}                                ${URI}zynq-fastvdma_rootfs.ext2-s_33554432-7a53506ed3e6cdaf247280ad7025ff1aa4cb98c5
 ${FASTVDMA_DRIVER}                       /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma.ko
 ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma-demo.ko
+${FASTVDMA_NATIVE_LINUX}                 ${URI}zynq-fastvdma_libVfastvdma-Linux-x86_64-1246779523.so-s_2057616-93e755f7d67bc4d5ca33cce6c88bbe8ea8b3bd31
+${FASTVDMA_NATIVE_WINDOWS}               ${URI}zynq-fastvdma_libVfastvdma-Windows-x86_64-1246779523.dll-s_14839852-62f85c68c37d34f17b10d39c5861780856d1698e
+${FASTVDMA_NATIVE_MACOS}                 ${URI}libVfastvdma-macOS-x86_64-1246779523.dylib-s_230304-6c7a97c3b3adddf60bfb769e751403e85092c3b8
 
 *** Keywords ***
 Create Machine
-    Execute Script                       ${SCRIPT}
+    Execute Command                      mach create
+    Execute Command                      machine LoadPlatformDescription @platforms/boards/zedboard.repl
+    Execute Command                      machine LoadPlatformDescriptionFromString 'dma: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x43c20000, +0x100> { frequency: 100000; limitBuffer: 100000; timeout: 10000; 0 -> gic@31; numberOfInterrupts: 1}'
+    Execute Command                      sysbus Redirect 0xC0000000 0x0 0x10000000
+    Execute Command                      using sysbus
+    Execute Command                      showAnalyzer uart1
+    Execute Command                      ttc0 Frequency 33333333
+    Execute Command                      ttc1 Frequency 33333333
+    Execute Command                      cpu SetRegisterUnsafe 0 0x000
+    Execute Command                      cpu SetRegisterUnsafe 1 0xD32 # board id
+    Execute Command                      cpu SetRegisterUnsafe 2 0x100 # device tree address
+    Execute Command                      sysbus LoadELF ${VM_BIN}
+    Execute Command                      sysbus LoadFdt ${DTB} 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1a000000,32M" false
+    Execute Command                      sysbus ZeroRange 0x1a000000 0x800000
+    Execute Command                      sysbus LoadBinary ${ROOTFS} 0x1a000000
+    Execute Command                      dma SimulationFilePathLinux ${FASTVDMA_NATIVE_LINUX}
+    Execute Command                      dma SimulationFilePathWindows ${FASTVDMA_NATIVE_WINDOWS}
+    Execute Command                      dma SimulationFilePathMacOS ${FASTVDMA_NATIVE_MACOS}
     Create Terminal Tester               ${UART}
 
 Compare Parts Of Images
