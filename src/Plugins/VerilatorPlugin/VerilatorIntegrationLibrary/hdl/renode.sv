@@ -11,13 +11,18 @@ import renode_pkg::renode_connection, renode_pkg::bus_connection;
 import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t;
 
 module renode #(
-    int unsigned BusControllerTimeout = 100
+    int unsigned BusControllerTimeout = 100,
+    int unsigned BusPeripheralsCount = 0
 ) (
     input logic clk
 );
   renode_connection connection = new();
   bus_connection bus_controller = new(connection);
+  bus_connection bus_peripheral = new(connection);
   time renode_time = 0;
+
+  always @(bus_peripheral.read_transaction_request) read_transaction();
+  always @(bus_peripheral.write_transaction_request) write_transaction();
 
   task static receive_and_handle_message();
     message_t message;
@@ -123,6 +128,33 @@ module renode #(
     if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
     else connection.send(message_t'{renode_pkg::ok, 0, 0});
     if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus write access timeout");
+  endtask
+
+  task static read_transaction();
+    message_t message;
+
+    connection.exclusive_receive.get();
+
+    connection.send_to_async_receiver(message_t'{renode_pkg::getDoubleWord, bus_peripheral.read_transaction_address, 0});
+
+    connection.receive(message);
+    while (message.action != renode_pkg::writeRequest) begin
+      handle_message(message);
+      connection.receive(message);
+    end
+
+    connection.exclusive_receive.put();
+    bus_peripheral.read_respond(message.data, 0);
+  endtask
+
+  task static write_transaction();
+    message_t message;
+
+    message.action = renode_pkg::pushDoubleWord;
+    message.address = bus_peripheral.write_transaction_address;
+    message.data = bus_peripheral.write_transaction_data;
+    connection.send_to_async_receiver(message);
+    bus_peripheral.write_respond(0);
   endtask
 endmodule
 
