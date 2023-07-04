@@ -12,14 +12,24 @@ import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t;
 
 module renode #(
     int unsigned BusControllerTimeout = 100,
-    int unsigned BusPeripheralsCount = 0
+    int unsigned BusPeripheralsCount = 0,
+    int unsigned InterruptsCount = 1
 ) (
-    input logic clk
+    input logic clk,
+    input logic [InterruptsCount-1:0] interrupts
 );
   renode_connection connection = new();
   bus_connection bus_controller = new(connection);
   bus_connection bus_peripheral = new(connection);
   time renode_time = 0;
+
+  renode_interrupts #(
+      .InterruptsCount(InterruptsCount)
+  ) gpio (
+      .clk(clk),
+      .interrupts(interrupts),
+      .connection(connection)
+  );
 
   always @(bus_peripheral.read_transaction_request) read_transaction();
   always @(bus_peripheral.write_transaction_request) write_transaction();
