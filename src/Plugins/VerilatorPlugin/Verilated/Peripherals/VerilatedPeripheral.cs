@@ -37,7 +37,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     AbortAndLogError("Send error!");
                 }
                 this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
-                allTicksProcessedARE.WaitOne();
+                if(!allTicksProcessedARE.WaitOne(timeout))
+                {
+                    AbortAndLogError("Timeout reached while waiting for a tick response.");
+                }
                 this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
             };
 
