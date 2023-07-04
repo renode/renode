@@ -17,6 +17,7 @@ module renode #(
 );
   renode_connection connection = new();
   bus_connection bus_controller = new(connection);
+  time renode_time = 0;
 
   task static receive_and_handle_message();
     message_t message;
@@ -36,6 +37,7 @@ module renode #(
     is_handled = 1;
     case (message.action)
       renode_pkg::resetPeripheral: reset();
+      renode_pkg::tickClock: sync_time(time'(message.data));
       renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, message.data);
       renode_pkg::readRequestDoubleWord: read_from_bus(message.address);
       default: is_handled = 0;
@@ -72,6 +74,14 @@ module renode #(
       end
     join
     connection.exclusive_receive.put();
+  endtask
+
+  task static sync_time(time time_to_elapse);
+    renode_time = renode_time + time_to_elapse;
+    while ($time < renode_time) @(clk);
+
+    connection.send_to_async_receiver(message_t'{renode_pkg::tickClock, 0, 0});
+    connection.log(renode_pkg::LogDebug, $sformatf("Simulation time synced to %t", $realtime));
   endtask
 
   task automatic read_from_bus(address_t address);
