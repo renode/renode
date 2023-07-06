@@ -24,15 +24,20 @@ bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value)
     return true;
 }
 
+void renodeDPIConnect(int receiverPort, int senderPort, const char* address)
+{
+    socketChannel = new SocketCommunicationChannel();
+    socketChannel->connect(receiverPort, senderPort, address);
+}
+
 void renodeDPIDisconnect()
 {
     socketChannel->disconnect();
 }
 
-void renodeDPIConnect(int receiverPort, int senderPort, const char* address)
+bool renodeDPIIsConnected()
 {
-    socketChannel = new SocketCommunicationChannel();
-    socketChannel->connect(receiverPort, senderPort, address);
+    return socketChannel->getIsConnected();
 }
 
 bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value)

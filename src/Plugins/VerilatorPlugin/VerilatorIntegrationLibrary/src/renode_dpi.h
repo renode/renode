@@ -12,6 +12,7 @@ extern "C"
 {
   void renodeDPIConnect(int receiverPort, int senderPort, const char *address);
   void renodeDPIDisconnect();
+  bool renodeDPIIsConnected();
   bool renodeDPIReceive(uint32_t *actionId, uint64_t *address, uint64_t *value);
   bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value);
   bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value);
