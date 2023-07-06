@@ -29,6 +29,7 @@ Get Virtual Time
     [return]  ${t}
 
 Sleep And Measure
+    Sleep                       4s
     ${t1}=  Get Virtual Time
     Sleep                       4s
     ${t2}=  Get Virtual Time
