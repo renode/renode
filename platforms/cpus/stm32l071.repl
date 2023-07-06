@@ -195,6 +195,30 @@ lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
 crc: CRC.STM32F0_CRC @ sysbus 0x40023000
     configurablePoly: true
 
+// Alternate function connections
+// The syntax is:
+//     alternateFunctionOutput -> gpioPort#pinNumber@AFNumber
+// Meaning `1 -> gpioPortA#2@0` connects output 1 to pin 2 of GPIO port A as AF 0
+timer2:
+    0 -> gpioPortA#00@2 | gpioPortA#05@5 | gpioPortA#15@5 | gpioPortE#09@0
+    1 -> gpioPortA#01@2 | gpioPortB#03@2 | gpioPortE#10@0
+    2 -> gpioPortA#02@2 | gpioPortB#10@2 | gpioPortE#11@0
+    3 -> gpioPortA#03@2 | gpioPortB#11@2 | gpioPortE#12@0
+
+timer3:
+    0 -> gpioPortA#06@2 | gpioPortB#04@2 | gpioPortC#06@2 | gpioPortE#03@2
+    1 -> gpioPortA#07@2 | gpioPortB#05@2 | gpioPortC#07@2 | gpioPortE#04@2
+    2 -> gpioPortB#00@2 | gpioPortC#08@2 | gpioPortE#05@2
+    3 -> gpioPortB#01@2 | gpioPortC#09@2 | gpioPortE#06@2
+
+timer21:
+    0 -> gpioPortA#02@0 | gpioPortB#13@6 | gpioPortD#00@0 | gpioPortE#05@0
+    1 -> gpioPortA#03@0 | gpioPortB#14@6 | gpioPortD#07@1 | gpioPortE#06@0
+
+timer22:
+    0 -> gpioPortA#06@5 | gpioPortB#04@4 | gpioPortC#06@0 | gpioPortE#03@0
+    1 -> gpioPortA#07@5 | gpioPortB#05@4 | gpioPortC#07@0 | gpioPortE#04@0
+
 sysbus:
     init:
         Tag <0x40026000, 0x400263FF> "AES"
