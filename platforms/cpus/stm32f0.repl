@@ -109,10 +109,10 @@ i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
 i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
-    -> nvic@25
+    IRQ -> nvic@25
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
-    -> nvic@26
+    IRQ -> nvic@26
 
 timer1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
     frequency: 10000000
