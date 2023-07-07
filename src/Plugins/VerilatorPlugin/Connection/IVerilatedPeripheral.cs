@@ -21,5 +21,6 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         bool IsConnected { get; }
         string SimulationFilePath { set; }
+        string Context { get; set; }
     }
 }

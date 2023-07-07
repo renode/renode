@@ -30,10 +30,12 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public abstract class VerilatedCPU : BaseCPU, IGPIOReceiver, ITimeSink, IDisposable
     {
         public VerilatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
-            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, string address = null)
+            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
         {
-            verilatedPeripheral = new BaseVerilatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, BaseVerilatedPeripheral.DefaultTimeout, address);
+            verilatedPeripheral = new BaseVerilatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+                simulationContextLinux, simulationContextWindows, simulationContextMacOS, BaseVerilatedPeripheral.DefaultTimeout, address);
             verilatedPeripheral.OnReceive = HandleReceived;
 
             InitializeRegisters();

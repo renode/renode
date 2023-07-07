@@ -21,8 +21,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class VerilatedPeripheral : BaseVerilatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput
     {
         public VerilatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
-            : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, timeout, address)
+            : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, simulationContextLinux, simulationContextWindows, simulationContextMacOS, timeout, address)
         {
             this.machine = machine;
             allTicksProcessedARE = new AutoResetEvent(initialState: false);

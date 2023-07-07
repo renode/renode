@@ -20,6 +20,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class BaseVerilatedPeripheral : IPeripheral, IDisposable, IHasOwnLife
     {
         public BaseVerilatedPeripheral(string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
             int timeout = DefaultTimeout, string address = null)
         {
             started = false;
@@ -35,6 +36,10 @@ namespace Antmicro.Renode.Peripherals.Verilated
             SimulationFilePathLinux = simulationFilePathLinux;
             SimulationFilePathWindows = simulationFilePathWindows;
             SimulationFilePathMacOS = simulationFilePathMacOS;
+
+            SimulationContextLinux = simulationContextLinux;
+            SimulationContextWindows = simulationContextWindows;
+            SimulationContextMacOS = simulationContextMacOS;
         }
 
         public Action<ProtocolMessage> OnReceive { get; set; }
@@ -71,6 +76,60 @@ namespace Antmicro.Renode.Peripherals.Verilated
         }
 
         public bool IsConnected => verilatorConnection.IsConnected;
+
+        public string SimulationContextLinux
+        {
+            get
+            {
+                return SimulationContext;
+            }
+            set
+            {
+#if PLATFORM_LINUX
+                SimulationContext = value;
+#endif
+            }
+        }
+
+        public string SimulationContextWindows
+        {
+            get
+            {
+                return SimulationContext;
+            }
+            set
+            {
+#if PLATFORM_WINDOWS
+                SimulationContext = value;
+#endif
+            }
+        }
+
+        public string SimulationContextMacOS
+        {
+            get
+            {
+                return SimulationContext;
+            }
+            set
+            {
+#if PLATFORM_OSX
+                SimulationContext = value;
+#endif
+            }
+        }
+
+        public string SimulationContext
+        {
+            get
+            {
+                return verilatorConnection.Context;
+            }
+            set
+            {
+                verilatorConnection.Context = value;
+            }
+        }
 
         public string SimulationFilePathLinux
         {

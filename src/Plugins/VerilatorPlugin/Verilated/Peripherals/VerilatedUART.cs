@@ -17,7 +17,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
     public class VerilatedUART : BaseDoubleWordVerilatedPeripheral, IUART
     {
         public VerilatedUART(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null) : base(machine, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, limitBuffer, timeout, address)
+            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null)
+            : base(machine, frequency, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, simulationContextLinux, simulationContextWindows, simulationContextMacOS, limitBuffer, timeout, address)
         {
             IRQ = new GPIO();
         }

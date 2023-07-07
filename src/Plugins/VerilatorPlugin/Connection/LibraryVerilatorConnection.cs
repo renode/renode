@@ -156,6 +156,22 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public bool IsConnected { get; private set; }
 
+        public string Context
+        {
+            get
+            {
+                return this.context;
+            }
+            set
+            {
+                if(IsConnected)
+                {
+                    throw new RecoverableException("Context cannot be modified while connected");
+                }
+                this.context = (value == "") ? null : value;
+            }
+        }
+
         public string SimulationFilePath
         {
             get
@@ -174,6 +190,12 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                     {
                         simulationFilePath = value;
                         binder = new NativeBinder(this, value);
+                        if(this.context != null)
+                        {
+                            IntPtr pContext = Marshal.StringToHGlobalAnsi(this.context);
+                            initializeContext(pContext);
+                            Marshal.FreeHGlobal(pContext);
+                        }
                         initializeNative();
                         mainResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
                         senderResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
@@ -212,6 +234,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         }
 
         private string simulationFilePath;
+        private string context;
         private NativeBinder binder;
         private IntPtr mainResponsePointer;
         private IntPtr senderResponsePointer;
@@ -229,6 +252,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
         private ActionIntPtr handleRequest;
+        [Import(UseExceptionWrapper = false, Optional = true)]
+        private ActionIntPtr initializeContext;
         [Import(UseExceptionWrapper = false)]
         private Action initializeNative;
         [Import(UseExceptionWrapper = false)]

@@ -175,6 +175,22 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public bool IsConnected => mainSocketComunicator.Connected;
 
+        public string Context
+        {
+            get
+            {
+                return this.context;
+            }
+            set
+            {
+                if(IsConnected)
+                {
+                    throw new RecoverableException("Context cannot be modified while connected");
+                }
+                this.context = (value == "" || value == null) ? "{0} {1} {2}" : value;
+            }
+        }
+
         public string SimulationFilePath
         {
             set
@@ -190,7 +206,21 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
-        public string ConnectionParameters => $"{mainSocketComunicator.ListenerPort} {asyncSocketComunicator.ListenerPort} {address}";
+        public string ConnectionParameters
+        {
+            get
+            {
+                try
+                {
+                    return String.Format(this.context,
+                        mainSocketComunicator.ListenerPort, asyncSocketComunicator.ListenerPort, address);
+                }
+                catch (FormatException e)
+                {
+                    throw new RecoverableException(e.Message);
+                }
+            }
+        }
 
         private void ReceiveLoop()
         {
@@ -295,6 +325,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         private volatile int disposeInitiated;
         private string simulationFilePath;
+        private string context = "{0} {1} {2}";
         private Process verilatedProcess;
         private SocketComunicator mainSocketComunicator;
         private SocketComunicator asyncSocketComunicator;
