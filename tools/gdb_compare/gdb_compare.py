@@ -226,11 +226,6 @@ class GDBInstance:
             self.last_output = None
             raise pexpect.TIMEOUT("")
 
-    def print_state(self, previous_pc):
-        for cmd in [f"x/i {previous_pc}", f"x/x {previous_pc}", "frame", "info all-registers"]:
-            self.run_command(cmd, async_=False)
-            print(">> " + self.last_output)
-
     def print_stack(self, stack: list[tuple[str, int]]) -> None:
         """Prints a stack."""
         print("Address\t\tOccurence\t\tSymbol")
