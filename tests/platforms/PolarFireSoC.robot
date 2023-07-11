@@ -12,6 +12,7 @@ Run Should Ignore Writing Other Values Test
     [Arguments]                 ${path}
     Execute Command             $bin = ${path}
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Start Emulation
 
@@ -26,6 +27,7 @@ Run Should Ignore Writing Other Values Test
 Should Fire NMI When Writing Any Value Into Forbidden Region When Forbidden Region Is Enabled
     Execute Command             $bin = @https://dl.antmicro.com/projects/renode/mpfs-watchdog-interrupt_case-a.elf-s_3353960-dd65a2a6d435d49509523cf68058af7027c69f02
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Create Log Tester           0
     Execute Command             logLevel -1
@@ -42,6 +44,7 @@ Should Fire NMI When Writing Any Value Into Forbidden Region When Forbidden Regi
 Should Refresh Watchdog By Writing Refresh Key Into Refresh Region When Forbidden Region Is Enabled
     Execute Command             $bin = @https://dl.antmicro.com/projects/renode/mpfs-watchdog-interrupt_case-b.elf-s_3353976-d0a8861250d15dbba1e25fb51797e72f82460453
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Create Log Tester           0
     Execute Command             logLevel -1
@@ -57,6 +60,7 @@ Should Refresh Watchdog By Writing Refresh Key Into Refresh Region When Forbidde
 Should Ignore Writing Other Values Into Refresh Region When Forbidden Region Is Enabled
     Execute Command             $bin = @https://dl.antmicro.com/projects/renode/mpfs-watchdog-interrupt_case-c.elf-s_3353976-2227f483cde453795dad468e3913e1a9a8dde7dc
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Create Log Tester           0
     Execute Command             logLevel -1
@@ -72,6 +76,7 @@ Should Ignore Writing Other Values Into Refresh Region When Forbidden Region Is 
 Should Refresh Watchdog By Writing Refresh Key Into Forbidden Region When Forbidden Region Is Disabled
     Execute Command             $bin = @https://dl.antmicro.com/projects/renode/mpfs-watchdog-interrupt_case-d-forbidden.elf-s_3353960-d197eb0f96c99c4ae244c315875d6d353d2c43ad
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Create Log Tester           0
     Execute Command             logLevel -1
@@ -86,6 +91,7 @@ Should Refresh Watchdog By Writing Refresh Key Into Forbidden Region When Forbid
 Should Refresh Watchdog By Writing Refresh Key Into Refresh Region When Forbidden Region Is Disabled
     Execute Command             $bin = @https://dl.antmicro.com/projects/renode/mpfs-watchdog-interrupt_case-d-refresh.elf-s_3353976-f3fd8998a7f9ae641fd786dd36b83b9074189010
     Execute Script              ${SCRIPT}
+    Execute Command             machine SetSerialExecution True
     Create Terminal Tester      ${UART}
     Create Log Tester           0
     Execute Command             logLevel -1
