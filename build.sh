@@ -24,8 +24,8 @@ NET_FRAMEWORK_VER=
 RID="linux-x64"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build]"
-  echo ""
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [-- <ARGS>]"
+  echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
   echo "-v                                verbose output"
@@ -41,6 +41,7 @@ function print_help() {
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "--profile-build                   build optimized for tlib profiling"
+  echo "<ARGS>                            arguments to pass to the build system"
 }
 
 while getopts "cdvpnstb:o:B:-:" opt
@@ -112,6 +113,14 @@ do
   esac
 done
 shift "$((OPTIND-1))"
+PARAMS+=(
+  # By default use CC as Compiler- and LinkerPath, and AR as ArPath
+  ${CC:+"p:CompilerPath=$CC"}
+  ${CC:+"p:LinkerPath=$CC"}
+  ${AR:+"p:ArPath=$AR"}
+  # But allow users to override it
+  "$@"
+)
 
 if [ -n "${PLATFORM:-}" ]
 then

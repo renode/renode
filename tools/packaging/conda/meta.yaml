@@ -6,7 +6,6 @@ source:
     git_url: https://github.com/renode/renode.git
     git_rev: master
     patches:
-        - use_conda_cc.patch       [not win]
         - lower_mono_version.patch [not win]
 
 build:
