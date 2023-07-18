@@ -1,0 +1,21 @@
+$name?="hifive-unmatched"
+$trace_file?=@renode.trace
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/sifive-fu740.repl
+
+showAnalyzer uart0
+
+$bin?=@https://dl.antmicro.com/projects/renode/hifive_unmatched--zephyr-shell_module.elf-s_1146984-4c34239d50f7b61dc2ee074a0135a7e299e21768
+
+# Create tracer for TraceBasedModel format
+s7 CreateExecutionTracing "tracer" $trace_file TraceBasedModel
+tracer TrackMemoryAccesses
+tracer TrackVectorConfiguration
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
