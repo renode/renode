@@ -133,6 +133,11 @@ def prepare_parser():
                         default=False,
                         help="Don't clean temporary files on exit")
 
+    parser.add_argument("--save-logs",
+                        choices=("onfail", "always"),
+                        default="onfail",
+                        help="When to save Renode logs. Defaults to 'onfail'.")
+
     if platform != "win32":
         parser.add_argument("-p", "--port",
                             dest="port",

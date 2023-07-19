@@ -485,6 +485,8 @@ class RobotTestSuite(object):
             variables.append('HOLD_ON_ERROR:True')
         if options.execution_metrics:
             variables.append('CREATE_EXECUTION_METRICS:True')
+        if options.save_logs == "always":
+            variables.append('SAVE_LOGS_WHEN:Always')
         if options.runner == 'dotnet':
             variables.append('BINARY_NAME:Renode.dll')
             variables.append('RENODE_PID:{}'.format(self.renode_pid))

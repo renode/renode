@@ -18,7 +18,8 @@ ${HOTSPOT_ACTION}            None
 ${DISABLE_XWT}               False
 ${DEFAULT_UART_TIMEOUT}      8
 ${CREATE_SNAPSHOT_ON_FAIL}   True
-${SAVE_LOG_ON_FAIL}          True
+${SAVE_LOGS}                 True
+${SAVE_LOGS_WHEN}            Fail
 ${HOLD_ON_ERROR}             False
 ${CREATE_EXECUTION_METRICS}  False
 ${NET_PLATFORM}              False
@@ -85,7 +86,7 @@ Setup
 
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
-    IF  ${SAVE_LOG_ON_FAIL}
+    IF  ${SAVE_LOGS}
         Enable Logging To Cache
     END
 
@@ -123,7 +124,7 @@ Create Snapshot Of Failed Test
     Execute Command  Save ${snapshot_path}
     Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
 
-Save Log Of Failed Test
+Save Test Log
     Return From Keyword If   'skipped' in @{TEST TAGS}
 
     ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}
@@ -149,9 +150,13 @@ Test Teardown
           ...   Create Snapshot Of Failed Test
     END
 
-    IF  ${SAVE_LOG_ON_FAIL}
-        Run Keyword If Test Failed
-          ...   Save Log Of Failed Test
+    IF  ${SAVE_LOGS}
+        IF  "${SAVE_LOGS_WHEN}" == "Always"
+            Save Test Log
+        ELSE IF  "${SAVE_LOGS_WHEN}" == "Fail"
+            Run Keyword If Test Failed
+              ...   Save Test Log
+        END
     END
 
     ${res}=  Run Keyword And Ignore Error
