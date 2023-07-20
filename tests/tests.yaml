@@ -108,3 +108,4 @@
 - tests/platforms/nucleo_wba52cg.robot
 - tests/unit-tests/page-access-via-io.robot
 - tests/unit-tests/precise-pause.robot
+- tests/unit-tests/peripheral-hooks.robot
