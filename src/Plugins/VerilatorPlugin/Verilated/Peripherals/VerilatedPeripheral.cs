@@ -138,21 +138,36 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     HandleInterrupt(message);
                     break;
                 case ActionType.PushByte:
-                    this.Log(LogLevel.Noisy, "Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
+                    this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
                     break;
                 case ActionType.PushWord:
-                    this.Log(LogLevel.Noisy, "Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
+                    this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
                     break;
                 case ActionType.PushDoubleWord:
-                    this.Log(LogLevel.Noisy, "Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
+                    this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
                     break;
+                case ActionType.PushQuadWord:
+                    this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
+                    machine.SystemBus.WriteQuadWord(message.Address, message.Data);
+                    break;
+                case ActionType.GetByte:
+                    this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", message.Address);
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(message.Address));
+                    break;
+                case ActionType.GetWord:
+                    this.Log(LogLevel.Noisy, "Requested word from address: 0x{0:X}", message.Address);
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(message.Address));
+                    break;
                 case ActionType.GetDoubleWord:
-                    this.Log(LogLevel.Noisy, "Requested data from address: 0x{0:X}", message.Address);
-                    var data = machine.SystemBus.ReadDoubleWord(message.Address);
-                    Respond(ActionType.WriteToBus, 0, data);
+                    this.Log(LogLevel.Noisy, "Requested double word from address: 0x{0:X}", message.Address);
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(message.Address));
+                    break;
+                case ActionType.GetQuadWord:
+                    this.Log(LogLevel.Noisy, "Requested quad word from address: 0x{0:X}", message.Address);
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(message.Address));
                     break;
                 case ActionType.TickClock:
                     allTicksProcessedARE.Set();

@@ -39,4 +39,6 @@ writeRequestByte = 25,
 writeRequestWord = 26,
 writeRequestDoubleWord = 27,
 writeRequestQuadWord = 28,
+pushQuadWord = 29,
+getQuadWord = 30,
 step = 100

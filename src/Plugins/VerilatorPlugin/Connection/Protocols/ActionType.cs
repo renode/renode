@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -39,6 +39,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         WriteToBusWord,
         WriteToBusDoubleWord,
         WriteToBusQuadWord,
+        PushQuadWord,
+        GetQuadWord,
         Step = 100, //all custom action type numbers must not fall in this range
     }
 }
