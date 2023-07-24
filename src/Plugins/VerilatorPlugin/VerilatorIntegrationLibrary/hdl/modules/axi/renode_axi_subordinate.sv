@@ -42,28 +42,27 @@ module renode_axi_subordinate (
     burst_length_t burst_length;
     burst_type_e burst_type;
     address_t address_last;
+    renode_pkg::valid_bits_e valid_bits;
+    address_t transfer_bytes;
 
     get_read_address(transaction_id, address, burst_size, burst_length, burst_type);
-    if (burst_size != 'b10) connection.fatal_error($sformatf("Unsupported burst size 'b%b", burst_size));
-    else if (address % 4 != 0) connection.fatal_error($sformatf("Unaligned address isn't supported."));
-    else if (burst_type != Incrementing) connection.fatal_error($sformatf("Unsupported burst type 'b%b", burst_type));
+    valid_bits = bus.burst_size_to_valid_bits(burst_size);
+    if(!is_access_valid(address, valid_bits, burst_type)) begin
+      // The invalid access causes a fatal error, so there is no need to response to all transfers
+      set_read_response(transaction_id, 0, SlaveError, address == address_last);
+    end
     else begin
-      address_last = address + 4 * burst_length;
-      for (; address <= address_last; address += 4) begin
+      transfer_bytes = 2**burst_size;
+      address_last = address + transfer_bytes * burst_length;
+      for (; address <= address_last; address += transfer_bytes) begin
         // The conection.read call may cause elapse of a simulation time.
-        connection.read(renode_pkg::address_t'(address), data, is_error);
-        if (is_error) connection.log_warning($sformatf("Unable to read data from Renode at address 'h%h, unknown value sent to bus.", address));
-
-        @(posedge clk);
-        bus.rid <= transaction_id;
-        bus.rdata <= data_t'(data);
-        bus.rlast <= address == address_last;
-        bus.rvalid <= 1;
-
-        // It's required to set the valid signal only for one clock cycle.
-        do @(posedge clk); while (!bus.rready);
-        bus.rlast  <= 0;
-        bus.rvalid <= 0;
+        connection.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
+        if (is_error) begin
+          connection.log_warning($sformatf("Unable to read data from Renode at address 'h%h, the 0 value sent to bus.", address));
+          data = 0;
+        end
+        data = data & valid_bits;
+        set_read_response(transaction_id, data_t'(data) << ((address % transfer_bytes) * 8), is_error ? SlaveError : Okay, address == address_last);
       end
     end
   endtask
@@ -71,25 +70,33 @@ module renode_axi_subordinate (
   task static write_transaction();
     transaction_id_t transaction_id;
     address_t address;
+    data_t data;
     bit is_error;
+    bit last_transfer;
     burst_size_t burst_size;
     burst_length_t burst_length;
     burst_type_e burst_type;
     address_t address_last;
+    renode_pkg::valid_bits_e valid_bits;
+    address_t transfer_bytes;
 
     get_write_address(transaction_id, address, burst_size, burst_length, burst_type);
-    if (burst_size != 'b10) connection.fatal_error($sformatf("Unsupported burst size 'b%b", burst_size));
-    else if (address % 4 != 0) connection.fatal_error($sformatf("Unaligned address isn't supported."));
-    else if (burst_type != Incrementing) connection.fatal_error($sformatf("Unsupported burst type 'b%b", burst_type));
+    valid_bits = bus.burst_size_to_valid_bits(burst_size);
+    if(!is_access_valid(address, valid_bits, burst_type)) begin
+      set_write_response(transaction_id, SlaveError);
+    end
     else begin
-      address_last = address + 4 * burst_length;
+      transfer_bytes = 2**burst_size;
+      address_last = address + transfer_bytes * burst_length;
 
       do @(posedge clk); while (!bus.wvalid);
       bus.wready <= 1;
 
-      for (; address <= address_last; address += 4) begin
+      for (; address <= address_last; address += transfer_bytes) begin
         do @(posedge clk); while (!bus.wvalid);
-        connection.write(renode_pkg::address_t'(address), renode_pkg::data_t'(bus.wdata), is_error);
+        data = bus.wdata >> ((address % transfer_bytes) * 8);
+        if (bus.wlast != (address == address_last)) connection.log_warning("Unexpected state of the wlast signal.");
+        connection.write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
         if (is_error) connection.log_warning($sformatf("Unable to write data to Renode at address 'h%h", address));
       end
 
@@ -99,6 +106,18 @@ module renode_axi_subordinate (
       set_write_response(transaction_id, Okay);
     end
   endtask
+
+  function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits, burst_type_e burst_type);
+    if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
+      connection.fatal_error("AXI Subordinate doesn't support unaligned access.");
+      return 0;
+    end
+    if(burst_type != Incrementing) begin
+      connection.fatal_error($sformatf("Unsupported burst type 'b%b", burst_type));
+      return 0;
+    end
+    return 1;
+  endfunction
 
   task static get_read_address(output transaction_id_t transaction_id, output address_t address,
                                output burst_size_t burst_size, output burst_length_t burst_length, output burst_type_e burst_type);
@@ -126,6 +145,20 @@ module renode_axi_subordinate (
     burst_length = bus.awlen;
     burst_type = burst_type_e'(bus.awburst);
     bus.awready <= 0;
+  endtask
+
+  task static set_read_response(transaction_id_t transaction_id, data_t data, response_e response, bit last);
+        @(posedge clk);
+        bus.rid <= transaction_id;
+        bus.rdata <= data;
+        bus.rresp <= response;
+        bus.rlast <= last;
+        bus.rvalid <= 1;
+
+        // It's required to assert the valid and ready signals only for one clock cycle.
+        do @(posedge clk); while (!bus.rready);
+        bus.rlast  <= 0;
+        bus.rvalid <= 0;
   endtask
 
   task static set_write_response(transaction_id_t id, response_e response);

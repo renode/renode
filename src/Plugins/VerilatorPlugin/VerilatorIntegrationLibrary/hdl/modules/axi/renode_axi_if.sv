@@ -69,5 +69,40 @@ interface renode_axi_if #(
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
   endtask
+
+  function static bit are_valid_bits_supported(renode_pkg::valid_bits_e valid_bits);
+    case (valid_bits)
+      renode_pkg::Byte: return DataWidth >= 8;
+      renode_pkg::Word: return DataWidth >= 16;
+      renode_pkg::DoubleWord: return DataWidth >= 32;
+      renode_pkg::QuadWord: return DataWidth >= 64;
+      default: return 0;
+    endcase
+  endfunction
+
+  function static burst_size_t valid_bits_to_burst_size(renode_pkg::valid_bits_e valid_bits);
+    case (valid_bits)
+      renode_pkg::Byte: return 'b000;
+      renode_pkg::Word: return 'b001;
+      renode_pkg::DoubleWord: return 'b010;
+      renode_pkg::QuadWord: return 'b011;
+      default: return 'x;
+    endcase
+  endfunction
+
+  function static renode_pkg::valid_bits_e burst_size_to_valid_bits(burst_size_t burst_size);
+    case (burst_size)
+      'b000: return renode_pkg::Byte;
+      'b001: return renode_pkg::Word;
+      'b010: return renode_pkg::DoubleWord;
+      'b011: return renode_pkg::QuadWord;
+      default: return renode_pkg::valid_bits_e'(0);
+    endcase
+  endfunction
+
+  function automatic strobe_t burst_size_to_strobe(burst_size_t burst_size);
+    int unsigned bytes_count = 2 ** burst_size;
+    return strobe_t'((1 << bytes_count) - 1);
+  endfunction
 endinterface
 

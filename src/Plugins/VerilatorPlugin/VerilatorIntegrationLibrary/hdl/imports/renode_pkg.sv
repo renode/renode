@@ -21,6 +21,13 @@ package renode_pkg;
     data_t data;
   } message_t;
 
+  typedef enum data_t {
+    QuadWord = {64{1'b1}},
+    DoubleWord = {32'b0, {32{1'b1}}},
+    Word = {48'b0, {16{1'b1}}},
+    Byte = {56'b0, {8{1'b1}}}
+  } valid_bits_e;
+
   typedef enum int {
     LogNoisy = -1,
     LogDebug = 0,
@@ -61,6 +68,16 @@ package renode_pkg;
     address_t address,
     data_t data
   );
+
+  function static bit is_access_aligned(address_t address, valid_bits_e valid_bits);
+    case(valid_bits)
+      Byte: return 1;
+      Word: return address % 2 == 0;
+      DoubleWord: return address % 4 == 0;
+      QuadWord: return address % 8 == 0;
+      default: return 0;
+    endcase
+  endfunction
 
   class renode_connection;
     semaphore exclusive_receive = new(1);
@@ -152,12 +169,14 @@ package renode_pkg;
     event read_transaction_response;
     address_t read_transaction_address;
     data_t read_transaction_data;
+    valid_bits_e read_transaction_data_bits;
     bit read_transaction_is_error;
 
     event write_transaction_request;
     event write_transaction_response;
     address_t write_transaction_address;
     data_t write_transaction_data;
+    valid_bits_e write_transaction_data_bits;
     bit write_transaction_is_error;
 
     renode_connection remote_connection;
@@ -194,8 +213,9 @@ package renode_pkg;
       ->reset_deassert_response;
     endtask
 
-    task read(address_t address, output data_t data, output bit is_error);
+    task read(address_t address, valid_bits_e data_bits, output data_t data, output bit is_error);
       read_transaction_address = address;
+      read_transaction_data_bits = data_bits;
       ->read_transaction_request;
       @(read_transaction_response) begin
         data = read_transaction_data;
@@ -209,8 +229,9 @@ package renode_pkg;
       ->read_transaction_response;
     endtask
 
-    task write(address_t address, data_t data, output bit is_error);
+    task write(address_t address, valid_bits_e data_bits, data_t data, output bit is_error);
       write_transaction_address = address;
+      write_transaction_data_bits = data_bits;
       write_transaction_data = data;
       ->write_transaction_request;
       @(write_transaction_response) begin

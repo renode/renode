@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps
 
 import renode_pkg::renode_connection, renode_pkg::bus_connection;
-import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t;
+import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t, renode_pkg::valid_bits_e;
 
 module renode #(
     int unsigned BusControllersCount = 0,
@@ -54,8 +54,14 @@ module renode #(
     case (message.action)
       renode_pkg::resetPeripheral: reset();
       renode_pkg::tickClock: sync_time(time'(message.data));
-      renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, message.data);
-      renode_pkg::readRequestDoubleWord: read_from_bus(message.address);
+      renode_pkg::writeRequestQuadWord: write_to_bus(message.address, renode_pkg::QuadWord, message.data);
+      renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, renode_pkg::DoubleWord, message.data);
+      renode_pkg::writeRequestWord: write_to_bus(message.address, renode_pkg::Word, message.data);
+      renode_pkg::writeRequestByte: write_to_bus(message.address, renode_pkg::Byte, message.data);
+      renode_pkg::readRequestQuadWord: read_from_bus(message.address, renode_pkg::QuadWord);
+      renode_pkg::readRequestDoubleWord: read_from_bus(message.address, renode_pkg::DoubleWord);
+      renode_pkg::readRequestWord: read_from_bus(message.address, renode_pkg::Word);
+      renode_pkg::readRequestByte: read_from_bus(message.address, renode_pkg::Byte);
       default: is_handled = 0;
     endcase
 
@@ -106,7 +112,7 @@ module renode #(
     connection.log(renode_pkg::LogNoisy, $sformatf("Simulation time synced to %t", $realtime));
   endtask
 
-  task automatic read_from_bus(address_t address);
+  task automatic read_from_bus(address_t address, valid_bits_e data_bits);
     // This task is automatic to separate timeout handling between calls.
     data_t data = 0;
     bit is_error = 0;
@@ -118,7 +124,7 @@ module renode #(
         is_timeout = 1;
       end
       begin
-        bus_controller.read(address, data, is_error);
+        bus_controller.read(address, data_bits, data, is_error);
       end
     join_any
 
@@ -127,7 +133,7 @@ module renode #(
     else connection.send(message_t'{renode_pkg::readRequest, address, data});
   endtask
 
-  task automatic write_to_bus(address_t address, data_t data);
+  task automatic write_to_bus(address_t address, valid_bits_e data_bits, data_t data);
     // This task is automatic to separate timeout handling between calls.
     bit is_error = 0;
     bit is_timeout = 0;
@@ -138,7 +144,7 @@ module renode #(
         is_timeout = 1;
       end
       begin
-        bus_controller.write(address, data, is_error);
+        bus_controller.write(address, data_bits, data, is_error);
       end
     join_any
 
@@ -150,9 +156,23 @@ module renode #(
   task static read_transaction();
     message_t message;
 
+    case (bus_peripheral.read_transaction_data_bits)
+      renode_pkg::Byte: message.action = renode_pkg::getByte;
+      renode_pkg::Word: message.action = renode_pkg::getWord;
+      renode_pkg::DoubleWord: message.action = renode_pkg::getDoubleWord;
+      renode_pkg::QuadWord: message.action = renode_pkg::getQuadWord;
+      default: begin
+        connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", bus_peripheral.read_transaction_data_bits));
+        bus_peripheral.read_respond(0, 1);
+        return;
+      end
+    endcase
+    message.address = bus_peripheral.read_transaction_address;
+    message.data = 0;
+
     connection.exclusive_receive.get();
 
-    connection.send_to_async_receiver(message_t'{renode_pkg::getDoubleWord, bus_peripheral.read_transaction_address, 0});
+    connection.send_to_async_receiver(message);
 
     connection.receive(message);
     while (message.action != renode_pkg::writeRequest) begin
@@ -167,9 +187,20 @@ module renode #(
   task static write_transaction();
     message_t message;
 
-    message.action = renode_pkg::pushDoubleWord;
+    case (bus_peripheral.read_transaction_data_bits)
+      renode_pkg::Byte: message.action = renode_pkg::pushByte;
+      renode_pkg::Word: message.action = renode_pkg::pushWord;
+      renode_pkg::DoubleWord: message.action = renode_pkg::pushDoubleWord;
+      renode_pkg::QuadWord: message.action = renode_pkg::pushQuadWord;
+      default: begin
+        connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", bus_peripheral.read_transaction_data_bits));
+        bus_peripheral.write_respond(1);
+        return;
+      end
+    endcase
     message.address = bus_peripheral.write_transaction_address;
     message.data = bus_peripheral.write_transaction_data;
+
     connection.send_to_async_receiver(message);
     bus_peripheral.write_respond(0);
   endtask

@@ -36,47 +36,91 @@ module renode_axi_manager (
 
   task static read_transaction();
     bit is_error;
+    address_t address;
+    renode_pkg::valid_bits_e valid_bits;
+    burst_size_t burst_size;
     data_t data;
 
-    read(0, address_t'(connection.read_transaction_address), data, is_error);
-    connection.read_respond(renode_pkg::data_t'(data), is_error);
+    address = address_t'(connection.read_transaction_address);
+    valid_bits = connection.read_transaction_data_bits;
+
+    if(!is_access_valid(address, valid_bits)) begin
+      connection.read_respond(0, 1);
+    end else begin
+      burst_size = bus.valid_bits_to_burst_size(valid_bits);
+
+      read(0, address, burst_size, data, is_error);
+
+      data = data >> ((address % bus.StrobeWidth) * 8);
+      connection.read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
+    end
   endtask
 
   task static write_transaction();
     bit is_error;
+    address_t address;
+    renode_pkg::valid_bits_e valid_bits;
+    burst_size_t burst_size;
+    data_t data;
+    strobe_t strobe;
 
-    write(0, address_t'(connection.write_transaction_address), data_t'(connection.write_transaction_data), is_error);
-    connection.write_respond(is_error);
+    address = address_t'(connection.write_transaction_address);
+    valid_bits = connection.write_transaction_data_bits;
+
+    if(!is_access_valid(address, valid_bits)) begin
+      connection.write_respond(1);
+    end else begin
+      burst_size = bus.valid_bits_to_burst_size(valid_bits);
+      data = data_t'(connection.write_transaction_data & valid_bits);
+      strobe = bus.burst_size_to_strobe(burst_size) << (address % bus.StrobeWidth);
+      data = data << ((address % bus.StrobeWidth) * 8);
+
+      write(0, address, burst_size, strobe, data, is_error);
+
+      connection.write_respond(is_error);
+    end
   endtask
 
-  task static read(transaction_id_t id, address_t address, output data_t data, output bit is_error);
+  function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits);
+    if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
+      connection.fatal_error("AXI Manager doesn't support unaligned access.");
+      return 0;
+    end
+    if(!bus.are_valid_bits_supported(valid_bits)) begin
+      connection.fatal_error($sformatf("This instance of the AXI Manager doesn't support access using the 'b%b mask.", valid_bits));
+      return 0;
+    end
+    return 1;
+  endfunction
+
+  task static read(transaction_id_t id, address_t address, burst_size_t burst_size, output data_t data, output bit is_error);
     transaction_id_t response_id;
     response_e response;
     fork
-      set_read_address(id, address);
+      set_read_address(id, address, burst_size);
       get_read_response(data, response_id, response);
     join
     is_error = check_response(id, response_id, response);
   endtask
 
-  task static write(transaction_id_t id, address_t address, data_t data, output bit is_error);
+  task static write(transaction_id_t id, address_t address, burst_size_t burst_size, strobe_t strobe, data_t data, output bit is_error);
     transaction_id_t response_id;
     response_e response;
     fork
-      set_write_address(id, address);
-      set_write_data(data);
+      set_write_address(id, address, burst_size);
+      set_write_data(data, strobe);
       get_write_response(response_id, response);
     join
     is_error = check_response(id, response_id, response);
   endtask
 
-  task static set_read_address(transaction_id_t transaction_id, address_t address);
+  task static set_read_address(transaction_id_t transaction_id, address_t address, burst_size_t burst_size);
     bus.arid = transaction_id;
     bus.araddr = address;
+    bus.arsize = burst_size;
 
-    // Configure 4-byte transaction without burst.
+    // Configure transaction with only one burst.
     bus.arlen = 0;
-    bus.arsize = 'b10;
     bus.arburst = 0;
     bus.arlock = 0;
     bus.arprot = 0;
@@ -99,13 +143,13 @@ module renode_axi_manager (
     bus.rready <= 0;
   endtask
 
-  task static set_write_address(transaction_id_t id, address_t address);
+  task static set_write_address(transaction_id_t id, address_t address, burst_size_t burst_size);
     bus.awid = id;
     bus.awaddr = address;
+    bus.awsize = burst_size;
 
-    // Configure 4-byte transaction without burst.
+    // Configure transaction with only one burst.
     bus.awlen = 0;
-    bus.awsize = 'b10;
     bus.awburst = 0;
     bus.awlock = 0;
     bus.awprot = 0;
@@ -117,9 +161,9 @@ module renode_axi_manager (
     bus.awvalid <= 0;
   endtask
 
-  task static set_write_data(data_t data);
+  task static set_write_data(data_t data, strobe_t strobe);
     bus.wdata = data;
-    bus.wstrb = 'b1111;
+    bus.wstrb = strobe;
     bus.wlast = 1;
 
     @(posedge clk);
