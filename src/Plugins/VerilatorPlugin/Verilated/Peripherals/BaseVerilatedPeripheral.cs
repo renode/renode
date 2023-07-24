@@ -213,6 +213,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected void AbortAndLogError(string message)
         {
+            // It's safe to call AbortAndLogError from any thread.
+            // Calling it from many threads may cause throwing more than one exception.
             if(disposeInitiated)
             {
                 return;
@@ -234,6 +236,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
         }
 
         private bool started;
-        private bool disposeInitiated;
+        private volatile bool disposeInitiated;
     }
 }
