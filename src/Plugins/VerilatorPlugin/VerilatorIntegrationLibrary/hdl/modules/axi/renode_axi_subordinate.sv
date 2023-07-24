@@ -19,6 +19,8 @@ module renode_axi_subordinate (
   wire clk = bus.clk;
 
   always @(connection.reset_assert_request) begin
+    bus.rvalid = 0;
+    bus.bvalid = 0;
     bus.reset_assert();
     connection.reset_assert_respond();
   end

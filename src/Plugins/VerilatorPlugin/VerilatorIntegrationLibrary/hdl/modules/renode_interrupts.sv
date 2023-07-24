@@ -15,22 +15,29 @@ module renode_interrupts #(
   logic [InterruptsCount-1:0] interrupts_prev;
 
   initial interrupts_prev = 0;
+  bit in_reset = 0;
 
-  task static reset_deassert;
-    interrupts_prev = 0;
+  task static reset_assert;
+    in_reset = 1;
   endtask
 
-  always @(clk) begin
-    for (int unsigned addr = 0; addr < InterruptsCount; addr++) begin
-      if (interrupts[addr] != interrupts_prev[addr]) begin
-        connection.send_to_async_receiver(renode_pkg::message_t'{
-            renode_pkg::interrupt,
-            renode_pkg::data_t'(addr),
-            renode_pkg::address_t'(interrupts[addr])
-          });
+  task static reset_deassert;
+    in_reset = 0;
+  endtask
+
+  always @(posedge clk) begin
+    if (!in_reset) begin
+      for (int unsigned addr = 0; addr < InterruptsCount; addr++) begin
+        if (interrupts[addr] != interrupts_prev[addr]) begin
+          connection.send_to_async_receiver(renode_pkg::message_t'{
+              renode_pkg::interrupt,
+              renode_pkg::data_t'(addr),
+              renode_pkg::address_t'(interrupts[addr])
+            });
+        end
       end
+      interrupts_prev <= interrupts;
     end
-    interrupts_prev <= interrupts;
   end
 endmodule
 

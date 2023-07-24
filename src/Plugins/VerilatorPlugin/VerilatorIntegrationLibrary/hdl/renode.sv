@@ -11,6 +11,7 @@ import renode_pkg::renode_connection, renode_pkg::bus_connection;
 import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t;
 
 module renode #(
+    int unsigned BusControllersCount = 0,
     int unsigned BusControllerTimeout = 100,
     int unsigned BusPeripheralsCount = 0,
     int unsigned InterruptsCount = 1
@@ -71,23 +72,29 @@ module renode #(
     // It may occure when an event is triggered before executing a wait for this event.
     // A non-blocking trigger, which is an alternative solution, isn't supported by Verilator.
     #1 fork
-      bus_controller.reset_assert();
       begin
-        if (BusPeripheralsCount > 0) begin
+        if (BusPeripheralsCount > 0)
           bus_peripheral.reset_assert();
-        end
       end
+      begin
+        if (BusControllersCount > 0)
+          bus_controller.reset_assert();
+      end
+      gpio.reset_assert();
     join
 
     fork
-      bus_controller.reset_deassert();
-      gpio.reset_deassert();
       begin
-        if (BusPeripheralsCount > 0) begin
+        if (BusPeripheralsCount > 0)
           bus_peripheral.reset_deassert();
-        end
       end
+      begin
+        if (BusControllersCount > 0)
+          bus_controller.reset_deassert();
+      end
+      gpio.reset_deassert();
     join
+
     connection.exclusive_receive.put();
   endtask
 
