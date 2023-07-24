@@ -79,8 +79,11 @@ package renode_pkg;
     endfunction
 
     function void fatal_error(string message);
+      string error_msg;
+      error_msg = $sformatf("Renode at %t: Error! %s", $realtime, message);
+      log(LogError, error_msg);
       disconnect();
-      $error("Renode at %t: Error! %s", $realtime, message);
+      $error(error_msg);
       $finish;
     endfunction
 
@@ -116,10 +119,16 @@ package renode_pkg;
     endfunction
 
     function void send(message_t message);
+`ifdef RENODE_DEBUG
+      $display("Renode at %t: Sent action %0s, address = 'h%h, data = 'h%h", $realtime, message.action.name(), message.address, message.data);
+`endif
       if (!renodeDPISend(message.action, message.address, message.data)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     function void send_to_async_receiver(message_t message);
+`ifdef RENODE_DEBUG
+      $display("Renode at %t: Sent async action %0s, address = 'h%h, data = 'h%h", $realtime, message.action.name(), message.address, message.data);
+`endif
       if (!renodeDPISendToAsync(message.action, message.address, message.data)) fatal_error("Unexpected channel disconnection");
     endfunction
 

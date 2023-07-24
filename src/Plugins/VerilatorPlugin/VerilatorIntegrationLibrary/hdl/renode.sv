@@ -103,7 +103,7 @@ module renode #(
     while ($time < renode_time) @(clk);
 
     connection.send_to_async_receiver(message_t'{renode_pkg::tickClock, 0, 0});
-    connection.log(renode_pkg::LogDebug, $sformatf("Simulation time synced to %t", $realtime));
+    connection.log(renode_pkg::LogNoisy, $sformatf("Simulation time synced to %t", $realtime));
   endtask
 
   task automatic read_from_bus(address_t address);
@@ -122,9 +122,9 @@ module renode #(
       end
     join_any
 
+    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus read access timeout");
     if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
     else connection.send(message_t'{renode_pkg::readRequest, address, data});
-    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus read access timeout");
   endtask
 
   task automatic write_to_bus(address_t address, data_t data);
@@ -142,9 +142,9 @@ module renode #(
       end
     join_any
 
+    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus write access timeout");
     if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
     else connection.send(message_t'{renode_pkg::ok, 0, 0});
-    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus write access timeout");
   endtask
 
   task static read_transaction();
