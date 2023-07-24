@@ -46,6 +46,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void Connect()
         {
+            if(verilatorConnection.IsConnected)
+            {
+                this.Log(LogLevel.Warning, "The Verilated peripheral is already connected.");
+                return;
+            }
             verilatorConnection.Connect();
         }
 
