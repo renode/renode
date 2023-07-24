@@ -174,7 +174,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
         }
 
-        public string ConnectionParameters => $"{mainSocketComunicator.ListenerPort} {asyncSocketComunicator.ListenerPort} {address}"; 
+        public string ConnectionParameters => $"{mainSocketComunicator.ListenerPort} {asyncSocketComunicator.ListenerPort} {address}";
 
         private void ReceiveLoop()
         {
@@ -238,7 +238,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             }
             parentElement.Log(LogLevel.Error, message);
             Abort();
-            
+
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
