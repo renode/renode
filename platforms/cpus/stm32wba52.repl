@@ -31,6 +31,11 @@ exti: IRQControllers.STM32WBA_EXTI @ sysbus 0x46022000
     numberOfOutputLines: 24
     [0-15] -> nvic@[11-26]
 
+adc4: Analog.STM32WBA_ADC @ sysbus 0x46021000
+    referenceVoltage: 3.0
+    externalEventFrequency: 1000
+    -> nvic@65
+
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m33"
     nvic: nvic
