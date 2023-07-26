@@ -93,3 +93,10 @@ PyDev Should Handle QuadWord Accesses
     ${new_value} =      Set Variable  0xfedcba0987654321
              Execute Command          sysbus WriteQuadWord ${pydev_address} ${new_value}
              Read Should Be Equal     QuadWord  ${pydev_address}  ${new_value}
+
+Should Handle Unsupported Variable Types
+             Execute Command          $a=@a
+
+    ${out}=  Run Keyword And Expect Error  KeywordException:*
+             ...                      Execute Command          py $a
+             Should Contain           ${out}      There was an error when executing command 'py $a': Variable type has to be a string.
