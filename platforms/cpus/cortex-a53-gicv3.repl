@@ -8,6 +8,7 @@ timer: Timers.ARM_GenericTimer @ cpu
     EL1PhysicalTimerIRQ -> gic#0@30
     EL1VirtualTimerIRQ -> gic#0@27
     NonSecureEL2PhysicalTimerIRQ -> gic#0@26
+    NonSecureEL2VirtualTimerIRQ -> gic#0@28
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: "distributor" };
