@@ -1,0 +1,20 @@
+:name: Cortex-A78
+:description: This script runs Linux (with Coreboot and ATF) on a 64-bit ARM Cortex-A78.
+
+using sysbus
+$name?="ARM Cortex-A78"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
+
+showAnalyzer uart0
+
+# Preconfigure UART to see Coreboot and ATF boot logs.
+uart0 WriteDoubleWord 0x30 0x301
+uart0 WriteDoubleWord 0x2c 0x40
+
+macro reset
+"""
+    sysbus LoadBinary @https://dl.antmicro.com/projects/renode/armv8a-coreboot-linux-gicv3.rom-s_67108864-1d969857e2debae53fa6c9c55e24c86ed52c7984 0x0
+"""
+runMacro $reset
