@@ -317,6 +317,10 @@ def run():
 
     options = parser.parse_args()
     handle_options(options)
+
+    if not options.tests:
+        sys.exit(1)
+
     for handler in registered_handlers:
         if 'after_parsing' in handler and handler['after_parsing'] is not None:
             handler['after_parsing'](options)
