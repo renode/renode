@@ -58,7 +58,7 @@ def prepare_parser():
                         metavar="FIXTURE")
 
     parser.add_argument("-n", "--repeat",
-                        dest="repeat_count",
+                        dest="iteration_count",
                         nargs="?",
                         type=int,
                         const=0,
@@ -273,7 +273,7 @@ def run_test_group(args):
 
     group, options, test_id = args
 
-    repeat_counter = 0
+    iteration_counter = 0
     tests_failed = False
     log_files = set()
 
@@ -282,13 +282,13 @@ def run_test_group(args):
     # needs the stdout to be reconfigured
     configure_output(options)
 
-    while options.repeat_count == 0 or repeat_counter < options.repeat_count:
-        repeat_counter += 1
+    while options.iteration_count == 0 or iteration_counter < options.iteration_count:
+        iteration_counter += 1
 
-        if options.repeat_count > 1:
-            print("Running tests iteration {} of {}...".format(repeat_counter, options.repeat_count))
-        elif options.repeat_count == 0:
-            print("Running tests iteration {}...".format(repeat_counter))
+        if options.iteration_count > 1:
+            print("Running tests iteration {} of {}...".format(iteration_counter, options.iteration_count))
+        elif options.iteration_count == 0:
+            print("Running tests iteration {}...".format(iteration_counter))
 
         for suite in group:
             # we need to collect log files here instead of appending to a global list
