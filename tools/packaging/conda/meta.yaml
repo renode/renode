@@ -43,7 +43,7 @@ requirements:
         - pango                 [not win]
         - atk                   [not win]
         - fontconfig            [not win]
-        - robotframework 4.0.1
+        - robotframework 6.0.2
         - netifaces
         - requests
         - psutil
