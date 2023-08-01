@@ -15,9 +15,6 @@ struct BaseAxi
 {
     BaseAxi(uint32_t dataWidth, uint32_t addrWidth);
 
-    uint32_t dataWidth;
-    uint32_t addrWidth;
-
     // Global AXI Signals
     uint8_t  *aclk;
     uint8_t  *aresetn;

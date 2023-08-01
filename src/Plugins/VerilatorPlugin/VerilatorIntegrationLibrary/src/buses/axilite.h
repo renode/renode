@@ -11,6 +11,7 @@
 
 struct AxiLite : public BaseTargetBus
 {
+    AxiLite(uint32_t dataWidth, uint32_t addrWidth);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
     virtual void onResetAction();

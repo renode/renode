@@ -30,6 +30,7 @@ public:
 class Wishbone : public WishboneBase, public BaseTargetBus
 {
 public:
+    Wishbone(uint32_t dataWidth, uint32_t addrWidth) : WishboneBase(), BaseTargetBus(dataWidth, addrWidth) {}
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
     virtual void onResetAction();

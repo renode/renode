@@ -7,6 +7,10 @@
 #include <cstdio>
 #include "axilite.h"
 
+AxiLite::AxiLite(uint32_t dataWidth, uint32_t addrWidth) : BaseTargetBus(dataWidth, addrWidth)
+{
+}
+
 extern void updateTime();
 
 void AxiLite::setClock(uint8_t value) {

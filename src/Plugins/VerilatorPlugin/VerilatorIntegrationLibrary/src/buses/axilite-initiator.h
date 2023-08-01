@@ -56,6 +56,8 @@ struct AxiLiteInitiator : public BaseInitiatorBus
     uint8_t reset_active = 0;
 #endif
 
+    AxiLiteInitiator(uint32_t dataWidth, uint32_t addrWidth);
+
     void prePosedgeTick();
     void posedgeTick();
     void negedgeTick();

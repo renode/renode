@@ -18,7 +18,11 @@ class RenodeAgent;
 class BaseBus
 {
 public:
-    BaseBus() : agent(nullptr), tickCounter(0) {}
+    BaseBus(uint32_t dataWidth, uint32_t addrWidth) : agent(nullptr), tickCounter(0)
+    {
+        this->dataWidth = dataWidth;
+        this->addrWidth = addrWidth;
+    }
     virtual void prePosedgeTick() = 0;
     virtual void posedgeTick() = 0;
     virtual void negedgeTick() = 0;
@@ -33,6 +37,9 @@ public:
     {
         busWidth = width;
     }
+    uint32_t dataWidth;
+    uint32_t addrWidth;
+
 protected:
     friend class RenodeAgent;
     RenodeAgent *agent;
@@ -46,6 +53,7 @@ protected:
 class BaseTargetBus : public BaseBus
 {
 public:
+    BaseTargetBus(uint32_t dataWidth, uint32_t addrWidth) : BaseBus(dataWidth, addrWidth) {}
     virtual void write(int width, uint64_t addr, uint64_t value) = 0;
     virtual uint64_t read(int width, uint64_t addr) = 0;
 };
@@ -53,6 +61,7 @@ public:
 class BaseInitiatorBus : public BaseBus
 {
 public:
+    BaseInitiatorBus(uint32_t dataWidth, uint32_t addrWidth) : BaseBus(dataWidth, addrWidth) {}
     virtual void readWord(uint64_t addr, uint8_t sel) = 0;
     virtual void writeWord(uint64_t addr, uint64_t data, uint8_t sel) = 0;
     virtual void readHandler() = 0;

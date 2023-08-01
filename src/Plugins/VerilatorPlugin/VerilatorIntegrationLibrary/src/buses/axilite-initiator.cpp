@@ -8,6 +8,10 @@
 #include "axilite-initiator.h"
 #include "../renode_bus.h"
 
+AxiLiteInitiator::AxiLiteInitiator(uint32_t dataWidth, uint32_t addrWidth) : BaseInitiatorBus(dataWidth, addrWidth)
+{
+}
+
 void AxiLiteInitiator::updateSignals()
 {
     *arready = arready_new;

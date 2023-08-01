@@ -7,6 +7,10 @@
 #include "apb3.h"
 #include <cstdio>
 
+APB3::APB3(uint32_t dataWidth, uint32_t addrWidth) : BaseTargetBus(dataWidth, addrWidth)
+{
+}
+
 void APB3::setClock(uint8_t value) {
     *pclk = value;
 }

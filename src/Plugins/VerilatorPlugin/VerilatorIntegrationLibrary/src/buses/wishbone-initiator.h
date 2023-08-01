@@ -15,8 +15,8 @@ template <typename data_t, typename addr_t>
 class WishboneInitiator : public WishboneBase, public BaseInitiatorBus
 {
 public:
-    WishboneInitiator()
-        : readState(0), writeState(0)
+    WishboneInitiator(uint32_t dataWidth, uint32_t addrWidth)
+        : BaseInitiatorBus(dataWidth, addrWidth), readState(0), writeState(0)
     {
     }
 

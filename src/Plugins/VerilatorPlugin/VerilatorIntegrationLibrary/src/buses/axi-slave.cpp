@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cinttypes>
 
-AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
+AxiSlave::AxiSlave(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth), BaseInitiatorBus(dataWidth, addrWidth)
 {
     writeState = AxiWriteState::AW;
     readState = AxiReadState::AR;

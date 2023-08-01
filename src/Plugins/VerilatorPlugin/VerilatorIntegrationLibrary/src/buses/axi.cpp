@@ -12,15 +12,11 @@ BaseAxi::BaseAxi(uint32_t dataWidth, uint32_t addrWidth)
     if(dataWidth != 32)
         throw "Unsupported AXI data width";
 
-    this->dataWidth = dataWidth;
-
     if(addrWidth != 32)
         throw "Unsupported AXI address width";
-
-    this->addrWidth = addrWidth;
 }
 
-Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
+Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth), BaseTargetBus(dataWidth, addrWidth)
 {
 }
 
