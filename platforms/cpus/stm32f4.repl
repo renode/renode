@@ -7,7 +7,10 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x200000
 
-flash_controller: MTD.STM32F4_FlashController @ sysbus 0x40023C00
+flash_controller: MTD.STM32F4_FlashController @ {
+        sysbus 0x40023C00;
+        sysbus new Bus.BusMultiRegistration { address: 0x1FFFC000; size: 0x100; region: "optionBytes" }
+    }
     flash: flash
 
 usart1: UART.STM32_UART @ sysbus <0x40011000, +0x100>
@@ -91,8 +94,11 @@ gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x40021400, +0x400>
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
     -> nvic@61
 
-rom: Memory.MappedMemory @ sysbus 0x1FFF0000
-    size: 0x10000
+rom1: Memory.MappedMemory @ sysbus 0x1FFF0000
+    size: 0xC000
+
+rom2: Memory.MappedMemory @ sysbus 0x1FFFC400
+    size: 0x3C00
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
 
