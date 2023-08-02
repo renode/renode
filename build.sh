@@ -43,7 +43,7 @@ function print_help() {
   echo "--profile-build                   build optimized for tlib profiling"
 }
 
-while getopts "cdvpnstbo:B:-:" opt
+while getopts "cdvpnstb:o:B:-:" opt
 do
   case $opt in
     c)
