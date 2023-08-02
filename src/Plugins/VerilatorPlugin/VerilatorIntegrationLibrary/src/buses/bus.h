@@ -8,6 +8,7 @@
 #define BaseBus_H
 
 #include <cstdint>
+#include <cstring>
 
 #ifndef DEFAULT_TIMEOUT
 #define DEFAULT_TIMEOUT 2000
@@ -41,6 +42,16 @@ public:
     uint32_t addrWidth;
 
 protected:
+    void assignData(uint8_t *data_ptr, uint8_t *val_ptr)
+    {
+        assignWithWidth(data_ptr, val_ptr, dataWidth);
+    }
+
+    void assignAddr(uint8_t *addr_ptr, uint8_t *val_ptr)
+    {
+        assignWithWidth(addr_ptr, val_ptr, addrWidth);
+    }
+
     friend class RenodeAgent;
     RenodeAgent *agent;
     int busWidth;
@@ -48,6 +59,13 @@ protected:
     uint8_t clock_high = 1;
     uint8_t clock_low = 0;
     uint8_t reset_active = 1;
+
+private:
+    void assignWithWidth(uint8_t *dest_ptr, uint8_t *src_ptr, uint32_t width)
+    {
+        // round up number of bits to bytes
+        std::memcpy(dest_ptr, src_ptr, (width + 7) / 8);
+    }
 };
 
 class BaseTargetBus : public BaseBus

@@ -36,8 +36,9 @@ void Wishbone::write(int width, uint64_t addr, uint64_t value)
     *wb_cyc = 1;
     *wb_stb = 1;
 
-    *wb_addr = (addr >> (32 - addr_lines));
-    *wb_wr_dat = value;
+    uint64_t addr_val = addr >> (32 - addr_lines);
+    assignAddr((uint8_t *)wb_addr, (uint8_t *)&addr_val);
+    assignData((uint8_t *)wb_wr_dat, (uint8_t *)&value);
 
     this->agent->timeoutTick(wb_ack, 1);
 
@@ -60,7 +61,8 @@ uint64_t Wishbone::read(int width, uint64_t addr)
     *wb_sel = (uint8_t)((1 << width) - 1);
     *wb_cyc = 1;
     *wb_stb = 1;
-    *wb_addr = (addr >> (32 - addr_lines));
+    uint64_t addr_val = addr >> (32 - addr_lines);
+    assignAddr((uint8_t *)wb_addr, (uint8_t *)&addr_val);
 
     this->agent->timeoutTick(wb_ack, 1);
     uint64_t result = *wb_rd_dat;
