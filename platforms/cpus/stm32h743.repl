@@ -13,6 +13,10 @@ sdramBank2: Memory.MappedMemory @ sysbus 0xD0000000
 sdramBank1: Memory.MappedMemory @ sysbus 0xC0000000
     size: 0x10000000
 
+flashController: MTD.STM32H7_FlashController @ sysbus 0x52002000
+    flash1: flash0
+    flash2: flash1
+
 flash0: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x10000000
 
@@ -65,6 +69,9 @@ gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x58020000, +0x400>
     numberOfAFs: 16
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
+
+spi4: SPI.STM32H7_SPI @ sysbus 0x40013400
+    DMARecieve -> dma2@4
 
 i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
     EventInterrupt -> nvic@95
@@ -255,6 +262,32 @@ itcm: Memory.MappedMemory @ sysbus 0x00000000
 
 rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
 
+crc: CRC.STM32F0_CRC @ sysbus 0x58024C00
+    configurablePoly: true
+
+lptimer1: Timers.STM32L0_LpTimer @ sysbus 0x40002400
+    frequency: 32000000
+    -> nvic@93
+
+lptimer2: Timers.STM32L0_LpTimer @ sysbus 0x58002400
+    frequency: 32000000
+    -> nvic@138
+
+lptimer3: Timers.STM32L0_LpTimer @ sysbus 0x58002800
+    frequency: 32000000
+    -> nvic@139
+
+lptimer4: Timers.STM32L0_LpTimer @ sysbus 0x58002C00
+    frequency: 32000000
+    -> nvic@140
+
+lptimer5: Timers.STM32L0_LpTimer @ sysbus 0x58003000
+    frequency: 32000000
+    -> nvic@141
+
+watchdog: Timers.STM32_IndependentWatchdog @ sysbus 0x58004800
+    frequency: 56000
+
 hsem: Miscellaneous.STM32H7_HardwareSemaphore @ sysbus 0x58026400
 
 sysbus:
@@ -265,13 +298,8 @@ sysbus:
         Tag <0x58024800, 0x58024BFF> "PWR"
         Tag <0x58024818, 0x58024818> "D3CR" 0x2000  // VOSRDY flag (b13) indicates the voltage was properly set.
         Tag <0x58005400, 0x580057FF> "SAI4"
-        Tag <0x58004800, 0x58004BFF> "IWDG1"
         Tag <0x58003C00, 0x58003FFF> "VREF"
         Tag <0x58003800, 0x58003BFF> "COMP1_-_COMP2"
-        Tag <0x58003000, 0x580033FF> "LPTIM5"
-        Tag <0x58002C00, 0x58002FFF> "LPTIM4"
-        Tag <0x58002800, 0x58002BFF> "LPTIM3"
-        Tag <0x58002400, 0x580027FF> "LPTIM2"
         Tag <0x58001400, 0x580017FF> "SPI6"
         Tag <0x58000000, 0x580003FF> "EXTI"
         Tag <0x52009000, 0x520093FF> "RAMECC1"
@@ -281,7 +309,6 @@ sysbus:
         Tag <0x52005000, 0x52005FFF> "QUADSPI_control_registers"
         Tag <0x52004000, 0x52004FFF> "FMC_control_registers"
         Tag <0x52003000, 0x52003FFF> "JPEG"
-        Tag <0x52002000, 0x52002FFF> "Flash_interface_registers"
         Tag <0x52000000, 0x52000FFF> "MDMA"
         Tag <0x51000000, 0x510FFFFF> "GPV_matrix_(AXIM)"
         Tag <0x50003000, 0x50003FFF> "WWDG1"
@@ -301,7 +328,6 @@ sysbus:
         Tag <0x40015C00, 0x40015FFF> "SAI2"
         Tag <0x40015800, 0x40015BFF> "SAI1"
         Tag <0x40015000, 0x400153FF> "SPI5"
-        Tag <0x40013400, 0x400137FF> "SPI4"
         Tag <0x40013000, 0x400133FF> "SPI1_/_I2S1"
         Tag <0x4000AC00, 0x4000D3FF> "CAN_Message_RAM"
         Tag <0x4000A800, 0x4000ABFF> "CAN_CCU"
@@ -316,4 +342,3 @@ sysbus:
         Tag <0x40004000, 0x400043FF> "SPDIFRX1"
         Tag <0x40003C00, 0x40003FFF> "SPI3_/_I2S3"
         Tag <0x40003800, 0x40003BFF> "SPI2_/_I2S2"
-        Tag <0x40002400, 0x400027FF> "LPTIM1"
