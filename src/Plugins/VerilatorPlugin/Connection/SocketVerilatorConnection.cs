@@ -47,6 +47,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         public void Dispose()
         {
             Abort();
+            pauseMRES.Dispose();
         }
 
         public void Connect()
@@ -120,7 +121,6 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                     receiveThread.Join(timeout);
                 }
             }
-            pauseMRES.Dispose();
 
             if(IsConnected)
             {
