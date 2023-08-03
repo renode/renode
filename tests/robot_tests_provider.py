@@ -408,6 +408,8 @@ class RobotTestSuite(object):
         else:
             proc = None
 
+        start_timestamp = monotonic()
+
         if any(self.tests_without_hotspots):
             result = result and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
         if any(self.tests_with_hotspots):
@@ -416,8 +418,9 @@ class RobotTestSuite(object):
                     continue
                 result = result and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
 
-        endTimestamp = monotonic()
-        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(endTimestamp - self.startTimestamp, 2)) + ' seconds.', flush=True)
+        end_timestamp = monotonic()
+
+        print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(end_timestamp - start_timestamp, 2)) + ' seconds.', flush=True)
         self._close_remote_server(proc, options)
         return result
 
@@ -515,7 +518,6 @@ class RobotTestSuite(object):
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
         log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-        self.startTimestamp = monotonic()
 
         keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
         keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
