@@ -6,6 +6,52 @@ cpu: CPU.CortexM @ sysbus
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     -> cpu@0
 
+exti: IRQControllers.STM32H7_EXTI @ sysbus 0x58000000
+    [0-4] -> nvic@[6-10]
+    [5-9] -> nvicInput23@[0-4]
+    [10-15] -> nvicInput40@[0-5]
+    [16-19] -> nvic@[1, 41, 2, 3]
+    [20, 21] -> nvicInput137@[0-1]
+    [22-24] -> nvic@[31, 33, 72]
+    [26-29] -> nvic@[37-39, 71]
+    [30-33] -> nvic@[52, 53, 82, 83]
+    [34-35] -> nvicInput142@[0-1]
+    [36-40] -> nvic@[35, 36, 51, 84, 85]
+    41 -> nvicInput86@0
+    [42-44] -> nvic@[119, 76, 100]
+    [47, 48, 50, 52, 53] -> nvic@[93, 138-141]
+    54 -> nvic@115
+    [55-60] -> nvicInput149@[0-5]
+    [61-64] -> nvic@[5, 95, 96, 142]
+    65 -> nvicInput86@1
+    [66-73] -> nvic@[129-136]
+    [74-76] -> nvic@[128, 127, 146]
+    [85, 86] -> nvic@[94, 61]
+
+nvicInput23: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 5
+    -> nvic@23
+
+nvicInput40: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@40
+
+nvicInput86: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@86
+
+nvicInput137: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@137
+
+nvicInput142: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
+    -> nvic@142
+
+nvicInput149: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@149
+
 // May be reserved
 sdramBank2: Memory.MappedMemory @ sysbus 0xD0000000
     size: 0x10000000
@@ -30,10 +76,10 @@ sramBank1: Memory.MappedMemory @ sysbus 0x60000000
 adc3: Analog.STM32F0_ADC @ sysbus 0x58026000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    -> nvic@127
+    -> exti@75
 
 bdma: DMA.STM32LDMA @ sysbus 0x58025400
-    [0-7] -> nvic@[129-136]
+    [0-7] -> exti@[66-73]
 
 gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x58022800, +0x400>
     numberOfAFs: 16
@@ -69,19 +115,22 @@ gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x58020000, +0x400>
     numberOfAFs: 16
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
+    AlarmIRQ -> exti@17
+    WakeupIRQ -> exti@19
 
 spi4: SPI.STM32H7_SPI @ sysbus 0x40013400
     DMARecieve -> dma2@4
 
 i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
-    EventInterrupt -> nvic@95
-    ErrorInterrupt -> nvic@96
+    EventInterrupt -> exti@62
+    ErrorInterrupt -> exti@63
 
 lpuart1: UART.STM32F7_USART @ sysbus 0x58000C00
     frequency: 125000000
-    IRQ -> nvic@142
+    IRQ -> exti@64
 
 syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x58000400
+    [0-15] -> exti@[0-15]
 
 dma2d: DMA.STM32DMA2D @ sysbus 0x52001000
     -> nvic@90
@@ -120,11 +169,11 @@ timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
 
 usart6: UART.STM32F7_USART @ sysbus 0x40011400
     frequency: 200000000
-    IRQ -> nvic@71
+    IRQ -> exti@29
 
 usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
-    IRQ -> nvic@37
+    IRQ -> exti@26
 
 timer8: Timers.STM32_Timer @ sysbus <0x40010400, +0x400>
     initialLimit: 0xffff
@@ -136,39 +185,39 @@ timer1: Timers.STM32_Timer @ sysbus <0x40010000, +0x400>
 
 uart8: UART.STM32F7_USART @ sysbus 0x40007C00
     frequency: 125000000
-    IRQ -> nvic@83
+    IRQ -> exti@33
 
 uart7: UART.STM32F7_USART @ sysbus 0x40007800
     frequency: 125000000
-    IRQ -> nvic@82
+    IRQ -> exti@32
 
 i2c3: I2C.STM32F7_I2C @ sysbus 0x40005C00
-    EventInterrupt -> nvic@72
+    EventInterrupt -> exti@24
     ErrorInterrupt -> nvic@73
 
 i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
-    EventInterrupt -> nvic@33
+    EventInterrupt -> exti@23
     ErrorInterrupt -> nvic@34
 
 i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
-    EventInterrupt -> nvic@31
+    EventInterrupt -> exti@22
     ErrorInterrupt -> nvic@32
 
 uart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 125000000
-    IRQ -> nvic@53
+    IRQ -> exti@31
 
 uart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 125000000
-    IRQ -> nvic@52
+    IRQ -> exti@30
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 125000000
-    IRQ -> nvic@39
+    IRQ -> exti@28
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 125000000
-    IRQ -> nvic@38
+    IRQ -> exti@27
 
 timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
     initialLimit: 0xffff
@@ -267,23 +316,23 @@ crc: CRC.STM32F0_CRC @ sysbus 0x58024C00
 
 lptimer1: Timers.STM32L0_LpTimer @ sysbus 0x40002400
     frequency: 32000000
-    -> nvic@93
+    -> exti@47
 
 lptimer2: Timers.STM32L0_LpTimer @ sysbus 0x58002400
     frequency: 32000000
-    -> nvic@138
+    -> exti@48
 
 lptimer3: Timers.STM32L0_LpTimer @ sysbus 0x58002800
     frequency: 32000000
-    -> nvic@139
+    -> exti@50
 
 lptimer4: Timers.STM32L0_LpTimer @ sysbus 0x58002C00
     frequency: 32000000
-    -> nvic@140
+    -> exti@52
 
 lptimer5: Timers.STM32L0_LpTimer @ sysbus 0x58003000
     frequency: 32000000
-    -> nvic@141
+    -> exti@53
 
 watchdog: Timers.STM32_IndependentWatchdog @ sysbus 0x58004800
     frequency: 56000
