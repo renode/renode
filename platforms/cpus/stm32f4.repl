@@ -107,6 +107,18 @@ spi2: SPI.STM32SPI @ sysbus 0x40003800
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
+i2c1: I2C.STM32F4_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+
+i2c2: I2C.STM32F4_I2C @ sysbus 0x40005800
+    EventInterrupt -> nvic@33
+    ErrorInterrupt -> nvic@34
+
+i2c3: I2C.STM32F4_I2C @ sysbus 0x40005C00
+    EventInterrupt -> nvic@72
+    ErrorInterrupt -> nvic@73
+
 dma1: DMA.STM32DMA @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
