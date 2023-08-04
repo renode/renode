@@ -105,6 +105,24 @@ Test CRC32X
     Step And Verify Accumulator   0x6189dcf1
     Step And Verify Accumulator   0x1bc6f80b
 
+Test CRC32CX
+    Create Machine
+    Execute Command               cpu ExecutionMode SingleStepBlocking
+    Start Emulation
+
+    Execute Command               sysbus WriteDoubleWord 0x0 0x9ac35c00  # crc32cx  w0, w0, x3
+    Execute Command               sysbus WriteDoubleWord 0x4 0x9ac45c00  # crc32cx  w0, w0, x4
+
+    # Set the initial accumulator value.
+    Execute Command               cpu SetRegisterUnsafeUlong 0 0xcafebee
+
+    # Set source registers.
+    Execute Command               cpu SetRegisterUnsafeUlong 3 0x1234567890abcdef
+    Execute Command               cpu SetRegisterUnsafeUlong 4 0xfedcba0987654321
+
+    Step And Verify Accumulator   0x8da20236
+    Step And Verify Accumulator   0xbcfc085a
+
 Test Running the Hello World Zephyr Sample
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_HELLO_WORLD_ELF}
