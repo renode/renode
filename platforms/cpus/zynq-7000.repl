@@ -60,7 +60,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     0 -> cpu@0
     supportsTwoSecurityStates: false
     ProductIdentifier: 0x390
-    ArchitectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
     CPUInterfaceRevision: 0x2
     CPUInterfaceImplementer: 0x43B
 
