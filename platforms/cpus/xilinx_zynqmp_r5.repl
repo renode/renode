@@ -1,0 +1,154 @@
+cpu0: CPU.ARMv7R @ sysbus
+    cpuType: "cortex-r5"
+    cpuId: 0
+    genericInterruptController: gic
+
+ddrLow0: Memory.MappedMemory @ sysbus 0x10000
+    size: 0x10000
+
+ddrLow1: Memory.MappedMemory @ sysbus 0x30000
+    size: 0x7fffd000
+
+atcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu0 };
+        sysbus 0xffe00000
+    }
+    size: 0x10000
+
+btcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: cpu0 };
+        sysbus 0xffe20000
+    }
+    size: 0x10000
+
+atcm1: Memory.MappedMemory @ sysbus 0xffe90000
+    size: 0x10000
+
+btcm1: Memory.MappedMemory @ sysbus 0xffeb0000
+    size: 0x10000
+
+flash0: Memory.MappedMemory @ sysbus 0xc0000000
+    size: 0x2000000
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xf9000000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf9001000; size: 0x100; region: "cpuInterface" }
+    }
+    0 -> cpu0@0
+    numberOfCPUs: 1
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+
+uart0: UART.Cadence_UART @ sysbus 0xff000000
+    -> gic@21
+
+uart1: UART.Cadence_UART @ sysbus 0xff010000
+    -> gic@22
+
+ttc0: Timers.Cadence_TTC @ sysbus 0xff110000
+    [0-2] -> gic@[36-38]
+
+ttc1: Timers.Cadence_TTC @ sysbus 0xff120000
+    [0-2] -> gic@[39-41]
+
+ttc2: Timers.Cadence_TTC @ sysbus 0xff130000
+    [0-2] -> gic@[42-44]
+
+ttc3: Timers.Cadence_TTC @ sysbus 0xff140000
+    [0-2] -> gic@[45-47]
+
+gem0: Network.CadenceGEM @ sysbus 0xff0b0000
+    -> gic@57
+
+gem1: Network.CadenceGEM @ sysbus 0xff0c0000
+    -> gic@59
+
+gem2: Network.CadenceGEM @ sysbus 0xff0d0000
+    -> gic@61
+
+gem3: Network.CadenceGEM @ sysbus 0xff0e0000
+    -> gic@63
+
+ocm: Memory.MappedMemory @ sysbus 0xfffc0000
+    size: 0x40000
+
+gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xff0a0000
+
+sysbus:
+    init:
+        Tag <0xffc40000, 0xffc47fff> "CSU_RAM"
+        Tag <0xffc00000, 0xffc1ffff> "CSU_ROM"
+        Tag <0xffcc0000, 0xffccffff> "EFUSE"
+        Tag <0xffd00000, 0xffd3ffff> "PMU_ROM"
+        Tag <0xffdc0000, 0xffddffff> "PMU_RAM"
+        Tag <0xffe40000, 0xffe4ffff> "R5_0_ICACHE"
+        Tag <0xffe50000, 0xffe5ffff> "R5_0_DCACHE"
+        Tag <0xffec0000, 0xffecffff> "R5_1_ICACHE"
+        Tag <0xffed0000, 0xffedffff> "R5_1_DCACHE"
+        Tag <0xf9002000, 0xf9002fff> "GICC interface"
+        Tag <0xfd6e0000, 0xfd6effff> "CCI_GPV"
+        Tag <0xfd700000, 0xfd7fffff> "FPD_GPV"
+        Tag <0xfe000000, 0xfe0fffff> "IOU_GPV"
+        Tag <0xfe100000, 0xfe1fffff> "LPD_GPV"
+        Tag <0xfd800000, 0xfdffffff> "SMMU_GPV"
+        Tag <0xff040000 0x1000> "SPI0"
+        Tag <0xff050000 0x1000> "SPI1"
+        Tag <0xff060000 0x1000> "CAN0"
+        Tag <0xff070000 0x1000> "CAN1"
+        Tag <0xff0f0000 0x1000> "QSPI"
+        Tag <0xff100000 0x1000> "NAND"
+        Tag <0xff160000 0x1000> "SD0"
+        Tag <0xff170000 0x1000> "SD1"
+        Tag <0xff990000 0x1000> "IPI buffer"
+        Tag <0xff9d0000 0x1000> "USB0"
+        Tag <0xff9e0000 0x1000> "USB1"
+        Tag <0xffa50000 0x800> "AMS"
+        Tag <0xffa50800 0x400> "PSSYSMON"
+        Tag <0xffa50c00 0x400> "PLSYSMON"
+        Tag <0xffcb0000 0x1000> "CSU_SWDT"
+        Tag <0xfd0c0000 0x1000> "SATA registers"
+        Tag <0xfd0e0000 0x800> "AXI PCIe bridge"
+        Tag <0xfd0e0800 0x400> "AXI PCIe ingress {0:7}"
+        Tag <0xfd0e0c00 0x400> "AXI PCIe egress {0:7}"
+        Tag <0xfd0f0000 0x1000> "AXI PCIe DMA {0:7}"
+        Tag <0xfd3d0000 0x1000> "SIOU slave access ports"
+        Tag <0xfd400000 0x1000> "PS GTR transceivers"
+        Tag <0xfd480000 0x1000> "PCIe attributes"
+        Tag <0xfd4a0000 0x1000> "DisplayPort controller"
+        Tag <0xfd4b0000 0x1000> "GPU"
+        Tag <0xfd4c0000 0x1000> "DisplayPort DMA"
+        Tag <0xff300000 0x1000> "Inter-processor interrupts (IPI)"
+        Tag <0xff150000 0x1000> "LPD_SWDT, system watchdog timer (swdt0)"
+        Tag <0xff980000 0x1000> "XPPU (Xilinx peripheral protection unit)"
+        Tag <0xff9c0000 0x1000> "XPPU_Sink"
+        Tag <0xff9b0000 0x1000> "PL_LPD (S_AXI_LPD)"
+        Tag <0xffa00000 0x1000> "Arm for OCM interconnect"
+        Tag <0xffa10000 0x1000> "Arm for LPD to FPD interconnect"
+        Tag <0xffa60000 0x1000> "Real-time clock (RTC)"
+        Tag <0xffa70000 0x1000> "OCM_XMPU"
+        Tag <0xffa80000 0x1000> "LPD_DMA channels {0:7}"
+        Tag <0xffc80000 0x1000> "CSU_DMA"
+        Tag <0xffca0000 0x1000> "Configuration and security unit (CSU)"
+        Tag <0xffcd0000 0x1000> "Battery-backed RAM (BBRAM) control and data"
+        Tag <0xfd000000 0x1000> "DDR_XMPU{0:5}"
+        Tag <0xfd070000 0x1000> "DDR controller"
+        Tag <0xfd080000 0x1000> "DDR PHY"
+        Tag <0xfd090000 0x1000> "DDR QoS control"
+        Tag <0xfd0b0000 0x1000> "Arm for DDR"
+        Tag <0xfd360000 0x1000> "HPC0 (S_AXI_HPC0_FPD)"
+        Tag <0xfd370000 0x1000> "HPC1 (S_AXI_HPC1_FPD)"
+        Tag <0xfd380000 0x1000> "HP0 (S_AXI_HP0_FPD)"
+        Tag <0xfd390000 0x1000> "HP1 (S_AXI_HP1_FPD)"
+        Tag <0xfd3a0000 0x1000> "HP2 (S_AXI_HP2_FPD)"
+        Tag <0xfd3b0000 0x1000> "HP3 (S_AXI_HP3_FPD)"
+        Tag <0xfd490000 0x1000> "Arm for CCI"
+        Tag <0xfd4d0000 0x1000> "FPD_SWDT, system watchdog timer (swdt1)"
+        Tag <0xfd500000 0x1000> "FPD_DMA channels {0:7}"
+        Tag <0xfd5d0000 0x1000> "FPD_XMPU"
+        Tag <0xfd4f0000 0x1000> "XMPU_Sink (FPD)"
+        Tag <0xfd5e0000 0x1000> "CCI_REG register set wrapper: debug enables"
+        Tag <0xfd5f0000 0x1000> "SMMU_REG (interrupts, power, and unit control)"
+        Tag <0xfd6e0000 0x1000> "CCI_GPV (CCI400, parameters)"
+        Tag <0xfd700000 0x1000> "FPD_GPV (parameters)"
+        Tag <0xfd800000 0x1000> "SMMU_GPV (SMMU500, parameters)"
+        Tag <0xfe000000 0x1000> "IOU_GPV (parameters)"
+        Tag <0xfe100000 0x1000> "LPD_GPV (parameters)"
