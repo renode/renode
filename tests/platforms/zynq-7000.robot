@@ -102,6 +102,27 @@ Should Erase Flash Memory
     Check Exit Code
     Execute Linux Command           umount ${mount_path}
 
+Should Access SPI Flash Memory Via Additional Cadence xSPI 
+    Create Machine
+    Execute Command                 machine LoadPlatformDescriptionFromString ${CADENCE_XSPI_PERIPHERAL}
+    Start Emulation
+
+    Boot And Login
+    # Suppress messages from the kernel space
+    Execute Linux Command           echo 0 > /proc/sys/kernel/printk
+
+    Write Line To Uart              ls --color=never -1 /dev/
+    Wait For Line On Uart           mtd0
+    Wait For Prompt On Uart         ${PROMPT}
+    Check Exit Code
+
+    Generate Random File            ${SAMPLE_FILENAME}  5
+
+    Should Mount Flash Memory And Write File  ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Mount Flash Memory And Compare Files  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
+    Should Erase Flash Memory       ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}
+
+
 *** Test Cases ***
 Should Boot And Login
     Create Machine
@@ -200,26 +221,9 @@ Time Should Elapse
     ${seconds}=                     Get Linux Elapsed Seconds
     Should Be True                  ${seconds_before} < ${seconds}
 
-Should Access Micron SPI Flash Memory Via Additional Cadence xSPI IP
+Should Access SPI Flash Memory Via Additional Cadence xSPI IP
     Execute Command                 $bin=${CADENCE_XSPI_BIN}
     Execute Command                 $rootfs=${CADENCE_XSPI_ROOTFS}
     Execute Command                 $dtb=${CADENCE_XSPI_DTB}
 
-    Create Machine
-    Execute Command                 machine LoadPlatformDescriptionFromString ${CADENCE_XSPI_PERIPHERAL}
-    Start Emulation
-
-    Boot And Login
-    # Suppress messages from the kernel space
-    Execute Linux Command           echo 0 > /proc/sys/kernel/printk
-
-    Write Line To Uart              ls --color=never -1 /dev/
-    Wait For Line On Uart           mtd0
-    Wait For Prompt On Uart         ${PROMPT}
-    Check Exit Code
-
-    Generate Random File            ${SAMPLE_FILENAME}  5
-
-    Should Mount Flash Memory And Write File  ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
-    Should Mount Flash Memory And Compare Files  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}  ${SAMPLE_FILENAME}
-    Should Erase Flash Memory       ${MTD0_DEV}  ${MTD0_BLOCK_DEV}  ${FLASH_MOUNT}
+    Should Access SPI Flash Memory Via Additional Cadence xSPI 
