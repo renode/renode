@@ -41,6 +41,16 @@ Terminal Tester Assert Should Start Emulation
 
     Emulation Should Not Be Paused
 
+Terminal Tester Idle Assert Should Start Emulation
+    # We attach the tester to usart1 because nothing is printed to it
+    Create Machine With Button And LED  button  usart=1
+
+    Emulation Should Be Paused
+
+    Test If Uart Is Idle     2
+
+    Emulation Should Not Be Paused
+
 Terminal Tester Assert Should Not Start Emulation If Matching String Has Already Been Printed
     Create Machine With Button And LED  button
 
@@ -49,7 +59,16 @@ Terminal Tester Assert Should Not Start Emulation If Matching String Has Already
 
     Emulation Should Be Paused At Time  00:00:00.100000
 
+    Provides                 string-printed-without-assert
+
     Wait For Line On Uart    Press the button
+
+    Emulation Should Be Paused At Time  00:00:00.100000
+
+Terminal Tester Assert Should Not Start Emulation With Timeout 0
+    Requires                 string-printed-without-assert
+
+    Run Keyword And Expect Error  *Terminal tester failed*  Wait For Line On Uart  String that was not printed  timeout=0
 
     Emulation Should Be Paused At Time  00:00:00.100000
 
