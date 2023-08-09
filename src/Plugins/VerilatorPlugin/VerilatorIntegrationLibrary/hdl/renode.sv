@@ -114,43 +114,49 @@ module renode #(
 
   task automatic read_from_bus(address_t address, valid_bits_e data_bits);
     // This task is automatic to separate timeout handling between calls.
-    data_t data = 0;
-    bit is_error = 0;
-    bit is_timeout = 0;
-
+    // There is a surrounding fork to work around a Verilator bug.
     fork
-      begin
-        repeat (BusControllerTimeout) @(posedge clk);
-        is_timeout = 1;
-      end
-      begin
-        bus_controller.read(address, data_bits, data, is_error);
-      end
-    join_any
+      data_t data = 0;
+      bit is_error = 0;
+      bit is_timeout = 0;
 
-    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus read access timeout");
-    if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
-    else connection.send(message_t'{renode_pkg::readRequest, address, data});
+      fork
+        begin
+          repeat (BusControllerTimeout) @(posedge clk);
+          is_timeout = 1;
+        end
+        begin
+          bus_controller.read(address, data_bits, data, is_error);
+        end
+      join_any
+
+      if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus read access timeout");
+      if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
+      else connection.send(message_t'{renode_pkg::readRequest, address, data});
+    join
   endtask
 
   task automatic write_to_bus(address_t address, valid_bits_e data_bits, data_t data);
     // This task is automatic to separate timeout handling between calls.
-    bit is_error = 0;
-    bit is_timeout = 0;
-
+    // There is a surrounding fork to work around a Verilator bug.
     fork
-      begin
-        repeat (BusControllerTimeout) @(posedge clk);
-        is_timeout = 1;
-      end
-      begin
-        bus_controller.write(address, data_bits, data, is_error);
-      end
-    join_any
+      bit is_error = 0;
+      bit is_timeout = 0;
 
-    if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus write access timeout");
-    if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
-    else connection.send(message_t'{renode_pkg::ok, 0, 0});
+      fork
+        begin
+          repeat (BusControllerTimeout) @(posedge clk);
+          is_timeout = 1;
+        end
+        begin
+          bus_controller.write(address, data_bits, data, is_error);
+        end
+      join_any
+
+      if (is_timeout) connection.log(renode_pkg::LogDebug, "Bus write access timeout");
+      if (is_error || is_timeout) connection.send(message_t'{renode_pkg::error, 0, 0});
+      else connection.send(message_t'{renode_pkg::ok, 0, 0});
+    join
   endtask
 
   task static read_transaction();
