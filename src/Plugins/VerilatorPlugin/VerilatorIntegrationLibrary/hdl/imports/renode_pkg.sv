@@ -244,5 +244,14 @@ package renode_pkg;
       ->write_transaction_response;
     endtask
   endclass
+
+  class timeout_checker;
+    bit is_error = 0;
+
+    task wait_until_timeout(logic clk, int unsigned timeout);
+      repeat(timeout) @(posedge clk);
+      is_error = 1;
+    endtask
+  endclass
 endpackage
 
