@@ -38,7 +38,7 @@ Added peripheral models:
 * OpenTitan Entropy Distribution Network
 * Quectel BC66
 * Quectel BG96
-* SI7210 Temperature
+* SI7210 Temperature sensor
 * SPI multiplexer
 * STM32F4 CRC
 * STM32F4 Flash
@@ -81,7 +81,6 @@ Added features:
 * support for FPU exceptions for Cortex-M
 * quad word (64-bit) peripherals API
 * ``CSV2RESD`` tool, for easy generation of RESD files
-* mechanism for hooks on peripheral registers accesses
 * automatic selection of port used to communicate between Renode and Robot
 * option to pause emulation of Robot keywords
 * support for NMI interrupts in RISC-V
