@@ -201,6 +201,11 @@ lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
 crc: CRC.STM32F0_CRC @ sysbus 0x40023000
     configurablePoly: true
 
+// The SYSCFG region is defined as memory mainly so that software can read/write
+// values from the EXTICR registers. They currently have no effect in Renode.
+syscfg: Memory.MappedMemory @ sysbus 0x40010000
+    size: 0x400
+
 // Alternate function connections
 // The syntax is:
 //     alternateFunctionOutput -> gpioPort#pinNumber@AFNumber
@@ -230,6 +235,5 @@ sysbus:
         Tag <0x40026000, 0x400263FF> "AES"
         Tag <0x40015800, 0x40015BFF> "DBGMCU"
         Tag <0x40011C00, 0x40011FFF> "Firewall"
-        Tag <0x40010000, 0x400103FF> "SYSCFG"
         Tag <0x40002C00, 0x40002FFF> "WWDG"
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L0x1.svd
