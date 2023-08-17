@@ -7,6 +7,8 @@ Create Machine With Button And LED
         Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-blinky.elf-s_395652-4d2c6106335435629d3611d2a732e37ca9f17eeb
     ELSE IF  "${firmware}" == "led_shell"
         Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-led_shell.elf-s_1471160-5398b2ac0ab1c71ec144eba55f4840d86ddb921a
+    ELSE IF  "${firmware}" == "pwm_shell"
+        Execute Command          $bin = @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_shell_pwm.elf-s_884872-f36f63ef9435aaf89f37922d3c78428c52be1320
     ELSE
         Fail                     Unknown firmware '${firmware}'
     END
@@ -169,3 +171,20 @@ LED And Terminal Testers Should Cooperate
     Assert LED State         true  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:00.001243
     PC Should Be Equal       0x800af0a
+
+LED Tester Assertion Triggered By PWM Should Not Log Errors
+    Create Log Tester        0
+    Create Machine With Button And LED  pwm_shell  led_port=B  led_pin=10
+
+    ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true  pauseEmulation=true
+    ${pwm}=  Set Variable    ${pwm.groups[0]}
+
+    Write Line To Uart       pwm cycles ${pwm} 3 256 127  pauseEmulation=true
+    Wait For Prompt On Uart  $  pauseEmulation=true
+
+    # The LED state is true at this point, so this will wait for it to turn off
+    Assert LED State         false  pauseEmulation=true
+
+    # There should be a warning but no errors
+    Wait For Log Entry       Failed to restart translation block for precise pause  keep=true
+    Should Not Be In Log     ${EMPTY}  level=Error
