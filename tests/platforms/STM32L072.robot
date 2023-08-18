@@ -28,12 +28,12 @@ Set PWM And Check Duty
     [Arguments]              ${pwm}  ${channel}  ${period}  ${pulse}  ${expected_duty}
 
     Write Line To Uart       pwm cycles ${pwm} ${channel} ${period} ${pulse}
-    Execute Command          timer2.pt Reset
+    Execute Command          gpioPortB.pt Reset
     Execute Command          pause
     Execute Command          emulation RunFor "5"
     # Go back to continuous running so the next iteration can run UART commands
     Start Emulation
-    ${hp}=  Execute Command  timer2.pt HighPercentage
+    ${hp}=  Execute Command  gpioPortB.pt HighPercentage
     ${hpn}=  Convert To Number  ${hp}
     Should Be Equal Within Range  ${expected_duty}  ${hpn}  10
 
@@ -118,9 +118,9 @@ PWM Should Support GPIO Output
     Execute Command          include @scripts/single-node/stm32l072.resc
     Execute Command          sysbus LoadELF @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-custom_shell_pwm.elf-s_884872-f36f63ef9435aaf89f37922d3c78428c52be1320
 
-    # create gpio analyzer and connect pwm0 to it
-    Execute Command          machine LoadPlatformDescriptionFromString "pt: PWMTester @ timer2 0"
-    Execute Command          machine LoadPlatformDescriptionFromString "timer2: { 0 -> pt@0 }"
+    # create a PWM analyzer and connect gpiob.10 to it
+    Execute Command          machine LoadPlatformDescriptionFromString "pt: PWMTester @ gpioPortB 10"
+    Execute Command          machine LoadPlatformDescriptionFromString "gpioPortB: { 10 -> pt@0 }"
 
     Create Terminal Tester   sysbus.usart2
 
@@ -129,10 +129,12 @@ PWM Should Support GPIO Output
     ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true
     ${pwm}=  Set Variable    ${pwm.groups[0]}
 
-    Set PWM And Check Duty   ${pwm}  1  256    5    0
-    Set PWM And Check Duty   ${pwm}  1  256   85   33
-    Set PWM And Check Duty   ${pwm}  1  256  127   50
-    Set PWM And Check Duty   ${pwm}  1  256  250  100
+    # The expected percentage in each test is approximately duty/period
+    #                        pwm    ch period duty expected %
+    Set PWM And Check Duty   ${pwm}  3  256    5    0
+    Set PWM And Check Duty   ${pwm}  3  256   85   33
+    Set PWM And Check Duty   ${pwm}  3  256  127   50
+    Set PWM And Check Duty   ${pwm}  3  256  250  100
 
 Should Handle Flash Operations
     Execute Command          include @scripts/single-node/stm32l072.resc
