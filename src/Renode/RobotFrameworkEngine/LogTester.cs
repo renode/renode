@@ -81,11 +81,17 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, float? timeout = null, bool keep = false, bool treatAsRegex = false, bool pauseEmulation = false)
+        public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, float? timeout = null, bool keep = false, bool treatAsRegex = false,
+            bool pauseEmulation = false, LogLevel level = null)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
             var regex = treatAsRegex ? new Regex(pattern) : null;
-            var predicate = treatAsRegex ? (Predicate<FormattedLogEntry>)(x => regex.IsMatch(x.message)) : (x => x.message.Contains(pattern));
+            var predicate = treatAsRegex ? (Predicate<LogEntry>)(x => regex.IsMatch(x.FullMessage)) : (x => x.FullMessage.Contains(pattern));
+            if(level != null)
+            {
+                var innerPredicate = predicate;
+                predicate = x => innerPredicate(x) && x.Type == level;
+            }
             var effectiveTimeout = timeout ?? defaultTimeout;
 
             lock(messages)
