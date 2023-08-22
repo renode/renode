@@ -12,7 +12,7 @@ interface renode_axi_if #(
     int unsigned DataWidth = 32,
     int unsigned TransactionIdWidth = 8
 ) (
-    input logic clk
+    input logic aclk
 );
   localparam int unsigned StrobeWidth = (DataWidth / 8);
 
@@ -58,18 +58,6 @@ interface renode_axi_if #(
   logic                  rvalid;
   logic                  rready;
 
-  task static reset_assert();
-    areset_n = 0;
-    // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
-    repeat (2) @(posedge clk);
-  endtask
-
-  task static reset_deassert();
-    areset_n = 1;
-    // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
-    repeat (2) @(posedge clk);
-  endtask
-
   function static bit are_valid_bits_supported(renode_pkg::valid_bits_e valid_bits);
     case (valid_bits)
       renode_pkg::Byte: return DataWidth >= 8;
@@ -105,4 +93,3 @@ interface renode_axi_if #(
     return strobe_t'((1 << bytes_count) - 1);
   endfunction
 endinterface
-

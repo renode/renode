@@ -185,7 +185,7 @@ module renode #(
   task static write_transaction();
     message_t message;
 
-    case (bus_peripheral.read_transaction_data_bits)
+    case (bus_peripheral.write_transaction_data_bits)
       renode_pkg::Byte: message.action = renode_pkg::pushByte;
       renode_pkg::Word: message.action = renode_pkg::pushWord;
       renode_pkg::DoubleWord: message.action = renode_pkg::pushDoubleWord;

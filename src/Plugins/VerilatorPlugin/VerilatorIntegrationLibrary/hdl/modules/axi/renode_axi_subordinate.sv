@@ -16,17 +16,21 @@ module renode_axi_subordinate (
   typedef logic [bus.StrobeWidth-1:0] strobe_t;
   typedef logic [bus.TransactionIdWidth-1:0] transaction_id_t;
 
-  wire clk = bus.clk;
+  wire clk = bus.aclk;
 
   always @(connection.reset_assert_request) begin
     bus.rvalid = 0;
     bus.bvalid = 0;
-    bus.reset_assert();
+    bus.areset_n = 0;
+    // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
+    repeat (2) @(posedge clk);
     connection.reset_assert_respond();
   end
 
   always @(connection.reset_deassert_request) begin
-    bus.reset_deassert();
+    bus.areset_n = 1;
+    // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
+    repeat (2) @(posedge clk);
     connection.reset_deassert_respond();
   end
 
