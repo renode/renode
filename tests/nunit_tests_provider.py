@@ -73,7 +73,7 @@ class NUnitTestSuite(object):
             print('Using native dotnet test runner -' + self.path, flush=True)
             # we don't build here - we had problems with concurrently occurring builds when copying files to one output directory
             # so we run test with --no-build and build tests in previous stage
-            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", '--configuration', options.configuration, self.path]
+            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", "--logger", "trx;LogFileName={}".format(output_file), '--configuration', options.configuration, self.path, "--", "NUnit.DisplayName=FullName"]
             process = subprocess.Popen(args)
             print('dotnet test runner PID is {}'.format(process.pid), flush=True)
             process.wait()
@@ -144,10 +144,21 @@ class NUnitTestSuite(object):
         for test_file in test_files:
             tree = ET.parse(test_file)
             root = tree.getroot()
+
+            # we analyze both types of output files (nunit and dotnet test) to avoid passing options as parameter
+            # the cost should be negligible in the context of compiling and running test suites
+
+            # nunit runner
             for test in root.iter('test-case'):
                 if test.attrib['result'] == 'Failed':
                     ret['mandatory'].append(test.attrib['fullname'])
-        
+
+            # dotnet runner
+            xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
+            for test in root.iter(f"{{{xmlns}}}UnitTestResult"):
+                if test.attrib['outcome'] == 'Failed':
+                    ret['mandatory'].append(test.attrib['testName'])
+
         if not ret['mandatory']:
             return None
         return ret
