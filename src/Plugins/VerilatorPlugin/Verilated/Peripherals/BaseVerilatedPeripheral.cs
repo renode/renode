@@ -249,7 +249,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             verilatorConnection.HandleMessage();
         }
-        
+
         public const int DefaultTimeout = 3000;
 
         protected virtual void HandleInterrupt(ProtocolMessage interrupt)
@@ -285,11 +285,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             this.Log(LogLevel.Error, message);
             verilatorConnection.Abort();
-            
+
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
-        
+
         protected string simulationFilePath;
         protected IVerilatorConnection verilatorConnection;
 
