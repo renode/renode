@@ -32,7 +32,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             lock(testers)
             {
-                Machine machineObject;
+                IMachine machineObject;
                 if(machine == null)
                 {
                     if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())

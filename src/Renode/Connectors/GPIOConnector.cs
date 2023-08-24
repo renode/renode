@@ -135,14 +135,14 @@ namespace Antmicro.Renode.Connectors
             destinationMachine.MachineReset += ResetDestinationPinState;
         }
 
-        private void ResetDestinationPinState(Machine machine)
+        private void ResetDestinationPinState(IMachine machine)
         {
             Reset();
         }
 
         private readonly IGPIO connectorPin;
 
-        private Machine destinationMachine;
+        private IMachine destinationMachine;
         private IGPIO sourcePin;
         private ISet<IPeripheral> peripherals = new HashSet<IPeripheral>();
     }

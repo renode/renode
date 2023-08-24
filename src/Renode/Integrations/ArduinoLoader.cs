@@ -335,7 +335,7 @@ namespace Antmicro.Renode.Integrations
 
         private readonly AutoResetEvent binarySync;
         private readonly CortexM cpu;
-        private readonly Machine machine;
+        private readonly IMachine machine;
         private readonly ulong binaryLoadAddress;
 
         private const int BufferSize = 0xf0000;

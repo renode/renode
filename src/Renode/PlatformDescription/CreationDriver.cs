@@ -1362,7 +1362,7 @@ namespace Antmicro.Renode.PlatformDescription
                         constructorSelectionReport.Add(() => string.Format("  Parameter '{0}' of type '{1}' filled with default value = '{2}'.", argument.Name, argument.ParameterType, defaultValue));
                         continue;
                     }
-                    if(argument.ParameterType == typeof(Machine))
+                    if(typeof(IMachine).IsAssignableFrom(argument.ParameterType))
                     {
                         constructorSelectionReport.Add(() => $"  Value provided for parameter {argument.Name} is of internal Machine type and it cannot be assigned by user. Rejecting contructor.");
                         goto next;
@@ -1458,7 +1458,7 @@ namespace Antmicro.Renode.PlatformDescription
         private bool TryGetValueOfOurDefaultParameter(Type type, out object value)
         {
             value = null;
-            if(type == typeof(Machine))
+            if(typeof(IMachine).IsAssignableFrom(type))
             {
                 value = machine;
                 return true;

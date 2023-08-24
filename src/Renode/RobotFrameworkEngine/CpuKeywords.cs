@@ -98,10 +98,10 @@ namespace Antmicro.Renode.RobotFramework
             return string.Join(", ", emulation.Machines.Select(mach => emulation[mach]));
         }
 
-        private Machine GetMachineByNameOrSingle(string machineName = null)
+        private IMachine GetMachineByNameOrSingle(string machineName = null)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
-            Machine machine;
+            IMachine machine;
 
             if(machineName == null)
             {
@@ -127,7 +127,7 @@ namespace Antmicro.Renode.RobotFramework
             return machine;
         }
 
-        private ICPU GetCPU(Machine machine, int? cpuId)
+        private ICPU GetCPU(IMachine machine, int? cpuId)
         {
             var sysbus = machine.SystemBus;
             var cpus = sysbus.GetCPUs();

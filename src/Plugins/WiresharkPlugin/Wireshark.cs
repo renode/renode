@@ -188,7 +188,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
         }
 
-        private void OnMachineRemoved(Machine machine)
+        private void OnMachineRemoved(IMachine machine)
         {
             lock(innerLock)
             {

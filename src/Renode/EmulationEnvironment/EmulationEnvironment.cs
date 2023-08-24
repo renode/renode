@@ -39,13 +39,13 @@ namespace Antmicro.Renode.EmulationEnvironment
     {
         public EmulationEnvironment()
         {
-            registeredMachines = new HashSet<Machine>();
+            registeredMachines = new HashSet<IMachine>();
             registeredSensors = new HashSet<ISensor>();
             InitSensorDelegates();
         }
 
         [HideInMonitor]
-        public void AddToEnvironment(Machine machine)
+        public void AddToEnvironment(IMachine machine)
         {
             var environments = EmulationManager.Instance.CurrentEmulation.ExternalsManager.GetExternalsOfType<EmulationEnvironment>().ToList();
             RemoveMachineFromOtherEnvironments(environments, machine);
@@ -63,7 +63,7 @@ namespace Antmicro.Renode.EmulationEnvironment
         [HideInMonitor]
         public void AddToEnvironment(ISensor sensor)
         {
-            if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineForPeripheral(sensor, out Machine machine))
+            if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineForPeripheral(sensor, out var machine))
             {
                 throw new RecoverableException($"Could not resolve machine for peripheral {sensor}.");
             }
@@ -134,7 +134,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             return names;
         }
 
-        private void RemoveMachineFromOtherEnvironments(IEnumerable<EmulationEnvironment> environments, Machine machine)
+        private void RemoveMachineFromOtherEnvironments(IEnumerable<EmulationEnvironment> environments, IMachine machine)
         {
             foreach(var environment in environments.Where(env => env != this && env.registeredMachines.Contains(machine)))
             {
@@ -161,22 +161,22 @@ namespace Antmicro.Renode.EmulationEnvironment
             }
         }
 
-        private void ObserveChangesInMachinePeripherals(Machine machine)
+        private void ObserveChangesInMachinePeripherals(IMachine machine)
         {
             machine.PeripheralsChanged += MachinePeripheralsChanged;
         }
 
-        private void StopObservingChangesInMachinePeripherals(Machine machine)
+        private void StopObservingChangesInMachinePeripherals(IMachine machine)
         {
             machine.PeripheralsChanged -= MachinePeripheralsChanged;
         }
 
-        private void ObserveMachineReset(Machine machine)
+        private void ObserveMachineReset(IMachine machine)
         {
             machine.MachineReset += OnMachineReset;
         }
 
-        private void StopObservingMachineReset(Machine machine)
+        private void StopObservingMachineReset(IMachine machine)
         {
             machine.MachineReset -= OnMachineReset;
         }
@@ -191,7 +191,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             EmulationManager.Instance.CurrentEmulation.MachineRemoved -= OnMachineRemoval;
         }
 
-        private void MachinePeripheralsChanged(Machine machine, PeripheralsChangedEventArgs e)
+        private void MachinePeripheralsChanged(IMachine machine, PeripheralsChangedEventArgs e)
         {
             if(e.Peripheral is ISensor sensor)
             {
@@ -206,7 +206,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             }
         }
 
-        private void OnMachineReset(Machine machine)
+        private void OnMachineReset(IMachine machine)
         {
             foreach(var sensor in machine.GetPeripheralsOfType<ISensor>().Where(s => registeredSensors.Contains(s)))
             {
@@ -214,7 +214,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             }
         }
 
-        private void OnMachineRemoval(Machine machine)
+        private void OnMachineRemoval(IMachine machine)
         {
             registeredMachines.Remove(machine);
         }
@@ -240,7 +240,7 @@ namespace Antmicro.Renode.EmulationEnvironment
         [Transient]
         private IDictionary<Type, SensorValueAndUpdateDelegate> sensorValueAndUpdateDelegates;
 
-        private readonly ISet<Machine> registeredMachines;
+        private readonly ISet<IMachine> registeredMachines;
         private readonly ISet<ISensor> registeredSensors;
 
         private class SensorValueAndUpdateDelegate

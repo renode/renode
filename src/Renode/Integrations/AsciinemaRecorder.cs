@@ -39,7 +39,7 @@ namespace Antmicro.Renode.Integrations
     [Transient]
     public class AsciinemaRecorder: IConnectable<IUART>, IDisposable, IExternal
     {
-        public AsciinemaRecorder(string filePath, Machine machine, string name, bool useVirtualTimeStamps, int width, int height)
+        public AsciinemaRecorder(string filePath, IMachine machine, string name, bool useVirtualTimeStamps, int width, int height)
         {
             this.filePath = filePath;
             this.name = name;
@@ -134,7 +134,7 @@ namespace Antmicro.Renode.Integrations
 
         private readonly ByteUtf8Decoder decoder;
         private readonly string name;
-        private readonly Machine machine;
+        private readonly IMachine machine;
         private readonly bool useVirtualTimeStamps;
         private readonly string filePath;
         private readonly int width;
