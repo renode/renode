@@ -407,19 +407,19 @@ Add Dummy Memory At Hivecs Base Address
     Execute Command                                        machine LoadPlatformDescriptionFromString ${HIVECS_DUMMY_MEMORY}
 
 Check Protection Region Address Register Access Through Selector Register
-    [Arguments]                                            ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}
-    ${EXPECTED_REG_VALUE}=                                 Set Variable  0xDEADBEEF
-
+    [Arguments]                                            ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}  ${reserved_mask}
+    ${WRITE_VALUE}                                         Set Variable  0xFFFFFFFF
+    ${EXPECTED_REG_VALUE}=                                 Evaluate  0xFFFFFFFF ^ ${reserved_mask}
     Set Current System Register Value                      ${selector_reg}  ${region_num}
-    Set Current System Register Value                      ${selected_addr_reg}  ${expected_reg_value}
+    Set Current System Register Value                      ${selected_addr_reg}  ${WRITE_VALUE}
     ${reg_value}=                                          Get Current System Register Value  ${direct_addr_reg}
     Should Be Equal As Integers                            ${reg_value}  ${EXPECTED_REG_VALUE}
 
 Check Protection Region Address Register Access Through Direct Register
-    [Arguments]                                            ${direct_addr_reg}  ${selected_addr_reg}  ${region_selector_reg}  ${region_num}
-    ${EXPECTED_REG_VALUE}=                                 Set Variable  0xDEADBEEF
-
-    Set Current System Register Value                      ${direct_addr_reg}  ${EXPECTED_REG_VALUE}
+    [Arguments]                                            ${direct_addr_reg}  ${selected_addr_reg}  ${region_selector_reg}  ${region_num}  ${reserved_mask}
+    ${WRITE_VALUE}                                         Set Variable  0xFFFFFFFF
+    ${EXPECTED_REG_VALUE}=                                 Evaluate  0xFFFFFFFF ^ ${reserved_mask}
+    Set Current System Register Value                      ${direct_addr_reg}  ${WRITE_VALUE}
     Set Current System Register Value                      ${region_selector_reg}  ${region_num}
     ${reg_value}=                                          Get Current System Register Value  ${selected_addr_reg}
     Should Be Equal As Integers                            ${reg_value}  ${EXPECTED_REG_VALUE}
@@ -641,9 +641,11 @@ Check Protection Region Address Register Access Template
     IF  "${reg_type}" == "Base" or "${reg_type}" == "BAR"
         ${direct_addr_reg}=                                Set Variable  PRBAR
         ${selector_reg}=                                   Set Variable  PRSELR
+        ${reserved_mask}=                                  Set Variable  0x20
     ELSE IF  "${reg_type}" == "Limit" or "${reg_type}" == "LAR"
         ${direct_addr_reg}=                                Set Variable  PRLAR
         ${selector_reg}=                                   Set Variable  PRSELR
+        ${reserved_mask}=                                  Set Variable  0x30
     ELSE
         Fail  "Incorrect Protection Region Type"
     END
@@ -653,8 +655,8 @@ Check Protection Region Address Register Access Template
         ${selected_addr_reg}=                              Catenate  SEPARATOR=   H  ${selected_addr_reg}
         ${selector_reg}=                                   Catenate  SEPARATOR=   H  ${selector_reg}
     END
-    Check Protection Region Address Register Access Through Selector Register  ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}
-    Check Protection Region Address Register Access Through Direct Register  ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}
+    Check Protection Region Address Register Access Through Selector Register  ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}  ${reserved_mask}
+    Check Protection Region Address Register Access Through Direct Register  ${direct_addr_reg}  ${selected_addr_reg}  ${selector_reg}  ${region_num}  ${reserved_mask}
 
     [Teardown]                                             Reset Emulation
 
