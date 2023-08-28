@@ -3,7 +3,7 @@ ${bin_out_signature}=                           ReTrace\x02
 ${triple_and_model}=                            riscv32 rv32imacv
 
 *** Keywords ***
-Create Machine
+Create Machine Versatile
     Execute Command                             using sysbus
     Execute Command                             include @scripts/single-node/versatile.resc
 
@@ -14,32 +14,66 @@ Create Machine
     Execute Command                             emulation SetGlobalQuantum "0.000004"
 
 Create Machine RISC-V 64-bit
-    [Arguments]                                 ${pc_hex}
+    [Arguments]                                 ${pc_hex}  ${memory_per_cpu}
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacv\\"; timeProvider: empty }"
-    Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+    IF  ${memory_per_cpu}
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: ${pc_hex}; cpu: cpu } { size: 0x40000 }"
+    ELSE
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+    END
 
     Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
     Execute Command                             sysbus.cpu PC ${pc_hex}
 
 Create Machine RISC-V 32-bit
-    [Arguments]                                 ${pc_hex}
+    [Arguments]                                 ${pc_hex}  ${memory_per_cpu}
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imacv\\"; timeProvider: empty }"
-    Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+    IF  ${memory_per_cpu}
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: ${pc_hex}; cpu: cpu } { size: 0x40000 }"
+    ELSE
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
+    END
 
     Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
 
-Run Simple RISC-V Program
-    [Arguments]                                 ${pc_hex}
-    ${pc}=                                      Convert To Integer  ${pc_hex}
+Trace The Execution On The Versatile Platform
+    [Arguments]                                 ${trace_format}
+    Create Machine Versatile
+    ${trace_file}=                              Allocate Temporary File
+    Execute Command                             cpu CreateExecutionTracing "tracer" @${trace_file} ${trace_format}
+    # exactly the amount of virtual time to execute 16 instructions
+    Execute Command                             emulation RunFor "0.000016"
+    Execute Command                             cpu DisableExecutionTracing
+
+    ${output}=                                  Get File  ${trace_file}
+    ${output_lines}=                            Split To Lines  ${output}
+    RETURN  ${output_lines}
+
+Run And Trace Simple Program On RISC-V
+    [Arguments]                                 ${pc_start_hex}  ${trace_format}  ${is_binary}
+    ${trace_file}=                              Allocate Temporary File
+    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_file}" ${trace_format} ${is_binary}
+
+    ${pc}=                                      Convert To Integer  ${pc_start_hex}
     Execute Command                             sysbus.cpu PC ${pc}
-    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x00000013  # nop
-    Execute Command                             sysbus WriteWord ${pc+4} 0x0001            # nop
-    Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x00310093  # addi x1, x2, 003
+    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x00000013 cpu  # nop
+    Execute Command                             sysbus WriteWord ${pc+4} 0x0001 cpu            # nop
+    Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x00310093 cpu  # addi x1, x2, 003
 
     Start Emulation
     Execute Command                             sysbus.cpu Step 3
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+    
+    IF  ${is_binary}
+        ${output}=                                  Get Binary File  ${trace_file}
+        RETURN  ${output}
+    ELSE
+        ${output}=                                  Get File  ${trace_file}
+        ${output_lines}=                            Split To Lines  ${output}
+        RETURN  ${output_lines}
+    END
 
 Run RISC-V Program With Vcfg Instruction
     [Arguments]                                 ${pc_hex}
@@ -57,9 +91,9 @@ Run RISC-V Program With Memory Access
     [Arguments]                                 ${pc_hex}
     ${pc}=                                      Convert To Integer  ${pc_hex}
     Execute Command                             sysbus.cpu PC ${pc}
-    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x305B7     # lui a1, 48
-    Execute Command                             sysbus WriteWord ${pc+4} 0xe537            # lui a0, 14
-    Execute Command                             sysbus WriteDoubleWord ${pc+8} 0xb52023    # sw a1, 0(a0)
+    Execute Command                             sysbus WriteDoubleWord ${pc+0} 0x305B7 cpu   # lui a1, 48
+    Execute Command                             sysbus WriteWord ${pc+4} 0xe537 cpu          # lui a0, 14
+    Execute Command                             sysbus WriteDoubleWord ${pc+8} 0xb52023 cpu  # sw a1, 0(a0)
 
     Start Emulation
     Execute Command                             sysbus.cpu Step 3
@@ -69,100 +103,27 @@ Should Be Equal As Bytes
     ${str_bytes}                                Convert To Bytes  ${str}
     Should Be Equal                             ${bytes}  ${str_bytes}  formatter=repr
 
-*** Test Cases ***
-Should Dump PCs
-    Create Machine
-    ${FILE}=                                    Allocate Temporary File
+Should Dump 64-bit PCs On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 64-bit                0x2000000000  ${memory_per_cpu}
 
-    Execute Command                             cpu CreateExecutionTracing "tracer" @${FILE} PC
-    # exactly the amount of virtual time to execute 16 instructions
-    Execute Command                             emulation RunFor "0.000016"
+    ${pcs}=                                     Run And Trace Simple Program On RISC-V  0x2000000000  PC  False
+    Should Contain                              ${pcs}[0]  0x2000000000
+    Should Contain                              ${pcs}[1]  0x2000000004
+    Should Contain                              ${pcs}[2]  0x2000000006
 
-    Execute Command                             cpu DisableExecutionTracing
+Should Dump Disassembly On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
-    ${content}=                                 Get File  ${FILE}
-    @{pcs}=                                     Split To Lines  ${content}
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  Disassembly  False
+    Should Contain                              ${trace}[0]  nop
+    Should Contain                              ${trace}[1]  nop
+    Should Contain                              ${trace}[2]  addi
 
-    Length Should Be                            ${pcs}      16
-    Should Be Equal                             ${pcs[0]}   0x8000
-    Should Be Equal                             ${pcs[1]}   0x8004
-    Should Be Equal                             ${pcs[2]}   0x8008
-    Should Be Equal                             ${pcs[3]}   0x359C08
-    Should Be Equal                             ${pcs[14]}  0x8010
-    Should Be Equal                             ${pcs[15]}  0x8014
-
-Should Dump Opcodes
-    Create Machine
-    ${FILE}=                                    Allocate Temporary File
-
-    Execute Command                             cpu CreateExecutionTracing "tracer" @${FILE} Opcode
-    # exactly the amount of virtual time to execute 16 instructions
-    Execute Command                             emulation RunFor "0.000016"
-
-    Execute Command                             cpu DisableExecutionTracing
-
-    ${content}=                                 Get File  ${FILE}
-    @{pcs}=                                     Split To Lines  ${content}
-
-    Length Should Be                            ${pcs}      16
-    Should Be Equal                             ${pcs[0]}   0xE321F0D3
-    Should Be Equal                             ${pcs[1]}   0xEE109F10
-    Should Be Equal                             ${pcs[2]}   0xEB0D46FE
-    Should Be Equal                             ${pcs[3]}   0xE28F3030
-    Should Be Equal                             ${pcs[14]}  0x0A0D470D
-    Should Be Equal                             ${pcs[15]}  0xE28F302C
-
-Should Dump PCs And Opcodes
-    Create Machine
-    ${FILE}=                                    Allocate Temporary File
-
-    Execute Command                             cpu CreateExecutionTracing "tracer" @${FILE} PCAndOpcode
-    # exactly the amount of virtual time to execute 16 instructions
-    Execute Command                             emulation RunFor "0.000016"
-
-    Execute Command                             cpu DisableExecutionTracing
-
-    ${content}=                                 Get File  ${FILE}
-    @{pcs}=                                     Split To Lines  ${content}
-
-    Length Should Be                            ${pcs}      16
-    Should Be Equal                             ${pcs[0]}   0x8000: 0xE321F0D3
-    Should Be Equal                             ${pcs[1]}   0x8004: 0xEE109F10
-    Should Be Equal                             ${pcs[2]}   0x8008: 0xEB0D46FE
-    Should Be Equal                             ${pcs[3]}   0x359C08: 0xE28F3030
-    Should Be Equal                             ${pcs[14]}  0x8010: 0x0A0D470D
-    Should Be Equal                             ${pcs[15]}  0x8014: 0xE28F302C
-
-Should Dump 64-bit PCs
-    Create Machine RISC-V 64-bit                0x2000000000
-
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC
-    Run Simple RISC-V Program                   0x2000000000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get File  ${trace_filepath}
-    ${output_lines}=                            Split To Lines  ${output_file}
-    Should Contain                              ${output_lines}[0]  0x2000000000
-    Should Contain                              ${output_lines}[1]  0x2000000004
-    Should Contain                              ${output_lines}[2]  0x2000000006
-
-Should Dump Disassembly
-    Create Machine RISC-V 32-bit                0x2000
-
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly
-    Run Simple RISC-V Program                   0x2000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get File  ${trace_filepath}
-    ${output_lines}=                            Split To Lines  ${output_file}
-    Should Contain                              ${output_lines}[0]  nop
-    Should Contain                              ${output_lines}[1]  nop
-    Should Contain                              ${output_lines}[2]  addi
-
-Should Be Able To Add Memory Accesses To The Trace
-    Create Machine RISC-V 32-bit                0x2000
+Should Be Able To Add Memory Accesses To The Trace On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly
@@ -177,11 +138,12 @@ Should Be Able To Add Memory Accesses To The Trace
     Should Contain                              ${output_lines}[2]  sw a1, 0(a0)
     Should Contain                              ${output_lines}[3]  MemoryWrite with address 0xE000
 
-Should Be Able To Add Memory Accesses To The Trace In Binary Format
-    Create Machine RISC-V 32-bit                0x2000
+Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
     ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PCAndOpcode true
+    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PCAndOpcode True
     Execute Command                             tracer TrackMemoryAccesses
     Run RISC-V Program With Memory Access       0x2000
     Execute Command                             sysbus.cpu DisableExecutionTracing
@@ -203,159 +165,137 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format
                                                 # [0]: access_type; [1-9]: access_address; [10]: additional_data_type = None
     Should Be Equal As Bytes                    ${output_file}[59:69]  \x03\x00\xe0\x00\x00\x00\x00\x00\x00\x00
 
-Should Dump 64-bit PCs As Binary
-    Create Machine RISC-V 64-bit                0x2000000000
+Should Dump 64-bit PCs As Binary On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 64-bit                0x2000000000  ${memory_per_cpu}
 
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC true
-    Run Simple RISC-V Program                   0x2000000000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  37
-    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
-    Should Be Equal As Bytes                    ${output_file}[08:10]  \x08\x00
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000000000  PC  True
+    Length Should Be                            ${trace}  37
+    Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${trace}[08:10]  \x08\x00
  
-    Should Be Equal As Bytes                    ${output_file}[10:19]  \x00\x00\x00\x00\x20\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[19:28]  \x04\x00\x00\x00\x20\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[28:37]  \x06\x00\x00\x00\x20\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[10:19]  \x00\x00\x00\x00\x20\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[19:28]  \x04\x00\x00\x00\x20\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[28:37]  \x06\x00\x00\x00\x20\x00\x00\x00\x00
 
-Should Dump 32-bit PCs As Binary
-    Create Machine RISC-V 32-bit                0x2000
+Should Dump 32-bit PCs As Binary On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC true
-    Run Simple RISC-V Program                   0x2000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  25
-    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
-    Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x00
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  PC  True
+    Length Should Be                            ${trace}  25
+    Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x00
 
-    Should Be Equal As Bytes                    ${output_file}[10:15]  \x00\x20\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[15:20]  \x04\x20\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[20:25]  \x06\x20\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[10:15]  \x00\x20\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[15:20]  \x04\x20\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[20:25]  \x06\x20\x00\x00\x00
 
-Should Dump Opcodes As Binary
-    Create Machine RISC-V 32-bit                0x2000
+Should Dump Opcodes As Binary On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer_name" "${trace_filepath}" Opcode true
-    Run Simple RISC-V Program                   0x2000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  45
-    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
-    Should Be Equal As Bytes                    ${output_file}[08:10]  \x00\x01
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  Opcode  True
+    Length Should Be                            ${trace}  45
+    Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${trace}[08:10]  \x00\x01
                                                 # [0]: uses_thumb_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${trace}[12:29]  ${triple_and_model}
 
-    Should Be Equal As Bytes                    ${output_file}[29:35]  \x04\x13\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[35:39]  \x02\x01\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[39:45]  \x04\x93\x00\x31\x00\x00
+    Should Be Equal As Bytes                    ${trace}[29:35]  \x04\x13\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[35:39]  \x02\x01\x00\x00
+    Should Be Equal As Bytes                    ${trace}[39:45]  \x04\x93\x00\x31\x00\x00
 
-Should Dump PCs And Opcodes As Binary
-    Create Machine RISC-V 32-bit                0x2000
+Should Dump PCs And Opcodes As Binary On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x2000  ${memory_per_cpu}
 
-    ${trace_filepath}=                          Allocate Temporary File
-    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer_name" "${trace_filepath}" PCAndOpcode true
-    Run Simple RISC-V Program                   0x2000
-    Execute Command                             sysbus.cpu DisableExecutionTracing
-    
-    ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  57
-    Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
-    Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  PCAndOpcode  True
+    Length Should Be                            ${trace}  57
+    Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
+    Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x01
                                                 # [0]: uses_thumb_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${trace}[12:29]  ${triple_and_model}
 
-    Should Be Equal As Bytes                    ${output_file}[29:33]  \x00\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[33:39]  \x04\x13\x00\x00\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[39:43]  \x04\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[43:47]  \x02\x01\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[47:51]  \x06\x20\x00\x00
-    Should Be Equal As Bytes                    ${output_file}[51:57]  \x04\x93\x00\x31\x00\x00
+    Should Be Equal As Bytes                    ${trace}[29:33]  \x00\x20\x00\x00
+    Should Be Equal As Bytes                    ${trace}[33:39]  \x04\x13\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[39:43]  \x04\x20\x00\x00
+    Should Be Equal As Bytes                    ${trace}[43:47]  \x02\x01\x00\x00
+    Should Be Equal As Bytes                    ${trace}[47:51]  \x06\x20\x00\x00
+    Should Be Equal As Bytes                    ${trace}[51:57]  \x04\x93\x00\x31\x00\x00
 
-Should Show Error When Format Is Incorrect
-    Create Machine RISC-V 32-bit                0x2000
-
-    ${trace_filepath}=                          Allocate Temporary File
-    Run Keyword And Expect Error                *don't support binary output file with the*formatting*  Execute Command  sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly true
-
-Should Trace Consecutive Blocks
-    Execute Command                             mach create
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32gc\\"; timeProvider: empty }"
-    Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000 }"
+Should Trace Consecutive Blocks On RISC-V
+    [Arguments]                                 ${memory_per_cpu}
+    Create Machine RISC-V 32-bit                0x0  ${memory_per_cpu}
+    Execute Command                             sysbus.cpu ExecutionMode Continuous
 
     # "li x1, 0"
-    Execute Command                             sysbus WriteDoubleWord 0x200 0x93
+    Execute Command                             sysbus WriteDoubleWord 0x200 0x93 cpu
     # "li x2, 10"
-    Execute Command                             sysbus WriteDoubleWord 0x204 0x00a00113
+    Execute Command                             sysbus WriteDoubleWord 0x204 0x00a00113 cpu
     # "addi x1, x1, 1"
-    Execute Command                             sysbus WriteDoubleWord 0x208 0x00108093
+    Execute Command                             sysbus WriteDoubleWord 0x208 0x00108093 cpu
     # "bne x1, x2, 0x214"
-    Execute Command                             sysbus WriteDoubleWord 0x20C 0x00209463
+    Execute Command                             sysbus WriteDoubleWord 0x20C 0x00209463 cpu
     # "j 0x300"
-    Execute Command                             sysbus WriteDoubleWord 0x210 0x0f00006f
+    Execute Command                             sysbus WriteDoubleWord 0x210 0x0f00006f cpu
 
     # "c.nop"s (compressed)
-    Execute Command                             sysbus WriteDoubleWord 0x214 0x01
-    Execute Command                             sysbus WriteDoubleWord 0x216 0x01
+    Execute Command                             sysbus WriteDoubleWord 0x214 0x01 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x216 0x01 cpu
 
     # "nop"s
-    Execute Command                             sysbus WriteDoubleWord 0x218 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x21C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x220 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x224 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x228 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x22C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x230 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x234 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x238 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x23C 0x13
+    Execute Command                             sysbus WriteDoubleWord 0x218 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x21C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x220 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x224 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x228 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x22C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x230 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x234 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x238 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x23C 0x13 cpu
 
     # "j +4" - just to break the block
     # this is to test the block chaining mechanism
-    Execute Command                             sysbus WriteDoubleWord 0x240 0x0040006f
+    Execute Command                             sysbus WriteDoubleWord 0x240 0x0040006f cpu
 
     # "nop"s
-    Execute Command                             sysbus WriteDoubleWord 0x244 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x248 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x24C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x250 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x254 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x258 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x25C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x260 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x264 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x268 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x26C 0x13
+    Execute Command                             sysbus WriteDoubleWord 0x244 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x248 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x24C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x250 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x254 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x258 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x25C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x260 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x264 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x268 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x26C 0x13 cpu
 
     # "j +4" - just to break the block
-    Execute Command                             sysbus WriteDoubleWord 0x270 0x0040006f
+    Execute Command                             sysbus WriteDoubleWord 0x270 0x0040006f cpu
 
     # "nop"s
-    Execute Command                             sysbus WriteDoubleWord 0x274 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x278 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x27C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x280 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x284 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x288 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x28C 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x290 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x294 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x298 0x13
-    Execute Command                             sysbus WriteDoubleWord 0x29C 0x13
+    Execute Command                             sysbus WriteDoubleWord 0x274 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x278 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x27C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x280 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x284 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x288 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x28C 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x290 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x294 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x298 0x13 cpu
+    Execute Command                             sysbus WriteDoubleWord 0x29C 0x13 cpu
 
     # "j 0x208"
-    Execute Command                             sysbus WriteDoubleWord 0x2A0 0xf69ff06f
+    Execute Command                             sysbus WriteDoubleWord 0x2A0 0xf69ff06f cpu
 
     # "j 0x300"
-    Execute Command                             sysbus WriteDoubleWord 0x300 0x6f
+    Execute Command                             sysbus WriteDoubleWord 0x300 0x6f cpu
 
     Execute Command                             sysbus.cpu PC 0x200
 
@@ -402,23 +342,27 @@ Should Trace Consecutive Blocks
     Should Be Equal                             ${pcs[356]}  0x300
 
 Should Trace In ARM and Thumb State
+    [Arguments]                                 ${memory_per_cpu}
     Execute Command                             mach create
-
-    Execute Command                             machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
+    IF  ${memory_per_cpu}
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu } { size: 0x1000 }"
+    ELSE
+        Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
+    END
 
     # nop (ARM)
-    Execute Command                             sysbus WriteDoubleWord 0x00000000 0xe1a00000
+    Execute Command                             sysbus WriteDoubleWord 0x00000000 0xe1a00000 cpu
     # blx 0x10 (ARM)
-    Execute Command                             sysbus WriteDoubleWord 0x00000004 0xfa000001
+    Execute Command                             sysbus WriteDoubleWord 0x00000004 0xfa000001 cpu
     # nop (ARM)
-    Execute Command                             sysbus WriteDoubleWord 0x00000008 0xe1a00000
+    Execute Command                             sysbus WriteDoubleWord 0x00000008 0xe1a00000 cpu
     # wfi (ARM)
-    Execute Command                             sysbus WriteDoubleWord 0x0000000c 0xe320f003
+    Execute Command                             sysbus WriteDoubleWord 0x0000000c 0xe320f003 cpu
     # 2x nop (Thumb)
-    Execute Command                             sysbus WriteDoubleWord 0x00000010 0x46c046c0
+    Execute Command                             sysbus WriteDoubleWord 0x00000010 0x46c046c0 cpu
     # bx lr; nop (Thumb)
-    Execute Command                             sysbus WriteDoubleWord 0x00000014 0x46c04770
+    Execute Command                             sysbus WriteDoubleWord 0x00000014 0x46c04770 cpu
 
     Execute Command                             sysbus.cpu PC 0x0
 
@@ -444,8 +388,118 @@ Should Trace In ARM and Thumb State
     Should Be Equal                             ${pcs[5]}   0x8
     Should Be Equal                             ${pcs[6]}   0xC
     
-Should trace the RISC-V Vector Configuration
-    Create Machine RISC-V 32-bit                0x2000
+*** Test Cases ***
+Should Dump PCs
+    ${pcs}=                                     Trace The Execution On The Versatile Platform  PC
+
+    Length Should Be                            ${pcs}      16
+    Should Be Equal                             ${pcs[0]}   0x8000
+    Should Be Equal                             ${pcs[1]}   0x8004
+    Should Be Equal                             ${pcs[2]}   0x8008
+    Should Be Equal                             ${pcs[3]}   0x359C08
+    Should Be Equal                             ${pcs[14]}  0x8010
+    Should Be Equal                             ${pcs[15]}  0x8014
+
+Should Dump Opcodes
+    ${opcodes}=                                 Trace The Execution On The Versatile Platform  Opcode
+
+    Length Should Be                            ${opcodes}      16
+    Should Be Equal                             ${opcodes[0]}   0xE321F0D3
+    Should Be Equal                             ${opcodes[1]}   0xEE109F10
+    Should Be Equal                             ${opcodes[2]}   0xEB0D46FE
+    Should Be Equal                             ${opcodes[3]}   0xE28F3030
+    Should Be Equal                             ${opcodes[14]}  0x0A0D470D
+    Should Be Equal                             ${opcodes[15]}  0xE28F302C
+
+Should Dump Opcodes For Isolated Memory
+    Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=True
+
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  Opcode  False
+    Should Contain                              ${trace}[0]  0x00000013
+    Should Contain                              ${trace}[1]  0x0001
+    Should Contain                              ${trace}[2]  0x00310093
+
+Should Dump PCs And Opcodes
+    ${trace}=                                   Trace The Execution On The Versatile Platform  PCAndOpcode
+
+    Length Should Be                            ${trace}      16
+    Should Be Equal                             ${trace[0]}   0x8000: 0xE321F0D3
+    Should Be Equal                             ${trace[1]}   0x8004: 0xEE109F10
+    Should Be Equal                             ${trace[2]}   0x8008: 0xEB0D46FE
+    Should Be Equal                             ${trace[3]}   0x359C08: 0xE28F3030
+    Should Be Equal                             ${trace[14]}  0x8010: 0x0A0D470D
+    Should Be Equal                             ${trace[15]}  0x8014: 0xE28F302C
+
+Should Dump PCs And Opcodes For Isolated Memory
+    Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=True
+
+    ${trace}=                                   Run And Trace Simple Program On RISC-V  0x2000  PCAndOpcode  False
+    Should Contain                              ${trace}[0]  0x2000: 0x00000013
+    Should Contain                              ${trace}[1]  0x2004: 0x0001
+    Should Contain                              ${trace}[2]  0x2006: 0x00310093
+
+Should Dump 64-bit PCs
+    Should Dump 64-bit PCs On RISC-V            memory_per_cpu=False
+
+Should Dump 64-bit PCs For Isolated Memory
+    Should Dump 64-bit PCs On RISC-V            memory_per_cpu=True
+
+Should Dump Disassembly
+    Should Dump Disassembly On RISC-V           memory_per_cpu=False
+
+Should Dump Disassembly For Isolated Memory
+    Should Dump Disassembly On RISC-V           memory_per_cpu=True
+
+Should Be Able To Add Accesses To The Memory To The Trace
+    Should Be Able To Add Memory Accesses To The Trace On RISC-V  memory_per_cpu=False
+
+Should Be Able To Add Accesses To The Isolated Memory To The Trace
+    Should Be Able To Add Memory Accesses To The Trace On RISC-V  memory_per_cpu=True
+
+Should Be Able To Add Accesses To The Memory To The Trace In Binary Format
+    Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V  memory_per_cpu=False
+
+Should Be Able To Add Accesses To The Isolated Memory To The Trace In Binary Format
+    Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V  memory_per_cpu=True
+
+Should Dump 64-bit PCs As Binary
+    Should Dump 64-bit PCs As Binary On RISC-V  memory_per_cpu=False
+
+Should Dump 64-bit PCs As Binary For Isolated Memory
+    Should Dump 64-bit PCs As Binary On RISC-V  memory_per_cpu=True
+
+Should Dump 32-bit PCs As Binary
+    Should Dump 32-bit PCs As Binary On RISC-V  memory_per_cpu=False
+
+Should Dump 32-bit PCs As Binary For Isolated Memory
+    Should Dump 32-bit PCs As Binary On RISC-V  memory_per_cpu=True
+
+Should Dump Opcodes As Binary
+    Should Dump Opcodes As Binary On RISC-V     memory_per_cpu=False
+
+Should Dump Opcodes As Binary For Isolated Memory
+    Should Dump Opcodes As Binary On RISC-V     memory_per_cpu=True
+
+Should Dump PCs And Opcodes As Binary
+    Should Dump PCs And Opcodes As Binary On RISC-V  memory_per_cpu=False
+
+Should Dump PCs And Opcodes As Binary For Isolated Memory
+    Should Dump PCs And Opcodes As Binary On RISC-V  memory_per_cpu=True
+
+Should Trace Consecutive Blocks
+    Should Trace Consecutive Blocks On RISC-V   memory_per_cpu=False
+
+Should Trace Consecutive Blocks For Isolated Memory
+    Should Trace Consecutive Blocks On RISC-V   memory_per_cpu=True
+
+Should Trace ARM Core
+    Should Trace In ARM and Thumb State         memory_per_cpu=False
+
+Should Trace ARM Core With Isolated Memory
+    Should Trace In ARM and Thumb State         memory_per_cpu=True
+    
+Should Trace The RISC-V Vector Configuration
+    Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=False
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" Disassembly
@@ -463,7 +517,7 @@ Should trace the RISC-V Vector Configuration
     Should Contain                              ${output_lines}[3]  Vector configured to VL: 0x0, VTYPE: 0x40
 
 Should Be Able To Add Vector Configuration To The Trace In Binary Format
-    Create Machine RISC-V 32-bit                0x2000
+    Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=False
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" PCAndOpcode true
@@ -489,3 +543,8 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
                                                 # [0:8]: vl; [8:16]: vtype; [16]: additional_data_type = None
     Should Be Equal As Bytes                    ${output_file}[57:74]  \x00\x00\x00\x00\x00\x00\x00\x00\x40\x00\x00\x00\x00\x00\x00\x00\x00
 
+Should Show Error When Format Is Incorrect
+    Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=False
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Run Keyword And Expect Error                *don't support binary output file with the*formatting*  Execute Command  sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly true
