@@ -287,7 +287,9 @@ namespace Antmicro.Renode.RobotFramework
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex, level: level);
+            // Passing `level` as a named argument causes a compiler crash in Mono 6.8.0.105+dfsg-3.4
+            // from Debian
+            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex, false, level);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
