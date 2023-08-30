@@ -138,7 +138,7 @@ Should Dump 64-bit PCs
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC
-    Run Simple RISC-V Program                          0x2000000000
+    Run Simple RISC-V Program                   0x2000000000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get File  ${trace_filepath}
@@ -152,7 +152,7 @@ Should Dump Disassembly
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly
-    Run Simple RISC-V Program                          0x2000
+    Run Simple RISC-V Program                   0x2000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get File  ${trace_filepath}
@@ -208,7 +208,7 @@ Should Dump 64-bit PCs As Binary
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC true
-    Run Simple RISC-V Program                          0x2000000000
+    Run Simple RISC-V Program                   0x2000000000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
@@ -225,7 +225,7 @@ Should Dump 32-bit PCs As Binary
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" PC true
-    Run Simple RISC-V Program                          0x2000
+    Run Simple RISC-V Program                   0x2000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
@@ -242,7 +242,7 @@ Should Dump Opcodes As Binary
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer_name" "${trace_filepath}" Opcode true
-    Run Simple RISC-V Program                          0x2000
+    Run Simple RISC-V Program                   0x2000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
@@ -262,7 +262,7 @@ Should Dump PCs And Opcodes As Binary
 
     ${trace_filepath}=                          Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer_name" "${trace_filepath}" PCAndOpcode true
-    Run Simple RISC-V Program                          0x2000
+    Run Simple RISC-V Program                   0x2000
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
     ${output_file}=                             Get Binary File  ${trace_filepath}
