@@ -2,3 +2,6 @@ robotframework==6.0.2
 requests==2.27.1
 psutil==5.9.3
 pyyaml==6.0
+
+# Include dependencies of csv2resd as it's used in robot tests
+-r ../tools/csv2resd/requirements.txt

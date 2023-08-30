@@ -10,6 +10,7 @@ cp -r $BASE/tools/execution_tracer $DIR/tools
 cp -r $BASE/tools/gdb_compare $DIR/tools
 cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
+cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
 
 #copy the test instrastructure and update the paths

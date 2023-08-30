@@ -13,6 +13,7 @@ cp -r $RENODE_ROOT_DIR/tools/metrics_analyzer $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/execution_tracer $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/gdb_compare $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/sel4_extensions $DESTINATION/tools
+cp -r $RENODE_ROOT_DIR/tools/csv2resd $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DESTINATION/plugins
 
 sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
