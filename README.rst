@@ -16,7 +16,7 @@ With Renode, developing, testing, debugging and simulating unmodified software f
 
 Supported architectures include:
 
-* ARMv7 and ARMv8 Cortex-A and Cortex-M
+* ARMv7 and ARMv8 Cortex-A, Cortex-R and Cortex-M
 * x86
 * RISC-V
 * SPARC
