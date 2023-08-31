@@ -111,11 +111,18 @@ Teardown
         Wait For Process
     END
 
+Sanitize Test Name
+    [Arguments]        ${test_name}
+    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+    # double quotes because editor syntax highlighting gets confused with a single one
+    ${test_name}=      Replace String Using Regexp  ${test_name}  [/""]  -
+    [return]           ${test_name}
+
 Create Snapshot Of Failed Test
     Return From Keyword If   'skipped' in @{TEST TAGS}
 
     ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail.save
-    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+    ${test_name}=      Sanitize Test Name  ${test_name}
 
     ${snapshots_dir}=  Set Variable  ${RESULTS_DIRECTORY}/snapshots
     Create Directory   ${snapshots_dir}
@@ -128,7 +135,7 @@ Save Test Log
     Return From Keyword If   'skipped' in @{TEST TAGS}
 
     ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}
-    ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
+    ${test_name}=      Sanitize Test Name  ${test_name}
 
     ${logs_dir}=       Set Variable  ${RESULTS_DIRECTORY}/logs
     Create Directory   ${logs_dir}
@@ -189,7 +196,7 @@ Start Profiler
     END
 
     ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
-    ${test_name}=               Replace String  ${test_name}  ${SPACE}  _
+    ${test_name}=               Sanitize Test Name  ${test_name}
 
     ${traces_dir}=              Set Variable  ${RESULTS_DIRECTORY}/traces
     Create Directory            ${traces_dir}
