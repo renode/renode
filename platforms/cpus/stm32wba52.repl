@@ -15,6 +15,11 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     IRQ -> nvic@47
 
+lpuart1: UART.STM32F7_USART @ sysbus 0x46002400
+    frequency: 200000000
+    lowPowerMode: true
+    IRQ -> nvic@48
+
 spi1: SPI.STM32WBA_SPI @ sysbus 0x40013000
     IRQ -> nvic@45
 
