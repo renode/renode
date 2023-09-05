@@ -75,7 +75,7 @@ namespace Antmicro.Renode.RobotFramework
                 var tester = creator(peripheral);
                 peripheralsWithTesters.Add(peripheral);
                 testers.Add(peripheralsWithTesters.Count - 1, tester);
-                
+
                 return peripheralsWithTesters.Count - 1;
             }
         }
