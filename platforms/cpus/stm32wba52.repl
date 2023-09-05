@@ -7,6 +7,8 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x100000
 
+pwr: Miscellaneous.STM32WBA_PWR @ sysbus 0x46020800
+
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
     IRQ -> nvic@46
@@ -119,11 +121,6 @@ lptim2: Timers.STM32L0_LpTimer @ sysbus 0x40009400
     -> nvic@50
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x46007800
-
-pwr: Python.PythonPeripheral @ sysbus 0x46020800
-    size: 0x400
-    initable: true
-    filename: "scripts/pydev/rolling-bit.py"
 
 flash_ctrl: MTD.STM32WBA_FlashController @ sysbus 0x40022000
     flash: flash
