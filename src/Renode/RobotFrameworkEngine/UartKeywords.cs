@@ -26,6 +26,12 @@ namespace Antmicro.Renode.RobotFramework
             globalTimeout = timeout;
         }
 
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
+        public void SetDefaultTester(int? id)
+        {
+            SetDefaultTesterId(id);
+        }
+
         [RobotFrameworkKeyword]
         public string GetTerminalTesterReport(int? testerId = null)
         {
