@@ -65,3 +65,11 @@ Should Run Zephyr Echo Client With Quectel BG96 Modem
     FOR  ${i}  IN RANGE  3
         Wait For Line On Uart     IPv4 TCP: Received and compared \\d+ bytes, all ok  treatAsRegex=true
     END
+
+Should Fail To Run Zephyr Echo Client With Quectel BG96 Modem With Overridden Command
+    Execute Command           include @scripts/single-node/stm32f746_modem.resc
+    Create Terminal Tester    ${UART}
+
+    Execute Command           usart2.bg96 OverrideResponseForCommand "AT+QIACT=1" "ERROR"
+
+    Wait For Line On Uart     modem_quectel_bg9x: Error activating modem with pdp context
