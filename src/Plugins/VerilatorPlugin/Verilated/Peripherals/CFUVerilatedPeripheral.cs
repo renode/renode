@@ -152,6 +152,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
                         verilatedPeripheral.SimulationFilePath = value;
+                        verilatedPeripheral.Connect();
 
                         if(timer != null)
                         {
