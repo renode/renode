@@ -78,7 +78,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public void Connect()
         {
-            // intentionally left empty
+            IsConnected = true;
         }
 
         public void HandleMessage()
@@ -199,7 +199,6 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
                         initializeNative();
                         mainResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
                         senderResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
-                        IsConnected = true;
                         resetPeripheral();
                     }
                     catch(Exception e)
