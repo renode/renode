@@ -3,8 +3,8 @@
 set -e
 set -u
 
-REMOTE=https://github.com/renode/renode-resources.git
-BRANCH=master
+RESOURCES_REMOTE="${RESOURCES_REMOTE:-https://github.com/renode/renode-resources.git}"
+RESOURCES_BRANCH="${RESOURCES_BRANCH:-master}"
 
 CURRENT_PATH=`dirname $0`
 
@@ -17,6 +17,6 @@ mkdir -p "$LIB_DIR"
 
 source "$CURRENT_PATH/../common.sh"
 
-clone_if_necessary "renode-resources" "$REMOTE" "$BRANCH" "$DIR" "$GUARD"
+clone_if_necessary "renode-resources" "$RESOURCES_REMOTE" "$RESOURCES_BRANCH" "$DIR" "$GUARD"
 
 touch "$GUARD"
