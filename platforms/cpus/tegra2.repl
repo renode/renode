@@ -18,8 +18,9 @@ memory: Memory.MappedMemory @ {
 iRam: Memory.MappedMemory @ sysbus 0x40000000
     size: 0x100000
 
-privateTimer: Timers.CortexAPrivateTimer @ sysbus <0x50040600, +0x200>
+privateTimer: Timers.ARM_PrivateTimer @ sysbus 0x50040600
     -> gic#0@29
+    frequency: 667000000
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x50041000; size: 0x1000; region: "distributor" };
