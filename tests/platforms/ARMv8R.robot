@@ -533,15 +533,16 @@ Check Access To SPSR_hyp Register Template
 
     Execute Command                                        sysbus.cpu Step
     IF  "${pl}" == "Hypervisor" or "${pl}" == "HYP"
-        # SPSR_hyp access from Hypervisor Privilege Level causes
-        # Undefined Instruction Exception handled at Hypervisor Privilege Level
+        # SPSR_hyp accesses from Hypervisor mode are UNPREDICTABLE. However, a common Cortex-R52 initialization procedure,
+        # that works correctly on hardware and in FVP, sets it so Renode also allows for such accesses.
         Current Privilege Level Should Be                  Hypervisor
+        Current PC Should Be                                   0x8004
     ELSE
         # SPSR_hyp access from other Privilege Levels causes
         # Undefined Instruction Exception handled at Undefined Privilege Level
         Current Privilege Level Should Be                  Undefined
+        Current PC Should Be                                   0x4
     END
-    Current PC Should Be                                   0x4
 
     [Teardown]                                             Reset Emulation
 
