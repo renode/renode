@@ -347,12 +347,25 @@ class RobotTestSuite(object):
             command.insert(0, 'dotnet')
             options.exclude.append('skip_dotnet')
 
+        renode_command = command
         if options.run_gdb:
             command = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + command
 
-        # start Renode
-        p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
-        self.renode_pid = p.pid
+        # start Renode or GDB
+        p = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
+        # if we started GDB, wait for the user to start Renode as a child process
+        if options.run_gdb:
+            print("Waiting for Renode process to start")
+            while True:
+                # We strip argv[0] because if we pass just `mono` to GDB it will resolve
+                # it to a full path to mono on the PATH, for example /bin/mono
+                renode_child = next((c for c in p.children() if c.cmdline()[1:] == renode_command[1:]), None)
+                if renode_child:
+                    break
+                sleep(0.5)
+            self.renode_pid = renode_child.pid
+        else:
+            self.renode_pid = p.pid
 
         countdown = 120
         temp_dir = tempfile.gettempdir()
