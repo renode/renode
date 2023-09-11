@@ -109,3 +109,4 @@
 - tests/unit-tests/page-access-via-io.robot
 - tests/unit-tests/precise-pause.robot
 - tests/unit-tests/peripheral-hooks.robot
+- tests/platforms/xilinx_zynqmp_r5.robot
