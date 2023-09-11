@@ -1,0 +1,61 @@
+cpu: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xAF100000; size: 0x200000; region: "redistributor" }
+    }
+    [0,1] -> cpu@[0,1]
+    numberOfCPUs: 1
+    supportsTwoSecurityStates: false
+
+timer: Timers.ARM_GenericTimer @ cpu
+    frequency: 1000000000
+    EL1PhysicalTimerIRQ -> gic#0@30
+    EL1VirtualTimerIRQ -> gic#0@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#0@26
+
+dram0: Memory.MappedMemory @ sysbus 0x0
+    size: 0x08000000
+
+sram0: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x180000
+
+flash0: Memory.MappedMemory @ sysbus 0x88000000
+    size: 0x04000000
+
+gpio: GPIOPort.Renesas_GPIO @ { sysbus 0x800A0000; sysbus 0x81030000 }
+
+// TODO: implement SCI peripheral
+sci: Memory.ArrayMemory @ { sysbus 0x80001000; sysbus 0x81001000 }
+    size: 0x1000
+
+sysbus:
+    init:
+        Tag <0x00000000 0x80000> "CPU0 ATCM"
+        Tag <0x00100000 0x10000> "CPU0 BTCM"
+        Tag <0x10000000 0x180000> "System RAM"
+        Tag <0x11000000 0x10000> "Area for Boot ROM"
+        Tag <0x20000000 0x80000> "CPU0 ATCM via AXIS"
+        Tag <0x20100000 0x80000> "CPU0 BTCM via AXIS"
+        Tag <0x30000000 0x180000> "Mirror area of System RAM"
+        Tag <0x40000000 0x8000000> "Mirror area of external address space XSPI0"
+        Tag <0x48000000 0x8000000> "Mirror area of external address space XSPI1"
+        Tag <0x50000000 0x10000000> "Mirror area of external address space CS0, 2, 3, 5"
+        Tag <0x60000000 0x8000000> "External address space xSPI0"
+        Tag <0x68000000 0x8000000> "External address space xSPI1"
+        Tag <0x70000000 0x10000000> "External address space CS0, 2, 3, 5"
+        Tag <0x80000000 0x1000000> "Non-Safety Peripheral"
+        Tag <0x80280000 0x320> "SYSC_NS"
+        Tag <0x80281A10 0x4> "RWP_NS"
+        Tag <0x81000000 0x1000000> "Safety Peripheral"
+        Tag <0x81030C00 0x19> "PTADR"
+        Tag <0x81280000 0x320> "SYSC_S"
+        Tag <0x81281A00 0x4> "RWP_S"
+        Tag <0x81280800 0x75> "CLMAm"
+        Tag <0x90000000 0x200000> "LLPP Peripheral"
+        Tag <0x94000000 0x200000> "GIC0"
+        Tag <0x9C000000 0x200000> "GIC1"
+        Tag <0xA0000000 0x1000000> "Encoder IF area"
+        Tag <0xC0000000 0x1000000> "Debug Private"

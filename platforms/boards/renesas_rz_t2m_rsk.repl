@@ -1,0 +1,12 @@
+using "platforms/cpus/renesas_rz_t2m.repl"
+
+led0: Miscellaneous.LED @ gpio
+led1: Miscellaneous.LED @ gpio
+led2: Miscellaneous.LED @ gpio
+led3: Miscellaneous.LED @ gpio
+
+gpio:
+    156 -> led0@0
+    158 -> led1@0
+    160 -> led2@0
+    188 -> led3@0
