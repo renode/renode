@@ -58,6 +58,16 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        private object ChangeType(object input, Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if(underlyingType != null && input != null)
+            {
+                type = underlyingType;
+            }
+            return Convert.ChangeType(input, type);
+        }
+
         private bool TryParseArguments(ParameterInfo[] parameters, object[] arguments, out object[] parsedArguments)
         {
             parsedArguments = null;
@@ -82,7 +92,7 @@ namespace Antmicro.Renode.RobotFramework
                     args[position].IsParsed = true;
                     // Allow type conversions of non-string arguments to allow calling methods that
                     // take a float with a Python float which becomes a double on the C# side
-                    args[position].Value = Convert.ChangeType(argumentObj, parameters[position].ParameterType);
+                    args[position].Value = ChangeType(argumentObj, parameters[position].ParameterType);
                     continue;
                 }
 
