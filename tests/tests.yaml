@@ -110,3 +110,4 @@
 - tests/unit-tests/precise-pause.robot
 - tests/unit-tests/peripheral-hooks.robot
 - tests/platforms/xilinx_zynqmp_r5.robot
+- tests/unit-tests/uart-tester.robot
