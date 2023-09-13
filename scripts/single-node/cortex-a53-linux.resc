@@ -1,8 +1,10 @@
 :name: Cortex-A53
 :description: This script runs Linux (with Coreboot and ATF) on a 64-bit ARM Cortex-A53.
 
-using sysbus
+$bin?=@https://dl.antmicro.com/projects/renode/coreboot-linux-armv8a-gicv3.rom-s_67108864-2348c80d6b871b9ac1916dfe0fd590125559ef73
 $name?="ARM Cortex-A53"
+
+using sysbus
 mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv3.repl
@@ -15,6 +17,6 @@ uart0 WriteDoubleWord 0x2c 0x40
 
 macro reset
 """
-    sysbus LoadBinary @https://dl.antmicro.com/projects/renode/armv8a-coreboot-linux-gicv3.rom-s_67108864-1d969857e2debae53fa6c9c55e24c86ed52c7984 0x0
+    sysbus LoadBinary $bin 0x0
 """
 runMacro $reset
