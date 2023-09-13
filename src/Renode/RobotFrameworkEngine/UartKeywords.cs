@@ -91,6 +91,24 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public void ShouldNotBeOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
+            bool includeUnfinishedLine = false)
+        {
+            TimeInterval? timeInterval = null;
+            if(timeout.HasValue)
+            {
+                timeInterval = TimeInterval.FromSeconds(timeout.Value);
+            }
+
+            var tester = GetTesterOrThrowException(testerId);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, false);
+            if(result != null)
+            {
+                throw new InvalidOperationException($"Terminal tester failed!\n\nUnexpected entry has been found on UART#:\n{result.line}");
+            }
+        }
+
+        [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null, bool? pauseEmulation = null)
         {
             TimeInterval? timeInterval = null;
