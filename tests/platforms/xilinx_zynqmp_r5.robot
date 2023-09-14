@@ -2,19 +2,23 @@
 ${UART}                                         sysbus.uart0
 ${PROMPT}                                       uart:~$
 ${URL}                                          https://dl.antmicro.com/projects/renode
-# Note that following samples are built with MPU disabled (CONFIG_ARM_MPU=n)
-${ZEPHYR_BASIC_SYS_HEAP}                        @${URL}/zephyr-basic_sys_heap-xilinx_zynqmp_r5-no_mpu.elf-s_410328-41429bd6fb58f0e8f730ba86a8775b15f134b9f3
-${ZEPHYR_COMPRESSION_LZ4}                       @${URL}/zephyr-compression_lz4-xilinx_zynqmp_r5-no_mpu.elf-s_827328-11c6e8c49708288cc39388f860139153ac2473d8
-${ZEPHYR_CPP_SYNCHRONIZATION}                   @${URL}/zephyr-cpp_cpp_synchronization-xilinx_zynqmp_r5-no_mpu.elf-s_466404-10b2e4a27fb049979b0819c52be3fede42d9c438
-${ZEPHYR_HELLO_WORLD}                           @${URL}/zephyr-hello_world-xilinx_zynqmp_r5-no_mpu.elf-s_357852-c165e28a3fa2fe42ba53ffcb916e3773cceb952f
-${ZEPHYR_KERNEL_CONDITION_VARIABLES_CONDVAR}    @${URL}/zephyr-kernel_condition_variables_condvar-xilinx_zynqmp_r5-no_mpu.elf-s_457628-11da822aa2a8573d790f3d333ee690b2185bf37e
-${ZEPHYR_KERNEL_CONDITION_VARIABLES_SIMPLE}     @${URL}/zephyr-kernel_condition_variables_simple-xilinx_zynqmp_r5-no_mpu.elf-s_455128-fc84bb8dc69870ec4bade073fdcec507407e0583
-${ZEPHYR_KERNEL_METAIRQ_DISPATCH}               @${URL}/zephyr-kernel_metairq_dispatch-xilinx_zynqmp_r5-no_mpu.elf-s_515944-d9169f147a260f8e726e6fc9256e605abd1af4d9
-${ZEPHYR_PHILOSOPHERS}                          @${URL}/zephyr-philosophers-xilinx_zynqmp_r5-no_mpu.elf-s_478248-ddb0b782d2bc6d39d81295a53a4866d5d4780d99
-${ZEPHYR_SYNCHRONIZATION}                       @${URL}/zephyr-synchronization-xilinx_zynqmp_r5-no_mpu.elf-s_381160-e91943b548e98c8368e823ff6746602dcea9b875
-${ZEPHYR_SHELL}                                 @${URL}/zephyr-subsys_shell_shell_module-xilinx_zynqmp_r5-no_mpu.elf-s_1271676-ef03382599f6f99c4de14d1306e8a706d3cd5a0c
+
+${ZEPHYR_BASIC_SYS_HEAP}                        @${URL}/zephyr-basic_sys_heap-xilinx_zynqmp_r5.elf-s_438388-8991d33506751fe196ee3eb488144583ba0ccbd7
+${ZEPHYR_COMPRESSION_LZ4}                       @${URL}/zephyr-compression_lz4-xilinx_zynqmp_r5.elf-s_862900-fbcf30b0880cabd5e807d9b166edb30af6292724
+${ZEPHYR_CPP_SYNCHRONIZATION}                   @${URL}/zephyr-cpp_cpp_synchronization-xilinx_zynqmp_r5.elf-s_493632-f7cd8210dde1935690ba706dd4d56f51c369be37
+${ZEPHYR_HELLO_WORLD}                           @${URL}/zephyr-hello_world-xilinx_zynqmp_r5.elf-s_388044-7673bd83fa331e9cab9281a0c000d9774479d4c4
+${ZEPHYR_KERNEL_CONDITION_VARIABLES_CONDVAR}    @${URL}/zephyr-kernel_condition_variables_condvar-xilinx_zynqmp_r5.elf-s_495360-20c5dc4d6c886c51fde9ce2d4057966762d410c9
+${ZEPHYR_KERNEL_CONDITION_VARIABLES_SIMPLE}     @${URL}/zephyr-kernel_condition_variables_simple-xilinx_zynqmp_r5.elf-s_493588-ff54eafc5f0aca434358a5c715058ad77166346b
+${ZEPHYR_KERNEL_METAIRQ_DISPATCH}               @${URL}/zephyr-kernel_metairq_dispatch-xilinx_zynqmp_r5.elf-s_551952-d4792b65f1cb6e172cd4d653d4b373abd1366b92
+${ZEPHYR_PHILOSOPHERS}                          @${URL}/zephyr-philosophers-xilinx_zynqmp_r5.elf-s_515508-f1bcfa0adcf29714365ae53609420644614298c9
+${ZEPHYR_SYNCHRONIZATION}                       @${URL}/zephyr-synchronization-xilinx_zynqmp_r5.elf-s_409936-c67fa8fb36a0318e82a45e57f0c8436c6af4740d
+${ZEPHYR_SHELL}                                 @${URL}/zephyr-subsys_shell_shell_module-xilinx_zynqmp_r5.elf-s_1310204-e0e970d25e7c5d471c1d2d308e3f30944c414490
 ${ZEPHYR_USERSPACE_HELLO_WORLD_NO_MPU}          @${URL}/zephyr-userspace_hello_world_user-xilinx_zynqmp_r5-no_mpu.elf-s_411848-1b3bc43849411db05745b5226bb64350ece53500
-${ZEPHYR_TESTS_KERNEL_FPU_SHARING}              @${URL}/zephyr-fpu_sharing-xilinx_zynqmp_r5-no_mpu.elf-s_480700-2e936ebba4e2980977679bbfccd248cf4d80a9be
+${ZEPHYR_TESTS_KERNEL_FPU_SHARING}              @${URL}/zephyr-kernel_fpu_sharing_generic-xilinx_zynqmp_r5.elf-s_515064-6f0345a25b12e1e8e5c130266ddd2568e3e7138f
+${ZEPHYR_USERSPACE_HELLO_WORLD}                 @${URL}/zephyr-userspace_hello_world_user-xilinx_zynqmp_r5.elf-s_1032888-0009042615539a30dbe799896b96501d0f90ae84
+${ZEPHYR_MPU_TEST}                              @${URL}/zephyr-arch_mpu_mpu_test-xilinx_zynqmp_r5.elf-s_1149568-ae2c8f6e5e8219564e4640c47cfef5e33fcf2ea4
+${ZEPHYR_USERSPACE_PROD_CONSUMER}               @${URL}/zephyr-userspace_prod_consumer-xilinx_zynqmp_r5.elf-s_1343804-9f7520160bb347a15f01e1a25bd94c87007335af
+${ZEPHYR_USERSPACE_SHARED_MEM}                  @${URL}/zephyr-userspace_shared_mem-xilinx_zynqmp_r5.elf-s_1081056-a43ec0a1353e21c55908bbed997d6a52b8d031fb
 
 *** Keywords ***
 Create Machine
@@ -226,7 +230,102 @@ Should Fail To Enter Userspace Without MPU
     Wait For Line On Uart           E: >>> ZEPHYR FATAL ERROR 4: Kernel panic on CPU 0
     Wait For Line On Uart           E: Halting system
 
+Should Print Hello World From Userspace
+    Create Machine                  ${ZEPHYR_USERSPACE_HELLO_WORLD}
+    Start Emulation
+    Wait For Line On Uart           Hello World from UserSpace! (qemu_cortex_r5)
+
 Should Pass Zephyr FPU Sharing Test
     Create Machine                  ${ZEPHYR_TESTS_KERNEL_FPU_SHARING}
     Start Emulation
     Should Pass Zephyr Test Suite
+
+Should Rise Permission Fault On MPU Test Read
+    Create Machine                  ${ZEPHYR_MPU_TEST}
+    Start Emulation
+
+    Wait For Prompt On Uart         ${PROMPT}
+    Write Line To Uart              mpu write
+    Wait For Line On Uart           write address: 0xc0004000
+
+    Wait For Line On Uart           <err> os: ***** DATA ABORT *****
+    Wait For Line On Uart           <err> os: Permission Fault @ 0xc0004000
+    Wait For Line On Uart           <err> os: r0/a1:${SPACE*2}0x00000000${SPACE*2}r1/a2:${SPACE*2}0x0000000e${SPACE*2}r2/a3:${SPACE*2}0x00010538
+    Wait For Line On Uart           <err> os: r3/a4:${SPACE*2}0x0badc0de r12/ip:${SPACE*2}0x[a-f0-9]+ r14/lr:${SPACE*2}0x00000f8f                  treatAsRegex=true
+    Wait For Line On Uart           <err> os:${SPACE*2}xpsr:${SPACE*2}0x6000013f
+    Wait For Line On Uart           <err> os: fpscr:${SPACE*2}0x00000000
+    Wait For Line On Uart           <err> os: Faulting instruction address (r15/pc): 0x00000f90
+    Wait For Line On Uart           <err> os: >>> ZEPHYR FATAL ERROR 48: Unknown error on CPU 0
+    Wait For Line On Uart           <err> os: Current thread: 0x10538 (shell_uart)
+    Wait For Line On Uart           <err> os: Halting system
+
+Should Rise Background Fault On MPU Test Write
+    Create Machine                  ${ZEPHYR_MPU_TEST}
+    Start Emulation
+
+    Wait For Prompt On Uart         ${PROMPT}
+    Write Line To Uart              mpu read
+    Wait For Line On Uart           <err> os: ***** DATA ABORT *****
+    Wait For Line On Uart           <err> os: Background Fault @ 0x04000000
+    Wait For Line On Uart           <err> os: r0/a1:${SPACE*2}0x0000a3bc${SPACE*2}r1/a2:${SPACE*2}0x00000008${SPACE*2}r2/a3:${SPACE*2}0x0000ace5
+    Wait For Line On Uart           <err> os: r3/a4:${SPACE*2}0x04000000 r12/ip:${SPACE*2}0x[a-f0-9]+ r14/lr:${SPACE*2}0x0000371b                 treatAsRegex=true
+    Wait For Line On Uart           <err> os:${SPACE*2}xpsr:${SPACE*2}0x2000013f
+    Wait For Line On Uart           <err> os: fpscr:${SPACE*2}0x00000000
+    Wait For Line On Uart           <err> os: Faulting instruction address (r15/pc): 0x00000fae
+    Wait For Line On Uart           <err> os: >>> ZEPHYR FATAL ERROR 47: Unknown error on CPU 0
+    Wait For Line On Uart           <err> os: Current thread: 0x10538 (shell_uart)
+    Wait For Line On Uart           <err> os: Halting system
+
+Should Successfully Run Producer Consumer Sample In Userspace
+    Create Machine                  ${ZEPHYR_USERSPACE_PROD_CONSUMER}
+    Start Emulation
+    Wait For Line On Uart           I: SUCCESS
+
+Should Pass Messages Between Threads
+    Create Machine                  ${ZEPHYR_USERSPACE_SHARED_MEM}
+    Start Emulation
+    Wait For Line On Uart           ENC Thread Created 0x104e0
+    Wait For Line On Uart           Partitions added to enc_domain
+    Wait For Line On Uart           enc_domain Created
+    Wait For Line On Uart           PT Thread Created 0x103e0
+    Wait For Line On Uart           pt_domain Created
+    Wait For Line On Uart           CT Thread Created 0x102e0
+    Wait For Line On Uart           ct partitions installed
+    Wait For Line On Uart           blk partitions installed
+    Wait For Line On Uart           ENC thread started
+    Wait For Line On Uart           PT thread started
+
+    FOR  ${i}  IN RANGE  0  3
+        Wait For Line On Uart           PT Sending Message 1
+        Wait For Line On Uart           ENC Thread Received Data
+        Wait For Line On Uart           ENC PT MSG: PT: message to encrypt
+
+        Wait For Line On Uart           CT Thread Received Message
+        Wait For Line On Uart           CT MSG: ofttbhfspgmeqzos
+
+        Wait For Line On Uart           PT Sending Message 1'
+        Wait For Line On Uart           ENC Thread Received Data
+        Wait For Line On Uart           ENC PT MSG: ofttbhfspgmeqzos
+
+        Wait For Line On Uart           CT Thread Received Message
+        Wait For Line On Uart           CT MSG: messagetoencrypt
+    END
+
+    Provides                        userspace_shared_mem-zephyr
+
+Should Pass Messages Between Threads From Serialized State
+    Requires                        userspace_shared_mem-zephyr
+
+    Wait For Line On Uart           PT Sending Message 1
+    Wait For Line On Uart           ENC Thread Received Data
+    Wait For Line On Uart           ENC PT MSG: PT: message to encrypt
+
+    Wait For Line On Uart           CT Thread Received Message
+    Wait For Line On Uart           CT MSG: ofttbhfspgmeqzos
+
+    Wait For Line On Uart           PT Sending Message 1'
+    Wait For Line On Uart           ENC Thread Received Data
+    Wait For Line On Uart           ENC PT MSG: ofttbhfspgmeqzos
+
+    Wait For Line On Uart           CT Thread Received Message
+    Wait For Line On Uart           CT MSG: messagetoencrypt
