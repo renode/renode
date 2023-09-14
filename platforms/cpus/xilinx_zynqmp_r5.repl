@@ -2,6 +2,7 @@ cpu0: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r5"
     cpuId: 0
     genericInterruptController: gic
+    numberOfMPURegions: 16
 
 ddrLow0: Memory.MappedMemory @ sysbus 0x10000
     size: 0x10000
