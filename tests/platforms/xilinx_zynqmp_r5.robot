@@ -203,10 +203,10 @@ Should Interact Via Shell
     Wait For Prompt On Uart         ${PROMPT}
     Write Line To Uart              log_test start demo
     FOR  ${i}  IN RANGE  0  7
-        Wait For Line On Uart           \\[\\d{2}:\\d{2}:\\d{2}.\\d{3},\\d{3}\\] <inf> app: Timer expired.          treatAsRegex=true
-        Wait For Line On Uart           \\[\\d{2}:\\d{2}:\\d{2}.\\d{3},\\d{3}\\] <inf> app_test: info message       treatAsRegex=true
-        Wait For Line On Uart           \\[\\d{2}:\\d{2}:\\d{2}.\\d{3},\\d{3}\\] <wrn> app_test: warning message    treatAsRegex=true
-        Wait For Line On Uart           \\[\\d{2}:\\d{2}:\\d{2}.\\d{3},\\d{3}\\] <err> app_test: err message        treatAsRegex=true
+        Wait For Line On Uart           <inf> app: Timer expired.          treatAsRegex=true
+        Wait For Line On Uart           <inf> app_test: info message       treatAsRegex=true
+        Wait For Line On Uart           <wrn> app_test: warning message    treatAsRegex=true
+        Wait For Line On Uart           <err> app_test: err message        treatAsRegex=true
     END
     Write Line To Uart              log_test stop
 
