@@ -1,6 +1,9 @@
 *** Variables ***
-${UART}                                         sysbus.uart0
+${ZEPHYR_UART}                                  sysbus.uart0
+${UBOOT_UART}                                   sysbus.uart1
 ${PROMPT}                                       uart:~$
+${UBOOT_PROMPT}                                 ZynqMP r5>
+${ASTERISK}                                     *
 ${URL}                                          https://dl.antmicro.com/projects/renode
 
 ${ZEPHYR_BASIC_SYS_HEAP}                        @${URL}/zephyr-basic_sys_heap-xilinx_zynqmp_r5.elf-s_438388-8991d33506751fe196ee3eb488144583ba0ccbd7
@@ -19,13 +22,14 @@ ${ZEPHYR_USERSPACE_HELLO_WORLD}                 @${URL}/zephyr-userspace_hello_w
 ${ZEPHYR_MPU_TEST}                              @${URL}/zephyr-arch_mpu_mpu_test-xilinx_zynqmp_r5.elf-s_1149568-ae2c8f6e5e8219564e4640c47cfef5e33fcf2ea4
 ${ZEPHYR_USERSPACE_PROD_CONSUMER}               @${URL}/zephyr-userspace_prod_consumer-xilinx_zynqmp_r5.elf-s_1343804-9f7520160bb347a15f01e1a25bd94c87007335af
 ${ZEPHYR_USERSPACE_SHARED_MEM}                  @${URL}/zephyr-userspace_shared_mem-xilinx_zynqmp_r5.elf-s_1081056-a43ec0a1353e21c55908bbed997d6a52b8d031fb
+${UBOOT}                                        @${URL}/xilinx_zynqmp_r5--u-boot.elf-s_2227172-4d77b9622e19b3dcf205efffde87321422b5294c
 
 *** Keywords ***
 Create Machine
-    [Arguments]                     ${elf}
+    [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
     Execute Command                 set bin ${elf}
     Execute Command                 include @scripts/single-node/xilinx_zynqmp_r5.resc
-    Create Terminal Tester          ${UART}
+    Create Terminal Tester          ${uart}
 
 Should Pass Zephyr Test Suite
     Wait For Line On Uart           SUITE PASS - 100.00%  timeout=40
@@ -329,3 +333,24 @@ Should Pass Messages Between Threads From Serialized State
 
     Wait For Line On Uart           CT Thread Received Message
     Wait For Line On Uart           CT MSG: messagetoencrypt
+
+Should Provide Booted U-Boot And Run Version Command
+    Create Machine                  ${UBOOT}  ${UBOOT_UART}
+    Start Emulation
+
+    Wait For Prompt On Uart         ${UBOOT_PROMPT}
+
+    Provides                        booted-uboot
+
+    Write Line To Uart              version
+    Wait For Line On Uart           U-Boot
+
+    Wait For Prompt On Uart         ${UBOOT_PROMPT}
+
+Should Run Version Command On Provided U-Boot
+    Requires                        booted-uboot
+
+    Write Line To Uart              version
+    Wait For Line On Uart           U-Boot
+
+    Wait For Prompt On Uart         ${UBOOT_PROMPT}
