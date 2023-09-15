@@ -972,3 +972,23 @@ Run Zephyr Kernel Condition Variables Simple Sample
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              [thread main] done == 20 so everyone is done
+
+Test Reading From Overlapping MPU Regions
+    [Tags]                             Exceptions
+
+    Initialize Emulation               elf=${URI}/zephyr_pmsav8-overlapping-regions-test_fvp_baser_aemv8r_aarch32.elf-s_573792-14ad334a607d98b602f0f72522c8c22ba986b5da
+    ...                                create_uart_tester=True
+
+    # The app will try to load from 0xCAFEBEE0 in main. It was built with an additional region in
+    # MPU <0xCAFEB000,0xCAFEBFFF> that overlaps a default DEVICE region <0x80000000,0xFFFFFFFF>.
+    Execute Command                    sysbus Tag <0xCAFEBEE0,0xCAFEBEE3> "MPU_TEST" 0xDEADCAFE
+
+    Start Emulation
+
+    Wait For Line On Uart              *** Booting Zephyr OS build
+    Wait For Line On Uart              Reading value from an address with overlapping MPU regions...
+
+    # 4 is a fault code for the Translation Fault. It doesn't have a nice log in Zephyr.
+    # See dump_fault in arch/arm/core/aarch32/cortex_a_r/fault.c.
+    Wait For Line On Uart              DATA ABORT
+    Wait For Line On Uart              Unknown (4)
