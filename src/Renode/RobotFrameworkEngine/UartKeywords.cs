@@ -42,8 +42,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null)
+        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null, bool? defaultPauseEmulation = null)
         {
+            this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
+
             return CreateNewTester(uartObject =>
             {
                 var timeoutInSeconds = timeout ?? globalTimeout;
@@ -64,14 +66,14 @@ namespace Antmicro.Renode.RobotFramework
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForPromptOnUart(string prompt, int? testerId = null, float? timeout = null, bool treatAsRegex = false,
-            bool pauseEmulation = false)
+            bool? pauseEmulation = null)
         {
             return WaitForLineOnUart(prompt, timeout, testerId, treatAsRegex, true, pauseEmulation);
         }
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
-            bool includeUnfinishedLine = false, bool pauseEmulation = false)
+            bool includeUnfinishedLine = false, bool? pauseEmulation = null)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -80,7 +82,7 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, pauseEmulation);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, pauseEmulation ?? defaultPauseEmulation);
             if(result == null)
             {
                 OperationFail(tester);
@@ -89,7 +91,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null, bool pauseEmulation = false)
+        public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null, bool? pauseEmulation = null)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -98,7 +100,7 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.NextLine(timeInterval, pauseEmulation);
+            var result = tester.NextLine(timeInterval, pauseEmulation ?? defaultPauseEmulation);
             if(result == null)
             {
                 OperationFail(tester);
@@ -127,11 +129,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true, bool pauseEmulation = false)
+        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true, bool? pauseEmulation = null)
         {
             var tester = GetTesterOrThrowException(testerId);
             tester.WriteLine(content);
-            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true, pauseEmulation: pauseEmulation) == null)
+            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true, pauseEmulation: pauseEmulation ?? defaultPauseEmulation) == null)
             {
                 OperationFail(tester);
             }
@@ -139,10 +141,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void TestIfUartIsIdle(float timeout, int? testerId = null, bool pauseEmulation = false)
+        public void TestIfUartIsIdle(float timeout, int? testerId = null, bool? pauseEmulation = null)
         {
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.IsIdle(TimeInterval.FromSeconds(timeout), pauseEmulation);
+            var result = tester.IsIdle(TimeInterval.FromSeconds(timeout), pauseEmulation ?? defaultPauseEmulation);
             if(!result)
             {
                 OperationFail(tester);
@@ -161,6 +163,7 @@ namespace Antmicro.Renode.RobotFramework
             throw new InvalidOperationException($"Terminal tester failed!\n\nFull report:\n{tester.GetReport()}");
         }
 
+        private bool defaultPauseEmulation;
         private float globalTimeout = 8;
     }
 }
