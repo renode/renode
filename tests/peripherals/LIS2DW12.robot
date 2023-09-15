@@ -49,3 +49,5 @@ Should Create RESD File
     Wait For Peripheral Reading  4
     Wait For Peripheral Reading  5
     Wait For Peripheral Reading  6
+
+    [Teardown]             Remove Directory  ${tmpDir}  recursive=true
