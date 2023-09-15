@@ -891,7 +891,6 @@ Run Zephyr User Space Shared Mem Sample
     [Tags]                             Demos
 
     Initialize Emulation               elf=@https://dl.antmicro.com/projects/renode/fvp_baser_aemv8r_aarch32--zephyr-userspace_shared_mem.elf-s_1096936-6da5eb0f22c62b0a23f66f68a4ba51b9ece6deff
-    Create Log Tester                  10
     Create Terminal Tester             sysbus.uart0
     Start Emulation
 
