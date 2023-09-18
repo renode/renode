@@ -99,6 +99,15 @@ Quantum Should Not Impact Tester Pause PC
 
     PC Should Be Equal       0x8002c08
 
+RunFor Should Work After Precise Pause
+    Create Machine With Button And LED  button
+
+    Wait For Line On Uart    Press the button  pauseEmulation=true
+    Emulation Should Be Paused At Time  00:00:00.000179
+
+    Execute Command          emulation RunFor "0.1"
+    Emulation Should Be Paused At Time  00:00:00.100179
+
 LED Tester Assert Should Start Emulation Unless The State Already Matches
     Create Machine With Button And LED  blinky
 
