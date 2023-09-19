@@ -1,5 +1,5 @@
 cpu0: CPU.ARMv7R @ sysbus
-    cpuType: "cortex-r5"
+    cpuType: "cortex-r5f"
     cpuId: 0
     genericInterruptController: gic
     numberOfMPURegions: 16
