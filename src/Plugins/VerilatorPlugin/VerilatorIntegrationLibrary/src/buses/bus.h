@@ -19,10 +19,12 @@ class BaseBus
 {
 public:
     BaseBus() : agent(nullptr), tickCounter(0) {}
-    virtual void tick(bool countEnable, uint64_t steps) = 0;
-    virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout) = 0;
-    virtual void reset() = 0;
-    void (*evaluateModel)();
+    virtual void prePosedgeTick() = 0;
+    virtual void posedgeTick() = 0;
+    virtual void negedgeTick() = 0;
+    virtual void setClock(uint8_t value) = 0;
+    virtual void setReset(uint8_t value) = 0;
+    virtual void onResetAction() = 0;
     virtual void setAgent(RenodeAgent *newAgent)
     {
         agent = newAgent;
@@ -36,12 +38,9 @@ protected:
     RenodeAgent *agent;
     int busWidth;
     uint64_t tickCounter;
-    template<typename T>
-    void setSignal(T* signal, T value)
-    {
-        *signal = value;
-        evaluateModel();
-    }
+    uint8_t clock_high = 1;
+    uint8_t clock_low = 0;
+    uint8_t reset_active = 1;
 };
 
 class BaseTargetBus : public BaseBus
@@ -58,7 +57,6 @@ public:
     virtual void writeWord(uint64_t addr, uint64_t data, uint8_t sel) = 0;
     virtual void readHandler() = 0;
     virtual void writeHandler() = 0;
-    virtual void clearSignals() = 0;
     virtual bool hasSpecifiedAdress() = 0;
     virtual uint64_t getSpecifiedAdress() = 0;
 };

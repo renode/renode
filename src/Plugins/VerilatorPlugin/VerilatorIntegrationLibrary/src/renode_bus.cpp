@@ -81,6 +81,26 @@ void RenodeAgent::pushDoubleWordToAgent(uint64_t addr, uint32_t value)
     communicationChannel->sendSender(Protocol(pushDoubleWord, addr, value));
 }
 
+void RenodeAgent::pushQuadWordToAgent(uint64_t addr, uint64_t value)
+{
+    communicationChannel->sendSender(Protocol(pushQuadWord, addr, value));
+}
+
+uint64_t RenodeAgent::requestQuadWordFromAgent(uint64_t addr)
+{
+    communicationChannel->sendSender(Protocol(getQuadWord, addr, 0));
+    Protocol* received = communicationChannel->receive();
+    while (received->actionId != writeRequestQuadWord)
+    {
+        handleRequest(received);
+        delete received;
+        received = communicationChannel->receive();
+    }
+    auto result = received->value;
+    delete received;
+    return result;
+}
+
 uint64_t RenodeAgent::requestDoubleWordFromAgent(uint64_t addr)
 {
     communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
@@ -95,35 +115,145 @@ uint64_t RenodeAgent::requestDoubleWordFromAgent(uint64_t addr)
     return result;
 }
 
-void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value)
+void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value, int width)
 {
-    communicationChannel->sendSender(Protocol(pushDoubleWord, addr, value));
+    uint64_t mask = 0;
+
+    Action action;
+    switch(width) {
+        case 1:
+            action = pushByte;
+            mask = 0xff;
+            break;
+        case 2:
+            action = pushWord;
+            mask = 0xffff;
+            break;
+        case 4:
+            action = pushDoubleWord;
+            mask = 0xffffffff;
+            break;
+        case 8:
+            action = pushQuadWord;
+            mask = 0xffffffffffffffff;
+            break;
+        default:
+            //todo log error
+            return;
+    }
+    communicationChannel->sendSender(Protocol(action, addr & mask, value));
 }
 
-uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
+uint64_t RenodeAgent::requestFromAgent(uint64_t addr, int width)
 {
-    communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
+    uint64_t mask = 0;
+
+    Action action;
+    switch(width) {
+        case 1:
+            action = getByte;
+            mask = 0xff;
+            break;
+        case 2:
+            action = getWord;
+            mask = 0xffff;
+            break;
+        case 4:
+            action = getDoubleWord;
+            mask = 0xffffffff;
+            break;
+        case 8:
+            action = getQuadWord;
+            mask = 0xffffffffffffffff;
+            break;
+        default:
+            //todo log error
+            return 0;
+    }
+    communicationChannel->sendSender(Protocol(action, addr & mask, 0));
     Protocol *received = communicationChannel->receive();
-    return received->value;
+    while (received->actionId != writeRequest) {
+        handleRequest(received);
+        delete received;
+        received = communicationChannel->receive();
+    }
+    auto result = received->value;
+    delete received;
+    return result;
 }
 
 void RenodeAgent::tick(bool countEnable, uint64_t steps)
 {
-    for (auto &b : targetInterfaces) {
-        b->tick(countEnable, steps);
+    for (uint32_t s = 0; s < steps; s++){
+        for (auto &b : targetInterfaces) {
+            b->prePosedgeTick();
+        }
+        for (auto &b : initatorInterfaces) {
+            b->prePosedgeTick();
+        }
+
+        for (auto &b : targetInterfaces) {
+            b->setClock(b->clock_high);
+        }
+        for (auto &b : initatorInterfaces) {
+            b->setClock(b->clock_high);
+        }
+
+        evaluateModel();
+        
+        for (auto &b : targetInterfaces) {
+            b->posedgeTick();
+        }
+        for (auto &b : initatorInterfaces) {
+            b->posedgeTick();
+        }
+
+        for (auto &b : targetInterfaces) {
+            b->setClock(b->clock_low);
+        }
+        for (auto &b : initatorInterfaces) {
+            b->setClock(b->clock_low);
+        }
+
+        evaluateModel();
+        
+        for (auto &b : targetInterfaces) {
+            b->negedgeTick();
+        }
+        for (auto &b : initatorInterfaces) {
+            b->negedgeTick();
+        }
     }
-    for (auto &b : initatorInterfaces) {
-        b->tick(countEnable, steps);
+
+    if (countEnable) {
+        for (auto &b : targetInterfaces) {
+            b->tickCounter += steps;
+        }
+        for (auto &b : initatorInterfaces) {
+            b->tickCounter += steps;
+        }
     }
+
 }
 
 void RenodeAgent::timeoutTick(uint8_t *signal, uint8_t expectedValue, int timeout)
 {
-    for (auto &b : targetInterfaces) {
-        b->timeoutTick(signal, expectedValue, timeout);
+
+    while((*signal != expectedValue) && timeout > 0) {
+        tick(true, 1);
+        timeout--;
     }
-    for (auto &b : initatorInterfaces) {
-        b->timeoutTick(signal, expectedValue, timeout);
+
+// This additional tick prevents Wishbone controller from reacting instantly
+// after the signal is set, as the change should be recognized after the next
+// rising edge (`tick` function returns right before the rising edge). It's only
+// an option because it may break communication with LiteX-generated IP cores.
+#ifdef WISHBONE_EXTRA_WAIT_TICK
+    tick(true, 1);
+#endif
+
+    if(timeout == 0) {
+        throw "Operation timeout";
     }
 }
 
@@ -138,11 +268,32 @@ void RenodeAgent::setBusWidth(int width)
 void RenodeAgent::reset()
 {
     for (auto &b : targetInterfaces) {
-        b->reset();
+        b->setReset(b->reset_active);
     }
     for (auto &b : initatorInterfaces) {
-        b->reset();
+        b->setReset(b->reset_active);
     }
+
+    for (auto &b : targetInterfaces) {
+        b->onResetAction();
+    }
+    for (auto &b : initatorInterfaces) {
+        b->onResetAction();
+    }
+
+    // AxiLite feature
+    tick(true, 2);
+
+    for (auto &b : targetInterfaces) {
+        b->setReset(!b->reset_active);
+    }
+    for (auto &b : initatorInterfaces) {
+        b->setReset(!b->reset_active);
+    }
+
+    // AxiLite feature
+    tick(true, 10);
+
 }
 
 void RenodeAgent::handleCustomRequestType(Protocol *message)

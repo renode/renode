@@ -24,30 +24,20 @@ Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
 {
 }
 
-void Axi::tick(bool countEnable, uint64_t steps = 1)
-{
-    for(uint64_t i = 0; i < steps; i++) {
-        *aclk = 1;
-        evaluateModel();
-        *aclk = 0;
-        evaluateModel();
-    }
-
-    if(countEnable) {
-        tickCounter += steps;
-    }
+void Axi::setClock(uint8_t value) {
+    *aclk = value;
 }
 
-void Axi::timeoutTick(uint8_t *signal, uint8_t value, int timeout = DEFAULT_TIMEOUT)
+void Axi::prePosedgeTick()
 {
-    do {
-        tick(true);
-        timeout--;
-    } while ((*signal != value) && timeout > 0);
+}
 
-    if (timeout == 0) {
-        throw "Operation timeout";
-    }
+void Axi::posedgeTick()
+{
+}
+
+void Axi::negedgeTick()
+{
 }
 
 void Axi::write(int width, uint64_t addr, uint64_t value)
@@ -61,8 +51,8 @@ void Axi::write(int width, uint64_t addr, uint64_t value)
 
     *awvalid = 1;
     if (*awready != 1)
-        timeoutTick(awready, 1);
-    tick(true);
+        this->agent->timeoutTick(awready, 1);
+    this->agent->tick(true, 1);
     *awvalid = 0;
 
     this->agent->log(0, "Axi write - W");
@@ -73,16 +63,16 @@ void Axi::write(int width, uint64_t addr, uint64_t value)
     *wlast = 1; // TODO: Variable write length
 
     if (*wready != 1)
-        timeoutTick(wready, 1);
-    tick(true);
+        this->agent->timeoutTick(wready, 1);
+    this->agent->tick(true, 1);
     *wvalid = 0;
 
     this->agent->log(0, "Axi write - B");
 
     *bready = 1;
 
-    timeoutTick(bvalid, 1);
-    tick(true);
+    this->agent->timeoutTick(bvalid, 1);
+    this->agent->tick(true, 1);
     *bready = 0;
 }
 
@@ -99,26 +89,26 @@ uint64_t Axi::read(int width, uint64_t addr)
     this->agent->log(0, "Axi read - AR");
 
     if (*arready != 1)
-        timeoutTick(arready, 1);
-    tick(true);
+        this->agent->timeoutTick(arready, 1);
+    this->agent->tick(true, 1);
     *arvalid = 0;
 
     this->agent->log(0, "Axi read - R");
 
     *rready = 1;
 
-    timeoutTick(rvalid, 1);
+    this->agent->timeoutTick(rvalid, 1);
     result = *rdata;
-    tick(true);
+    this->agent->tick(true, 1);
     *rready = 0;
 
     return result;
 }
 
-void Axi::reset()
+void Axi::setReset(uint8_t value) {
+    *aresetn = value;
+}
+
+void Axi::onResetAction()
 {
-    *aresetn = 1;
-    tick(true);
-    *aresetn = 0;
-    tick(true);
 }
