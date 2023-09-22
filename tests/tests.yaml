@@ -115,3 +115,4 @@
 - tests/platforms/ARMv8A-Linux.robot
 - tests/peripherals/SHT45.robot
 - tests/peripherals/BME280.robot
+- tests/peripherals/MB85RC1MT.robot
