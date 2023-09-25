@@ -3,6 +3,10 @@ cpu0: CPU.ARMv7R @ sysbus
     cpuId: 0
     genericInterruptController: gic
     numberOfMPURegions: 16
+    init:
+        //                             interface region
+        RegisterTCMRegion sysbus.atcm0 1         0
+        RegisterTCMRegion sysbus.btcm0 0         0
 
 ddrLow0: Memory.MappedMemory @ sysbus 0x10000
     size: 0x10000
