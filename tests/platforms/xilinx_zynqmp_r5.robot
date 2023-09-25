@@ -319,6 +319,7 @@ Should Pass Messages Between Threads
 
 Should Pass Messages Between Threads From Serialized State
     Requires                        userspace_shared_mem-zephyr
+    Clear Terminal Tester Report
 
     Wait For Line On Uart           PT Sending Message 1
     Wait For Line On Uart           ENC Thread Received Data
