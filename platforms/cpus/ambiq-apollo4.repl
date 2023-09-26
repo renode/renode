@@ -192,6 +192,8 @@ pwrctrl: Miscellaneous.AmbiqApollo4_PowerController @ sysbus 0x40021000
 
 security: Miscellaneous.AmbiqApollo4_Security @ sysbus 0x40030000
 
+wdt: Timers.AmbiqApollo4_Watchdog @ sysbus 0x40024000
+
 sysbus:
     init:
         Tag <0x0800004D,0x0800009F> "CPU_BOOTROM"
