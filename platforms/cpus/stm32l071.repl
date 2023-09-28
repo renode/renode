@@ -104,6 +104,7 @@ flashController: MTD.STM32L0_FlashController @ {
 rcc: Miscellaneous.STM32L0_RCC @ sysbus 0x40021000
     rtc: rtc
     lptimer: lptim1
+    systick: nvic
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
     AlarmIRQ -> exti@17
