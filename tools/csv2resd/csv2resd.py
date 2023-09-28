@@ -32,13 +32,15 @@ class Mapping:
         return output
 
     def _retype(self, value):
-        if all(c.isdigit() for c in value):
-            value = int(value)
-        elif all(c.isdigit() or c == '.' for c in value):
-            value = float(value)
-        elif value[0] == '"' and value[-1] == '"':
-            value = value[1:-1]
-        return value
+        try:
+            if all(c.isdigit() for c in value.lstrip('-')):
+                return int(value)
+            elif all(c.isdigit() or c == '.' for c in value.lstrip('-')):
+                return float(value)
+            elif value[0] == '"' and value[-1] == '"':
+                return value[1:-1]
+        except ValueError:
+            return value
 
 
 def parse_mapping(mapping):
