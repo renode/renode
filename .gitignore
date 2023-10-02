@@ -22,3 +22,5 @@ packages
 #verilator trace files
 *.vcd
 
+perf.data
+perf.script

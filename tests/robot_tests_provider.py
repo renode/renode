@@ -2,12 +2,15 @@
 from __future__ import print_function
 from sys import platform
 import os
+import time
 import sys
 import socket
 import fnmatch
 import subprocess
 import psutil
+import shutil
 import tempfile
+import uuid
 from time import monotonic, sleep
 
 import robot
@@ -348,13 +351,12 @@ class RobotTestSuite(object):
             options.exclude.append('skip_dotnet')
 
         renode_command = command
-        if options.run_gdb:
-            command = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + command
 
-        # start Renode or GDB
-        p = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
+            command = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + command
+            p = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
+
             print("Waiting for Renode process to start")
             while True:
                 # We strip argv[0] because if we pass just `mono` to GDB it will resolve
@@ -364,7 +366,33 @@ class RobotTestSuite(object):
                     break
                 sleep(0.5)
             self.renode_pid = renode_child.pid
+        elif options.perf_output_path:
+            pid_file_uuid = uuid.uuid4()
+            pid_filename = f'pid_file_{pid_file_uuid}'
+
+            command = ['perf', 'record', '-q', '-g', '-F', 'max'] + command + ['--pid-file', pid_filename]
+
+            perf_stdout_stderr_file_name = "perf_stdout_stderr"
+
+            print(f"WARNING: perf stdout and stderr is being redirected to {perf_stdout_stderr_file_name}")
+
+            perf_stdout_stderr_file = open(perf_stdout_stderr_file_name, "w")
+            p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file)
+
+            pid_file_path = os.path.join(self.remote_server_directory, pid_filename)
+            perf_renode_timeout = 10
+
+            while not os.path.exists(pid_file_path) and perf_renode_timeout > 0:
+                sleep(0.5)
+                perf_renode_timeout -= 1
+
+            if perf_renode_timeout <= 0:
+                raise RuntimeError("Renode pid file could not be found, can't attach perf")
+
+            with open(pid_file_path, 'r') as pid_file:
+                self.renode_pid = pid_file.read()
         else:
+            p = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
             self.renode_pid = p.pid
 
         countdown = 120
@@ -390,6 +418,16 @@ class RobotTestSuite(object):
         print('Started Renode instance on port {}; pid {}'.format(self.remote_server_port, self.renode_pid))
         return p
 
+    def __move_perf_data(self, options):
+        perf_data_path = os.path.join(self.remote_server_directory, "perf.data")
+
+        if not perf_data_path:
+            raise RuntimeError("perf.data file was not generated succesfully")
+
+        if not os.path.isdir(options.perf_output_path):
+            raise RuntimeError(f"{options.perf_output_path} is not a valid directory path")
+
+        shutil.move(perf_data_path, options.perf_output_path)
 
     def _close_remote_server(self, proc, options):
         if proc:
@@ -398,12 +436,18 @@ class RobotTestSuite(object):
                 process = psutil.Process(proc.pid)
                 os.kill(proc.pid, 2)
                 process.wait(timeout=options.cleanup_timeout)
+
+                if options.perf_output_path:
+                    self.__move_perf_data(options)
             except psutil.TimeoutExpired:
                 process.kill()
                 process.wait()
             except psutil.NoSuchProcess:
                 #evidently closed by other means
                 pass
+
+            if options.perf_output_path and proc.stdout:
+                proc.stdout.close()
 
 
     def run(self, options, run_id=0):

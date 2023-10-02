@@ -138,6 +138,11 @@ def prepare_parser():
                         default="onfail",
                         help="When to save Renode logs. Defaults to 'onfail'.")
 
+    parser.add_argument("--perf-output-path",
+                        dest="perf_output_path",
+                        default=None,
+                        help="Generate perf.data from test in specified directory")
+
     if platform != "win32":
         parser.add_argument("-p", "--port",
                             dest="port",
