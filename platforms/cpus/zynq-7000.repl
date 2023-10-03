@@ -138,7 +138,13 @@ nand: Python.PythonPeripheral @ sysbus 0xE000E000
 
 sysbus:
     init:
-        Tag <0xF8000000,0xF8000FFF> "XSLCR"
-        Tag <0xF8007000,0xF8007FFF> "devcfg"
-        Tag <0xF8003000,0xF8003FFF> "pl330_dma"
-
+        Tag <0xF8000000,0xF8000FFF> "Xilinx_SLCR"
+        Tag <0xF8003000,0xF8003FFF> "ARM_PL330DMA"
+        Tag <0xF8007000,0xF8007FFF> "Xilinx_DeviceConfigurationInterface"
+        Tag <0xF8801000,0xF8801FFF> "ARM_CoreSightEmbeddedTraceBuffer"
+        Tag <0xF8803000,0xF8803FFF> "ARM_CoreSightTracePacketOutput"
+        Tag <0xF8804000,0xF8804FFF> "ARM_CoreSightTraceFunnel"
+        Tag <0xF8891000,0xF8892FFF> "ARM_PerformanceMonitorUnit_cpu0"
+        Tag <0xF8893000,0xF8894FFF> "ARM_PerformanceMonitorUnit_cpu1"
+        Tag <0xF889C000,0xF889CFFF> "ARM_CoreSightProgramTraceMacrocell_cpu0"
+        Tag <0xF889D000,0xF889DFFF> "ARM_CoreSightProgramTraceMacrocell_cpu1"
