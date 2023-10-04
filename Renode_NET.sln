@@ -61,9 +61,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketDotNet", "lib\Packet.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TermSharp-working_copy", "lib\termsharp\TermSharp-working_copy_NET.csproj", "{F204E8AC-FF7D-4F6A-9442-61E7A3538505}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt", "lib\xwt\Xwt\Xwt_NET.csproj", "{DCFA213D-1D5A-43F8-90F2-0A015299D1DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt", "lib\termsharp\xwt\Xwt\Xwt_NET.csproj", "{DCFA213D-1D5A-43F8-90F2-0A015299D1DA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt.Gtk3", "lib\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj", "{3B25FD1F-CEBA-4450-8893-DC330FDB56A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt.Gtk3", "lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj", "{3B25FD1F-CEBA-4450-8893-DC330FDB56A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VerilatorPlugin_NET", "src\Plugins\VerilatorPlugin\VerilatorPlugin_NET.csproj", "{A244A988-6ADC-4B90-912B-D66C680FA962}"
 EndProject

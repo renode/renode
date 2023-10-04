@@ -11,15 +11,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELFSharp", "lib\ELFSharp\EL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntShell", "lib\AntShell\AntShell\AntShell.csproj", "{0A473566-F4C6-455E-A56E-B3963FBABDFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt", "lib\xwt\Xwt\Xwt.csproj", "{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt", "lib\termsharp\xwt\Xwt\Xwt.csproj", "{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt.WPF", "lib\xwt\Xwt.WPF\Xwt.WPF.csproj", "{C93D746E-1586-4D4F-B411-BF5A966E6A08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt.WPF", "lib\termsharp\xwt\Xwt.WPF\Xwt.WPF.csproj", "{C93D746E-1586-4D4F-B411-BF5A966E6A08}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FdtSharp", "lib\FdtSharp\FdtSharp\FdtSharp.csproj", "{74FDB727-CC22-4E13-AF44-EE3E9C146D8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emulator", "src\Infrastructure\src\Emulator\Main\Emulator.csproj", "{2901AECB-A54F-4FD8-9AC1-033D86DC7257}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt.Gtk", "lib\xwt\Xwt.Gtk\Xwt.Gtk.csproj", "{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xwt.Gtk", "lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk.csproj", "{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptionsParser", "lib\options-parser\OptionsParser.csproj", "{C56AABEF-C01E-493F-A65F-09A572FE9B2E}"
 EndProject
