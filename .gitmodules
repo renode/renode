@@ -13,9 +13,6 @@
 [submodule "lib/AntShell"]
 	path = lib/AntShell
 	url = https://github.com/antmicro/AntShell.git
-[submodule "lib/xwt"]
-	path = lib/xwt
-	url = https://github.com/antmicro/xwt.git
 [submodule "lib/ELFSharp"]
 	path = lib/ELFSharp
 	url = https://github.com/antmicro/elfsharp.git
