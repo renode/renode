@@ -194,13 +194,20 @@ security: Miscellaneous.AmbiqApollo4_Security @ sysbus 0x40030000
 
 wdt: Timers.AmbiqApollo4_Watchdog @ sysbus 0x40024000
 
+cpu_complex: Python.PythonPeripheral @ sysbus 0x48000000
+    size: 0x1000
+    // DAXI Control = 0x4 - DAXIREADY bit set
+    script: "request.value = 0x4 if request.offset == 0x54 else 0"
+
 sysbus:
     init:
+        SilenceRange <0x40020000, 0x40020FFF>  // MCUCTRL
+        SilenceRange <0x47FF0000, 0x47FF0004>  // SYNC_READ
+
         Tag <0x0800004D,0x0800009F> "CPU_BOOTROM"
         Tag <0x40004000,0x40004FFF> "CLKGEN"
         Tag <0x40008000,0x400087FF> "TIMER"
         Tag <0x40014000,0x40014FFF> "MRAM"
-        Tag <0x40020000,0x40020FFF> "MCUCTRL"
 
         Tag <0x400C0000,0x400C3FFF> "CRYPTO"
         Tag <0x400C2000,0x400C3FFF> "OTP"
@@ -209,8 +216,5 @@ sysbus:
         Tag <0x42000000,0x42000067> "INFO0"
         Tag <0x42002000,0x4200332F> "INFO1"
 
-        Tag <0x48000000,0x48000FFF> "CPU"
-        Tag <0x48000050,0x48000050> "DAXI_CONFIG"
-        Tag <0x48000054,0x48000054> "DAXI_CONTROL" 0x4  // DAXIREADY set.
         Tag <0xE0000000,0xE0000FFF> "ITM"
         Tag <0xF0000000,0xF0000FFF> "JEDEC"
