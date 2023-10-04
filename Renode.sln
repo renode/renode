@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptionsParser", "lib\option
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions", "src\Infrastructure\src\Emulator\Extensions\Extensions.csproj", "{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TermSharp", "lib\termsharp\TermSharp-working_copy.csproj", "{25FAECC1-55F0-4608-88BD-4207A7F993B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TermSharp", "lib\termsharp\TermSharp.csproj", "{25FAECC1-55F0-4608-88BD-4207A7F993B0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "src\Infrastructure\src\UI\UI.csproj", "{AEFE490F-85AC-42AF-9CAE-2B7FC7167E0E}"
 EndProject

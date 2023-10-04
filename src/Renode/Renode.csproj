@@ -183,7 +183,7 @@
       <Project>{c93d746e-1586-4d4f-b411-bf5a966e6a08}</Project>
       <Name>Xwt.WPF</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\lib\termsharp\TermSharp-working_copy.csproj">
+    <ProjectReference Include="..\..\lib\termsharp\TermSharp.csproj">
       <Project>{25FAECC1-55F0-4608-88BD-4207A7F993B0}</Project>
       <Name>TermSharp</Name>
     </ProjectReference>

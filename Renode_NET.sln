@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OptionsParser", "lib\option
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketDotNet", "lib\Packet.Net\PacketDotNet\PacketDotNet_NET.csproj", "{E7B8BFDB-6432-4321-83A3-42FCE8775436}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TermSharp-working_copy", "lib\termsharp\TermSharp-working_copy_NET.csproj", "{F204E8AC-FF7D-4F6A-9442-61E7A3538505}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TermSharp", "lib\termsharp\TermSharp_NET.csproj", "{F204E8AC-FF7D-4F6A-9442-61E7A3538505}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt", "lib\termsharp\xwt\Xwt\Xwt_NET.csproj", "{DCFA213D-1D5A-43F8-90F2-0A015299D1DA}"
 EndProject

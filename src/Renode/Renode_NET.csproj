@@ -41,7 +41,7 @@
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt\Xwt_NET.csproj"/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj" Condition=" $(OS) != 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.WPF\Xwt.WPF_NET.csproj" Condition=" $(OS) == 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
-    <ProjectReference Include="..\..\lib\termsharp\TermSharp-working_copy_NET.csproj"/>
+    <ProjectReference Include="..\..\lib\termsharp\TermSharp_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386_NET.csproj"/>
