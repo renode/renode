@@ -187,28 +187,6 @@ else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
 fi
 
-# Update references to Xwt
-if $NET
-then
-  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp_NET.csproj"
-  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy_NET.csproj"
-  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
-  then
-      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
-      sed -i.bak 's/"xwt\\Xwt\\Xwt_NET.csproj"/"..\\xwt\\Xwt\\Xwt_NET.csproj"/' "$TERMSHARP_PROJECT_COPY"
-      rm "$TERMSHARP_PROJECT_COPY.bak"
-  fi
-else
-  TERMSHARP_PROJECT="${CURRENT_PATH:=.}/lib/termsharp/TermSharp.csproj"
-  TERMSHARP_PROJECT_COPY="${CURRENT_PATH:=.}/lib/termsharp/TermSharp-working_copy.csproj"
-  if [ ! -e "$TERMSHARP_PROJECT_COPY" ]
-  then
-      cp "$TERMSHARP_PROJECT" "$TERMSHARP_PROJECT_COPY"
-      sed -i.bak 's/"xwt\\Xwt\\Xwt.csproj"/"..\\xwt\\Xwt\\Xwt.csproj"/' "$TERMSHARP_PROJECT_COPY"
-      rm "$TERMSHARP_PROJECT_COPY.bak"
-  fi
-fi
-
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS && ! $NET
 then
@@ -229,12 +207,12 @@ if [ -n "${CUSTOM_PROP}" ]; then
 else
     if $ON_OSX
     then
-      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
+      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
     elif $ON_LINUX
     then
-      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
+      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
     else
-      PROP_FILE="$CURRENT_PATH/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
+      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
     fi
 fi
 cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
