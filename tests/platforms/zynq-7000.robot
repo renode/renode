@@ -18,6 +18,7 @@ ${CADENCE_XSPI_AUTOCOMMAND_DTB}     @https://dl.antmicro.com/projects/renode/zyn
 ${ZYNQ_UFS_BIN}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.elf-s_14602408-e730ddd43bc5bd78d3295f4816a80f2a43832388
 ${ZYNQ_UFS_ROOTFS}                  @https://dl.antmicro.com/projects/renode/zynq--linux-ufs-rootfs.ext2-s_16777216-6f4122f4b1dd932df6636d83503b4f0ca60aac86
 ${ZYNQ_UFS_DTB}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.dtb-s_12720-0dfc729e7c8db7b51c5eb4dfd990cee186de1442
+${ZYNQ_UFS_TEST_DISK_IMG}           @https://dl.antmicro.com/projects/renode/test-fs-ext2.img-s_524288-67f5bc210d7be8905b4de4ae5d70a8a142459110
 ${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
 ...                                 """
 ...                                 xspi: SPI.Cadence_xSPI @ {
@@ -354,6 +355,19 @@ Should Access UFS Storage
         Wait For Line On Uart           ${OUTPUT_LIST}[${i}]
         Execute Linux Command           umount ${MOUNT_POINT}
     END
+
+Should Load Disk Image For UFS Storage From File
+    Requires                        ufs-logged-in
+
+    ${MOUNT_POINT}=                 Set Variable  /mnt
+    ${LOGICAL_UNIT_INDEX}=          Set Variable  0
+    
+    ${DISK_LETTER}=                 Map Index To Disk Letter    ${LOGICAL_UNIT_INDEX}
+    ${DISK_DEVICE}=                 Set Variable  /dev/sd${DISK_LETTER}
+
+    Execute Command                 ufs.ufsStorage LoadFromFile ${LOGICAL_UNIT_INDEX} ${ZYNQ_UFS_TEST_DISK_IMG} False
+    Execute Linux Command           mount ${DISK_DEVICE} ${MOUNT_POINT}  # Mounting should be successful as disk image contains valid filesystem
+    Execute Linux Command           umount ${MOUNT_POINT}
 
 # ufs-utils: https://github.com/westerndigitalcorporation/ufs-utils/tree/faf0fe153547f5d02315fa82159f925f0c9daef8
 # was added to rootfs through buildroot's BR2_ROOTFS_OVERLAY configuration and is used for testing.
