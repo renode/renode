@@ -54,7 +54,7 @@ namespace Antmicro.Renode.RobotFramework
                     return;
                 }
 
-                if(!TryFind(predicate, keep: true, result: out var _))
+                if(!predicate(entry))
                 {
                     // not found anything interesting
                     return;
