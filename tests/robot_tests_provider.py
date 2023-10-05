@@ -320,38 +320,38 @@ class RobotTestSuite(object):
             print("The selected port {} is not available".format(options.remote_server_port))
             sys.exit(1)
 
-        args = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
+        command = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
         if not options.show_log:
-            args.append('--hide-log')
+            command.append('--hide-log')
         if not options.enable_xwt:
-            args.append('--disable-xwt')
+            command.append('--disable-xwt')
         if options.debug_on_error:
-            args.append('--robot-debug-on-error')
+            command.append('--robot-debug-on-error')
         if options.keep_temps:
-            args.append('--keep-temporary-files')
+            command.append('--keep-temporary-files')
         if options.renode_config:
-            args.append('--config')
-            args.append(options.renode_config)
+            command.append('--config')
+            command.append(options.renode_config)
 
         if options.runner == 'mono':
-            args.insert(0, 'mono')
+            command.insert(0, 'mono')
             if options.port is not None:
                 if options.suspend:
                     print('Waiting for a debugger at port: {}'.format(options.port))
-                args.insert(1, '--debug')
-                args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
+                command.insert(1, '--debug')
+                command.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
             elif options.debug_mode:
-                args.insert(1, '--debug')
+                command.insert(1, '--debug')
             options.exclude.append('skip_mono')
         elif options.runner == 'dotnet':
-            args.insert(0, 'dotnet')
+            command.insert(0, 'dotnet')
             options.exclude.append('skip_dotnet')
 
         if options.run_gdb:
-            args = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
+            command = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + command
 
         # start Renode
-        p = subprocess.Popen(args, cwd=self.remote_server_directory, bufsize=1)
+        p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
         self.renode_pid = p.pid
 
         countdown = 120
