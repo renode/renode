@@ -87,9 +87,10 @@ mscm: IRQControllers.MSCM @ sysbus 0x40001000
     [0-111, 224-227] -> gic@[8-119, 0-3]
     [112-223, 228-231] -> nvic@[8-119, 0-3]
 
-globalTimer: Timers.CortexAGlobalTimer @ sysbus 0x40002200
-    -> gic#0@27
+globalTimer: Timers.ARM_GlobalTimer @ sysbus 0x40002200
+    0 -> gic#0@27
     frequency: 528000000
+    irqController: gic
 
 sema4: Miscellaneous.SEMA4 @ sysbus 0x4001D000
     CPU0 -> gic@4

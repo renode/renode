@@ -52,9 +52,10 @@ privateTimer: Timers.ARM_PrivateTimer @ {
     -> gic#0@29
     frequency: 667000000
 
-globalTimer: Timers.CortexAGlobalTimer @ sysbus 0xF8F00200
-    -> gic#0@27
+globalTimer: Timers.ARM_GlobalTimer @ sysbus 0xF8F00200
+    0 -> gic#0@27
     frequency: 433333333
+    irqController: gic
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xF8F01000; size: 0x1000; region: "distributor" };
