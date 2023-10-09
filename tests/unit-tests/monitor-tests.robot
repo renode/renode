@@ -63,3 +63,11 @@ Should Call Conditional Set
 
     ${res}=  Execute Command  echo $\var1
     Should Be Equal           ${res.strip()}   5678
+
+Should Call GPIO Set
+    Execute Command           i @scripts/single-node/nrf52840.resc
+    ${gpioState}=             Execute Command   uart0 IRQ
+    Should Contain            ${gpioState}  GPIO: unset 
+    Execute Command           uart0 IRQ Set true
+    ${gpioState}=             Execute Command   uart0 IRQ
+    Should Contain            ${gpioState}  GPIO: set 
