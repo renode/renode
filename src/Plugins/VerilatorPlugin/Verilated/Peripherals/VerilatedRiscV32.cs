@@ -28,7 +28,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
         }
 
-        public string Architecture { get { return "riscv"; } }
+        public override string Architecture { get { return "riscv"; } }
 
         public string GDBArchitecture { get { return "riscv:rv32"; } }
 
