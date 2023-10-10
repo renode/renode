@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2023 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             : base(cpuType, machine, endianness, bitness, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, address)
         {
         }
-        
+
         public string Architecture { get { return "riscv"; } }
 
         public string GDBArchitecture { get { return "riscv:rv32"; } }
@@ -72,32 +72,32 @@ namespace Antmicro.Renode.Peripherals.Verilated
             UpdateHaltedState();
             InvokeHalted(args);
         }
-        
+
         public void AddHookAtInterruptBegin(Action<ulong> hook)
         {
             this.Log(LogLevel.Warning, "AddHookAtInterruptBegin not implemented");
         }
-        
+
         public void AddHookAtInterruptEnd(Action<ulong> hook)
         {
             this.Log(LogLevel.Warning, "AddHookAtInterruptEnd not implemented");
         }
-        
+
         public void AddHook(ulong addr, Action<ICpuSupportingGdb, ulong> hook)
         {
             this.Log(LogLevel.Warning, "AddHook not implemented");
         }
-        
+
         public void RemoveHook(ulong addr, Action<ICpuSupportingGdb, ulong> hook)
         {
             this.Log(LogLevel.Warning, "RemoveHook not implemented");
         }
-        
+
         public void RemoveHooksAt(ulong addr)
         {
             this.Log(LogLevel.Warning, "RemoveHooksAt not implemented");
         }
-        
+
         public void RemoveAllHooks()
         {
             this.Log(LogLevel.Warning, "RemoveAllHooks not implemented");
