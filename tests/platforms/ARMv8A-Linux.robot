@@ -96,7 +96,7 @@ Linux Should Print GICv3 Info
 
 Linux Should Run Init Process
     [Arguments]    ${arch_timer_type}    ${cpu_start_el}    ${uart_irq}    ${perfevents_counters}=False
-    ...            ${squashfs}=False    ${fuse}=False    ${virtio_mmio_devices}=False
+    ...            ${squashfs}=False    ${fuse}=False    ${virtio_mmio_devices}=False    ${check_rtc}=True
 
     Wait For Line On Uart         arch_timer: cp15 timer(s) running at 62.50MHz (${arch_timer_type}).
 
@@ -121,6 +121,12 @@ Linux Should Run Init Process
         # Initializing the remaining 31 results in 'Wrong magic value' logs.
         Wait For Line On Uart         virtio-mmio a000200.virtio_mmio: Wrong magic value 0x00000000
         Wait For Line On uart         virtio_blk virtio0: [vda] 0 512-byte logical blocks (0 B/0 B)
+    END
+
+    IF  ${check_rtc}
+        Wait For Line On Uart         rtc-pl031 9010000.pl031: registered as rtc0
+        # It can be the current date with 'machine RealTimeClockMode HostTimeUTC' but testing it here would be problematic.
+        Wait For Line On Uart         rtc-pl031 9010000.pl031: setting system clock to 1970-01-01
     END
 
     Wait For Line On Uart         Freeing unused kernel memory
@@ -271,6 +277,7 @@ Test Running Oreboot With Linux And Rust Shell With GICv2
     ...                           arch_timer_type=virt
     ...                           cpu_start_el=1
     ...                           uart_irq=13
+    ...                           check_rtc=False
 
     Linux Should Start Rust Userspace
 
@@ -296,6 +303,7 @@ Test Running Oreboot With Linux And Rust Shell With GICv3
     ...                           arch_timer_type=virt
     ...                           cpu_start_el=1
     ...                           uart_irq=13
+    ...                           check_rtc=False
 
     Linux Should Start Rust Userspace
 
