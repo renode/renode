@@ -46,16 +46,18 @@ void APB3::write(int width, uint64_t addr, uint64_t value)
     *pwrite = 1;
     *paddr = addr;
     *pwdata = value;
-
-    timeoutTick(pready, 1);
+    tick(true);
 
     *penable = 1;
-
-    tick(true);
+    if(*pready) {
+        // Transfer without wait state works only when there is no combinational path between PREADY and PENABLE. 
+        tick(true);
+    } else {
+        timeoutTick(pready, 1);
+    }
 
     *psel = 0;
     *penable = 0;
-
     tick(true);
 }
 
@@ -69,18 +71,21 @@ uint64_t APB3::read(int width, uint64_t addr)
     *psel = 1;
     *pwrite = 0;
     *paddr = addr;
-
-    timeoutTick(pready, 1);
-
-    *penable = 1;
-
     tick(true);
 
-    uint64_t result = *prdata;
+    *penable = 1;
+    uint64_t result;
+    if(*pready) {
+        // Transfer without wait state works only when there is no combinational path between PREADY and PENABLE. 
+        result = *prdata;
+        tick(true);
+    } else {
+        timeoutTick(pready, 1);
+        result = *prdata;
+    }
 
     *psel = 0;
     *penable = 0;
-
     tick(true);
 
     return result;
