@@ -45,7 +45,7 @@ tmr4: Timers.TegraTimer @ sysbus 0x60005058
 
 pl310: Cache.PL310 @ sysbus <0x50043000, +0x1000>
 
-scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
+scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xF8F00000
 
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"

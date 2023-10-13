@@ -65,7 +65,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     CPUInterfaceRevision: 0x2
     CPUInterfaceImplementer: 0x43B
 
-scu: Miscellaneous.SnoopControlUnit @ sysbus <0xF8F00000, +0x100>
+scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xF8F00000
 
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
