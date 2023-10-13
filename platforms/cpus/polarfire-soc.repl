@@ -1,5 +1,5 @@
 e51: CPU.RiscV64 @ sysbus
-    cpuType: "rv64imac"
+    cpuType: "rv64imac_zicsr_zifencei"
     hartId: 0
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
@@ -8,7 +8,7 @@ e51: CPU.RiscV64 @ sysbus
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_1: CPU.RiscV64 @ sysbus
-    cpuType: "rv64gc"
+    cpuType: "rv64gc_zicsr_zifencei"
     hartId: 1
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
@@ -17,7 +17,7 @@ u54_1: CPU.RiscV64 @ sysbus
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_2: CPU.RiscV64 @ sysbus
-    cpuType: "rv64gc"
+    cpuType: "rv64gc_zicsr_zifencei"
     hartId: 2
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
@@ -26,7 +26,7 @@ u54_2: CPU.RiscV64 @ sysbus
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_3: CPU.RiscV64 @ sysbus
-    cpuType: "rv64gc"
+    cpuType: "rv64gc_zicsr_zifencei"
     hartId: 3
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint
@@ -35,7 +35,7 @@ u54_3: CPU.RiscV64 @ sysbus
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
 u54_4: CPU.RiscV64 @ sysbus
-    cpuType: "rv64gc"
+    cpuType: "rv64gc_zicsr_zifencei"
     hartId: 4
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: clint

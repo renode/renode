@@ -1,7 +1,7 @@
 *** Keywords ***
 Create Machine
     Execute Command                             mach create
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacv\\"; timeProvider: empty }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacv_zicsr\\"; timeProvider: empty }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
 
     Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking

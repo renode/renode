@@ -12,8 +12,7 @@ main_ram: Memory.MappedMemory @ { sysbus 0x40000000 }
     size: 0x10000000
 
 cpu: CPU.VexRiscv @ sysbus
-
-    cpuType: "rv32im"
+    cpuType: "rv32im_zicsr_zifencei"
 
 ctrl: Miscellaneous.LiteX_SoC_Controller @ { sysbus 0x82000000 }
 

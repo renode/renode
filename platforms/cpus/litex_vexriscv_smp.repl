@@ -1,23 +1,23 @@
 cpu_0: CPU.VexRiscv @ sysbus
-    cpuType: "rv32ima"
+    cpuType: "rv32ima_zicsr_zifencei"
     hartId: 0
     timeProvider: clint
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
 
 cpu_1: CPU.VexRiscv @ sysbus
-    cpuType: "rv32ima"
+    cpuType: "rv32ima_zicsr_zifencei"
     hartId: 1
     timeProvider: clint
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
 
 cpu_2: CPU.VexRiscv @ sysbus
-    cpuType: "rv32ima"
+    cpuType: "rv32ima_zicsr_zifencei"
     hartId: 2
     timeProvider: clint
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10 
 
 cpu_3: CPU.VexRiscv @ sysbus
-    cpuType: "rv32ima"
+    cpuType: "rv32ima_zicsr_zifencei"
     hartId: 3
     timeProvider: clint
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10 

@@ -1,4 +1,5 @@
 cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32im_zicsr_zifencei"
 
 mem: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x40000

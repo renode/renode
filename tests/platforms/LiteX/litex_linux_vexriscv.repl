@@ -54,7 +54,7 @@ cpuTimer: Timers.LiteX_CPUTimer @ {
     -> cpu@100
 
 cpu: CPU.VexRiscv @ sysbus
-    cpuType: "rv32ima"
+    cpuType: "rv32ima_zicsr_zifencei"
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
     timeProvider: cpuTimer
 

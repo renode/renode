@@ -37,7 +37,7 @@ flash_mem: Memory.MappedMemory @ {
     size: 0x02000000
 
 cpu: CPU.VexRiscv @ sysbus
-    cpuType: "rv32imac"
+    cpuType: "rv32imac_zicsr"
     privilegeArchitecture: PrivilegeArchitecture.Priv1_10
 
 timer0: Timers.LiteX_Timer_CSR32 @ sysbus 0x82002800

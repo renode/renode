@@ -4,7 +4,7 @@
 //CPUs
 cpu0: CPU.IbexRiscV32 @ sysbus
     hartId: 0
-    cpuType: "rv32imacb"
+    cpuType: "rv32imacb_zicsr_zifencei"
     timeProvider: empty
 
 // Memory

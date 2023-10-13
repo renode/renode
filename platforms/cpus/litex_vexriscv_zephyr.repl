@@ -8,7 +8,7 @@ ram: Memory.MappedMemory @ {
     size: 0x10000000
 
 cpu: CPU.VexRiscv @ sysbus
-    cpuType: "rv32imac"
+    cpuType: "rv32imac_zicsr_zifencei"
 
 uart: UART.LiteX_UART @ {
         sysbus 0x60001800;

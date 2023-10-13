@@ -5,7 +5,7 @@ flash: Memory.MappedMemory @ sysbus 0x1000000
     size: 0x1000000
 
 cpu: CPU.PicoRV32 @ sysbus
-    cpuType: "rv32imc"
+    cpuType: "rv32imc_zicsr"
 
 uart: UART.PicoSoC_SimpleUART @ sysbus 0x2000004
 

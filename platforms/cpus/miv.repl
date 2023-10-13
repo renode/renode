@@ -14,7 +14,7 @@ uart: UART.MiV_CoreUART @ sysbus 0x70001000
     clockFrequency: 66000000
 
 cpu: CPU.RiscV32 @ sysbus
-    cpuType: "rv32imaf"
+    cpuType: "rv32imaf_zicsr_zifencei"
     privilegeArchitecture: PrivilegeArchitecture.Priv1_09
     timeProvider: clint
 

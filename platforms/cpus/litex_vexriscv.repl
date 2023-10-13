@@ -1,6 +1,7 @@
 using "./litex_common.repl"
 
 cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32im_zicsr_zifencei"
 
 timer0: Timers.LiteX_Timer @ {
         sysbus 0x60002800;
