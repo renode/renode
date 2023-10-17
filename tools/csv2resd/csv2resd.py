@@ -97,6 +97,9 @@ def parse_arguments():
         if parsed.frequency is None and parsed.timestamp is None:
             print(f'{parsed.input}: either frequency or timestamp should be provided')
             sys.exit(1)
+        if parsed.frequency and parsed.timestamp:
+            print(f'{parsed.input}: cannot provide both frequency and timestamp')
+            sys.exit(1)
 
         entries.append(parsed)
 
