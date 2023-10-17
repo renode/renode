@@ -81,6 +81,8 @@ def parse_arguments():
     entry_parser.add_argument('-s', '--start-time', type=int, help='start time (in nanoseconds)')
     entry_parser.add_argument('-f', '--frequency', type=int, help='frequency of the data (in Hz)')
     entry_parser.add_argument('-t', '--timestamp', help='index/label of a column in the csv file for the timestamps (in nanoseconds)')
+    entry_parser.add_argument('-o', '--offset', type=int, default=0, help='number of samples to skip from the beginning of the file')
+    entry_parser.add_argument('-c', '--count', type=int, default=sys.maxsize, help='number of samples to parse')
     entry_parser.add_argument('output', nargs='?', help='output file path')
 
     if not arguments or any(v in ('-h', '--help') for v in arguments):
@@ -152,6 +154,9 @@ if __name__ == '__main__':
             labels = mapping = None
             timestamp_source = None
 
+            to_skip = group.offset
+            to_parse = group.count
+
             for row in csv_reader:
                 if labels is None:
                     labels = list(row.keys())
@@ -161,12 +166,22 @@ if __name__ == '__main__':
                         if timestamp_source is None:
                             sys.exit(1)
 
+                if to_skip > 0:
+                    to_skip -= 1
+                    continue
+
+                if to_parse == 0:
+                    break
+
                 for mapping in mappings:
+
                     block = resd_file.get_block_or_create(mapping.sample_type, block_type, mapping.channel)
                     if block_type == BLOCK_TYPE.CONSTANT_FREQUENCY:
                         block.add_sample(mapping.remap(row))
                     else:
                         block.add_sample(mapping.remap(row), int(row[timestamp_source]))
+
+                to_parse -= 1
 
         for mapping in mappings:
             block = resd_file.get_block(mapping.sample_type, mapping.channel)
