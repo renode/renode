@@ -1,0 +1,23 @@
+:name: hci_uart
+:description: This script prepares a machine for integration with an external BLE controller.
+
+using sysbus
+
+mach create
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+
+# mesh sample
+$bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk_nrf52840--zephyr-hci-uart-ble-mesh.elf-s_6254428-ea0b067773adeed92a659394967e05e741b76d09
+# heart rate peripheral sample
+#$bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk_nrf52840--zephyr-hci-uart-ble-peripheral_hr.elf-s_3387816-be92be9edccf6cc83bfadf8b77146041666272b5
+
+emulation CreateServerSocketTerminal $port "hci" false
+connector Connect sysbus.uart1 hci
+
+showAnalyzer uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset

@@ -1,0 +1,31 @@
+using "platforms/cpus/nrf52840.repl"
+
+gpio0:
+    13 -> led0@0
+    14 -> led1@0
+    15 -> led2@0
+    16 -> led3@0
+
+led0: Miscellaneous.LED @ gpio0 13
+    invert: true
+
+led1: Miscellaneous.LED @ gpio0 14
+    invert: true
+
+led2: Miscellaneous.LED @ gpio0 15
+    invert: true
+
+led3: Miscellaneous.LED @ gpio0 16
+    invert: true
+
+sw0: Miscellaneous.Button @ gpio0 11
+    -> gpio0@11
+
+sw1: Miscellaneous.Button @ gpio0 12
+    -> gpio0@12
+
+sw2: Miscellaneous.Button @ gpio0 24
+    -> gpio0@24
+
+sw3: Miscellaneous.Button @ gpio0 25
+    -> gpio0@25
