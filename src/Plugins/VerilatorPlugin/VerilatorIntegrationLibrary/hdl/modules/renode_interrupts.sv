@@ -31,8 +31,8 @@ module renode_interrupts #(
         if (interrupts[addr] != interrupts_prev[addr]) begin
           connection.send_to_async_receiver(renode_pkg::message_t'{
               renode_pkg::interrupt,
-              renode_pkg::data_t'(addr),
-              renode_pkg::address_t'(interrupts[addr])
+              renode_pkg::address_t'(addr),
+              renode_pkg::data_t'(interrupts[addr])
             });
         end
       end
