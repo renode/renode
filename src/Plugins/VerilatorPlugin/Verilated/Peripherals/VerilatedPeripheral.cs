@@ -51,6 +51,67 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 innerConnections[i] = new GPIO();
             }
 
+            deferredActions = new Dictionary<ActionType, Action<ProtocolMessage>>
+            {
+                {ActionType.Interrupt, HandleInterrupt},
+                {ActionType.PushByte,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", msg.Data, msg.Address);
+                        machine.SystemBus.WriteByte(msg.Address, (byte)msg.Data);
+                    }
+                },
+                {ActionType.PushWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", msg.Data, msg.Address);
+                        machine.SystemBus.WriteWord(msg.Address, (ushort)msg.Data);
+                    }
+                },
+                {ActionType.PushDoubleWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", msg.Data, msg.Address);
+                        machine.SystemBus.WriteDoubleWord(msg.Address, (uint)msg.Data);
+                    }
+                },
+                {ActionType.PushQuadWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", msg.Data, msg.Address);
+                        machine.SystemBus.WriteQuadWord(msg.Address, msg.Data);
+                    }
+                },
+                {ActionType.GetByte,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", msg.Address);
+                        Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(msg.Address));
+                    }
+                },
+                {ActionType.GetWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Requested word from address: 0x{0:X}", msg.Address);
+                        Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(msg.Address));
+                    }
+                },
+                {ActionType.GetDoubleWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Requested double word from address: 0x{0:X}", msg.Address);
+                        Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(msg.Address));
+                    }
+                },
+                {ActionType.GetQuadWord,
+                    (msg) =>
+                    {
+                        this.Log(LogLevel.Noisy, "Requested quad word from address: 0x{0:X}", msg.Address);
+                        Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(msg.Address));
+                    }
+                }
+            };
+
             Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
         }
 
@@ -135,45 +196,15 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 case ActionType.InvalidAction:
                     this.Log(LogLevel.Warning, "Invalid action received");
                     break;
-                case ActionType.Interrupt:
-                    HandleInterrupt(message);
-                    break;
-                case ActionType.PushByte:
-                    this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
-                    break;
-                case ActionType.PushWord:
-                    this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
-                    break;
-                case ActionType.PushDoubleWord:
-                    this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
-                    break;
-                case ActionType.PushQuadWord:
-                    this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteQuadWord(message.Address, message.Data);
-                    break;
-                case ActionType.GetByte:
-                    this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(message.Address));
-                    break;
-                case ActionType.GetWord:
-                    this.Log(LogLevel.Noisy, "Requested word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(message.Address));
-                    break;
-                case ActionType.GetDoubleWord:
-                    this.Log(LogLevel.Noisy, "Requested double word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(message.Address));
-                    break;
-                case ActionType.GetQuadWord:
-                    this.Log(LogLevel.Noisy, "Requested quad word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(message.Address));
-                    break;
                 case ActionType.TickClock:
                     allTicksProcessedARE.Set();
                     break;
                 default:
+                    if(deferredActions.TryGetValue(message.ActionId, out var action))
+                    {
+                        machine.LocalTimeSource.ExecuteInNearestSyncedState((_) => action(message));
+                        return;
+                    }
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
                         message.ActionId, message.Address, message.Data);
                     break;
@@ -239,6 +270,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         protected const ulong LimitBuffer = 1000000;
 
+        private readonly IReadOnlyDictionary<ActionType, Action<ProtocolMessage>> deferredActions;
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
         private const string LimitTimerName = "VerilatorIntegrationClock";
