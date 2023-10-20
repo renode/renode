@@ -25,6 +25,7 @@
 - tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
 - tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
 - tests/platforms/Fomu.robot
+- tests/platforms/verilated/UARTLite.robot
 - tests/platforms/verilated/axi.robot
 - tests/platforms/verilated/MuraxAPB3.robot
 - tests/platforms/verilated/zynq_verilated_fastvdma.robot
