@@ -7,7 +7,6 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xAF100000; size: 0x200000; region: "redistributor" }
     }
     [0,1] -> cpu@[0,1]
-    numberOfCPUs: 1
     supportsTwoSecurityStates: false
 
 timer: Timers.ARM_GenericTimer @ cpu

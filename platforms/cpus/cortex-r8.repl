@@ -9,7 +9,6 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xae001000; size: 0x1000; region: "distributor" }
     }
     0 -> cpu@0
-    numberOfCPUs: 1
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
     supportsTwoSecurityStates: false
 
