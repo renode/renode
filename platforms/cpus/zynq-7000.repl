@@ -81,55 +81,8 @@ gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
 xadc: Analog.Xilinx_XADC @ sysbus 0xF8007100
     -> gic@7
 
-armPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000100
-    size: 0x4
-    initable: false
-    script: "request.value = 0x0001A008"
-
-ddrPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000104
-    size: 0x4
-    initable: false
-    script: "request.value = 0x0001A008"
-
-ioPllCtrl: Python.PythonPeripheral @ sysbus 0xF8000108
-    size: 0x4
-    initable: false
-    script: "request.value = 0x0001A008"
-
-pllStatus: Python.PythonPeripheral @ sysbus 0xF800010C
-    size: 0x4
-    initable: false
-    script: "request.value = 0x0000003F"
-
-armClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000120
-    size: 0x4
-    initable: false
-    script: "request.value = 0x1F000400"
-
-ddrClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000124
-    size: 0x4
-    initable: false
-    script: "request.value = 0x18400003"
-
-aperClkCtrl: Python.PythonPeripheral @ sysbus 0xF800012C
-    size: 0x4
-    initable: false
-    script: "request.value = 0x01FFCCCD"
-
-sdioClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000150
-    size: 0x4
-    initable: false
-    script: "request.value = 0x00001E03"
-
-gem0ClkCtrl: Python.PythonPeripheral @ sysbus 0xF8000140
-    size: 0x4
-    initable: false
-    script: "request.value = 0x00003C01"
-
-clk261True: Python.PythonPeripheral @ sysbus 0xF80001C4
-    size: 0x4
-    initable: false
-    script: "request.value = 1"
+slcr: Miscellaneous.Zynq7000_SystemLevelControlRegisters @ sysbus 0xF8000000
+    cpu0: cpu
 
 nand: Python.PythonPeripheral @ sysbus 0xE000E000
     size: 0x4
@@ -138,7 +91,6 @@ nand: Python.PythonPeripheral @ sysbus 0xE000E000
 
 sysbus:
     init:
-        Tag <0xF8000000,0xF8000FFF> "Xilinx_SLCR"
         Tag <0xF8003000,0xF8003FFF> "ARM_PL330DMA"
         Tag <0xF8007000,0xF8007FFF> "Xilinx_DeviceConfigurationInterface"
         Tag <0xF8801000,0xF8801FFF> "ARM_CoreSightEmbeddedTraceBuffer"
