@@ -259,8 +259,6 @@ class RobotTestSuite(object):
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
 
-        file_name = os.path.splitext(os.path.basename(self.path))[0]
-
         hotSpotTestFinder = TestsFinder(keyword="Handle Hot Spot")
         suiteBuilder = robot.running.builder.TestSuiteBuilder()
         suite = suiteBuilder.build(self.path)
@@ -268,16 +266,6 @@ class RobotTestSuite(object):
 
         self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
         self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
-
-        if any(self.tests_without_hotspots):
-            log_file = os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name))
-            RobotTestSuite.log_files.append(log_file)
-        if any(self.tests_with_hotspots):
-            for hotspot in RobotTestSuite.hotspot_action:
-                if options.hotspot and options.hotspot != hotspot:
-                    continue
-                log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-                RobotTestSuite.log_files.append(log_file)
 
         # in parallel runs each parallel group starts it's own Renode process
         # see: run
@@ -610,6 +598,18 @@ class RobotTestSuite(object):
                 test.teardown.config(name="Test Teardown")
 
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
+
+        file_name = os.path.splitext(os.path.basename(self.path))[0]
+        if any(self.tests_without_hotspots):
+            log_file = os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name))
+            RobotTestSuite.log_files.append(log_file)
+        if any(self.tests_with_hotspots):
+            for hotspot in RobotTestSuite.hotspot_action:
+                if options.hotspot and options.hotspot != hotspot:
+                    continue
+                log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+                RobotTestSuite.log_files.append(log_file)
+
         return result.return_code == 0
 
 
