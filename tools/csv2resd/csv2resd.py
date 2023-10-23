@@ -189,3 +189,5 @@ if __name__ == '__main__':
                 block.frequency = group.frequency
             if group.start_time is not None:
                 block.start_time = group.start_time
+
+        resd_file.flush()
