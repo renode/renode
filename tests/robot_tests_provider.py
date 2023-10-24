@@ -16,6 +16,8 @@ from time import monotonic, sleep
 import robot
 import xml.etree.ElementTree as ET
 
+from tests_engine import TestResult
+
 this_path = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -454,24 +456,24 @@ class RobotTestSuite(object):
             proc = None
 
         def get_result():
-            return result if result is not None else True
+            return result if result is not None else TestResult(True, None)
 
         start_timestamp = monotonic()
 
         if any(self.tests_without_hotspots):
-            result = get_result() and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
+            result = get_result().ok and self._run_inner(options.fixture, None, self.tests_without_hotspots, options)
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                result = get_result() and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
+                result = get_result().ok and self._run_inner(options.fixture, hotspot, self.tests_with_hotspots, options)
 
         end_timestamp = monotonic()
 
         if result is None:
             print(f'No tests executed for suite {self.path}', flush=True)
         else:
-            status = 'finished successfully' if result else 'failed'
+            status = 'finished successfully' if result.ok else 'failed'
             exec_time = round(end_timestamp - start_timestamp, 2)
             print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
 
@@ -599,18 +601,17 @@ class RobotTestSuite(object):
 
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
 
+        log_files = []
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         if any(self.tests_without_hotspots):
-            log_file = os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name))
-            RobotTestSuite.log_files.append(log_file)
+            log_files.append(os.path.join(options.results_directory, 'results-{0}.robot.xml'.format(file_name)))
         if any(self.tests_with_hotspots):
             for hotspot in RobotTestSuite.hotspot_action:
                 if options.hotspot and options.hotspot != hotspot:
                     continue
-                log_file = os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-                RobotTestSuite.log_files.append(log_file)
+                log_files.append(os.path.join(options.results_directory, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else '')))
 
-        return result.return_code == 0
+        return TestResult(result.return_code == 0, log_files)
 
 
     @staticmethod

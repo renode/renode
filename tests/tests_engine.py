@@ -1,5 +1,6 @@
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
+from collections import defaultdict, namedtuple
 from sys import platform
 import os
 import sys
@@ -10,6 +11,7 @@ import multiprocessing
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
+TestResult = namedtuple('TestResult', ('ok', 'log_file'))
 
 
 class IncludeLoader(yaml.SafeLoader):
@@ -273,6 +275,7 @@ def run_test_group(args):
 
     repeat_counter = 0
     tests_failed = False
+    log_files = set()
 
     # this function will be called in a separate
     # context (due to the pool.map_async) and
@@ -288,14 +291,18 @@ def run_test_group(args):
             print("Running tests iteration {}...".format(repeat_counter))
 
         for suite in group:
-            if not suite.run(options, run_id=test_id if options.jobs != 1 else 0):
-                tests_failed = True
+            # we need to collect log files here instead of appending to a global list
+            # in each suite runner because this function will be called in a multiprocessing
+            # context when using the --jobs argument, as mentioned above
+            ok, suite_log_files = suite.run(options, run_id=test_id if options.jobs != 1 else 0)
+            tests_failed |= not ok
+            log_files.update((type(suite), log_file) for log_file in suite_log_files)
 
         if options.stop_on_error and tests_failed:
             break
 
     options.output.flush()
-    return tests_failed
+    return (tests_failed, log_files)
 
 def print_failed_tests(options):
     for handler in registered_handlers:
@@ -359,19 +366,23 @@ def run():
     options.output = None
 
     if options.jobs == 1:
-        tests_failed = False
-        for a in args:
-            tests_failed |= run_test_group(a)
+        tests_failed, logs = zip(*map(run_test_group, args))
     else:
         multiprocessing.set_start_method("spawn")
         pool = multiprocessing.Pool(processes=options.jobs)
         # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
         # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
         # otherwise it would not be possible to abort tests in progress
-        tests_failed = any(pool.map_async(run_test_group, args).get(999999))
+        tests_failed, logs = zip(*pool.map_async(run_test_group, args).get(999999))
         pool.close()
         print("Waiting for all processes to exit")
         pool.join()
+
+    tests_failed = any(tests_failed)
+    logs = set().union(*logs)
+    logs_per_type = defaultdict(lambda: [])
+    for suite_type, log in logs:
+        logs_per_type[suite_type].append(log)
 
     configure_output(options)
 
@@ -379,6 +390,7 @@ def run():
 
     for group in options.tests:
         for suite in options.tests[group]:
+            type(suite).log_files = logs_per_type[type(suite)]
             suite.cleanup(options)
 
     options.output.flush()

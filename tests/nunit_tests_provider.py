@@ -10,6 +10,8 @@ from time import monotonic
 import xml.etree.ElementTree as ET
 import glob
 
+from tests_engine import TestResult
+
 this_path = os.path.abspath(os.path.dirname(__file__))
 
 def install_cli_arguments(parser):
@@ -84,7 +86,7 @@ class NUnitTestSuite(object):
                         # let's kill it
                         print('KILLING A DANGLING dotnet test process {}'.format(proc.info['pid']))
                         os.kill(proc.info['pid'], signal.SIGTERM)
-            return process.returncode == 0
+            return TestResult(process.returncode == 0, [output_file])
 
         args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
         if options.stop_on_error:
@@ -132,7 +134,7 @@ class NUnitTestSuite(object):
         result = process.returncode == 0
         endTimestamp = monotonic()
         print('Suite ' + self.path + (' finished successfully!' if result else ' failed!') + ' in ' + str(round(endTimestamp - startTimestamp, 2)) + ' seconds.', flush=True)
-        return result
+        return TestResult(result, [output_file])
 
     def cleanup(self, options):
         pass
