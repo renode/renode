@@ -2,7 +2,6 @@
 from __future__ import print_function
 from sys import platform
 import os
-import time
 import sys
 import socket
 import fnmatch
