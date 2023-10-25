@@ -65,6 +65,15 @@ class NUnitTestSuite(object):
 
         return 0
 
+    def _cleanup_dangling(self, process, proc_name, test_agent_name):
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            if proc_name in (proc.info['name'] or ''):
+                flat_cmdline = ' '.join(proc.info['cmdline'] or [])
+                if test_agent_name in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
+                    # let's kill it
+                    print('KILLING A DANGLING {} test process {}'.format(test_agent_name, proc.info['pid']))
+                    os.kill(proc.info['pid'], signal.SIGTERM)
+
     def run(self, options, run_id):
         print('Running ' + self.path)
 
@@ -75,61 +84,65 @@ class NUnitTestSuite(object):
             print('Using native dotnet test runner -' + self.path, flush=True)
             # we don't build here - we had problems with concurrently occurring builds when copying files to one output directory
             # so we run test with --no-build and build tests in previous stage
-            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", "--logger", "trx;LogFileName={}".format(output_file), '--configuration', options.configuration, self.path, "--", "NUnit.DisplayName=FullName"]
-            process = subprocess.Popen(args)
-            print('dotnet test runner PID is {}'.format(process.pid), flush=True)
-            process.wait()
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                if 'dotnet' in (proc.info['name'] or ''):
-                    flat_cmdline = ' '.join(proc.info['cmdline'] or [])
-                    if 'dotnet test' in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
-                        # let's kill it
-                        print('KILLING A DANGLING dotnet test process {}'.format(proc.info['pid']))
-                        os.kill(proc.info['pid'], signal.SIGTERM)
-            return TestResult(process.returncode == 0, [output_file])
+            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", "--logger", "trx;LogFileName={}".format(output_file), '--configuration', options.configuration, self.path]
+        else:
+            args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
 
-        args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
+        # Unfortunately, debugging like this won't work on .NET, see: https://github.com/dotnet/sdk/issues/4994
+        # The easiest workaround is to set VSTEST_HOST_DEBUG=1 in your environment
         if options.stop_on_error:
             args.append('--stoponerror')
-        if platform.startswith("linux") or platform == "darwin":
-            args.insert(0, 'mono')
+        if (platform.startswith("linux") or platform == "darwin"):
+            if not options.runner == 'dotnet':
+                args.insert(0, 'mono')
             if options.port is not None:
                 if options.suspend:
                     print('Waiting for a debugger at port: {}'.format(options.port))
-                args.insert(1, '--debug')
-                args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
+                else:
+                    args.insert(1, '--debug')
+                    args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
             elif options.debug_mode:
                 args.insert(1, '--debug')
 
         where_conditions = []
         if options.fixture:
-            where_conditions.append('test =~ .*{}.*'.format(options.fixture))
+            if options.runner == 'dotnet':
+                where_conditions.append(options.fixture)
+            else:
+                where_conditions.append('test =~ .*{}.*'.format(options.fixture))
 
         if options.exclude:
+            cat = 'TestCategory' if options.runner == 'dotnet' else 'cat'
             for category in options.exclude:
-                where_conditions.append('cat != {}'.format(category))
+                where_conditions.append('{} != {}'.format(cat, category))
         if options.include:
             for category in options.include:
-                where_conditions.append('cat == {}'.format(category))
+                where_conditions.append('{} == {}'.format(cat, category))
 
         if where_conditions:
-            args.append('--where= ' + ' and '.join(['({})'.format(x) for x in where_conditions]))
+            if options.runner == 'dotnet':
+                args.append('--filter')
+                args.append(' & '.join('({})'.format(x) for x in where_conditions))
+            else:
+                args.append('--where= ' + ' and '.join(['({})'.format(x) for x in where_conditions]))
 
         if options.run_gdb:
             args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
 
         startTimestamp = monotonic()
-        process = subprocess.Popen(args, cwd=options.results_directory)
-        print('NUnit3 runner PID is {}'.format(process.pid))
-        process.wait()
+        if options.runner == 'dotnet':
+            args += ['--', 'NUnit.DisplayName=FullName']
+            process = subprocess.Popen(args)
+            print('dotnet test runner PID is {}'.format(process.pid), flush=True)
+        else:
+            process = subprocess.Popen(args, cwd=options.results_directory)
+            print('NUnit3 runner PID is {}'.format(process.pid), flush=True)
 
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            if 'mono' in (proc.info['name'] or ''):
-                flat_cmdline = ' '.join(proc.info['cmdline'] or [])
-                if 'nunit-agent.exe' in flat_cmdline and '--pid={}'.format(process.pid) in flat_cmdline:
-                    # let's kill it
-                    print('KILLING A DANGLING nunit-agent.exe process {}'.format(proc.info['pid']))
-                    os.kill(proc.info['pid'], signal.SIGTERM)
+        process.wait()
+        if options.runner == 'dotnet':
+            self._cleanup_dangling(process, 'dotnet', 'dotnet test')
+        else:
+            self._cleanup_dangling(process, 'mono', 'nunit-agent.exe')
 
         result = process.returncode == 0
         endTimestamp = monotonic()
