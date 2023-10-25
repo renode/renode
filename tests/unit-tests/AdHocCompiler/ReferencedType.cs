@@ -9,7 +9,7 @@ using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Peripherals
 {
-    public class ReferencedType : IInterestingType
+    public class ReferencedType
     {
         public static long Size => 0x100;
     }
