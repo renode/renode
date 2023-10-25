@@ -57,6 +57,7 @@
 - tests/peripherals/LIS2DS12.robot
 - tests/peripherals/LSM303.robot
 - tests/peripherals/MC3635.robot
+- tests/peripherals/MCAN.robot
 - tests/unit-tests/AdHocCompiler/adhoc-compiler.robot
 - tests/platforms/OpenTitan-EarlGrey.robot
 - tests/platforms/Arnold.robot
