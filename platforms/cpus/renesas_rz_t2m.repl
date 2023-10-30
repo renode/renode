@@ -27,7 +27,9 @@ flash0: Memory.MappedMemory @ sysbus 0x88000000
 gpio: GPIOPort.Renesas_GPIO @ { sysbus 0x800A0000; sysbus 0x81030000 }
 
 sci0: UART.Renesas_SCI @ sysbus 0x80001000
-    -> gic@289
+    RxIRQ -> gic@289
+    TxIRQ -> gic@290
+    TxEndIRQ -> gic@291
 
 sci1: UART.Renesas_SCI @ sysbus 0x80001400
 
