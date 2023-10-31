@@ -1,0 +1,36 @@
+:name: Zynqmp
+:description: This script runs Linux on Zynq UltraScale+ MPSoC.
+
+using sysbus
+$name?="ZynqUS+"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+showAnalyzer uart1
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynq-us_plus--sm-k26-revA.dtb-s_37854-cc08802e65ac86f1415bfd58b5bfc2f2fbc9c3f0
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
+$linux?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--linux.Image-s_21039616-74b4831df919e21f699cc0d647874bfa99d69fb6
+$linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-s_62914560-3d4dd1f233b7be349e7ec48d64d6081cb5350d77
+
+macro reset
+"""
+    cpu PC 0x1000000
+
+    sysbus LoadELF    $atf_elf
+
+    sysbus LoadFdt    $dtb    0x100000   "console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M nr_cpus=1" false
+    sysbus LoadBinary $uboot  0x8000000
+    sysbus LoadBinary $linux  0x10000000
+    sysbus LoadBinary $rootfs 0x20000000
+
+    sysbus LoadSymbolsFrom $uboot_elf
+    sysbus LoadSymbolsFrom $linux_elf
+
+    sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
+"""
+
+runMacro $reset

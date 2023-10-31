@@ -1,0 +1,49 @@
+cpu: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    genericInterruptController: gic
+
+timer: Timers.ARM_GenericTimer @ cpu
+    frequency: 100000000
+    NonSecureEL2PhysicalTimerIRQ -> gic#0@29
+    EL1PhysicalTimerIRQ -> gic#0@30
+    EL1VirtualTimerIRQ -> gic#0@27
+    EL3PhysicalTimerIRQ -> gic#0@26
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xf9010000; size: 0x010000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf9020000; size: 0x010000; region: "cpuInterface" }
+    }
+    [0-1] -> cpu@[0-1]
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+
+lowerMemory: Memory.MappedMemory @ sysbus 0x0
+    size: 0x80000000
+
+higherMemory: Memory.MappedMemory @ sysbus 0x800000000
+    size: 0x80000000
+
+uart0: UART.Cadence_UART @ sysbus <0xff000000, +0x1000>
+    -> gic@21
+
+uart1: UART.Cadence_UART @ sysbus <0xff010000, +0x1000>
+    -> gic@22
+
+gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
+    numberOfGpioBanks: 6
+
+i2c0: I2C.Cadence_I2C @ sysbus <0xff020000, +0x1000>
+    -> gic@17
+
+i2c1: I2C.Cadence_I2C @ sysbus <0xff030000, +0x1000>
+    -> gic@18
+
+ipi_mailbox: Python.PythonPeripheral @ sysbus 0xff9905c0
+    size: 0x900
+    initable: true
+    filename: "scripts/pydev/ipi_mailbox.py"
+
+sysbus:
+    init:
+        Tag <0xff260020 0x4> "counter_frequency" 0x5F5E100
+        Tag <0xfd6e0fe0 0x4> "cci_part_number_lo" 0x20
+        Tag <0xfd6e0fe4 0x4> "cci_part_number_hi" 0x04
