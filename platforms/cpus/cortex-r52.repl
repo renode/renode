@@ -22,3 +22,4 @@ flash0: Memory.MappedMemory @ sysbus 0x88000000
     size: 0x04000000
 
 uart0: UART.PL011 @ sysbus 0x9c090000
+    -> gic@5
