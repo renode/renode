@@ -12,8 +12,13 @@ import sys
 import os
 import gzip
 from enum import Enum
+from elftools.common.utils import bytes2str
+from elftools.dwarf.descriptions import describe_form_class
+from elftools.elf.elffile import ELFFile
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
+
+import dwarf
 
 
 FILE_SIGNATURE = b"ReTrace"
@@ -261,6 +266,26 @@ class LLVMDisassembler():
         return (bytes_read, disas_str.value)
 
 
+def print_coverage_report(report):
+    for line in report:
+        yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
+
+
+def handle_coverage(parser, args, trace_data):
+    if args.coverage_code == None:
+        parser.error('--coverage requires --coverage-code')
+
+    report = dwarf.report_coverage(trace_data, args.coverage, args.coverage_code)
+    printed_report = print_coverage_report(report)
+
+    if args.coverage_output != None:
+        for line in printed_report:
+            args.coverage_output.write(f"{line}\n")
+    else:
+        for line in printed_report:
+            print(line)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
     parser.add_argument("file", help="binary file")
@@ -270,6 +295,9 @@ if __name__ == "__main__":
 
     parser.add_argument("--disassemble", action="store_true", default=False)
     parser.add_argument("--llvm_disas_path", default=None, help="path to libllvm-disas library")
+    parser.add_argument("--coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    parser.add_argument("--coverage-code", default=None, type=argparse.FileType('r'), help="path to a file that contains code")
+    parser.add_argument("--coverage-output", default=None, type=argparse.FileType('w'), help="path to output coverage file")
 
     args = parser.parse_args()
 
@@ -309,8 +337,11 @@ if __name__ == "__main__":
 
         with file_open(args.file, "rb") as file:
             trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
-            for entry in trace_data:
-                print(trace_data.format_entry(entry))
+            if args.coverage != None:
+                handle_coverage(parser, args, trace_data)
+            else:
+                for entry in trace_data:
+                    print(trace_data.format_entry(entry))
     except InvalidFileFormatException as err:
         sys.exit(f"Error: {err}")
     except KeyboardInterrupt:
