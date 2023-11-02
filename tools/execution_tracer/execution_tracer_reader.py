@@ -315,5 +315,3 @@ if __name__ == "__main__":
         sys.exit(f"Error: {err}")
     except KeyboardInterrupt:
         sys.exit(1)
-    except Exception as err:
-        sys.exit(err)
