@@ -13,6 +13,7 @@ ${SKIP_RUNNING_SERVER}       False
 ${CONFIGURATION}             Release
 ${PORT_NUMBER}               9999
 ${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
+${RENODETOOLS}               ${CURDIR}/../tools
 ${BINARY_NAME}               Renode.exe
 ${HOTSPOT_ACTION}            None
 ${DISABLE_XWT}               False
