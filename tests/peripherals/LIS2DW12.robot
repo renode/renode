@@ -3,7 +3,7 @@ ${ACCEL}                 sysbus.i2c1.accel
 ${UART}                  sysbus.usart2
 ${ACCEL_POLLING_SAMPLE}  @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-accel_polling.elf-s_731368-a41b79116936bdadbee51e497847273f971ed409
 ${ACCEL_POLLING_SAMPLE_14BIT}  @https://dl.antmicro.com/projects/renode/b_l072z_lrwan1--zephyr-accel_polling-high_performance.elf-s_731368-049f6743622eb0b8068dbc2a24742561c8fa046a
-${CSV2RESD}              ${CURDIR}/../../tools/csv2resd/csv2resd.py
+${CSV2RESD}              ${RENODETOOLS}/csv2resd/csv2resd.py
 
 *** Keywords ***
 Execute Python Script
