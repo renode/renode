@@ -121,3 +121,4 @@
 - tests/peripherals/MB85RC1MT.robot
 - tests/platforms/nucleo_f429zi.robot
 - tests/peripherals/SynopsysDWCEthernetQualityOfService.robot
+- tests/unit-tests/ARMv8R_TCM.robot
