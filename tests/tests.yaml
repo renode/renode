@@ -19,6 +19,7 @@
 - tests/unit-tests/robot-integration.robot
 - tests/unit-tests/riscv-unit-tests.robot
 - tests/unit-tests/mpu.robot
+- tests/unit-tests/arm-atomic.robot
 - tests/platforms/SAME70.robot
 - tests/platforms/Murax.robot
 - tests/unit-tests/monitor-tests.robot
