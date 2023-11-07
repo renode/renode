@@ -4,6 +4,8 @@ ${COMMON_MEMORY}                         0x1400000
 ${PER_CORE_MEMORY}                       0x3000000
 ${CORE1_MEM_ALIAS}                       0x2010000
 ${CORE2_MEM_ALIAS}                       0x2020000
+${UART_ADDR}                             0x50230000
+${UART_ADDR_MOVED}                       0x60230000
 ${URI}                                   @https://dl.antmicro.com/projects/renode
 ${TEST_ELF}                              ${URI}/multibus_test.elf-s_3718712-8ec6b7305242b1bfce702459d75ea02d04f00360
 
@@ -23,7 +25,8 @@ Create Machine
     Execute Command                      mach create
     Execute Command                      machine LoadPlatformDescription "${CURDIR}${/}per-core-registration.repl"
 
-    Execute Command                      sysbus LoadELF ${elf}
+    Execute Command                      macro reset "sysbus LoadELF ${elf}"
+    Execute Command                      runMacro $reset
 
     Create Terminal Tester               ${UART}
 
@@ -121,6 +124,50 @@ Disassemble Code From Per Core Memory
 
   ${out}=  Execute Command               sysbus.cpu2 DisassembleBlock ${PER_CORE_MEMORY} 2
            Should Contain                ${out}    lw
+
+Should Move Peripheral Registered Per Core
+           Create Machine                ${TEST_ELF}
+
+           # Verify expected UART registration
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR} sysbus.cpu1
+           Should Not Be Empty           ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR} sysbus.cpu2
+           Should Not Be Empty           ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR_MOVED} sysbus.cpu1
+           Should Be Empty               ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR_MOVED} sysbus.cpu2
+           Should Be Empty               ${out}
+
+           Execute Command               sysbus.cpu2 AddHook `sysbus GetSymbolAddress "thread_entry"` "machine.SystemBus.MoveRegistrationWithinContext(machine.SystemBus.WhatIsAt(${UART_ADDR}, cpu).Peripheral, ${UART_ADDR_MOVED}, cpu)"
+           Execute Command               start
+
+           Wait For Line On Uart         Core 0 read from ${PER_CORE_MEMORY} returned: 0xB0B0B0B0
+
+           Run Keyword And Expect Error  InvalidOperationException: Terminal tester failed!*
+           ...                           Wait For Line On Uart
+           ...                           Core 1 read from ${PER_CORE_MEMORY} returned: 0xBABABABA
+
+           Execute Command               pause
+           Execute Command               sysbus.cpu2 RemoveHooksAt `sysbus GetSymbolAddress "thread_entry"`
+           Execute Command               sysbus.cpu2 AddHook `sysbus GetSymbolAddress "thread_entry"` "machine.SystemBus.MoveRegistrationWithinContext(machine.SystemBus.WhatIsAt(${UART_ADDR_MOVED}, cpu).Peripheral, ${UART_ADDR}, cpu)"
+
+           Clear Terminal Tester Report
+           Execute Command               runMacro $reset
+
+           # UART registration shouldn't reset
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR} sysbus.cpu1
+           Should Not Be Empty           ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR_MOVED} sysbus.cpu2
+           Should Not Be Empty           ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR_MOVED} sysbus.cpu1
+           Should Be Empty               ${out}
+  ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR} sysbus.cpu2
+           Should Be Empty               ${out}
+
+           Execute Command               start
+
+           Wait For Line On Uart         Core 0 read from ${PER_CORE_MEMORY} returned: 0xB0B0B0B0
+           Wait For Line On Uart         Core 1 read from ${PER_CORE_MEMORY} returned: 0xBABABABA
 
 
 Should Not Load Hex To Invalid Core Specific Memory
