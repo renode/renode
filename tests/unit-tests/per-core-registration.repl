@@ -18,20 +18,20 @@ cpu2: CPU.RiscV64 @ sysbus
 
 uart: UART.SiFive_UART @ sysbus 0x50230000
 
-core1_mem: Memory.MappedMemory @ { 
-    sysbus 0x2010000; 
+core1_mem: Memory.MappedMemory @ {
+    sysbus 0x2010000;
     sysbus new Bus.BusPointRegistration {
-        address: 0x3000000; 
-        cpu: cpu1 
-    } 
-} 
-    size: 0x1000 
+        address: 0x3000000;
+        cpu: cpu1
+    }
+}
+    size: 0x1000
 
-core2_mem: Memory.MappedMemory @ { 
-    sysbus 0x2020000; 
+core2_mem: Memory.MappedMemory @ {
+    sysbus 0x2020000;
     sysbus new Bus.BusPointRegistration {
-        address: 0x3000000; 
-        cpu: cpu2 
-    } 
+        address: 0x3000000;
+        cpu: cpu2
+    }
 }
     size: 0x1000
