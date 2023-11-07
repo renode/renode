@@ -152,7 +152,8 @@ Should Transfer File Via TFTP
     # Wait for Read Request
     Wait For Outgoing Packet With Bytes At Index  0000deadbeef02010305040608004500002f__________11____c0a80001c0a80064____17b5001b____00016877006f63746574007473697a65003000________  0  10  10
 
-    Write Line To Uart        diff hw <(echo hello world) > /dev/null && echo success || echo failure
+    # Compare contents, but ignore whitespaces due to OS dependent handling of new line, CR LF vs LF
+    Write Line To Uart        diff -w hw <(echo hello world) > /dev/null && echo success || echo failure
     Wait For Line On Uart     success
 
 Should Send Lots Of Data Via TCP Twice

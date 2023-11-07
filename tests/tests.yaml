@@ -120,3 +120,4 @@
 - tests/peripherals/BME280.robot
 - tests/peripherals/MB85RC1MT.robot
 - tests/platforms/nucleo_f429zi.robot
+- tests/peripherals/SynopsysDWCEthernetQualityOfService.robot
