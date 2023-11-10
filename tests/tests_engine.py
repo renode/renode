@@ -349,6 +349,59 @@ def print_failed_tests(options):
                 _print_helper('non_critical')
             print("------")
 
+def print_rerun_trace(options):
+    for handler in registered_handlers:
+        handler_obj = handler["creator"]
+        reruns = handler_obj.find_rerun_tests(options.results_directory)
+        if not reruns:
+            continue
+
+        did_retry = False
+        if options.retry_count != 1:
+            for trace in reruns.values():
+                test_case_retry_occurred = any([x["nth"] > 1 for x in trace])
+                suite_retry_occurred = any([x["label"].endswith("retry1") for x in trace])
+                if test_case_retry_occurred or suite_retry_occurred:
+                    did_retry = True
+                    break
+        if options.iteration_count == 1 and not did_retry:
+            return
+        elif options.iteration_count == 1 and did_retry:
+            print("Some tests were retried:")
+        elif options.iteration_count != 1 and not did_retry:
+            print(f"Ran {options.iteration_count} iterations:")
+        elif options.iteration_count != 1 and did_retry:
+            print(f"Ran {options.iteration_count} iterations, some tests were retried:")
+
+        trace_index = 0
+        for test, trace in reruns.items():
+            n_runs = sum([x["nth"] for x in trace])
+            has_failed = not all(x["nth"] == 1 and x["status"] == "PASS" for x in trace)
+            if n_runs == 1 or not has_failed:
+                # Don't mention tests that were run only once or that never
+                # failed. It CAN happen that n_runs > 1 and has_failed == False;
+                # when another test in the same suite triggers a suite retry.
+                continue
+            trace_index += 1
+            print(f"\t{trace_index}. {test} was started {n_runs} times:")
+            iteration_index = 1
+            suite_retry_index = 0
+            for i, trace_entry in enumerate(trace, 1):
+                label, status, nth, tags, crash = trace_entry.values()
+                print("\t     {}:  {} {:<9} {}{}{}".format(
+                    label, nth,
+                    "attempt," if nth == 1 else "attempts,",
+                    status,
+                    f" [{', '.join(tags)}]" if tags else "",
+                    " (crash detected)" if crash else "",
+                ))
+                if label == "iteration":
+                    iteration_index += 1
+                else:
+                    suite_retry_index += 1
+        print("------")
+
+
 def run():
     parser = prepare_parser()
     for handler in registered_handlers:
@@ -428,5 +481,7 @@ def run():
     if tests_failed:
         print("Some tests failed :( See the list of failed tests below and logs for details!")
         print_failed_tests(options)
+        print_rerun_trace(options)
         sys.exit(1)
     print("Tests finished successfully :)")
+    print_rerun_trace(options)

@@ -11,7 +11,7 @@ import shutil
 import tempfile
 import uuid
 import re
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from time import monotonic, sleep
 from typing import List, Dict, Tuple, Set
 
@@ -766,3 +766,84 @@ class RobotTestSuite(object):
                     pass
             ret[(iteration, suite_retry)].add(path)
         return ret
+
+
+    @classmethod
+    def find_rerun_tests(cls, path):
+        re_retry_status = re.compile(r"\[RETRY\] (PASS|FAIL) on (\d+)\. retry\.")
+
+        def analyze_xml(label, retry_dir, file="robot_output.xml"):
+            try:
+                tree = ET.parse(os.path.join(retry_dir, file))
+            except FileNotFoundError:
+                return
+            root = tree.getroot()
+            for suite in root.iter('suite'):
+                if not suite.get('source', False):
+                    continue # it is a tag used to group other suites without meaning on its own
+                suite_name = suite.attrib['name']
+                if suite_name == "Test Suite":
+                    # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
+                    # instead of wrapping in a new top-level Test Suite. A workaround is to extract
+                    # the suite name from the *.robot file name.
+                    suite_name = os.path.basename(suite.attrib["source"]).strip(".robot")
+                for test in suite.iter('test'):
+                    test_name = test.attrib['name']
+                    tags = []
+                    if test.find("./tags/[tag='skipped']"):
+                        continue # skipped test should not be classified as fail
+                    if test.find("./tags/[tag='non_critical']"):
+                        tags.append("non_critical")
+                    status = test.find('status') # only finds immediate children - important requirement
+                    m = re_retry_status.search(status.text) if status.text is not None else None
+
+                    # Check whether renode crashed during this test
+                    has_renode_crashed = False
+                    if status.text is not None and cls.retry_suite_regex.search(status.text):
+                        has_renode_crashed = True
+                    else:
+                        has_renode_crashed = any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg"))
+
+                    status_str = status.attrib["status"]
+                    nth = (1 + int(m.group(2))) if m else 1
+                    key = f"{suite_name}.{test_name}"
+                    if key not in data:
+                        data[key] = []
+                    data[key].append({
+                        "label": label,        # e.g. "retry0", "retry1", "iteration1/retry2", ...
+                        "status": status_str,  # e.g. "PASS", "FAIL", "SKIP", ...
+                        "nth": nth,            # The number of test case attempts that led to the above status
+                        "tags": tags,          # e.g. ["non_critical"], [], ...
+                        "crash": has_renode_crashed,
+                    })
+
+        def analyze_iteration(iteration_dir):
+            iteration_dirname = os.path.basename(iteration_dir)
+            report_fpath = os.path.join(iteration_dir, "robot_output.xml")
+            if os.path.isfile(report_fpath):
+                analyze_xml(iteration_dirname, iteration_dir)
+                return
+            i = -1
+            while True:
+                i += 1
+                retry_dirpath = os.path.join(iteration_dir, f"retry{i}")
+                if os.path.isdir(retry_dirpath):
+                    analyze_xml(os.path.join(iteration_dirname, f"retry{i}"), retry_dirpath)
+                    continue
+                break
+
+        data = OrderedDict()
+        i = -1
+        while True:
+            i += 1
+            iteration_dirpath = os.path.join(path, f"iteration{i + 1}")
+            retry_dirpath = os.path.join(path, f"retry{i}")
+            if os.path.isdir(iteration_dirpath):
+                analyze_iteration(iteration_dirpath)
+                continue
+            elif os.path.isdir(retry_dirpath):
+                analyze_xml(f"retry{i}", retry_dirpath)
+                continue
+            break
+
+        return data

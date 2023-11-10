@@ -193,3 +193,10 @@ class NUnitTestSuite(object):
         if not ret['mandatory']:
             return None
         return ret
+
+
+    @staticmethod
+    def find_rerun_tests(path):
+        # Unused mechanism, this exists to keep a uniform interface with
+        # robot_tests_provider.py.
+        return None
