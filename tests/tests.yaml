@@ -122,3 +122,4 @@
 - tests/platforms/nucleo_f429zi.robot
 - tests/peripherals/SynopsysDWCEthernetQualityOfService.robot
 - tests/unit-tests/ARMv8R_TCM.robot
+- tests/tools/execution_tracer_reader.robot
