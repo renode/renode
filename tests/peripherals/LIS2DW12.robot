@@ -129,6 +129,37 @@ LIS2DW12 Should Return Data From RESD
 
     [Return]  ${resdPath}
 
+Prepare Multi-Frequency Data Test
+    # 3 blocks starting one after the other: low-frequency, high-frequency, low-frequency
+    ${resdArgs}=  Catenate  SEPARATOR=,
+                  ...       "--input", r"${CURDIR}/LIS2DW12-samples_lowfreq1.csv"
+                  ...       "--frequency", "100"
+                  ...       "--start-time", "0"
+                  ...       "--map", "acceleration:x,y,z:x,y,z"
+                  ...       "--input", r"${CURDIR}/LIS2DW12-samples_highfreq.csv"
+                  ...       "--frequency", "1600"
+                  ...       "--start-time", "320000000"
+                  ...       "--map", "acceleration:x,y,z:x,y,z"
+                  ...       "--input", r"${CURDIR}/LIS2DW12-samples_lowfreq2.csv"
+                  ...       "--frequency", "100"
+                  ...       "--start-time", "340000000"
+                  ...       "--map", "acceleration:x,y,z:x,y,z"
+
+    ${resdPath}=  Create RESD File  ${resdArgs}
+
+    Execute Command        allowPrivates true
+    Execute Command        using sysbus
+    Execute Command        mach create
+    Execute Command        machine LoadPlatformDescriptionFromString "i2c1: I2C.STM32F7_I2C @ sysbus 0x10000000"
+    Execute Command        machine LoadPlatformDescriptionFromString "accel: Sensors.LIS2DW12 @ i2c1 0"
+    Execute Command        logLevel -1 ${ACCEL}
+
+    # The accelerometer starts at 100 Hz, which we'll call the "low frequency"
+    Execute Command        ${ACCEL} SampleRate 100
+    Execute Command        ${ACCEL} FeedAccelerationSamplesFromRESD @${resdPath} 0 0 0 0 MultiFrequency
+
+    [Return]  ${resdPath}
+
 *** Test Cases ***
 LIS2DW12 Should Return Data From RESD In 12-Bit Mode
     ${resdPath}=  LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE}  12
