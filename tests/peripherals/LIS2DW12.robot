@@ -160,6 +160,15 @@ Prepare Multi-Frequency Data Test
 
     [Return]  ${resdPath}
 
+Acceleration Should Be
+    [Arguments]  ${major}  ${minor}
+
+    ${actual}=  Execute Command  ${ACCEL} AccelerationX
+    ${minor}=  Evaluate  "{:03}".format(${minor})
+    # Why 2 separate rstrips? To turn 0.010 into 0.01, but 0.000 into 0 and not ""
+    ${expected}=  Evaluate  "${major}.${minor}".rstrip("0").rstrip(".")
+    Should Be Equal  ${actual.strip()}  ${expected}
+
 *** Test Cases ***
 LIS2DW12 Should Return Data From RESD In 12-Bit Mode
     ${resdPath}=  LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE}  12
@@ -176,5 +185,58 @@ LIS2DW12 Should Return Data From RESD In 14-Bit Mode
     Wait For Peripheral Reading For Set Value And Known LSBs  -40992  14  0xFD60
     Wait For Peripheral Reading For Set Value And Known LSBs  7320  14  0x0078
     Wait For Peripheral Reading For Set Value And Known LSBs  1046028  14  0x42FC
+
+    [Teardown]             Test Teardown And Cleanup RESD File  ${resdPath}
+
+LIS2DW12 Should Return Multi-Frequency Data - Switch Late
+    ${resdPath}=  Prepare Multi-Frequency Data Test
+
+    # the full low-frequency block #1
+    FOR  ${i}  IN RANGE  32
+        Acceleration Should Be  0  ${i}  # the first low-frequency block has values 0, 0.001, ...
+        Execute Command        emulation RunFor "0.01"  # play one low-frequency point
+    END
+    # 3 more HF sample periods, staying at the low frequency
+    FOR  ${i}  IN RANGE  3
+        Acceleration Should Be  0  31  # the last low-frequency sample repeating
+        Execute Command        emulation RunFor "0.000625"  # play one high-frequency point
+    END
+    Execute Command        ${ACCEL} SampleRate 1600
+    FOR  ${i}  IN RANGE  32
+        Acceleration Should Be  1  ${i}  # the high-frequency block has values 1, 1.001, ...
+        Execute Command        emulation RunFor "0.000625"  # play one high-frequency point
+    END
+    # 3 more HF sample periods, staying at the high frequency
+    FOR  ${i}  IN RANGE  3
+        Acceleration Should Be  1  31  # the last high-frequency sample repeating
+        Execute Command        emulation RunFor "0.000625"  # play one high-frequency point
+    END
+    Execute Command        ${ACCEL} SampleRate 100
+    FOR  ${i}  IN RANGE  32
+        Acceleration Should Be  2  ${i}  # the second low-frequency block has values 2, 2.001, ...
+        Execute Command        emulation RunFor "0.01"  # play one low-frequency point
+    END
+
+    [Teardown]             Test Teardown And Cleanup RESD File  ${resdPath}
+
+LIS2DW12 Should Return Multi-Frequency Data - Switch Early
+    ${resdPath}=  Prepare Multi-Frequency Data Test
+
+    # the first 16 samples of low-frequency block #1
+    FOR  ${i}  IN RANGE  16
+        Acceleration Should Be  0  ${i}  # the first low-frequency block has values 0, 0.001, ...
+        Execute Command        emulation RunFor "0.01"  # play one low-frequency point
+    END
+    Execute Command        ${ACCEL} SampleRate 1600
+    # the first 20 samples of the high-frequency block
+    FOR  ${i}  IN RANGE  20
+        Acceleration Should Be  1  ${i}  # the high-frequency block has values 1, 1.001, ...
+        Execute Command        emulation RunFor "0.000625"  # play one high-frequency point
+    END
+    Execute Command        ${ACCEL} SampleRate 100
+    FOR  ${i}  IN RANGE  32
+        Acceleration Should Be  2  ${i}  # the second low-frequency block has values 2, 2.001, ...
+        Execute Command        emulation RunFor "0.01"  # play one low-frequency point
+    END
 
     [Teardown]             Test Teardown And Cleanup RESD File  ${resdPath}

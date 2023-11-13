@@ -124,3 +124,4 @@
 - tests/peripherals/SynopsysDWCEthernetQualityOfService.robot
 - tests/unit-tests/ARMv8R_TCM.robot
 - tests/tools/execution_tracer_reader.robot
+- tests/peripherals/LIS2DW12.robot
