@@ -81,17 +81,30 @@ Wait For Peripheral Reading For Set Value And Known LSBs
     Wait For Log Entry     result: ${lsbs}  timeout=2  pauseEmulation=true  keep=true
     Wait For Peripheral Reading  ${microg}  ${resolution}
 
+Create RESD File
+    [Arguments]  ${resdArgs}
+    ${resdPath}=  Evaluate  tempfile.mktemp()  tempfile
+    ${resdArgs}=  Catenate  SEPARATOR=,  ${resdArgs}  r"${resdPath}"
+
+    Execute Python Script  ${CSV2RESD}  ${resdArgs}
+
+    [Return]  ${resdPath}
+
+Test Teardown And Cleanup RESD File
+    [Arguments]  ${resdPath}
+
+    Test Teardown
+    Remove File  ${resdPath}
+
 LIS2DW12 Should Return Data From RESD
     [Arguments]  ${firmware}  ${resolution}
-    ${resdPath}=  Evaluate  tempfile.mktemp()  tempfile
     ${resdArgs}=  Catenate  SEPARATOR=,
-                  ...       "--input", "${CURDIR}/LIS2DW12-samples.csv"
+                  ...       "--input", r"${CURDIR}/LIS2DW12-samples.csv"
                   ...       "--frequency", "1"
                   ...       "--start-time", "0"
                   ...       "--map", "acceleration:x,y,z:x,y,z"
-                  ...       "${resdPath}"
 
-    Execute Python Script  ${CSV2RESD}  ${resdArgs}
+    ${resdPath}=  Create RESD File  ${resdArgs}
 
     Create Machine
 
@@ -114,17 +127,23 @@ LIS2DW12 Should Return Data From RESD
     # Otherwise set sample will be overridden by the one fed from RESD.
     Execute Command        emulation RunFor "1"
 
-    [Teardown]             Remove File  ${resdPath}
+    [Return]  ${resdPath}
 
 *** Test Cases ***
 LIS2DW12 Should Return Data From RESD In 12-Bit Mode
-    LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE}  12
+    ${resdPath}=  LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE}  12
+
+    # Test Teardown must be called from a test teardown as it uses Run Keyword If Test Failed, so
+    # we have to repeat this here instead of in LIS2DW12 Should Return Data From RESD
+    [Teardown]             Test Teardown And Cleanup RESD File  ${resdPath}
 
 LIS2DW12 Should Return Data From RESD In 14-Bit Mode
-    LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE_14BIT}  14
+    ${resdPath}=  LIS2DW12 Should Return Data From RESD  ${ACCEL_POLLING_SAMPLE_14BIT}  14
 
     # Additionally verify the examples from ST AN5038. In the app note the calculated
     # mg values are rounded to integers, these are exact values.
     Wait For Peripheral Reading For Set Value And Known LSBs  -40992  14  0xFD60
     Wait For Peripheral Reading For Set Value And Known LSBs  7320  14  0x0078
     Wait For Peripheral Reading For Set Value And Known LSBs  1046028  14  0x42FC
+
+    [Teardown]             Test Teardown And Cleanup RESD File  ${resdPath}
