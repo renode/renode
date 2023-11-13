@@ -83,8 +83,7 @@ Wait For Peripheral Reading For Set Value And Known LSBs
 
 LIS2DW12 Should Return Data From RESD
     [Arguments]  ${firmware}  ${resolution}
-    ${tmpDir}=    Evaluate  tempfile.mkdtemp()  tempfile
-    ${resdPath}=  Set Variable  ${tmpDir}/samples.resd
+    ${resdPath}=  Evaluate  tempfile.mktemp()  tempfile
     ${resdArgs}=  Catenate  SEPARATOR=,
                   ...       "--input", "${CURDIR}/LIS2DW12-samples.csv"
                   ...       "--frequency", "1"
@@ -115,7 +114,7 @@ LIS2DW12 Should Return Data From RESD
     # Otherwise set sample will be overridden by the one fed from RESD.
     Execute Command        emulation RunFor "1"
 
-    [Teardown]             Remove Directory  ${tmpDir}  recursive=true
+    [Teardown]             Remove File  ${resdPath}
 
 *** Test Cases ***
 LIS2DW12 Should Return Data From RESD In 12-Bit Mode
