@@ -22,5 +22,6 @@ packages
 #verilator trace files
 *.vcd
 
+.DS_Store
 perf.data
 perf.script
