@@ -1,3 +1,7 @@
 matplotlib
 pandas
 numpy
+# Pillow is a dependency of `matplotlib`.
+# Version at least 10.0.1 is recommended to avoid security vulnerabilities.
+# https://security.snyk.io/vuln/SNYK-PYTHON-PILLOW-5918878
+Pillow>=10.0.1
