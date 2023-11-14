@@ -1,6 +1,7 @@
-cpu: CPU.ARMv7R @ sysbus
+cpu0: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
+    cpuId: 0
 
 scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xae000000
 
@@ -8,11 +9,13 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xae000100; size: 0x100; region: "cpuInterface" };
         sysbus new Bus.BusMultiRegistration { address: 0xae001000; size: 0x1000; region: "distributor" }
     }
-    0 -> cpu@0
+    [0,1] -> cpu0@[0,1]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
     supportsTwoSecurityStates: false
 
-privateTimer: Timers.ARM_PrivateTimer @ sysbus <0xae000600, +0x200>
+privateTimer0: Timers.ARM_PrivateTimer @ {
+        sysbus new Bus.BusPointRegistration { address: 0xae000600; cpu: cpu0 }
+    }
     -> gic#0@29
     frequency: 667000000
 
