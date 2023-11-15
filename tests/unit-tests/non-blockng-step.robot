@@ -1,7 +1,3 @@
-*** Settings ***
-Test Timeout             2 minutes
-
-
 *** Variables ***
 ${URI}                   @https://dl.antmicro.com/projects/renode
 

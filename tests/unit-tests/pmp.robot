@@ -1,7 +1,3 @@
-*** Settings ***
-Test Timeout                        2 minutes
-
-
 *** Variables ***
 ${MTVEC}                            0x80080000
 
