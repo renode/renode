@@ -67,9 +67,16 @@ Wait For Peripheral Reading For Set Value And Known LSBs
     [Arguments]  ${microg}  ${resolution}  ${lsbs}
 
     ${g}=  Format Fixed Point Integer As Decimal  ${microg}  6
+    # For LIS2DW12 operating in FIFO mode, setting `DefaultAcceleration` would be enough 
+    # as it would start returning default samples after RESD stream is finished.
+    # For Bypass mode it needs to be set explicitly (through `Acceleration` properties),
+    # because the actual sample is kept until it is overwritten by a new sample.
     Execute Command        ${ACCEL} DefaultAccelerationX ${g}
     Execute Command        ${ACCEL} DefaultAccelerationY ${g}
     Execute Command        ${ACCEL} DefaultAccelerationZ ${g}
+    Execute Command        ${ACCEL} AccelerationX ${g}
+    Execute Command        ${ACCEL} AccelerationY ${g}
+    Execute Command        ${ACCEL} AccelerationZ ${g}
     # Wait for the expected LSBs value keeping the entry for use by the following keyword
     Wait For Log Entry     result: ${lsbs}  timeout=2  pauseEmulation=true  keep=true
     Wait For Peripheral Reading  ${microg}  ${resolution}
@@ -103,6 +110,10 @@ LIS2DW12 Should Return Data From RESD
     Wait For Peripheral Reading  700000  ${resolution}
     Wait For Peripheral Reading  -100000  ${resolution}
     Wait For Peripheral Reading  -200000  ${resolution}
+
+    # Run for an additional second to allow RESD stream to finish before setting an actual sample to an arbitrary value.
+    # Otherwise set sample will be overridden by the one fed from RESD.
+    Execute Command        emulation RunFor "1"
 
     [Teardown]             Remove Directory  ${tmpDir}  recursive=true
 
