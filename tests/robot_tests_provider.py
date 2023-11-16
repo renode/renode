@@ -625,6 +625,13 @@ class RobotTestSuite(object):
                                 if suite_name not in failed_suites:
                                     os.remove(fpath)
 
+                    # If the logs directory is empty, delete it
+                    try:
+                        os.rmdir(dirpath)
+                    except OSError:
+                        pass
+
+
     def should_retry_suite(self, options, iteration_index, suite_retry_index):
         tree = None
         assert self.suite_log_files is not None, "The suite has not yet been run."
