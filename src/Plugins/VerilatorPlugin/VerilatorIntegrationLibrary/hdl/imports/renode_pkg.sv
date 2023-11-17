@@ -254,4 +254,3 @@ package renode_pkg;
     endtask
   endclass
 endpackage
-

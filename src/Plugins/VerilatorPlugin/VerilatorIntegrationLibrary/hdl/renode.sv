@@ -203,4 +203,3 @@ module renode #(
     bus_peripheral.write_respond(0);
   endtask
 endmodule
-
