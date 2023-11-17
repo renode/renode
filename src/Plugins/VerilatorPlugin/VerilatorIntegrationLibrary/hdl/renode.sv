@@ -7,12 +7,11 @@
 
 `timescale 1ns / 1ps
 
-import renode_pkg::renode_connection, renode_pkg::bus_connection, renode_pkg::timeout_checker;
+import renode_pkg::renode_connection, renode_pkg::bus_connection;
 import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t, renode_pkg::valid_bits_e;
 
 module renode #(
     int unsigned BusControllersCount = 0,
-    int unsigned BusControllerTimeout = 100,
     int unsigned BusPeripheralsCount = 0,
     int unsigned InterruptsCount = 1
 ) (
@@ -113,40 +112,18 @@ module renode #(
   endtask
 
   task automatic read_from_bus(address_t address, valid_bits_e data_bits);
-    // This task is automatic to separate timeout handling between calls.
-    // The timeout is a reference variable to work around a Verilator bug.
     data_t data = 0;
     bit is_error = 0;
-    timeout_checker timeout = new();
+    bus_controller.read(address, data_bits, data, is_error);
 
-    fork
-      timeout.wait_until_timeout(clk, BusControllerTimeout);
-      bus_controller.read(address, data_bits, data, is_error);
-    join_any
-
-    if (timeout.is_error) begin
-      connection.log(renode_pkg::LogWarning, "Bus read access timeout");
-      is_error = 1;
-    end
     if (is_error) connection.send(message_t'{renode_pkg::error, 0, 0});
     else connection.send(message_t'{renode_pkg::readRequest, address, data});
   endtask
 
   task automatic write_to_bus(address_t address, valid_bits_e data_bits, data_t data);
-    // This task is automatic to separate timeout handling between calls.
-    // The timeout is a reference variable to work around a Verilator bug.
     bit is_error = 0;
-    timeout_checker timeout = new();
+    bus_controller.write(address, data_bits, data, is_error);
 
-    fork
-      timeout.wait_until_timeout(clk, BusControllerTimeout);
-      bus_controller.write(address, data_bits, data, is_error);
-    join_any
-
-    if (timeout.is_error) begin
-      connection.log(renode_pkg::LogWarning, "Bus write access timeout");
-      is_error = 1;
-    end
     if (is_error) connection.send(message_t'{renode_pkg::error, 0, 0});
     else connection.send(message_t'{renode_pkg::ok, 0, 0});
   endtask
