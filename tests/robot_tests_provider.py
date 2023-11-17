@@ -14,6 +14,7 @@ import re
 from collections import OrderedDict, defaultdict
 from time import monotonic, sleep
 from typing import List, Dict, Tuple, Set
+from argparse import Namespace
 
 import robot
 import xml.etree.ElementTree as ET
@@ -765,7 +766,33 @@ class RobotTestSuite(object):
                 if os.path.isfile(log_file):
                     self.suite_log_files.append(log_file)
 
+        if options.runner == "mono":
+            self.copy_mono_logs(options, iteration_index, suite_retry_index)
+
         return TestResult(result.return_code == 0, self.suite_log_files)
+
+
+    def copy_mono_logs(self, options: Namespace, iteration_index: int, suite_retry_index: int) -> None:
+        """Copies 'mono_crash.*.json' files into the suite's logs directory.
+
+        These files are occasionally created when mono crashes. There are also 'mono_crash.*.blob'
+        files, but they contain heavier memory dumps and have questionable usefulness."""
+        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
+        logs_dir = os.path.join(output_dir, "logs")
+        for dirpath, dirnames, fnames in os.walk(os.getcwd()):
+            # Do not descend into "logs" directories, to prevent later invocations from
+            # stealing files already moved by earlier invocations
+            logs_indices = [x for x in range(len(dirnames)) if dirnames[x] == "logs"]
+            logs_indices.sort(reverse=True)
+            for logs_idx in logs_indices:
+                del dirnames[logs_idx]
+
+            for fname in filter(lambda x: x.startswith("mono_crash.") and x.endswith(".json"), fnames):
+                os.makedirs(logs_dir, exist_ok=True)
+                src_fpath = os.path.join(dirpath, fname)
+                dest_fpath = os.path.join(logs_dir, fname)
+                print(f"Moving mono_crash file: '{src_fpath}' -> '{dest_fpath}'")
+                os.rename(src_fpath, dest_fpath)
 
 
     @staticmethod
