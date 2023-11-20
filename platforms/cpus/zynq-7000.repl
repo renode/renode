@@ -74,6 +74,9 @@ cpu: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
     genericInterruptController: gic
 
+pmu: Miscellaneous.ArmPerformanceMonitoringUnit @ cpu
+    -> gic@5
+
 qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
     -> gic@19
 

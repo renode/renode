@@ -8,6 +8,9 @@ cpu0: CPU.ARMv7R @ sysbus
         RegisterTCMRegion sysbus.atcm0 1         0
         RegisterTCMRegion sysbus.btcm0 0         0
 
+pmu0: Miscellaneous.ArmPerformanceMonitoringUnit @ cpu0
+    -> gic@5
+
 ddrLow0: Memory.MappedMemory @ sysbus 0x10000
     size: 0x10000
 
