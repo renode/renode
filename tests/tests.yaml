@@ -125,3 +125,4 @@
 - tests/unit-tests/ARMv8R_TCM.robot
 - tests/tools/execution_tracer_reader.robot
 - tests/peripherals/LIS2DW12.robot
+- tests/unit-tests/arm-performance-monitoring-unit.robot
