@@ -54,18 +54,30 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<char> EscapeCharacter = Parse.Char('\\');
 
+        public static readonly Parser<char> NumberSeparator = Parse.Char('_');
+
         public static readonly Parser<string> RightArrow = Parse.String("->").Text().Token().Named("arrow");
 
         public static readonly Parser<string> HexadecimalPrefix = Parse.String("0x").Text();
 
-        public static readonly Parser<long> DecimalLong = Parse.Number.Select(x => long.Parse(x)).Token().Named("decimal number");
+        public static readonly Parser<string> DigitSequence =
+            (from digits in Parse.Number
+             from digitsContinuation in NumberSeparator.Then(_ => Parse.Number).Many().Select(x => String.Join(String.Empty, x))
+             select digits + digitsContinuation);
 
-        public static readonly Parser<ulong> DecimalUnsignedLong = Parse.Number.Select(x => ulong.Parse(x)).Token().Named("decimal non-negative number");
+        public static readonly Parser<long> DecimalLong = DigitSequence.Select(x => long.Parse(x)).Token().Named("decimal number");
+
+        public static readonly Parser<ulong> DecimalUnsignedLong = DigitSequence.Select(x => ulong.Parse(x)).Token().Named("decimal non-negative number");
 
         public static readonly Parser<char> HexadecimalDigit = Parse.Chars("0123456789ABCDEFabcdef");
 
+        public static readonly Parser<string> HexadecimalDigitSequence =
+            (from hexadecimalDigits in HexadecimalDigit.AtLeastOnce().Text()
+             from hexadecimalDigitsContinuation in NumberSeparator.Then(_ => HexadecimalDigit.AtLeastOnce().Text()).Many().Select(x => String.Join(String.Empty, x))
+             select hexadecimalDigits + hexadecimalDigitsContinuation);
+
         public static readonly Parser<ulong> HexadecimalUnsignedLong =
-            HexadecimalPrefix.Then(x => HexadecimalDigit.AtLeastOnce().Text().Select(y => ulong.Parse(y, System.Globalization.NumberStyles.HexNumber))).Token().Named("hexadecimal number");
+            HexadecimalPrefix.Then(x => HexadecimalDigitSequence.Select(y => ulong.Parse(y, System.Globalization.NumberStyles.HexNumber))).Token().Named("hexadecimal number");
 
         public static readonly Parser<uint> HexadecimalUnsignedInt = HexadecimalUnsignedLong.Select(x => (uint)x);
         public static readonly Parser<int> HexadecimalInt = HexadecimalUnsignedLong.Select(x => (int)x);
@@ -76,12 +88,12 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<string> HexadecimalNumberWithSign =
             (from sign in Minus.Optional()
              from prefix in HexadecimalPrefix
-             from digits in HexadecimalDigit.AtLeastOnce().Text()
+             from digits in HexadecimalDigitSequence
              select (sign.IsDefined ? "-" : "") + prefix + digits).Token().Named("hexadecimal number");
 
         public static readonly Parser<string> DecimalNumberWithSign =
             (from sign in Minus.Optional()
-             from integerPart in Parse.Number
+             from integerPart in DigitSequence
              from fractionalPart in (Parse.Char('.').Then(x => Parse.Number.Select(y => x + y))).Optional()
              select (sign.IsDefined ? "-" : "") + integerPart + fractionalPart.GetOrElse("")).Token().Named("decimal number");
 
