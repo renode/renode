@@ -156,7 +156,7 @@ Prepare Multi-Frequency Data Test
 
     # The accelerometer starts at 100 Hz, which we'll call the "low frequency"
     Execute Command        ${ACCEL} SampleRate 100
-    Execute Command        ${ACCEL} FeedAccelerationSamplesFromRESD @${resdPath} 0 0 0 0 MultiFrequency
+    Execute Command        ${ACCEL} FeedAccelerationSamplesFromRESD @${resdPath} type=MultiFrequency
 
     [Return]  ${resdPath}
 
