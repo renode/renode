@@ -104,6 +104,12 @@ def install_cli_arguments(parser):
                         default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
                         help=".NET runner.")
 
+    parser.add_argument("--net",
+                        dest="runner",
+                        action="store_const",
+                        const="dotnet",
+                        help="Use .NET Core runner (alias for --runner=dotnet).")
+
     parser.add_argument("--debug-on-error",
                         dest="debug_on_error",
                         action="store_true",
