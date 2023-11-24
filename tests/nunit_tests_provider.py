@@ -101,9 +101,8 @@ class NUnitTestSuite(object):
         # The easiest workaround is to set VSTEST_HOST_DEBUG=1 in your environment
         if options.stop_on_error:
             args.append('--stoponerror')
-        if (platform.startswith("linux") or platform == "darwin"):
-            if not options.runner == 'dotnet':
-                args.insert(0, 'mono')
+        if (platform.startswith("linux") or platform == "darwin") and options.runner != 'dotnet':
+            args.insert(0, 'mono')
             if options.port is not None:
                 if options.suspend:
                     print('Waiting for a debugger at port: {}'.format(options.port))
