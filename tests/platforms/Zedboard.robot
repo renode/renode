@@ -1,5 +1,5 @@
 *** Settings ***
-Library                             QuarkC1000/quark_helper.py    # used for 'Precofingure Macos' keyword
+Library                             tap_helper.py    # used for 'Precofingure Macos' keyword
 
 *** Variables ***
 ${UART}                             sysbus.uart0

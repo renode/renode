@@ -5,7 +5,7 @@ Library                       quark_helper.py
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uartB
 ${URI}                        @https://dl.antmicro.com/projects/renode
-${SCRIPT}                     ${CURDIR}/../../../scripts/single-node/quark_c1000.resc
+${SCRIPT}                     ${CURDIR}/../../scripts/single-node/quark_c1000.resc
 
 *** Test Cases ***
 Should Run Hello World
@@ -142,36 +142,3 @@ Should Talk Over Network Using Ethernet
     
         Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
     END
-
-Should Serve Webpage Using Tap
-    [Documentation]           Runs Zephyr's 'net/http' sample on Quark C1000 platform with external ENC28J60 ethernet module.
-    [Tags]                    zephyr  uart  spi  ethernet  gpio  tap  skip_windows
-    # the demo hangs for a long time on Windows, due to bugs in Quark binary
-    # but we can't use a timeout here, because Windows doesn't respect timeouts
-    # we need to skip the test, so it doesn't hang our CI
-    Set Test Variable         ${TAP_INTERFACE}     tap0
-    Set Test Variable         ${TAP_INTERFACE_IP}  192.0.2.1
-    Set Test Variable         ${SERVER_IP}         192.0.2.2
-    Set Test Variable         ${SERVER_PORT}       8000
-
-    Execute Command           emulation CreateSwitch "switch"
-
-    Execute Command           emulation CreateTap "${TAP_INTERFACE}" "tap"
-
-    Preconfigure Macos        tap0  ${TAP_INTERFACE_IP}  255.255.255.0
-    Network Interface Should Have Address  ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
-
-    Execute Command           connector Connect host.tap switch
-
-    Execute Command           $bin = ${URI}/http_server-s_819052-7ddc5a39c953a6330ca4971bd99bda1ea2a5beca
-    Execute Script            ${SCRIPT}
-    Execute Command           connector Connect spi1.ethernet switch
-    Create Terminal Tester    ${UART}
-
-    Start Emulation
-    Wait For Line On Uart     Address: ${SERVER_IP}, port: ${SERVER_PORT}
-    Execute Command           spi0.lm74 Temperature 32.5
-
-    ${resp}=                  Get Request  http://${SERVER_IP}:${SERVER_PORT}/index.html
-    Should Contain            ${resp.text}  It Works!
-    Should Contain            ${resp.text}  Temperature: 32.500
