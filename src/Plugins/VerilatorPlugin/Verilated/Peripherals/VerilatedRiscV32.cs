@@ -93,6 +93,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
             this.Log(LogLevel.Warning, "RemoveHook not implemented");
         }
 
+        public void AddHookAtWfiStateChange(Action<bool> hook)
+        {
+            this.Log(LogLevel.Warning, "AddHookAtWfiStateChange not implemented");
+        }
+
         public void RemoveHooksAt(ulong addr)
         {
             this.Log(LogLevel.Warning, "RemoveHooksAt not implemented");

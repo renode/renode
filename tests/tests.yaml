@@ -128,3 +128,4 @@
 - tests/unit-tests/arm-performance-monitoring-unit.robot
 - tests/peripherals/ARM_GenericInterruptController.robot
 - tests/platforms/Versatile.robot
+- tests/unit-tests/arm-wfi-hook.robot
