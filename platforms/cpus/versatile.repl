@@ -13,7 +13,7 @@ pci: PCI.VersatilePCI @ {
 memory: Memory.MappedMemory @ sysbus 0
     size: 0x10000000
 
-pic: IRQControllers.PL190 @ sysbus <0x10140000, +0x1000>
+pic: IRQControllers.PL190_VIC @ sysbus 0x10140000
     [IRQ, FIQ] -> cpu@[0,1]
 
 sic: IRQControllers.SIC @ sysbus <0x10003000, +0x1000>
