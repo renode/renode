@@ -5,3 +5,11 @@ using "platforms/boards/ck-ra6m5.repl"
 barometer: Sensors.ICP_101xx @ sci0 0x63
 
 hs3001: Sensors.HS3001 @ sci0 0x44
+
+iaq: Sensors.ZMOD4xxx @ sci0 0x33
+    model: Model.ZMOD4510
+    IRQ -> icu@16
+
+oaq: Sensors.ZMOD4xxx @ sci0 0x32
+    model: Model.ZMOD4410
+    IRQ -> icu@5

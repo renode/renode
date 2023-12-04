@@ -4,6 +4,8 @@ ${AGT_ELF}                          renesas_ra6m5--agt.elf-s_303444-613fbe7bc11e
 ${HELLO_WORLD_ELF}                  ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
 ${AWS_SCI_ICP10101_ELF}             renesas_ra6m5--aws-icp10101.elf-s_795916-3d68631f0fdfc3838fdba768d3a6d46312707ae3
 ${AWS_SCI_HS3001_ELF}               renesas_ra6m5--aws-hs3001.elf-s_758320-642c83fb428d4ccc1e35c2908178de232744dbad
+${AWS_ZMOD4510_ELF}                 renesas_ra6m5--aws-zmod4510.elf-s_807176-4b4d580be7d9876f822205349432d3ea68172a17
+${AWS_ZMOD4410_ELF}                 renesas_ra6m5--aws-zmod4410.elf-s_808224-8d79f1a1ff242d00131c12298f64420df21bc1d3
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -158,3 +160,30 @@ Should Get Correct Readouts from the HS3001
     Execute Command                 sysbus.sci0.hs3001 DefaultHumidity 100
     Wait For Line On Uart           Temperature:\\s+125.000  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+100.000  treatAsRegex=true
+
+Should Read From The ZMOD4510 Sensor
+    Prepare Machine With IIC Sensors           ${AWS_ZMOD4510_ELF}
+    Prepare SEGGER_RTT
+
+    Wait For Line On Uart           ZMOD4510 sensor setup success
+    # Sensor readouts depend on the "InitConfigurationRValue", "Rvalue" and "Configuration".
+    # This test uses the default values, but it can be set using those properties
+    # As the algorithm for calculating the final result is proprietary, we expose a way of providing the complete RField input vector
+    Wait For Line On Uart           OAQ: 231.935
+    Wait For Line On Uart           OAQ: 099.132
+
+Should Read From The ZMOD4410 Sensor
+    Prepare Machine With IIC Sensors           ${AWS_ZMOD4410_ELF}
+    Prepare SEGGER_RTT
+
+    Wait For Line On Uart         ZMOD4410 sensor setup success
+    # Sensor readouts depend on the "InitConfigurationRValue", "Rvalue" , "ProductionData" and "Configuration".
+    # This test uses the default values, but it can be set using those properties
+    # As the algorithm for calculating the final result is proprietary, we expose a way of providing the complete RField input vector
+    Wait For Line On Uart         TVOC: 000.014
+    Wait For Line On Uart         ETOH: 000.007
+    Wait For Line On Uart         ECO2: 401.176
+    # Readouts should soon stabilize
+    Wait For Line On Uart         TVOC: 000.015
+    Wait For Line On Uart         ETOH: 000.008
+    Wait For Line On Uart         ECO2: 404.523
