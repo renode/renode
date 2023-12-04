@@ -1,0 +1,13 @@
+using sysbus
+$name?="andes_ae350"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/andes_ae350_n25.repl
+showAnalyzer uart1
+
+macro reset
+"""
+    sysbus LoadELF @https://dl.antmicro.com/projects/renode/andes_ae250_n25--zephyr-shell_module.elf-s_1042024-25a28a78beb3cf27b53894fa50e3192811e27b6b
+"""
+
+runMacro $reset

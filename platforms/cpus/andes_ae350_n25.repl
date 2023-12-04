@@ -1,0 +1,18 @@
+dram: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000000
+
+uart1: UART.NS16550 @ sysbus 0xf0300020
+    wideRegisters: true
+    ->plic@9
+
+cpu0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32gc_xandes"
+    hartId: 0
+    timeProvider: empty
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_11
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xe4000000
+    numberOfSources: 1023
+    numberOfContexts: 9
+    prioritiesEnabled: true
+    0->cpu0@11
