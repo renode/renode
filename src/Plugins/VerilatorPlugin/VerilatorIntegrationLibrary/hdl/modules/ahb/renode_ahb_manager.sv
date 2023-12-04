@@ -97,6 +97,7 @@ module renode_ahb_manager (
         `endif
 
         @(posedge clk);
+        bus.HSEL = 1;
         bus.HADDR = address;
         bus.HWRITE = '0;
         bus.HBURST = '0;
@@ -106,6 +107,7 @@ module renode_ahb_manager (
         data = bus.HRDATA;
         bus.HTRANS = '0;
         is_error = check_response(bus.HRESP);
+        bus.HSEL = '0;
 
         `ifdef RENODE_DEBUG
         $display("AHB manager: read data = %h", data);
