@@ -26,6 +26,9 @@ Create Machine
     Execute Command                 sysbus WriteDoubleWord 0x1000 0xE320F000  # nop
     Execute Command                 sysbus WriteDoubleWord 0x1004 0xEAFFFFFD  # b to 0x1000
 
+    # Set predefined PerformanceInMips, so it's possible to calculate
+    # the number of expected instructions to execute in the given time frame
+    Execute Command                 cpu PerformanceInMips 100
     Execute Command                 cpu PC 0x1000
 
 Set Register Bits
@@ -42,6 +45,16 @@ Clear Register Bits
 
     Execute Command                 cpu.pmu SetRegister ${regName} ${mask}
 
+Assert Bit Set
+    [Arguments]                     ${value}  ${bit}
+    ${isSet}=                       Evaluate  (${value} & (1 << ${bit})) > 0
+    Should Be True                  ${isSet}
+
+Assert Bit Unset
+    [Arguments]                     ${value}  ${bit}
+    ${isNotSet}=                    Evaluate  (${value} & (1 << ${bit})) == 0
+    Should Be True                  ${isNotSet}
+
 Enable PMU
     Set Register Bits               "PMCR"  1
 
@@ -56,10 +69,23 @@ Reset PMU Cycle Counter
 
 Set Cycles Divisor 64
     [Arguments]                     ${divisor}
-    IF  $divisor
+    IF  ${divisor}
         Set Register Bits               "PMCR"  9
     ELSE
         Clear Register Bits             "PMCR"  9
+    END
+
+Switch Privilege Mode
+    [Arguments]                     ${privileged}
+    # use CPSR to switch between PL0/PL1
+    IF  ${privileged}  # PL1 - SVC mode
+        ${cpsr}=                        Execute Command  cpu CPSR
+        ${cpsr}=                        Evaluate  (int(${cpsr}) & ~0x1F ) | 0x13
+        Execute Command                 cpu CPSR ${cpsr}
+    ELSE  # PL0
+        ${cpsr}=                        Execute Command  cpu CPSR
+        ${cpsr}=                        Evaluate  (int(${cpsr}) & ~0x1F ) | 0x10
+        Execute Command                 cpu CPSR ${cpsr}
     END
 
 Enable PMU Counter
@@ -117,6 +143,17 @@ Assert PMU IRQ Is Set
 Assert PMU IRQ Is Unset
     ${irqState}=                    Execute Command  cpu.pmu IRQ
     Should Contain                  ${irqState}  GPIO: unset
+
+Assert PMU Counter Overflowed
+    [Arguments]                     ${counter}
+    # n-th bit denotes overflow status for the n-th PMU counter
+    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
+    Assert Bit Set                  ${overflowStatus}  ${counter}
+
+Assert PMU Counter Not Overflowed
+    [Arguments]                     ${counter}
+    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
+    Assert Bit Unset                ${overflowStatus}  ${counter}
 
 *** Test Cases ***
 Should Count Cycles
@@ -296,14 +333,12 @@ Should Trigger Cycles Overflow
     Assert Executed Instructions Equal To  1000000
     # The value is counter's base value "0xFFF0BDBF" + 1 000 000 expected instructions to execute
     Assert PMU Counter Is Equal To  1  0xFFFFFFFF
-    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
-    Should Be Equal As Integers     ${overflowStatus}  0
+    Assert PMU Counter Not Overflowed  1
     Assert PMU IRQ Is Unset
 
     # It will overflow 1 instruction after, we now execute 100 000, so overflow bit has to be set
     Execute Command                 emulation RunFor "00:00:00.001"
-    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
-    Should Be Equal As Integers     ${overflowStatus}  2  # second counter (Counter number 1)
+    Assert PMU Counter Overflowed   1
     Assert PMU IRQ Is Set
 
     Provides                        cycles-overflow
@@ -327,8 +362,7 @@ Should Overflow Second Time
     Assert Executed Instructions Equal To  3000000
     Assert PMU Counter Is Equal To  2  2
 
-    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
-    Should Be Equal As Integers     ${overflowStatus}  4  # counter 2 overflowed
+    Assert PMU Counter Overflowed   2
 
 Should Increment Bogus Event From Monitor
     # The event is unimplemented, and there will be warnings in the logs
@@ -347,6 +381,53 @@ Should Increment Bogus Event From Monitor
     Execute Command                 cpu.pmu BroadcastEvent ${BOGUS_EVENT_2} 0xFFFFFFFF
     Assert PMU Counter Is Equal To  1  4
 
-    ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
-    Should Be Equal As Integers     ${overflowStatus}  2  # second counter (Counter number 1)
+    Assert PMU Counter Overflowed   1
+    Assert PMU IRQ Is Set
+
+Should Count Instructions With PL Masking
+    Create Machine
+
+    Enable PMU Counter              0
+    Execute Command                 cpu.pmu SetCounterEvent 0 ${INSTRUCTIONS_EVENT} ignoreCountAtPL0=false ignoreCountAtPL1=true
+    Enable PMU
+    Enable Overflow Interrupt For PMU Counter  0
+
+    Execute Command                 emulation RunFor "00:00:00.01"
+    Assert Executed Instructions Equal To  1000000
+    # The counter doesn't count at PL1, so should be zero
+    Assert PMU Counter Is Equal To  0  0
+
+    Switch Privilege Mode           ${False}
+    Execute Command                 emulation RunFor "00:00:00.01"
+    Assert Executed Instructions Equal To  2000000
+    # The PMU counter only counted in PL0, so only 1 000 000 instructions
+    Assert PMU Counter Is Equal To  0  1000000
+
+    Execute Command                 cpu.pmu SetCounterEvent 0 ${INSTRUCTIONS_EVENT} ignoreCountAtPL0=true ignoreCountAtPL1=true
+    # Now, counting at PL0 is disabled too, so PMU counter should not progress
+    Execute Command                 emulation RunFor "00:00:00.01"
+    Assert Executed Instructions Equal To  3000000
+    Assert PMU Counter Is Equal To  0  1000000
+
+    # See that the counter doesn't count and doesn't trigger overflow
+    # Configure counter, so after 3 000 000 instructions it should have overflowed and have the value 2 stored
+    # so it's set to "UINT32_MAX - value + 3"
+    # But it shouldn't count anything at PL0
+    Execute Command                 cpu.pmu SetCounterValue 0 0xFFD23942
+    Execute Command                 emulation RunFor "00:00:00.03"
+    Assert Executed Instructions Equal To  6000000
+    # No progress for the couner
+    Assert PMU Counter Is Equal To  0  0xFFD23942
+    Assert PMU Counter Not Overflowed  0
+    Assert PMU IRQ Is Unset
+
+    # Now, switch the mode back to PL1 and enable counting events there
+    Execute Command                 cpu.pmu SetCounterEvent 0 ${INSTRUCTIONS_EVENT} ignoreCountAtPL0=true ignoreCountAtPL1=false
+    Switch Privilege Mode           ${True}
+
+    # The counter hadn't progressed at all, so it's not necessary to set it's value again
+    Execute Command                 emulation RunFor "00:00:00.03"
+    Assert Executed Instructions Equal To  9000000
+    Assert PMU Counter Is Equal To  0  2
+    Assert PMU Counter Overflowed   0
     Assert PMU IRQ Is Set
