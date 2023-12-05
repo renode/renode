@@ -1,0 +1,153 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu@0
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+rom: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x10000
+
+code_ram: Memory.MappedMemory @ {
+        sysbus 0x10058000;
+        sysbus 0x20058000
+    }
+    size: 0x68000
+
+data_ram: Memory.MappedMemory @ {
+        sysbus 0x200C0000;
+        sysbus 0x100C0000
+    }
+    size: 0x17800
+
+battery_backed_ram: Memory.MappedMemory @ sysbus 0x400AF000
+    // Size should be 0x40
+    size: 0x400
+
+internal_flash: Memory.MappedMemory @ sysbus 0x64000000
+    size: 0x100000
+
+cr_uart1: UART.NPCX_UART @ sysbus 0x400E0000
+    -> nvic@33
+
+cr_uart2: UART.NPCX_UART @ sysbus 0x400E2000
+    -> nvic@32
+
+cr_uart3: UART.NPCX_UART @ sysbus 0x400E4000
+    -> nvic@38
+
+cr_uart4: UART.NPCX_UART @ sysbus 0x400E6000
+    -> nvic@39
+
+itim32_1: Timers.NPCX_ITIM32 @ sysbus 0x400B0000
+    -> nvic@28
+
+itim32_2: Timers.NPCX_ITIM32 @ sysbus 0x400B2000
+    -> nvic@27
+
+itim32_3: Timers.NPCX_ITIM32 @ sysbus 0x400B4000
+    -> nvic@17
+
+itim32_4: Timers.NPCX_ITIM32 @ sysbus 0x400B6000
+    -> nvic@43
+
+itim32_5: Timers.NPCX_ITIM32 @ sysbus 0x400B8000
+    -> nvic@44
+
+itim32_6: Timers.NPCX_ITIM32 @ sysbus 0x400BA000
+    -> nvic@45
+
+image_type: Memory.ArrayMemory @ sysbus 0x4000C009
+    size: 0x1
+
+twd: Timers.NPCX_TWD @ sysbus 0x400D8000
+    -> nvic@31
+
+mtc: Timers.NPCX_MTC @ sysbus 0x400B7000
+
+mdma1: DMA.NPCX_MDMA @ sysbus 0x40011100
+
+mdma2: DMA.NPCX_MDMA @ sysbus 0x40011200
+
+mdma3: DMA.NPCX_MDMA @ sysbus 0x40011300
+
+mdma4: DMA.NPCX_MDMA @ sysbus 0x40011400
+
+mdma5: DMA.NPCX_MDMA @ sysbus 0x40011500
+
+spip: SPI.NPCX_SPIP @ sysbus 0x400D2000
+
+lfcg: Miscellaneous.NPCX_LFCG @ sysbus 0x400B5100
+
+hfcg: Miscellaneous.NPCX_HFCG @ sysbus 0x400B5000
+
+sysbus:
+    init:
+        Tag <0x400C3000 0x400> "System Configuration"
+        Tag <0x40020000 0x1000> "FIU"
+        Tag <0x400F8000 0x400> "FLM"
+        Tag <0x40011000 0x100> "GDMA"
+        Tag <0x400BB000 0x100> "MIWU0"
+        Tag <0x400BD000 0x100> "MIWU1"
+        Tag <0x400BF000 0x100> "MIWU2"
+        Tag <0x40081000 0x100> "GPIO0"
+        Tag <0x40083000 0x100> "GPIO1"
+        Tag <0x40085000 0x100> "GPIO2"
+        Tag <0x40087000 0x100> "GPIO3"
+        Tag <0x40089000 0x100> "GPIO4"
+        Tag <0x4008B000 0x100> "GPIO5"
+        Tag <0x4008D000 0x100> "GPIO6"
+        Tag <0x4008F000 0x100> "GPIO7"
+        Tag <0x40091000 0x100> "GPIO8"
+        Tag <0x40093000 0x100> "GPIO9"
+        Tag <0x40095000 0x100> "GPIOA"
+        Tag <0x40097000 0x100> "GPIOB"
+        Tag <0x40099000 0x100> "GPIOC"
+        Tag <0x4009B000 0x100> "GPIOD"
+        Tag <0x4009D000 0x100> "GPIOE"
+        Tag <0x4009F000 0x100> "GPIOF"
+        Tag <0x400A3000 0x100> "Keyboard scan"
+        Tag <0x400A5000 0x100> "System Glue Functions"
+        Tag <0x400B1000 0x100> "PS/2"
+        Tag <0x400E1000 0x100> "MTF16-1"
+        Tag <0x400E3000 0x100> "MTF16-2"
+        Tag <0x400E5000 0x100> "MTF16-3"
+        Tag <0x400BE000 0x100> "ITIM64"
+        Tag <0x400D7000 0x100> "LTC"
+        Tag <0x40080000 0x100> "PWM0"
+        Tag <0x40082000 0x100> "PWM1"
+        Tag <0x40084000 0x100> "PWM2"
+        Tag <0x40086000 0x100> "PWM3"
+        Tag <0x40088000 0x100> "PWM4"
+        Tag <0x4008A000 0x100> "PWM5"
+        Tag <0x4008C000 0x100> "PWM6"
+        Tag <0x4008E000 0x100> "PWM7"
+        Tag <0x400D1000 0x100> "ADC"
+        Tag <0x40009000 0x100> "SMBUS0"
+        Tag <0x4000B000 0x100> "SMBUS1"
+        Tag <0x400C0000 0x100> "SMBUS2"
+        Tag <0x400C2000 0x100> "SMBUS3"
+        Tag <0x40008000 0x100> "SMBUS4"
+        Tag <0x40017000 0x100> "SMBUS5"
+        Tag <0x40018000 0x100> "SMBUS6"
+        Tag <0x40019000 0x100> "SMBUS7"
+        Tag <0x400D4000 0x100> "PECI"
+        Tag <0x4000F000 0x200> "SHI"
+        Tag <0x400AF100 0x100> "BBRM"
+        Tag <0x4000C000 0x100> "MDC"
+        Tag <0x40007000 0x100> "OTPI"
+        Tag <0x4000D000 0x100> "PMC"
+        Tag <0x400C3000 0x100> "Debugger Interface"
+        Tag <0x400C7000 0x100> "Keyboard and Mouse Interface"
+        Tag <0x400C9000 0x100> "PM1"
+        Tag <0x400CB000 0x100> "PM2"
+        Tag <0x400CD000 0x100> "PM3"
+        Tag <0x400CF000 0x100> "PM4"
+        Tag <0x4000E000 0x100> "Host Modules"
+        Tag <0x40010000 0x80> "SHM"
+        Tag <0x40010080 0x80> "eSHM"
+        Tag <0x400C1000 0x100> "MSWC"
+        Tag <0x4000A000 0x100> "eSPI_SIF"
