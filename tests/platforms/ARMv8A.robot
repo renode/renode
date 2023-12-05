@@ -18,6 +18,7 @@ Create Machine
     Execute Command               machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv${gic_version}.repl
 
     Create Terminal Tester        ${UART}
+    Execute Command               showAnalyzer ${UART}
 
 Step And Verify Accumulator
     [Arguments]    ${expected_value}
@@ -25,6 +26,27 @@ Step And Verify Accumulator
     Execute Command               cpu Step
     ${acc} =  Execute Command     cpu GetRegisterUnsafe 0
     Should Be Equal As Integers   ${acc}  ${expected_value}  base=16
+
+Verify System Registers
+    [Arguments]    ${names}  ${expected_values}
+
+    ${names_length} =   Get Length    ${names}
+    ${values_length} =  Get Length    ${expected_values}
+    Should Be Equal  ${names_length}  ${values_length}
+
+    ${all_values} =  Execute Command    cpu GetAllSystemRegisterValues
+    FOR    ${index}    IN RANGE  ${names_length}
+        ${name} =  Set Variable  ${names[${index}]}
+        ${expected_value} =  Set Variable  ${expected_values[${index}]}
+
+        ${match} =  Get Regexp Matches  ${all_values}  ${name}.*(0x[0-9A-F]+)  1  flags=MULTILINE
+        IF  ${match}
+            Should Be Equal    ${match[0]}    ${expected_value}
+            ...  msg="Invalid value of '${name}' system register: ${match[0]}; expected: ${expected_value}"
+        ELSE
+            Fail  "${name} not found in the system registers list: ${all_values}"
+        END
+    END
 
 Verify Timer Register
     [Arguments]    ${system_register_name}    ${timer_register_name}
@@ -82,6 +104,30 @@ Test Accessing ARM Generic Timer Registers Through AArch64 System Registers
     Verify Timer Register         CNTV_CTL_EL0       EL1VirtualTimerControl
     Verify Timer Register         CNTV_CVAL_EL0      EL1VirtualTimerCompareValue
     Verify Timer Register         CNTV_TVAL_EL0      EL1VirtualTimerValue
+
+Test Accessing System Registers
+    Create Machine
+
+    ${MIDR_val} =         Set Variable  0x410FD034
+    ${new_DAIF} =         Set Variable  0x180
+    ${new_NZCV} =         Set Variable  0xA0000000
+    ${new_SCTLR} =        Set Variable  0xDEADBEEF
+
+    @{register_names} =   Create List   DAIF   MIDR_EL1     NZCV        SCTLR_EL3
+    @{expected_values} =  Create List   0x3C0  ${MIDR_val}  0x40000000  0xC50838
+
+    Verify System Registers       ${register_names}  ${expected_values}
+
+    # MIDR_EL1 is a Read-Only register. Setting it should fail.
+    Run Keyword And Expect Error  KeywordException: *Writing the MIDR_EL1 register isn't supported*
+    ...  Execute Command          cpu SetSystemRegisterValue "MIDR_EL1" 0xDEADBEEF
+
+    Execute Command               cpu SetSystemRegisterValue "DAIF" ${new_DAIF}
+    Execute Command               cpu SetSystemRegisterValue "NZCV" ${new_NZCV}
+    Execute Command               cpu SetSystemRegisterValue "SCTLR_EL3" ${new_SCTLR}
+
+    @{expected_values} =  Create List   ${new_DAIF}  ${MIDR_val}  ${new_NZCV}  ${new_SCTLR}
+    Verify System Registers       ${register_names}  ${expected_values}
 
 Test CRC32X
     Create Machine
