@@ -90,7 +90,7 @@ namespace Antmicro.Renode.RobotFramework
             if(level != null)
             {
                 var innerPredicate = predicate;
-                predicate = x => innerPredicate(x) && x.Type == level;
+                predicate = x => x.Type == level && innerPredicate(x);
             }
             var effectiveTimeout = timeout ?? defaultTimeout;
 
