@@ -261,19 +261,20 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public void CreateLogTester(float timeout)
+        public void CreateLogTester(float timeout, bool? defaultPauseEmulation = null)
         {
+            this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
             logTester = new LogTester(timeout);
             Logging.Logger.AddBackend(logTester, "Log Tester", true);
         }
 
         [RobotFrameworkKeyword]
         public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false,
-            bool pauseEmulation = false, LogLevel level = null)
+            bool? pauseEmulation = null, LogLevel level = null)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex, pauseEmulation, level);
+            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result == null)
             {
                 var logMessages = string.Join("\n ", bufferedMessages);
@@ -283,13 +284,13 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void ShouldNotBeInLog(String pattern, float? timeout = null, bool treatAsRegex = false, LogLevel level = null)
+        public void ShouldNotBeInLog(String pattern, float? timeout = null, bool treatAsRegex = false, bool? pauseEmulation = null, LogLevel level = null)
         {
             CheckLogTester();
 
             // Passing `level` as a named argument causes a compiler crash in Mono 6.8.0.105+dfsg-3.4
             // from Debian
-            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex, false, level);
+            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
@@ -374,6 +375,7 @@ namespace Antmicro.Renode.RobotFramework
 
         private LogTester logTester;
         private string cachedLogFilePath;
+        private bool defaultPauseEmulation;
 
         private readonly Monitor monitor;
 
