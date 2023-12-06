@@ -62,7 +62,7 @@ namespace Antmicro.Renode.RobotFramework
 
                 if(pauseEmulation)
                 {
-                    if(!EmulationManager.Instance.CurrentEmulation.TryGetExecutionContext(out var machine, out var __))
+                    if(!EmulationManager.Instance.CurrentEmulation.TryGetExecutionContext(out var machine, out var cpu) || !cpu.OnPossessedThread)
                     {
                         // we are not on a CPU thread so we can issue a global pause
                         EmulationManager.Instance.CurrentEmulation.PauseAll();
