@@ -46,6 +46,10 @@ ttc0: Timers.Cadence_TTC @ sysbus 0xF8001000
 ttc1: Timers.Cadence_TTC @ sysbus 0xF8002000
     [0-2] -> gic@[37-39]
 
+watchdog0: Timers.Cadence_WDT @ sysbus 0xF8005000
+    frequency: 33333333
+    -> gic@9
+
 privateTimer: Timers.ARM_PrivateTimer @ {
         sysbus new Bus.BusPointRegistration { address: 0xF8F00600; cpu: cpu }
     }

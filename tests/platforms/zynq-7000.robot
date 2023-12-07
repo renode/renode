@@ -19,6 +19,7 @@ ${ZYNQ_UFS_BIN}                     @https://dl.antmicro.com/projects/renode/zyn
 ${ZYNQ_UFS_ROOTFS}                  @https://dl.antmicro.com/projects/renode/zynq--linux-ufs-rootfs.ext2-s_16777216-6f4122f4b1dd932df6636d83503b4f0ca60aac86
 ${ZYNQ_UFS_DTB}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.dtb-s_12720-0dfc729e7c8db7b51c5eb4dfd990cee186de1442
 ${ZYNQ_UFS_TEST_DISK_IMG}           @https://dl.antmicro.com/projects/renode/test-fs-ext2.img-s_524288-67f5bc210d7be8905b4de4ae5d70a8a142459110
+${ZYNQ_WATCHDOG_RESET_DTB}          @https://dl.antmicro.com/projects/renode/zynq--linux-watchdog-reset-on-timeout.dtb-s_12898-a3b65664ac84db801b0dad1525207f304e8a7428
 ${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
 ...                                 """
 ...                                 xspi: SPI.Cadence_xSPI @ {
@@ -297,6 +298,28 @@ Time Should Elapse
     Execute Linux Command           sleep 2
     ${seconds}=                     Get Linux Elapsed Seconds
     Should Be True                  ${seconds_before} < ${seconds}
+
+Watchdog Should Timeout
+    Requires                        logged-in
+    # Restore suppressed messages from the kernel space
+    Execute Linux Command           echo 7 > /proc/sys/kernel/printk
+
+    # Watchdog timeout is specified with -T option.
+    # Watchdog is restarted after period specified with -t option.
+    Write Line To Uart              watchdog -T 2 -t 5 -F /dev/watchdog0
+    Wait For Line On Uart           cdns-wdt f8005000.watchdog: Watchdog timed out. Internal reset not enabled
+
+Watchdog Should Reset On Timeout
+    # 'reset-on-timeout' property was added to watchdog node in dts to cause internal reset on watchdog timeout. 
+    # https://github.com/Xilinx/linux-xlnx/blob/c8b3583bc86352009c6ac61e2ced0e12118f8ebb/Documentation/devicetree/bindings/watchdog/cdns%2Cwdt-r1p2.yaml#L35-L39
+    Execute Command                 $dtb=${ZYNQ_WATCHDOG_RESET_DTB}
+    Create Machine
+    Boot And Login
+
+    # Watchdog timeout is specified with -T option.
+    # Watchdog is restarted after period specified with -t option.
+    Write Line To Uart              watchdog -T 2 -t 5 -F /dev/watchdog0
+    Boot And Login
 
 Should Access SPI Flash Memory Via Additional Cadence xSPI IP
     Execute Command                 $bin=${CADENCE_XSPI_BIN}
