@@ -53,7 +53,6 @@ Create Machine
 
 *** Test Cases ***
 Should Force Interrupt Only To Lowest Id CPU
-    [Tags]                          non_critical
     Execute Command                 emulation SetGlobalSerialExecution true
     Execute Command                 emulation SetAdvanceImmediately true
     Execute Command                 logLevel 3
