@@ -23,6 +23,9 @@ namespace Antmicro.Renode.RobotFramework
         {
             // we need to use synchronous logging in order to pause the emulation precisely
             EmulationManager.Instance.CurrentEmulation.CurrentLogger.SynchronousLogging = true;
+#if TRACE_ENABLED
+            Logger.Log(LogLevel.Warning, "Using LogTester with tracing enabled will cause deadlock on pausing emulation.");
+#endif
 
             this.defaultTimeout = virtualSecondsTimeout;
             messages = new List<LogEntry>();
@@ -62,6 +65,9 @@ namespace Antmicro.Renode.RobotFramework
 
                 if(pauseEmulation)
                 {
+#if TRACE_ENABLED
+                    throw new InvalidOperationException("Pausing emulation in LogTester with tracing enabled causes deadlock.");
+#endif
                     if(!EmulationManager.Instance.CurrentEmulation.TryGetExecutionContext(out var machine, out var cpu) || !cpu.OnPossessedThread)
                     {
                         // we are not on a CPU thread so we can issue a global pause
