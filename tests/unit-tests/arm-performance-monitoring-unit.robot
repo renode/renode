@@ -65,14 +65,14 @@ Reset PMU Counters
     Set Register Bits               "PMCR"  2
 
 Reset PMU Cycle Counter
-    Set Register Bits               "PMCR"  3
+    Set Register Bits               "PMCR"  4
 
 Set Cycles Divisor 64
     [Arguments]                     ${divisor}
     IF  ${divisor}
-        Set Register Bits               "PMCR"  9
+        Set Register Bits               "PMCR"  8
     ELSE
-        Clear Register Bits             "PMCR"  9
+        Clear Register Bits             "PMCR"  8
     END
 
 Switch Privilege Mode
@@ -213,6 +213,8 @@ Should Program PMU Counter To Count Cycles
 Should Program PMU Counter To Count Instructions
     Create Machine
 
+    # Cycles value will be used in dependent tests
+    Enable PMU Counter              31
     Enable PMU
     Execute Command                 cpu.pmu SetCounterEvent 0 ${INSTRUCTIONS_EVENT}
     Enable PMU Counter              0
@@ -229,6 +231,10 @@ Should Reset PMU counters
     Assert PMU Counter Is Equal To  0  112 000 000
     Reset PMU Counters
     Assert PMU Counter Is Equal To  0  0
+
+    Assert PMU Cycle Counter Equal To  112 000 000
+    Reset PMU Cycle Counter
+    Assert PMU Cycle Counter Equal To  0
 
 Should Kick Software Increment
     Create Machine
