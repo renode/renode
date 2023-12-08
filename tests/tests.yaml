@@ -129,3 +129,4 @@
 - tests/peripherals/ARM_GenericInterruptController.robot
 - tests/platforms/Versatile.robot
 - tests/unit-tests/arm-wfi-hook.robot
+- tests/platforms/Renesas_RA6M5.robot
