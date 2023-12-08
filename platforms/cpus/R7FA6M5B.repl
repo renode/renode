@@ -1,0 +1,99 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 32000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic
+
+code_flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x200000
+
+data_flash: Memory.MappedMemory @ sysbus 0x8000000
+    size: 0x2000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x80000
+
+sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
+    size: 0x4
+    initable: true
+    script: "request.value = 0xFF"
+
+gpt: Timers.RenesasRA_GPT @ sysbus 0x40169000
+    numberOf32BitChannels: 4
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0xa00
+
+agt0: Timers.RenesasRA_AGT @ sysbus <0x400e8000,0x400e8013>
+
+sci0: UART.RenesasRA_SCI @ sysbus <0x40118000,0x40118033>
+
+sci1: UART.RenesasRA_SCI @ sysbus <0x40118100,0x40118143>
+
+sci3: UART.RenesasRA_SCI @ sysbus <0x40118300,0x40118333>
+
+icu: IRQControllers.RenesasRA_ICU @ sysbus <0x40006000,0x40006687>
+    interruptsCount: 16
+
+port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40080000,0x40080013>
+    numberOfConnections: 16
+
+port1: GPIOPort.RenesasRA_GPIO @ sysbus <0x40080020,0x40080037>
+    numberOfConnections: 16
+
+portA: GPIOPort.RenesasRA_GPIO @ sysbus <0x40080140,0x40080153>
+    numberOfConnections: 16
+
+portB: GPIOPort.RenesasRA_GPIO @ sysbus <0x40080160,0x40080173>
+    numberOfConnections: 16
+
+sysbus:
+    init:
+        Tag <0x40000000,0x40000673> "RMPU" // Renesas Memory Protection Unit
+        Tag <0x40000e00,0x40000e07> "TZF" // TrustZone Filter
+        Tag <0x40002000,0x400020db> "SRAM" // SRAM Control
+        Tag <0x40003000,0x40004a73> "BUS" // Bus Control
+        Tag <0x40005000,0x40005037> "DMAC0" // Direct memory access controller 0
+        Tag <0x40005200,0x40005247> "DMA" // DMAC Module Activation
+        Tag <0x40005400,0x40005427> "DTC" // Data Transfer Controller
+        Tag <0x40007000,0x4000720b> "CACHE" // CACHE
+        Tag <0x40008000,0x400081b7> "CPSCU" // CPU System Security Control Unit
+        Tag <0x4001b000,0x4001b017> "DBG" // Debug Function
+        Tag <0x4001c100,0x4001c143> "FCACHE" // SYSTEM/FLASH
+        Tag <0x4001e000,0x4001e62b> "SYSC" // System Control
+        Tag <0x40080800,0x40080d37> "PFS" // Control Register
+        Tag <0x40082000,0x40082087> "ELC" // Event Link Controller
+        Tag <0x40083000,0x400830ab> "RTC" // Realtime Clock
+        Tag <0x40083200,0x40083207> "IWDT" // Independent Watchdog Timer
+        Tag <0x40083400,0x4008340b> "WDT" // Watchdog Timer
+        Tag <0x40083600,0x4008360f> "CAC" // Clock Frequency Accuracy Measurement Circuit
+        Tag <0x40084000,0x40084023> "MSTP" // Module Stop Control
+        Tag <0x4008a000,0x4008a307> "POEG" // Port Output Enable Module for GPT
+        Tag <0x40090000,0x4009040b> "USBFS" // USB 2.0 Full-Speed Module
+        Tag <0x40092000,0x400921e7> "SDHI0" // SD Host Interface 0
+        Tag <0x4009d000,0x4009d037> "SSIE0" // Serial Sound Interface Enhanced (SSIE)
+        Tag <0x4009f000,0x4009f023> "IIC0" // Inter-Integrated Circuit 0
+        Tag <0x4009f014,0x4009f01b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
+        Tag <0x400a6000,0x400a6087> "OSPI" // Octa Serial Peripheral Interface
+        Tag <0x400ac000,0x400ac047> "CEC" // Consumer Electronics Control
+        Tag <0x400b0000,0x400c4097> "CANFD" // CANFD
+        Tag <0x400d0000,0x400d0027> "CTSU" // Capacitive Touch Sensing Unit
+        Tag <0x400e0000,0x400e004b> "PSCU" // Peripheral Security Control Unit
+        Tag <0x400f3000,0x400f3003> "TSN" // Temperature Sensor
+        Tag <0x40108000,0x4010800f> "CRC" // Cyclic Redundancy Check Calculator
+        Tag <0x40109000,0x40109007> "DOC" // Data Operation Circuit
+        Tag <0x40111000,0x40111173> "USBHS" // USB 2.0 High-Speed Module
+        Tag <0x40114000,0x401140df> "EDMAC0" // DMA Controller for the Ethernet Controller Channel 0
+        Tag <0x40114100,0x4011420b> "ETHERC0" // Ethernet Controller Channel 0
+        Tag <0x4011a000,0x4011a02f> "SPI0" // Serial Peripheral Interface 0
+        Tag <0x4012f000,0x4012f017> "ECCAFL0" // ECCAFL
+        Tag <0x4012f200,0x4012f217> "ECCMB" // ECCMB
+        Tag <0x40170000,0x401700f3> "ADC120" // 12-bit A/D Converter
+        Tag <0x40170200,0x401702e3> "ADC121" // 12-bit A/D Converter
+        Tag <0x40171000,0x401720c3> "DAC12" // 12-bit D/A converter
+        Tag <0x407fb000,0x407fb183> "TSD" // Temperature Sensor Calibration Data
+        Tag <0x407fc000,0x407fc043> "FLAD" // Data Flash
+        Tag <0x407fe000,0x407fe0eb> "FACI" // Flash/CPU Interface
+        Tag <0x64000000,0x6400080b> "QSPI" // Quad Serial Peripheral Interface

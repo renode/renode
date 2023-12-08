@@ -1,0 +1,77 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 120000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4"
+    nvic: nvic
+
+code_flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+data_flash: Memory.MappedMemory @ sysbus 0x40100000
+    size: 0x2000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x8000
+
+gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
+    numberOf32BitChannels: 2
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0xff0
+
+agt0: Timers.RenesasRA_AGT @ sysbus <0x40084000,0x40084013>
+
+sci0: UART.RenesasRA_SCI @ sysbus <0x40070000,0x40070023>
+
+sci2: UART.RenesasRA_SCI @ sysbus <0x40070040,0x40070063>
+
+icu: IRQControllers.RenesasRA_ICU @ sysbus <0x40006000,0x4000642b>
+    interruptsCount: 16
+
+port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40040000,0x4004000f>
+    numberOfConnections: 16
+
+port1: GPIOPort.RenesasRA_GPIO @ sysbus <0x40040020,0x40040033>
+    numberOfConnections: 16
+
+sysbus:
+    init:
+        Tag <0x4001e000,0x4001ea13> "SYSTEM" // System Control
+        Tag <0x40003000,0x4000486b> "BUS" // BUS Control
+        Tag <0x40044600,0x4004460f> "CAC" // Clock Frequency Accuracy Measurement Circuit
+        Tag <0x40050000,0x40050877> "CAN0" // CAN0 Module
+        Tag <0x4001b000,0x4001b027> "DBG" // Debug Function
+        Tag <0x40074000,0x4007400f> "CRC" // CRC Calculator
+        Tag <0x40081000,0x40081033> "CTSU" // Capacitive Touch Sensing Unit
+        Tag <0x4005e000,0x4005e00b> "DAC12" // 12-bit D/A converter
+        Tag <0x4009e000,0x4009e007> "DAC8" // 8-bit D/A converter
+        Tag <0x40005000,0x4000501f> "DMAC0" // Direct memory access controller 0
+        Tag <0x40005200,0x40005203> "DMA" // DMAC Module Activation
+        Tag <0x40054100,0x40054107> "DOC" // Data Operation Circuit
+        Tag <0x40005400,0x40005413> "DTC" // Data Transfer Controller
+        Tag <0x40041000,0x4004106b> "ELC" // Event Link Controller
+        Tag <0x4001c000,0x4001c11f> "FCACHE" // Flash Cache
+        Tag <0x40040800,0x40040a83> "PFS" // Pmn Pin Function Control Register
+        Tag <0x40040d00,0x40040d07> "PMISC" // Miscellaneous Port Control Register
+        Tag <0x40053000,0x4005301b> "IIC0" // Inter-Integrated Circuit 0
+        Tag <0x40053100,0x40053117> "IIC1" // Inter-Integrated Circuit 1
+        Tag <0x40044400,0x40044407> "IWDT" // Independent Watchdog Timer
+        Tag <0x40080000,0x4008000b> "KINT" // Key Interrupt Function
+        Tag <0x40047000,0x40047013> "MSTP" // Module Stop Control B,C,D
+        Tag <0x40000000,0x4000045f> "MMPU" // Bus Master MPU
+        Tag <0x40000c00,0x40000c3b> "SMPU" // Bus Slave MPU
+        Tag <0x40000d00,0x40000d27> "SPMON" // CPU Stack Pointer Monitor
+        Tag <0x40086000,0x4008600f> "OPAMP" // OperationalAmplifier
+        Tag <0x40042000,0x40042513> "POEG" // Port Output Enable Module for GPT
+        Tag <0x40002000,0x400020db> "SRAM" // SRAM Control
+        Tag <0x40044000,0x400440a7> "RTC" // Realtime Clock
+        Tag <0x40082000,0x4008213b> "SLCDC" // Segment LCD Controller/Driver
+        Tag <0x40072000,0x4007201b> "SPI0" // Serial Peripheral Interface 0
+        Tag <0x40072100,0x4007211b> "SPI1" // Serial Peripheral Interface 1
+        Tag <0x4004e000,0x4004e037> "SSIE0" // Serial Sound Interface Ver.2.0
+        Tag <0x407ec000,0x407ec22b> "TSN" // Temperature Sensor
+        Tag <0x40090000,0x400900e3> "USBFS" // USB 2.0 FS Module
+        Tag <0x40044200,0x4004420b> "WDT" // Watchdog Timer
+        Tag <0x40085e00,0x40085e07> "ACMPLP" // Low-Power Analog Comparator
+        Tag <0x4005c000,0x4005c1e3> "ADC140" // 14bit A/D Converter

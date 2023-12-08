@@ -1,0 +1,63 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 120000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m23"
+    nvic: nvic
+
+code_flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+data_flash: Memory.MappedMemory @ sysbus 0x40100000
+    size: 0x2000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x8000
+
+gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
+    numberOf32BitChannels: 4
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0xff0
+
+agt0: Timers.RenesasRA_AGT @ sysbus <0x40084000, 0x40084013>
+
+sci0: UART.RenesasRA_SCI @ sysbus <0x40070000, 0x4007003b>
+
+icu: IRQControllers.RenesasRA_ICU @ sysbus <0x40006000, 0x4000642b>
+    interruptsCount: 16
+
+port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40040000,0x40040013>
+    numberOfConnections: 16
+
+port1: GPIOPort.RenesasRA_GPIO @ sysbus <0x40040020,0x40040037>
+    numberOfConnections: 16
+
+sysbus:
+    init:
+        Tag <0x40000000,0x40000d27> "RMPU" // Renesas Memory Protection Unit
+        Tag <0x40002000,0x400020db> "SRAM" // SRAM Control
+        Tag <0x40003000,0x40004837> "BUS" // BUS Control
+        Tag <0x40005400,0x40005413> "DTC" // Data Transfer Controller
+        Tag <0x4001b000,0x4001b017> "DBG" // Debug Function
+        Tag <0x4001e000,0x4001e493> "SYSC" // System Control
+        Tag <0x40040800,0x40040d13> "PFS" // Pmn Pin Function Control Register
+        Tag <0x40041000,0x4004105b> "ELC" // Event Link Controller
+        Tag <0x40042000,0x40042107> "POEG" // Port Output Enable Module for GPT
+        Tag <0x40044000,0x4004402f> "RTC" // Realtime Clock
+        Tag <0x40044200,0x4004420b> "WDT" // Watchdog Timer
+        Tag <0x40044400,0x40044407> "IWDT" // Independent Watchdog Timer
+        Tag <0x40044600,0x4004460f> "CAC" // Clock Frequency Accuracy Measurement Circuit
+        Tag <0x40047000,0x40047017> "MSTP" // Module Stop Control B, C, D
+        Tag <0x40050000,0x40050877> "CAN0" // Controller Area Network
+        Tag <0x40053000,0x40053023> "IIC0" // Inter-Integrated Circuit 0
+        Tag <0x40053014,0x4005301b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
+        Tag <0x40054100,0x40054107> "DOC" // Data Operation Circuit
+        Tag <0x4005c000,0x4005c0f7> "ADC120" // 12-bit A/D Converter
+        Tag <0x4005e000,0x4005e00b> "DAC12" // 12-bit D/A converter
+        Tag <0x40072000,0x40072013> "SPI0" // Serial Peripheral Interface 0
+        Tag <0x40074000,0x4007400f> "CRC" // Cyclic Redundancy Check Calculator
+        Tag <0x40080000,0x4008000b> "KINT" // Key Interrupt Function
+        Tag <0x40082000,0x4008203f> "CTSU" // Capacitive Touch Sensing Unit
+        Tag <0x40085e00,0x40085e03> "ACMPLP" // Low-Power Analog Comparator
+        Tag <0x407ec000,0x407effcb> "FLCN" // Flash I/O Registers

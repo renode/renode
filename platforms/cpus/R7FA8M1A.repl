@@ -1,0 +1,95 @@
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 32000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m85"
+    nvic: nvic
+
+code_flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x200000
+
+data_flash: Memory.MappedMemory @ sysbus 0x8000000
+    size: 0x2000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x80000
+
+gpt: Timers.RenesasRA_GPT @ sysbus 0x40322000
+    numberOf32BitChannels: 8
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0x1f00
+
+gpt_ns: Timers.RenesasRA_GPT @ sysbus 0x50322000
+    numberOf32BitChannels: 8
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0x1f00
+
+agt0: Timers.RenesasRA_AGT @ sysbus <0x40221000,0x40221013>
+
+sci0: UART.RenesasRA_SCI @ sysbus <0x40358000,0x4035808b>
+
+icu: IRQControllers.RenesasRA_ICU @ sysbus <0x4000c000,0x4000c687>
+    interruptsCount: 16
+
+port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40400000,0x4040000f>
+    numberOfConnections: 16
+
+port1: GPIOPort.RenesasRA_GPIO @ sysbus <0x40400020,0x40400033>
+    numberOfConnections: 16
+
+sysbus:
+    init:
+        Tag <0x40000000,0x40000e43> "RMPU" // Renesas Memory Protection Unit
+        Tag <0x40002000,0x40002157> "SRAM" // SRAM Control
+        Tag <0x40003000,0x40004c03> "BUS" // BUS Control
+        Tag <0x40004000,0x40004017> "TZF" // TrustZone Filter
+        Tag <0x40006000,0x40006097> "ICU_COMMON" // Common Interrupt Controller
+        Tag <0x40008000,0x40008d03> "CPSCU" // CPU System Security Control Unit
+        Tag <0x4000a000,0x4000a037> "DMAC0" // Direct memory access controller 0
+        Tag <0x4000a800,0x4000a8b3> "DMA" // DMAC Module Activation
+        Tag <0x4000ac00,0x4000ac27> "DTC" // Data Transfer Controller
+        Tag <0x40011000,0x40011307> "CPU_OCD" // On-Chip Debug
+        Tag <0x4001b000,0x4001b317> "CPU_DBG" // Debug Function
+        Tag <0x4001c100,0x4001c143> "FCACHE" // Flash Cache
+        Tag <0x4001e000,0x4001ee2b> "SYSC" // System Control
+        Tag <0x4011b17c,0x4011b183> "TSD" // Temperature Sensor Data
+        Tag <0x4011c000,0x4011c043> "FLAD" // Data Flash
+        Tag <0x4011e000,0x4011e817> "FACI" // Flash Application Command Interface
+        Tag <0x40201000,0x402010fb> "ELC" // Event Link Controller
+        Tag <0x40202000,0x402020ab> "RTC" // Realtime Clock
+        Tag <0x40202200,0x4020220f> "IWDT" // Independent Watchdog Timer
+        Tag <0x40202400,0x4020240f> "CAC" // Clock Frequency Accuracy Measurement Circuit
+        Tag <0x40202600,0x4020260f> "WDT" // Watchdog Timer
+        Tag <0x40203000,0x40203023> "MSTP" // Module Stop Control A,B,C,D,E
+        Tag <0x40204000,0x40204063> "PSCU" // Peripheral Security Control Unit
+        Tag <0x40212000,0x40213027> "POEG" // Port Output Enable Module for GPT
+        Tag <0x40220000,0x4022001b> "ULPT0" // Ultra-Low Power Timer 0
+        Tag <0x40235000,0x40235007> "TSN" // Temperature Sensor
+        Tag <0x40236000,0x40236047> "ACMPHS0" // High-Speed Analog Comparator 0
+        Tag <0x40250000,0x40250527> "USBFS" // USB 2.0 FS Module
+        Tag <0x40252000,0x40252213> "SDHI0" // SD Host Interface 0
+        Tag <0x4025d000,0x4025d037> "SSIE0" // Serial Sound Interface Enhanced (SSIE)
+        Tag <0x4025e000,0x4025e023> "IIC0" // Inter-Integrated Circuit 0
+        Tag <0x4025e014,0x4025e01b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
+        Tag <0x4025e100,0x4025e123> "IIC1" // Inter-Integrated Circuit 1
+        Tag <0x40268000,0x4026823b> "xSPI" // eXpanded SPI
+        Tag <0x40310000,0x4031000f> "CRC" // CRC Calculator
+        Tag <0x40311000,0x4031101b> "DOC" // Data Operation Circuit-4
+        Tag <0x40332000,0x403321e3> "ADC120" // 12bit A/D Converter 0
+        Tag <0x40332200,0x403323e3> "ADC121" // 12bit A/D Converter 1
+        Tag <0x40333000,0x403340c7> "DAC12" // 12-bit D/A converter
+        Tag <0x40342000,0x40343FFF> "GLCDC" // Graphics LCD Controller
+        Tag <0x40344000,0x403440fb> "DRW" // 2D Drawing Engine
+        Tag <0x40346000,0x403469f3> "DSILINK" // DSI Link
+        Tag <0x40346c00,0x40346d47> "DPHYCNT" // D-PHY Controller Top
+        Tag <0x40348000,0x4034a0a7> "CEU" // Capture Engine Unit
+        Tag <0x40351000,0x40351173> "USBHS" // USB 2.0 High-Speed Module
+        Tag <0x40354000,0x403540df> "EDMAC0" // DMA Controller for the Ethernet Controller Channel 0
+        Tag <0x40354100,0x40355983> "ETHERC0" // Ethernet Controller Channel 0
+        Tag <0x4035c000,0x4035c073> "SPI0" // Serial Peripheral Interface 0
+        Tag <0x4035f000,0x4035f403> "I3C" // I2C I3C unified IP
+        Tag <0x4036f200,0x4036f217> "ECCMB0" // Error correction circuit for MBRAM0
+        Tag <0x40380000,0x40381b4b> "CANFD0" // CANFD Module 0
+        Tag <0x40400800,0x40400e37> "PFS" // Pmn Pin Function Control Register
