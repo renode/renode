@@ -104,6 +104,8 @@ rom2: Memory.MappedMemory @ sysbus 0x1FFFC400
 spi1: SPI.STM32SPI @ sysbus 0x40013000
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    IRQ->nvic@35
+    DMARecieve->dma1@3
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
 
