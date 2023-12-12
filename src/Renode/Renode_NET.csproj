@@ -2,8 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
     <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	  <Deterministic>false</Deterministic>
+    <Deterministic>false</Deterministic>
     <OutputPath>..\..\output\bin\$(Configuration)</OutputPath>
     <OutputType>Exe</OutputType>
     <StartupObject>Antmicro.Renode.Program</StartupObject>
@@ -62,6 +61,9 @@
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm64_NET.csproj"/>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs"/>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="..\..\lib\resources\images\windows_setup\renode_nobg.ico">
       <Link>Resources\renode_nobg.ico</Link>
       <LogicalName>renode_nobg.ico</LogicalName>
@@ -74,9 +76,14 @@
       <LogicalName>RobotoMono-Regular.ttf</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="CreateAssemblyVersionInfo" BeforeTargets="PrepareForBuild">
-    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(OS) != 'Windows_NT'" />
-    <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
-    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(OS) == 'Windows_NT'" />
+  <Target Name="SetSourceRevisionId" BeforeTargets="PrepareForBuild">
+    <Exec Command="git rev-parse --short=8 HEAD" StandardOutputImportance="Low" ConsoleToMSBuild="True" IgnoreExitCode="False">
+      <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput"/>
+    </Exec>
+    <PropertyGroup>
+      <AssemblyVersion>$([System.IO.File]::ReadAllText(../../tools/version).Trim()).*</AssemblyVersion>
+      <InformationalVersion>$(SourceRevisionId)-$([System.DateTime]::Now.ToString(yyyyMMddhhmm))</InformationalVersion>
+      <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
   </Target>
 </Project>
