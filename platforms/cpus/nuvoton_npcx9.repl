@@ -67,6 +67,7 @@ twd: Timers.NPCX_TWD @ sysbus 0x400D8000
     -> nvic@31
 
 mtc: Timers.NPCX_MTC @ sysbus 0x400B7000
+    -> nvic@5
 
 mdma1: DMA.NPCX_MDMA @ sysbus 0x40011100
 
