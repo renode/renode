@@ -84,10 +84,41 @@ lfcg: Miscellaneous.NPCX_LFCG @ sysbus 0x400B5100
 
 hfcg: Miscellaneous.NPCX_HFCG @ sysbus 0x400B5000
 
+fiu: SPI.NPCX_FIU @ sysbus 0x40020000
+
+internal_flash_controller: SPI.NPCX_Flash @ fiu
+    fiu: fiu
+    memory: internal_flash
+
+// DEV_CTL4 register from the System Configuration peripheral
+// Its `Write-Protect Internal Flash` bit is used to force
+// write protection of the internal flash
+DEV_CTL4: Python.PythonPeripheral @ sysbus 0x400C3006
+    size: 0x1
+    initable: true
+    script: '''
+if request.isInit:
+    value = 0xA
+    is_locked = False
+    WRITE_PROTECTION = (1 << 5)
+
+elif request.isRead:
+    request.value = value
+
+elif request.isWrite:
+    if is_locked:
+        request.value |= WRITE_PROTECTION
+    elif request.value & WRITE_PROTECTION:
+        is_locked = True
+        self.GetMachine()["sysbus.fiu"].IsLocked = True
+        value = request.value
+
+    value = request.value
+'''
+
 sysbus:
     init:
         Tag <0x400C3000 0x400> "System Configuration"
-        Tag <0x40020000 0x1000> "FIU"
         Tag <0x400F8000 0x400> "FLM"
         Tag <0x40011000 0x100> "GDMA"
         Tag <0x400BB000 0x100> "MIWU0"
