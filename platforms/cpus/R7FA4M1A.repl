@@ -23,7 +23,21 @@ gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
     numberOf16BitChannels: 6
     commonRegistersOffset: 0xff0
 
-agt0: Timers.RenesasRA_AGT @ sysbus <0x40084000,0x40084013>
+agt0: Timers.RenesasRA_AGT @ sysbus 0x40084000
+    lowSpeedOnChipOscillatorFrequency: 32768
+    subClockOscillatorFrequency: 32768
+    peripheralClockBFrequency: 32000000
+    IRQ -> icu@0x01E
+    CompareMatchA -> icu@0x01F
+    CompareMatchB -> icu@0x020
+
+agt1: Timers.RenesasRA_AGT @ sysbus 0x40084100
+    lowSpeedOnChipOscillatorFrequency: 32768
+    subClockOscillatorFrequency: 32768
+    peripheralClockBFrequency: 32000000
+    IRQ -> icu@0x021
+    CompareMatchA -> icu@0x022
+    CompareMatchB -> icu@0x023
 
 sci0: UART.RenesasRA_SCI @ sysbus <0x40070000,0x40070023>
 
