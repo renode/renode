@@ -83,7 +83,7 @@ echo "Created a Debian package in $PACKAGES/$deb"
 ### create rpm package
 #redhat-rpm-config is apparently required for GCC to work in Docker images
 fpm -s dir -t rpm\
-    -d "mono-complete >= $MONOVERSION" -d "python3-devel >= $PYTHONVERSION" -d python3-pip -d gcc -d redhat-rpm-config -d gtk-sharp2 -d screen -d beesu \
+    -d "mono-complete >= $MONOVERSION" -d "python3-devel >= $PYTHONVERSION" -d python3-pip -d gcc -d redhat-rpm-config -d gtk-sharp2 -d screen -d polkit \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 rpm=(renode*rpm)
