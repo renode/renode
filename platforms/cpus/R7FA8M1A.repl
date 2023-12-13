@@ -47,11 +47,77 @@ agt1: Timers.RenesasRA_AGT @ sysbus 0x40221100
 
 sci0: UART.RenesasRA_SCI @ sysbus <0x40358000,0x4035808b>
 
-port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40400000,0x4040000f>
+port0: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400000;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400800; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 14
+
+port1: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400020;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400840; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 12
+
+port2: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400040;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400880; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 14
+
+port3: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400060;
+    sysbus new Bus.BusMultiRegistration { address: 0x404008C0; size: 0x40; region: "pinConfiguration" }
+}
     numberOfConnections: 16
 
-port1: GPIOPort.RenesasRA_GPIO @ sysbus <0x40400020,0x40400033>
+port4: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400080;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400900; size: 0x40; region: "pinConfiguration" }
+}
     numberOfConnections: 16
+
+port5: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x404000A0;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400940; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 16
+
+port6: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x404000C0;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400980; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 15
+
+port7: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x404000E0;
+    sysbus new Bus.BusMultiRegistration { address: 0x404009C0; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 16
+
+port8: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400100;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400A00; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 16
+
+port9: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400120;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400A40; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 16
+
+portA: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400140;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400A80; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 16
+
+portB: GPIOPort.RenesasRA_GPIO @ {
+    sysbus 0x40400160;
+    sysbus new Bus.BusMultiRegistration { address: 0x40400AC0; size: 0x40; region: "pinConfiguration" }
+}
+    numberOfConnections: 8
 
 sysbus:
     init:
