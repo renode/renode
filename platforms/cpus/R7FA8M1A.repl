@@ -16,6 +16,9 @@ data_flash: Memory.MappedMemory @ sysbus 0x8000000
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x80000
 
+icu: IRQControllers.RenesasRA_ICU @ sysbus 0x4000c000
+    nvic: nvic
+
 gpt: Timers.RenesasRA_GPT @ sysbus 0x40322000
     numberOf32BitChannels: 8
     numberOf16BitChannels: 6
@@ -29,9 +32,6 @@ gpt_ns: Timers.RenesasRA_GPT @ sysbus 0x50322000
 agt0: Timers.RenesasRA_AGT @ sysbus <0x40221000,0x40221013>
 
 sci0: UART.RenesasRA_SCI @ sysbus <0x40358000,0x4035808b>
-
-icu: IRQControllers.RenesasRA_ICU @ sysbus <0x4000c000,0x4000c687>
-    interruptsCount: 16
 
 port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40400000,0x4040000f>
     numberOfConnections: 16

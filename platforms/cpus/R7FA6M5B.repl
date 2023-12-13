@@ -16,6 +16,9 @@ data_flash: Memory.MappedMemory @ sysbus 0x8000000
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x80000
 
+icu: IRQControllers.RenesasRA_ICU @ sysbus 0x40006000
+    nvic: nvic
+
 sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
     size: 0x4
     initable: true
@@ -33,9 +36,6 @@ sci0: UART.RenesasRA_SCI @ sysbus <0x40118000,0x40118033>
 sci1: UART.RenesasRA_SCI @ sysbus <0x40118100,0x40118143>
 
 sci3: UART.RenesasRA_SCI @ sysbus <0x40118300,0x40118333>
-
-icu: IRQControllers.RenesasRA_ICU @ sysbus <0x40006000,0x40006687>
-    interruptsCount: 16
 
 port0: GPIOPort.RenesasRA_GPIO @ sysbus <0x40080000,0x40080013>
     numberOfConnections: 16
