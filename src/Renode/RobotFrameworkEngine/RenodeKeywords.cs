@@ -297,6 +297,13 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        [RobotFrameworkKeyword]
+        public void ClearLogTesterHistory()
+        {
+            CheckLogTester();
+            logTester.ClearHistory();
+        }
+
         [RobotFrameworkKeyword(replayMode: Replay.Never)]
         public void LogToFile(string filePath, bool flushAfterEveryWrite = false)
         {

@@ -135,6 +135,14 @@ namespace Antmicro.Renode.RobotFramework
             return FlushAndCheckLocked(emulation, predicate, keep, out bufferedMessages);
         }
 
+        public void ClearHistory()
+        {
+            lock(messages)
+            {
+                messages.Clear();
+            }
+        }
+
         private string FlushAndCheckLocked(Emulation emulation, Predicate<LogEntry> predicate, bool keep, out IEnumerable<string> bufferedMessages)
         {
             emulation.CurrentLogger.Flush();
