@@ -26,6 +26,7 @@ ${INITIAL_CPSR_E_VALUE}                0x0
 ### SCTLR
 
 ${SCTLR_V_MASK}                        ${{ 1 << 13 }}
+${SCTLR_M_MASK}                        ${{ 1 << 0 }}
 
 ### Privilege Level
 
@@ -300,6 +301,16 @@ Enable Hivecs
     ${sctlr}=                          Get Updated Register Value  ${sctlr}  ${SCTLR_V_MASK}  ${SCTLR_V_MASK}
     Set Current System Register Value  SCTLR  ${sctlr}
 
+Enable EL2 MPU
+    ${sctlr}=                          Get Current System Register Value  HSCTLR
+    ${sctlr}=                          Get Updated Register Value  ${sctlr}  ${SCTLR_M_MASK}  ${SCTLR_M_MASK}
+    Set Current System Register Value  HSCTLR  ${sctlr}
+
+Enable EL1 MPU
+    ${sctlr}=                          Get Current System Register Value  SCTLR
+    ${sctlr}=                          Get Updated Register Value  ${sctlr}  ${SCTLR_M_MASK}  ${SCTLR_M_MASK}
+    Set Current System Register Value  SCTLR  ${sctlr}
+
 Unmask Exception
     [Arguments]                        ${excp_name}
     ${mask}                            Set Variable  0x0
@@ -369,7 +380,7 @@ Current System Register Value Should Be
 
 Initialize Emulation
     [Arguments]                                            ${exec_mode}=Continuous  ${pl}=default  ${pc}=default  ${elf}=default
-    ...                                                    ${binary}=default  ${create_uart_tester}=False
+    ...                                                    ${binary}=default  ${create_uart_tester}=False  ${map_memory}=False
 
     # Tests assume Renode prints HEX numbers.
     Execute Command                                        numbersMode Hexadecimal
@@ -377,6 +388,25 @@ Initialize Emulation
     Execute Command                                        mach create
     Execute Command                                        machine LoadPlatformDescription @platforms/cpus/cortex-r52.repl
     Execute Command                                        sysbus.cpu ExecutionMode ${exec_mode}
+
+    # Map all addresses as read/write and executable for EL2, EL1, and EL0
+    IF  ${map_memory}
+        # Set Attr0 to Normal, Outer-Read and -Write
+        Set Current System Register Value                  MAIR0  0x70
+        # Set base address to 0, Outer Shareable, and Read-Write at EL1 and EL0, and disable execute never
+        Set Current System Register Value                  PRBAR  0x12
+        # Set limit address to 0xFFFFFFFF, select Attr0, and enable the region
+        Set Current System Register Value                  PRLAR  0xFFFFFFC1
+        Enable EL1 MPU
+
+        # Set Attr0 to Normal, Outer-Read and -Write
+        Set Current System Register Value                  HMAIR0  0x70
+        # Set base address to 0, Outer Shareable, and Read-Write at EL2, EL1, and EL0, and disable execute never
+        Set Current System Register Value                  HPRBAR  0x12
+        # Set limit address to 0xFFFFFFFF, select Attr0, and enable the region
+        Set Current System Register Value                  HPRLAR  0xFFFFFFC1
+        Enable EL2 MPU
+    END
 
     IF  "${elf}" != "default"
         Execute Command                                    sysbus LoadELF ${elf}
@@ -474,7 +504,7 @@ Check Synchronous Exceptions Handling Template
     ${EXCEPTION_HANDLER_OFFSET}=                           Get Exception Handler Offset  ${pl}  ${exception_type}
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${EXCEPTION_HANDLER_BASE_ADDRESS} + ${EXCEPTION_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking  map_memory=True
     Unmask Exception                                       ${exception_type}
     Start Emulation
 
@@ -535,7 +565,7 @@ Check Value Of System Registers After Reset Template
 Check Access To SPSR_hyp Register Template
     [Arguments]                                            ${pl}
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
     Write Opcode To Address                                0x8000  0xe16ef300  # msr SPSR_hyp, r0
     Start Emulation
 
@@ -557,7 +587,7 @@ Check Access To SPSR_hyp Register Template
 Check Access To ELR_hyp Template
     [Arguments]                                            ${pl}  ${expected_access_allowed}
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
     Write Opcode To Address                                0x8000  0xe30c0afe  # movw    r0, #51966      ; 0xcafe
     Write Opcode To Address                                0x8004  0xe12ef300  # msr     ELR_hyp, r0
     Write Opcode To Address                                0x8008  0xe10e1300  # mrs     r1, ELR_hyp
@@ -581,7 +611,7 @@ Check CPSR_c Instruction Changing Privilege Level To User Template
     ${TARGET_CPSR}=                                        Set Variable  0x40000110
     ${EXPECTED_PC}=                                        Set Variable  0x8004
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
     Write Opcode To Address                                0x8000  0xe321f010  # msr CPSR_c, #16
     Start Emulation
 
@@ -626,7 +656,7 @@ Check High Exception Vectors Usage By IRQ Template
     ${IRQ_HANDLER_OFFSET}=                                 Set Variable  0x18
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${IRQ_HANDLER_BASE} + ${IRQ_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking  map_memory=True
     Add Dummy Memory At Hivecs Base Address                # Prevent CPU abort error when trying to execute code from hivecs addresses
     Unmask Exception                                       IRQ
     Enable Hivecs
