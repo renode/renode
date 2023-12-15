@@ -12,7 +12,7 @@ ${ZYNQ_MCAN_PERIPHERALS}                           SEPARATOR=\n
 ...                                                ${SPACE*4}Line1 -> gic@31
 ...                                                ${SPACE*4}Calibration -> gic@32
 ...                                                ${SPACE*4}messageRAM: canMessageRAM
-...                                                
+...
 ...                                                canMessageRAM: Memory.ArrayMemory @ sysbus <0xe0108000, +0x22000>
 ...                                                ${SPACE*4}size: 0x22000
 ...                                                """
@@ -126,7 +126,7 @@ Should Use CAN ISOTP Protocol To Exchange Messages In Loopback Mode
     Create STM32H7 Machine    ${SAMPLES_SUBSYS_CANBUS_ISOTP_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Got 247 bytes in total
@@ -145,7 +145,7 @@ Should Use CAN ISOTP Protocol To Exchange Messages Between Machines
     Create STM32H7 Machine    ${SAMPLES_SUBSYS_CANBUS_ISOTP_NO_LOOPBACK_BIN}  machine-1
     ${tester-1}=              Create Terminal Tester  ${UART}  machine=machine-1
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Got 247 bytes in total  testerId=${tester-0}
@@ -161,7 +161,7 @@ Should Use CAN Socket API To Exchange Messages In Loopback Mode
     Create STM32H7 Machine    ${SAMPLES_NET_SOCKETS_CAN_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     net_socket_can_sample: [0] CAN frame: IDE 0x0 RTR 0x0 ID 0x1 DLC 0x8
@@ -178,7 +178,7 @@ Should Use CAN Socket API To Exchange Messages Between Machines
     Execute Command           emulation SetGlobalQuantum "0.000025"
     Execute Command           emulation SetGlobalSerialExecution True
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     net_socket_can_sample: [0] CAN frame: IDE 0x0 RTR 0x0 ID 0x1 DLC 0x8  testerId=${tester-0}
@@ -192,7 +192,7 @@ Should Run Zephyr CAN Counter Sample In Loopback Mode
     Create STM32H7 Machine    ${SAMPLES_DRIVERS_CAN_COUNTER_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Counter received: ${i}
@@ -209,7 +209,7 @@ Should Run Zephyr CAN Counter Sample To Exchange Messages Between Machines
     Execute Command           emulation SetGlobalQuantum "0.000025"
     Execute Command           emulation SetGlobalSerialExecution True
 
-    # Wait for several successful transmissions 
+    # Wait for several successful transmissions
     ${cnt}=                   Set Variable  40
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Counter received: ${i}  testerId=${tester-0}
@@ -225,7 +225,7 @@ Should Boot Linux And Login With MCAN
     # Lower quantum to keep synchronization between machines
     Execute Command           emulation SetGlobalQuantum "0.000025"
     Execute Command           emulation SetGlobalSerialExecution True
-    
+
     Boot And Login            ${tester-0}
     Boot And Login            ${tester-1}
     # Suppress messages from the kernel space
