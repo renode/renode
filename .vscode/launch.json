@@ -29,6 +29,57 @@
             "port": 55555
         },
         {
+            "name": "Launch .NET - Debug",
+            "preLaunchTask": "Build .NET - Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "logging": {
+                "engineLogging": true,
+                "diagnosticsLog": {
+                    "protocolMessages": true
+                }
+            },
+            "program": "${workspaceRoot}/output/bin/Debug/net6.0/Renode.dll",
+            "cwd": "${workspaceRoot}"
+        },
+        {
+            "name": ".NET Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "logging": {
+                "engineLogging": true,
+                "diagnosticsLog": {
+                    "protocolMessages": true
+                }
+            },
+            "processId": "${command:pickProcess}",
+            "program": "${workspaceRoot}/output/bin/Debug/net6.0/Renode.dll"
+        },
+        {
+            "name": "(gdb) Tlib .NET Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceRoot}/output/bin/Debug/net6.0/Renode.dll",
+            "processId": "${command:pickProcess}",
+            "miDebuggerPath": "${workspaceRoot}/.vscode/net_interop_debug/gdb_launcher.py",
+            "miDebuggerArgs": "gdb", // gdb_launcher.py gets path to GDB as the argument.
+            "MIMode": "gdb",
+            "logging": {
+                "engineLogging": true,
+                "programOutput": true
+            },
+            "setupCommands": [
+                {
+                    "text": "source ${workspaceRoot}/.vscode/net_interop_debug/gdb_controller.py"
+                },
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "(gdb) Tlib Attach",
             "type": "cppdbg",
             "request": "attach",

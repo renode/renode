@@ -24,6 +24,17 @@
                 "reveal": "always",
                 "panel": "shared"
             }
+        },
+        {
+            "label": "Build .NET - Debug",
+            "problemMatcher": "$msCompile",
+            "type": "shell",
+            "command": "./build.sh -d --net",
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
         }
     ]
 }
