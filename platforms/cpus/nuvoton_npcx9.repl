@@ -30,17 +30,37 @@ battery_backed_ram: Memory.MappedMemory @ sysbus 0x400AF000
 internal_flash: Memory.MappedMemory @ sysbus 0x64000000
     size: 0x100000
 
-cr_uart1: UART.NPCX_UART @ sysbus 0x400E0000
+nvicIrq33: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
     -> nvic@33
 
-cr_uart2: UART.NPCX_UART @ sysbus 0x400E2000
+nvicIrq32: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
     -> nvic@32
 
-cr_uart3: UART.NPCX_UART @ sysbus 0x400E4000
+nvicIrq38: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
     -> nvic@38
 
-cr_uart4: UART.NPCX_UART @ sysbus 0x400E6000
+nvicIrq39: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 2
     -> nvic@39
+
+cr_uart1: UART.NPCX_UART @ sysbus 0x400E0000
+    IRQ -> nvicIrq33@0
+    DMAReceive -> mdma1@0
+
+cr_uart2: UART.NPCX_UART @ sysbus 0x400E2000
+    IRQ -> nvicIrq32@0
+    DMAReceive -> mdma2@0
+
+cr_uart3: UART.NPCX_UART @ sysbus 0x400E4000
+    IRQ -> nvicIrq38@0
+    DMAReceive -> mdma3@0
+
+cr_uart4: UART.NPCX_UART @ sysbus 0x400E6000
+    IRQ -> nvicIrq39@0
+    DMAReceive -> mdma4@0
 
 itim32_1: Timers.NPCX_ITIM32 @ sysbus 0x400B0000
     -> nvic@28
@@ -70,14 +90,32 @@ mtc: Timers.NPCX_MTC @ sysbus 0x400B7000
     -> nvic@5
 
 mdma1: DMA.NPCX_MDMA @ sysbus 0x40011100
+    sourceAddress: 0x400E0002
+    destinationAddress: 0x400E0000
+    -> nvicIrq33@1
 
 mdma2: DMA.NPCX_MDMA @ sysbus 0x40011200
+    sourceAddress: 0x400E2002
+    destinationAddress: 0x400E2000
+    -> nvicIrq32@1
 
 mdma3: DMA.NPCX_MDMA @ sysbus 0x40011300
+    sourceAddress: 0x400E4002
+    destinationAddress: 0x400E4000
+    -> nvicIrq38@1
 
 mdma4: DMA.NPCX_MDMA @ sysbus 0x40011400
+    sourceAddress: 0x400E6002
+    destinationAddress: 0x400E6000
+    -> nvicIrq39@1
 
 mdma5: DMA.NPCX_MDMA @ sysbus 0x40011500
+    // For MDMA5 the source and destination addresses can be different
+    // based on the state of `I3C_MS` flag in the `DEV_CTL3` register
+    // of the System Configuration peripheral.
+    // This is currently not implemented.
+    sourceAddress: 0x400E00C0
+    destinationAddress: 0x400E00B0
 
 spip: SPI.NPCX_SPIP @ sysbus 0x400D2000
 
