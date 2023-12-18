@@ -84,75 +84,75 @@ sci1: UART.RenesasRA_SCI @ sysbus <0x40118100,0x40118143>
 sci3: UART.RenesasRA_SCI @ sysbus <0x40118300,0x40118333>
 
 port0: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080000;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080800; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080000;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080800; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 13
 
 port1: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080020;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080840; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080020;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080840; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 16
 
 port2: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080040;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080880; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080040;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080880; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 15
 
 port3: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080060;
-    sysbus new Bus.BusMultiRegistration { address: 0x400808C0; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080060;
+        sysbus new Bus.BusMultiRegistration { address: 0x400808C0; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 16
 
 port4: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080080;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080900; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080080;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080900; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 16
 
 port5: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x400800A0;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080940; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x400800A0;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080940; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 12
 
 port6: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x400800C0;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080980; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x400800C0;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080980; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 16
 
 port7: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x400800E0;
-    sysbus new Bus.BusMultiRegistration { address: 0x400809C0; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x400800E0;
+        sysbus new Bus.BusMultiRegistration { address: 0x400809C0; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 9
 
 port8: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080100;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080A00; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080100;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080A00; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 7
 
 port9: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080120;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080A40; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080120;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080A40; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 6
 
 portA: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080140;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080A80; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080140;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080A80; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 5
 
 portB: GPIOPort.RenesasRA_GPIO @ {
-    sysbus 0x40080160;
-    sysbus new Bus.BusMultiRegistration { address: 0x40080AC0; size: 0x40; region: "pinConfiguration" }
-}
+        sysbus 0x40080160;
+        sysbus new Bus.BusMultiRegistration { address: 0x40080AC0; size: 0x40; region: "pinConfiguration" }
+    }
     numberOfConnections: 2
 
 sysbus:
