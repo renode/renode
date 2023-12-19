@@ -107,6 +107,7 @@
 - tests/unit-tests/riscv-ebreak.robot
 - tests/platforms/ARMv8A.robot
 - tests/platforms/ARMv8R.robot
+- tests/platforms/ARMv8R-PMSA.robot
 - tests/platforms/ARMv8M.robot
 - tests/peripherals/NRF52840_GPIO.robot
 - tests/platforms/nucleo_wba52cg.robot
