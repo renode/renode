@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -16,6 +16,7 @@ using Antmicro.Renode.Core.Structure;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
+using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Collections;
@@ -415,46 +416,48 @@ namespace Antmicro.Renode.PlatformDescription
 
                     var usefulRegistrationPointTypes = new List<Type>();
 
-                    // real null registration point always wins
-                    if(registrationPoint == null && registerInterfaces.Any(x => x.GetGenericArguments()[1] == typeof(NullRegistrationPoint)))
+                    var friendlyName = "Registration point";
+                    // reference and object values are type checked
+                    var referenceRegPoint = registrationPoint as ReferenceValue;
+                    var objectRegPoint = registrationPoint as ObjectValue;
+                    if(referenceRegPoint != null)
                     {
-                        usefulRegistrationPointTypes.Add(typeof(NullRegistrationPoint));
+                        usefulRegistrationPointTypes.AddRange(ValidateReference(friendlyName, possibleTypes, referenceRegPoint));
+                    }
+                    else if(objectRegPoint != null)
+                    {
+                        usefulRegistrationPointTypes.AddRange(ValidateObjectValue(friendlyName, possibleTypes, objectRegPoint));
                     }
                     else
                     {
-
-                        var friendlyName = "Registration point";
-                        // reference and object values are type checked
-                        var referenceRegPoint = registrationPoint as ReferenceValue;
-                        var objectRegPoint = registrationPoint as ObjectValue;
-                        if(referenceRegPoint != null)
+                        // for simple values we try to find a ctor
+                        var ctors = FindUsableRegistrationPoints(possibleTypes, registrationPoint);
+                        if(ctors.Count == 0)
                         {
-                            usefulRegistrationPointTypes.AddRange(ValidateReference(friendlyName, possibleTypes, referenceRegPoint));
-                        }
-                        else if(objectRegPoint != null)
-                        {
-                            usefulRegistrationPointTypes.AddRange(ValidateObjectValue(friendlyName, possibleTypes, objectRegPoint));
-                        }
-                        else
-                        {
-                            // for simple values we try to find a ctor
-                            var ctors = FindUsableRegistrationPoints(possibleTypes, registrationPoint);
-                            if(ctors.Count == 0)
+                            // fall back to the null registration point if possible and it makes sense for the registree
+                            // (do not allow it for bus peripherals as they need a bus registration)
+                            if(registrationPoint == null
+                                && possibleTypes.Contains(typeof(NullRegistrationPoint))
+                                && !typeof(IBusPeripheral).IsAssignableFrom(entryType))
                             {
-                                HandleError(ParsingError.NoCtorForRegistrationPoint, registrationPoint ?? registrationInfo.Register, "Could not find any suitable constructor for this registration point.", true);
-                            }
-                            else if(ctors.Count > 1)
-                            {
-                                HandleError(ParsingError.AmbiguousCtorForRegistrationPoint, registrationPoint ?? registrationInfo.Register,
-                                            "Ambiguous choice between constructors for registration point:" + Environment.NewLine +
-                                            ctors.Select(x => GetFriendlyConstructorName(x.Item1)).Aggregate((x, y) => x + Environment.NewLine + y), true);
+                                usefulRegistrationPointTypes.Add(typeof(NullRegistrationPoint));
                             }
                             else
                             {
-                                registrationInfo.Constructor = ctors[0].Item1;
-                                registrationInfo.ConvertedValue = ctors[0].Item2;
-                                usefulRegistrationPointTypes.Add(ctors[0].Item1.ReflectedType);
+                                HandleError(ParsingError.NoCtorForRegistrationPoint, registrationPoint ?? registrationInfo.Register, "Could not find any suitable constructor for this registration point.", true);
                             }
+                        }
+                        else if(ctors.Count > 1)
+                        {
+                            HandleError(ParsingError.AmbiguousCtorForRegistrationPoint, registrationPoint ?? registrationInfo.Register,
+                                        "Ambiguous choice between constructors for registration point:" + Environment.NewLine +
+                                        ctors.Select(x => GetFriendlyConstructorName(x.Item1)).Aggregate((x, y) => x + Environment.NewLine + y), true);
+                        }
+                        else
+                        {
+                            registrationInfo.Constructor = ctors[0].Item1;
+                            registrationInfo.ConvertedValue = ctors[0].Item2;
+                            usefulRegistrationPointTypes.Add(ctors[0].Item1.ReflectedType);
                         }
                     }
                     // our first criterium is registration point type (we seek the most derived), then we check for the registree (peripheral)
