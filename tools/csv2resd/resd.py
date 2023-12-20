@@ -111,11 +111,11 @@ class RESDBlockConstantFrequency(RESDBlock):
 
     @property
     def frequency(self):
-        return int(1e9) // self.__period
+        return 1e9 / self.__period
 
     @frequency.setter
     def frequency(self, value):
-        self.__period = int(1e9) // value
+        self.__period = int(1e9 / value)
 
     @property
     def start_time(self):

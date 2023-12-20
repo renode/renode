@@ -79,7 +79,7 @@ def parse_arguments():
     entry_parser.add_argument('-m', '--map', action='append', type=parse_mapping,
         help='mapping in format <type>:<index/label>[:<to_property>:<channel>], multiple mappings are possible')
     entry_parser.add_argument('-s', '--start-time', type=int, help='start time (in nanoseconds)')
-    entry_parser.add_argument('-f', '--frequency', type=int, help='frequency of the data (in Hz)')
+    entry_parser.add_argument('-f', '--frequency', type=float, help='frequency of the data (in Hz)')
     entry_parser.add_argument('-t', '--timestamp', help='index/label of a column in the csv file for the timestamps (in nanoseconds)')
     entry_parser.add_argument('-o', '--offset', type=int, default=0, help='number of samples to skip from the beginning of the file')
     entry_parser.add_argument('-c', '--count', type=int, default=sys.maxsize, help='number of samples to parse')
