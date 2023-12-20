@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from grammar import resd_header, data_block, data_block_sample_frequency, data_block_header, data_block_subheader, BLOCK_TYPE, SAMPLE_TYPE
+from grammar import resd_header, data_block, data_block_sample_frequency, data_block_sample_arbitrary, data_block_header, data_block_subheader, data_block_metadata_item, BLOCK_TYPE, SAMPLE_TYPE
 
 __VERSION__ = 1
 
