@@ -30,6 +30,7 @@ Create RESD File
     ${args}=                        Catenate  SEPARATOR=,
     ...                             "--input", r"${path}"
     ...                             "--map", "temperature:temp::0"
+    ...                             "--map", "humidity:humidity::0"
     ...                             "--start-time", "0"
     ...                             "--frequency", "1"
     ...                             r"${resd_path}"
@@ -60,18 +61,19 @@ Should Read Temperature And Humidity
     Set Enviroment                  temperature=88.02  humidity=8.50
     Check Enviroment                temperature=88.08  humidity=8.50
 
-Should Read Temperature From RESD
+Should Read Samples From RESD
     Create Machine
 
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
     Execute Command                 ${SENSOR} FeedTemperatureSamplesFromRESD @${resd_path}
-    Execute Command                 ${SENSOR} DefaultTemperature 25.56
+    Execute Command                 ${SENSOR} FeedHumiditySamplesFromRESD @${resd_path}
+    Set Enviroment                  temperature=25.56  humidity=30.39
 
-    Check Enviroment                temperature=-9.-99
-    Check Enviroment                temperature=0.00
-    Check Enviroment                temperature=4.99
-    Check Enviroment                temperature=10.00
-    Check Enviroment                temperature=15.00
-    # Sensor should go back to the default value after the RESD file finishes
-    Check Enviroment                temperature=25.56
-    Check Enviroment                temperature=25.56
+    Check Enviroment                temperature=-9.-99  humidity=0.00
+    Check Enviroment                temperature=0.00  humidity=20.00
+    Check Enviroment                temperature=4.99  humidity=40.05
+    Check Enviroment                temperature=10.00  humidity=60.01
+    Check Enviroment                temperature=15.00  humidity=80.31
+    # Sensor should go back to the default values after the RESD file finishes
+    Check Enviroment                temperature=25.56  humidity=30.39
+    Check Enviroment                temperature=25.56  humidity=30.39
