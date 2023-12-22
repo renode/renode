@@ -77,11 +77,95 @@ agt5: Timers.RenesasRA_AGT @ sysbus 0x400E8500
     CompareMatchA -> icu@0x050
     CompareMatchB -> icu@0x051
 
-sci0: UART.RenesasRA_SCI @ sysbus <0x40118000,0x40118033>
+sci0: SCI.RenesasRA6M5_SCI @ sysbus 0x40118000
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
 
-sci1: UART.RenesasRA_SCI @ sysbus <0x40118100,0x40118143>
+    ReceiveIRQ -> icu@0x180
+    TransmitIRQ -> icu@0x181
+    TransmitEndIRQ -> icu@0x182
 
-sci3: UART.RenesasRA_SCI @ sysbus <0x40118300,0x40118333>
+sci1: SCI.RenesasRA6M5_SCI @ sysbus 0x40118100
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x186
+    TransmitIRQ -> icu@0x187
+    TransmitEndIRQ -> icu@0x188
+
+sci2: SCI.RenesasRA6M5_SCI @ sysbus 0x40118200
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x18C
+    TransmitIRQ -> icu@0x18D
+    TransmitEndIRQ -> icu@0x18E
+
+sci3: SCI.RenesasRA6M5_SCI @ sysbus 0x40118300
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x192
+    TransmitIRQ -> icu@0x193
+    TransmitEndIRQ -> icu@0x194
+
+sci4: SCI.RenesasRA6M5_SCI @ sysbus 0x40118400
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x198
+    TransmitIRQ -> icu@0x199
+    TransmitEndIRQ -> icu@0x19A
+
+sci5: SCI.RenesasRA6M5_SCI @ sysbus 0x40118500
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x19E
+    TransmitIRQ -> icu@0x19F
+    TransmitEndIRQ -> icu@0x1A0
+
+sci6: SCI.RenesasRA6M5_SCI @ sysbus 0x40118600
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x1A4
+    TransmitIRQ -> icu@0x1A5
+    TransmitEndIRQ -> icu@0x1A6
+
+sci7: SCI.RenesasRA6M5_SCI @ sysbus 0x40118700
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x1AA
+    TransmitIRQ -> icu@0x1AB
+    TransmitEndIRQ -> icu@0x1AC
+
+sci8: SCI.RenesasRA6M5_SCI @ sysbus 0x40118800
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x1B0
+    TransmitIRQ -> icu@0x1B1
+    TransmitEndIRQ -> icu@0x1B2
+
+sci9: SCI.RenesasRA6M5_SCI @ sysbus 0x40118900
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+
+    ReceiveIRQ -> icu@0x1B6
+    TransmitIRQ -> icu@0x1B7
+    TransmitEndIRQ -> icu@0x1B8
 
 port0: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080000;
