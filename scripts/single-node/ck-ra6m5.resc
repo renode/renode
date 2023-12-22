@@ -1,0 +1,20 @@
+:name: Renesas CK-RA6M5 Cloud Kit
+:description: This script runs basic hello world program on CK-RA6M5 board
+
+$name?="Renesas CK-RA6M5"
+
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/ra6m5-hello_world.elf-s_294808-99eaeb76d73e9a860fa749433886da1aa6ebdd1a
+
+machine LoadPlatformDescription @platforms/boards/ck-ra6m5.repl
+
+showAnalyzer sci0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset

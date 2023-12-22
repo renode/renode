@@ -1,0 +1,12 @@
+using "platforms/cpus/R7FA6M5B.repl"
+
+port6:
+    1 -> led_blue@0
+    9 -> led_green@0
+    10 -> led_red@0
+
+led_red: Miscellaneous.LED @ port6 10
+
+led_green: Miscellaneous.LED @ port6 9
+
+led_blue: Miscellaneous.LED @ port6 1
