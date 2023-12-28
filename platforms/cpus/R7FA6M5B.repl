@@ -10,6 +10,14 @@ cpu: CPU.CortexM @ sysbus
 code_flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x200000
 
+// should be 0x10080f0 - 0x10081b4, but the registered memory region has to be aligned to page boundaries
+factory_flash: Memory.MappedMemory @ sysbus 0x1008000
+    size: 0x400
+
+// should be 0x100a100 - 0x100a300, but the registered memory region has to be aligned to page boundaries
+option_setting_flash: Memory.MappedMemory @ sysbus 0x100A000
+    size: 0x400
+
 data_flash: Memory.MappedMemory @ sysbus 0x8000000
     size: 0x2000
 
