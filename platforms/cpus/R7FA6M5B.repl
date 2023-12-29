@@ -175,77 +175,91 @@ sci9: SCI.RenesasRA6M5_SCI @ sysbus 0x40118900
     TransmitIRQ -> icu@0x1B7
     TransmitEndIRQ -> icu@0x1B8
 
+portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40080D00
+
 port0: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080000;
         sysbus new Bus.BusMultiRegistration { address: 0x40080800; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 13
+    pfsMisc: portMisc
 
 port1: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080020;
         sysbus new Bus.BusMultiRegistration { address: 0x40080840; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 16
+    pfsMisc: portMisc
 
 port2: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080040;
         sysbus new Bus.BusMultiRegistration { address: 0x40080880; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 15
+    pfsMisc: portMisc
 
 port3: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080060;
         sysbus new Bus.BusMultiRegistration { address: 0x400808C0; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 16
+    pfsMisc: portMisc
 
 port4: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080080;
         sysbus new Bus.BusMultiRegistration { address: 0x40080900; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 16
+    pfsMisc: portMisc
 
 port5: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x400800A0;
         sysbus new Bus.BusMultiRegistration { address: 0x40080940; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 12
+    pfsMisc: portMisc
 
 port6: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x400800C0;
         sysbus new Bus.BusMultiRegistration { address: 0x40080980; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 16
+    pfsMisc: portMisc
 
 port7: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x400800E0;
         sysbus new Bus.BusMultiRegistration { address: 0x400809C0; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 9
+    pfsMisc: portMisc
 
 port8: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080100;
         sysbus new Bus.BusMultiRegistration { address: 0x40080A00; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 7
+    pfsMisc: portMisc
 
 port9: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080120;
         sysbus new Bus.BusMultiRegistration { address: 0x40080A40; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 6
+    pfsMisc: portMisc
 
 portA: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080140;
         sysbus new Bus.BusMultiRegistration { address: 0x40080A80; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 5
+    pfsMisc: portMisc
 
 portB: GPIOPort.RenesasRA_GPIO @ {
         sysbus 0x40080160;
         sysbus new Bus.BusMultiRegistration { address: 0x40080AC0; size: 0x40; region: "pinConfiguration" }
     }
     numberOfConnections: 2
+    pfsMisc: portMisc
 
 sysbus:
     init:
