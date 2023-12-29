@@ -11,12 +11,12 @@ machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
 
 showAnalyzer uart0
 
-# Preconfigure UART to see Coreboot and ATF boot logs.
-uart0 WriteDoubleWord 0x30 0x301
-uart0 WriteDoubleWord 0x2c 0x40
-
 macro reset
 """
+    # Preconfigure UART to see Coreboot and ATF boot logs.
+    uart0 WriteDoubleWord 0x30 0x301
+    uart0 WriteDoubleWord 0x2c 0x40
+
     sysbus LoadBinary $bin 0x0
 """
 runMacro $reset
