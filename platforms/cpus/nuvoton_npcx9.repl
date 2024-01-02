@@ -159,7 +159,7 @@ sysbus:
     init:
         // Script contains implementation for select bootrom functions
         // that on hardware would be present in board's read-only memory
-        RunPythonScript @scripts/pydev/nuvoton_npcx9_bootrom.py
+        Machine ExecutePythonFromFile @scripts/pydev/nuvoton_npcx9_bootrom.py
 
         Tag <0x400C3000 0x400> "System Configuration"
         Tag <0x400F8000 0x400> "FLM"

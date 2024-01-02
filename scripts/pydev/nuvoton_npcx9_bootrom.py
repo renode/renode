@@ -20,11 +20,11 @@ from System.Security.Cryptography import SHA256, SHA384, SHA512
 
 
 def register_bootrom_hook(addr, func):
-    self.Machine["sysbus.cpu"].AddHook(addr, func)
+    self["sysbus.cpu"].AddHook(addr, func)
     # Fill the bootrom's function pointer entry with the address that the hook is registered to.
     # For simplicity hooks are added on function pointer locations, no the actual function addresses.
-    self.Machine.SystemBus.WriteDoubleWord(addr, addr)
-    self.Machine.InfoLog("Registering bootrom function at 0x{0:X}", addr)
+    self.SystemBus.WriteDoubleWord(addr, addr)
+    self.InfoLog("Registering bootrom function at 0x{0:X}", addr)
 
 
 # Based on: https://chromium.googlesource.com/chromiumos/platform/ec/+/6898a6542ed0238cc182948f56e3811534db1a38/chip/npcx/header.c#43
@@ -49,18 +49,18 @@ def register_bootloader():
         ]
 
     HEADER_SIZE = ctypes.sizeof(FirmwareHeader)
-    flash = self.Machine["sysbus.internal_flash"]
+    flash = self["sysbus.internal_flash"]
 
     def bootloader(cpu, addr):
         header_data = flash.ReadBytes(0x0, HEADER_SIZE)
         header = FirmwareHeader.from_buffer(array("B", header_data))
 
         firmware = flash.ReadBytes(HEADER_SIZE, header.fw_length)
-        self.Machine.SystemBus.WriteBytes(firmware, header.fw_load_addr)
+        self.SystemBus.WriteBytes(firmware, header.fw_load_addr)
 
         cpu.PC = RegisterValue.Create(header.fw_entry, 32)
 
-        self.Machine.InfoLog(
+        self.InfoLog(
             "Firmware loaded at: 0x{0:X} ({1} bytes). PC = 0x{2:X}",
             header.fw_load_addr,
             header.fw_length,
@@ -103,11 +103,11 @@ def register_ncl_functions():
 
     def trng_generate(cpu, addr):
         out_buff = cpu.GetRegisterUnsafe(3).RawValue
-        out_buff_len = self.Machine.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
+        out_buff_len = self.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
 
         data = System.Array[System.Byte](range(out_buff_len))
         rng.NextBytes(data)
-        self.Machine.SystemBus.WriteBytes(data, out_buff)
+        self.SystemBus.WriteBytes(data, out_buff)
 
         cpu.SetRegisterUnsafe(0, RegisterValue.Create(NCL_STATUS_OK, 32))
         cpu.PC = cpu.LR
@@ -163,7 +163,7 @@ def register_ncl_functions():
             SHAContext.sha_buffer.Clear()
 
             data_addr = cpu.GetRegisterUnsafe(1).RawValue
-            self.Machine.SystemBus.WriteBytes(hash, data_addr)
+            self.SystemBus.WriteBytes(hash, data_addr)
 
             cpu.SetRegisterUnsafe(0, RegisterValue.Create(NCL_STATUS_OK, 32))
             cpu.PC = cpu.LR
@@ -174,7 +174,7 @@ def register_ncl_functions():
     def sha_update(cpu, addr):
         data_addr = cpu.GetRegisterUnsafe(1).RawValue
         length = cpu.GetRegisterUnsafe(2).RawValue
-        data = self.Machine.SystemBus.ReadBytes(data_addr, length)
+        data = self.SystemBus.ReadBytes(data_addr, length)
 
         SHAContext.sha_buffer.AddRange(data)
 
@@ -208,10 +208,10 @@ def register_download_from_flash():
         src_offset = cpu.GetRegisterUnsafe(0).RawValue
         dest_addr = cpu.GetRegisterUnsafe(1).RawValue
         size = cpu.GetRegisterUnsafe(2).RawValue
-        exe_addr = self.Machine.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
+        exe_addr = self.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
 
-        data = self.Machine["sysbus.internal_flash"].ReadBytes(src_offset, size)
-        self.Machine.SystemBus.WriteBytes(data, dest_addr)
+        data = self["sysbus.internal_flash"].ReadBytes(src_offset, size)
+        self.SystemBus.WriteBytes(data, dest_addr)
 
         cpu.PC = RegisterValue.Create(exe_addr, 32)
 
