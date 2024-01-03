@@ -27,7 +27,7 @@ class TrapsFilter:
 
 async def run_commmand_with_filter(command, filter):
     process = await asyncio.create_subprocess_exec(
-        *command, stdout=asyncio.subprocess.PIPE
+        *command, limit=512*1024, stdout=asyncio.subprocess.PIPE
     )
     await asyncio.gather(filter.async_filter(process.stdout, sys.stdout))
     await process.communicate()

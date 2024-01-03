@@ -66,7 +66,7 @@ class StopController:
 
 
 def initialize():
-    gdb.set_parameter("confirm", False)
+    gdb.set_parameter("confirm", "off")
     gdb.execute("handle all pass nostop noprint")
     # For an unknown reason disable printing (noprint) for SIGTRAP causes a segmentation fault.
     gdb.execute("handle SIGTRAP nopass stop print")
