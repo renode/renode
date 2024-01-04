@@ -140,7 +140,7 @@ adc2: Analog.IMXRT_ADC @ sysbus 0x400C8000
 pwm1: Timers.IMXRT_PWM @ sysbus 0x403DC000
 
 pwm2: Timers.IMXRT_PWM @ sysbus 0x403E0000
-    -> nvic@137
+    2 -> nvic@137 // Reload IRQ for submodule 0
 
 pwm3: Timers.IMXRT_PWM @ sysbus 0x403E4000
 
