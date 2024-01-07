@@ -3,7 +3,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
-    cpuType: "cortex-m4"
+    cpuType: "cortex-m4f"
     nvic: nvic
 
 code_flash: Memory.MappedMemory @ sysbus 0x0
@@ -22,6 +22,8 @@ gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
     numberOf32BitChannels: 2
     numberOf16BitChannels: 6
     commonRegistersOffset: 0xff0
+    peripheralClockDFrequency: 24000000
+    [0x0-0x3F] -> icu@[0x57-0x96]
 
 agt0: Timers.RenesasRA_AGT @ sysbus 0x40084000
     lowSpeedOnChipOscillatorFrequency: 32768
@@ -142,6 +144,16 @@ port9: GPIOPort.RenesasRA_GPIO @ {
     }
     numberOfConnections: 2
     pfsMisc: portMisc
+
+sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
+    size: 0x4
+    initable: true
+    script: "request.value = 0xFF"
+
+sysc_vbtsr: Python.PythonPeripheral @ sysbus 0x4001E4B1
+    size: 0x4
+    initable: true
+    script: "request.value = 0x10"
 
 sysbus:
     init:
