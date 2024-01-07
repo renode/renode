@@ -22,6 +22,36 @@ gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
     numberOf32BitChannels: 4
     numberOf16BitChannels: 6
     commonRegistersOffset: 0xff0
+    peripheralClockDFrequency: 48000000
+    [0x00-0x03] -> icu@[0x46-0x49]
+    // GPT0_CMPE and _CMPF are not connected
+    [0x06-0x07] -> icu@[0x4A-0x4B]
+    // GPT0_PC is not connected
+    // GPT1..3 are not connected
+    [0x24-0x27] -> icu@[0x5E-0x61]
+    // GPT4_CMPE and _CMPF are not connected
+    [0x2A-0x2B] -> icu@[0x62-0x63]
+    // GPT4_PC is not connected
+    [0x2D-0x30] -> icu@[0x64-0x67]
+    // GPT5_CMPE and _CMPF are not connected
+    [0x33-0x34] -> icu@[0x68-0x69]
+    // GPT5_PC is not connected
+    [0x36-0x39] -> icu@[0x6A-0x6D]
+    // GPT6_CMPE and _CMPF are not connected
+    [0x3C-0x3D] -> icu@[0x6E-0x6F]
+    // GPT6_PC is not connected
+    [0x3F-0x42] -> icu@[0x70-0x73]
+    // GPT7_CMPE and _CMPF are not connected
+    [0x45-0x46] -> icu@[0x74-0x75]
+    // GPT7_PC is not connected
+    [0x48-0x4B] -> icu@[0x76-0x79]
+    // GPT8_CMPE and _CMPF are not connected
+    [0x4E-0x4F] -> icu@[0x7A-0x7B]
+    // GPT8_PC is not connected
+    [0x51-0x54] -> icu@[0x7C-0x7F]
+    // GPT9_CMPE and _CMPF are not connected
+    [0x57-0x58] -> icu@[0x80-0x81]
+    // GPT9_PC is not connected
 
 agt0: Timers.RenesasRA_AGT @ sysbus 0x40084000
     lowSpeedOnChipOscillatorFrequency: 32768

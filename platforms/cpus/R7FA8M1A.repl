@@ -23,11 +23,14 @@ gpt: Timers.RenesasRA_GPT @ sysbus 0x40322000
     numberOf32BitChannels: 8
     numberOf16BitChannels: 6
     commonRegistersOffset: 0x1f00
+    peripheralClockDFrequency: 48000000
 
 gpt_ns: Timers.RenesasRA_GPT @ sysbus 0x50322000
     numberOf32BitChannels: 8
     numberOf16BitChannels: 6
     commonRegistersOffset: 0x1f00
+    peripheralClockDFrequency: 48000000
+    [0x0-0x7C] -> icu@[0x0A1-0x11D]
 
 agt0: Timers.RenesasRA_AGT @ sysbus 0x40221000
     lowSpeedOnChipOscillatorFrequency: 32768

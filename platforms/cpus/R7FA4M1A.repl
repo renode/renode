@@ -23,7 +23,22 @@ gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
     numberOf16BitChannels: 6
     commonRegistersOffset: 0xff0
     peripheralClockDFrequency: 24000000
-    [0x0-0x3F] -> icu@[0x57-0x96]
+    [0x00-0x07] -> icu@[0x57-0x5E]
+    // GPT0_PC is not connected
+    [0x09-0x10] -> icu@[0x5F-0x66]
+    // GPT1_PC is not connected
+    [0x12-0x19] -> icu@[0x67-0x6E]
+    // GPT2_PC is not connected
+    [0x1B-0x22] -> icu@[0x6F-0x76]
+    // GPT3_PC is not connected
+    [0x24-0x2B] -> icu@[0x77-0x7E]
+    // GPT4_PC is not connected
+    [0x2D-0x34] -> icu@[0x7F-0x86]
+    // GPT5_PC is not connected
+    [0x36-0x3D] -> icu@[0x87-0x8E]
+    // GPT6_PC is not connected
+    [0x3F-0x46] -> icu@[0x8F-0x96]
+    // GPT7_PC is not connected
 
 agt0: Timers.RenesasRA_AGT @ sysbus 0x40084000
     lowSpeedOnChipOscillatorFrequency: 32768
