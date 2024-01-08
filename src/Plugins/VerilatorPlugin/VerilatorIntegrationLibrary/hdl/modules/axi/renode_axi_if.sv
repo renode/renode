@@ -1,11 +1,9 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-
-import renode_axi_pkg::*;
 
 interface renode_axi_if #(
     int unsigned AddressWidth = 32,
@@ -14,6 +12,8 @@ interface renode_axi_if #(
 ) (
     input logic aclk
 );
+  import renode_axi_pkg::*;
+
   localparam int unsigned StrobeWidth = (DataWidth / 8);
 
   typedef logic [AddressWidth-1:0] address_t;

@@ -1,16 +1,16 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-import renode_axi_pkg::*;
-
 module renode_axi_subordinate (
     renode_axi_if bus,
     input renode_pkg::bus_connection connection
 );
+  import renode_axi_pkg::*;
+
   typedef logic [bus.AddressWidth-1:0] address_t;
   typedef logic [bus.DataWidth-1:0] data_t;
   typedef logic [bus.StrobeWidth-1:0] strobe_t;
