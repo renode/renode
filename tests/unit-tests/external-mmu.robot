@@ -132,7 +132,7 @@ Can Reset The Windows
     Should Be Equal As Integers     0  ${range_start}  "Range start incorrect"
     Should Be Equal As Integers     0  ${range_end}  "Range end incorrect"
     Should Be Equal As Integers     0  ${addend}  "Range adden incorrect"
-    Should Be Equal As Integers     0  ${priv}  "Range priviledges incorrect"
+    Should Be Equal As Integers     0  ${priv}  "Range privileges incorrect"
 
     # Surrounding windows should remain untouched
     ${range_start}=                 Execute Command    cpu GetMmuWindowStart ${window1}
@@ -279,3 +279,13 @@ Execution Stops On Fault
     # Assert that the second insn was not executed
     ${val}=                         Execute Command   cpu GetRegisterUnsafe ${a2}
     Should Be Equal As Integers     ${val}  0x0
+
+Throws When Window Is Out Of Range
+    Requires                        SingleMMU
+    Run Keyword And Expect Error    *Address is outside of the possible range.*
+    ...                             Define Typed Window Using CPU API  0x0  0x100001000  0x0  ${PRIV_ALL}  ${PRIV_ALL}
+
+Works With The Last Page Of Memory
+    Requires                        SingleMMU
+    Define Typed Window Using CPU API  0x0  0x100000000  0x0  ${PRIV_EXEC_ONLY}  ${PRIV_EXEC_ONLY}
+    Execute Command                 sysbus ReadWord 0xFFFFFFFF
