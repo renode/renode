@@ -501,7 +501,7 @@ Should Ping
     Wait For Prompt On Uart         ${PROMPT}  testerId=${tester1}
 
 Should Ping Over TAP
-    [Tags]                          skip_windows
+    [Tags]                          ethernet  tap
     Requires                        logged-in
 
     Set Test Variable               ${TAP_INTERFACE}  tap0
