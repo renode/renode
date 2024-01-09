@@ -129,10 +129,10 @@ Can Reset The Windows
     ${range_end}=                   Execute Command    cpu GetMmuWindowEnd ${window2}
     ${addend}=                      Execute Command    cpu GetMmuWindowAddend ${window2}
     ${priv}=                        Execute Command    cpu GetMmuWindowPrivileges ${window2}
-    Should Be Equal As Integers     0  ${range_start}
-    Should Be Equal As Integers     0  ${range_end}
-    Should Be Equal As Integers     0  ${addend}
-    Should Be Equal As Integers     0  ${priv}
+    Should Be Equal As Integers     0  ${range_start}  "Range start incorrect"
+    Should Be Equal As Integers     0  ${range_end}  "Range end incorrect"
+    Should Be Equal As Integers     0  ${addend}  "Range adden incorrect"
+    Should Be Equal As Integers     0  ${priv}  "Range priviledges incorrect"
 
     # Surrounding windows should remain untouched
     ${range_start}=                 Execute Command    cpu GetMmuWindowStart ${window1}
