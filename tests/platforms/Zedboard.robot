@@ -16,13 +16,13 @@ ${MTD0_BLOCK_DEV}                   /dev/mtdblock0
 ${MTD1_DEV}                         /dev/mtd1
 ${MTD1_BLOCK_DEV}                   /dev/mtdblock1
 ${CADENCE_XSPI_BIN}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-vmlinux-s_14143972-449b7a25d689a4b6e2adc9ae4c3abbf375ccc70c
-${CADENCE_XSPI_ROOTFS}              @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-d1dabbf627ba4846963c97db8d27f5d4f454e72b
+${CADENCE_XSPI_ROOTFS}              @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-65f5f502eb4a970cb0e24b5382a524a99ed9e360
 ${CADENCE_XSPI_DTB}                 @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi.dtb-s_11045-f5e1772bb1d19234ce6f0b8ec77c2f970660c7bb
 ${CADENCE_XSPI_AUTOCOMMAND_BIN}     @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-vmlinux-s_14386012-ff7f3dfd09804979deca966c66127df7495c5318
-${CADENCE_XSPI_AUTOCOMMAND_ROOTFS}  @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-rootfs.ext2-s_16777216-a05d6421ce699832c6f372f2001aaa13b054c02b
+${CADENCE_XSPI_AUTOCOMMAND_ROOTFS}  @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi-autocommand-rootfs.ext2-s_16777216-e57483f695b8e43f7550aba5185055f675e19101
 ${CADENCE_XSPI_AUTOCOMMAND_DTB}     @https://dl.antmicro.com/projects/renode/zynq--cadence-xspi.dtb-s_11045-f5e1772bb1d19234ce6f0b8ec77c2f970660c7bb
 ${ZYNQ_UFS_BIN}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.elf-s_14602408-e730ddd43bc5bd78d3295f4816a80f2a43832388
-${ZYNQ_UFS_ROOTFS}                  @https://dl.antmicro.com/projects/renode/zynq--linux-ufs-rootfs.ext2-s_16777216-6f4122f4b1dd932df6636d83503b4f0ca60aac86
+${ZYNQ_UFS_ROOTFS}                  @https://dl.antmicro.com/projects/renode/zynq--linux-ufs-rootfs.ext2-s_16777216-d81aa7e35d2b9a00d8ee7dda34143e26a958908f
 ${ZYNQ_UFS_DTB}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.dtb-s_12720-0dfc729e7c8db7b51c5eb4dfd990cee186de1442
 ${ZYNQ_UFS_TEST_DISK_IMG}           @https://dl.antmicro.com/projects/renode/test-fs-ext2.img-s_524288-67f5bc210d7be8905b4de4ae5d70a8a142459110
 ${ZYNQ_WATCHDOG_RESET_DTB}          @https://dl.antmicro.com/projects/renode/zynq--linux-watchdog-reset-on-timeout.dtb-s_12898-a3b65664ac84db801b0dad1525207f304e8a7428

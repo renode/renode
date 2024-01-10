@@ -10,7 +10,7 @@ showAnalyzer uart0
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
 $bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_14142952-ab5cd7445f31414fcbf8c79d49d737c669034ef2
-$rootfs?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ext2-s_16777216-a08ef98709fb96de6662ed492eb45e95eb2127b3
+$rootfs?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-gem0.dtb-s_11724-f0dec8ffadea47891dfe2441215401f09f7242fa
 
 ## set timer frequency ##

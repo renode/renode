@@ -32,7 +32,7 @@ ${SAMPLES_DRIVERS_CAN_COUNTER_LOOPBACK_BIN}        @https://dl.antmicro.com/proj
 ${SAMPLES_DRIVERS_CAN_COUNTER_NO_LOOPBACK_BIN}     @https://dl.antmicro.com/projects/renode/nucleo_h743zi--zephyr-samples-drivers-can-counter.elf-s_1391464-17e71d5820ab718e5dc89f8480644c576306d24c
 # Linux with support for MCAN
 ${ZYNQ_MCAN_BIN}                                   @https://dl.antmicro.com/projects/renode/zynq--linux-mcan.elf-s_14394628-0381324a8046cfb3f7a3f08364acd364588d2f03
-${ZYNQ_MCAN_ROOTFS}                                @https://dl.antmicro.com/projects/renode/zynq--linux-mcan-rootfs.ext2-s_16777216-fb63c58c39db51545817865a0f04895d7c96e0b4
+${ZYNQ_MCAN_ROOTFS}                                @https://dl.antmicro.com/projects/renode/zynq--linux-mcan-rootfs.ext2-s_16777216-485d90cf2065794b6bbb68768315d1310387a0cc
 ${ZYNQ_MCAN_DTB}                                   @https://dl.antmicro.com/projects/renode/zynq--linux-mcan.dtb-s_12849-650fd5a9575fd9e2917e5f9dd2677014cbd7af11
 
 *** Keywords ***

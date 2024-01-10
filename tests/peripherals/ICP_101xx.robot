@@ -2,7 +2,7 @@
 ${SCRIPT}                           scripts/single-node/zedboard.resc
 ${BIN}                              https://dl.antmicro.com/projects/renode/zynq-interface-tests-icp10101-vmlinux-s_14145184-faf7b152d8913a54efee567c701b4f8a494d72ea
 ${DTB}                              https://dl.antmicro.com/projects/renode/zynq-linux-icp10101.dtb-s_11796-15666b09e3900565b3c5c31bbf08f8b2ecab1e93
-${ROOTFS}                           https://dl.antmicro.com/projects/renode/zynq-interface-tests-rootfs.ext2-s_16777216-a08ef98709fb96de6662ed492eb45e95eb2127b3
+${ROOTFS}                           https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 ${UART}                             sysbus.uart0
 ${SENSOR}                           sysbus.i2c0.barometer
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
