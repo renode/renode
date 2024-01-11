@@ -106,9 +106,8 @@ class NUnitTestSuite(object):
             if options.port is not None:
                 if options.suspend:
                     print('Waiting for a debugger at port: {}'.format(options.port))
-                else:
-                    args.insert(1, '--debug')
-                    args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
+                args.insert(1, '--debug')
+                args.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
             elif options.debug_mode:
                 args.insert(1, '--debug')
 
