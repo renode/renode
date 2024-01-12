@@ -2,7 +2,6 @@
 ${SCRIPT}                           scripts/single-node/zedboard.resc
 ${BIN}                              https://dl.antmicro.com/projects/renode/zynq-interface-tests-icp10101-vmlinux-s_14145184-faf7b152d8913a54efee567c701b4f8a494d72ea
 ${DTB}                              https://dl.antmicro.com/projects/renode/zynq-linux-icp10101.dtb-s_11796-15666b09e3900565b3c5c31bbf08f8b2ecab1e93
-${ROOTFS}                           https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 ${UART}                             sysbus.uart0
 ${SENSOR}                           sysbus.i2c0.barometer
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -13,12 +12,7 @@ ${PROMPT}                           \#${SPACE}
 Create Machine
     Execute Command                 set bin @${BIN}
     Execute Command                 set dtb @${DTB}
-    Execute Command                 set rootfs @${ROOTFS}
     Execute Command                 include @${SCRIPT}
-    Execute Command                 showAnalyzer sysbus.uart0
-    Execute Command                 sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1a000000,16M" false
-    Execute Command                 sysbus ZeroRange 0x1a000000 0x1600000
-    Execute Command                 sysbus LoadBinary $rootfs 0x1a000000
 
     Execute Command                 machine LoadPlatformDescriptionFromString "barometer: Sensors.ICP_101xx @ i2c0 0x50"
 
