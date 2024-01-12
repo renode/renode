@@ -1,0 +1,190 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m23"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 120000000
+    IRQ -> cpu@0
+
+icu: IRQControllers.RenesasRA_ICU @ sysbus 0x40006000
+    nvic: nvic
+    eventToInterruptLink: EventToInterruptLinkType.RA2
+    numberOfExternalInterrupts: 8
+    highestEventNumber: 0xA9
+    numberOfNVICOutputs: 32
+
+code_flash: Memory.MappedMemory @ sysbus 0x0
+    size: 0x20000
+
+data_flash: Memory.MappedMemory @ sysbus 0x40100000
+    size: 0x1000
+
+sram: Memory.MappedMemory @ sysbus 0x20004000
+    size: 0x4000
+
+portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40040D00
+
+port0: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040000;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040800; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 16
+    pfsMisc: portMisc
+
+port1: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040020;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040840; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 14
+    pfsMisc: portMisc
+
+port2: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040040;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040880; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 16
+    pfsMisc: portMisc
+
+port3: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040060;
+        sysbus new Bus.BusMultiRegistration { address: 0x400408C0; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 5
+    pfsMisc: portMisc
+
+port4: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040080;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040900; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 16
+    pfsMisc: portMisc
+
+port5: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x400400A0;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040940; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 3
+    pfsMisc: portMisc
+
+port9: GPIOPort.RenesasRA_GPIO @ {
+        sysbus 0x40040120;
+        sysbus new Bus.BusMultiRegistration { address: 0x40040A40; size: 0x40; region: "pinConfiguration" }
+    }
+    numberOfConnections: 16
+    pfsMisc: portMisc
+
+gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
+    numberOf32BitChannels: 4
+    numberOf16BitChannels: 6
+    commonRegistersOffset: 0xff0
+    peripheralClockDFrequency: 48000000
+    [0x00-0x03] -> icu@[0x46-0x49]
+    // GPT0_CMPE and _CMPF are not connected
+    [0x06-0x07] -> icu@[0x4A-0x4B]
+    // GPT0_PC is not connected
+    // GPT1..3 are not connected
+    [0x24-0x27] -> icu@[0x5E-0x61]
+    // GPT4_CMPE and _CMPF are not connected
+    [0x2A-0x2B] -> icu@[0x62-0x63]
+    // GPT4_PC is not connected
+    [0x2D-0x30] -> icu@[0x64-0x67]
+    // GPT5_CMPE and _CMPF are not connected
+    [0x33-0x34] -> icu@[0x68-0x69]
+    // GPT5_PC is not connected
+    [0x36-0x39] -> icu@[0x6A-0x6D]
+    // GPT6_CMPE and _CMPF are not connected
+    [0x3C-0x3D] -> icu@[0x6E-0x6F]
+    // GPT6_PC is not connected
+    [0x3F-0x42] -> icu@[0x98-0x9B]
+    // GPT7_CMPE and _CMPF are not connected
+    [0x45-0x46] -> icu@[0x9C-0x9D]
+    // GPT7_PC is not connected
+    [0x48-0x4B] -> icu@[0x9E-0xA1]
+    // GPT8_CMPE and _CMPF are not connected
+    [0x4E-0x4F] -> icu@[0xA2-0xA3]
+    // GPT8_PC is not connected
+    [0x51-0x54] -> icu@[0xA4-0xA7]
+    // GPT9_CMPE and _CMPF are not connected
+    [0x57-0x58] -> icu@[0xA8-0xA9]
+    // GPT9_PC is not connected
+
+agt0: Timers.RenesasRA_AGT @ sysbus 0x40084000
+    lowSpeedOnChipOscillatorFrequency: 32768
+    subClockOscillatorFrequency: 32768
+    peripheralClockBFrequency: 24000000
+    IRQ -> icu@0x11
+    CompareMatchA -> icu@0x12
+    CompareMatchB -> icu@0x13
+
+agt1: Timers.RenesasRA_AGT @ sysbus 0x40084100
+    lowSpeedOnChipOscillatorFrequency: 32768
+    subClockOscillatorFrequency: 32768
+    peripheralClockBFrequency: 24000000
+    IRQ -> icu@0x14
+    CompareMatchA -> icu@0x15
+    CompareMatchB -> icu@0x16
+
+sci0: SCI.RenesasRA6M5_SCI @ sysbus <0x40070000, +0x20>
+    frequency: 32000000
+    enableManchesterMode: false
+    enableFIFO: true
+    ReceiveIRQ -> icu@0x71
+    TransmitIRQ -> icu@0x72
+    TransmitEndIRQ -> icu@0x73
+
+sci1: SCI.RenesasRA6M5_SCI @ sysbus <0x40070020, +0x20>
+    frequency: 32000000
+    enableManchesterMode: false
+    enableFIFO: false
+    ReceiveIRQ -> icu@0x77
+    TransmitIRQ -> icu@0x78
+    TransmitEndIRQ -> icu@0x79
+
+sci2: SCI.RenesasRA6M5_SCI @ sysbus <0x40070040, +0x20>
+    frequency: 32000000
+    enableManchesterMode: false
+    enableFIFO: false
+    ReceiveIRQ -> icu@0x8E
+    TransmitIRQ -> icu@0x8F
+    TransmitEndIRQ -> icu@0x90
+
+sci9: SCI.RenesasRA6M5_SCI @ sysbus <0x40070120, +0x20>
+    frequency: 32000000
+    enableManchesterMode: false
+    enableFIFO: false
+    ReceiveIRQ -> icu@0x7C
+    TransmitIRQ -> icu@0x7D
+    TransmitEndIRQ -> icu@0x7E
+
+sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
+    size: 0x4
+    initable: true
+    script: "request.value = 0xFF"
+
+sysbus:
+    init:
+        Tag <0x40000000,0x40000d27> "RMPU" // Renesas Memory Protection Unit
+        Tag <0x40002000,0x40002007> "SRAM" // SRAM Control
+        Tag <0x40003000,0x40004837> "BUS" // BUS Control
+        Tag <0x40005400,0x40005413> "DTC" // Data Transfer Controller
+        Tag <0x4001b000,0x4001b017> "DBG" // Debug Function
+        Tag <0x4001e000,0x4001e493> "SYSC" // System Control
+        Tag <0x40040800,0x40040d13> "PFS" // Pmn Pin Function Control Register
+        Tag <0x40041000,0x4004105b> "ELC" // Event Link Controller
+        Tag <0x40042000,0x40042107> "POEG" // Port Output Enable Module for GPT
+        Tag <0x40044000,0x4004402f> "RTC" // Realtime Clock
+        Tag <0x40044200,0x4004420b> "WDT" // Watchdog Timer
+        Tag <0x40044400,0x40044407> "IWDT" // Independent Watchdog Timer
+        Tag <0x40044600,0x4004460f> "CAC" // Clock Frequency Accuracy Measurement Circuit
+        Tag <0x40047000,0x40047017> "MSTP" // Module Stop Control B, C, D
+        Tag <0x40053000,0x40053023> "IIC0" // Inter-Integrated Circuit 0
+        Tag <0x40053014,0x4005301b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
+        Tag <0x40054100,0x40054107> "DOC" // Data Operation Circuit
+        Tag <0x4005c000,0x4005c0f3> "ADC120" // 12-bit A/D Converter
+        Tag <0x40072000,0x40072013> "SPI0" // Serial Peripheral Interface
+        Tag <0x40074000,0x4007400f> "CRC" // Cyclic Redundancy Check Calculator
+        Tag <0x40078ff0,0x40078ff7> "GPT_OPS" // Output Phase Switching Controller
+        Tag <0x40080000,0x4008000b> "KINT" // Key Interrupt Function
+        Tag <0x40082000,0x4008203f> "CTSU" // Capacitive Touch Sensing Unit
+        Tag <0x40085e00,0x40085e03> "ACMPLP" // Low-Power Analog Comparator
+        Tag <0x407ec000,0x407effcb> "FLCN" // Flash I/O Registers

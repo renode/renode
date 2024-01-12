@@ -1,0 +1,18 @@
+using "platforms/cpus/renesas-r7fa2e1a9.repl"
+
+port9:
+    15 -> led_blue@0
+    14 -> led_green@0
+    13 -> led_red@0
+
+led_blue: Miscellaneous.LED @ port9 15
+
+led_green: Miscellaneous.LED @ port9 14
+
+led_red: Miscellaneous.LED @ port9 13
+
+button_s2: Miscellaneous.Button @ port0 15
+    -> port0@15
+
+button_s1: Miscellaneous.Button @ port0 4
+    -> port0@4
