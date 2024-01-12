@@ -17,7 +17,7 @@ Create Machine
 Set Enviroment
     [Arguments]                     ${temperature}=0.00  ${humidity}=0.00
     Execute Command                 ${SENSOR} DefaultTemperature ${temperature}
-    Execute Command                 ${SENSOR} Humidity ${humidity}
+    Execute Command                 ${SENSOR} DefaultHumidity ${humidity}
 
 Check Enviroment
     [Arguments]                     ${temperature}=0.00  ${humidity}=0.00
