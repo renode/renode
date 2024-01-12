@@ -4,6 +4,7 @@
     <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
     <AssemblyName>RenodeTests</AssemblyName>
     <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <Import Project="$(PropertiesLocation)" />
   <ItemGroup>
