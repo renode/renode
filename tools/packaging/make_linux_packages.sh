@@ -33,7 +33,8 @@ PYTHONVERSION=3.8
 
 COMMON_SCRIPT=$DIR/tests/common.sh
 TEST_SCRIPT=linux/renode-test
-copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT
+RUNNER=mono
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT $RUNNER
 
 COMMAND_SCRIPT=linux/renode
 echo "#!/bin/sh" > $COMMAND_SCRIPT

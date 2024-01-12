@@ -20,7 +20,11 @@ OS_NAME=macos
 # OSX version of sed requires backup appendix when in-place editing, backups are removed later on
 SED_COMMAND="sed -i.sed_backup"
 . common_copy_files.sh
-copy_bash_tests_scripts $DIR/tests/renode-test $DIR/tests/common.sh
+
+COMMON_SCRIPT=$DIR/tests/common.sh
+TEST_SCRIPT=$DIR/tests/renode-test
+RUNNER=mono
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT $RUNNER
 
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
 cp macos/Info.plist $MACOS_APP_DIR/Contents/

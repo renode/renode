@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+LAUNCHER=dotnet
+
+if ! [ -x "$(command -v $LAUNCHER)" ]
+then
+    echo "$LAUNCHER not found. Renode requires dotnet runtime. Please refer to documentation for installation instructions. Exiting!"
+    exit 1
+fi
+
+$LAUNCHER $(dirname "${BASH_SOURCE[0]}")/bin/Renode.dll "$@"

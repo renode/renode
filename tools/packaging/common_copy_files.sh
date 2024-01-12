@@ -2,9 +2,15 @@ rm -rf $DIR
 mkdir -p $DIR/{bin,licenses,tests,tools,plugins}
 
 #copy the main content
-cp -r $BASE/output/bin/$TARGET/*.{dll,exe} $DIR/bin
+cp -r $BASE/output/bin/$TARGET/*.dll $DIR/bin
 cp -r $BASE/output/bin/$TARGET/libllvm-disas.* $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
+
+if ls $BASE/output/bin/$TARGET/*.exe
+then
+    cp -r $BASE/output/bin/$TARGET/*.exe $DIR/bin
+fi
+
 cp -r $BASE/{.renode-root,scripts,platforms} $DIR
 cp -r $BASE/tools/execution_tracer $DIR/tools
 cp -r $BASE/tools/gdb_compare $DIR/tools
@@ -35,12 +41,13 @@ $BASE/tools/packaging/common_copy_licenses.sh $DIR/licenses $OS_NAME
 function copy_bash_tests_scripts() {
     TEST_SCRIPT=$1
     COMMON_SCRIPT=$2
+    RUNNER=$3
 
     cp -r $BASE/renode-test $TEST_SCRIPT
     $SED_COMMAND 's#tools/##' $TEST_SCRIPT
     $SED_COMMAND 's#tests/run_tests.py#run_tests.py#' $TEST_SCRIPT
-    $SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory='$INSTALL_DIR'/bin --css-file='$INSTALL_DIR'/tests/robot.css -r $(pwd) "$@"#' $TEST_SCRIPT
-    $SED_COMMAND 's#^ROOT_PATH=".*#ROOT_PATH="'$INSTALL_DIR'/tests"#g' $TEST_SCRIPT
+    $SED_COMMAND 's#--properties-file.*#--robot-framework-remote-server-full-directory='"$INSTALL_DIR"'/bin --css-file='"$INSTALL_DIR"'/tests/robot.css -r $(pwd) --runner='$RUNNER' "$@"#' $TEST_SCRIPT
+    $SED_COMMAND 's#^ROOT_PATH=".*#ROOT_PATH="'"$INSTALL_DIR"'/tests"#g' $TEST_SCRIPT
     $SED_COMMAND '/TESTS_FILE/d' $TEST_SCRIPT
     $SED_COMMAND '/TESTS_RESULTS/d' $TEST_SCRIPT
 
