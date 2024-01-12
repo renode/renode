@@ -13,7 +13,7 @@ itcm: Memory.MappedMemory @ sysbus 0x0
 dtcm: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x80000
 
-ocram2: Memory.MappedMemory @ sysbus 0x20200000 
+ocram2: Memory.MappedMemory @ sysbus 0x20200000
     size: 0x80000
 
 wdog1: Python.PythonPeripheral @ sysbus 0x400B8000
@@ -23,12 +23,12 @@ wdog1: Python.PythonPeripheral @ sysbus 0x400B8000
 
 trng: Miscellaneous.IMX_TRNG @ sysbus 0x400CC000
 
-wdog2: Python.PythonPeripheral @ sysbus 0x400D0000 
+wdog2: Python.PythonPeripheral @ sysbus 0x400D0000
     size: 0x4000
     initable: true
     filename: "scripts/pydev/ticker.py"
 
-wdog3: Python.PythonPeripheral @ sysbus 0x400BC000 
+wdog3: Python.PythonPeripheral @ sysbus 0x400BC000
     size: 0x4000
     initable: true
     filename: "scripts/pydev/ticker.py"
@@ -107,7 +107,7 @@ enet2: Network.K6xF_Ethernet @ sysbus 0x402D4000
     [TxIRQ, RxIRQ, MiscIRQ, PtpIRQ] -> enet2IRQs@[0-3]
     TimerIRQ -> nvic@153
 
-flex_spi: SPI.IMXRT_FlexSPI @ { 
+flex_spi: SPI.IMXRT_FlexSPI @ {
     sysbus 0x402A8000;
     sysbus new Bus.BusMultiRegistration { address: 0x60000000; size: 0xF000000; region: "ciphertext" }
 }
@@ -118,7 +118,7 @@ flex_spi2: SPI.IMXRT_FlexSPI @ sysbus 0x402A4000
 // in this configuration all reads/writes to the ciphertext region are translated into commands;
 // it might not be possible to execute code (XIP) in this setup
 // -------------------------------
-// flex_spi2: SPI.IMXRT_FlexSPI @ { 
+// flex_spi2: SPI.IMXRT_FlexSPI @ {
 //     sysbus 0x402A4000;
 //     sysbus new Bus.BusMultiRegistration { address: 0x70000000; size: 0xF000000; region: "ciphertext" }
 // }
