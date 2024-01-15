@@ -1,0 +1,95 @@
+nvic_m33: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu_m33
+    }
+    priorityMask: 0xF0
+    systickFrequency: 32000000
+    IRQ -> cpu_m33@0
+
+nvic_cmac: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cmac
+    }
+    priorityMask: 0xF0
+    systickFrequency: 32000000
+    IRQ -> cmac@0
+
+cpu_m33: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic_m33
+    id: 0
+
+cmac: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0+"
+    nvic: nvic_cmac
+    id: 1
+
+rom: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus 0x900000
+    }
+    size: 0x48000
+
+eflash_code: Memory.MappedMemory @ sysbus 0xA00000
+    size: 0x40800
+
+eflash_data: Memory.MappedMemory @ sysbus 0x31000000
+    size: 0x40800
+
+qpic_m: Memory.MappedMemory @ {
+        sysbus 0x16000000;
+        sysbus 0x32000000
+    }
+    size: 0x2000000
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x800000;
+        sysbus 0x20000000
+    }
+    size: 0x18000
+
+sysbus:
+    init:
+        Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
+        Tag <0x30020000,0x30020093> "AMBA_BUS_DW" // AMBA_BUS_DW registers
+        Tag <0x50060004,0x5006007f> "MEMORY_CONTROLLER" // MEMORY_CONTROLLER registers
+        Tag <0x50060100,0x50060123> "EFLASH_CONTROLLER" // EFLASH_CONTROLLER registers
+        Tag <0x34000000,0x34000047> "QSPI_FLASH/RAM" // QSPI_FLASH/RAM registers
+        Tag <0x50000400,0x50000497> "REAL_TIME_CLOCK" // REAL_TIME_CLOCK registers
+        Tag <0x50000500,0x5000051b> "QUADRATURE_DECODER" // QUADRATURE_DECODER registers
+        Tag <0x50020200,0x5002022f> "SPI_CONTROLLER" // SPI_CONTROLLER registers
+        Tag <0x50020300,0x500203a7> "I2C_CONTROLLER" // I2C_CONTROLLER registers
+        Tag <0x50010300,0x5001034b> "TIMERS_1" // TIMERS_1 registers
+        Tag <0x50010400,0x50010437> "TIMERS_2" // TIMERS_2 registers
+        Tag <0x50010500,0x50010537> "TIMERS_3" // TIMERS_3 registers
+        Tag <0x50020a00,0x50020a37> "TIMER_4" // TIMER_4 registers
+        Tag <0x50000300,0x50000303> "DCDC_CONVERTER" // DCDC_CONVERTER registers
+        Tag <0x50020000,0x500200ff> "UART" // UART registers
+        Tag <0x50020100,0x500201ff> "UART2" // UART2 registers
+        Tag <0x50050200,0x50050203> "CHIP_ID1" 0x32
+        Tag <0x50050204,0x50050207> "CHIP_ID2" 0x36
+        Tag <0x50050208,0x5005020B> "CHIP_ID3" 0x33
+        Tag <0x5005020C,0x5005020F> "CHIP_ID4" 0x34
+        Tag <0x50050210,0x50050213> "CHIP_SWC" 0x2
+        Tag <0x50050214,0x50050214> "CHIP_REVISION" 0x41
+        Tag <0x500502F8,0x500502F4> "CHIP_LAYOUT_REVISION" 0x45
+        Tag <0x500502FC,0x500502FF> "CHIP_METAL_OPTION" 0x0
+        Tag <0x50000100,0x50000163> "WAKE-UP_CONTROLLER" // WAKE_UP_CONTROLLER registers
+        Tag <0x50000700,0x50000707> "WATCHDOG_CONTROLLER" // WATCHDOG_CONTROLLER registers
+        Tag <0x50020400,0x5002041F> "GENERAL_PURPOSE_or_ADC_1" // GENERAL_PURPOSE_or_ADC_1 registers
+        Tag <0x50040900,0x50040923> "GENERAL_PURPOSE_or_ADC_2" // GENERAL_PURPOSE_or_ADC_2 registers
+        Tag <0x50020600,0x500206ab> "GENERAL_PURPOSE_I/O" // GENERAL_PURPOSE_I/O registers
+        Tag <0x50050300,0x50050317> "GENERAL_PURPOSE" // GENERAL_PURPOSE registers
+        Tag <0x50000200,0x5000029b> "POWER_DOMAIN_CONTROLLER" // POWER_DOMAIN_CONTROLLER registers
+        Tag <0x50060200,0x50060317> "DMA_CONTROLLER" // DMA_CONTROLLER registers
+        Tag <0x50000000,0x500000FF> "CLOCK_GENERATION_CONTROLLER" // CLOCK_GENERATION_CONTROLLER registers
+        Tag <0x50010000,0x5001006B> "CLOCK_GENERATION_CONTROLLER2" // CLOCK_GENERATION_CONTROLLER2 registers
+        Tag <0x50020504,0x5002050F> "CLOCK_GENERATION_CONTROLLER3" // CLOCK_GENERATION_CONTROLLER3 registers
+        Tag <0x50040C04,0x50040C07> "CLOCK_GENERATION_CONTROLLER4" // CLOCK_GENERATION_CONTROLLER4 registers
+        Tag <0x50050500,0x50050503> "CLOCK_GENERATION_CONTROLLER5" // CLOCK_GENERATION_CONTROLLER5 registers
+        Tag <0x1a0c0020,0x1a0c0053> "CORTEX_M33_CACHE_CONTROLLER" // CORTEX_M33_CACHE_CONTROLLER registers
+        Tag <0x1a1c0020,0x1a1c0053> "CORTEX_M0+_CACHE_CONTROLLER" // CORTEX_M0+_CACHE_CONTROLLER registers
+        Tag <0x50030040,0x5003004f> "AUDIO_UNIT" // AUDIO_UNIT registers
+        Tag <0x50030400,0x50030433> "AUDIO_ACCELERATOR" // AUDIO_ACCELERATOR registers
+        Tag <0x50040b10,0x50040b1f> "ANALOG_MISCELLANEOUS" // ANALOG_MISCELLANEOUS registers
+        Tag <0x30040000,0x30040103> "CRYPTO-ENGINE" // CRYPTO-ENGINE registers
