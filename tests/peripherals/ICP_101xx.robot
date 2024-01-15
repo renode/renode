@@ -24,8 +24,8 @@ Create Machine
 
 Set Enviroment
     [Arguments]                     ${temperature}  ${pressure}
-    Execute Command                 ${SENSOR} Temperature ${temperature}
-    Execute Command                 ${SENSOR} Pressure ${pressure}
+    Execute Command                 ${SENSOR} DefaultTemperature ${temperature}
+    Execute Command                 ${SENSOR} DefaultPressure ${pressure}
 
 Check Enviroment
     # temperature read is in miliCelsius, pressure in kiloPascals
@@ -47,6 +47,7 @@ Create RESD File
     ${args}=                        Catenate  SEPARATOR=,
     ...                             "--input", r"${path}"
     ...                             "--map", "temperature:temp::0"
+    ...                             "--map", "pressure:pres::0"
     # Offset since Linux manages to boot-up and display the first measurement, minus 0.03 second, to be sure the change will be seen
     # Note that for different Linux build, this time might be different, and the tests will fail
     ...                             "--start-time", "5_220_000_000"
@@ -79,17 +80,18 @@ Should Read Temperature And Pressure
     Set Enviroment                  temperature=37.82            pressure=101237
     Check Enviroment                temperature=37818.982320     pressure=101.236999
 
-Should Read Temperature From RESD
+Should Read Temperature And Pressure From RESD
     Requires                        booted-linux
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
 
     Execute Command                 ${SENSOR} FeedTemperatureSamplesFromRESD @${resd_path}
+    Execute Command                 ${SENSOR} FeedPressureSamplesFromRESD @${resd_path}
 
     # Pressure will fluctuate a bit, since its calculation depends on the temperature
     # these are very much dependent on a specific software build, because the samples need to be fed and read-out at strict intervals
     # if the soft changes, frequency and start-time in RESD might need to change as well
     Check Enviroment                temperature=-21002.121744    pressure=29.999976
     Check Enviroment                temperature=-.306624         pressure=29.999993
-    Check Enviroment                temperature=4998.472512      pressure=29.999985
-    Check Enviroment                temperature=9999.921936      pressure=29.999976
-    Check Enviroment                temperature=54999.615312     pressure=29.999984
+    Check Enviroment                temperature=4998.472512      pressure=52.911995
+    Check Enviroment                temperature=9999.921936      pressure=101.450998
+    Check Enviroment                temperature=54999.615312     pressure=72.520999
