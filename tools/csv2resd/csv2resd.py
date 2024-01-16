@@ -100,8 +100,7 @@ def parse_arguments():
             print(f'{parsed.input}: either frequency or timestamp should be provided')
             sys.exit(1)
         if parsed.frequency and parsed.timestamp:
-            print(f'{parsed.input}: cannot provide both frequency and timestamp')
-            sys.exit(1)
+            print(f'Data will be resampled to {parsed.frequency}Hz based on provided timestamps')
 
         entries.append(parsed)
 
@@ -146,8 +145,26 @@ if __name__ == '__main__':
     resd_file = resd.RESD(output_file)
     for group in arguments:
         block_type = BLOCK_TYPE.ARBITRARY_TIMESTAMP
+        resampling_mode = False
         if group.frequency is not None:
             block_type = BLOCK_TYPE.CONSTANT_FREQUENCY
+            if group.timestamp is not None:
+                # In resampling mode we use provided timestamps to generate constant frequency sample blocks.
+                # It allows to reconstruct RESD stream spanning long time periods from the sparse data.
+                # The idea is based on the default behavior of RESD, that allows for gaps between RESD blocks.
+                # On the other side, constant frequency sample blocks contain continuous, densely packed data,
+                # so we split samples into separate groups that are used to generate separate blocks.
+                # It is based on a simple heuristic:
+                # Samples with the same timestamps are grouped together and resampled to the frequency passed from the command line.
+                # Start time of the generated block is calculated as an offset to the previous timestamp + the initial start-time passed from the command line.
+                # Therefore for sparse data you often end up with the RESD file that consists of multiple blocks made of just one sample.
+                # Start time of the block calculated from the provided timestamps is crucial,
+                # because it translates to the virtual time during emulation, when the first sample from the block appears.
+                # Gaps can be handled directly in the model using RESD APIs.
+                # Usual behavior is to provide a default sample or repeat the last sample in the place of gaps.
+                # If your CSV file contains well spaced samples, it is better to not provide timestamps explicitly
+                # and generate a single block containing all samples.
+                resampling_mode = True
 
         with open(group.input, 'rt') as csv_file:
             csv_reader = csv.DictReader(csv_file)
@@ -157,11 +174,16 @@ if __name__ == '__main__':
             to_skip = group.offset
             to_parse = group.count
 
+            # These fields are used only in resampling mode to keep track of the block's start time.
+            # In resampling mode, data is automatically split into multiple blocks based on the timestamps.
+            prev_timestamp = None
+            start_offset = group.start_time
+
             for row in csv_reader:
                 if labels is None:
                     labels = list(row.keys())
                     mappings = [rebuild_mapping(labels, mapping) for mapping in group.map]
-                    if block_type == BLOCK_TYPE.ARBITRARY_TIMESTAMP:
+                    if block_type == BLOCK_TYPE.ARBITRARY_TIMESTAMP or resampling_mode:
                         timestamp_source = map_source(labels, group.timestamp)
                         if timestamp_source is None:
                             sys.exit(1)
@@ -174,20 +196,42 @@ if __name__ == '__main__':
                     break
 
                 for mapping in mappings:
-
                     block = resd_file.get_block_or_create(mapping.sample_type, block_type, mapping.channel)
                     if block_type == BLOCK_TYPE.CONSTANT_FREQUENCY:
-                        block.add_sample(mapping.remap(row))
+                        if resampling_mode:
+                            current_sample = mapping.remap(row)
+                            current_timestamp = int(row[timestamp_source])
+
+                            if prev_timestamp is None:
+                                # First block
+                                prev_timestamp = current_timestamp
+                                block.frequency = group.frequency
+                                block.start_time = start_offset
+
+                            if current_timestamp != prev_timestamp:
+                                resd_file.flush()
+                                block = resd_file.get_block_or_create(mapping.sample_type, block_type, mapping.channel)
+                                block.frequency = group.frequency
+                                start_offset += (current_timestamp - prev_timestamp) # Gap between blocks
+                                block.start_time = start_offset
+
+                            block.add_sample(current_sample)
+                            prev_timestamp = current_timestamp
+                        else:
+                            block.add_sample(mapping.remap(row))
                     else:
                         block.add_sample(mapping.remap(row), int(row[timestamp_source]))
 
                 to_parse -= 1
 
-        for mapping in mappings:
-            block = resd_file.get_block(mapping.sample_type, mapping.channel)
-            if block_type == BLOCK_TYPE.CONSTANT_FREQUENCY:
-                block.frequency = group.frequency
-            if group.start_time is not None:
-                block.start_time = group.start_time
+        # In resampling mode, multiple blocks are usually generated from the single input
+        # so block properties are tracked ad hoc.
+        if not resampling_mode:
+            for mapping in mappings:
+                block = resd_file.get_block(mapping.sample_type, mapping.channel)
+                if block_type == BLOCK_TYPE.CONSTANT_FREQUENCY:
+                    block.frequency = group.frequency
+                if group.start_time is not None:
+                    block.start_time = group.start_time
 
         resd_file.flush()
