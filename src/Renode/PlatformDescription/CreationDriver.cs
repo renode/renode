@@ -1010,9 +1010,20 @@ namespace Antmicro.Renode.PlatformDescription
                         }
                         if(gpioProperties.Length > 1)
                         {
-                            
+                            // If we get more than one property, try to further narrow the list - search if there is one with DefaultInterruptAttribute
+                            gpioProperties = gpioProperties.Where(p => p.GetCustomAttribute(typeof(DefaultInterruptAttribute)) != null).ToArray();
+                        }
+                        // Now, there are the following possibilities:
+                        // (1) either there is only one GPIO in the peripheral model
+                        // (2) there are multiple GPIOs but one is marked with DefaultInterruptAttribute
+                        // (3) there are multiple GPIOs but none is marked with DefaultInterruptAttribute
+                        // (4) there are multiple GPIOs and several are marked with DefaultInterruptAttribute
+                        // The clause below covers options (3) and (4) - it impossible to determine default interrupt here.
+                        if(gpioProperties.Length != 1)
+                        {
                             HandleError(ParsingError.AmbiguousDefaultIrqSource, irqAttribute,
-                                        string.Format("There are at least '{0}' and '{1}' properties of GPIO type, ambiguous choice of default interrupt.", gpioProperties[0], gpioProperties[1]),
+                                        "Ambiguous choice of default interrupt." +
+                                        $"\nThere are the following properties of GPIO type available: {Misc.PrettyPrintCollection(GetGpioProperties(objectType), e => e.Name)}.",
                                         false);
                         }
                         // we can now fill the missing source so that we can treat default irqs as normal ones from this point on

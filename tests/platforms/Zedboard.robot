@@ -106,6 +106,18 @@ ${UFS_DEVICE_PERIPHERAL}            SEPARATOR=\n
 ...                                 ${SPACE*4}productRevisionLevel: ${UFS_DEVICE_PRODUCT_REV_LEVEL}
 ...                                 """
 
+${DEFAULT_IRQ_TEST}                 SEPARATOR=\n
+...                                 """
+...                                 led50: Miscellaneous.LED @ sysbus
+...                                 led51: Miscellaneous.LED @ sysbus
+...                                 led52: Miscellaneous.LED @ sysbus
+...
+...                                 uart1:
+...                                 ${SPACE*4}-> led50@0
+...                                 ${SPACE*4}RxFifoEmptyIRQ -> led51@0
+...                                 ${SPACE*4}RxFifoFullIRQ -> led52@0
+...                                 """
+
 *** Keywords ***
 Create Machine
     Execute Command                 include @scripts/single-node/zedboard.resc
@@ -523,3 +535,20 @@ Should Ping Over TAP
     Write Line To Uart              ping -c 5 ${TAP_INTERFACE_IP}
     Wait For Line On Uart           5 packets transmitted, 5 packets received, 0% packet loss
 
+Should Pass Default Interrupt Test
+    # This test checks `DefaultInterrupt` behavior with named and unnamed GPIOs
+
+    Create Machine
+    Execute Command                machine LoadPlatformDescriptionFromString ${DEFAULT_IRQ_TEST}
+    ${generic_irq_tester}=         Create LED Tester  sysbus.led50  defaultTimeout=0
+    ${rx_empty_tester}=            Create LED Tester  sysbus.led51  defaultTimeout=0
+    ${rx_full_tester}=             Create LED Tester  sysbus.led52  defaultTimeout=0
+
+    # Enable UART's RX/TX - so it triggers the IRQ
+    Execute Command                sysbus.uart1 WriteDoubleWord 0x0 0x14
+    # Enable all interrupts
+    Execute Command                sysbus.uart1 WriteDoubleWord 0x8 0xFFFFFFFF
+
+    Assert LED State               true   testerId=${generic_irq_tester}
+    Assert LED State               true   testerId=${rx_empty_tester}
+    Assert LED State               false  testerId=${rx_full_tester}
