@@ -1,6 +1,7 @@
 *** Variables ***
 ${URL}                  https://dl.antmicro.com/projects/renode
 ${AGT_ELF}              renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
+${HELLO_WORLD_ELF}      ra6m5-hello_world.elf-s_294808-99eaeb76d73e9a860fa749433886da1aa6ebdd1a
 
 ${SEGGER_RTT_SETUP}     SEPARATOR=\n
 ...  """
@@ -38,12 +39,13 @@ ${LED_REPL}             SEPARATOR=\n
 
 *** Keywords ***
 Prepare Machine
+    [Arguments]                 ${bin}
     Execute Command             using sysbus
     Execute Command             mach create "ra6m5"
 
     Execute Command             machine LoadPlatformDescription @platforms/cpus/R7FA6M5B.repl
 
-    Execute Command             set bin @${URL}/${AGT_ELF}
+    Execute Command             set bin @${URL}/${bin}
     Execute Command             macro reset "sysbus LoadELF $bin"
     Execute Command             runMacro $reset
 
@@ -57,9 +59,12 @@ Prepare LED Tester
     Execute Command             machine LoadPlatformDescriptionFromString ${LED_REPL}
     Create Led Tester           sysbus.port6.led
 
+Prepare UART Tester
+    Create Terminal Tester      sysbus.sci0
+
 *** Test Cases ***
 Should Run Periodicaly Blink LED
-    Prepare Machine
+    Prepare Machine             ${AGT_ELF}
     Prepare LED Tester
     Prepare Segger RTT
 
@@ -92,3 +97,15 @@ Should Run Periodicaly Blink LED
     Write Line To Uart                                                                  waitForEcho=false
     Wait For Line On Uart       Periodic timer stopped. Enter any key to start timers.  pauseEmulation=true
     Assert And Hold Led State   True  0.0  0.05
+
+Should Run Hello World Demo
+    Prepare Machine             ${HELLO_WORLD_ELF}
+    Prepare UART Tester
+
+    Start Emulation
+    Wait For Line On Uart       Hello world!
+    Wait For Line On Uart       Blinking available LEDs with 1Hz frequency: P1546, P1545, P1537, P1538, P1539, P1541
+    Wait For Line On Uart       LEDS OFF
+    Wait For Line On Uart       LEDS ON
+    Wait For Line On Uart       LEDS OFF
+    Wait For Line On Uart       LEDS ON
