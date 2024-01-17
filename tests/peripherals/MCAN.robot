@@ -44,7 +44,7 @@ Create STM32H7 Machine
     [Arguments]               ${bin}  ${name}=machine-0
     Execute Command           $bin=${bin}
     Execute Command           mach create "${name}"
-    Execute Command           machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+    Execute Command           machine LoadPlatformDescription @platforms/cpus/stm32h753.repl
     Execute Command           sysbus LoadELF ${bin}
     Execute Command           connector Connect ${CAN} ${CAN_HUB}
     Execute Command           showAnalyzer ${UART}
