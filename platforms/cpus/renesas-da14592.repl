@@ -80,6 +80,9 @@ gpio: GPIOPort.RenesasDA14_GPIO @ sysbus 0x50020600
 dma: DMA.RenesasDA14_DMA @ sysbus 0x50060200
     IRQ -> nvic_m33@1
 
+i2c: I2C.RenesasDA14_I2C @ sysbus 0x50020300
+    -> nvic_m33@5
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers

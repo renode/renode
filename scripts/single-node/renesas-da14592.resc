@@ -1,0 +1,19 @@
+:name: Renesas DA14592
+:description: This script runs a hello world example
+
+$name?="Renesas DA14592"
+
+$bin?=@https://dl.antmicro.com/projects/renode/renesas-da1459x-hello_world.elf-s_1266192-ec30b009ff7f1c806e6905030626dce2374817db
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/renesas-da14592.repl
+
+macro reset
+"""
+    cmac IsHalted true
+    sysbus LoadELF $bin true
+"""
+
+runMacro $reset
