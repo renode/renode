@@ -1,0 +1,20 @@
+:name: Arduino Uno R4 Minima
+:description: This script runs Zephyr shell sample on Arduino Uno R4 Minima board
+
+$name?="Arduino Uno R4"
+
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/arduino_uno_r4_minima-zephyr-shell_module.elf-s_1068728-aab68bf55c34638d1ba641464a8456a04bfff1df
+
+machine LoadPlatformDescription @platforms/boards/arduino_uno_r4_minima.repl
+
+showAnalyzer sci2
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
