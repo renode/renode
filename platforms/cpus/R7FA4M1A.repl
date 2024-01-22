@@ -39,9 +39,37 @@ agt1: Timers.RenesasRA_AGT @ sysbus 0x40084100
     CompareMatchA -> icu@0x022
     CompareMatchB -> icu@0x023
 
-sci0: UART.RenesasRA_SCI @ sysbus <0x40070000,0x40070023>
+sci0: SCI.RenesasRA6M5_SCI @ sysbus 0x40070000
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: true
+    ReceiveIRQ -> icu@0x98
+    TransmitIRQ -> icu@0x99
+    TransmitEndIRQ -> icu@0x9A
 
-sci2: UART.RenesasRA_SCI @ sysbus <0x40070040,0x40070063>
+sci1: SCI.RenesasRA6M5_SCI @ sysbus 0x40070020
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: true
+    ReceiveIRQ -> icu@0x9E
+    TransmitIRQ -> icu@0x9F
+    TransmitEndIRQ -> icu@0xA0
+
+sci2: SCI.RenesasRA6M5_SCI @ sysbus 0x40070040
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+    ReceiveIRQ -> icu@0xA3
+    TransmitIRQ -> icu@0xA4
+    TransmitEndIRQ -> icu@0xA5
+
+sci9: SCI.RenesasRA6M5_SCI @ sysbus 0x40070120
+    frequency: 50000000
+    enableManchesterMode: false
+    enableFIFO: false
+    ReceiveIRQ -> icu@0xA8
+    TransmitIRQ -> icu@0xA9
+    TransmitEndIRQ -> icu@0xAA
 
 portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40040D00
 
@@ -117,7 +145,7 @@ port9: GPIOPort.RenesasRA_GPIO @ {
 
 sysbus:
     init:
-        Tag <0x4001e000,0x4001ea13> "SYSTEM" // System Control
+        Tag <0x4001e03c 0x4> "SYSTEM_STATUS_REGISTER" 0xFF
         Tag <0x40003000,0x4000486b> "BUS" // BUS Control
         Tag <0x40044600,0x4004460f> "CAC" // Clock Frequency Accuracy Measurement Circuit
         Tag <0x40050000,0x40050877> "CAN0" // CAN0 Module
