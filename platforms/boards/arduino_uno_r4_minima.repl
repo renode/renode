@@ -1,1 +1,1 @@
-using "platforms/cpus/R7FA4M1A.repl"
+using "platforms/cpus/renesas-r7fa4m1a.repl"

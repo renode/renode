@@ -43,7 +43,7 @@ Prepare Machine
     Execute Command             using sysbus
     Execute Command             mach create "ra6m5"
 
-    Execute Command             machine LoadPlatformDescription @platforms/cpus/R7FA6M5B.repl
+    Execute Command             machine LoadPlatformDescription @platforms/cpus/renesas-r7fa6m5b.repl
 
     Execute Command             set bin @${URL}/${bin}
     Execute Command             macro reset "sysbus LoadELF $bin"
