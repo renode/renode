@@ -116,7 +116,7 @@ Write Watchpoint Should See Correct Value
     Start Emulation
 
     Execute Command           cpu Step 6
-    PC Should Be Equal        0x00000014
+    PC Should Be Equal        0x00000018
     Wait For Log Entry        Watchpoint saw 0x78563412L
 
 Write Watchpoint Should Work Multiple Times
