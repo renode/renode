@@ -16,7 +16,16 @@ DESTINATION=renode_${VERSION}-dotnet_portable
 . common_make_linux_portable.sh
 
 cp $RENODE_OUTPUT_BINARY $DESTINATION/renode
-cp $RENODE_OUTPUT_DIR/../libllvm-disas.so $DESTINATION
+cp \
+   $RENODE_OUTPUT_DIR/../libllvm-disas.so \
+   $RENODE_OUTPUT_DIR/libhostfxr.so \
+   $RENODE_OUTPUT_DIR/libcoreclr.so \
+   $RENODE_OUTPUT_DIR/libhostpolicy.so \
+   $RENODE_OUTPUT_DIR/libclrjit.so \
+   $RENODE_OUTPUT_DIR/libSystem.Native.so \
+   $RENODE_OUTPUT_DIR/libSystem.Security.Cryptography.Native.OpenSsl.so \
+   $RENODE_OUTPUT_DIR/../Renode.runtimeconfig.json \
+   $DESTINATION
 
 # Handle a very rare case where the binary doesn't have the execute permission after building.
 chmod +x $DESTINATION/renode
