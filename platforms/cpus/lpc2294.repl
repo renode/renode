@@ -1,0 +1,68 @@
+internal_sram: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus 0x40000000
+    }
+    size: 0x10000
+
+memory: Memory.MappedMemory @ sysbus 0x81000000
+    size: 0x2000000
+
+can1: CAN.LPC_CAN @ sysbus <0xE0044000, +0x1000>
+    [TxIRQ, RxIRQ] -> vic@[20,26]
+
+can2: CAN.LPC_CAN @ sysbus <0xE0048000, +0x1000>
+    [TxIRQ, RxIRQ] -> vic@[21,27]
+
+can3: CAN.LPC_CAN @ sysbus <0xE004C000, +0x1000>
+    [TxIRQ, RxIRQ] -> vic@[22,28]
+
+can4: CAN.LPC_CAN @ sysbus <0xE0050000, +0x1000>
+    [TxIRQ, RxIRQ] -> vic@[23,29]
+
+cpu: CPU.ARMv7A @ sysbus
+    cpuType: "arm7tdmi"
+
+vic: IRQControllers.PL190_VIC @ sysbus 0xFFFFF000
+    [IRQ, FIQ] -> cpu@[0, 1]
+
+uart0: UART.NS16550 @ sysbus <0xE000C000, +0x1000>
+    wideRegisters: true
+    -> vic@6
+
+uart1: UART.NS16550 @ sysbus <0xE0010000, +0x1000>
+    wideRegisters: true
+    -> vic@7
+
+timer0: Timers.LPC_CTimer @ sysbus 0xE0004000
+    frequency: 10000000
+    -> vic@4
+
+sysbus:
+    init:
+        Tag <0xE0000000 0x10> "WD"
+        Tag <0xE0004000 0x40> "TIMER0"
+        Tag <0xE001C000 0x4> "I2CONSET"
+        Tag <0xE001C010 0x4> "I2SCLH"
+        Tag <0xE001C014 0x4> "I2SCLL"
+        Tag <0xE001C018 0x4> "I2CONCLR"
+        Tag <0xE0024000 0x100> "RTC"
+        Tag <0xE0028000 0x4> "IO0PIN"
+        Tag <0xE0028004 0x4> "IO0SET"
+        Tag <0xE0028008 0x4> "GPIO_IODIR"
+        Tag <0xE002800C 0x4> "IO0CLR"
+        Tag <0xE0028010 0x4> "IOPIN1"
+        Tag <0xE0028018 0x4> "IODIR1"
+        Tag <0xE002801C 0x4> "IOCLR1"
+        Tag <0xE002C000 0x18> "PINSEL"
+        Tag <0xE0034000 0x4> "ADCR"
+        Tag <0xE0034004 0x4> "ADDR" 0x80000000
+        Tag <0xE003C000 0x4> "CAN_AFMR"
+        Tag <0xE003C018 0x4> "LUTerrAd"
+        Tag <0xE01FC040 0x4> "MEMMAP"
+        Tag <0xE01FC080 0x4> "PLL_PLLCON"
+        Tag <0xE01FC088 0x4> "PLLSTAT" 0xFFFFFFFF
+        Tag <0xE01FC140 0x4> "EXTINT"
+        Tag <0xE01FC144 0x4> "EXTWAKE"
+        Tag <0xE01FC148 0x4> "EXTMODE"
+        Tag <0xE01FC14C 0x4> "EXTPOLAR"
+        Tag <0xFFE00000 0x10> "BCFG"
