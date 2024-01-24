@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -277,8 +277,13 @@ namespace Antmicro.Renode.RobotFramework
             var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result == null)
             {
-                var logMessages = string.Join("\n ", bufferedMessages);
-                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\nBuffered log messages are: \n {logMessages}");
+                // We must limit the length of the resulting string to Int32.MaxValue to avoid OutOfMemoryException. 
+                // We could do it accurately, but it doesn't seem worth here, because the goal is just to provide some extra context to the exception message.
+                // We arbitrarily chose the number of messages to include here. In theory it could still throw during string.Join operation given very long messages,
+                // but it's unlikely to happen given the value of Int32.MaxValue = 2,147,483,647.
+                var logContextMessages = bufferedMessages.TakeLast(MaxLogContextPrintedOnException);
+                var logMessages = string.Join("\n ", logContextMessages);
+                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\nLast {logContextMessages.Count()} buffered log messages are: \n {logMessages}");
             }
             return result;
         }
@@ -387,6 +392,7 @@ namespace Antmicro.Renode.RobotFramework
         private readonly Monitor monitor;
 
         private const string CachedLogBackendName = "cache";
+        private const int MaxLogContextPrintedOnException = 1000;
 
         private struct Savepoint
         {
