@@ -136,3 +136,4 @@
 - tests/unit-tests/grammar-number-separator.robot
 - tests/peripherals/PL330_DMA.robot
 - tests/platforms/GR712RC.robot
+- tests/platforms/nucleo_h753zi.robot
