@@ -133,7 +133,7 @@ class Renode:
                 print("!!! Found another instance of Renode running on the same port. Killing it before proceeding")
                 p.kill()
         try:
-            self.proc = pexpect.spawn(f"{binary} --disable-xwt --plain --port {port}", timeout=20)
+            self.proc = pexpect.spawn(f"{binary} --disable-gui --plain --port {port}", timeout=20)
             self.proc.stripcr = True
             self.proc.expect("Monitor available in telnet mode on port")
         except pexpect.exceptions.EOF as err:

@@ -16,7 +16,7 @@ ${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
 ${RENODETOOLS}               ${CURDIR}/../tools
 ${BINARY_NAME}               Renode.exe
 ${HOTSPOT_ACTION}            None
-${DISABLE_XWT}               False
+${DISABLE_GUI}               False
 ${DEFAULT_UART_TIMEOUT}      8
 ${CREATE_SNAPSHOT_ON_FAIL}   True
 ${SAVE_LOGS}                 True
@@ -38,8 +38,8 @@ Setup
     # http://robotframework.org/robotframework/latest/libraries/Process.html#Standard%20output%20and%20error%20streams
     @{PARAMS}=           Create List  --robot-server-port  ${PORT_NUMBER}  --hide-log
 
-    IF  ${DISABLE_XWT}
-        Insert Into List  ${PARAMS}  0  --disable-xwt
+    IF  ${DISABLE_GUI}
+        Insert Into List  ${PARAMS}  0  --disable-gui
     END
 
     IF  not ${SKIP_RUNNING_SERVER}

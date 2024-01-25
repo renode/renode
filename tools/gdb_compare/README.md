@@ -80,7 +80,7 @@ python gdb_compare.py \
 
 ```
 python gdb_compare.py \
-    -r 'renode my_board.resc --console --disable-xwt -e "machine StartGdbServer 1234"' \
+    -r 'renode my_board.resc --console --disable-gui -e "machine StartGdbServer 1234"' \
     -c 'info registers' \
     -s my_board.resc \
     -p 1234 \

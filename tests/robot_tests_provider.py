@@ -351,7 +351,7 @@ class RobotTestSuite(object):
         if not options.show_log and not options.keep_renode_output:
             command.append('--hide-log')
         if not options.enable_xwt:
-            command.append('--disable-xwt')
+            command.append('--disable-gui')
         if options.debug_on_error:
             command.append('--robot-debug-on-error')
         if options.keep_temps:
