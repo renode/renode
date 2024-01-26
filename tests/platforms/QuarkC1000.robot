@@ -1,6 +1,3 @@
-*** Settings ***
-Library                       quark_helper.py
-
 *** Variables ***
 ${CPU}                        sysbus.cpu
 ${UART}                       sysbus.uartB
