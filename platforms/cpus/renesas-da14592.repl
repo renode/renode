@@ -62,6 +62,12 @@ timer3: Timers.RenesasDA14_GPT @ sysbus 0x50010500
 timer4: Timers.RenesasDA14_GPT @ sysbus 0x50020A00
     -> nvic_m33@31
 
+uart0: UART.RenesasDA14_UART @ sysbus 0x50020000
+    -> nvic_m33@3
+
+uart1: UART.RenesasDA14_UART @ sysbus 0x50020100
+    -> nvic_m33@4
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
@@ -74,8 +80,6 @@ sysbus:
         Tag <0x50020200,0x5002022f> "SPI_CONTROLLER" // SPI_CONTROLLER registers
         Tag <0x50020300,0x500203a7> "I2C_CONTROLLER" // I2C_CONTROLLER registers
         Tag <0x50000300,0x50000303> "DCDC_CONVERTER" // DCDC_CONVERTER registers
-        Tag <0x50020000,0x500200ff> "UART" // UART registers
-        Tag <0x50020100,0x500201ff> "UART2" // UART2 registers
         Tag <0x50050200,0x50050203> "CHIP_ID1" 0x32
         Tag <0x50050204,0x50050207> "CHIP_ID2" 0x36
         Tag <0x50050208,0x5005020B> "CHIP_ID3" 0x33
