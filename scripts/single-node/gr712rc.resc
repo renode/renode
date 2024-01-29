@@ -1,0 +1,19 @@
+:name: GR712RC
+:description: This script runs the RTEMS hello world demo, started by the LEON3 PROM, on the GR712RC
+
+using sysbus
+$name?="GR712RC"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/gr712rc.repl
+
+$bin?=@https://dl.antmicro.com/projects/renode/gr712rc--rtems-hello.prom.elf-s_118692-e7b2e7d24b1293f600b81224f771d276a3dfdfa0
+
+showAnalyzer sysbus.uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset

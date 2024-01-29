@@ -134,3 +134,4 @@
 - tests/peripherals/ICP_101xx.robot
 - tests/unit-tests/grammar-number-separator.robot
 - tests/peripherals/PL330_DMA.robot
+- tests/platforms/GR712RC.robot
