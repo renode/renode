@@ -12,6 +12,7 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" $(PORTABLE) == 'true' ">
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <UseAppHost>true</UseAppHost>
     <IncludeNativeLibrariesInSingleFile>true</IncludeNativeLibrariesInSingleFile>

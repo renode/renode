@@ -24,7 +24,6 @@ cp \
    $RENODE_OUTPUT_DIR/libclrjit.so \
    $RENODE_OUTPUT_DIR/libSystem.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.Security.Cryptography.Native.OpenSsl.so \
-   $RENODE_OUTPUT_DIR/../Renode.runtimeconfig.json \
    $DESTINATION
 
 # Handle a very rare case where the binary doesn't have the execute permission after building.
