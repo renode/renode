@@ -1,3 +1,6 @@
+sysbus:
+    Endianess: Endianess.BigEndian
+
 cpu: CPU.PowerPc @ sysbus
     cpuType: "e200z6"
 

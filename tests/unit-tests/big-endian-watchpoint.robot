@@ -3,6 +3,7 @@ Prepare Machine
     Execute Command           using sysbus
     Execute Command           mach create "Leon3"
 
+    Execute Command           machine LoadPlatformDescriptionFromString "sysbus: { Endianess: Endianess.BigEndian }"
     Execute Command           machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x40000000 }"
     Execute Command           machine LoadPlatformDescriptionFromString "ddr: Memory.MappedMemory @ sysbus 0x40000000 { size: 0x20000000 }"
     Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.Sparc @ sysbus { cpuType: \\"leon3\\" }"

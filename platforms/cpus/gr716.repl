@@ -1,3 +1,6 @@
+sysbus:
+    Endianess: Endianess.BigEndian
+
 bootprom: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x1000
 
