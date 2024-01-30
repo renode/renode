@@ -1,11 +1,13 @@
 *** Keywords ***
 Prepare Machine
+    [Arguments]  ${memoryType}
+
     Execute Command           using sysbus
     Execute Command           mach create "Leon3"
 
     Execute Command           machine LoadPlatformDescriptionFromString "sysbus: { Endianess: Endianess.BigEndian }"
     Execute Command           machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x40000000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "ddr: Memory.MappedMemory @ sysbus 0x40000000 { size: 0x20000000 }"
+    Execute Command           machine LoadPlatformDescriptionFromString "ddr: Memory.${memoryType} @ sysbus 0x40000000 { size: 0x20000000 }"
     Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.Sparc @ sysbus { cpuType: \\"leon3\\" }"
 
     Execute Command           cpu PC 0x0
@@ -44,23 +46,10 @@ Memory Should Be Equal
     ${res}=  Execute Command  sysbus ReadDoubleWord ${address}
     Should Be Equal As Numbers  ${res}  ${value}
 
-*** Test Cases ***
-Should Read Big-Endian Value Without Watchpoint
-    Prepare Machine
-    Load Reader Program
-
-    # Little-endian write
-    Execute Command           sysbus WriteDoubleWord 0x40000104 0x78563412
-
-    PC Should Be Equal        0x00000000
-    Start Emulation
-
-    Execute Command           cpu Step 3
-    PC Should Be Equal        0x0000000c
-    Register Should Be Equal  2  0x12345678
-
 Should Read Big-Endian Value With Watchpoint
-    Prepare Machine
+    [Arguments]  ${memoryType}
+
+    Prepare Machine           ${memoryType}
     Load Reader Program
 
     # Little-endian write
@@ -76,20 +65,10 @@ Should Read Big-Endian Value With Watchpoint
     PC Should Be Equal        0x0000000c
     Register Should Be Equal  2  0x12345678
 
-Should Write Big-Endian Value Without Watchpoint
-    Prepare Machine
-    Load Writer Program
-
-    PC Should Be Equal        0x00000000
-    Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
-
-    Execute Command           cpu Step 5
-    PC Should Be Equal        0x00000014
-    Memory Should Be Equal    0x40000104  0x78563412
-
 Should Write Big-Endian Value With Watchpoint
-    Prepare Machine
+    [Arguments]  ${memoryType}
+
+    Prepare Machine           ${memoryType}
     Load Writer Program
 
     # Same page as the value that gets accessed, not same address
@@ -104,7 +83,9 @@ Should Write Big-Endian Value With Watchpoint
     Memory Should Be Equal    0x40000104  0x78563412
 
 Write Watchpoint Should See Correct Value
-    Prepare Machine
+    [Arguments]  ${memoryType}
+
+    Prepare Machine           ${memoryType}
     Create Log Tester         0
     Load Writer Program
 
@@ -121,7 +102,9 @@ Write Watchpoint Should See Correct Value
     Wait For Log Entry        Watchpoint saw 0x78563412L
 
 Write Watchpoint Should Work Multiple Times
-    Prepare Machine
+    [Arguments]  ${memoryType}
+
+    Prepare Machine           ${memoryType}
     Create Log Tester         0
     Load Writer Program
 
@@ -141,7 +124,9 @@ Write Watchpoint Should Work Multiple Times
     END
 
 Abort Should Work After Watchpoint Hit
-    Prepare Machine
+    [Arguments]  ${memoryType}
+
+    Prepare Machine           ${memoryType}
     Create Log Tester         0
     Load Writer Program
 
@@ -161,3 +146,60 @@ Abort Should Work After Watchpoint Hit
 
     Wait For Log Entry        Watchpoint saw 0x78563412L    timeout=1
     Wait For Log Entry        CPU abort [PC=0x14]: Trap 0x02 while interrupts disabled    timeout=1
+
+*** Test Cases ***
+Should Read Big-Endian Value Without Watchpoint
+    Prepare Machine           MappedMemory
+    Load Reader Program
+
+    # Little-endian write
+    Execute Command           sysbus WriteDoubleWord 0x40000104 0x78563412
+
+    PC Should Be Equal        0x00000000
+    Start Emulation
+
+    Execute Command           cpu Step 3
+    PC Should Be Equal        0x0000000c
+    Register Should Be Equal  2  0x12345678
+
+Should Write Big-Endian Value Without Watchpoint
+    Prepare Machine           MappedMemory
+    Load Writer Program
+
+    PC Should Be Equal        0x00000000
+    Memory Should Be Equal    0x40000104  0x00000000
+    Start Emulation
+
+    Execute Command           cpu Step 5
+    PC Should Be Equal        0x00000014
+    Memory Should Be Equal    0x40000104  0x78563412
+
+Should Read Big-Endian Value With Watchpoint On MappedMemory
+    Should Read Big-Endian Value With Watchpoint  MappedMemory
+
+Should Read Big-Endian Value With Watchpoint On ArrayMemory
+    Should Read Big-Endian Value With Watchpoint  ArrayMemory
+
+Should Write Big-Endian Value With Watchpoint On MappedMemory
+    Should Write Big-Endian Value With Watchpoint  MappedMemory
+
+Should Write Big-Endian Value With Watchpoint On ArrayMemory
+    Should Write Big-Endian Value With Watchpoint  ArrayMemory
+
+Write Watchpoint Should See Correct Value On MappedMemory
+    Write Watchpoint Should See Correct Value  MappedMemory
+
+Write Watchpoint Should See Correct Value On ArrayMemory
+    Write Watchpoint Should See Correct Value  ArrayMemory
+
+Write Watchpoint Should Work Multiple Times On MappedMemory
+    Write Watchpoint Should Work Multiple Times  MappedMemory
+
+Write Watchpoint Should Work Multiple Times On ArrayMemory
+    Write Watchpoint Should Work Multiple Times  ArrayMemory
+
+Abort Should Work After Watchpoint Hit On MappedMemory
+    Abort Should Work After Watchpoint Hit  MappedMemory
+
+Abort Should Work After Watchpoint Hit On ArrayMemory
+    Abort Should Work After Watchpoint Hit  ArrayMemory
