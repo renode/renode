@@ -1,0 +1,31 @@
+using "platforms/cpus/stm32h753.repl"
+
+GreenLED: Miscellaneous.LED @ gpioPortB 11
+    invert: true
+
+YellowLED: Miscellaneous.LED @ gpioPortE 1
+    invert: true
+
+RedLED: Miscellaneous.LED @ gpioPortB 14
+    invert: true
+
+UserButton1: Miscellaneous.Button @ gpioPortC
+    invert: true
+    -> gpioPortC@13
+
+gpioPortB:
+    11 -> GreenLED@0
+    14 -> RedLED@0
+
+gpioPortE:
+    1 -> YellowLED@0
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    BasicControl: 0x3100
+    BasicStatus: 0x782D
+    Id1: 0x0007
+    Id2: 0xC130
+    AutoNegotiationAdvertisement: 0x01E1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x0001
+    AutoNegotiationExpansion: 0x0064
+    AutoNegotiationNextPageTransmit: 0x2001
