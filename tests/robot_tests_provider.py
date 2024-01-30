@@ -822,7 +822,7 @@ class RobotTestSuite(object):
                                 # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
                                 # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                                 # the suite name from the *.robot file name.
-                                suite_name = os.path.basename(suite.attrib["source"]).strip(".robot")
+                                suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                             if test.find("./tags/[tag='skipped']"):
                                 continue # skipped test should not be classified as fail
                             if test.find("./tags/[tag='non_critical']"):
@@ -856,7 +856,7 @@ class RobotTestSuite(object):
                         # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
                         # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                         # the suite name from the *.robot file name.
-                        suite_name = os.path.basename(suite.attrib["source"]).rstrip(".robot")
+                        suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
 
                     for test in suite.iter('test'):
                         if test.find("./tags/[tag='skipped']"):
@@ -918,7 +918,7 @@ class RobotTestSuite(object):
                     # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
                     # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                     # the suite name from the *.robot file name.
-                    suite_name = os.path.basename(suite.attrib["source"]).strip(".robot")
+                    suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                 for test in suite.iter('test'):
                     test_name = test.attrib['name']
                     tags = []
