@@ -1,0 +1,408 @@
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic0
+    id: 0
+
+cpu1: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic1
+    id: 1
+    init:
+        IsHalted true
+
+cpu2: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic2
+    id: 2
+    init:
+        IsHalted true
+
+cpu3: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic3
+    id: 3
+    init:
+        IsHalted true
+
+nvic0: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu0
+    }
+    systickFrequency: 320000000
+    -> cpu0@0
+
+nvic1: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu1
+    }
+    systickFrequency: 320000000
+    -> cpu1@0
+
+nvic2: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu2
+    }
+    systickFrequency: 320000000
+    -> cpu2@0
+
+nvic3: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu3
+    }
+    systickFrequency: 320000000
+    -> cpu3@0
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 320000000
+
+itcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x00000000;
+            cpu: cpu0
+        };
+        sysbus 0x11000000
+    }
+    size: 0x8000
+
+itcm1: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x00000000;
+            cpu: cpu1
+        };
+        sysbus 0x11400000
+    }
+    size: 0x8000
+
+itcm2: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x00000000;
+            cpu: cpu2
+        };
+        sysbus 0x11800000
+    }
+    size: 0x8000
+
+itcm3: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x00000000;
+            cpu: cpu3
+        };
+        sysbus 0x11C00000
+    }
+    size: 0x8000
+
+program_flash: Memory.MappedMemory @ sysbus 0x00400000
+    size: 0x800000
+
+data_flash: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x20000
+
+utest: Memory.MappedMemory @ sysbus 0x1B000000
+    size: 0x2000
+
+dtcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x20000000;
+            cpu: cpu0
+        };
+        sysbus 0x21000000
+    }
+    size: 0x10000
+
+dtcm1: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x20000000;
+            cpu: cpu1
+        };
+        sysbus 0x21400000
+    }
+    size: 0x10000
+
+dtcm2: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x20000000;
+            cpu: cpu2
+        };
+        sysbus 0x21800000
+    }
+    size: 0x10000
+
+dtcm3: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration {
+            address: 0x20000000;
+            cpu: cpu3
+        };
+        sysbus 0x21C00000
+    }
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x20400000
+    size: 0xc0000
+
+quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
+    size: 0x8000000
+
+lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x40358000
+    -> nvic0@165
+
+lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4035C000
+    -> nvic0@166
+
+lpspi2: SPI.IMXRT_LPSPI @ sysbus 0x40360000
+    -> nvic0@167
+
+lpspi3: SPI.IMXRT_LPSPI @ sysbus 0x40364000
+    -> nvic0@168
+
+lpspi4: SPI.IMXRT_LPSPI @ sysbus 0x404BC000
+    -> nvic0@169
+
+lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x404C0000
+    -> nvic0@170
+
+lpuart0: UART.Kinetis_LPUART @ sysbus 0x40328000
+    frequency: 48000000
+    IRQ -> nvic0@141
+
+lpuart1: UART.Kinetis_LPUART @ sysbus 0x4032C000
+    frequency: 48000000
+    IRQ -> nvic0@142
+
+lpuart2: UART.Kinetis_LPUART @ sysbus 0x40330000
+    frequency: 48000000
+    IRQ -> nvic0@143
+
+lpuart3: UART.Kinetis_LPUART @ sysbus 0x40334000
+    frequency: 48000000
+    IRQ -> nvic0@144
+
+lpuart4: UART.Kinetis_LPUART @ sysbus 0x40338000
+    frequency: 48000000
+    IRQ -> nvic0@145
+
+lpuart5: UART.Kinetis_LPUART @ sysbus 0x4033C000
+    frequency: 48000000
+    IRQ -> nvic0@146
+
+lpuart6: UART.Kinetis_LPUART @ sysbus 0x40340000
+    frequency: 48000000
+    IRQ -> nvic0@147
+
+lpuart7: UART.Kinetis_LPUART @ sysbus 0x40344000
+    frequency: 48000000
+    IRQ -> nvic0@148
+
+lpuart8: UART.Kinetis_LPUART @ sysbus 0x4048C000
+    frequency: 48000000
+    IRQ -> nvic0@149
+
+lpuart9: UART.Kinetis_LPUART @ sysbus 0x40490000
+    frequency: 48000000
+    IRQ -> nvic0@150
+
+lpuart10: UART.Kinetis_LPUART @ sysbus 0x40494000
+    frequency: 48000000
+    IRQ -> nvic0@151
+
+lpuart11: UART.Kinetis_LPUART @ sysbus 0x40498000
+    frequency: 48000000
+    IRQ -> nvic0@152
+
+lpuart12: UART.Kinetis_LPUART @ sysbus 0x4049C000
+    frequency: 48000000
+    IRQ -> nvic0@153
+
+lpuart13: UART.Kinetis_LPUART @ sysbus 0x404A0000
+    frequency: 48000000
+    IRQ -> nvic0@154
+
+lpuart14: UART.Kinetis_LPUART @ sysbus 0x404A4000
+    frequency: 48000000
+    IRQ -> nvic0@155
+
+lpuart15: UART.Kinetis_LPUART @ sysbus 0x404A8000
+    frequency: 48000000
+    IRQ -> nvic0@156
+
+sysbus:
+    init:
+        // Core and Systems
+        Tag <0xE0000000 0x1000> "ITM"
+        Tag <0xE0002000 0x1000> "FPB"
+        Tag <0xE0040000 0x1000> "TPIU"
+        Tag <0xE0041000 0x1000> "ETM"
+        Tag <0xE0042000 0x1000> "CTI"
+        Tag <0xE00FF000 0x1000> "Cortex-M7 PPB ROM table"
+        Tag <0xE0080000 0x1000> "MCM"
+        Tag <0x40260000 0xA60> "MSCM"
+        Tag <0x402A8000 0x804> "VIRT_WRAPPER"
+        Tag <0x40290000 0x17BC> "SIUL2"
+        Tag <0x402C4000 0xA8> "TSPC"
+        Tag <0x40200000 0x714> "AXBS"
+        Tag <0x40280000 0x10> "DMAMUX_0"
+        Tag <0x40284000 0x10> "DMAMUX_1"
+        Tag <0x4020C000 0x180> "eDMA"
+        Tag <0x40210000 0x40> "TCD_0"
+        Tag <0x40214000 0x40> "TCD_1"
+        Tag <0x40218000 0x40> "TCD_2"
+        Tag <0x4021C000 0x40> "TCD_3"
+        Tag <0x40220000 0x40> "TCD_4"
+        Tag <0x40224000 0x40> "TCD_5"
+        Tag <0x40228000 0x40> "TCD_6"
+        Tag <0x4022C000 0x40> "TCD_7"
+        Tag <0x40230000 0x40> "TCD_8"
+        Tag <0x40234000 0x40> "TCD_9"
+        Tag <0x40238000 0x40> "TCD_10"
+        Tag <0x4023C000 0x40> "TCD_11"
+        Tag <0x40410000 0x40> "TCD_12"
+        Tag <0x40414000 0x40> "TCD_13"
+        Tag <0x40418000 0x40> "TCD_14"
+        Tag <0x4041C000 0x40> "TCD_15"
+        Tag <0x40420000 0x40> "TCD_16"
+        Tag <0x40424000 0x40> "TCD_17"
+        Tag <0x40428000 0x40> "TCD_18"
+        Tag <0x4042C000 0x40> "TCD_19"
+        Tag <0x40430000 0x40> "TCD_20"
+        Tag <0x40434000 0x40> "TCD_21"
+        Tag <0x40438000 0x40> "TCD_22"
+        Tag <0x4043C000 0x40> "TCD_23"
+        Tag <0x40440000 0x40> "TCD_24"
+        Tag <0x40444000 0x40> "TCD_25"
+        Tag <0x40448000 0x40> "TCD_26"
+        Tag <0x4044C000 0x40> "TCD_27"
+        Tag <0x40450000 0x40> "TCD_28"
+        Tag <0x40454000 0x40> "TCD_29"
+        Tag <0x40458000 0x40> "TCD_30"
+        Tag <0x4045C000 0x40> "TCD_31"
+        Tag <0x4027C000 0x48> "INTM"
+        Tag <0x40460000 0x44> "SEMA42"
+        Tag <0x40204000 0x10> "XBIC_AXBS"
+        Tag <0x4040C000 0x10> "XBIC_AXBS_ACE"
+        Tag <0x40008000 0x10> "XBIC_AXBS_ACE_HSE"
+        Tag <0x40208000 0x10> "XBIC_AXBS_PERI"
+        Tag <0x40408000 0x10> "XBIC_AXBS_PRAM_TCM"
+        Tag <0x40400000 0x10> "XBIC_AXBS_TCM"
+        Tag <0x40404000 0x10> "XBIC_AXBS_eDMA"
+        Tag <0x40278000 0x2870> "XRDC"
+
+        // Memory and Memory Interfaces
+        Tag <0x402EC000 0x180> "c40asf_flash"
+        Tag <0x40268000 0x4F4> "PFLASH"
+        Tag <0x40264000 0x4> "PRAMC_0"
+        Tag <0x40464000 0x4> "PRAMC_1"
+        Tag <0x40468000 0x4> "PRAMC_2"
+
+        // Clocking
+        Tag <0x402D8000 0x800> "MC_CGM"
+        Tag <0x402D0000 0xC> "FIRC"
+        Tag <0x402C8000 0x10> "SIRC"
+        Tag <0x402D4000 0x8> "FXOSC"
+        Tag <0x402CC000 0x8> "SXOSC"
+        Tag <0x402E0000 0x88> "PLL"
+        Tag <0x402E4000 0x88> "PLL_AUX"
+
+        // Reset and Boot
+        Tag <0x4028C000 0x28> "MC_RGM"
+
+        // Security and Device GPRs
+        Tag <0x44000000 0x400> "AES_ACCEL"
+        Tag <0x4039C000 0xD8> "Configuration_GPR"
+        Tag <0x402AC000 0x84> "DCM"
+        Tag <0x402AC200 0x510> "DCM_GPR"
+        Tag <0x400B8000 0x290> "MU_2.MUA"
+        Tag <0x400C4000 0x290> "MU_3.MUA"
+        Tag <0x400CC000 0x290> "MU_4.MUA"
+        Tag <0x4038C000 0x290> "MU_0.MUB"
+        Tag <0x404EC000 0x290> "MU_1.MUB"
+        Tag <0x400BC000 0x290> "MU_2.MUB"
+        Tag <0x400C8000 0x290> "MU_3.MUB"
+        Tag <0x400D0000 0x290> "MU_4.MUB"
+
+        // Modes and Power Management
+        Tag <0x402E8000 0x10> "PMC"
+        Tag <0x402DC000 0x53C> "MC_ME"
+        Tag <0x402B4000 0x74> "WKPU"
+
+        // Safety
+        Tag <0x4050C000 0x8C8> "EIM_0"
+        Tag <0x40510000 0x8C8> "EIM_1"
+        Tag <0x40514000 0x8C8> "EIM_2"
+        Tag <0x40518000 0x8C8> "EIM_3"
+        Tag <0x4025C000 0x23C> "ERM_0"
+        Tag <0x4000C000 0x23C> "ERM_1"
+        Tag <0x40384000 0x13C> "FCCU"
+        Tag <0x403B0000 0x18> "SELFTEST_GPR"
+        Tag <0x403A0000 0x225C> "STCU2"
+        Tag <0x402BC000 0x18> "CMU_0" // FC
+        Tag <0x402BC020 0x10> "CMU_1" // FM
+        Tag <0x402BC040 0x10> "CMU_2" // FM
+        Tag <0x402BC060 0x18> "CMU_3" // FC
+        Tag <0x402BC080 0x18> "CMU_4" // FC
+        Tag <0x402BC0C0 0x18> "CMU_6" // FC
+        Tag <0x40380000, 0x4038000F> "CRC"
+
+        // Real-time control
+        Tag <0x400A0000 0x3B8> "ADC_0"
+        Tag <0x400A4000 0x3B8> "ADC_1"
+        Tag <0x400A8000 0x3B8> "ADC_2"
+        Tag <0x40370000 0x34> "LPCMP_0"
+        Tag <0x40374000 0x34> "LPCMP_1"
+        Tag <0x404E8000 0x34> "LPCMP_2"
+        Tag <0x40098000 0x2AC> "LCU_0"
+        Tag <0x4009C000 0x2AC> "LCU_1"
+        Tag <0x40088000 0x31C> "eMIOS_0"
+        Tag <0x4008C000 0x31C> "eMIOS_1"
+        Tag <0x40090000 0x31C> "eMIOS_2"
+        Tag <0x40084000 0x474> "BCTU"
+        Tag <0x40080000 0xA0> "TRGMUX"
+
+        // Timers
+        Tag <0x40270000 0x20> "SWT_0"
+        Tag <0x4046C000 0x20> "SWT_1"
+        Tag <0x40470000 0x20> "SWT_2"
+        Tag <0x40070000 0x20> "SWT_3"
+        Tag <0x40274000 0x4C> "STM_0"
+        Tag <0x40474000 0x4C> "STM_1"
+        Tag <0x40478000 0x4C> "STM_2"
+        Tag <0x4047C000 0x4C> "STM_3"
+        Tag <0x400B0000 0x140> "PIT_0"
+        Tag <0x400B4000 0x140> "PIT_1"
+        Tag <0x402FC000 0x140> "PIT_2"
+        Tag <0x40300000 0x140> "PIT_3"
+        Tag <0x40288000 0x18> "RTC"
+
+        // Communication
+        Tag <0x40350000 0x174> "LPI2C_0"
+        Tag <0x40354000 0x174> "LPI2C_1"
+        Tag <0x40324000 0x920> "FlexIO"
+        Tag <0x40304000 0xDB0> "CAN_0"
+        Tag <0x40307000 0x200> "CAN_0 filter"
+        Tag <0x40308000 0xDB0> "CAN_1"
+        Tag <0x4030B000 0x200> "CAN_1 filter"
+        Tag <0x4030C000 0xDB0> "CAN_2"
+        Tag <0x4030F000 0x200> "CAN_2 filter"
+        Tag <0x40310000 0xDB0> "CAN_3"
+        Tag <0x40313000 0x200> "CAN_3 filter"
+        Tag <0x40314000 0xDB0> "CAN_4"
+        Tag <0x40317000 0x200> "CAN_4 filter"
+        Tag <0x40318000 0xDB0> "CAN_5"
+        Tag <0x4031B000 0x200> "CAN_5 filter"
+        Tag <0x4031C000 0xDB0> "CAN_6"
+        Tag <0x4031F000 0x200> "CAN_6 filter"
+        Tag <0x40320000 0xDB0> "CAN_7"
+        Tag <0x40323000 0x200> "CAN_7 filter"
+        Tag <0x4036C000 0xE4> "SAI_0"
+        Tag <0x404DC000 0xE4> "SAI_1"
+        Tag <0x40484000 0x1270> "GMAC_0"
+        Tag <0x40488000 0x1270> "GMAC_1"
+        Tag <0x404CC000 0x940> "QuadSPI"
+        Tag <0x67000000 0x400> "QuadSPI RX buffer"
+        Tag <0x68000000 0x80> "QuadSPI_ARDB"
+
+        // Debug
+        Tag <0x40250600 0x3C> "MDM_AP"
+        Tag <0x40254700 0x100> "SDA_AP"
+        Tag <0x40394000 0x10> "JDC"
+
+        // Analog
+        Tag <0x4037C000 0x14> "TEMPSENSE"
