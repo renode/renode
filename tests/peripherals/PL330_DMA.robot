@@ -56,11 +56,11 @@ Should Pass Linux Dmatest
     Wait For Line On Uart        dmatest: Started 4 threads using dma0chan0
     Wait For Line On Uart        dmatest: Started 4 threads using dma0chan1
 
-    Wait For Line On Uart        dmatest: dma0chan1-copy1: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan1-copy0: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan1-copy2: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan1-copy3: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan0-copy0: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan0-copy2: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan0-copy1: summary 5 tests, 0 failures      includeUnfinishedLine=true
-    Wait For Line On Uart        dmatest: dma0chan0-copy3: summary 5 tests, 0 failures      includeUnfinishedLine=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+    Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
