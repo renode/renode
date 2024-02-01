@@ -1,0 +1,60 @@
+bootrom: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x8000
+
+flash: Memory.MappedMemory @ sysbus 0x1000000
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x18000
+
+edacsram: Memory.MappedMemory @ sysbus 0x4000D000
+    size: 0x1000
+
+systemrom: Memory.MappedMemory @ sysbus 0xF0000000
+    size: 0x1000
+
+mtbsfr: Memory.MappedMemory @ sysbus 0xF0200000
+    size: 0x1000
+
+mtbsram: Memory.MappedMemory @ sysbus 0xF0210000
+    size: 0x10000
+
+uart0: UART.GaislerAPBUART @ sysbus <0x40004000, +0x1000>
+    frequency: 40000000
+    -> nvic@14
+
+uart1: UART.GaislerAPBUART @ sysbus <0x40005000, +0x1000>
+    frequency: 40000000
+    -> nvic@15
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m0+"
+
+sysbus:
+    init:
+        Tag <0x40000000 0x1000> "RTC"
+        Tag <0x40001000 0x1000> "Dual Timer0"
+        Tag <0x40002000 0x1000> "Dual Timer1"
+        Tag <0x40003000 0x1000> "PWM"
+        Tag <0x40006000 0x1000> "SPI"
+        Tag <0x40007000 0x1000> "DACs"
+        Tag <0x40008000 0x1000> "Watchdog"
+        Tag <0x40009000 0x1000> "I2C0"
+        Tag <0x4000A000 0x1000> "I2C1"
+        Tag <0x4000B000 0x1000> "Trim Control"
+        Tag <0x4000C000 0x1000> "NFC"
+        Tag <0x4000E000 0x1000> "Comparators"
+        Tag <0x4000F000 0x1000> "ADC"
+        Tag <0x40020000 0x1000> "AHB GPIO Bank 0"
+        Tag <0x40021000 0x1000> "AHB GPIO Bank 1"
+        Tag <0x40022000 0x1000> "AHB GPIO Bank 2"
+        Tag <0x40023000 0x1000> "AHB CAN 0"
+        Tag <0x40024000 0x1000> "AHB CAN 1"
+        Tag <0x40020000 0x1000> "System Controller"
+        Tag <0xE0000000 0x1000> "Private peripheral bus addresses in the Cortex-M0+"
