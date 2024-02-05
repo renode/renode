@@ -250,34 +250,38 @@ agt1: Timers.RenesasRA_AGT @ sysbus 0x40084100
     CompareMatchA -> icu@0x15
     CompareMatchB -> icu@0x16
 
-sci0: SCI.RenesasRA6M5_SCI @ sysbus <0x40070000, +0x20>
+sci0: SCI.RenesasRA6M5_SCI @ sysbus 0x40070000
     frequency: 32000000
     enableManchesterMode: false
     enableFIFO: true
+    fullModel: false
     ReceiveIRQ -> icu@0x71
     TransmitIRQ -> icu@0x72
     TransmitEndIRQ -> icu@0x73
 
-sci1: SCI.RenesasRA6M5_SCI @ sysbus <0x40070020, +0x20>
+sci1: SCI.RenesasRA6M5_SCI @ sysbus 0x40070020
     frequency: 32000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0x77
     TransmitIRQ -> icu@0x78
     TransmitEndIRQ -> icu@0x79
 
-sci2: SCI.RenesasRA6M5_SCI @ sysbus <0x40070040, +0x20>
+sci2: SCI.RenesasRA6M5_SCI @ sysbus 0x40070040
     frequency: 32000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0x8E
     TransmitIRQ -> icu@0x8F
     TransmitEndIRQ -> icu@0x90
 
-sci9: SCI.RenesasRA6M5_SCI @ sysbus <0x40070120, +0x20>
+sci9: SCI.RenesasRA6M5_SCI @ sysbus 0x40070120
     frequency: 32000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0x7C
     TransmitIRQ -> icu@0x7D
     TransmitEndIRQ -> icu@0x7E

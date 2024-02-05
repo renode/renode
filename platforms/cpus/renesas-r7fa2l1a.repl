@@ -113,10 +113,11 @@ gpt:
     [0x21-0x22] -> icu@[0x5C-0x5D]
     // GPT3 PC is not connected
 
-sci3: SCI.RenesasRA6M5_SCI @ sysbus <0x40070060, +0x20>
+sci3: SCI.RenesasRA6M5_SCI @ sysbus 0x40070060
     frequency: 32000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0x93
     TransmitIRQ -> icu@0x94
     TransmitEndIRQ -> icu@0x95

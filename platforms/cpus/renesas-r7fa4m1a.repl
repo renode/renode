@@ -60,6 +60,7 @@ sci0: SCI.RenesasRA6M5_SCI @ sysbus 0x40070000
     frequency: 50000000
     enableManchesterMode: false
     enableFIFO: true
+    fullModel: false
     ReceiveIRQ -> icu@0x98
     TransmitIRQ -> icu@0x99
     TransmitEndIRQ -> icu@0x9A
@@ -68,6 +69,7 @@ sci1: SCI.RenesasRA6M5_SCI @ sysbus 0x40070020
     frequency: 50000000
     enableManchesterMode: false
     enableFIFO: true
+    fullModel: false
     ReceiveIRQ -> icu@0x9E
     TransmitIRQ -> icu@0x9F
     TransmitEndIRQ -> icu@0xA0
@@ -76,6 +78,7 @@ sci2: SCI.RenesasRA6M5_SCI @ sysbus 0x40070040
     frequency: 50000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0xA3
     TransmitIRQ -> icu@0xA4
     TransmitEndIRQ -> icu@0xA5
@@ -84,6 +87,7 @@ sci9: SCI.RenesasRA6M5_SCI @ sysbus 0x40070120
     frequency: 50000000
     enableManchesterMode: false
     enableFIFO: false
+    fullModel: false
     ReceiveIRQ -> icu@0xA8
     TransmitIRQ -> icu@0xA9
     TransmitEndIRQ -> icu@0xAA

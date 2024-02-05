@@ -2,6 +2,9 @@
 ${URL}                  https://dl.antmicro.com/projects/renode
 ${AGT_ELF}              renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
 ${HELLO_WORLD_ELF}      ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
+${AWS_SCI_I2C_ELF}      renesas_ra6m5--aws.elf-s_795908-8da7d7d21c633826e0b6a98ff841007212ad99c9
+
+${ICP_101XX_REPL}       "barometer: Sensors.ICP_101xx @ sci0 0x44"
 
 ${LED_REPL}             SEPARATOR=\n
 ...  """
@@ -38,6 +41,10 @@ Prepare Segger RTT
 Prepare LED Tester
     Execute Command             machine LoadPlatformDescriptionFromString ${LED_REPL}
     Create Led Tester           sysbus.port6.led
+
+Prepare ICP_10101 Sensor
+    # This is not a part of the platform, as on the physical board ICP sensor is connected to the I2C peripheral rather than the SCI in I2C mode
+    Execute Command             machine LoadPlatformDescriptionFromString ${ICP_101XX_REPL}
 
 Prepare UART Tester
     Create Terminal Tester      sysbus.sci0
@@ -107,3 +114,17 @@ Should Run Hello World Demo
     Wait For Line On Uart       LEDS ON
     Wait For Line On Uart       LEDS OFF
     Wait For Line On Uart       LEDS ON
+
+Should Get Correct Temperature Readouts From ICP10101
+    Prepare Machine            ${AWS_SCI_I2C_ELF}
+    Prepare ICP_10101 Sensor
+    Prepare SEGGER_RTT
+
+    Start Emulation
+    Wait For Line On Uart           Renesas FSP Application Project
+    Wait For Line On Uart           I2C bus setup success
+    Wait For Line On Uart           ICP Sensor Data
+    Wait For Line On Uart           Temperature -000.000
+
+    Execute Command                 sysbus.sci0.barometer DefaultTemperature 13.5
+    Wait For Line On Uart           Temperature\\s+013.498  treatAsRegex=true
