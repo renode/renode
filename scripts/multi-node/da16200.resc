@@ -1,0 +1,58 @@
+using sysbus
+
+$bin_sender=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-sender.elf-s_381512-edc8d2313a0c86cc5ac92079fdc2a5c744e1c4f2
+$bin_receiver=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-receiver.elf-s_381484-4fd4ae40c3748be11bfc7fee2fbfd3aea49425f1
+
+set console_hook
+"""
+self.GetMachine()["sysbus.segger"].DisplayChar(cpu.GetRegisterUnsafe(1).RawValue)
+"""
+
+# Create network
+emulation CreateDA16200Network "wifi"
+
+# Create sender
+mach create "Sender"
+machine LoadPlatformDescription @platforms/boards/ck-ra6m5.repl
+
+machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
+sci0.da16200 CommandResponseDelayMilliseconds 50
+sci0.da16200 TransferBandwidth 960
+sci0.da16200 DataResponseDelayMilliseconds 100
+sci0.da16200 IpAddress "192.0.2.2"
+
+connector Connect sci0.da16200 wifi
+
+machine CreateVirtualConsole "segger"
+showAnalyzer segger
+
+macro reset
+"""
+    sysbus LoadELF $bin_sender
+"""
+runMacro $reset
+
+cpu AddHook `sysbus GetSymbolAddress "_StoreChar"` $console_hook
+
+# Create receiver
+mach create "Receiver"
+machine LoadPlatformDescription @platforms/boards/ck-ra6m5.repl
+
+machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
+sci0.da16200 CommandResponseDelayMilliseconds 50
+sci0.da16200 TransferBandwidth 960
+sci0.da16200 DataResponseDelayMilliseconds 100
+sci0.da16200 IpAddress "192.0.2.1"
+
+connector Connect sci0.da16200 wifi
+
+machine CreateVirtualConsole "segger"
+showAnalyzer segger
+
+macro reset
+"""
+    sysbus LoadELF $bin_receiver
+"""
+runMacro $reset
+
+cpu AddHook `sysbus GetSymbolAddress "_StoreChar"` $console_hook
