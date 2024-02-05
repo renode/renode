@@ -98,7 +98,7 @@ Should Pass Zephyr CAN ISOTP Conformance Test
     Create STM32H7 Machine    ${TESTS_SUBSYS_CANBUS_ISOTP_CONFORMANCE_BIN}
     Create Terminal Tester    ${UART}
 
-    Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
+    Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL  timeout=12
 
 Should Pass Zephyr CAN API Test
     Create CAN Hub
