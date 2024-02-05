@@ -1,6 +1,6 @@
 using "platforms/cpus/stm32h753.repl"
 
-GreenLED: Miscellaneous.LED @ gpioPortB 11
+GreenLED: Miscellaneous.LED @ gpioPortB 0
     invert: true
 
 YellowLED: Miscellaneous.LED @ gpioPortE 1
@@ -9,12 +9,12 @@ YellowLED: Miscellaneous.LED @ gpioPortE 1
 RedLED: Miscellaneous.LED @ gpioPortB 14
     invert: true
 
-UserButton1: Miscellaneous.Button @ gpioPortC
+UserButton1: Miscellaneous.Button @ gpioPortC 13
     invert: true
     -> gpioPortC@13
 
 gpioPortB:
-    11 -> GreenLED@0
+    0 -> GreenLED@0
     14 -> RedLED@0
 
 gpioPortE:
