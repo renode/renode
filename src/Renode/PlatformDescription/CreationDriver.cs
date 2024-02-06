@@ -17,6 +17,7 @@ using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
+using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Collections;
@@ -40,6 +41,7 @@ namespace Antmicro.Renode.PlatformDescription
             objectValueUpdateQueue = new Queue<ObjectValue>();
             objectValueInitQueue = new Queue<ObjectValue>();
             usingsBeingProcessed = new Stack<string>();
+            irqCombiners = new Dictionary<IrqDestination, IrqCombinerConnection>();
             PrepareVariables();
         }
 
@@ -71,9 +73,31 @@ namespace Antmicro.Renode.PlatformDescription
                 }
 
                 var sortedForCreation = SortEntriesForCreation(mergedEntries);
+                var irqConnectionCount = new Dictionary<IrqDestination, int>();
                 foreach(var entry in sortedForCreation)
                 {
                     CreateFromEntry(entry);
+
+                    var irqs = entry.Attributes.OfType<IrqAttribute>()
+                        .SelectMany(attr => attr.Destinations)
+                        .Where(dest => dest.DestinationPeripheral != null);
+                    foreach(var irq in irqs)
+                    {
+                        var destinationPeripheralName = irq.DestinationPeripheral.Reference.Value;
+                        var destinationLocalIndex = irq.DestinationPeripheral.LocalIndex;
+                        var destinationIndex = irq.Destinations.Single().Ends.Single().Number;
+                        var key = new IrqDestination(destinationPeripheralName, destinationLocalIndex, destinationIndex);
+                        if(!irqConnectionCount.TryGetValue(key, out var count))
+                        {
+                            count = 0;
+                        }
+                        irqConnectionCount[key] = count + 1;
+                    }
+                }
+
+                foreach(var pair in irqConnectionCount.Where(pair => pair.Value > 1))
+                {
+                    irqCombiners[pair.Key] = new IrqCombinerConnection(new CombinedInput(pair.Value));
                 }
 
                 foreach(var entry in sortedForCreation)
@@ -112,6 +136,7 @@ namespace Antmicro.Renode.PlatformDescription
                 objectValueUpdateQueue.Clear();
                 objectValueInitQueue.Clear();
                 usingsBeingProcessed.Clear();
+                irqCombiners.Clear();
                 PrepareVariables();
             }
             machine.PostCreationActions();
@@ -762,7 +787,8 @@ namespace Antmicro.Renode.PlatformDescription
                         continue;
                     }
                     // at this moment all irq attributes are of simple type (i.e. a->b@c)
-                    var destination = variableStore.GetVariableFromReference(attribute.DestinationPeripheral.Reference).Value;
+                    var destinationReference = attribute.DestinationPeripheral.Reference;
+                    var destination = variableStore.GetVariableFromReference(destinationReference).Value;
 
                     IGPIO source;
                     IGPIOReceiver destinationReceiver;
@@ -798,16 +824,31 @@ namespace Antmicro.Renode.PlatformDescription
                         }
                     }
 
-                    if(attribute.DestinationPeripheral.LocalIndex.HasValue)
+                    var localIndex = attribute.DestinationPeripheral.LocalIndex;
+                    var index = attribute.Destinations.Single().Ends.Single().Number;
+                    if(localIndex.HasValue)
                     {
-                        destinationReceiver = ((ILocalGPIOReceiver)destination).GetLocalReceiver(attribute.DestinationPeripheral.LocalIndex.Value);
+                        destinationReceiver = ((ILocalGPIOReceiver)destination).GetLocalReceiver(localIndex.Value);
                     }
                     else
                     {
                         destinationReceiver = (IGPIOReceiver)destination;
                     }
 
-                    source.Connect(destinationReceiver, attribute.Destinations.Single().Ends.Single().Number);
+                    var key = new IrqDestination(destinationReference.Value, localIndex, index);
+                    if(irqCombiners.TryGetValue(key, out var combinerConnection))
+                    {
+                        // Connect the first one to the old destination
+                        var combiner = combinerConnection.Combiner;
+                        if(combinerConnection.nextConnectionIndex == 0)
+                        {
+                            combiner.OutputLine.Connect(destinationReceiver, index);
+                        }
+                        destinationReceiver = combiner;
+                        index = combinerConnection.nextConnectionIndex++;
+                    }
+
+                    source.Connect(destinationReceiver, index);
                 }
             }
         }
@@ -1606,6 +1647,7 @@ namespace Antmicro.Renode.PlatformDescription
         private readonly Queue<ObjectValue> objectValueUpdateQueue;
         private readonly Queue<ObjectValue> objectValueInitQueue;
         private readonly Stack<string> usingsBeingProcessed;
+        private readonly Dictionary<IrqDestination, IrqCombinerConnection> irqCombiners;
 
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>(new []
         {
@@ -1651,6 +1693,33 @@ namespace Antmicro.Renode.PlatformDescription
             public ReferenceValueStack Previous { get; private set; }
             public ReferenceValue Value { get; private set; }
             public Entry Entry { get; private set; }
+        }
+
+        private struct IrqDestination
+        {
+            public IrqDestination(string peripheralName, int? localIndex, int index)
+            {
+                PeripheralName = peripheralName;
+                LocalIndex = localIndex;
+                Index = index;
+            }
+
+            public readonly string PeripheralName;
+            public readonly int? LocalIndex;
+            public readonly int Index;
+        }
+
+        private struct IrqCombinerConnection
+        {
+            public IrqCombinerConnection(CombinedInput combiner)
+            {
+                Combiner = combiner;
+                nextConnectionIndex = 0;
+            }
+
+            public int nextConnectionIndex;
+
+            public readonly CombinedInput Combiner;
         }
     }
 }
