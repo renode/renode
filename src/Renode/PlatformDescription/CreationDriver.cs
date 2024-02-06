@@ -159,7 +159,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void PrepareVariables()
         {
-            // machine is always there and is not a peripheral 
+            // machine is always there and is not a peripheral
             variableStore.AddBuiltinOrAlreadyRegisteredVariable(Machine.MachineKeyword, machine);
             var peripherals = machine.GetRegisteredPeripherals().Where(x => !string.IsNullOrEmpty(x.Name)).Select(x => Tuple.Create(x.Peripheral, x.Name)).Distinct().ToDictionary(x => x.Item1, x => x.Item2);
             foreach(var peripheral in peripherals)
@@ -252,7 +252,7 @@ namespace Antmicro.Renode.PlatformDescription
                     message.AppendLine();
                     message.AppendFormat("Entry '{0}' at {1} references '{2}' at {3}.",
                                          pathElement.Previous.Entry.VariableName, GetFormattedPosition(pathElement.Previous.Entry.Type),
-                                         pathElement.Value.Value, GetFormattedPosition(pathElement.Value));                    
+                                         pathElement.Value.Value, GetFormattedPosition(pathElement.Value));
                 }
                 HandleError(cycleErrorType, pathElement.Entry, message.ToString(), false);
             }
@@ -480,7 +480,7 @@ namespace Antmicro.Renode.PlatformDescription
                     registrationInfo.RegistrationInterface = typeof(IPeripheralRegister<,>).MakeGenericType(new[] { usefulRegistreeTypes[0], usefulRegistrationPointTypes[0] });
                 }
             }
-                
+
             if(entry.Attributes == null)
             {
                 return;
@@ -745,7 +745,7 @@ namespace Antmicro.Renode.PlatformDescription
                     var recoverableException = exception.InnerException as RecoverableException;
                     if(recoverableException == null)
                     {
-                        throw;   
+                        throw;
                     }
                     HandleError(ParsingError.PropertySettingException, attribute, string.Format("Exception was thrown when setting property '{0}'", attribute.Name), false);
                 }
@@ -763,15 +763,15 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                     // at this moment all irq attributes are of simple type (i.e. a->b@c)
                     var destination = variableStore.GetVariableFromReference(attribute.DestinationPeripheral.Reference).Value;
-                    
+
                     IGPIO source;
                     IGPIOReceiver destinationReceiver;
-                    
+
                     var irqEnd = multiplexedAttributes.Sources.Single().Ends.Single();
                     if(irqEnd.PropertyName != null)
                     {
                         source = (IGPIO)GetGpioProperties(objectType).Single(x => x.Name == irqEnd.PropertyName).GetValue(objectToSetOn);
-                        
+
                         if(source == null)
                         {
                             HandleError(ParsingError.UninitializedSourceIrqObject, multiplexedAttributes,
@@ -789,7 +789,7 @@ namespace Antmicro.Renode.PlatformDescription
                             continue;
                         }
                         source = connections[irqEnd.Number];
-                        
+
                         if(source == null)
                         {
                             HandleError(ParsingError.UninitializedSourceIrqObject, multiplexedAttributes,
@@ -797,7 +797,7 @@ namespace Antmicro.Renode.PlatformDescription
                             continue;
                         }
                     }
-                    
+
                     if(attribute.DestinationPeripheral.LocalIndex.HasValue)
                     {
                         destinationReceiver = ((ILocalGPIOReceiver)destination).GetLocalReceiver(attribute.DestinationPeripheral.LocalIndex.Value);
@@ -806,7 +806,7 @@ namespace Antmicro.Renode.PlatformDescription
                     {
                         destinationReceiver = (IGPIOReceiver)destination;
                     }
-                    
+
                     source.Connect(destinationReceiver, attribute.Destinations.Single().Ends.Single().Number);
                 }
             }
@@ -986,7 +986,7 @@ namespace Antmicro.Renode.PlatformDescription
                             HandleError(ParsingError.IrqDestinationDoesNotExist, attribute.DestinationPeripheral,
                                         string.Format("Irq destination '{0}' does not exist.", attribute.DestinationPeripheral.Reference.Value), true);
                         }
-                        
+
                         if(attribute.DestinationPeripheral.LocalIndex.HasValue && !typeof(ILocalGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
                         {
                             HandleError(ParsingError.NotLocalGpioReceiver, attribute.DestinationPeripheral,
@@ -998,13 +998,13 @@ namespace Antmicro.Renode.PlatformDescription
                         // irq -> none case
                         irqDestinationVariable = null;
                     }
-                    
+
                     if(irqAttribute.Sources == null)
                     {
                         var gpioProperties = GetGpioProperties(objectType).ToArray();
                         if(gpioProperties.Length == 0)
                         {
-                            
+
                             HandleError(ParsingError.IrqSourceDoesNotExist, irqAttribute,
                                         string.Format("Type '{0}' does not contain any property of type GPIO.", objectType), false);
                         }
@@ -1042,7 +1042,7 @@ namespace Antmicro.Renode.PlatformDescription
                                             string.Format("Irq arity does not match. It is {0} on the left side and {1} on the right side.", leftArity, rightArity), false);
                             }
                         }
-                        
+
                         foreach(var source in irqAttribute.Sources)
                         {
                             foreach(var end in source.Ends)
@@ -1067,7 +1067,7 @@ namespace Antmicro.Renode.PlatformDescription
                             }
                         }
                     }
-                    
+
                     if(irqDestinationVariable!= null && !typeof(IGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
                     {
                         HandleError(ParsingError.IrqDestinationIsNotIrqReceiver, attribute.DestinationPeripheral,
