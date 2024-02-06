@@ -142,6 +142,52 @@ sram: Memory.MappedMemory @ sysbus 0x20400000
 quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
     size: 0x8000000
 
+mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
+
+siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
+
+swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
+    -> nvic0@42
+
+swt1: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x4046C000
+    -> nvic0@43
+
+swt2: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40470000
+    -> nvic0@44
+
+swt3: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40070000
+    -> nvic0@58
+
+stm0: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40274000
+    -> nvic0@39
+
+stm1: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40474000
+    -> nvic0@40
+
+stm2: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40478000
+    -> nvic0@41
+
+stm3: Timers.S32K3XX_SystemTimerModule @ sysbus 0x4047C000
+    -> nvic0@57
+
+pit0: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B0000
+    hasRealTimeInterrupt: true
+    hasLifetimeTimer: true
+    supportsTimersChaining: true
+    -> nvic0@96
+
+pit1: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B4000
+    -> nvic0@97
+
+pit2: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x402FC000
+    -> nvic0@98
+
+pit3: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x40300000
+    -> nvic0@99
+
+rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000 
+    -> nvic0@102
+
 lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x40358000
     -> nvic0@165
 
@@ -234,9 +280,7 @@ sysbus:
         Tag <0xE0042000 0x1000> "CTI"
         Tag <0xE00FF000 0x1000> "Cortex-M7 PPB ROM table"
         Tag <0xE0080000 0x1000> "MCM"
-        Tag <0x40260000 0xA60> "MSCM"
         Tag <0x402A8000 0x804> "VIRT_WRAPPER"
-        Tag <0x40290000 0x17BC> "SIUL2"
         Tag <0x402C4000 0xA8> "TSPC"
         Tag <0x40200000 0x714> "AXBS"
         Tag <0x40280000 0x10> "DMAMUX_0"
@@ -355,21 +399,6 @@ sysbus:
         Tag <0x40090000 0x31C> "eMIOS_2"
         Tag <0x40084000 0x474> "BCTU"
         Tag <0x40080000 0xA0> "TRGMUX"
-
-        // Timers
-        Tag <0x40270000 0x20> "SWT_0"
-        Tag <0x4046C000 0x20> "SWT_1"
-        Tag <0x40470000 0x20> "SWT_2"
-        Tag <0x40070000 0x20> "SWT_3"
-        Tag <0x40274000 0x4C> "STM_0"
-        Tag <0x40474000 0x4C> "STM_1"
-        Tag <0x40478000 0x4C> "STM_2"
-        Tag <0x4047C000 0x4C> "STM_3"
-        Tag <0x400B0000 0x140> "PIT_0"
-        Tag <0x400B4000 0x140> "PIT_1"
-        Tag <0x402FC000 0x140> "PIT_2"
-        Tag <0x40300000 0x140> "PIT_3"
-        Tag <0x40288000 0x18> "RTC"
 
         // Communication
         Tag <0x40350000 0x174> "LPI2C_0"
