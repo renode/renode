@@ -48,6 +48,20 @@ sram: Memory.MappedMemory @ {
     }
     size: 0x18000
 
+timer1: Timers.RenesasDA14_GPT @ sysbus 0x50010300
+    extendedTimer: true
+    -> nvic_m33@14
+    CaptureIRQ -> nvic_m33@28
+
+timer2: Timers.RenesasDA14_GPT @ sysbus 0x50010400
+    -> nvic_m33@15
+
+timer3: Timers.RenesasDA14_GPT @ sysbus 0x50010500
+    -> nvic_m33@30
+
+timer4: Timers.RenesasDA14_GPT @ sysbus 0x50020A00
+    -> nvic_m33@31
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
@@ -59,10 +73,6 @@ sysbus:
         Tag <0x50000500,0x5000051b> "QUADRATURE_DECODER" // QUADRATURE_DECODER registers
         Tag <0x50020200,0x5002022f> "SPI_CONTROLLER" // SPI_CONTROLLER registers
         Tag <0x50020300,0x500203a7> "I2C_CONTROLLER" // I2C_CONTROLLER registers
-        Tag <0x50010300,0x5001034b> "TIMERS_1" // TIMERS_1 registers
-        Tag <0x50010400,0x50010437> "TIMERS_2" // TIMERS_2 registers
-        Tag <0x50010500,0x50010537> "TIMERS_3" // TIMERS_3 registers
-        Tag <0x50020a00,0x50020a37> "TIMER_4" // TIMER_4 registers
         Tag <0x50000300,0x50000303> "DCDC_CONVERTER" // DCDC_CONVERTER registers
         Tag <0x50020000,0x500200ff> "UART" // UART registers
         Tag <0x50020100,0x500201ff> "UART2" // UART2 registers
