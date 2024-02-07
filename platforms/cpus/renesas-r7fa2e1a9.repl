@@ -24,54 +24,180 @@ sram: Memory.MappedMemory @ sysbus 0x20004000
 
 portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40040D00
 
-port0: GPIOPort.RenesasRA_GPIO @ {
+port0: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040000;
         sysbus new Bus.BusMultiRegistration { address: 0x40040800; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x0
     numberOfConnections: 16
     pfsMisc: portMisc
 
-port1: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port1: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040020;
         sysbus new Bus.BusMultiRegistration { address: 0x40040840; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x1
     numberOfConnections: 14
     pfsMisc: portMisc
 
-port2: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port2: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040040;
         sysbus new Bus.BusMultiRegistration { address: 0x40040880; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x2
     numberOfConnections: 16
     pfsMisc: portMisc
 
-port3: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port3: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040060;
         sysbus new Bus.BusMultiRegistration { address: 0x400408C0; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x3
     numberOfConnections: 5
     pfsMisc: portMisc
 
-port4: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port4: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040080;
         sysbus new Bus.BusMultiRegistration { address: 0x40040900; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x4
     numberOfConnections: 16
     pfsMisc: portMisc
 
-port5: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port5: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x400400A0;
         sysbus new Bus.BusMultiRegistration { address: 0x40040940; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x5
     numberOfConnections: 3
     pfsMisc: portMisc
 
-port9: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port9: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040120;
         sysbus new Bus.BusMultiRegistration { address: 0x40040A40; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x9
     numberOfConnections: 16
     pfsMisc: portMisc
+
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
 
 gpt: Timers.RenesasRA_GPT @ sysbus 0x40078000
     numberOf32BitChannels: 4

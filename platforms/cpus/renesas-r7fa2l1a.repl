@@ -21,26 +21,80 @@ port3:
 port5:
     numberOfConnections: 6
 
-port6: GPIOPort.RenesasRA_GPIO @ {
+port6: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x400400C0;
         sysbus new Bus.BusMultiRegistration { address: 0x40040980; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x6
     numberOfConnections: 11
     pfsMisc: portMisc
 
-port7: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port7: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x400400E0;
         sysbus new Bus.BusMultiRegistration { address: 0x400409C0; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x7
     numberOfConnections: 15
     pfsMisc: portMisc
 
-port8: GPIOPort.RenesasRA_GPIO @ {
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
+
+port8: GPIOPort.RenesasRA2_GPIO @ {
         sysbus 0x40040100;
         sysbus new Bus.BusMultiRegistration { address: 0x40040A00; size: 0x40; region: "pinConfiguration" }
     }
+    portNumber: 0x8
     numberOfConnections: 10
     pfsMisc: portMisc
+
+    IRQ0 -> icu@1
+    IRQ1 -> icu@2
+    IRQ2 -> icu@3
+    IRQ3 -> icu@4
+    IRQ4 -> icu@5
+    IRQ5 -> icu@6
+    IRQ6 -> icu@7
+    IRQ7 -> icu@8
+    IRQ8 -> icu@9
+    IRQ9 -> icu@10
+    IRQ10 -> icu@11
+    IRQ11 -> icu@12
+    IRQ12 -> icu@13
+    IRQ13 -> icu@14
+    IRQ14 -> icu@15
+    IRQ15 -> icu@16
 
 // Removing PORT9 as it's not present in RA2L1
 port9: @ none
