@@ -19,7 +19,7 @@ esaMemController: MemoryControllers.ESAMemoryController @ sysbus <0x80000000, +0
 mic: IRQControllers.GaislerMIC @ sysbus <0x80000200, +0x100>
     0 -> cpu@0 | cpu@1 | cpu@2
 
-uart: UART.GaislerUART @ sysbus <0x80000100, +0x100>
+uart: UART.GaislerAPBUART @ sysbus <0x80000100, +0x100>
     -> mic@2
 
 timer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>

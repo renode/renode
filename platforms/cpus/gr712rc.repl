@@ -16,22 +16,22 @@ cpu: CPU.Sparc @ sysbus
 mic: IRQControllers.GaislerMIC @ sysbus <0x80000200, +0x100>
     0 -> cpu@0 | cpu@1 | cpu@2
 
-uart0: UART.GaislerUART @ sysbus <0x80000100, +0x100>
+uart0: UART.GaislerAPBUART @ sysbus <0x80000100, +0x100>
     -> mic@2
 
-uart1: UART.GaislerUART @ sysbus <0x80100100, +0x100>
+uart1: UART.GaislerAPBUART @ sysbus <0x80100100, +0x100>
     -> mic@17
 
-uart2: UART.GaislerUART @ sysbus <0x80100200, +0x100>
+uart2: UART.GaislerAPBUART @ sysbus <0x80100200, +0x100>
     -> mic@18
 
-uart3: UART.GaislerUART @ sysbus <0x80100300, +0x100>
+uart3: UART.GaislerAPBUART @ sysbus <0x80100300, +0x100>
     -> mic@19
 
-uart4: UART.GaislerUART @ sysbus <0x80100400, +0x100>
+uart4: UART.GaislerAPBUART @ sysbus <0x80100400, +0x100>
     -> mic@20
 
-uart5: UART.GaislerUART @ sysbus <0x80100500, +0x100>
+uart5: UART.GaislerAPBUART @ sysbus <0x80100500, +0x100>
     -> mic@21
 
 gptimer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>
