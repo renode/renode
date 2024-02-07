@@ -10,3 +10,6 @@ led_red: Miscellaneous.LED @ port6 10
 led_green: Miscellaneous.LED @ port6 9
 
 led_blue: Miscellaneous.LED @ port6 1
+
+button: Miscellaneous.Button @ port8 4
+    -> port8@4
