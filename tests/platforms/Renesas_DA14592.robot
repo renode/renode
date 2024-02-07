@@ -58,3 +58,15 @@ GPIO Should Work
             Wait For Line On Uart           Updated GPIO port: ${i} pin: ${j} val: 1
         END
     END
+
+Timer Should Work
+    Create Machine                  https://dl.antmicro.com/projects/renode/renesas_da1459x--freertos_retarget.elf-s_1269044-d15f0d09d3c156507ce8b054feeb1293713f864e
+    # Sample code doesn't reload the watchdog
+    Execute Command                 sysbus.wdog Enabled false
+    Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
+
+    Wait For Line On Uart           Hello, world!
+    # Timer is configured to fire approx. once per second
+    Wait For Line On Uart           Timer tick!  timeout=1.1
+    Wait For Line On Uart           Timer tick!  timeout=1.1
+    Wait For Line On Uart           Timer tick!  timeout=1.1
