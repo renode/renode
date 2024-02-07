@@ -99,12 +99,12 @@ nand: Python.PythonPeripheral @ sysbus 0xE000E000
 
 dma_pl330: DMA.PL330_DMA @ sysbus 0xF8003000
     numberOfSupportedEventsAndInterrupts: 16
+    numberOfSupportedPeripheralRequestInterfaces: 4
     AbortIRQ -> gic@13
     [0-3] -> gic@[14-17]
     [4-7] -> gic@[40-43]
     AXIBusWidth: 64
     DataBufferDepth: 1
-    NumberOfSupportedPeripheralRequestInterfaces: 4
     InstructionCacheLinesNumber: 8
     InstructionCacheLineLength: 16
     ReadQueueDepth: 16

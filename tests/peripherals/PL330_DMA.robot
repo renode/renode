@@ -1,10 +1,15 @@
 *** Variables ***
+${PROJECT_URL}                      https://dl.antmicro.com/projects/renode
+
 ${PLATFORM}                         platforms/cpus/cortex-a53-gicv3.repl
-${ZEPHYR-BIN}                       https://dl.antmicro.com/projects/renode/cortex-a53--zephyr-pl330-dma_loop_tests.elf-s_70008-bdfc1e055c0dc33dbc846d085bab60e1cdd33352
+${ZEPHYR-BIN}                       ${PROJECT_URL}/cortex-a53--zephyr-pl330-dma_loop_tests.elf-s_70008-bdfc1e055c0dc33dbc846d085bab60e1cdd33352
 
 ${LINUX-SCRIPT}                     scripts/single-node/zedboard.resc
-${LINUX-BIN}                        https://dl.antmicro.com/projects/renode/zynq--pl330-dmatest-vmlinux-s_14774936-a7c672b2c4fb40a65d87e3454b18813061f18419
-${ROOTFS}                           https://dl.antmicro.com/projects/renode/zynq--pl330-dmatest-vmlinux-rootfs.ext2-s_16777216-335b589cf4048764907362ec668c29db88644ffc
+${LINUX-BIN}                        ${PROJECT_URL}/zynq--pl330-dmatest-vmlinux-s_15041432-5c3eb414a72bb23cc7bc425163945a5a8f9f10b5
+# This DT is modified for peripheral transfer tests - it inserts STM USART that is not normally available for this platform
+# and connects it to the DMA Controller, using `dmas` property of the USART's node, to test peripheral to memory DMA transfers
+${LINUX-DTB}                        ${PROJECT_URL}/zynq--pl330-dmatest-devicetree.dtb-s_12003-4d13125ea98eaafb4df8854dc43b2dbb31a5bac2
+${LINUX-ROOTFS}                     ${PROJECT_URL}/zynq--pl330-dmatest-vmlinux-rootfs.ext2-s_16777216-335b589cf4048764907362ec668c29db88644ffc
 ${PROMPT}                           \#${SPACE}
 
 ${UART}                             sysbus.uart0
@@ -32,8 +37,12 @@ Should Pass Zephyr DMA Loop Transfer Test
 
 Should Initialize Linux Driver
     Execute Command                 set bin @${LINUX-BIN}
-    Execute Command                 set rootfs @${ROOTFS}
+    Execute Command                 set rootfs @${LINUX-ROOTFS}
+    Execute Command                 set dtb @${LINUX-DTB}
     Execute Command                 include @${LINUX-SCRIPT}
+    # This is needed for peripheral transfer tests - it occupies unused address
+    # channels 2 and 3 are reserved by USART's driver, and shouldn't be used otherwise
+    Execute Command                 machine LoadPlatformDescriptionFromString "st_dma_uart: UART.STM32F7_USART @ sysbus 0x4000e000 { frequency: 200000000; IRQ -> gic@55; ReceiveDmaRequest -> dma_pl330@2 }"
 
     Create Terminal Tester          ${UART}           defaultPauseEmulation=True
 
@@ -64,3 +73,22 @@ Should Pass Linux Dmatest
     Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
     Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
     Wait For Line On Uart        dmatest: dma\\dchan\\d-copy\\d: summary 5 tests, 0 failures      includeUnfinishedLine=true  treatAsRegex=true
+
+Should Perform Peripheral To Memory Transfer
+    Requires                     booted-linux
+
+    # This test uses artificially inserted STM32 USART to trigger transfer using its DMA driver API
+    # raw mode forces TTY to print character by character without waiting for new line
+    Write Line To Uart           stty -F /dev/ttySTM2 raw
+    Wait For Prompt On Uart      ${PROMPT}
+
+    Write Line To Uart           cat /dev/ttySTM2 &
+    # USART needs to be woken up and rx channel activated by the driver - give it some time
+    # this delay is practically invisible in an interactive flow
+    Write Line To Uart           sleep 1
+    Wait For Prompt On Uart      ${PROMPT}
+
+    Execute Command              st_dma_uart WriteLine "DMATEST"
+
+    # If DMA works correctly, the same string will be printed on stdout
+    Wait For Line On Uart        DMATEST         includeUnfinishedLine=true
