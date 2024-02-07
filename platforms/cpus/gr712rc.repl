@@ -2,7 +2,7 @@ rom: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x800000
 
 sram: Memory.MappedMemory @ sysbus 0x40000000
-    size: 0x800000
+    size: 0x8000000
 
 sdram: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x2000000
