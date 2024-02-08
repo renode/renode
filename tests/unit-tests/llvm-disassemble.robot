@@ -95,6 +95,9 @@ Create Machine
     ${extra}=          Set Variable If    "${cpu}" == "X86"            ; lapic: empty }                             ${extra}
 
     Execute Command    mach create
+    IF  any(x in "${cpu}" for x in ("PowerPc", "Sparc"))
+        Execute Command  machine LoadPlatformDescriptionFromString "sysbus: { Endianess: Endianess.BigEndian }"
+    END
     Execute Command    machine LoadPlatformDescriptionFromString "cpu: CPU.${cpu} @ sysbus { cpuType: \\"${model}\\" ${extra}"
     Execute Command    machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x50000 }"
 
@@ -209,9 +212,9 @@ Should Disassemble RISCV64GCV
 Should Disassemble PPC
     Create Machine         PowerPc     e200z6
 
-    DisasTest BE           4800007c    b         .+124
-    DisasTest BE           7f880040    cmplw     7, 8, 0    hex_addr=123
-    DisasTest BE           7ce40034    cntlzw    4, 7
+    DisasTest LE           4800007c    b         .+124
+    DisasTest LE           7f880040    cmplw     7, 8, 0    hex_addr=123
+    DisasTest LE           7ce40034    cntlzw    4, 7
 
 Should Disassemble PPC64 LE
     Create Machine         PowerPc64   620
@@ -225,9 +228,9 @@ Should Disassemble PPC64 LE
 Should Disassemble Sparc
     Create Machine         Sparc       leon3
 
-    DisasTest BE           85e8a018    restore    %g2, 24, %g2    hex_addr=abc
-    DisasTest BE           01000000    nop        hex_addr=abc
-    DisasTest BE           10680047    ba         %xcc, 71
+    DisasTest LE           85e8a018    restore    %g2, 24, %g2    hex_addr=abc
+    DisasTest LE           01000000    nop        hex_addr=abc
+    DisasTest LE           10680047    ba         %xcc, 71
 
 Should Disassemble X86
     Create Machine         X86         x86

@@ -37,28 +37,30 @@ Should Print Version
 Should Handle WRASR
     Prepare Machine
 
+    # Note that these writes to memory are in the emulation target's endianness (which is big-endian here), NOT the host's.
+    # For example, after `sysbus WriteDoubleWord 0x00000000 0x03100000`, the memory content as a byte array is `[0x03, 0x10, 0x00, 0x00]`.
     # sethi  %hi(0xa5a5a400), %g1
-    Execute Command           sysbus WriteDoubleWord 0x40000000 0x69692903
+    Execute Command           sysbus WriteDoubleWord 0x40000000 0x03296969
     # or     %g1, 0x1a5, %g1
-    Execute Command           sysbus WriteDoubleWord 0x40000004 0xa5611082
+    Execute Command           sysbus WriteDoubleWord 0x40000004 0x821061a5
     # orn    %g0, %g0, %g2
-    Execute Command           sysbus WriteDoubleWord 0x40000008 0x00003084
+    Execute Command           sysbus WriteDoubleWord 0x40000008 0x84300000
     # wr     0x1555, %asr18
-    Execute Command           sysbus WriteDoubleWord 0x4000000c 0x553580a5
+    Execute Command           sysbus WriteDoubleWord 0x4000000c 0xa5803555
     # wr     %g1, %asr18
-    Execute Command           sysbus WriteDoubleWord 0x40000010 0x010080a5
+    Execute Command           sysbus WriteDoubleWord 0x40000010 0xa5800001
     # wr     %g2, 0x1555, %asr18
-    Execute Command           sysbus WriteDoubleWord 0x40000014 0x55b580a5
+    Execute Command           sysbus WriteDoubleWord 0x40000014 0xa580b555
     # wr     %g1, %g2, %asr18
-    Execute Command           sysbus WriteDoubleWord 0x40000018 0x024080a5
+    Execute Command           sysbus WriteDoubleWord 0x40000018 0xa5804002
     # wr     %g2, %asr15
-    Execute Command           sysbus WriteDoubleWord 0x4000001c 0x0200809f
+    Execute Command           sysbus WriteDoubleWord 0x4000001c 0x9f800002
     # nop
-    Execute Command           sysbus WriteDoubleWord 0x40000020 0x00000001
+    Execute Command           sysbus WriteDoubleWord 0x40000020 0x01000000
     # ba .
-    Execute Command           sysbus WriteDoubleWord 0x40000024 0x00008010
+    Execute Command           sysbus WriteDoubleWord 0x40000024 0x10800000
     # nop
-    Execute Command           sysbus WriteDoubleWord 0x40000028 0x00000001
+    Execute Command           sysbus WriteDoubleWord 0x40000028 0x01000000
 
     Execute Command           cpu ExecutionMode SingleStepBlocking
     Start Emulation

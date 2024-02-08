@@ -1,3 +1,7 @@
+// PowerPc needs a big-endian bus even if running in LE
+sysbus:
+    Endianess: Endianess.BigEndian
+
 cpu: CPU.PowerPc64 @ sysbus
     endianness: Endianess.LittleEndian
 

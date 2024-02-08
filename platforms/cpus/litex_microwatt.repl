@@ -1,3 +1,7 @@
+// PowerPc needs a big-endian bus even if running in LE
+sysbus:
+    Endianess: Endianess.BigEndian
+
 rom: Memory.MappedMemory @ sysbus 0x0
     size: 0x8000
 
