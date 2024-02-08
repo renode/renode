@@ -4,16 +4,19 @@ cpu1: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
     cpuId: 1
+    signalsUnit: signalsUnit
 
 cpu2: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
     cpuId: 2
+    signalsUnit: signalsUnit
 
 cpu3: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
     cpuId: 3
+    signalsUnit: signalsUnit
 
 gic:
     [4,5] -> cpu1@[0,1]

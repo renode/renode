@@ -3,6 +3,9 @@ cpu0: CPU.ARMv7R @ sysbus
     genericInterruptController: gic
     numberOfMPURegions: 24
     cpuId: 0
+    signalsUnit: signalsUnit
+
+signalsUnit: Miscellaneous.ArmSignalsUnit @ sysbus
 
 scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xae000000
 
