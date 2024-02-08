@@ -1109,10 +1109,11 @@ namespace Antmicro.Renode.PlatformDescription
                         }
                     }
 
-                    if(irqDestinationVariable!= null && !typeof(IGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType))
+                    if(irqDestinationVariable != null &&
+                        !(typeof(IGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType) || typeof(ILocalGPIOReceiver).IsAssignableFrom(irqDestinationVariable.VariableType)))
                     {
                         HandleError(ParsingError.IrqDestinationIsNotIrqReceiver, attribute.DestinationPeripheral,
-                                    string.Format("Type '{0}' does not implement IGPIOReceiver and cannot be a destination of interrupts.", irqDestinationVariable.VariableType), false);
+                                    string.Format("Type '{0}' does not implement IGPIOReceiver or ILocalGPIOReceiver and cannot be a destination of interrupts.", irqDestinationVariable.VariableType), false);
                     }
                     return;
                 }
