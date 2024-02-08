@@ -44,8 +44,8 @@ Load Writer Program
     Execute Command           sysbus WriteDoubleWord 0x00000018 0x01000000
 
 Memory Should Be Equal
-    [Arguments]  ${address}   ${value}
-    ${res}=  Execute Command  sysbus ReadDoubleWord ${address}
+    [Arguments]  ${address}   ${value}  ${width}=DoubleWord
+    ${res}=  Execute Command  sysbus Read${width} ${address}
     Should Be Equal As Numbers  ${res}  ${value}
 
 Should Read Big-Endian Value With Watchpoint
@@ -83,6 +83,10 @@ Should Write Big-Endian Value With Watchpoint
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014
     Memory Should Be Equal    0x40000104  0x12345678
+    # Also verify that reading parts of the value separately works as expected
+    Memory Should Be Equal    0x40000104  0x1234  Word
+    Memory Should Be Equal    0x40000106  0x5678  Word
+    Memory Should Be Equal    0x40000104  0x12  Byte
 
 Write Watchpoint Should See Correct Value
     [Arguments]  ${memoryType}
