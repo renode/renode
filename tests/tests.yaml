@@ -7,6 +7,7 @@
 - tests/example.robot
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 - tests/platforms/QuarkC1000.robot
+- tests/unit-tests/arm-signals-unit.robot
 - tests/unit-tests/llvm-disassemble.robot
 - tests/unit-tests/emulation-environment.robot
 - tests/unit-tests/platform_descriptions.robot
