@@ -219,5 +219,12 @@ Watchpoint Should Not Affect Execution On MPC5567
     # causes an access endianness mismatch
     Execute Command           sysbus AddWatchpointHook 0x40002ccc 4 3 "cpu.WarningLog('Watchpoint hit')"
 
-    Wait For Prompt On Uart   QR5567>
+    Wait For Prompt On Uart   QR5567>  pauseEmulation=true
     Wait For Log Entry        Watchpoint hit
+    # Ensure that access translation works as expected for big-endian peripherals by reading the
+    # UART status register, because the MPC5567_UART has ByteToDoubleWord
+    Memory Should Be Equal    0xfffb0008  0xc0000000
+    Memory Should Be Equal    0xfffb0008  0xc0  Byte
+    Memory Should Be Equal    0xfffb0009  0x00  Byte
+    Memory Should Be Equal    0xfffb000a  0x00  Byte
+    Memory Should Be Equal    0xfffb000b  0x00  Byte
