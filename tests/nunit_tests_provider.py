@@ -54,7 +54,8 @@ class NUnitTestSuite(object):
             print("Building {0}".format(self.path))
             if options.runner == 'dotnet':
                 self.builder = 'dotnet'
-                params = ['build', '--verbosity', 'quiet', '--configuration', options.configuration, '/p:NET=true']
+                tfm = "net6.0-windows10.0.17763.0" if platform == "win32" else "net6.0"
+                params = ['build', '-f', tfm, '--verbosity', 'quiet', '--configuration', options.configuration, '/p:NET=true']
             else:
                 if platform == "win32":
                     self.builder = 'MSBuild.exe'
@@ -91,9 +92,10 @@ class NUnitTestSuite(object):
 
         if options.runner == 'dotnet':
             print('Using native dotnet test runner -' + self.path, flush=True)
+            tfm = "net6.0-windows10.0.17763.0" if platform == "win32" else "net6.0"
             # we don't build here - we had problems with concurrently occurring builds when copying files to one output directory
             # so we run test with --no-build and build tests in previous stage
-            args = ['dotnet', 'test', "--no-build", "--logger", "console;verbosity=detailed", "--logger", "trx;LogFileName={}".format(output_file), '--configuration', options.configuration, self.path]
+            args = ['dotnet', 'test', '-f', tfm, "--no-build", "--logger", "console;verbosity=detailed", "--logger", "trx;LogFileName={}".format(output_file), '--configuration', options.configuration, self.path]
         else:
             args = [NUnitTestSuite.nunit_path, '--domain=None', '--noheader', '--labels=Before', '--result={}'.format(output_file), project_file.replace("csproj", "dll")]
 

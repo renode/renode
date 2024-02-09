@@ -213,6 +213,7 @@ elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
     TFM="net6.0-windows10.0.17763.0"
+    RID="win-x64"
 else
     BUILD_TARGET=Mono
 fi
@@ -220,7 +221,7 @@ fi
 if $NET
 then
   export DOTNET_CLI_TELEMETRY_OPTOUT=1
-  CS_COMPILER="dotnet build"
+  CS_COMPILER="dotnet build -f $TFM"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
 else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
@@ -281,7 +282,7 @@ then
       do
         if $NET
         then
-            dotnet clean $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
+            dotnet clean -f $TFM $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
         else
             $CS_COMPILER $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
         fi
@@ -442,18 +443,18 @@ fi
 if $PORTABLE
 then
     PARAMS+=(p:PORTABLE=true)
-    if $ON_LINUX
+    if $NET
     then
-      if $NET
-      then
-          eval "dotnet publish -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
-          export RID TFM
-          $ROOT_PATH/tools/packaging/make_linux_portable_dotnet.sh $params
-      else
-          $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
-      fi
+        eval "dotnet publish -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
+        export RID TFM
+        $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable_dotnet.sh $params
     else
-      echo "Portable packages are only available on Linux. Exiting!"
-      exit 1
+        if $ON_LINUX
+        then
+            $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+        else
+            echo "Portable packages for Mono are only available on Linux. Exiting!"
+            exit 1
+        fi
     fi
 fi
