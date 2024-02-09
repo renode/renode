@@ -48,12 +48,12 @@ timer0: Timers.GaislerGPTimer @ sysbus <0x80003000, +0x100>
     timersNumber: 2
     frequency: 20000000
 
-gpio0: GPIOPort.GaislerGPIO @ sysbus <0x8030C000, +0x100>
-    -> mic@17
-    numberOfPorts: 32
+gpio0: GPIOPort.Gaisler_GPIO @ sysbus 0x8030C000
+    32 -> mic@17 // This interrupt routing is not verified.
+    numberOfConnections: 32
     numberOfInterrupts: 1
 
-gpio1: GPIOPort.GaislerGPIO @ sysbus <0x8030D000, +0x100>
-    -> mic@38
-    numberOfPorts: 32
+gpio1: GPIOPort.Gaisler_GPIO @ sysbus 0x8030D000
+    32 -> mic@38 // This interrupt routing is not verified.
+    numberOfConnections: 32
     numberOfInterrupts: 1

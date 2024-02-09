@@ -30,7 +30,7 @@ timer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>
 eth: Network.GaislerEth @ sysbus 0x80000B00
     -> mic@12
 
-gpio: GPIOPort.GaislerGPIO @ sysbus <0x80000800, +0x100>
-    -> mic@10
-    numberOfPorts: 16
+gpio: GPIOPort.Gaisler_GPIO @ sysbus 0x80000800
+    16 -> mic@10 // This interrupt routing is not verified.
+    numberOfConnections: 16
     numberOfInterrupts: 1

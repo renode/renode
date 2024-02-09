@@ -45,15 +45,17 @@ grtimer: Timers.GaislerGPTimer @ sysbus <0x80100600, +0x100>
     timersNumber: 2
     frequency: 20000000
 
-gpio1: GPIOPort.GaislerGPIO @ sysbus <0x80000900, +0x100>
-    -> mic@1 // GPIO ports should have multiple interrupts
-    numberOfPorts: 32
-    numberOfInterrupts: 1
+gpio1: GPIOPort.Gaisler_GPIO @ sysbus 0x80000900
+    [32-46] -> mic@[1-15]
+    numberOfConnections: 32
+    numberOfInterrupts: 15
+    inputOnlyPins: "0,2,4,6,8,11,12,15,16,19,20,23,24,27,28,31"
 
-gpio2: GPIOPort.GaislerGPIO @ sysbus <0x80000a00, +0x100>
-    -> mic@38
-    numberOfPorts: 32
-    numberOfInterrupts: 1
+gpio2: GPIOPort.Gaisler_GPIO @ sysbus 0x80000a00
+    [32-46] -> mic@[1-15]
+    numberOfConnections: 32
+    numberOfInterrupts: 15
+    inputOnlyPins: "0,3,4,7,11,12,15,16,20,21"
 
 ahbInfo: Bus.GaislerAHBPlugAndPlayInfo @ sysbus <0xfffff000, +0x1000>
 
