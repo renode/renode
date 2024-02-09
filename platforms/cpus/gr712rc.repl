@@ -37,15 +37,16 @@ uart4: UART.GaislerAPBUART @ sysbus <0x80100400, +0x100>
 uart5: UART.GaislerAPBUART @ sysbus <0x80100500, +0x100>
     -> mic@21
 
-gptimer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>
-    0 -> mic@8 // This timer should have multiple interrupts
-    timersNumber: 4
+gptimer: Timers.Gaisler_GPTimer @ sysbus 0x80000300
+    [0-3] -> mic@[8-11]
+    numberOfTimers: 4
     frequency: 20000000
 
-// This timer should have the time latch capability (and PnP id 0x038)
-grtimer: Timers.GaislerGPTimer @ sysbus <0x80100600, +0x100>
+grtimer: Timers.Gaisler_GPTimer @ sysbus 0x80100600
     0 -> mic@7
-    timersNumber: 2
+    numberOfTimers: 2
+    supportsTimeLatch: true
+    separateInterrupts: false
     frequency: 20000000
 
 gpio1: GPIOPort.Gaisler_GPIO @ sysbus 0x80000900

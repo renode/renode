@@ -46,9 +46,10 @@ uart4: UART.GaislerAPBUART @ sysbus <0x80304000, +0x100>
 uart5: UART.GaislerAPBUART @ sysbus <0x80305000, +0x100>
     -> mic@7
 
-timer0: Timers.GaislerGPTimer @ sysbus <0x80003000, +0x100>
+timer0: Timers.Gaisler_GPTimer @ sysbus 0x80003000
     0 -> mic@9
-    timersNumber: 2
+    numberOfTimers: 2
+    separateInterrupts: false
     frequency: 20000000
 
 gpio0: GPIOPort.Gaisler_GPIO @ sysbus 0x8030C000

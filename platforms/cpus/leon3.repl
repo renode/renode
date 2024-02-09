@@ -25,9 +25,10 @@ mic: IRQControllers.GaislerMIC @ sysbus <0x80000200, +0x100>
 uart: UART.GaislerAPBUART @ sysbus <0x80000100, +0x100>
     -> mic@2
 
-timer: Timers.GaislerGPTimer @ sysbus <0x80000300, +0x100>
+timer: Timers.Gaisler_GPTimer @ sysbus 0x80000300
     0 -> mic@8
-    timersNumber: 2
+    numberOfTimers: 2
+    separateInterrupts: false
     frequency: 50000000
 
 eth: Network.GaislerEth @ sysbus 0x80000B00
