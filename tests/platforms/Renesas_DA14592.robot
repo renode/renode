@@ -47,3 +47,14 @@ Test GPADC
 
     Wait For Line On Uart           ADC read completed
     Wait For Line On Uart           Number of samples: 21, ADC result value: 18900
+
+GPIO Should Work
+    Create Machine                  https://dl.antmicro.com/projects/renode/da1459x-gpio-sample.elf-s_1272236-e9ad9a46463f2b65117790c2c712c72b4174206d
+    Create Terminal Tester          sysbus.uart1
+
+    FOR  ${i}  IN RANGE  2
+        FOR  ${j}  IN RANGE  2
+            Wait For Line On Uart           Initial GPIO port: ${i} pin: ${j} val: 0
+            Wait For Line On Uart           Updated GPIO port: ${i} pin: ${j} val: 1
+        END
+    END
