@@ -178,18 +178,6 @@ gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x40022800, +0x400>
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
     -> nvic@61
 
-phy: Network.EthernetPhysicalLayer @ ethernet 0
-    Id1: 0x0007
-    Id2: 0xC0F1
-    AutoNegotiationAdvertisement: 0x00A1
-    AutoNegotiationLinkPartnerBasePageAbility: 0x001
-
-phy1: Network.EthernetPhysicalLayer @ ethernet 1
-    Id1: 0x0007
-    Id2: 0xC0F1
-    AutoNegotiationAdvertisement: 0x00A1
-    AutoNegotiationLinkPartnerBasePageAbility: 0x001
-
 spi1: SPI.STM32SPI @ sysbus 0x40013000
     series: STM32Series.F7
     IRQ -> nvic@35

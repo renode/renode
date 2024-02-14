@@ -14,3 +14,9 @@ gpioPortB:
     0 -> GreenLED@0
     7 -> BlueLED@0
     14 -> RedLED@0
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    Id1: 0x0007
+    Id2: 0xC0F1
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x001
