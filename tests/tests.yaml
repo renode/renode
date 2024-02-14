@@ -145,6 +145,7 @@
 - tests/peripherals/BME280.robot
 - tests/peripherals/MB85RC1MT.robot
 - tests/platforms/nucleo_f429zi.robot
+- tests/platforms/nucleo_f767zi.robot
 - tests/peripherals/SynopsysDWCEthernetQualityOfService.robot
 - tests/peripherals/S32K3XX_EMAC.robot
 - tests/unit-tests/ARMv8R_TCM.robot
