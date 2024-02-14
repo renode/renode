@@ -99,6 +99,20 @@ port8: GPIOPort.RenesasRA2_GPIO @ {
 // Removing PORT9 as it's not present in RA2L1
 port9: @ none
 
+gpt:
+    [0x09-0x0C] -> icu@[0x4C-0x4F]
+    // GPT1 CMPE and CMPF are not connected
+    [0x0F-0x10] -> icu@[0x50-0x51]
+    // GPT1 PC is not connected
+    [0x12-0x15] -> icu@[0x52-0x55]
+    // GPT2 CMPE and CMPF are not connected
+    [0x18-0x19] -> icu@[0x56-0x57]
+    // GPT2 PC is not connected
+    [0x1B-0x1E] -> icu@[0x58-0x5B]
+    // GPT3 CMPE and CMPF are not connected
+    [0x21-0x22] -> icu@[0x5C-0x5D]
+    // GPT3 PC is not connected
+
 sci3: SCI.RenesasRA6M5_SCI @ sysbus <0x40070060, +0x20>
     frequency: 32000000
     enableManchesterMode: false
