@@ -37,7 +37,7 @@ Prepare UART Tester
     Create Terminal Tester      sysbus.sci0
 
 *** Test Cases ***
-Should Run Periodicaly Blink LED
+Should Run Periodically Blink LED
     Prepare Machine             ${AGT_ELF}
     Prepare LED Tester
     Prepare Segger RTT
