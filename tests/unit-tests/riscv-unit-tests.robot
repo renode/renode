@@ -14,25 +14,24 @@ ${nonexisting_csr}            0xfff0d073
 
 
 *** Keywords ***
-Create Machine 32
+Create Machine
+    [Arguments]    ${bitness}    ${init_pc}
     Execute Command           using sysbus
     Execute Command           mach create "risc-v"
 
     Execute Command           machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { timeProvider: clint; cpuType: \\"rv32gc\\" }"
+    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV${bitness} @ sysbus { timeProvider: clint; cpuType: \\"rv${bitness}gc\\" }"
     Execute Command           machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x40000 }"
 
-    Execute Command           cpu PC ${starting_pc}
+    IF    ${init_pc}
+       Execute Command           cpu PC ${starting_pc}
+    END
+
+Create Machine 32
+    Create Machine    bitness=32  init_pc=True
 
 Create Machine 64
-    Execute Command           using sysbus
-    Execute Command           mach create "risc-v"
-
-    Execute Command           machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { timeProvider: clint; cpuType: \\"rv64gc\\" }"
-    Execute Command           machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x40000 }"
-
-    Execute Command           cpu PC ${starting_pc}
+    Create Machine    bitness=64  init_pc=True
 
 Write Opcode To
     [Arguments]                         ${adress}   ${opcode}
