@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -114,17 +114,25 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var emulationPausedEvent = emulation.GetStartedStateChangedEvent(false);
+            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)(effectiveTimeout * 1000), () =>
+            {
+                if(this.pauseEmulation)
+                {
+                    emulation.PauseAll();
+                }
+            });
+
             if(!emulation.IsStarted)
             {
                 emulation.StartAll();
             }
 
-            var timeoutEvent = emulation.MasterTimeSource.EnqueueTimeoutEvent((ulong)(effectiveTimeout * 1000));
             var eventId = WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, predicateEvent });
 
             if(eventId == 1)
             {
                 // predicate event; we know the machine is paused, now we need to check for the rest of the emulation to stop
+                timeoutEvent.Cancel();
                 if(pauseEmulation)
                 {
                     emulationPausedEvent.WaitOne();
