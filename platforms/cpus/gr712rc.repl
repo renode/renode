@@ -65,6 +65,8 @@ ahbInfo: Bus.GaislerAHBPlugAndPlayInfo @ sysbus <0xfffff000, +0x1000>
 
 apb1Controller: Bus.GaislerAPBController @ sysbus <0x800ff000, +0x1000>
 
+apb2Controller: Bus.GaislerAPBController @ sysbus <0x801ff000, +0x1000>
+
 sysbus:
     init:
         Tag <0x20000000 0x20000000> "FTMCTRL IO area"
