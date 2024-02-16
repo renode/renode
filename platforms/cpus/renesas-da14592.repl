@@ -71,6 +71,9 @@ uart1: UART.RenesasDA14_UART @ sysbus 0x50020100
 wdog: Timers.RenesasDA14_Watchdog @ sysbus 0x50000700
     frequency: 32000
 
+gpadc: Analog.RenesasDA14_GPADC @ sysbus 0x50040900
+    IRQ -> nvic_m33@25
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
@@ -93,7 +96,6 @@ sysbus:
         Tag <0x500502FC,0x500502FF> "CHIP_METAL_OPTION" 0x0
         Tag <0x50000100,0x50000163> "WAKE-UP_CONTROLLER" // WAKE_UP_CONTROLLER registers
         Tag <0x50020400,0x5002041F> "GENERAL_PURPOSE_or_ADC_1" // GENERAL_PURPOSE_or_ADC_1 registers
-        Tag <0x50040900,0x50040923> "GENERAL_PURPOSE_or_ADC_2" // GENERAL_PURPOSE_or_ADC_2 registers
         Tag <0x50020600,0x500206ab> "GENERAL_PURPOSE_I/O" // GENERAL_PURPOSE_I/O registers
         Tag <0x50050300,0x50050317> "GENERAL_PURPOSE" // GENERAL_PURPOSE registers
         Tag <0x50000200,0x5000029b> "POWER_DOMAIN_CONTROLLER" // POWER_DOMAIN_CONTROLLER registers
