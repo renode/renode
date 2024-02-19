@@ -5,6 +5,7 @@ cpu: CPU.CortexM @ sysbus
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     systickFrequency: 96_000_000
+    priorityMask: 0xF0
     -> cpu@0
 
 exti: IRQControllers.STM32H7_EXTI @ sysbus 0x58000000
