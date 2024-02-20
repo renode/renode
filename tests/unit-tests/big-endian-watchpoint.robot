@@ -212,6 +212,7 @@ Abort Should Work After Watchpoint Hit On ArrayMemory
     Abort Should Work After Watchpoint Hit  ArrayMemory
 
 Watchpoint Should Not Affect Execution On MPC5567
+    # This is a big-endian PowerPC platform
     Execute Script            ${CURDIR}/../../scripts/single-node/mpc5567.resc
     Create Terminal Tester    sysbus.uart
     Create Log Tester         0
@@ -228,3 +229,15 @@ Watchpoint Should Not Affect Execution On MPC5567
     Memory Should Be Equal    0xfffb0009  0x00  Byte
     Memory Should Be Equal    0xfffb000a  0x00  Byte
     Memory Should Be Equal    0xfffb000b  0x00  Byte
+
+Watchpoint Should Not Affect Execution On Microwatt
+    # This is a little-endian PowerPC platform
+    Execute Script            ${CURDIR}/../../scripts/single-node/microwatt.resc
+    Create Terminal Tester    sysbus.uart
+    Create Log Tester         0
+    # This address has been chosen to cause a failure to boot if the presence of the watchpoint
+    # causes an access endianness mismatch
+    Execute Command           sysbus AddWatchpointHook 0x5fee0 8 3 "cpu.WarningLog('Watchpoint hit')"
+
+    Wait For Prompt On Uart   >>>  pauseEmulation=true
+    Wait For Log Entry        Watchpoint hit
