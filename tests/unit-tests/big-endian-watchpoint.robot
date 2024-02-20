@@ -1,19 +1,25 @@
 *** Keywords ***
 Prepare Machine
-    [Arguments]  ${memoryType}
+    [Arguments]  ${architecture}  ${memoryType}
 
     Execute Command           using sysbus
     Execute Command           mach create "Leon3"
 
     Execute Command           machine LoadPlatformDescriptionFromString "sysbus: { Endianess: Endianess.BigEndian }"
-    Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.Sparc @ sysbus { cpuType: \\"leon3\\" }"
+    IF  "${architecture}" == "Sparc"
+        Execute Command       machine LoadPlatformDescriptionFromString "cpu: CPU.Sparc @ sysbus { cpuType: \\"leon3\\" }"
+    ELSE IF  "${architecture}" == "PowerPC"
+        Execute Command       machine LoadPlatformDescriptionFromString "cpu: CPU.PowerPc @ sysbus { cpuType: \\"e200z6\\" }"
+    ELSE
+        Fail                  Unknown architecture ${architecture}
+    END
     Execute Command           machine LoadPlatformDescriptionFromString "rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x40000000 }"
     Execute Command           machine LoadPlatformDescriptionFromString "ddr: Memory.${memoryType} @ sysbus 0x40000000 { size: 0x20000000 }"
 
     Execute Command           cpu PC 0x0
     Execute Command           cpu ExecutionMode SingleStepBlocking
 
-Load Reader Program
+Load Sparc Reader Program
     # Note that these writes to memory are in the emulation target's endianness (which is big-endian here), NOT the host's.
     # For example, after `sysbus WriteDoubleWord 0x00000000 0x03100000`, the memory content as a byte array is `[0x03, 0x10, 0x00, 0x00]`.
     # sethi  %hi(0x40000000), %g1
@@ -27,7 +33,7 @@ Load Reader Program
     # nop
     Execute Command           sysbus WriteDoubleWord 0x00000010 0x01000000
 
-Load Writer Program
+Load Sparc Writer Program
     # sethi  %hi(0x40000000), %g1
     Execute Command           sysbus WriteDoubleWord 0x00000000 0x03100000
     # or  %g1, 0x104, %g1
@@ -43,16 +49,49 @@ Load Writer Program
     # nop
     Execute Command           sysbus WriteDoubleWord 0x00000018 0x01000000
 
+Load PowerPC Reader Program
+    # lis r1, 0x4000
+    Execute Command           sysbus WriteDoubleWord 0x00000000 0x3c204000
+    # ori r1, r1, 0x104
+    Execute Command           sysbus WriteDoubleWord 0x00000004 0x60210104
+    # lwz r2, 0(r1)
+    Execute Command           sysbus WriteDoubleWord 0x00000008 0x80410000
+    # b .
+    Execute Command           sysbus WriteDoubleWord 0x0000000c 0x48000000
+    # nop
+    Execute Command           sysbus WriteDoubleWord 0x00000010 0x60000000
+
+Load PowerPC Writer Program
+    # lis r1, 0x4000
+    Execute Command           sysbus WriteDoubleWord 0x00000000 0x3c204000
+    # ori r1, r1, 0x104
+    Execute Command           sysbus WriteDoubleWord 0x00000004 0x60210104
+    # lis r2, 0x1234
+    Execute Command           sysbus WriteDoubleWord 0x00000008 0x3c401234
+    # ori r2, r2, 0x5678
+    Execute Command           sysbus WriteDoubleWord 0x0000000c 0x60425678
+    # stw r2, 0(r1)
+    Execute Command           sysbus WriteDoubleWord 0x00000010 0x90410000
+    # b .-4
+    Execute Command           sysbus WriteDoubleWord 0x00000014 0x4bfffffc
+    # nop
+    Execute Command           sysbus WriteDoubleWord 0x00000018 0x60000000
+
+Load Program
+    [Arguments]  ${architecture}  ${type}
+
+    Run Keyword               Load ${architecture} ${type} Program
+
 Memory Should Be Equal
     [Arguments]  ${address}   ${value}  ${width}=DoubleWord
     ${res}=  Execute Command  sysbus Read${width} ${address}
     Should Be Equal As Numbers  ${res}  ${value}
 
 Should Read Big-Endian Value With Watchpoint
-    [Arguments]  ${memoryType}
+    [Arguments]  ${architecture}  ${memoryType}
 
-    Prepare Machine           ${memoryType}
-    Load Reader Program
+    Prepare Machine           ${architecture}  ${memoryType}
+    Load Program              ${architecture}  Reader
 
     # Target-endian write
     Execute Command           sysbus WriteDoubleWord 0x40000104 0x12345678
@@ -68,10 +107,10 @@ Should Read Big-Endian Value With Watchpoint
     Register Should Be Equal  2  0x12345678
 
 Should Write Big-Endian Value With Watchpoint
-    [Arguments]  ${memoryType}
+    [Arguments]  ${architecture}  ${memoryType}
 
-    Prepare Machine           ${memoryType}
-    Load Writer Program
+    Prepare Machine           ${architecture}  ${memoryType}
+    Load Program              ${architecture}  Writer
 
     # Same page as the value that gets accessed, not same address
     Execute Command           sysbus AddWatchpointHook 0x40000200 4 2 "pass"
@@ -89,11 +128,11 @@ Should Write Big-Endian Value With Watchpoint
     Memory Should Be Equal    0x40000104  0x12  Byte
 
 Write Watchpoint Should See Correct Value
-    [Arguments]  ${memoryType}
+    [Arguments]  ${architecture}  ${memoryType}
 
-    Prepare Machine           ${memoryType}
+    Prepare Machine           ${architecture}  ${memoryType}
     Create Log Tester         0
-    Load Writer Program
+    Load Program              ${architecture}  Writer
 
     # Watch the address that gets accessed
     # Watchpoints see the value as the CPU sees it, so BE here.
@@ -105,15 +144,19 @@ Write Watchpoint Should See Correct Value
     Start Emulation
 
     Execute Command           cpu Step 6
-    PC Should Be Equal        0x00000018
+    IF  "${architecture}" == "Sparc"
+        PC Should Be Equal    0x00000018
+    ELSE
+        PC Should Be Equal    0x00000010
+    END
     Wait For Log Entry        Watchpoint saw 0x12345678L
 
 Write Watchpoint Should Work Multiple Times
-    [Arguments]  ${memoryType}
+    [Arguments]  ${architecture}  ${memoryType}
 
-    Prepare Machine           ${memoryType}
+    Prepare Machine           ${architecture}  ${memoryType}
     Create Log Tester         0
-    Load Writer Program
+    Load Program              ${architecture}  Writer
 
     # Watch the address that gets accessed
     Execute Command           sysbus AddWatchpointHook 0x40000104 4 2 "self.DebugLog('Watchpoint saw ' + hex(value))"
@@ -133,9 +176,9 @@ Write Watchpoint Should Work Multiple Times
 Abort Should Work After Watchpoint Hit
     [Arguments]  ${memoryType}
 
-    Prepare Machine           ${memoryType}
+    Prepare Machine           Sparc  ${memoryType}
     Create Log Tester         0
-    Load Writer Program
+    Load Program              Sparc  Writer
 
     # Overwrite branch with illegal instruction
     Execute Command           rom WriteDoubleWord 0x00000014 0xffffffff
@@ -154,10 +197,11 @@ Abort Should Work After Watchpoint Hit
     Wait For Log Entry        Watchpoint saw 0x12345678L    timeout=1
     Wait For Log Entry        CPU abort [PC=0x14]: Trap 0x02 while interrupts disabled    timeout=1
 
-*** Test Cases ***
 Should Read Big-Endian Value Without Watchpoint
-    Prepare Machine           MappedMemory
-    Load Reader Program
+    [Arguments]  ${architecture}
+
+    Prepare Machine           ${architecture}  MappedMemory
+    Load Program              ${architecture}  Reader
 
     # Target-endian write
     Execute Command           sysbus WriteDoubleWord 0x40000104 0x12345678
@@ -170,8 +214,10 @@ Should Read Big-Endian Value Without Watchpoint
     Register Should Be Equal  2  0x12345678
 
 Should Write Big-Endian Value Without Watchpoint
-    Prepare Machine           MappedMemory
-    Load Writer Program
+    [Arguments]  ${architecture}
+
+    Prepare Machine           ${architecture}  MappedMemory
+    Load Program              ${architecture}  Writer
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
@@ -181,29 +227,61 @@ Should Write Big-Endian Value Without Watchpoint
     PC Should Be Equal        0x00000014
     Memory Should Be Equal    0x40000104  0x12345678
 
-Should Read Big-Endian Value With Watchpoint On MappedMemory
-    Should Read Big-Endian Value With Watchpoint  MappedMemory
 
-Should Read Big-Endian Value With Watchpoint On ArrayMemory
-    Should Read Big-Endian Value With Watchpoint  ArrayMemory
+*** Test Cases ***
+Should Read Big-Endian Value Without Watchpoint On Sparc
+    Should Read Big-Endian Value Without Watchpoint  Sparc
 
-Should Write Big-Endian Value With Watchpoint On MappedMemory
-    Should Write Big-Endian Value With Watchpoint  MappedMemory
+Should Write Big-Endian Value Without Watchpoint On Sparc
+    Should Write Big-Endian Value Without Watchpoint  Sparc
 
-Should Write Big-Endian Value With Watchpoint On ArrayMemory
-    Should Write Big-Endian Value With Watchpoint  ArrayMemory
+Should Read Big-Endian Value With Watchpoint On MappedMemory On Sparc
+    Should Read Big-Endian Value With Watchpoint  Sparc  MappedMemory
 
-Write Watchpoint Should See Correct Value On MappedMemory
-    Write Watchpoint Should See Correct Value  MappedMemory
+Should Read Big-Endian Value With Watchpoint On ArrayMemory On Sparc
+    Should Read Big-Endian Value With Watchpoint  Sparc  ArrayMemory
 
-Write Watchpoint Should See Correct Value On ArrayMemory
-    Write Watchpoint Should See Correct Value  ArrayMemory
+Should Write Big-Endian Value With Watchpoint On MappedMemory On Sparc
+    Should Write Big-Endian Value With Watchpoint  Sparc  MappedMemory
 
-Write Watchpoint Should Work Multiple Times On MappedMemory
-    Write Watchpoint Should Work Multiple Times  MappedMemory
+Should Write Big-Endian Value With Watchpoint On ArrayMemory On Sparc
+    Should Write Big-Endian Value With Watchpoint  Sparc  ArrayMemory
 
-Write Watchpoint Should Work Multiple Times On ArrayMemory
-    Write Watchpoint Should Work Multiple Times  ArrayMemory
+Write Watchpoint Should See Correct Value On MappedMemory On Sparc
+    Write Watchpoint Should See Correct Value  Sparc  MappedMemory
+
+Write Watchpoint Should See Correct Value On ArrayMemory On Sparc
+    Write Watchpoint Should See Correct Value  Sparc  ArrayMemory
+
+Write Watchpoint Should Work Multiple Times On MappedMemory On Sparc
+    Write Watchpoint Should Work Multiple Times  Sparc  MappedMemory
+
+Write Watchpoint Should Work Multiple Times On ArrayMemory On Sparc
+    Write Watchpoint Should Work Multiple Times  Sparc  ArrayMemory
+
+Should Read Big-Endian Value With Watchpoint On MappedMemory On PowerPC
+    Should Read Big-Endian Value With Watchpoint  PowerPC  MappedMemory
+
+Should Read Big-Endian Value With Watchpoint On ArrayMemory On PowerPC
+    Should Read Big-Endian Value With Watchpoint  PowerPC  ArrayMemory
+
+Should Write Big-Endian Value With Watchpoint On MappedMemory On PowerPC
+    Should Write Big-Endian Value With Watchpoint  PowerPC  MappedMemory
+
+Should Write Big-Endian Value With Watchpoint On ArrayMemory On PowerPC
+    Should Write Big-Endian Value With Watchpoint  PowerPC  ArrayMemory
+
+Write Watchpoint Should See Correct Value On MappedMemory On PowerPC
+    Write Watchpoint Should See Correct Value  PowerPC  MappedMemory
+
+Write Watchpoint Should See Correct Value On ArrayMemory On PowerPC
+    Write Watchpoint Should See Correct Value  PowerPC  ArrayMemory
+
+Write Watchpoint Should Work Multiple Times On MappedMemory On PowerPC
+    Write Watchpoint Should Work Multiple Times  PowerPC  MappedMemory
+
+Write Watchpoint Should Work Multiple Times On ArrayMemory On PowerPC
+    Write Watchpoint Should Work Multiple Times  PowerPC  ArrayMemory
 
 Abort Should Work After Watchpoint Hit On MappedMemory
     Abort Should Work After Watchpoint Hit  MappedMemory
