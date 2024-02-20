@@ -1,0 +1,24 @@
+:name: Renesas EK-RA8M1 Evaluation Kit
+:description: This script runs agt fsp example software on EK-RA8M1 board
+
+$name?="Renesas EK-RA8M1"
+
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--agt.elf-s_390120-5dfd54a412e405b4527aba3b32e9590e668fbfcf
+
+machine LoadPlatformDescription @platforms/boards/ek-ra8m1.repl
+
+include @scripts/single-node/renesas-segger-rtt.py
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
+
+machine CreateVirtualConsole "segger_rtt"
+setup_segger_rtt sysbus.segger_rtt
+showAnalyzer sysbus.segger_rtt
