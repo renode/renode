@@ -70,3 +70,18 @@ Timer Should Work
     Wait For Line On Uart           Timer tick!  timeout=1.1
     Wait For Line On Uart           Timer tick!  timeout=1.1
     Wait For Line On Uart           Timer tick!  timeout=1.1
+
+DMA Should Work
+    Create Machine                  https://dl.antmicro.com/projects/renode/renesas_da14592--dma_mem_to_mem.elf-s_1265040-95f747c5ab0f99da1ac4b342ff3bb156c77f7e06
+    # Sample code doesn't reload the watchdog
+    Execute Command                 sysbus.wdog Enabled false
+    # This register contains memory remapping information.
+    # It is necessary for the DMA to calculate the physical address.
+    # At this point we don't support it  hw_sys_get_memory_remapping.
+    Execute Command                 sysbus Tag <0x50000024 +4> "SYS_CTRL_REG" 0x3
+    Create Terminal Tester          sysbus.uart1
+
+    Wait For Line On Uart           SRC: { 0 1 2 3 4 5 6 7 8 9 }
+    Wait For Line On Uart           DEST: { 0 0 0 0 0 0 0 0 0 0 }
+    Wait For Line On Uart           Transfer completed
+    Wait For Line On Uart           DEST: { 0 1 2 3 4 5 6 7 8 9 }
