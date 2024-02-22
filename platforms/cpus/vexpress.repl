@@ -19,10 +19,10 @@ memory: Memory.MappedMemory @ {
 sram: Memory.MappedMemory @ sysbus 0x48000000
     size: 0x02000000
 
-timer1: Timers.SP804 @ sysbus 0x10011000
+timer1: Timers.ARM_SP804_Timer @ sysbus 0x10011000
     -> gic@2
 
-timer2: Timers.SP804 @ sysbus 0x10012000
+timer2: Timers.ARM_SP804_Timer @ sysbus 0x10012000
     -> gic@3
 
 sysCtl: Miscellaneous.ArmSysCtl @ sysbus <0x10000000, +0x1000>
