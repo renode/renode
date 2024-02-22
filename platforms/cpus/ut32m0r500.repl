@@ -27,6 +27,14 @@ uart1: UART.GaislerAPBUART @ sysbus <0x40005000, +0x1000>
     frequency: 40000000
     -> nvic@15
 
+timer0: Timers.ARM_SP804_Timer @ sysbus 0x40001000
+    frequency: 50000000
+    -> nvic@1
+
+timer1: Timers.ARM_SP804_Timer @ sysbus 0x40002000
+    frequency: 50000000
+    -> nvic@2
+
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     systickFrequency: 72000000
@@ -39,8 +47,6 @@ cpu: CPU.CortexM @ sysbus
 sysbus:
     init:
         Tag <0x40000000 0x1000> "RTC"
-        Tag <0x40001000 0x1000> "Dual Timer0"
-        Tag <0x40002000 0x1000> "Dual Timer1"
         Tag <0x40003000 0x1000> "PWM"
         Tag <0x40006000 0x1000> "SPI"
         Tag <0x40007000 0x1000> "DACs"
