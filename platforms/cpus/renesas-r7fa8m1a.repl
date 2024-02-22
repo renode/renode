@@ -407,6 +407,7 @@ sysbus:
         Tag <0x4001b000,0x4001b317> "CPU_DBG" // Debug Function
         Tag <0x4001c100,0x4001c143> "FCACHE" // Flash Cache
         Tag <0x4001e000,0x4001ee2b> "SYSC" // System Control
+        Tag <0x4001e03c,0x4001e03d> "OSCSF" 0x69 // Oscillation Stabilization Flag Register
         Tag <0x4011b17c,0x4011b183> "TSD" // Temperature Sensor Data
         Tag <0x4011c000,0x4011c043> "FLAD" // Data Flash
         Tag <0x4011e000,0x4011e817> "FACI" // Flash Application Command Interface
