@@ -90,7 +90,8 @@ agt1: Timers.RenesasRA_AGT @ sysbus 0x40221100
 
 sci0: UART.RenesasRA_SCI @ sysbus <0x40358000,0x4035808b>
 
-portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40040D00
+portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40400D00
+    version: Version.RA8
 
 port0: GPIOPort.RenesasRA8_GPIO @ {
         sysbus 0x40400000;
