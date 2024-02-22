@@ -23,7 +23,7 @@ ${MULTICORE_ZYNQ_7000}=     SEPARATOR=
 ...  ${SPACE*4}frequency: 667000000                             ${\n}
 ...                                                             ${\n}
 ...  gic:                                                       ${\n}
-...  ${SPACE*4}\[2-3\] -> cpu1@\[0-1\]                          ${\n}
+...  ${SPACE*4}\[4-5\] -> cpu1@\[0-1\]                          ${\n}
 ...                                                             ${\n}
 ...  slcr:                                                      ${\n}
 ...  ${SPACE*4}cpu1: cpu1                                       ${\n}
