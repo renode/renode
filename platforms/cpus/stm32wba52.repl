@@ -52,24 +52,24 @@ gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x42020000, +0x400>
     outputSpeedResetValue: 0x08000000
     pullUpPullDownResetValue: 0x64000000
     numberOfAFs: 16
-    [0-15] -> exti@[0-15]
+    [0-15] -> exti#0@[0-15]
 
 gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x42020400, +0x400>
     modeResetValue: 0xFFFFFEBF
     outputSpeedResetValue: 0x00000080
     pullUpPullDownResetValue: 0x00000100
     numberOfAFs: 16
-    [0-15] -> exti@[0-15]
+    [0-15] -> exti#1@[0-15]
 
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x42020800, +0x400>
     modeResetValue: 0xFC000000
     numberOfAFs: 16
-    [0-15] -> exti@[0-15]
+    [0-15] -> exti#2@[0-15]
 
 gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x42021C00, +0x400>
     modeResetValue: 0x000000C0
     numberOfAFs: 16
-    [0-15] -> exti@[0-15]
+    [0-15] -> exti#7@[0-15]
 
 rom: Memory.MappedMemory @ sysbus 0x1FFF0000
     size: 0x10000
