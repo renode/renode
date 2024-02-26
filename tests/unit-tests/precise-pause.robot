@@ -197,3 +197,35 @@ LED Tester Assertion Triggered By PWM Should Not Log Errors
     # There should be a warning but no errors
     Wait For Log Entry       Failed to restart translation block for precise pause  keep=true
     Should Not Be In Log     ${EMPTY}  level=Error
+
+Log Tester Assert Should Precisely Pause Emulation
+    Create Log Tester        5
+    Create Machine With Button And LED  pwm_shell  led_port=B  led_pin=10
+
+    ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true  pauseEmulation=true
+    ${pwm}=  Set Variable    ${pwm.groups[0]}
+
+    Write Line To Uart       pwm cycles ${pwm} 3 256 127  waitForEcho=false
+
+    Provides                 waiting-for-unhandled-write-log
+
+    Wait For Log Entry       Unhandled write to offset 0x1C.  pauseEmulation=true
+    Emulation Should Be Paused At Time  00:00:00.001297
+
+    Provides                 paused-at-log-assertion
+
+Log Tester Should Not Be In Log Assert Should Precisely Pause Emulation
+    Requires                 paused-at-log-assertion
+
+    Should Not Be In Log     No such random message in log  timeout=2  pauseEmulation=true
+    # The time gets rounded to the sync point
+    Emulation Should Be Paused At Time  00:00:02.001300
+
+Log Tester Should Not Be In Log Assert Should Not Pause Emulation Later If The Matching String Actually Gets Logged
+    Requires                 waiting-for-unhandled-write-log
+
+    Run Keyword And Expect Error  *Unexpected line detected in the log*  Should Not Be In Log  Unhandled write to offset 0x1C.  timeout=2  pauseEmulation=true
+    Emulation Should Be Paused At Time  00:00:00.001297
+
+    Execute Command  emulation RunFor "3"
+    Emulation Should Be Paused At Time  00:00:03.001297
