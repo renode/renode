@@ -1,7 +1,7 @@
 *** Variables ***
 ${URL}                  https://dl.antmicro.com/projects/renode
 ${AGT_ELF}              renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
-${HELLO_WORLD_ELF}      ra6m5-hello_world.elf-s_294808-99eaeb76d73e9a860fa749433886da1aa6ebdd1a
+${HELLO_WORLD_ELF}      ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
 
 ${LED_REPL}             SEPARATOR=\n
 ...  """
@@ -9,6 +9,12 @@ ${LED_REPL}             SEPARATOR=\n
 ...
 ...  port6:
 ...  ${SPACE*4}10 -> led@0
+...  """
+
+${BUTTON_REPL}          SEPARATOR=\n
+...  """
+...  button: Miscellaneous.Button @ port8 4
+...  ${SPACE*4}-> port8@4
 ...  """
 
 *** Keywords ***
@@ -74,11 +80,29 @@ Should Run Periodically Blink LED
 
 Should Run Hello World Demo
     Prepare Machine             ${HELLO_WORLD_ELF}
+    Execute Command             machine LoadPlatformDescriptionFromString ${BUTTON_REPL}
     Prepare UART Tester
 
     Start Emulation
     Wait For Line On Uart       Hello world!
     Wait For Line On Uart       Blinking available LEDs with 1Hz frequency: P1546, P1545, P1537, P1538, P1539, P1541
+    Wait For Line On Uart       LEDS OFF
+    Wait For Line On Uart       LEDS ON
+    Wait For Line On Uart       LEDS OFF
+    Wait For Line On Uart       LEDS ON
+
+    # Test GPIO IRQ, button (PORT8.4) allows to toggle blinking
+
+    # Stop blinking
+    Execute Command             port8.button PressAndRelease
+    Wait For Line On Uart       Blinking has been disabled
+    # LEDS OFF and LEDS ON messages shouldn't be printed anymore
+    Should Not Be On Uart       LEDS OFF   timeout=1
+    Should Not Be On Uart       LEDS ON   timeout=1
+
+    # Star blinking again
+    Execute Command             port8.button PressAndRelease
+    Wait For Line On Uart       Blinking has been enabled
     Wait For Line On Uart       LEDS OFF
     Wait For Line On Uart       LEDS ON
     Wait For Line On Uart       LEDS OFF
