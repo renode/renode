@@ -149,6 +149,10 @@ quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
 
 siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
+    IRQ1 -> nvic0@53
+    IRQ2 -> nvic0@54
+    IRQ3 -> nvic0@55
+    IRQ4 -> nvic0@56
 
 swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
     -> nvic0@42
