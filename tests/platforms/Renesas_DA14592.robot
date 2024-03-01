@@ -31,9 +31,16 @@ Test Watchdog
         Wait For Log Entry      wdog: Ticker value set to: 0x1FFF
     END
 
+    # After NMI exception, binary falls into while(true) loop while waiting for the watchdog to reset the machine.
+    # We set the quantum and advance immediately to speed up the test.
+    Execute Command         emulation SetGlobalQuantum "0.001"
+    Execute Command         emulation SetAdvanceImmediately true
     # The application loops waiting for the watchdog to reset the machine.
-    Wait For Log Entry      wdog: Limit reached
+    Wait For Log Entry      wdog: Limit reached     timeout=85
     Wait For Log Entry      wdog: Triggering IRQ
+    Execute Command         pause
+    # It should take about 160ms of virtual time after NMI to reset the machine.
+    Execute Command         emulation RunFor "0.17"
     Wait For Log Entry      wdog: Limit reached
     Wait For Log Entry      wdog: Reseting machine
 

@@ -70,6 +70,7 @@ uart1: UART.RenesasDA14_UART @ sysbus 0x50020100
 
 wdog: Timers.RenesasDA14_Watchdog @ sysbus 0x50000700
     frequency: 32000
+    nvic: nvic_m33
 
 gpadc: Analog.RenesasDA14_GPADC @ sysbus 0x50040900
     IRQ -> nvic_m33@25
