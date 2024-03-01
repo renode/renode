@@ -167,15 +167,19 @@ swt3: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40070000
     -> nvic0@58
 
 stm0: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40274000
+    clockFrequency: 48_000_000
     -> nvic0@39
 
 stm1: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40474000
+    clockFrequency: 48_000_000
     -> nvic0@40
 
 stm2: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40478000
+    clockFrequency: 48_000_000
     -> nvic0@41
 
 stm3: Timers.S32K3XX_SystemTimerModule @ sysbus 0x4047C000
+    clockFrequency: 48_000_000
     -> nvic0@57
 
 pit0: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B0000
