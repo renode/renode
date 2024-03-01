@@ -100,6 +100,7 @@
 - tests/unit-tests/non-blockng-step.robot
 - tests/platforms/STM32L072.robot
 - tests/unit-tests/hifive1-pmp.robot
+- tests/unit-tests/hifive1-gpio-int.robot
 - tests/unit-tests/real-time-clock-mode.robot
 - tests/platforms/MAX32650.robot
 - tests/unit-tests/pmp.robot
