@@ -222,6 +222,8 @@ lpspi4: SPI.IMXRT_LPSPI @ sysbus 0x404BC000
 lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x404C0000
     -> nvic0@170
 
+flex_io: Miscellaneous.S32K3XX_FlexIO @ sysbus 0x40324000
+
 lpuart0: UART.Kinetis_LPUART @ sysbus 0x40328000
     frequency: 48000000
     fifoSize: 16
@@ -450,7 +452,6 @@ sysbus:
         // Communication
         Tag <0x40350000 0x174> "LPI2C_0"
         Tag <0x40354000 0x174> "LPI2C_1"
-        Tag <0x40324000 0x920> "FlexIO"
         Tag <0x40304000 0xDB0> "CAN_0"
         Tag <0x40307000 0x200> "CAN_0 filter"
         Tag <0x40308000 0xDB0> "CAN_1"
