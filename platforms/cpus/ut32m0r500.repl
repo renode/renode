@@ -35,6 +35,25 @@ timer1: Timers.ARM_SP804_Timer @ sysbus 0x40002000
     frequency: 50000000
     -> nvic@2
 
+gpio0: GPIOPort.ARM_AHB_GPIO @ sysbus 0x40020000
+    -> nvic@22
+
+gpio1: GPIOPort.ARM_AHB_GPIO @ sysbus 0x40021000
+    hasDedicatedIRQs: true
+    CombinedIRQ -> nvic@23
+    DedicatedIRQ0 -> nvic@5
+    DedicatedIRQ1 -> nvic@6
+    DedicatedIRQ2 -> nvic@7
+    DedicatedIRQ3 -> nvic@8
+    DedicatedIRQ4 -> nvic@9
+    DedicatedIRQ5 -> nvic@10
+    DedicatedIRQ6 -> nvic@11
+    DedicatedIRQ7 -> nvic@12
+
+gpio2: GPIOPort.ARM_AHB_GPIO @ sysbus 0x40022000
+    alternateFunctionResetValue: 0xFFFF
+    -> nvic@24
+
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     systickFrequency: 72000000
@@ -57,9 +76,6 @@ sysbus:
         Tag <0x4000C000 0x1000> "NFC"
         Tag <0x4000E000 0x1000> "Comparators"
         Tag <0x4000F000 0x1000> "ADC"
-        Tag <0x40020000 0x1000> "AHB GPIO Bank 0"
-        Tag <0x40021000 0x1000> "AHB GPIO Bank 1"
-        Tag <0x40022000 0x1000> "AHB GPIO Bank 2"
         Tag <0x40023000 0x1000> "AHB CAN 0"
         Tag <0x40024000 0x1000> "AHB CAN 1"
         Tag <0x40020000 0x1000> "System Controller"
