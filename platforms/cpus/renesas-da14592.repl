@@ -30,11 +30,17 @@ rom: Memory.MappedMemory @ {
     }
     size: 0x48000
 
-eflash_code: Memory.MappedMemory @ sysbus 0xA00000
-    size: 0x40800
+eflash_data_header: Memory.MappedMemory @ {
+    sysbus 0xA00000;
+    sysbus 0x31000000
+}
+    size: 0x2400
 
-eflash_data: Memory.MappedMemory @ sysbus 0x31000000
-    size: 0x40800
+eflash_data_text: Memory.MappedMemory @ {
+    sysbus 0xA02400;
+    sysbus 0x31002400
+}
+    size: 0x3E400
 
 qpic_m: Memory.MappedMemory @ {
         sysbus 0x16000000;
@@ -83,6 +89,13 @@ dma: DMA.RenesasDA14_DMA @ sysbus 0x50060200
 i2c: I2C.RenesasDA_I2C @ sysbus 0x50020300
     -> nvic_m33@5
 
+general_regs: Miscellaneous.RenesasDA14_GeneralRegisters @ sysbus 0x50000000
+    xtal32m: xtal32m_regs
+    rom: rom
+    eflashDataText: eflash_data_text
+
+xtal32m_regs: Miscellaneous.RenesasDA14_XTAL32MRegisters @ sysbus 0x50010000
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
@@ -107,8 +120,6 @@ sysbus:
         Tag <0x50020400,0x5002041F> "GENERAL_PURPOSE_or_ADC_1" // GENERAL_PURPOSE_or_ADC_1 registers
         Tag <0x50050300,0x50050317> "GENERAL_PURPOSE" // GENERAL_PURPOSE registers
         Tag <0x50000200,0x5000029b> "POWER_DOMAIN_CONTROLLER" // POWER_DOMAIN_CONTROLLER registers
-        Tag <0x50000000,0x500000FF> "CLOCK_GENERATION_CONTROLLER" // CLOCK_GENERATION_CONTROLLER registers
-        Tag <0x50010000,0x5001006B> "CLOCK_GENERATION_CONTROLLER2" // CLOCK_GENERATION_CONTROLLER2 registers
         Tag <0x50020504,0x5002050F> "CLOCK_GENERATION_CONTROLLER3" // CLOCK_GENERATION_CONTROLLER3 registers
         Tag <0x50040C04,0x50040C07> "CLOCK_GENERATION_CONTROLLER4" // CLOCK_GENERATION_CONTROLLER4 registers
         Tag <0x50050500,0x50050503> "CLOCK_GENERATION_CONTROLLER5" // CLOCK_GENERATION_CONTROLLER5 registers

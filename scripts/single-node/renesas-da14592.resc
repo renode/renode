@@ -3,22 +3,25 @@
 
 $name?="Renesas DA14592"
 
-$bin?=@https://dl.antmicro.com/projects/renode/renesas-da1459x-hello_world.elf-s_1266192-ec30b009ff7f1c806e6905030626dce2374817db
+$booter?=@https://dl.antmicro.com/projects/renode/renesas_da1459x--bootrom_dump.bin-s_294912-5924a2e7cd41cd4ee7d6698b9a365f6fa3123322
+$bin?=@https://dl.antmicro.com/projects/renode/renesas-da1459x-uart_hello_world.bin-s_42820-89e34783fa568d03c826357dceaa80c3637c14e1
+$symbolsElf?=@https://dl.antmicro.com/projects/renode/renesas-da1459x-uart_hello_world.elf-s_1302844-67f230aeae16f04f9e6e9e1ac1ab1ceb133dc2a1
+$manufacturingTrimValues?=@https://dl.antmicro.com/projects/renode/renesas_da1459x--manufacturing-trim-values.bin-s_2047-da7dd396378062293362bbe2d200650ba1af325f
 
 using sysbus
 mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/renesas-da14592.repl
 
-# Software specific mock
-sysbus Tag <0x50000028 +4> "SYS_STAT_REG" 0x605
-
 showAnalyzer uart1
 
 macro reset
 """
     cmac IsHalted true
-    sysbus LoadELF $bin useVirtualAddress=true
+    sysbus LoadBinary $booter 0x0
+    sysbus LoadBinary $bin 0x31000000
+    sysbus LoadSymbolsFrom $symbolsElf
+    sysbus LoadBinary $manufacturingTrimValues 0x31040000
 """
 
 runMacro $reset
