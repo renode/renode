@@ -27,7 +27,7 @@ Test Watchdog
     Execute Command         sysbus.wdog Enabled true
 
     # The application initializes the wdog and then loops to refresh the watchdog 100 times.
-    FOR  ${i}  IN RANGE  101
+    FOR  ${i}  IN RANGE  100
         Wait For Log Entry      wdog: Ticker value set to: 0x1FFF
     END
 
