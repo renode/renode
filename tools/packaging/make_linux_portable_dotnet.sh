@@ -24,6 +24,14 @@ cp \
    $RENODE_OUTPUT_DIR/libclrjit.so \
    $RENODE_OUTPUT_DIR/libSystem.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.Security.Cryptography.Native.OpenSsl.so \
+   $RENODE_OUTPUT_DIR/libMonoPosixHelper.so \
+   $RENODE_OUTPUT_DIR/libSystem.Globalization.Native.so \
+   $RENODE_OUTPUT_DIR/libSystem.IO.Compression.Native.so \
+   $RENODE_OUTPUT_DIR/libSystem.Net.Security.Native.so \
+   $RENODE_OUTPUT_DIR/libcoreclrtraceptprovider.so \
+   $RENODE_OUTPUT_DIR/libdbgshim.so \
+   $RENODE_OUTPUT_DIR/libmscordaccore.so \
+   $RENODE_OUTPUT_DIR/libmscordbi.so \
    $DESTINATION
 
 # Handle a very rare case where the binary doesn't have the execute permission after building.
