@@ -418,6 +418,26 @@ mc_cgm_mux_19_css: Python.PythonPeripheral @ sysbus 0x402D87C4
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
+gmac0: Network.S32K3XX_GMAC @ sysbus 0x40484000
+    systemClockFrequency: 50000000
+    -> nvic0@224
+    Channel0TX -> nvic0@225
+    Channel0RX -> nvic0@226
+    Channel1TX -> nvic0@227
+    Channel1RX -> nvic0@228
+    Channel2TX -> nvic0@229
+    Channel2RX -> nvic0@230
+
+gmac1: Network.S32K3XX_GMAC @ sysbus 0x40488000
+    systemClockFrequency: 50000000
+    -> nvic0@171
+    Channel0TX -> nvic0@172
+    Channel0RX -> nvic0@233
+    Channel1TX -> nvic0@234
+    Channel1RX -> nvic0@235
+    Channel2TX -> nvic0@236
+    Channel2RX -> nvic0@237
+
 sysbus:
     init:
         // Core and Systems
@@ -567,8 +587,6 @@ sysbus:
         Tag <0x40323000 0x200> "CAN_7 filter"
         Tag <0x4036C000 0xE4> "SAI_0"
         Tag <0x404DC000 0xE4> "SAI_1"
-        Tag <0x40484000 0x1270> "GMAC_0"
-        Tag <0x40488000 0x1270> "GMAC_1"
         Tag <0x404CC000 0x940> "QuadSPI"
         Tag <0x67000000 0x400> "QuadSPI RX buffer"
         Tag <0x68000000 0x80> "QuadSPI_ARDB"
