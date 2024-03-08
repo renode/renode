@@ -38,3 +38,6 @@
 [submodule "lib/bc-csharp"]
 	path = lib/bc-csharp
 	url = https://github.com/antmicro/bc-csharp.git
+[submodule "tools/dts2repl"]
+	path = tools/dts2repl
+	url = https://github.com/antmicro/dts2repl.git
