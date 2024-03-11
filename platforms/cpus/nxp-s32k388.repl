@@ -578,3 +578,5 @@ sysbus:
         // Mocks
         Tag <0x402D4004 0x4> "Oscillator Status Register (STAT)" 0x80000000
         Tag <0x402CC004 0x4> "Oscillator Status Register (SXOSC_STAT)" 0x80000000
+        Tag <0x402E0004 0x4> "PLL Status Register (PLLSR)" 0x4
+        Tag <0x402E4004 0x4> "PLL Status Register (PLLSR)" 0x4
