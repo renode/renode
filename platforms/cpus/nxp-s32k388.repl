@@ -310,7 +310,27 @@ lpuart15: UART.Kinetis_LPUART @ sysbus 0x404A8000
     fifoSize: 4
     IRQ -> nvic0@156
 
-mc_cgm_mux_6_css: Python.PythonPeripheral @ sysbus 0x402D8484
+mc_cgm_mux_0_css: Python.PythonPeripheral @ sysbus 0x402D8304
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_1_css: Python.PythonPeripheral @ sysbus 0x402D8344
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_2_css: Python.PythonPeripheral @ sysbus 0x402D8384
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_3_css: Python.PythonPeripheral @ sysbus 0x402D83C4
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_4_css: Python.PythonPeripheral @ sysbus 0x402D8404
     size: 0x4
     initable: true
     filename: "scripts/pydev/flipflop.py"
@@ -320,7 +340,72 @@ mc_cgm_mux_5_css: Python.PythonPeripheral @ sysbus 0x402D8444
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
+mc_cgm_mux_6_css: Python.PythonPeripheral @ sysbus 0x402D8484
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_7_css: Python.PythonPeripheral @ sysbus 0x402D84C4
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_8_css: Python.PythonPeripheral @ sysbus 0x402D8504
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_9_css: Python.PythonPeripheral @ sysbus 0x402D8544
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_10_css: Python.PythonPeripheral @ sysbus 0x402D8584
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 mc_cgm_mux_11_css: Python.PythonPeripheral @ sysbus 0x402D85C4
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_12_css: Python.PythonPeripheral @ sysbus 0x402D8604
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_13_css: Python.PythonPeripheral @ sysbus 0x402D8644
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_14_css: Python.PythonPeripheral @ sysbus 0x402D8684
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_15_css: Python.PythonPeripheral @ sysbus 0x402D86C4
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_16_css: Python.PythonPeripheral @ sysbus 0x402D8704
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_17_css: Python.PythonPeripheral @ sysbus 0x402D8744
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_18_css: Python.PythonPeripheral @ sysbus 0x402D8784
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+mc_cgm_mux_19_css: Python.PythonPeripheral @ sysbus 0x402D87C4
     size: 0x4
     initable: true
     filename: "scripts/pydev/flipflop.py"
