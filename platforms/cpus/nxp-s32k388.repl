@@ -154,6 +154,12 @@ siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
     IRQ3 -> nvic0@55
     IRQ4 -> nvic0@56
 
+mc_me: Miscellaneous.S32KXX_ModeEntryModule @ sysbus 0x402DC000
+    core0: cpu0
+    core1: cpu1
+    core4: cpu2
+    core3: cpu3
+
 swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
     -> nvic0@42
 
@@ -485,21 +491,5 @@ sysbus:
         Tag <0x4037C000 0x14> "TEMPSENSE"
 
         // Mocks
-        Tag <0x402DC310 0x4> "PRTN1_COFB0_STAT" 0xFFFFFFFF
-        Tag <0x402DC314 0x4> "PRTN1_COFB1_STAT" 0xFFFFFFFF
         Tag <0x402D4004 0x4> "Oscillator Status Register (STAT)" 0x80000000
         Tag <0x402CC004 0x4> "Oscillator Status Register (SXOSC_STAT)" 0x80000000
-        Tag <0x402DC110 0x4> "PRTN0_COFB0_STAT" 0xFFFFFFFF
-        Tag <0x402DC114 0x4> "PRTN0_COFB1_STAT" 0xFFFFFFFF
-        Tag <0x402DC318 0x4> "PRTN1_COFB2_STAT" 0xFFFFFFFF
-        Tag <0x402DC31C 0x4> "PRTN1_COFB3_STAT" 0xFFFFFFFF
-        Tag <0x402DC510 0x4> "PRTN2_COFB0_STAT" 0xFFFFFFFF
-        Tag <0x402DC514 0x4> "PRTN2_COFB1_STAT" 0xFFFFFFFF
-        Tag <0x402DC518 0x4> "PRTN2_COFB2_STAT" 0xFFFFFFFF
-        Tag <0x402DC108 0x4> "PRTN0_STAT" 0x1
-        Tag <0x402DC308 0x4> "PRTN1_STAT" 0x1
-        Tag <0x402DC508 0x4> "PRTN2_STAT" 0x1
-        Tag <0x402DC148 0x4> "PRTN0_CORE0_STAT" 0x1
-        Tag <0x402DC168 0x4> "PRTN0_CORE1_STAT" 0x80000001
-        Tag <0x402DC1A8 0x4> "PRTN0_CORE3_STAT" 0x80000001
-        Tag <0x402DC1C8 0x4> "PRTN0_CORE4_STAT" 0x80000001
