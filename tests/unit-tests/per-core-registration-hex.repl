@@ -1,12 +1,12 @@
 cpu1: CPU.CortexM @ sysbus
     cpuType: "cortex-m4"
-    nvic: nvic
+    nvic: nvic1
     id: 0
 
 
 cpu2: CPU.CortexM @ sysbus
     cpuType: "cortex-m4"
-    nvic: nvic
+    nvic: nvic2
     id: 1
 
 
@@ -27,7 +27,18 @@ core2_mem: Memory.MappedMemory @ {
 }
     size: 0x4000
 
-
-nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+nvic1: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu1
+    }
     priorityMask: 0xF0
     systickFrequency: 72000000
+    -> cpu1@0
+
+nvic2: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu2
+    }
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    -> cpu2@0
