@@ -41,6 +41,8 @@ find $RENODE_ROOT_DIR/tests/unit-tests \
 # `tests.yaml` should only list robot files included in the original tests.yaml
 sed '/csproj$/d' $BASE/tests/tests.yaml > $DESTINATION/tests/tests.yaml
 
+$BASE/tools/packaging/common_copy_dts2repl_version_script.sh $BASE $DESTINATION
+
 $BASE/tools/packaging/common_copy_licenses.sh $DESTINATION/licenses linux
 
 cp $RENODE_ROOT_DIR/.renode-root $DESTINATION

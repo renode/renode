@@ -38,6 +38,8 @@ cp $BASE/tests/requirements.txt $DIR/tests/requirements.txt
 
 $BASE/tools/packaging/common_copy_licenses.sh $DIR/licenses $OS_NAME
 
+$BASE/tools/packaging/common_copy_dts2repl_version_script.sh $BASE $DIR
+
 function copy_bash_tests_scripts() {
     TEST_SCRIPT=$1
     COMMON_SCRIPT=$2
@@ -53,4 +55,3 @@ function copy_bash_tests_scripts() {
 
     cp -r $BASE/tools/common.sh $COMMON_SCRIPT
 }
-

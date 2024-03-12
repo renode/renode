@@ -28,6 +28,14 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 
+# In packages the DTS2REPL_VERSION variable will be set to specific dts2repl version.
+# The bottom part of this script will be copied directly to the package, but the
+# upper part will contain a single line:
+#   DTS2REPL_VERSION=<commit-sha>
+#
+# To make it easy to cut the head of this script we leave the marker here:
+# END OF VERSION CHECK
+
 case $1 in
   "--commit"|"")
     echo "$DTS2REPL_VERSION"
