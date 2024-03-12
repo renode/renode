@@ -88,7 +88,41 @@ agt1: Timers.RenesasRA_AGT @ sysbus 0x40221100
     CompareMatchA -> icu@0x04A
     CompareMatchB -> icu@0x04B
 
-sci0: UART.RenesasRA_SCI @ sysbus <0x40358000,0x4035808b>
+sci0: UART.RenesasRA8M1_SCI @ sysbus 0x40358000
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x124
+    TransmitIRQ -> icu@0x125
+    TransmitEndIRQ -> icu@0x126
+
+sci1: UART.RenesasRA8M1_SCI @ sysbus 0x40358100
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x12B
+    TransmitIRQ -> icu@0x12C
+    TransmitEndIRQ -> icu@0x12D
+
+sci2: UART.RenesasRA8M1_SCI @ sysbus 0x40358200
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x132
+    TransmitIRQ -> icu@0x133
+    TransmitEndIRQ -> icu@0x134
+
+sci3: UART.RenesasRA8M1_SCI @ sysbus 0x40358300
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x139
+    TransmitIRQ -> icu@0x13A
+    TransmitEndIRQ -> icu@0x13B
+
+sci4: UART.RenesasRA8M1_SCI @ sysbus 0x40358400
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x140
+    TransmitIRQ -> icu@0x141
+    TransmitEndIRQ -> icu@0x142
+
+sci9: UART.RenesasRA8M1_SCI @ sysbus 0x40358900
+    frequency: 8_000_000
+    ReceiveIRQ -> icu@0x163
+    TransmitIRQ -> icu@0x164
+    TransmitEndIRQ -> icu@0x165
 
 portMisc: GPIOPort.RenesasRA_GPIOMisc @ sysbus 0x40400D00
     version: Version.RA8
