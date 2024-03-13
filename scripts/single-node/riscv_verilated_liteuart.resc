@@ -8,7 +8,7 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/litex_vexriscv_verilated_liteuart.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/zephyr--verilated_liteuart--shell.elf-s_864780-63c7e83fb01451ac6683434997f6f03c6a8f9079
-$uartLinux?=@https://dl.antmicro.com/projects/renode/libVliteuart-Linux-x86_64-1116123840.so-s_2040888-d31aa31e74329fc50e5e36ca0540de2571b8e3de
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVliteuart-Linux-x86_64-8247720497.so-s_2065832-a41433a1ed9bd5d28414ffe64d677ad9f86d0d3b
 $uartWindows?=@https://dl.antmicro.com/projects/renode/libVliteuart-Windows-x86_64-1116123840.dll-s_14824753-d84d662cba6d457d55ac8b17bc6cd473d6d553ca
 $uartMacOS?=@https://dl.antmicro.com/projects/renode/libVliteuart-macOS-x86_64-1116123840.dylib-s_213784-da6594d7f7a5ef6fd3d52a9a64d6fcfe3d91d935
 
