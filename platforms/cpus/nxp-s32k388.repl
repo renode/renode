@@ -207,7 +207,7 @@ pit3: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x40300000
     oscillatorFrequency: 12_000_000
     -> nvic0@99
 
-rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000 
+rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000
     -> nvic0@102
 
 lpi2c0: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ sysbus 0x40350000
