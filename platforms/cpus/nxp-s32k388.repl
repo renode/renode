@@ -318,6 +318,28 @@ lpuart15: UART.Kinetis_LPUART @ sysbus 0x404A8000
     fifoSize: 4
     IRQ -> nvic0@156
 
+can0: CAN.S32K3XX_FlexCAN @ sysbus 0x40304000
+    numberOfMessageBuffers: 96
+    enhancedRxFifoSize: 20
+
+can1: CAN.S32K3XX_FlexCAN @ sysbus 0x40308000
+    numberOfMessageBuffers: 96
+    enhancedRxFifoSize: 20
+
+can2: CAN.S32K3XX_FlexCAN @ sysbus 0x4030C000
+    numberOfMessageBuffers: 96
+    enhancedRxFifoSize: 20
+
+can3: CAN.S32K3XX_FlexCAN @ sysbus 0x40310000
+
+can4: CAN.S32K3XX_FlexCAN @ sysbus 0x40314000
+
+can5: CAN.S32K3XX_FlexCAN @ sysbus 0x40318000
+
+can6: CAN.S32K3XX_FlexCAN @ sysbus 0x4031C000
+
+can7: CAN.S32K3XX_FlexCAN @ sysbus 0x40320000
+
 mc_cgm_mux_0_css: Python.PythonPeripheral @ sysbus 0x402D8304
     size: 0x4
     initable: true
@@ -569,22 +591,6 @@ sysbus:
         Tag <0x40080000 0xA0> "TRGMUX"
 
         // Communication
-        Tag <0x40304000 0xDB0> "CAN_0"
-        Tag <0x40307000 0x200> "CAN_0 filter"
-        Tag <0x40308000 0xDB0> "CAN_1"
-        Tag <0x4030B000 0x200> "CAN_1 filter"
-        Tag <0x4030C000 0xDB0> "CAN_2"
-        Tag <0x4030F000 0x200> "CAN_2 filter"
-        Tag <0x40310000 0xDB0> "CAN_3"
-        Tag <0x40313000 0x200> "CAN_3 filter"
-        Tag <0x40314000 0xDB0> "CAN_4"
-        Tag <0x40317000 0x200> "CAN_4 filter"
-        Tag <0x40318000 0xDB0> "CAN_5"
-        Tag <0x4031B000 0x200> "CAN_5 filter"
-        Tag <0x4031C000 0xDB0> "CAN_6"
-        Tag <0x4031F000 0x200> "CAN_6 filter"
-        Tag <0x40320000 0xDB0> "CAN_7"
-        Tag <0x40323000 0x200> "CAN_7 filter"
         Tag <0x4036C000 0xE4> "SAI_0"
         Tag <0x404DC000 0xE4> "SAI_1"
         Tag <0x404CC000 0x940> "QuadSPI"

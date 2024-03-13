@@ -1,0 +1,12 @@
+$name?="mr_canhubk3"
+
+mach create $name
+machine LoadPlatformDescription $ORIGIN/mr_canhubk3.repl
+
+macro reset
+"""
+    sysbus LoadELF $bin false true sysbus.cpu0
+    sysbus.cpu0 VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+"""
+
+runMacro $reset
