@@ -210,6 +210,12 @@ pit3: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x40300000
 rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000 
     -> nvic0@102
 
+lpi2c0: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ sysbus 0x40350000
+    -> nvic0@161
+
+lpi2c1: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ sysbus 0x40354000
+    -> nvic0@162
+
 lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x40358000
     -> nvic0@165
 
@@ -541,8 +547,6 @@ sysbus:
         Tag <0x40080000 0xA0> "TRGMUX"
 
         // Communication
-        Tag <0x40350000 0x174> "LPI2C_0"
-        Tag <0x40354000 0x174> "LPI2C_1"
         Tag <0x40304000 0xDB0> "CAN_0"
         Tag <0x40307000 0x200> "CAN_0 filter"
         Tag <0x40308000 0xDB0> "CAN_1"
