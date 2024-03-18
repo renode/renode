@@ -1,0 +1,22 @@
+$name?="SiFive-FU740"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/sifive-fu740.repl
+
+$sd?=@https://dl.antmicro.com/projects/renode/zephyr-ext-test-sd.img-s_1310720-55c5fbcb6be6fe138ebd08d31f70552609c9c015
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr--fs_sample.elf-s_1030024-5915de196eecb6f143ec26dc4148eab574c0f327
+
+showAnalyzer uart0
+
+# default Zephyr config requires the ext2 filesystem starting on 2082 sector.
+# The Zephyr ext2 filesystem driver doesn't support all features, some of the should be turned off.
+# Example command that creates filesystem compatible with the Zephyr driver:
+# mkfs.ext2 -O filetype,-ext_attr,-resize_inode,-dir_index,-sparse_super,-large_file [device]
+machine SdCardFromFile $sd sysbus.qspi2 0 0x140000 False "sd"
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
