@@ -3,6 +3,116 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.15.0 - 2024.03.18
+-------------------
+
+Added architecture support:
+
+* initial support for ARMv7-R and Cortex-R8, verified with ThreadX and Zephyr
+* initial support for Cortex-A55
+* initial support for Cortex-M23 and Cortex-M85
+* support for RISC-V Bit Manipulation extensions - Zba, Zbb, Zbc and Zbs
+* support for RISC-V Half-precision Floating Point (Zfh) extension, including vector operations
+* support for RISC-V Andes AndeStar V5 ISA extension
+
+Added and improved platform descriptions:
+
+* generic Cortex-R8 platform
+* Renesas EK-RA2E1 board with R7FA2E1A9 SoC
+* Arduino Uno R4 Minima platform with Renesas F7FA4M1A SoC
+* Renesas CK-RA6M5 board with R7FA6M5B SoC, with initial radio support
+* Renesas EK-RA8M1 board with R7FA8M1A SoC
+* Renesas R7FA2L1A SoC
+* Renesas DA14592 SoC
+* Renesas RZ/T2M-RSK board with RZ/T2M SoC
+* Gaisler GR712RC SoC with UART, timer, GPIO, FTMC and Ethernet
+* Gaisler GR716 SoC with UART, timer and GPIO
+* Gaisler UT32M0R500 SoC with UART, timer and GPIO
+* NXP S32K388 with UART, timers, watchdog, SIUL2, SPI, Mode entry module and others
+* NXP LPC2294 SoC with UART, CAN, timer and interrupts support
+* Xilinx Zynq UltraScale+ MPSoC platform support with single core Cortex-A53, UART, GPIO and I2C
+* singlecore Cortex-R5 part of Zynq UltraScale+ MPSoC platform with UART, TTC, Ethernet and GPIO
+* Nuvoton NPCX9 platform support with UART, various timers, SPI, flash and other peripherals
+* ST Nucleo H753ZI with STM32H753 SoC with a range of ST peripherals
+* updates to Armv8-A platforms
+* updates to Ambiq Apollo4
+* updates to Xilinx Zynq 7000
+* various updates in STM32 platform files
+
+Added peripheral models:
+
+* ABRTCMC, I2C-based RTC
+* Altera JTAG UART
+* Ambiq Apollo4 Watchdog
+* Arm Global Timer
+* Arm Private Timer
+* Arm SP804 Timer
+* ArmSnoopControlUnit
+* BCM2711 AUX UART
+* BME280 sensor
+* Betrusted EC I2C
+* Betrusted SoC I2C
+* Bosch M_CAN
+* CAN to UART converter
+* Cadence Watchdog Timer
+* Gaisler APBUART
+* Gaisler GPIO
+* GigaDevice GD32 UART
+* HS3001 sensor
+* ICM20948 sensor
+* ICP10101 sensor
+* Infineon SCB UART
+* LINFlexD UART
+* MB85RC1MT Ferroelectric Random Access Memory
+* MXIC MX66UM1G45G flash
+* NPCX FIU
+* NPCX Flash
+* NPCX HFCG
+* NPCX ITIM32
+* NPCX LFCG
+* NPCX MDMA
+* NPCX Monotonic Counter
+* NPCX SPIP
+* NPCX Timer and Watchdog
+* NPCX UART
+* NXP LPC CAN
+* NXP LPC CTimer
+* NXP LPC USART
+* OB1203A sensor
+* PL190 vectored interrupt controller
+* PL330_DMA (CoreLink DMA-330) Controller
+* Renesas DA14 DMA peripheral
+* Renesas DA14 GPIO
+* Renesas DA14 General Purpose Timer
+* Renesas DA14 UART
+* Renesas DA14 I2C
+* Renesas DA16200 Wi-Fi module
+* Renesas RA series AGT
+* Renesas RA series GPIO
+* Renesas RA series GPT
+* Renesas RA series ICU
+* Renesas RA series SCI
+* Renesas RZ/T2M GPIO
+* Renesas RZ/T2M SCI
+* S32K3XX Miscellaneous System Control Module
+* S32K3XX Periodic Interrupt Timer
+* S32K3XX Real Time Clock
+* S32K3XX Software Watchdog Timer
+* S32K3XX System Integration Unit Lite 2
+* S32K3XX System Timer Module
+* S32K3XX FlexIO stub
+* S32K3XX Mode Entry Module
+* SHT45 temperature/humidity sensor
+* SPI NAND flash
+* STM32WBA PWR
+* Samsung K9 NAND Flash
+* Smartbond UART
+* Universal Flash Storage (JESD220F)
+* Universal Flash Storage Host Controller (JESD223E)
+* XMC4XXX UART
+* ZMOD4xxx sensor
+* Zynq 7000 System Level Control Registers
+
 
 1.14.0 - 2023.08.08
 -------------------
