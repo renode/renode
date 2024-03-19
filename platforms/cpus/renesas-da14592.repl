@@ -68,7 +68,7 @@ uart0: UART.RenesasDA14_UART @ sysbus 0x50020000
 uart1: UART.RenesasDA14_UART @ sysbus 0x50020100
     -> nvic_m33@4
 
-wdog: Timers.RenesasDA14_Watchdog @ sysbus 0x50000700
+wdog: Timers.RenesasDA_Watchdog @ sysbus 0x50000700
     frequency: 32000
     nvic: nvic_m33
 
@@ -80,7 +80,7 @@ gpio: GPIOPort.RenesasDA14_GPIO @ sysbus 0x50020600
 dma: DMA.RenesasDA14_DMA @ sysbus 0x50060200
     IRQ -> nvic_m33@1
 
-i2c: I2C.RenesasDA14_I2C @ sysbus 0x50020300
+i2c: I2C.RenesasDA_I2C @ sysbus 0x50020300
     -> nvic_m33@5
 
 sysbus:
