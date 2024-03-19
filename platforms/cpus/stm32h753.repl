@@ -1,5 +1,4 @@
 using "./stm32h743.repl"
 
-sysbus:
-    init add:
-        Tag <0x48021000, 0x480213FF> "CRYPTO"
+crypto: Miscellaneous.Crypto.STM32H7_CRYPTO @ sysbus 0x48021000
+    -> nvic@79
