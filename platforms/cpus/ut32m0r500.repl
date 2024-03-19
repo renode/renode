@@ -35,6 +35,9 @@ timer1: Timers.ARM_SP804_Timer @ sysbus 0x40002000
     frequency: 50000000
     -> nvic@2
 
+adc: Analog.CAES_ADC @ sysbus 0x4000F000
+    -> nvic@21
+
 gpio0: GPIOPort.ARM_AHB_GPIO @ sysbus 0x40020000
     -> nvic@22
 
@@ -81,6 +84,5 @@ sysbus:
         Tag <0x4000B000 0x1000> "Trim Control"
         Tag <0x4000C000 0x1000> "NFC"
         Tag <0x4000E000 0x1000> "Comparators"
-        Tag <0x4000F000 0x1000> "ADC"
         Tag <0x4002F000 0x1000> "System Controller"
         Tag <0xE0000000 0x1000> "Private peripheral bus addresses in the Cortex-M0+"
