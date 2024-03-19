@@ -174,6 +174,12 @@ Test Running the Hello World Zephyr Sample
     Execute Command               sysbus LoadELF ${ZEPHYR_HELLO_WORLD_ELF}
 
     Wait For Line On Uart         Booting Zephyr OS
+    Provides                      zephyr-hello-world-after-booting
+    Wait For Line On Uart         Hello World!
+
+Test Resuming Zephyr Hello World After Deserialization
+    Requires                      zephyr-hello-world-after-booting
+    Execute Command               showAnalyzer ${UART}
     Wait For Line On Uart         Hello World!
 
 Test Running the Zephyr Synchronization Sample

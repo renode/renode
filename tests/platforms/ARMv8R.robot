@@ -919,6 +919,12 @@ Run Zephyr User Space Prod Consumer Sample
     ...                                create_uart_tester=True
 
     Wait For Line On Uart              Booting Zephyr OS build
+    Provides                           zephyr-userspace_prod_consumer-after-booting
+    Wait For Line On Uart              I: SUCCESS
+
+Test Resuming Zephyr User Space Prod Consumer After Deserialization
+    Requires                           zephyr-userspace_prod_consumer-after-booting
+    Execute Command                    showAnalyzer ${UART}
     Wait For Line On Uart              I: SUCCESS
 
 Run Zephyr User Space Shared Mem Sample
