@@ -132,9 +132,12 @@ Should Get Correct Temperature Readouts From ICP10101
     Wait For Line On Uart           I2C bus setup success
     Wait For Line On Uart           ICP Sensor Data
     Wait For Line On Uart           Temperature -000.000
+    Wait For Line On Uart           Pressure\\s+ 29999.820  treatAsRegex=true
 
     Execute Command                 sysbus.sci0.barometer DefaultTemperature 13.5
+    Execute Command                 sysbus.sci0.barometer DefaultPressure 40000
     Wait For Line On Uart           Temperature\\s+013.498  treatAsRegex=true
+    Wait For Line On Uart           Pressure\\s+ 39999.929  treatAsRegex=true
 
 Should Get Correct Readouts from the HS3001
 
