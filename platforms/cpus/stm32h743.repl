@@ -360,6 +360,9 @@ ethernet: Network.SynopsysDWCEthernetQualityOfService @ {
     systemClockFrequency: 50000000
     -> nvic@61
 
+qspi: SPI.STM32H7_QuadSPI @ sysbus 0x52005000
+    -> nvic@92
+
 sysbus:
     init:
         Tag <0x58027000, 0x580273FF> "RAMECC3"
@@ -374,7 +377,6 @@ sysbus:
         Tag <0x52008000, 0x52008FFF> "Delay_Block_SDMMC1"
         Tag <0x52007000, 0x52007FFF> "SDMMC1"
         Tag <0x52006000, 0x52006FFF> "Delay_Block_QUADSPI"
-        Tag <0x52005000, 0x52005FFF> "QUADSPI_control_registers"
         Tag <0x52004000, 0x52004FFF> "FMC_control_registers"
         Tag <0x52003000, 0x52003FFF> "JPEG"
         Tag <0x52000000, 0x52000FFF> "MDMA"

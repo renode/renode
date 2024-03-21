@@ -8,6 +8,9 @@ ${BLINKY}                           ${PROJECT_URL}/zephyr--nucleo-h753zi-blinky.
 ${BUTTON}                           ${PROJECT_URL}/zephyr--nucleo_h753zi_button_sample.elf-s_582696-3d5e6775a24c75e8fff6b812d5bc850b361e3d93
 ${CRYPTO_GCM}                       ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM.elf-s_2136368-45a90683e4f954667a464fc8fa9ce57d0b74ac09
 ${CRYPTO_GCM_IT}                    ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM_IT.elf-s_2137876-ee038aa93bf68cb91af9894e0be9584eec3057e5
+${QSPI_RW}                          ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ReadWrite_IT.elf-s_2146460-5c6870c2698fe33a9ef78ce791d9e83439328cc4
+${QSPI_MemMapped}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_MemoryMapped.elf-s_2152312-faec8bb984c61aabb52ae9eec1598999ea906a1c
+${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ExecuteInPlace.elf-s_2233412-67befe44572c483b242a95ce8e714f75f4e7dc69
 
 ${PLATFORM}                         @platforms/boards/nucleo_h753zi.repl
 
@@ -21,6 +24,14 @@ ${EVAL_STUB}=    SEPARATOR=
 ...  gpioPortA:                                                           ${\n}
 ...  ${SPACE*4}4 -> led3@0                                                ${\n}
 ...  """
+
+# The address of the memory is mentioned in the MCU docs, when the QSPI is configured to operate in memory-mapped mode
+# So it's added along with the external flash
+${EXTERNAL_FLASH}=   SEPARATOR=
+...    """
+...    externalFlash: SPI.Macronix_MX25R @ qspi {underlyingMemory: qspiMappedFlashMemory}   ${\n}
+...    qspiMappedFlashMemory: Memory.MappedMemory @ sysbus 0x90000000 { size: 0x10000000 }  ${\n}
+...    """
 
 *** Keywords ***
 Create Setup
@@ -39,6 +50,11 @@ Create Machine
     Execute Command                 machine LoadPlatformDescription ${PLATFORM}
 
     Execute Command                 sysbus LoadELF @${elf}
+
+Assert PC Equals
+    [Arguments]            ${expected}
+    ${pc}=                 Execute Command  sysbus.cpu PC
+    Should Be Equal As Integers  ${pc}  ${expected}
 
 *** Test Cases ***
 Should Talk Over Ethernet
@@ -123,3 +139,79 @@ Should Encrypt And Decrypt Data in AES GCM Mode With Interrupts
     # See `Should Encrypt And Decrypt Data in AES GCM Mode` for explanation
     Assert LED State                false    testerId=${led3_tester}
     Assert LED State                true     testerId=${led1_tester}
+
+Should Program Flash With QSPI
+    Create Machine                  ${QSPI_RW}  qspi
+    # This sample is built for STM32 Evaluation Kit, which uses the same SoC but has a bit different HW - we only care about LEDs to signal test status
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EVAL_STUB}
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EXTERNAL_FLASH}
+
+    ${led3_tester}=                 Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
+    ${led1_tester}=                 Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
+
+    # Wait for drivers to configure GPIO
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led1_tester}     pauseEmulation=true
+
+    # LED1 means that the data was uploaded to flash, and the comparison with the base was successful
+    # LED2 should inform about comparison success, but we lack the necessary peripherals to configure it
+    # the sample has been modified instead to halt on first comparison error and turn LED3 on
+    Assert LED State                true     testerId=${led1_tester}     pauseEmulation=true     timeout=10
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+    # And again - LED 1 toggles each time a transfer round completes
+    Assert LED State                false    testerId=${led1_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+    Assert LED State                true     testerId=${led1_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+Should Program Flash With QSPI Memory Mapped
+    Create Machine                  ${QSPI_MemMapped}  qspi
+    # This sample is built for STM32 Evaluation Kit, which uses the same SoC but has a bit different HW - we only care about LEDs to signal test status
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EVAL_STUB}
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EXTERNAL_FLASH}
+
+    ${led3_tester}=                 Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
+    ${led1_tester}=                 Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
+
+    # Wait for drivers to configure GPIO
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led1_tester}     pauseEmulation=true
+
+    # LED1 means that the data was uploaded to flash, and the comparison with the base was successful
+    Assert LED State                true     testerId=${led1_tester}     pauseEmulation=true    timeout=10
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+    # And again - LED 1 toggles each time a transfer round completes
+    Assert LED State                false    testerId=${led1_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+    Assert LED State                true     testerId=${led1_tester}     pauseEmulation=true
+    Assert LED State                false    testerId=${led3_tester}     pauseEmulation=true
+
+# This sample normally would use MDMA to transfer data, but has been switched to interrupt mode instead
+# Additionally, unsupported LEDs are disabled
+# Instead of blinking LEDs periodically, it will spin forever after turning them on, on test success
+Should Program Flash With QSPI and use XIP
+    Create Machine                  ${QSPI_XIP}  qspi
+    # This sample is built for STM32 Evaluation Kit, which uses the same SoC but has a bit different HW - we only care about LEDs to signal test status
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EVAL_STUB}
+    Execute Command                 machine LoadPlatformDescriptionFromString ${EXTERNAL_FLASH}
+
+    ${led3_tester}=                 Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
+    ${led1_tester}=                 Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
+
+    # Wait for drivers to configure GPIO
+    Assert LED State                false    testerId=${led3_tester}     timeout=20  pauseEmulation=true
+    Assert LED State                false    testerId=${led1_tester}                 pauseEmulation=true
+
+    # If the LEDs turned on, it means that the code relocated to QSPI memory is being executed
+    Assert LED State                true     testerId=${led1_tester}     timeout=10  pauseEmulation=true
+    Assert LED State                true     testerId=${led3_tester}                 pauseEmulation=true
+
+    # Get out of GPIO init functions, which are located in regular memory
+    # and step into infinite spin-loop in the QSPI memory
+    Execute Command                 emulation RunFor "00:00:00.01"
+    # QSPI memory starts at:        0x90000000
+    Assert PC Equals                0x90000010
