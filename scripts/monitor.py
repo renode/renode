@@ -80,3 +80,8 @@ def mc_get_environ(variable):
     v = System.Environment.GetEnvironmentVariable(variable)
     if v != None:
         print v
+
+externals = type('ExternalsManagerAccessor', (object,), dict(
+    __getitem__ = lambda _, name: Renode.Core.Structure.IHasChildren[Renode.Core.IExternal].TryGetByName(emulationManager.CurrentEmulation.ExternalsManager, name)[0],
+    __getattr__ = lambda self, name: self.__getitem__(name),
+))()
