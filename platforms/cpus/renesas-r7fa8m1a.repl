@@ -427,6 +427,13 @@ portB: GPIOPort.RenesasRA8_GPIO @ {
     IRQ14 -> icu@15
     IRQ15 -> icu@16
 
+// This is an 8-bit register. During initialization we sometimes require
+// this register to first be 0 and then non 0. Hence the use of flipflop.
+SYSC_SCICKCR: Python.PythonPeripheral @ sysbus 0x4001e055
+    size: 0x1
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init:
         Tag <0x40000000,0x40000e43> "RMPU" // Renesas Memory Protection Unit
