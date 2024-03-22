@@ -268,6 +268,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             {LinkLayer.Ethernet, typeof(Switch)},
             {LinkLayer.IEEE802_15_4, typeof(IEEE802_15_4Medium)},
             {LinkLayer.Bluetooth_LE, typeof(BLEMedium)},
+            {LinkLayer.CAN, typeof(CANHub)},
         };
     }
 }
