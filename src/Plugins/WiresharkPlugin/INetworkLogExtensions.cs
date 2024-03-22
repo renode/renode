@@ -28,6 +28,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             CreateIEEE802_15_4ConfiguredWireshark(emulation, name);
         }
 
+        public static void CreateWiresharkForCAN(this Emulation emulation, string name)
+        {
+            CreateCANConfiguredWireshark(emulation, name);
+        }
+
         public static void CreateWiresharkForEthernet(this Emulation emulation, string name)
         {
             CreateEthernetConfiguredWireshark(emulation, name);
@@ -88,12 +93,28 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
         }
 
+        public static void LogCANTraffic(this Emulation emulation)
+        {
+            var result = CreateCANConfiguredWireshark(emulation, CANLogName);
+            foreach(var hub in emulation.ExternalsManager.GetExternalsOfType<CANHub>())
+            {
+                result.LogToWireshark((INetworkLog<INetworkInterface>)hub);
+            }
+
+            // We detach the event before reattaching it to ensure that we are connected only once.
+            // This manouver allows us not to use an additional variable, which would be difficult
+            // to reset, as it is a static class.
+            emulation.ExternalsManager.ExternalsChanged -= AddExternal;
+            emulation.ExternalsManager.ExternalsChanged += AddExternal;
+        }
+
         private static void AddExternal(ExternalsManager.ExternalsChangedEventArgs reporter)
         {
             var external = reporter.External;
             var BLEResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(BLELogName, out var BLEWiresharkFound);
             var IEEE802_15_4Result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(IEEE802_15_4LogName, out var IEEE802_15_4WiresharkFound);
             var ethernetResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(EthernetLogName, out var ethernetWiresharkFound);
+            var CANResult = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(CANLogName, out var CANWiresharkFound);
 
             if(IEEE802_15_4WiresharkFound && external is IEEE802_15_4Medium)
             {
@@ -108,6 +129,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             if(ethernetWiresharkFound && external is Switch)
             {
                 ethernetResult.LogToWireshark((Switch)external);
+            }
+
+            if(CANWiresharkFound && external is CANHub)
+            {
+                CANResult.LogToWireshark((CANHub)external);
             }
         }
 
@@ -125,9 +151,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             {
                 return CreateEthernetConfiguredWireshark(emulation, hostName);
             }
+            else if(reporter is CANHub)
+            {
+                return CreateCANConfiguredWireshark(emulation, hostName);
+            }
             else
             {
-                throw new ArgumentException("Expected Switch, BLEMedium or IEEE802_15_4Medium.");
+                throw new ArgumentException("Expected CANHub, Switch, BLEMedium or IEEE802_15_4Medium.");
             }
         }
 
@@ -165,6 +195,18 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
 
             return CreateWireshark(emulation, name, LinkLayer.Ethernet);
+        }
+
+        private static Wireshark CreateCANConfiguredWireshark(Emulation emulation, string name)
+        {
+            var result = (Wireshark)EmulationManager.Instance.CurrentEmulation.HostMachine.TryGetByName(name, out var CANWiresharkFound);
+
+            if(CANWiresharkFound)
+            {
+                return result;
+            }
+
+            return CreateWireshark(emulation, name, LinkLayer.CAN);
         }
 
         private static Wireshark CreateWireshark(this Emulation emulation, string name, LinkLayer layer)
@@ -205,6 +247,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         private const string BLELogName = WiresharkExternalPrefix + "-" + "allBLETraffic";
         private const string IEEE802_15_4LogName = WiresharkExternalPrefix + "-" + "allIEEE802_15_4Traffic";
         private const string EthernetLogName = WiresharkExternalPrefix + "-" + "allEthernetTraffic";
+        private const string CANLogName = WiresharkExternalPrefix + "-" + "allCANTraffic";
 #if PLATFORM_WINDOWS
         private const string WiresharkPath = @"c:\Program Files\Wireshark\Wireshark.exe";
 #elif PLATFORM_OSX
