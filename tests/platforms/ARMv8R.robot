@@ -861,7 +861,6 @@ Run Zephyr Hello World Sample
 
     Initialize Emulation               elf=${URI}/aemv8r_aarch32--zephyr-hello_world.elf-s_390996-d824c18d2044d741b7761f7ab27d3b49fae9a9e4
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              *** Booting Zephyr OS build ${SPACE}***
     Wait For Line On Uart              Hello World! fvp_baser_aemv8r_aarch32
@@ -871,7 +870,6 @@ Run Zephyr Synchronization Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-synchronization.elf-s_402972-0cd785e0ec32a0c9106dec5369ad36e4b4fb386f
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              thread_a: Hello World from cpu 0 on fvp_baser_aemv8r_aarch32!
@@ -884,7 +882,6 @@ Run Zephyr Philosophers Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-philosophers.elf-s_500280-b9bbb31c64dec3f3273535be657b8e4d7ca182f9
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Philosopher 0.*THINKING  treatAsRegex=true
     Wait For Line On Uart              Philosopher 0.*HOLDING  treatAsRegex=true
@@ -910,7 +907,6 @@ Run Zephyr User Space Hello World Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-userspace_hello_world_user.elf-s_1039836-cbc30725dd16eeb46c01b921f0c96e6a927c3669
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              Hello World from UserSpace! (fvp_baser_aemv8r_aarch32)
@@ -920,7 +916,6 @@ Run Zephyr User Space Prod Consumer Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-userspace_prod_consumer.elf-s_1291928-637dbadb671ac5811ed6390b6be09447e586bf82
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              I: SUCCESS
@@ -930,7 +925,6 @@ Run Zephyr User Space Shared Mem Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-userspace_shared_mem.elf-s_1096936-6da5eb0f22c62b0a23f66f68a4ba51b9ece6deff
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              PT Sending Message 1
@@ -949,7 +943,6 @@ Run Zephyr Basic Sys Heap Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-basic_sys_heap.elf-s_433924-f490ec4c563a8f553702b7203956bf961242d91b
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              allocated 0, free 196, max allocated 0, heap size 256
@@ -962,7 +955,6 @@ Run Zephyr Compression LZ4 Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-compression_lz4.elf-s_840288-1558c5d70a6fa74ffebf6fe8a31398d29af0d087
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              Successfully decompressed some data
@@ -973,7 +965,6 @@ Run Zephyr Cpp Synchronization Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-cpp_cpp_synchronization.elf-s_488868-3ac689f04acc81aaf0e10b7979f12a8d66ba73d7
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              Create semaphore 0x4e04
@@ -988,7 +979,6 @@ Run Zephyr Kernel Condition Variables Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-kernel_condition_variables_condvar.elf-s_478952-6ef5d598b47ef8dd8a624ffb85e4cb60fc2c6736
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              Main(): Waited and joined with 3 threads. Final value of count = 145. Done.
@@ -998,7 +988,6 @@ Run Zephyr Kernel Condition Variables Simple Sample
 
     Initialize Emulation               elf=${URI}/fvp_baser_aemv8r_aarch32--zephyr-kernel_condition_variables_simple.elf-s_476108-e8c6ccae3076acc95f23fc3c726b4bcb8e20fff1
     ...                                create_uart_tester=True
-    Start Emulation
 
     Wait For Line On Uart              Booting Zephyr OS build
     Wait For Line On Uart              [thread main] done == 20 so everyone is done
@@ -1012,8 +1001,6 @@ Test Reading From Overlapping MPU Regions
     # The app will try to load from 0xCAFEBEE0 in main. It was built with an additional region in
     # MPU <0xCAFEB000,0xCAFEBFFF> that overlaps a default DEVICE region <0x80000000,0xFFFFFFFF>.
     Execute Command                    sysbus Tag <0xCAFEBEE0,0xCAFEBEE3> "MPU_TEST" 0xDEADCAFE
-
-    Start Emulation
 
     Wait For Line On Uart              *** Booting Zephyr OS build
     Wait For Line On Uart              Reading value from an address with overlapping MPU regions...

@@ -173,16 +173,12 @@ Test Running the Hello World Zephyr Sample
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_HELLO_WORLD_ELF}
 
-    Start Emulation
-
     Wait For Line On Uart         Booting Zephyr OS
     Wait For Line On Uart         Hello World!
 
 Test Running the Zephyr Synchronization Sample
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_SYNCHRONIZATION_ELF}
-
-    Start Emulation
 
     Wait For Line On Uart         Booting Zephyr OS
     Wait For Line On Uart         thread_a: Hello World from cpu 0
@@ -194,8 +190,6 @@ Test Running the Zephyr Philosophers Sample
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_PHILOSOPHERS_ELF}
 
-    Start Emulation
-
     Wait For Line On Uart         Booting Zephyr OS
     Wait For Line On Uart         Philosopher 5.*STARVING  treatAsRegex=true
     Wait For Line On Uart         Philosopher 5.*HOLDING ONE FORK  treatAsRegex=true
@@ -205,8 +199,6 @@ Test Running the Zephyr Philosophers Sample
 Test Running the Zephyr Kernel FPU Sharing Generic Test
     Create Machine
     Execute Command               sysbus LoadELF ${ZEPHYR_FPU_SHARING_ELF}
-
-    Start Emulation
 
     Wait For Line On Uart         Booting Zephyr OS
     Wait For Line On Uart         Running TESTSUITE fpu_sharing_generic
@@ -230,8 +222,6 @@ Test Running the seL4 Adder Sample
     Execute Command               ${UART} WriteDoubleWord 0x30 0x301
     # Set 7-bit word length to hush the warning that 5-bit WLEN is unsupported.
     Execute Command               ${UART} WriteDoubleWord 0x2c 0x40  #b10 << 5
-
-    Start Emulation
 
     Wait For Line On Uart         Booting all finished, dropped to user space
     Wait For Line On Uart         client: what's the answer to 342 + 74 + 283 + 37 + 534 ?
