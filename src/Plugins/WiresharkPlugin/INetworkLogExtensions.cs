@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -22,7 +22,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         {
             CreateBLEConfiguredWireshark(emulation, name);
         }
-        
+
         public static void CreateWiresharkForIEEE802_15_4(this Emulation emulation, string name)
         {
             CreateIEEE802_15_4ConfiguredWireshark(emulation, name);
@@ -57,7 +57,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             emulation.ExternalsManager.ExternalsChanged -= AddExternal;
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
         }
-        
+
         public static void LogIEEE802_15_4Traffic(this Emulation emulation)
         {
             var result = CreateIEEE802_15_4ConfiguredWireshark(emulation, IEEE802_15_4LogName);
@@ -99,7 +99,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             {
                 IEEE802_15_4Result.LogToWireshark((IEEE802_15_4Medium)external);
             }
-            
+
             if(BLEWiresharkFound && external is BLEMedium)
             {
                 BLEResult.LogToWireshark((BLEMedium)external);
