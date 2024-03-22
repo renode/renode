@@ -17,7 +17,7 @@ Create Machine
     Execute Command               mach create
     Execute Command               machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv${gic_version}.repl
 
-    Create Terminal Tester        ${UART}
+    Create Terminal Tester        ${UART}  defaultPauseEmulation=True
     Execute Command               showAnalyzer ${UART}
 
 Step And Verify Accumulator

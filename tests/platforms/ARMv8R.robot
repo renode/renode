@@ -1,5 +1,6 @@
 ********************************** Variables **********************************
 
+${UART}                                sysbus.uart0
 ${URI}                                 @https://dl.antmicro.com/projects/renode
 
 ### CPSR
@@ -425,8 +426,8 @@ Initialize Emulation
     END
 
     IF  ${create_uart_tester}
-        Create Terminal Tester                             sysbus.uart0
-        Execute Command                                    showAnalyzer sysbus.uart0
+        Create Terminal Tester                             ${UART}  defaultPauseEmulation=True
+        Execute Command                                    showAnalyzer ${UART}
     END
 
 Check If CPSR Contains Reset Values
