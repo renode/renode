@@ -10,10 +10,15 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/renesas-da14592.repl
 
+# Software specific mock
+sysbus Tag <0x50000028 +4> "SYS_STAT_REG" 0x605
+
+showAnalyzer uart1
+
 macro reset
 """
     cmac IsHalted true
-    sysbus LoadELF $bin true
+    sysbus LoadELF $bin useVirtualAddress=true
 """
 
 runMacro $reset

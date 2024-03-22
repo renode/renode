@@ -1,23 +1,27 @@
+*** Variables ***
+${URL}                              https://dl.antmicro.com/projects/renode
+${HELLO_WORLD_ELF}                  ${URL}/renesas-da1459x-hello_world.elf-s_1266192-ec30b009ff7f1c806e6905030626dce2374817db
+${WATCHDOG_ELF}                     ${URL}/renesas_da14592--watchdog.elf-s_1602660-74e8c2cde25d190d225185e9567b6fce4baeeac0
+${ADC_ELF}                          ${URL}/renesas_da14592--adc.elf-s_1617224-06ae23b3a2f10598dbec9febef19b9cbee219121
+${FREERTOS_RETARGET_ELF}            ${URL}/renesas_da1459x--freertos_retarget.elf-s_1269044-d15f0d09d3c156507ce8b054feeb1293713f864e
+${DMA_ELF}                          ${URL}/renesas_da14592--dma_mem_to_mem.elf-s_1265040-95f747c5ab0f99da1ac4b342ff3bb156c77f7e06
+
 *** Keywords ***
 Create Machine
     [Arguments]                     ${elf}
-    Execute Command                 mach create "DA14592"
-    Execute Command                 machine LoadPlatformDescription @platforms/cpus/renesas-da14592.repl
-    Execute Command                 sysbus LoadELF @${elf} useVirtualAddress=true
-    Execute Command                 sysbus.cmac IsHalted true
-    Execute Command                 sysbus Tag <0x50000028 +4> "SYS_STAT_REG" 0x605
+    Execute Command                 set bin @${elf}
+    Execute Command                 include @scripts/single-node/renesas-da14592.resc
 
 *** Test Cases ***
 UART Should Work
-    Create Machine                  https://dl.antmicro.com/projects/renode/renesas-da1459x-hello_world.elf-s_1266192-ec30b009ff7f1c806e6905030626dce2374817db
+    Create Machine                  ${HELLO_WORLD_ELF}
     Create Terminal Tester          sysbus.uart1
 
     Wait For Line On Uart           Hello, world!
 
 Test Watchdog
-    Create Machine          @https://dl.antmicro.com/projects/renode/renesas_da14592--watchdog.elf-s_1602660-74e8c2cde25d190d225185e9567b6fce4baeeac0
+    Create Machine          ${WATCHDOG_ELF}
 
-    Execute Command         sysbus.cmac IsHalted true
     Execute Command         sysbus.wdog Enabled false
 
     Create Log Tester       10
@@ -45,10 +49,9 @@ Test Watchdog
     Wait For Log Entry      wdog: Reseting machine
 
 Test GPADC
-    Create Machine                  https://dl.antmicro.com/projects/renode/renesas_da14592--adc.elf-s_1617224-06ae23b3a2f10598dbec9febef19b9cbee219121
+    Create Machine                  ${ADC_ELF}
     Execute Command                 sysbus Tag <0x50000028 +4> "SYS_STAT_REG" 0xE0D
     Execute Command                 sysbus Tag <0x50010024 +4> "CLOCK_GENERATION_CONTROLLER2_1" 0x1
-    Execute Command                 sysbus.cmac IsHalted true
     Create Terminal Tester          sysbus.uart1
     Execute Command                 sysbus.gpadc FeedSamplesFromRESD @https://dl.antmicro.com/projects/renode/renesas_da14_gpadc.resd-s_49-d7ebebfafe5c44561381ab5c3ffe65266f0a8ad3 6 6
 
@@ -67,7 +70,7 @@ GPIO Should Work
     END
 
 Timer Should Work
-    Create Machine                  https://dl.antmicro.com/projects/renode/renesas_da1459x--freertos_retarget.elf-s_1269044-d15f0d09d3c156507ce8b054feeb1293713f864e
+    Create Machine                  ${FREERTOS_RETARGET_ELF}
     # Sample code doesn't reload the watchdog
     Execute Command                 sysbus.wdog Enabled false
     Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
@@ -79,7 +82,7 @@ Timer Should Work
     Wait For Line On Uart           Timer tick!  timeout=1.1
 
 DMA Should Work
-    Create Machine                  https://dl.antmicro.com/projects/renode/renesas_da14592--dma_mem_to_mem.elf-s_1265040-95f747c5ab0f99da1ac4b342ff3bb156c77f7e06
+    Create Machine                  ${DMA_ELF}
     # Sample code doesn't reload the watchdog
     Execute Command                 sysbus.wdog Enabled false
     # This register contains memory remapping information.
