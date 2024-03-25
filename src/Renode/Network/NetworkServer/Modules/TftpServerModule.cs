@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,7 +8,9 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 using libtftp;
@@ -17,6 +19,7 @@ using PacketDotNet;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network
 {
@@ -48,6 +51,7 @@ namespace Antmicro.Renode.Network
             server.DataReady = HandleResponse;
 
             server.GetStream += HandleStream;
+            server.FileReceived += HandleFileReceived;
 
             this.Log(LogLevel.Info, "TFTP server started at port {0}", Port);
         }
@@ -78,6 +82,8 @@ namespace Antmicro.Renode.Network
         }
 
         public int Port { get; }
+
+        public bool LogReceivedFiles { get; set; }
 
         private void HandleLog(object src, TftpLogEventArgs args)
         {
@@ -154,6 +160,37 @@ namespace Antmicro.Renode.Network
             {
                 this.Log(LogLevel.Warning, "There was an error when reading {0} file: {1}", path, e.Message);
             }
+        }
+
+        private void HandleFileReceived(object caller, TftpTransferCompleteEventArgs args)
+        {
+            if(!LogReceivedFiles)
+            {
+                return;
+            }
+
+            var data = args.Stream.ToArray();
+            if(data.Length == 0)
+            {
+                this.Log(LogLevel.Info, "Received file '{0}' without any content", args.Filename);
+                return;
+            }
+
+            string toPrint;
+
+            try
+            {
+                // Remove null terminator before trying to convert data to a string
+                var length = data.Last() == '\0' ? data.Length - 1 : data.Length;
+                toPrint = Encoding.ASCII.GetString(data, 0, length);
+            }
+            catch(ArgumentException)
+            {
+                // If the data is not a valid string then present it as an array of hex values
+                toPrint = Misc.PrettyPrintCollectionHex(data);
+            }
+
+            this.Log(LogLevel.Info, "Received file '{0}': {1}", args.Filename, toPrint);
         }
 
         private string FindFile(string filename)
