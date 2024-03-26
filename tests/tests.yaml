@@ -144,3 +144,4 @@
 - tests/platforms/GR712RC.robot
 - tests/platforms/nucleo_h753zi.robot
 - tests/platforms/EK-RA2E1.robot
+- tests/peripherals/UT32_CAN.robot
