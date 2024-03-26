@@ -1,6 +1,7 @@
 cpu0: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
+    numberOfMPURegions: 24
     cpuId: 0
 
 scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xae000000
@@ -21,3 +22,10 @@ privateTimer0: Timers.ARM_PrivateTimer @ {
 
 mem: Memory.MappedMemory @ sysbus 0x0
     size: 0x8000000
+
+uart1: UART.Cadence_UART @ sysbus 0xff010000
+    -> gic@22
+
+ttc0: Timers.Cadence_TTC @ sysbus 0xff110000
+    [0-2] -> gic@[36-38]
+
