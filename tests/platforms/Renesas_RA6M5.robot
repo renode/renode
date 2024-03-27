@@ -3,6 +3,7 @@ ${URL}                              https://dl.antmicro.com/projects/renode
 ${AGT_ELF}                          renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
 ${HELLO_WORLD_ELF}                  ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
 ${AWS_SCI_ICP10101_ELF}             renesas_ra6m5--aws-icp10101.elf-s_795916-3d68631f0fdfc3838fdba768d3a6d46312707ae3
+${AWS_SCI_HS3001_ELF}               renesas_ra6m5--aws-hs3001.elf-s_758320-642c83fb428d4ccc1e35c2908178de232744dbad
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -132,3 +133,28 @@ Should Get Correct Temperature Readouts From ICP10101
 
     Execute Command                 sysbus.sci0.barometer DefaultTemperature 13.5
     Wait For Line On Uart           Temperature\\s+013.498  treatAsRegex=true
+
+Should Get Correct Readouts from the HS3001
+
+    Prepare Machine With IIC Sensors  ${AWS_SCI_HS3001_ELF}
+    Prepare SEGGER RTT
+
+    # Due to rounding precision, some errors in the measured values are expected
+    Wait For Line On Uart           HS3001 sensor setup success
+    Wait For Line On Uart           HS3001 Sensor Data
+    Wait For Line On Uart           Temperature:\\s+000.000  treatAsRegex=true
+    Wait For Line On Uart           Humidity:\\s+000.000  treatAsRegex=true
+
+    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature 13.5
+    Execute Command                 sysbus.sci0.hs3001 DefaultHumidity 50
+    Wait For Line On Uart           Temperature:\\s+013.500  treatAsRegex=true
+    Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
+
+    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature -40
+    Wait For Line On Uart           Temperature:\\s-039.950  treatAsRegex=true
+    Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
+
+    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature 125
+    Execute Command                 sysbus.sci0.hs3001 DefaultHumidity 100
+    Wait For Line On Uart           Temperature:\\s+125.000  treatAsRegex=true
+    Wait For Line On Uart           Humidity:\\s+100.000  treatAsRegex=true
