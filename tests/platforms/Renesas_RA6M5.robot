@@ -2,7 +2,7 @@
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${AGT_ELF}                          renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
 ${HELLO_WORLD_ELF}                  ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
-${AWS_SCI_I2C_ELF}                  renesas_ra6m5--aws.elf-s_795908-8da7d7d21c633826e0b6a98ff841007212ad99c9
+${AWS_SCI_ICP10101_ELF}             renesas_ra6m5--aws-icp10101.elf-s_795916-3d68631f0fdfc3838fdba768d3a6d46312707ae3
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -121,7 +121,7 @@ Should Run Hello World Demo
     Wait For Line On Uart           LEDS ON
 
 Should Get Correct Temperature Readouts From ICP10101
-    Prepare Machine With IIC Sensors  ${AWS_SCI_I2C_ELF}
+    Prepare Machine With IIC Sensors  ${AWS_SCI_ICP10101_ELF}
     Prepare SEGGER_RTT
 
     Start Emulation
