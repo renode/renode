@@ -2,6 +2,7 @@
 ${AGT_ELF}                          https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--agt.elf-s_390120-5dfd54a412e405b4527aba3b32e9590e668fbfcf
 ${SCI_UART_ELF}                     https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_uart.elf-s_533288-8f668c5fbab3d6a4f0ddfb9ea4f475f623d3c001
 ${SCI_SPI_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_spi.elf-s_440972-22ac9393b23602f53292b175c4070a840135cbc8
+${SCI_I2C_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_i2c.elf-s_427784-2814fc53a441712e50d182c6e73770344b7f6ba4
 
 *** Keywords ***
 Prepare Machine
@@ -24,6 +25,28 @@ Prepare Segger RTT
 
 Prepare LED Tester
     Create Led Tester               sysbus.port6.led_blue
+
+Create Echo I2C Peripheral
+    [Arguments]                     ${master}  ${slave_address}
+    Execute Command                 machine LoadPlatformDescriptionFromString "dummy: Mocks.DummyI2CSlave @ ${master} ${slave_address}"
+
+    ${python_script}=  Catenate     SEPARATOR=\n
+    ...  python
+    ...  """
+    ...  class EchoI2CPeripheral:
+    ...  ${SPACE*4}def __init__(self, dummy):
+    ...  ${SPACE*8}self.dummy = dummy
+    ...
+    ...  ${SPACE*4}def write(self, data):
+    ...  ${SPACE*8}self.dummy.EnqueueResponseBytes(data)
+    ...
+    ...  def mc_setup_echo_i2c_peripheral(path):
+    ...  ${SPACE*4}dummy = monitor.Machine[path]
+    ...  ${SPACE*4}dummy.DataReceived += EchoI2CPeripheral(dummy).write
+    ...  """
+
+    Execute Command                 ${python_script}
+    Execute Command                 setup_echo_i2c_peripheral "sysbus.${master}.dummy"
 
 *** Test Cases ***
 Should Run Periodically Blink LED
@@ -120,3 +143,14 @@ Should Read Temperature From SPI
     Wait For Line On Uart           Temperature:${SPACE*2}10.000000 *C
     Wait For Line On Uart           Temperature:${SPACE*2}2.000000 *C
     Wait For Line On Uart           Temperature:${SPACE*2}0.000000 *C
+
+Should Pass Communication Test On SCI With Sample I2C Echo Slave
+    Prepare Machine                 ${SCI_I2C_ELF}
+    Prepare Segger RTT
+    Execute Command                 cpu AddHook `sysbus GetSymbolAddress "bsp_clock_init"` "cpu.PC = cpu.LR"
+
+    Create Echo I2C Peripheral      sci1  0x4A
+
+    Wait For Line On Uart           ** SCI_I2C Master Write operation is successful **
+    Wait For Line On Uart           ** SCI_I2C Master Read operation is successful **
+    Wait For Line On Uart           ** Read and Write buffers are equal **
