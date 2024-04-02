@@ -1,0 +1,19 @@
+using sysbus
+
+mach create
+machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+
+showAnalyzer uart0
+
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr-subsys_shell_shell_module-xilinx_zynqmp_r5-no_mpu.elf-s_1271676-ef03382599f6f99c4de14d1306e8a706d3cd5a0c
+
+macro reset
+"""
+    rpu1 IsHalted true
+    apu0 IsHalted true
+    apu1 IsHalted true
+
+    sysbus LoadELF $bin cpu=rpu0
+"""
+
+runMacro $reset

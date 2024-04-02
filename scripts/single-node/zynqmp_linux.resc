@@ -18,9 +18,12 @@ $rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-
 
 macro reset
 """
-    cpu PC 0x1000000
+    apu0 PC 0x1000000
+    apu1 IsHalted true
+    rpu0 IsHalted true
+    rpu1 IsHalted true
 
-    sysbus LoadELF    $atf_elf
+    sysbus LoadELF    $atf_elf cpu=apu0
 
     sysbus LoadFdt    $dtb    0x100000   "console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M nr_cpus=1" false
     sysbus LoadBinary $uboot  0x8000000

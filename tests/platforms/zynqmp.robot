@@ -6,7 +6,7 @@ ${I2C_ECHO_ADDRESS}                 0x10
 
 *** Keywords ***
 Create Machine
-    Execute Command                 include @scripts/single-node/zynqmp.resc
+    Execute Command                 include @scripts/single-node/zynqmp_linux.resc
     Create Terminal Tester          ${UART}
 
 Boot U-Boot And Launch Linux

@@ -1,46 +1,168 @@
-cpu: CPU.ARMv8A @ sysbus
+// APU
+
+apu0: CPU.ARMv8A @ sysbus
     cpuType: "cortex-a53"
-    genericInterruptController: gic
+    cpuId: 0
+    genericInterruptController: apuGic
 
-timer: Timers.ARM_GenericTimer @ cpu
+apu0Timer: Timers.ARM_GenericTimer @ apu0
     frequency: 100000000
-    NonSecureEL2PhysicalTimerIRQ -> gic#0@29
-    EL1PhysicalTimerIRQ -> gic#0@30
-    EL1VirtualTimerIRQ -> gic#0@27
-    EL3PhysicalTimerIRQ -> gic#0@26
+    NonSecureEL2PhysicalTimerIRQ -> apuGic#0@29
+    EL1PhysicalTimerIRQ -> apuGic#0@30
+    EL1VirtualTimerIRQ -> apuGic#0@27
+    EL3PhysicalTimerIRQ -> apuGic#0@26
 
-gic: IRQControllers.ARM_GenericInterruptController @ {
+apu1: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    cpuId: 1
+    genericInterruptController: apuGic
+
+apu1Timer: Timers.ARM_GenericTimer @ apu1
+    frequency: 100000000
+    NonSecureEL2PhysicalTimerIRQ -> apuGic#1@29
+    EL1PhysicalTimerIRQ -> apuGic#1@30
+    EL1VirtualTimerIRQ -> apuGic#1@27
+    EL3PhysicalTimerIRQ -> apuGic#1@26
+
+apuGic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9010000; size: 0x010000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xf9020000; size: 0x010000; region: "cpuInterface" }
     }
-    [0-1] -> cpu@[0-1]
+    [0-1] -> apu0@[0-1]
+    [2-3] -> apu1@[0-1]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
 
-lowerMemory: Memory.MappedMemory @ sysbus 0x0
+// RPU
+
+rpu0: CPU.ARMv7R @ sysbus
+    cpuType: "cortex-r5f"
+    cpuId: 0
+    genericInterruptController: rpuGic
+    numberOfMPURegions: 16
+    init:
+        //                             interface region
+        RegisterTCMRegion sysbus.atcm0 1         0
+        RegisterTCMRegion sysbus.btcm0 0         0
+
+rpu1: CPU.ARMv7R @ sysbus
+    cpuType: "cortex-r5f"
+    cpuId: 1
+    genericInterruptController: rpuGic
+    numberOfMPURegions: 16
+    init:
+        //                             interface region
+        RegisterTCMRegion sysbus.atcm1 1         0
+        RegisterTCMRegion sysbus.btcm1 0         0
+
+rpuGic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xf9000000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xf9001000; size: 0x100; region: "cpuInterface" }
+    }
+    0 -> rpu0@0
+    1 -> rpu1@0
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+
+// MEMORY
+
+atcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: rpu0 };
+        sysbus 0xffe00000
+    }
+    size: 0x10000
+
+btcm0: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: rpu0 };
+        sysbus 0xffe20000
+    }
+    size: 0x10000
+
+ddrLowRpu: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x10000; cpu: rpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x10000; cpu: rpu1 }
+    }
+    size: 0x10000
+
+atcm1: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: rpu1 };
+        sysbus 0xffe90000
+    }
+    size: 0x10000
+
+btcm1: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: rpu1 };
+        sysbus 0xffeb0000
+    }
+    size: 0x10000
+
+ddrLowApu: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu1 }
+    }
+    size: 0x30000
+
+ddrLowCommon: Memory.MappedMemory @ sysbus 0x30000
+    size: 0x7ffd0000
+
+quadSpiFlash: Memory.MappedMemory @ sysbus 0xc0000000
+    size: 0x2000000
+
+ocm: Memory.MappedMemory @ sysbus 0xfffc0000
+    size: 0x40000
+
+ddrHigh: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu1 }
+    }
     size: 0x80000000
 
-higherMemory: Memory.MappedMemory @ sysbus 0x800000000
-    size: 0x80000000
+// I/O MAPPED PERIPHERALS
 
-uart0: UART.Cadence_UART @ sysbus <0xff000000, +0x1000>
-    -> gic@21
+uart0: UART.Cadence_UART @ sysbus 0xff000000
+    -> apuGic@21 | rpuGic@21
 
-uart1: UART.Cadence_UART @ sysbus <0xff010000, +0x1000>
-    -> gic@22
+uart1: UART.Cadence_UART @ sysbus 0xff010000
+    -> apuGic@22 | rpuGic@22
+
+i2c0: I2C.Cadence_I2C @ sysbus <0xff020000, +0x1000>
+    -> apuGic@17 | rpuGic@17
+
+i2c1: I2C.Cadence_I2C @ sysbus <0xff030000, +0x1000>
+    -> apuGic@18 | rpuGic@17
+
+ttc0: Timers.Cadence_TTC @ sysbus 0xff110000
+    [0-2] -> apuGic@[36-38] | rpuGic@[36-38]
+
+ttc1: Timers.Cadence_TTC @ sysbus 0xff120000
+    [0-2] -> apuGic@[39-41] | rpuGic@[39-41]
+
+ttc2: Timers.Cadence_TTC @ sysbus 0xff130000
+    [0-2] -> apuGic@[42-44] | rpuGic@[42-44]
+
+ttc3: Timers.Cadence_TTC @ sysbus 0xff140000
+    [0-2] -> apuGic@[45-47] | rpuGic@[45-47]
+
+gem0: Network.CadenceGEM @ sysbus 0xff0b0000
+    -> apuGic@57 | rpuGic@57
+
+gem1: Network.CadenceGEM @ sysbus 0xff0c0000
+    -> apuGic@59 | rpuGic@59
+
+gem2: Network.CadenceGEM @ sysbus 0xff0d0000
+    -> apuGic@61 | rpuGic@61
+
+gem3: Network.CadenceGEM @ sysbus 0xff0e0000
+    -> apuGic@63 | rpuGic@63
 
 gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
     numberOfGpioBanks: 6
-
-i2c0: I2C.Cadence_I2C @ sysbus <0xff020000, +0x1000>
-    -> gic@17
-
-i2c1: I2C.Cadence_I2C @ sysbus <0xff030000, +0x1000>
-    -> gic@18
 
 ipi_mailbox: Python.PythonPeripheral @ sysbus 0xff9905c0
     size: 0x900
     initable: true
     filename: "scripts/pydev/ipi_mailbox.py"
+
+pmu0: Miscellaneous.ArmPerformanceMonitoringUnit @ rpu0
+    -> rpuGic@5
 
 sysbus:
     init:

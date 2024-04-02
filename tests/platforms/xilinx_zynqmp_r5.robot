@@ -28,7 +28,7 @@ ${UBOOT}                                        @${URL}/xilinx_zynqmp_r5--u-boot
 Create Machine
     [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
     Execute Command                 set bin ${elf}
-    Execute Command                 include @scripts/single-node/xilinx_zynqmp_r5.resc
+    Execute Command                 include @scripts/single-node/zynqmp_zephyr.resc
     Create Terminal Tester          ${uart}
 
 Should Pass Zephyr Test Suite
