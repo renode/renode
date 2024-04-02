@@ -634,7 +634,14 @@ namespace Antmicro.Renode.PlatformDescription
                 {
                     throw;
                 }
-                var message = string.Format("Exception was thrown during construction of {0}:{1}{2}", friendlyName, Environment.NewLine, constructionException.Message);
+
+                var exceptionMessage = new StringBuilder();
+                exceptionMessage.AppendLine(constructionException.Message);
+                for(var innerException = constructionException.InnerException; innerException != null; innerException = innerException.InnerException)
+                {
+                    exceptionMessage.AppendLine(innerException.Message);
+                }
+                var message = string.Format("Exception was thrown during construction of {0}:{1}{2}", friendlyName, Environment.NewLine, exceptionMessage);
                 HandleError(ParsingError.ConstructionException, responsibleSyntaxElement, message, false);
             }
             return result;
