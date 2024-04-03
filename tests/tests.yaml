@@ -10,6 +10,7 @@
 - tests/unit-tests/llvm-disassemble.robot
 - tests/unit-tests/emulation-environment.robot
 - tests/unit-tests/platform_descriptions.robot
+- tests/unit-tests/sysbus.robot
 - tests/platforms/SiFive-FE310/SiFive-FE310.robot
 - tests/platforms/SiFive-FU540.robot
 - tests/platforms/PicoSoC.robot
