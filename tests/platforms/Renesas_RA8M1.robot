@@ -1,7 +1,7 @@
 *** Variables ***
 ${AGT_ELF}                          https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--agt.elf-s_390120-5dfd54a412e405b4527aba3b32e9590e668fbfcf
-${UART_ELF}                         https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_uart.elf-s_533288-8f668c5fbab3d6a4f0ddfb9ea4f475f623d3c001
-${SPI_ELF}                          https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_spi.elf-s_440972-22ac9393b23602f53292b175c4070a840135cbc8
+${SCI_UART_ELF}                     https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_uart.elf-s_533288-8f668c5fbab3d6a4f0ddfb9ea4f475f623d3c001
+${SCI_SPI_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_spi.elf-s_440972-22ac9393b23602f53292b175c4070a840135cbc8
 
 *** Keywords ***
 Prepare Machine
@@ -62,7 +62,7 @@ Should Run Periodically Blink LED
     Assert And Hold Led State       True  0.0  0.05
 
 Should Read And Write On UART
-    Prepare Machine                 ${UART_ELF}
+    Prepare Machine                 ${SCI_UART_ELF}
     Execute Command                 cpu AddHook `sysbus GetSymbolAddress "bsp_clock_init"` "cpu.PC = cpu.LR"
 
     Create Terminal Tester          sysbus.sci2
@@ -89,7 +89,7 @@ Should Read And Write On UART
     Wait For Line On Uart           Set next value
 
 Should Read Temperature From SPI
-    Prepare Machine                 ${SPI_ELF}
+    Prepare Machine                 ${SCI_SPI_ELF}
     Execute Command                 cpu AddHook `sysbus GetSymbolAddress "bsp_clock_init"` "cpu.PC = cpu.LR"
     Prepare Segger RTT
 
