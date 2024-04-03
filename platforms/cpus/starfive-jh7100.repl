@@ -121,6 +121,7 @@ spi2: SPI.DesignWare_SPI@sysbus 0x12410000
 
 ethernet: Network.SynopsysEthernetMAC @sysbus 0x10020000
     IRQ -> plic@6
+    version: SynopsysEthernetVersion.BeagleV
 
 sysbus:
     init:
