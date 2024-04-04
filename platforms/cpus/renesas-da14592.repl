@@ -96,6 +96,9 @@ general_regs: Miscellaneous.RenesasDA14_GeneralRegisters @ sysbus 0x50000000
 
 xtal32m_regs: Miscellaneous.RenesasDA14_XTAL32MRegisters @ sysbus 0x50010000
 
+spi: SPI.RenesasDA_SPI @ sysbus 0x50020200
+    -> nvic_m33@6
+
 sysbus:
     init:
         Tag <0x50060400,0x5006040b> "AMBA_BUS_SYSB" // AMBA_BUS_SYSB registers
@@ -105,7 +108,6 @@ sysbus:
         Tag <0x34000000,0x34000047> "QSPI_FLASH/RAM" // QSPI_FLASH/RAM registers
         Tag <0x50000400,0x50000497> "REAL_TIME_CLOCK" // REAL_TIME_CLOCK registers
         Tag <0x50000500,0x5000051b> "QUADRATURE_DECODER" // QUADRATURE_DECODER registers
-        Tag <0x50020200,0x5002022f> "SPI_CONTROLLER" // SPI_CONTROLLER registers
         Tag <0x50020300,0x500203a7> "I2C_CONTROLLER" // I2C_CONTROLLER registers
         Tag <0x50000300,0x50000303> "DCDC_CONVERTER" // DCDC_CONVERTER registers
         Tag <0x50050200,0x50050203> "CHIP_ID1" 0x32
