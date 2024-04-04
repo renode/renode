@@ -15,6 +15,8 @@ ${DMA_BIN}                          ${URL}/renesas-da1459x-dma_mem_to_mem.bin-s_
 ${DMA_ELF}                          ${URL}/renesas-da1459x-dma_mem_to_mem.elf-s_1301508-5370b27c1b1a252e07446758579c5fefaff168a9
 ${FREERTOS_RETARGET_ELF}            ${URL}/renesas-da1459x-freertos_retarget.elf-s_1379120-5728b9a9cca03e23e66c32db302e356532fcfc52
 ${FREERTOS_RETARGET_BIN}            ${URL}/renesas-da1459x-freertos_retarget.bin-s_63072-e28ce2134937840990ae4be78a3da330595f48e8
+${SPI_BIN}                          ${URL}/renesas-da1459x-spi_sample.bin-s_43188-944034990fb62e11fe2738530f1420b6e232819a
+${SPI_ELF}                          ${URL}/renesas-da1459x-spi_sample.elf-s_1490188-9f030ab673cc588fb2c19ed3da3fde7d973259e7
 
 *** Keywords ***
 Create Machine
@@ -22,6 +24,14 @@ Create Machine
     Execute Command                 set bin @${bin}
     Execute Command                 set symbolsElf @${symbolsElf}
     Execute Command                 include @scripts/single-node/renesas-da14592.resc
+
+Check Acceleration Values
+    [Arguments]                     ${x}  ${y}  ${z}
+    Execute Command                 sysbus.spi.adxl372 AccelerationX ${x}
+    Execute Command                 sysbus.spi.adxl372 AccelerationY ${y}
+    Execute Command                 sysbus.spi.adxl372 AccelerationZ ${z}
+
+    Wait For Line On Uart           X = ${x}, Y = ${y}, Z = ${z}
 
 *** Test Cases ***
 UART Should Work
@@ -110,3 +120,18 @@ freertos_retarget Should work
     Wait For Log Entry              cpu_m33: PC set to 0x200, SP set to 0x20005EF8
 
     Wait For Prompt On Uart           \#
+
+Should Read Samples From ADXL372 Over SPI
+    Create Machine                  ${SPI_BIN}  ${SPI_ELF}
+    Execute Command                 machine LoadPlatformDescriptionFromString "adxl372: Sensors.ADXL372 @ spi 1"
+
+    Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
+
+    Wait For Line On Uart           Starting SPI app test
+    Wait For Line On Uart           Device ID: 0xAD
+    Wait For Line On Uart           Part ID: 0xFA
+
+    Check Acceleration Values       0  0  0
+    Check Acceleration Values       1  0  0
+    Check Acceleration Values       5  3  7
+    Check Acceleration Values       3  56  12
