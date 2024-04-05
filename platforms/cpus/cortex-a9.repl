@@ -10,7 +10,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xae001000; size: 0x1000; region: "distributor" }
     }
     [0,1] -> cpu0@[0,1]
-    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
     supportsTwoSecurityStates: false
 
 privateTimer0: Timers.ARM_PrivateTimer @ {
