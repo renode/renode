@@ -43,7 +43,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9001000; size: 0x100; region: "cpuInterface" }
     }
     0 -> cpu0@0
-    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
 
 uart0: UART.Cadence_UART @ sysbus 0xff000000
     -> gic@21
