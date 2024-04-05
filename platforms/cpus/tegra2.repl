@@ -28,6 +28,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     }
     0 -> cpu@0
     supportsTwoSecurityStates: false
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
 
 tmr1: Timers.TegraTimer @ sysbus 0x60005000
     -> gic@0

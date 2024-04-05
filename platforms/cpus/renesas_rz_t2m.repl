@@ -8,6 +8,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     }
     [0,1] -> cpu@[0,1]
     supportsTwoSecurityStates: false
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 20000000

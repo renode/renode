@@ -57,6 +57,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     }
     0 -> cpu@0
     supportsTwoSecurityStates: false
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
 
 // The cpuType, the frequency of the timer and the timer interrupt id are extracted from the legacy CPU.CortexA7 class
 cpu: CPU.ARMv7A @ sysbus

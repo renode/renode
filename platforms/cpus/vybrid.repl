@@ -42,6 +42,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
     }
     0 -> cpuA5@0
     supportsTwoSecurityStates: false
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
 
 cpuA5: CPU.ARMv7A @ sysbus
     cpuType: "cortex-a9"
