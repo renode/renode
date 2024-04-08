@@ -3,3 +3,13 @@ using "platforms/cpus/starfive-jh7100.repl"
 ddr: Memory.MappedMemory @sysbus 0x80000000
     size: 0x200000000
 
+phy: Network.EthernetPhysicalLayer @ {
+        ethernet 0;
+        ethernet 7
+    }
+    BasicStatus: 0x62A4
+    BasicControl: 0x0880
+    Id1: 0x4F51
+    Id2: 0x751B
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x0000
