@@ -19,7 +19,7 @@ uart: UART.PULP_uDMA_UART @ sysbus 0x1A102100
     RxIRQ -> itc_ev@4
     TxIRQ -> itc_ev@5
 
-timer: Timers.PULP_Timer @ sysbus <0x1A10B000, +0x80>
+timer: Timers.PULP_Timer @ sysbus 0x1A10B000
     frequency: 100000
     [0, 1] -> itc@[10, 11]
 
