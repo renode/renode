@@ -9,16 +9,17 @@ BLOCK_TYPE = Enum(Int8ul,
 )
 
 SAMPLE_TYPE = Enum(Int16ul,
-    RESERVED     = 0x0000,
-    TEMPERATURE  = 0x0001,
-    ACCELERATION = 0x0002,
-    ANGULAR_RATE = 0x0003,
-    VOLTAGE      = 0x0004,
-    ECG          = 0x0005,
-    HUMIDITY     = 0x0006,
-    PRESSURE     = 0x0007,
+    RESERVED              = 0x0000,
+    TEMPERATURE           = 0x0001,
+    ACCELERATION          = 0x0002,
+    ANGULAR_RATE          = 0x0003,
+    VOLTAGE               = 0x0004,
+    ECG                   = 0x0005,
+    HUMIDITY              = 0x0006,
+    PRESSURE              = 0x0007,
+    MAGNETIC_FLUX_DENSITY = 0x0008,
 
-    CUSTOM       = 0xF000,
+    CUSTOM                = 0xF000,
 )
 
 resd_header = Struct(
@@ -73,6 +74,11 @@ data_block_sample = lambda sample_type: Switch(sample_type, {
     "ECG": Int32sl,
     "HUMIDITY": Int32ul,
     "PRESSURE": Int64ul,
+    "MAGNETIC_FLUX_DENSITY": Struct(
+        "x" / Int32sl,
+        "y" / Int32sl,
+        "z" / Int32sl,
+    ),
 })
 
 data_block_sample_arbitrary = lambda sample_type: Struct(
