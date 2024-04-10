@@ -42,6 +42,8 @@ Boot U-Boot And Launch Linux
     Wait For Line On Uart           Starting kernel ...
 
 Boot Linux And Login
+    # Verify that SMP works
+    Wait For Line On Uart           SMP: Total of 4 processors activated  includeUnfinishedLine=true
     Wait For Prompt On Uart         buildroot login:  timeout=50
     Write Line To Uart              root
     Wait For Prompt On Uart         ${LINUX_PROMPT}
@@ -66,6 +68,10 @@ Should Boot And Login
 
     Boot U-Boot And Launch Linux
     Boot Linux And Login
+
+    # Check if we see the other CPUs
+    Write Line To Uart              nproc
+    Wait For Line On Uart           4
 
 Should Detect I2C Peripherals
     Create Linux Machine

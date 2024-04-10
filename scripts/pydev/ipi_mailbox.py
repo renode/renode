@@ -1,6 +1,8 @@
 # This PMU implementation is based on open source firmware available at:
 # https://github.com/Xilinx/embeddedsw/tree/master/lib/sw_apps/zynqmp_pmufw
 
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
 local_request_region_offset = 0x0
 local_response_region_offset = 0x20
 remote_request_region_offset = 0x8c0
@@ -378,6 +380,48 @@ pmu_functions[0x49] = {
     "local_mapping_function": lambda request_args: [XST_SUCCESS],
 }
 
+def wakeupCpu(request_args):
+    self.Log(LogLevel.Debug, 'PM_REQUEST_WAKEUP, id={0}', request_args[0])
+
+    # `zynqmp_pm_defs.h` from Xilinx's Arm Trusted Firmware fork (`plat/xilinx/zynqmp`)
+    pm_node_id_to_cpuId = {
+        2: 0, # 'NODE_APU_0'
+        3: 1, # 'NODE_APU_1'
+        4: 2, # 'NODE_APU_2'
+        5: 3, # 'NODE_APU_3'
+    }
+
+    pm_node_id = request_args[0]
+    if pm_node_id not in pm_node_id_to_cpuId:
+        self.Log(LogLevel.Debug, 'PM_REQUEST_WAKEUP received, but not for APU. Ignoring.')
+        return [XST_INVALID_PARAM]
+
+    # Filter only APU nodes
+    _cpus = filter(lambda cpu: str(type(cpu)) == "<type 'ARMv8A'>", emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus.GetCPUs())
+    cpus = {cpu.Id: cpu for cpu in _cpus}
+
+    apu_id = pm_node_id_to_cpuId[pm_node_id]
+    if apu_id not in cpus:
+        self.Log(LogLevel.Error, 'PM_REQUEST_WAKEUP received, but cpuId is unrecognized. The platform might be misconfigured.')
+        return [XST_INVALID_PARAM]
+
+    address = (request_args[2] << 32) | request_args[1]
+
+    # First bit is used to signify that a new address will be set
+    if(address & 1):
+        cpus[apu_id].PC = RegisterValue.Create(address & ~1, 64)
+        cpus[apu_id].IsHalted = False
+
+    self.Log(LogLevel.Debug, 'Updated CPU, cpuId={0}, addr={1}', apu_id, hex(address))
+
+    return [XST_SUCCESS]
+
+pmu_functions[0xA] = {
+    "implemented": True,
+    "ignored": False,
+    "name": "PM_REQUEST_WAKEUP",
+    "local_mapping_function": wakeupCpu,
+}
 
 def check_request_from_args_local():
     return pmu_functions[request_args_local[0]]["implemented"]

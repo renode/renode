@@ -5,17 +5,33 @@ apu0: CPU.ARMv8A @ sysbus
     cpuId: 0
     genericInterruptController: apuGic
 
+apu1: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    cpuId: 1
+    genericInterruptController: apuGic
+    init:
+        IsHalted true
+
+apu2: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    cpuId: 2
+    genericInterruptController: apuGic
+    init:
+        IsHalted true
+
+apu3: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    cpuId: 3
+    genericInterruptController: apuGic
+    init:
+        IsHalted true
+
 apu0Timer: Timers.ARM_GenericTimer @ apu0
     frequency: 100000000
     NonSecureEL2PhysicalTimerIRQ -> apuGic#0@29
     EL1PhysicalTimerIRQ -> apuGic#0@30
     EL1VirtualTimerIRQ -> apuGic#0@27
     EL3PhysicalTimerIRQ -> apuGic#0@26
-
-apu1: CPU.ARMv8A @ sysbus
-    cpuType: "cortex-a53"
-    cpuId: 1
-    genericInterruptController: apuGic
 
 apu1Timer: Timers.ARM_GenericTimer @ apu1
     frequency: 100000000
@@ -24,12 +40,28 @@ apu1Timer: Timers.ARM_GenericTimer @ apu1
     EL1VirtualTimerIRQ -> apuGic#1@27
     EL3PhysicalTimerIRQ -> apuGic#1@26
 
+apu2Timer: Timers.ARM_GenericTimer @ apu2
+    frequency: 100000000
+    NonSecureEL2PhysicalTimerIRQ -> apuGic#2@29
+    EL1PhysicalTimerIRQ -> apuGic#2@30
+    EL1VirtualTimerIRQ -> apuGic#2@27
+    EL3PhysicalTimerIRQ -> apuGic#2@26
+
+apu3Timer: Timers.ARM_GenericTimer @ apu3
+    frequency: 100000000
+    NonSecureEL2PhysicalTimerIRQ -> apuGic#3@29
+    EL1PhysicalTimerIRQ -> apuGic#3@30
+    EL1VirtualTimerIRQ -> apuGic#3@27
+    EL3PhysicalTimerIRQ -> apuGic#3@26
+
 apuGic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9010000; size: 0x010000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xf9020000; size: 0x010000; region: "cpuInterface" }
     }
     [0-3] -> apu0@[0-3]
     [4-7] -> apu1@[0-3]
+    [8-11]  -> apu2@[0-3]
+    [12-15] -> apu3@[0-3]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
 
 // RPU
@@ -96,7 +128,9 @@ btcm1: Memory.MappedMemory @ {
 
 ddrLowApu: Memory.MappedMemory @ {
         sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu0 };
-        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu1 }
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu2 };
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu3 }
     }
     size: 0x30000
 
@@ -111,7 +145,9 @@ ocm: Memory.MappedMemory @ sysbus 0xfffc0000
 
 ddrHigh: Memory.MappedMemory @ {
         sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu0 };
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu1 }
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu2 };
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu3 }
     }
     size: 0x80000000
 
