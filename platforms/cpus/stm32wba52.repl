@@ -82,27 +82,27 @@ i2c3: I2C.STM32F7_I2C @ sysbus 0x46002800
     EventInterrupt -> nvic@54
     ErrorInterrupt -> nvic@55
 
-timer1: Timers.STM32_Timer @ sysbus <0x40012C00, +0x400>
+timer1: Timers.STM32_Timer @ sysbus 0x40012C00
     initialLimit: 0xFFFF
     frequency: 16000000
     IRQ -> nvic@40
 
-timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
     initialLimit: 0xFFFF
     frequency: 16000000
     IRQ -> nvic@41
 
-timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
     initialLimit: 0xFFFF
     frequency: 16000000
     IRQ -> nvic@42
 
-timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+timer16: Timers.STM32_Timer @ sysbus 0x40014400
     initialLimit: 0xFFFF
     frequency: 16000000
     IRQ -> nvic@51
 
-timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+timer17: Timers.STM32_Timer @ sysbus 0x40014800
     initialLimit: 0xFFFF
     frequency: 16000000
     IRQ -> nvic@52

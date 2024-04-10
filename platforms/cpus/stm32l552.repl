@@ -63,47 +63,47 @@ rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
     -> exti@17
 
 // frequency to be verified
-timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
     -> nvic@28
     frequency: 10000000
     initialLimit: 0xFFFFFFFF
 
-timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
     -> nvic@29
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer4: Timers.STM32_Timer @ sysbus <0x40000800, +0x400>
+timer4: Timers.STM32_Timer @ sysbus 0x40000800
     -> nvic@30
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer5: Timers.STM32_Timer @ sysbus <0x40000C00, +0x400>
+timer5: Timers.STM32_Timer @ sysbus 0x40000C00
     -> nvic@45
     frequency: 10000000
     initialLimit: 0xFFFFFFFF
 
-timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+timer6: Timers.STM32_Timer @ sysbus 0x40001000
     -> nvic@43
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+timer7: Timers.STM32_Timer @ sysbus 0x40001400
     -> nvic@44
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
+timer15: Timers.STM32_Timer @ sysbus 0x40014000
     -> nvic@25
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+timer16: Timers.STM32_Timer @ sysbus 0x40014400
     -> nvic@26
     frequency: 10000000
     initialLimit: 0xFFFF
 
-timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+timer17: Timers.STM32_Timer @ sysbus 0x40014800
     -> nvic@27
     frequency: 10000000
     initialLimit: 0xFFFF

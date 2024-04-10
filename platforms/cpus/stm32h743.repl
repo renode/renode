@@ -165,17 +165,17 @@ dma2: DMA.STM32DMA @ sysbus 0x40020400
 dma1: DMA.STM32DMA @ sysbus 0x40020000
     [0-7] -> nvic@[11-17, 47]
 
-timer17: Timers.STM32_Timer @ sysbus <0x40014800, +0x400>
+timer17: Timers.STM32_Timer @ sysbus 0x40014800
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@118
 
-timer16: Timers.STM32_Timer @ sysbus <0x40014400, +0x400>
+timer16: Timers.STM32_Timer @ sysbus 0x40014400
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@117
 
-timer15: Timers.STM32_Timer @ sysbus <0x40014000, +0x400>
+timer15: Timers.STM32_Timer @ sysbus 0x40014000
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@116
@@ -188,11 +188,11 @@ usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
     IRQ -> exti@26
 
-timer8: Timers.STM32_Timer @ sysbus <0x40010400, +0x400>
+timer8: Timers.STM32_Timer @ sysbus 0x40010400
     initialLimit: 0xffff
     frequency: 250000000
 
-timer1: Timers.STM32_Timer @ sysbus <0x40010000, +0x400>
+timer1: Timers.STM32_Timer @ sysbus 0x40010000
     initialLimit: 0xffff
     frequency: 250000000
 
@@ -232,47 +232,47 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 125000000
     IRQ -> exti@27
 
-timer14: Timers.STM32_Timer @ sysbus <0x40002000, +0x400>
+timer14: Timers.STM32_Timer @ sysbus 0x40002000
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@45
 
-timer13: Timers.STM32_Timer @ sysbus <0x40001C00, +0x400>
+timer13: Timers.STM32_Timer @ sysbus 0x40001C00
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@44
 
-timer12: Timers.STM32_Timer @ sysbus <0x40001800, +0x400>
+timer12: Timers.STM32_Timer @ sysbus 0x40001800
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@43
 
-timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+timer7: Timers.STM32_Timer @ sysbus 0x40001400
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@55
 
-timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+timer6: Timers.STM32_Timer @ sysbus 0x40001000
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@54
 
-timer5: Timers.STM32_Timer @ sysbus <0x40000C00, +0x400>
+timer5: Timers.STM32_Timer @ sysbus 0x40000C00
     initialLimit: 0xffffffff
     frequency: 250000000
     -> nvic@50
 
-timer4: Timers.STM32_Timer @ sysbus <0x40000800, +0x400>
+timer4: Timers.STM32_Timer @ sysbus 0x40000800
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@30
 
-timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@29
 
-timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
     initialLimit: 0xffffffff
     frequency: 250000000
     -> nvic@28

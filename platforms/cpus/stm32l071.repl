@@ -118,32 +118,32 @@ spi2: SPI.STM32SPI @ sysbus 0x40003800
     bufferCapacity: 1
     IRQ ->nvic@26
 
-timer2: Timers.STM32_Timer @ sysbus <0x40000000, +0x400>
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@15
 
-timer3: Timers.STM32_Timer @ sysbus <0x40000400, +0x400>
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@16
 
-timer21: Timers.STM32_Timer @ sysbus <0x40010800, +0x400>
+timer21: Timers.STM32_Timer @ sysbus 0x40010800
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@20
 
-timer22: Timers.STM32_Timer @ sysbus <0x40011400, +0x400>
+timer22: Timers.STM32_Timer @ sysbus 0x40011400
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@22
 
-timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+timer6: Timers.STM32_Timer @ sysbus 0x40001000
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@17
 
-timer7: Timers.STM32_Timer @ sysbus <0x40001400, +0x400>
+timer7: Timers.STM32_Timer @ sysbus 0x40001400
     frequency: 10000000
     initialLimit: 0xFFFF
     ->nvic@18
