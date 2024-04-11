@@ -1,7 +1,7 @@
 *** Variables ***
-${AGT_ELF}                          https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--agt.elf-s_390120-5dfd54a412e405b4527aba3b32e9590e668fbfcf
-${SCI_UART_ELF}                     https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_uart.elf-s_533288-8f668c5fbab3d6a4f0ddfb9ea4f475f623d3c001
-${SCI_SPI_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_spi.elf-s_440972-22ac9393b23602f53292b175c4070a840135cbc8
+${AGT_ELF}                          https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--agt.elf-s_391008-c0a91e7f3d279b86269ca83ac0aabb9936f94838
+${SCI_UART_ELF}                     https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_uart.elf-s_535224-63f8b0f8a025f09554a015f4b896f73b2cbeee43
+${SCI_SPI_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_spi.elf-s_436396-52fced761b153c037fab56f23d65971e752af799
 ${SCI_I2C_ELF}                      https://dl.antmicro.com/projects/renode/renesas_ek_ra8m1--sci_i2c.elf-s_427784-2814fc53a441712e50d182c6e73770344b7f6ba4
 
 *** Keywords ***
