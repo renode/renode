@@ -69,8 +69,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VerilatorPlugin_NET", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WiresharkPlugin_NET", "src\Plugins\WiresharkPlugin\WiresharkPlugin_NET.csproj", "{1FBC3B41-D61C-4528-8BA5-20EBA17C9031}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdvancedLoggerViewerPlugin_NET", "src\Infrastructure\src\Plugins\AdvancedLoggerViewerPlugin\AdvancedLoggerViewerPlugin_NET.csproj", "{0BCB9C31-D6CA-457E-9630-6088E7818B6F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleCommandPlugin_NET", "src\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin_NET.csproj", "{78DBBFB9-7193-4ABC-BE9F-DA839693C23A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TracePlugin_NET", "src\Infrastructure\src\Plugins\TracePlugin\TracePlugin_NET.csproj", "{2DB2469A-9F2E-4BA8-A4A0-333E4A319AF0}"
@@ -497,22 +495,6 @@ Global
 		{1FBC3B41-D61C-4528-8BA5-20EBA17C9031}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
 		{1FBC3B41-D61C-4528-8BA5-20EBA17C9031}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
 		{1FBC3B41-D61C-4528-8BA5-20EBA17C9031}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 		{78DBBFB9-7193-4ABC-BE9F-DA839693C23A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{78DBBFB9-7193-4ABC-BE9F-DA839693C23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78DBBFB9-7193-4ABC-BE9F-DA839693C23A}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
@@ -740,7 +722,6 @@ Global
                 # {...} = Plugins
 		{A244A988-6ADC-4B90-912B-D66C680FA962} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
 		{1FBC3B41-D61C-4528-8BA5-20EBA17C9031} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
-		{0BCB9C31-D6CA-457E-9630-6088E7818B6F} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
 		{78DBBFB9-7193-4ABC-BE9F-DA839693C23A} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
 		{2DB2469A-9F2E-4BA8-A4A0-333E4A319AF0} = {8BD709BF-8C11-4CBA-9A7D-CC2CC639BD4F}
                 # {...} = Tests
