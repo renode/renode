@@ -51,9 +51,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 result.LogToWireshark((INetworkLog<INetworkInterface>)BLE);
             }
 
-            //We detach the event before reattaching it to ensure that we are connected only once.
-            //This manouver allows us not to use an additional variable, which would be difficult
-            //to reset, as it is a static class.
+            // We detach the event before reattaching it to ensure that we are connected only once.
+            // This manouver allows us not to use an additional variable, which would be difficult
+            // to reset, as it is a static class.
             emulation.ExternalsManager.ExternalsChanged -= AddExternal;
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
         }
@@ -66,9 +66,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 result.LogToWireshark((INetworkLog<INetworkInterface>)IEEE802_15_4);
             }
 
-            //We detach the event before reattaching it to ensure that we are connected only once.
-            //This manouver allows us not to use an additional variable, which would be difficult
-            //to reset, as it is a static class.
+            // We detach the event before reattaching it to ensure that we are connected only once.
+            // This manouver allows us not to use an additional variable, which would be difficult
+            // to reset, as it is a static class.
             emulation.ExternalsManager.ExternalsChanged -= AddExternal;
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
         }
@@ -81,9 +81,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
                 result.LogToWireshark((INetworkLog<INetworkInterface>)ethernet);
             }
 
-            //We detach the event before reattaching it to ensure that we are connected only once.
-            //This manouver allows us not to use an additional variable, which would be difficult
-            //to reset, as it is a static class.
+            // We detach the event before reattaching it to ensure that we are connected only once.
+            // This manouver allows us not to use an additional variable, which would be difficult
+            // to reset, as it is a static class.
             emulation.ExternalsManager.ExternalsChanged -= AddExternal;
             emulation.ExternalsManager.ExternalsChanged += AddExternal;
         }
