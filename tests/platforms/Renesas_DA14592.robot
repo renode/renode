@@ -1,4 +1,5 @@
 *** Variables ***
+${echo_i2c_peripheral}              ${CURDIR}/echo-i2c-peripheral.py
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${HELLO_WORLD_ELF}                  ${URL}/renesas-da1459x-uart_hello_world.elf-s_1302844-67f230aeae16f04f9e6e9e1ac1ab1ceb133dc2a1
 ${HELLO_WORLD_BIN}                  ${URL}/renesas-da1459x-uart_hello_world.bin-s_42820-89e34783fa568d03c826357dceaa80c3637c14e1
@@ -17,6 +18,8 @@ ${FREERTOS_RETARGET_ELF}            ${URL}/renesas-da1459x-freertos_retarget.elf
 ${FREERTOS_RETARGET_BIN}            ${URL}/renesas-da1459x-freertos_retarget.bin-s_63072-e28ce2134937840990ae4be78a3da330595f48e8
 ${SPI_BIN}                          ${URL}/renesas-da1459x-spi_sample.bin-s_43188-944034990fb62e11fe2738530f1420b6e232819a
 ${SPI_ELF}                          ${URL}/renesas-da1459x-spi_sample.elf-s_1490188-9f030ab673cc588fb2c19ed3da3fde7d973259e7
+${I2C_BIN}                          ${URL}/renesas-da1459x-i2c_sample.bin-s_36032-0cb6f278b3467dfbbf80f14b8504db7f2552c113
+${I2C_ELF}                          ${URL}/renesas-da1459x-i2c_sample.elf-s_1500812-4323681e8ecb9c7ca31db357a86e0348477c6894
 
 *** Keywords ***
 Create Machine
@@ -32,6 +35,11 @@ Check Acceleration Values
     Execute Command                 sysbus.spi.adxl372 AccelerationZ ${z}
 
     Wait For Line On Uart           X = ${x}, Y = ${y}, Z = ${z}
+
+Create Echo Peripheral
+    Execute Command                 machine LoadPlatformDescriptionFromString "dummy: Mocks.DummyI2CSlave @ i2c 0x75"
+    Execute Command                 include @${echo_i2c_peripheral}
+    Execute Command                 setup_echo_i2c_peripheral "sysbus.i2c.dummy"
 
 *** Test Cases ***
 UART Should Work
@@ -135,3 +143,11 @@ Should Read Samples From ADXL372 Over SPI
     Check Acceleration Values       1  0  0
     Check Acceleration Values       5  3  7
     Check Acceleration Values       3  56  12
+
+Should Pass Communication Test With Sample Echo Slave
+    Create Machine                  ${I2C_BIN}  ${I2C_ELF}
+
+    Create Echo Peripheral
+    Create Log Tester               1
+
+    Wait For Log Entry              i2c.dummy: Test suite passed  level=Info
