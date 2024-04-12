@@ -6,6 +6,7 @@ ${AWS_SCI_ICP10101_ELF}             renesas_ra6m5--aws-icp10101.elf-s_795916-3d6
 ${AWS_SCI_HS3001_ELF}               renesas_ra6m5--aws-hs3001.elf-s_758320-642c83fb428d4ccc1e35c2908178de232744dbad
 ${AWS_ZMOD4510_ELF}                 renesas_ra6m5--aws-zmod4510.elf-s_807176-4b4d580be7d9876f822205349432d3ea68172a17
 ${AWS_ZMOD4410_ELF}                 renesas_ra6m5--aws-zmod4410.elf-s_808224-8d79f1a1ff242d00131c12298f64420df21bc1d3
+${SCI_SPI_ELF}                      renesas_ra6m5--sci_spi.elf-s_346192-72cd95f5c506423a29f654be7fb7471b3b230ed0
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -190,3 +191,35 @@ Should Read From The ZMOD4410 Sensor
     Wait For Line On Uart         TVOC: 000.015
     Wait For Line On Uart         ETOH: 000.008
     Wait For Line On Uart         ECO2: 404.523
+
+Should Read Temperature From SPI Sensor
+    Prepare Machine                 ${SCI_SPI_ELF}
+    Prepare Segger RTT
+
+    # Sample expects the MAX31723PMB1 temperature sensor which there is no model for in Renode
+    Execute Command                 machine LoadPlatformDescriptionFromString "sensor: Sensors.GenericSPISensor @ sci0"
+
+    # Sensor initialization values
+    Execute Command                 sci0.sensor FeedSample 0x80
+    Execute Command                 sci0.sensor FeedSample 0x6
+    Execute Command                 sci0.sensor FeedSample 0x0
+
+    # Temperature of 15 °C
+    Execute Command                 sci0.sensor FeedSample 0x0
+    Execute Command                 sci0.sensor FeedSample 0xF
+    Execute Command                 sci0.sensor FeedSample 0x0
+
+    # Temperature of 10 °C
+    Execute Command                 sci0.sensor FeedSample 0x0
+    Execute Command                 sci0.sensor FeedSample 0xA
+    Execute Command                 sci0.sensor FeedSample 0x0
+
+    # Temperature of 2 °C
+    Execute Command                 sci0.sensor FeedSample 0x0
+    Execute Command                 sci0.sensor FeedSample 0x2
+    Execute Command                 sci0.sensor FeedSample 0x0
+
+    Wait For Line On Uart           Temperature:${SPACE*2}15.000000 *C
+    Wait For Line On Uart           Temperature:${SPACE*2}10.000000 *C
+    Wait For Line On Uart           Temperature:${SPACE*2}2.000000 *C
+    Wait For Line On Uart           Temperature:${SPACE*2}0.000000 *C
