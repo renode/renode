@@ -201,17 +201,13 @@ Should Program PMU Counter To Count Cycles
     Assert Executed Instructions Equal To  112 000 000
     Assert PMU Counter Is Equal To  0  112 000 000
 
-    # Now, an instruction should be equal to 2 cycles
-    # Currently, it is needed to disable and then reenable/reset the counter, either in Monitor or with CP15 instructions
-    # if "CyclesPerInstruction" value changes at runtime
-    Disable PMU Counter             0
-    Execute Command                 cpu CyclesPerInstruction 2
-    Enable PMU Counter              0
+    # Now, an instruction should be equal to 1.25 cycles
+    Execute Command                 cpu CyclesPerInstruction 1.25
     Execute Command                 emulation RunFor "00:00:00.01"
 
-    # Executed 1 000 000 instructions, so 2 000 000 cycles
+    # Executed 1 000 000 instructions, so 1 250 000 cycles
     Assert Executed Instructions Equal To  113 000 000
-    Assert PMU Counter Is Equal To  0  114 000 000
+    Assert PMU Counter Is Equal To  0  113 250 000
 
 Should Program PMU Counter To Count Instructions
     Create Machine
