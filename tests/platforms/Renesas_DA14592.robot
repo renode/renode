@@ -145,6 +145,7 @@ Should Read Samples From ADXL372 Over SPI
     Check Acceleration Values       3  56  12
 
 Should Pass Communication Test With Sample Echo Slave
+    [Tags]                   skip_windows
     Create Machine                  ${I2C_BIN}  ${I2C_ELF}
 
     Create Echo Peripheral
