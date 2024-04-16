@@ -18,6 +18,9 @@ ${CYCLES_EVENT}                     0x11
 
 *** Keywords ***
 Create Machine
+    # Some keywords expect numbers to be printed as hex.
+    Execute Command                 numbersMode Hexadecimal
+
     Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLATFORM}
