@@ -21,7 +21,7 @@ systemTimer: Timers.Atmel91SystemTimer @ sysbus 0xFFFFFD00
 cpu: CPU.ARMv7A @ sysbus
     cpuType: "arm926"
     init:
-        ID 0x41009200
+        ModelID 0x41009200
 
 ckgrPllar: Python.PythonPeripheral @ sysbus 0xFFFFFC28
     size: 0x4
