@@ -38,7 +38,7 @@ Check Acceleration Values
 
 Create Echo Peripheral
     Execute Command                 machine LoadPlatformDescriptionFromString "dummy: Mocks.DummyI2CSlave @ i2c 0x75"
-    Execute Command                 include @${echo_i2c_peripheral}
+    Execute Command                 include "${echo_i2c_peripheral}"
     Execute Command                 setup_echo_i2c_peripheral "sysbus.i2c.dummy"
 
 *** Test Cases ***
@@ -145,7 +145,6 @@ Should Read Samples From ADXL372 Over SPI
     Check Acceleration Values       3  56  12
 
 Should Pass Communication Test With Sample Echo Slave
-    [Tags]                   skip_windows
     Create Machine                  ${I2C_BIN}  ${I2C_ELF}
 
     Create Echo Peripheral

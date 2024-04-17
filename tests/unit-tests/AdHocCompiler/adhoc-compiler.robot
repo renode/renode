@@ -27,9 +27,7 @@ Use Peripheral
 
 *** Test Cases ***
 Should Compile Simple Peripheral
-        # Escape space in windows path
-        ${TEST_DIR}=             Evaluate  r"${CURDIR}".replace(" ", "\\ ")
-        Execute Command          include @${TEST_DIR}${/}SimplePeripheral.cs
+        Execute Command          include "${CURDIR}/SimplePeripheral.cs"
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM}
@@ -37,11 +35,9 @@ Should Compile Simple Peripheral
         Use Peripheral
 
 Should Compile Multiple Files Referencing Each Other
-        # Escape space in windows path
-        ${TEST_DIR}=             Evaluate  r"${CURDIR}".replace(" ", "\\ ")
-        Execute Command          include @${TEST_DIR}${/}ReferencedType.cs
+        Execute Command          include "${CURDIR}/ReferencedType.cs"
         Execute Command          EnsureTypeIsLoaded "Antmicro.Renode.Peripherals.ReferencedType"
-        Execute Command          include @${TEST_DIR}${/}ReferencingPeripheral.cs
+        Execute Command          include "${CURDIR}/ReferencingPeripheral.cs"
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${COMPLEX_PLATFORM}

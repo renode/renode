@@ -17,7 +17,7 @@ Should Fail On Python Command With Invalid Parameters
 
 Should Fail On Command Error
     ${msg}=     Run Keyword And Expect Error        *   Execute Command     include @nonexistingfile
-    Should Contain      ${msg}      No such file
+    Should Contain      ${msg}      File does not exist
 
 Should Allow Passing Python Float As Float Argument
     ${flt}=                         Evaluate  float(1)
