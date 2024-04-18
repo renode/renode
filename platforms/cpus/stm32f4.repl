@@ -142,6 +142,7 @@ rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
 
 timer1: Timers.STM32_Timer @ sysbus 0x40010000
+    -> nvic@25
     frequency: 10000000
     initialLimit: 0xFFFF
 
