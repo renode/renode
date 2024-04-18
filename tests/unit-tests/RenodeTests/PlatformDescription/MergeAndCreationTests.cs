@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -547,7 +547,7 @@ sender:
         public void ShouldHandleManyMultiplexedMultiDestinationInterrupts()
         {
             var source = @"
-sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral @ sysbus <0, 1>
+sender: Antmicro.Renode.UnitTests.Mocks.MockGPIOByNumberConnectorPeripheral @ sysbus <3, 4>
     gpios: 2
     [0, Irq] -> receiver@[1-2] | receiver2@[3-4] | receiver3@[5-6]
 receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus <0, 1>
