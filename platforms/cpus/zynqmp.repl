@@ -68,7 +68,8 @@ apuGic: IRQControllers.ARM_GenericInterruptController @ {
 
 rpu0: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r5f"
-    cpuId: 0
+    // Aff1: 1, Aff0: 0
+    cpuId: 0x100
     genericInterruptController: rpuGic
     numberOfMPURegions: 16
     init:
@@ -78,7 +79,8 @@ rpu0: CPU.ARMv7R @ sysbus
 
 rpu1: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r5f"
-    cpuId: 1
+    // Aff1: 1, Aff0: 1
+    cpuId: 0x101
     genericInterruptController: rpuGic
     numberOfMPURegions: 16
     init:
