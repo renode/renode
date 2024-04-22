@@ -28,8 +28,8 @@ apuGic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9010000; size: 0x010000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xf9020000; size: 0x010000; region: "cpuInterface" }
     }
-    [0-1] -> apu0@[0-1]
-    [2-3] -> apu1@[0-1]
+    [0-3] -> apu0@[0-3]
+    [4-7] -> apu1@[0-3]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
 
 // RPU
