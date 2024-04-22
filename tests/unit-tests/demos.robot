@@ -18,8 +18,6 @@ Load Script
 
 *** Test Cases ***
 Should Load Demos
-    [Tags]    skip_osx
-
     FOR  ${script}  IN  @{scripts}
         Load Script  ${script}
         Reset Emulation 

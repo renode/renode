@@ -22,8 +22,6 @@ Try Load Platform
 
 *** Test Cases ***
 Should Load Repls
-    [Tags]    skip_osx
-
     # This tests uses templates as it tests every item on the list, even if a prior one failed, and produces aggregated fails summary
     [Template]  Try Load Platform
     FOR  ${test}  IN  @{platforms}
