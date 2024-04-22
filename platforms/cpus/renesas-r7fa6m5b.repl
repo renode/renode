@@ -479,6 +479,24 @@ portB: GPIOPort.RenesasRA6_GPIO @ {
     IRQ14 -> icu@15
     IRQ15 -> icu@16
 
+iic0: I2C.RenesasRA_IIC @ sysbus 0x4009F000
+    ReceiveIRQ -> icu@0x073
+    TransmitIRQ -> icu@0x074
+    TransmitEndIRQ -> icu@0x075
+    ErrorOrEventIRQ -> icu@0x076
+
+iic1: I2C.RenesasRA_IIC @ sysbus 0x4009F100
+    ReceiveIRQ -> icu@0x078
+    TransmitIRQ -> icu@0x079
+    TransmitEndIRQ -> icu@0x07A
+    ErrorOrEventIRQ -> icu@0x07B
+
+iic2: I2C.RenesasRA_IIC @ sysbus 0x4009F200
+    ReceiveIRQ -> icu@0x07D
+    TransmitIRQ -> icu@0x07E
+    TransmitEndIRQ -> icu@0x07F
+    ErrorOrEventIRQ -> icu@0x080
+
 sysbus:
     init:
         Tag <0x40000000,0x40000673> "RMPU" // Renesas Memory Protection Unit
@@ -504,8 +522,6 @@ sysbus:
         Tag <0x40090000,0x4009040b> "USBFS" // USB 2.0 Full-Speed Module
         Tag <0x40092000,0x400921e7> "SDHI0" // SD Host Interface 0
         Tag <0x4009d000,0x4009d037> "SSIE0" // Serial Sound Interface Enhanced (SSIE)
-        Tag <0x4009f000,0x4009f023> "IIC0" // Inter-Integrated Circuit 0
-        Tag <0x4009f014,0x4009f01b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
         Tag <0x400a6000,0x400a6087> "OSPI" // Octa Serial Peripheral Interface
         Tag <0x400ac000,0x400ac047> "CEC" // Consumer Electronics Control
         Tag <0x400b0000,0x400c4097> "CANFD" // CANFD
