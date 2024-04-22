@@ -1,14 +1,18 @@
 *** Variables ***
 ${URL}                              https://dl.antmicro.com/projects/renode
-${AGT_ELF}                          renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
-${HELLO_WORLD_ELF}                  ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
-${AWS_SCI_ICP10101_ELF}             renesas_ra6m5--aws-icp10101.elf-s_795916-3d68631f0fdfc3838fdba768d3a6d46312707ae3
-${AWS_SCI_HS3001_ELF}               renesas_ra6m5--aws-hs3001.elf-s_758320-642c83fb428d4ccc1e35c2908178de232744dbad
-${AWS_ZMOD4510_ELF}                 renesas_ra6m5--aws-zmod4510.elf-s_807176-4b4d580be7d9876f822205349432d3ea68172a17
-${AWS_ZMOD4410_ELF}                 renesas_ra6m5--aws-zmod4410.elf-s_808224-8d79f1a1ff242d00131c12298f64420df21bc1d3
-${SCI_SPI_ELF}                      renesas_ra6m5--sci_spi.elf-s_346192-72cd95f5c506423a29f654be7fb7471b3b230ed0
+${AGT_ELF}                          ${URL}/renesas_ra6m5--agt.elf-s_303444-613fbe7bc11ecbc13afa7a8a907682bbbb2a3458
+${HELLO_WORLD_ELF}                  ${URL}/ra6m5-hello_world.elf-s_310112-5e896556c868826bc8d25d695202ebe0beed7df2
+${AWS_SCI_ICP10101_ELF}             ${URL}/renesas_ra6m5--aws-icp10101.elf-s_795916-3d68631f0fdfc3838fdba768d3a6d46312707ae3
+${AWS_SCI_HS3001_ELF}               ${URL}/renesas_ra6m5--aws-hs3001.elf-s_758320-642c83fb428d4ccc1e35c2908178de232744dbad
+${AWS_ZMOD4510_ELF}                 ${URL}/renesas_ra6m5--aws-zmod4510.elf-s_807176-4b4d580be7d9876f822205349432d3ea68172a17
+${AWS_ZMOD4410_ELF}                 ${URL}/renesas_ra6m5--aws-zmod4410.elf-s_808224-8d79f1a1ff242d00131c12298f64420df21bc1d3
+${SCI_SPI_ELF}                      ${URL}/renesas_ra6m5--sci_spi.elf-s_346192-72cd95f5c506423a29f654be7fb7471b3b230ed0
+${AWS_ICM20948_ELF}                 ${URL}/renesas_ra6m5--aws-icm20948.elf-s_799636-492407caeb09cadd9b5bab867955ce9dc6d7229e
 # SCI_UART demo is slightly modified version with additional printfs for better testability
-${SCI_UART_ELF}                     renesas_ra6m5--sci_uart.elf-s_413420-158250896f48de6bf28e409c99cdda0b2b21e43e
+${SCI_UART_ELF}                     ${URL}/renesas_ra6m5--sci_uart.elf-s_413420-158250896f48de6bf28e409c99cdda0b2b21e43e
+
+${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
+${ICM20948_SAMPLES_CSV}             ${CURDIR}/ICM20948-samples.csv
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -35,7 +39,7 @@ Create Machine
 
     Execute Command                 machine LoadPlatformDescription @${repl}
 
-    Execute Command                 set bin @${URL}/${bin}
+    Execute Command                 set bin @${bin}
     Execute Command                 macro reset "sysbus LoadELF $bin"
     Execute Command                 runMacro $reset
 
@@ -59,6 +63,19 @@ Prepare LED Tester
 
 Prepare UART Tester
     Create Terminal Tester          sysbus.sci0
+
+Create ICM20948 RESD File
+    [Arguments]                     ${path}
+    ${resd_path}=                   Allocate Temporary File
+    ${args}=                        Catenate  SEPARATOR=,
+    ...                             "--input", r"${path}"
+    ...                             "--map", "angular_rate:angular_rate_x,angular_rate_y,angular_rate_z:x,y,z"
+    ...                             "--map", "acceleration:acceleration_x,acceleration_y,acceleration_z:x,y,z"
+    ...                             "--start-time", "200000000"
+    ...                             "--frequency", "5"
+    ...                             r"${resd_path}"
+    Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
+    [Return]                        ${resd_path}
 
 *** Test Cases ***
 Should Run Periodically Blink LED
@@ -251,3 +268,50 @@ Should Read And Write On UART
     Write Line To Uart              74  waitForEcho=false
     Wait For Line On Uart           Setting intensity to: 74
     Wait For Line On Uart           Set next value
+
+Should Read Default Values From ICM20948
+    Prepare Machine With IIC Sensors  ${AWS_ICM20948_ELF}
+    Prepare Segger RTT
+
+    Execute Command                 sci0.icm DefaultAccelerationX 0.3183098861837907
+    Execute Command                 sci0.icm DefaultAccelerationY 1.618033988749895
+    Execute Command                 sci0.icm DefaultAccelerationZ -0.36787944117144233
+
+    Execute Command                 sci0.icm DefaultAngularRateX 10.604
+    Execute Command                 sci0.icm DefaultAngularRateY 200.002
+    Execute Command                 sci0.icm DefaultAngularRateZ -3.1
+
+    Wait For Line On Uart           ICM Sensor Data
+    Wait For Line On Uart           AccX 000.318
+    Wait For Line On Uart           AccY 001.618
+    Wait For Line On Uart           AccZ -000.367
+
+    Wait For Line On Uart           GyrX 010.597
+    Wait For Line On Uart           GyrY 199.890
+    Wait For Line On Uart           GyrZ -003.097
+
+Should Read Values From ICM20948 Fed From RESD File
+    Prepare Machine With IIC Sensors  ${AWS_ICM20948_ELF}
+    Prepare Segger RTT
+
+    ${resd_path}=                   Create ICM20948 RESD File  ${ICM20948_SAMPLES_CSV}
+    Execute Command                 sysbus.sci0.icm FeedAccelerationSamplesFromRESD @${resd_path}
+    Execute Command                 sysbus.sci0.icm FeedAngularRateSamplesFromRESD @${resd_path}
+
+    Wait For Line On Uart           ICM Sensor Data
+    Wait For Line On Uart           AccX 000.001
+    Wait For Line On Uart           AccY 001.002
+    Wait For Line On Uart           AccZ -004.000
+
+    Wait For Line On Uart           GyrX 249.862
+    Wait For Line On Uart           GyrY -249.862
+    Wait For Line On Uart           GyrZ 003.143
+
+    Wait For Line On Uart           ICM Sensor Data
+    Wait For Line On Uart           AccX 000.002
+    Wait For Line On Uart           AccY 000.998
+    Wait For Line On Uart           AccZ 003.999
+
+    Wait For Line On Uart           GyrX 243.499
+    Wait For Line On Uart           GyrY -249.549
+    Wait For Line On Uart           GyrZ 003.280
