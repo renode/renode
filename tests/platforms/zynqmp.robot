@@ -29,13 +29,15 @@ ${UBOOT}                                        @${URL_BASE}/xilinx_zynqmp_r5--u
 *** Keywords ***
 Create Linux Machine
     Execute Command                 include @scripts/single-node/zynqmp_linux.resc
-    Create Terminal Tester          ${LINUX_UART}
+    Execute Command                 machine SetSerialExecution True
+    Create Terminal Tester          ${LINUX_UART}    defaultPauseEmulation=true
 
 Create Zephyr Machine
     [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
     Execute Command                 set bin ${elf}
     Execute Command                 include @scripts/single-node/zynqmp_zephyr.resc
-    Create Terminal Tester          ${uart}
+    Execute Command                 machine SetSerialExecution True
+    Create Terminal Tester          ${uart}    defaultPauseEmulation=true
 
 Boot U-Boot And Launch Linux
     Wait For Line On Uart           U-Boot 2023.01
