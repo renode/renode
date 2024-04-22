@@ -38,9 +38,9 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             CreateEthernetConfiguredWireshark(emulation, name);
         }
 
-        public static void LogToWireshark(this Emulation emulation, INetworkLog<INetworkInterface> reporter, INetworkInterface iface)
+        public static void LogToWireshark<T>(this Emulation emulation, INetworkLog<T> reporter, T iface) where T : INetworkInterface
         {
-            GetConfiguredWireshark(emulation, reporter, GetName(reporter, iface)).LogToWireshark(reporter, iface);
+            GetConfiguredWireshark(emulation, reporter as INetworkLog<INetworkInterface>, GetName(reporter, iface)).LogToWireshark(reporter as INetworkLog<INetworkInterface>, iface);
         }
 
         public static void LogToWireshark(this Emulation emulation, INetworkLog<INetworkInterface> reporter)
