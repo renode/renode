@@ -7,6 +7,8 @@ ${AWS_SCI_HS3001_ELF}               renesas_ra6m5--aws-hs3001.elf-s_758320-642c8
 ${AWS_ZMOD4510_ELF}                 renesas_ra6m5--aws-zmod4510.elf-s_807176-4b4d580be7d9876f822205349432d3ea68172a17
 ${AWS_ZMOD4410_ELF}                 renesas_ra6m5--aws-zmod4410.elf-s_808224-8d79f1a1ff242d00131c12298f64420df21bc1d3
 ${SCI_SPI_ELF}                      renesas_ra6m5--sci_spi.elf-s_346192-72cd95f5c506423a29f654be7fb7471b3b230ed0
+# SCI_UART demo is slightly modified version with additional printfs for better testability
+${SCI_UART_ELF}                     renesas_ra6m5--sci_uart.elf-s_413420-158250896f48de6bf28e409c99cdda0b2b21e43e
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
 ${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
@@ -223,3 +225,29 @@ Should Read Temperature From SPI Sensor
     Wait For Line On Uart           Temperature:${SPACE*2}10.000000 *C
     Wait For Line On Uart           Temperature:${SPACE*2}2.000000 *C
     Wait For Line On Uart           Temperature:${SPACE*2}0.000000 *C
+
+Should Read And Write On UART
+    Prepare Machine                 ${SCI_UART_ELF}
+
+    Create Terminal Tester          sysbus.sci0
+
+    Wait For Line On Uart           Starting UART demo
+
+    Write Line To Uart              56  waitForEcho=false
+    Wait For Line On Uart           Setting intensity to: 56
+    Wait For Line On Uart           Set next value
+
+    Write Line To Uart              1  waitForEcho=false
+    Wait For Line On Uart           Setting intensity to: 1
+    Wait For Line On Uart           Set next value
+
+    Write Line To Uart              100  waitForEcho=false
+    Wait For Line On Uart           Setting intensity to: 100
+    Wait For Line On Uart           Set next value
+
+    Write Line To Uart              371  waitForEcho=false
+    Wait For Line On Uart           Invalid input. Input range is from 1 - 100
+
+    Write Line To Uart              74  waitForEcho=false
+    Wait For Line On Uart           Setting intensity to: 74
+    Wait For Line On Uart           Set next value
