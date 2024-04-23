@@ -15,7 +15,7 @@ Create MR CANHUBK3 Machine
     [Arguments]                   ${binary}    ${name}=machine-0
     Execute Command               $name="${name}"
     Execute Command               $bin=${binary}
-    Execute Command               include @${CURDIR}${/}mr_canhubk3.resc
+    Execute Command               include @tests/peripherals/mr_canhubk3.resc
     Execute Command               connector Connect ${CAN} ${CAN_HUB}
 
 *** Test Cases ***
