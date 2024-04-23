@@ -125,6 +125,7 @@
     <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqDestinations.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
+    <Compile Include="Network\ExternalControl\ExternalControlServer.cs" />
     <Compile Include="Network\NetworkServer\NetworkServer.cs" />
     <Compile Include="Network\NetworkServer\IServerModule.cs" />
     <Compile Include="Network\NetworkServer\Modules\TftpServerModule.cs" />
