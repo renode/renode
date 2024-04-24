@@ -818,7 +818,7 @@ namespace Antmicro.Renode.PlatformDescription
                         if(!connections.ContainsKey(irqEnd.Number))
                         {
                             HandleError(ParsingError.IrqSourcePinDoesNotExist, multiplexedAttributes,
-                                        $"{objectToSetOn} doesn't have IRQ {irqEnd.Number}.\nAvailable IRQs: {connections.Count}.", false);
+                                        $"{objectToSetOn} doesn't have IRQ {irqEnd.Number}.\nAvailable IRQs: {Misc.PrettyPrintCollection(connections.Keys)}.", false);
                             continue;
                         }
                         source = connections[irqEnd.Number];
