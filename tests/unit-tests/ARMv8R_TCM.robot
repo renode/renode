@@ -18,7 +18,7 @@ ${PLAT}                             SEPARATOR=\n  """
 ...
 ...                                 gic: IRQControllers.ARM_GenericInterruptController @ {
 ...                                 ${SPACE*4}${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0x6E00000; size: 0x10000; region: \"distributor\" };
-...                                 ${SPACE*4}${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0x6E10000; size: 0x20000; region: \"redistributor\" }
+...                                 ${SPACE*4}${SPACE*4}sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0x6E10000; cpu: cpu }
 ...                                 ${SPACE*4}}
 ...                                 ${SPACE*4}\[0-1] -> cpu@[0-1]
 ...                                 ${SPACE*4}supportsTwoSecurityStates: false
