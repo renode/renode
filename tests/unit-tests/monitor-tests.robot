@@ -7,6 +7,8 @@ Should Pause Renode
     ${pause_limit}=           Convert Time           9
                               Execute Command        i @scripts/single-node/miv.resc
                               Execute Command        cpu PerformanceInMips 1
+    # treat WFI as NOP because WFI might make virtual time advance too far if it has fallen behind host time
+                              Execute Command        cpu WfiAsNop true
                               Execute Command        emulation SetGlobalQuantum "10"
     # we assume that starting/pausing of the simulation happens during the same quantum;
     # it seems to be a resonable expectation for the quantum value of 10 virtual seconds
