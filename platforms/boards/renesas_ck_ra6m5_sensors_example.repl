@@ -4,6 +4,8 @@ using "platforms/boards/ck-ra6m5.repl"
 
 icm: Sensors.ICM20948 @ sci0 0x68
 
+magnetometer: Sensors.AK09916 @ icm 0xC
+
 barometer: Sensors.ICP_101xx @ sci0 0x63
 
 hs3001: Sensors.HS3001 @ sci0 0x44

@@ -71,6 +71,7 @@ Create ICM20948 RESD File
     ...                             "--input", r"${path}"
     ...                             "--map", "angular_rate:angular_rate_x,angular_rate_y,angular_rate_z:x,y,z"
     ...                             "--map", "acceleration:acceleration_x,acceleration_y,acceleration_z:x,y,z"
+    ...                             "--map", "magnetic_flux_density:magnetic_flux_density_x,magnetic_flux_density_y,magnetic_flux_density_z:x,y,z"
     ...                             "--start-time", "200000000"
     ...                             "--frequency", "5"
     ...                             r"${resd_path}"
@@ -281,6 +282,10 @@ Should Read Default Values From ICM20948
     Execute Command                 sci0.icm DefaultAngularRateY 200.002
     Execute Command                 sci0.icm DefaultAngularRateZ -3.1
 
+    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityX 150
+    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityY 300
+    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityZ 450
+
     Wait For Line On Uart           ICM Sensor Data
     Wait For Line On Uart           AccX 000.318
     Wait For Line On Uart           AccY 001.618
@@ -290,6 +295,11 @@ Should Read Default Values From ICM20948
     Wait For Line On Uart           GyrY 199.890
     Wait For Line On Uart           GyrZ -003.097
 
+    Wait For Line On Uart           MagX 000.149
+    Wait For Line On Uart           MagY 000.298
+    Wait For Line On Uart           MagZ 000.448
+
+
 Should Read Values From ICM20948 Fed From RESD File
     Prepare Machine With IIC Sensors  ${AWS_ICM20948_ELF}
     Prepare Segger RTT
@@ -297,6 +307,7 @@ Should Read Values From ICM20948 Fed From RESD File
     ${resd_path}=                   Create ICM20948 RESD File  ${ICM20948_SAMPLES_CSV}
     Execute Command                 sysbus.sci0.icm FeedAccelerationSamplesFromRESD @${resd_path}
     Execute Command                 sysbus.sci0.icm FeedAngularRateSamplesFromRESD @${resd_path}
+    Execute Command                 sysbus.sci0.icm.magnetometer FeedMagneticSamplesFromRESD @${resd_path}
 
     Wait For Line On Uart           ICM Sensor Data
     Wait For Line On Uart           AccX 000.001
@@ -307,6 +318,10 @@ Should Read Values From ICM20948 Fed From RESD File
     Wait For Line On Uart           GyrY -249.862
     Wait For Line On Uart           GyrZ 003.143
 
+    Wait For Line On Uart           MagX 000.149
+    Wait For Line On Uart           MagY 000.298
+    Wait For Line On Uart           MagZ 000.448
+
     Wait For Line On Uart           ICM Sensor Data
     Wait For Line On Uart           AccX 000.002
     Wait For Line On Uart           AccY 000.998
@@ -315,3 +330,7 @@ Should Read Values From ICM20948 Fed From RESD File
     Wait For Line On Uart           GyrX 243.499
     Wait For Line On Uart           GyrY -249.549
     Wait For Line On Uart           GyrZ 003.280
+
+    Wait For Line On Uart           MagX 000.298
+    Wait For Line On Uart           MagY 000.448
+    Wait For Line On Uart           MagZ 000.597
