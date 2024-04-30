@@ -119,12 +119,13 @@ class NUnitTestSuite(object):
                 where_conditions.append('test =~ .*{}.*'.format(options.fixture))
 
         cat = 'TestCategory' if options.runner == 'dotnet' else 'cat'
+        equals = '=' if options.runner == 'dotnet' else '=='
         if options.exclude:
             for category in options.exclude:
                 where_conditions.append('{} != {}'.format(cat, category))
         if options.include:
             for category in options.include:
-                where_conditions.append('{} == {}'.format(cat, category))
+                where_conditions.append('{} {} {}'.format(cat, equals, category))
 
         if where_conditions:
             if options.runner == 'dotnet':
