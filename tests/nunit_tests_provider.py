@@ -118,8 +118,8 @@ class NUnitTestSuite(object):
             else:
                 where_conditions.append('test =~ .*{}.*'.format(options.fixture))
 
+        cat = 'TestCategory' if options.runner == 'dotnet' else 'cat'
         if options.exclude:
-            cat = 'TestCategory' if options.runner == 'dotnet' else 'cat'
             for category in options.exclude:
                 where_conditions.append('{} != {}'.format(cat, category))
         if options.include:
