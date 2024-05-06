@@ -10,6 +10,7 @@ ${SCI_SPI_ELF}                      ${URL}/renesas_ra6m5--sci_spi.elf-s_346192-7
 ${AWS_ICM20948_ELF}                 ${URL}/renesas_ra6m5--aws-icm20948.elf-s_799636-492407caeb09cadd9b5bab867955ce9dc6d7229e
 # SCI_UART demo is slightly modified version with additional printfs for better testability
 ${SCI_UART_ELF}                     ${URL}/renesas_ra6m5--sci_uart.elf-s_413420-158250896f48de6bf28e409c99cdda0b2b21e43e
+${IIC_MASTER_ELF}                   ${URL}/renesas_ra6m5--iic_master.elf-s_322744-232a1bea524059a7170c97c7fa698c5efff39f03
 
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
 ${ICM20948_SAMPLES_CSV}             ${CURDIR}/ICM20948-samples.csv
@@ -334,3 +335,26 @@ Should Read Values From ICM20948 Fed From RESD File
     Wait For Line On Uart           MagX 000.298
     Wait For Line On Uart           MagY 000.448
     Wait For Line On Uart           MagZ 000.597
+
+Should Communicate Over IIC
+    Prepare Machine                 ${IIC_MASTER_ELF}
+    Execute Command                 machine LoadPlatformDescriptionFromString "adxl345: Sensors.ADXL345 @ iic1 0x1D"
+    Prepare Segger RTT
+
+    # Sample displays raw data from the sensor, so printed values are different from loaded samples
+    Execute Command                 iic1.adxl345 FeedSample 1000 1000 1000
+    Wait For Line On Uart           X-axis = 250.00, Y-axis = 250.00, Z-axis = 250.00
+
+    Execute Command                 iic1.adxl345 FeedSample 2000 3000 4000
+    Wait For Line On Uart           X-axis = 500.00, Y-axis = 750.00, Z-axis = 1000.00
+
+    Execute Command                 iic1.adxl345 FeedSample 1468 745 8921
+    Wait For Line On Uart           X-axis = 367.00, Y-axis = 186.00, Z-axis = 2230.00
+    
+    Execute Command                 iic1.adxl345 FeedSample 3912 8888 5456
+    Wait For Line On Uart           X-axis = 978.00, Y-axis = 2222.00, Z-axis = 1364.00
+    
+    Execute Command                 iic1.adxl345 FeedSample 0 5000 0
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
+
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 
