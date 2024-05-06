@@ -434,6 +434,18 @@ SYSC_SCICKCR: Python.PythonPeripheral @ sysbus 0x4001e055
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
+iic0: I2C.RenesasRA_IIC @ sysbus 0x4025e000
+    ReceiveIRQ -> icu@0x05C
+    TransmitIRQ -> icu@0x05D
+    TransmitEndIRQ -> icu@0x05E
+    ErrorOrEventIRQ -> icu@0x05F
+
+iic1: I2C.RenesasRA_IIC @ sysbus 0x4025e100
+    ReceiveIRQ -> icu@0x061
+    TransmitIRQ -> icu@0x062
+    TransmitEndIRQ -> icu@0x063
+    ErrorOrEventIRQ -> icu@0x064
+
 sysbus:
     init:
         Tag <0x40000000,0x40000e43> "RMPU" // Renesas Memory Protection Unit
@@ -467,9 +479,6 @@ sysbus:
         Tag <0x40250000,0x40250527> "USBFS" // USB 2.0 FS Module
         Tag <0x40252000,0x40252213> "SDHI0" // SD Host Interface 0
         Tag <0x4025d000,0x4025d037> "SSIE0" // Serial Sound Interface Enhanced (SSIE)
-        Tag <0x4025e000,0x4025e023> "IIC0" // Inter-Integrated Circuit 0
-        Tag <0x4025e014,0x4025e01b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
-        Tag <0x4025e100,0x4025e123> "IIC1" // Inter-Integrated Circuit 1
         Tag <0x40268000,0x4026823b> "xSPI" // eXpanded SPI
         Tag <0x40310000,0x4031000f> "CRC" // CRC Calculator
         Tag <0x40311000,0x4031101b> "DOC" // Data Operation Circuit-4
