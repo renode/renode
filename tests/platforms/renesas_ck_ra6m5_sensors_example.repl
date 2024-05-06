@@ -1,0 +1,19 @@
+using "platforms/boards/ck-ra6m5.repl"
+
+// This is just a example of connecting sensors available on the board to the I2C host - in this case SCI0
+
+icm_sci: Sensors.ICM20948 @ sci0 0x68
+
+magnetometer_sci: Sensors.AK09916 @ icm_sci 0xC
+
+barometer_sci: Sensors.ICP_101xx @ sci0 0x63
+
+hs3001_sci: Sensors.HS3001 @ sci0 0x44
+
+iaq_sci: Sensors.ZMOD4xxx @ sci0 0x33
+    model: Model.ZMOD4510
+    IRQ -> icu@16
+
+oaq_sci: Sensors.ZMOD4xxx @ sci0 0x32
+    model: Model.ZMOD4410
+    IRQ -> icu@5

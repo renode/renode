@@ -11,12 +11,14 @@ ${AWS_ICM20948_ELF}                 ${URL}/renesas_ra6m5--aws-icm20948.elf-s_799
 # SCI_UART demo is slightly modified version with additional printfs for better testability
 ${SCI_UART_ELF}                     ${URL}/renesas_ra6m5--sci_uart.elf-s_413420-158250896f48de6bf28e409c99cdda0b2b21e43e
 ${IIC_MASTER_ELF}                   ${URL}/renesas_ra6m5--iic_master.elf-s_322744-232a1bea524059a7170c97c7fa698c5efff39f03
+${AWS_CC_ELF}                       ${URL}/renesas_ra6m5--aws.elf-s_1022068-eb223bcbec23d091f52980a36dea325060d046f7
 
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
 ${ICM20948_SAMPLES_CSV}             ${CURDIR}/ICM20948-samples.csv
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
-${CK_BOARD_REPL}                    platforms/boards/renesas_ck_ra6m5_sensors_example.repl
+${CK_BOARD_REPL}                    platforms/boards/ck-ra6m5.repl
+${CK_SCI_SENSORS_BOARD_REPL}        ${CURDIR}/renesas_ck_ra6m5_sensors_example.repl
 
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
@@ -48,7 +50,11 @@ Prepare Machine
     [Arguments]                     ${bin}
     Create Machine                  ${bin}  ${RA6M5_REPL}
 
-Prepare Machine With IIC Sensors
+Prepare Machine With SCI Sensors Board
+    [Arguments]                     ${bin}
+    Create Machine                  ${bin}  ${CK_SCI_SENSORS_BOARD_REPL}
+
+Prepare Machine With CK Board
     [Arguments]                     ${bin}
     Create Machine                  ${bin}  ${CK_BOARD_REPL}
 
@@ -146,7 +152,7 @@ Should Run Hello World Demo
     Wait For Line On Uart           LEDS ON
 
 Should Get Correct Temperature Readouts From ICP10101
-    Prepare Machine With IIC Sensors  ${AWS_SCI_ICP10101_ELF}
+    Prepare Machine With SCI Sensors Board  ${AWS_SCI_ICP10101_ELF}
     Prepare SEGGER_RTT
 
     Start Emulation
@@ -156,14 +162,14 @@ Should Get Correct Temperature Readouts From ICP10101
     Wait For Line On Uart           Temperature -000.000
     Wait For Line On Uart           Pressure\\s+ 29999.820  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.barometer DefaultTemperature 13.5
-    Execute Command                 sysbus.sci0.barometer DefaultPressure 40000
+    Execute Command                 sysbus.sci0.barometer_sci DefaultTemperature 13.5
+    Execute Command                 sysbus.sci0.barometer_sci DefaultPressure 40000
     Wait For Line On Uart           Temperature\\s+013.498  treatAsRegex=true
     Wait For Line On Uart           Pressure\\s+ 39999.929  treatAsRegex=true
 
 Should Get Correct Readouts from the HS3001
 
-    Prepare Machine With IIC Sensors  ${AWS_SCI_HS3001_ELF}
+    Prepare Machine With SCI Sensors Board  ${AWS_SCI_HS3001_ELF}
     Prepare SEGGER RTT
 
     # Due to rounding precision, some errors in the measured values are expected
@@ -172,22 +178,22 @@ Should Get Correct Readouts from the HS3001
     Wait For Line On Uart           Temperature:\\s+000.000  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+000.000  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature 13.5
-    Execute Command                 sysbus.sci0.hs3001 DefaultHumidity 50
+    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature 13.5
+    Execute Command                 sysbus.sci0.hs3001_sci DefaultHumidity 50
     Wait For Line On Uart           Temperature:\\s+013.500  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature -40
+    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature -40
     Wait For Line On Uart           Temperature:\\s-039.950  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001 DefaultTemperature 125
-    Execute Command                 sysbus.sci0.hs3001 DefaultHumidity 100
+    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature 125
+    Execute Command                 sysbus.sci0.hs3001_sci DefaultHumidity 100
     Wait For Line On Uart           Temperature:\\s+125.000  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+100.000  treatAsRegex=true
 
 Should Read From The ZMOD4510 Sensor
-    Prepare Machine With IIC Sensors           ${AWS_ZMOD4510_ELF}
+    Prepare Machine With SCI Sensors Board           ${AWS_ZMOD4510_ELF}
     Prepare SEGGER_RTT
 
     Wait For Line On Uart           ZMOD4510 sensor setup success
@@ -198,7 +204,7 @@ Should Read From The ZMOD4510 Sensor
     Wait For Line On Uart           OAQ: 099.132
 
 Should Read From The ZMOD4410 Sensor
-    Prepare Machine With IIC Sensors           ${AWS_ZMOD4410_ELF}
+    Prepare Machine With SCI Sensors Board           ${AWS_ZMOD4410_ELF}
     Prepare SEGGER_RTT
 
     Wait For Line On Uart         ZMOD4410 sensor setup success
@@ -272,20 +278,20 @@ Should Read And Write On UART
     Wait For Line On Uart           Set next value
 
 Should Read Default Values From ICM20948
-    Prepare Machine With IIC Sensors  ${AWS_ICM20948_ELF}
+    Prepare Machine With SCI Sensors Board  ${AWS_ICM20948_ELF}
     Prepare Segger RTT
 
-    Execute Command                 sci0.icm DefaultAccelerationX 0.3183098861837907
-    Execute Command                 sci0.icm DefaultAccelerationY 1.618033988749895
-    Execute Command                 sci0.icm DefaultAccelerationZ -0.36787944117144233
+    Execute Command                 sci0.icm_sci DefaultAccelerationX 0.3183098861837907
+    Execute Command                 sci0.icm_sci DefaultAccelerationY 1.618033988749895
+    Execute Command                 sci0.icm_sci DefaultAccelerationZ -0.36787944117144233
 
-    Execute Command                 sci0.icm DefaultAngularRateX 10.604
-    Execute Command                 sci0.icm DefaultAngularRateY 200.002
-    Execute Command                 sci0.icm DefaultAngularRateZ -3.1
+    Execute Command                 sci0.icm_sci DefaultAngularRateX 10.604
+    Execute Command                 sci0.icm_sci DefaultAngularRateY 200.002
+    Execute Command                 sci0.icm_sci DefaultAngularRateZ -3.1
 
-    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityX 150
-    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityY 300
-    Execute Command                 sysbus.sci0.icm.magnetometer DefaultMagneticFluxDensityZ 450
+    Execute Command                 sysbus.sci0.icm_sci.magnetometer_sci DefaultMagneticFluxDensityX 150
+    Execute Command                 sysbus.sci0.icm_sci.magnetometer_sci DefaultMagneticFluxDensityY 300
+    Execute Command                 sysbus.sci0.icm_sci.magnetometer_sci DefaultMagneticFluxDensityZ 450
 
     Wait For Line On Uart           ICM Sensor Data
     Wait For Line On Uart           AccX 000.318
@@ -302,13 +308,13 @@ Should Read Default Values From ICM20948
 
 
 Should Read Values From ICM20948 Fed From RESD File
-    Prepare Machine With IIC Sensors  ${AWS_ICM20948_ELF}
+    Prepare Machine With SCI Sensors Board  ${AWS_ICM20948_ELF}
     Prepare Segger RTT
 
     ${resd_path}=                   Create ICM20948 RESD File  ${ICM20948_SAMPLES_CSV}
-    Execute Command                 sysbus.sci0.icm FeedAccelerationSamplesFromRESD @${resd_path}
-    Execute Command                 sysbus.sci0.icm FeedAngularRateSamplesFromRESD @${resd_path}
-    Execute Command                 sysbus.sci0.icm.magnetometer FeedMagneticSamplesFromRESD @${resd_path}
+    Execute Command                 sysbus.sci0.icm_sci FeedAccelerationSamplesFromRESD @${resd_path}
+    Execute Command                 sysbus.sci0.icm_sci FeedAngularRateSamplesFromRESD @${resd_path}
+    Execute Command                 sysbus.sci0.icm_sci.magnetometer_sci FeedMagneticSamplesFromRESD @${resd_path}
 
     Wait For Line On Uart           ICM Sensor Data
     Wait For Line On Uart           AccX 000.001
@@ -358,3 +364,54 @@ Should Communicate Over IIC
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
 
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 
+
+CK IIC Board Should Work
+    Prepare Machine With CK Board   ${AWS_CC_ELF}
+    Prepare Segger RTT
+
+    Execute Command                 sysbus.iic0.hs3001 DefaultTemperature 13.5
+    Execute Command                 sysbus.iic0.hs3001 DefaultHumidity 50
+
+    Execute Command                 sysbus.iic0.barometer DefaultTemperature 13.5
+    Execute Command                 sysbus.iic0.barometer DefaultPressure 40000
+
+    Execute Command                 sysbus.iic0.icm DefaultAccelerationX 0.3183098861837907
+    Execute Command                 sysbus.iic0.icm DefaultAccelerationY 1.618033988749895
+    Execute Command                 sysbus.iic0.icm DefaultAccelerationZ -0.36787944117144233
+
+    Execute Command                 sysbus.iic0.icm DefaultAngularRateX 10.604
+    Execute Command                 sysbus.iic0.icm DefaultAngularRateY 200.002
+    Execute Command                 sysbus.iic0.icm DefaultAngularRateZ -3.1
+
+    Execute Command                 sysbus.iic0.icm.magnetometer DefaultMagneticFluxDensityX 150
+    Execute Command                 sysbus.iic0.icm.magnetometer DefaultMagneticFluxDensityY 300
+    Execute Command                 sysbus.iic0.icm.magnetometer DefaultMagneticFluxDensityZ 450
+
+    Wait For Line On Uart           IAQ Sensor Data
+    Wait For Line On Uart           TVOC: 000.015
+    Wait For Line On Uart           ETOH: 000.008
+    Wait For Line On Uart           ECO2: 404.384
+
+    Wait For Line On Uart           OAQ Sensor Data 
+    Wait For Line On Uart           OAQ: 231.935
+
+    Wait For Line On Uart           HS3001 Sensor Data 
+    Wait For Line On Uart           Humidity: 050.099
+    Wait For Line On Uart           Temperature: 013.500
+
+    Wait For Line On Uart           ICM Sensor Data
+    Wait For Line On Uart           AccX 000.318
+    Wait For Line On Uart           AccY 001.618
+    Wait For Line On Uart           AccZ -000.367
+
+    Wait For Line On Uart           GyrX 010.597
+    Wait For Line On Uart           GyrY 199.890
+    Wait For Line On Uart           GyrZ -003.097
+
+    Wait For Line On Uart           MagX 000.149
+    Wait For Line On Uart           MagY 000.298
+    Wait For Line On Uart           MagZ 000.448
+
+    Wait For Line On Uart           ICP Sensor Data
+    Wait For Line On Uart           Temperature: 013.498
+    Wait For Line On Uart           Pressure: 39999.929

@@ -13,3 +13,20 @@ led_blue: Miscellaneous.LED @ port6 1
 
 button: Miscellaneous.Button @ port8 4
     -> port8@4
+
+hs3001: Sensors.HS3001 @ iic0 0x44
+
+iaq: Sensors.ZMOD4xxx @ iic0 0x32
+    model: Model.ZMOD4410
+    IRQ -> icu@5
+
+oaq: Sensors.ZMOD4xxx @ iic0 0x33
+    model: Model.ZMOD4510
+    IRQ -> icu@16
+
+barometer: Sensors.ICP_101xx @ iic0 0x63
+
+icm: Sensors.ICM20948 @ iic0 0x68
+    IRQ -> port0@8
+
+magnetometer: Sensors.AK09916 @ icm 0xC
