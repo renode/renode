@@ -122,12 +122,17 @@ sci3: SCI.RenesasRA6M5_SCI @ sysbus 0x40070060
     TransmitIRQ -> icu@0x94
     TransmitEndIRQ -> icu@0x95
 
+iic1: I2C.RenesasRA_IIC @ sysbus 0x40053100
+    ReceiveIRQ -> icu@0x2C
+    TransmitIRQ -> icu@0x2D
+    TransmitEndIRQ -> icu@0x2E
+    ErrorOrEventIRQ -> icu@0x2F
+
 sysbus:
     init add:
         RemoveTag 0x40002000 // Updating "SRAM" due to differences between RA2E1 and RA2L1
         Tag <0x40002000,0x400020db> "SRAM" // SRAM Control
         Tag <0x40050000,0x40050877> "CAN0" // Controller Area Network
-        Tag <0x40053100,0x40053123> "IIC1" // Inter-Integrated Circuit 0
         RemoveTag 0x4005c000 // Updating "ADC120" due to differences between RA2E1 and RA2L1
         Tag <0x4005c000,0x4005c0f7> "ADC120" // 12-bit A/D Converter
         Tag <0x4005e000,0x4005e00b> "DAC12" // 12-bit D/A converter
