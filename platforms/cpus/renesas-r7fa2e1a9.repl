@@ -291,6 +291,12 @@ sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
     initable: true
     script: "request.value = 0xFF"
 
+iic0: I2C.RenesasRA_IIC @ sysbus 0x40053000
+    ReceiveIRQ -> icu@0x27
+    TransmitIRQ -> icu@0x28
+    TransmitEndIRQ -> icu@0x29
+    ErrorOrEventIRQ -> icu@0x2A
+
 sysbus:
     init:
         Tag <0x40000000,0x40000d27> "RMPU" // Renesas Memory Protection Unit
@@ -307,8 +313,6 @@ sysbus:
         Tag <0x40044400,0x40044407> "IWDT" // Independent Watchdog Timer
         Tag <0x40044600,0x4004460f> "CAC" // Clock Frequency Accuracy Measurement Circuit
         Tag <0x40047000,0x40047017> "MSTP" // Module Stop Control B, C, D
-        Tag <0x40053000,0x40053023> "IIC0" // Inter-Integrated Circuit 0
-        Tag <0x40053014,0x4005301b> "IIC0WU" // Inter-Integrated Circuit 0 Wake-up Unit
         Tag <0x40054100,0x40054107> "DOC" // Data Operation Circuit
         Tag <0x4005c000,0x4005c0f3> "ADC120" // 12-bit A/D Converter
         Tag <0x40072000,0x40072013> "SPI0" // Serial Peripheral Interface
