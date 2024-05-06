@@ -354,6 +354,18 @@ sysc_vbtsr: Python.PythonPeripheral @ sysbus 0x4001E4B1
     initable: true
     script: "request.value = 0x10"
 
+iic0: I2C.RenesasRA_IIC @ sysbus 0x40053000
+    ReceiveIRQ -> icu@0x035
+    TransmitIRQ -> icu@0x036
+    TransmitEndIRQ -> icu@0x037
+    ErrorOrEventIRQ -> icu@0x038
+
+iic1: I2C.RenesasRA_IIC @ sysbus 0x40053100
+    ReceiveIRQ -> icu@0x03A
+    TransmitIRQ -> icu@0x03B
+    TransmitEndIRQ -> icu@0x03C
+    ErrorOrEventIRQ -> icu@0x03D
+
 sysbus:
     init:
         Tag <0x4001e03c 0x4> "SYSTEM_STATUS_REGISTER" 0xFF
@@ -373,8 +385,6 @@ sysbus:
         Tag <0x4001c000,0x4001c11f> "FCACHE" // Flash Cache
         Tag <0x40040800,0x40040a83> "PFS" // Pmn Pin Function Control Register
         Tag <0x40040d00,0x40040d07> "PMISC" // Miscellaneous Port Control Register
-        Tag <0x40053000,0x4005301b> "IIC0" // Inter-Integrated Circuit 0
-        Tag <0x40053100,0x40053117> "IIC1" // Inter-Integrated Circuit 1
         Tag <0x40044400,0x40044407> "IWDT" // Independent Watchdog Timer
         Tag <0x40080000,0x4008000b> "KINT" // Key Interrupt Function
         Tag <0x40047000,0x40047013> "MSTP" // Module Stop Control B,C,D
