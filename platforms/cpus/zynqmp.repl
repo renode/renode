@@ -194,10 +194,22 @@ gem3: Network.CadenceGEM @ sysbus 0xff0e0000
 gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
     numberOfGpioBanks: 6
 
-ipi_mailbox: Python.PythonPeripheral @ sysbus 0xff9905c0
-    size: 0x900
-    initable: true
-    filename: "scripts/pydev/ipi_mailbox.py"
+ipi: Miscellaneous.ZynqMP_IPI @ sysbus 0xff300000
+    mailbox: ipiMailbox
+    0 -> apuGic@67
+    [1-2] -> rpuGic@[65-66]
+    [3-6] -> platformManagementUnit@[0-3]
+
+ipiMailbox: Memory.MappedMemory @ sysbus 0xff990000
+    size: 0x1000
+
+platformManagementUnit: Miscellaneous.ZynqMP_PlatformManagementUnit @ ipi
+    apu0: apu0
+    apu1: apu1
+    apu2: apu2
+    apu3: apu3
+    rpu0: rpu0
+    rpu1: rpu1
 
 pmu0: Miscellaneous.ArmPerformanceMonitoringUnit @ rpu0
     -> rpuGic@5
