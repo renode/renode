@@ -34,7 +34,7 @@ Format Fixed Point Integer As Decimal
     ${fraction}=  Evaluate  ${value} % ${divisor}
     ${string}=  Evaluate  "${minus}%d.%0${places}d" % (${units}, ${fraction})
 
-    [Return]  ${string}
+    RETURN  ${string}
 
 Wait For Peripheral Reading
     [Arguments]  ${microg}  ${resolution}
@@ -88,7 +88,7 @@ Create RESD File
 
     Execute Python Script  ${CSV2RESD}  ${resdArgs}
 
-    [Return]  ${resdPath}
+    RETURN  ${resdPath}
 
 Test Teardown And Cleanup RESD File
     [Arguments]  ${resdPath}
@@ -127,7 +127,7 @@ LIS2DW12 Should Return Data From RESD
     # Otherwise set sample will be overridden by the one fed from RESD.
     Execute Command        emulation RunFor "1"
 
-    [Return]  ${resdPath}
+    RETURN  ${resdPath}
 
 Prepare Multi-Frequency Data Test
     # 3 blocks starting one after the other: low-frequency, high-frequency, low-frequency
@@ -158,7 +158,7 @@ Prepare Multi-Frequency Data Test
     Execute Command        ${ACCEL} SampleRate 100
     Execute Command        ${ACCEL} FeedAccelerationSamplesFromRESD @${resdPath} type=MultiFrequency
 
-    [Return]  ${resdPath}
+    RETURN  ${resdPath}
 
 Acceleration Should Be
     [Arguments]  ${major}  ${minor}

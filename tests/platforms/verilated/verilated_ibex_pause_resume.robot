@@ -26,7 +26,7 @@ Get Virtual Time
     ${mc}=  Convert To Integer      ${match[0][1]}
     ${se}=  Convert To Integer      ${match[0][0]}
     ${t}=   Evaluate                ${mc} + ${se} * 1000000
-    [return]  ${t}
+    RETURN  ${t}
 
 Sleep And Measure
     ${t1}=  Get Virtual Time

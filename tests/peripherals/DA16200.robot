@@ -6,7 +6,7 @@ Set Machine
 Setup Terminal Tester
     [Arguments]                     ${machine}
     ${tester_id}=                   Create Terminal Tester          sysbus.segger  machine=${machine}  defaultPauseEmulation=true
-    [return]                        ${tester_id}
+    RETURN                          ${tester_id}
 
 *** Test Cases ***
 Should Run Demo

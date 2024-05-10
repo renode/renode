@@ -39,7 +39,7 @@ Wait For Outgoing PTPv2 Packet
     ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f7__02  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
-    [return]                                       ${bytes}  ${pkt.timestamp}
+    RETURN                                         ${bytes}  ${pkt.timestamp}
 
 Wait For Outgoing PTPv2 Announce Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
@@ -48,7 +48,7 @@ Wait For Outgoing PTPv2 Announce Packet
     ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f71b  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
-    [return]                                       ${bytes}  ${pkt.timestamp}
+    RETURN                                         ${bytes}  ${pkt.timestamp}
 
 Wait For Outgoing PTPv2 Sync Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
@@ -57,7 +57,7 @@ Wait For Outgoing PTPv2 Sync Packet
     ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f710  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
-    [return]                                       ${bytes}  ${pkt.timestamp}
+    RETURN                                         ${bytes}  ${pkt.timestamp}
 
 Wait For Outgoing PTPv2 Sync Follow Up Packet
     # EtherType are Bytes 13-14 and should be equal to 0x88f7 for PTPv2 packets
@@ -66,7 +66,7 @@ Wait For Outgoing PTPv2 Sync Follow Up Packet
     ${pkt} =                                       Wait For Outgoing Packet With Bytes At Index  88f718  12  20  60
     ${bytes} =                                     Convert To Bytes  ${pkt.bytes}
 
-    [return]                                       ${bytes}  ${pkt.timestamp}
+    RETURN                                         ${bytes}  ${pkt.timestamp}
 
 #######################
 ### GENERIC GETTERS ###
@@ -77,14 +77,14 @@ Get Timestamp From The PTP Packet
 
     ${timestamp} =                                 Get Substring  ${pktBytes}  48  58
 
-    [return]                                       ${timestamp}
+    RETURN                                         ${timestamp}
 
 Get Clock ID From The PTP Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  34  42
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 #################################
 ### ANNOUNCE SPECIFIC GETTERS ###
@@ -95,49 +95,49 @@ Get Priority1 From The Announce Packet
 
     ${value} =                                     Get Substring  ${pktBytes}  61  61
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Grand Master Clock Class From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  62  62
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Grand Master Clock Accuracy From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  63  63
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Grand Master Clock Variance From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  64  66
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Priority2 From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  66  66
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Grand Master Clock ID From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  67  75
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 Get Time Source From The Announce Packet
     [Arguments]   ${pktBytes}
 
     ${value} =                                     Get Substring  ${pktBytes}  77  77
 
-    [return]                                       ${value}
+    RETURN                                         ${value}
 
 #############################
 ### SYNC SPECIFIC GETTERS ###
@@ -153,7 +153,7 @@ Get Sync Messages Reported Period
     # (Renode uses milliseconds for timestamps)
     ${interval} =                                  Evaluate  2**(${logInterval}) * (10**3)
 
-    [return]                                       ${interval}
+    RETURN                                         ${interval}
 
 ############################
 ### ACTUAL TEST KEYWORDS ###

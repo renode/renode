@@ -194,7 +194,7 @@ Assert Command Output Equal To
 
 Get ${name} Register Offset
     ${variableName}=  Set Variable  ${{ "REG_" + "${name}" + "_OFFSET" }}
-    [Return]  ${ ${variableName} }
+    RETURN  ${ ${variableName} }
 
 MMIO-Accessed ${name} Should Be Equal To Value ${expectedValue}
     ${offset}=                      Get ${name} Register Offset

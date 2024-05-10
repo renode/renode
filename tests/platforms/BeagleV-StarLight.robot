@@ -15,7 +15,7 @@ Create Machine
     Execute Command          $name="${machine}"
     Execute Command          include @${SCRIPT}
     ${tester} =              Create Terminal Tester   ${UART}   40   ${machine}   defaultPauseEmulation=True
-    [Return]                 ${tester}
+    RETURN                   ${tester}
 
 Connect Machines To Switch
     Execute Command          emulation CreateSwitch "switch"

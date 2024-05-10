@@ -13,7 +13,7 @@ Should Run Detection
     ${l}=  Wait For Line On Uart    Person score: (\\d+) No person score: (\\d+)      treatAsRegex=true
     ${s}=  Evaluate                 int(${l.groups[0]}) - int(${l.groups[1]})
 
-    [return]                        ${s}
+    RETURN                          ${s}
 
 Run Test
     [Arguments]                     ${image}

@@ -41,7 +41,7 @@ Get ${peripheral} Size, Address And Range
     ...    [ re.search('<(0x[0-9A-F]*), .*>', """${ranges}""").group(i) for i in range(2) ]
     ...    modules=re
 
-    [Return]  ${size}  ${address}  ${range}
+    RETURN  ${size}  ${address}  ${range}
 
 ${lock_or_unlock:(Lock|Unlock)} Address Range From ${start} To ${end}
     ${range}=     Evaluate   f"<{ hex(${start}) }, { hex(${end}) }>"
