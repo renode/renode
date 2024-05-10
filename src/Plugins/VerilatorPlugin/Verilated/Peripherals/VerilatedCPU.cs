@@ -193,8 +193,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                             case ExecutionMode.Continuous:
                                 verilatedPeripheral.Send(ActionType.SingleStepMode, 0, 0);
                                 break;
-                            case ExecutionMode.SingleStepNonBlocking:
-                            case ExecutionMode.SingleStepBlocking:
+                            case ExecutionMode.SingleStep:
                                 verilatedPeripheral.Send(ActionType.SingleStepMode, 0, 1);
                                 break;
                         }

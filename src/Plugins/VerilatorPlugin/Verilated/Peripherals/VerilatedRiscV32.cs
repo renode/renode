@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -62,12 +62,13 @@ namespace Antmicro.Renode.Peripherals.Verilated
             return mapping.Values.OrderBy(x => x.Index);
         }
 
-        public void EnterSingleStepModeSafely(HaltArguments args, bool? blocking = null)
+        public void EnterSingleStepModeSafely(HaltArguments args)
         {
             // this method should only be called from CPU thread,
             // but we should check it anyway
             CheckCpuThreadId();
-            ChangeExecutionModeToSingleStep(blocking);
+
+            ExecutionMode = ExecutionMode.SingleStep;
 
             UpdateHaltedState();
             InvokeHalted(args);
