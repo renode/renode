@@ -106,8 +106,6 @@ Should Handle LB
     # lb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00558503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -121,8 +119,6 @@ Should Handle LH
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -136,8 +132,6 @@ Should Fail LH
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -154,8 +148,6 @@ Should Handle LW
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -169,8 +161,6 @@ Should Fail LW
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -187,8 +177,6 @@ Should Handle LD
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -202,8 +190,6 @@ Should Fail LD
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -220,8 +206,6 @@ Should Handle SB
     # sb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a582a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -235,8 +219,6 @@ Should Handle SH
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -250,8 +232,6 @@ Should Fail SH
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -268,8 +248,6 @@ Should Handle SW
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -283,8 +261,6 @@ Should Fail SW
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -301,8 +277,6 @@ Should Handle SD
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -316,8 +290,6 @@ Should Fail SD
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step
 
     ${pc}=                          Execute Command     cpu PC
@@ -347,8 +319,6 @@ Should Set MEPC on Illegal Instruction
     # ILLEGAL INSTRUCTION
     Execute Command                 sysbus WriteDoubleWord 0x4004 ${illegal_opcode}
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step 3
 
     PC Should Be Equal              0x1010
@@ -374,8 +344,6 @@ Should Set MEPC on Illegal CSR access
     # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
     Execute Command                 sysbus WriteDoubleWord 0x4004 ${illegal_csr}
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step 3
 
     PC Should Be Equal              0x1010
@@ -400,8 +368,6 @@ Should Set MEPC on Non-Existing CSR access
     # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
     Execute Command                 sysbus WriteDoubleWord 0x4004 ${nonexisting_csr}
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step 3
 
     PC Should Be Equal              0x1010
@@ -426,8 +392,6 @@ Should Set MEPC on Wrong SRET
     # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
     Execute Command                 sysbus WriteDoubleWord 0x4004 0x10200073
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 s
     Execute Command                 cpu Step 3
 
     PC Should Be Equal              0x1010

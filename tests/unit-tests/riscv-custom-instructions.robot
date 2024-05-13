@@ -21,7 +21,6 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imac_zicsr\\"; timeProvider: empty }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
 
-    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
     Execute Command                             sysbus.cpu PC 0x0
 
 Load Code To Memory
@@ -44,7 +43,6 @@ Should Install Custom 16-bit Instruction
     Execute Command                             sysbus WriteWord 0x0 0xb38f
 
     Execute Command                             log "--- start ---"
-    Start Emulation
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
@@ -61,7 +59,6 @@ Should Install Custom 32-bit Instruction
     Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
 
     Execute Command                             log "--- start ---"
-    Start Emulation
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
@@ -79,7 +76,6 @@ Should Install Custom 64-bit Instruction
     Execute Command                             sysbus WriteDoubleWord 0x4 0xb38f0f82
 
     Execute Command                             log "--- start ---"
-    Start Emulation
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
@@ -100,7 +96,6 @@ Should Override An Existing 32-bit Instruction
     Register Should Be Equal                    1  0x0
 
     Execute Command                             log "--- start ---"
-    Start Emulation
     Execute Command                             sysbus.cpu Step
     Execute Command                             log "--- stop ---"
 
@@ -131,7 +126,6 @@ Should Install Custom 32-bit Instructions Sharing State
     Register Should Be Equal                    2  0x0
     Register Should Be Equal                    3  0x0
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 2
 
     Register Should Be Equal                    1  0x147
@@ -159,7 +153,6 @@ Should Register Simple Custom CSR
     Register Should Be Equal                    1  0x0
     Register Should Be Equal                    2  0x0
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 3
     
     PC Should Be Equal                          0xc
@@ -177,7 +170,6 @@ Should Register Custom CSR
 
     Load Code To Memory
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 3
     
     ${pc}=  Execute Command                     sysbus.cpu PC

@@ -212,14 +212,12 @@ Create Machine
             Execute Command     sysbus LoadELF ${URI}/${elf}
             Execute Command     cpu PC 0x08000044
             Execute Command     cpu SP 0x08200000
-            Execute Command     cpu ExecutionMode SingleStepBlocking
 
 *** Test Cases ***
 Should Return Corrrect IT_STATUS Value
 
             Create Machine      ${ITSTATE_BIN}
 
-            Start Emulation
             Execute Command     cpu Step 4
     ${it}=  Execute Command     cpu GetItState
             Should Contain      ${it}   0x00000005      # IT_cond = 0b000; abcde bits = 0b00101
@@ -228,7 +226,6 @@ Should Have Correct Condition Code
 
             Create Machine      ${ITSTATE_BIN}
 
-            Start Emulation
             Execute Command     cpu Step 22
     ${it}=  Execute Command     cpu GetItState
             Should Contain      ${it}   0x000000AD      # IT_cond = 0b101; abcde bits = 0b00101
@@ -238,7 +235,6 @@ Should Evaluate Condition Codes Properly
             Create Machine      ${CONDITION_BIN}
 
             Execute Command     cpu PC 0x8000000
-            Start Emulation
 
   #Flags: Z=0, N=1, C=0, V=0
             Execute Command     cpu Step 2                      # After CMP 125, 127
@@ -332,7 +328,6 @@ Should Shift State Bits After Every IT Block Instruction
 
             Create Machine      ${ITSTATE_BIN}
 
-            Start Emulation
             Execute Command     cpu Step 4
     ${it}=  Execute Command     cpu GetItState
   ${next}=  Execute Command     cpu WillNextItInstructionExecute ${it}
@@ -365,7 +360,6 @@ Should Execute Only 'Then' Instructions
 
             Create Machine      ${ITSTATE_BIN}
 
-            Start Emulation
             Execute Command     cpu Step 16                 # After CMP 6, 6 ; ITTET EQ
     ${r1}=  Execute Command     sysbus ReadByte 0x20000000
     ${r2}=  Execute Command     sysbus ReadByte 0x20000004
@@ -407,7 +401,6 @@ Should Save and Restore State of IT Block Correctly
 
            Create Machine      ${ITSTATE_BIN}
 
-           Start Emulation
            Execute Command     cpu Step 5
   ${old}=  Execute Command     cpu GetItState
 
@@ -416,8 +409,6 @@ Should Save and Restore State of IT Block Correctly
            Execute Command     Load @${tmp_file}
            Execute Command     mach set 0
 
-           Execute Command     cpu ExecutionMode SingleStepBlocking
-           Start Emulation
   ${new}=  Execute Command     cpu GetItState
            Should Be Equal     ${old}  ${new}
 
@@ -444,7 +435,6 @@ Should Survive Interrupt
             Create Machine      ${ITSTATE_BIN}
 
             Execute Command     nvic WriteDoubleWord 0x100 0x01
-            Start Emulation
             Execute Command     cpu Step 5
 
             Execute Command     nvic OnGPIO 0 true
@@ -473,7 +463,6 @@ Should Allow Condition Flag Change From Inside IT Block
 
             Create Machine      ${ITSTATE_BIN}
             Execute Command     cpu PC 0x080000dc
-            Start Emulation
 
             Execute Command     cpu Step 7     # Inside It block; Before executing CMPEQ  r6,#7
   ${ev}=    Execute Command     cpu EvaluateConditionCode 0x00  # EQ
@@ -504,7 +493,6 @@ Should Work in BlockBeginHooks
             Create Machine      ${ITSTATE_BIN}
             Create Log Tester   5000
 
-            Start Emulation
             Execute Command     cpu Step 3
             Execute Command     cpu SetHookAtBlockBegin "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
             Execute Command     logLevel 0
@@ -526,10 +514,9 @@ Should Work in BlockBeginHooks
 Should Work in BlockEndHooks
             # In BlockEnd both PC and It_status concerns first instruction of next block
 
-            Create Machine      ${ITSTATE_BIN}
+            Create Machine      ${ITSTATE_BIN}  #PC = 0x8000044
             Create Log Tester   5000
 
-            Start Emulation                     #PC = 0x8000044
             Execute Command     cpu Step 3      #PC = 0x8000048
             Execute Command     cpu SetHookAtBlockEnd "self.DebugLog('PC '+ str(self.PC) + ';IT_state ' + hex(self.GetItState()).rstrip('L'))"
             Execute Command     logLevel 0

@@ -27,8 +27,6 @@ Expect Value Read From Address
     Execute Command                 cpu SetRegisterUnsafe ${a0} ${address}
     Execute Command                 sysbus WriteDoubleWord ${START_PC} 0x52583  # lw a1, 0(a0)
 
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
-    Execute Command                 start
     Execute Command                 cpu Step
 
     ${val}=                         Execute Command   cpu GetRegisterUnsafe ${a1}

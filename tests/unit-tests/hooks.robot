@@ -37,8 +37,6 @@ Should Stop On Peripheral Read Watchpoint
 
     Execute Command          sysbus.cpu PC 0x10
     Execute Command          sysbus.cpu SetRegisterUnsafe 1 0xf0000004
-    Execute Command          sysbus.cpu ExecutionMode SingleStepBlocking
-    Execute Command          start
 
     # add an empty watchpoint
     Execute Command          sysbus AddWatchpointHook 0xf0000004 1 Read ""

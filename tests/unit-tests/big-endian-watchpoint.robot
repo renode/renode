@@ -17,7 +17,6 @@ Prepare Machine
     Execute Command           machine LoadPlatformDescriptionFromString "ddr: Memory.${memoryType} @ sysbus 0x40000000 { size: 0x20000000 }"
 
     Execute Command           cpu PC 0x0
-    Execute Command           cpu ExecutionMode SingleStepBlocking
 
 Load Sparc Reader Program
     # Note that these writes to memory are in the emulation target's endianness (which is big-endian here), NOT the host's.
@@ -100,7 +99,6 @@ Should Read Big-Endian Value With Watchpoint
     Execute Command           sysbus AddWatchpointHook 0x40000200 4 2 "pass"
 
     PC Should Be Equal        0x00000000
-    Start Emulation
 
     Execute Command           cpu Step 3
     PC Should Be Equal        0x0000000c
@@ -117,7 +115,6 @@ Should Write Big-Endian Value With Watchpoint
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
 
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014
@@ -141,7 +138,6 @@ Write Watchpoint Should See Correct Value
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
 
     Execute Command           cpu Step 6
     IF  "${architecture}" == "Sparc"
@@ -164,7 +160,6 @@ Write Watchpoint Should Work Multiple Times
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
 
     Execute Command           cpu ExecutionMode Continuous
     Execute Command           start
@@ -189,7 +184,6 @@ Abort Should Work After Watchpoint Hit
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
 
     Execute Command           cpu ExecutionMode Continuous
     Execute Command           start
@@ -207,7 +201,6 @@ Should Read Big-Endian Value Without Watchpoint
     Execute Command           sysbus WriteDoubleWord 0x40000104 0x12345678
 
     PC Should Be Equal        0x00000000
-    Start Emulation
 
     Execute Command           cpu Step 3
     PC Should Be Equal        0x0000000c
@@ -221,7 +214,6 @@ Should Write Big-Endian Value Without Watchpoint
 
     PC Should Be Equal        0x00000000
     Memory Should Be Equal    0x40000104  0x00000000
-    Start Emulation
 
     Execute Command           cpu Step 5
     PC Should Be Equal        0x00000014

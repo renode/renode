@@ -7,7 +7,6 @@ Prepare Machine
     Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
 
     Execute Command           cpu PC 0x0
-    Execute Command           cpu ExecutionMode SingleStepBlocking
 
 Thumb State Should Be Equal
     [Arguments]  ${state}
@@ -32,7 +31,6 @@ Should Expose Thumb State In CPSR
     Prepare Machine
     Load Program
 
-    Start Emulation
     PC Should Be Equal        0x00000000
     Thumb State Should Be Equal  False
 

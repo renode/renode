@@ -12,7 +12,8 @@ Create Machine
     Execute Command             sysbus LoadFdt ${URI}/hifive-unleashed--devicetree.dtb-s_10532-70cd4fc9f3b4df929eba6e6f22d02e6ce4c17bd1 0x81000000 "earlyconsole mem=256M@0x80000000"
     Execute Command             e51 SetRegisterUnsafe 11 0x81000000
 
-    Execute Command             u54_1 ExecutionMode SingleStepNonBlocking
+    Execute Command             emulation SingleStepBlocking false
+    Execute Command             u54_1 ExecutionMode SingleStep
 
     Create Terminal Tester      sysbus.uart0
 

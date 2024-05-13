@@ -57,16 +57,17 @@ Should Enter Single Step Blocking
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
-    Execute Command             cpu ExecutionMode SingleStepBlocking
+    Execute Command             cpu ExecutionMode SingleStep
     Sleep And Measure
     Execute Command             cpu ExecutionMode Continuous
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Enter Single Step Non Blocking
     Create Machine
+    Execute Command             emulation SingleStepBlocking false
 
     Wait For Line On Uart       Build your hardware, easily!
-    Execute Command             cpu ExecutionMode SingleStepNonBlocking
+    Execute Command             cpu ExecutionMode SingleStep
     ${t1}=  Get Virtual Time
     Test If Uart Is Idle        4
     ${t2}=  Get Virtual Time

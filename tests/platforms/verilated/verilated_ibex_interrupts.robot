@@ -16,9 +16,7 @@ Create Machine
     Execute Command                 $c_example=@https://dl.antmicro.com/projects/renode/verilated-ibex--c_example.elf-s_5956-ea5ae45679b4070cd21933b9602bbcfd80302c93
     Execute Command                 showAnalyzer ${UART}
     Execute Command                 sysbus LoadELF $c_example
-    Execute Command                 cpu ExecutionMode SingleStepBlocking
     Create Terminal Tester          ${UART}
-    Start Emulation
 
 Check Register By Name
     [Arguments]                     ${register}     ${x}

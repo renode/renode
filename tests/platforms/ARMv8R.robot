@@ -477,7 +477,7 @@ Check Debug Exceptions Template
         Fail  Unexpected instruction: "${instruction}"
     END
 
-    Initialize Emulation                                   pc=0x8000  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pc=0x8000  exec_mode=SingleStep
     Write Opcode To Address                                0x8000  0xE3080010  # mov r0, #0x8010  @ HANDLER_ADDRESS
     Write Opcode To Address                                0x8004  0xEE8C0F10  # mcr p15, 4, r0, c12, c0, 0  @ set HVBAR
     Write Opcode To Address                                0x8008  ${opcode}  # instruction #0
@@ -505,7 +505,7 @@ Check Synchronous Exceptions Handling Template
     ${EXCEPTION_HANDLER_OFFSET}=                           Get Exception Handler Offset  ${pl}  ${exception_type}
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${EXCEPTION_HANDLER_BASE_ADDRESS} + ${EXCEPTION_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking  map_memory=True
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStep  map_memory=True
     Unmask Exception                                       ${exception_type}
     Start Emulation
 
@@ -521,7 +521,7 @@ Check Asynchronous Exceptions Handling Template
     ${EXCEPTION_HANDLER_OFFSET}=                           Get Exception Handler Offset  ${pl}  ${exception_type}
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${EXCEPTION_HANDLER_BASE_ADDRESS} + ${EXCEPTION_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStep
     Unmask Exception                                       ${exception_type}
     Start Emulation
 
@@ -566,7 +566,7 @@ Check Value Of System Registers After Reset Template
 Check Access To SPSR_hyp Register Template
     [Arguments]                                            ${pl}
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStep  map_memory=True
     Write Opcode To Address                                0x8000  0xe16ef300  # msr SPSR_hyp, r0
     Start Emulation
 
@@ -588,7 +588,7 @@ Check Access To SPSR_hyp Register Template
 Check Access To ELR_hyp Template
     [Arguments]                                            ${pl}  ${expected_access_allowed}
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStep  map_memory=True
     Write Opcode To Address                                0x8000  0xe30c0afe  # movw    r0, #51966      ; 0xcafe
     Write Opcode To Address                                0x8004  0xe12ef300  # msr     ELR_hyp, r0
     Write Opcode To Address                                0x8008  0xe10e1300  # mrs     r1, ELR_hyp
@@ -612,7 +612,7 @@ Check CPSR_c Instruction Changing Privilege Level To User Template
     ${TARGET_CPSR}=                                        Set Variable  0x40000110
     ${EXPECTED_PC}=                                        Set Variable  0x8004
 
-    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStepBlocking  map_memory=True
+    Initialize Emulation                                   pl=${pl}  pc=0x8000  exec_mode=SingleStep  map_memory=True
     Write Opcode To Address                                0x8000  0xe321f010  # msr CPSR_c, #16
     Start Emulation
 
@@ -638,7 +638,7 @@ Check VBAR Register Usage By IRQ Template
     ${IRQ_HANDLER_OFFSET}=                                 Set Variable  0x18
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${EXCEPTION_VECTOR_ADDRESS} + ${IRQ_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStep
     Unmask Exception                                       IRQ
     Start Emulation
 
@@ -657,7 +657,7 @@ Check High Exception Vectors Usage By IRQ Template
     ${IRQ_HANDLER_OFFSET}=                                 Set Variable  0x18
     ${EXPECTED_PC}=                                        Set Variable  ${{ ${IRQ_HANDLER_BASE} + ${IRQ_HANDLER_OFFSET} }}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking  map_memory=True
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStep  map_memory=True
     Add Dummy Memory At Hivecs Base Address                # Prevent CPU abort error when trying to execute code from hivecs addresses
     Unmask Exception                                       IRQ
     Enable Hivecs
@@ -675,7 +675,7 @@ Check High Exception Vectors Usage By IRQ Template
 Check Protection Region Address Register Access Template
     [Arguments]                                            ${pl}  ${reg_type}  ${region_num}
 
-    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStepBlocking
+    Initialize Emulation                                   pl=${pl}  exec_mode=SingleStep
     Start Emulation
 
     IF  "${reg_type}" == "Base" or "${reg_type}" == "BAR"

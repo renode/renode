@@ -26,8 +26,6 @@ Create RV32PRIV10 Machine
 Prepare RV32 State
     Execute Command                     cpu MTVEC ${MTVEC}
     Execute Command                     cpu PC 0x80000000
-    Execute Command                     cpu ExecutionMode SingleStepBlocking
-    Execute Command                     start
 
 Step Once And Ensure Not Trapped
     [Arguments]                         ${trap_adress}

@@ -12,7 +12,6 @@ Create Machine
     Execute Command        using sysbus
 
     Execute Command        cpu PC 0x0
-    Execute Command        cpu ExecutionMode SingleStepBlocking
     Execute Command        sysbus WriteDoubleWord 0x0 0x800593  # 0x0000: li a1, 0x8
     Execute Command        sysbus WriteDoubleWord 0x4 0x13      # 0x0004: nop
     Execute Command        sysbus WriteDoubleWord 0x8 0x500e7   # 0x0008: jalr a0
@@ -74,7 +73,6 @@ Shoud Invalidate Other Page When Overwritten Using Sysbus
     Create Machine
     Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x1000
 
-    Start Emulation
     Execute Command        cpu Step 3
     Assert PC Equals       0x1000
     Execute Command        cpu Step 3
@@ -89,7 +87,6 @@ Shoud Invalidate The Same Page When Overwritten Using Sysbus
     Create Machine
     Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x10
 
-    Start Emulation
     Execute Command        cpu Step 3
     Assert PC Equals       0x10
     Execute Command        cpu Step 3
@@ -104,7 +101,6 @@ Should Invalidate Other Page When Overwritten By Guest
     Create Machine
     Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x1000
 
-    Start Emulation
     Execute Command        cpu Step 3
     Assert PC Equals       0x1000
     Execute Command        cpu Step 3
@@ -119,7 +115,6 @@ Should Invalidate The Same Page When Overwritten By Guest
     Create Machine
     Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x10
 
-    Start Emulation
     Execute Command        cpu Step 3
     Assert PC Equals       0x10
     Execute Command        cpu Step 3

@@ -23,7 +23,6 @@ Create Machine RISC-V 64-bit
         Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
     END
 
-    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
     Execute Command                             sysbus.cpu PC ${pc_hex}
 
 Create Machine RISC-V 32-bit
@@ -35,8 +34,6 @@ Create Machine RISC-V 32-bit
     ELSE
         Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${pc_hex} { size: 0x40000 }"
     END
-
-    Execute Command                             sysbus.cpu ExecutionMode SingleStepBlocking
 
 Trace The Execution On The Versatile Platform
     [Arguments]                                 ${trace_format}
@@ -62,7 +59,6 @@ Run And Trace Simple Program On RISC-V
     Execute Command                             sysbus WriteWord ${pc+4} 0x0001 cpu            # nop
     Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x00310093 cpu  # addi x1, x2, 003
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 3
     Execute Command                             sysbus.cpu DisableExecutionTracing
     
@@ -84,7 +80,6 @@ Run RISC-V Program With Vcfg Instruction
     Execute Command                             sysbus WriteWord ${pc+4} 0x0001            # nop
     Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x04007057  # vsetvli zero, zero, e8, m1, ta, mu
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 3
 
 Run RISC-V Program With Memory Access
@@ -95,7 +90,6 @@ Run RISC-V Program With Memory Access
     Execute Command                             sysbus WriteWord ${pc+4} 0xe537 cpu          # lui a0, 14
     Execute Command                             sysbus WriteDoubleWord ${pc+8} 0xb52023 cpu  # sw a1, 0(a0)
 
-    Start Emulation
     Execute Command                             sysbus.cpu Step 3
 
 Should Be Equal As Bytes

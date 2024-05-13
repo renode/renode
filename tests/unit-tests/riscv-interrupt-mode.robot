@@ -11,7 +11,6 @@ Create Machine
     Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty; privilegeArchitecture: PrivilegeArchitecture.Priv1_10; interruptMode: InterruptMode.${interruptMode} }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000000 }"
 
-    Execute Command                             cpu ExecutionMode SingleStepBlocking
     Execute Command                             cpu TbCacheEnabled false
 
 
@@ -108,7 +107,6 @@ Should Not Correct STVEC From Monitor in Auto Mode
 Should Not Correct MTVEC Written By Software in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
-    Start Emulation
 
     MTVEC Should Be Equal                       0x1010
 
@@ -136,7 +134,6 @@ Should Not Correct MTVEC Written By Software in Auto Mode
 Should Not Correct STVEC Written By Software in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
-    Start Emulation
 
     STVEC Should Be Equal                       0x0
 
@@ -218,7 +215,6 @@ Should Correct STVEC From Monitor in Direct Mode
 Should Correct MTVEC Written By Software in Direct Mode
     Create Log Tester                           0
     Create Machine                              Direct
-    Start Emulation
 
     MTVEC Should Be Equal                       0x1010
 
@@ -246,7 +242,6 @@ Should Correct MTVEC Written By Software in Direct Mode
 Should Correct STVEC Written By Software in Direct Mode
     Create Log Tester                           0
     Create Machine                              Direct
-    Start Emulation
 
     STVEC Should Be Equal                       0x0
 
@@ -330,7 +325,6 @@ Should Correct STVEC From Monitor in Vectored Mode
 Should Correct MTVEC Written By Software in Vectored Mode
     Create Log Tester                           0
     Create Machine                              Vectored
-    Start Emulation
 
     MTVEC Should Be Equal                       0x1011
 
@@ -358,7 +352,6 @@ Should Correct MTVEC Written By Software in Vectored Mode
 Should Correct STVEC Written By Software in Vectored Mode
     Create Log Tester                           0
     Create Machine                              Vectored
-    Start Emulation
 
     STVEC Should Be Equal                       0x1
 

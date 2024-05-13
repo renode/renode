@@ -131,8 +131,6 @@ Test Accessing System Registers
 
 Test CRC32X
     Create Machine
-    Execute Command               cpu ExecutionMode SingleStepBlocking
-    Start Emulation
 
     Execute Command               sysbus WriteDoubleWord 0x0 0x9ac34c00  # crc32x  w0, w0, x3
     Execute Command               sysbus WriteDoubleWord 0x4 0x9ac44c00  # crc32x  w0, w0, x4
@@ -153,8 +151,6 @@ Test CRC32X
 
 Test CRC32CX
     Create Machine
-    Execute Command               cpu ExecutionMode SingleStepBlocking
-    Start Emulation
 
     Execute Command               sysbus WriteDoubleWord 0x0 0x9ac35c00  # crc32cx  w0, w0, x3
     Execute Command               sysbus WriteDoubleWord 0x4 0x9ac45c00  # crc32cx  w0, w0, x4

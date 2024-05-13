@@ -62,8 +62,6 @@ Should Handle WRASR
     # nop
     Execute Command           sysbus WriteDoubleWord 0x40000028 0x01000000
 
-    Execute Command           cpu ExecutionMode SingleStepBlocking
-    Start Emulation
     PC Should Be Equal        0x40000000
 
     Execute Command           cpu Step 3

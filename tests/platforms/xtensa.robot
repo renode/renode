@@ -34,7 +34,6 @@ Test Division
     Create Machine
     Execute Command               machine LoadPlatformDescriptionFromString 'opmem: Memory.MappedMemory @ sysbus 0x0 { size: 0x30000 }'
     Execute Command               cpu PC 0x0
-    Execute Command               cpu ExecutionMode SingleStepBlocking
     Load Opcodes To Memory
 
     # Load operands of the operation
@@ -42,8 +41,6 @@ Test Division
     # 0x10 / 0x02
     Execute Command               sysbus WriteDoubleWord 0x400 ${NUMERATOR}
     Execute Command               sysbus WriteDoubleWord 0x404 ${DENOMINATOR}
-
-    Start Emulation
 
     Execute Command               cpu Step
     PC Should Be Equal            0x3

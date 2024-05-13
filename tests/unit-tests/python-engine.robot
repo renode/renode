@@ -61,10 +61,8 @@ Should Abort On Runtime Error
              Execute Command          logLevel -1 cpu
              Execute Command          cpu InstallCustomInstructionHandlerFromString "11111111111111111111111100001011" "a = b"
              Execute Command          sysbus WriteDoubleWord 0x00000000 0xffffff0b
-             Execute Command          cpu ExecutionMode SingleStepBlocking
              Execute Command          cpu PC 0x00000000
 
-             Start Emulation
              Execute Command          cpu Step
              Wait For Log Entry       Python runtime error: name 'b' is not defined
              Wait For Log Entry       CPU abort detected, halting.

@@ -105,7 +105,7 @@ Should Modify Peripheral Registration
         Execute Command    cpu${i} Reset
     END
     Execute Command                          emulation RunFor '0.0001'
-    # Start Emulation
+
     FOR  ${i}  IN RANGE  ${CPU_COUNT}
         Verify Command Output As Integer     ${NEW_PERIPHBASE_ADDRESS}  cpu${i} GetSystemRegisterValue "CBAR"
     END
@@ -115,8 +115,8 @@ Should Modify Peripheral Registration
 Should Set PC For Cores With INITRAM And VINITHI High
     Requires           created-machine
 
-    Execute Command    cpu0 ExecutionMode SingleStepBlocking
-    Execute Command    cpu1 ExecutionMode SingleStepBlocking
+    Execute Command    cpu0 ExecutionMode SingleStep
+    Execute Command    cpu1 ExecutionMode SingleStep
 
     # Both signals will be high only for cpu0.
     Execute Command    ${SIGNALS_UNIT} SetSignalStateForCPU "INITRAM" true cpu0
