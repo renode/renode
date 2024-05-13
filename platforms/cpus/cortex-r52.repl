@@ -17,7 +17,7 @@ timer: Timers.ARM_GenericTimer @ cpu
     NonSecureEL2PhysicalTimerIRQ -> gic#0@26
 
 dram0: Memory.MappedMemory @ sysbus 0x0
-    size: 0x08000000
+    size: 0x80000000
 
 flash0: Memory.MappedMemory @ sysbus 0x88000000
     size: 0x04000000
