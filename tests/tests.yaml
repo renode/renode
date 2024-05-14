@@ -100,7 +100,7 @@
 - tests/platforms/PolarFireSoC.robot
 - tests/platforms/SLTB004A.robot
 - tests/platforms/ambiq-apollo4.robot
-- tests/unit-tests/non-blockng-step.robot
+- tests/unit-tests/cpu-step.robot
 - tests/platforms/STM32L072.robot
 - tests/unit-tests/hifive1-pmp.robot
 - tests/unit-tests/hifive1-gpio-int.robot
