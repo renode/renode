@@ -4,6 +4,7 @@ ${URI}                   @https://dl.antmicro.com/projects/renode
 
 *** Keywords ***
 Create Machine
+    [Arguments]    ${step_blocking}=false
     Execute Command             using sysbus
     Execute Command             mach create
     Execute Command             machine LoadPlatformDescription @platforms/cpus/sifive-fu540.repl
@@ -12,10 +13,18 @@ Create Machine
     Execute Command             sysbus LoadFdt ${URI}/hifive-unleashed--devicetree.dtb-s_10532-70cd4fc9f3b4df929eba6e6f22d02e6ce4c17bd1 0x81000000 "earlyconsole mem=256M@0x80000000"
     Execute Command             e51 SetRegisterUnsafe 11 0x81000000
 
-    Execute Command             emulation SingleStepBlocking false
+    Execute Command             emulation SingleStepBlocking ${step_blocking}
     Execute Command             u54_1 ExecutionMode SingleStep
 
     Create Terminal Tester      sysbus.uart0
+
+${cpu} PC ${should:(Should|Shouldn't)} Be Equal To ${pc_expected}
+    ${pc}=  Execute Command     ${cpu} PC
+    IF    "${should}" == "Should"
+        Should Be Equal As Integers    ${pc}    ${pc_expected}
+    ELSE
+        Should Not Be Equal As Integers    ${pc}    ${pc_expected}
+    END
 
 SingleStep Should Be Blocking
     ${isBlocking}=  Execute Command    emulation SingleStepBlocking
@@ -68,3 +77,27 @@ Step Should Be Blocking After Deserialization
     Execute Command             Load @${tmp_file}
 
     SingleStep Should Be Blocking
+
+Test SingleStepBlocking Change After Blocking Steps
+    Create Machine              step_blocking=True
+
+    # Let's do a single step; PCs of other cores change on the first step.
+    Execute Command             u54_1 Step
+
+    # Let's keep PCs for two other cores.
+    ${pc_e51}=
+    ...    Execute Command      e51 PC
+    ${pc_u54_2}=
+    ...    Execute Command      u54_2 PC
+
+    Execute Command             u54_1 Step 10
+
+    # Let's make sure PCs are the same.
+    e51 PC Should Be Equal To ${pc_e51}
+    u54_2 PC Should Be Equal To ${pc_u54_2}
+
+    # Now make SingleStep non-blocking without any other changes.
+    Execute Command             emulation SingleStepBlocking false
+
+    # Other cores should be able to reach it.
+    Wait For Line On Uart       smp: Bringing up secondary CPUs
