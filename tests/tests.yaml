@@ -150,3 +150,4 @@
 - tests/peripherals/S32K3XX_FlexCAN.robot
 - tests/platforms/BeagleV-StarLight.robot
 - tests/unit-tests/virtual-time.robot
+- tests/peripherals/VirtIO.robot

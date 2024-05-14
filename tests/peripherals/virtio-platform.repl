@@ -1,0 +1,41 @@
+rom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x10000
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x2000
+
+main_ram: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0x10000000
+
+spiflash: Memory.MappedMemory @ sysbus 0xd0000000
+    size: 0x1000000
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0xf0010000
+    frequency: 100000000
+    [0, 1] -> cpu@[3, 7]
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf0c00000
+    [0, 1, 2] -> cpu@[11, 9, 13]
+    numberOfSources: 32
+    numberOfContexts: 3
+    prioritiesEnabled: false
+
+cpu: CPU.VexRiscv @ sysbus
+    cpuType: "rv32imac_zicsr_zifencei"
+    builtInIrqController: false
+    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    timeProvider: clint
+
+ctrl: Miscellaneous.LiteX_SoC_Controller @ sysbus 0xf0000000
+
+uart0: UART.LiteX_UART @ sysbus 0xf0001000
+
+timer0: Timers.LiteX_Timer @ sysbus 0xf0001800
+    frequency: 100000000
+
+litespi0: SPI.LiteX_SPI @ sysbus 0xf0007000
+
+sysbus:
+    init add:
+        SilenceRange <4026544128 0x200> # ddrphy
+        SilenceRange <4026546176 0x200> # sdram

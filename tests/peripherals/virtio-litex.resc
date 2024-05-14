@@ -1,0 +1,15 @@
+using sysbus
+mach create
+
+machine LoadPlatformDescription $platform
+
+showAnalyzer uart0
+
+sysbus LoadBinary $img 0x40000000
+sysbus LoadBinary $dtb 0x40ef0000
+sysbus LoadBinary $osbi 0x40f00000
+sysbus LoadBinary $rootfs 0x42000000
+
+cpu PC 0x40f00000
+
+machine StartGdbServer 3333
