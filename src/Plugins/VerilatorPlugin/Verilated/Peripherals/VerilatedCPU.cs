@@ -119,6 +119,52 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
+        public override ExecutionResult ExecuteInstructions(ulong numberOfInstructionsToExecute, out ulong numberOfExecutedInstructions)
+        {
+            instructionsExecutedThisRound = 0UL;
+
+            try
+            {
+                lock(verilatedPeripheralLock)
+                {
+                    if (IsSingleStepMode)
+                    {
+                        while(instructionsExecutedThisRound < 1)
+                        {
+                            gotStep = false;
+                            verilatedPeripheral.Send(ActionType.Step, 0, 1);
+                            while(!gotStep)
+                            {
+                                verilatedPeripheral.HandleMessage();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ticksProcessed = false;
+                        verilatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
+                        while(!ticksProcessed)
+                        {
+                            verilatedPeripheral.HandleMessage();
+                        }
+                    }
+                }
+            }
+            catch(Exception)
+            {
+                this.NoisyLog("CPU exception detected, halting.");
+                InvokeHalted(new HaltArguments(HaltReason.Abort, Id));
+                return ExecutionResult.Aborted;
+            }
+            finally
+            {
+                numberOfExecutedInstructions = instructionsExecutedThisRound;
+                totalExecutedInstructions += instructionsExecutedThisRound;
+            }
+
+            return ExecutionResult.Ok;
+        }
+
         protected abstract void InitializeRegisters();
 
         public override ExecutionMode ExecutionMode
@@ -166,52 +212,6 @@ namespace Antmicro.Renode.Peripherals.Verilated
         }
 
         public override ulong ExecutedInstructions => totalExecutedInstructions;
-
-        protected override ExecutionResult ExecuteInstructions(ulong numberOfInstructionsToExecute, out ulong numberOfExecutedInstructions)
-        {
-            instructionsExecutedThisRound = 0UL;
-
-            try
-            {
-                lock(verilatedPeripheralLock)
-                {
-                    if (IsSingleStepMode)
-                    {
-                        while(instructionsExecutedThisRound < 1)
-                        {
-                            gotStep = false;
-                            verilatedPeripheral.Send(ActionType.Step, 0, 1);
-                            while(!gotStep)
-                            {
-                                verilatedPeripheral.HandleMessage();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ticksProcessed = false;
-                        verilatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
-                        while(!ticksProcessed)
-                        {
-                            verilatedPeripheral.HandleMessage();
-                        }
-                    }
-                }
-            }
-            catch(Exception)
-            {
-                this.NoisyLog("CPU exception detected, halting.");
-                InvokeHalted(new HaltArguments(HaltReason.Abort, Id));
-                return ExecutionResult.Aborted;
-            }
-            finally
-            {
-                numberOfExecutedInstructions = instructionsExecutedThisRound;
-                totalExecutedInstructions += instructionsExecutedThisRound;
-            }
-
-            return ExecutionResult.Ok;
-        }
 
         protected void HandleReceived(ProtocolMessage message)
         {
