@@ -17,6 +17,10 @@ Create Machine
 
     Create Terminal Tester      sysbus.uart0
 
+SingleStep Should Be Blocking
+    ${isBlocking}=  Execute Command    emulation SingleStepBlocking
+    Should Be True                     ${isBlocking}
+
 *** Test Cases ***
 Should Start Execution With One Core In SingleStepNonBlocking
     Create Machine
@@ -51,3 +55,16 @@ Should Step Core In SingleStepNonBlocking Over Quantum Limit
 
     ${x}=  Execute Command      u54_1 Step 101
     Should Contain              ${x}  0x0000000080001C1C
+
+Step Should Be Blocking By Default
+    SingleStep Should Be Blocking
+
+Step Should Be Blocking After Deserialization
+    # Let's change to make sure the value isn't serialized.
+    Execute Command             emulation SingleStepBlocking false
+
+    ${tmp_file}=                Allocate Temporary File
+    Execute Command             Save @${tmp_file}
+    Execute Command             Load @${tmp_file}
+
+    SingleStep Should Be Blocking
