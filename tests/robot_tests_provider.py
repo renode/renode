@@ -263,6 +263,8 @@ class RobotTestSuite(object):
     retry_suite_regex = re.compile(r"|".join((
             r"\[Errno \d+\] Connection refused",
             r"Connection to remote server broken: \[WinError \d+\]",
+            r"Connecting remote server at [^ ]+ failed",
+            "Getting keyword names from library 'Remote' failed",
     )))
 
     def __init__(self, path):
