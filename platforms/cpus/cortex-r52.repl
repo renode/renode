@@ -1,6 +1,7 @@
 cpu: CPU.ARMv8R @ sysbus
     cpuType: "cortex-r52"
     genericInterruptController: gic
+    cpuId: 0
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };

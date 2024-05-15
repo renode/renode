@@ -1,0 +1,22 @@
+using "./cortex-r52.repl"
+
+cpu1: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+    cpuId: 1
+
+gic: @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0xAF100000; cpu: cpu };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0xAF120000; cpu: cpu1 }
+    }
+    [4-7] -> cpu1@[0-3]
+
+timer1: Timers.ARM_GenericTimer @ cpu1
+    frequency: 100000000
+    EL1PhysicalTimerIRQ -> gic#1@30
+    EL1VirtualTimerIRQ -> gic#1@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#1@26
+
+uart1: UART.PL011 @ sysbus 0x9c0a0000
+    -> gic@6
