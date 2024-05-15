@@ -150,3 +150,40 @@ Test Writing To A Locked Sysbus Range
     Should Read Byte           0x100  ${new_value_0x100}
     Should Read Byte           0x140  ${new_value_0x140}
     Should Read Byte           0x180  ${init_value_0x180}
+
+Symbols Should Be Dynamically Loaded and Unloaded On Request
+    ${bin}=                        Set Variable  @https://dl.antmicro.com/projects/renode/stm32l07--zephyr-shell_module.elf-s_1195760-e9474da710aca88c89c7bddd362f7adb4b0c4b70
+    ${cpu}=                        Set Variable  sysbus.cpu
+    ${main_symbol_name}=           Set Variable  "main"
+    ${main_symbol_address}=        Set Variable  0x0000000008007644
+
+    Execute Command                include @platforms/cpus/stm32l072.repl
+
+    # LoadELF without cpu context argument loads symbols in the global scope
+    Execute Command                sysbus LoadELF ${bin}
+    ${main_address_global}=        Execute Command  sysbus GetSymbolAddress ${main_symbol_name}
+    Should Be Equal As Numbers     ${main_symbol_address}  ${main_address_global}
+    
+    # Symbol lookup fallbacks to the global scope if the per-cpu lookup is not found
+    ${main_address_local}=         Execute Command  sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
+    Should Be Equal As Numbers     ${main_symbol_address}  ${main_address_local}
+
+    # Global lookup is not cleared when the per-cpu lookup is cleared, so local lookup fallbacks to the global scope
+    Execute Command                sysbus ClearSymbols context=${cpu}
+    ${main_address_local}=         Execute Command  sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
+    Should Be Equal As Numbers     ${main_symbol_address}  ${main_address_local}
+
+    Execute Command                sysbus ClearSymbols
+    # Global lookup is cleared so both local and global lookup fail
+    Run Keyword And Expect Error   *No symbol with name `main` found*
+    ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
+    Run Keyword And Expect Error   *No symbol with name `main` found*
+    ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
+    
+    # Load symbols in the local scope so they are visible only for the given cpu
+    Execute Command                sysbus LoadSymbolsFrom ${bin} context=${cpu}
+    ${main_address_local}=         Execute Command  sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
+    Should Be Equal As Numbers     ${main_symbol_address}  ${main_address_local}
+    Run Keyword And Expect Error   *No symbol with name `main` found*
+    ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
+    
