@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -53,17 +53,17 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public override void Reset()
         {
             base.Reset();
-            
+
             gotRegisterValue = false;
             setRegisterValue = false;
             gotSingleStepMode = false;
             ticksProcessed = false;
             gotStep = false;
-        
+
             registerValue = 0;
             instructionsExecutedThisRound = 0;
             totalExecutedInstructions = 0;
-        
+
             lock(verilatedPeripheralLock)
             {
                 verilatedPeripheral.Reset();
@@ -78,7 +78,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 verilatedPeripheral.Dispose();
             }
         }
-        
+
         public void OnGPIO(int number, bool value)
         {
             this.NoisyLog("IRQ {0}, value {1}", number, value);
@@ -168,7 +168,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public override ulong ExecutedInstructions => totalExecutedInstructions;
 
         protected override ExecutionResult ExecuteInstructions(ulong numberOfInstructionsToExecute, out ulong numberOfExecutedInstructions)
-        { 
+        {
             instructionsExecutedThisRound = 0UL;
 
             try
@@ -323,11 +323,11 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 }
             }
         }
-        
+
         protected readonly object verilatedPeripheralLock = new object();
 
         private readonly BaseVerilatedPeripheral verilatedPeripheral;
-        
+
         private bool gotRegisterValue;
         private ulong registerValue;
         private bool setRegisterValue;
