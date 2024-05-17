@@ -4,7 +4,7 @@ cpu: CPU.ARMv8R @ sysbus
 
 gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x94000000; size: 0x10000; region: "distributor" };
-        sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0x94100000; cpu: cpu }
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x94100000 }
     }
     [0,1] -> cpu@[0,1]
     supportsTwoSecurityStates: false

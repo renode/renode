@@ -7,8 +7,8 @@ cpu1: CPU.ARMv8R @ sysbus
 
 gic: @ {
         sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };
-        sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0xAF100000; cpu: cpu };
-        sysbus new IRQControllers.ArmGicRedistributorRegistration { address: 0xAF120000; cpu: cpu1 }
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu;  address: 0xAF100000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; address: 0xAF120000 }
     }
     [4-7] -> cpu1@[0-3]
 
