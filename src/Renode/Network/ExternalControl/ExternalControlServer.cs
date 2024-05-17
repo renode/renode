@@ -110,87 +110,90 @@ namespace Antmicro.Renode.Network
             this.Log(LogLevel.Noisy, "Received new data: {0}", Misc.PrettyPrintCollectionHex(data));
             this.Log(LogLevel.Debug, "Current buffer: {0}", Misc.PrettyPrintCollectionHex(buffer));
 
-            switch(state)
+            while(state != State.Disposed)
             {
-            case State.Handshake:
-                if(buffer.Count < HandshakeHeaderSize)
+                switch(state)
                 {
-                    return;
+                    case State.Handshake:
+                        if(buffer.Count < HandshakeHeaderSize)
+                        {
+                            return;
+                        }
+                        commandsToActivate = BitConverter.ToUInt16(buffer.GetRange(0, HandshakeHeaderSize).ToArray(), 0);
+                        buffer.RemoveRange(0, HandshakeHeaderSize);
+                        this.Log(LogLevel.Noisy, "{0} commands to activate", commandsToActivate);
+
+                        SetState(State.WaitingForHandshakeData);
+                        continue;
+
+                    case State.WaitingForHandshakeData:
+                        if(commandsToActivate > 0 && buffer.Count >= 2)
+                        {
+                            var toActivate = (int)Math.Min(commandsToActivate, buffer.Count / 2);
+
+                            if(!TryActivateCommands(buffer.GetRange(0, toActivate * 2)))
+                            {
+                                socketServerProvider.Stop();
+                                return;
+                            }
+
+                            buffer.RemoveRange(0, toActivate * 2);
+                            commandsToActivate -= toActivate;
+                        }
+
+                        if(commandsToActivate > 0)
+                        {
+                            return;
+                        }
+
+                        SendResponse(Response.SuccessfulHandshake());
+                        this.Log(LogLevel.Noisy, "Handshake finished");
+
+                        SetState(State.WaitingForHeader);
+                        continue;
+
+                    case State.WaitingForHeader:
+                        if(buffer.Count < HeaderSize)
+                        {
+                            return;
+                        }
+
+                        header = Packet.Decode<ExternalControlProtocolHeader>(buffer);
+                        if(!IsHeaderValid())
+                        {
+                            var message = $"Encountered invalid header: {header}";
+                            this.Log(LogLevel.Error, message);
+                            SendResponse(Response.FatalError(message));
+                            socketServerProvider.Stop();
+                            return;
+                        }
+
+                        this.Log(LogLevel.Noisy, "Received header: {0}", header);
+                        buffer.RemoveRange(0, HeaderSize);
+
+                        SetState(State.WaitingForData);
+                        continue;
+
+                    case State.WaitingForData:
+                        if(buffer.Count < header.Value.dataSize)
+                        {
+                            return;
+                        }
+
+                        TryHandleCommand(out var response, header.Value.command, buffer.GetRange(0, (int)header.Value.dataSize));
+
+                        buffer.RemoveRange(0, (int)header.Value.dataSize);
+                        header = null;
+
+                        SendResponse(response);
+
+                        SetState(State.WaitingForHeader);
+                        continue;
+
+                    case State.NotConnected:
+                    default:
+                        throw new Exception("Unreachable");
                 }
-                commandsToActivate = BitConverter.ToUInt16(buffer.GetRange(0, HandshakeHeaderSize).ToArray(), 0);
-                buffer.RemoveRange(0, HandshakeHeaderSize);
-                this.Log(LogLevel.Noisy, "{0} commands to activate", commandsToActivate);
-
-                state = State.WaitingForHandshakeData;
-                goto case State.WaitingForHandshakeData;
-
-            case State.WaitingForHandshakeData:
-                if(commandsToActivate > 0 && buffer.Count >= 2)
-                {
-                    var toActivate = (int)Math.Min(commandsToActivate, buffer.Count / 2);
-
-                    if(!TryActivateCommands(buffer.GetRange(0, toActivate * 2)))
-                    {
-                        socketServerProvider.Stop();
-                        return;
-                    }
-
-                    buffer.RemoveRange(0, toActivate * 2);
-                    commandsToActivate -= toActivate;
-                }
-
-                if(commandsToActivate > 0)
-                {
-                    return;
-                }
-
-                SendResponse(Response.SuccessfulHandshake());
-                this.Log(LogLevel.Noisy, "Handshake finished");
-
-                state = State.WaitingForHeader;
-                goto case State.WaitingForHeader;
-
-            case State.WaitingForHeader:
-                if(buffer.Count < HeaderSize)
-                {
-                    return;
-                }
-
-                header = Packet.Decode<ExternalControlProtocolHeader>(buffer);
-                if(!IsHeaderValid())
-                {
-                    var message = $"Encountered invalid header: {header}";
-                    this.Log(LogLevel.Error, message);
-                    SendResponse(Response.FatalError(message));
-                    socketServerProvider.Stop();
-                    return;
-                }
-
-                this.Log(LogLevel.Noisy, "Received header: {0}", header);
-                buffer.RemoveRange(0, HeaderSize);
-
-                state = State.WaitingForData;
-                goto case State.WaitingForData;
-
-            case State.WaitingForData:
-                if(buffer.Count < header.Value.dataSize)
-                {
-                    return;
-                }
-
-                TryHandleCommand(out var response, header.Value.command, buffer.GetRange(0, (int)header.Value.dataSize));
-
-                buffer.RemoveRange(0, (int)header.Value.dataSize);
-                header = null;
-
-                SendResponse(response);
-
-                state = State.WaitingForHeader;
-                goto case State.WaitingForHeader;
-
-            case State.NotConnected:
-            default:
-                throw new Exception("Unreachable");
             }
         }
 
@@ -215,6 +218,15 @@ namespace Antmicro.Renode.Network
             socketServerProvider.Send(bytes);
             this.Log(LogLevel.Debug, "Response sent: {0}", response);
             this.Log(LogLevel.Noisy, "Bytes sent: {0}", Misc.PrettyPrintCollectionHex(bytes));
+        }
+
+        private void SetState(State newState)
+        {
+            if(state == State.Disposed)
+            {
+                return;
+            }
+            state = newState;
         }
 
         private State state = State.NotConnected;
