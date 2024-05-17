@@ -15,6 +15,8 @@ typedef enum {
     ERR_NOT_CONNECTED,
     ERR_PERIPHERAL_INIT_FAILED,
     ERR_TIMEOUT,
+    ERR_COMMAND_FAILED,
+    ERR_NO_ERROR = -1,
 } renode_error_code;
 
 typedef struct {

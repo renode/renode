@@ -57,8 +57,6 @@ typedef enum {
 
 #define ERROR_DYNAMIC_MESSAGE_SIZE 0x400
 
-static renode_error_t *create_fatal_error_static(char *message);
-
 static void *xmalloc(size_t size)
 {
     void *result = malloc(size);
@@ -66,27 +64,27 @@ static void *xmalloc(size_t size)
     return result;
 }
 
-static renode_error_t *create_connection_failed_error(char *message)
+static renode_error_t *create_error_static(renode_error_code code, char *message)
 {
     renode_error_t *error = xmalloc(sizeof(renode_error_t));
-    error->code = ERR_CONNECTION_FAILED;
+    error->code = code;
     error->flags = 0;
     error->message = message;
     error->data = NULL;
     return error;
 }
 
-static renode_error_t *create_fatal_error_static(char *message)
+static renode_error_t *create_error_dynamic(renode_error_code code, char *message)
 {
-    renode_error_t *error = xmalloc(sizeof(renode_error_t));
-    error->code = ERR_FATAL;
-    error->flags = 0;
-    error->message = message;
-    error->data = NULL;
+    renode_error_t *error = create_error_static(code, message);
+    error->flags |= ERROR_FREE_MESSAGE;
     return error;
 }
 
-static renode_error_t *create_fatal_error(char *fmt, ...)
+#define create_connection_failed_error(message) create_error_static(ERR_COMMAND_FAILED, (message))
+#define create_fatal_error_static(message) create_error_static(ERR_FATAL, (message))
+
+static renode_error_t *create_error(renode_error_code code, char *fmt, ...)
 {
     char *message = xmalloc(ERROR_DYNAMIC_MESSAGE_SIZE);
     va_list ap;
@@ -94,10 +92,13 @@ static renode_error_t *create_fatal_error(char *fmt, ...)
     vsnprintf(message, ERROR_DYNAMIC_MESSAGE_SIZE, fmt, ap);
     va_end(ap);
 
-    renode_error_t *error = create_fatal_error_static(message);
+    renode_error_t *error = create_error_static(code, message);
     error->flags |= ERROR_FREE_MESSAGE;
     return error;
 }
+
+#define create_fatal_error(...) create_error(ERR_FATAL, __VA_ARGS__)
+#define create_command_failed_error(...) create_error(ERR_COMMAND_FAILED, __VA_ARGS__)
 
 void renode_free_error(renode_error_t *error)
 {
@@ -284,6 +285,7 @@ static renode_error_t *renode_receive_bytes(renode_t *renode, uint8_t *buffer, u
 
 static renode_error_t *renode_receive_response(renode_t *renode, api_command_t expected_command, uint8_t *data_buffer, uint32_t buffer_size, uint32_t *data_size)
 {
+    uint8_t *buffer = data_buffer;
     uint8_t return_code;
     uint8_t command;
     *data_size = -1;
@@ -320,10 +322,15 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
             return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
 
             if (buffer_size < *data_size) {
-                return create_fatal_error_static("Buffer too small");
+                if(return_code == SUCCESS_WITH_DATA)
+                {
+                    return create_fatal_error_static("Buffer too small");
+                }
+                buffer = xmalloc(*data_size + 1);
+                buffer[*data_size] = '\0';
             }
 
-            return_error_if_fails(renode_receive_bytes(renode, data_buffer, *data_size));
+            return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
             break;
         case INVALID_COMMAND:
         case SUCCESS_WITHOUT_DATA:
@@ -333,8 +340,19 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
             return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
     }
 
-    if (return_code == FATAL_ERROR) {
-        return create_fatal_error_static("received fatal error");
+    renode_error_code error_code = ERR_NO_ERROR;
+    switch (return_code) {
+        case COMMAND_FAILED:
+            error_code = ERR_COMMAND_FAILED;
+            break;
+        case FATAL_ERROR:
+            error_code = ERR_COMMAND_FAILED;
+            break;
+        default:
+            break;
+    }
+    if (error_code != ERR_NO_ERROR) {
+        return create_error_dynamic(error_code, (char *)buffer);
     }
 
     if (return_code == INVALID_COMMAND) {
