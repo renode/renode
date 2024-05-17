@@ -131,6 +131,9 @@
     <Compile Include="Network\NetworkServer\Modules\TftpServerModule.cs" />
     <Compile Include="Integrations\ArduinoLoader.cs" />
     <Compile Include="Integrations\AsciinemaRecorder.cs" />
+    <Compile Include="Network\ExternalControl\ICommand.cs" />
+    <Compile Include="Network\ExternalControl\Response.cs" />
+    <Compile Include="Network\ExternalControl\RunFor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
