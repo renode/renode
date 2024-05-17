@@ -70,14 +70,7 @@ namespace Antmicro.Renode.Network
                 return false;
             }
 
-            try
-            {
-                if(Encoding.ASCII.GetString(header.Value.magic) != Magic)
-                {
-                    return false;
-                }
-            }
-            catch(ArgumentException)
+            if(header.Value.Magic != Magic)
             {
                 return false;
             }
@@ -262,7 +255,22 @@ namespace Antmicro.Renode.Network
         {
             public override string ToString()
             {
-                return $"{{ magic: {Misc.PrettyPrintCollectionHex(magic)} ({Encoding.ASCII.GetString(magic)}), command: 0x{(byte)command} ({command}), dataSize: {dataSize} }}";
+                return $"{{ magic: {Misc.PrettyPrintCollectionHex(magic)} ({Magic}), command: 0x{(byte)command} ({command}), dataSize: {dataSize} }}";
+            }
+
+            public string Magic
+            {
+                get
+                {
+                    try
+                    {
+                        return Encoding.ASCII.GetString(magic);
+                    }
+                    catch
+                    {
+                        return "<invalid>";
+                    }
+                }
             }
 
 #pragma warning disable 649
