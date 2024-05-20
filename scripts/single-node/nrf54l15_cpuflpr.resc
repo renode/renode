@@ -1,0 +1,15 @@
+$name?="nrf54l15-cpuflpr"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/boards/nrf54l15_cpuflpr.repl
+
+$elf?=@https://dl.antmicro.com/projects/renode/nrf54l15pdk--zephyr-hello_world.elf-s_732140-5c387a1f075e4f48ace7db9af4db6f179d018f1f
+
+macro reset
+"""
+    sysbus LoadELF $elf true
+    machine StartGdbServer 3333 true
+"""
+
+runMacro $reset
