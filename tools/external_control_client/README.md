@@ -27,6 +27,7 @@ The currently implemented functions from the header file are:
 * `renode_connect`
 * `renode_disconnect`
 * `renode_run_for`
+* `renode_get_current_time`
 * `renode_error_free`
 
 The library itself can be built with CMake using the `./lib/CMakeLists.txt`.

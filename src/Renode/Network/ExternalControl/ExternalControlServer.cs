@@ -35,6 +35,7 @@ namespace Antmicro.Renode.Network
 
             commandHandlers = new CommandHandlerCollection();
             commandHandlers.Register(new RunFor(this));
+            commandHandlers.Register(new GetTime(this));
 
             socketServerProvider.ConnectionAccepted += delegate
             {

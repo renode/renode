@@ -11,6 +11,7 @@ namespace Antmicro.Renode.Network.ExternalControl
     public enum Command : byte
     {
         RunFor = 1,
+        GetTime,
     }
 
     public interface ICommand

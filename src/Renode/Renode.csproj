@@ -134,6 +134,7 @@
     <Compile Include="Network\ExternalControl\ICommand.cs" />
     <Compile Include="Network\ExternalControl\Response.cs" />
     <Compile Include="Network\ExternalControl\RunFor.cs" />
+    <Compile Include="Network\ExternalControl\GetTime.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

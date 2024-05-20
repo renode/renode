@@ -114,11 +114,13 @@ void renode_free_error(renode_error_t *error)
 
 typedef enum {
     RUN_FOR = 1,
+    GET_TIME,
 } api_command_t;
 
 static uint8_t command_versions[][2] = {
     { 0x0, 0x0 }, // reserved for size
     { RUN_FOR, 0x0 },
+    { GET_TIME, 0x0 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -399,4 +401,30 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64
     }
 
     return renode_execute_command(renode, RUN_FOR, &data, sizeof(data), sizeof(data), NULL);
+}
+
+renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time)
+{
+    assert(renode != NULL);
+
+    uint64_t divider;
+    switch (unit) {
+        case TU_MICROSECONDS:
+        case TU_MILLISECONDS:
+        case TU_SECONDS:
+            // The enum values are equal to 1 `unit` expressed in microseconds.
+            divider = unit;
+            break;
+        default:
+            assert_fmsg(false, "Invalid unit: %d\n", unit);
+    }
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(renode, GET_TIME, current_time, sizeof(*current_time), sizeof(*current_time), &response_size));
+
+    assert_msg(response_size == sizeof(*current_time), "Received unexpected number of bytes");
+
+    *current_time /= divider;
+
+    return NO_ERROR;
 }

@@ -47,3 +47,4 @@ typedef enum {
 } renode_time_unit_t;
 
 renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64_t value);
+renode_error_t *renode_get_current_time(renode_t *renode_instance, renode_time_unit_t unit, uint64_t *current_time);
