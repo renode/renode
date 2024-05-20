@@ -1,0 +1,21 @@
+$name?="arty-e21"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/boards/arty_sifive_e21.repl
+
+# cpu LogFunctionNames true
+
+# TODO: if example works OK, upload to dev.antmicro.com
+$elf?=@wip-bins/arty_e21_cxx_hello.elf
+
+showAnalyzer uart Antmicro.Renode.Analyzers.LoggingUartAnalyzer
+
+macro reset
+"""
+    sysbus LoadELF $elf true
+    machine StartGdbServer 3333 true
+"""
+
+runMacro $reset
+
