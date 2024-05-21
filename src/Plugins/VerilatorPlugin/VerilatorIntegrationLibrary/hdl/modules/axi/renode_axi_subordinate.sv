@@ -11,10 +11,17 @@ module renode_axi_subordinate (
 );
   import renode_axi_pkg::*;
 
+  `ifdef XCELIUM
+  typedef logic [$bits(bus.address_t)-1:0] address_t;
+  typedef logic [$bits(bus.data_t)-1:0] data_t;
+  typedef logic [$bits(bus.strobe_t)-1:0] strobe_t;
+  typedef logic [$bits(bus.transaction_id_t)-1:0] transaction_id_t;
+  `else
   typedef logic [bus.AddressWidth-1:0] address_t;
   typedef logic [bus.DataWidth-1:0] data_t;
   typedef logic [bus.StrobeWidth-1:0] strobe_t;
   typedef logic [bus.TransactionIdWidth-1:0] transaction_id_t;
+  `endif
 
   wire clk = bus.aclk;
 
