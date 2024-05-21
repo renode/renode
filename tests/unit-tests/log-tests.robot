@@ -1,5 +1,5 @@
 *** Keywords ***
-Create Machine                                  
+Create Machine
     Execute Command           using sysbus
     Execute Command           mach create
     Execute Command           machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty }"
