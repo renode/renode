@@ -129,6 +129,38 @@ internal_flash_controller: SPI.NPCX_Flash @ fiu
     fiu: fiu
     memory: internal_flash
 
+gpio0: GPIOPort.NPCX_GPIO @ sysbus 0x40081000
+
+gpio1: GPIOPort.NPCX_GPIO @ sysbus 0x40083000
+
+gpio2: GPIOPort.NPCX_GPIO @ sysbus 0x40085000
+
+gpio3: GPIOPort.NPCX_GPIO @ sysbus 0x40087000
+
+gpio4: GPIOPort.NPCX_GPIO @ sysbus 0x40089000
+
+gpio5: GPIOPort.NPCX_GPIO @ sysbus 0x4008B000
+
+gpio6: GPIOPort.NPCX_GPIO @ sysbus 0x4008D000
+
+gpio7: GPIOPort.NPCX_GPIO @ sysbus 0x4008F000
+
+gpio8: GPIOPort.NPCX_GPIO @ sysbus 0x40091000
+
+gpio9: GPIOPort.NPCX_GPIO @ sysbus 0x40093000
+
+gpioa: GPIOPort.NPCX_GPIO @ sysbus 0x40095000
+
+gpiob: GPIOPort.NPCX_GPIO @ sysbus 0x40097000
+
+gpioc: GPIOPort.NPCX_GPIO @ sysbus 0x40099000
+
+gpiod: GPIOPort.NPCX_GPIO @ sysbus 0x4009B000
+
+gpioe: GPIOPort.NPCX_GPIO @ sysbus 0x4009D000
+
+gpiof: GPIOPort.NPCX_GPIO @ sysbus 0x4009F000
+
 // DEV_CTL4 register from the System Configuration peripheral
 // Its `Write-Protect Internal Flash` bit is used to force
 // write protection of the internal flash
@@ -149,7 +181,7 @@ elif request.isWrite:
         request.value |= WRITE_PROTECTION
     elif request.value & WRITE_PROTECTION:
         is_locked = True
-        self.GetMachine()["sysbus.fiu"].IsLocked = True
+        self.GetMachine()["sysbus.fiu.internal_flash_controller"].WriteProtect.Set(True)
         value = request.value
 
     value = request.value
@@ -167,22 +199,6 @@ sysbus:
         Tag <0x400BB000 0x100> "MIWU0"
         Tag <0x400BD000 0x100> "MIWU1"
         Tag <0x400BF000 0x100> "MIWU2"
-        Tag <0x40081000 0x100> "GPIO0"
-        Tag <0x40083000 0x100> "GPIO1"
-        Tag <0x40085000 0x100> "GPIO2"
-        Tag <0x40087000 0x100> "GPIO3"
-        Tag <0x40089000 0x100> "GPIO4"
-        Tag <0x4008B000 0x100> "GPIO5"
-        Tag <0x4008D000 0x100> "GPIO6"
-        Tag <0x4008F000 0x100> "GPIO7"
-        Tag <0x40091000 0x100> "GPIO8"
-        Tag <0x40093000 0x100> "GPIO9"
-        Tag <0x40095000 0x100> "GPIOA"
-        Tag <0x40097000 0x100> "GPIOB"
-        Tag <0x40099000 0x100> "GPIOC"
-        Tag <0x4009B000 0x100> "GPIOD"
-        Tag <0x4009D000 0x100> "GPIOE"
-        Tag <0x4009F000 0x100> "GPIOF"
         Tag <0x400A3000 0x100> "Keyboard scan"
         Tag <0x400A5000 0x100> "System Glue Functions"
         Tag <0x400B1000 0x100> "PS/2"
