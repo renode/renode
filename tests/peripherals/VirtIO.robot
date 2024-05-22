@@ -11,10 +11,11 @@ ${SCRIPT_BLK}                   ${CURDIR}/../../scripts/single-node/hifive_unlea
 ${SCRIPT_FS}                    ${CURDIR}/../../tests/peripherals/virtio-vexriscv.resc
 ${INPUT}                        Quick Brown Fox Jumps Over the Lazy Dog
 ${PROMPT}                       #
-${SOCK_FILE}                    ${CURDIR}/fs.sock
+${SOCK_FILE}                    libfuse-passthrough-hp.sock
+${SOCK_PATH}                    ${TEMPDIR}${/}${SOCK_FILE}
 ${SHARED_FILE}                  testfile
 ${SHARED_DIR}                   shareddir
-${VIRTIOFS_TAG}                 "tag0"
+${VIRTIOFS_TAG}                 "MySharedDir"
 ${SYSTEM}=                      Evaluate         platform.system()    modules=platform
 
 *** Keywords ***
@@ -25,7 +26,6 @@ Custom Suite Setup
     ${DIR}  ${FILE_NAME}=       Split Path       ${TEMP_DRIVE}
     Copy File                   ${TEMP_DRIVE}    ${TEMPDIR}
     Set Suite Variable          ${DRIVE_PATH}    ${TEMPDIR}${/}${FILE_NAME}
-    Set Suite Variable          ${SOCK_PATH}     ${SOCK_FILE}
     ${TEMP_FS}=                 Download File    ${FS}
     ${DIR}  ${FILE_NAME}=       Split Path       ${TEMP_FS}
     Copy File                   ${TEMP_FS}       ${TEMPDIR}
@@ -48,9 +48,9 @@ Create Machine VirtIOFS
     Execute Command             $dtb=@https://dl.antmicro.com/projects/renode/virtio-filesystem-rv32.dtb-s_1806-b2ad3ecaf517c6a6781d1cbb48eff6fca7972094
     Execute Command             $osbi=@https://dl.antmicro.com/projects/renode/litex_vexriscv_smp--opensbi.bin-s_45360-dcfe5f7b149bd1e0232609d87fb698f95f5e33c4
     Execute Command             $rootfs=@https://dl.antmicro.com/projects/renode/virtio-filesystem-rootfs.cpio-s_39962112-95a3591d189699f21b988b036a9843c882d8e42f
+    Execute Command             $sock_path=@${SOCK_PATH}
+    Execute Command             $virtiofs_tag=${VIRTIOFS_TAG}
     Execute Script              ${SCRIPT_FS}
-    Execute Command             machine LoadPlatformDescriptionFromString 'virtiofs: Storage.VirtIOFSDevice @ sysbus 0x100d0000 { IRQ -> plic@2 }'
-    Execute Command             virtiofs Create @${SOCK_PATH} ${VIRTIOFS_TAG}
 
 Setup Machine VirtIOBlock
     Wait For Prompt On Uart     buildroot login:

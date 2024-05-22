@@ -39,3 +39,5 @@ sysbus:
     init add:
         SilenceRange <4026544128 0x200> # ddrphy
         SilenceRange <4026546176 0x200> # sdram
+
+virtiofs: Storage.VirtIOFSDevice @ sysbus 0x100d0000 {IRQ -> plic@2}

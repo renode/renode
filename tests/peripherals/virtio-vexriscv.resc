@@ -1,9 +1,16 @@
 using sysbus
 mach create
 
+$platform?=@tests/peripherals/virtio-platform.repl
+
 machine LoadPlatformDescription $platform
 
 showAnalyzer uart0
+
+$img?=@https://dl.antmicro.com/projects/renode/virtio-filesystem-image-s_8448188-414604e8f64c41ebdbffe0f9ae7525c20bb1b124
+$dtb?=@https://dl.antmicro.com/projects/renode/virtio-filesystem-rv32.dtb-s_1806-b2ad3ecaf517c6a6781d1cbb48eff6fca7972094
+$osbi?=@https://dl.antmicro.com/projects/renode/litex_vexriscv_smp--opensbi.bin-s_45360-dcfe5f7b149bd1e0232609d87fb698f95f5e33c4
+$rootfs?=@https://dl.antmicro.com/projects/renode/virtio-filesystem-rootfs.cpio-s_39962112-95a3591d189699f21b988b036a9843c882d8e42f
 
 sysbus LoadBinary $img 0x40000000
 sysbus LoadBinary $dtb 0x40ef0000
@@ -12,4 +19,8 @@ sysbus LoadBinary $rootfs 0x42000000
 
 cpu PC 0x40f00000
 
+$sock_path?=@/tmp/libfuse-passthrough-hp.sock
+$virtiofs_tag?="MySharedDir"
+
 machine StartGdbServer 3333
+virtiofs Create $sock_path $virtiofs_tag
