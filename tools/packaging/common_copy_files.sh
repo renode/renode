@@ -18,6 +18,12 @@ cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
+cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
+# For now, SystemCPlugin uses socket-cpp library from VerilatorIntegrationLibrary.
+# ln -f argument is quietly ignored in windows-package environment, so instead of updating remove the link
+# and create it again.
+rm -rf $DIR/plugins/SystemCModule/lib/socket-cpp
+ln -s ../../VerilatorIntegrationLibrary/libs/socket-cpp $DIR/plugins/SystemCModule/lib/socket-cpp
 
 #copy the test instrastructure and update the paths
 cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer

@@ -15,6 +15,9 @@ cp -r $RENODE_ROOT_DIR/tools/gdb_compare $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/sel4_extensions $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/tools/csv2resd $DESTINATION/tools
 cp -r $RENODE_ROOT_DIR/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DESTINATION/plugins
+cp -r $RENODE_ROOT_DIR/src/Plugins/SystemCPlugin/SystemCModule $DESTINATION/plugins
+# For now, SystemCPlugin uses socket-cpp library from VerilatorIntegrationLibrary.
+ln -fs ../../VerilatorIntegrationLibrary/libs/socket-cpp $DESTINATION/plugins/SystemCModule/lib/socket-cpp
 
 sed -i '/nunit/d' $DESTINATION/tests/run_tests.py
 sed -i 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DESTINATION/renode-test

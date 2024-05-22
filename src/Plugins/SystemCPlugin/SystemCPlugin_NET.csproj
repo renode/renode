@@ -1,0 +1,23 @@
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <AssemblyName>SystemCPlugin</AssemblyName>
+    <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+  <Import Project="$(PropertiesLocation)" />
+  <ItemGroup>
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" Condition=" $(OS) != 'Windows_NT'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="SystemCModule\**\*"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
+    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
+  </ItemGroup>
+</Project>

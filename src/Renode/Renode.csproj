@@ -232,6 +232,10 @@
       <Project>{887C6088-F483-466A-A671-06EEC42B8DC1}</Project>
       <Name>TracePlugin</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Plugins\SystemCPlugin\SystemCPlugin.csproj">
+      <Project>{8882BDAF-FE52-4A39-B1F2-84C3F061D5A7}</Project>
+      <Name>SystemCPlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Plugins\WiresharkPlugin\WiresharkPlugin.csproj">
       <Project>{66A9995A-13AE-4454-88A6-29EB2D6F5988}</Project>
       <Name>WiresharkPlugin</Name>
