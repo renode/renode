@@ -145,7 +145,7 @@
 - tests/peripherals/PL330_DMA.robot
 - tests/platforms/GR712RC.robot
 - tests/platforms/nucleo_h753zi.robot
-- tests/platforms/EK-RA2E1.robot
+- tests/platforms/Renesas_EK-RA2E1.robot
 - tests/peripherals/UT32_CAN.robot
 - tests/peripherals/S32K3XX_FlexCAN.robot
 - tests/platforms/BeagleV-StarLight.robot
