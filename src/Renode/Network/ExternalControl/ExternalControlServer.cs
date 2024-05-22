@@ -37,6 +37,10 @@ namespace Antmicro.Renode.Network
             commandHandlers.Register(new RunFor(this));
             commandHandlers.Register(new GetTime(this));
 
+            var getMachineHandler = new GetMachine(this);
+            Machines = getMachineHandler;
+            commandHandlers.Register(getMachineHandler);
+
             socketServerProvider.ConnectionAccepted += delegate
             {
                 lock(locker)
@@ -81,6 +85,8 @@ namespace Antmicro.Renode.Network
             commandHandlers.Dispose();
             socketServerProvider.Stop();
         }
+
+        public IMachineContainer Machines { get; }
 
         private bool IsHeaderValid()
         {

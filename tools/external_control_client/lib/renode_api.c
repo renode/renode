@@ -16,11 +16,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "renode_api.h"
 
 struct renode {
     int socket_fd;
+};
+
+struct renode_machine {
+    renode_t *renode;
+    int32_t md;
 };
 
 #define SERVER_START_COMMAND "emulation CreateExternalControlServer \"<NAME>\""
@@ -62,6 +68,11 @@ static void *xmalloc(size_t size)
     void *result = malloc(size);
     assert_exit(result != NULL);
     return result;
+}
+
+static void xcleanup(void *ptr)
+{
+    free(*(void**)ptr);
 }
 
 static renode_error_t *create_error_static(renode_error_code code, char *message)
@@ -115,12 +126,14 @@ void renode_free_error(renode_error_t *error)
 typedef enum {
     RUN_FOR = 1,
     GET_TIME,
+    GET_MACHINE,
 } api_command_t;
 
 static uint8_t command_versions[][2] = {
     { 0x0, 0x0 }, // reserved for size
     { RUN_FOR, 0x0 },
     { GET_TIME, 0x0 },
+    { GET_MACHINE, 0x0 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -376,6 +389,28 @@ static renode_error_t *renode_execute_command(renode_t *renode, api_command_t ap
 
     uint32_t ignored_data_size;
     return_error_if_fails(renode_receive_response(renode, api_command, data_buffer, buffer_size, received_data_size == NULL ? &ignored_data_size : received_data_size));
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_machine_t **machine)
+{
+    uint32_t name_length = strlen(name);
+    uint32_t data_size = name_length + sizeof(int32_t);
+    int32_t *data __attribute__ ((__cleanup__(xcleanup))) = xmalloc(data_size);
+
+    data[0] = name_length;
+    memcpy(data + 1, name, name_length);
+
+    return_error_if_fails(renode_execute_command(renode, GET_MACHINE, data, data_size, data_size, &data_size));
+
+    assert_msg(data_size == 4, "received unexpected number of bytes");
+
+    assert_msg(data[0] >= 0, "received invalid machine descriptor");
+
+    *machine = xmalloc(sizeof(renode_machine_t));
+    (*machine)->renode = renode;
+    (*machine)->md = data[0];
 
     return NO_ERROR;
 }

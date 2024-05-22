@@ -12,19 +12,21 @@ namespace Antmicro.Renode.Network.ExternalControl
     {
         RunFor = 1,
         GetTime,
+        GetMachine,
     }
 
     public interface ICommand
     {
         Command Identifier { get; }
         byte Version { get; }
+        IMachineContainer Machines { get; }
 
         Response Invoke(List<byte> data);
     }
 
     public abstract class BaseCommand : ICommand
     {
-        public BaseCommand(IEmulationElement parent)
+        public BaseCommand(ExternalControlServer parent)
         {
             this.parent = parent;
         }
@@ -33,7 +35,8 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public abstract Command Identifier { get; }
         public abstract byte Version { get; }
+        public IMachineContainer Machines => parent.Machines;
 
-        protected readonly IEmulationElement parent;
+        protected readonly ExternalControlServer parent;
     }
 }

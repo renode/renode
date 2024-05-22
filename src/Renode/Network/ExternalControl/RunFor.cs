@@ -15,7 +15,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class RunFor : BaseCommand, IDisposable
     {
-        public RunFor(IEmulationElement parent)
+        public RunFor(ExternalControlServer parent)
             : base(parent)
         {
         }

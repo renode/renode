@@ -28,13 +28,16 @@ typedef struct {
 
 /* General */
 
-// Pointers to these structs must be obtained in `X_get` functions (`connect` for renode_t)
+// Pointers to these structs must be obtained in `renode_get_X` functions (`connect` for renode_t)
 // so that they can be later used in their related functions.
 // Internals of these structs aren't part of the API.
 typedef struct renode renode_t;
+typedef struct renode_machine renode_machine_t;
 
 renode_error_t *renode_connect(const char *port, renode_t **renode);
 renode_error_t *renode_disconnect(renode_t **renode);
+
+renode_error_t *renode_get_machine(renode_t *renode_instance, const char *name, renode_machine_t **machine);
 
 void renode_free_error(renode_error_t *error);
 
