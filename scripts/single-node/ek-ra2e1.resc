@@ -8,7 +8,7 @@ mach create $name
 
 $bin?=@https://dl.antmicro.com/projects/renode/renesas_ra2e1--agt.elf-s_286560-6efe10bdcb980192b7892b0c7c28710615defac1
 
-machine LoadPlatformDescription @platforms/boards/ek-ra2e1.repl
+machine LoadPlatformDescription @platforms/boards/renesas-ek_ra2e1.repl
 
 include @scripts/single-node/renesas-segger-rtt.py
 

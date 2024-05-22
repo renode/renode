@@ -10,7 +10,7 @@ Prepare Machine
     Execute Command                 using sysbus
     Execute Command                 mach create "ra8m1"
 
-    Execute Command                 machine LoadPlatformDescription @platforms/boards/ek-ra8m1.repl
+    Execute Command                 machine LoadPlatformDescription @platforms/boards/renesas-ek_ra8m1.repl
 
     Execute Command                 set bin @${elf}
     Execute Command                 macro reset "sysbus LoadELF $bin"

@@ -1,4 +1,4 @@
-using "platforms/boards/ck-ra6m5.repl"
+using "platforms/boards/renesas-ck_ra6m5.repl"
 
 // This is just a example of connecting sensors available on the board to the I2C host - in this case SCI0
 

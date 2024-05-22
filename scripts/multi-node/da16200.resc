@@ -13,7 +13,7 @@ emulation CreateDA16200Network "wifi"
 
 # Create sender
 mach create "Sender"
-machine LoadPlatformDescription @platforms/boards/ck-ra6m5.repl
+machine LoadPlatformDescription @platforms/boards/renesas-ck_ra6m5.repl
 
 machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
 sci0.da16200 CommandResponseDelayMilliseconds 50
@@ -36,7 +36,7 @@ cpu AddHook `sysbus GetSymbolAddress "_StoreChar"` $console_hook
 
 # Create receiver
 mach create "Receiver"
-machine LoadPlatformDescription @platforms/boards/ck-ra6m5.repl
+machine LoadPlatformDescription @platforms/boards/renesas-ck_ra6m5.repl
 
 machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
 sci0.da16200 CommandResponseDelayMilliseconds 50

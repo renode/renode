@@ -17,8 +17,8 @@ ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
 ${ICM20948_SAMPLES_CSV}             ${CURDIR}/ICM20948-samples.csv
 
 ${RA6M5_REPL}                       platforms/cpus/renesas-r7fa6m5b.repl
-${CK_BOARD_REPL}                    platforms/boards/ck-ra6m5.repl
-${CK_SCI_SENSORS_BOARD_REPL}        @tests/platforms/renesas_ck_ra6m5_sensors_example.repl
+${CK_BOARD_REPL}                    platforms/boards/renesas-ck_ra6m5.repl
+${CK_SCI_SENSORS_BOARD_REPL}        @tests/platforms/renesas-ck_ra6m5-sensors_example.repl
 
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
