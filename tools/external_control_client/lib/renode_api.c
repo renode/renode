@@ -29,6 +29,11 @@ struct renode_machine {
     int32_t md;
 };
 
+struct renode_adc {
+    renode_machine_t *machine;
+    int32_t id;
+};
+
 #define SERVER_START_COMMAND "emulation CreateExternalControlServer \"<NAME>\""
 #define SOCKET_INVALID -1
 
@@ -127,6 +132,7 @@ typedef enum {
     RUN_FOR = 1,
     GET_TIME,
     GET_MACHINE,
+    ADC,
 } api_command_t;
 
 static uint8_t command_versions[][2] = {
@@ -134,6 +140,7 @@ static uint8_t command_versions[][2] = {
     { RUN_FOR, 0x0 },
     { GET_TIME, 0x0 },
     { GET_MACHINE, 0x0 },
+    { ADC, 0x0 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -415,6 +422,28 @@ renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_ma
     return NO_ERROR;
 }
 
+static renode_error_t *renode_get_instance_descriptor(renode_machine_t *machine, api_command_t api_command, const char *name, int32_t *instance_descriptor)
+{
+    uint32_t name_length = strlen(name);
+    uint32_t data_size = name_length + sizeof(int32_t) * 3;
+    int32_t *data __attribute__ ((__cleanup__(xcleanup))) = xmalloc(data_size);
+
+    data[0] = -1;
+    data[1] = machine->md;
+    data[2] = name_length;
+    memcpy(data + 3, name, name_length);
+
+    return_error_if_fails(renode_execute_command(machine->renode, api_command, data, data_size, data_size, &data_size));
+
+    assert_msg(data_size == 4, "received unexpected number of bytes");
+
+    *instance_descriptor = data[0];
+
+    assert_msg(*instance_descriptor >= 0, "received invalid instance descriptor");
+
+    return NO_ERROR;
+}
+
 struct run_for_out {
     uint64_t microseconds;
 };
@@ -460,6 +489,102 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t uni
     assert_msg(response_size == sizeof(*current_time), "Received unexpected number of bytes");
 
     *current_time /= divider;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_adc(renode_machine_t *machine, const char *name, renode_adc_t **adc)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, ADC, name, &id));
+
+    *adc = xmalloc(sizeof(renode_adc_t));
+    (*adc)->machine = machine;
+    (*adc)->id = id;
+
+    return NO_ERROR;
+}
+
+typedef enum {
+    GET_CHANNEL_COUNT = 0,
+    GET_CHANNEL_VALUE,
+    SET_CHANNEL_VALUE,
+} adc_command_t;
+
+typedef union {
+    struct {
+        int32_t id;
+        int8_t command;
+        int32_t channel;
+        uint32_t value;
+    } __attribute__((packed)) out;
+
+    struct {
+        int32_t count;
+    } get_count_result;
+
+    struct {
+        uint32_t value;
+    } get_value_result;
+} adc_frame_t;
+
+renode_error_t *renode_get_adc_channel_count(renode_adc_t *adc, int32_t *count)
+{
+    // adc id, adc command -> count
+    adc_frame_t frame = {
+        .out = {
+            .id = adc->id,
+            .command = GET_CHANNEL_COUNT,
+        },
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), offsetof(adc_frame_t, out.channel), &response_size));
+
+    assert_msg(response_size == sizeof(*count), "Received unexpected number of bytes");
+
+    *count = frame.get_count_result.count;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel, uint32_t *value)
+{
+    // adc id, adc command, channel index -> value
+    adc_frame_t frame = {
+        .out = {
+            .id = adc->id,
+            .command = GET_CHANNEL_VALUE,
+            .channel = channel,
+        },
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), offsetof(adc_frame_t, out.value), &response_size));
+
+    assert_msg(response_size == sizeof(*value), "Received unexpected number of bytes");
+
+    *value = frame.get_value_result.value;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel, uint32_t value)
+{
+    // adc id, adc command, channel index, value -> ()
+    adc_frame_t frame = {
+        .out = {
+            .id = adc->id,
+            .command = SET_CHANNEL_VALUE,
+            .channel = channel,
+            .value = value,
+        },
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), sizeof(frame.out), &response_size));
+
+    assert_msg(response_size == 0, "Received unexpected number of bytes");
 
     return NO_ERROR;
 }

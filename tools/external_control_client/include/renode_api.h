@@ -33,6 +33,7 @@ typedef struct {
 // Internals of these structs aren't part of the API.
 typedef struct renode renode_t;
 typedef struct renode_machine renode_machine_t;
+typedef struct renode_adc renode_adc_t;
 
 renode_error_t *renode_connect(const char *port, renode_t **renode);
 renode_error_t *renode_disconnect(renode_t **renode);
@@ -51,3 +52,10 @@ typedef enum {
 
 renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64_t value);
 renode_error_t *renode_get_current_time(renode_t *renode_instance, renode_time_unit_t unit, uint64_t *current_time);
+
+/* ADC */
+
+renode_error_t *renode_get_adc(renode_machine_t *machine, const char *name, renode_adc_t **adc);
+renode_error_t *renode_get_adc_channel_count(renode_adc_t *adc, int32_t *count);
+renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel, uint32_t *value);
+renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel, uint32_t value);

@@ -137,6 +137,7 @@
     <Compile Include="Network\ExternalControl\GetTime.cs" />
     <Compile Include="Network\ExternalControl\IInstanceBasedCommand.cs" />
     <Compile Include="Network\ExternalControl\GetMachine.cs" />
+    <Compile Include="Network\ExternalControl\ADC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

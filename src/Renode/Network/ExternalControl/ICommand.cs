@@ -13,6 +13,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         RunFor = 1,
         GetTime,
         GetMachine,
+        ADC,
     }
 
     public interface ICommand
