@@ -55,6 +55,17 @@ Verify Timer Register
     Wait For Log Entry            Read from ${timer_register_name}
 
 *** Test Cases ***
+Should Get Correct EL and SS on CPU Creation
+    # This platform uses `Cortex-A53` CPU - ARMv8A
+    # We only check if EL and SS are reflected correctly on C# side, for their usage in peripherals
+    Create Machine
+
+    ${ss}=                             Execute Command  sysbus.cpu SecurityState
+    ${el}=                             Execute Command  sysbus.cpu ExceptionLevel
+
+    Should Be Equal As Strings         ${ss.split()[0].strip()}  Secure
+    Should Be Equal As Strings         ${el.split()[0].strip()}  EL3_MonitorMode
+
 Test Accessing ARM Generic Timer Registers Through AArch64 System Registers
     Create Machine
     Create Log Tester             0

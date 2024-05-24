@@ -704,6 +704,17 @@ Check Protection Region Address Register Access Template
 
 ### Prerequisites
 
+Should Get Correct EL and SS on CPU Creation
+    # This platform uses `Cortex-R52` CPU - ARMv8R in AArch32 configuration
+    # We only check if EL and SS are reflected correctly on C# side, for their usage in peripherals
+    Initialize Emulation
+
+    ${ss}=                             Execute Command  sysbus.cpu SecurityState
+    ${el}=                             Execute Command  sysbus.cpu ExceptionLevel
+
+    Should Be Equal As Strings         ${ss.split()[0].strip()}  NonSecure
+    Should Be Equal As Strings         ${el.split()[0].strip()}  EL2_HypervisorMode
+
 Check Changing Privilege Level From Monitor
     [Template]                         Check Changing Privilege Level From Monitor Template
     [Tags]                             Prerequisite
