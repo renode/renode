@@ -8,7 +8,7 @@ ${UART}                         sysbus.uart0
 ${DRIVE}                        https://dl.antmicro.com/projects/renode/empty-ext4-filesystem.img-s_33554432-1eb65a808612389cc35a69b81178fbad5708a863
 ${FS}                           https://dl.antmicro.com/projects/renode/virtio-filesystem-passthrough_hp_uds-s_7318728-f7b60ce9b60c82cede19e798e81971663e1c0ad2
 ${SCRIPT_BLK}                   ${CURDIR}/../../scripts/single-node/hifive_unleashed.resc
-${SCRIPT_FS}                    ${CURDIR}/../../tests/peripherals/virtio-litex.resc
+${SCRIPT_FS}                    ${CURDIR}/../../tests/peripherals/virtio-vexriscv.resc
 ${INPUT}                        Quick Brown Fox Jumps Over the Lazy Dog
 ${PROMPT}                       #
 ${SOCK_FILE}                    ${CURDIR}/fs.sock
