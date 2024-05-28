@@ -126,7 +126,6 @@ hfcg: Miscellaneous.NPCX_HFCG @ sysbus 0x400B5000
 fiu: SPI.NPCX_FIU @ sysbus 0x40020000
 
 internal_flash_controller: SPI.NPCX_Flash @ fiu
-    fiu: fiu
     memory: internal_flash
 
 gpio0: GPIOPort.NPCX_GPIO @ sysbus 0x40081000
