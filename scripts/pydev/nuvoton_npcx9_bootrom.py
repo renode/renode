@@ -80,6 +80,7 @@ def register_ncl_functions():
     POINTER_SIZE = 0x4
 
     DRBG_CONTEXT_SIZE = 240
+    SHA_CONTEXT_SIZE = 212
 
     NCL_STATUS_OK = 0xA5A5
     NCL_STATUS_FAIL = 0x5A5A
@@ -182,7 +183,7 @@ def register_ncl_functions():
         cpu.PC = cpu.LR
 
     SHA_FUNCTIONS = [
-        create_hook("get_context_size"),
+        create_hook("get_context_size", SHA_CONTEXT_SIZE),
         create_hook("init_context"),
         create_hook("finalize_context"),
         create_hook("init"),
