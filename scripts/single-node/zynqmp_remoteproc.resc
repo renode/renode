@@ -1,0 +1,43 @@
+:name: Zynqmp
+:description: This script runs Linux on Zynq UltraScale+ MPSoC with remoteproc enabled.
+
+using sysbus
+$name?="ZynqUS+"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+machine SetSerialExecution True
+sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
+showAnalyzer uart0
+showAnalyzer uart1
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynq-us_plus--sm-k26-revA-remoteproc.dtb-s_39351-3552c56edd753f963afeb0dff0fde05b77eae71f
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
+$linux?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--linux.Image-s_21965312-dd92630f6236b895cd938eede475770d18f9bd6f
+$linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-s_62914560-8855af9789b427c44a5f0378c256a3ab7867c46b
+
+macro reset
+"""
+    apu0 PC 0x1000000
+    apu1 IsHalted true
+    apu2 IsHalted true
+    apu3 IsHalted true
+
+    rpu0 IsHalted true
+    rpu1 IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=apu0
+
+    sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false context=apu0
+    sysbus LoadBinary $uboot  0x8000000  cpu=apu0
+    sysbus LoadBinary $linux  0x10000000 cpu=apu0
+    sysbus LoadBinary $rootfs 0x20000000 cpu=apu0
+
+    sysbus LoadSymbolsFrom $uboot_elf context=apu0
+    sysbus LoadSymbolsFrom $linux_elf context=apu0
+"""
+
+runMacro $reset

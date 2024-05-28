@@ -30,39 +30,50 @@ ${UBOOT}                                        @${URL_BASE}/xilinx_zynqmp_r5--u
 Create Linux Machine
     Execute Command                 include @scripts/single-node/zynqmp_linux.resc
     Execute Command                 machine SetSerialExecution True
-    Create Terminal Tester          ${LINUX_UART}    defaultPauseEmulation=true
+    ${linux_tester}=                Create Terminal Tester          ${LINUX_UART}  defaultPauseEmulation=true
+
+Create Linux Remoteproc Machine
+    Execute Command                 include @scripts/single-node/zynqmp_remoteproc.resc
+    Execute Command                 machine SetSerialExecution True
+    ${linux_tester}=                Create Terminal Tester          ${LINUX_UART}  defaultPauseEmulation=true
+    ${zephyr_tester}=               Create Terminal Tester          ${ZEPHYR_UART}  defaultPauseEmulation=true
+    RETURN                          ${linux_tester}  ${zephyr_tester}
+
 
 Create Zephyr Machine
     [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
     Execute Command                 set bin ${elf}
     Execute Command                 include @scripts/single-node/zynqmp_zephyr.resc
     Execute Command                 machine SetSerialExecution True
-    Create Terminal Tester          ${uart}    defaultPauseEmulation=true
+    ${zephyr_tester}=               Create Terminal Tester          ${uart}  defaultPauseEmulation=true
 
 Boot U-Boot And Launch Linux
     Wait For Line On Uart           U-Boot 2023.01
     Wait For Line On Uart           Starting kernel ...
 
 Boot Linux And Login
+    [Arguments]                     ${testerId}=0
     # Verify that SMP works
-    Wait For Line On Uart           SMP: Total of 4 processors activated  includeUnfinishedLine=true
-    Wait For Prompt On Uart         buildroot login:  timeout=50
-    Write Line To Uart              root
-    Wait For Prompt On Uart         ${LINUX_PROMPT}
+    Wait For Line On Uart           SMP: Total of 4 processors activated    testerId=${testerId}  includeUnfinishedLine=true
+    Wait For Prompt On Uart         buildroot login:                        testerId=${testerId}  timeout=50
+    Write Line To Uart              root                                    testerId=${testerId}
+    Wait For Prompt On Uart         ${LINUX_PROMPT}                         testerId=${testerId}
 
 Check Exit Code
-    Write Line To Uart              echo $?
-    Wait For Line On Uart           0
-    Wait For Prompt On Uart         ${LINUX_PROMPT}
+    [Arguments]                     ${testerId}=0
+    Write Line To Uart              echo $?                                 testerId=${testerId}
+    Wait For Line On Uart           0                                       testerId=${testerId}
+    Wait For Prompt On Uart         ${LINUX_PROMPT}                         testerId=${testerId}
 
 Execute Linux Command
-    [Arguments]                     ${command}  ${timeout}=5
-    Write Line To Uart              ${command}
-    Wait For Prompt On Uart         ${LINUX_PROMPT}  timeout=${timeout}
-    Check Exit Code
+    [Arguments]                     ${command}  ${testerId}=0  ${timeout}=5
+    Write Line To Uart              ${command}                              testerId=${testerId}
+    Wait For Prompt On Uart         ${LINUX_PROMPT}                         testerId=${testerId}  timeout=${timeout}
+    Check Exit Code                 testerId=${testerId}
 
 Should Pass Zephyr Test Suite
-    Wait For Line On Uart           SUITE PASS - 100.00%  timeout=40
+    [Arguments]                     ${testerId}=0
+    Wait For Line On Uart           SUITE PASS - 100.00%                    testerId=${testerId}  timeout=40
 
 *** Test Cases ***
 Should Boot And Login
@@ -439,3 +450,29 @@ Should Run Version Command On Provided U-Boot
     Wait For Line On Uart           U-Boot
 
     Wait For Prompt On Uart         ${UBOOT_PROMPT}
+
+Should Start And Stop Remoteproc
+    ${linux_tester}  ${zephyr_tester}=  Create Linux Remoteproc Machine
+    Boot Linux And Login                testerId=${linux_tester}
+
+    # Load remoteproc kernel module and start demo
+    Execute Linux Command               modprobe zynqmp_r5_remoteproc                                       testerId=${linux_tester}
+    Execute Linux Command               mkdir /lib/firmware                                                 testerId=${linux_tester}
+    Execute Linux Command               cp /elfs/philosophers.elf /lib/firmware                             testerId=${linux_tester}
+    Execute Linux Command               echo philosophers.elf > /sys/class/remoteproc/remoteproc0/firmware  testerId=${linux_tester}
+    Execute Linux Command               echo start > /sys/class/remoteproc/remoteproc0/state                testerId=${linux_tester}
+
+    # Check if demo works correctly
+    FOR  ${p}  IN RANGE  0  5
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    testerId=${zephyr_tester}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  testerId=${zephyr_tester}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           testerId=${zephyr_tester}  treatAsRegex=true 
+    END
+
+    # Stop demo
+    Execute Linux Command               echo stop > /sys/class/remoteproc/remoteproc0/state                 testerId=${linux_tester}
+    ${is_halted}=  Execute Command      rpu0 IsHalted
+    Should Contain                      ${is_halted}    True
+
