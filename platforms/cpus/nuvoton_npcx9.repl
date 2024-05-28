@@ -180,7 +180,8 @@ elif request.isWrite:
         request.value |= WRITE_PROTECTION
     elif request.value & WRITE_PROTECTION:
         is_locked = True
-        self.GetMachine()["sysbus.fiu.internal_flash_controller"].WriteProtect.Set(True)
+        # This signal (WP) is active-low
+        self.GetMachine()["sysbus.fiu.internal_flash_controller"].OnGPIO(0, False)
         value = request.value
 
     value = request.value
