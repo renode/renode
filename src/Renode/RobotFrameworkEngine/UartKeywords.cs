@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -42,9 +42,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null, bool? defaultPauseEmulation = null)
+        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null, bool? defaultPauseEmulation = null, bool? defaultMatchNextLine = null)
         {
             this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
+            this.defaultMatchNextLine = defaultMatchNextLine.GetValueOrDefault();
 
             return CreateNewTester(uartObject =>
             {
@@ -73,7 +74,7 @@ namespace Antmicro.Renode.RobotFramework
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
-            bool includeUnfinishedLine = false, bool? pauseEmulation = null)
+            bool includeUnfinishedLine = false, bool? pauseEmulation = null, bool? matchNextLine = null)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -82,7 +83,8 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
-            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, pauseEmulation ?? defaultPauseEmulation);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                pauseEmulation ?? defaultPauseEmulation, matchNextLine ?? defaultMatchNextLine);
             if(result == null)
             {
                 OperationFail(tester);
@@ -182,6 +184,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private bool defaultPauseEmulation;
+        private bool defaultMatchNextLine;
         private float globalTimeout = 8;
     }
 }
