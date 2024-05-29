@@ -291,7 +291,7 @@ namespace Antmicro.Renode.Debug
             // We changed context, remove this hook as we don't need it anymore
             cpu.RemoveHook(address, HandleThreadSwitch);
             cpu.Pause();
-            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu.Id, address, BreakpointType.MemoryBreakpoint));
+            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu, address, BreakpointType.MemoryBreakpoint));
         }
 
         private void HandleBreakpoint(ICpuSupportingGdb cpu, ulong address)
@@ -304,7 +304,7 @@ namespace Antmicro.Renode.Debug
 
             ClearTemporaryBreakpoint(address, threadName);
             cpu.Pause();
-            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu.Id, address, BreakpointType.MemoryBreakpoint));
+            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu, address, BreakpointType.MemoryBreakpoint));
         }
 
         private void HandleExitUserspace(ICpuSupportingGdb cpu, ulong address)
@@ -315,7 +315,7 @@ namespace Antmicro.Renode.Debug
             }
 
             cpu.Pause();
-            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu.Id, address, BreakpointType.MemoryBreakpoint));
+            cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu, address, BreakpointType.MemoryBreakpoint));
             if(exitUserspaceMode == ExitUserspaceMode.Once)
             {
                 cpu.RemoveHook(address, HandleExitUserspace);
@@ -385,7 +385,7 @@ namespace Antmicro.Renode.Debug
             {
                 pendingThreadName = null;
                 cpu.Pause();
-                cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu.Id, address, BreakpointType.MemoryBreakpoint));
+                cpu.EnterSingleStepModeSafely(new HaltArguments(HaltReason.Breakpoint, cpu, address, BreakpointType.MemoryBreakpoint));
             }
         }
 

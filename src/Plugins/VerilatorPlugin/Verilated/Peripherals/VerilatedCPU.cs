@@ -153,7 +153,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             catch(Exception)
             {
                 this.NoisyLog("CPU exception detected, halting.");
-                InvokeHalted(new HaltArguments(HaltReason.Abort, Id));
+                InvokeHalted(new HaltArguments(HaltReason.Abort, this));
                 return ExecutionResult.Aborted;
             }
             finally
