@@ -5,7 +5,7 @@
 # To make it run from any place in the system (possibly different git repository)
 # we have to get full path of the script and then find the git repository that
 # contains it (it will be the Renode repository).
-RENODE_DIR="$(git -C $(dirname $(realpath $0)) rev-parse --show-toplevel)"
+RENODE_DIR="$(cd $(dirname $(realpath $0)); git rev-parse --show-toplevel)"
 
 # Read dts2repl commit cached in the Renode repository
 #
@@ -18,7 +18,8 @@ RENODE_DIR="$(git -C $(dirname $(realpath $0)) rev-parse --show-toplevel)"
 #       however, the -P option isn't available on all supported platforms, so
 #       it has to be split into two separate commands.
 DTS2REPL_VERSION=$( \
-  git -C $RENODE_DIR submodule status --cached tools/dts2repl | \
+  cd $RENODE_DIR; \
+  git submodule status --cached tools/dts2repl | \
   grep -Eo "[a-f0-9]{40}\s+tools/dts2repl" | \
   grep -Eo "[a-f0-9]{40}" \
 )
