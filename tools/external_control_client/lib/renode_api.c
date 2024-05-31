@@ -340,16 +340,20 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
     switch (return_code) {
         case COMMAND_FAILED:
         case FATAL_ERROR:
+            return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
+
+            if (buffer_size < *data_size + 1) {
+                buffer = xmalloc(*data_size + 1);
+            }
+            buffer[*data_size] = '\0';
+
+            return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
+            break;
         case SUCCESS_WITH_DATA:
             return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
 
             if (buffer_size < *data_size) {
-                if(return_code == SUCCESS_WITH_DATA)
-                {
-                    return create_fatal_error_static("Buffer too small");
-                }
-                buffer = xmalloc(*data_size + 1);
-                buffer[*data_size] = '\0';
+                return create_fatal_error_static("Buffer too small");
             }
 
             return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
@@ -373,6 +377,7 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
         default:
             break;
     }
+
     if (error_code != ERR_NO_ERROR) {
         return create_error_dynamic(error_code, (char *)buffer);
     }
