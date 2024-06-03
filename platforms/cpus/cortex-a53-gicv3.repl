@@ -1,6 +1,7 @@
 cpu: CPU.ARMv8A @ sysbus
     cpuType: "cortex-a53"
     genericInterruptController: gic
+    cpuId: 0
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 62500000

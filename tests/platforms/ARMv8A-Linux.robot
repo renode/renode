@@ -1,6 +1,7 @@
 *** Variables ***
 ${UART}                           sysbus.uart0
 ${URI}                            @https://dl.antmicro.com/projects/renode
+${LINUX_PROMPT}                   \#${SPACE}
 
 # DTBs are embedded in Coreboot+Linux ROMs. Built with Coreboot v4.20.1, ATF v2.9.0, Linux v6.3 and Buildroot 2023.08-rc1.
 ${COREBOOT_ARMv8A_ROM}                ${URI}/coreboot-without-payload-armv8a.rom-s_16777216-b5c6df85cfb8d240d31fe3cd1d055a3106d2fadb
@@ -38,6 +39,17 @@ Create Machine
 
     Create Terminal Tester        ${UART}  defaultPauseEmulation=true
     Execute Command               showAnalyzer ${UART}
+
+Create Multicore Machine
+    Execute Command                 include @scripts/single-node/cortex-a53-linux.resc
+    Create Terminal Tester          ${UART}
+
+Boot Linux And Login
+    # Verify that SMP works
+    Wait For Line On Uart           SMP: Total of 4 processors activated  includeUnfinishedLine=true
+    Wait For Prompt On Uart         buildroot login:  timeout=50
+    Write Line To Uart              root
+    Wait For Prompt On Uart         ${LINUX_PROMPT}
 
 Configure UART For Boot Logs
     [Arguments]    ${uart}
@@ -339,3 +351,12 @@ Test Running U-Boot With Linux
 
     Wait For Services And Enter Shell   with_network=True
     Shell Should Handle Basic Commands
+
+Should Boot And Login
+    Create Multicore Machine
+
+    Boot Linux And Login
+
+    # Check if we see other CPUs
+    Write Line To Uart              nproc
+    Wait For Line On Uart           4

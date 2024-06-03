@@ -1,15 +1,43 @@
 :name: Cortex-A53
 :description: This script runs Linux (with Coreboot and ATF) on a 64-bit ARM Cortex-A53.
 
-$bin?=@https://dl.antmicro.com/projects/renode/coreboot-linux-armv8a-gicv3.rom-s_67108864-2348c80d6b871b9ac1916dfe0fd590125559ef73
+$bin?=@https://dl.antmicro.com/projects/renode/coreboot-linux-armv8a-gicv3-multicore.rom-s_67108864-02cf8d5b31d105603e63306ac07517a48134bfed
 $name?="ARM Cortex-A53"
 
 using sysbus
 mach create $name
 
-machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv3.repl
+machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv3_smp.repl
 
 showAnalyzer uart0
+
+# Based on https://github.com/ARM-software/arm-trusted-firmware/blob/5436047a0e1f32543042d6de9f1f6a3edcd47591/plat/qemu/qemu/include/platform_def.h#L107C1-L115C35
+set py_virt_trusted_mailbox_hook
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
+PLAT_VIRT_TRUSTED_MAILBOX_BASE = 0x0e000000
+PLAT_VIRT_HOLD_BASE = PLAT_VIRT_TRUSTED_MAILBOX_BASE + 0x8
+PLAT_VIRT_HOLD_ENTRY_SIZE = 0x8
+
+PLAT_VIRT_HOLD_STATE_WAIT = 0
+PLAT_VIRT_HOLD_STATE_GO = 1
+
+_cpus = filter(lambda cpu: str(type(cpu)) == "<type 'ARMv8A'>", emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus.GetCPUs())
+cpus = {cpu.Id: cpu for cpu in _cpus}
+
+idx = (address - PLAT_VIRT_HOLD_BASE) // PLAT_VIRT_HOLD_ENTRY_SIZE
+
+secure_entrypoint = self.ReadQuadWord(PLAT_VIRT_TRUSTED_MAILBOX_BASE);
+
+if value == PLAT_VIRT_HOLD_STATE_GO:
+    cpus[idx].PC = RegisterValue.Create(secure_entrypoint, 64)
+    cpus[idx].IsHalted = False
+    cpu.InfoLog("CPU %d started at PC: 0x%x" % (idx, secure_entrypoint))
+elif value == PLAT_VIRT_HOLD_STATE_WAIT:
+    cpus[idx].IsHalted = True
+    cpu.InfoLog("CPU %d halted")
+"""
 
 macro reset
 """
@@ -18,5 +46,16 @@ macro reset
     uart0 WriteDoubleWord 0x2c 0x40
 
     sysbus LoadBinary $bin 0x0
+
+    sysbus LoadSymbolsFrom @https://dl.antmicro.com/projects/renode/coreboot-bootblock-armv8a-gicv3-multicore.elf-s_45992-e566f9ef7c7f1357a6a5f4e433b42eae686b2773
+    sysbus LoadSymbolsFrom @https://dl.antmicro.com/projects/renode/coreboot-romstage-armv8a-gicv3-multicore.elf-s_53824-78204652d3be096534a1e3036f308ff0c93f5423
+    sysbus LoadSymbolsFrom @https://dl.antmicro.com/projects/renode/coreboot-ramstage-armv8a-gicv3-multicore.elf-s_147352-4d8d77fcee90f90eceebef782140189b21169778
+    sysbus LoadSymbolsFrom @https://dl.antmicro.com/projects/renode/bl31-atf-armv8a-gicv3-multicore.elf-s_1259192-f31a6120e8881925b3290ddd7ac2bc008f56460a
+    sysbus LoadSymbolsFrom @https://dl.antmicro.com/projects/renode/vmlinux-armv8a-gicv3-multicore-s_14825032-9d3f0ca4dc4b246cc648bb45bb36d8c2317bc41b
+
+    sysbus AddWatchpointHook 0x0e000008 QuadWord Write $py_virt_trusted_mailbox_hook # CPU 0 Mailbox 
+    sysbus AddWatchpointHook 0x0e000010 QuadWord Write $py_virt_trusted_mailbox_hook # CPU 1 Mailbox 
+    sysbus AddWatchpointHook 0x0e000018 QuadWord Write $py_virt_trusted_mailbox_hook # CPU 2 Mailbox 
+    sysbus AddWatchpointHook 0x0e000020 QuadWord Write $py_virt_trusted_mailbox_hook # CPU 3 Mailbox 
 """
 runMacro $reset

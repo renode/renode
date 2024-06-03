@@ -1,0 +1,57 @@
+using "./cortex-a53-gicv3.repl"
+
+cpu1: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    genericInterruptController: gic
+    cpuId: 1
+    init:
+        IsHalted true
+
+cpu2: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    genericInterruptController: gic
+    cpuId: 2
+    init:
+        IsHalted true
+
+cpu3: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    genericInterruptController: gic
+    cpuId: 3
+    init:
+        IsHalted true
+
+timer1: Timers.ARM_GenericTimer @ cpu1
+    frequency: 62500000
+    EL3PhysicalTimerIRQ -> gic#1@29
+    EL1PhysicalTimerIRQ -> gic#1@30
+    EL1VirtualTimerIRQ -> gic#1@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#1@26
+    NonSecureEL2VirtualTimerIRQ -> gic#1@28
+
+timer2: Timers.ARM_GenericTimer @ cpu2
+    frequency: 62500000
+    EL3PhysicalTimerIRQ -> gic#2@29
+    EL1PhysicalTimerIRQ -> gic#2@30
+    EL1VirtualTimerIRQ -> gic#2@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#2@26
+    NonSecureEL2VirtualTimerIRQ -> gic#2@28
+
+timer3: Timers.ARM_GenericTimer @ cpu3
+    frequency: 62500000
+    EL3PhysicalTimerIRQ -> gic#3@29
+    EL1PhysicalTimerIRQ -> gic#3@30
+    EL1VirtualTimerIRQ -> gic#3@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#3@26
+    NonSecureEL2VirtualTimerIRQ -> gic#3@28
+
+gic: @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: "distributor" };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x80a0000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; address: 0x80c0000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu2; address: 0x80e0000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu3; address: 0x8100000 }
+    }
+    [4-7]   -> cpu1@[0-3]
+    [8-11]  -> cpu2@[0-3]
+    [12-15] -> cpu3@[0-3]
