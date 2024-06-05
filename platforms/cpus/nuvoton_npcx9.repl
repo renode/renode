@@ -160,6 +160,30 @@ gpioe: GPIOPort.NPCX_GPIO @ sysbus 0x4009D000
 
 gpiof: GPIOPort.NPCX_GPIO @ sysbus 0x4009F000
 
+smbus0: I2C.NPCX_SMBus @ sysbus 0x40009000
+    IRQ -> nvic@13
+
+smbus1: I2C.NPCX_SMBus @ sysbus 0x4000B000
+    IRQ -> nvic@14
+
+smbus2: I2C.NPCX_SMBus @ sysbus 0x400C0000
+    IRQ -> nvic@36
+
+smbus3: I2C.NPCX_SMBus @ sysbus 0x400C2000
+    IRQ -> nvic@37
+
+smbus4: I2C.NPCX_SMBus @ sysbus 0x40008000
+    IRQ -> nvic@19
+
+smbus5: I2C.NPCX_SMBus @ sysbus 0x40017000
+    IRQ -> nvic@20
+
+smbus6: I2C.NPCX_SMBus @ sysbus 0x40018000
+    IRQ -> nvic@16
+
+smbus7: I2C.NPCX_SMBus @ sysbus 0x40019000
+    IRQ -> nvic@8
+
 // DEV_CTL4 register from the System Configuration peripheral
 // Its `Write-Protect Internal Flash` bit is used to force
 // write protection of the internal flash
