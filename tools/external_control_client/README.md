@@ -58,15 +58,20 @@ It can be built in the `build` directory from the Renode repository's root direc
 renode$ mkdir build && cmake -DAPP_NAME=run_for -DAPP_SOURCES_DIR=tools/external_control_client/examples/run_for -S tools/external_control_client -B build && cmake --build build
 ```
 
-After starting the server in Renode, the `run_for` application can be used multiple times to progress emulation time.
+After starting the server in Renode, the `run_for` application can be used to progress emulation time multiple times with an ability to run it again and connect to the same server.
+
+Following every executed set it will ask whether to continue with the current configuration, defaults to `No`.
+This prompt also has an option (`c` for change) to provide a new time value, using the same format as the CLI argument, with an optional new number of times to run, defaults to 1. 
 
 The usage is:
 ```
 Usage:
-  ./test_run_for <PORT> <VALUE_WITH_UNIT>
+  ./test_run_for <PORT> <VALUE_WITH_UNIT> [<REPEAT>]
   where:
   * <VALUE_WITH_UNIT> is an integer with a time unit, e.g.: '100ms'
   * accepted time units are 's', 'ms' and 'us' (for microseconds)
+  * <REPEAT> is an optional number of times (default: 1) to run
+  * the simulation for
 ```
 
 ### `adc` example
