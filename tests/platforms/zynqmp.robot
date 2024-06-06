@@ -278,9 +278,11 @@ Should Run Philosophers Sample
     Create Zephyr Machine           ${ZEPHYR_PHILOSOPHERS}
 
     FOR  ${p}  IN RANGE  0  5
-        FOR  ${state}  IN  ${SPACE*7}STARVING${SPACE*7}  ${SPACE*3}HOLDING ONE FORK${SPACE*3}  ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  ${SPACE*3}DROPPED ONE FORK${SPACE*3}  ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}
-            Wait For Line On Uart   Philosopher 0 \\[[PC]:[ -]\\d\\] ${state}                       treatAsRegex=true
-        END
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           treatAsRegex=true 
     END
 
 Should Interact Via Shell
