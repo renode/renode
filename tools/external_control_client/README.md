@@ -68,3 +68,23 @@ Usage:
   * <VALUE_WITH_UNIT> is an integer with a time unit, e.g.: '100ms'
   * accepted time units are 's', 'ms' and 'us' (for microseconds)
 ```
+
+### `adc` example
+
+The example application using Renode API can be found in `examples/adc`.
+
+It can be built in the `build` directory from the Renode repository's root directory with:
+```bash
+renode$ mkdir build && cmake -DAPP_NAME=adc -DAPP_SOURCES_DIR=tools/external_control_client/examples/adc -S tools/external_control_client -B build && cmake --build build
+```
+
+After starting the server in Renode, the `adc` application can be used multiple times to set ADC channel 0 value.
+
+The usage is:
+```
+Usage:
+  ./adc <PORT> <MACHINE_NAME> <ADC_NAME> <VALUE_WITH_UNIT>
+  where:
+  * <VALUE_WITH_UNIT> is an unsigned integer with a voltage unit, e.g.: '100mV'
+  * accepted voltage units are 'V', 'mV' and 'uV' (for microvolts)
+```
