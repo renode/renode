@@ -1027,3 +1027,18 @@ Test Reading From Overlapping MPU Regions
     # See dump_fault in arch/arm/core/aarch32/cortex_a_r/fault.c.
     Wait For Line On Uart              DATA ABORT
     Wait For Line On Uart              Unknown (4)
+
+Run Zephyr SMP Pi Sample On 4 Cores
+    [Tags]                             Demos
+
+    Execute Command                    i @platforms/cpus/cortex-r52_smp_4.repl
+    Execute Command                    sysbus LoadELF ${URI}/fvp_baser_aemv8r_aarch32--zephyr-arch-smp-pi.elf-s_610540-6034d4eb76ea1b158f34bdd92ffcff2365f2c2e6
+
+    # These parameters ensure the determinism of execution for this demo
+    Execute Command                    emulation SetGlobalSerialExecution True
+    Execute Command                    emulation SetGlobalQuantum "0.01"
+
+    Execute Command                    showAnalyzer ${UART}
+    Create Terminal Tester             ${UART}
+
+    Wait For Line On Uart              All 16 threads executed by 4 cores

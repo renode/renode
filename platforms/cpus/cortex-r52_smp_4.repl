@@ -1,0 +1,39 @@
+using "./cortex-r52_smp.repl"
+
+cpu2: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+    cpuId: 2
+
+cpu3: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+    cpuId: 3
+
+gic: @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x10000; region: "distributor" };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu;  address: 0xAF100000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; address: 0xAF120000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu2; address: 0xAF140000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu3; address: 0xAF160000 }
+    }
+    [8-11]  -> cpu2@[0-3]
+    [12-15] -> cpu3@[0-3]
+
+timer2: Timers.ARM_GenericTimer @ cpu2
+    frequency: 100000000
+    EL1PhysicalTimerIRQ -> gic#2@30
+    EL1VirtualTimerIRQ -> gic#2@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#2@26
+
+timer3: Timers.ARM_GenericTimer @ cpu3
+    frequency: 100000000
+    EL1PhysicalTimerIRQ -> gic#3@30
+    EL1VirtualTimerIRQ -> gic#3@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#3@26
+
+uart2: UART.PL011 @ sysbus 0x9c0b0000
+    -> gic@7
+
+uart3: UART.PL011 @ sysbus 0x9c0c0000
+    -> gic@8
