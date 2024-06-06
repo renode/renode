@@ -5,7 +5,7 @@ about: Create a report to point us to an issue with the current codebase
 
 Thanks for taking the time to file an issue for Renode!
 
-Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.rst) first.
+Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.md) first.
 
 ### Description
 

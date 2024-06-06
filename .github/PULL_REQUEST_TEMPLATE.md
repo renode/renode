@@ -1,6 +1,6 @@
 Thanks for taking the time to create a Pull Request for Renode!
 
-Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.rst) first.
+Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.md) first.
 
 Please note that all contributions to Renode require you to sign a [Contributor License Agreement](https://cla-assistant.io/renode/renode).
 

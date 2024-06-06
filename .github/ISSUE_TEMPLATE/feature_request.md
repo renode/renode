@@ -5,7 +5,7 @@ about: Suggest an idea or ask questions about Renode usage
 
 Thanks for taking the time to submit a feature request for Renode!
 
-Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.rst) first.
+Please familiarize yourself with our [Contributing guidelines](https://github.com/renode/renode/blob/master/CONTRIBUTING.md) first.
 
 ### Description
 
