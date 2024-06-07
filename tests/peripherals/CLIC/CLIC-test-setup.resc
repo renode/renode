@@ -1,0 +1,80 @@
+using sysbus
+logLevel 0
+
+# This file requires variables:
+# example_elf - path to the elf with test code
+# example_sig - path to the file with example signature (has to be local absolute path)
+
+include @tests/peripherals/CLIC/CLIC-test-platform.repl
+
+machine UserState $example_sig
+echo $example_sig
+
+set end_hookscript
+"""
+start_addr = cpu.Bus.GetSymbolAddress("begin_signature")
+end_addr = cpu.Bus.GetSymbolAddress("end_signature")
+sig_path = machine.UserState
+
+generated_signatures = []
+
+curr_addr = start_addr
+while curr_addr < end_addr:
+    s = ""
+    for j in range(4, 0, -1):
+        s += "%02x" % cpu.Bus.ReadByte(curr_addr + j - 1)
+    curr_addr += 4
+    generated_signatures.append(s)
+
+reference_signatures = []
+cpu.Log(LogLevel.Error, "Sig path: ({0})", sig_path)
+with open(sig_path, "r") as f:
+    reference_signatures = f.readlines()
+
+if len(generated_signatures) != len(reference_signatures):
+    cpu.Log(LogLevel.Error, "Different number of generated ({0}) and reference"
+        "({1}) signatures", len(generated_signatures), len(reference_signatures))
+
+all_equal = True
+for i, sig in enumerate(generated_signatures):
+    ref_sig = reference_signatures[i].rstrip()
+    if sig != ref_sig:
+        cpu.Log(LogLevel.Error, "Wrong generated signature #{0}: {1} different than reference signature {2}".format(i, sig, ref_sig))
+        all_equal = False
+    else:
+        cpu.Log(LogLevel.Info, "Signature {0} OK: {1} == {2}".format(i, sig, ref_sig))
+
+if all_equal:
+    cpu.Log(LogLevel.Info, "All signatures correct")
+
+machine.UserState = ''
+"""
+
+set sigwrite_hookscript
+"""
+if machine.UserState != '':
+    sig_path = machine.UserState
+    start_addr = sysbus.GetSymbolAddress("begin_signature")
+    signature_idx = offset/4
+
+    reference_signatures = []
+    with open(sig_path, "r") as f:
+        reference_signatures = f.readlines()
+
+    value = int(value)
+    ref_sig = int(reference_signatures[signature_idx].rstrip(), 16)
+    if value == ref_sig:
+        machine.Log(LogLevel.Info, "Signature OK: 0x{:08X} == 0x{:08X}".format(value, ref_sig))
+    else:
+        machine.Log(LogLevel.Warning, "Writing signature #{}: 0x{:08X} different than reference signature 0x{:08X} at address {:08X}".format(signature_idx, value, ref_sig, start_addr + offset))
+"""
+
+sysbus LoadELF $example_elf
+
+cpu AddHook `sysbus GetSymbolAddress "rvtest_code_end"` $end_hookscript
+#sysbus SetHookBeforePeripheralWrite signature $sigwrite_hookscript
+
+sysbus LogPeripheralAccess signature
+
+# The Sail model treats WFI as NOP, see https://github.com/riscv/sail-riscv/blob/ba35af52e8ee57b7b30772490e9e35d537c769d9/model/riscv_platform.sail#L447
+cpu WfiAsNop true
