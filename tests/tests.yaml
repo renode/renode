@@ -153,3 +153,4 @@
 - tests/unit-tests/platform-file-aliases.robot
 - tests/peripherals/VirtIO.robot
 - tests/peripherals/CLIC/CLIC-platform-tests.robot
+- tests/peripherals/CLIC/CLIC_tests.robot
