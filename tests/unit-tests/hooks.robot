@@ -167,7 +167,7 @@ Should Count on Uart Access
     Wait For Prompt On Uart  x     pauseEmulation=true
 
     ${cnt}=                  Execute Command  sysbus.cpu PC
-    Should Be Equal As Numbers          ${cnt}  0x2c
+    Should Be Equal As Numbers          ${cnt}  0x30
 
     ${cnt}=                  Execute Command  sysbus.cpu ExecutedInstructions
     Should Be Equal As Numbers          ${cnt}  8

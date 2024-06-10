@@ -85,7 +85,22 @@ Terminal Tester Assert Should Precisely Pause Emulation
     Should Be Equal          ${l.groups[0]}  6401
 
     Emulation Should Be Paused At Time  00:00:00.000226
-    PC Should Be Equal       0x8002c08  # this is the STR that writes to TDR in LL_USART_TransmitData8
+    PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
+
+Emulation Should Pause Precisely Between Translation Blocks
+    Create Machine With Button And LED  button
+    # Forcing all blocks to contain a single instruction will force the precise pauses to be handled between blocks
+    Execute Command          cpu MaximumBlockSize 1
+
+    Wait For Line On Uart    Press the button  pauseEmulation=true
+
+    Execute Command          gpioPortB.button Press
+
+    ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
+    Should Be Equal          ${l.groups[0]}  6401
+
+    Emulation Should Be Paused At Time  00:00:00.000226
+    PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
 
 Quantum Should Not Impact Tester Pause PC
     Create Machine With Button And LED  button
@@ -97,7 +112,7 @@ Quantum Should Not Impact Tester Pause PC
 
     Wait For Line On Uart    Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
 
-    PC Should Be Equal       0x8002c08
+    PC Should Be Equal       0x8002c0a
 
 RunFor Should Work After Precise Pause
     Create Machine With Button And LED  button
@@ -134,11 +149,11 @@ LED Tester Assert Should Precisely Pause Emulation
 
     Assert LED State         true  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:00.000120
-    PC Should Be Equal       0x8002a46  # this is the STR that writes to BSRR in gpio_stm32_port_set_bits_raw
+    PC Should Be Equal       0x8002a48  # this is the next instruction after STR that writes to BSRR in gpio_stm32_port_set_bits_raw
 
     Assert LED State         false  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:01.000211
-    PC Should Be Equal       0x80028a2  # this is the STR that writes to BRR in LL_GPIO_ResetOutputPin
+    PC Should Be Equal       0x80028a4  # this is the next instruction after STR that writes to BRR in LL_GPIO_ResetOutputPin
 
     Provides                 synced-blinky
 
@@ -172,14 +187,14 @@ LED And Terminal Testers Should Cooperate
     Write Line To Uart       led on leds 0  waitForEcho=false
     Wait For Line On Uart    leds: turning on LED 0  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:00.001239
-    PC Should Be Equal       0x800b26a
+    PC Should Be Equal       0x800b26c
     # The LED should not be turned on yet: the string is printed before actually changing the GPIO
     Assert LED State         false  0
 
     # Now wait for the LED to turn on
     Assert LED State         true  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:00.001243
-    PC Should Be Equal       0x800af0a
+    PC Should Be Equal       0x800af0c
 
 LED Tester Assertion Triggered By PWM Should Not Log Errors
     Create Log Tester        0
