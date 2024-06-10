@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2010-2023 Antmicro
+# Copyright (c) 2010-2024 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -22,9 +22,9 @@ import dwarf
 
 
 FILE_SIGNATURE = b"ReTrace"
-FILE_VERSION = b"\x02"
+FILE_VERSION = b"\x03"
 HEADER_LENGTH = 10
-MEMORY_ACCESS_LENGTH = 9
+MEMORY_ACCESS_LENGTH = 17
 RISCV_VECTOR_CONFIGURATION_LENGTH = 16
 
 
@@ -188,9 +188,10 @@ class TraceData:
         if len(data) != MEMORY_ACCESS_LENGTH:
             raise InvalidFileFormatException("Unexpected end of file")
         type = MemoryAccessType(data[0])
-        address = bytes_to_hex(data[1:])
+        address = bytes_to_hex(data[1:9], zero_padded=False)
+        value = bytes_to_hex(data[9:], zero_padded=False)
 
-        return f"{type.name} with address {address}"
+        return f"{type.name} with address {address}, value {value}"
 
     def parse_riscv_vector_configuration_data(self):
         data = self.file.read(RISCV_VECTOR_CONFIGURATION_LENGTH)
