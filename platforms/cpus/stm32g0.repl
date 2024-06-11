@@ -246,7 +246,7 @@ dma2: DMA.STM32G0DMA @ sysbus 0x40020400
     numberOfChannels: 5
     [0-4] -> nvicInput11@[4-8]
 
-adc: Analog.STM32F0_ADC @ sysbus 0x40012400
+adc: Analog.STM32G0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     -> nvic@12
