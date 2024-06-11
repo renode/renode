@@ -1034,10 +1034,6 @@ Run Zephyr SMP Pi Sample On 4 Cores
     Execute Command                    i @platforms/cpus/cortex-r52_smp_4.repl
     Execute Command                    sysbus LoadELF ${URI}/fvp_baser_aemv8r_aarch32--zephyr-arch-smp-pi.elf-s_610540-6034d4eb76ea1b158f34bdd92ffcff2365f2c2e6
 
-    # These parameters ensure the determinism of execution for this demo
-    Execute Command                    emulation SetGlobalSerialExecution True
-    Execute Command                    emulation SetGlobalQuantum "0.01"
-
     Execute Command                    showAnalyzer ${UART}
     Create Terminal Tester             ${UART}
 
