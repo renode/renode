@@ -154,3 +154,4 @@
 - tests/peripherals/VirtIO.robot
 - tests/peripherals/CLIC/CLIC-platform-tests.robot
 - tests/peripherals/CLIC/CLIC_tests.robot
+- tests/peripherals/CLIC/CLIC-indirect-csr.robot
