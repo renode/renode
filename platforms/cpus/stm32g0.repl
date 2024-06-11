@@ -251,6 +251,12 @@ adc: Analog.STM32G0_ADC @ sysbus 0x40012400
     externalEventFrequency: 1000
     -> nvic@12
 
+iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
+
+flash_ctrl: MTD.STM32F4_FlashController @ sysbus 0x40022000
+    flash: flash
+
 sysbus:
     init:
         Tag <0x40002C00, 0x40002FFF> "WWDG"
