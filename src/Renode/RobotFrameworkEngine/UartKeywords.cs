@@ -93,6 +93,26 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
+        public TerminalTesterResult WaitForLinesOnUart(string[] content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
+            bool includeUnfinishedLine = false, bool? pauseEmulation = null, bool? matchFromNextLine = null)
+        {
+            TimeInterval? timeInterval = null;
+            if(timeout.HasValue)
+            {
+                timeInterval = TimeInterval.FromSeconds(timeout.Value);
+            }
+
+            var tester = GetTesterOrThrowException(testerId);
+            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
+            if(result == null)
+            {
+                OperationFail(tester);
+            }
+            return result;
+        }
+
+        [RobotFrameworkKeyword]
         public void ShouldNotBeOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
             bool includeUnfinishedLine = false)
         {
