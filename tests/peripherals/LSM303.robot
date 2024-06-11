@@ -12,17 +12,13 @@ ${LSM303DLHC}=     SEPARATOR=
 ...  lsm303dlhc_g: Sensors.LSM303DLHC_Gyroscope @ twi1 0x1e     ${\n}
 ...  """
 
-${MAGNETICFIELD}=    SEPARATOR=
-... """                                            ${\n}
-... Magnetometer data:                             ${\n}
-... ( x y z ) = ( 20.000000  5.000000  -5.000000 ) ${\n}
-... """
+@{MAGNETICFIELD}=
+...  Magnetometer data:
+...  ( x y z ) = ( 20.000000${SPACE*2}5.000000${SPACE*2}-5.000000 )
 
-${ACCELERATION}=    SEPARATOR=
-... """                                            ${\n}
-... Accelerometer data:                            ${\n}
-... ( x y z ) = ( 11.998728  3.993192  -2.001384 ) ${\n}
-... """
+@{ACCELERATION}=
+...  Accelerometer data:
+...  ( x y z ) = ( 11.998728${SPACE*2}3.993192${SPACE*2}-2.001384 )
 
 
 *** Keywords ***
@@ -41,7 +37,7 @@ Should Read MagneticField
 	Execute Command           sysbus.twi1.lsm303dlhc_g MagneticFieldZ -5
 
 	Start Emulation
-	Wait For Line On Uart     ${MAGNETICFIELD}
+	Wait For Lines On Uart    ${MAGNETICFIELD}
 
 Should Read Acceleration
 	Create Machine
@@ -52,4 +48,4 @@ Should Read Acceleration
 	Execute Command           sysbus.twi1.lsm303dlhc_a AccelerationZ -2
 
 	Start Emulation
-	Wait For Line On Uart     ${ACCELERATION}
+	Wait For Lines On Uart    ${ACCELERATION}
