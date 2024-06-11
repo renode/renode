@@ -1,0 +1,23 @@
+cpu: CPU.RiscV32 @ sysbus
+    hartId: 0
+    cpuType: "rv32imc_zicsr_zifencei_zbs"
+    timeProvider: empty
+
+clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x02000000
+    frequency: 1000000
+    [0, 1] -> clic@[3, 7]
+
+clic: IRQControllers.CoreLocalInterruptController @ { 
+        sysbus <0x04000000, +0x10000>; 
+        cpu <0x1000, +0x4A1> 
+    } 
+    cpu: cpu
+    [0] -> cpu@[16]
+
+uart: UART.TrivialUart @ sysbus 0xd0000000
+
+memory: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x4000
+
+signature: Memory.ArrayMemory @ sysbus 0x80004000
+    size: 0x1000

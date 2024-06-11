@@ -1,0 +1,78 @@
+sysbus WriteDoubleWord 0x80000000 0x00001437	# asm: lui	s0,0x1
+sysbus WriteDoubleWord 0x80000004 0x40040413	# asm: addi	s0,s0,1024 # 1400 <miselect_clicintipe>
+sysbus WriteDoubleWord 0x80000008 0x000014b7	# asm: lui	s1,0x1
+sysbus WriteDoubleWord 0x8000000c 0x48048493	# asm: addi	s1,s1,1152 # 1480 <miselect_clicinttrig>
+sysbus WriteDoubleWord 0x80000010 0x00040513	# asm: mv	a0,s0
+sysbus WriteDoubleWord 0x80000014 0x040015b7	# asm: lui	a1,0x4001
+sysbus WriteDoubleWord 0x80000018 0x00000613	# asm: li	a2,0
+sysbus WriteDoubleWord 0x8000001c 0xc0fe66b7	# asm: lui	a3,0xc0fe6
+sysbus WriteDoubleWord 0x80000020 0xa5a68693	# asm: addi	a3,a3,-1446 # c0fe5a5a <UART_TX+0xf0fe5a5a>
+sysbus WriteDoubleWord 0x80000024 0x084000ef	# asm: jal	ra,800000a8 <verify_read>
+sysbus WriteDoubleWord 0x80000028 0x04051e63	# asm: bnez	a0,80000084 <bad_ending>
+sysbus WriteDoubleWord 0x8000002c 0x00140413	# asm: addi	s0,s0,1
+sysbus WriteDoubleWord 0x80000030 0xfe9440e3	# asm: blt	s0,s1,80000010 <CLIC_ENABLE_BASE+0x7bfff00f>
+sysbus WriteDoubleWord 0x80000034 0x00001437	# asm: lui	s0,0x1
+sysbus WriteDoubleWord 0x80000038 0x40040413	# asm: addi	s0,s0,1024 # 1400 <miselect_clicintipe>
+sysbus WriteDoubleWord 0x8000003c 0x000014b7	# asm: lui	s1,0x1
+sysbus WriteDoubleWord 0x80000040 0x48048493	# asm: addi	s1,s1,1152 # 1480 <miselect_clicinttrig>
+sysbus WriteDoubleWord 0x80000044 0x00040513	# asm: mv	a0,s0
+sysbus WriteDoubleWord 0x80000048 0x040015b7	# asm: lui	a1,0x4001
+sysbus WriteDoubleWord 0x8000004c 0x00158593	# asm: addi	a1,a1,1 # 4001001 <CLIC_ENABLE_BASE>
+sysbus WriteDoubleWord 0x80000050 0x00100613	# asm: li	a2,1
+sysbus WriteDoubleWord 0x80000054 0x705ac6b7	# asm: lui	a3,0x705ac
+sysbus WriteDoubleWord 0x80000058 0x28068693	# asm: addi	a3,a3,640 # 705ac280 <CLIC_ENABLE_BASE+0x6c5ab27f>
+sysbus WriteDoubleWord 0x8000005c 0x04c000ef	# asm: jal	ra,800000a8 <verify_read>
+sysbus WriteDoubleWord 0x80000060 0x02051263	# asm: bnez	a0,80000084 <bad_ending>
+sysbus WriteDoubleWord 0x80000064 0x00140413	# asm: addi	s0,s0,1
+sysbus WriteDoubleWord 0x80000068 0xfc944ee3	# asm: blt	s0,s1,80000044 <CLIC_ENABLE_BASE+0x7bfff043>
+sysbus WriteDoubleWord 0x8000006c 0xd0000537	# asm: lui	a0,0xd0000
+sysbus WriteDoubleWord 0x80000070 0x04f00293	# asm: li	t0,79
+sysbus WriteDoubleWord 0x80000074 0x00552023	# asm: sw	t0,0(a0) # d0000000 <UART_TX+0x0>
+sysbus WriteDoubleWord 0x80000078 0x04b00293	# asm: li	t0,75
+sysbus WriteDoubleWord 0x8000007c 0x00552023	# asm: sw	t0,0(a0)
+sysbus WriteDoubleWord 0x80000080 0x0140006f	# asm: j	80000094 <newline_halt>
+sysbus WriteDoubleWord 0x80000084 0xd0000537	# asm: lui	a0,0xd0000
+sysbus WriteDoubleWord 0x80000088 0x05800293	# asm: li	t0,88
+sysbus WriteDoubleWord 0x8000008c 0x00552023	# asm: sw	t0,0(a0) # d0000000 <UART_TX+0x0>
+sysbus WriteDoubleWord 0x80000090 0x00552023	# asm: sw	t0,0(a0)
+sysbus WriteDoubleWord 0x80000094 0x00d00293	# asm: li	t0,13
+sysbus WriteDoubleWord 0x80000098 0x00552023	# asm: sw	t0,0(a0)
+sysbus WriteDoubleWord 0x8000009c 0x00a00293	# asm: li	t0,10
+sysbus WriteDoubleWord 0x800000a0 0x00552023	# asm: sw	t0,0(a0)
+sysbus WriteDoubleWord 0x800000a4 0x0000006f	# asm: j	800000a4 <newline_halt+0x10>
+sysbus WriteDoubleWord 0x800000a8 0x00000e93	# asm: li	t4,0
+sysbus WriteDoubleWord 0x800000ac 0x02000f13	# asm: li	t5,32
+sysbus WriteDoubleWord 0x800000b0 0x00001337	# asm: lui	t1,0x1
+sysbus WriteDoubleWord 0x800000b4 0x40030313	# asm: addi	t1,t1,1024 # 1400 <miselect_clicintipe>
+sysbus WriteDoubleWord 0x800000b8 0x406502b3	# asm: sub	t0,a0,t1
+sysbus WriteDoubleWord 0x800000bc 0x00729293	# asm: slli	t0,t0,0x7
+sysbus WriteDoubleWord 0x800000c0 0x00b282b3	# asm: add	t0,t0,a1
+sysbus WriteDoubleWord 0x800000c4 0x49d6d3b3	# asm: bext	t2,a3,t4
+sysbus WriteDoubleWord 0x800000c8 0x00728023	# asm: sb	t2,0(t0)
+sysbus WriteDoubleWord 0x800000cc 0x00428293	# asm: addi	t0,t0,4
+sysbus WriteDoubleWord 0x800000d0 0x001e8e93	# asm: addi	t4,t4,1
+sysbus WriteDoubleWord 0x800000d4 0xffeee8e3	# asm: bltu	t4,t5,800000c4 <verify_read+0x1c>
+sysbus WriteDoubleWord 0x800000d8 0x35051073	# asm: csrw	0x350,a0
+sysbus WriteDoubleWord 0x800000dc 0x00061663	# asm: bnez	a2,800000e8 <verify_read+0x40>
+sysbus WriteDoubleWord 0x800000e0 0x35102e73	# asm: csrr	t3,0x351
+sysbus WriteDoubleWord 0x800000e4 0x0080006f	# asm: j	800000ec <verify_read+0x44>
+sysbus WriteDoubleWord 0x800000e8 0x35202e73	# asm: csrr	t3,0x352
+sysbus WriteDoubleWord 0x800000ec 0x40de0e33	# asm: sub	t3,t3,a3
+sysbus WriteDoubleWord 0x800000f0 0x00061663	# asm: bnez	a2,800000fc <verify_read+0x54>
+sysbus WriteDoubleWord 0x800000f4 0x35101073	# asm: csrw	0x351,zero
+sysbus WriteDoubleWord 0x800000f8 0x0080006f	# asm: j	80000100 <verify_read+0x58>
+sysbus WriteDoubleWord 0x800000fc 0x35201073	# asm: csrw	0x352,zero
+sysbus WriteDoubleWord 0x80000100 0x02000e93	# asm: li	t4,32
+sysbus WriteDoubleWord 0x80000104 0x00001337	# asm: lui	t1,0x1
+sysbus WriteDoubleWord 0x80000108 0x40030313	# asm: addi	t1,t1,1024 # 1400 <miselect_clicintipe>
+sysbus WriteDoubleWord 0x8000010c 0x406502b3	# asm: sub	t0,a0,t1
+sysbus WriteDoubleWord 0x80000110 0x00729293	# asm: slli	t0,t0,0x7
+sysbus WriteDoubleWord 0x80000114 0x00b282b3	# asm: add	t0,t0,a1
+sysbus WriteDoubleWord 0x80000118 0x00028383	# asm: lb	t2,0(t0)
+sysbus WriteDoubleWord 0x8000011c 0x00039863	# asm: bnez	t2,8000012c <verify_read+0x84>
+sysbus WriteDoubleWord 0x80000120 0x00428293	# asm: addi	t0,t0,4
+sysbus WriteDoubleWord 0x80000124 0xfffe8e93	# asm: addi	t4,t4,-1
+sysbus WriteDoubleWord 0x80000128 0xffd048e3	# asm: bgtz	t4,80000118 <verify_read+0x70>
+sysbus WriteDoubleWord 0x8000012c 0x007e6e33	# asm: or	t3,t3,t2
+sysbus WriteDoubleWord 0x80000130 0x01c03533	# asm: snez	a0,t3
+sysbus WriteDoubleWord 0x80000134 0x00008067	# asm: ret
