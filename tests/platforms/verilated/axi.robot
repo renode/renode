@@ -1,17 +1,17 @@
 *** Variables ***
-${URI}                              @https://dl.antmicro.com/projects/renode
-${FASTVDMA_SOCKET_LINUX}            ${URI}/Vfastvdma-Linux-x86_64-1116123840-s_1616232-37fd8031dec810475ac6abf68a789261ce6551b0
-${FASTVDMA_SOCKET_WINDOWS}          ${URI}/Vfastvdma-Windows-x86_64-1116123840.exe-s_14833257-3a1fef7953686e58a00b09870c5a57e3ac91621d
-${FASTVDMA_SOCKET_MACOS}            ${URI}/Vfastvdma-macOS-x86_64-1116123840-s_230336-8f69fd45aea5806309e9253bcca8b7e32a1d5544
-${FASTVDMA_NATIVE_LINUX}            ${URI}/libVfastvdma-Linux-x86_64-1116123840.so-s_2057368-8e927ed058a025cf5c1d4d423336f830e9dc7734
-${FASTVDMA_NATIVE_WINDOWS}          ${URI}/libVfastvdma-Windows-x86_64-1116123840.dll-s_14838113-a51512dd0c7c4b5f5d8e28aca2ce872a2c9c1edd
-${FASTVDMA_NATIVE_MACOS}            ${URI}/libVfastvdma-macOS-x86_64-1116123840.dylib-s_230272-465727b67a3b37554b2a0e6fd36f9b73e5af015e
-${RAM_SOCKET_LINUX}                 ${URI}/Vram-Linux-x86_64-1116123840-s_1599888-76d5965bf7e7e1c6b92a606c35cc9df818ac8f6f
-${RAM_SOCKET_WINDOWS}               ${URI}/Vram-Windows-x86_64-1116123840.exe-s_14819329-08c574a442749bff9e30de9e30323a0b730c64d2
-${RAM_SOCKET_MACOS}                 ${URI}/Vram-macOS-x86_64-1116123840-s_213960-84c4147cb55aa7a77a33db111cf34bd2e684e370
-${RAM_NATIVE_LINUX}                 ${URI}/libVram-Linux-x86_64-1116123840.so-s_2041000-dc075efcd97e2dc460660e26bcf34efe79f7da64
-${RAM_NATIVE_WINDOWS}               ${URI}/libVram-Windows-x86_64-1116123840.dll-s_14824186-efcb553f2f0a1d6aef13abedddec91d3613169fc
-${RAM_NATIVE_MACOS}                 ${URI}/libVram-macOS-x86_64-1116123840.dylib-s_213904-bab67e73e73c7f3f9f3b8916d6df53294d9e337a
+${URI}                             @https://dl.antmicro.com/projects/renode
+${FASTVDMA_SOCKET_LINUX}           ${URI}/Vfastvdma-Linux-x86_64-10267006380-s_1632096-6348313862e83feb81f8c415c6deb7b2104a8c6f
+${FASTVDMA_SOCKET_WINDOWS}         ${URI}/Vfastvdma-Windows-x86_64-10267006380.exe-s_3233455-72bc5811a53051343ae7d82b10057cc2f5c48850
+${FASTVDMA_SOCKET_MACOS}           ${URI}/Vfastvdma-macOS-x86_64-10267006380-s_235752-7cff3410d92216fce601770306cbd4e1ee751d8c
+${FASTVDMA_NATIVE_LINUX}           ${URI}/libVfastvdma-Linux-x86_64-10267006380.so-s_2078200-8a4a7543cce11dfefc05fb8e5251b27ebad744a8
+${FASTVDMA_NATIVE_WINDOWS}         ${URI}/libVfastvdma-Windows-x86_64-10267006380.dll-s_3239883-3a1596007ce59c548ee16a7bf16984d9422e1a18
+${FASTVDMA_NATIVE_MACOS}           ${URI}/libVfastvdma-macOS-x86_64-10267006380.dylib-s_235688-11295715923d1462bfd1f54ecd55ab1ae94cc048
+${RAM_SOCKET_LINUX}                ${URI}/Vram-Linux-x86_64-10267006380-s_1615752-8f60a8f37d281df6299182275a33b39e30225dc2
+${RAM_SOCKET_WINDOWS}              ${URI}/Vram-Windows-x86_64-10267006380.exe-s_3220003-44297982a17f9585ec04a61a9fe2e566719ba7f3
+${RAM_SOCKET_MACOS}                ${URI}/Vram-macOS-x86_64-10267006380-s_219400-996168311f9b1358633b8582e11dec68f8672039
+${RAM_NATIVE_LINUX}                ${URI}/libVram-Linux-x86_64-10267006380.so-s_2065920-5de934761fd389b24f8da41fe36a1ebbd7450cd0
+${RAM_NATIVE_WINDOWS}              ${URI}/libVram-Windows-x86_64-10267006380.dll-s_3226432-999306f3cf046fec7f421d7d7daddc1309bfa8d6
+${RAM_NATIVE_MACOS}                ${URI}/libVram-macOS-x86_64-10267006380.dylib-s_219336-143ebedfef1f50521da6daa23d3dd0151c1b39c9
 
 *** Keywords ***
 Create Machine

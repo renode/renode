@@ -2,12 +2,12 @@
 ${URI}                              @https://dl.antmicro.com/projects/renode
 ${BIN}                              murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
 ${UART}                             sysbus.uart
-${APB3UART_SOCKET_LINUX}            ${URI}/Vapb3uart-Linux-x86_64-1116123840-s_1604688-cb9962289b326d8defc1f7abb4b293a0e71ef8aa
-${APB3UART_SOCKET_WINDOWS}          ${URI}/Vapb3uart-Windows-x86_64-1116123840.exe-s_14823704-16aec151000300b42efc759f325438c2aad77d6e
-${APB3UART_SOCKET_MACOS}            ${URI}/Vapb3uart-macOS-x86_64-1116123840-s_214928-b8cbb2c12d4bf367cf10ff1ad5db45238ad06f08
-${APB3UART_NATIVE_LINUX}            ${URI}/libVapb3uart-Linux-x86_64-1116123840.so-s_2049920-1bca4e9cf7f3465907cea32e2be7a176b78d97f3
-${APB3UART_NATIVE_WINDOWS}          ${URI}/libVapb3uart-Windows-x86_64-1116123840.dll-s_14829076-0f58c94cf875cf6ebe442dbe24426c9308eef3e7
-${APB3UART_NATIVE_MACOS}            ${URI}/libVapb3uart-macOS-x86_64-1116123840.dylib-s_214864-267618c5da753aa7c1629db0a518aea39fdf6ad0
+${APB3UART_SOCKET_LINUX}            ${URI}/Vapb3uart-Linux-x86_64-10267006380-s_1620552-5cdfbc97010a725f3015896b90bc498943c09e30
+${APB3UART_SOCKET_WINDOWS}          ${URI}/Vapb3uart-Windows-x86_64-10267006380.exe-s_3224360-294a7f9f8c6adbbb1a4136de75a1e6eff413c0d9
+${APB3UART_SOCKET_MACOS}            ${URI}/Vapb3uart-macOS-x86_64-10267006380-s_220360-2b75964e9eb842dc9f3c569658702a3bdf2c740d
+${APB3UART_NATIVE_LINUX}            ${URI}/libVapb3uart-Linux-x86_64-10267006380.so-s_2074848-c77cfbdc729bc6162f30f6c9f59198df4825f097
+${APB3UART_NATIVE_WINDOWS}          ${URI}/libVapb3uart-Windows-x86_64-10267006380.dll-s_3230280-5d735ed96ff80ecc92e20f3027833f2d8aba841a
+${APB3UART_NATIVE_MACOS}            ${URI}/libVapb3uart-macOS-x86_64-10267006380.dylib-s_220296-3feb569724edb0d44421a85619acd948014d8455
 
 ${PLATFORM}=     SEPARATOR=
 ...  """                                                                        ${\n}

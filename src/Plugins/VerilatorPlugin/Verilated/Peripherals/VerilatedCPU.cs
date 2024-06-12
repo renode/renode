@@ -219,22 +219,22 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 case ActionType.PushByte:
                     this.NoisyLog("Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
+                    Respond(ActionType.PushConfirmation, 0);
                     break;
                 case ActionType.PushWord:
                     this.NoisyLog("Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
+                    Respond(ActionType.PushConfirmation, 0);
                     break;
                 case ActionType.PushDoubleWord:
                     this.Log(LogLevel.Noisy, "Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
+                    Respond(ActionType.PushConfirmation, 0);
                     break;
                 case ActionType.GetDoubleWord:
                     this.Log(LogLevel.Noisy, "Requested data from address: 0x{0:X}", message.Address);
                     var data = machine.SystemBus.ReadDoubleWord(message.Address);
-                    lock(verilatedPeripheralLock)
-                    {
-                        verilatedPeripheral.Respond(ActionType.WriteToBus, 0, data);
-                    }
+                    Respond(ActionType.WriteToBus, data);
                     break;
                 case ActionType.TickClock:
                     ticksProcessed = true;
@@ -262,6 +262,14 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
                         message.ActionId, message.Address, message.Data);
                     break;
+            }
+        }
+
+        private void Respond(ActionType action, ulong data)
+        {
+            lock(verilatedPeripheralLock)
+            {
+                verilatedPeripheral.Respond(action, 0, data);
             }
         }
 

@@ -1,14 +1,13 @@
 *** Variables ***
-${URI}                                   @https://dl.antmicro.com/projects/renode/
-
+${URI}                                   @https://dl.antmicro.com/projects/renode
 ${PROMPT}                                zynq>
 ${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/zynq_verilated_fastvdma.resc
 ${UART}                                  sysbus.uart1
 ${FASTVDMA_DRIVER}                       /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma.ko
 ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma-demo.ko
-${FASTVDMA_NATIVE_LINUX}                 ${URI}zynq-fastvdma_libVfastvdma-Linux-x86_64-1246779523.so-s_2057616-93e755f7d67bc4d5ca33cce6c88bbe8ea8b3bd31
-${FASTVDMA_NATIVE_WINDOWS}               ${URI}zynq-fastvdma_libVfastvdma-Windows-x86_64-1246779523.dll-s_14839852-62f85c68c37d34f17b10d39c5861780856d1698e
-${FASTVDMA_NATIVE_MACOS}                 ${URI}libVfastvdma-macOS-x86_64-1246779523.dylib-s_230304-6c7a97c3b3adddf60bfb769e751403e85092c3b8
+${FASTVDMA_NATIVE_LINUX}                 ${URI}/libVfastvdma-Linux-x86_64-10267006380.so-s_2078200-8a4a7543cce11dfefc05fb8e5251b27ebad744a8
+${FASTVDMA_NATIVE_WINDOWS}               ${URI}/libVfastvdma-Windows-x86_64-10267006380.dll-s_3239883-3a1596007ce59c548ee16a7bf16984d9422e1a18
+${FASTVDMA_NATIVE_MACOS}                 ${URI}/libVfastvdma-macOS-x86_64-10267006380.dylib-s_235688-11295715923d1462bfd1f54ecd55ab1ae94cc048
 
 *** Keywords ***
 Create Machine

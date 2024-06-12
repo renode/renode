@@ -1,9 +1,9 @@
 *** Variables ***
 ${URI}                         @https://dl.antmicro.com/projects/renode
 ${UART}                        sysbus.uart
-${CPU_IBEX_NATIVE_LINUX}       ${URI}/verilated-ibex--libVtop-s_2214528-ebb048cb40ded91b7ddce15a4a9c303f18f36998
-${CPU_IBEX_NATIVE_WINDOWS}     ${URI}/verilated-ibex--libVtop.dll-s_3253532-6f580a2d9bf4f525d5e5e6432d0cb1ff4efa9c75
-${CPU_IBEX_NATIVE_MACOS}       ${URI}/verilated-ibex--libVtop.dylib-s_329984-1446a5b2d8a92b894bf1b78d16c30cd443c28527
+${CPU_IBEX_NATIVE_LINUX}       ${URI}/libVcpu_ibex-Linux-x86_64-10267006380.so-s_2224472-d6ea2673d9e1f9a912f7cd96fcc8c0efdff937be
+${CPU_IBEX_NATIVE_WINDOWS}     ${URI}/libVcpu_ibex-Windows-x86_64-10267006380.dll-s_3392612-4aa33470a0038709c264745daa170a8cee95a76e
+${CPU_IBEX_NATIVE_MACOS}       ${URI}/libVcpu_ibex-macOS-x86_64-10267006380.dylib-s_316064-e60c296740d38ca6e8e4811dd98309ba6d6ca7e2
 
 *** Test Cases ***
 Should Boot
