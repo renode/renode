@@ -176,7 +176,17 @@ module renode #(
     message.address = bus_peripheral.write_transaction_address;
     message.data = bus_peripheral.write_transaction_data;
 
+    connection.exclusive_receive.get();
+
     connection.send_to_async_receiver(message);
+    connection.receive(message);
+    while (message.action != renode_pkg::pushConfirmation) begin
+      handle_message(message);
+      connection.receive(message);
+    end
+
+    connection.exclusive_receive.put();
+
     bus_peripheral.write_respond(0);
   endtask
 endmodule

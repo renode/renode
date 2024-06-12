@@ -41,6 +41,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
         WriteToBusQuadWord,
         PushQuadWord,
         GetQuadWord,
+        PushConfirmation,
         Step = 100, //all custom action type numbers must not fall in this range
     }
 }

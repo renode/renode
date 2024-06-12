@@ -141,18 +141,22 @@ namespace Antmicro.Renode.Peripherals.Verilated
                 case ActionType.PushByte:
                     this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
+                    Respond(ActionType.PushConfirmation, 0, 0);
                     break;
                 case ActionType.PushWord:
                     this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
+                    Respond(ActionType.PushConfirmation, 0, 0);
                     break;
                 case ActionType.PushDoubleWord:
                     this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
+                    Respond(ActionType.PushConfirmation, 0, 0);
                     break;
                 case ActionType.PushQuadWord:
                     this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteQuadWord(message.Address, message.Data);
+                    Respond(ActionType.PushConfirmation, 0, 0);
                     break;
                 case ActionType.GetByte:
                     this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", message.Address);

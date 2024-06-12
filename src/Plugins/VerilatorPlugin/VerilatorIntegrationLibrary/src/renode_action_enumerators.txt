@@ -41,4 +41,5 @@ writeRequestDoubleWord = 27,
 writeRequestQuadWord = 28,
 pushQuadWord = 29,
 getQuadWord = 30,
+pushConfirmation = 31,
 step = 100
