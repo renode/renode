@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -22,7 +22,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                 nameSpaceAndType.Push(element);
             }
             Value = nameSpaceAndType.Pop();
-            TypeAndReversedNamespace = nameSpaceAndType;
+            TypeName = nameSpaceAndType.Pop();
+            ReversedNamespace = nameSpaceAndType;
         }
 
         public override string ToString()
@@ -32,10 +33,11 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public string ToShortString()
         {
-            return TypeAndReversedNamespace.Reverse().Concat(new[] { Value }).Aggregate((x, y) => x + '.' + y);
+            return ReversedNamespace.Reverse().Concat(new[] { TypeName, Value }).Aggregate((x, y) => x + '.' + y);
         }
 
-        public IEnumerable<string> TypeAndReversedNamespace { get; private set; }
+        public IEnumerable<string> ReversedNamespace { get; private set; }
         public string Value { get; private set; }
+        public string TypeName { get; }
     }
 }
