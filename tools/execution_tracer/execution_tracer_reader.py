@@ -12,9 +12,6 @@ import sys
 import os
 import gzip
 from enum import Enum
-from elftools.common.utils import bytes2str
-from elftools.dwarf.descriptions import describe_form_class
-from elftools.elf.elffile import ELFFile
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
