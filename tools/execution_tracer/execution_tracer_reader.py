@@ -57,7 +57,7 @@ def read_header(file):
 
     version = file.read(1)
     if version != FILE_VERSION:
-        raise InvalidFileFormatException("Unsuported file format version")
+        raise InvalidFileFormatException(f"Unsuported file format version {version}, expected {FILE_VERSION}")
 
     pc_length_raw = file.read(1)
     opcodes_raw = file.read(1)
