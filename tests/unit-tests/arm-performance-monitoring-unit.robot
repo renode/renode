@@ -4,7 +4,15 @@ ${PLATFORM}                         SEPARATOR=
 ...                                 cpu: CPU.ARMv7A @ sysbus                               ${\n}
 ...                                 ${SPACE*4}cpuType: "cortex-a9"                         ${\n}
 ...                                                                                        ${\n}
-...                                 pmu: Miscellaneous.ArmPerformanceMonitoringUnit @ cpu  ${\n}
+...                                 pmu: Miscellaneous.ArmPerformanceMonitoringUnit @ {    ${\n}
+...                                 ${SPACE*8}cpu;                                         ${\n}
+...                                 ${SPACE*8}sysbus new Bus.BusRangeRegistration {        ${\n}
+...                                 ${SPACE*8}${SPACE*4}address: ${MMIO_ADDRESS};          ${\n}
+...                                 ${SPACE*8}${SPACE*4}size: 0x1000                       ${\n}
+...                                 ${SPACE*8}}                                            ${\n}
+...                                 ${SPACE*4}}                                            ${\n}
+...                                 ${SPACE*4}peripheralId: ${PERIPHERAL_ID}               ${\n}
+...                                 ${SPACE*4}withProcessorIdMMIORegisters: true           ${\n}
 ...                                                                                        ${\n}
 ...                                 memory: Memory.MappedMemory @ sysbus 0x0               ${\n}
 ...                                 ${SPACE*4}size: 0x20000                                ${\n}
@@ -15,6 +23,27 @@ ${BOGUS_EVENT_2}                    0xAB
 ${SOFTWARE_INCREMENT_EVENT}         0x00
 ${INSTRUCTIONS_EVENT}               0x8
 ${CYCLES_EVENT}                     0x11
+
+${CPU_MIDR}                         0x410fc090
+${MMIO_ADDRESS}                     0xF0000000
+${MMIO_SOFTWARE_LOCK_KEY}           0xC5ACCE55
+${PERIPHERAL_ID}                    0xFEDCBA9876543210
+${REG_ID_PFR1_OFFSET}               0xD24
+${REG_MIDR_OFFSET}                  0xD00
+${REG_MPUIR_OFFSET}                 0xD10
+${REG_PMCCNTR_OFFSET}               0x07C
+${REG_PMCNTENSET_OFFSET}            0xC00
+${REG_PMCR_OFFSET}                  0xE04
+${REG_PMLAR_OFFSET}                 0xFB0  # MMIO-only register
+${REG_PMPID0_OFFSET}                0xFE0
+${REG_PMPID2_OFFSET}                0xFE8
+${REG_PMPID4_OFFSET}                0xFD0
+${REG_PMSWINC_OFFSET}               0xCA0
+${REG_PMXEVCNTR0_OFFSET}            0x000
+${REG_PMXEVCNTR30_OFFSET}           0x078
+${REG_PMXEVTYPER0_OFFSET}           0x400
+${REG_PMXEVTYPER30_OFFSET}          0x478
+${REG_TLBTR_OFFSET}                 0xD0C
 
 *** Keywords ***
 Create Machine
@@ -157,6 +186,40 @@ Assert PMU Counter Not Overflowed
     [Arguments]                     ${counter}
     ${overflowStatus}=              Execute Command  cpu.pmu GetRegister "PMOVSR"
     Assert Bit Unset                ${overflowStatus}  ${counter}
+
+Assert Command Output Equal To
+    [Arguments]                     ${expectedOutput}  ${command}
+    ${output}=                      Execute Command  ${command}
+    Should Be Equal                 ${output}  ${expectedOutput}  strip_spaces=True
+
+Get ${name} Register Offset
+    ${variableName}=  Set Variable  ${{ "REG_" + "${name}" + "_OFFSET" }}
+    [Return]  ${ ${variableName} }
+
+MMIO-Accessed ${name} Should Be Equal To Value ${expectedValue}
+    ${offset}=                      Get ${name} Register Offset
+    ${output}=                      Execute Command  sysbus ReadDoubleWord ${{ ${MMIO_ADDRESS} + ${offset} }}
+    Should Be Equal As Integers     ${output}  ${expectedValue}
+
+MMIO-Accessed ${name} Should Be Equal To System Register
+    # There are no direct PMXEVCNTR and PMXEVTYPER system registers for all counters but only
+    # two such registers depending on PMSELR so PMU wrapping methods have to be used instead.
+    IF  "${name}".startswith("PMXEVCNTR")
+        ${expectedValue}=           Execute Command  cpu.pmu GetCounterValue ${{ int("${name}".replace("PMXEVCNTR", "")) }}
+    ELSE IF  "${name}".startswith("PMXEVTYPER")
+        ${expectedValue}=           Execute Command  cpu.pmu GetCounterEvent ${{ int("${name}".replace("PMXEVTYPER", "")) }}
+    ELSE
+        ${expectedValue}=           Execute Command  cpu GetSystemRegisterValue "${name}"
+    END
+
+    MMIO-Accessed ${name} Should Be Equal To Value ${expectedValue}
+
+Write ${value} To ${name} Using MMIO
+    ${offset}=                      Get ${name} Register Offset
+    Execute Command                 sysbus WriteDoubleWord ${{ ${MMIO_ADDRESS} + ${offset} }} ${value}
+
+Unlock MMIO Writes
+    Write ${MMIO_SOFTWARE_LOCK_KEY} To PMLAR Using MMIO
 
 *** Test Cases ***
 Should Count Cycles
@@ -436,3 +499,90 @@ Should Count Instructions With PL Masking
     Assert PMU Counter Is Equal To  0  2
     Assert PMU Counter Overflowed   0
     Assert PMU IRQ Is Set
+
+Should Allow MMIO Writes Only After Disabling Software Lock
+    Create Machine
+
+    Create Log Tester               0
+    Execute Command                 logLevel -1 pmu
+    Assert Command Output Equal To  True  pmu SoftwareLockEnabled
+
+    # Try writing.
+    Write 0xAB To PMXEVTYPER0 Using MMIO
+    Wait For Log Entry              write ignored
+    Wait For Log Entry              Software Lock can be cleared by writing ${MMIO_SOFTWARE_LOCK_KEY} to the PMLAR register at ${REG_PMLAR_OFFSET}
+    MMIO-Accessed PMXEVTYPER0 Should Be Equal To Value 0
+
+    # Try unlocking with invalid key.
+    ${invalidUnlockKey}=  Set Variable  0xABCD
+    Write ${invalidUnlockKey} To PMLAR Using MMIO
+    Wait For Log Entry              Tried to disable Software Lock with invalid value ${invalidUnlockKey}, should be ${MMIO_SOFTWARE_LOCK_KEY}
+    Assert Command Output Equal To  True  pmu SoftwareLockEnabled
+
+    # Unlock.
+    Unlock MMIO Writes
+    Wait For Log Entry              Software Lock disabled
+    Assert Command Output Equal To  False  pmu SoftwareLockEnabled
+
+    # Write again.
+    Write ${BOGUS_EVENT_1} To PMXEVTYPER0 Using MMIO
+    Should Not Be In Log            write ignored
+    Wait For Log Entry              cpu: Invalid/Unimplemented event ${BOGUS_EVENT_1} selected for PMU counter 0
+    MMIO-Accessed PMXEVTYPER0 Should Be Equal To Value ${BOGUS_EVENT_1}
+
+Should Kick Software Incremented Counters Using MMIO
+    Create Machine
+    Unlock MMIO Writes
+
+    # Enable PMU.
+    Write 0x1 To PMCR Using MMIO
+
+    # Set counters 0 and 30 to software increment event and enable them.
+    Write ${SOFTWARE_INCREMENT_EVENT} To PMXEVTYPER0 Using MMIO
+    Write ${SOFTWARE_INCREMENT_EVENT} To PMXEVTYPER30 Using MMIO
+    Write ${{ (1 << 30) | 1 }} To PMCNTENSET Using MMIO
+
+    # Increment counters using both MMIO and System Registers.
+    Write 1 To PMSWINC Using MMIO
+    Write ${{ 1 << 30 }} To PMSWINC Using MMIO
+    Increment Software PMU Counter  30
+
+    # Make sure the MMIO-accessed count is valid and equal to system registers.
+    MMIO-Accessed PMXEVCNTR0 Should Be Equal To Value 1
+    MMIO-Accessed PMXEVCNTR0 Should Be Equal To System Register
+    MMIO-Accessed PMXEVCNTR30 Should Be Equal To Value 2
+    MMIO-Accessed PMXEVCNTR30 Should Be Equal To System Register
+
+Should Read Peripheral ID Using MMIO
+    Create Machine
+
+    ${peripheralId}=  Execute Command  pmu PeripheralId
+    ${peripheralId}=  Strip String     ${peripheralId}
+
+    # Peripheral ID's bits 20-23 should contain variant from bits 20-23 of MIDR.
+    Should Be Equal As Integers     ${{ ((${peripheralId}^${CPU_MIDR}) >> 20) & 0xF }}  0
+
+    # Each of PMPID0-PMPID7 contains 8 bits from PeripheralId.
+    MMIO-Accessed PMPID0 Should Be Equal To Value ${{ ${peripheralId} & 0xFF }}
+    MMIO-Accessed PMPID2 Should Be Equal To Value ${{ (${peripheralId} >> 16) & 0xFF }}
+    MMIO-Accessed PMPID4 Should Be Equal To Value ${{ (${peripheralId} >> 32) & 0xFF }}
+
+Should Read Processor ID System Registers Using MMIO
+    Create Machine
+
+    MMIO-Accessed ID_PFR1 Should Be Equal To System Register
+    MMIO-Accessed MIDR Should Be Equal To System Register
+    # MIDR is read for MPUIR because Cortex-A9 doesn't have MPU.
+    MMIO-Accessed MPUIR Should Be Equal To Value ${CPU_MIDR}
+    MMIO-Accessed TLBTR Should Be Equal To System Register
+
+Should Read PMU Registers Using MMIO
+    # Let's use a saved state with enabled cycle counter and counter 0 counting instructions.
+    Requires                        program-counter
+
+    # Compare PMU registers used in the case providing `program-counter` state.
+    MMIO-Accessed PMXEVCNTR0 Should Be Equal To System Register
+    MMIO-Accessed PMXEVTYPER0 Should Be Equal To System Register
+    MMIO-Accessed PMCCNTR Should Be Equal To System Register
+    MMIO-Accessed PMCNTENSET Should Be Equal To System Register
+    MMIO-Accessed PMCR Should Be Equal To System Register
