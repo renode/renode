@@ -93,19 +93,20 @@ module renode_axi_subordinate (
       transfer_bytes = 2**burst_size;
       address_last = address + transfer_bytes * burst_length;
 
-      do @(posedge clk); while (!bus.wvalid);
-      bus.wready <= 1;
 
       for (; address <= address_last; address += transfer_bytes) begin
         do @(posedge clk); while (!bus.wvalid);
+        bus.wready <= 1;
         data = bus.wdata >> ((address % transfer_bytes) * 8);
+
+        @(posedge clk);
+        bus.wready <= 0;
+
         if (bus.wlast != (address == address_last)) connection.log_warning("Unexpected state of the wlast signal.");
+        // The conection.write call may cause elapse of a simulation time.
         connection.write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
         if (is_error) connection.log_warning($sformatf("Unable to write data to Renode at address 'h%h", address));
       end
-
-      @(posedge clk);
-      bus.wready <= 0;
 
       set_write_response(transaction_id, Okay);
     end
