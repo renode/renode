@@ -22,29 +22,29 @@ ${UARTLITE_SCRIPT}                  scripts/single-node/riscv_verilated_uartlite
 ${LOG_TIMEOUT}                      1  # virtual seconds
 
 # same as riscv_verilated_uartlite.repl, but adds address for uart
-${PLATFORM}=     SEPARATOR=
-...  """                                                                        ${\n}
-...  cpu: CPU.RiscV32 @ sysbus                                                  ${\n}
-...  ${SPACE*4}cpuType: "rv32g"                                                 ${\n}
-...  ${SPACE*4}privilegeArchitecture: PrivilegeArchitecture.Priv1_09            ${\n}
-...  ${SPACE*4}timeProvider: clint                                              ${\n}
-...                                                                             ${\n}
-...  plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000  ${\n}
-...  ${SPACE*4}0 -> cpu@11                                                      ${\n}
-...  ${SPACE*4}numberOfSources: 31                                              ${\n}
-...  ${SPACE*4}numberOfContexts: 1                                              ${\n}
-...  ${SPACE*4}prioritiesEnabled : false                                        ${\n}
-...                                                                             ${\n}
-...  clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000            ${\n}
-...  ${SPACE*4}frequency: 66000000                                              ${\n}
-...  ${SPACE*4}\[0, 1\] -> cpu@\[3, 7\]                                         ${\n}
-...                                                                             ${\n}
-...  ram: Memory.MappedMemory @ sysbus 0x60000000                               ${\n}
-...  ${SPACE*4}size: 0x06400000                                                 ${\n}
-...                                                                             ${\n}
-...  uart: Verilated.VerilatedUART @ sysbus <0x70000000, +0x100>                ${\n}
-...  ${SPACE*4}frequency: 100000000                                             ${\n}
-...  ${SPACE*4}address: "127.0.0.1"                                             ${\n}
+${PLATFORM}=     SEPARATOR=${\n}
+...  """
+...  cpu: CPU.RiscV32 @ sysbus
+...  ${SPACE*4}cpuType: "rv32g"
+...  ${SPACE*4}privilegeArchitecture: PrivilegeArchitecture.Priv1_09
+...  ${SPACE*4}timeProvider: clint
+...
+...  plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
+...  ${SPACE*4}0 -> cpu@11
+...  ${SPACE*4}numberOfSources: 31
+...  ${SPACE*4}numberOfContexts: 1
+...  ${SPACE*4}prioritiesEnabled : false
+...
+...  clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000
+...  ${SPACE*4}frequency: 66000000
+...  ${SPACE*4}\[0, 1\] -> cpu@\[3, 7\]
+...
+...  ram: Memory.MappedMemory @ sysbus 0x60000000
+...  ${SPACE*4}size: 0x06400000
+...
+...  uart: Verilated.VerilatedUART @ sysbus <0x70000000, +0x100>
+...  ${SPACE*4}frequency: 100000000
+...  ${SPACE*4}address: "127.0.0.1"
 ...  """
 
 *** Keywords ***
