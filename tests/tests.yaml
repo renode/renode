@@ -155,3 +155,4 @@
 - tests/peripherals/CLIC/CLIC-platform-tests.robot
 - tests/peripherals/CLIC/CLIC_tests.robot
 - tests/peripherals/CLIC/CLIC-indirect-csr.robot
+- tests/peripherals/CLIC/CLIC-preemption-01.robot
