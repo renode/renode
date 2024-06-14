@@ -57,6 +57,20 @@ ${HIVECS_DUMMY_MEMORY}                                                         S
 ...  \ \ \ \ size: 0x1000                                                      ${\n}
 ...  """
 
+
+### SMP
+
+${GIC_V2_SMP}                                                                                                           SEPARATOR=
+...  """                                                                                                                ${\n}
+...  using "platforms/cpus/cortex-r52_smp_4.repl"                                                                       ${\n}
+...                                                                                                                     ${\n}
+...  gic: @ {                                                                                                           ${\n}
+...  ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x010000; region: \"distributor\" };    ${\n}
+...  ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0xAF100000; size: 0x200000; region: \"cpuInterface\" }    ${\n}
+...  }                                                                                                                  ${\n}
+...  ${SPACE*4}architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2                          ${\n}
+...  """
+
 *********************************** Keywords **********************************
 
 ### Stateless Keywords (do not depend on the current state of the simulation)
@@ -1028,11 +1042,23 @@ Test Reading From Overlapping MPU Regions
     Wait For Line On Uart              DATA ABORT
     Wait For Line On Uart              Unknown (4)
 
-Run Zephyr SMP Pi Sample On 4 Cores
+Run Zephyr SMP Pi Sample On 4 Cores with GICv3
     [Tags]                             Demos
 
     Execute Command                    i @platforms/cpus/cortex-r52_smp_4.repl
     Execute Command                    sysbus LoadELF ${URI}/fvp_baser_aemv8r_aarch32--zephyr-arch-smp-pi.elf-s_610540-6034d4eb76ea1b158f34bdd92ffcff2365f2c2e6
+
+    Execute Command                    showAnalyzer ${UART}
+    Create Terminal Tester             ${UART}
+
+    Wait For Line On Uart              All 16 threads executed by 4 cores
+
+Run Zephyr SMP Pi Sample On 4 Cores with GICv2
+    [Tags]                             Demos
+
+    Execute Command                    mach create
+    Execute Command                    machine LoadPlatformDescriptionFromString ${GIC_V2_SMP}
+    Execute Command                    sysbus LoadELF ${URI}/fvp_baser_aemv8r_aarch32-gicv2--zephyr-arch-smp-pi.elf-s_597400-159126f83bc84cc4c34e1f4088774ba47fc0632e
 
     Execute Command                    showAnalyzer ${UART}
     Create Terminal Tester             ${UART}
