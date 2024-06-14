@@ -3,6 +3,215 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.15.1 - 2024.06.14
+-------------------
+
+Added and improved architecture support:
+
+* improved support for SMP processing in Armv8 and Armv7
+* configuration signals for Arm cores
+* LOB extension (without tp variants) for Armv7
+* VSTRW instruction support from Armv8.1-M MVE
+* support for additional Arm CP14 and CP15 registers
+* Armv8 LDM (user) instruction will update registers predictably even when executing in System Mode, instead of being UNPREDICTABLE according to Arm documentation
+* basic support for Cortex-A5 CPU type
+* DCIMALL instruction for Aarch32 CPUs
+* IMP_CDBGDCI instruction for Cortex-R52 CPUs
+
+Added and improved platform descriptions:
+
+* timer interrupts configuration for STM32F4-based platforms
+* improvements to networking configuration for StarFive JH7100
+* improvements to Renesas R7FA2E1A9, R7FA2L1A, R7FA4M1A, R7FA6M5B, R7FA8M1A SoC
+* improvements to UT32M0R500 SoC
+* platform with example sensor connections for CK-RA6M5
+* multicore Cortex-R52 platform
+* multicore Cortex-A53 with GICv3 in SMP configuration
+* improvements to the Cortex-R52 platform
+* GIC architecture version selection for many Arm platforms
+* added Arm signal unit support for Cortex-R8 and multicore Cortex-R8 platforms
+* merged Zynq Ultrascale+ into a single platform with both Cortex-A and Cortex-R CPUs
+* updated peripherals registration for STM32F0, STM32F4, STM32F746, STM32G0, STM32H743, STM32L071, STM32L151, STM32L552, STM32WBA52 SoCs
+
+* Renesas CK-RA6M5 board
+* Beagle-V Fire, with Microchip's PolarFire SoC
+
+Added peripheral models:
+
+* Gaisler ADC
+* NPCX GPIO
+* NPCX SMBus
+* NXP OS Timer
+* Renesas DA SPI
+* Renesas RA IIC
+* Renesas DA14 GeneralRegisters
+* Renesas DA14 XTAL32MRegisters
+* S32K3XX EMAC
+* S32K3XX FlexCAN
+* S32K3XX FlexIO with SENT and UART endpoints
+* S32K3XX GMAC
+* S32K3XX Low Power IIC
+* STM32H7 Crypto Accelerator
+* STM32H7 QuadSPI
+* STM32WBA GP DMA
+* UT32 CAN
+* VirtIO Filesystem device
+* ZynqMP Inter Processor Interrupt controller
+* ZynqMP Platform Management Unit
+* ZMOD4410 and ZMOD4510 air quality sensors
+* AK09916 and AK09918 3-axis electronic compass sensors
+* generic configurable Pulse Generator block
+
+Added demos and tests:
+
+* I2C echo test for Renesas DA14592
+* addtional unit tests for CRCEngine
+* I2C mode tests for Renesas RA8M1 SCI
+* BeagleV-StarLight ethernet tests
+* serialization tests for Armv8-A and Armv8-R cores
+* Cortex-R8 Zephyr tests
+* configuration signals tests for Cortex-R8
+* NXP S32K388 Low Power SPI test
+* HiRTOS samples (including multicore) on Cortex-R52
+* Renesas RA6M5 platform tests including SCI SPI, ICM20948, HS3001, IIC
+* EXT2 filesystem Zephyr tests based on SiFive FU740
+* STM32H7 Nucleo test for CRYPTO and SPI
+* tests for GDB accessing peripheral space
+* regression tests for ARMv8 Security State and Exception Level after core initialization
+* VirtIO Filesystem directory sharing test
+* Zephyr SMP test for Cortex-R52
+* aws_cc test for the Renesas CK-RA6M5 board
+* machine log level test
+* range locking tests in sysbus.robot
+
+Added features:
+
+* mechanism for integrating Renode with SystemC simulations
+* VirtIO-based directory sharing with host OS
+* new GIC redistributor regions registration methods for multi-core platforms
+* CAN analyzer support in Wireshark integration
+* CPU-specific function names lookup support
+* ability to clear CPU-specific or global function names lookups
+* SENT protocol support
+* LIN protocol support
+* IADC interface for generic ADC control
+* support for specifying additional offset to function names addresses in lookups
+* locking sysbus accesses to specified ranges
+* easier access to externals in Python scripts via externals variable
+* external control API with C client library
+* integration with dts2repl tool
+* virtual CAN host integration via SocketCAN bridge
+* ability to control log level of the whole machine with the logLevel command
+* ability to specify Privileged Architecture Version 1.12 on RISC-V processors
+* optional CPU context in locking sysbus accesses to peripherals
+
+Fixed:
+
+* Migrant not keeping track of all child-parent connections in the Reflection mode
+* Arm PMSAv8 configuration using stale values in some circumstances
+* Armv7 CP15 registers - ADFSR, AIFSR, non-MP BP*, DC* and IC* registers
+* Armv7 and older memory barrier instructions and CP15 registers (DMB, DSB and DWB)
+* read accesses to write-only Aarch32 coprocessor registers
+* Armv7/Armv8 MPIDR register
+* breakpoints serialization and deserialization
+* calculation of target EL and interrupt masking for Armv8 Aarch32
+* crashes in certian register configurations for Armv8 Aarch32
+* FIQs being disabled with no way of enabling them for GICv3 and onwards
+* NA4 range end address calculation in RISC-V PMP
+* effective PMP configuration calculation in RISC-V when mstatus.MPRV is set
+* RISC-V vector load and store segment instructions
+* crashes when a breakpoint and a watchpoint trigger at the same instruction
+* RISC-V PMP NAPOT grain check implementation
+* TranslationCPU's CyclesPerInstruction changes during runtime not being automatically applied to ArmPerformanceMonitoringUnit's cycle counters
+* unmapping of memory segments
+* unregistering peripherals
+* valid Ethernet frames sometimes getting rejected due to CRC mismatch
+* virtual time advancing too far when pausing the emulation
+* CCSIDR for L1 data cache in Arm Cortex-R8
+* CCSIDR for L2 cache in Arm Cortex-R5/R8
+* renode-test --include behavior for NUnit test suites
+* atomic instructions handling when running multithreaded program on a single CPU machine
+* automatic 64-bit access translations on system bus
+* crashes on Cortex-M construction if NVIC is already attached to a different core
+* exclusive load/store instructions on Armv8
+* failures in monitor-tests.Should Pause Renode under certain conditions
+* invalid Asciinema generation if the UART output contains a backslash character
+* logging value written on an unhandled tag write
+* names of Arm TCM registers
+* pausing on SemihostingUart events in Xtensa CPUs
+* reporting thread ID as decimal number in GDB's query command - cpuId restricted to 32
+* selecting PMP access mode for RISC-V cores
+* serialization for Armv8-A and Armv8-R cores
+* suppressed SP and PC initialization on halted Cortex-M cores
+* cache selection in Armv7 and older CPUs, now verified with CLIDR when reading CCSIDR
+* precise pausing causing parts of the instruction to be executed twice
+* ARM MPU ignoring memory restriction check to the page that was previously accessed even if region/subregion permissions don't match
+* Armv8-R AArch32 executing in Secure State instead on Non-Secure
+* Armv8-R changing Security State, while it should never do so
+* Armv8 cores not propagating their Exception Level and Security State outside tlib correctly after creation
+* DMAEngine memory transactions with when not incrementing source or destination addresses
+* RISC-V BEXT instruction handling
+* RISC-V xRET instructions not changing status bits correctly
+* SocketServerProvider not closing correctly without any connected clients
+* detection of test failures which should be retried when renode-test's --retry option is used
+* handling peripheral accesses when debugging with GDB
+* initialization of PC and SP on leaving reset on Cortex-M
+* printing of possible values for invalid Enum arguments in Monitor commands
+* heterogeneous platforms handling in GDB
+* single step execution mode in Xtensa cores
+* variable expansion in Monitor
+
+
+Changed:
+
+* Terminal Tester delayed typing now relies on virtual time
+* removed AdvancedLoggerViewer plugin
+* improved TAP networking performance on Linux
+* reduced overhead of calling tlib exports
+* TranslationCPU's CyclesPerInstruction now accepts non-integer values
+* CPU Step call now automatically starts the emulation
+* upgraded Robot Framework to 6.1, to work with Python 3.12
+* renamed the ID property of Arm cores to ModelID
+* improved Arm core performance
+* improved logging performance if lower log levels are not enabled
+* added host memory barrier generation to TCG
+* actions delayed with machine.ScheduleAction can now execute as soon as the end of the current instructions block (it used to be quantum)
+* CPU's SingleStepBlocking and SingleStepNonBlocking ExecutionModes were replaced by SingleStep and emulation.SingleStepBlocking was added
+* blockOnStep was removed from StartGdbServer
+* single-step-based tests were refactored due to automatic start on Step and ExecutionMode changes
+
+Improvements in peripherals:
+
+* Andes AndeStarV5Extension.cs - Added Configuration and Crash Debug CSRs
+* Arm Generic Interrupt Controller, with changes to v1, v2 and v3 versions, focused on improving multicore support for both Armv7 and Armv8 platforms
+* Gaisler APBUART
+* Gaisler GPTimer
+* Gaisler Ethernet
+* Gaisler MIC
+* Kinetis LPUART
+* NPCX FIU
+* NPCX Flash
+* NXP LPSPI
+* Renesas RA8M1 SCI
+* Renesas DA I2C
+* Renesas DA Watchdog
+* Renesas DA14 DMA
+* Renesas RA6M5 SCI
+* Renesas DA DMABase
+* S32K3XX LowPowerInterIntegratedCircuit
+* SDCard
+* STM32 PWR
+* STM32F4 CRC
+* STM32H7 RCC
+* Synopsys DWCEthernetQualityOfService
+* Synopsys EthernetMAC
+* VirtIOBlockDevice, now based on VirtIO MMIO version v1.2
+* Xilinx IPI mailbox
+* BME280 sensor
+* ICM20948 sensor
+* SHT45 sensor
+
+
 1.15.0 - 2024.03.18
 -------------------
 
