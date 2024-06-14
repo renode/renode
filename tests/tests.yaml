@@ -154,3 +154,4 @@
 - tests/peripherals/VirtIO.robot
 - tests/peripherals/CLIC/CLIC-riscv-arch-tests.robot
 - tests/peripherals/CLIC/CLIC-indirect-csr.robot
+- tests/peripherals/CLIC/CLIC-preemption-01.robot
