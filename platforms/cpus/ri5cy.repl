@@ -18,4 +18,4 @@ lptmr1: UART.LowPower_Timer @ sysbus 0x40033000
 lptmr2: UART.LowPower_Timer @ sysbus 0x4102B000
 
 cpu: CPU.Ri5cy @ sysbus
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10

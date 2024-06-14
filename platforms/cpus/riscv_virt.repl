@@ -6,7 +6,7 @@ uart0: UART.NS16550 @ sysbus 0x10000000
 
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32imac"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     hartId: 0
 

@@ -1,31 +1,31 @@
 e51: CPU.RiscV64 @ sysbus
     cpuType: "rv64imac_zicsr_zifencei"
     hartId: 0
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 u54_1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc_zicsr_zifencei"
     hartId: 1
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 u54_2: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc_zicsr_zifencei"
     hartId: 2
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 u54_3: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc_zicsr_zifencei"
     hartId: 3
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 u54_4: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc_zicsr_zifencei"
     hartId: 4
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 debug: Memory.MappedMemory @sysbus 0x0

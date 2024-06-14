@@ -5,7 +5,7 @@ ram: Memory.MappedMemory @ { sysbus 0x1C000000; sysbus 0x0 }
     size: 0x80000
 
 cpu: CPU.CV32E40P @ sysbus
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_11
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_11
     // We are overriding the default value to include information about coreID and clusterID
     HartId: 0x3e0
 

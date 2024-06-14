@@ -13,7 +13,7 @@ emulator_ram: Memory.MappedMemory @ sysbus 0x20000000
 cpu: CPU.VexRiscv @ sysbus
     timeProvider: cpu_timer
     cpuType: "rv32ima_zicsr_zifencei"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
 
 timer0: Timers.LiteX_Timer @ sysbus 0xF0001800
     frequency: 100000000

@@ -26,7 +26,7 @@ ${PLATFORM}=     SEPARATOR=${\n}
 ...  """
 ...  cpu: CPU.RiscV32 @ sysbus
 ...  ${SPACE*4}cpuType: "rv32g"
-...  ${SPACE*4}privilegeArchitecture: PrivilegeArchitecture.Priv1_09
+...  ${SPACE*4}privilegedArchitecture: PrivilegedArchitecture.Priv1_09
 ...  ${SPACE*4}timeProvider: clint
 ...
 ...  plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000

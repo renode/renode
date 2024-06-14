@@ -9,7 +9,7 @@ cpu0: CPU.RiscV32 @ sysbus
     cpuType: "rv32gc_xandes"
     hartId: 0
     timeProvider: empty
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_11
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_11
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xe4000000
     numberOfSources: 1023

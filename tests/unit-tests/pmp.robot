@@ -5,7 +5,7 @@ ${RV32_PRIV10}=     SEPARATOR=${\n}
 ...  """
 ...  cpu: CPU.RiscV32 @ sysbus
 ...  ${SPACE*4}cpuType: "rv32gcv"
-...  ${SPACE*4}privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+...  ${SPACE*4}privilegedArchitecture: PrivilegedArchitecture.Priv1_10
 ...  ${SPACE*4}timeProvider: empty
 ...
 ...  dram: Memory.MappedMemory @ sysbus 0x80000000

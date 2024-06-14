@@ -15,7 +15,7 @@ uart1: UART.SiFive_UART @ sysbus 0x10023000
 
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32imac_zicsr_zifencei"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x0C000000

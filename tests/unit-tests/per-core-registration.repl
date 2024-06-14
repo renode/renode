@@ -6,13 +6,13 @@ ram: Memory.MappedMemory @ {
 
 cpu1: CPU.RiscV64 @ sysbus
     cpuType: "rv64imacfd_zicsr"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: empty
     hartId: 0
 
 cpu2: CPU.RiscV64 @ sysbus
     cpuType: "rv64imafdc_zicsr"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: empty
     hartId: 1
 

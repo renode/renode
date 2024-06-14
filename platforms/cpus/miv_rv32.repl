@@ -1,6 +1,6 @@
 cpu: CPU.RiscV32 @ sysbus
     cpuType: "rv32imc"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_09
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_09
     timeProvider: clint
 
 tcm: Memory.MappedMemory @ sysbus 0x40000000

@@ -6,13 +6,13 @@ rom: Memory.MappedMemory @ {
 
 cpu1: CPU.RiscV64 @ sysbus
     cpuType: "rv64imacfd_zicsr_zifencei"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     hartId: 0
 
 cpu2: CPU.RiscV64 @ sysbus
     cpuType: "rv64imafdc_zicsr_zifencei"
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     hartId: 1
 

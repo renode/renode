@@ -1,13 +1,13 @@
 U74_2: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 1
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 U74_1: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc"
     hartId: 0
-    privilegeArchitecture: PrivilegeArchitecture.Priv1_10
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
 
 dtim: Memory.MappedMemory @sysbus 0x0100000
