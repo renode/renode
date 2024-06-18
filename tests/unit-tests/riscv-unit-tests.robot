@@ -379,11 +379,10 @@ Should Set MEPC on Non-Existing CSR access
     ${mepc}=                        Execute Command     cpu MEPC
     Should Be Equal As Numbers      ${mepc}    0x4004
 
-Should Set MEPC on Wrong SRET
+Should Allow SRET In Machine Mode
     Create Machine 32
 
-    # j .
-    Execute Command                 sysbus WriteDoubleWord 0x1010 0x0000006f
+    Execute Command                 cpu SEPC 0x1234
 
     # j 0x4000
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
@@ -394,14 +393,7 @@ Should Set MEPC on Wrong SRET
 
     Execute Command                 cpu Step 3
 
-    PC Should Be Equal              0x1010
-
-    ${mcause}=                      Execute Command     cpu MCAUSE
-    Should Be Equal As Numbers      ${mcause}  ${illegal_instruction}
-    ${mtval}=                       Execute Command     cpu MTVAL
-    Should Be Equal As Numbers      ${mtval}   0x10200073
-    ${mepc}=                        Execute Command     cpu MEPC
-    Should Be Equal As Numbers      ${mepc}    0x4004
+    PC Should Be Equal              0x1234
 
 Should Exit Translation Block After Invalid Instruction And Report Single Error
     Create Machine 32
