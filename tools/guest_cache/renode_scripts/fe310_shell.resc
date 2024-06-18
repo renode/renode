@@ -1,0 +1,29 @@
+using sysbus
+mach create
+machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
+
+set cacheBenchamrkLogger
+"""
+from Antmicro.Renode.Peripherals.CPU import ICPU
+
+machine = self.Machine
+sysbus = machine.SystemBus
+cpu = machine.GetPeripheralsOfType(ICPU)[0]
+
+def end_hook(cpu, addr):
+    cpu.Pause()
+    cpu.Log(LogLevel.Info, "Reached simulation end hook at PC: %s" % cpu.PC)
+    monitor.Parse("q")
+
+for addr in sysbus.GetAllSymbolAddresses("k_cpu_idle"):
+    cpu.AddHook(addr, end_hook)
+"""
+
+sysbus LoadELF @https://dl.antmicro.com/projects/renode/zephyr-fe310-shell.elf-s_323068-cf87169150ecdb30ad5a14c87ae209c53dd3eca2
+cpu PC `sysbus GetSymbolAddress "vinit"`
+
+cpu MaximumBlockSize 1
+cpu CreateExecutionTracing "tracer" $ORIGIN/trace.log PCAndOpcode
+tracer TrackMemoryAccesses
+
+python $cacheBenchamrkLogger
