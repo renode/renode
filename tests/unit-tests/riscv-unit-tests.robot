@@ -389,7 +389,7 @@ Should Set MEPC on Wrong SRET
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0000206f
     # nop
     Execute Command                 sysbus WriteDoubleWord 0x4000 0x00000013
-    # csrwi marchid, 1 - this is an illegal CSR operation as `marchid` is read-only
+    # sret
     Execute Command                 sysbus WriteDoubleWord 0x4004 0x10200073
 
     Execute Command                 cpu Step 3
