@@ -2,8 +2,8 @@
 set -e
 set -u
 
-# this is to support running Renode from external directory
-ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
+# this is to support running Renode from an external directory and via a symlink
+ROOT_PATH="$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD)"
 
 . "$ROOT_PATH/tools/common.sh"
 

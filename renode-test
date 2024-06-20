@@ -2,7 +2,8 @@
 set -e
 set -u
 
-ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
+# this is to support running renode-test from an external directory and via a symlink
+ROOT_PATH="$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD)"
 
 TESTS_FILE="$ROOT_PATH/tests/tests.yaml"
 TESTS_RESULTS="$ROOT_PATH/output/tests"
