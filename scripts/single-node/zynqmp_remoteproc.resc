@@ -29,6 +29,10 @@ macro reset
     rpu0 IsHalted true
     rpu1 IsHalted true
 
+    # We register ttc0 to rpu0 because it is used by philosophers sample
+    # running on rpu0.
+    ipi.platformManagementUnit RegisterPeripheral rpu0 ttc0
+
     sysbus LoadELF    $atf_elf cpu=apu0
 
     sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false context=apu0
