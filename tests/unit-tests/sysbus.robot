@@ -470,3 +470,16 @@ Symbols Should Be Dynamically Loaded and Unloaded On Request
     Run Keyword And Expect Error   *No symbol with name `main` found*
     ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
 
+Should Log All Peripherals Accesses Only When Enabled
+    ${log}=                        Set Variable   peripheral: ReadByte from 0x0 (unknown), returned 0x0.
+    Create Log Tester              0
+    Execute Command                mach create
+    Execute Command                machine LoadPlatformDescriptionFromString "peripheral: Mocks.MockBytePeripheralWithoutTranslations @ sysbus <0x0, +0x8>"
+
+    Execute Command                sysbus LogAllPeripheralsAccess True
+    Execute Command                sysbus ReadByte 0x0
+    Wait For Log Entry             ${log}
+
+    Execute Command                sysbus LogAllPeripheralsAccess False
+    Execute Command                sysbus ReadByte 0x0
+    Should Not Be In Log           ${log}
