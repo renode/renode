@@ -68,22 +68,40 @@ void RenodeAgent::readFromBus(int width, uint64_t addr)
 
 void RenodeAgent::pushByteToAgent(uint64_t addr, uint8_t value)
 {
-    communicationChannel->sendSender(Protocol(pushByte, addr, value));
+    pushToAgent(pushByte, addr, value);
 }
 
 void RenodeAgent::pushWordToAgent(uint64_t addr, uint16_t value)
 {
-    communicationChannel->sendSender(Protocol(pushWord, addr, value));
+    pushToAgent(pushWord, addr, value);
 }
 
 void RenodeAgent::pushDoubleWordToAgent(uint64_t addr, uint32_t value)
 {
-    communicationChannel->sendSender(Protocol(pushDoubleWord, addr, value));
+    pushToAgent(pushDoubleWord, addr, value);
 }
 
 uint64_t RenodeAgent::requestDoubleWordFromAgent(uint64_t addr)
 {
-    communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
+    return requestFromAgent(getDoubleWord, addr);
+}
+
+void RenodeAgent::pushToAgent(Action action, uint64_t addr, uint64_t value)
+{
+    communicationChannel->sendSender(Protocol(action, addr, value));
+    Protocol* received = communicationChannel->receive();
+    while (received->actionId != pushConfirmation)
+    {
+        handleRequest(received);
+        delete received;
+        received = communicationChannel->receive();
+    }
+    delete received;
+}
+
+uint64_t RenodeAgent::requestFromAgent(Action action, uint64_t addr)
+{
+    communicationChannel->sendSender(Protocol(action, addr, 0));
     Protocol* received = communicationChannel->receive();
     while (received->actionId != writeRequest)
     {
@@ -94,18 +112,6 @@ uint64_t RenodeAgent::requestDoubleWordFromAgent(uint64_t addr)
     auto result = received->value;
     delete received;
     return result;
-}
-
-void RenodeAgent::pushToAgent(uint64_t addr, uint64_t value)
-{
-    communicationChannel->sendSender(Protocol(pushDoubleWord, addr, value));
-}
-
-uint64_t RenodeAgent::requestFromAgent(uint64_t addr)
-{
-    communicationChannel->sendSender(Protocol(getDoubleWord, addr, 0));
-    Protocol* received = communicationChannel->receive();
-    return received->value;
 }
 
 void RenodeAgent::tick(bool countEnable, uint64_t steps)

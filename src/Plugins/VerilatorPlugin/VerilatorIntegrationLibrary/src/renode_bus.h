@@ -37,8 +37,8 @@ public:
   virtual void pushWordToAgent(uint64_t addr, uint16_t value);
   virtual void pushDoubleWordToAgent(uint64_t addr, uint32_t value);
   virtual uint64_t requestDoubleWordFromAgent(uint64_t addr);
-  virtual void pushToAgent(uint64_t addr, uint64_t value);
-  virtual uint64_t requestFromAgent(uint64_t addr);
+  virtual void pushToAgent(Action action, uint64_t addr, uint64_t value);
+  virtual uint64_t requestFromAgent(Action action, uint64_t addr);
   virtual void tick(bool countEnable, uint64_t steps);
   virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000);
   virtual void reset();
