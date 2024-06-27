@@ -78,12 +78,12 @@ ${GIC_V2_SMP}                                                                   
 Get Updated Register Value
     [Arguments]                        ${reg_val}  ${mask}  ${new_val}
     ${result}=                         Set Variable  ${{ (${reg_val} & ~${mask}) | (${new_val} & ${mask}) }}
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get Register Field Value
     [Arguments]                        ${reg_val}  ${mask}
     ${result}=                         Set Variable  ${{ ${reg_val} & ${mask} }}
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get CPSR Field Value
     [Arguments]                        ${cpsr}  ${field}
@@ -120,7 +120,7 @@ Get CPSR Field Value
     ELSE
         Fail  Unexpected CPSR Field Name: "${field}"
     END
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get CPSR Mode Value From Privilege Level Name
     [Arguments]                        ${pl}
@@ -145,20 +145,20 @@ Get CPSR Mode Value From Privilege Level Name
     ELSE
         Fail  Unexpected Privilege Level Name: "${pl}"
     END
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get CPSR For Changed Privilege Level
     [Arguments]                        ${pl}  ${cpsr}
     ${mode_val}=                       Get CPSR Mode Value From Privilege Level Name  ${pl}
     ${new_cpsr}=                       Get Updated Register Value  ${cpsr}  ${CPSR_MODE_MASK}  ${mode_val}
-    [Return]                           ${new_cpsr}
+    RETURN                             ${new_cpsr}
 
 Get CPSR After Changing To Wrong Mode
     [Arguments]                        ${old_cpsr}  ${new_cpsr}
     ${mask}=                           Set Variable  ${{ ~${CPSR_MODE_MASK} }}
     ${new_cpsr}                        Set Variable  ${{ ${new_cpsr} | ${CPSR_IL_MASK} }}
     ${result}=                         Get Updated Register Value  ${old_cpsr}  ${mask}  ${new_cpsr}
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get Exception Handler Offset From Hypervisor Vector Table
     [Arguments]                                            ${exception_type}
@@ -179,7 +179,7 @@ Get Exception Handler Offset From Hypervisor Vector Table
     ELSE
         Fail  Unexpected Exception Type Name: "${exception_type}"
     END
-    [Return]                                               ${offset}
+    RETURN                                                 ${offset}
 
 Get Exception Handler Offset From Non-Secure Vector Table
     [Arguments]                                            ${exception_type}
@@ -198,7 +198,7 @@ Get Exception Handler Offset From Non-Secure Vector Table
     ELSE
         Fail  Unexpected Exception Type Name: "${exception_type}"
     END
-    [Return]                                               ${offset}
+    RETURN                                                 ${offset}
 
 Get Exception Handler Offset
     [Arguments]                                            ${pl}  ${excp_type}
@@ -207,24 +207,24 @@ Get Exception Handler Offset
     ELSE
         ${offset}=                                         Get Exception Handler Offset From Non-Secure Vector Table  ${excp_type}
     END
-    [Return]                                               ${offset}
+    RETURN                                                 ${offset}
 
 Convert Integer To Hex String
     [Arguments]                        ${value}
     ${result}=                         Convert To Hex  ${value}  prefix=0x
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Contains Substring
     [Arguments]                        ${str}  ${substr}
     ${result}=                         Run Keyword And Return Status  Should Contain  ${str}  ${substr}
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 ### Stateful Keywords (they depend on the current state of the simulation)
 
 Get Current CPSR Value
     ${cpsr}=                           Execute Command  sysbus.cpu CPSR
     ${cpsr}=                           Convert To Integer  ${cpsr}
-    [Return]                           ${cpsr}
+    RETURN                             ${cpsr}
 
 Set Current CPSR Value
     [Arguments]                        ${value}
@@ -234,7 +234,7 @@ Set Current CPSR Value
 Get Current Privilege Level Value
     ${cpsr}=                           Get Current CPSR Value
     ${mode}=                           Get Register Field Value  ${cpsr}  ${CPSR_MODE_MASK}
-    [Return]                           ${mode}
+    RETURN                             ${mode}
 
 Set Current Privilege Level Value
     [Arguments]                        ${pl}
@@ -246,7 +246,7 @@ Set Current Privilege Level Value
 Get Current PC Value
     ${pc}=                             Execute Command  sysbus.cpu PC
     ${pc}=                             Convert To Integer  ${pc}
-    [Return]                           ${pc}
+    RETURN                             ${pc}
 
 Set Current PC Value
     [Arguments]                        ${value}
@@ -257,14 +257,14 @@ Get Current CPSR Field Value
     [Arguments]                        ${field}
     ${cpsr}=                           Get Current CPSR Value
     ${result}=                         Get CPSR Field Value  ${cpsr}  ${field}
-    [Return]                           ${result}
+    RETURN                             ${result}
 
 Get Current System Register Value
     [Arguments]                                            ${reg_name}
     ${reg_value}=                                          Execute Command  sysbus.cpu GetSystemRegisterValue \"${reg_name}\"
     ${result}=                                             Convert To Integer  ${reg_value}
     Check For Register Errors In Last Log                  ${reg_name}
-    [Return]                                               ${result}
+    RETURN                                                 ${result}
 
 Set Current System Register Value
     [Arguments]                                            ${reg_name}  ${value}

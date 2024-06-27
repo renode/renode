@@ -54,7 +54,7 @@ Create RESD File
     ...                             "--frequency", "10"
     ...                             r"${resd_path}"
     Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
-    [Return]                        ${resd_path}
+    RETURN                          ${resd_path}
 
 *** Test Cases ***
 

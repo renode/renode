@@ -126,7 +126,7 @@ Create Machine
     Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory; extendedDeviceId: 0x44 }; spi0FlashMemory: Memory.MappedMemory { size: 0x2000000 }"
     Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash1: SPI.Cypress_S25H @ spi0 1 { underlyingMemory: spi1FlashMemory }; spi1FlashMemory: Memory.MappedMemory { size: 0x4000000 }"
     ${tester}=                      Create Terminal Tester          ${UART}
-    [Return]                        ${tester}
+    RETURN                          ${tester}
 
 Boot And Login
     [Arguments]                     ${terminalTester}
@@ -152,7 +152,7 @@ Get Linux Elapsed Seconds
     Wait For Prompt On Uart         ${PROMPT}
     Check Exit Code
     ${seconds}=                     Convert To Integer  ${date.line}
-    [return]                        ${seconds}
+    RETURN                          ${seconds}
 
 Generate Random File
     [Arguments]                     ${filename}  ${size_kilobytes}
@@ -214,12 +214,12 @@ Get Raw String Descriptor
     ${length}=                      Evaluate    '0x\{:02x\}'.format(len("${string}".encode('utf-16le')) + 2)
     ${raw}=                         Evaluate    ' '.join(r'0x{:02x}'.format(chr) for chr in bytes("${string}", 'utf-16le'))
     ${descr}=                       Catenate    ${length} ${STRING_DESCR_TYPE} ${raw}
-    [return]                        ${descr}
+    RETURN                          ${descr}
 
 Map Index To Disk Letter
     [Arguments]                     ${index}
     ${letter}=                      Evaluate    chr(97 + ${index})
-    [return]                        ${letter}
+    RETURN                          ${letter}
 
 *** Test Cases ***
 Should Boot And Login

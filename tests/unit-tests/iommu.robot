@@ -40,7 +40,7 @@ Read From Address By DMA
     ${dma_addr}=                    Convert To Integer  ${dma_addr_hex}
     Execute Command                 sysbus WriteDoubleWord ${dma_addr+8} ${addr}
     ${read_value}=                  Execute Command  sysbus ReadDoubleWord ${dma_addr+0}
-    [return]                        ${read_value}                   
+    RETURN                          ${read_value}                   
 
 Define Window
     [Arguments]                     ${window_index}  ${start_addr}  ${end_addr}  ${offset}  ${priv}

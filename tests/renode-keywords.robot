@@ -117,7 +117,7 @@ Sanitize Test Name
     ${test_name}=      Replace String  ${test_name}  ${SPACE}  _
     # double quotes because editor syntax highlighting gets confused with a single one
     ${test_name}=      Replace String Using Regexp  ${test_name}  [/""]  -
-    [return]           ${test_name}
+    RETURN             ${test_name}
 
 Create Snapshot Of Failed Test
     Return From Keyword If   'skipped' in @{TEST TAGS}

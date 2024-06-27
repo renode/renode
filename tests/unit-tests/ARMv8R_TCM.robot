@@ -38,12 +38,12 @@ Get System Register As Int
     [Arguments]                     ${reg_name}
     ${as_str}=                      Execute Command  cpu GetSystemRegisterValue ${reg_name}
     ${as_int}=                      Convert To Integer  ${as_str}
-    [return]                        ${as_int}
+    RETURN                          ${as_int}
 
 Get Register Field
     [Arguments]                     ${int_value}  ${start_offset}  ${mask}
     ${field_val}=                   Evaluate  ((${int_value} >> ${start_offset}) & ${mask})
-    [return]                        ${field_val}
+    RETURN                          ${field_val}
 
 Field Should Have Correct Value
     [Arguments]                     ${register_name}  ${field_offset}  ${field_mask}  ${expected_value}  ${error_message}
