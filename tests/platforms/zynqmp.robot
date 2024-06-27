@@ -473,3 +473,9 @@ Should Start And Stop Remoteproc
             Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           testerId=${zephyr_tester}  treatAsRegex=true 
     END
 
+    # Stop demo
+    Execute Linux Command               echo stop > /sys/class/remoteproc/remoteproc0/state                 testerId=${linux_tester}
+    Sleep                               1s
+    ${is_halted}=  Execute Command      rpu0 IsHalted
+    Should Contain                      ${is_halted}    True
+
