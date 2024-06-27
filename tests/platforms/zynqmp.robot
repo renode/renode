@@ -413,7 +413,7 @@ Should Pass Messages Between Threads
         Wait For Line On Uart           CT MSG: messagetoencrypt
     END
 
-    Provides                        userspace_shared_mem-zephyr    Reexecution
+    Provides                        userspace_shared_mem-zephyr
 
 Should Pass Messages Between Threads From Serialized State
     Requires                        userspace_shared_mem-zephyr
@@ -438,7 +438,7 @@ Should Provide Booted U-Boot And Run Version Command
 
     Wait For Prompt On Uart         ${UBOOT_PROMPT}
 
-    Provides                        booted-uboot    Reexecution
+    Provides                        booted-uboot
 
     Write Line To Uart              version
     Wait For Line On Uart           U-Boot

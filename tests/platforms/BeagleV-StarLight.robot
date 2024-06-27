@@ -52,7 +52,7 @@ Should Boot U-Boot
     Verify U-Boot  ${tester0}
     Verify U-Boot  ${tester1}
 
-    Provides                 booted-uboot   Reexecution
+    Provides                 booted-uboot
 
 Should Provide Two Linux Machines With Ethernet Connection
     Requires                 booted-uboot
@@ -81,7 +81,7 @@ Should Provide Two Linux Machines With Ethernet Connection
     Wait For Prompt On Uart  \#                                             testerId=${tester1}                                    
     Write Line To Uart       ifconfig eth0 mtu 440 up ${IP_ADDR1}           testerId=${tester1}  waitForEcho=false
 
-    Provides                 booted-linux   Reexecution
+    Provides                 booted-linux
 
 Should Ping
     Requires                 booted-linux
