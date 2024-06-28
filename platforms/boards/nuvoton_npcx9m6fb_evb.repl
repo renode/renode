@@ -1,0 +1,7 @@
+using "platforms/cpus/nuvoton_npcx9.repl"
+
+red_led: Miscellaneous.LED @ gpio6
+    invert: true
+
+gpio6:
+    0 -> red_led@0
