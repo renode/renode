@@ -1,5 +1,5 @@
 *** Variables ***
-${bin_out_signature}=                           ReTrace\x03
+${bin_out_signature}=                           ReTrace\x04
 ${triple_and_model}=                            riscv32 rv32imacv
 
 *** Keywords ***
@@ -143,7 +143,7 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V
     Execute Command                             sysbus.cpu DisableExecutionTracing
 
     ${output_file}=                             Get Binary File  ${trace_filepath}
-    Length Should Be                            ${output_file}  77
+    Length Should Be                            ${output_file}  85
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
                                                 # [0]: pc_width; [1]: include_opcode
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
@@ -160,6 +160,8 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V
     Should Be Equal As Bytes                    ${output_file}[59:69]  \x03\x00\xe0\x00\x00\x00\x00\x00\x00\x00
                                                 # [0-7]: access_value
     Should Be Equal As Bytes                    ${output_file}[69:77]  \x00\x03\x00\x00\x00\x00\x00\x00
+                                                # [0-7]: physical_access_address
+    Should Be Equal As Bytes                    ${output_file}[77:85]  \xe0\x00\x00\x00\x00\x00\x00\x00
 
 Should Dump 64-bit PCs As Binary On RISC-V
     [Arguments]                                 ${memory_per_cpu}
