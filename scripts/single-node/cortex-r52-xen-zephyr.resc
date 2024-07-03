@@ -1,0 +1,45 @@
+:name: Cortex-R52
+:description: This script runs the Zephyr philosophers sample under the Xen hypervisor on a 32-bit ARM Cortex-R52.
+
+$name?="ARM Cortex-R52"
+$xen?=@https://dl.antmicro.com/projects/renode/xen_cortex-r52.bin-s_950280-5abcd07806d4f8d33b370020342470c15bf499b5
+$dtc?=@https://dl.antmicro.com/projects/renode/xen_zephyr_cortex-r52.dtc-s_1961-4e8eefe98742e2860ca28cf82e75ae8d8c6c2a5d
+$zephyr?=@https://dl.antmicro.com/projects/renode/zephyr_philosophers_xen_cortex-r52.bin-s_42884-05ca319e43ca33a124c51f84319229815acc654f
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/cortex-r52.repl
+
+python
+"""
+from System.Runtime.CompilerServices import RuntimeHelpers
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
+ZEPHYR_IMAGE_BASE = 0xd00080
+ZEPHYR_BASE = 0xb00000
+DTC_BASE = 0xfe00000
+R2_REG = 102
+
+sysbus = self.Machine["sysbus"]
+
+def mc_load_dtc(dtc):
+    sysbus.LoadBinary(dtc, DTC_BASE)
+    dtc_addr = RegisterValue.Create(DTC_BASE, 32)
+    self.Machine["sysbus.cpu"].SetRegisterUnsafe(R2_REG, dtc_addr)
+
+def mc_load_zephyr(zephyr_bin):
+    image_len = System.IO.FileInfo(zephyr_bin).Length
+    sysbus.LoadBinary(zephyr_bin, ZEPHYR_BASE)
+    sysbus.WriteDoubleWord(ZEPHYR_BASE + 0x2c, ZEPHYR_IMAGE_BASE + image_len)
+"""
+
+showAnalyzer uart0
+
+macro reset
+"""
+    sysbus LoadBinary $xen 0x0
+    load_dtc $dtc
+    load_zephyr $zephyr
+"""
+runMacro $reset
