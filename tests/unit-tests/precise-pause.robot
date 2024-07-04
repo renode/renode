@@ -19,6 +19,19 @@ Create Machine With Button And LED
     Create Terminal Tester   sysbus.usart${usart}
     Create LED Tester        sysbus.gpioPort${led_port}.led  defaultTimeout=2
 
+Create Machine With Trivial Uart
+    ${platform}=             Catenate  SEPARATOR=${\n}
+    ...  """
+    ...  cpu: CPU.ARMv7R @ sysbus
+    ...  ${SPACE*4}cpuType: "cortex-r8"
+    ...  mem: Memory.MappedMemory @ sysbus 0x0
+    ...  ${SPACE*4}size: 0x400
+    ...  uart: UART.TrivialUart @ sysbus <0x1000, +0x100>
+    ...  """
+    Execute Command          using sysbus
+    Execute Command          mach create
+    Execute Command          machine LoadPlatformDescriptionFromString ${platform}
+
 Emulation Should Be Paused
     ${st}=                   Execute Command  emulation IsStarted
     Should Contain           ${st}  False
@@ -244,3 +257,25 @@ Log Tester Should Not Be In Log Assert Should Not Pause Emulation Later If The M
 
     Execute Command  emulation RunFor "3"
     Emulation Should Be Paused At Time  00:00:03.001297
+
+Should Finish Instructions Before Pausing
+    Create Machine With Trivial Uart
+    Create Terminal Tester   sysbus.uart  defaultPauseEmulation=true
+
+    Execute Command          cpu SetRegisterUnsafe 0 0x1000  # UART write address
+    Execute Command          cpu SetRegisterUnsafe 1 0x4F  # 'O'
+    Execute Command          cpu SetRegisterUnsafe 2 0x6E  # 'n'
+    Execute Command          cpu SetRegisterUnsafe 3 0x65  # 'e'
+    Execute Command          cpu SetRegisterUnsafe 4 0x0A  # '\n'
+    Execute Command          cpu SetRegisterUnsafe 5 0x54  # 'T'
+    Execute Command          cpu SetRegisterUnsafe 6 0x77  # 'w'
+    Execute Command          cpu SetRegisterUnsafe 7 0x6F  # 'o'
+    Execute Command          cpu SetRegisterUnsafe 8 0x0A  # '\n'
+
+    Execute Command          sysbus WriteDoubleWord 0x10 0xE8A001FE  # stm r0!, {r1-r8}
+    Execute Command          cpu PC 0x10
+
+    Wait For Line On Uart    One
+    # This string should already be present, as the instruction printing it should have finished successfully
+    Wait For Line On Uart    Two  timeout=0  matchNextLine=true
+    PC Should Be Equal       0x14
