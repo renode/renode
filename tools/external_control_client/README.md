@@ -93,3 +93,22 @@ Usage:
   * <VALUE_WITH_UNIT> is an unsigned integer with a voltage unit, e.g.: '100mV'
   * accepted voltage units are 'V', 'mV' and 'uV' (for microvolts)
 ```
+
+### `gpio` example
+
+The example application using Renode API can be found in `examples/gpio`.
+
+It can be built in the `build` directory from the Renode repository's root directory with:
+```bash
+renode$ mkdir build && cmake -DAPP_NAME=gpio -DAPP_SOURCES_DIR=tools/external_control_client/examples/gpio -S tools/external_control_client -B build && cmake --build build
+```
+
+After starting the server in Renode, the `gpio` application can be used multiple times to get output state of a pin or, when the `STATE` is provided, to set the input state.
+
+The usage is:
+```
+Usage:
+  ./gpio <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [<STATE>]
+  where:
+  * <STATE> is an optional boolean ('true' or 'false') value
+```

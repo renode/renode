@@ -14,6 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         GetTime,
         GetMachine,
         ADC,
+        GPIOPort,
     }
 
     public interface ICommand

@@ -34,6 +34,11 @@ struct renode_adc {
     int32_t id;
 };
 
+struct renode_gpio {
+    renode_machine_t *machine;
+    int32_t id;
+};
+
 #define SERVER_START_COMMAND "emulation CreateExternalControlServer \"<NAME>\""
 #define SOCKET_INVALID -1
 
@@ -134,6 +139,7 @@ typedef enum {
     GET_TIME,
     GET_MACHINE,
     ADC,
+    GPIO,
 } api_command_t;
 
 static uint8_t command_versions[][2] = {
@@ -142,6 +148,7 @@ static uint8_t command_versions[][2] = {
     { GET_TIME, 0x0 },
     { GET_MACHINE, 0x0 },
     { ADC, 0x0 },
+    { GPIO, 0x0 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -589,6 +596,78 @@ renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel,
 
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), sizeof(frame.out), &response_size));
+
+    assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_gpio(renode_machine_t *machine, const char *name, renode_gpio_t **gpio)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, GPIO, name, &id));
+
+    *gpio = xmalloc(sizeof(renode_gpio_t));
+    (*gpio)->machine = machine;
+    (*gpio)->id = id;
+
+    return NO_ERROR;
+}
+
+typedef enum {
+    GET_STATE,
+    SET_STATE,
+} gpio_command_t;
+
+typedef union {
+    struct {
+        int32_t id;
+        int8_t command;
+        int32_t number;
+        uint8_t state;
+    } __attribute__((packed)) out;
+
+    struct {
+        uint8_t value;
+    } get_state_result;
+} gpio_frame_t;
+
+renode_error_t *renode_get_gpio_state(renode_gpio_t *gpio, int32_t id, bool *state)
+{
+    // gpio id, gpio command, pin number -> state
+    gpio_frame_t frame = {
+        .out = {
+            .id = gpio->id,
+            .command = GET_STATE,
+            .number = id,
+        },
+    };
+    uint8_t value = *state;
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(gpio->machine->renode, GPIO, &frame, sizeof(frame), offsetof(gpio_frame_t, out.state), &response_size));
+
+    assert_msg(response_size == sizeof(value), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+    *state = frame.get_state_result.value;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool state)
+{
+    // gpio id, gpio command, pin number, state -> ()
+    gpio_frame_t frame = {
+        .out = {
+            .id = gpio->id,
+            .command = SET_STATE,
+            .number = id,
+            .state = state,
+        },
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(gpio->machine->renode, GPIO, &frame, sizeof(frame), sizeof(frame.out), &response_size));
 
     assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 

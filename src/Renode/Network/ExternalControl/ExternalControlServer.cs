@@ -37,6 +37,7 @@ namespace Antmicro.Renode.Network
             commandHandlers.Register(new RunFor(this));
             commandHandlers.Register(new GetTime(this));
             commandHandlers.Register(new ADC(this));
+            commandHandlers.Register(new GPIOPort(this));
 
             var getMachineHandler = new GetMachine(this);
             Machines = getMachineHandler;
