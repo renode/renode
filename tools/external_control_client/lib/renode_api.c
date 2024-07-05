@@ -127,6 +127,7 @@ void renode_free_error(renode_error_t *error)
 #define ERRMSG_FAILED_TO_READ_FROM_SOCKET "Failed to read from socket"
 #define ERRMSG_SOCKET_CLOSED "Socket was closed"
 #define ERRMSG_UNEXPECTED_RETURN_CODE "Unexpected return code"
+#define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
 
 typedef enum {
     RUN_FOR = 1,
@@ -491,7 +492,7 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t uni
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(renode, GET_TIME, current_time, sizeof(*current_time), sizeof(*current_time), &response_size));
 
-    assert_msg(response_size == sizeof(*current_time), "Received unexpected number of bytes");
+    assert_msg(response_size == sizeof(*current_time), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
     *current_time /= divider;
 
@@ -546,7 +547,7 @@ renode_error_t *renode_get_adc_channel_count(renode_adc_t *adc, int32_t *count)
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), offsetof(adc_frame_t, out.channel), &response_size));
 
-    assert_msg(response_size == sizeof(*count), "Received unexpected number of bytes");
+    assert_msg(response_size == sizeof(*count), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
     *count = frame.get_count_result.count;
 
@@ -567,7 +568,7 @@ renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel,
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), offsetof(adc_frame_t, out.value), &response_size));
 
-    assert_msg(response_size == sizeof(*value), "Received unexpected number of bytes");
+    assert_msg(response_size == sizeof(*value), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
     *value = frame.get_value_result.value;
 
@@ -589,7 +590,7 @@ renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel,
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(adc->machine->renode, ADC, &frame, sizeof(frame), sizeof(frame.out), &response_size));
 
-    assert_msg(response_size == 0, "Received unexpected number of bytes");
+    assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
     return NO_ERROR;
 }
