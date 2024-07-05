@@ -88,4 +88,12 @@
       <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
   </Target>
+  <Target Name="AddAssemblyMetadata" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>BinaryName</_Parameter1>
+        <_Parameter2>renode</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup> 
+  </Target>
 </Project>
