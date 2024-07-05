@@ -14,7 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public static class IInstanceBasedCommandExtensions
     {
-        public static Response InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, List<byte> data)
+        public static Response InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, List<byte> data, Predicate<T> instanceFilter = null)
             where T : IEmulationElement
         {
             if(data.Count < PayloadOffset)
@@ -47,7 +47,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return response;
             }
 
-            if(!@this.TryRegisterInstance(machine, name, out id))
+            if(!@this.TryRegisterInstance(machine, name, instanceFilter, out id))
             {
                 return Response.CommandFailed(@this.Identifier, "Instance not found");
             }
@@ -55,7 +55,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             return Response.Success(@this.Identifier, id.AsRawBytes());
         }
 
-        private static bool TryRegisterInstance<T>(this IInstanceBasedCommand<T> @this, IMachine machine, string name, out int id)
+        private static bool TryRegisterInstance<T>(this IInstanceBasedCommand<T> @this, IMachine machine, string name, Predicate<T> instanceFilter, out int id)
             where T : IEmulationElement
         {
             id = default(int);
@@ -64,7 +64,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return false;
             }
 
-            if(!(instance is T))
+            if(!(instance is T) || (!instanceFilter?.Invoke((T)instance) ?? false))
             {
                 return false;
             }
