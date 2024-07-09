@@ -89,11 +89,9 @@ Should Run ZephyrRTOS Shell On UARTE
 
 Should Run Alarm Sample
     Create Machine            ${NO_DMA}  zephyr_alarm_nRF52840.elf-s_489392-49a2ec3fda2f0337fe72521f08e51ecb0fd8d616
-    Create Terminal Tester    ${UART}
+    Create Terminal Tester    ${UART}  defaultPauseEmulation=True
 
     Execute Command           showAnalyzer ${UART}
-
-    Start Emulation
 
     Wait For Line On Uart     !!! Alarm !!!
     ${timeInfo}=              Execute Command    emulation GetTimeSourceInfo
