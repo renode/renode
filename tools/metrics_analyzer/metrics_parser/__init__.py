@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2023 Antmicro
+# Copyright (c) 2010-2024 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -22,7 +22,7 @@ class MetricsParser:
     def get_instructions_entries(self):
         with open(self.filePath, "rb") as f:
             cpus, _ = self._parseHeader(f)
-            return cpus, self._parse(f, b'\x00', '<cQ')
+            return cpus, self._parse(f, b'\x00', '<iQ')
 
     def get_memory_entries(self):
         with open(self.filePath, "rb") as f:
@@ -78,7 +78,7 @@ class MetricsParser:
 
     def _ignore(self, entryType, f):
         if entryType == b'\x00':
-            self._read('<cQ', f)
+            self._read('<iQ', f)
         if entryType == b'\x01':
             self._read('c', f)
         if entryType == b'\x02':

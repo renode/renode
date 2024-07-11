@@ -24,7 +24,7 @@ PLAT_VIRT_HOLD_STATE_WAIT = 0
 PLAT_VIRT_HOLD_STATE_GO = 1
 
 _cpus = filter(lambda cpu: str(type(cpu)) == "<type 'ARMv8A'>", emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus.GetCPUs())
-cpus = {cpu.Id: cpu for cpu in _cpus}
+cpus = {cpu.MultiprocessingId: cpu for cpu in _cpus}
 
 idx = (address - PLAT_VIRT_HOLD_BASE) // PLAT_VIRT_HOLD_ENTRY_SIZE
 

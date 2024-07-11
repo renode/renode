@@ -29,7 +29,7 @@ def _prepare_data(fig, ax, cpus, instructionEntries, columnName):
     instructionLines = []
 
     for cpuId, cpuName in cpus.items():
-        entries = data[data['cpuId'] == bytes([cpuId])]
+        entries = data[data['cpuId'] == cpuId]
         if entries.empty:
             continue
         line, = ax.plot(entries[columnName], entries['executedInstruction'], label=cpuName)

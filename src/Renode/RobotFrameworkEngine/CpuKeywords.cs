@@ -149,7 +149,7 @@ namespace Antmicro.Renode.RobotFramework
                 }
             }
 
-            var selectedCpu = cpus.SingleOrDefault(cpu => sysbus.GetCPUId(cpu) == cpuId);
+            var selectedCpu = cpus.SingleOrDefault(cpu => sysbus.GetCPUSlot(cpu) == cpuId);
             if(selectedCpu == null)
             {
                 throw new KeywordException($"This machine has no CPU with ID {cpuId}");

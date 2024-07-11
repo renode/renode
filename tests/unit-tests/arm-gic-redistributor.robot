@@ -23,7 +23,7 @@ Read From Redistributor
     [Return]                        ${val}
 
 Compare ${cpu} Id With Redistributor ${rdist}
-    ${expected}=                    Execute Command  ${cpu} Id
+    ${expected}=                    Execute Command  ${cpu} MultiprocessingId
     ${gicr_typer_val}=              Read From Redistributor  ${rdist}  ${GICR_TYPER}  ${cpu}  size=Quad
     ${gic_affinity}=                Evaluate  ${gicr_typer_val.strip()} >> 32
     ${result}=                      Evaluate  ${expected.strip()} == ${gic_affinity}
