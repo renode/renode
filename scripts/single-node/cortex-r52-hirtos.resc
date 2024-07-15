@@ -1,0 +1,18 @@
+:name: Cortex-R52
+:description: This script runs the HiRTOS operating system on a dual core 32-bit ARM Cortex-R52.
+
+$name?="ARM Cortex-R52"
+$bin?=@https://dl.antmicro.com/projects/renode/cortex-r52--hirtos-hello_partitions.elf-s_285392-644559248d6c6d752fe0dc1b46e3a467cce75841
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/cortex-r52_smp.repl
+showAnalyzer uart0
+showAnalyzer uart1
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
