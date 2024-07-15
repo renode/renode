@@ -107,6 +107,8 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
             // intentionally left empty
         }
 
+        public bool IsPaused => false;
+
         [Export]
         public void HandleMainMessage(IntPtr received)
         {

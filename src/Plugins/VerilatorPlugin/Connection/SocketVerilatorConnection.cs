@@ -165,13 +165,23 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
 
         public void Pause()
         {
-            pauseMRES.Reset();
+            lock(pauseLock)
+            {
+                pauseMRES.Reset();
+                IsPaused = true;
+            }
         }
 
         public void Resume()
         {
-            pauseMRES.Set();
+            lock(pauseLock)
+            {
+                pauseMRES.Set();
+                IsPaused = false;
+            }
         }
+
+        public bool IsPaused { get; private set; } = false;
 
         public bool IsConnected => mainSocketComunicator.Connected;
 
@@ -336,6 +346,7 @@ namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
         private readonly string address;
         private readonly Thread receiveThread;
         private readonly object receiveThreadLock = new object();
+        private readonly object pauseLock = new object();
         private readonly ManualResetEventSlim pauseMRES;
 
         private const string DefaultAddress = "127.0.0.1";

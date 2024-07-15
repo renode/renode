@@ -82,6 +82,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             verilatedPeripheral.Start();
         }
 
+        public bool IsPaused => verilatedPeripheral.IsPaused;
+
         public string SimulationFilePathLinux
         {
             get
