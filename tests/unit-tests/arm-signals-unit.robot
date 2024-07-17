@@ -23,6 +23,9 @@ Verify Command Output
     ${output}=  Execute Command      ${command}
     Should Be Equal                  ${expected}  ${output}  strip_spaces=True
 
+Verify PERIPHBASE Init Value
+    Verify Command Output As Integer         ${INIT_PERIPHBASE_ADDRESS}  ${SIGNALS_UNIT} GetAddress "PERIPHBASE"
+
 Verify Peripherals Registered At
     [Arguments]  ${address}
 
@@ -62,9 +65,9 @@ Should Gracefully Handle Invalid Signal
     ...    Execute Command    ${SIGNALS_UNIT} GetSignal "INVALID"
 
 Should Handle Addresses
-    Requires                                created-machine
+    Requires                      created-machine
 
-    Verify Command Output As Integer         ${INIT_PERIPHBASE_ADDRESS}  ${SIGNALS_UNIT} GetAddress "PERIPHBASE"
+    Verify PERIPHBASE Init Value
 
     Execute Command                          ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${NEW_PERIPHBASE_ADDRESS}
     Verify Command Output As Integer         ${NEW_PERIPHBASE_ADDRESS}  ${SIGNALS_UNIT} GetAddress "PERIPHBASE"
@@ -149,3 +152,28 @@ Should Set PC For Cores With INITRAM And VINITHI High
     Execute Command    cpu0 Start
     Execute Command    cpu1 Start
     Verify PCs         0x0  0xFFFF0000
+
+Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
+    Execute Command               using sysbus
+    Execute Command               mach create
+
+    ${PLATFORM}=  Catenate     SEPARATOR=\n
+    ...  signalsUnit: Miscellaneous.ArmSignalsUnit @ sysbus
+    ...  
+    ...  cpu0: CPU.ARMv7R @ sysbus
+    ...  ${SPACE*4}cpuType: "cortex-r8"
+    ...  ${SPACE*4}cpuId: 0
+    ...  ${SPACE*4}signalsUnit: signalsUnit
+    ...  
+    ...  cpu1: CPU.ARMv7R @ sysbus
+    ...  ${SPACE*4}cpuType: "cortex-r8"
+    ...  ${SPACE*4}cpuId: 1
+    ...  ${SPACE*4}signalsUnit: signalsUnit
+    ...
+    ...  scu: Miscellaneous.ArmSnoopControlUnit @ {
+    ...  ${SPACE*4}sysbus new Bus.BusPointRegistration { address: 0xae000000; cpu: cpu0 };
+    ...  ${SPACE*4}sysbus new Bus.BusPointRegistration { address: 0xae000000; cpu: cpu1 }
+    ...  }
+    Execute Command               machine LoadPlatformDescriptionFromString """${PLATFORM}"""
+
+    Verify PERIPHBASE Init Value
