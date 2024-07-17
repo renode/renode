@@ -93,7 +93,7 @@ PyDev Should Handle QuadWord Accesses
              Read Should Be Equal     QuadWord  ${pydev_address}  ${new_value}
 
 Should Handle Unsupported Variable Types
-             Execute Command          $a=@a
+             Execute Command          $a=1
 
     ${out}=  Run Keyword And Expect Error  KeywordException:*
              ...                      Execute Command          py $a
