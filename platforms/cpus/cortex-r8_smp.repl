@@ -3,18 +3,21 @@ using "./cortex-r8.repl"
 cpu1: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
+    numberOfMPURegions: 24
     cpuId: 1
     signalsUnit: signalsUnit
 
 cpu2: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
+    numberOfMPURegions: 24
     cpuId: 2
     signalsUnit: signalsUnit
 
 cpu3: CPU.ARMv7R @ sysbus
     cpuType: "cortex-r8"
     genericInterruptController: gic
+    numberOfMPURegions: 24
     cpuId: 3
     signalsUnit: signalsUnit
 
