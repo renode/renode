@@ -283,7 +283,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private ulong GetCurrentVirtualTimeUS()
         {
-            return machine.LocalTimeSource.ElapsedVirtualTime.TotalMicroseconds;
+            // Truncate, as the SystemC integration uses microsecond resolution
+            return (ulong)machine.LocalTimeSource.ElapsedVirtualTime.TotalMicroseconds;
         }
 
         private void StartSystemCProcess(string systemcExecutablePath, string connectionParams)
