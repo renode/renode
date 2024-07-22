@@ -50,7 +50,7 @@ Create RESD File
     ...                             "--map", "pressure:pres::0"
     # Offset since Linux manages to boot-up and display the first measurement, minus 0.03 second, to be sure the change will be seen
     # Note that for different Linux build, this time might be different, and the tests will fail
-    ...                             "--start-time", "5_240_000_000"
+    ...                             "--start-time", "5_290_000_000"
     ...                             "--frequency", "10"
     ...                             r"${resd_path}"
     Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
