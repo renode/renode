@@ -119,6 +119,7 @@
     <Compile Include="Network\RangeLossMediumFunction.cs" />
     <Compile Include="Network\RangeMediumFunction.cs" />
     <Compile Include="Backends\Terminals\UartPtyTerminal.cs" />
+    <Compile Include="Plugins\ZephyrMode.cs" />
     <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
     <Compile Include="PlatformDescription\UserInterface\PlatformDescriptionMachineExtensions.cs" />
     <Compile Include="Connectors\GPIOConnector.cs" />

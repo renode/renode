@@ -165,3 +165,4 @@
 - tests/unit-tests/riscv-mret.robot
 - tests/platforms/X86.robot
 - tests/platforms/ACRN.robot
+- tests/unit-tests/zephyr-mode.robot
