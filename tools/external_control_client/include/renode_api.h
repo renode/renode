@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stdbool.h>
 
 /* Error handling */
 
