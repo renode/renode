@@ -17,6 +17,7 @@ cp -r $BASE/tools/gdb_compare $DIR/tools
 cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
+cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
 cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
 # For now, SystemCPlugin uses socket-cpp library from VerilatorIntegrationLibrary.
