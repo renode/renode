@@ -6,6 +6,7 @@ mkdir -p $DIR/{licenses,tests,tools,plugins}
 
 cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer
 cp -r $BASE/tests/network-server $DIR/tests/network-server
+cp -r $BASE/tests/network-logging $DIR/tests/network-logging
 cp -r $BASE/tests/peripherals $DIR/tests/peripherals
 cp -r $BASE/tests/platforms $DIR/tests/platforms
 cp -r $BASE/tests/{robot_tests_provider,run_tests,tests_engine,robot_output_formatter,robot_output_formatter_verbose,helper}.py $DIR/tests
