@@ -15,6 +15,7 @@ target_compile_options(renode_api
     -Wextra
     -fno-strict-aliasing
     )
+set_property(TARGET renode_api PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/../include
