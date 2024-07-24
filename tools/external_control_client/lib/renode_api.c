@@ -130,6 +130,7 @@ void renode_free_error(renode_error_t *error)
 }
 
 #define ERRMSG_FAILED_TO_READ_FROM_SOCKET "Failed to read from socket"
+#define ERRMSG_FAILED_TO_WRITE_TO_SOCKET "Failed to write to socket"
 #define ERRMSG_SOCKET_CLOSED "Socket was closed"
 #define ERRMSG_UNEXPECTED_RETURN_CODE "Unexpected return code"
 #define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
@@ -155,12 +156,14 @@ static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t
 {
     ssize_t sent;
 
+    assert_msg(count > 0, "Usage error: attempted to write invalid number of bytes to socket");
+
     while (count > 0 && (sent = write(socket_fd, data, count)) > 0) {
         count -= sent;
     }
 
     if (sent <= 0) {
-        return create_connection_failed_error("Failed to write to socket");
+        return create_connection_failed_error(ERRMSG_FAILED_TO_WRITE_TO_SOCKET);
     }
 
     return NO_ERROR;
@@ -185,6 +188,8 @@ static renode_error_t *read_byte_or_fail(int socket_fd, uint8_t *value)
 static renode_error_t *read_or_fail(int socket_fd, uint8_t *buffer, uint32_t count)
 {
     ssize_t received;
+
+    assert_msg(count > 0, "Usage error: attempted to read invalid number of bytes from socket");
 
     while (count > 0 && (received = read(socket_fd, buffer, count)) > 0) {
         buffer += received;
@@ -257,7 +262,7 @@ static renode_error_t *obtain_socket(int *socket_fd, const char *address, const 
 
 renode_error_t *renode_connect(const char *port, renode_t **renode)
 {
-    int socket_fd;
+    int socket_fd = -1;
 
     assert(port != NULL && renode != NULL);
 
