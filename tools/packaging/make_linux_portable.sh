@@ -14,8 +14,11 @@ RENODE_BIN=$RENODE_OUTPUT_DIR/Renode.exe
 DESTINATION=renode_${VERSION}_portable
 WORKDIR=$THIS_DIR/renode_${VERSION}_portable-workdir
 MONO_VERSION=4.5
+OS_NAME=linux
+SED_COMMAND="sed -i"
+DIR=$DESTINATION
 
-. common_make_linux_portable.sh
+. common_copy_files_portable.sh
 
 mkdir -p $WORKDIR
 rm -rf $WORKDIR/*

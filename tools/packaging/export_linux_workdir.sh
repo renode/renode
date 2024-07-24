@@ -18,7 +18,7 @@ cd "${0%/*}"
 
 OS_NAME=linux
 SED_COMMAND="sed -i"
-. common_copy_files.sh
+. common_copy_files_package.sh
 
 TEST_SCRIPT=$DIR/renode-test
 

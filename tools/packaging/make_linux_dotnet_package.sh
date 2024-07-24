@@ -10,7 +10,7 @@ RENODE_ROOT_DIR=$BASE
 
 DIR=renode_${VERSION}-dotnet
 # Contents of this variable should be pasted verbatim into renode-test script.
-INSTALL_DIR='$(dirname "${BASH_SOURCE[0]}")'
+INSTALL_DIR='$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD)'
 OS_NAME=linux
 SED_COMMAND="sed -i"
 
@@ -20,7 +20,7 @@ cp $RENODE_ROOT_DIR/output/bin/$TARGET/$TFM/libllvm-disas.so $RENODE_ROOT_DIR/ou
 # It is used to copy files into final package directory and all required files were moved there.
 TARGET="$TARGET/$TFM/publish"
 
-. common_copy_files.sh
+. common_copy_files_package.sh
 
 # Remove RenodeTests because they are unused in the package
 rm -rf $DIR/tests/unit-tests/RenodeTests

@@ -27,7 +27,7 @@ INSTALL_DIR=/opt/renode
 
 OS_NAME=linux
 SED_COMMAND="sed -i"
-. common_copy_files.sh
+. common_copy_files_package.sh
 
 PYTHONVERSION=3.8
 

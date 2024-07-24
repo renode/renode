@@ -12,8 +12,11 @@ RENODE_ROOT_DIR=$THIS_DIR/../..
 RENODE_OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET/$TFM/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DESTINATION=renode_${VERSION}-dotnet_portable
+OS_NAME=linux
+SED_COMMAND="sed -i"
+DIR=$DESTINATION
 
-. common_make_linux_portable.sh
+. common_copy_files_portable.sh
 
 cp $RENODE_OUTPUT_BINARY $DESTINATION/renode
 cp \

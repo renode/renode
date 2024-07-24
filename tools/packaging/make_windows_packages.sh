@@ -18,7 +18,7 @@ MSI=$DIR.msi
 
 OS_NAME=windows
 SED_COMMAND="sed -i"
-. common_copy_files.sh
+. common_copy_files_package.sh
 
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
