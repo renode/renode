@@ -21,6 +21,7 @@ endif()
 
 set(LIB_DIR ${CMAKE_CURRENT_LIST_DIR}/lib)
 include(${LIB_DIR}/CMakeLists.txt)
+include(${APP_SOURCES_DIR}/CMakeLists.txt OPTIONAL)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${APP_SOURCES_DIR}/*.c)
 add_executable(${APP_NAME} ${SOURCES})
