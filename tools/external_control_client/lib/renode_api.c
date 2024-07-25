@@ -457,7 +457,10 @@ static renode_error_t *renode_get_instance_descriptor(renode_machine_t *machine,
     return NO_ERROR;
 }
 
-struct run_for_out {
+struct __attribute__((packed)) run_for_out {
+    uint8_t header[2];
+    uint8_t api_command;
+    uint32_t data_size;
     uint64_t microseconds;
 };
 
@@ -465,7 +468,11 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64
 {
     assert(renode != NULL && value < UINT64_MAX / unit);
 
-    struct run_for_out data;
+    struct run_for_out data = {
+        .header = {'R', 'E'},
+        .api_command = RUN_FOR,
+        .data_size = sizeof(data.microseconds)
+    };
     switch (unit) {
         case TU_MICROSECONDS:
         case TU_MILLISECONDS:
@@ -477,7 +484,10 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64
             assert_fmsg(false, "Invalid unit: %d\n", unit);
     }
 
-    return renode_execute_command(renode, RUN_FOR, &data, sizeof(data), sizeof(data), NULL);
+    return_error_if_fails(write_or_fail(renode->socket_fd, (uint8_t*)&data, sizeof(data)));
+
+    uint32_t ignored_data_size;
+    return renode_receive_response(renode, RUN_FOR, NULL, 0, &ignored_data_size);
 }
 
 renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time)
