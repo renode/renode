@@ -49,6 +49,12 @@
     <Reference Include="CookComputing.XmlRpcV2">
       <HintPath>..\..\lib\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
+    <Reference Include="NetMQ">
+      <HintPath>..\..\lib\resources\libraries\NetMQ.dll</HintPath>
+    </Reference>
+    <Reference Include="AsyncIO">
+      <HintPath>..\..\lib\resources\libraries\AsyncIO.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
