@@ -27,6 +27,11 @@ Should Create Peripheral Using Aliases
     Wait For Log Entry              aliasedParameter = 100
     Wait For Log Entry              aliasedParameterDefault = 15
 
+Should Throw Recoverable Exception When Using Alias And Argument Name At The Same Time
+    Create Machine
+    Run Keyword And Expect Error    *Ambiguous choice between aliased and normal argument name*
+    ...                             Create Test Peripheral  normalParameter: -12; mode: Modes.Mode2; ctorAlias: 100; aliasedParameter: 100
+
 Should Warn When Using Aliases
     Create Machine
     Create Test Peripheral          normalParameter: 5; mode: Modes.Mode1; ctorAlias: 10; ctorAliasDefault: 15

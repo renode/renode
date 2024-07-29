@@ -55,5 +55,6 @@ namespace Antmicro.Renode.PlatformDescription
         IrqSourcePinDoesNotExist = 43,
         UninitializedSourceIrqObject = 44,
         RegistrationOrderCycle = 45,
+        AliasedAndNormalArgumentName = 46,
     }
 }

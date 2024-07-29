@@ -1418,7 +1418,14 @@ namespace Antmicro.Renode.PlatformDescription
 
                 foreach(var argument in ctor.GetParameters())
                 {
-                    var correspondingAttribute = attributes.SingleOrDefault(x => ParameterNameMatches(x.Name, argument));
+                    var correspondingAttributes = attributes.Where(x => ParameterNameMatches(x.Name, argument));
+                    if(correspondingAttributes.Count() > 1)
+                    {
+                        HandleError(ParsingError.AliasedAndNormalArgumentName, responsibleObject,
+                                    "Ambiguous choice between aliased and normal argument name:" + Environment.NewLine +
+                                    String.Join(Environment.NewLine, correspondingAttributes.Select(x => x.Name + ": " + x.Value)), true);
+                    }
+                    var correspondingAttribute = correspondingAttributes.FirstOrDefault();
                     if(correspondingAttribute == null)
                     {
                         object defaultValue = null;
