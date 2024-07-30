@@ -1,25 +1,30 @@
+// Clusters definitions
+cluster0: CPU.Cluster @ sysbus
+
+cluster1: CPU.Cluster @ sysbus
+
 // APU
 
-apu0: CPU.ARMv8A @ sysbus
+apu0: CPU.ARMv8A @ cluster0
     cpuType: "cortex-a53"
     cpuId: 0
     genericInterruptController: apuGic
 
-apu1: CPU.ARMv8A @ sysbus
+apu1: CPU.ARMv8A @ cluster0
     cpuType: "cortex-a53"
     cpuId: 1
     genericInterruptController: apuGic
     init:
         IsHalted true
 
-apu2: CPU.ARMv8A @ sysbus
+apu2: CPU.ARMv8A @ cluster0
     cpuType: "cortex-a53"
     cpuId: 2
     genericInterruptController: apuGic
     init:
         IsHalted true
 
-apu3: CPU.ARMv8A @ sysbus
+apu3: CPU.ARMv8A @ cluster0
     cpuType: "cortex-a53"
     cpuId: 3
     genericInterruptController: apuGic
@@ -66,7 +71,7 @@ apuGic: IRQControllers.ARM_GenericInterruptController @ {
 
 // RPU
 
-rpu0: CPU.ARMv7R @ sysbus
+rpu0: CPU.ARMv7R @ cluster1
     cpuType: "cortex-r5f"
     // Aff1: 1, Aff0: 0
     cpuId: 0x100
@@ -77,7 +82,7 @@ rpu0: CPU.ARMv7R @ sysbus
         RegisterTCMRegion sysbus.atcm0 1         0
         RegisterTCMRegion sysbus.btcm0 0         0
 
-rpu1: CPU.ARMv7R @ sysbus
+rpu1: CPU.ARMv7R @ cluster1
     cpuType: "cortex-r5f"
     // Aff1: 1, Aff0: 1
     cpuId: 0x101
@@ -111,8 +116,7 @@ btcm0: Memory.MappedMemory @ {
     size: 0x10000
 
 ddrLowRpu: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x10000; cpu: rpu0 };
-        sysbus new Bus.BusPointRegistration { address: 0x10000; cpu: rpu1 }
+        sysbus new Bus.BusPointRegistration { address: 0x10000; cluster: cluster1 }
     }
     size: 0x10000
 
@@ -129,10 +133,7 @@ btcm1: Memory.MappedMemory @ {
     size: 0x10000
 
 ddrLowApu: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu0 };
-        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu1 };
-        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu2 };
-        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: apu3 }
+        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: cluster0 }
     }
     size: 0x30000
 
@@ -146,10 +147,7 @@ ocm: Memory.MappedMemory @ sysbus 0xfffc0000
     size: 0x40000
 
 ddrHigh: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu0 };
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu1 };
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu2 };
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cpu: apu3 }
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cluster: cluster0 }
     }
     size: 0x80000000
 
