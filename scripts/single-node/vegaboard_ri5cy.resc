@@ -4,6 +4,12 @@ using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/ri5cy.repl
 
+$pcc_mock="""
+if request.isInit: lastVal = 0x80000000
+if request.isRead: request.value = lastVal
+if request.isWrite: lastVal = request.value
+"""
+
 $bin?=@https://dl.antmicro.com/projects/renode/vegaboard--zephyr_shell.elf-s_1000428-46ce2752ebea346c8d232ab4e4f8d489999488af
 
 showAnalyzer lpuart0
@@ -26,11 +32,41 @@ else:
     ctr += 1
 """ 0x4002c010 0x4 True
 
+# Peripheral Clock Controller 0 TPM2
+machine PyDevFromString $pcc_mock 0x4002b0dc 0x4 True
+
+# Peripheral Clock Controller 0 PORTA
+machine PyDevFromString $pcc_mock 0x4002b118 0x4 True
+
+# Peripheral Clock Controller 0 PORTB
+machine PyDevFromString $pcc_mock 0x4002b11c 0x4 True
+
+# Peripheral Clock Controller 0 PORTC
+machine PyDevFromString $pcc_mock 0x4002b120 0x4 True
+
+# Peripheral Clock Controller 0 PORTD
+machine PyDevFromString $pcc_mock 0x4002b124 0x4 True
+
+# Peripheral Clock Controller 0 unmapped
+machine PyDevFromString $pcc_mock 0x4002b13c 0x4 True
+
+# Peripheral Clock Controller 0 LPUART0
+machine PyDevFromString $pcc_mock 0x4002b108 0x4 True
+
+# Peripheral Clock Controller 1 PORTE
+machine PyDevFromString $pcc_mock 0x410270dc 0x4 True
+
+# Peripheral Clock Controller 1 GPIOE
+machine PyDevFromString $pcc_mock 0x4102703c 0x4 True
+
 # Slow IRC Control Status Register
 sysbus Tag <0x4002c200 4> "SIRCCSR" 0xFFFFFFFF
 
 # Fast IRC Control Status Register
 sysbus Tag <0x4002c300 4> "FIRCCSR" 0xFFFFFFFF
+
+# Fast IRC Divider Register
+sysbus Tag <0x4002c304 4> "FIRCDIV" 0x00010101  # Divide by 1
 
 # Low Power FLL Control Status Register
 sysbus Tag <0x4002c500 4> "LPFFLCSR" 0xFFFFFFFF
