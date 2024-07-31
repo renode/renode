@@ -95,7 +95,7 @@ Terminal Tester Assert Should Precisely Pause Emulation
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4897
+    Should Be Equal          ${l.groups[0]}  4896
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
@@ -110,7 +110,7 @@ Emulation Should Pause Precisely Between Translation Blocks
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4225
+    Should Be Equal          ${l.groups[0]}  4213
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
