@@ -675,7 +675,7 @@ class RobotTestSuite(object):
                     if status.text is not None and self.retry_suite_regex.search(status.text):
                         return True
                     for msg in test.iter("msg"):
-                        if self.retry_suite_regex.search(msg.text):
+                        if msg.text is not None and self.retry_suite_regex.search(msg.text):
                             return True
         return False
 
