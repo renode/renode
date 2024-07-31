@@ -14,6 +14,8 @@ Create Machine
     [Arguments]              ${machine}
     Execute Command          $name="${machine}"
     Execute Command          include @${SCRIPT}
+    # We enable serial execution to ensure a deterministic result as this test uses 2 machines, each with 2 CPUs
+    Execute Command          emulation SetGlobalSerialExecution True
     ${tester} =              Create Terminal Tester   ${UART}   40   ${machine}   defaultPauseEmulation=True
     RETURN                   ${tester}
 
