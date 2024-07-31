@@ -199,7 +199,8 @@ lptim1: Timers.STM32L0_LpTimer @ sysbus 0x40007C00
     frequency: 0x1000000
     -> exti@29
 
-crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+crc: CRC.STM32_CRC @ sysbus 0x40023000
+    series: CRC.STM32Series.STM32F0
     configurablePoly: true
 
 // The SYSCFG region is defined as memory mainly so that software can read/write

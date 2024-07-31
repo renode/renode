@@ -204,7 +204,8 @@ adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     externalEventFrequency: 1000
     -> nvicInput12@2
 
-crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+crc: CRC.STM32_CRC @ sysbus 0x40023000
+    series: CRC.STM32Series.STM32F0
     configurablePoly: false // Only STM32F07x and STM32F09x implements configurablePoly: true
     
 sysbus:

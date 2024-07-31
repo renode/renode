@@ -46,7 +46,8 @@ cpu: CPU.CortexM @ sysbus
 
 pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
 
-crc: CRC.STM32F4_CRC @ sysbus 0x40023000
+crc: CRC.STM32_CRC @ sysbus 0x40023000
+    series: CRC.STM32Series.STM32F4
 
 exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
     numberOfOutputLines: 24
