@@ -11,7 +11,7 @@ sdram: Memory.MappedMemory @ sysbus 0x1000000
 uart: UART.NS16550 @ sysbus 0xE00003F8
 
 cpu: CPU.X86 @ sysbus
-    cpuType: "x86"
+    cpuType: "n270"
     lapic: lapic
 
 lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
