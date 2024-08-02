@@ -163,3 +163,4 @@
 - tests/unit-tests/python-engine.robot
 - tests/network-logging/network-logging.robot
 - tests/unit-tests/riscv-mret.robot
+- tests/platforms/X86.robot
