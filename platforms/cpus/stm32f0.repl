@@ -205,7 +205,7 @@ adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     -> nvicInput12@2
 
 crc: CRC.STM32_CRC @ sysbus 0x40023000
-    series: CRC.STM32Series.STM32F0
+    series: STM32Series.F0
     configurablePoly: false // Only STM32F07x and STM32F09x implements configurablePoly: true
     
 sysbus:
