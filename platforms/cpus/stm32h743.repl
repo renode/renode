@@ -324,6 +324,8 @@ itcm: Memory.MappedMemory @ sysbus 0x00000000
 
 rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
 
+pwr: Miscellaneous.STM32H7_PWR @ sysbus 0x58024800
+
 crc: CRC.STM32_CRC @ sysbus 0x58024C00
     series: CRC.STM32Series.STM32F0
     configurablePoly: true
@@ -368,8 +370,6 @@ sysbus:
     init:
         Tag <0x58027000, 0x580273FF> "RAMECC3"
         Tag <0x58025800, 0x58025BFF> "DMAMUX2"
-        Tag <0x58024800, 0x58024BFF> "PWR"
-        Tag <0x58024818, 0x58024818> "D3CR" 0x2000  // VOSRDY flag (b13) indicates the voltage was properly set.
         Tag <0x58005400, 0x580057FF> "SAI4"
         Tag <0x58003C00, 0x58003FFF> "VREF"
         Tag <0x58003800, 0x58003BFF> "COMP1_-_COMP2"
