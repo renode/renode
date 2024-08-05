@@ -43,7 +43,7 @@ def end_test(data, result):
     if result.passed:
         status = term_color.GREEN + 'OK' + term_color.RESET
     else:
-        if 'skipped' in result.tags:
+        if result.skipped:
             status = term_color.BLUE + 'skipped' + term_color.RESET
         elif 'non_critical' in result.tags:
             status = term_color.YELLOW + 'failed (non critical)' + term_color.RESET
