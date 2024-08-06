@@ -13,6 +13,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 100000000
+    defaultCounterFrequencyRegister: 100000000
     EL1PhysicalTimerIRQ -> gic#0@30
     EL1VirtualTimerIRQ -> gic#0@27
     NonSecureEL2PhysicalTimerIRQ -> gic#0@26
