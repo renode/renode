@@ -168,12 +168,11 @@ pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
     size: 0x4
     initable: true
     filename: "scripts/pydev/flipflop.py"
+                                   
+sdmmc: SD.STM32SDMMC @ sysbus 0x40012c00
+    IRQ -> nvic@49
+    DMAReceive -> dma2@3
 
-sdMmcSta: Python.PythonPeripheral @ sysbus 0x40012C34
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-  
 flash_regs: Memory.MappedMemory @ sysbus 0x40023C00
     size: 0x400
 
