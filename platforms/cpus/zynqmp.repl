@@ -113,7 +113,7 @@ btcm0: Memory.MappedMemory @ {
         sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: rpu0 };
         sysbus 0xffe20000
     }
-    size: 0x10000
+    size: 0x20000
 
 ddrLowRpu: Memory.MappedMemory @ {
         sysbus new Bus.BusPointRegistration { address: 0x10000; cluster: cluster1 }
@@ -150,6 +150,9 @@ ddrHigh: Memory.MappedMemory @ {
         sysbus new Bus.BusPointRegistration { address: 0x800000000; cluster: cluster0 }
     }
     size: 0x80000000
+
+rpu_control: Memory.MappedMemory @ sysbus 0xff9a0000
+    size: 0x1000
 
 // I/O MAPPED PERIPHERALS
 
