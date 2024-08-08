@@ -1,0 +1,42 @@
+:name: Zynqmp
+:description: This script runs on Zynq UltraScale+ MPSoC. It's showcasing two way communication between Linux running on Cortex-A53 and OpenAMP demo running on Cortex-R5.
+
+using sysbus
+$name?="ZynqUS+"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+machine SetSerialExecution True
+sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
+showAnalyzer uart1
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp--sm-k26-revA-openamp.dtb-s_39689-4a8f42bbd45093526b1beddb36d39e9486dd328d
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
+$linux?=     @https://dl.antmicro.com/projects/renode/zynqmp--linux-Image-openamp-s_23429632-e9ff8dd5c5963153dd87791cc250dea3c039cbbc
+$linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynqmp--linux-rootfs-openamp.ext2-s_62914560-8b8fde7705a876b05d6f1a0f98540f28ba1dd924
+
+macro reset
+"""
+    apu0 PC 0x1000000
+    apu1 IsHalted true
+    apu2 IsHalted true
+    apu3 IsHalted true
+
+    rpu0 IsHalted true
+    rpu1 IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=apu0
+
+    sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false context=apu0
+    sysbus LoadBinary $uboot  0x8000000  cpu=apu0
+    sysbus LoadBinary $linux  0x10000000 cpu=apu0
+    sysbus LoadBinary $rootfs 0x20000000 cpu=apu0
+
+    sysbus LoadSymbolsFrom $uboot_elf context=apu0
+    sysbus LoadSymbolsFrom $linux_elf context=apu0
+"""
+
+runMacro $reset
