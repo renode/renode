@@ -194,9 +194,10 @@ gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
 
 ipi: Miscellaneous.ZynqMP_IPI @ sysbus 0xff300000
     mailbox: ipiMailbox
-    0 -> apuGic@67
-    [1-2] -> rpuGic@[65-66]
+    0 -> apuGic@35 | rpuGic@35
+    [1-2] -> apuGic@[33-34] | rpuGic@[33-34]
     [3-6] -> platformManagementUnit@[0-3]
+    [7-10] -> apuGic@[29-32] | rpuGic@[29-32]
 
 ipiMailbox: Memory.MappedMemory @ sysbus 0xff990000
     size: 0x1000
