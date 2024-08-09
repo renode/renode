@@ -43,11 +43,11 @@ lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4002D000
     -> nvic@27
 
 
-lpuart0: UART.Kinetis_LPUART @ sysbus 0x4006A000
+lpuart0: UART.NXP_LPUART @ sysbus 0x4006A000
     IRQ -> nvic@31
 
 
-lpuart1: UART.Kinetis_LPUART @ sysbus 0x4006B000
+lpuart1: UART.NXP_LPUART @ sysbus 0x4006B000
     IRQ -> nvic@30
 
 

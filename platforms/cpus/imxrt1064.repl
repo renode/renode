@@ -56,28 +56,28 @@ dcdc: Python.PythonPeripheral @ sysbus 0x40080000
 gpTimer1: Timers.IMX_GPTimer @ sysbus 0x401EC000
     IRQ -> nvic@100
 
-lpuart1: UART.Kinetis_LPUART @ sysbus 0x40184000
+lpuart1: UART.NXP_LPUART @ sysbus 0x40184000
     IRQ -> nvic@20
 
-lpuart2: UART.Kinetis_LPUART @ sysbus 0x40188000
+lpuart2: UART.NXP_LPUART @ sysbus 0x40188000
     IRQ -> nvic@21
 
-lpuart3: UART.Kinetis_LPUART @ sysbus 0x4018c000
+lpuart3: UART.NXP_LPUART @ sysbus 0x4018c000
     IRQ -> nvic@22
 
-lpuart4: UART.Kinetis_LPUART @ sysbus 0x40190000
+lpuart4: UART.NXP_LPUART @ sysbus 0x40190000
     IRQ -> nvic@23
 
-lpuart5: UART.Kinetis_LPUART @ sysbus 0x40194000
+lpuart5: UART.NXP_LPUART @ sysbus 0x40194000
     IRQ -> nvic@24
 
-lpuart6: UART.Kinetis_LPUART @ sysbus 0x40198000
+lpuart6: UART.NXP_LPUART @ sysbus 0x40198000
     IRQ -> nvic@25
 
-lpuart7: UART.Kinetis_LPUART @ sysbus 0x4019c000
+lpuart7: UART.NXP_LPUART @ sysbus 0x4019c000
     IRQ -> nvic@26
 
-lpuart8: UART.Kinetis_LPUART @ sysbus 0x401a0000
+lpuart8: UART.NXP_LPUART @ sysbus 0x401a0000
     IRQ -> nvic@27
 
 gpio1: GPIOPort.IMXRT_GPIO @ sysbus 0x401B8000

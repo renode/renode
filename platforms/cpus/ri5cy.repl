@@ -4,10 +4,12 @@ flash: Memory.MappedMemory @ sysbus 0x0
 mem: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x30000
 
-lpuart0: UART.Kinetis_LPUART @ sysbus 0x40042000
+lpuart0: UART.NXP_LPUART @ sysbus 0x40042000
+    fifoSize: 8
     IRQ -> cpu@17
 
-lpuart1: UART.Kinetis_LPUART @ sysbus 0x40043000
+lpuart1: UART.NXP_LPUART @ sysbus 0x40043000
+    fifoSize: 8
 
 lptmr0: UART.LowPower_Timer @ sysbus 0x40032000
     // normally it should be routed via intmux, but we connect it directly to CPU

@@ -98,52 +98,52 @@ cpu0: CPU.CortexM @ sysbus
 lpspi3: SPI.IMXRT_LPSPI @ sysbus 0x40364000
     ->nvic0@168
 
-lpuart0: UART.Kinetis_LPUART @ sysbus 0x40328000
+lpuart0: UART.NXP_LPUART @ sysbus 0x40328000
     IRQ->nvic0@141
 
-lpuart1: UART.Kinetis_LPUART @ sysbus 0x4032c000
+lpuart1: UART.NXP_LPUART @ sysbus 0x4032c000
     IRQ->nvic0@142
 
-lpuart2: UART.Kinetis_LPUART @ sysbus 0x40330000
+lpuart2: UART.NXP_LPUART @ sysbus 0x40330000
     IRQ->nvic0@143
 
-lpuart3: UART.Kinetis_LPUART @ sysbus 0x40334000
+lpuart3: UART.NXP_LPUART @ sysbus 0x40334000
     IRQ->nvic0@144
 
-lpuart4: UART.Kinetis_LPUART @ sysbus 0x40338000
+lpuart4: UART.NXP_LPUART @ sysbus 0x40338000
     IRQ->nvic0@145
 
-lpuart5: UART.Kinetis_LPUART @ sysbus 0x4033c000
+lpuart5: UART.NXP_LPUART @ sysbus 0x4033c000
     IRQ->nvic0@146
 
-lpuart6: UART.Kinetis_LPUART @ sysbus 0x40340000
+lpuart6: UART.NXP_LPUART @ sysbus 0x40340000
     IRQ->nvic0@147
 
-lpuart7: UART.Kinetis_LPUART @ sysbus 0x40344000
+lpuart7: UART.NXP_LPUART @ sysbus 0x40344000
     IRQ->nvic0@148
 
-lpuart8: UART.Kinetis_LPUART @ sysbus 0x4048c000
+lpuart8: UART.NXP_LPUART @ sysbus 0x4048c000
     IRQ->nvic0@149
 
-lpuart9: UART.Kinetis_LPUART @ sysbus 0x40490000
+lpuart9: UART.NXP_LPUART @ sysbus 0x40490000
     IRQ->nvic0@150
 
-lpuart10: UART.Kinetis_LPUART @ sysbus 0x40494000
+lpuart10: UART.NXP_LPUART @ sysbus 0x40494000
     IRQ->nvic0@151
 
-lpuart11: UART.Kinetis_LPUART @ sysbus 0x40498000
+lpuart11: UART.NXP_LPUART @ sysbus 0x40498000
     IRQ->nvic0@152
 
-lpuart12: UART.Kinetis_LPUART @ sysbus 0x4049c000
+lpuart12: UART.NXP_LPUART @ sysbus 0x4049c000
     IRQ->nvic0@153
 
-lpuart13: UART.Kinetis_LPUART @ sysbus 0x404a0000
+lpuart13: UART.NXP_LPUART @ sysbus 0x404a0000
     IRQ->nvic0@154
 
-lpuart14: UART.Kinetis_LPUART @ sysbus 0x404a4000
+lpuart14: UART.NXP_LPUART @ sysbus 0x404a4000
     IRQ->nvic0@155
 
-lpuart15: UART.Kinetis_LPUART @ sysbus 0x404a8000
+lpuart15: UART.NXP_LPUART @ sysbus 0x404a8000
     IRQ->nvic0@156
 
 // nxp,mr_canhubk3 overlay
