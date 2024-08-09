@@ -6,13 +6,13 @@ ${csr_script}=  SEPARATOR=
 ...      cpu.DebugLog('CSR written: {}!'.format(hex(request.value)))
 
 ${xadd}=  SEPARATOR=
-...  src_reg_a = instruction & 0xF                                                                   ${\n}
+...  src_reg_a = (instruction >> 3) & 0xF                                                            ${\n}
 ...  src_reg_b = (instruction >> 12) & 0xF                                                           ${\n}
 ...  res = cpu.GetRegisterUnsafe(src_reg_a).RawValue + cpu.GetRegisterUnsafe(src_reg_b).RawValue     ${\n}
 ...  state['res'] = res
 
 ${xmv}=  SEPARATOR=
-...  dst_reg = instruction & 0xF                                         ${\n}
+...  dst_reg = (instruction >> 3) & 0xF                                  ${\n}
 ...  cpu.SetRegisterUnsafe(dst_reg, state['res'])                        
 
 *** Keywords ***
@@ -38,9 +38,9 @@ Should Install Custom 16-bit Instruction
     Create Machine
     Create Log Tester                           1
 
-    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001110" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             logLevel 0
-    Execute Command                             sysbus WriteWord 0x0 0xb38f
+    Execute Command                             sysbus WriteWord 0x0 0xb38e
 
     Execute Command                             log "--- start ---"
     Execute Command                             sysbus.cpu Step
@@ -54,9 +54,9 @@ Should Install Custom 32-bit Instruction
     Create Machine
     Create Log Tester                           1
 
-    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110000011" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             logLevel 0
-    Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
+    Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f83
 
     Execute Command                             log "--- start ---"
     Execute Command                             sysbus.cpu Step
@@ -70,9 +70,9 @@ Should Install Custom 64-bit Instruction
     Create Machine
     Create Log Tester                           1
 
-    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111110111111" "cpu.DebugLog('custom instruction executed!')"
     Execute Command                             logLevel 0
-    Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0f82
+    Execute Command                             sysbus WriteDoubleWord 0x0 0xb38f0fbf
     Execute Command                             sysbus WriteDoubleWord 0x4 0xb38f0f82
 
     Execute Command                             log "--- start ---"
@@ -109,8 +109,8 @@ Should Install Custom 32-bit Instructions Sharing State
     Create Machine
     Create Log Tester                           1
 
-    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111bbbb11111000aaaa" "${xadd}"
-    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111011aaaa" "${xmv}"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111bbbb11111aaaa011" "${xadd}"
+    Execute Command                             sysbus.cpu InstallCustomInstructionHandlerFromString "0011001110001111000011111aaaa011" "${xmv}"
 
     # li x1, 0x147
     Execute Command                             sysbus WriteDoubleWord 0x0 0x14700093 
@@ -118,9 +118,9 @@ Should Install Custom 32-bit Instructions Sharing State
     Execute Command                             sysbus WriteDoubleWord 0x4 0x01900113
 
     # add values of x1 and x2 and store in the local register
-    Execute Command                             sysbus WriteDoubleWord 0x8 0xB38F2F81
+    Execute Command                             sysbus WriteDoubleWord 0x8 0xB38F2F8B
     # move the local register to x3
-    Execute Command                             sysbus WriteDoubleWord 0xC 0xB38F0FB3
+    Execute Command                             sysbus WriteDoubleWord 0xC 0x338F0F9B
 
     Register Should Be Equal                    1  0x0
     Register Should Be Equal                    2  0x0
