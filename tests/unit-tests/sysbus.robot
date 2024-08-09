@@ -219,6 +219,10 @@ Test Writing To A Locked Sysbus Range With CPU Context
     Execute Command            machine LoadPlatformDescriptionFromString "mockCpu0: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
     Execute Command            machine LoadPlatformDescriptionFromString "mockCpu1: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
 
+    # SerialExecution is necessary only because the logs might appear in any order when being run concurrently on two CPUs
+    # and this will cause the tests to timeout
+    Execute Command            machine SetSerialExecution True
+
     Provides                   sysbus-with-mock-cpus
 
     ${new_value_0x100}=        Set Variable  0x66
