@@ -15,7 +15,7 @@ then
     ON_OSX=true
     ON_LINUX=false
     CS_COMPILER=xbuild
-    LAUNCHER="mono64"
+    LAUNCHER="mono"
     PYTHON_RUNNER="python3"
 else
     DETECTED_OS="windows"
