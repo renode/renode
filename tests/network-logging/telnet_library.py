@@ -1,7 +1,17 @@
+import socket
 from telnetlib import Telnet
 
 ENCODING = "utf-8"
 tn = Telnet()
+
+
+def find_free_port() -> int:
+    # Return open port number
+    s = socket.socket()
+    s.bind(('localhost', 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
 
 def telnet_connect(port: int) -> None:
