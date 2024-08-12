@@ -50,6 +50,30 @@ Should Install Custom 16-bit Instruction
     Wait For Log Entry                          custom instruction executed! 
     Wait For Log Entry                          --- stop ---
 
+Should Not Install Custom Instructions With Invalid Length Encoding
+    Create Machine
+
+    # 16 bit
+    Run Keyword And Expect Error                *Pattern 0xB38F is invalid for 16 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxAA, AA != 11*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111" "cpu.DebugLog('custom instruction executed!')"
+
+    # 32 bit
+    Run Keyword And Expect Error                *Pattern 0xB38F0F82 is invalid for 32 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxxxxxxxxxxxxxxBBB11, BBB != 111*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110000010" "cpu.DebugLog('custom instruction executed!')"
+
+    Run Keyword And Expect Error                *Pattern 0xB38F0F9F is invalid for 32 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxxxxxxxxxxxxxxBBB11, BBB != 111*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110011111" "cpu.DebugLog('custom instruction executed!')"
+
+    Run Keyword And Expect Error                *Pattern 0xB38F0F9E is invalid for 32 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxxxxxxxxxxxxxxBBB11, BBB != 111*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "10110011100011110000111110011110" "cpu.DebugLog('custom instruction executed!')"
+
+    # 64 bit
+    Run Keyword And Expect Error                *Pattern 0xB38F0F82B38F0FBB is invalid for 64 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0111111*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111110111011" "cpu.DebugLog('custom instruction executed!')"
+
+    Run Keyword And Expect Error                *Pattern 0xB38F0F82B38F0FFF is invalid for 64 bits long instruction. Expected instruction in format: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0111111*
+    ...    Execute Command                      sysbus.cpu InstallCustomInstructionHandlerFromString "1011001110001111000011111000001010110011100011110000111111111111" "cpu.DebugLog('custom instruction executed!')"
+
 Should Install Custom 32-bit Instruction
     Create Machine
     Create Log Tester                           1
