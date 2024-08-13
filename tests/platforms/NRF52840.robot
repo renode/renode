@@ -314,3 +314,25 @@ Should Run Bluetooth sample
     Wait For Line On Uart     [SUBSCRIBED]                      testerId=${cen_uart}
     Wait For Line On Uart     [NOTIFICATION]                    testerId=${cen_uart}
 
+Should Run Bluetooth Hci Uart Sample
+    Execute Command           include @scripts/multi-node/nrf52840-ble-hci-uart-zephyr.resc
+
+    ${cen_uart}=              Create Terminal Tester                    ${UART}  machine=central_host
+    ${per_uart}=              Create Terminal Tester                    ${UART}  machine=peripheral_host
+
+    Wait For Line On Uart     *** Booting Zephyr OS build v3.6.0 ***    testerId=${cen_uart}
+    Wait For Line On Uart     *** Booting Zephyr OS build v3.6.0 ***    testerId=${per_uart}
+
+    Wait For Line On Uart     Bluetooth initialized                     testerId=${cen_uart}
+    Wait For Line On Uart     Bluetooth initialized                     testerId=${per_uart}
+
+    Wait For Line On Uart     Scanning successfully started             testerId=${cen_uart}
+    Wait For Line On Uart     Advertising successfully started          testerId=${per_uart}
+
+    Wait For Line On Uart     Connected:                                testerId=${cen_uart}
+    Wait For Line On Uart     Connected                                 testerId=${per_uart}
+
+    Wait For Line On Uart     HRS notifications enabled                 testerId=${per_uart}
+
+    Wait For Line On Uart     [SUBSCRIBED]                              testerId=${cen_uart}
+    Wait For Line On Uart     [NOTIFICATION]                            testerId=${cen_uart}
