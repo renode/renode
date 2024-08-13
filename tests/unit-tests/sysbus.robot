@@ -17,6 +17,13 @@ ${per-core-memory}=            SEPARATOR=
 
 ${max_32bit_addr}              0xFFFFFFFF
 
+${platform_no_region_specified}   SEPARATOR=${\n}
+...                               """
+...                               mock: Mocks.MockDoubleWordPeripheralWithOnlyRegionReadMethod @ {
+...                               ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0x100; size: 0x100; region: "nonexisting" }
+...                               }
+...                               """
+
 *** Keywords ***
 Create Machine With CPU And Two MappedMemory Peripherals
     Execute Command            using sysbus
@@ -487,3 +494,8 @@ Should Log All Peripherals Accesses Only When Enabled
     Execute Command                sysbus LogAllPeripheralsAccess False
     Execute Command                sysbus ReadByte 0x0
     Should Not Be In Log           ${log}
+
+Should Not Register Platform When Nonexisting Region Is Specified
+    Execute Command                mach create
+    Run Keyword And Expect Error   *No region "nonexisting" is available for Antmicro.Renode.Peripherals.Mocks.MockDoubleWordPeripheralWithOnlyRegionReadMethod*
+    ...                            Execute Command   machine LoadPlatformDescriptionFromString ${platform_no_region_specified}
