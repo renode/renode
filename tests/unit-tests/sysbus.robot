@@ -24,6 +24,13 @@ ${platform_no_region_specified}   SEPARATOR=${\n}
 ...                               }
 ...                               """
 
+${platform_only_region_read}   SEPARATOR=${\n}
+...                            """
+...                            mock: Mocks.MockDoubleWordPeripheralWithOnlyRegionReadMethod @ {
+...                            ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0x100; size: 0x100; region: "region" }
+...                            }
+...                            """
+
 *** Keywords ***
 Create Machine With CPU And Two MappedMemory Peripherals
     Execute Command            using sysbus
@@ -499,3 +506,9 @@ Should Not Register Platform When Nonexisting Region Is Specified
     Execute Command                mach create
     Run Keyword And Expect Error   *No region "nonexisting" is available for Antmicro.Renode.Peripherals.Mocks.MockDoubleWordPeripheralWithOnlyRegionReadMethod*
     ...                            Execute Command   machine LoadPlatformDescriptionFromString ${platform_no_region_specified}
+
+Should Not Register Region When Only Read Method Is Implemented
+    Execute Command                mach create
+    Run Keyword And Expect Error   *WriteDoubleWord is not specified for region*
+    ...                            Execute Command   machine LoadPlatformDescriptionFromString ${platform_only_region_read}
+
