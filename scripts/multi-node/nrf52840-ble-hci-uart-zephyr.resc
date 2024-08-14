@@ -1,0 +1,66 @@
+:name: Zephyr BLE HCI-UART on nRF52840
+:description: Two pairs of machines (host-controller) communicating through BLE. Hosts and controllers communicate using HCI-UART. Every machine is running Zephyr on nRF52840.
+
+emulation CreateUARTHub "central_hci"
+emulation CreateUARTHub "peripheral_hci"
+emulation CreateBLEMedium "wireless"
+
+using sysbus
+
+$central_bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk--zephyr-ble_central_hr_hci_uart.elf-s_3302344-e0d303c14ad52fda2b16157c09ce62f1d065bc31
+$peripheral_bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk--zephyr-ble_peripheral_hr_hci_uart.elf-s_3094464-d15ff2ff7cf4ba4105b1896b445b5e4baeb7a487
+$hci_uart_bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk--zephyr-ble_hci_uart.elf-s_2437336-4bf9cccb70ca95fb12667896eec3f777f39f90ee
+
+# Create central machines
+mach create "central_host"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect sysbus.uart1 central_hci
+showAnalyzer uart0
+
+mach create "central_controller"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect sysbus.radio wireless
+connector Connect sysbus.uart1 central_hci
+
+# Create peripheral machines
+mach create "peripheral_host"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect sysbus.uart1 peripheral_hci
+showAnalyzer uart0
+
+mach create "peripheral_controller"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect sysbus.radio wireless
+connector Connect sysbus.uart1 peripheral_hci
+
+# Set Quantum value for CPUs. This is required by BLE stack
+# as it results in more often synchronization between machines.
+emulation SetGlobalQuantum "0.00001"
+
+macro reset
+"""
+    mach set "central_host"
+    sysbus LoadELF $central_bin
+    cpu IsHalted true
+
+    mach set "peripheral_host"
+    sysbus LoadELF $peripheral_bin
+    cpu IsHalted true
+
+    mach set "central_controller"
+    sysbus LoadELF $hci_uart_bin
+
+    mach set "peripheral_controller"
+    sysbus LoadELF $hci_uart_bin
+
+    # Controllers need to be started earlier as they need time to configure UART devices for reception.
+    # Hosts begin UART transmission early so without the delay the initial part of the communication would be dropped.
+    emulation RunFor "1"
+
+    mach set "central_host"
+    cpu IsHalted false
+
+    mach set "peripheral_host"
+    cpu IsHalted false
+"""
+runMacro $reset
