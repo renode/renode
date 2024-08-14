@@ -20,9 +20,9 @@ ttc1 Frequency 33333333
 macro reset
 """
     ## set registers ##
-    cpu SetRegisterUnsafe 0 0x000
-    cpu SetRegisterUnsafe 1 0xD32 # processor variant (cortex-a9)
-    cpu SetRegisterUnsafe 2 0x100 # device tree address
+    cpu SetRegister 0 0x000
+    cpu SetRegister 1 0xD32 # processor variant (cortex-a9)
+    cpu SetRegister 2 0x100 # device tree address
 
     ## load binaries ##
     sysbus LoadELF $bin

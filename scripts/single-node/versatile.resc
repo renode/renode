@@ -26,9 +26,9 @@ macro reset
 """
     ### set registers ###
 
-    sysbus.cpu SetRegisterUnsafe 0 0x0
-    sysbus.cpu SetRegisterUnsafe 1 0x183     # board id
-    sysbus.cpu SetRegisterUnsafe 2 0x100     # atags
+    sysbus.cpu SetRegister 0 0x0
+    sysbus.cpu SetRegister 1 0x183     # board id
+    sysbus.cpu SetRegister 2 0x100     # atags
 
     ### load binaries ###
 

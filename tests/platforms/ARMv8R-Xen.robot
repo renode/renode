@@ -36,7 +36,7 @@ Create Machine
     Execute Command                 sysbus LoadBinary ${XEN_DTC} ${DTC_ADDR}
 
     Execute Command                 load_zephyr ${zephyr_bin}
-    Execute Command                 sysbus.cpu SetRegisterUnsafe 102 ${DTC_ADDR}
+    Execute Command                 sysbus.cpu SetRegister 102 ${DTC_ADDR}
     Create Terminal Tester          ${UART0}  defaultPauseEmulation=True
 
 *** Test Cases ***

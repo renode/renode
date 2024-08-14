@@ -24,7 +24,7 @@ Step And Verify Accumulator
     [Arguments]    ${expected_value}
 
     Execute Command               cpu Step
-    ${acc} =  Execute Command     cpu GetRegisterUnsafe 0
+    ${acc} =  Execute Command     cpu GetRegister 0
     Should Be Equal As Integers   ${acc}  ${expected_value}  base=16
 
 Verify System Registers
@@ -147,11 +147,11 @@ Test CRC32X
     Execute Command               sysbus WriteDoubleWord 0x4 0x9ac44c00  # crc32x  w0, w0, x4
 
     # Set the initial accumulator value.
-    Execute Command               cpu SetRegisterUnsafeUlong 0 0xcafebee
+    Execute Command               cpu SetRegisterUlong 0 0xcafebee
 
     # Set source registers.
-    Execute Command               cpu SetRegisterUnsafeUlong 3 0x1234567890abcdef
-    Execute Command               cpu SetRegisterUnsafeUlong 4 0xfedcba0987654321
+    Execute Command               cpu SetRegisterUlong 3 0x1234567890abcdef
+    Execute Command               cpu SetRegisterUlong 4 0xfedcba0987654321
 
     # CRC has many caveats with conversions done on input/output/accumulator.
     # Let's make sure a proper version is used. Mono used to overwrite tlib's
@@ -167,11 +167,11 @@ Test CRC32CX
     Execute Command               sysbus WriteDoubleWord 0x4 0x9ac45c00  # crc32cx  w0, w0, x4
 
     # Set the initial accumulator value.
-    Execute Command               cpu SetRegisterUnsafeUlong 0 0xcafebee
+    Execute Command               cpu SetRegisterUlong 0 0xcafebee
 
     # Set source registers.
-    Execute Command               cpu SetRegisterUnsafeUlong 3 0x1234567890abcdef
-    Execute Command               cpu SetRegisterUnsafeUlong 4 0xfedcba0987654321
+    Execute Command               cpu SetRegisterUlong 3 0x1234567890abcdef
+    Execute Command               cpu SetRegisterUlong 4 0xfedcba0987654321
 
     Step And Verify Accumulator   0x8da20236
     Step And Verify Accumulator   0xbcfc085a

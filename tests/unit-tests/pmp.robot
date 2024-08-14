@@ -80,7 +80,7 @@ Should Not Throw Exception After MRET in the NAPOT GRAIN32 Configuration
     Step Once And Ensure Not Trapped    ${MTVEC}
 
     # Test loads from the PMP covered region
-    Execute Command                     cpu SetRegisterUnsafe 8 0x80001000
+    Execute Command                     cpu SetRegister 8 0x80001000
     Write Opcode To  0x8000001c         0x00042483  # lw       s1, 0(s0)
     Step Once And Ensure Not Trapped    ${MTVEC}
 

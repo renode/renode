@@ -24,12 +24,12 @@ Create Platform
 Expect Value Read From Address
     [Arguments]                     ${address}  ${value}
     Execute Command                 cpu PC ${START_PC}
-    Execute Command                 cpu SetRegisterUnsafe ${a0} ${address}
+    Execute Command                 cpu SetRegister ${a0} ${address}
     Execute Command                 sysbus WriteDoubleWord ${START_PC} 0x52583  # lw a1, 0(a0)
 
     Execute Command                 cpu Step
 
-    ${val}=                         Execute Command   cpu GetRegisterUnsafe ${a1}
+    ${val}=                         Execute Command   cpu GetRegister ${a1}
     Should Be Equal As Integers     ${val}  ${value}
 
 Write Range With Doublewords
@@ -265,7 +265,7 @@ Second MMU Throws On Fault In Its Window
 Execution Stops On Fault
     Requires                        SingleMMU
     Write Range With Doublewords    0x0  0x1000  0x13 # Nop sled on whole page
-    Execute Command                 cpu SetRegisterUnsafe ${a0} 0x1C
+    Execute Command                 cpu SetRegister ${a0} 0x1C
     Execute Command                 sysbus WriteDoubleWord 0x1C 0x52583  # lw a1, 0(a0)
     Execute Command                 sysbus WriteDoubleWord 0x20 0xd02503 # lw a2, 0(zero)
     Start Emulation
@@ -275,7 +275,7 @@ Execution Stops On Fault
     ${pc}=                          Execute Command   cpu PC
     Should Be Equal As integers     ${pc}  0x1C
     # Assert that the second insn was not executed
-    ${val}=                         Execute Command   cpu GetRegisterUnsafe ${a2}
+    ${val}=                         Execute Command   cpu GetRegister ${a2}
     Should Be Equal As Integers     ${val}  0x0
 
 Throws When Window Is Out Of Range

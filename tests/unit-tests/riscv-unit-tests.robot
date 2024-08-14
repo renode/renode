@@ -101,7 +101,7 @@ Verify PC
 Should Handle LB
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # lb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00558503
@@ -114,7 +114,7 @@ Should Handle LB
 Should Handle LH
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000001
+    Execute Command                 cpu SetRegister ${a1} 0x00000001
 
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
@@ -127,7 +127,7 @@ Should Handle LH
 Should Fail LH
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # lh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00559503
@@ -143,7 +143,7 @@ Should Fail LH
 Should Handle LW
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000003
+    Execute Command                 cpu SetRegister ${a1} 0x00000003
 
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
@@ -156,7 +156,7 @@ Should Handle LW
 Should Fail LW
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # lw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055a503
@@ -172,7 +172,7 @@ Should Fail LW
 Should Handle LD
     Create Machine 64
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000003
+    Execute Command                 cpu SetRegister ${a1} 0x00000003
 
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
@@ -185,7 +185,7 @@ Should Handle LD
 Should Fail LD
     Create Machine 64
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # ld a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x0055b503
@@ -201,7 +201,7 @@ Should Fail LD
 Should Handle SB
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # sb a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a582a3
@@ -214,7 +214,7 @@ Should Handle SB
 Should Handle SH
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000001
+    Execute Command                 cpu SetRegister ${a1} 0x00000001
 
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
@@ -227,7 +227,7 @@ Should Handle SH
 Should Fail SH
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # sh a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a592a3
@@ -243,7 +243,7 @@ Should Fail SH
 Should Handle SW
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000003
+    Execute Command                 cpu SetRegister ${a1} 0x00000003
 
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
@@ -256,7 +256,7 @@ Should Handle SW
 Should Fail SW
     Create Machine 32
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000000
+    Execute Command                 cpu SetRegister ${a1} 0x00000000
 
     # sw a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5a2a3
@@ -272,7 +272,7 @@ Should Fail SW
 Should Handle SD
     Create Machine 64
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000003
+    Execute Command                 cpu SetRegister ${a1} 0x00000003
 
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
@@ -285,7 +285,7 @@ Should Handle SD
 Should Fail SD
     Create Machine 64
 
-    Execute Command                 cpu SetRegisterUnsafe ${a1} 0x00000001
+    Execute Command                 cpu SetRegister ${a1} 0x00000001
 
     # sd a0, 0x00000005(a1)
     Execute Command                 sysbus WriteDoubleWord ${starting_pc} 0x00a5b2a3
@@ -301,7 +301,7 @@ Should Fail SD
 Should Fail On Setting X0 register
     Create Machine 32
 
-    ${msg}=     		    Run Keyword And Expect Error        *   Execute Command       cpu SetRegisterUnsafe ${register_0} 0x00000001
+    ${msg}=     		    Run Keyword And Expect Error        *   Execute Command       cpu SetRegister ${register_0} 0x00000001
     Should Contain      	    ${msg}      register is read-only
 
     Register Should Be Equal        0  0x0

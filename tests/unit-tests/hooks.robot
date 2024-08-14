@@ -36,7 +36,7 @@ Should Stop On Peripheral Read Watchpoint
     Execute Command          sysbus WriteDoubleWord 0x14 0xeafffffd
 
     Execute Command          sysbus.cpu PC 0x10
-    Execute Command          sysbus.cpu SetRegisterUnsafe 1 0xf0000004
+    Execute Command          sysbus.cpu SetRegister 1 0xf0000004
 
     # add an empty watchpoint
     Execute Command          sysbus AddWatchpointHook 0xf0000004 1 Read ""
@@ -161,8 +161,8 @@ Should Count on Uart Access
     Execute Command          sysbus WriteDoubleWord 0x3c 0xe320f000
 
     # 'x'
-    Execute Command          sysbus.cpu SetRegisterUnsafe 0 120
-    Execute Command          sysbus.cpu SetRegisterUnsafe 1 0x2000
+    Execute Command          sysbus.cpu SetRegister 0 120
+    Execute Command          sysbus.cpu SetRegister 1 0x2000
 
     Wait For Prompt On Uart  x     pauseEmulation=true
 

@@ -23,9 +23,9 @@ macro reset
 """
     ### set registers ###
 
-    cpu SetRegisterUnsafe 0 0x0
-    cpu SetRegisterUnsafe 1 0x8E0      # board id
-    cpu SetRegisterUnsafe 2 0x80000100 # atags
+    cpu SetRegister 0 0x0
+    cpu SetRegister 1 0x8E0      # board id
+    cpu SetRegister 2 0x80000100 # atags
 
     ### load binaries ###
 

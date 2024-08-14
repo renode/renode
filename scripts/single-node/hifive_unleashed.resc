@@ -19,6 +19,6 @@ macro reset
     sysbus LoadSymbolsFrom $vmlinux
 
     # Device tree address is passed as an argument to the BBL
-    e51 SetRegisterUnsafe 11 0x81000000
+    e51 SetRegister 11 0x81000000
 """
 runMacro $reset

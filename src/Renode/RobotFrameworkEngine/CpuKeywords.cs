@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -43,7 +43,7 @@ namespace Antmicro.Renode.RobotFramework
                 throw new KeywordException("This CPU does not allow to access registers");
             }
 
-            var actual = cpu.GetRegisterUnsafe(register).RawValue;
+            var actual = cpu.GetRegister(register).RawValue;
 
             if(actual != value)
             {

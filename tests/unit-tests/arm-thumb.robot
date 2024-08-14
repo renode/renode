@@ -10,7 +10,7 @@ Prepare Machine
 
 Thumb State Should Be Equal
     [Arguments]  ${state}
-    ${cpsr}=  Execute Command  cpu GetRegisterUnsafe 25
+    ${cpsr}=  Execute Command  cpu GetRegister 25
     ${t}=     Evaluate  bool(${cpsr.strip()} & (1<<5))
     Should Be Equal As Strings  ${t}  ${state}
 

@@ -36,7 +36,7 @@ Should Invalidate On Write
     Execute Command                             sysbus WriteDoubleWord 0x0 0x00200093
 
     Execute Command                             cpu PC 0x0
-    Execute Command                             cpu SetRegisterUnsafe ${X1} 0x0
+    Execute Command                             cpu SetRegister ${X1} 0x0
     Execute Command                             emulation RunFor "0.01"
 
     PC Should Be Equal                          0x4
@@ -78,9 +78,9 @@ Should Invalidate on Cross Page Word Write
     Execute Command                             sysbus WriteWord 0xffffff 0x9313
 
     Execute Command                             cpu PC 0xfffffc
-    Execute Command                             cpu SetRegisterUnsafe ${X1} 0x0
-    Execute Command                             cpu SetRegisterUnsafe ${X2} 0x0
-    Execute Command                             cpu SetRegisterUnsafe ${X3} 0x0
+    Execute Command                             cpu SetRegister ${X1} 0x0
+    Execute Command                             cpu SetRegister ${X2} 0x0
+    Execute Command                             cpu SetRegister ${X3} 0x0
     Execute Command                             emulation RunFor "0.0001"
 
     PC Should Be Equal                          0x1000004
@@ -124,9 +124,9 @@ Should Invalidate on Cross Page DoubleWord Write
     Execute Command                             sysbus WriteDoubleWord 0xfffffe 0x01931310
 
     Execute Command                             cpu PC 0xfffffc
-    Execute Command                             cpu SetRegisterUnsafe ${X1} 0x0
-    Execute Command                             cpu SetRegisterUnsafe ${X2} 0x0
-    Execute Command                             cpu SetRegisterUnsafe ${X3} 0x0
+    Execute Command                             cpu SetRegister ${X1} 0x0
+    Execute Command                             cpu SetRegister ${X2} 0x0
+    Execute Command                             cpu SetRegister ${X3} 0x0
     Execute Command                             emulation RunFor "0.0001"
 
     PC Should Be Equal                          0x1000004

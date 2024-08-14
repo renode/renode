@@ -120,8 +120,8 @@ Should Run I2C test
     #
     # WARNING: the addresses below are binary-specific and should be adapted after rebuilding the demo
 
-    Execute Command           sysbus.cpu AddHook 0x1c008208 "self.SetRegisterUnsafeUlong(12, 0x1a102190)"
-    Execute Command           sysbus.cpu AddHook 0x1c00822c "self.SetRegisterUnsafeUlong(12, 0x1a102190)"
+    Execute Command           sysbus.cpu AddHook 0x1c008208 "self.SetRegisterUlong(12, 0x1a102190)"
+    Execute Command           sysbus.cpu AddHook 0x1c00822c "self.SetRegisterUlong(12, 0x1a102190)"
 
     Create Terminal Tester    ${UART}
 

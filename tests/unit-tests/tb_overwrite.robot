@@ -36,10 +36,10 @@ Overwrite With Nops As Guest
     [Arguments]            ${addr}  ${count}
     ${ptr}=                Set Variable  0x2000
     ${tmp_ptr}=            Set Variable  ${ptr}
-    ${prev_a0_value}=      Execute Command  sysbus.cpu GetRegisterUnsafe ${a0}
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} ${ptr}
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a2} 0x13
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a3} ${addr}
+    ${prev_a0_value}=      Execute Command  sysbus.cpu GetRegister ${a0}
+    Execute Command        sysbus.cpu SetRegister ${a0} ${ptr}
+    Execute Command        sysbus.cpu SetRegister ${a2} 0x13
+    Execute Command        sysbus.cpu SetRegister ${a3} ${addr}
 
     # Write instructions overwriting requested range
     FOR  ${repetition}  IN RANGE  ${count}
@@ -61,7 +61,7 @@ Overwrite With Nops As Guest
     Should Be Equal As Integers  ${insn_at_addr}  0x13
 
     # Restore significant registers
-    Execute Command     sysbus.cpu SetRegisterUnsafe ${a0} ${prev_a0_value}
+    Execute Command     sysbus.cpu SetRegister ${a0} ${prev_a0_value}
 
 Assert PC Equals
     [Arguments]            ${expected}
@@ -71,7 +71,7 @@ Assert PC Equals
 *** Test Cases ***
 Shoud Invalidate Other Page When Overwritten Using Sysbus
     Create Machine
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x1000
+    Execute Command        sysbus.cpu SetRegister ${a0} 0x1000
 
     Execute Command        cpu Step 3
     Assert PC Equals       0x1000
@@ -85,7 +85,7 @@ Shoud Invalidate Other Page When Overwritten Using Sysbus
 
 Shoud Invalidate The Same Page When Overwritten Using Sysbus
     Create Machine
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x10
+    Execute Command        sysbus.cpu SetRegister ${a0} 0x10
 
     Execute Command        cpu Step 3
     Assert PC Equals       0x10
@@ -99,7 +99,7 @@ Shoud Invalidate The Same Page When Overwritten Using Sysbus
 
 Should Invalidate Other Page When Overwritten By Guest
     Create Machine
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x1000
+    Execute Command        sysbus.cpu SetRegister ${a0} 0x1000
 
     Execute Command        cpu Step 3
     Assert PC Equals       0x1000
@@ -113,7 +113,7 @@ Should Invalidate Other Page When Overwritten By Guest
 
 Should Invalidate The Same Page When Overwritten By Guest
     Create Machine
-    Execute Command        sysbus.cpu SetRegisterUnsafe ${a0} 0x10
+    Execute Command        sysbus.cpu SetRegister ${a0} 0x10
 
     Execute Command        cpu Step 3
     Assert PC Equals       0x10

@@ -14,7 +14,7 @@ showAnalyzer sysbus.uart
 
 macro reset
 """
-    cpu SetRegisterUnsafe 2 0x1000
+    cpu SetRegister 2 0x1000
     sysbus LoadELF $bin
 """
 

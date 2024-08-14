@@ -5,7 +5,7 @@ $bin_receiver=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-re
 
 set console_hook
 """
-self.GetMachine()["sysbus.segger"].DisplayChar(cpu.GetRegisterUnsafe(1).RawValue)
+self.GetMachine()["sysbus.segger"].DisplayChar(cpu.GetRegister(1).RawValue)
 """
 
 # Create network

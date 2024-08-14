@@ -8,12 +8,12 @@ ${csr_script}=  SEPARATOR=
 ${xadd}=  SEPARATOR=
 ...  src_reg_a = (instruction >> 3) & 0xF                                                            ${\n}
 ...  src_reg_b = (instruction >> 12) & 0xF                                                           ${\n}
-...  res = cpu.GetRegisterUnsafe(src_reg_a).RawValue + cpu.GetRegisterUnsafe(src_reg_b).RawValue     ${\n}
+...  res = cpu.GetRegister(src_reg_a).RawValue + cpu.GetRegister(src_reg_b).RawValue                 ${\n}
 ...  state['res'] = res
 
 ${xmv}=  SEPARATOR=
 ...  dst_reg = (instruction >> 3) & 0xF                                  ${\n}
-...  cpu.SetRegisterUnsafe(dst_reg, state['res'])                        
+...  cpu.SetRegister(dst_reg, state['res'])                        
 
 *** Keywords ***
 Create Machine

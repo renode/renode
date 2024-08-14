@@ -330,7 +330,7 @@ Locked MappedMemory Should Not Be Accessible From CPU
 
     # With flash locked, the loads from [r3] and stores to [r3] should be blocked.
     ${result_addr}=  Evaluate  hex(${flash_addr} + 0x1000)
-    Execute Command            cpu SetRegisterUnsafe 3 ${result_addr}
+    Execute Command            cpu SetRegister 3 ${result_addr}
 
     Execute Command            ${ram} WriteDoubleWord 0x00 0xe59f2028  # ldr   r2, [pc, #40] // =0x11111111
     Execute Command            ${ram} WriteDoubleWord 0x04 0xe5832000  # str   r2, [r3]

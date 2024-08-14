@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2023 Antmicro
+# Copyright (c) 2010-2024 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -95,7 +95,7 @@ def register_ncl_functions():
             cpu.NoisyLog(
                 "Entering '{0}' hook that returns 0x{1:X}", name, return_value
             )
-            cpu.SetRegisterUnsafe(0, RegisterValue.Create(return_value, 32))
+            cpu.SetRegister(0, RegisterValue.Create(return_value, 32))
             cpu.PC = cpu.LR
 
         return hook
@@ -103,14 +103,14 @@ def register_ncl_functions():
     rng = Antmicro.Renode.Core.PseudorandomNumberGenerator()
 
     def trng_generate(cpu, addr):
-        out_buff = cpu.GetRegisterUnsafe(3).RawValue
+        out_buff = cpu.GetRegister(3).RawValue
         out_buff_len = self.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
 
         data = System.Array[System.Byte](range(out_buff_len))
         rng.NextBytes(data)
         self.SystemBus.WriteBytes(data, out_buff)
 
-        cpu.SetRegisterUnsafe(0, RegisterValue.Create(NCL_STATUS_OK, 32))
+        cpu.SetRegister(0, RegisterValue.Create(NCL_STATUS_OK, 32))
         cpu.PC = cpu.LR
 
     DRGB_FUNCTIONS = [
@@ -133,7 +133,7 @@ def register_ncl_functions():
 
     def sha_start(cpu, addr):
         status = NCL_STATUS_OK
-        sha_type = cpu.GetRegisterUnsafe(1).RawValue
+        sha_type = cpu.GetRegister(1).RawValue
         if sha_type in [
             NCL_SHA_TYPE_2_256,
             NCL_SHA_TYPE_2_384,
@@ -142,7 +142,7 @@ def register_ncl_functions():
             SHAContext.sha_type = sha_type
         else:
             status = NCL_STATUS_INVALID_PARAM
-        cpu.SetRegisterUnsafe(0, RegisterValue.Create(status, 32))
+        cpu.SetRegister(0, RegisterValue.Create(status, 32))
         cpu.PC = cpu.LR
 
     def sha_finish(cpu, addr):
@@ -154,7 +154,7 @@ def register_ncl_functions():
             elif SHAContext.sha_type == NCL_SHA_TYPE_2_512:
                 sha_instance = SHA512.Create()
             else:
-                cpu.SetRegisterUnsafe(
+                cpu.SetRegister(
                     0, RegisterValue.Create(NCL_STATUS_FAIL, 32)
                 )
                 cpu.PC = cpu.LR
@@ -163,23 +163,23 @@ def register_ncl_functions():
             hash = sha_instance.ComputeHash(SHAContext.sha_buffer.ToArray())
             SHAContext.sha_buffer.Clear()
 
-            data_addr = cpu.GetRegisterUnsafe(1).RawValue
+            data_addr = cpu.GetRegister(1).RawValue
             self.SystemBus.WriteBytes(hash, data_addr)
 
-            cpu.SetRegisterUnsafe(0, RegisterValue.Create(NCL_STATUS_OK, 32))
+            cpu.SetRegister(0, RegisterValue.Create(NCL_STATUS_OK, 32))
             cpu.PC = cpu.LR
         finally:
             if sha_instance is not None:
                 sha_instance.Dispose()
 
     def sha_update(cpu, addr):
-        data_addr = cpu.GetRegisterUnsafe(1).RawValue
-        length = cpu.GetRegisterUnsafe(2).RawValue
+        data_addr = cpu.GetRegister(1).RawValue
+        length = cpu.GetRegister(2).RawValue
         data = self.SystemBus.ReadBytes(data_addr, length)
 
         SHAContext.sha_buffer.AddRange(data)
 
-        cpu.SetRegisterUnsafe(0, RegisterValue.Create(NCL_STATUS_OK, 32))
+        cpu.SetRegister(0, RegisterValue.Create(NCL_STATUS_OK, 32))
         cpu.PC = cpu.LR
 
     SHA_FUNCTIONS = [
@@ -206,9 +206,9 @@ def register_ncl_functions():
 # Based on: https://chromium.googlesource.com/chromiumos/platform/ec/+/6898a6542ed0238cc182948f56e3811534db1a38/chip/npcx/rom_chip.h
 def register_download_from_flash():
     def download_from_flash(cpu, addr):
-        src_offset = cpu.GetRegisterUnsafe(0).RawValue
-        dest_addr = cpu.GetRegisterUnsafe(1).RawValue
-        size = cpu.GetRegisterUnsafe(2).RawValue
+        src_offset = cpu.GetRegister(0).RawValue
+        dest_addr = cpu.GetRegister(1).RawValue
+        size = cpu.GetRegister(2).RawValue
         exe_addr = self.SystemBus.ReadDoubleWord(cpu.SP.RawValue)
 
         data = self["sysbus.internal_flash"].ReadBytes(src_offset, size)

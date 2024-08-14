@@ -262,15 +262,15 @@ Should Finish Instructions Before Pausing
     Create Machine With Trivial Uart
     Create Terminal Tester   sysbus.uart  defaultPauseEmulation=true
 
-    Execute Command          cpu SetRegisterUnsafe 0 0x1000  # UART write address
-    Execute Command          cpu SetRegisterUnsafe 1 0x4F  # 'O'
-    Execute Command          cpu SetRegisterUnsafe 2 0x6E  # 'n'
-    Execute Command          cpu SetRegisterUnsafe 3 0x65  # 'e'
-    Execute Command          cpu SetRegisterUnsafe 4 0x0A  # '\n'
-    Execute Command          cpu SetRegisterUnsafe 5 0x54  # 'T'
-    Execute Command          cpu SetRegisterUnsafe 6 0x77  # 'w'
-    Execute Command          cpu SetRegisterUnsafe 7 0x6F  # 'o'
-    Execute Command          cpu SetRegisterUnsafe 8 0x0A  # '\n'
+    Execute Command          cpu SetRegister 0 0x1000  # UART write address
+    Execute Command          cpu SetRegister 1 0x4F  # 'O'
+    Execute Command          cpu SetRegister 2 0x6E  # 'n'
+    Execute Command          cpu SetRegister 3 0x65  # 'e'
+    Execute Command          cpu SetRegister 4 0x0A  # '\n'
+    Execute Command          cpu SetRegister 5 0x54  # 'T'
+    Execute Command          cpu SetRegister 6 0x77  # 'w'
+    Execute Command          cpu SetRegister 7 0x6F  # 'o'
+    Execute Command          cpu SetRegister 8 0x0A  # '\n'
 
     Execute Command          sysbus WriteDoubleWord 0x10 0xE8A001FE  # stm r0!, {r1-r8}
     Execute Command          cpu PC 0x10

@@ -12,8 +12,8 @@ Create Machine
 
     Execute Command             cpu PerformanceInMips 1
     Execute Command             cpu PC ${starting_pc}
-    Execute Command             cpu SetRegisterUnsafe 1 0x02004000  # address of MTimeCmpHart0Lo register
-    Execute Command             cpu SetRegisterUnsafe 3 0x02004004  # address of MTimeCmpHart0Hi register
+    Execute Command             cpu SetRegister 1 0x02004000  # address of MTimeCmpHart0Lo register
+    Execute Command             cpu SetRegister 3 0x02004004  # address of MTimeCmpHart0Hi register
 
     Execute Command             cpu SetHookAtBlockEnd "self.DebugLog('block ended: ' + 'PC '+ str(self.PC))"
     Execute Command             cpu SetHookAtBlockBegin "self.DebugLog('block started: ' + 'PC '+ str(self.PC))"
@@ -40,7 +40,7 @@ Create Machine
 Should Tick Between Chained Blocks
     Create Machine
     Execute Command             cpu MaximumBlockSize 1
-    Execute Command             cpu SetRegisterUnsafe 2 5  # new Compare value = 5
+    Execute Command             cpu SetRegister 2 5  # new Compare value = 5
 
     Execute Command             emulation RunFor "0.000012"
     Wait For Log Entry          block ended: PC 0x1014  timeout=0
@@ -50,7 +50,7 @@ Should Tick Between Chained Blocks
 Should Tick In The Same Block
     Create Machine
     Execute Command             cpu MaximumBlockSize 8
-    Execute Command             cpu SetRegisterUnsafe 2 6  # new Compare value = 6
+    Execute Command             cpu SetRegister 2 6  # new Compare value = 6
 
     Execute Command             emulation RunFor "0.000008"
     Wait For Log Entry          block started: PC 0x1000  timeout=0
@@ -62,7 +62,7 @@ Should Tick In The Same Block
 Should Tick At Exact Time
     Create Machine
     Execute Command             cpu MaximumBlockSize 8
-    Execute Command             cpu SetRegisterUnsafe 2 6  # new Compare value = 6
+    Execute Command             cpu SetRegister 2 6  # new Compare value = 6
 
     Execute Command             emulation RunFor "0.000005"
     Should Not Be In Log        IRQ  timeout=0

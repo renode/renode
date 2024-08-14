@@ -28,7 +28,7 @@ Check Register By Name
 
 Check Register
     [Arguments]                     ${register}     ${x}
-    ${value}=  Execute Command      cpu GetRegisterUnsafe ${register}
+    ${value}=  Execute Command      cpu GetRegister ${register}
     ${valuen}=  Convert To Integer  ${value}
     ${xn}=  Convert To Integer      ${x}            16
     Should Be True                  ${valuen} == ${xn}

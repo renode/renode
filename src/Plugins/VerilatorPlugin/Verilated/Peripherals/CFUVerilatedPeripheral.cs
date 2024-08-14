@@ -273,9 +273,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             int rD = (int)BitHelper.GetValue(opcode, 7, 5);
             int rs1 = (int)BitHelper.GetValue(opcode, 15, 5);
-            UInt32 rs1Value = Convert.ToUInt32(connectedCpu.GetRegisterUnsafe(rs1).RawValue);
+            UInt32 rs1Value = Convert.ToUInt32(connectedCpu.GetRegister(rs1).RawValue);
             int rs2 = (int)BitHelper.GetValue(opcode, 20, 5);
-            UInt32 rs2Value = Convert.ToUInt32(connectedCpu.GetRegisterUnsafe(rs2).RawValue);
+            UInt32 rs2Value = Convert.ToUInt32(connectedCpu.GetRegister(rs2).RawValue);
             UInt32 funct3 = Convert.ToUInt32(BitHelper.GetValue(opcode, 12, 3));
             UInt32 funct7 = Convert.ToUInt32(BitHelper.GetValue(opcode, 25, 7));
             UInt32 functionID = (funct7 << 3) + funct3;
@@ -288,7 +288,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             switch(status)
             {
                 case CfuStatus.CfuOk:
-                    connectedCpu.SetRegisterUnsafe(rD, result);
+                    connectedCpu.SetRegister(rD, result);
                     break;
                 case CfuStatus.CfuFail:
                     this.Log(LogLevel.Error, "CFU custom instruction error, opcode: 0x{0:x}, error: {1}", opcode, status);

@@ -11,7 +11,7 @@ Create Machine
 
     Execute Command             sysbus LoadELF ${URI}/hifive-unleashed--bbl.elf-s_17219640-c7e1b920bf81be4062f467d9ecf689dbf7f29c7a
     Execute Command             sysbus LoadFdt ${URI}/hifive-unleashed--devicetree.dtb-s_10532-70cd4fc9f3b4df929eba6e6f22d02e6ce4c17bd1 0x81000000 "earlyconsole mem=256M@0x80000000"
-    Execute Command             e51 SetRegisterUnsafe 11 0x81000000
+    Execute Command             e51 SetRegister 11 0x81000000
 
     Execute Command             emulation SingleStepBlocking ${step_blocking}
     Execute Command             u54_1 ExecutionMode SingleStep

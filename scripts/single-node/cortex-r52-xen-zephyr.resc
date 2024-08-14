@@ -26,7 +26,7 @@ sysbus = self.Machine["sysbus"]
 def mc_load_dtc(dtc):
     sysbus.LoadBinary(dtc, DTC_BASE)
     dtc_addr = RegisterValue.Create(DTC_BASE, 32)
-    self.Machine["sysbus.cpu"].SetRegisterUnsafe(R2_REG, dtc_addr)
+    self.Machine["sysbus.cpu"].SetRegister(R2_REG, dtc_addr)
 
 def mc_load_zephyr(zephyr_bin):
     image_len = System.IO.FileInfo(zephyr_bin).Length

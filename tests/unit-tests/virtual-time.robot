@@ -68,7 +68,7 @@ Should Delay Action
     Create Log Tester        1
 
     Execute Command          sysbus.cpu PC 0x10
-    Execute Command          sysbus.cpu SetRegisterUnsafe 1 0x2000
+    Execute Command          sysbus.cpu SetRegister 1 0x2000
 
     Fill Memory
     Scheduled Action Should Be Delayed By 3 Microseconds
@@ -82,7 +82,7 @@ Should Delay Action With Multiple Cores
     Create Log Tester        1
 
     Execute Command          sysbus.cpu0 PC 0x10
-    Execute Command          sysbus.cpu0 SetRegisterUnsafe 1 0x2000
+    Execute Command          sysbus.cpu0 SetRegister 1 0x2000
 
     # just make the other CPU spin in a loop
     Execute Command          sysbus.cpu1 PC 0x3c
@@ -99,7 +99,7 @@ Should Delay Action With Multiple Cores In Different Ordering
     Create Log Tester        1
 
     Execute Command          sysbus.cpu1 PC 0x10
-    Execute Command          sysbus.cpu1 SetRegisterUnsafe 1 0x2000
+    Execute Command          sysbus.cpu1 SetRegister 1 0x2000
 
     # just make the other CPU spin in a loop
     Execute Command          sysbus.cpu0 PC 0x3c

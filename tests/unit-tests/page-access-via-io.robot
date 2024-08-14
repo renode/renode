@@ -55,7 +55,7 @@ Prepare Machine
 Trigger Page Access
     [Arguments]                 ${MEM}
     # Set R1 to MEM, then load the value at MEM into R0
-    Execute Command             sysbus.cpu SetRegisterUnsafe 1 ${MEM}
+    Execute Command             sysbus.cpu SetRegister 1 ${MEM}
     Write Thumb Opcode To       ${PC_START}     0x6808    # ldr r0, [r1, #0]
 
     Execute Command             sysbus.cpu PC ${PC_START}

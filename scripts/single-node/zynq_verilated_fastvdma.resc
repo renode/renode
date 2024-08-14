@@ -29,9 +29,9 @@ macro reset
 """
     ### set registers ###
 
-    cpu SetRegisterUnsafe 0 0x000
-    cpu SetRegisterUnsafe 1 0xD32 # board id
-    cpu SetRegisterUnsafe 2 0x100 # device tree address
+    cpu SetRegister 0 0x000
+    cpu SetRegister 1 0xD32 # board id
+    cpu SetRegister 2 0x100 # device tree address
 
     ### load binaries ###
 

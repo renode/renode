@@ -47,9 +47,9 @@ Create Machine
     Execute Command           ttc1 Frequency 33333333
 
 # Set registers
-    Execute Command           cpu SetRegisterUnsafe 0 0x000
-    Execute Command           cpu SetRegisterUnsafe 1 0xD32 # processor variant (cortex-a9)
-    Execute Command           cpu SetRegisterUnsafe 2 0x100 # device tree address
+    Execute Command           cpu SetRegister 0 0x000
+    Execute Command           cpu SetRegister 1 0xD32 # processor variant (cortex-a9)
+    Execute Command           cpu SetRegister 2 0x100 # device tree address
 
     Execute Command           sysbus LoadELF $bin
     Execute Command           sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 ramdisk_size=65536 root=/dev/ram0 rw initrd=0x1a000000,64M" false
