@@ -408,8 +408,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             };
             X = new RegistersGroup(
                 indexValueMapX.Keys,
-                i => GetRegisterUnsafe((int)indexValueMapX[i]),
-                (i, v) => SetRegisterUnsafe((int)indexValueMapX[i], v));
+                i => GetRegister((int)indexValueMapX[i]),
+                (i, v) => SetRegister((int)indexValueMapX[i], v));
 
             var indexValueMapT = new Dictionary<int, VerilatedRiscV32Registers>
             {
@@ -423,8 +423,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             };
             T = new RegistersGroup(
                 indexValueMapT.Keys,
-                i => GetRegisterUnsafe((int)indexValueMapT[i]),
-                (i, v) => SetRegisterUnsafe((int)indexValueMapT[i], v));
+                i => GetRegister((int)indexValueMapT[i]),
+                (i, v) => SetRegister((int)indexValueMapT[i], v));
 
             var indexValueMapS = new Dictionary<int, VerilatedRiscV32Registers>
             {
@@ -443,8 +443,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             };
             S = new RegistersGroup(
                 indexValueMapS.Keys,
-                i => GetRegisterUnsafe((int)indexValueMapS[i]),
-                (i, v) => SetRegisterUnsafe((int)indexValueMapS[i], v));
+                i => GetRegister((int)indexValueMapS[i]),
+                (i, v) => SetRegister((int)indexValueMapS[i], v));
 
             var indexValueMapA = new Dictionary<int, VerilatedRiscV32Registers>
             {
@@ -459,8 +459,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             };
             A = new RegistersGroup(
                 indexValueMapA.Keys,
-                i => GetRegisterUnsafe((int)indexValueMapA[i]),
-                (i, v) => SetRegisterUnsafe((int)indexValueMapA[i], v));
+                i => GetRegister((int)indexValueMapA[i]),
+                (i, v) => SetRegister((int)indexValueMapA[i], v));
 
             var indexValueMapF = new Dictionary<int, VerilatedRiscV32Registers>
             {
@@ -499,8 +499,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
             };
             F = new RegistersGroup(
                 indexValueMapF.Keys,
-                i => GetRegisterUnsafe((int)indexValueMapF[i]),
-                (i, v) => SetRegisterUnsafe((int)indexValueMapF[i], v));
+                i => GetRegister((int)indexValueMapF[i]),
+                (i, v) => SetRegister((int)indexValueMapF[i], v));
 
         }
 

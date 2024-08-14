@@ -34,7 +34,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public List<GDBFeatureDescriptor> GDBFeatures { get { return new List<GDBFeatureDescriptor>(); } }
 
-        public void SetRegisterUnsafe(int register, RegisterValue value)
+        public void SetRegister(int register, RegisterValue value)
         {
             if(!mapping.TryGetValue((VerilatedRiscV32Registers)register, out var r))
             {
@@ -48,13 +48,23 @@ namespace Antmicro.Renode.Peripherals.Verilated
             SetRegisterValue32(r.Index, checked((UInt32)value));
         }
 
-        public RegisterValue GetRegisterUnsafe(int register)
+        public void SetRegisterUnsafe(int register, RegisterValue value)
+        {
+            SetRegister(register, value);
+        }
+
+        public RegisterValue GetRegister(int register)
         {
             if(!mapping.TryGetValue((VerilatedRiscV32Registers)register, out var r))
             {
                 throw new RecoverableException($"Wrong register index: {register}");
             }
             return GetRegisterValue32(r.Index);
+        }
+
+        public RegisterValue GetRegisterUnsafe(int register)
+        {
+            return GetRegister(register);
         }
 
         public IEnumerable<CPURegister> GetRegisters()
