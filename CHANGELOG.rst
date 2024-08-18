@@ -3,6 +3,162 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.15.2 - 2024.08.18
+-------------------
+
+Added and improved architecture support:
+
+* support for Core-Local Interrupt Controller (CLIC) in RISC-V, enabling several flavors of the (not yet ratified) RISC-V Fast Interrupts specification
+* various improvements to x86 architecture support, including virtual address translation fixes
+* RISC-V custom instructions now have to follow length encoding patterns, as specified in the ISA manual (section 1.2 Instruction Length Encoding)
+* fixed fetching RISC-V instruction with PMP boundary set exactly after the instruction
+* fixed setting MPP after mret on RISC-V platforms without user privilege level
+* fixed RISC-V PMPCFG CSR operations not respecting the ``write any, read legal`` semantics
+* fixed RISC-V fcvt.wu.s, fcvt.lu.s and vmulh.vv instructions implementation
+
+Added and improved platform descriptions:
+
+* NPCX9 platform with improved bootrom implementation
+* Chip revision tags in the Renesas DA14592 platform
+* Fixed MPU regions configuration in Cortex-R8 SMP platform description
+* Nuvoton NPCX9M6F EVB
+* Microchip Mi-V, with correct Privileged Architecture version
+
+Added peripheral models:
+
+* MAX32655 UART
+* NEORV32 Machine System Timer
+* NEORV32 UART
+* KB1200 UART
+* RISC-V Core-Local Interrupt Controller
+* STM32WBA CRC
+* VeeR EL2 RISC-V core with custom CSRs
+
+Added demos and tests:
+
+* HiRTOS sample running on a dual-core Cortex-R52
+* Xen hypervisor running on Cortex-R52 with Zephyr payload
+* remoteproc demo on ZynqMP, with Linux running on Cortex-A loading Zephyr to Cortex-R
+* NPCX9 Zephyr-based tests for GPIO and I2C
+* synthetic tests for RISC-V Core-Local Interrupt Controller
+* RISC-V Core-Local Interrupt Controller tests based on riscv-arch-test
+* Zephyr bluetooth HR demo running on 4 nRF52840 in host / controller split communicating with HCI UART
+* Zephyr running hello_world sample on X86
+* regression test for custom RISC-V instructions not following the length encoding pattern
+
+Added features:
+
+* CPU cache analysis tool using the ExecutionTracer interface
+* initial GPIO support via External Control API
+* Wait For Lines On Uart keyword for Robot Framework for multiline matching
+* ability to specify aliases for names of constructor parameters in REPL, simplifying adaptation to API changes
+* ability to specify implemented privilege levels on RISC-V processors
+* initial SMC handling for ARMv8 CPUs
+* ability to load snapshots (.save files) from CLI
+* mechanism for enabling sysbus transaction translations for unimplemented widths in runtime
+* network based logging backend
+* option to assert match on the next line in UART keywords for Robot Framework
+* remapping exception vector in Arm CPUs having neither VBAR nor VTOR
+* support for declaring clusters of cores in REPL files
+* support for loading gzip compressed emulation snapshots
+* NetMQ and AsyncIO integration
+
+Changed:
+
+* ExecutionTracer logs additional physical address on memory access when MMU translation is involved
+* ExecutionTracer tracks values written to/read from memory if TrackMemoryAccesses parameter is used
+* added the ability to override build properties
+* added the ability to track memory accesses when address translation is active
+* External Control client \`run_for\` example can now progress time multiple times without reconnecting
+* machine by default disallows spawning a GdbServer with CPUs belonging to different architectures.
+* made user-configured $CC the default value for Compiler and LinkerPath and $AR for ArPath
+* paths encapsulated in quotes can handle names with whitespaces
+* paths in Monitor can be encapsulated in quotes in more contexts
+* improved precision of timer reconfiguration
+* translation library will attempt to expand its code buffer when running out of space
+* improved flexibility of parameter passing to registration points in REPL, as used by GIC
+* improved flexibility of the logLevel command
+* improved Renode pausing responsiveness when using TAP interface on Linux
+* improved performance of External Control API renode_run_for function
+* simplified per-core registration API in REPL files
+* renamed \`\`PrivilegeArchitecture\`\` to \`\`PrivilegedArchitecture\`\` on RISC-V
+* unified STM32 CRC peripherals so they use a single class configured with the STM32Series enum
+* co-simulated peripherals protocol on writes directed to system bus
+* MacOS now uses \`\`mono\`\` instead of \`\`mono64\`\` as a runner, which is equivalent since Mono 5.2
+* time updates are now deferred when possible to improve performance
+* virtual time precision is now 1 nanosecond instead of 1 microsecond
+* limited unnecessary invalidations of memory for multicore platforms
+* CPU-specific peripheral registrations have now higher priority than the global ones
+* undefined AArch64 ID registers are now treated as RAZ
+
+Fixed:
+
+* initialization of VFP registers for Armv8 CPUs
+* support for building tlibs with clang
+* interruption of instructions block on precise pause
+* accessing RISC-V counter CSRs for lower privilege levels for privileged specification 1.10 and newer
+* Time Framework errors when handling halted CPUs
+* running renode and renode-test commands via symlinks
+* serialization of ARMv8-A CPUs
+* serialization of some complex classes
+* listing of registration points for peripherals registered at both cpu and sysbus
+* handling of watchpoints set at addresses above the 32-bit range
+* crashes when using both aliased attribute name and normal name at the same time
+* possible hang when disabling logging of peripheral accesses
+* handling of exclusive store/load instructions for ARMv7-R CPUs
+* handling of interrupting execution in GDB on multicore platforms in all-stop mode
+* allocating huge amount of memory for translation cache on CPU deserialization
+* invalid undefined instruction faults for Armv8 CPUs
+* GDB getting confused when receiving Ctrl-C on multicore platforms
+* LSM303 peripheral test
+* CS7034 \"specified version string does not conform to recommended format\" warning appearing when building
+* Vegaboard-RI5CY demo failing to boot
+* exception thrown on an empty message in log when failing a Robot test
+* linking and imports in the External Control library
+* nonstandard configuration byte when disabling Telnet line mode
+* printing skipped test status
+* version information not appearing correctly after running \`renode --help\`
+
+Improvements in peripherals:
+
+* Ambiq Apollo4 System Timer
+* Arm Generic Interrupt Controller
+* ARM Generic Timer
+* Arm Performance Monitoring Unit
+* Arm Snoop Control Unit
+* Arm CPUs
+* Arm Signal Unit
+* Gaisler APB UART
+* K6xF Multipurpose Clock Generator
+* KB1200 UART
+* LPC USART
+* Macronix MX25R
+* MAX32650 WDT
+* Mi-V Core Timer
+* MPFS SD controller
+* NEORV32 UART
+* NPCX MDMA
+* NPCX ITIM, including both 32 and 64-bit flavors of the peripheral
+* NPCX TWD
+* NPCX SMBus
+* NPCX UART
+* nRF52840 CLOCK
+* NVIC
+* Renesas RA6M5 SCI
+* RCAR UART
+* SAMD20 UART
+* SD card
+* STM32 UART
+* STM32 LTDC
+* STM32 CRC
+* STM32 Timer
+* STM32F4 Flash with added mass erase and sector erase commands
+* STM32L0 RCC model with added support for Low-power timer (LPTIM) reset
+* STM32WBA GPDMA
+* SynopsysDWCEthernetQualityOfService incorrectly resetting transmit/receive buffer position when suspending its DMA engine
+* VirtIO
+* Zynq7000 System Level Control Registers
+
 1.15.1 - 2024.06.14
 -------------------
 
