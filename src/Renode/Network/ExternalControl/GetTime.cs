@@ -23,7 +23,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime;
             parent.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
 
-            return Response.Success(Identifier, timestamp.TotalMicroseconds.AsRawBytes());
+            return Response.Success(Identifier, ((ulong)timestamp.TotalMicroseconds).AsRawBytes());
         }
 
         public override Command Identifier => Command.GetTime;
