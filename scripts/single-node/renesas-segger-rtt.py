@@ -42,5 +42,5 @@ def mc_setup_segger_rtt(name, with_has_key = True, with_read = True):
     if with_has_key:
         add_hook("SEGGER_RTT_HasKey", has_key)
     if with_read:
-        add_hook("SEGGER_RTT_Read", read)
+        add_hook("SEGGER_RTT_ReadNoLock", read)
     add_hook("SEGGER_RTT_WriteNoLock", write)
