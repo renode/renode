@@ -3,10 +3,8 @@ using sysbus
 $bin_sender=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-sender.elf-s_381512-edc8d2313a0c86cc5ac92079fdc2a5c744e1c4f2
 $bin_receiver=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-receiver.elf-s_381484-4fd4ae40c3748be11bfc7fee2fbfd3aea49425f1
 
-set console_hook
-"""
-self.GetMachine()["sysbus.segger"].DisplayChar(cpu.GetRegister(1).RawValue)
-"""
+# Load helper attaching SEGGER read/write functions to a virtual console with `setup_segger_rtt`.
+include @scripts/single-node/renesas-segger-rtt.py
 
 # Create network
 emulation CreateDA16200Network "wifi"
@@ -23,16 +21,15 @@ sci0.da16200 IpAddress "192.0.2.2"
 
 connector Connect sci0.da16200 wifi
 
-machine CreateVirtualConsole "segger"
-showAnalyzer segger
-
 macro reset
 """
     sysbus LoadELF $bin_sender
 """
 runMacro $reset
 
-cpu AddHook `sysbus GetSymbolAddress "_StoreChar"` $console_hook
+machine CreateVirtualConsole "segger"
+setup_segger_rtt sysbus.segger false false
+showAnalyzer segger
 
 # Create receiver
 mach create "Receiver"
@@ -46,13 +43,12 @@ sci0.da16200 IpAddress "192.0.2.1"
 
 connector Connect sci0.da16200 wifi
 
-machine CreateVirtualConsole "segger"
-showAnalyzer segger
-
 macro reset
 """
     sysbus LoadELF $bin_receiver
 """
 runMacro $reset
 
-cpu AddHook `sysbus GetSymbolAddress "_StoreChar"` $console_hook
+machine CreateVirtualConsole "segger"
+setup_segger_rtt sysbus.segger false false
+showAnalyzer segger
