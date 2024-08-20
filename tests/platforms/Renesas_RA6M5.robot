@@ -59,9 +59,10 @@ Prepare Machine With CK Board
     Create Machine                  ${bin}  ${CK_BOARD_REPL}
 
 Prepare Segger RTT
+    [Arguments]                     ${with_has_key}=False  ${with_read}=False
     Execute Command                 machine CreateVirtualConsole "segger_rtt"
     Execute Command                 include @scripts/single-node/renesas-segger-rtt.py
-    Execute Command                 setup_segger_rtt sysbus.segger_rtt
+    Execute Command                 setup_segger_rtt sysbus.segger_rtt ${with_has_key} ${with_read}
     Create Terminal Tester          sysbus.segger_rtt
 
 Prepare LED Tester
@@ -89,7 +90,7 @@ Create ICM20948 RESD File
 Should Run Periodically Blink LED
     Prepare Machine                 ${AGT_ELF}
     Prepare LED Tester
-    Prepare Segger RTT
+    Prepare Segger RTT              with_has_key=True  with_read=True
 
     Execute Command                 agt0 IRQ AddStateChangedHook "Antmicro.Renode.Logging.Logger.Log(LogLevel.Error, 'AGT0 ' + str(state))"
     # Timeout is only used for checking whether the IRQ has been handled
