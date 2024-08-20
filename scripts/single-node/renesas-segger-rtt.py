@@ -8,7 +8,6 @@
 def mc_setup_segger_rtt(name):
     segger = monitor.Machine[name]
     bus = monitor.Machine.SystemBus
-    cpus = bus.GetCPUs()
 
     def has_key(cpu, _):
         cpu.SetRegisterUlong(0, 1 if segger.Contains(ord('\r')) else 0)
@@ -28,11 +27,12 @@ def mc_setup_segger_rtt(name):
             segger.DisplayChar(bus.ReadByte(pointer + i))
 
     def add_hook(symbol, function):
-        for cpu in cpus:
+        for cpu in bus.GetCPUs():
             try:
                 cpu.AddHook(bus.GetSymbolAddress(symbol), function)
-            except:
-                print "Failed to hook at '{}' for cpu {}".format(symbol, cpu.GetName())
+            except Exception as e:
+                cpu.WarningLog("Failed to add hook at '{}': {}".format(symbol, e))
+                cpu.WarningLog("Make sure the binary is loaded before calling setup_segger_rtt")
 
     add_hook("SEGGER_RTT_HasKey", has_key)
     add_hook("SEGGER_RTT_Read", read)
