@@ -10,9 +10,6 @@ def mc_setup_segger_rtt(name):
     bus = monitor.Machine.SystemBus
     cpus = bus.GetCPUs()
 
-    def store_char(cpu, _):
-        segger.DisplayChar(cpu.GetRegister(1).RawValue)
-
     def has_key(cpu, _):
         cpu.SetRegisterUlong(0, 1 if segger.Contains(ord('\r')) else 0)
         cpu.PC = cpu.LR
@@ -24,6 +21,12 @@ def mc_setup_segger_rtt(name):
         cpu.SetRegisterUlong(0, written)
         cpu.PC = cpu.LR
 
+    def write(cpu, _):
+        pointer = cpu.GetRegister(1).RawValue
+        length = cpu.GetRegister(2).RawValue
+        for i in range(length):
+            segger.DisplayChar(bus.ReadByte(pointer + i))
+
     def add_hook(symbol, function):
         for cpu in cpus:
             try:
@@ -31,6 +34,6 @@ def mc_setup_segger_rtt(name):
             except:
                 print "Failed to hook at '{}' for cpu {}".format(symbol, cpu.GetName())
 
-    add_hook("_StoreChar", store_char)
     add_hook("SEGGER_RTT_HasKey", has_key)
     add_hook("SEGGER_RTT_Read", read)
+    add_hook("SEGGER_RTT_WriteNoLock", write)
