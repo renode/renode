@@ -66,6 +66,7 @@ typedef enum {
     SUCCESS_WITH_DATA, // code, command, data
     SUCCESS_WITHOUT_DATA, // code, command
     SUCCESS_HANDSHAKE, // code
+    ASYNC_EVENT, // code, command, callback id, data
 } return_code_t;
 
 // internal renode_error_t flags
@@ -134,13 +135,16 @@ void renode_free_error(renode_error_t *error)
 #define ERRMSG_SOCKET_CLOSED "Socket was closed"
 #define ERRMSG_UNEXPECTED_RETURN_CODE "Unexpected return code"
 #define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
+#define ERRMSG_COMMAND_MISMATCH "received mismatched command"
 
 typedef enum {
+    ANY_COMMAND = 0,
     RUN_FOR = 1,
     GET_TIME,
     GET_MACHINE,
     ADC,
     GPIO,
+    EVENT = -1,
 } api_command_t;
 
 static uint8_t command_versions[][2] = {
@@ -149,7 +153,7 @@ static uint8_t command_versions[][2] = {
     { GET_TIME, 0x0 },
     { GET_MACHINE, 0x0 },
     { ADC, 0x0 },
-    { GPIO, 0x0 },
+    { GPIO, 0x1 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -318,11 +322,81 @@ static renode_error_t *renode_receive_bytes(renode_t *renode, uint8_t *buffer, u
     return read_or_fail(renode->socket_fd, buffer, count);
 }
 
-static renode_error_t *renode_receive_response(renode_t *renode, api_command_t expected_command, uint8_t *data_buffer, uint32_t buffer_size, uint32_t *data_size)
+struct renode_event {
+    uint32_t ed;
+    api_command_t command;
+    uint32_t size;
+    uint8_t data[];
+};
+
+#define MAX_CALLBACK_COUNT 1024
+
+typedef void (*raw_callback_t)(void *, void *);
+
+static raw_callback_t callbacks[MAX_CALLBACK_COUNT];
+static void *callback_user_data[MAX_CALLBACK_COUNT];
+static uint32_t callbacks_count;
+
+static renode_error_t *register_callback(raw_callback_t callback, void *user_data, uint32_t *ed)
 {
-    uint8_t *buffer = data_buffer;
+    assert_msg(callbacks_count < MAX_CALLBACK_COUNT, "Cannot register any more callbacks");
+
+    callbacks[callbacks_count] = callback;
+    callback_user_data[callbacks_count] = user_data;
+
+    *ed = callbacks_count;
+    callbacks_count += 1;
+
+    return NO_ERROR;
+}
+
+static renode_error_t *invoke_callback(struct renode_event *response)
+{
+    switch(response->command)
+    {
+    case GPIO:
+        assert_msg(response->ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
+        assert_msg(response->size == sizeof(renode_gpio_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        renode_gpio_event_data_t *data = (renode_gpio_event_data_t*)response->data;
+
+        callbacks[response->ed](callback_user_data[response->ed], data);
+        return NO_ERROR;
+    default:
+        assert_msg(false, "Tried to invoke callback for an invalid command");
+    }
+}
+
+static renode_error_t *renode_receive_event(renode_t *renode, void **buffer)
+{
+    uint8_t command = 0;
+    uint32_t ed = 0;
+    uint32_t size = 0;
+
+    return_error_if_fails(renode_receive_bytes(renode, &command, 1));
+    return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)&ed, 4));
+    return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)&size, 4));
+
+    struct renode_event *event = xmalloc(sizeof(struct renode_event) + size);
+    event->ed = ed;
+    event->size = size;
+    event->command = command;
+
+    renode_error_t *error = renode_receive_bytes(renode, (uint8_t*)&event->data, event->size);
+
+    if (error != NO_ERROR) {
+        free(event);
+        return error;
+    }
+
+    *buffer = event;
+    return NO_ERROR;
+}
+
+static renode_error_t *renode_receive_response(renode_t *renode, api_command_t *command, void **data_buffer, uint32_t buffer_size, uint32_t *data_size)
+{
+    uint8_t *buffer = *data_buffer;
     uint8_t return_code;
-    uint8_t command;
+    uint8_t received_command;
     *data_size = -1;
 
     return_error_if_fails(renode_receive_byte(renode, &return_code));
@@ -334,6 +408,14 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
         case SUCCESS_WITHOUT_DATA:
         case FATAL_ERROR:
             break;
+        case ASYNC_EVENT:
+            return_error_if_fails(renode_receive_event(renode, data_buffer));
+            if (*command == EVENT || *command == ANY_COMMAND) {
+                *command = EVENT;
+                return NO_ERROR;
+            }
+            free(*data_buffer);
+            return create_fatal_error_static("received unexpected event");
         default:
             return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
     }
@@ -343,7 +425,7 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
         case INVALID_COMMAND:
         case SUCCESS_WITH_DATA:
         case SUCCESS_WITHOUT_DATA:
-            return_error_if_fails(renode_receive_byte(renode, &command));
+            return_error_if_fails(renode_receive_byte(renode, &received_command));
         case FATAL_ERROR:
             break;
         default:
@@ -399,21 +481,24 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t e
         return create_fatal_error_static("received invalid command error");
     }
 
-    if (command != expected_command) {
-        return create_fatal_error_static("received mismatched command");
+    if (*command != ANY_COMMAND && received_command != *command) {
+        return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
     }
+    *command = received_command;
 
     return NO_ERROR;
 }
 
 static renode_error_t *renode_execute_command(renode_t *renode, api_command_t api_command, void *data_buffer, uint32_t buffer_size, uint32_t sent_data_size, uint32_t *received_data_size)
 {
+    assert(api_command != ANY_COMMAND && api_command != EVENT);
     assert(buffer_size >= sent_data_size);
 
     return_error_if_fails(renode_send_command(renode, api_command, data_buffer, sent_data_size));
 
     uint32_t ignored_data_size;
-    return_error_if_fails(renode_receive_response(renode, api_command, data_buffer, buffer_size, received_data_size == NULL ? &ignored_data_size : received_data_size));
+    void **buffer = &data_buffer;
+    return_error_if_fails(renode_receive_response(renode, &api_command, buffer, buffer_size, received_data_size == NULL ? &ignored_data_size : received_data_size));
 
     return NO_ERROR;
 }
@@ -491,8 +576,33 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64
 
     return_error_if_fails(write_or_fail(renode->socket_fd, (uint8_t*)&data, sizeof(data)));
 
-    uint32_t ignored_data_size;
-    return renode_receive_response(renode, RUN_FOR, NULL, 0, &ignored_data_size);
+    api_command_t command;
+    do {
+        command = ANY_COMMAND;
+
+        uint32_t response_size;
+        void *buffer = &data;
+        return_error_if_fails(renode_receive_response(renode, &command, &buffer, sizeof(data), &response_size));
+
+        if (command == RUN_FOR) {
+            break;
+        }
+
+        if (command != EVENT) {
+            return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
+        }
+
+        struct renode_event *event = buffer;
+        renode_error_t *error = invoke_callback(event);
+        free(event);
+
+        if (error != NO_ERROR) {
+            return error;
+        }
+    }
+    while(command != RUN_FOR);
+
+    return NO_ERROR;
 }
 
 renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time)
@@ -632,6 +742,7 @@ renode_error_t *renode_get_gpio(renode_machine_t *machine, const char *name, ren
 typedef enum {
     GET_STATE,
     SET_STATE,
+    REGISTER_EVENT,
 } gpio_command_t;
 
 typedef union {
@@ -683,6 +794,39 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
 
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(gpio->machine->renode, GPIO, &frame, sizeof(frame), sizeof(frame.out), &response_size));
+
+    assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+    return NO_ERROR;
+}
+
+struct gpio_callback_data
+{
+    bool current_state;
+};
+
+struct __attribute__((packed)) event_gpio_frame
+{
+    int32_t id;
+    int8_t command;
+    int32_t number;
+    int32_t ed;
+};
+
+renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, int32_t id, void *user_data, void (*callback)(void *, renode_gpio_event_data_t *))
+{
+    uint32_t ed;
+    return_error_if_fails(register_callback((raw_callback_t)callback, user_data, &ed));
+
+    struct event_gpio_frame frame = {
+        .id = gpio->id,
+        .command = REGISTER_EVENT,
+        .number = id,
+        .ed = ed,
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(gpio->machine->renode, GPIO, &frame, sizeof(frame), sizeof(frame), &response_size));
 
     assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 

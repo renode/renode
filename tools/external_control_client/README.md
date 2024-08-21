@@ -103,12 +103,17 @@ It can be built in the `build` directory from the Renode repository's root direc
 renode$ mkdir build && cmake -DAPP_NAME=gpio -DAPP_SOURCES_DIR=tools/external_control_client/examples/gpio -S tools/external_control_client -B build && cmake --build build
 ```
 
-After starting the server in Renode, the `gpio` application can be used multiple times to get output state of a pin or, when the `STATE` is provided, to set the input state.
+
+After starting the server in Renode, the `gpio` application can be used in three different modes.
+
+In the first mode, it returns the current state of a pin. This happens when only the required arguments are provided.
+
+In the second mode, the application can be used to set the state of a pin. This happens when the last argument is either `true` or `false`.
+
+Finally, the application can show GPIO state changes as the simulation is running by subscribing to GPIO state change events. This happens when the last argument is set to `event`.
 
 The usage is:
 ```
 Usage:
-  ./gpio <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [<STATE>]
-  where:
-  * <STATE> is an optional boolean ('true' or 'false') value
+  ./gpio <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]
 ```

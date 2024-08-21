@@ -9,10 +9,11 @@ using System.Collections.Generic;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
-    public class GPIOPort : BaseCommand, IInstanceBasedCommand<IPeripheral>
+    public class GPIOPort : BaseCommand, IHasEvents, IInstanceBasedCommand<IPeripheral>
     {
         public GPIOPort(ExternalControlServer parent)
             : base(parent)
@@ -21,6 +22,8 @@ namespace Antmicro.Renode.Network.ExternalControl
         }
 
         public override Response Invoke(List<byte> data) => this.InvokeHandledWithInstance(data, HasGPIO);
+
+        public event Action<Response> EventReported;
 
         public Response Invoke(IPeripheral instance, List<byte> data)
         {
@@ -61,15 +64,40 @@ namespace Antmicro.Renode.Network.ExternalControl
                     }
                     return Response.CommandFailed(Identifier, "This instance does not provide GPIO inputs");
 
+                case GPIOPortCommand.RegisterEvent:
+                    DecodeRegisterEventArguments(data, out id, out var ed);
+
+                    if(!(instance is INumberedGPIOOutput gpioDriver))
+                    {
+                        return Response.CommandFailed(Identifier, "This instance does not provide GPIO outputs");
+                    }
+
+                    if(!gpioDriver.Connections.TryGetValue(id, out var pin) || !(pin is GPIO))
+                    {
+                        return Response.CommandFailed(Identifier, $"This instance does not provide GPIO output #{id}");
+                    }
+
+                    (pin as GPIO).AddStateChangedHook((state) => SendEvent(state, ed));
+                    return Response.Success(Identifier);
+
                 default:
                     return Response.CommandFailed(Identifier, "Unexpected command format");
             }
         }
 
+        private void SendEvent(bool gpioState, int eventDescriptor)
+        {
+            var data = new EventData();
+            data.timestampMicroseconds = (ulong)EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalMicroseconds;
+            data.gpioState = gpioState;
+
+            EventReported?.Invoke(Response.Event(Identifier, eventDescriptor, data.AsRawBytes()));
+        }
+
         public InstanceCollection<IPeripheral> Instances { get; }
 
         public override Command Identifier => Command.GPIOPort;
-        public override byte Version => 0x0;
+        public override byte Version => 0x1;
 
         private static bool HasGPIO(IPeripheral instance)
         {
@@ -84,6 +112,8 @@ namespace Antmicro.Renode.Network.ExternalControl
                     return sizeof(byte) + sizeof(uint);
                 case GPIOPortCommand.SetState:
                     return sizeof(byte) * 2 + sizeof(uint);
+                case GPIOPortCommand.RegisterEvent:
+                    return sizeof(byte) + sizeof(uint) * 2;
                 default:
                     return sizeof(byte);
             }
@@ -100,12 +130,25 @@ namespace Antmicro.Renode.Network.ExternalControl
             value = BitConverter.ToBoolean(data.GetRange(5, sizeof(byte)).ToArray(), 0);
         }
 
+        private void DecodeRegisterEventArguments(List<byte> data, out int id, out int ed)
+        {
+            DecodeIdArgument(data, out id);
+            ed = BitConverter.ToInt32(data.GetRange(5, sizeof(uint)).ToArray(), 0);
+        }
+
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;
+
+        private struct EventData
+        {
+            public ulong timestampMicroseconds;
+            public bool gpioState;
+        }
 
         private enum GPIOPortCommand : byte
         {
             GetState = 0,
             SetState,
+            RegisterEvent,
         }
     }
 }

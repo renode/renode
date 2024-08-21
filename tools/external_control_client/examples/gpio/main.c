@@ -16,9 +16,7 @@ void exit_with_usage_info(const char *argv0)
 {
     fprintf(stderr,
         "Usage:\n"
-        "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [<STATE>]\n"
-        "  where:\n"
-        "  * <STATE> is an optional boolean ('true' or 'false') value\n",
+        "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]",
         argv0);
     exit(EXIT_FAILURE);
 }
@@ -42,6 +40,21 @@ int try_renode_disconnect(renode_t **renode)
     return 0;
 }
 
+typedef struct {
+    char *machine_name;
+    char *gpio_name;
+    int pin_no;
+    bool run;
+} gpio_event_user_data;
+
+void gpio_callback(void *user_data, renode_gpio_event_data_t *event_data)
+{
+    gpio_event_user_data *udata = (gpio_event_user_data *)user_data;
+    printf("%s: GPIO #%d in %s %sset", udata->machine_name, udata->pin_no, udata->gpio_name, event_data->state ? "" : "un");
+    printf(" at %lu us\n", event_data->timestamp_us);
+    udata->run = false;
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 5 || 6 < argc) {
@@ -51,6 +64,7 @@ int main(int argc, char **argv)
     char *gpio_name = argv[3];
     bool set = argc == 6;
     bool state = false;
+    bool wait_for_event = false;
 
     char *endptr;
     // base=0 tries to figure out the number's base automatically.
@@ -66,10 +80,11 @@ int main(int argc, char **argv)
 
     if (set)
     {
-        if (strcmp(argv[5], "true") != 0 && strcmp(argv[5], "false") != 0) {
+        if (strcmp(argv[5], "true") != 0 && strcmp(argv[5], "false") != 0 && strcmp(argv[5], "event")) {
             exit_with_usage_info(argv[0]);
         }
         state = argv[5][0] == 't';
+        wait_for_event = argv[5][0] == 'e';
     }
 
     // get Renode, machine and GPIO instances
@@ -95,17 +110,33 @@ int main(int argc, char **argv)
 
     // perform get/set
 
-    if (set)
-    {
+    if (wait_for_event) {
+        gpio_event_user_data user_data = (gpio_event_user_data){
+            .machine_name = machine_name,
+            .gpio_name = gpio_name,
+            .pin_no = number,
+            .run = true
+        };
+
+        if ((error = renode_register_gpio_state_change_callback(gpio, number, &user_data, gpio_callback)) != NO_ERROR) {
+            fprintf(stderr, "Registering event on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+            goto fail_gpio;
+        }
+
+        while (user_data.run) {
+            if ((error = renode_run_for(renode, TU_SECONDS, 60)) != NO_ERROR) {
+                fprintf(stderr, "Run for failed with: %s\n", get_error_message(error));
+                goto fail_gpio;
+            }
+        }
+    } else if (set) {
         if ((error = renode_set_gpio_state(gpio, number, state)) != NO_ERROR) {
             fprintf(stderr, "Setting state on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
             goto fail_gpio;
         }
 
         printf("GPIO set to: %s\n", state ? "true" : "false");
-    }
-    else
-    {
+    } else {
         if ((error = renode_get_gpio_state(gpio, number, &state)) != NO_ERROR) {
             fprintf(stderr, "Getting state on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
             goto fail_gpio;

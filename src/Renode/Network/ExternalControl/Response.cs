@@ -49,8 +49,13 @@ namespace Antmicro.Renode.Network.ExternalControl
             return new Response(ReturnCode.SuccessfulHandshake);
         }
 
+        public static Response Event(Command command, int eventDescriptor, IEnumerable<byte> data)
+        {
+            return new Response(ReturnCode.AsyncEvent, command, eventDescriptor, data.ToArray());
+        }
+
         private Response(ReturnCode returnCode)
-            : this(returnCode, null, (byte[])null)
+            : this(returnCode, null, null, null)
         {
         }
 
@@ -60,23 +65,26 @@ namespace Antmicro.Renode.Network.ExternalControl
         }
 
         private Response(ReturnCode returnCode, Command? command, string text)
-            : this(returnCode, command, Encoding.ASCII.GetBytes(text))
+            : this(returnCode, command, null, Encoding.ASCII.GetBytes(text))
         {
             dataIsText = true;
         }
 
         private Response(ReturnCode returnCode, Command? command, IEnumerable<byte> data)
-            : this(returnCode, command, data.ToArray())
+            : this(returnCode, command, null, data.ToArray())
         {
         }
 
-        private Response(ReturnCode returnCode, Command? command, byte[] data = null)
+        private Response(ReturnCode returnCode, Command? command, int? eventDescriptor = null, byte[] data = null)
         {
             // Command can be null only for FatalError and SuccessfulHandshake
             DebugHelper.Assert(command != null || returnCode == ReturnCode.FatalError || returnCode == ReturnCode.SuccessfulHandshake);
+            // eventDescriptor can be null for all return codes but AsyncEvent
+            DebugHelper.Assert(eventDescriptor != null || returnCode != ReturnCode.AsyncEvent);
 
             this.returnCode = returnCode;
             this.command = command;
+            this.eventDescriptor = eventDescriptor;
             this.data = data;
             dataIsText = false;
         }
@@ -88,6 +96,11 @@ namespace Antmicro.Renode.Network.ExternalControl
             if(command.HasValue)
             {
                 response.Add((byte)command);
+            }
+
+            if(eventDescriptor.HasValue)
+            {
+                response.AddRange(((int)eventDescriptor).AsRawBytes());
             }
 
             if(data != null && data.Any())
@@ -111,6 +124,13 @@ namespace Antmicro.Renode.Network.ExternalControl
                     .Append(command);
             }
 
+            if(eventDescriptor != null)
+            {
+                result
+                    .Append(", eventDescriptor: ")
+                    .Append(eventDescriptor);
+            }
+
             if(data != null)
             {
                 result
@@ -125,6 +145,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private readonly bool dataIsText;
         private readonly Command? command;
+        private readonly int? eventDescriptor;
         private readonly byte[] data;
         private readonly ReturnCode returnCode;
 
@@ -137,6 +158,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             SuccessWithData,
             SuccessWithoutData,
             SuccessfulHandshake,
+            AsyncEvent,
         }
     }
 }

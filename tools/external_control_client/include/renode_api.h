@@ -67,3 +67,10 @@ renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel,
 renode_error_t *renode_get_gpio(renode_machine_t *machine, const char *name, renode_gpio_t **gpio);
 renode_error_t *renode_get_gpio_state(renode_gpio_t *gpio, int32_t id, bool *state);
 renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool state);
+
+typedef struct {
+    uint64_t timestamp_us;
+    bool state;
+} renode_gpio_event_data_t;
+
+renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, int32_t id, void *user_data, void (*callback)(void *, renode_gpio_event_data_t *));

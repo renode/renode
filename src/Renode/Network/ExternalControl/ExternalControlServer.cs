@@ -34,6 +34,7 @@ namespace Antmicro.Renode.Network
             socketServerProvider.BufferSize = 0x10;
 
             commandHandlers = new CommandHandlerCollection();
+            commandHandlers.EventReported += SendEventResponse;
             commandHandlers.Register(new RunFor(this));
             commandHandlers.Register(new GetTime(this));
             commandHandlers.Register(new ADC(this));
@@ -272,6 +273,13 @@ namespace Antmicro.Renode.Network
 
             try
             {
+                // Create an ICanReportEvents interface or something similar if
+                // we ever have more command handlers that need to do this.
+                if(commandHandler is RunFor)
+                {
+                    EventsEnabled = true;
+                }
+
                 response = commandHandler.Invoke(data);
                 return true;
             }
@@ -280,6 +288,21 @@ namespace Antmicro.Renode.Network
                 this.Log(LogLevel.Error, "{0} command error: {1}", command, e.Message);
                 response = Response.CommandFailed(command, e.Message);
                 return false;
+            }
+            finally
+            {
+                if(commandHandler is RunFor)
+                {
+                    EventsEnabled = false;
+                }
+            }
+        }
+
+        private void SendEventResponse(Response response)
+        {
+            if(EventsEnabled)
+            {
+                SendResponse(response);
             }
         }
 
@@ -302,6 +325,8 @@ namespace Antmicro.Renode.Network
                 throw new ServerDisposedException();
             }
         }
+
+        public bool EventsEnabled = false;
 
         private State state = State.NotConnected;
         private int commandsToActivate = 0;
@@ -371,6 +396,10 @@ namespace Antmicro.Renode.Network
             public void Register(ICommand command)
             {
                 commandHandlers.Add(command.Identifier, command);
+                if(command is IHasEvents commandWithEvents)
+                {
+                    commandWithEvents.EventReported += this.EventReported;
+                }
             }
 
             public void ClearActivation()
@@ -419,6 +448,8 @@ namespace Antmicro.Renode.Network
                 version = command.Version;
                 return true;
             }
+
+            public event Action<Response> EventReported;
 
             private readonly Dictionary<Command, ICommand> commandHandlers;
             private readonly Dictionary<Command, ICommand> activeCommandHandlers;
