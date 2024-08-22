@@ -1,0 +1,23 @@
+:name: ACRN x86_64
+:description: This script runs Zephyr hello_world sample on a bare x86_64 platform.
+
+$name?="i386"
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/acrn--zephyr-hello_world.elf-s_651256-2c595456c50fc3be02f70020d215f0284917e8bb
+machine LoadPlatformDescription @platforms/cpus/acrn_x86_64.repl
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+    # set the D flag for Executable code segment
+    cpu SetDescriptor CS 0x0 0x0 0x0 0x400000
+
+    # enable protected mode
+    cpu CR0 0x60000011
+
+    sysbus LoadELF $bin
+"""
+runMacro $reset
