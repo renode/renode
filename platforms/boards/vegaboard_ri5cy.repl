@@ -1,0 +1,36 @@
+using "platforms/cpus/ri5cy.repl"
+
+SCG_CSR: Python.PythonPeripheral @ sysbus 0x4002C010
+    size: 0x4
+    initable: true
+    script: '''
+if request.isInit: lastVal = None
+if request.isRead: request.value = 0x2000000 if lastVal == None else 0x3000001; lastVal = request.value
+'''
+
+pcc0: Python.PythonPeripheral @ sysbus 0x4002B000
+    initable: true
+    size: 0x204
+    script: '''
+if request.isInit: regs = [0x80000000] * (size / 4)
+if request.isRead: request.value = regs[request.offset >> 2]
+if request.isWrite: regs[request.offset >> 2] = request.value
+'''
+
+pcc1: Python.PythonPeripheral @ sysbus 0x41027000
+    initable: true
+    size: 0x208
+    script: '''
+if request.isInit: regs = [0x80000000] * (size / 4)
+if request.isRead: request.value = regs[request.offset >> 2]
+if request.isWrite: regs[request.offset >> 2] = request.value
+'''
+
+sysbus: 
+    init:
+        Tag <0x4002c200 4> "SIRCCSR" 0xFFFFFFFF          // Slow IRC Control Status Register
+        Tag <0x4002c300 4> "FIRCCSR" 0xFFFFFFFF          // Fast IRC Control Status Register
+        Tag <0x4002c304 4> "FIRCDIV" 0x00010101          // Fast IRC Divider Register - Divide by 1
+        Tag <0x4002c500 4> "LPFFLCSR" 0xFFFFFFFF         // Low Power FLL Control Status Register
+        Tag <0x4002c208 4> "SIRCFFG" 0x1                 // Slow IRC Configuration Register: configured as high range clock (8 MHz)
+        SilenceRange <0xe004100c 4>                      // EVENT0: Clear Interrupt Pending Register
