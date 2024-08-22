@@ -24,6 +24,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-arm64_NET", "src\Infrastructure\src\Emulator\Cores\cores-arm64_NET.csproj", "{220080D2-A102-018B-F7D9-FF971F0400F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-i386_NET", "src\Infrastructure\src\Emulator\Cores\cores-i386_NET.csproj", "{D1C68C46-AC88-4CD1-B792-BE814C5DAE96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-x86_64_NET", "src\Infrastructure\src\Emulator\Cores\cores-x86_64_NET.csproj", "{A3222114-707C-4EFD-8289-2728351FB7E9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cores-ppc_NET", "src\Infrastructure\src\Emulator\Cores\cores-ppc_NET.csproj", "{2590E77B-C888-4C62-8165-C4FA96762B16}"
 EndProject
@@ -177,6 +178,22 @@ Global
 		{D1C68C46-AC88-4CD1-B792-BE814C5DAE96}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
 		{D1C68C46-AC88-4CD1-B792-BE814C5DAE96}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
 		{D1C68C46-AC88-4CD1-B792-BE814C5DAE96}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 		{2590E77B-C888-4C62-8165-C4FA96762B16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2590E77B-C888-4C62-8165-C4FA96762B16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2590E77B-C888-4C62-8165-C4FA96762B16}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU

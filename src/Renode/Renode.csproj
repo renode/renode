@@ -214,6 +214,10 @@
       <Project>{53222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-i386</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-x86_64.csproj">
+      <Project>{A3222114-707C-4EFD-8289-2728351FB7E9}</Project>
+      <Name>cores-x86_64</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc.csproj">
       <Project>{23222114-707C-4EFD-8289-2728351FB7E9}</Project>
       <Name>cores-ppc</Name>

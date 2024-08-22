@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-ppc64", "src\Infrastr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-i386", "src\Infrastructure\src\Emulator\Cores\cores-i386.csproj", "{53222114-707C-4EFD-8289-2728351FB7E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-x86_64", "src\Infrastructure\src\Emulator\Cores\cores-x86_64.csproj", "{A3222114-707C-4EFD-8289-2728351FB7E9}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-arm-m", "src\Infrastructure\src\Emulator\Cores\cores-arm-m.csproj", "{43222114-707C-4EFD-8289-2728351FB7E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cores-riscv", "src\Infrastructure\src\Emulator\Cores\cores-riscv.csproj", "{63222124-707C-5EFD-8289-2728351FB7E9}"
@@ -295,6 +297,18 @@ Global
 		{53222114-707C-4EFD-8289-2728351FB7E9}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 		{53222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
 		{53222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugMono|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugMono|Any CPU.Build.0 = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3222114-707C-4EFD-8289-2728351FB7E9}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
 		{43222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.ActiveCfg = Debug|Any CPU
 		{43222114-707C-4EFD-8289-2728351FB7E9}.DebugHeadless|Any CPU.Build.0 = Debug|Any CPU
 		{43222114-707C-4EFD-8289-2728351FB7E9}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU

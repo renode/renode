@@ -54,6 +54,7 @@
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-x86_64_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc_NET.csproj"/>
