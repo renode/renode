@@ -1,0 +1,39 @@
+biosMemory: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus <0xFF0000, +0x10000>;
+        sysbus <0xFFFF0000, +0x10000>
+    }
+    size: 0xFF0000
+
+sdram: Memory.MappedMemory @ sysbus 0x1000000
+    size: 0x20000000
+
+uart: UART.NS16550 @ sysbus 0xE00003F8
+
+cpu: CPU.X86_64 @ sysbus
+    cpuType: "x86_64"
+    lapic: lapic
+
+lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
+    IRQ -> cpu@0
+
+clkctl1: Python.PythonPeripheral @ sysbus 0xFED000F0
+    size: 0x8
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+sysbus:
+    init:
+        Tag <0xE0000020 1> "PIC1_CMD"
+        Tag <0xE0000021 1> "PIC1_DATA"
+        Tag <0xE00000A0 1> "PIC2_CMD"
+        Tag <0xE00000A1 1> "PIC2_DATA"
+        Tag <0xE0000040 1> "PIT_CHANNEL0"
+        Tag <0xE0000041 1> "PIT_CHANNEL1"
+        Tag <0xE0000042 1> "PIT_CHANNEL2"
+        Tag <0xE0000043 1> "PIT_CMDREG"
+        Tag <0xE0000CF8 4> "PCI_ADDRESS"
+        Tag <0xE0000CFC 4> "PCI_DATA"
+        Tag <0xE0000070 1> "CMOS_ADDRESS"
+        Tag <0xE0000071 1> "CMOS_DATA"
+        Tag <0xFED00004 1> "HPET" 10000000
