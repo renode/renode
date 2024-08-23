@@ -1,5 +1,7 @@
 *** Variables ***
 ${echo_i2c_peripheral}              ${CURDIR}/echo-i2c-peripheral.py
+@{HUMIDITY_SAMPLES}                 10  20  30  40  50  60  70  80  90  100
+@{TEMPERATURE_SAMPLES}              15  17  19  21  23  25  27  29  31  33
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${HELLO_WORLD_ELF}                  ${URL}/renesas-da1459x-uart_hello_world.elf-s_1302844-67f230aeae16f04f9e6e9e1ac1ab1ceb133dc2a1
 ${HELLO_WORLD_BIN}                  ${URL}/renesas-da1459x-uart_hello_world.bin-s_42820-89e34783fa568d03c826357dceaa80c3637c14e1
@@ -20,6 +22,8 @@ ${SPI_BIN}                          ${URL}/renesas-da1459x-spi_sample.bin-s_4318
 ${SPI_ELF}                          ${URL}/renesas-da1459x-spi_sample.elf-s_1490188-9f030ab673cc588fb2c19ed3da3fde7d973259e7
 ${I2C_BIN}                          ${URL}/renesas-da1459x-i2c_sample.bin-s_36032-0cb6f278b3467dfbbf80f14b8504db7f2552c113
 ${I2C_ELF}                          ${URL}/renesas-da1459x-i2c_sample.elf-s_1500812-4323681e8ecb9c7ca31db357a86e0348477c6894
+${I2C_DMA_BIN}                      ${URL}/renesas-da14592--sdk-i2c_example.bin-s_68956-a27edc575b95fc553d5d626afe5e7c5581be1977
+${I2C_DMA_ELF}                      ${URL}/renesas-da14592--sdk-i2c_example.elf-s_1483872-07e845601c2acfcd439249f3ba3e5d19cdc37445
 
 *** Keywords ***
 Create Machine
@@ -189,3 +193,19 @@ Should Pass Communication Test With Sample Echo Slave
     Create Log Tester               1
 
     Wait For Log Entry              i2c.dummy: Test suite passed  level=Info
+
+I2C Should Work With DMA Triggers
+    Create Machine                  ${I2C_DMA_BIN}    ${I2C_DMA_ELF}
+    Execute Command                 machine LoadPlatformDescriptionFromString "hs3001: Sensors.HS3001 @ i2c 0x44"
+
+    Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
+
+    Wait For Line On Uart           I2C init
+
+    FOR    ${index}    ${element}    IN ENUMERATE    @{HUMIDITY_SAMPLES}
+        Execute Command            sysbus.i2c.hs3001 DefaultTemperature ${TEMPERATURE_SAMPLES}[${index}]
+        Execute Command            sysbus.i2c.hs3001 DefaultHumidity ${HUMIDITY_SAMPLES}[${index}]
+
+        Wait For Line On Uart      Successfully read I2C
+        Wait For Line On Uart      Hum: ${HUMIDITY_SAMPLES}[${index}] Temp: ${TEMPERATURE_SAMPLES}[${index}]
+    END

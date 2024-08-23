@@ -90,6 +90,7 @@ dma: DMA.RenesasDA14_DMA @ sysbus 0x50060200
     IRQ -> nvic_m33@1
 
 i2c: I2C.RenesasDA_I2C @ sysbus 0x50020300
+    dma: dma
     -> nvic_m33@5
 
 clock_gen: Miscellaneous.RenesasDA14_ClockGenerationController @ sysbus 0x50000000
