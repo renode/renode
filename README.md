@@ -71,6 +71,8 @@ cd renode_portable
 export PATH="`pwd`:$PATH"
 ```
 
+Please note that the portable package requires GTK2 to be available on the host to run with the UI enabled.
+
 Follow the [Additional Prerequisites](#additional-prerequisites-for-robot-framework-testing) section if you wish to use Robot Framework for testing.
 Otherwise, proceed to the 'Running Renode' section.
 
