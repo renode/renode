@@ -164,3 +164,4 @@
 - tests/network-logging/network-logging.robot
 - tests/unit-tests/riscv-mret.robot
 - tests/platforms/X86.robot
+- tests/platforms/ACRN.robot
