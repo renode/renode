@@ -85,6 +85,9 @@ Setup
           ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/
     END
 
+    Setup Renode
+
+Setup Renode
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
     IF  ${SAVE_LOGS}
