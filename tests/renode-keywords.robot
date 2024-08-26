@@ -169,10 +169,11 @@ Test Teardown
         END
     END
 
-    ${res}=  Run Keyword And Ignore Error
-          ...    Import Library  Dialogs
-
     IF  ${HOLD_ON_ERROR}
+        ${res}=  Run Keyword If Test Failed
+        ...    Run Keyword And Ignore Error
+        ...    Import Library  Dialogs
+
         Run Keyword If Test Failed  Run Keywords
         ...         Run Keyword If    '${res[0]}' == 'FAIL'    Log                Couldn't load the Dialogs library - interactive debugging is not possible    console=True
         ...    AND  Run Keyword If    '${res[0]}' != 'FAIL'    Open GUI
