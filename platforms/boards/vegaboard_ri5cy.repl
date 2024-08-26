@@ -4,8 +4,8 @@ SCG_CSR: Python.PythonPeripheral @ sysbus 0x4002C010
     size: 0x4
     initable: true
     script: '''
-if request.isInit: lastVal = None
-if request.isRead: request.value = 0x2000000 if lastVal == None else 0x3000001; lastVal = request.value
+if request.isInit: firstRead = True
+if request.isRead: request.value = 0x2000000 if firstRead else 0x3000001; firstRead = False
 '''
 
 pcc0: Python.PythonPeripheral @ sysbus 0x4002B000
