@@ -407,7 +407,7 @@ class RobotTestSuite(object):
             perf_stdout_stderr_file_name = "perf_stdout_stderr"
 
             if options.keep_renode_output:
-                print("Note: --keep-renode-output is not supported when using --run-gdb")
+                print("Note: --keep-renode-output is not supported when using --perf-output-path")
 
             print(f"WARNING: perf stdout and stderr is being redirected to {perf_stdout_stderr_file_name}")
 
