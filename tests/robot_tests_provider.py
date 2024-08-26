@@ -16,7 +16,10 @@ from time import monotonic, sleep
 from typing import List, Dict, Tuple, Set
 from argparse import Namespace
 
-import robot
+import robot, robot.result, robot.running
+from robot.libraries.BuiltIn import BuiltIn
+from robot.libraries.DateTime import Time
+
 import xml.etree.ElementTree as ET
 
 from tests_engine import TestResult
@@ -254,6 +257,10 @@ class TestsFinder(robot.model.SuiteVisitor):
 
 
 class RobotTestSuite(object):
+    after_timeout_message_suffix = ' '.join([
+        "Failed on Renode restarted after timeout,",
+        "will be retried if `-N/--retry` option was used."
+    ])
     instances_count = 0
     robot_frontend_process = None
     hotspot_action = ['None', 'Pause', 'Serialize']
@@ -265,7 +272,9 @@ class RobotTestSuite(object):
             r"Connection to remote server broken: \[WinError \d+\]",
             r"Connecting remote server at [^ ]+ failed",
             "Getting keyword names from library 'Remote' failed",
+            after_timeout_message_suffix,
     )))
+    timeout_expected_tag = 'timeout_expected'
 
     def __init__(self, path):
         self.path = path
@@ -278,6 +287,7 @@ class RobotTestSuite(object):
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
+        self.tests_with_unexpected_timeouts = []
 
 
     def check(self, options, number_of_runs):
@@ -322,7 +332,7 @@ class RobotTestSuite(object):
         return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
 
 
-    def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0):
+    def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0, remote_server_port=None):
         if options.runner == 'dotnet':
             remote_server_name = "Renode.dll"
             if platform == "win32":
@@ -348,11 +358,14 @@ class RobotTestSuite(object):
             print("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
             sys.exit(1)
 
-        if options.remote_server_port != 0 and not is_port_available(options.remote_server_port, options.autokill_renode):
-            print("The selected port {} is not available".format(options.remote_server_port))
+        if remote_server_port is None:
+            remote_server_port = options.remote_server_port
+
+        if remote_server_port != 0 and not is_port_available(remote_server_port, options.autokill_renode):
+            print("The selected port {} is not available".format(remote_server_port))
             sys.exit(1)
 
-        command = [remote_server_binary, '--robot-server-port', str(options.remote_server_port)]
+        command = [remote_server_binary, '--robot-server-port', str(remote_server_port)]
         if not options.show_log and not options.keep_renode_output:
             command.append('--hide-log')
         if not options.enable_xwt:
@@ -475,13 +488,19 @@ class RobotTestSuite(object):
 
         shutil.move(perf_data_path, options.perf_output_path)
 
-    def _close_remote_server(self, proc, options):
+    def _close_remote_server(self, proc, options, cleanup_timeout_override=None, silent=False):
         if proc:
-            print('Closing Renode pid {}'.format(proc.pid))
+            if not silent:
+                print('Closing Renode pid {}'.format(proc.pid))
+
             try:
                 process = psutil.Process(proc.pid)
                 os.kill(proc.pid, 2)
-                process.wait(timeout=options.cleanup_timeout)
+                if cleanup_timeout_override is not None:
+                    cleanup_timeout = cleanup_timeout_override
+                else:
+                    cleanup_timeout = options.cleanup_timeout
+                process.wait(timeout=cleanup_timeout)
 
                 if options.perf_output_path:
                     self.__move_perf_data(options)
@@ -494,6 +513,9 @@ class RobotTestSuite(object):
 
             if options.perf_output_path and proc.stdout:
                 proc.stdout.close()
+
+            # None of the previously provided states are available after closing the server.
+            self._dependencies_met = set()
 
 
     def run(self, options, run_id=0, iteration_index=1, suite_retry_index=0):
@@ -737,12 +759,15 @@ class RobotTestSuite(object):
             if not self._run_dependencies(deps, options, iteration_index, suite_retry_index):
                 return False
 
+        # Listeners are called in the exact order as in `listeners` list for both `start_test` and `end_test`.
         output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
-        listeners = [os.path.join(this_path, output_formatter)]
+        listeners = [
+            os.path.join(this_path, f'retry_and_timeout_listener.py:{options.retry_count}'),
+            # Has to be the last one to print final state, message etc. after all the changes made by other listeners.
+            os.path.join(this_path, output_formatter),
+        ]
         if options.listener:
             listeners += options.listener
-        if options.retry_count > 1:
-            listeners += [f'RetryFailed:{options.retry_count - 1}']
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
         log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
@@ -774,6 +799,30 @@ class RobotTestSuite(object):
             if not test.teardown:
                 test.teardown.config(name="Test Teardown")
 
+            # Let's just fail tests which previously unexpectedly timed out.
+            if test.name in self.tests_with_unexpected_timeouts:
+                test.config(setup=None, teardown=None)
+                test.body.clear()
+                test.body.create_keyword('Fail', ["Test timed out in a previous run and won't be retried."])
+
+                # This tag tells `RetryFailed` max retries for this test.
+                if 'test:retry' in test.tags:
+                    test.tags.remove('test:retry')
+                test.tags.add('test:retry(0)')
+
+            # Timeout tests with `self.timeout_expected_tag` will be set as passed in the listener
+            # during timeout handling. Their timeout won't be influenced by the global timeout option.
+            if self.timeout_expected_tag in test.tags:
+                if not test.timeout:
+                    print(f"!!!!! Test with a `{self.timeout_expected_tag}` tag must have `[Timeout]` set: {test.longname}")
+                    sys.exit(1)
+
+        # Timeout handler is used in `retry_and_timeout_listener.py` and, to be able to call it,
+        # `self` is smuggled in suite's `parent` which is typically None for the main suite.
+        # Listener grabs it on suite start and resets to original value.
+        suite.parent = (self, suite.parent)
+        self.timeout_handler = self._create_timeout_handler(options, iteration_index, suite_retry_index)
+
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
 
         self.suite_log_files = []
@@ -795,6 +844,28 @@ class RobotTestSuite(object):
             self.copy_mono_logs(options, iteration_index, suite_retry_index)
 
         return TestResult(result.return_code == 0, self.suite_log_files)
+
+    def _create_timeout_handler(self, options, iteration_index, suite_retry_index):
+        def _timeout_handler(test: robot.running.TestCase, result: robot.result.TestCase):
+            if self.timeout_expected_tag in test.tags:
+                message_start = '----- Test timed out, as expected,'
+            else:
+                # Let's make the first message stand out if the timeout wasn't expected.
+                message_start = '!!!!! Test timed out'
+
+                # Tests with unexpected timeouts won't be retried.
+                self.tests_with_unexpected_timeouts = test.name
+            print(f"{message_start} after {Time(test.timeout).seconds}s: {test.parent.name}.{test.name}")
+            print(f"----- Skipped flushing emulation log and saving state due to the timeout, restarting Renode...")
+
+            self._close_remote_server(RobotTestSuite.robot_frontend_process, options, cleanup_timeout_override=0, silent=True)
+            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index, self.remote_server_port)
+
+            # It's typically used in suite setup (renode-keywords.robot:Setup) but we don't need to
+            # call full setup which imports library etc. We only need to resend settings to Renode.
+            BuiltIn().run_keyword("Setup Renode")
+            print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using the same port {self.remote_server_port}")
+        return _timeout_handler
 
 
     def copy_mono_logs(self, options: Namespace, iteration_index: int, suite_retry_index: int) -> None:

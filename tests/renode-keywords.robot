@@ -158,6 +158,16 @@ Test Setup
 Test Teardown
     Stop Profiler
 
+    ${failed}=  Run Keyword If Test Failed  Set Variable  True
+    IF  ${failed}
+        # Some of the exception messages end with whitespace.
+        ${message}=  Strip String  ${TEST_MESSAGE}  mode=right
+        Set Test Message           ${message}
+    END
+
+    ${timed_out}=  Run Keyword If Timeout Occurred  Set Variable  True
+    IF  ${timed_out}  RETURN
+
     IF  ${CREATE_SNAPSHOT_ON_FAIL}
         Run Keyword If Test Failed
           ...   Create Snapshot Of Failed Test
