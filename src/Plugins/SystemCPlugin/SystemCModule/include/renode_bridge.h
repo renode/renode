@@ -123,6 +123,8 @@ private:
   void service_backward_request(tlm::tlm_generic_payload &payload,
                                 uint8_t connection_idx,
                                 sc_core::sc_time &delay);
+  bool service_backward_request_dmi(tlm::tlm_generic_payload &payload,
+                                    tlm::tlm_dmi &dmi_data);
   int64_t get_systemc_time_us();
 
   // Connection from Renode -> SystemC.
