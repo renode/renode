@@ -216,28 +216,30 @@ class Cache:
         print(f'off : {convop(self._addr_get_offset(addr))}')
 
     def print_cache_info(self) -> None:
-        tag_width = self._memory_width - self._block_width - self._set_width
-        print('addressing:')
-        print(f'tag: {tag_width} bits')
-        print(f'set: {self._set_width} bits')
-        print(f'block: {self._block_width} bits\n')
+        print(f'{self.name} configuration:')
+        print(f'Cache size:          {self._cache_size} bytes')
+        print(f'Block size:          {self._block_size} bytes')
+        print(f'Number of lines:     {self._num_lines}')
+        print(f'Number of sets:      {self._sets} ({self._lines_per_set} lines per set)')
+        print(f'Replacement policy:  {self._replacement_policy if self._replacement_policy is not None else "RAND"}')
 
-        print('cache configuration')
-        print(f'block: {self._block_width} bits')
-        print(f'msize:  {self._memory_size} bytes')
-        print(f'csize:  {self._cache_size} bytes')
-        print(f'bsize:  {self._block_size} bytes')
-        print(f'clines: {self._num_lines}')
-        print(f'csets:  {self._sets} ({self._lines_per_set} lines per set)')
-        print(f'rpoli:  {self._replacement_policy if self._replacement_policy is not None else "RAND"}')
+        if self.debug:
+            print(f'Cache block width:   {self._block_width} bits')
+            print(f'Addressable memory:  {self._memory_size} bytes')
+            tag_width = self._memory_width - self._block_width - self._set_width
+            print('Addressing parameters:')
+            print(f'Tag: {tag_width} bits')
+            print(f'Set: {self._set_width} bits')
+            print(f'Block: {self._block_width} bits\n')
+
         print()
 
     def print_hmr(self) -> None:
         ratio = (self.hits / ((self.hits + self.misses) if self.misses else 1)) * 100
-        print(f'm: {self.misses}')
-        print(f'h: {self.hits}')
-        print(f'i: {self.invalidations}')
-        print(f'hmr: {round(ratio, 2)}%')
+        print(f'Misses: {self.misses}')
+        print(f'Hits: {self.hits}')
+        print(f'Invalidations: {self.invalidations}')
+        print(f'Hit ratio: {round(ratio, 2)}%')
 
     def print_debug_lines(self, include_empty_tags: bool = False) -> None:
         tag_width = self._memory_width - self._block_width - self._set_width

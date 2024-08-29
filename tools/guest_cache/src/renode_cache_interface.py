@@ -39,11 +39,9 @@ class RenodeLogInterface:
         self.invalidation_opcodes = invalidation_opcodes if invalidation_opcodes else {}
         self.invalidate_on_io = invalidate_on_io
 
-        if self.l1i is not None:
-            self.l1i.print_cache_info()
-
-        if self.l1d is not None:
-            self.l1d.print_cache_info()
+        for cache in [self.l1i, self.l1d]:
+            if cache is not None:
+                cache.print_cache_info()
 
     def simulate(self) -> None:
         """ Simulate the cache structure
@@ -94,15 +92,15 @@ class RenodeLogInterface:
 
     def print_analysis_results(self) -> None:
         if self.l1i:
-            print(f'insn_read: {self.count_insn_read}')
+            print(f'Instructions read: {self.count_insn_read}')
         if self.l1d:
-            print(f'mem_total: {self.count_mem_read + self.count_mem_write} (read: {self.count_mem_read}, write {self.count_mem_write})')
-            print(f'io_total: {self.count_io_read + self.count_io_write} (read: {self.count_io_read}, write {self.count_io_write})')
+            print(f'Total memory operations: {self.count_mem_read + self.count_mem_write} (read: {self.count_mem_read}, write {self.count_mem_write})')
+            print(f'Total I/O operations: {self.count_io_read + self.count_io_write} (read: {self.count_io_read}, write {self.count_io_write})')
 
         print()
         for c in [self.l1i, self.l1d]:
             if c is not None:
-                print(c.name)
+                print(f'{c.name} results:')
                 c.print_hmr()
                 print()
 
