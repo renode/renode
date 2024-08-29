@@ -2,6 +2,7 @@
 ${LINUX_UART}                                   sysbus.uart1
 ${UBOOT_UART}                                   sysbus.uart1
 ${ZEPHYR_UART}                                  sysbus.uart0
+${OPENAMP_UART}                                 sysbus.uart0
 ${LINUX_PROMPT}                                 \#${SPACE}
 ${ZEPHYR_PROMPT}                                uart:~$
 ${UBOOT_PROMPT}                                 ZynqMP r5>
@@ -39,6 +40,12 @@ Create Linux Remoteproc Machine
     ${zephyr_tester}=               Create Terminal Tester          ${ZEPHYR_UART}  defaultPauseEmulation=true
     RETURN                          ${linux_tester}  ${zephyr_tester}
 
+Create Linux OpenAMP Machine
+    Execute Command                 include @scripts/single-node/zynqmp_openamp.resc
+    Execute Command                 machine SetSerialExecution True
+    ${linux_tester}=                Create Terminal Tester         ${LINUX_UART}    defaultPauseEmulation=true
+    ${openamp_tester}=              Create Terminal Tester         ${OPENAMP_UART}  defaultPauseEmulation=true
+    RETURN                          ${linux_tester}  ${openamp_tester}
 
 Create Zephyr Machine
     [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
@@ -70,6 +77,10 @@ Execute Linux Command
     Write Line To Uart              ${command}                              testerId=${testerId}
     Wait For Prompt On Uart         ${LINUX_PROMPT}                         testerId=${testerId}  timeout=${timeout}
     Check Exit Code                 testerId=${testerId}
+
+Execute Linux Command Non Blocking
+    [Arguments]                     ${command}  ${testerId}=0
+    Write Line To Uart              ${command}                              testerId=${testerId}
 
 Should Pass Zephyr Test Suite
     [Arguments]                     ${testerId}=0
@@ -479,3 +490,21 @@ Should Start And Stop Remoteproc
     ${is_halted}=  Execute Command      rpu0 IsHalted
     Should Contain                      ${is_halted}    True
 
+Should Run OpenAMP Echo Sample
+    ${linux_tester}  ${openamp_tester}=     Create Linux OpenAMP Machine
+    Boot Linux And Login                    testerId=${linux_tester}
+
+    # Load remoteproc kernel module and start demo
+    Execute Linux Command                   modprobe zynqmp_r5_remoteproc                                       testerId=${linux_tester}
+    Execute Linux Command                   echo rpmsg-echo.out > /sys/class/remoteproc/remoteproc0/firmware    testerId=${linux_tester}
+    Execute Linux Command                   echo start > /sys/class/remoteproc/remoteproc0/state                testerId=${linux_tester}
+    Execute Linux Command Non Blocking      ./echo_test                                                         testerId=${linux_tester}
+
+    # Check if demo works correctly
+    Wait For Line On Uart                   Echo Test Round 0                                                   testerId=${linux_tester}
+    FOR  ${i}  IN RANGE  0  471
+            Wait For Line On Uart           sending payload number ${i} of size ${i + 17}                       testerId=${linux_tester}
+            Wait For Line On Uart           echo test: sent : ${i + 17}                                         testerId=${linux_tester}
+            Wait For Line On Uart           received payload number ${i} of size ${i + 17}                      testerId=${linux_tester}
+    END
+    Wait For Line On Uart                   Echo Test Round 0 Test Results: Error count = 0                     testerId=${linux_tester}
