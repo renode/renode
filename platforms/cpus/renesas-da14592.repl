@@ -92,7 +92,7 @@ dma: DMA.RenesasDA14_DMA @ sysbus 0x50060200
 i2c: I2C.RenesasDA_I2C @ sysbus 0x50020300
     -> nvic_m33@5
 
-general_regs: Miscellaneous.RenesasDA14_GeneralRegisters @ sysbus 0x50000000
+clock_gen: Miscellaneous.RenesasDA14_ClockGenerationController @ sysbus 0x50000000
     xtal32m: xtal32m_regs
     rom: rom
     eflashDataText: eflash_data_text
@@ -101,6 +101,9 @@ xtal32m_regs: Miscellaneous.RenesasDA14_XTAL32MRegisters @ sysbus 0x50010000
 
 spi: SPI.RenesasDA_SPI @ sysbus 0x50020200
     -> nvic_m33@6
+
+gp_regs: Miscellaneous.RenesasDA14_GeneralPurposeRegisters @ sysbus 0x50050300
+    sysWatchdog: sys_wdog
 
 sysbus:
     init:
@@ -123,7 +126,6 @@ sysbus:
         Tag <0x500502FC,0x500502FF> "CHIP_METAL_OPTION" 0x0
         Tag <0x50000100,0x50000163> "WAKE-UP_CONTROLLER" // WAKE_UP_CONTROLLER registers
         Tag <0x50020400,0x5002041F> "GENERAL_PURPOSE_or_ADC_1" // GENERAL_PURPOSE_or_ADC_1 registers
-        Tag <0x50050300,0x50050317> "GENERAL_PURPOSE" // GENERAL_PURPOSE registers
         Tag <0x50000200,0x5000029b> "POWER_DOMAIN_CONTROLLER" // POWER_DOMAIN_CONTROLLER registers
         Tag <0x50020504,0x50020507> "CLK_COM"
         Tag <0x50020508,0x5002050B> "SET_CLK_COM"
