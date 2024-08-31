@@ -46,7 +46,37 @@ UART Should Work
     Create Machine                  ${HELLO_WORLD_BIN}    ${HELLO_WORLD_ELF}
     Create Terminal Tester          sysbus.uart1
 
-    Wait For Line On Uart           Hello, world!
+    Wait For Line On Uart           Hello, world!    pauseEmulation=true
+    Provides                        machine-after-hello-world
+
+Watchdog Should Reset Machine Continuously If Not Frozen
+    Requires                        machine-after-hello-world
+    Create Log Tester               5
+
+    # Let's check this sample without GeneralPurposeRegisters containing Watchdog freeze register.
+    # It should reset over and over again without the ability to freeze it.
+    Execute Command                 sysbus Unregister sysbus.gp_regs
+
+    # Failed attempt to freeze watchdog.
+    Wait For Log Entry              WriteDoubleWord to non existing peripheral at 0x50050300, value 0x8
+
+    # And resets all over the place.
+    Wait For Log Entry              sys_wdog: Reseting machine
+    Wait For Log Entry              sys_wdog: Reseting machine
+    Wait For Log Entry              sys_wdog: Reseting machine
+
+Freezing Watchdog Should Work
+    Requires                        machine-after-hello-world
+    Create Log Tester               5
+    Execute Command                 logLevel -1 sysbus.sys_wdog
+    Execute Command                 sysbus LogPeripheralAccess sysbus.gp_regs
+
+    # Sample freezes Watchdog after reaching limit which prevents resetting machine.
+    Wait For Log Entry              sys_wdog: Limit reached
+    Wait For Log Entry              WriteUInt32 to 0x0 (SetFreeze), value 0x8
+    Wait For Log Entry              sys_wdog: Freeze set
+
+    Should Not Be In Log            sys_wdog: Resetting machine
 
 Test Watchdog
     Create Machine          ${WATCHDOG_BIN}  ${WATCHDOG_ELF}
