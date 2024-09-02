@@ -100,10 +100,34 @@ namespace Antmicro.Renode.Peripherals.Plugins
             returnAddress = 0;
             switch(cpu.Architecture)
             {
+                case "arm-m":
+                case "arm":
+                    returnAddress = cpu.GetRegister(14).RawValue;
+                    return true;
+                case "arm64":
+                    returnAddress = cpu.GetRegister(30).RawValue;
+                    return true;
+                case "i386":
+                    // SystemV calling convention
+                    IMachine machine = cpu.GetMachine();
+                    returnAddress = ((SystemBus)machine.SystemBus).ReadDoubleWord(cpu.GetRegister(4).RawValue);
+                    return true;
                 case "riscv64":
                 case "riscv32":
                 case "riscv":
                     returnAddress = cpu.GetRegister(1).RawValue;
+                    return true;
+                case "sparc":
+                    /*
+                     * If subroutine uses SAVE instruction, then it's 15th register+8,
+                     * if it doesn't use SAVE instruction, then it's 31th register+8.
+                     * We can't easily detect it, it's dependent on how compiler will compile
+                     * the function.
+                     */
+                    returnAddress = cpu.GetRegister(15).RawValue + 8;
+                    return true;
+                case "xtensa":
+                    returnAddress = cpu.GetRegister(89).RawValue;
                     return true;
             }
             return false;
@@ -114,10 +138,29 @@ namespace Antmicro.Renode.Peripherals.Plugins
             firstParameter = 0;
             switch(cpu.Architecture)
             {
+                case "arm-m":
+                case "arm64":
+                case "arm":
+                    firstParameter = cpu.GetRegister(0).RawValue;
+                    return true;
+                case "i386":
+                    // SystemV calling convention
+                    IMachine machine = cpu.GetMachine();
+                    firstParameter = ((SystemBus)machine.SystemBus).ReadDoubleWord(cpu.GetRegister(4).RawValue + 4);
+                    return true;
                 case "riscv64":
                 case "riscv32":
                 case "riscv":
                     firstParameter = cpu.GetRegister(10).RawValue;
+                    return true;
+                case "sparc":
+                    firstParameter = cpu.GetRegister(8).RawValue;
+                    return true;
+                case "xtensa":
+                    /*
+                     * Zephyr calls k_busy_wait with CALL8 instruction, first argument is in A10 register
+                     */
+                    firstParameter = cpu.GetRegister(99).RawValue;
                     return true;
             }
             return false;
