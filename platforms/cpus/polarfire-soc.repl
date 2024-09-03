@@ -227,6 +227,16 @@ ddr: Memory.MappedMemory @ {
     }
     size: 0x40000000
 
+ddr2: Memory.MappedMemory @ {
+        sysbus 0x1040000000;
+        sysbus 0x1440000000;
+        sysbus 0x1840000000
+    }
+    size: 0x3c0000000
+
+mem_bootloader: Memory.MappedMemory @ sysbus 0x0
+    size: 0x100000
+
 pcie0: PCI.MPFS_PCIe @ sysbus 0x53004000
 
 pcie1: PCI.MPFS_PCIe @ {
@@ -245,6 +255,7 @@ pcieMem: PCI.PCIeMemory  @ pcie1 1
     parent: pcie1
 
 qspi: SPI.MPFS_QSPI @ sysbus 0x21000000
+    size: 0x1000
     IRQ -> plic@85
 
 pseFlash: SPI.Micron_MT25Q @ qspi
@@ -254,12 +265,30 @@ flash_mem: Memory.MappedMemory
     size: 0x00800000
 
 sysServices: Miscellaneous.MPFS_SystemServices @ sysbus 0x37020000
-    flashMemory: flash_mem
+    flashMemory: sys_ctrl_flash_memory
+    mailboxMemory: mailbox
     SerialNumberLower: 0x0123456789ABCDEF
     SerialNumberUpper: 0x0123456789ABCDEF
     IRQ -> plic@96
 
+syscontroller_qspi: SPI.MPFS_QSPI @ sysbus 0x37020100
+    size: 0x200
+    IRQ -> plic@110
+
+sys_ctrl_flash: SPI.Micron_MT25Q @ syscontroller_qspi
+    underlyingMemory: sys_ctrl_flash_memory
+
+sys_ctrl_flash_memory: Memory.MappedMemory
+    size: 0x800000
+
+mailbox: Memory.ArrayMemory @ sysbus 0x37020800
+    size: 0x800
+
 athena: Miscellaneous.Crypto.AthenaX5200 @ sysbus 0x22000000
+
+ioscb: Python.PythonPeripheral @ sysbus 0x37080000
+    size: 0x1f7ffff
+    script: '''request.value = 0xFFFFFFFF'''
 
 // There are 8 BootRom registers covering range from 0x20003120 to 0x2000313F,
 // but because of Renode's memory alignment limitations they are mapped as a single memory
@@ -271,9 +300,26 @@ DDR_PHY: Miscellaneous.MPFS_DDRMock @ sysbus 0x20007000
 SCB_DDR_PLL: Miscellaneous.MPFS_DDRMock @ sysbus 0x3e010000
 DDRCFG: Miscellaneous.MPFS_DDRMock @ sysbus 0x20080000
 
+CacheConfig_WayEnable: Python.PythonPeripheral @ sysbus 0x02010008
+    size: 0x8
+    initable: true
+    script: '''
+if request.isInit:
+    reg = 0x0
+elif request.isRead:
+    request.value = reg
+elif request.isWrite:
+    reg = request.value
+'''
+
+TopSystemRegisters: Miscellaneous.MPFS_Sysreg @ sysbus 0x20002000
+
 sysbus:
     init:
-        Tag <0x200020B8, 0x200020BB> "SYSREG:MESH_SEED_CR" 0xFF
+        SilenceRange <0x02010010, 0x02010FFF> # "Cache controller"
+        SilenceRange <0x01700000, 0x01704FFF> # Bus error units
+        Tag <0x37080000, 0x38FFFFFF> "IOSCB" 0xFFFFFFFF
+        Tag <0x20005000, 0x20005FFF> "MPU Config"
 
         Tag <0x20007000, 0x20007FFF> "CFG_DDR_SGMII_PHY"
         Tag <0x20007208, 0x2000720B> "IOC_REG1" 0xFF
@@ -288,6 +334,4 @@ sysbus:
         Tag <0x20084428, 0x2008442B> "CSR_APB_MT_DONE_ACK" 0x1
         Tag <0x20090034, 0x20090037> "CSR_APB_STAT_DFI_INIT_COMPLETE" 0x1
         Tag <0x20090038, 0x2009003B> "CSR_APB_STAT_DFI_TRAINING_COMPLETE" 0x1
-
-        Tag <0x3E001004, 0x3E001007> "PLL:PLL_CTRL" 0x2000000
         Tag <0x3E040008, 0x3E04000B> "IOSCB_IO_CALIB_DDR:IOC_REG1" 0xFF
