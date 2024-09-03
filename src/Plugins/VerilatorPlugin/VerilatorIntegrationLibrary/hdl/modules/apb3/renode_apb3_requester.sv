@@ -82,14 +82,18 @@ module renode_apb3_requester (
   //
 
   always @(connection.read_transaction_request) begin
-    assert (connection.read_transaction_data_bits == renode_pkg::DoubleWord)
-    else begin
-      connection.fatal_error("Read transaction data bits must be DoubleWord.");
-      connection.read_respond(0, 1);
+    integer transaction_width;
+
+    if(!renode_pkg::is_access_aligned(connection.read_transaction_address, connection.read_transaction_data_bits)) begin
+        connection.log_warning("Unaligned access on APB bus results in unpredictable behavior");
     end
-    if (bus.DataWidth != 32) begin
+    transaction_width = renode_pkg::valid_bits_to_transaction_width(connection.read_transaction_data_bits);
+    if (bus.DataWidth > transaction_width) begin
       connection.log_warning(
-          $sformatf("Bus DataWidth is (%d) < 32, so MSB will be truncated.", bus.DataWidth));
+          $sformatf("Bus bus.bus.DataWidth is (%d) > transaction width (%d), MSB will be truncated.", bus.DataWidth, transaction_width));
+    end else if (bus.DataWidth < transaction_width) begin
+      connection.log_warning(
+          $sformatf("Bus bus.bus.DataWidth is (%d) < transaction width (%d), MSB will be zero-extended.", bus.DataWidth, transaction_width));
     end
 
     read_address = address_t'(connection.read_transaction_address);
@@ -99,14 +103,18 @@ module renode_apb3_requester (
   end
 
   always @(connection.write_transaction_request) begin
-    assert (connection.write_transaction_data_bits == renode_pkg::DoubleWord)
-    else begin
-      connection.fatal_error("Write transaction data bits must be DoubleWord.");
-      connection.write_respond(1'b1);
+    integer transaction_width;
+
+    if(!renode_pkg::is_access_aligned(connection.write_transaction_address, connection.write_transaction_data_bits)) begin
+        connection.log_warning("Unaligned access on APB bus results in unpredictable behavior");
     end
-    if (bus.DataWidth != 32) begin
+    transaction_width = renode_pkg::valid_bits_to_transaction_width(connection.write_transaction_data_bits);
+    if (bus.DataWidth > transaction_width) begin
       connection.log_warning(
-          $sformatf("Bus DataWidth is (%d) < 32, so MSB will be truncated.", bus.DataWidth));
+          $sformatf("Bus bus.bus.DataWidth is (%d) > transaction width (%d), MSB will be truncated.", bus.DataWidth, transaction_width));
+    end else if (bus.DataWidth < transaction_width) begin
+      connection.log_warning(
+          $sformatf("Bus bus.bus.DataWidth is (%d) < transaction width (%d), MSB will be zero-extended.", bus.DataWidth, transaction_width));
     end
 
     write_address = address_t'(connection.write_transaction_address);
@@ -207,7 +215,5 @@ module renode_apb3_requester (
       end
     endcase
   end
-
-
 endmodule
 

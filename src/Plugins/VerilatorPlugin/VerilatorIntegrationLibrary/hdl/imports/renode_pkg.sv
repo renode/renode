@@ -79,6 +79,19 @@ package renode_pkg;
     endcase
   endfunction
 
+  function static integer valid_bits_to_transaction_width(valid_bits_e valid_bits);
+    case (valid_bits)
+      QuadWord: return 64;
+      DoubleWord: return 32;
+      Word: return 16;
+      Byte: return 8;
+      default: begin
+          $error($sformatf("Cannot determine transaction width for valid_bits %d", valid_bits));
+          return 0;
+      end
+    endcase
+  endfunction
+
   class renode_connection;
     semaphore exclusive_receive = new(1);
 

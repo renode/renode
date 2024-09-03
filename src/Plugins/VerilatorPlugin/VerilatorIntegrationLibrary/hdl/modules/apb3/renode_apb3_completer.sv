@@ -56,7 +56,7 @@ module renode_apb3_completer #(
   end
 
   renode_pkg::valid_bits_e valid_bits;
-  assign valid_bits = renode_pkg::DoubleWord;
+  assign valid_bits = renode_pkg::valid_bits_e'((1 << bus.DataWidth) - 1);
 
   //
   // APB3 Completer
@@ -102,10 +102,6 @@ module renode_apb3_completer #(
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
           begin
-            if (bus.DataWidth != 32) begin
-              connection.log_warning(
-                  $sformatf("Bus DataWidth is (%d) < 32, so MSB will be padded.", bus.DataWidth));
-            end
             connection.write(renode_pkg::address_t'(paddr), valid_bits, renode_pkg::data_t'(pwdata),
                              is_error);
             if (is_error) begin
@@ -120,10 +116,6 @@ module renode_apb3_completer #(
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
           begin
-            if (bus.DataWidth != 32) begin
-              connection.log_warning(
-                  $sformatf("Bus DataWidth is (%d) < 32, so MSB will be padded.", bus.DataWidth));
-            end
             // The connection.read call may cause elapse of a simulation time.
             connection.read(renode_pkg::address_t'(paddr), valid_bits, prdata_int, is_error);
             if (is_error) begin
