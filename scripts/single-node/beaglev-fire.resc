@@ -1,0 +1,35 @@
+:name: BeagleV-Fire
+:description: This is a sample script running HSS, U-Boot and Linux on BeagleV-Fire with PolarFire SoC
+
+$bootloader?=@https://dl.antmicro.com/projects/renode/hss-envm-wrapper.elf-s_3090016-1703473abada7b58db4af77d726b569962e28e3e
+$image?=@https://dl.antmicro.com/projects/renode/sdcard.img-s_126566400-406ae9e256ba0a8935156b6033e6b316b075f1ab
+$uboot?=@https://dl.antmicro.com/projects/renode/u-boot-s_7278264-f40c30543d63d91ecd65c731c217f4218b0a3ced
+
+using sysbus
+mach create
+
+machine LoadPlatformDescription @platforms/boards/beaglev-fire.repl
+machine SdCardFromFile $image mmc 0x100000000
+emulation SetGlobalSerialExecution True
+emulation SetGlobalQuantum "0.0008"
+
+showAnalyzer mmuart0
+
+gpio0.UserButton Pressed
+
+
+set hook
+"""
+# The e51 CPU continuously monitors the system, halting it significantly improves the speed of the simulation
+e51 = machine['sysbus.e51']
+e51.IsHalted = True
+print("halted management CPU")
+"""
+sysbus LoadSymbolsFrom $uboot
+u54_4 AddHook `sysbus GetSymbolAddress "_start"` $hook
+
+macro reset
+"""
+    sysbus LoadELF $bootloader
+"""
+runMacro $reset
