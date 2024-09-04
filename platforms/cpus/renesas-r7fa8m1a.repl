@@ -17,7 +17,7 @@ code_flash: Memory.MappedMemory @ {
         sysbus 0x02000000;
         sysbus 0x12000000
     }
-    size: 0x2F8000
+    size: 0x200000
 
 factory_flash: Memory.MappedMemory @ {
         sysbus 0x03008000;
