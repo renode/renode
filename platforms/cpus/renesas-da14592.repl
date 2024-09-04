@@ -74,7 +74,10 @@ uart0: UART.RenesasDA14_UART @ sysbus 0x50020000
 uart1: UART.RenesasDA14_UART @ sysbus 0x50020100
     -> nvic_m33@4
 
-wdog: Timers.RenesasDA_Watchdog @ sysbus 0x50000700
+sys_wdog: Timers.RenesasDA_Watchdog @ sysbus new Bus.BusPointRegistration {
+        address: 0x50000700;
+        cpu: cpu_m33
+    }
     frequency: 32000
     nvic: nvic_m33
 
