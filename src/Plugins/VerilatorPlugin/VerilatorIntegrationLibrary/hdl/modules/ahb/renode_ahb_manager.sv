@@ -36,11 +36,15 @@ module renode_ahb_manager (
   task static write_transaction();
     renode_pkg::valid_bits_e valid_bits;
     data_t data;
-    bit is_error;
+    bit is_invalid;
 
     valid_bits = connection.write_transaction_data_bits;
     data = data_t'(connection.write_transaction_data & valid_bits);
-    configure_transfer(connection.write_transaction_address, valid_bits, Write);
+    configure_transfer(connection.write_transaction_address, valid_bits, Write, is_invalid);
+    if (is_invalid) begin
+        connection.write_respond(is_invalid);
+        return;
+    end
 
     bus.hwstrb = bus.transfer_size_to_strobe(bus.valid_bits_to_transfer_size(valid_bits));
     bus.hwdata = data;
@@ -53,10 +57,15 @@ module renode_ahb_manager (
   task static read_transaction();
     renode_pkg::valid_bits_e valid_bits;
     data_t data;
+    bit is_invalid;
     bit is_error;
 
     valid_bits = connection.read_transaction_data_bits;
-    configure_transfer(connection.read_transaction_address, valid_bits, Read);
+    configure_transfer(connection.read_transaction_address, valid_bits, Read, is_invalid);
+    if (is_invalid) begin
+        connection.read_respond(renode_pkg::data_t'(0), is_invalid);
+        return;
+    end
 
     bus.htrans <= Idle;
 
@@ -66,10 +75,12 @@ module renode_ahb_manager (
     connection.read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
   endtask
 
-  task static configure_transfer(renode_pkg::address_t address, renode_pkg::valid_bits_e valid_bits, transfer_direction_e direction);
-    if (valid_bits != renode_pkg::DoubleWord || !bus.are_valid_bits_supported(valid_bits)) begin
-      connection.log_warning($sformatf("Trying to access bits 'b%b on the bus that is %d bits width.", valid_bits, bus.DataWidth));
-      connection.fatal_error("Incorrect access, the AHB Manager currently supports only 32-bit access.");
+  task static configure_transfer(renode_pkg::address_t address, renode_pkg::valid_bits_e valid_bits, transfer_direction_e direction, output logic is_invalid);
+    is_invalid = 0;
+    if (!bus.are_valid_bits_supported(valid_bits)) begin
+      is_invalid = 1;
+      connection.log_warning($sformatf("Unsupported transaction width of %d for AHB bus with width %d. No transaction will be performed.", renode_pkg::valid_bits_to_transaction_width(valid_bits), bus.DataWidth));
+      return;
     end
     bus.hwrite = direction;
     bus.hsize  = bus.valid_bits_to_transfer_size(valid_bits);
