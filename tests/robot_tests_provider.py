@@ -304,7 +304,7 @@ class RobotTestSuite(object):
         self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
         self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
 
-        # In parallel runs, each parallel group starts its own Renode process.
+        # In parallel runs, Renode is started for each suite.
         # The same is done in sequential runs with --keep-renode-output.
         # see: run
         if options.jobs == 1 and not options.keep_renode_output:
@@ -462,7 +462,6 @@ class RobotTestSuite(object):
             self._close_remote_server(p, options)
             return None
 
-        print('Started Renode instance on port {}; pid {}'.format(self.remote_server_port, self.renode_pid))
         return p
 
     def __move_perf_data(self, options):
@@ -502,18 +501,20 @@ class RobotTestSuite(object):
             print('Ignoring helper file: {}'.format(self.path))
             return True
 
-        print('Running ' + self.path)
-        result = None
-
         # in non-parallel runs there is only one Renode process for all runs,
         # unless --keep-renode-output is enabled, in which case a new process
         # is spawned for every suite to ensure logs are separate files.
         # see: prepare
         if options.jobs != 1 or options.keep_renode_output:
-            proc = self._run_remote_server(options, iteration_index, suite_retry_index)
-        else:
-            proc = None
+            # Parallel groups run in separate processes so these aren't really
+            # shared, they're only needed to restart Renode in timeout handler.
+            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
+            RobotTestSuite.remote_server_port = self.remote_server_port
 
+        self.renode_pid = RobotTestSuite.robot_frontend_process.pid
+        print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}')
+
+        result = None
         def get_result():
             return result if result is not None else TestResult(True, None)
 
@@ -546,7 +547,8 @@ class RobotTestSuite(object):
             exec_time = round(end_timestamp - start_timestamp, 2)
             print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
 
-        self._close_remote_server(proc, options)
+        if options.jobs != 1 or options.keep_renode_output:
+            self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
 
         # make sure renode is still alive when a non-parallel run depends on it
         if options.jobs == 1 and not options.keep_renode_output:
