@@ -13,6 +13,7 @@ u54_1: CPU.RiscV64 @ sysbus
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     CyclesPerInstruction: 8
+    allowUnalignedAccesses: true
     init:
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
@@ -22,6 +23,7 @@ u54_2: CPU.RiscV64 @ sysbus
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     CyclesPerInstruction: 8
+    allowUnalignedAccesses: true
     init:
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
@@ -31,6 +33,7 @@ u54_3: CPU.RiscV64 @ sysbus
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     CyclesPerInstruction: 8
+    allowUnalignedAccesses: true
     init:
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
@@ -40,6 +43,7 @@ u54_4: CPU.RiscV64 @ sysbus
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     CyclesPerInstruction: 8
+    allowUnalignedAccesses: true
     init:
         RegisterCustomCSR "BPM" 0x7C0 Machine
 
