@@ -167,3 +167,4 @@
 - tests/platforms/ACRN.robot
 - tests/unit-tests/zephyr-mode.robot
 - tests/unit-tests/riscv-zbb-extension.robot
+- tests/unit-tests/register-read-caching.robot
