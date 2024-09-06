@@ -58,3 +58,25 @@ Should Propagate Python Exception
 
 Should Fail On Python Syntax Error
     Run Keyword And Expect Error    SyntaxErrorException*  Execute Python  "a
+
+Should Trigger Timeout Handling
+    [Tags]                          timeout_expected
+    [Timeout]                       3 seconds
+    Create Log Tester               0
+    Execute Command                 using sysbus
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\"}"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
+
+    # Let's set a Python variable to check in the next test that Renode was restarted when handling the timeout.
+    Execute Command                 python 'timeout_test_executed = True'
+
+    # 0x0 opcode is NOP in A32 so everything's fine as long as PC doesn't leave `mem`.
+    Execute Command                 cpu AddHook 0xFFC "import time; time.sleep(10)"
+    Execute Command                 emulation RunFor '0.1'
+
+# This shouldn't be available because it's only set in the test which times out.
+# Timeout handling should restart Renode so this variable shouldn't be available.
+Should Run On Renode Restarted By Timeout Handling
+    Run Keyword And Expect Error    *'timeout_test_executed' is not defined*
+    ...    Execute Command          python 'print timeout_test_executed'
