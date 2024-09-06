@@ -27,6 +27,15 @@ from tests_engine import TestResult
 this_path = os.path.abspath(os.path.dirname(__file__))
 
 
+class Timeout:
+    def __init__(self, value: str):
+        self.seconds = Time(value).seconds
+        self.value = value
+
+    def __repr__(self):
+        return f"{self.value} ({self.seconds}s)"
+
+
 def install_cli_arguments(parser):
     group = parser.add_mutually_exclusive_group()
 
@@ -147,6 +156,16 @@ def install_cli_arguments(parser):
                         action="store_true",
                         default=False,
                         help="Gather execution metrics for each suite.")
+
+    parser.add_argument("--test-timeout",
+                        dest="timeout",
+                        action="store",
+                        default=None,
+                        type=Timeout,
+                        help=" ".join([
+                            "Default test case timeout after which Renode keywords will be interrupted.",
+                            "It's parsed by Robot Framework's DateTime library so all its time formats are supported.",
+                        ]))
 
 
 def verify_cli_arguments(options):
@@ -816,6 +835,10 @@ class RobotTestSuite(object):
                 if not test.timeout:
                     print(f"!!!!! Test with a `{self.timeout_expected_tag}` tag must have `[Timeout]` set: {test.longname}")
                     sys.exit(1)
+            elif options.timeout:
+                # Timeout from tags is used if it's shorter than the global timeout.
+                if not test.timeout or Time(test.timeout).seconds >= options.timeout.seconds:
+                    test.timeout = options.timeout.value
 
         # Timeout handler is used in `retry_and_timeout_listener.py` and, to be able to call it,
         # `self` is smuggled in suite's `parent` which is typically None for the main suite.
