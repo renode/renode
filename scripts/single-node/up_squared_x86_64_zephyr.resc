@@ -1,0 +1,25 @@
+:name: UP Squared (x86_64)
+:description: This script runs Zephyr hello_world sample on a UP Squared platform.
+
+$name?="UP Squared"
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/up_squared--zephyr-hello_world.elf-s_5247080-e38ef496b86f337bd8592dccdc85cb059a961339
+machine LoadPlatformDescription @platforms/cpus/up_squared_x86_64.repl
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+    # set the D flag for Executable code segment
+    cpu0 SetDescriptor CS 0x0 0x0 0x0 0x400000
+
+    # enable protected mode
+    cpu0 CR0 0x60000011
+
+    cpu1 IsHalted true
+
+    sysbus LoadELF $bin
+"""
+runMacro $reset

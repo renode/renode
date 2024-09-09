@@ -1,0 +1,113 @@
+dram: Memory.MappedMemory @ sysbus 0x0
+    size: 0x80000000
+
+uart: UART.NS16550 @ sysbus 0xa0000000
+
+cpu0: CPU.X86_64 @ sysbus
+    cpuType: "x86_64"
+    lapic: lapic0
+
+cpu1: CPU.X86_64 @ sysbus
+    cpuType: "x86_64"
+    lapic: lapic1
+
+lapic0: IRQControllers.LAPIC @ sysbus new Bus.BusPointRegistration { address: 0xFEE00000; cpu: cpu0 }
+    id: 0x0
+    IRQ -> cpu0@0
+
+lapic1: IRQControllers.LAPIC @ sysbus new Bus.BusPointRegistration { address: 0xFEE00000; cpu: cpu1 }
+    id: 0x1
+    IRQ -> cpu1@0
+
+hpet: Python.PythonPeripheral @ sysbus 0xFED00000
+    size: 0x400
+    initable: true
+    script: '''
+if request.isInit:
+   counter = 0
+if request.isRead:
+    if request.offset == 0x4: # counter clock period
+        request.value = 10000000
+    elif request.offset == 0xf0: # main counter value register
+        request.value = counter
+        counter += 100
+'''
+
+pci: Python.PythonPeripheral @ sysbus 0xE0000CF8
+    size: 0x400
+    initable: false
+    script: '''
+if request.isRead:
+    if addr == 0x0:
+        # ns16550 vendor and device ID
+        request.value = 0x5abc8086
+    elif addr == 0x10:
+        # address to memory-mapped accesses, it should be the same as 'uart' point of registration
+        request.value = 0xa0000000
+else:
+    addr = request.value & 0xFF
+'''
+
+sysbus:
+    init:
+        Tag <0xE0000020 1> "PIC1_CMD"
+        Tag <0xE0000021 1> "PIC1_DATA"
+        Tag <0xE00000A0 1> "PIC2_CMD"
+        Tag <0xE00000A1 1> "PIC2_DATA"
+        Tag <0xE0000040 1> "PIT_CHANNEL0"
+        Tag <0xE0000041 1> "PIT_CHANNEL1"
+        Tag <0xE0000042 1> "PIT_CHANNEL2"
+        Tag <0xE0000043 1> "PIT_CMDREG"
+        Tag <0xE0000CF8 4> "PCI_ADDRESS"
+        Tag <0xE0000CFC 4> "PCI_DATA"
+        Tag <0xE0000070 1> "CMOS_ADDRESS"
+        Tag <0xE0000071 1> "CMOS_DATA"
+
+        // ACPI table
+
+        // string "RSD PTR "
+        WriteQuadWord 0xe0000 0x2052545020445352
+        WriteDoubleWord 0xe0010 0xe0014
+
+        // table signature "RSDT"
+        WriteDoubleWord 0xe0014 0x52534454
+        // table Length (Header + 2 entries)
+        WriteDoubleWord 0xe0018 0x2c
+
+        // FACP table entry address
+        WriteDoubleWord 0xe0038 0xe0040
+        // APIC table entry address
+        WriteDoubleWord 0xe003c 0xe00d0
+
+        // table signature "FACP"
+        WriteDoubleWord 0xe0040 0x50434146
+        // table Length
+        WriteDoubleWord 0xe0044 0x90
+
+        // X_Dsdt
+        WriteDoubleWord 0xe00cc 0xe0040
+
+        // table signature "APIC"
+        WriteDoubleWord 0xe00d0 0x43495041
+        // Length
+        WriteDoubleWord 0xe00d4 0x3c
+
+        // entry type - Local APIC
+        WriteByte 0xe00fc 0x0
+        // entry Length
+        WriteByte 0xe00fd 0x8
+
+        // flags - set processor enabled
+        WriteByte 0xe0100 0xff
+
+        // entry type - Local APIC
+        WriteByte 0xe0104 0x0
+        // entry Length
+        WriteByte 0xe0105 0x8
+
+        // APIC Id
+        WriteByte 0xe0107 0x1
+
+        // flags - set processor enabled
+        WriteByte 0xe0108 0xff
+
