@@ -60,7 +60,7 @@ Should Fail On Python Syntax Error
     Run Keyword And Expect Error    SyntaxErrorException*  Execute Python  "a
 
 Should Trigger Timeout Handling
-    [Tags]                          timeout_expected
+    [Tags]                          timeout_expected  skip_windows
     [Timeout]                       3 seconds
     Create Log Tester               0
     Execute Command                 using sysbus
@@ -78,5 +78,6 @@ Should Trigger Timeout Handling
 # This shouldn't be available because it's only set in the test which times out.
 # Timeout handling should restart Renode so this variable shouldn't be available.
 Should Run On Renode Restarted By Timeout Handling
+    [Tags]                          skip_windows
     Run Keyword And Expect Error    *'timeout_test_executed' is not defined*
     ...    Execute Command          python 'print timeout_test_executed'
