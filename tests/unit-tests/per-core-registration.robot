@@ -18,6 +18,7 @@ ${CONFLICTING_MEMORY}=     SEPARATOR=
 ...  ${SPACE*4}size: 0x1000                                                          ${\n}
 ...  """
 
+
 *** Keywords ***
 Create Machine
     [Arguments]  ${elf}
@@ -28,7 +29,7 @@ Create Machine
     Execute Command                      macro reset "sysbus LoadELF ${elf}"
     Execute Command                      runMacro $reset
 
-    Create Terminal Tester               ${UART}
+    Create Terminal Tester               ${UART}  timeout=1
 
 
 Create Machine With Hex File
@@ -38,6 +39,15 @@ Create Machine With Hex File
     Execute Command                      machine LoadPlatformDescription "${CURDIR}${/}per-core-registration-hex.repl"
 
     Execute Command                      sysbus LoadHEX @https://dl.antmicro.com/projects/renode/stm32f072b_disco--zephyr-hello_world.hex-s_34851-4e97c68491cf652d0becd549526cd3df56e8ae66 ${cpu}
+
+ Add Peripheral Move Hook
+    [Arguments]                          ${cpu}  ${hook_addr}  ${peripheral_addr}  ${new_address}
+    ${hook_script}=                      Catenate  SEPARATOR=\n
+                                         ...  from Antmicro.Renode.Peripherals.Bus import BusRangeRegistration
+                                         ...  uart_peripheral = machine.SystemBus.WhatIsAt(${peripheral_addr}, cpu).Peripheral
+                                         ...  new_registration = BusRangeRegistration(${new_address}, uart_peripheral.Size)
+                                         ...  machine.SystemBus.MoveRegistrationWithinContext(uart_peripheral, new_registration, cpu)
+    Execute Command                      ${cpu} AddHook ${hook_addr} """${hook_script}"""
 
 
 *** Test Cases ***
@@ -124,7 +134,6 @@ Disassemble Code From Per Core Memory
 
   ${out}=  Execute Command               sysbus.cpu2 DisassembleBlock ${PER_CORE_MEMORY} 2
            Should Contain                ${out}    lw
-
 Should Move Peripheral Registered Per Core
            Create Machine                ${TEST_ELF}
 
@@ -138,7 +147,9 @@ Should Move Peripheral Registered Per Core
   ${out}=  Execute Command               sysbus WhatIsAt ${UART_ADDR_MOVED} sysbus.cpu2
            Should Be Empty               ${out}
 
-           Execute Command               sysbus.cpu2 AddHook `sysbus GetSymbolAddress "thread_entry"` "machine.SystemBus.MoveRegistrationWithinContext(machine.SystemBus.WhatIsAt(${UART_ADDR}, cpu).Peripheral, ${UART_ADDR_MOVED}, cpu)"
+           Add Peripheral Move Hook      sysbus.cpu2  `sysbus GetSymbolAddress "thread_entry"`  ${UART_ADDR}  ${UART_ADDR_MOVED}
+
+           Execute Command       showAnalyzer sysbus.uart
            Execute Command               start
 
            Wait For Line On Uart         Core 0 read from ${PER_CORE_MEMORY} returned: 0xB0B0B0B0
@@ -149,7 +160,8 @@ Should Move Peripheral Registered Per Core
 
            Execute Command               pause
            Execute Command               sysbus.cpu2 RemoveHooksAt `sysbus GetSymbolAddress "thread_entry"`
-           Execute Command               sysbus.cpu2 AddHook `sysbus GetSymbolAddress "thread_entry"` "machine.SystemBus.MoveRegistrationWithinContext(machine.SystemBus.WhatIsAt(${UART_ADDR_MOVED}, cpu).Peripheral, ${UART_ADDR}, cpu)"
+
+           Add Peripheral Move Hook      sysbus.cpu2  `sysbus GetSymbolAddress "thread_entry"`  ${UART_ADDR_MOVED}  ${UART_ADDR}
 
            Clear Terminal Tester Report
            Execute Command               runMacro $reset
@@ -180,3 +192,4 @@ Should Load Hex To Core Specific Memory
            Create Log Tester             0    # no need for additional timeout, we're only testing synchronous operations
            Create Machine With Hex File  sysbus.cpu2
            Should Not Be In Log          Tried to access bytes at non-existing peripheral
+

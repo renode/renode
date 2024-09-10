@@ -4,6 +4,7 @@ ${INIT_PERIPHBASE_ADDRESS}          0xAE000000
 ${INIT_PERIPHBASE}                  0x57000
 ${NEW_PERIPHBASE_ADDRESS}           0x80000000
 ${NEW_PERIPHBASE}                   0x40000
+${REPL_PATH}                        platforms/cpus/cortex-r8_smp.repl
 ${SIGNALS_UNIT}                     signalsUnit
 
 ${GIC_MODEL}                        Antmicro.Renode.Peripherals.IRQControllers.ARM_GenericInterruptController
@@ -11,6 +12,48 @@ ${PRIVATE_TIMER_MODEL}              Antmicro.Renode.Peripherals.Timers.ARM_Priva
 ${SCU_MODEL}                        Antmicro.Renode.Peripherals.Miscellaneous.ArmSnoopControlUnit
 
 *** Keywords ***
+Create Machine
+    [Arguments]  ${scu_registration}
+
+    Execute Command    using sysbus
+    Execute Command    mach create
+    Execute Command    machine LoadPlatformDescriptionFromString "using \\"${REPL_PATH}\\"; scu: @ ${scu_registration}"
+
+Should Modify Peripheral Registration
+    Verify Command Output As Integer         0x0                 cpu0 GetSystemRegisterValue "CBAR"
+
+    Execute Command                          emulation RunFor '0.0001'
+    FOR  ${i}  IN RANGE  ${CPU_COUNT}
+        # SCU address is based on PERIPHBASE with zero offset.
+        Verify Command Output As Integer
+        ...    ${INIT_PERIPHBASE_ADDRESS}    cpu${i} GetSystemRegisterValue "CBAR"
+    END
+
+    Execute Command                          ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${NEW_PERIPHBASE_ADDRESS}
+
+    # Nothing changes before exiting from reset.
+    Verify Peripherals Registered At         ${INIT_PERIPHBASE_ADDRESS}
+    Verify Command Output As Integer
+        ...    ${INIT_PERIPHBASE_ADDRESS}    cpu1 GetSystemRegisterValue "CBAR"
+
+    # Let's make sure the behavior is preserved across serialization.
+    ${f}=                                    Allocate Temporary File
+    Execute Command                          Save @${f}
+    Execute Command                          Clear
+    Execute Command                          Load @${f}
+    Execute Command                          mach set 0
+
+    FOR  ${i}  IN RANGE  ${CPU_COUNT}
+        Execute Command    cpu${i} Reset
+    END
+    Execute Command                          emulation RunFor '0.0001'
+
+    FOR  ${i}  IN RANGE  ${CPU_COUNT}
+        Verify Command Output As Integer     ${NEW_PERIPHBASE_ADDRESS}  cpu${i} GetSystemRegisterValue "CBAR"
+    END
+
+    Verify Peripherals Registered At         ${NEW_PERIPHBASE_ADDRESS}
+
 Verify Command Output As Integer
     [Arguments]  ${expected}  ${command}
 
@@ -46,16 +89,14 @@ Verify PCs
     Verify Command Output As Integer  ${cpu0_pc_expected}  cpu0 PC
     Verify Command Output As Integer  ${cpu1_pc_expected}  cpu1 PC
 
-*** Test Cases ***
-Create Machine
-    Execute Command    using sysbus
-    Execute Command    mach create
-    Execute Command    machine LoadPlatformDescription @platforms/cpus/cortex-r8_smp.repl
 
+*** Test Cases ***
+Create Machine With SCU Registered
+    Create Machine     scu_registration=sysbus ${INIT_PERIPHBASE_ADDRESS}
     Provides           created-machine
 
 Should Gracefully Handle Invalid Signal
-    Requires                      created-machine
+    Requires           created-machine
 
     # All available signals should be printed with both names when the given signal can't be found.
     # Let's just check if two example signals are included: INITRAM and PERIPHBASE.
@@ -65,7 +106,7 @@ Should Gracefully Handle Invalid Signal
     ...    Execute Command    ${SIGNALS_UNIT} GetSignal "INVALID"
 
 Should Handle Addresses
-    Requires                      created-machine
+    Requires           created-machine
 
     Verify PERIPHBASE Init Value
 
@@ -75,45 +116,29 @@ Should Handle Addresses
     # When set from address, the signal is set to a value based on address' top bits.
     Verify Command Output As Integer         ${NEW_PERIPHBASE}  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
 
-Should Modify Peripheral Registration
-    Requires                                 created-machine
+Should Modify Peripheral Registration With SCU Registered
+    Requires           created-machine
 
-    Verify Command Output As Integer         0x0                 cpu0 GetSystemRegisterValue "CBAR"
     Verify Command Output As Integer         ${INIT_PERIPHBASE}  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
-
     Verify Peripherals Registered At         ${INIT_PERIPHBASE_ADDRESS}
 
-    Execute Command                          emulation RunFor '0.0001'
-    FOR  ${i}  IN RANGE  ${CPU_COUNT}
-        # SCU address is based on PERIPHBASE with zero offset.
-        Verify Command Output As Integer
-        ...    ${INIT_PERIPHBASE_ADDRESS}    cpu${i} GetSystemRegisterValue "CBAR"
-    END
+    Should Modify Peripheral Registration
 
-    Execute Command                          ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${NEW_PERIPHBASE_ADDRESS}
+Should Modify Peripheral Registration With SCU Unregistered
+    Create Machine    scu_registration=sysbus
 
-    # Nothing changes before exitting from reset.
-    Verify Command Output    ${SCU_MODEL}    sysbus WhatPeripheralIsAt ${INIT_PERIPHBASE_ADDRESS}
-    Verify Command Output As Integer
-        ...    ${INIT_PERIPHBASE_ADDRESS}    cpu1 GetSystemRegisterValue "CBAR"
+    # SCU initially unregistered, PERIPHBASE not automatically set as when SCU registered at a specific address.
+    Verify Command Output As Integer         0x0  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
 
-    # Let's make sure the behavior is preserved across serialization.
-    ${f}=                                    Allocate Temporary File
-    Execute Command                          Save @${f}
-    Execute Command                          Clear
-    Execute Command                          Load @${f}
-    Execute Command                          mach set 0
+    # There should be no peripheral at INIT_PERIPHBASE where SCU is registered by default.
+    ${peripherals}=  Execute Command         peripherals
+    Should Not Contain                       ${peripherals}  ${INIT_PERIPHBASE_ADDRESS}
 
-    FOR  ${i}  IN RANGE  ${CPU_COUNT}
-        Execute Command    cpu${i} Reset
-    END
-    Execute Command                          emulation RunFor '0.0001'
+    # Now let's set PERIPHBASE which will register SCU there on CPU out of reset and test modifying registrations.
+    Execute Command                          ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${INIT_PERIPHBASE_ADDRESS}
+    Should Modify Peripheral Registration
 
-    FOR  ${i}  IN RANGE  ${CPU_COUNT}
-        Verify Command Output As Integer     ${NEW_PERIPHBASE_ADDRESS}  cpu${i} GetSystemRegisterValue "CBAR"
-    END
-
-    Verify Peripherals Registered At         ${NEW_PERIPHBASE_ADDRESS}
+    ${peripherals}=  Execute Command         peripherals
 
 Should Set PC For Cores With INITRAM And VINITHI High
     Requires           created-machine
@@ -154,11 +179,12 @@ Should Set PC For Cores With INITRAM And VINITHI High
     Verify PCs         0x0  0xFFFF0000
 
 Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
-    Execute Command               using sysbus
-    Execute Command               mach create
+    Execute Command    using sysbus
+    Execute Command    mach create
 
     ${PLATFORM}=  Catenate     SEPARATOR=\n
     ...  signalsUnit: Miscellaneous.ArmSignalsUnit @ sysbus
+    ...  ${SPACE*4}snoopControlUnit: scu
     ...  
     ...  cpu0: CPU.ARMv7R @ sysbus
     ...  ${SPACE*4}cpuType: "cortex-r8"
@@ -174,6 +200,6 @@ Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
     ...  ${SPACE*4}sysbus new Bus.BusPointRegistration { address: 0xae000000; cpu: cpu0 };
     ...  ${SPACE*4}sysbus new Bus.BusPointRegistration { address: 0xae000000; cpu: cpu1 }
     ...  }
-    Execute Command               machine LoadPlatformDescriptionFromString """${PLATFORM}"""
+    Execute Command    machine LoadPlatformDescriptionFromString """${PLATFORM}"""
 
     Verify PERIPHBASE Init Value
