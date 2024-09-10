@@ -459,11 +459,9 @@ namespace Antmicro.Renode.PlatformDescription
                         var ctors = FindUsableRegistrationPoints(possibleTypes, registrationPoint);
                         if(ctors.Count == 0)
                         {
-                            // fall back to the null registration point if possible and it makes sense for the registree
-                            // (do not allow it for bus peripherals if there is a bus registration available)
+                            // fall back to the null registration point if possible
                             if(registrationPoint == null
-                                && possibleTypes.Contains(typeof(NullRegistrationPoint))
-                                && !(typeof(IBusPeripheral).IsAssignableFrom(entryType) && possibleTypes.Any(t => typeof(IBusRegistration).IsAssignableFrom(t))))
+                                && possibleTypes.Contains(typeof(NullRegistrationPoint)))
                             {
                                 usefulRegistrationPointTypes.Add(typeof(NullRegistrationPoint));
                             }

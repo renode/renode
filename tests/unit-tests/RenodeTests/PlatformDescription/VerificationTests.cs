@@ -474,16 +474,6 @@ peripheral: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithDependency
         }
 
         [Test]
-        public void ShouldNotAcceptNullRegistrationPointWhenRealOneIsNecessary()
-        {
-            var source = @"
-peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus";
-
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
-            Assert.AreEqual(ParsingError.NoCtorForRegistrationPoint, exception.Error);
-        }
-
-        [Test]
         public void ShouldFailOnAmbiguousRegistrationPoint()
         {
             var source = @"
