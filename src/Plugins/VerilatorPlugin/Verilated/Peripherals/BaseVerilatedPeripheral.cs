@@ -263,7 +263,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             if(message.ActionId == ActionType.Error)
             {
-                AbortAndLogError("Operation error!");
+                this.Log(LogLevel.Warning, "Operation error reported by the co-simulation!");
             }
         }
 
