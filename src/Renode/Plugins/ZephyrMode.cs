@@ -21,7 +21,6 @@ namespace Antmicro.Renode.Peripherals.Plugins
     {
         public static void EnableZephyrMode(this ICPU cpu)
         {
-
             IMachine machine = cpu.GetMachine();
             if((cpu is BaseCPU) && (cpu is ICPUWithHooks) && (cpu is ICpuSupportingGdb) && (machine.SystemBus is SystemBus))
             {
@@ -83,7 +82,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
             }
         }
 
-        private static void SkipTimeHook(ICpuSupportingGdb cpu, ulong address) 
+        private static void SkipTimeHook(ICpuSupportingGdb cpu, ulong address)
         {
             // We don't check it because it was checked while configuring hooks
             TryGetReturnAddress(cpu, out var returnAddress);
@@ -92,7 +91,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
             cpu.PC = returnAddress;
             var delayUs = firstParameter;
             var timeInterval = TimeInterval.FromMicroseconds(delayUs);
-            
+
             ((BaseCPU)cpu).SkipTime(timeInterval);
         }
 
