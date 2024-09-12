@@ -22,7 +22,10 @@ cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
+# Copy required headers into the package and adjust the include
+cp -r $BASE/src/Infrastructure/src/Emulator/Cores/renode/include/renode_imports{,_generated}.h $DIR/plugins/VerilatorIntegrationLibrary/src
 cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
+sed -i s:../../../../Infrastructure/src/Emulator/Cores/renode/include/::g $DIR/plugins/VerilatorIntegrationLibrary/src/renode_bus.h
 # For now, SystemCPlugin uses socket-cpp library from VerilatorIntegrationLibrary.
 # ln -f argument is quietly ignored in windows-package environment, so instead of updating remove the link
 # and create it again.
