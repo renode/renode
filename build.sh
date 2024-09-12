@@ -235,24 +235,7 @@ then
   find $ROOT_PATH -type f -name 'project.assets.json' -delete
 fi
 
-# Build CCTask in Release configuration
-CCTASK_OUTPUT=`mktemp`
-CCTASK_BUILD_ARGS=($NET_FRAMEWORK_VER p:Configuration=Release p:Platform="\"$BUILD_PLATFORM\"")
-set +e
-CCTASK_SLN=CCTask.sln
-if $NET
-then
-    CCTASK_SLN=CCTask_NET.sln
-fi
-eval "$CS_COMPILER $(build_args_helper "${CCTASK_BUILD_ARGS[@]}") $(get_path $ROOT_PATH/lib/cctask/$CCTASK_SLN)" 2>&1 > $CCTASK_OUTPUT
-
-if [ $? -ne 0 ]; then
-    cat $CCTASK_OUTPUT
-    rm $CCTASK_OUTPUT
-    exit 1
-fi
-rm $CCTASK_OUTPUT
-set -e
+CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
 
 # clean instead of building
 if $CLEAN
@@ -273,6 +256,7 @@ then
         fi
       done
       rm -fr $OUTPUT_DIRECTORY/bin/$conf
+      rm -rf $CORES_PATH/obj $CORES_PATH/bin
     done
     exit 0
 fi
@@ -283,6 +267,47 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 popd > /dev/null
 
 PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
+
+# Paths for tlib
+CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION"
+CORES_BIN_PATH="$CORES_PATH/bin/$CONFIGURATION"
+
+# Common cmake flags
+if $ON_WINDOWS
+then
+    CMAKE_COMMON="-GMinGW Makefiles"
+else
+    CMAKE_COMMON="-GUnix Makefiles"
+fi
+
+# build tlib
+for core in arm arm64 arm-m ppc ppc64 i386 x86_64 riscv riscv64 sparc xtensa
+do
+  # We don't actually use support all cores in both le and be modes, so this could be optimized
+  for endian in le be
+  do
+    BITS=32
+    # Check if core is 64-bit
+    if [[ $core =~ "64" ]]; then
+      BITS=64
+    fi
+    # Core specific flags to cmake
+    CMAKE_CONF_FLAGS="-DTARGET_ARCH=$core -DTARGET_WORD_SIZE=$BITS -DCMAKE_BUILD_TYPE=$CONFIGURATION"
+    CORE_DIR=$CORES_BUILD_PATH/$core/$endian
+    mkdir -p $CORE_DIR
+    pushd "$CORE_DIR" > /dev/null
+    if [[ $endian == "be" ]]; then
+      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS -DTARGET_BIG_ENDIAN=1 $CORES_PATH
+    else
+      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS $CORES_PATH
+    fi
+    cmake --build . -j$(nproc)
+    CORE_BIN_DIR=$CORES_BIN_PATH/lib
+    mkdir -p $CORE_BIN_DIR
+    cp -v *.so $CORE_BIN_DIR/
+    popd > /dev/null
+  done
+done
 
 # build
 eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
