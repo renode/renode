@@ -103,7 +103,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 case "riscv64":
                 case "riscv32":
                 case "riscv":
-                    returnAddress = cpu.GetRegisterUnsafe(1).RawValue;
+                    returnAddress = cpu.GetRegister(1).RawValue;
                     return true;
             }
             return false;
@@ -117,7 +117,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 case "riscv64":
                 case "riscv32":
                 case "riscv":
-                    firstParameter = cpu.GetRegisterUnsafe(10).RawValue;
+                    firstParameter = cpu.GetRegister(10).RawValue;
                     return true;
             }
             return false;
