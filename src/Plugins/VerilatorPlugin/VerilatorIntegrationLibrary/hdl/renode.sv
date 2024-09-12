@@ -13,21 +13,21 @@ import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t, renode_
 module renode #(
     int unsigned BusControllersCount = 0,
     int unsigned BusPeripheralsCount = 0,
-    int unsigned InterruptsCount = 1
+    int unsigned RenodeInputsCount = 1
 ) (
     input logic clk,
-    input logic [InterruptsCount-1:0] interrupts
+    input logic [RenodeInputsCount-1:0] renode_inputs
 );
   renode_connection connection = new();
   bus_connection bus_controller = new(connection);
   bus_connection bus_peripheral = new(connection);
   time renode_time = 0;
 
-  renode_interrupts #(
-      .InterruptsCount(InterruptsCount)
+  renode_inputs #(
+      .InputsCount(RenodeInputsCount)
   ) gpio (
       .clk(clk),
-      .interrupts(interrupts),
+      .inputs(renode_inputs),
       .connection(connection)
   );
 
