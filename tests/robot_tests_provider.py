@@ -448,7 +448,8 @@ class RobotTestSuite(object):
                 p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
                 self.renode_pid = p.pid
 
-        countdown = 360
+        timeout_s = 180
+        countdown = float(timeout_s)
         temp_dir = tempfile.gettempdir()
         renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
         while countdown > 0:
@@ -461,12 +462,10 @@ class RobotTestSuite(object):
                 break
             except:
                 sleep(0.5)
-                countdown -= 1
-
-        if countdown == 0:
-            print("Couldn't access port file for Renode instance pid {}".format(self.renode_pid))
+                countdown -= 0.5
+        else:
             self._close_remote_server(p, options)
-            return None
+            raise TimeoutError(f"Couldn't access port file for Renode instance pid {self.renode_pid}; timed out after {timeout_s}s")
 
         return p
 
