@@ -5,16 +5,16 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-module renode_interrupts #(
-    int unsigned InterruptsCount = 1
+module renode_inputs #(
+    int unsigned InputsCount = 1
 ) (
     input logic clk,
-    logic [InterruptsCount-1:0] interrupts,
+    logic [InputsCount-1:0] inputs,
     renode_pkg::renode_connection connection
 );
-  logic [InterruptsCount-1:0] interrupts_prev;
+  logic [InputsCount-1:0] inputs_prev;
 
-  initial interrupts_prev = 0;
+  initial inputs_prev = 0;
   bit in_reset = 0;
 
   task static reset_assert;
@@ -27,16 +27,16 @@ module renode_interrupts #(
 
   always @(posedge clk) begin
     if (!in_reset) begin
-      for (int unsigned addr = 0; addr < InterruptsCount; addr++) begin
-        if (interrupts[addr] != interrupts_prev[addr]) begin
+      for (int unsigned addr = 0; addr < InputsCount; addr++) begin
+        if (inputs[addr] != inputs_prev[addr]) begin
           connection.send_to_async_receiver(renode_pkg::message_t'{
               renode_pkg::interrupt,
               renode_pkg::address_t'(addr),
-              renode_pkg::data_t'(interrupts[addr])
+              renode_pkg::data_t'(inputs[addr])
             });
         end
       end
-      interrupts_prev <= interrupts;
+      inputs_prev <= inputs;
     end
   end
 endmodule
