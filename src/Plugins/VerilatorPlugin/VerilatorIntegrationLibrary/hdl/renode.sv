@@ -13,10 +13,12 @@ import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t, renode_
 module renode #(
     int unsigned BusControllersCount = 0,
     int unsigned BusPeripheralsCount = 0,
-    int unsigned RenodeInputsCount = 1
+    int unsigned RenodeInputsCount = 1,
+    int unsigned RenodeOutputsCount = 1
 ) (
     input logic clk,
-    input logic [RenodeInputsCount-1:0] renode_inputs
+    input logic [RenodeInputsCount-1:0] renode_inputs,
+    output logic [RenodeOutputsCount-1:0] renode_outputs
 );
   renode_connection connection = new();
   bus_connection bus_controller = new(connection);
@@ -53,6 +55,7 @@ module renode #(
     case (message.action)
       renode_pkg::resetPeripheral: reset();
       renode_pkg::tickClock: sync_time(time'(message.data));
+      renode_pkg::interrupt: handle_renode_output(message.address, message.data[0]);
       renode_pkg::writeRequestQuadWord: write_to_bus(message.address, renode_pkg::QuadWord, message.data);
       renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, renode_pkg::DoubleWord, message.data);
       renode_pkg::writeRequestWord: write_to_bus(message.address, renode_pkg::Word, message.data);
@@ -99,6 +102,8 @@ module renode #(
       end
       gpio.reset_deassert();
     join
+
+    renode_outputs = 0;
 
     connection.exclusive_receive.put();
   endtask
@@ -188,5 +193,21 @@ module renode #(
     connection.exclusive_receive.put();
 
     bus_peripheral.write_respond(0);
+  endtask
+
+  // calculate number of bits needed to hold the output number
+  `define max(a,b) (a > b) ? a : b
+  localparam RenodeOutputsCountWidth = `max($clog2(RenodeOutputsCount), 1);
+
+  task automatic handle_renode_output(address_t number, bit value);
+    if (number >= 64'(RenodeOutputsCount)) begin
+      connection.log(renode_pkg::LogWarning, $sformatf("Output %0d is out of range of [0;%0d]", number, RenodeOutputsCount - 1));
+      connection.send(message_t'{renode_pkg::error, 0, 0});
+    end
+
+    @(posedge clk);
+    renode_outputs[number[RenodeOutputsCountWidth-1:0]] <= value;
+
+    connection.send(message_t'{renode_pkg::ok, 0, 0});
   endtask
 endmodule
