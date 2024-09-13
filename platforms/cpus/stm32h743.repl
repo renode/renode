@@ -62,11 +62,14 @@ sdramBank1: Memory.MappedMemory @ sysbus 0xC0000000
     size: 0x10000000
 
 flashController: MTD.STM32H7_FlashController @ sysbus 0x52002000
-    flash1: flash0
-    flash2: flash1
+    flash1: flashBank1
+    flash2: flashBank2
 
-flash0: Memory.MappedMemory @ sysbus 0x80000000
+externalFlash: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x10000000
+
+flashBank1: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x100000
 
 // May be reserved
 sramBank2: Memory.MappedMemory @ sysbus 0x70000000
@@ -316,8 +319,8 @@ dtcm: Memory.MappedMemory @ sysbus 0x20000000
 ram: Memory.MappedMemory @ sysbus 0x1FF00000
     size: 0x20000
 
-flash1: Memory.MappedMemory @ sysbus 0x08000000
-    size: 0x200000
+flashBank2: Memory.MappedMemory @ sysbus 0x08100000
+    size: 0x100000
 
 itcm: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x10000

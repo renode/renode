@@ -29,7 +29,7 @@ ${EVAL_STUB}=    SEPARATOR=
 # So it's added along with the external flash
 ${EXTERNAL_FLASH}=   SEPARATOR=
 ...    """
-...    externalFlash: SPI.Macronix_MX25R @ qspi {underlyingMemory: qspiMappedFlashMemory}   ${\n}
+...    externalQspiFlash: SPI.Macronix_MX25R @ qspi {underlyingMemory: qspiMappedFlashMemory}   ${\n}
 ...    qspiMappedFlashMemory: Memory.MappedMemory @ sysbus 0x90000000 { size: 0x10000000 }  ${\n}
 ...    """
 
