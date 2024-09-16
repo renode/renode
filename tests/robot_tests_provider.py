@@ -270,6 +270,7 @@ class RobotTestSuite(object):
     ])
     instances_count = 0
     robot_frontend_process = None
+    renode_pid = -1  # It's not always robot_frontend_process.pid, e.g., with `--run-gdb` option.
     hotspot_action = ['None', 'Pause', 'Serialize']
     # Used to share the port between all suites when running sequentially
     remote_server_port = -1
@@ -287,8 +288,6 @@ class RobotTestSuite(object):
         self.path = path
         self._dependencies_met = set()
         self.remote_server_directory = None
-        self.renode_pid = -1
-        self.remote_server_port = -1
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
         self.suite_log_files = None
 
@@ -339,6 +338,9 @@ class RobotTestSuite(object):
 
 
     def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0, remote_server_port=None):
+        # Let's reset PID and check it's set before returning to prevent keeping old PID.
+        self.renode_pid = -1
+
         if options.runner == 'dotnet':
             remote_server_name = "Renode.dll"
         else:
@@ -467,6 +469,7 @@ class RobotTestSuite(object):
             self._close_remote_server(p, options)
             raise TimeoutError(f"Couldn't access port file for Renode instance pid {self.renode_pid}; timed out after {timeout_s}s")
 
+        assert self.renode_pid != -1, "Renode PID has to be set before returning"
         return p
 
     def __move_perf_data(self, options):
@@ -484,6 +487,10 @@ class RobotTestSuite(object):
         if proc:
             if not silent:
                 print('Closing Renode pid {}'.format(proc.pid))
+
+            # Let's prevent using these after the server is closed.
+            self.robot_frontend_process = None
+            self.renode_pid = -1
 
             try:
                 process = psutil.Process(proc.pid)
@@ -531,7 +538,6 @@ class RobotTestSuite(object):
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
             RobotTestSuite.remote_server_port = self.remote_server_port
 
-        self.renode_pid = RobotTestSuite.robot_frontend_process.pid
         print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}')
 
         result = None
