@@ -3,6 +3,99 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.15.3 - 2024.09.17
+-------------------
+
+Added and improved architecture support:
+
+* fixed Arm MPU skipping access checks for MPU regions sharing a page with a background region
+* FPU dirty flag is now set on all FPU load instructions for RISC-V
+* fixed Arm PMSAv8 not checking for domains not being page aligned
+* RISC-V MTVAL register now contains the invalid instruction after illegal instruction exception
+* Arm SRS (Store Return State) instruction now saves onto stack SPSR instead of masked CPSR
+* improved support for x86-64, verified with Zephyr
+* added SMEPMP extension stub for RISC-V
+* added ability to configure usable bits in RISC-V PMPADDR registers
+* fixed runtime configurability of the RISC-V MISA registers
+* fixed RISC-V PMPCFG semantics from WIRI to WARL
+* fixed decoding of C.ADDI4SPN in RISC-V
+* fixed behavior of RORIW, RORI and SLLI.UW RISC-V instructions
+* changed MSTATUS RISC-V CSR to be more responsive to the presence of User and Supervisor modes
+
+Added and improved platform descriptions:
+
+* NXP MR-CANHUBK3
+* NXP S32K388
+* NXP S32K118
+* RI5CY
+* Renesas r7fa8m1a
+* Renesas DA14592
+* STM32H743
+* x86-64 ACRN
+
+Added demos and tests:
+
+* Zephyr running hello_world demo on x86-64 ACRN
+* ZynqMP demo showcasing two way communication between Cortex-A53 running Linux and Cortex-R5 running OpenAMP echo sample
+
+Added features:
+
+* Socket Manager mechanism, organizing socket management in a single entity
+* test real-time timeout handling mechanism in Robot
+* GPIO events support for the External Control API
+* Zephyr Mode support for Arm, Arm-M, SPARC, x86 and Xtensa
+* disassembling support for x86-64 architecture
+* support for bus access widths other than DoubleWord for DPI integration of APB3
+* support for overriding a default implementation of the verilated UART model
+
+Changed:
+
+* improved `renesas-segger-rtt.py` helper
+* Renode logs a warning instead of crashing when HDL co-simulated block reports an error
+* improved `guest cache` tool results readability
+
+Fixed:
+
+* PulseGenerator behavior when `onTicks == offTicks`
+* External Control API GetTime command returning incorrect results
+* SystemC integration crashing when initializing GPIO connections
+* USB Speed value reported in USB/IP device descriptor
+* USB endpoints with the same number but opposite direction not being distinguished
+* a potential crash due to ``OverflowException`` when stopping the emulation
+* checking address range when mapping memory ranges in TranslationCPU
+* configuration descriptor parsing in USBIPServer
+* fatal TCG errors in some cases of invalid RISC-V instructions
+* handling registration of regions not defined by peripherals
+* handling registration of regions with unpaired access method
+* incorrect sequence number in USBIP setup packet reply
+* SD card reset condition
+* starting GDB stub on platforms containing CPUs not supporting GDB
+* infinite loop on debug exception with an interrupt pending
+* simulation elements unpausing after some Monitor commands
+
+Added peripheral models:
+
+* Arm CoreLink Network Interconnect
+* LPC Clock0
+* RenesasDA14 GeneralPurposeRegisters
+* STM32 SDMMC
+* Synopsys SSI
+
+Improvements in peripherals:
+
+* Arm Signals Unit
+* CAES ADC
+* Gaisler FaultTolerantMemoryController
+* LPC USART
+* MiV CoreUART
+* NXP LPUART
+* RenesasDA Watchdog
+* RenesasDA14 ClockGenerationController
+* RISC-V Platform Level Interrupt Controller
+* STM32 DMA
+* ZynqMP IPI
+* ZynqMP Platform Management Unit
+
 1.15.2 - 2024.08.18
 -------------------
 
