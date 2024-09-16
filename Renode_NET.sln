@@ -716,12 +716,12 @@ Global
 		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.DebugWindows|Any CPU.Build.0 = Debug|Any CPU
 		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseHeadless|Any CPU.ActiveCfg = Debug|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseHeadless|Any CPU.Build.0 = Debug|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseMono|Any CPU.ActiveCfg = Debug|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseMono|Any CPU.Build.0 = Debug|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseWindows|Any CPU.ActiveCfg = Debug|Any CPU
-		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseWindows|Any CPU.Build.0 = Debug|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseHeadless|Any CPU.ActiveCfg = Release|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseHeadless|Any CPU.Build.0 = Release|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseMono|Any CPU.ActiveCfg = Release|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseMono|Any CPU.Build.0 = Release|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseWindows|Any CPU.ActiveCfg = Release|Any CPU
+		{B83F88C1-35CB-4A41-A1B2-3EA252300C11}.ReleaseWindows|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
