@@ -469,6 +469,11 @@ class RobotTestSuite(object):
             self._close_remote_server(p, options)
             raise TimeoutError(f"Couldn't access port file for Renode instance pid {self.renode_pid}; timed out after {timeout_s}s")
 
+        # If a certain port was expected, let's make sure Renode uses it.
+        if remote_server_port and remote_server_port != self.remote_server_port:
+            self._close_remote_server(p, options)
+            raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
+
         assert self.renode_pid != -1, "Renode PID has to be set before returning"
         return p
 
