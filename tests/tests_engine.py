@@ -313,6 +313,23 @@ def configure_output(options):
             print("Failed to open output file. Falling back to STDOUT.")
 
 
+# Raised exceptions typically cause `map_async` to fail after all the tests have been processed.
+# Let's print them with traceback right away to know the exact moment and raise the exception to
+# fail `map_async` too.
+def task(args):
+    # Exception handling needs to be adjusted if there's more than one suite in a parallel group.
+    group = args[0]
+    assert len(group) == 1, "Parallel task started with more than one suite!"
+
+    try:
+        return run_test_group(args)
+    except Exception as e:
+        print(f"Exception occurred when running {group[0].path}:")
+        import traceback
+        traceback.print_exception(e)
+        raise
+
+
 def run_test_group(args):
 
     group, options, test_id = args
@@ -488,7 +505,7 @@ def run():
         # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
         # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
         # otherwise it would not be possible to abort tests in progress
-        tests_failed, logs = zip(*pool.map_async(run_test_group, args).get(999999))
+        tests_failed, logs = zip(*pool.map_async(task, args).get(999999))
         pool.close()
         print("Waiting for all processes to exit")
         pool.join()
