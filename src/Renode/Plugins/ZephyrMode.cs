@@ -105,7 +105,12 @@ namespace Antmicro.Renode.Peripherals.Plugins
                     returnAddress = cpu.GetRegister(14).RawValue;
                     return true;
                 case "arm64":
-                    returnAddress = cpu.GetRegister(30).RawValue;
+                    // RA register index in Renode for Arm differs between
+                    // the AArch64 (X30, index 30)  and AArch32 (R14, index 114) modes;
+                    // currently for Armv8R we support only the AArch32 mode
+                    // and for Armv8A we support only the AArch64 mode
+                    var regId = (cpu is ARMv8R) ? 114 : 30;
+                    returnAddress = cpu.GetRegister(regId).RawValue;
                     return true;
                 case "i386":
                     // SystemV calling convention
