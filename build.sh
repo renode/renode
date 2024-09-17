@@ -16,6 +16,7 @@ NIGHTLY=false
 PORTABLE=false
 HEADLESS=false
 SKIP_FETCH=false
+TLIB_ONLY=false
 NET=false
 TFM="net6.0"
 PARAMS=()
@@ -24,7 +25,7 @@ NET_FRAMEWORK_VER=
 RID="linux-x64"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -41,6 +42,7 @@ function print_help() {
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "--profile-build                   build optimized for tlib profiling"
+  echo "--tlib-only                       build only the c translation library"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
@@ -99,6 +101,9 @@ do
           ;;
         "profile-build")
           PARAMS+=('p:TlibProfilingBuild=true')
+          ;;
+        "tlib-only")
+          TLIB_ONLY=true
           ;;
         *)
           print_help
@@ -308,6 +313,11 @@ do
     popd > /dev/null
   done
 done
+
+if $TLIB_ONLY
+then
+    exit 0
+fi
 
 # build
 eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
