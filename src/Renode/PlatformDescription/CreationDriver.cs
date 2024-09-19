@@ -1134,7 +1134,7 @@ namespace Antmicro.Renode.PlatformDescription
 
             if(propertyInfo.GetSetMethod() == null)
             {
-                HandleError(ParsingError.PropertyNotWritable, attribute, string.Format("Property {0} does not have setter.", propertyInfo.Name), false);
+                HandleError(ParsingError.PropertyNotWritable, attribute, string.Format("Property {0} does not have a public setter.", propertyInfo.Name), false);
             }
 
             var propertyFriendlyName = string.Format("Property '{0}'", attribute.Name);
