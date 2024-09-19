@@ -23,6 +23,7 @@ PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
 RID="linux-x64"
+HOST_ARCH="i386"
 
 function print_help() {
   echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [-- <ARGS>]"
@@ -43,10 +44,11 @@ function print_help() {
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "--profile-build                   build optimized for tlib profiling"
   echo "--tlib-only                       build only the c translation library"
+  echo "-a                                build with a specific tcg host architecture (default: i386)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
-while getopts "cdvpnstb:o:B:-:" opt
+while getopts "cdvpnstb:o:B:a:-:" opt
 do
   case $opt in
     c)
@@ -77,6 +79,9 @@ do
     o)
       EXPORT_DIRECTORY=$OPTARG
       echo "Setting the output directory to $EXPORT_DIRECTORY"
+      ;;
+    a)
+      HOST_ARCH=$OPTARG
       ;;
     B)
       RID=$OPTARG
@@ -305,9 +310,9 @@ do
     mkdir -p $CORE_DIR
     pushd "$CORE_DIR" > /dev/null
     if [[ $endian == "be" ]]; then
-      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS -DTARGET_BIG_ENDIAN=1 $CORES_PATH
+      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS -DTARGET_BIG_ENDIAN=1 -DHOST_ARCH=$HOST_ARCH $CORES_PATH
     else
-      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS $CORES_PATH
+      cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS -DHOST_ARCH=$HOST_ARCH $CORES_PATH
     fi
     cmake --build . -j$(nproc)
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
