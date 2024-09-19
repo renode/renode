@@ -285,12 +285,15 @@ else
     CMAKE_COMMON="-GUnix Makefiles"
 fi
 
+# This list contains all cores that will be built.
+# If you are adding a new core or endianess add it here to have the correct tlib built
+CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
+
 # build tlib
-for core in arm arm64 arm-m ppc ppc64 i386 x86_64 riscv riscv64 sparc xtensa
+for core_config in "${CORES[@]}"
 do
-  # We don't actually use support all cores in both le and be modes, so this could be optimized
-  for endian in le be
-  do
+    core="$(echo $core_config | cut -d '.' -f 1)"
+    endian="$(echo $core_config | cut -d '.' -f 2)"
     BITS=32
     # Check if core is 64-bit
     if [[ $core =~ "64" ]]; then
@@ -311,7 +314,6 @@ do
     mkdir -p $CORE_BIN_DIR
     cp -v *.so $CORE_BIN_DIR/
     popd > /dev/null
-  done
 done
 
 if $TLIB_ONLY
