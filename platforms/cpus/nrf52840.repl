@@ -36,7 +36,7 @@ flash: Memory.MappedMemory @ sysbus 0x0
 ram: Memory.MappedMemory @ { sysbus 0x800000; sysbus 0x20000000 }
     size: 0x40000
 
-clock: Miscellaneous.NRF52840_CLOCK @ sysbus 0x40000000
+clock: Miscellaneous.NRF_CLOCK @ sysbus 0x40000000
     -> nvic@0
 
 twi0: I2C.NRF52840_I2C @ sysbus 0x40003000
