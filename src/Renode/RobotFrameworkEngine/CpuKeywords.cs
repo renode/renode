@@ -20,11 +20,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void PcShouldBeEqual(ulong value, string machine = null, int? cpuId = null)
+        public void PcShouldBeEqual(ulong value, string machine = null, string cpuName = null)
         {
             var machineObj = GetMachineByNameOrSingle(machine);
 
-            var actual = GetCPU(machineObj, cpuId).PC.RawValue;
+            var actual = GetCPU(machineObj, cpuName).PC.RawValue;
 
             if(actual != value)
             {
@@ -33,11 +33,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void RegisterShouldBeEqual(int register, ulong value, string machine = null, int? cpuId = null)
+        public void RegisterShouldBeEqual(int register, ulong value, string machine = null, string cpuName = null)
         {
             var machineObj = GetMachineByNameOrSingle(machine);
 
-            var cpu = GetCPU(machineObj, cpuId) as ICPUWithRegisters;
+            var cpu = GetCPU(machineObj, cpuName) as ICPUWithRegisters;
             if(cpu == null)
             {
                 throw new KeywordException("This CPU does not allow to access registers");
@@ -52,10 +52,10 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void RunUntilBreakpoint(float timeout, string machine = null, int? cpuId = null, ulong? address = null)
+        public void RunUntilBreakpoint(float timeout, string machine = null, string cpuName = null, ulong? address = null)
         {
             var machineObj = GetMachineByNameOrSingle(machine);
-            var cpu = GetCPU(machineObj, cpuId) as BaseCPU;
+            var cpu = GetCPU(machineObj, cpuName) as BaseCPU;
 
             var masterTimeSource = EmulationManager.Instance.CurrentEmulation.MasterTimeSource;
 
@@ -127,7 +127,7 @@ namespace Antmicro.Renode.RobotFramework
             return machine;
         }
 
-        private ICPU GetCPU(IMachine machine, int? cpuId)
+        private ICPU GetCPU(IMachine machine, string name = null)
         {
             var sysbus = machine.SystemBus;
             var cpus = sysbus.GetCPUs();
@@ -137,7 +137,7 @@ namespace Antmicro.Renode.RobotFramework
                 throw new KeywordException("This machine has no CPUs.");
             }
 
-            if(cpuId == null)
+            if(String.IsNullOrEmpty(name))
             {
                 if(cpus.Count() == 1)
                 {
@@ -145,14 +145,14 @@ namespace Antmicro.Renode.RobotFramework
                 }
                 else
                 {
-                    throw new KeywordException("This machine has {0} CPUs and no CPU ID was specified.", cpus.Count());
+                    throw new KeywordException("This machine has {0} CPUs and no CPU name was specified", cpus.Count());
                 }
             }
 
-            var selectedCpu = cpus.SingleOrDefault(cpu => sysbus.GetCPUSlot(cpu) == cpuId);
-            if(selectedCpu == null)
+            var selectedCpu = cpus.SingleOrDefault(c => machine.GetLocalName(c) == name);
+            if(selectedCpu == default(ICPU))
             {
-                throw new KeywordException($"This machine has no CPU with ID {cpuId}");
+                throw new KeywordException($"This machine has no CPU named: {name}, available are: {String.Join(',', cpus.Select(c => machine.GetLocalName(c)))}");
             }
 
             return selectedCpu;
