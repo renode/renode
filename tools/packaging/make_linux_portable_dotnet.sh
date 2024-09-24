@@ -27,7 +27,7 @@ cp \
    $RENODE_OUTPUT_DIR/libclrjit.so \
    $RENODE_OUTPUT_DIR/libSystem.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.Security.Cryptography.Native.OpenSsl.so \
-   $RENODE_OUTPUT_DIR/libMonoPosixHelper.so \
+   $RENODE_OUTPUT_DIR/libMono.Unix.so \
    $RENODE_OUTPUT_DIR/libSystem.Globalization.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.IO.Compression.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.Net.Security.Native.so \

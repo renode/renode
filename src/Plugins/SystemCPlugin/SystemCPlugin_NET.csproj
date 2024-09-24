@@ -11,7 +11,7 @@
     <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />
     <PackageReference Include="System.ServiceModel.Federation" Version="4.8.1" />
-    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" Condition=" $(OS) != 'Windows_NT'" />
+    <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" Condition=" $(OS) != 'Windows_NT'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="SystemCModule\**\*"/>
