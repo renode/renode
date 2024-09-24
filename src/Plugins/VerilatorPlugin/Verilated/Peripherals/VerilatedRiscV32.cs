@@ -21,8 +21,8 @@ namespace Antmicro.Renode.Peripherals.Verilated
 {
     public partial class VerilatedRiscV32 : VerilatedCPU, ICpuSupportingGdb
     {
-        public VerilatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian, 
-        CpuBitness bitness = CpuBitness.Bits32, string simulationFilePathLinux = null, 
+        public VerilatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian,
+        CpuBitness bitness = CpuBitness.Bits32, string simulationFilePathLinux = null,
         string simulationFilePathWindows = null, string simulationFilePathMacOS = null, string address = null)
             : base(cpuType, machine, endianness, bitness, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, address)
         {
