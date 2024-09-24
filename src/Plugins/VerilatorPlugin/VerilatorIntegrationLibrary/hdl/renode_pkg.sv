@@ -103,7 +103,10 @@ package renode_pkg;
 
     function void connect(int receiver_port, int sender_port, string address);
       renodeDPIConnect(receiver_port, sender_port, address);
-      $display("Renode at %t: Connected using the socket based interface", $realtime);
+      if(is_connected())
+        $display("Renode at %t: Connected using the socket based interface", $realtime);
+      else
+        $error("Renode at %t: Connection error", $realtime);
     endfunction
 
     function bit is_connected();
@@ -173,6 +176,9 @@ package renode_pkg;
     local function void handle_disconnect();
       send(message_t'{ok, 0, 0});
       disconnect();
+`ifdef RENODE_DEBUG
+      $display("Renode at %t: disconnected", $realtime);
+`endif
     endfunction
   endclass
 
