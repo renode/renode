@@ -46,7 +46,7 @@ package renode_pkg;
 
   import "DPI-C" function bit renodeDPIIsConnected();
 
-  import "DPI-C" function void renodeDPILog(
+  import "DPI-C" function bit renodeDPILog(
     int logLevel,
     string data
   );
@@ -130,7 +130,9 @@ package renode_pkg;
 `ifdef RENODE_DEBUG
       $display("Renode at %t logs: %s", $realtime, message);
 `endif
-      renodeDPILog(log_level, message);
+      if(!renodeDPILog(log_level, message)) begin
+        $display("Renode at %t: Unable to send the log: %s", $realtime, message);
+      end
     endfunction
 
     function void receive(output message_t message);
