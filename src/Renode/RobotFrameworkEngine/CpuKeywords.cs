@@ -152,7 +152,7 @@ namespace Antmicro.Renode.RobotFramework
             var selectedCpu = cpus.SingleOrDefault(c => machine.GetLocalName(c) == name);
             if(selectedCpu == default(ICPU))
             {
-                throw new KeywordException($"This machine has no CPU named: {name}, available are: {String.Join(',', cpus.Select(c => machine.GetLocalName(c)))}");
+                throw new KeywordException($"This machine has no CPU named: {name}, available are: {String.Join(", ", cpus.Select(c => machine.GetLocalName(c)))}");
             }
 
             return selectedCpu;
