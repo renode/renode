@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+`timescale 1ns / 1ps
+
 package renode_pkg;
   typedef longint address_t;
   typedef longint data_t;

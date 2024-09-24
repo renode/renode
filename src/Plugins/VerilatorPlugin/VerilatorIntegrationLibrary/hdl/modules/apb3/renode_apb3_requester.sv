@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+`timescale 1ns / 1ps
+
 module renode_apb3_requester (
     renode_apb3_if bus,
     input renode_pkg::bus_connection connection

@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+`timescale 1ns / 1ps
+
 module renode_apb3_completer #(
     parameter int unsigned OutputLatency = 0
 ) (

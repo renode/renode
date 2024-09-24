@@ -6,6 +6,8 @@
 // Full license text is available in 'LICENSE'.
 //
 
+`timescale 1ns / 1ps
+
 module renode_ahb_subordinate (
     renode_ahb_if bus,
     input renode_pkg::bus_connection connection

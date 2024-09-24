@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+`timescale 1ns / 1ps
+
 module renode_inputs #(
     int unsigned InputsCount = 1
 ) (

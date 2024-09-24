@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
+`timescale 1ns / 1ps
+
 module renode_axi_manager (
     renode_axi_if bus,
     input renode_pkg::bus_connection connection
