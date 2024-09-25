@@ -215,6 +215,18 @@ elif request.isWrite:
     value = request.value
 '''
 
+// SWRST_CTL4 register from the System Configuration peripheral
+SWRST_CTL4: Python.PythonPeripheral @ sysbus 0x400C3110
+    size: 0x4
+    initable: true
+    script: '''
+if request.isInit:
+    MDMA2_RESET = (1 << 25)
+elif request.isWrite:
+    if request.value & MDMA2_RESET:
+        self.GetMachine()["sysbus.mdma2"].Reset()
+'''
+
 sysbus:
     init:
         // Script contains implementation for select bootrom functions
@@ -222,6 +234,7 @@ sysbus:
         Machine ExecutePythonFromFile @scripts/pydev/nuvoton_npcx9_bootrom.py
 
         Tag <0x400C3000 0x400> "System Configuration"
+        Tag <0x400C3100 0x2>   "SWRST_TRG" 0xFFFF
         Tag <0x400F8000 0x400> "FLM"
         Tag <0x40011000 0x100> "GDMA"
         Tag <0x400BB000 0x100> "MIWU0"
