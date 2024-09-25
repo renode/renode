@@ -18,6 +18,20 @@ cp -r $BASE $TMP
 mv $TMP $DIR
 rm -rf $TMP
 
+# Force dotnet to save all NuGet dependencies, so we can bundle them with the package
+dotnet restore "${DIR}/Renode_NET.sln" --force --packages "${DIR}/nuget"
+
+# Add a local nuget package source
+cat > "${DIR}/NuGet.Config" <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="local-packages" value="./nuget" />
+  </packageSources>
+</configuration>
+EOF
+
 # Remove the output folder
 rm -rf $DIR/output
 

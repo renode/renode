@@ -379,9 +379,11 @@ then
         eval "dotnet publish -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
         $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
+        # Source package bundles nuget dependencies required for building the dotnet version of Renode
+        # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
+        $ROOT_PATH/tools/packaging/make_source_package.sh $params
     else
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
-        $ROOT_PATH/tools/packaging/make_source_package.sh $params
     fi
 fi
 
