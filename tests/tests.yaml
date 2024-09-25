@@ -169,3 +169,4 @@
 - tests/unit-tests/riscv-zbb-extension.robot
 - tests/unit-tests/register-read-caching.robot
 - tests/unit-tests/symbols.robot
+- tests/unit-tests/aarch64-host.robot
