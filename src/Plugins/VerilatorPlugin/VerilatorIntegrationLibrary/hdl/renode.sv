@@ -91,6 +91,10 @@ module renode #(
       gpio.reset_assert();
     join
 
+    // It's required to make values of all signals known (different than `x`) before a deassertion of resets.
+    // The assignment to renode_outputs is an equivalent of a reset assertion.
+    renode_outputs = 0;
+
     fork
       begin
         if (BusPeripheralsCount > 0)
@@ -102,8 +106,6 @@ module renode #(
       end
       gpio.reset_deassert();
     join
-
-    renode_outputs = 0;
 
     connection.exclusive_receive.put();
   endtask
