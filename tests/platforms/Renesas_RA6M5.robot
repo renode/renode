@@ -179,17 +179,17 @@ Should Get Correct Readouts from the HS3001
     Wait For Line On Uart           Temperature:\\s+000.000  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+000.000  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature 13.5
-    Execute Command                 sysbus.sci0.hs3001_sci DefaultHumidity 50
+    Execute Command                 sysbus.sci0.hs3001_sci Temperature 13.5
+    Execute Command                 sysbus.sci0.hs3001_sci Humidity 50
     Wait For Line On Uart           Temperature:\\s+013.500  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature -40
+    Execute Command                 sysbus.sci0.hs3001_sci Temperature -40
     Wait For Line On Uart           Temperature:\\s-039.950  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+050.099  treatAsRegex=true
 
-    Execute Command                 sysbus.sci0.hs3001_sci DefaultTemperature 125
-    Execute Command                 sysbus.sci0.hs3001_sci DefaultHumidity 100
+    Execute Command                 sysbus.sci0.hs3001_sci Temperature 125
+    Execute Command                 sysbus.sci0.hs3001_sci Humidity 100
     Wait For Line On Uart           Temperature:\\s+125.000  treatAsRegex=true
     Wait For Line On Uart           Humidity:\\s+100.000  treatAsRegex=true
 
@@ -370,8 +370,8 @@ CK IIC Board Should Work
     Prepare Machine With CK Board   ${AWS_CC_ELF}
     Prepare Segger RTT
 
-    Execute Command                 sysbus.iic0.hs3001 DefaultTemperature 13.5
-    Execute Command                 sysbus.iic0.hs3001 DefaultHumidity 50
+    Execute Command                 sysbus.iic0.hs3001 Temperature 13.5
+    Execute Command                 sysbus.iic0.hs3001 Humidity 50
 
     Execute Command                 sysbus.iic0.barometer DefaultTemperature 13.5
     Execute Command                 sysbus.iic0.barometer DefaultPressure 40000

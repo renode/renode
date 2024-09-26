@@ -203,8 +203,8 @@ I2C Should Work With DMA Triggers
     Wait For Line On Uart           I2C init
 
     FOR    ${index}    ${element}    IN ENUMERATE    @{HUMIDITY_SAMPLES}
-        Execute Command            sysbus.i2c.hs3001 DefaultTemperature ${TEMPERATURE_SAMPLES}[${index}]
-        Execute Command            sysbus.i2c.hs3001 DefaultHumidity ${HUMIDITY_SAMPLES}[${index}]
+        Execute Command            sysbus.i2c.hs3001 Temperature ${TEMPERATURE_SAMPLES}[${index}]
+        Execute Command            sysbus.i2c.hs3001 Humidity ${HUMIDITY_SAMPLES}[${index}]
 
         Wait For Line On Uart      Successfully read I2C
         Wait For Line On Uart      Hum: ${HUMIDITY_SAMPLES}[${index}] Temp: ${TEMPERATURE_SAMPLES}[${index}]
