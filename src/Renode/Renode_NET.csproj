@@ -27,14 +27,14 @@
   <ItemGroup>
     <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" Condition=" $(OS) != 'Windows_NT'"/>
     <PackageReference Include="IronPython.StdLib" Version="2.7.11" />
+    <PackageReference Include="NetMQ" Version="4.0.1.12" />
+    <PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
+
     <Reference Include="Sprache">
       <HintPath>..\..\lib\resources\libraries\Sprache.dll</HintPath>
     </Reference>
     <Reference Include="CookComputing.XmlRpcV2">
       <HintPath>..\..\lib\resources\libraries\CookComputing.XmlRpcV2.dll</HintPath>
-    </Reference>
-    <Reference Include="NetMQ">
-      <HintPath>..\..\lib\resources\libraries\NetMQ.dll</HintPath>
     </Reference>
     <Reference Include="AsyncIO">
       <HintPath>..\..\lib\resources\libraries\AsyncIO.dll</HintPath>
