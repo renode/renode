@@ -227,6 +227,19 @@ elif request.isWrite:
         self.GetMachine()["sysbus.mdma2"].Reset()
 '''
 
+// Mocking "Power Management Channel (PMCH) device registers", as RW memory
+pm1: Memory.ArrayMemory @ sysbus 0x400C9000
+    size: 0x100
+
+pm2: Memory.ArrayMemory @ sysbus 0x400CB000
+    size: 0x100
+
+pm3: Memory.ArrayMemory @ sysbus 0x400CD000
+    size: 0x100
+
+pm4: Memory.ArrayMemory @ sysbus 0x400CF000
+    size: 0x100
+
 sysbus:
     init:
         // Script contains implementation for select bootrom functions
