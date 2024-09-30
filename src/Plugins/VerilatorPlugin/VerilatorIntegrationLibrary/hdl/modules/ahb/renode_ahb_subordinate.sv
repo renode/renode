@@ -8,9 +8,11 @@
 
 `timescale 1ns / 1ps
 
+import renode_pkg::renode_runtime, renode_pkg::LogWarning;
+
 module renode_ahb_subordinate (
-    renode_ahb_if bus,
-    input renode_pkg::bus_connection connection
+    ref renode_runtime runtime,
+    renode_ahb_if bus
 );
   import renode_ahb_pkg::*;
 
@@ -18,18 +20,18 @@ module renode_ahb_subordinate (
   typedef logic [bus.DataWidth-1:0] data_t;
   wire clk = bus.hclk;
 
-  always @(connection.reset_assert_request) begin
+  always @(runtime.peripheral.reset_assert_request) begin
     bus.hresetn = 0;
     bus.hresp = Okay;
     bus.hreadyout = 1;
     repeat (2) @(posedge clk);
-    connection.reset_assert_respond();
+    runtime.peripheral.reset_assert_respond();
   end
 
-  always @(connection.reset_deassert_request) begin
+  always @(runtime.peripheral.reset_deassert_request) begin
     bus.hresetn = 1;
     repeat (2) @(posedge clk);
-    connection.reset_deassert_respond();
+    runtime.peripheral.reset_deassert_respond();
   end
 
   always @(posedge clk) transaction();
@@ -44,7 +46,7 @@ module renode_ahb_subordinate (
 
     wait_for_transfer(address, valid_bits, direction, is_invalid);
 
-    // The connection.read call may consume an unknown number of clock cycles.
+    // The runtime.peripheral.read call may consume an unknown number of clock cycles.
     // To to make the logic simpler both read and write transactions contain at least one cycle with a deasserted ready.
     // It also ensures that address and data phases don't overlap between transactions.
     bus.hreadyout <= 0;
@@ -52,12 +54,12 @@ module renode_ahb_subordinate (
 
     if (!is_invalid) begin
       if (direction == Read) begin
-        connection.read(address, valid_bits, data, is_error);
+        runtime.peripheral.read(address, valid_bits, data, is_error);
         bus.hrdata = data_t'(data & valid_bits);
-        if (is_error) connection.log_warning($sformatf("Unable to read data from Renode at address 'h%h", address));
+        if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h", address));
       end else begin
-        connection.write(address, valid_bits, renode_pkg::data_t'(bus.hwdata) & valid_bits, is_error);
-        if (is_error) connection.log_warning($sformatf("Unable to write data to Renode at address 'h%h", address));
+        runtime.peripheral.write(address, valid_bits, renode_pkg::data_t'(bus.hwdata) & valid_bits, is_error);
+        if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to write data to Renode at address 'h%h", address));
       end
     end
 
@@ -82,7 +84,7 @@ module renode_ahb_subordinate (
     valid_bits = bus.transfer_size_to_valid_bits(bus.hsize);
     direction = transfer_direction_e'(bus.hwrite);
     if (!bus.are_valid_bits_supported(valid_bits)) begin
-      connection.log_warning($sformatf("Unsupported transaction width of %d for AHB bus with width %d. No transaction will be performed.", renode_pkg::valid_bits_to_transaction_width(valid_bits), bus.DataWidth));
+      runtime.connection.log(LogWarning, $sformatf("Unsupported transaction width of %d for AHB bus with width %d. No transaction will be performed.", renode_pkg::valid_bits_to_transaction_width(valid_bits), bus.DataWidth));
       is_invalid = 1;
     end
   endtask

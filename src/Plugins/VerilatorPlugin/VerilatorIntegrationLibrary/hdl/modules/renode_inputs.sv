@@ -7,12 +7,14 @@
 
 `timescale 1ns / 1ps
 
+import renode_pkg::renode_runtime;
+
 module renode_inputs #(
     int unsigned InputsCount = 1
 ) (
+    ref renode_runtime runtime,
     input logic clk,
-    logic [InputsCount-1:0] inputs,
-    renode_pkg::renode_connection connection
+    logic [InputsCount-1:0] inputs
 );
   logic [InputsCount-1:0] inputs_prev;
 
@@ -31,7 +33,7 @@ module renode_inputs #(
     if (!in_reset) begin
       for (int unsigned addr = 0; addr < InputsCount; addr++) begin
         if (inputs[addr] != inputs_prev[addr]) begin
-          connection.send_to_async_receiver(renode_pkg::message_t'{
+          runtime.connection.send_to_async_receiver(renode_pkg::message_t'{
               renode_pkg::interrupt,
               renode_pkg::address_t'(addr),
               renode_pkg::data_t'(inputs[addr])
@@ -42,4 +44,3 @@ module renode_inputs #(
     end
   end
 endmodule
-

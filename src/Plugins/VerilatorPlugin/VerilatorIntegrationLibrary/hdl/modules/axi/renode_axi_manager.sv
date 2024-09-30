@@ -7,9 +7,11 @@
 
 `timescale 1ns / 1ps
 
+import renode_pkg::renode_runtime, renode_pkg::LogWarning;
+
 module renode_axi_manager (
-    renode_axi_if bus,
-    input renode_pkg::bus_connection connection
+    ref renode_runtime runtime,
+    renode_axi_if bus
 );
   import renode_axi_pkg::*;
 
@@ -20,25 +22,25 @@ module renode_axi_manager (
 
   wire clk = bus.aclk;
 
-  always @(connection.reset_assert_request) begin
+  always @(runtime.controller.reset_assert_request) begin
     bus.arvalid = 0;
     bus.awvalid = 0;
     bus.wvalid  = 0;
     bus.areset_n = 0;
     // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
     repeat (2) @(posedge clk);
-    connection.reset_assert_respond();
+    runtime.controller.reset_assert_respond();
   end
 
-  always @(connection.reset_deassert_request) begin
+  always @(runtime.controller.reset_deassert_request) begin
     bus.areset_n = 1;
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
-    connection.reset_deassert_respond();
+    runtime.controller.reset_deassert_respond();
   end
 
-  always @(connection.read_transaction_request) read_transaction();
-  always @(connection.write_transaction_request) write_transaction();
+  always @(runtime.controller.read_transaction_request) read_transaction();
+  always @(runtime.controller.write_transaction_request) write_transaction();
 
   task static read_transaction();
     bit is_error;
@@ -47,18 +49,18 @@ module renode_axi_manager (
     burst_size_t burst_size;
     data_t data;
 
-    address = address_t'(connection.read_transaction_address);
-    valid_bits = connection.read_transaction_data_bits;
+    address = address_t'(runtime.controller.read_transaction_address);
+    valid_bits = runtime.controller.read_transaction_data_bits;
 
     if(!is_access_valid(address, valid_bits)) begin
-      connection.read_respond(0, 1);
+      runtime.controller.read_respond(0, 1);
     end else begin
       burst_size = bus.valid_bits_to_burst_size(valid_bits);
 
       read(0, address, burst_size, data, is_error);
 
       data = data >> ((address % bus.StrobeWidth) * 8);
-      connection.read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
+      runtime.controller.read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
     end
   endtask
 
@@ -70,30 +72,30 @@ module renode_axi_manager (
     data_t data;
     strobe_t strobe;
 
-    address = address_t'(connection.write_transaction_address);
-    valid_bits = connection.write_transaction_data_bits;
+    address = address_t'(runtime.controller.write_transaction_address);
+    valid_bits = runtime.controller.write_transaction_data_bits;
 
     if(!is_access_valid(address, valid_bits)) begin
-      connection.write_respond(1);
+      runtime.controller.write_respond(1);
     end else begin
       burst_size = bus.valid_bits_to_burst_size(valid_bits);
-      data = data_t'(connection.write_transaction_data & valid_bits);
+      data = data_t'(runtime.controller.write_transaction_data & valid_bits);
       strobe = bus.burst_size_to_strobe(burst_size) << (address % bus.StrobeWidth);
       data = data << ((address % bus.StrobeWidth) * 8);
 
       write(0, address, burst_size, strobe, data, is_error);
 
-      connection.write_respond(is_error);
+      runtime.controller.write_respond(is_error);
     end
   endtask
 
   function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits);
     if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
-      connection.fatal_error("AXI Manager doesn't support unaligned access.");
+      runtime.connection.fatal_error("AXI Manager doesn't support unaligned access.");
       return 0;
     end
     if(!bus.are_valid_bits_supported(valid_bits)) begin
-      connection.fatal_error($sformatf("This instance of the AXI Manager doesn't support access using the 'b%b mask.", valid_bits));
+      runtime.connection.fatal_error($sformatf("This instance of the AXI Manager doesn't support access using the 'b%b mask.", valid_bits));
       return 0;
     end
     return 1;
@@ -192,11 +194,11 @@ module renode_axi_manager (
   function automatic bit check_response(transaction_id_t request_id, transaction_id_t response_id, response_t response);
     response_e response_enum = response_e'(response);
     if (response_id != request_id) begin
-      connection.log_warning($sformatf("Unexpected transaction id in the response ('h%h), expected 'h%h", response_id, request_id));
+      runtime.connection.log(LogWarning, $sformatf("Unexpected transaction id in the response ('h%h), expected 'h%h", response_id, request_id));
       return 1;
     end
     if (response_enum != Okay && response_enum != ExclusiveAccessOkay) begin
-      connection.log_warning($sformatf("Response error 'h%h", response));
+      runtime.connection.log(LogWarning, $sformatf("Response error 'h%h", response));
       return 1;
     end
     return 0;

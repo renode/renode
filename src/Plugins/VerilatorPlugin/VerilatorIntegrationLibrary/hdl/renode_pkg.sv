@@ -202,20 +202,6 @@ package renode_pkg;
     valid_bits_e write_transaction_data_bits;
     bit write_transaction_is_error;
 
-    renode_connection remote_connection;
-
-    function new(renode_connection remote_connection);
-      this.remote_connection = remote_connection;
-    endfunction
-
-    function void fatal_error(string message);
-      remote_connection.fatal_error(message);
-    endfunction
-
-    function void log_warning(string message);
-      remote_connection.log(LogWarning, message);
-    endfunction
-
     // Passing a class by a reference isn't supported by Verilator.
     // Events are indirectly triggered by tasks.
     task reset_assert();
@@ -266,5 +252,17 @@ package renode_pkg;
       write_transaction_is_error = is_error;
       ->write_transaction_response;
     endtask
+  endclass
+
+  // It's required to pass the whole instance to modules.
+  // Passing single property triggers a null pointer dereference in Verilator.
+  class renode_runtime;
+    renode_connection connection = new();
+    bus_connection controller = new();
+    bus_connection peripheral = new();
+
+    function bit is_connected();
+      return connection.is_connected();
+    endfunction
   endclass
 endpackage

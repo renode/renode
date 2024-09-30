@@ -7,9 +7,11 @@
 
 `timescale 1ns / 1ps
 
+import renode_pkg::renode_runtime, renode_pkg::LogWarning;
+
 module renode_axi_subordinate (
-    renode_axi_if bus,
-    input renode_pkg::bus_connection connection
+    ref renode_runtime runtime,
+    renode_axi_if bus
 );
   import renode_axi_pkg::*;
 
@@ -20,20 +22,20 @@ module renode_axi_subordinate (
 
   wire clk = bus.aclk;
 
-  always @(connection.reset_assert_request) begin
+  always @(runtime.peripheral.reset_assert_request) begin
     bus.rvalid = 0;
     bus.bvalid = 0;
     bus.areset_n = 0;
     // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
     repeat (2) @(posedge clk);
-    connection.reset_assert_respond();
+    runtime.peripheral.reset_assert_respond();
   end
 
-  always @(connection.reset_deassert_request) begin
+  always @(runtime.peripheral.reset_deassert_request) begin
     bus.areset_n = 1;
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
-    connection.reset_deassert_respond();
+    runtime.peripheral.reset_deassert_respond();
   end
 
   always @(clk) read_transaction();
@@ -62,9 +64,9 @@ module renode_axi_subordinate (
       address_last = address + transfer_bytes * burst_length;
       for (; address <= address_last; address += transfer_bytes) begin
         // The conection.read call may cause simulation time to move forward
-        connection.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
+        runtime.peripheral.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
         if (is_error) begin
-          connection.log_warning($sformatf("Unable to read data from Renode at address 'h%h, the 0 value sent to bus.", address));
+          runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h, the 0 value sent to bus.", address));
           data = 0;
         end
         data = data & valid_bits;
@@ -104,10 +106,10 @@ module renode_axi_subordinate (
         @(posedge clk);
         bus.wready <= 0;
 
-        if (bus.wlast != (address == address_last)) connection.log_warning("Unexpected state of the wlast signal.");
+        if (bus.wlast != (address == address_last)) runtime.connection.log(LogWarning, "Unexpected state of the wlast signal.");
         // The conection.write call may cause simulation time to move forward
-        connection.write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
-        if (is_error) connection.log_warning($sformatf("Unable to write data to Renode at address 'h%h", address));
+        runtime.peripheral.write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
+        if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to write data to Renode at address 'h%h", address));
       end
 
       set_write_response(transaction_id, Okay);
@@ -116,11 +118,11 @@ module renode_axi_subordinate (
 
   function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits, burst_type_e burst_type);
     if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
-      connection.fatal_error("AXI Subordinate doesn't support unaligned access.");
+      runtime.connection.fatal_error("AXI Subordinate doesn't support unaligned access.");
       return 0;
     end
     if(burst_type != Incrementing) begin
-      connection.fatal_error($sformatf("Unsupported burst type 'b%b", burst_type));
+      runtime.connection.fatal_error($sformatf("Unsupported burst type 'b%b", burst_type));
       return 0;
     end
     return 1;
