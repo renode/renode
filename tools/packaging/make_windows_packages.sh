@@ -23,13 +23,8 @@ SED_COMMAND="sed -i"
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
-### prepare renode-test
-cat >> $DIR/tests/test.bat << EOL
-@echo off
-set SCRIPTDIR=%~dp0
-py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory  "%SCRIPTDIR%\..\bin" -r %cd% %*
-EOL
-
+# Set up test wrappers that allow for running in CMD
+cp -r $BASE/tests/test.bat $DIR/tests/test.bat
 cat >> $DIR/bin/renode-test.bat << EOL
 @echo off
 set test_script=%~dp0%..\tests\test.bat
