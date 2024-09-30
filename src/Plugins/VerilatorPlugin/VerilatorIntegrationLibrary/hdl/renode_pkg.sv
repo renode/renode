@@ -257,9 +257,27 @@ package renode_pkg;
   // It's required to pass the whole instance to modules.
   // Passing single property triggers a null pointer dereference in Verilator.
   class renode_runtime;
+    const string ReceiverPortArgName = "RENODE_RECEIVER_PORT";
+    const string SenderPortArgName = "RENODE_SENDER_PORT";
+    const string AddressArgName = "RENODE_ADDRESS";
+
     renode_connection connection = new();
     bus_connection controller = new();
     bus_connection peripheral = new();
+
+    function void connect_plus_args();
+      int receiver_port, sender_port;
+      string address;
+      if(!$value$plusargs({ReceiverPortArgName, "=%d"}, receiver_port)
+        || !$value$plusargs({SenderPortArgName, "=%d"}, sender_port)
+        || !$value$plusargs({AddressArgName, "=%s"}, address))
+      begin
+          $error("Please specify the +%s, +%s and +%s arguments in the command that invokes the simulation", ReceiverPortArgName, SenderPortArgName, AddressArgName);
+      end
+      else begin
+        connection.connect(receiver_port, sender_port, address);
+      end
+    endfunction
 
     function bit is_connected();
       return connection.is_connected();
