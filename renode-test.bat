@@ -1,4 +1,7 @@
 @echo off
+set "CONTEXT=source"
+set "test_script=%~dp0%tests\test.bat"
+
 :args
 if "%1" == "" goto args_end
 if "%1" == "-d" (
@@ -8,6 +11,4 @@ shift
 goto args
 :args_end
 
-set "CONTEXT=source"
-set "test_script=%~dp0%tests\test.bat"
 call "%test_script%" %*
