@@ -30,52 +30,58 @@ namespace Antmicro.Renode.RobotFramework
             };
         }
 
-        public int CreateNewTester(Func<TPeripheral, TTester> creator, string peripheralName, string machine = null)
+        public int CreateNewTester(Func<TPeripheral, TTester> creator, string peripheralOrExternalName, string machine = null)
         {
             lock(testers)
             {
-                IMachine machineObject;
-                if(machine == null)
+                TPeripheral emulationElement = null;
+                IMachine machineObject = null;
+                // first check if `peripheralOrExternalName` is not an external, then try match it to a peripheral
+                if(!EmulationManager.Instance.CurrentEmulation.ExternalsManager.TryGetByName<TPeripheral>(peripheralOrExternalName, out emulationElement))
                 {
-                    if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())
+                    if(machine == null)
                     {
-                        throw new KeywordException("There is no machine in the emulation. Could not create tester for peripheral: {0}", peripheralName);
+                        if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())
+                        {
+                            throw new KeywordException("There is no machine in the emulation. Could not create tester for peripheral: {0}", peripheralOrExternalName);
+                        }
+                        machineObject = EmulationManager.Instance.CurrentEmulation.Machines.Count() == 1
+                            ? EmulationManager.Instance.CurrentEmulation.Machines.First()
+                            : null;
+                        if(machineObject == null)
+                        {
+                            throw new KeywordException("No machine name provided. Don't know which one to choose. Available machines: [{0}]",
+                                string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
+                        }
                     }
-                    machineObject = EmulationManager.Instance.CurrentEmulation.Machines.Count() == 1
-                        ? EmulationManager.Instance.CurrentEmulation.Machines.First()
-                        : null;
-                    if(machineObject == null)
+                    else if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out machineObject))
                     {
-                        throw new KeywordException("No machine name provided. Don't know which one to choose. Available machines: [{0}]",
-                            string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
+                        throw new KeywordException("Machine with name {0} not found. Available machines: [{1}]", machine,
+                                string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
                     }
-                }
-                else if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out machineObject))
-                {
-                    throw new KeywordException("Machine with name {0} not found. Available machines: [{1}]", machine,
-                            string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
+
+                    if(!machineObject.TryGetByName(peripheralOrExternalName, out IPeripheral typeLessPeripheral))
+                    {
+                        throw new KeywordException("Peripheral for machine '{0}' not found or of wrong type: '{1}'. Available peripherals: [{2}]", machine, peripheralOrExternalName,
+                                string.Join(", ", machineObject.GetAllNames()));
+                    }
+
+                    emulationElement = typeLessPeripheral as TPeripheral;
+                    if(emulationElement == null)
+                    {
+                        throw new KeywordException("Peripheral for machine '{0}' not found or of wrong type: '{1}'. Available peripherals: [{2}]", machine, peripheralOrExternalName,
+                                string.Join(", ", machineObject.GetAllNames()));
+                    }
                 }
 
-                if(!machineObject.TryGetByName(peripheralName, out IPeripheral typeLessPeripheral))
-                {
-                    throw new KeywordException("Peripheral for machine '{0}' not found or of wrong type: '{1}'. Available peripherals: [{2}]", machine, peripheralName,
-                            string.Join(", ", machineObject.GetAllNames()));
-                }
-                var peripheral = typeLessPeripheral as TPeripheral;
-                if(peripheral == null)
-                {
-                    throw new KeywordException("Peripheral for machine '{0}' not found or of wrong type: '{1}'. Available peripherals: [{2}]", machine, peripheralName,
-                            string.Join(", ", machineObject.GetAllNames()));
-                }
-
-                var testerId = peripheralsWithTesters.IndexOf(peripheral);
+                var testerId = peripheralsWithTesters.IndexOf(emulationElement);
                 if(testerId != -1)
                 {
                     return testerId;
                 }
 
-                var tester = creator(peripheral);
-                peripheralsWithTesters.Add(peripheral);
+                var tester = creator(emulationElement);
+                peripheralsWithTesters.Add(emulationElement);
                 testers.Add(peripheralsWithTesters.Count - 1, tester);
 
                 return peripheralsWithTesters.Count - 1;
