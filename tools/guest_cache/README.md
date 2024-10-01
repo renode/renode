@@ -1,4 +1,4 @@
-# Renode Guest Cache Modelling Script
+# Renode Guest Cache Modelling Analyzer
 
 ## Generating traces from Renode:
 
