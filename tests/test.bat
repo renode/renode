@@ -1,22 +1,15 @@
 @echo off
-
 set SCRIPTDIR=%~dp0
-set "BINDIR=%SCRIPTDIR%\..\output\bin\Release"
-set "CONTEXT=package"
-
-:args
-if "%1" == "" goto args_done
-
-if "%1" == "-d" (
-    set "BINDIR=..\output\bin\Debug"
-) else if "%1" == "--source" (
-    set "CONTEXT=source"
+if "%CONTEXT%" == "" (
+    set "CONTEXT=package"
 )
-shift
-goto args
-:args_done
 
 if "%CONTEXT%" == "source" (
+    set "BINDIR=%SCRIPTDIR%\..\output\bin\Release"
+    if "%DEBUG%" == "1" (
+        set "BINDIR=..\output\bin\Debug"
+    )
+
     py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\..\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory  "%BINDIR%" -r %cd% %*
 ) else (
     py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory  "%SCRIPTDIR%\..\bin" -r %cd% %*
