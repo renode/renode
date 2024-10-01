@@ -23,8 +23,9 @@ SED_COMMAND="sed -i"
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
-# Set up test wrappers that allow for running in CMD
+### prepare renode-test
 cp -r $BASE/tests/test.bat $DIR/tests/test.bat
+
 cat >> $DIR/bin/renode-test.bat << EOL
 @echo off
 set test_script=%~dp0%..\tests\test.bat
