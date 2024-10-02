@@ -25,12 +25,8 @@ OUTPUT=$BASE/$PACKAGES
 
 ### prepare renode-test
 cp -r $BASE/tests/test.bat $DIR/tests/test.bat
-
-cat >> $DIR/bin/renode-test.bat << EOL
-@echo off
-set test_script=%~dp0%..\tests\test.bat
-call "%test_script%" %*
-EOL
+cp -r $BASE/renode-test.bat $DIR/bin/renode-test.bat
+sed -i 's/CONTEXT=source/CONTEXT=package/' $DIR/bin/renode-test.bat
 
 mkdir -p $OUTPUT
 
