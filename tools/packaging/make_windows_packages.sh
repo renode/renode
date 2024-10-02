@@ -24,7 +24,6 @@ PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
 ### prepare renode-test
-cp -r $BASE/tests/test.bat $DIR/tests/test.bat
 cp -r $BASE/renode-test.bat $DIR/bin/renode-test.bat
 sed -i 's/CONTEXT=source/CONTEXT=package/' $DIR/bin/renode-test.bat
 
