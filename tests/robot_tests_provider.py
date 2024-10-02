@@ -474,7 +474,7 @@ class RobotTestSuite(object):
                 p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
                 self.renode_pid = p.pid
 
-        countdown = 120
+        countdown = 360
         temp_dir = tempfile.gettempdir()
         renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
         while countdown > 0:
