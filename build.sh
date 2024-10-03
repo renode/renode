@@ -26,7 +26,7 @@ RID="linux-x64"
 HOST_ARCH="i386"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--host-arch i386|aarch64] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -43,8 +43,8 @@ function print_help() {
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "--profile-build                   build optimized for tlib profiling"
-  echo "--tlib-only                       build only the c translation library"
-  echo "-a                                build with a specific tcg host architecture (default: i386)"
+  echo "--tlib-only                       only build tlib"
+  echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
@@ -80,9 +80,6 @@ do
       EXPORT_DIRECTORY=$OPTARG
       echo "Setting the output directory to $EXPORT_DIRECTORY"
       ;;
-    a)
-      HOST_ARCH=$OPTARG
-      ;;
     B)
       RID=$OPTARG
       ;;
@@ -109,6 +106,11 @@ do
           ;;
         "tlib-only")
           TLIB_ONLY=true
+          ;;
+        "host-arch")
+          shift $((OPTIND-1))
+          HOST_ARCH=$1
+          OPTIND=2
           ;;
         *)
           print_help
