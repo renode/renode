@@ -1,0 +1,43 @@
+:name: VeeR EL2
+$name?="VeeR EL2"
+
+# Set to path of the bootable Tock image to run.
+$elf?=@https://dl.antmicro.com/projects/renode/Veer_EL2_Tock_Kernel.elf-s_3091224-2047782db63254c1553d2c56286785d8da5d085c
+$app?=@https://dl.antmicro.com/projects/renode/Veer_EL2_Tock_Rot13_Demo.tbf-s_20824-1038416452d64a736454d0a8ccb2bf537c37f166
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/tock_veer_el2_sim.repl
+
+macro reset
+"""
+    sysbus LoadELF $elf
+    sysbus LoadBinary $app 0x20300000
+"""
+
+machine CreateVirtualConsole "htif"
+python """
+from Antmicro.Renode.Peripherals.Bus import Access, SysbusAccessWidth
+htif = monitor.Machine["sysbus.htif"]
+bus = monitor.Machine.SystemBus
+
+def handle_char(_, __, ___, value):
+    if(value not in (0x1, 0xFF) and value < 0xFF):
+        htif.DisplayChar(value)
+    else:
+        for x in [ord(c) for c in "\n[[htif: Finished, requested simulation end]]"]:
+            htif.DisplayChar(x)
+        htif.DebugLog("FINISHED")
+        monitor.Machine.Pause()
+
+bus.AddWatchpointHook(0xd0580000, SysbusAccessWidth.DoubleWord, Access.Write, handle_char)
+bus.AddWatchpointHook(0xd0580000, SysbusAccessWidth.Byte, Access.Write, handle_char)
+"""
+# This address above might seem arbitrary, but it's hard-coded into the VeeR_EL2 platform definition in Tock
+# That's the location of htif uart
+
+# Silencing plic logs because the driver in Tock currently is a stub and generates a lot of "unhalted write" messages
+logLevel 3 plic
+
+showAnalyzer htif
+runMacro $reset

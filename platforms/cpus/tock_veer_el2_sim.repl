@@ -1,0 +1,28 @@
+rom0: Memory.MappedMemory @ sysbus 0x0
+    size: 0x500000
+
+rom: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x300000
+
+flash: Memory.MappedMemory @ sysbus 0x20300000
+    size: 0x300000
+
+ram: Memory.MappedMemory @ sysbus 0x20600000
+    size: 0x300000
+
+// Virtual uart's memory
+htif_mem: Memory.MappedMemory @sysbus 0xD0580000
+    size: 0x1000
+
+cpu: CPU.VeeR_EL2 @ sysbus
+    hartId: 0
+    timeProvider: clint
+
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
+    [0,1] -> cpu@[3,7]
+    frequency: 1000000
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf00c0000
+    [0,1] -> cpu@[11,9]
+    numberOfSources: 64
+    numberOfContexts: 2
