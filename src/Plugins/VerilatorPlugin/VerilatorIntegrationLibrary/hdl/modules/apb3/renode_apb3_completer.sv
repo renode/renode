@@ -15,9 +15,13 @@ module renode_apb3_completer #(
     ref renode_runtime runtime,
     renode_apb3_if bus
 );
-
+  `ifdef XCELIUM
+  typedef logic [$bits(bus.address_t)-1:0] address_t;
+  typedef logic [$bits(bus.data_t)-1:0] data_t;
+  `else
   typedef logic [bus.AddressWidth-1:0] address_t;
   typedef logic [bus.DataWidth-1:0] data_t;
+  `endif
 
   // Renaming the bus is a style preference
   wire clk;
@@ -103,8 +107,10 @@ module renode_apb3_completer #(
 
       // Write Enable logic: write data to memory in Renode
       if (pselx && penable && pwrite) begin
+        `ifdef VERILATOR
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
+        `endif
           begin
             runtime.peripheral.write(renode_pkg::address_t'(paddr), valid_bits, renode_pkg::data_t'(pwdata),
                              is_error);
@@ -112,13 +118,17 @@ module renode_apb3_completer #(
               runtime.connection.log(LogWarning, "Renode connection write transfer was unable to complete");
             end
           end
+        `ifdef VERILATOR
         join
+        `endif
       end
 
       // Read Enable logic: read data from memory in Renode
       if (pselx && !penable && !pwrite) begin
+        `ifdef VERILATOR
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
+        `endif
           begin
             // The runtime.peripheral.read call may cause elapse of a simulation time.
             runtime.peripheral.read(renode_pkg::address_t'(paddr), valid_bits, prdata_int, is_error);
@@ -126,7 +136,9 @@ module renode_apb3_completer #(
               runtime.connection.log(LogWarning, "Renode connection read transfer was unable to complete");
             end
           end
+        `ifdef VERILATOR
         join
+        `endif
       end else begin
         prdata_int <= '0;
       end

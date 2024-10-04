@@ -16,8 +16,13 @@ module renode_ahb_manager (
 );
   import renode_ahb_pkg::*;
 
+  `ifdef XCELIUM
+  typedef logic [$bits(bus.address_t)-1:0] address_t;
+  typedef logic [$bits(bus.data_t)-1:0] data_t;
+  `else
   typedef logic [bus.AddressWidth-1:0] address_t;
   typedef logic [bus.DataWidth-1:0] data_t;
+  `endif
   wire clk = bus.hclk;
 
   always @(runtime.controller.reset_assert_request) begin

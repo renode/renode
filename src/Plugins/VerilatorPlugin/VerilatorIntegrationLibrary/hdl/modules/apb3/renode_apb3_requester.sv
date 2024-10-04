@@ -13,8 +13,13 @@ module renode_apb3_requester (
     ref renode_runtime runtime,
     renode_apb3_if bus
 );
+  `ifdef XCELIUM
+  typedef logic [$bits(bus.address_t)-1:0] address_t;
+  typedef logic [$bits(bus.data_t)-1:0] data_t;
+  `else
   typedef logic [bus.AddressWidth-1:0] address_t;
   typedef logic [bus.DataWidth-1:0] data_t;
+  `endif
 
   // Renaming the bus is a style preference
   wire clk;
@@ -79,7 +84,7 @@ module renode_apb3_requester (
     S_SETUP,
     S_ACCESS
   } state_t;
-  state_t state = S_IDLE;
+  state_t state;
 
   //
   // Waveform generation
