@@ -325,7 +325,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, port);
             forwardSocket = listener.Accept();
             forwardSocket.SendTimeout = 1000;
-            forwardSocket.ReceiveTimeout = 1000;
+            // No ReceiveTimeout for forwardSocket - so if a debugger halts the SystemC process, Renode will wait for the process to restart
 
             backwardSocket = listener.Accept();
             backwardSocket.SendTimeout = 1000;
