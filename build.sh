@@ -359,9 +359,9 @@ do
     mkdir -p $CORE_BIN_DIR
     if $ON_OSX; then
         # macos `cp` does not have the -u flag
-        cp -v *.so $CORE_BIN_DIR/
+        cp -v tlib/*.so $CORE_BIN_DIR/
     else
-        cp -u -v *.so $CORE_BIN_DIR/
+        cp -u -v tlib/*.so $CORE_BIN_DIR/
     fi
     # copy compile_commands.json to tlib directory
     if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
