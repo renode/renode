@@ -28,6 +28,9 @@ def mc_setup_segger_rtt(name, with_has_key = True, with_read = True):
         for i in range(length):
             segger.DisplayChar(bus.ReadByte(pointer + i))
 
+        cpu.SetRegisterUlong(0, length)
+        cpu.PC = cpu.LR
+
     def add_hook(symbol, function):
         for cpu in bus.GetCPUs():
             try:
