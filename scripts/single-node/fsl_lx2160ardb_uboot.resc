@@ -1,0 +1,41 @@
+using sysbus
+$name?="fsl-lx2160a-rdb"
+mach create $name
+$bin?=@https://dl.antmicro.com/projects/renode/lx2160ardb_tfa--fsl-lx2160a-rdb-uboot.elf-s_6536168-1086a07768d4a4e6b1a7f80bd2d9c0e6444c0a2b
+machine LoadPlatformDescription @platforms/boards/fsl_lx2160ardb.repl
+showAnalyzer uart0
+
+macro reset
+"""
+    cpu0 StubPSCICalls true
+    sysbus LoadELF $bin
+"""
+
+# This handler stubs the `smc` SIP call 0xff12 (SIP_SVC_MEM_BANK)
+# atf implementation can be found here:
+# https://github.com/Xilinx/arm-trusted-firmware/blob/e4a37b000fb9a708112da1e06da0e8fad939dc86/plat/nxp/common/sip_svc/sip_svc.c#L115
+# Basically it returns available dram regions size
+cpu0 AddCustomPSCIStub 0xc200ff12 """
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
+x1 = self.GetRegisterUlong(1)
+if x1 == 0xFFFFFFFFFFFFFFFF:
+    self.SetRegisterUlong(1, 0x80002000)
+    self.SetRegisterUlong(0, 0x0)
+elif x1 == 0:
+    self.SetRegisterUlong(1, 0x80000000)
+    self.SetRegisterUlong(2, 0x80000000)
+    self.SetRegisterUlong(0, 0)
+elif x1 == 1:
+    self.SetRegisterUlong(1, 0x1080000)
+    self.SetRegisterUlong(2, 0x1000)
+    self.SetRegisterUlong(0, 0)
+elif x1 == 2:
+    self.SetRegisterUlong(1, 0x1090000)
+    self.SetRegisterUlong(2, 0x1000)
+    self.SetRegisterUlong(0, 0)
+else:
+    self.SetRegisterUlong(0, 0xFFFFFFFFFFFFFFFF)
+"""
+
+runMacro $reset

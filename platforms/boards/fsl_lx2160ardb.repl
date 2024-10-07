@@ -1,0 +1,99 @@
+memory: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x80000000
+
+ddr1: Memory.MappedMemory @ sysbus 0x1080000
+    size: 0x1000
+
+ddr2: Memory.MappedMemory @ sysbus 0x1090000
+    size: 0x1000
+
+reserved: Memory.MappedMemory @ sysbus 0x16000000
+    size: 0x8000000
+
+timer: Timers.ARM_GenericTimer @ cpu0
+    frequency: 100000000
+    EL3PhysicalTimerIRQ->gic#0@29
+    EL1PhysicalTimerIRQ->gic#0@30
+    EL1VirtualTimerIRQ->gic#0@27
+    NonSecureEL2PhysicalTimerIRQ->gic#0@26
+
+uart0: UART.PL011 @ sysbus 0x21c0000
+    ->gic@32
+
+uart1: UART.PL011 @ sysbus 0x21d0000
+    ->gic@33
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x6000000; size: 0x010000; region: "distributor" };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0; address: 0x6200000 }
+    }
+    [0-3] -> cpu0@[0-3]
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
+    supportsTwoSecurityStates: true
+
+i2c0: I2C.VybridI2C @ sysbus 0x2000000
+    ->gic@34
+
+cpu0: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a53"
+    cpuId: 0
+    genericInterruptController: gic
+
+ccn508: Python.PythonPeripheral @ {
+    sysbus 0x4200018;
+    sysbus 0x4210018;
+    sysbus 0x4220018;
+    sysbus 0x4230018;
+    sysbus 0x4240018;
+    sysbus 0x4250018;
+    sysbus 0x4260018;
+    sysbus 0x4270018
+}
+    size: 0x4
+    initable: true
+    script: '''
+if request.isInit:
+    lastVal = 0
+else:
+    lastVal = 1 - lastVal
+if lastVal == 0:
+    request.value = 0x4
+else:
+    request.value = 0xC
+'''
+
+sysbus:
+    init:
+        Tag <0x1E00740 0x4> "TP_ITYP0" 0x0
+        Tag <0x1E0074C 0x4> "TP_ITYP1" 0x1
+        Tag <0x1E00100 0x4> "RCWSR1" 0x0
+        Tag <0x1300080 0x4> "PLLC1GSR" 0x08000402
+        Tag <0x13000A0 0x4> "PLLC2GSR" 0x08000402
+        Tag <0x13000C0 0x4> "PLLC3GSR" 0x08000402
+        Tag <0x1310080 0x4> "PLLC1GSR2" 0x08000402
+        Tag <0x13100A0 0x4> "PLLC2GSR2" 0x08000402
+        Tag <0x1370000 0x4> "CLKC1CSR" 0x0
+        Tag <0x1370020 0x4> "CLKC2CSR" 0x0
+        Tag <0x1370040 0x4> "CLKC3CSR" 0x0
+        Tag <0x1370060 0x4> "CLKC4CSR" 0x0
+        Tag <0x1370080 0x4> "CLKC5CSR" 0x0
+        Tag <0x13700A0 0x4> "CLKC6CSR" 0x0
+        Tag <0x13700C0 0x4> "CLKC7CSR" 0x0
+        Tag <0x13700E0 0x4> "CLKC8CSR" 0x0
+        Tag <0x1E00844 0x4> "TP_CLUSTER1L" 0x0303
+        Tag <0x1E0084C 0x4> "TP_CLUSTER2L" 0x0303
+        Tag <0x1E00854 0x4> "TP_CLUSTER3L" 0x0303
+        Tag <0x1E0085C 0x4> "TP_CLUSTER4L" 0x0303
+        Tag <0x1E00864 0x4> "TP_CLUSTER5L" 0x0303
+        Tag <0x1E0086C 0x4> "TP_CLUSTER6L" 0x0303
+        Tag <0x1E00874 0x4> "TP_CLUSTER7L" 0x0303
+        Tag <0x1E0087C 0x4> "TP_CLUSTER8L" 0x80000303
+        Tag <0x2000000 0x1> "I2C1_IBAD" 0x0
+        Tag <0x2000001 0x1> "I2C1_IBFD" 0x0
+        Tag <0x2000002 0x1> "I2C1_IBCR" 0x80
+        Tag <0x2000003 0x1> "I2C1_IBSR" 0x80
+        Tag <0x2000004 0x1> "I2C1_IBDR" 0x00
+        Tag <0x2000005 0x1> "I2C1_IBIC" 0x00
+        Tag <0x2000006 0x1> "I2C1_IBDBG" 0x00
+        Tag <0x2200804 0x4> "TZDECPROT0_Set" 0x8
+
