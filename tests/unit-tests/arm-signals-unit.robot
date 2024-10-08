@@ -227,3 +227,37 @@ Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
     Execute Command                 machine LoadPlatformDescriptionFromString """${PLATFORM}"""
 
     Verify PERIPHBASE Init Value
+
+Registration Of Unsupported CPU Should Not Be Allowed From The Monitor
+    Requires                        created-cr8-machine
+
+    ${CR5_CPU}=                     Catenate  SEPARATOR=\n
+    ...                             cr5: CPU.ARMv7R @ sysbus
+    ...                             ${SPACE*4}cpuType: "cortex-r5"
+    ...                             ${SPACE*4}cpuId: 5
+
+    Execute Command                 machine LoadPlatformDescriptionFromString """${CR5_CPU}"""
+
+    ${MESSAGE}=                     Catenate  SEPARATOR=${SPACE}
+    ...    *Tried to register unsupported CPU model to CortexR8SignalsUnit: cortex-r5;
+    ...    supported CPUs are: cortex-r8*
+
+    Run Keyword And Expect Error    ${MESSAGE}
+    ...    Execute Command          ${SIGNALS_UNIT} RegisterCPU cr5
+
+Registration Of Unsupported CPU Should Not Be Allowed From Platform Description
+    Execute Command                 mach create
+
+    ${CR8_CPU}=                     Catenate  SEPARATOR=\n
+    ...                             ${SIGNALS_UNIT}: Miscellaneous.CortexR5SignalsUnit @ sysbus
+    ...
+    ...                             cpu: CPU.ARMv7R @ sysbus
+    ...                             ${SPACE*4}cpuType: "cortex-r8"
+    ...                             ${SPACE*4}signalsUnit: ${SIGNALS_UNIT}
+
+    ${MESSAGE}=                     Catenate  SEPARATOR=${SPACE}
+    ...    *Tried to register unsupported CPU model to CortexR5SignalsUnit: cortex-r8;
+    ...    supported CPUs are: cortex-r5, cortex-r5f*
+
+    Run Keyword And Expect Error    ${MESSAGE}
+    ...    Execute Command          machine LoadPlatformDescriptionFromString """${CR8_CPU}"""
