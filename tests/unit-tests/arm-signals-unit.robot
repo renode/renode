@@ -182,7 +182,7 @@ Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
     Execute Command                 mach create
 
     ${PLATFORM}=                    Catenate  SEPARATOR=\n
-    ...                             signalsUnit: Miscellaneous.ArmSignalsUnit @ sysbus
+    ...                             signalsUnit: Miscellaneous.CortexR8SignalsUnit @ sysbus
     ...                             ${SPACE*4}snoopControlUnit: scu
     ...
     ...                             cpu0: CPU.ARMv7R @ sysbus

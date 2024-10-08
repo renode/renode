@@ -5,7 +5,7 @@ cpu0: CPU.ARMv7R @ sysbus
     cpuId: 0
     signalsUnit: signalsUnit
 
-signalsUnit: Miscellaneous.ArmSignalsUnit @ sysbus
+signalsUnit: Miscellaneous.CortexR8SignalsUnit @ sysbus
     snoopControlUnit: scu
 
 scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xae000000
