@@ -15,7 +15,6 @@ ${SCU_MODEL}                        Antmicro.Renode.Peripherals.Miscellaneous.Ar
 Create Machine
     [Arguments]                     ${scu_registration}
 
-    Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString "using \\"${REPL_PATH}\\"; scu: @ ${scu_registration}"
 
@@ -178,7 +177,6 @@ Should Set PC For Cores With INITRAM And VINITHI High
     Verify PCs                      0x0  0xFFFF0000
 
 Verify PERIPHBASE Init Value With CPU-specific SCU Registrations
-    Execute Command                 using sysbus
     Execute Command                 mach create
 
     ${PLATFORM}=                    Catenate  SEPARATOR=\n
