@@ -24,17 +24,8 @@ PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 
 ### prepare renode-test
-cat >> $DIR/tests/test.bat << EOL
-@echo off
-set SCRIPTDIR=%~dp0
-py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory  "%SCRIPTDIR%\..\bin" -r %cd% %*
-EOL
-
-cat >> $DIR/bin/renode-test.bat << EOL
-@echo off
-set test_script=%~dp0%..\tests\test.bat
-call "%test_script%" %*
-EOL
+cp -r $BASE/renode-test.bat $DIR/bin/renode-test.bat
+sed -i 's/CONTEXT=source/CONTEXT=package/' $DIR/bin/renode-test.bat
 
 mkdir -p $OUTPUT
 
