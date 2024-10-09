@@ -17,6 +17,7 @@ PORTABLE=false
 HEADLESS=false
 SKIP_FETCH=false
 TLIB_ONLY=false
+TLIB_ARCH=""
 NET=false
 TFM="net6.0"
 PARAMS=()
@@ -26,7 +27,7 @@ RID="linux-x64"
 HOST_ARCH="i386"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--host-arch i386|aarch64] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--tlib-export-compile-commands] [--tlib-arch <arch>] [--host-arch i386|aarch64] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -44,6 +45,8 @@ function print_help() {
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "--profile-build                   build optimized for tlib profiling"
   echo "--tlib-only                       only build tlib"
+  echo "--tlib-arch                       build only single arch (implies --tlib-only)"
+  echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-only)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
@@ -106,6 +109,13 @@ do
           ;;
         "tlib-only")
           TLIB_ONLY=true
+          ;;
+        "tlib-arch")
+          # This only makes sense with '--tlib-only' set; it might as well imply it
+          TLIB_ONLY=true
+          shift $((OPTIND-1))
+          TLIB_ARCH=$1
+          OPTIND=2
           ;;
         "host-arch")
           shift $((OPTIND-1))
@@ -295,6 +305,23 @@ fi
 # This list contains all cores that will be built.
 # If you are adding a new core or endianess add it here to have the correct tlib built
 CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
+
+# if '--tlib-arch' was used - pick the first matching one
+if [[ ! -z $TLIB_ARCH ]]; then
+  NONE_MATCHED=true
+  for potential_match in "${CORES[@]}"; do
+    if [[ $potential_match == "$TLIB_ARCH"* ]]; then
+      CORES=($potential_match)
+      echo "Compiling tlib for $potential_match"
+      NONE_MATCHED=false
+      break
+    fi
+  done
+  if $NONE_MATCHED ; then
+    echo "Failed to match any tlib arch"
+    exit 1
+  fi
+fi
 
 # build tlib
 for core_config in "${CORES[@]}"
