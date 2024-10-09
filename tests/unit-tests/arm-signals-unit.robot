@@ -12,7 +12,7 @@ ${PRIVATE_TIMER_MODEL}              Antmicro.Renode.Peripherals.Timers.ARM_Priva
 ${SCU_MODEL}                        Antmicro.Renode.Peripherals.Miscellaneous.ArmSnoopControlUnit
 
 *** Keywords ***
-Create Machine
+Create Cortex-R8 Machine
     [Arguments]                     ${scu_registration}
 
     Execute Command                 mach create
@@ -90,11 +90,11 @@ Verify PCs
 
 *** Test Cases ***
 Create Machine With SCU Registered
-    Create Machine                  scu_registration=sysbus ${INIT_PERIPHBASE_ADDRESS}
-    Provides                        created-machine
+    Create Cortex-R8 Machine        scu_registration=sysbus ${INIT_PERIPHBASE_ADDRESS}
+    Provides                        created-cr8-machine
 
 Should Gracefully Handle Invalid Signal
-    Requires                        created-machine
+    Requires                        created-cr8-machine
 
     # All available signals should be printed with both names when the given signal can't be found.
     # Let's just check if two example signals are included: INITRAM and PERIPHBASE.
@@ -104,7 +104,7 @@ Should Gracefully Handle Invalid Signal
     ...                             Execute Command  ${SIGNALS_UNIT} GetSignal "INVALID"
 
 Should Handle Addresses
-    Requires                        created-machine
+    Requires                        created-cr8-machine
 
     Verify PERIPHBASE Init Value
 
@@ -142,7 +142,7 @@ Should Handle Addresses
     Verify Command Output As Integer  0x0    ${SIGNALS_UNIT} GetSignal ${signal}
 
 Should Modify Peripheral Registration With SCU Registered
-    Requires                        created-machine
+    Requires                        created-cr8-machine
 
     Verify Command Output As Integer  ${INIT_PERIPHBASE}  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
     Verify Peripherals Registered At  ${INIT_PERIPHBASE_ADDRESS}
@@ -150,7 +150,7 @@ Should Modify Peripheral Registration With SCU Registered
     Should Modify Peripheral Registration
 
 Should Modify Peripheral Registration With SCU Unregistered
-    Create Machine                  scu_registration=sysbus
+    Create Cortex-R8 Machine        scu_registration=sysbus
 
     # SCU initially unregistered, PERIPHBASE not automatically set as when SCU registered at a specific address.
     Verify Command Output As Integer  0x0  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
@@ -166,7 +166,7 @@ Should Modify Peripheral Registration With SCU Unregistered
     ${peripherals}=                 Execute Command  peripherals
 
 Should Set PC For Cores With INITRAM And VINITHI High
-    Requires                        created-machine
+    Requires                        created-cr8-machine
 
     Execute Command                 cpu0 ExecutionMode SingleStep
     Execute Command                 cpu1 ExecutionMode SingleStep
@@ -261,3 +261,61 @@ Registration Of Unsupported CPU Should Not Be Allowed From Platform Description
 
     Run Keyword And Expect Error    ${MESSAGE}
     ...    Execute Command          machine LoadPlatformDescriptionFromString """${CR8_CPU}"""
+
+Create Machine With Cortex-R5 And Cortex-R5F
+    Execute Command                 mach create
+
+    ${PLATFORM}=                    Catenate  SEPARATOR=\n
+    ...                             ${SIGNALS_UNIT}: Miscellaneous.CortexR5SignalsUnit @ sysbus
+    ...
+    ...                             cpu0: CPU.ARMv7R @ sysbus
+    ...                             ${SPACE*4}cpuType: "cortex-r5f"
+    ...                             ${SPACE*4}cpuId: 0
+    ...                             ${SPACE*4}signalsUnit: ${SIGNALS_UNIT}
+    ...
+    ...                             cpu1: CPU.ARMv7R @ sysbus
+    ...                             ${SPACE*4}cpuType: "cortex-r5"
+    ...                             ${SPACE*4}cpuId: 1
+    ...                             ${SPACE*4}signalsUnit: ${SIGNALS_UNIT}
+
+    Execute Command                 machine LoadPlatformDescriptionFromString """${PLATFORM}"""
+
+    Provides                        created-cr5-machine
+
+Set Cortex-R5 Peripheral Interface Region Registers With Signals
+    Requires                        created-cr5-machine
+
+    # So that there's no CPU abort after starting emulation which is also why SingleStep is used.
+    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000 }"
+
+    # Base can be up to 20 bits.
+    Execute Command                 ${SIGNALS_UNIT} SetSignalFromAddress "PPHBASE" 0x12345000
+    Execute Command                 ${SIGNALS_UNIT} SetSignalFromAddress "PPXBASE" 0x60007000
+    Execute Command                 ${SIGNALS_UNIT} SetSignalFromAddress "PPVBASE" 0x00089000
+
+    # Size can be up to 5 bits.
+    Execute Command                 ${SIGNALS_UNIT} SetSignal "PPHSIZE" 0x1F
+    Execute Command                 ${SIGNALS_UNIT} SetSignal "PPXSIZE" 0x10
+    Execute Command                 ${SIGNALS_UNIT} SetSignal "PPVSIZE" 0x0F
+
+    FOR  ${i}  IN RANGE  2
+        # Init is a per-cpu signal, there's no init signal for Virtual AXI Interface Region Register (PPVR).
+        Execute Command                 ${SIGNALS_UNIT} SetSignalStateForCPU "INITPPH" false cpu${i}
+        Execute Command                 ${SIGNALS_UNIT} SetSignalStateForCPU "INITPPX" true cpu${i}
+
+        # Configuration signals take effect on CPU out of reset.
+        Verify Command Output As Integer  0x0  cpu${i} GetSystemRegisterValue "PPHR"
+        Verify Command Output As Integer  0x0  cpu${i} GetSystemRegisterValue "PPXR"
+        Verify Command Output As Integer  0x0  cpu${i} GetSystemRegisterValue "PPVR"
+
+        # Continuous code execution would quickly reach 0x10000 and cause CPU abort.
+        Execute Command    cpu${i} ExecutionMode SingleStep
+    END
+
+    Start Emulation
+
+    FOR  ${i}  IN RANGE  2
+        Verify Command Output As Integer  ${{ hex(0x12345000 | (0x1F << 2) | 0) }}  cpu${i} GetSystemRegisterValue "PPHR"
+        Verify Command Output As Integer  ${{ hex(0x60007000 | (0x10 << 2) | 1) }}  cpu${i} GetSystemRegisterValue "PPXR"
+        Verify Command Output As Integer  ${{ hex(0x00089000 | (0x0F << 2) | 0) }}  cpu${i} GetSystemRegisterValue "PPVR"
+    END
