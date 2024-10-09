@@ -108,11 +108,38 @@ Should Handle Addresses
 
     Verify PERIPHBASE Init Value
 
-    Execute Command                 ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${NEW_PERIPHBASE_ADDRESS}
+    Execute Command                   ${SIGNALS_UNIT} SetSignalFromAddress "PERIPHBASE" ${NEW_PERIPHBASE_ADDRESS}
     Verify Command Output As Integer  ${NEW_PERIPHBASE_ADDRESS}  ${SIGNALS_UNIT} GetAddress "PERIPHBASE"
 
     # When set from address, the signal is set to a value based on address' top bits.
     Verify Command Output As Integer  ${NEW_PERIPHBASE}  ${SIGNALS_UNIT} GetSignal "PERIPHBASE"
+
+    Create Log Tester                 0
+
+    # DBGROMADDR is a 20-bit signal, let's first set it to a non-zero value.
+    ${exp_value}=    Set Variable     0x12345
+    ${address}=      Set Variable     ${exp_value}000
+    ${signal}=       Set Variable     DebugROMAddress
+    Execute Command                   ${SIGNALS_UNIT} SetSignalFromAddress ${signal} ${address}
+
+    # Setting signals from addresses with bits over 32 set is invalid for Cortex-R8 even though only top 20 bits are set.
+    ${address_64b}=    Set Variable   0xFEDCB00000000000
+    Run Keyword And Expect Error      *${SIGNALS_UNIT}: ${signal}: 20-bit signal in a 32-bit unit shouldn't be set from ${address_64b} address*
+    ...  Execute Command              ${SIGNALS_UNIT} SetSignalFromAddress ${signal} ${address_64b}
+
+    # Valid address/value should be preserved.
+    Verify Command Output As Integer  ${address}    ${SIGNALS_UNIT} GetAddress ${signal}
+    Verify Command Output As Integer  ${exp_value}      ${SIGNALS_UNIT} GetSignal ${signal}
+
+    # PFILTERSTART is a 12-bit signal so setting it from an address with any of bits 0-19 set should fail.
+    ${address}=    Set Variable       0x12340000
+    ${signal}=     Set Variable       PeripheralFilterStart
+    Run Keyword And Expect Error      *${SIGNALS_UNIT}: ${signal}: 12-bit signal in a 32-bit unit shouldn't be set from ${address} address*
+    ...  Execute Command              ${SIGNALS_UNIT} SetSignalFromAddress ${signal} ${address}
+
+    # Make sure it stayed zero.
+    Verify Command Output As Integer  0x0    ${SIGNALS_UNIT} GetAddress ${signal}
+    Verify Command Output As Integer  0x0    ${SIGNALS_UNIT} GetSignal ${signal}
 
 Should Modify Peripheral Registration With SCU Registered
     Requires                        created-machine
