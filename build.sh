@@ -17,6 +17,7 @@ PORTABLE=false
 HEADLESS=false
 SKIP_FETCH=false
 TLIB_ONLY=false
+TLIB_EXPORT_COMPILE_COMMANDS=false
 TLIB_ARCH=""
 NET=false
 TFM="net6.0"
@@ -46,7 +47,7 @@ function print_help() {
   echo "--profile-build                   build optimized for tlib profiling"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
-  echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-only)"
+  echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
@@ -116,6 +117,13 @@ do
           shift $((OPTIND-1))
           TLIB_ARCH=$1
           OPTIND=2
+          ;;
+        "tlib-export-compile-commands")
+          if [ -z $TLIB_ARCH ]; then
+              echo "--tlib-export-compile-commands requires --tlib-arch begin set"
+              exit 1
+          fi
+          TLIB_EXPORT_COMPILE_COMMANDS=true
           ;;
         "host-arch")
           shift $((OPTIND-1))
@@ -341,6 +349,9 @@ do
     if [[ $ENDIAN == "be" ]]; then
         CMAKE_CONF_FLAGS+=" -DTARGET_BIG_ENDIAN=1"
     fi
+    if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
+        CMAKE_CONF_FLAGS+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
+    fi
     cmake "$CMAKE_COMMON" $CMAKE_CONF_FLAGS -DHOST_ARCH=$HOST_ARCH $CORES_PATH
     cmake --build . -j$(nproc)
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
@@ -350,6 +361,10 @@ do
         cp -v *.so $CORE_BIN_DIR/
     else
         cp -u -v *.so $CORE_BIN_DIR/
+    fi
+    # copy compile_commands.json to tlib directory
+    if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
+       command cp -v -f $CORE_DIR/compile_commands.json $CORES_PATH/tlib/
     fi
     popd > /dev/null
 done
