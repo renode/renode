@@ -318,8 +318,7 @@ do
     cmake --build . -j$(nproc)
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
     mkdir -p $CORE_BIN_DIR
-    if $ON_OSX
-    then
+    if $ON_OSX; then
         # macos `cp` does not have the -u flag
         cp -v *.so $CORE_BIN_DIR/
     else
