@@ -1,0 +1,46 @@
+debugArea: Memory.MappedMemory @ sysbus 0x0
+    size: 0x1000
+
+smallRom: Memory.MappedMemory @ sysbus 0x1000
+    size: 0xF000
+
+flash: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x40000
+
+ddr_overlay: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration { address: 0x80000000; cpu: cpu }
+    size: 0x100
+
+ddr: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x4000000
+
+uart: UART.MiV_CoreUART @ sysbus 0x70001000
+    clockFrequency: 66000000
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0x40000000
+    0 -> cpu@11
+    numberOfSources: 31
+    numberOfContexts: 1
+    prioritiesEnabled : false
+
+cpu: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imafd_zicsr_zifencei"
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: clint
+
+// Power/Reset/Clock/Interrupt
+clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000
+    frequency: 66000000
+    [0, 1] -> cpu@[3, 7]
+
+gpioInputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70002000
+    -> plic@29
+
+gpioOutputs: GPIOPort.MiV_CoreGPIO @ sysbus 0x70005000
+
+timer0: Timers.MiV_CoreTimer @ sysbus 0x70003000
+    -> plic@30
+    clockFrequency: 66000000
+
+timer1: Timers.MiV_CoreTimer @ sysbus 0x70004000
+    -> plic@31
+    clockFrequency: 66000000
