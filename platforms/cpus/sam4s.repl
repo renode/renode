@@ -1,0 +1,96 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4"
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu }
+    }
+    -> cpu@0
+    systickFrequency: 120000000
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+boot: Memory.MappedMemory @ sysbus 0x0
+    size: 0x400000
+
+flash: Memory.MappedMemory @ sysbus 0x400000
+    size: 0x400000
+
+rom: Memory.MappedMemory @ sysbus 0x800000
+    size: 0x400000
+
+sram_bb: Miscellaneous.BitBanding @ sysbus <0x22000000, 0x23FFFFFF>
+    peripheralBase: 0x20000000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x400000
+
+usart0: UART.SAM_USART @ sysbus 0x40024000
+    ->nvic@14
+
+usart1: UART.SAM_USART @ sysbus 0x40028000
+    ->nvic@15
+
+PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0468
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+uart0: UART.SAM_USART @ sysbus 0x400E0600
+    ->nvic@8
+
+uart1: UART.SAM_USART @ sysbus 0x400E0800
+    ->nvic@9
+
+peripheral_bb: Miscellaneous.BitBanding @ sysbus <0x42000000, 0x43FFFFFF>
+    peripheralBase: 0x40000000
+
+sram0: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x1000000
+
+sram1: Memory.MappedMemory @ sysbus 0x61000000
+    size: 0x1000000
+
+sram2: Memory.MappedMemory @ sysbus 0x62000000
+    size: 0x1000000
+
+sram3: Memory.MappedMemory @ sysbus 0x63000000
+    size: 0x1000000
+
+sysbus:
+    init:
+        Tag <0x40000000 0x20000000> "Peripherals"
+        Tag <0x40000000 0x4000> "HSMCI"
+        Tag <0x40004000 0x4000> "SSC"
+        Tag <0x40008000 0x4000> "SPI"
+        Tag <0x40010000 0x40> "TC0"
+        Tag <0x40010040 0x40> "TC1"
+        Tag <0x40010080 0x3F80> "TC2"
+        Tag <0x40014000 0x40> "TC3"
+        Tag <0x40014040 0x40> "TC4"
+        Tag <0x40014080 0x3F80> "TC5"
+        Tag <0x40018000 0x4000> "TWI0"
+        Tag <0x4001C000 0x4000> "TWI1"
+        Tag <0x40020000 0x4000> "PWM"
+        Tag <0x40034000 0x4000> "UDP"
+        Tag <0x40038000 0x4000> "ADC"
+        Tag <0x4003C000 0x4000> "DACC"
+        Tag <0x40040000 0x4000> "ACC"
+        Tag <0x40044000 0x4000> "CRCCU"
+        Tag <0x400E0000 0x2600> "System Controller"
+        Tag <0x400E0000 0x200> "SMC"
+        Tag <0x400E0200 0x200> "MATRIX"
+        Tag <0x400E0400 0x200> "PMC"
+        Tag <0x400E0740 0xC0> "CHIPID"
+        Tag <0x400E0A00 0x200> "EEFC0"
+        Tag <0x400E0C00 0x200> "EEFC0"
+        Tag <0x400E0E00 0x200> "PIOA"
+        Tag <0x400E1000 0x200> "PIOB"
+        Tag <0x400E1200 0x200> "PIOC"
+        Tag <0x400E1400 0x10> "RSTC"
+        Tag <0x400E1410 0x20> "SUPC"
+        Tag <0x400E1430 0x20> "RTT"
+        Tag <0x400E1450 0x10> "WDT"
+        Tag <0x400E1460 0x30> "RTC"
+        Tag <0x400E1490 0x170> "GPBR"
