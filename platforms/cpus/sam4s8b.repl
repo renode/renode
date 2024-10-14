@@ -1,0 +1,7 @@
+using "platforms/cpus/sam4s.repl"
+
+flash:
+    size: 0x80000
+
+sram:
+    size: 0x20000
