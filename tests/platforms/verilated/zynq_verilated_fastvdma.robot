@@ -48,8 +48,8 @@ Should Load Drivers
     [Documentation]                      Loads fastvdma.ko and fastvdma-demo.ko and performs image transfer via FastVDMA.
     Requires                             booted-linux
 
-# Suppress messages from kernel space
-    Write Line To Uart                   echo 0 > /proc/sys/kernel/printk
+# Suppress messages from kernel space; don't wait for echo because a kernel log might be printed in the middle of writing.
+    Write Line To Uart                   echo 0 > /proc/sys/kernel/printk  waitForEcho=false
 
 # Write Line To Uart for some reason breaks this line into two.
     Write To Uart                        insmod ${FASTVDMA_DRIVER} ${\n}
