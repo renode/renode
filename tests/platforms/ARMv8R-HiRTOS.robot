@@ -15,6 +15,7 @@ Create Machine
 Create Multicore Machine
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/cortex-r52_smp.repl
+    Execute Command                 machine SetSerialExecution True
 
 Wait For Lines Per Thread
     [Arguments]                     @{lines}  ${testerId}
