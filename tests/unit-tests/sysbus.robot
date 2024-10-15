@@ -476,16 +476,16 @@ Symbols Should Be Dynamically Loaded and Unloaded On Request
 
     Execute Command                sysbus ClearSymbols
     # Global lookup is cleared so both local and global lookup fail
-    Run Keyword And Expect Error   *No symbol with name `main` found*
+    Run Keyword And Expect Error   *Could not find any address for symbol: main*
     ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
-    Run Keyword And Expect Error   *No symbol with name `main` found*
+    Run Keyword And Expect Error   *Could not find any address for symbol: main*
     ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
     
     # Load symbols in the local scope so they are visible only for the given cpu
     Execute Command                sysbus LoadSymbolsFrom ${bin} context=${cpu}
     ${main_address_local}=         Execute Command  sysbus GetSymbolAddress ${main_symbol_name} context=${cpu}
     Should Be Equal As Numbers     ${main_symbol_address}  ${main_address_local}
-    Run Keyword And Expect Error   *No symbol with name `main` found*
+    Run Keyword And Expect Error   *Could not find any address for symbol: main*
     ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
 
 Should Log All Peripherals Accesses Only When Enabled
