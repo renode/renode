@@ -241,6 +241,8 @@ For more information and the underlying Dockerfile, visit the [repository on Git
 
 Documentation is available on [Read the Docs](https://renode.readthedocs.io).
 
+You can also [Ask Renode Guru](https://gurubase.io/g/renode), it is an Renode-focused AI to answer your questions.
+
 ## License & contributions
 
 Renode is released under the permissive MIT license.
