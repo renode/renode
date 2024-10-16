@@ -1,0 +1,72 @@
+flash0: Memory.MappedMemory @ sysbus 0x0000_0000
+    size: 0x40000
+
+dwt: Miscellaneous.DWT @ sysbus 0xE000_1000
+    frequency: 72_000_000
+
+sram0: Memory.MappedMemory @ sysbus 0x2000_0000
+    size: 0x8000
+
+nvic0: IRQControllers.NVIC @ {
+    sysbus new Bus.BusPointRegistration { address: 0xE000_E000; cpu: cpu0 }
+}
+    -> cpu0@0
+    systickFrequency: 48_000_000
+
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0+"
+    nvic: nvic0
+    init:
+        PerformanceInMips 48
+
+rtc: Timers.SAMD21_RTC @ sysbus 0x4000_1400
+    IRQ -> nvic0@3
+
+gpio_a: GPIOPort.SAMD21_GPIO @ sysbus 0x4100_4400
+
+gpio_b: GPIOPort.SAMD21_GPIO @ sysbus 0x4100_4480
+
+usart0: UART.SAMD5_UART @ sysbus 0x4200_0800
+    -> nvic0@9
+
+tc4: Timers.SAMD21_Timer @ sysbus 0x4200_3000
+    baseFrequency: 48_000_000
+    IRQ -> nvic0@19
+
+tc6: Timers.SAMD21_Timer @ sysbus 0x4200_3800
+    baseFrequency: 48_000_000
+    IRQ -> nvic0@21
+
+gclk: Memory.ArrayMemory @ sysbus 0x40000C00
+    size: 0x20
+
+usart1: UART.SAMD5_UART @ sysbus 0x4200_0C00
+    -> nvic0@10
+
+usart2: UART.SAMD5_UART @ sysbus 0x4200_1400
+    -> nvic0@12
+
+sysbus:
+    init:
+        Tag <0x40000000 0x08> "Peripheral Access Controller 0"
+        Tag <0x40000400 0x80> "Power Manager"
+        Tag <0x40000800 0x80> "System Control"
+        Tag <0x4000080C 0x4> "System Control: Power and Clocks Status" 0x0000FFFF
+        Tag <0x40000C00 0x10> "Generic Clock Generator"
+        Tag <0x40001000 0x10> "Watchdog Timer"
+        Tag <0x40001400 0x40> "Real-Time Counter"
+        Tag <0x40001800 0x40> "External Interrupt Controller"
+        Tag <0x41002000 0x2000> "Device Service Unit"
+        Tag <0x41004000 0x80> "Non-Volatile Memory Controller"
+        Tag <0x41004400 0x200> "Port Module"
+        Tag <0x41004800 0x80> "Direct Memory Access Controller"
+        Tag <0x41005000 0x1000> "Universal Serial Bus"
+        Tag <0x41006000 0x1000> "Cortex-M0+ Micro-Trace Buffer"
+        Tag <0x42000400 0x80> "Event System Interface"
+        Tag <0x42000800 0x40> "Serial Communication Interface 0"
+        Tag <0x42002000 0x090> "Timer Counter Control 0"
+        Tag <0x42002C00 0x040> "Basic Timer Counter 3"
+        Tag <0x42004000 0x80> "Analog Digital Converter"
+        Tag <0x42004400 0x40> "Analog Comparators"
+        Tag <0x42004800 0x10> "Digital Analog Converter"
+        Tag <0x42005000 0x40> "Inter-IC Sound Interface"
