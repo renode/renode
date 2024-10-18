@@ -6,9 +6,9 @@
 //
 using System;
 using Antmicro.Renode.Peripherals;
-using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
+using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
-namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public interface IVerilatorConnection : IDisposable, IHasOwnLife
     {

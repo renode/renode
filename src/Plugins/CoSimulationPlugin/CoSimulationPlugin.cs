@@ -7,12 +7,12 @@
 using System;
 using Antmicro.Renode.UserInterface;
 
-namespace Antmicro.Renode.Plugins.VerilatorPlugin
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin
 {
     [Plugin(Name = "Verilator Plugin", Version = "1.0", Description = "Provides Verilog simulation integration.", Vendor = "Antmicro")]
-    public sealed class VerilatorPlugin : IDisposable
+    public sealed class CoSimulationPlugin : IDisposable
     {
-        public VerilatorPlugin(Monitor monitor)
+        public CoSimulationPlugin(Monitor monitor)
         {
         }
 

@@ -21,7 +21,7 @@ cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
-cp -r $BASE/src/Plugins/VerilatorPlugin/VerilatorIntegrationLibrary $DIR/plugins
+cp -r $BASE/src/Plugins/CoSimulationPlugin/VerilatorIntegrationLibrary $DIR/plugins
 cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
 # For now, SystemCPlugin uses socket-cpp library from VerilatorIntegrationLibrary.
 # ln -f argument is quietly ignored in windows-package environment, so instead of updating remove the link

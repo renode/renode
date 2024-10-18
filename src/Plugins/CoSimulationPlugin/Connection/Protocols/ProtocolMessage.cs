@@ -6,7 +6,7 @@
 //
 using System.Runtime.InteropServices;
 
-namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
 {
     // ProtocolMessage must be in sync with Verilator integration library
     [StructLayout(LayoutKind.Sequential, Pack = 2)]

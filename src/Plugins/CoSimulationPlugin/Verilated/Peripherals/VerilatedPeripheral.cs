@@ -13,8 +13,8 @@ using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.Timers;
-using Antmicro.Renode.Plugins.VerilatorPlugin.Connection;
-using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
+using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection;
+using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
