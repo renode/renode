@@ -40,7 +40,7 @@
     <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\BaseCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />

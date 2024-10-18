@@ -14,7 +14,7 @@ using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 namespace Antmicro.Renode.Peripherals.Verilated
 {
     [AllowedTranslations(AllowedTranslation.ByteToDoubleWord)]
-    public class CoSimulatedUART : BaseDoubleWordVerilatedPeripheral, IUART
+    public class CoSimulatedUART : BaseDoubleWordCoSimulatedPeripheral, IUART
     {
         public CoSimulatedUART(Machine machine, long frequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null)
