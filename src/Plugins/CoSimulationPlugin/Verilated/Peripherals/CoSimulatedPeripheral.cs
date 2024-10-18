@@ -18,9 +18,9 @@ using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class VerilatedPeripheral : BaseCoSimulatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IGPIOReceiver
+    public class CoSimulatedPeripheral : BaseCoSimulatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IGPIOReceiver
     {
-        public VerilatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+        public CoSimulatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
             : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, simulationContextLinux, simulationContextWindows, simulationContextMacOS, timeout, address)

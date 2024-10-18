@@ -43,12 +43,12 @@
     <Compile Include="Verilated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\CFUCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\BaseCoSimulatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\CoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedUART.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedCPU.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32Registers.cs" />
-    <Compile Include="Connection\IVerilatedPeripheral.cs" />
+    <Compile Include="Connection\ICoSimulatedPeripheral.cs" />
     <Compile Include="Connection\SocketVerilatorConnection.cs" />
     <Compile Include="Connection\LibraryVerilatorConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
