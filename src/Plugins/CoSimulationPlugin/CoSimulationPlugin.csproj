@@ -44,7 +44,7 @@
     <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\BaseCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
+    <Compile Include="Verilated\Peripherals\CoSimulatedUART.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedCPU.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32Registers.cs" />
