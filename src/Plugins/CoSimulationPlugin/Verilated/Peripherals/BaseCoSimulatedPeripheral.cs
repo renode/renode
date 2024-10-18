@@ -26,7 +26,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             started = false;
             if(address != null)
             {
-                verilatorConnection = new SocketVerilatorConnection(this, timeout, HandleReceivedMessage, address);
+                verilatorConnection = new SocketCoSimulationConnection(this, timeout, HandleReceivedMessage, address);
             }
             else
             {
@@ -201,7 +201,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
         }
 
-        public string ConnectionParameters => (verilatorConnection as SocketVerilatorConnection)?.ConnectionParameters ?? "";
+        public string ConnectionParameters => (verilatorConnection as SocketCoSimulationConnection)?.ConnectionParameters ?? "";
 
         public void Start()
         {
