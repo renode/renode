@@ -42,7 +42,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 {
                     AbortAndLogError("Timeout reached while waiting for a tick response.");
                 }
-                this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
+                this.NoisyLog("Tick: Co-simulated peripheral finished evaluating the model.");
             };
 
             var innerConnections = new Dictionary<int, IGPIO>();
@@ -250,7 +250,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         private readonly AutoResetEvent allTicksProcessedARE;
         private readonly LimitTimer timer;
-        private const string LimitTimerName = "VerilatorIntegrationClock";
+        private const string LimitTimerName = "CosimulationClock";
 
         // The following constant should be in sync with a time unit defined in the `renode` SystemVerilog module.
         // It allows using simulation time instead of a number of clock ticks.

@@ -66,7 +66,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         private const ulong RxdInterrupt = 1;
     }
 
-    // UARTActionNumber must be in sync with Verilator integration library
+    // UARTActionNumber must be in sync with cosimulation library
     public enum UARTActionNumber
     {
         UARTTxd = 13,
