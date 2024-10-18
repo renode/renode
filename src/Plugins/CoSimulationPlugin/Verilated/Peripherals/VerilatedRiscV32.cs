@@ -19,7 +19,7 @@ using Machine = Antmicro.Renode.Core.Machine;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public partial class VerilatedRiscV32 : VerilatedCPU, ICpuSupportingGdb
+    public partial class VerilatedRiscV32 : CoSimulatedCPU, ICpuSupportingGdb
     {
         public VerilatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian,
         CpuBitness bitness = CpuBitness.Bits32, string simulationFilePathLinux = null,
