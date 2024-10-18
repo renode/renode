@@ -16,7 +16,7 @@ using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class LibraryCoSimulationConnection: IVerilatorConnection, IEmulationElement
+    public class LibraryCoSimulationConnection: ICoSimulationConnection, IEmulationElement
     {
         public LibraryCoSimulationConnection(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
         {
