@@ -91,11 +91,11 @@ module renode_axi_manager (
 
   function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits);
     if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
-      runtime.connection.fatal_error("AXI Manager doesn't support unaligned access.");
+      runtime.connection.log(LogWarning, $sformatf("Unaligned access to 0x%08X is unsupported by AXI Manager. Operation will have no effect.", address));
       return 0;
     end
     if(!bus.are_valid_bits_supported(valid_bits)) begin
-      runtime.connection.fatal_error($sformatf("This instance of the AXI Manager doesn't support access using the 'b%b mask.", valid_bits));
+      runtime.connection.log(LogWarning, $sformatf("This instance of the AXI Manager doesn't support access using the 'b%b mask.", valid_bits));
       return 0;
     end
     return 1;

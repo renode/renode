@@ -55,22 +55,21 @@ module renode_axi_subordinate (
 
     get_read_address(transaction_id, address, burst_size, burst_length, burst_type);
     valid_bits = bus.burst_size_to_valid_bits(burst_size);
-    if(!is_access_valid(address, valid_bits, burst_type)) begin
-      // The invalid access causes a fatal error, so there is no need to response to all transfers
-      set_read_response(transaction_id, 0, SlaveError, address == address_last);
-    end
-    else begin
-      transfer_bytes = 2**burst_size;
-      address_last = address + transfer_bytes * burst_length;
-      for (; address <= address_last; address += transfer_bytes) begin
-        // The conection.read call may cause simulation time to move forward
-        runtime.peripheral.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
-        if (is_error) begin
-          runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h, the 0 value sent to bus.", address));
-          data = 0;
-        end
-        data = data & valid_bits;
-        set_read_response(transaction_id, data_t'(data) << ((address % transfer_bytes) * 8), is_error ? SlaveError : Okay, address == address_last);
+    transfer_bytes = 2**burst_size;
+    address_last = address + transfer_bytes * burst_length;
+    for (; address <= address_last; address += transfer_bytes) begin
+      if(!is_access_valid(address, valid_bits, burst_type)) begin
+          set_read_response(transaction_id, 0, SlaveError, address == address_last);
+      end
+      else begin
+          // The conection.read call may cause simulation time to move forward
+          runtime.peripheral.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
+          if (is_error) begin
+            runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h, responding with 0.", address));
+            data = 0;
+          end
+          data = data & valid_bits;
+          set_read_response(transaction_id, data_t'(data) << ((address % transfer_bytes) * 8), is_error ? SlaveError : Okay, address == address_last);
       end
     end
   endtask
@@ -91,6 +90,10 @@ module renode_axi_subordinate (
     get_write_address(transaction_id, address, burst_size, burst_length, burst_type);
     valid_bits = bus.burst_size_to_valid_bits(burst_size);
     if(!is_access_valid(address, valid_bits, burst_type)) begin
+      do @(posedge clk); while (!bus.wvalid);
+      bus.wready <= 1;
+      @(posedge clk);
+      bus.wready <= 0;
       set_write_response(transaction_id, SlaveError);
     end
     else begin
@@ -118,7 +121,7 @@ module renode_axi_subordinate (
 
   function static is_access_valid(address_t address, renode_pkg::valid_bits_e valid_bits, burst_type_e burst_type);
     if(!renode_pkg::is_access_aligned(renode_pkg::address_t'(address), valid_bits)) begin
-      runtime.connection.fatal_error("AXI Subordinate doesn't support unaligned access.");
+      runtime.connection.log(LogWarning, $sformatf("Unaligned access to 0x%08X unsupported by AXI Subordinate. This will result in bus error response.", address));
       return 0;
     end
     if(burst_type != Incrementing) begin
