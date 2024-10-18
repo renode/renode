@@ -41,7 +41,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
-        // StopBits, ParityBit and BaudRate are not in sync with the verilated model
+        // StopBits, ParityBit and BaudRate are not in sync with the cosimulated model
         public Bits StopBits { get { return Bits.One; } }
         public Parity ParityBit { get { return Parity.None; } }
         public uint BaudRate { get { return 115200; } }

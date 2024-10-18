@@ -21,7 +21,7 @@ enum CfuStatus
   CFU_TIMEOUT = 2,
 };
 
-extern RenodeAgent *Init(void); //definition has to be provided in sim_main.cpp of verilated CFU
+extern RenodeAgent *Init(void); //definition has to be provided in sim_main.cpp of cosimulated CFU
 
 extern "C"
 {

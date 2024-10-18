@@ -28,18 +28,18 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
 
-            verilatedPeripheral = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
+            cosimulatedPeripheral = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
 
             if(frequency != 0)
             {
                 timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
                 timer.LimitReached += () =>
                 {
-                    if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                    if(!cosimulatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
                     {
                         AbortAndLogError("Send error!");
                     }
-                    this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
+                    this.NoisyLog("Tick: TickClock sent, waiting for the cosimulated peripheral...");
                     allTicksProcessedARE.WaitOne();
                     this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
                 };
@@ -59,18 +59,18 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         public void Dispose()
         {
             disposeInitiated = true;
-            verilatedPeripheral.Dispose();
+            cosimulatedPeripheral.Dispose();
             Marshal.FreeHGlobal(errorPointer);
         }
 
         public void Pause()
         {
-            verilatedPeripheral.Pause();
+            cosimulatedPeripheral.Pause();
         }
 
         public void Resume()
         {
-            verilatedPeripheral.Resume();
+            cosimulatedPeripheral.Resume();
         }
 
         public void Start()
@@ -79,10 +79,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
             }
-            verilatedPeripheral.Start();
+            cosimulatedPeripheral.Start();
         }
 
-        public bool IsPaused => verilatedPeripheral.IsPaused;
+        public bool IsPaused => cosimulatedPeripheral.IsPaused;
 
         public string SimulationFilePathLinux
         {
@@ -130,7 +130,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             get
             {
-                return verilatedPeripheral.SimulationFilePath;
+                return cosimulatedPeripheral.SimulationFilePath;
             }
             set
             {
@@ -153,8 +153,8 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     {
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
-                        verilatedPeripheral.SimulationFilePath = value;
-                        verilatedPeripheral.Connect();
+                        cosimulatedPeripheral.SimulationFilePath = value;
+                        cosimulatedPeripheral.Connect();
 
                         if(timer != null)
                         {
@@ -195,7 +195,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!verilatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimulatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Send error!");
             }
@@ -233,7 +233,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 return;
             }
             this.Log(LogLevel.Error, message);
-            verilatedPeripheral.Abort();
+            cosimulatedPeripheral.Abort();
 
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
@@ -307,7 +307,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
         private bool disposeInitiated;
-        private readonly LibraryCoSimulationConnection verilatedPeripheral;
+        private readonly LibraryCoSimulationConnection cosimulatedPeripheral;
         private NativeBinder executeBinder;
         private BaseRiscV connectedCpu;
         private IntPtr errorPointer;

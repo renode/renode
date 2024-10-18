@@ -60,7 +60,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 asyncSocketComunicator.ResetConnections();
                 KillVerilatedProcess();
 
-                LogAndThrowRE($"Connection to the verilated peripheral failed!");
+                LogAndThrowRE($"Connection to the cosimulated peripheral failed!");
             }
             else
             {
@@ -68,7 +68,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 mainSocketComunicator.CloseListener();
                 asyncSocketComunicator.CloseListener();
 
-                parentElement.Log(LogLevel.Debug, "Connected to the verilated peripheral!");
+                parentElement.Log(LogLevel.Debug, "Connected to the cosimulated peripheral!");
             }
         }
 
@@ -129,13 +129,13 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 mainSocketComunicator.CancelCommunication();
             }
 
-            if(verilatedProcess != null)
+            if(cosimulatedProcess != null)
             {
-                // Ask verilatedProcess to close, kill if it doesn't
-                if(!verilatedProcess.HasExited)
+                // Ask cosimulatedProcess to close, kill if it doesn't
+                if(!cosimulatedProcess.HasExited)
                 {
                     parentElement.DebugLog($"Verilated peripheral '{simulationFilePath}' is still working...");
-                    if(verilatedProcess.WaitForExit(500))
+                    if(cosimulatedProcess.WaitForExit(500))
                     {
                         parentElement.DebugLog("Verilated peripheral exited gracefully.");
                     }
@@ -145,7 +145,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                         parentElement.Log(LogLevel.Warning, "Verilated peripheral had to be killed.");
                     }
                 }
-                verilatedProcess.Dispose();
+                cosimulatedProcess.Dispose();
             }
 
             mainSocketComunicator.Dispose();
@@ -207,7 +207,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 simulationFilePath = value;
                 parentElement.Log(LogLevel.Debug,
-                    "Trying to run and connect to the verilated peripheral '{0}' through ports {1} and {2}...",
+                    "Trying to run and connect to the cosimulated peripheral '{0}' through ports {1} and {2}...",
                     value, mainSocketComunicator.ListenerPort, asyncSocketComunicator.ListenerPort);
 #if !PLATFORM_WINDOWS
                 Mono.Unix.Native.Syscall.chmod(value, FilePermissions.S_IRWXU); //setting permissions to 0x700
@@ -256,7 +256,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             try
             {
-                verilatedProcess = new Process
+                cosimulatedProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo(filePath)
                     {
@@ -265,12 +265,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                     }
                 };
 
-                verilatedProcess.Start();
+                cosimulatedProcess.Start();
             }
             catch(Exception e)
             {
-                verilatedProcess = null;
-                LogAndThrowRE($"Error starting verilated peripheral!\n{e.Message}");
+                cosimulatedProcess = null;
+                LogAndThrowRE($"Error starting cosimulated peripheral!\n{e.Message}");
             }
         }
 
@@ -297,7 +297,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             try
             {
-                verilatedProcess?.Kill();
+                cosimulatedProcess?.Kill();
             }
             catch
             {
@@ -336,7 +336,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private volatile int disposeInitiated;
         private string simulationFilePath;
         private string context = "{0} {1} {2}";
-        private Process verilatedProcess;
+        private Process cosimulatedProcess;
         private SocketComunicator mainSocketComunicator;
         private SocketComunicator asyncSocketComunicator;
         private Action<ProtocolMessage> receivedHandler;
