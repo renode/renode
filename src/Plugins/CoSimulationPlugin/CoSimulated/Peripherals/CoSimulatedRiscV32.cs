@@ -17,7 +17,7 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.CPU.Registers;
 using Machine = Antmicro.Renode.Core.Machine;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public partial class CoSimulatedRiscV32 : CoSimulatedCPU, ICpuSupportingGdb
     {

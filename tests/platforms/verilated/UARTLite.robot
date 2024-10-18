@@ -42,7 +42,7 @@ ${PLATFORM}=     SEPARATOR=${\n}
 ...  ram: Memory.MappedMemory @ sysbus 0x60000000
 ...  ${SPACE*4}size: 0x06400000
 ...
-...  uart: Verilated.CoSimulatedUART @ sysbus <0x70000000, +0x100>
+...  uart: CoSimulated.CoSimulatedUART @ sysbus <0x70000000, +0x100>
 ...  ${SPACE*4}frequency: 100000000
 ...  ${SPACE*4}address: "127.0.0.1"
 ...  """

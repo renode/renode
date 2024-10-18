@@ -40,7 +40,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             receiveThread = new Thread(ReceiveLoop)
             {
                 IsBackground = true,
-                Name = "Verilated.Receiver"
+                Name = "CoSimulated.Receiver"
             };
         }
 

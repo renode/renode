@@ -15,7 +15,7 @@ using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class BaseCoSimulatedPeripheral : IPeripheral, IDisposable, IHasOwnLife
     {

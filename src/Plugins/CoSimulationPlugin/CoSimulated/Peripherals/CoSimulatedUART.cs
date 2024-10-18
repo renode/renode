@@ -11,7 +11,7 @@ using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     [AllowedTranslations(AllowedTranslation.ByteToDoubleWord)]
     public class CoSimulatedUART : BaseDoubleWordCoSimulatedPeripheral, IUART
