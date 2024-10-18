@@ -46,8 +46,8 @@
     <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
     <Compile Include="Verilated\Peripherals\CoSimulatedCPU.cs" />
-    <Compile Include="Verilated\Peripherals\VerilatedRiscV32.cs" />
-    <Compile Include="Verilated\Peripherals\VerilatedRiscV32Registers.cs" />
+    <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32.cs" />
+    <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32Registers.cs" />
     <Compile Include="Connection\IVerilatedPeripheral.cs" />
     <Compile Include="Connection\SocketVerilatorConnection.cs" />
     <Compile Include="Connection\LibraryVerilatorConnection.cs" />

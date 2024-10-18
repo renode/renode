@@ -19,9 +19,9 @@ using Machine = Antmicro.Renode.Core.Machine;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public partial class VerilatedRiscV32 : CoSimulatedCPU, ICpuSupportingGdb
+    public partial class CoSimulatedRiscV32 : CoSimulatedCPU, ICpuSupportingGdb
     {
-        public VerilatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian,
+        public CoSimulatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian,
         CpuBitness bitness = CpuBitness.Bits32, string simulationFilePathLinux = null,
         string simulationFilePathWindows = null, string simulationFilePathMacOS = null, string address = null)
             : base(cpuType, machine, endianness, bitness, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, address)
@@ -36,7 +36,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public void SetRegister(int register, RegisterValue value)
         {
-            if(!mapping.TryGetValue((VerilatedRiscV32Registers)register, out var r))
+            if(!mapping.TryGetValue((CoSimulatedRiscV32Registers)register, out var r))
             {
                 throw new RecoverableException($"Wrong register index: {register}");
             }
@@ -55,7 +55,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         public RegisterValue GetRegister(int register)
         {
-            if(!mapping.TryGetValue((VerilatedRiscV32Registers)register, out var r))
+            if(!mapping.TryGetValue((CoSimulatedRiscV32Registers)register, out var r))
             {
                 throw new RecoverableException($"Wrong register index: {register}");
             }
