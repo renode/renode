@@ -25,7 +25,7 @@ using ELFSharp.ELF;
 using ELFSharp.UImage;
 using Machine = Antmicro.Renode.Core.Machine;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public abstract class CoSimulatedCPU : BaseCPU, IGPIOReceiver, ITimeSink, IDisposable
     {

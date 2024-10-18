@@ -20,7 +20,7 @@ using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Binding;
 using Antmicro.Renode.Core.Structure;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CFUCoSimulatedPeripheral : ICFU, IDisposable, IHasOwnLife
     {

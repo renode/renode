@@ -11,7 +11,7 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.CPU.Registers;
 using Antmicro.Renode.Utilities.Binding;
 
-namespace Antmicro.Renode.Peripherals.Verilated
+namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public partial class CoSimulatedRiscV32
     {

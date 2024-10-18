@@ -30,4 +30,4 @@ timer0: Timers.LiteX_Timer @ {
     frequency: 100000000
     -> cpu@1
 
-cfu0: Verilated.CFUCoSimulatedPeripheral @ cpu 0
+cfu0: CoSimulated.CFUCoSimulatedPeripheral @ cpu 0

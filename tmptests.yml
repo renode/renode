@@ -1,0 +1,5 @@
+- ./tests/platforms/verilated/verilated_ibex_pause_resume.robot
+- ./tests/platforms/verilated/verilated_ibex_litex_bios.robot
+- ./tests/platforms/verilated/zynq_verilated_fastvdma.robot
+- ./tests/platforms/verilated/verilated_ibex_interrupts.robot
+- ./tests/platforms/verilated/zynq_verilated_fpga_isp.robot
