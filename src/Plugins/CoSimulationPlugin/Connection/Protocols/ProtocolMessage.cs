@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
 {
-    // ProtocolMessage must be in sync with Verilator integration library
+    // ProtocolMessage must be in sync with the cosimulation library
     [StructLayout(LayoutKind.Sequential, Pack = 2)]
     public struct ProtocolMessage
     {

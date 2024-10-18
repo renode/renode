@@ -6,7 +6,7 @@
 //
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
 {
-    // ActionType must be in sync with the Verilator integration library.
+    // ActionType must be in sync with the cosimulation library.
     // Append new actions to the end to preserve compatibility.
     public enum ActionType
     {
