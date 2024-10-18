@@ -25,7 +25,7 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class SocketCoSimulationConnection : IVerilatorConnection, IDisposable
+    public class SocketCoSimulationConnection : ICoSimulationConnection, IDisposable
     {
         public SocketCoSimulationConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {

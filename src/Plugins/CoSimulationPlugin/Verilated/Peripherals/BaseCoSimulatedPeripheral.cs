@@ -293,7 +293,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         }
 
         protected string simulationFilePath;
-        protected IVerilatorConnection verilatorConnection;
+        protected ICoSimulationConnection verilatorConnection;
 
         private void LogAndThrowRE(string info)
         {
