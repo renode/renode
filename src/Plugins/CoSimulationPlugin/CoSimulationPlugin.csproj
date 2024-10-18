@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{45A27C6A-1831-4E0D-84C2-FB3893E7FBE5}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Antmicro.Renode.Plugins.VerilatorPlugin</RootNamespace>
-    <AssemblyName>VerilatorPlugin</AssemblyName>
+    <RootNamespace>Antmicro.Renode.Plugins.CoSimulationPlugin</RootNamespace>
+    <AssemblyName>CoSimulationPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
     <ProductVersion>8.0.30703</ProductVersion>

@@ -4,7 +4,7 @@
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
 //
-namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
 {
     // ActionType must be in sync with the Verilator integration library.
     // Append new actions to the end to preserve compatibility.

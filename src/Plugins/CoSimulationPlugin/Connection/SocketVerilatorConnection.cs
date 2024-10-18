@@ -18,12 +18,12 @@ using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.CPU;
-using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
+using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 #if !PLATFORM_WINDOWS
 using Mono.Unix.Native;
 #endif
 
-namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketVerilatorConnection : IVerilatorConnection, IDisposable
     {

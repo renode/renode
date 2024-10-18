@@ -12,9 +12,9 @@ using Antmicro.Renode.Debugging;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Utilities.Binding;
-using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
+using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
-namespace Antmicro.Renode.Plugins.VerilatorPlugin.Connection
+namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class LibraryVerilatorConnection: IVerilatorConnection, IEmulationElement
     {
