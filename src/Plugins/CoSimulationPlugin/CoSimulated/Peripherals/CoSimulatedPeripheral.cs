@@ -33,11 +33,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: true, eventEnabled: true, autoUpdate: true);
             timer.LimitReached += () =>
             {
-                if(!verilatorConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
                 {
                     AbortAndLogError("Send error!");
                 }
-                this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
+                this.NoisyLog("Tick: TickClock sent, waiting for the cosimulated peripheral...");
                 if(!allTicksProcessedARE.WaitOne(timeout))
                 {
                     AbortAndLogError("Timeout reached while waiting for a tick response.");

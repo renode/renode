@@ -15,7 +15,7 @@
 class RenodeAgent;
 struct Protocol;
 
-extern RenodeAgent* Init(void); //definition has to be provided in sim_main.cpp of verilated peripheral
+extern RenodeAgent* Init(void); //definition has to be provided in sim_main.cpp of cosimulated peripheral
 
 extern "C"
 {

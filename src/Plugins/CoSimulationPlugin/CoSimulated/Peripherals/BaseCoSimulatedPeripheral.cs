@@ -26,11 +26,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             started = false;
             if(address != null)
             {
-                verilatorConnection = new SocketCoSimulationConnection(this, timeout, HandleReceivedMessage, address);
+                cosimulationConnection = new SocketCoSimulationConnection(this, timeout, HandleReceivedMessage, address);
             }
             else
             {
-                verilatorConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceivedMessage);
+                cosimulationConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceivedMessage);
             }
 
             SimulationFilePathLinux = simulationFilePathLinux;
@@ -51,33 +51,33 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public void Connect()
         {
-            if(verilatorConnection.IsConnected)
+            if(cosimulationConnection.IsConnected)
             {
                 this.Log(LogLevel.Warning, "The Verilated peripheral is already connected.");
                 return;
             }
-            verilatorConnection.Connect();
+            cosimulationConnection.Connect();
         }
 
         public void Dispose()
         {
             disposeInitiated = true;
-            verilatorConnection.Dispose();
+            cosimulationConnection.Dispose();
         }
 
         public void Pause()
         {
-            verilatorConnection.Pause();
+            cosimulationConnection.Pause();
         }
 
         public void Resume()
         {
-            verilatorConnection.Resume();
+            cosimulationConnection.Resume();
         }
 
-        public bool IsPaused => verilatorConnection.IsPaused;
+        public bool IsPaused => cosimulationConnection.IsPaused;
 
-        public bool IsConnected => verilatorConnection.IsConnected;
+        public bool IsConnected => cosimulationConnection.IsConnected;
 
         public string SimulationContextLinux
         {
@@ -125,11 +125,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             get
             {
-                return verilatorConnection.Context;
+                return cosimulationConnection.Context;
             }
             set
             {
-                verilatorConnection.Context = value;
+                cosimulationConnection.Context = value;
             }
         }
 
@@ -194,14 +194,14 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
                 if(!String.IsNullOrWhiteSpace(value))
                 {
-                    verilatorConnection.SimulationFilePath = value;
+                    cosimulationConnection.SimulationFilePath = value;
                     simulationFilePath = value;
                     Connect();
                 }
             }
         }
 
-        public string ConnectionParameters => (verilatorConnection as SocketCoSimulationConnection)?.ConnectionParameters ?? "";
+        public string ConnectionParameters => (cosimulationConnection as SocketCoSimulationConnection)?.ConnectionParameters ?? "";
 
         public void Start()
         {
@@ -214,12 +214,12 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath or connect to a simulator first!");
             }
-            verilatorConnection.Start();
+            cosimulationConnection.Start();
         }
 
         public void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!verilatorConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Send error!");
             }
@@ -227,7 +227,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public void Respond(ActionType actionId, ulong offset, ulong value)
         {
-            if(!verilatorConnection.TryRespond(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimulationConnection.TryRespond(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Respond error!");
             }
@@ -249,7 +249,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public void HandleMessage()
         {
-            verilatorConnection.HandleMessage();
+            cosimulationConnection.HandleMessage();
         }
 
         public const int DefaultTimeout = 3000;
@@ -269,7 +269,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         protected ProtocolMessage Receive()
         {
-            if(!verilatorConnection.TryReceiveMessage(out var message))
+            if(!cosimulationConnection.TryReceiveMessage(out var message))
             {
                 AbortAndLogError("Receive error!");
             }
@@ -286,14 +286,14 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 return;
             }
             this.Log(LogLevel.Error, message);
-            verilatorConnection.Abort();
+            cosimulationConnection.Abort();
 
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
 
         protected string simulationFilePath;
-        protected ICoSimulationConnection verilatorConnection;
+        protected ICoSimulationConnection cosimulationConnection;
 
         private void LogAndThrowRE(string info)
         {

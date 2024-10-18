@@ -205,7 +205,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                     }
                     catch(Exception e)
                     {
-                        var info = "Error starting verilated peripheral!\n" + e.Message;
+                        var info = "Error starting cosimulated peripheral!\n" + e.Message;
                         parentElement.Log(LogLevel.Error, info);
                         throw new RecoverableException(info);
                     }
