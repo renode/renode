@@ -25,9 +25,9 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class SocketVerilatorConnection : IVerilatorConnection, IDisposable
+    public class SocketCoSimulationConnection : IVerilatorConnection, IDisposable
     {
-        public SocketVerilatorConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketCoSimulationConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
