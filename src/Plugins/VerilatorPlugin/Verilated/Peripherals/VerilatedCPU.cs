@@ -34,9 +34,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
         {
-            verilatedPeripheral = new BaseVerilatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                simulationContextLinux, simulationContextWindows, simulationContextMacOS, BaseVerilatedPeripheral.DefaultTimeout, address);
-            verilatedPeripheral.OnReceive = HandleReceived;
+            coSimulatedPeripheral = new BaseCoSimulatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+                simulationContextLinux, simulationContextWindows, simulationContextMacOS, BaseCoSimulatedPeripheral.DefaultTimeout, address);
+            coSimulatedPeripheral.OnReceive = HandleReceived;
 
             InitializeRegisters();
         }
@@ -44,9 +44,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
         public override void Start()
         {
             base.Start();
-            if(!String.IsNullOrWhiteSpace(verilatedPeripheral.SimulationFilePath))
+            if(!String.IsNullOrWhiteSpace(coSimulatedPeripheral.SimulationFilePath))
             {
-                verilatedPeripheral.Start();
+                coSimulatedPeripheral.Start();
             }
         }
 
@@ -64,18 +64,18 @@ namespace Antmicro.Renode.Peripherals.Verilated
             instructionsExecutedThisRound = 0;
             totalExecutedInstructions = 0;
 
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
-                verilatedPeripheral.Reset();
+                coSimulatedPeripheral.Reset();
             }
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
-                verilatedPeripheral.Dispose();
+                coSimulatedPeripheral.Dispose();
             }
         }
 
@@ -86,34 +86,34 @@ namespace Antmicro.Renode.Peripherals.Verilated
             {
                 return;
             }
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
-                verilatedPeripheral.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
+                coSimulatedPeripheral.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
             }
         }
 
         public virtual void SetRegisterValue32(int register, uint value)
         {
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
                 setRegisterValue = false;
-                verilatedPeripheral.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
+                coSimulatedPeripheral.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
                 while(!setRegisterValue) // This kind of while loops are for socket communication
                 {
-                    verilatedPeripheral.HandleMessage();
+                    coSimulatedPeripheral.HandleMessage();
                 }
             }
         }
 
         public virtual uint GetRegisterValue32(int register)
         {
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
                 gotRegisterValue = false;
-                verilatedPeripheral.Send(ActionType.RegisterGet, (ulong)register, 0);
+                coSimulatedPeripheral.Send(ActionType.RegisterGet, (ulong)register, 0);
                 while(!gotRegisterValue)
                 {
-                    verilatedPeripheral.HandleMessage();
+                    coSimulatedPeripheral.HandleMessage();
                 }
                 return (uint)registerValue;
             }
@@ -125,27 +125,27 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
             try
             {
-                lock(verilatedPeripheralLock)
+                lock(coSimulatedPeripheralLock)
                 {
                     if (IsSingleStepMode)
                     {
                         while(instructionsExecutedThisRound < 1)
                         {
                             gotStep = false;
-                            verilatedPeripheral.Send(ActionType.Step, 0, 1);
+                            coSimulatedPeripheral.Send(ActionType.Step, 0, 1);
                             while(!gotStep)
                             {
-                                verilatedPeripheral.HandleMessage();
+                                coSimulatedPeripheral.HandleMessage();
                             }
                         }
                     }
                     else
                     {
                         ticksProcessed = false;
-                        verilatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
+                        coSimulatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
                         while(!ticksProcessed)
                         {
-                            verilatedPeripheral.HandleMessage();
+                            coSimulatedPeripheral.HandleMessage();
                         }
                     }
                 }
@@ -186,21 +186,21 @@ namespace Antmicro.Renode.Peripherals.Verilated
                     executionMode = value;
                     gotSingleStepMode = false;
 
-                    lock(verilatedPeripheralLock)
+                    lock(coSimulatedPeripheralLock)
                     {
                         switch(executionMode)
                         {
                             case ExecutionMode.Continuous:
-                                verilatedPeripheral.Send(ActionType.SingleStepMode, 0, 0);
+                                coSimulatedPeripheral.Send(ActionType.SingleStepMode, 0, 0);
                                 break;
                             case ExecutionMode.SingleStep:
-                                verilatedPeripheral.Send(ActionType.SingleStepMode, 0, 1);
+                                coSimulatedPeripheral.Send(ActionType.SingleStepMode, 0, 1);
                                 break;
                         }
 
                         while(!gotSingleStepMode)
                         {
-                            verilatedPeripheral.HandleMessage();
+                            coSimulatedPeripheral.HandleMessage();
                         }
                     }
 
@@ -267,9 +267,9 @@ namespace Antmicro.Renode.Peripherals.Verilated
 
         private void Respond(ActionType action, ulong data)
         {
-            lock(verilatedPeripheralLock)
+            lock(coSimulatedPeripheralLock)
             {
-                verilatedPeripheral.Respond(action, 0, data);
+                coSimulatedPeripheral.Respond(action, 0, data);
             }
         }
 
@@ -319,21 +319,21 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             get
             {
-                return verilatedPeripheral.SimulationFilePath;
+                return coSimulatedPeripheral.SimulationFilePath;
             }
             set
             {
                 if(!String.IsNullOrWhiteSpace(value))
                 {
-                    verilatedPeripheral.SimulationFilePath = value;
-                    verilatedPeripheral.Start();
+                    coSimulatedPeripheral.SimulationFilePath = value;
+                    coSimulatedPeripheral.Start();
                 }
             }
         }
 
-        protected readonly object verilatedPeripheralLock = new object();
+        protected readonly object coSimulatedPeripheralLock = new object();
 
-        private readonly BaseVerilatedPeripheral verilatedPeripheral;
+        private readonly BaseCoSimulatedPeripheral coSimulatedPeripheral;
 
         private bool gotRegisterValue;
         private ulong registerValue;

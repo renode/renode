@@ -18,7 +18,7 @@ using Antmicro.Renode.Plugins.VerilatorPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public class VerilatedPeripheral : BaseVerilatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IGPIOReceiver
+    public class VerilatedPeripheral : BaseCoSimulatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IGPIOReceiver
     {
         public VerilatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
