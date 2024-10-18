@@ -30,7 +30,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
             }
             else
             {
-                verilatorConnection = new LibraryVerilatorConnection(this, timeout, HandleReceivedMessage);
+                verilatorConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceivedMessage);
             }
 
             SimulationFilePathLinux = simulationFilePathLinux;

@@ -50,7 +50,7 @@
     <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32Registers.cs" />
     <Compile Include="Connection\ICoSimulatedPeripheral.cs" />
     <Compile Include="Connection\SocketVerilatorConnection.cs" />
-    <Compile Include="Connection\LibraryVerilatorConnection.cs" />
+    <Compile Include="Connection\LibraryCoSimulationConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionType.cs" />
   </ItemGroup>

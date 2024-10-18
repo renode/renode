@@ -28,7 +28,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
 
-            verilatedPeripheral = new LibraryVerilatorConnection(this, timeout, HandleReceived);
+            verilatedPeripheral = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
 
             if(frequency != 0)
             {
@@ -307,7 +307,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
         private bool disposeInitiated;
-        private readonly LibraryVerilatorConnection verilatedPeripheral;
+        private readonly LibraryCoSimulationConnection verilatedPeripheral;
         private NativeBinder executeBinder;
         private BaseRiscV connectedCpu;
         private IntPtr errorPointer;
