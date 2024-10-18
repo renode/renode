@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="Verilated\Peripherals\BaseDoubleWordVerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\CFUVerilatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\BaseVerilatedPeripheral.cs" />
+    <Compile Include="Verilated\Peripherals\BaseCoSimulatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedPeripheral.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedUART.cs" />
     <Compile Include="Verilated\Peripherals\VerilatedCPU.cs" />
