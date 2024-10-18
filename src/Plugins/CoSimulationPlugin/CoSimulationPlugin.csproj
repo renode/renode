@@ -40,14 +40,14 @@
     <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Verilated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\CFUCoSimulatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\BaseCoSimulatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\CoSimulatedPeripheral.cs" />
-    <Compile Include="Verilated\Peripherals\CoSimulatedUART.cs" />
-    <Compile Include="Verilated\Peripherals\CoSimulatedCPU.cs" />
-    <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32.cs" />
-    <Compile Include="Verilated\Peripherals\CoSimulatedRiscV32Registers.cs" />
+    <Compile Include="CoSimulated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
+    <Compile Include="CoSimulated\Peripherals\CFUCoSimulatedPeripheral.cs" />
+    <Compile Include="CoSimulated\Peripherals\BaseCoSimulatedPeripheral.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedPeripheral.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedUART.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedCPU.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32Registers.cs" />
     <Compile Include="Connection\ICoSimulatedPeripheral.cs" />
     <Compile Include="Connection\SocketCoSimulationConnection.cs" />
     <Compile Include="Connection\LibraryCoSimulationConnection.cs" />
@@ -86,8 +86,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Connection\" />
-    <Folder Include="Verilated\" />
-    <Folder Include="Verilated\Peripherals\" />
+    <Folder Include="CoSimulated\" />
+    <Folder Include="CoSimulated\Peripherals\" />
     <Folder Include="Connection\Protocols\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
