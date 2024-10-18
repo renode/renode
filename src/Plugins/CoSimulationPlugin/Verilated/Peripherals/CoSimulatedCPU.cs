@@ -27,9 +27,9 @@ using Machine = Antmicro.Renode.Core.Machine;
 
 namespace Antmicro.Renode.Peripherals.Verilated
 {
-    public abstract class VerilatedCPU : BaseCPU, IGPIOReceiver, ITimeSink, IDisposable
+    public abstract class CoSimulatedCPU : BaseCPU, IGPIOReceiver, ITimeSink, IDisposable
     {
-        public VerilatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
+        public CoSimulatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
