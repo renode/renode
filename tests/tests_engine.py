@@ -155,6 +155,18 @@ def prepare_parser():
                         default=None,
                         help="Generate perf.data from test in specified directory")
 
+    parser.add_argument("--runner",
+                        dest="runner",
+                        action="store",
+                        default="mono" if platform.startswith("linux") or platform == "darwin" else "none",
+                        help=".NET runner.")
+
+    parser.add_argument("--net",
+                        dest="runner",
+                        action="store_const",
+                        const="dotnet",
+                        help="Use .NET Core runner (alias for --runner=dotnet).")
+
     if platform != "win32":
         parser.add_argument("-p", "--port",
                             dest="port",
