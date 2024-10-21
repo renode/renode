@@ -241,6 +241,11 @@ def handle_options(options):
 
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
+    # Apply the dotnet telemetry optout in this script instead of the shell wrappers as it's
+    # portable between OSes
+    if options.runner == 'dotnet':
+        os.putenv("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
+
 
 def register_handler(handler_type, extension, creator, before_parsing=None, after_parsing=None):
     registered_handlers.append({'type': handler_type, 'extension': extension, 'creator': creator, 'before_parsing': before_parsing, 'after_parsing': after_parsing})

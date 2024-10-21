@@ -84,6 +84,7 @@ fi
 
 if $NET
 then
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
     if $ON_WINDOWS
     then
         TFM="net6.0-windows10.0.17763.0"

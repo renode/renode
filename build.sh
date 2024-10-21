@@ -219,6 +219,7 @@ fi
 
 if $NET
 then
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1
   CS_COMPILER="dotnet build"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
 else
