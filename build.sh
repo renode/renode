@@ -391,12 +391,21 @@ fi
 eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
 
 # copy llvm library
+LLVM_LIB="libllvm-disas"
+if [[ "${DETECTED_OS}" == "windows" ]]; then
+  LLVM_LIB+=".dll"
+elif [[ "${DETECTED_OS}" == "osx" ]]; then
+  LLVM_LIB+=".dylib"
+else
+  LLVM_LIB+=".so"
+fi
 if $NET
 then
-  cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/$TFM/libllvm-disas.* output/bin/$CONFIGURATION/$TFM
+  LLVM_OUT_DIR=output/bin/$CONFIGURATION/$TFM
 else
-  cp src/Infrastructure/src/Emulator/Peripherals/bin/$CONFIGURATION/libllvm-disas.* output/bin/$CONFIGURATION
+  LLVM_OUT_DIR=output/bin/$CONFIGURATION
 fi
+cp lib/resources/llvm/$LLVM_LIB $LLVM_OUT_DIR/
 
 # build packages after successful compilation
 params=""
