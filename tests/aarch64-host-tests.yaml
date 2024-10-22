@@ -7,3 +7,4 @@
 - tests/example.robot
 - tests/unit-tests/aarch64-host.robot
 - tests/unit-tests/riscv-mret.robot
+- tests/unit-tests/llvm-asm-disasm.robot

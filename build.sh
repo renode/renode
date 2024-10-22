@@ -225,8 +225,10 @@ then
   export DOTNET_CLI_TELEMETRY_OPTOUT=1
   CS_COMPILER="dotnet build -f $TFM"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
+  OUT_BIN_DIR=output/bin/$CONFIGURATION/$TFM
 else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
+  OUT_BIN_DIR=output/bin/$CONFIGURATION
 fi
 
 # Verify Mono and mcs version on Linux and macOS
@@ -392,20 +394,18 @@ eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
 
 # copy llvm library
 LLVM_LIB="libllvm-disas"
+if [[ $HOST_ARCH == "aarch64" ]]; then
+  # aarch64 host binaries have a different name
+  LLVM_LIB="libllvm-disas-aarch64"
+fi
 if [[ "${DETECTED_OS}" == "windows" ]]; then
-  LLVM_LIB+=".dll"
+  LIB_EXT="dll"
 elif [[ "${DETECTED_OS}" == "osx" ]]; then
-  LLVM_LIB+=".dylib"
+  LIB_EXT="dylib"
 else
-  LLVM_LIB+=".so"
+  LIB_EXT="so"
 fi
-if $NET
-then
-  LLVM_OUT_DIR=output/bin/$CONFIGURATION/$TFM
-else
-  LLVM_OUT_DIR=output/bin/$CONFIGURATION
-fi
-cp lib/resources/llvm/$LLVM_LIB $LLVM_OUT_DIR/
+cp lib/resources/llvm/$LLVM_LIB.$LIB_EXT $OUT_BIN_DIR/libllvm-disas.$LIB_EXT
 
 # build packages after successful compilation
 params=""
