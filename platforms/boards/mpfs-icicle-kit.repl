@@ -33,3 +33,30 @@ button3: Miscellaneous.Button @ gpio2 28
     -> plic@118
 
 pac1934: Sensors.PAC1934 @ i2c1 0x10000
+
+qspi: SPI.MPFS_QSPI @ sysbus 0x21000000
+    size: 0x1000
+    IRQ -> plic@85
+
+pseFlash: SPI.Micron_MT25Q @ qspi
+    underlyingMemory: flash_mem
+
+flash_mem: Memory.MappedMemory
+    size: 0x00800000
+
+sysServices: Miscellaneous.MPFS_SystemServices @ sysbus 0x37020000
+    flashMemory: sys_ctrl_flash_memory
+    mailboxMemory: mailbox
+    SerialNumberLower: 0x0123456789ABCDEF
+    SerialNumberUpper: 0x0123456789ABCDEF
+    IRQ -> plic@96
+
+syscontroller_qspi: SPI.MPFS_QSPI @ sysbus 0x37020100
+    size: 0x200
+    IRQ -> plic@110
+
+sys_ctrl_flash: SPI.Micron_MT25Q @ syscontroller_qspi
+   underlyingMemory: sys_ctrl_flash_memory
+
+sys_ctrl_flash_memory: Memory.MappedMemory
+    size: 0x800000
