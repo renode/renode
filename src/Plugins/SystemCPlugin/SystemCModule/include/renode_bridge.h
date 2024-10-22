@@ -32,6 +32,7 @@ public:
   renode_bridge(sc_core::sc_module_name name, const char *address,
                 const char *port);
   ~renode_bridge();
+  bool is_initialized() { return fw_connection_initialized; }
 
 public:
   using renode_bus_target_socket =
@@ -139,6 +140,8 @@ private:
 
   initiator_bw_handler dc_initiators[NUM_DIRECT_CONNECTIONS];
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
+
+  bool fw_connection_initialized;
 };
 
 // ================================================================================
