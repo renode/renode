@@ -2,6 +2,7 @@
 
 set -e
 set -u
+set -x
 
 #change dir to script location
 cd "${0%/*}"

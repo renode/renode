@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 rm -rf $DIR
 mkdir -p $DIR/bin
 
