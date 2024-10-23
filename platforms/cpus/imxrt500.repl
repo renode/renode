@@ -1,0 +1,188 @@
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic0
+    init:
+        // jump right away from the OTP_FUSE_READ_API function stored in OTP
+        // this address is hardcoded in Zephyr:
+        // https://github.com/zephyrproject-rtos/zephyr/blob/e801f1a9ad6ae0d60362ec0f576ce130659360ee/boards/nxp/mimxrt595_evk/board.c#L21
+        AssembleBlock 0x1300805c "bx lr"
+
+nvic0: IRQControllers.NVIC @ {
+        sysbus 0xe000e000;
+        sysbus 0xf000e000
+    }
+    -> cpu0@0
+    systickFrequency: 1000000
+
+// TIMERS
+ctimer0: Timers.LPC_CTimer @ {
+        sysbus 0x40028000;
+        sysbus 0x50028000
+    }
+    ->nvic0@10
+
+ctimer1: Timers.LPC_CTimer @ {
+        sysbus 0x40029000;
+        sysbus 0x50029000
+    }
+    ->nvic0@11
+
+ctimer2: Timers.LPC_CTimer @ {
+        sysbus 0x4002a000;
+        sysbus 0x5002a000
+    }
+    ->nvic0@39
+
+ctimer3: Timers.LPC_CTimer @ {
+        sysbus 0x4002b000;
+        sysbus 0x5002b000
+    }
+    ->nvic0@13
+
+ctimer4: Timers.LPC_CTimer @ {
+        sysbus 0x4002c000;
+        sysbus 0x5002c000
+    }
+    ->nvic0@40
+
+ostimer: Timers.NXP_OsTimer @ {
+        sysbus 0x40113000;
+        sysbus 0x50113000
+    }
+    frequency: 1000000
+    ->nvic0@41
+
+// FLEXCOMM
+flexcomm0: UART.LPC_USART @ {
+        sysbus 0x40106000;
+        sysbus 0x50106000
+    }
+    ->nvic0@14
+
+flexcomm12: UART.LPC_USART @ {
+        sysbus 0x4020d000;
+        sysbus 0x5020d000
+    }
+    ->nvic0@64
+
+flexspi2: SPI.IMXRT_FlexSPI @ {
+     sysbus 0x4013c000;
+     sysbus 0x5013c000
+    }
+    ->nvic0@42
+
+flexspi: SPI.IMXRT_FlexSPI @ {
+        sysbus 0x40134000;
+        sysbus 0x50134000
+    }
+    ->nvic0@42
+
+// MEMORY
+sram0: Memory.MappedMemory @ {
+        sysbus 0x00000000;
+        sysbus 0x10000000
+    }
+    size: 0x500000
+
+sram1: Memory.MappedMemory @ {
+        sysbus 0x20000000;
+        sysbus 0x30000000
+    }
+    size: 0x500000
+
+bootrom: Memory.MappedMemory @ {
+        sysbus 0x03000000;
+        sysbus 0x13000000
+    }
+    size: 0x20000
+
+flexspi0_mem: Memory.MappedMemory @ {
+        sysbus 0x08000000;
+        sysbus 0x18000000
+    }
+    size: 0x800000
+
+flexspi1_mem: Memory.MappedMemory @ {
+        sysbus 0x28000000;
+        sysbus 0x38000000
+    }
+    size: 0x800000
+
+usb_ram: Memory.MappedMemory @ {
+         sysbus 0x40140000;
+         sysbus 0x50140000
+    }
+    size: 0x4000
+
+// OTHERS
+clkctl0: Miscellaneous.LPC_Clock0 @ {
+        sysbus 0x40001000;
+        sysbus 0x50001000
+    }
+
+trng: Miscellaneous.IMX_TRNG @ {
+        sysbus 0x40138000;
+        sysbus 0x50138000
+    }
+    ->nvic0@31
+
+dwt: Miscellaneous.DWT @ {
+        sysbus 0xe0001000;
+        sysbus 0xf0001000
+    }
+    frequency: 72000000
+
+clkctl1: Python.PythonPeripheral @ {
+        sysbus 0x40021000;
+        sysbus 0x50021000
+    }
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+reset_flexspi1: Python.PythonPeripheral @ {
+        sysbus 0x40000010;
+        sysbus 0x50000010
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+reset_adc0: Python.PythonPeripheral @ {
+        sysbus 0x40000014;
+        sysbus 0x50000014
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+reset_flexcomm12: Python.PythonPeripheral @ {
+        sysbus 0x40020010;
+        sysbus 0x50020010
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+PRSTCTL2: Python.PythonPeripheral @ {
+        sysbus 0x40020018;
+        sysbus 0x50020018
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+reset_hsgpio3: Python.PythonPeripheral @ {
+        sysbus 0x40020014;
+        sysbus 0x50020014
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+sysbus:
+    init:
+        // to be removed once DTS in Zephyr is fixed
+        Tag <0x501340E0 0x4> "flexspi_status"       0xffffffff
+        Tag <0x401340E0 0x4> "flexspi_status_ns"    0xffffffff
+
