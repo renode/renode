@@ -26,6 +26,8 @@ CUSTOM_PROP=
 NET_FRAMEWORK_VER=
 RID="linux-x64"
 HOST_ARCH="i386"
+# Common cmake flags
+CMAKE_COMMON=""
 
 function print_help() {
   echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--tlib-export-compile-commands] [--tlib-arch <arch>] [--host-arch i386|aarch64] [-- <ARGS>]"
@@ -106,7 +108,7 @@ do
           PARAMS+=(p:NET=true)
           ;;
         "profile-build")
-          PARAMS+=('p:TlibProfilingBuild=true')
+          CMAKE_COMMON="-DTLIB_PROFILING_BUILD=ON"
           ;;
         "tlib-only")
           TLIB_ONLY=true
@@ -311,14 +313,13 @@ then
 else
     CMAKE_GEN="-GUnix Makefiles"
 fi
-# Common cmake flags
-CMAKE_COMMON=""
+
 # Macos architecture flags, to make rosetta work properly
 if $ON_OSX
 then
-  CMAKE_COMMON="-DCMAKE_OSX_ARCHITECTURES=x86_64"
+  CMAKE_COMMON+="-DCMAKE_OSX_ARCHITECTURES=x86_64"
   if [ $HOST_ARCH == "aarch64" ]; then
-    CMAKE_COMMON="-DCMAKE_OSX_ARCHITECTURES=arm64"
+    CMAKE_COMMON+="-DCMAKE_OSX_ARCHITECTURES=arm64"
   fi
 fi
 
