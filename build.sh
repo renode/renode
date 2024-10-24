@@ -46,7 +46,7 @@ function print_help() {
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
-  echo "--profile-build                   build optimized for tlib profiling"
+  echo "--profile-build                   build optimized for profiling"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
   echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-arch)"
@@ -108,7 +108,7 @@ do
           PARAMS+=(p:NET=true)
           ;;
         "profile-build")
-          CMAKE_COMMON="-DTLIB_PROFILING_BUILD=ON"
+          CMAKE_COMMON="-DPROFILING_BUILD=ON"
           ;;
         "tlib-only")
           TLIB_ONLY=true
