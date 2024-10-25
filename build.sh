@@ -432,7 +432,8 @@ then
             # Restore dependecies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
             dotnet restore --runtime linux-x64 Renode_NET.sln
 
-            eval "dotnet publish -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
+            # maxcpucount:1 to avoid an error with multithreaded publish
+            eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
             export RID TFM
             $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
             # Source package bundles nuget dependencies required for building the dotnet version of Renode
@@ -449,7 +450,9 @@ then
     PARAMS+=(p:PORTABLE=true)
     if $NET
     then
-        eval "dotnet publish -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
+        dotnet restore --runtime $RID Renode_NET.sln
+        # maxcpucount:1 to avoid an error with multithreaded publish
+        eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable_dotnet.sh $params
     else
