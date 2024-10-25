@@ -426,15 +426,19 @@ if $PACKAGES
 then
     if $NET
     then
-        # Restore dependecies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
-        dotnet restore --runtime linux-x64 Renode_NET.sln
+        # dotnet package on linux uses a seperate script
+        if $ON_LINUX
+        then
+            # Restore dependecies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
+            dotnet restore --runtime linux-x64 Renode_NET.sln
 
-        eval "dotnet publish -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
-        export RID TFM
-        $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
-        # Source package bundles nuget dependencies required for building the dotnet version of Renode
-        # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
-        $ROOT_PATH/tools/packaging/make_source_package.sh $params
+            eval "dotnet publish -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
+            export RID TFM
+            $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
+            # Source package bundles nuget dependencies required for building the dotnet version of Renode
+            # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
+            $ROOT_PATH/tools/packaging/make_source_package.sh $params
+        fi
     else
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
     fi
