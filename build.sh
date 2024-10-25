@@ -439,6 +439,15 @@ then
             # Source package bundles nuget dependencies required for building the dotnet version of Renode
             # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
             $ROOT_PATH/tools/packaging/make_source_package.sh $params
+        elif $ON_WINDOWS && ! $PORTABLE
+        then
+            # No Non portable dotnet package on windows yet
+            echo "Only portable dotnet packages are supported on windows. Rerun build.sh with -t flag to build portable"
+            exit 1
+        elif $ON_OSX
+        then
+            echo "dotnet packages not supported on ${DETECTED_OS}"
+            exit 1
         fi
     else
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
