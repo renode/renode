@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug application in Renode",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "Run Renode",
+            "postDebugTask": "Close Renode",
+            "miDebuggerServerAddress": "localhost:3333",
+            "cwd": "${workspaceRoot}",
+            "miDebuggerPath": "arm-zephyr-eabi-gdb",
+            "program": "${workspaceRoot}/build/zephyr/zephyr.elf"
+        }
+    ]
+}
