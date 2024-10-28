@@ -413,20 +413,37 @@ if [[ ! -z $TLIB_ARCH ]]; then
   for potential_match in "${CORES[@]}"; do
     if [[ $potential_match == "$TLIB_ARCH"* ]]; then
       CORES=("$potential_match")
-      echo "Compiling tlib for $potential_match"
+      echo "Compiling external lib for $potential_match"
       NONE_MATCHED=false
       break
     fi
   done
   if $NONE_MATCHED ; then
-    echo "Failed to match any tlib arch"
+    echo "Failed to match any external lib arch"
     exit 1
   fi
+fi
+
+# build KVM - currently it's supported only on Linux
+if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $TLIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
+    KVM_CORE_DIR="$CORES_BUILD_PATH/virt"
+    mkdir -p $KVM_CORE_DIR
+    pushd "$KVM_CORE_DIR" > /dev/null
+    cmake "$CORES_PATH/virt"
+    cmake --build . -j$(nproc)
+    CORE_BIN_DIR=$CORES_BIN_PATH/lib
+    mkdir -p $CORE_BIN_DIR
+    cp -u -v *.so $CORE_BIN_DIR/
+    popd > /dev/null
 fi
 
 # build tlib
 for core_config in "${CORES[@]}"
 do
+    if [[ $core_config == *"kvm"* ]]; then
+        continue
+    fi
+
     CORE="$(echo $core_config | cut -d '.' -f 1)"
     ENDIAN="$(echo $core_config | cut -d '.' -f 2)"
     BITS=32
