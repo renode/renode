@@ -1,0 +1,17 @@
+:name: Atmel SAM4S
+:description: This script runs Zephyr shell sample on a SAM4S series platform.
+
+$name?="sam4s"
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr-shell_module.elf-s_1978576-c61a285f08ddfafe7f894d0b61729d0e6a1df9fc
+machine LoadPlatformDescription @platforms/cpus/sam4s.repl
+
+showAnalyzer sysbus.uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
