@@ -5,6 +5,7 @@ Suite Setup                   Get Test Cases
 ${platforms_path}=            ${CURDIR}${/}..${/}..${/}platforms
 @{pattern}=                   *.repl
 ${invalid_using_error}=       REGEXP: (?s:.)* Using 'invalid' does not exist(?s:.)*
+${eq}=                        ==
 # Some repls are not standalone and need to be included by other repls with "using" syntax
 # or added dynamically to the existing platform with "machine LoadPlatformDescription" command.
 # We maintain the known list of such repls to exclude from a standalone testing.
@@ -20,9 +21,24 @@ ${invalid_using_error}=       REGEXP: (?s:.)* Using 'invalid' does not exist(?s:
 *** Keywords ***
 Get Test Cases
     Setup
+
+    &{conditional_blacklist}=          Create Dictionary
+    ...  ${platforms_path}${/}cpus${/}i386-kvm.repl                  '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
+
+    ${system}=                Evaluate    platform.system()    modules=platform
+    ${arch}=                  Evaluate    'arm' if platform.machine() in ['aarch64', 'arm64'] else 'x64'    modules=platform
     # This line must use the "path" notation to handle paths with spaces
     @{platforms}=             List Files In Directory Recursively  ${platforms_path}  @{pattern}
     Remove Values From List   ${platforms}  @{blacklist}
+
+    FOR  ${platform}  ${condition}  IN  &{conditional_blacklist}
+        ${condition}=                   Replace String  ${condition}  {system}  ${system}
+        ${condition}=                   Replace String  ${condition}  {arch}  ${arch}
+        IF  not (${condition})
+            Remove Values From List     ${platforms}  ${platform}
+        END
+    END
+
     ${list_length}=           Get Length  ${platforms}
     Should Not Be True        ${list_length} == 0
     Set Suite Variable        ${platforms}
