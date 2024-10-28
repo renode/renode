@@ -319,9 +319,9 @@ fi
 # Macos architecture flags, to make rosetta work properly
 if $ON_OSX
 then
-  CMAKE_COMMON+="-DCMAKE_OSX_ARCHITECTURES=x86_64"
+  CMAKE_COMMON+=" -DCMAKE_OSX_ARCHITECTURES=x86_64"
   if [ $HOST_ARCH == "aarch64" ]; then
-    CMAKE_COMMON+="-DCMAKE_OSX_ARCHITECTURES=arm64"
+    CMAKE_COMMON+=" -DCMAKE_OSX_ARCHITECTURES=arm64"
   fi
 fi
 
