@@ -1,0 +1,13 @@
+$name?="i386-kvm"
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/virt_x86--seabios.bin-s_262144-bf6c73a297b2764eb5f5bbe34297987c16648718
+machine LoadPlatformDescription @platforms/cpus/i386-kvm.repl
+
+showAnalyzer uart
+
+macro reset
+"""
+    sysbus LoadBinary $bin 0xc0000
+"""
+runMacro $reset
