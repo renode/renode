@@ -28,14 +28,14 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
 
-            cosimulatedPeripheral = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
+            cosimulationConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
 
             if(frequency != 0)
             {
                 timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
                 timer.LimitReached += () =>
                 {
-                    if(!cosimulatedPeripheral.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                    if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
                     {
                         AbortAndLogError("Send error!");
                     }
@@ -59,18 +59,18 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         public void Dispose()
         {
             disposeInitiated = true;
-            cosimulatedPeripheral.Dispose();
+            cosimulationConnection.Dispose();
             Marshal.FreeHGlobal(errorPointer);
         }
 
         public void Pause()
         {
-            cosimulatedPeripheral.Pause();
+            cosimulationConnection.Pause();
         }
 
         public void Resume()
         {
-            cosimulatedPeripheral.Resume();
+            cosimulationConnection.Resume();
         }
 
         public void Start()
@@ -79,10 +79,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
             }
-            cosimulatedPeripheral.Start();
+            cosimulationConnection.Start();
         }
 
-        public bool IsPaused => cosimulatedPeripheral.IsPaused;
+        public bool IsPaused => cosimulationConnection.IsPaused;
 
         public string SimulationFilePathLinux
         {
@@ -130,7 +130,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             get
             {
-                return cosimulatedPeripheral.SimulationFilePath;
+                return cosimulationConnection.SimulationFilePath;
             }
             set
             {
@@ -153,8 +153,8 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     {
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
-                        cosimulatedPeripheral.SimulationFilePath = value;
-                        cosimulatedPeripheral.Connect();
+                        cosimulationConnection.SimulationFilePath = value;
+                        cosimulationConnection.Connect();
 
                         if(timer != null)
                         {
@@ -195,7 +195,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         protected void Send(ActionType actionId, ulong offset, ulong value)
         {
-            if(!cosimulatedPeripheral.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
             {
                 AbortAndLogError("Send error!");
             }
@@ -233,7 +233,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 return;
             }
             this.Log(LogLevel.Error, message);
-            cosimulatedPeripheral.Abort();
+            cosimulationConnection.Abort();
 
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
@@ -307,7 +307,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
         private bool disposeInitiated;
-        private readonly LibraryCoSimulationConnection cosimulatedPeripheral;
+        private readonly LibraryCoSimulationConnection cosimulationConnection;
         private NativeBinder executeBinder;
         private BaseRiscV connectedCpu;
         private IntPtr errorPointer;
