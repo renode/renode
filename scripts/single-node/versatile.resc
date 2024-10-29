@@ -20,7 +20,7 @@ showAnalyzer sysbus.uart0
 emulation CreateSwitch "switch"
 connector Connect smc91x switch
 
-machine CFIFlashFromFile $rootfs 0x34000000 "flash"
+machine CFIFlashFromFile $rootfs 0x34000000 "flash" nonPersistent=true
 
 macro reset
 """
