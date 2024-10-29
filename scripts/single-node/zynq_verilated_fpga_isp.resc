@@ -41,4 +41,4 @@ isp SimulationFilePathWindows $ispWindows
 isp SimulationFilePathMacOS $ispMacOS
 
 $virtio?=@https://dl.antmicro.com/projects/renode/empty-ext4-filesystem.img-s_33554432-1eb65a808612389cc35a69b81178fbad5708a863
-virtio LoadImage $virtio true
+virtio LoadImage $virtio
