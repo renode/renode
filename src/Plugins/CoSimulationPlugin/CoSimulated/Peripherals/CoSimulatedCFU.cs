@@ -22,9 +22,9 @@ using Antmicro.Renode.Core.Structure;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
-    public class CFUCoSimulatedPeripheral : ICFU, IDisposable, IHasOwnLife
+    public class CoSimulatedCFU : ICFU, IDisposable, IHasOwnLife
     {
-        public CFUCoSimulatedPeripheral(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
+        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
         {
             allTicksProcessedARE = new AutoResetEvent(initialState: false);
 

@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoSimulated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
-    <Compile Include="CoSimulated\Peripherals\CFUCoSimulatedPeripheral.cs" />
+    <Compile Include="CoSimulated\Peripherals\CoSimulatedCFU.cs" />
     <Compile Include="CoSimulated\Peripherals\BaseCoSimulatedPeripheral.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedPeripheral.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedUART.cs" />
