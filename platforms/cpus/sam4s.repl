@@ -26,6 +26,12 @@ sram_bb: Miscellaneous.BitBanding @ sysbus <0x22000000, 0x23FFFFFF>
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x400000
 
+tc0_1_2: Timers.SAM_TC @ sysbus 0x40010000
+    [0-2]->nvic@[23-25]
+
+tc3_4_5: Timers.SAM_TC @ sysbus 0x40014000
+    [0-2]->nvic@[26-28]
+
 usart0: UART.SAM_USART @ sysbus 0x40024000
     enablePdc: true
     ->nvic@14
@@ -83,12 +89,6 @@ sysbus:
         Tag <0x40000000 0x20000000> "Peripherals"
         Tag <0x40000000 0x4000> "HSMCI"
         Tag <0x40004000 0x4000> "SSC"
-        Tag <0x40010000 0x40> "TC0"
-        Tag <0x40010040 0x40> "TC1"
-        Tag <0x40010080 0x3F80> "TC2"
-        Tag <0x40014000 0x40> "TC3"
-        Tag <0x40014040 0x40> "TC4"
-        Tag <0x40014080 0x3F80> "TC5"
         Tag <0x40018000 0x4000> "TWI0"
         Tag <0x4001C000 0x4000> "TWI1"
         Tag <0x40020000 0x4000> "PWM"
