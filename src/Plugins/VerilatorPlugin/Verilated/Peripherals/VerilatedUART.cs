@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2024 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Peripherals.Verilated
         {
             Send((ActionType)UARTActionNumber.UARTRxd, 0, value);
         }
-        
+
         public override void HandleReceivedMessage(ProtocolMessage message)
         {
             switch(message.ActionId)
