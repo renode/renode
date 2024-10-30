@@ -38,7 +38,19 @@ call "%test_script%" %*
 EOL
 
 cp $RENODE_OUTPUT_BINARY $DIR/renode
-cp $RENODE_OUTPUT_DIR/../libllvm-disas.dll $DIR
+cp \
+    $RENODE_OUTPUT_DIR/../libllvm-disas.dll \
+    $RENODE_OUTPUT_DIR/hostfxr.dll \
+    $RENODE_OUTPUT_DIR/coreclr.dll \
+    $RENODE_OUTPUT_DIR/hostpolicy.dll \
+    $RENODE_OUTPUT_DIR/clrjit.dll \
+    $RENODE_OUTPUT_DIR/System.IO.Compression.Native.dll \
+    $RENODE_OUTPUT_DIR/dbgshim.dll \
+    $RENODE_OUTPUT_DIR/mscordaccore.dll \
+    $RENODE_OUTPUT_DIR/mscordbi.dll \
+    $RENODE_OUTPUT_DIR/Renode.runtimeconfig.json \
+    $RENODE_OUTPUT_DIR/Renode.deps.json \
+    $DIR
 
 ### create zip
 mkdir -p ../../output/packages
