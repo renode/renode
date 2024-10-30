@@ -58,6 +58,8 @@ sram2: Memory.MappedMemory @ sysbus 0x62000000
 sram3: Memory.MappedMemory @ sysbus 0x63000000
     size: 0x1000000
 
+crc: CRC.SAM4S_CRCCU @ sysbus 0x40044000
+
 sysbus:
     init:
         Tag <0x40000000 0x20000000> "Peripherals"
@@ -77,7 +79,6 @@ sysbus:
         Tag <0x40038000 0x4000> "ADC"
         Tag <0x4003C000 0x4000> "DACC"
         Tag <0x40040000 0x4000> "ACC"
-        Tag <0x40044000 0x4000> "CRCCU"
         Tag <0x400E0000 0x2600> "System Controller"
         Tag <0x400E0000 0x200> "SMC"
         Tag <0x400E0200 0x200> "MATRIX"
