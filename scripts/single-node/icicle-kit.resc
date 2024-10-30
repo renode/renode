@@ -14,7 +14,7 @@ emulation SetGlobalSerialExecution true
 emulation SetGlobalQuantum "0.0008"
 
 showAnalyzer mmuart1
-machine SdCardFromFile $emmc mmc 0x100000000 
+machine SdCardFromFile $emmc mmc 0x100000000 persistent=false
 
 macro reset
 """
