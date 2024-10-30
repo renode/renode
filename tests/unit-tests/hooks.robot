@@ -171,3 +171,32 @@ Should Count on Uart Access
 
     ${cnt}=                  Execute Command  sysbus.cpu ExecutedInstructions
     Should Be Equal As Numbers          ${cnt}  8
+
+Test Enabling Systick And Pausing Emulation From CortexM Hook
+    # This test shouldn't take much more than 1s but if the systick logic is wrong, it can get stuck.
+    [Timeout]                10s
+
+    ${platform}=             catenate  SEPARATOR=
+    ...  nvic: IRQControllers.NVIC @ sysbus 0xe000e000 { -> cpu@0 }          ${\n}
+    ...  cpu: CPU.CortexM @ sysbus { cpuType: \\"cortex-m0\\"; nvic: nvic }  ${\n}
+    ...  mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x10000 }             ${\n}
+
+    Execute Command          mach create
+    Execute Command          machine LoadPlatformDescriptionFromString "${platform}"
+    Create Log Tester        0.001
+
+    # Enable all NVIC logs and set reload value zero.
+    Execute Command          logLevel -1 nvic
+    Execute Command          nvic WriteDoubleWord 0x14 0x0
+
+    # Empty memory acts as NOPs in ARM so not loading anything to memory isn't an issue.
+    Execute Command          cpu PC 0x0
+
+    # Let's make CPU enable systick and pause emulation soon after from hooks. This will freeze
+    # Renode if systick's underlying LimitTimer really can be enabled with limit zero.
+    Execute Command          cpu AddHook 0x10 "machine.SystemBus.WriteDoubleWord(0xe000e010, 0x1)"
+    Execute Command          cpu AddHook 0x20 "machine.PauseAndRequestEmulationPause()"
+
+    # Let's wait for the systick enabling attempt and machine pausing.
+    Wait For Log Entry       Systick enabled but it won't be started as long as reload value is zero
+    Wait For Log Entry       Machine paused
