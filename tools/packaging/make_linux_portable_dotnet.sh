@@ -32,7 +32,6 @@ cp \
    $RENODE_OUTPUT_DIR/libSystem.IO.Compression.Native.so \
    $RENODE_OUTPUT_DIR/libSystem.Net.Security.Native.so \
    $RENODE_OUTPUT_DIR/libcoreclrtraceptprovider.so \
-   $RENODE_OUTPUT_DIR/libdbgshim.so \
    $RENODE_OUTPUT_DIR/libmscordaccore.so \
    $RENODE_OUTPUT_DIR/libmscordbi.so \
    $DESTINATION
