@@ -21,6 +21,7 @@ TLIB_EXPORT_COMPILE_COMMANDS=false
 TLIB_ARCH=""
 NET=false
 TFM="net6.0"
+GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
@@ -46,15 +47,17 @@ function print_help() {
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
+  echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
   echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --tlib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
+  echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
-while getopts "cdvpnstb:o:B:a:-:" opt
+while getopts "cdvpnstb:o:B:F:a:-:" opt
 do
   case $opt in
     c)
@@ -88,6 +91,13 @@ do
       ;;
     B)
       RID=$OPTARG
+      ;;
+    F)
+      if ! $NET; then
+        echo "-F requires --net being set"
+        exit 1
+      fi
+      TFM=$OPTARG
       ;;
     -)
       case $OPTARG in
@@ -131,6 +141,9 @@ do
           shift $((OPTIND-1))
           HOST_ARCH=$1
           OPTIND=2
+          ;;
+        "skip-dotnet-target-generation")
+          GENERATE_DOTNET_BUILD_TARGET=false
           ;;
         *)
           print_help
@@ -214,16 +227,34 @@ then
 elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
-    TFM="net6.0-windows10.0.17763.0"
+    TFM="$TFM-windows10.0.17763.0"
     RID="win-x64"
 else
     BUILD_TARGET=Mono
 fi
 
+if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
+  if $ON_WINDOWS; then
+    # CsWinRTAotOptimizerEnabled is disabled due to a bug in dotnet-sdk.
+    # See: https://github.com/dotnet/sdk/issues/44026
+    OS_SPECIFIC_TARGET_OPTS='<CsWinRTAotOptimizerEnabled>false</CsWinRTAotOptimizerEnabled>'
+  fi
+
+cat <<EOF > "$(get_path "$PWD/Directory.Build.targets")"
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks>$TFM</TargetFrameworks>
+    ${OS_SPECIFIC_TARGET_OPTS:+${OS_SPECIFIC_TARGET_OPTS}}
+  </PropertyGroup>
+</Project>
+EOF
+
+fi
+
 if $NET
 then
   export DOTNET_CLI_TELEMETRY_OPTOUT=1
-  CS_COMPILER="dotnet build -f $TFM"
+  CS_COMPILER="dotnet build"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
   BUILD_TYPE="dotnet"
 else

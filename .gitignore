@@ -18,6 +18,7 @@ log.html
 lib/resources/
 src/Renode/Properties/AssemblyInfo.cs
 packages
+Directory.Build.targets
 
 #verilator trace files
 *.vcd
