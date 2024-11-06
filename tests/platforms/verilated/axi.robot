@@ -39,8 +39,8 @@ Create Machine
     Execute Command                             using sysbus
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString 'cpu: CPU.RiscV32 @ sysbus { cpuType: "rv32imaf"; timeProvider: empty }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: Verilated.BaseDoubleWordVerilatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000
@@ -121,7 +121,7 @@ Memory Should Contain
     ${res}=             Execute Command         ${periph} ReadDoubleWord ${addr}
     Should Contain                              ${res}             ${val}
 
-Test Read Write Verilated Memory
+Test Read Write Co-simulated Memory
     Ensure Memory Is Clear                      mem
 
     # Write to memory
@@ -141,7 +141,7 @@ Test DMA Transaction From Mapped Memory to Mapped Memory
 
     Ensure Memory Is Written                    ram
 
-Test DMA Transaction From Mapped Memory to Verilated Memory
+Test DMA Transaction From Mapped Memory to Co-simulated Memory
     Prepare Data                                0xA1000000
 
     Configure DMA                               0xA1000000  0x20000000
@@ -153,7 +153,7 @@ Test DMA Transaction From Mapped Memory to Verilated Memory
 
     Ensure Memory Is Written                    mem
 
-Test DMA Transaction From Verilated Memory to Mapped Memory
+Test DMA Transaction From Co-simulated Memory to Mapped Memory
     Prepare Data                                0x20080000
 
     Configure DMA                               0x20080000  0xA0000000
@@ -165,7 +165,7 @@ Test DMA Transaction From Verilated Memory to Mapped Memory
 
     Ensure Memory Is Written                    ram
 
-Test DMA Transaction From Verilated Memory to Verilated Memory
+Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
     Prepare Data                                0x20080000
 
     Configure DMA                               0x20080000  0x20000000
@@ -178,47 +178,47 @@ Test DMA Transaction From Verilated Memory to Verilated Memory
     Ensure Memory Is Written                    mem
 
 *** Test Cases ***
-Should Read Write Verilated Memory Using Socket
+Should Read Write Co-simulated Memory Using Socket
     Create Machine      True
-    Test Read Write Verilated Memory
+    Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory Using Socket
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
-Should Run DMA Transaction From Mapped Memory to Verilated Memory Using Socket
+Should Run DMA Transaction From Mapped Memory to Co-simulated Memory Using Socket
     Create Machine      True
-    Test DMA Transaction From Mapped Memory to Verilated Memory
+    Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
-Should Run DMA Transaction From Verilated Memory to Mapped Memory Using Socket
+Should Run DMA Transaction From Co-simulated Memory to Mapped Memory Using Socket
     Create Machine      True
-    Test DMA Transaction From Verilated Memory to Mapped Memory
+    Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
-Should Run DMA Transaction From Verilated Memory to Verilated Memory Using Socket
+Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory Using Socket
     Create Machine      True
-    Test DMA Transaction From Verilated Memory to Verilated Memory
+    Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 
-Should Read Write Verilated Memory
+Should Read Write Co-simulated Memory
     [Tags]                          skip_osx
     Create Machine      False
-    Test Read Write Verilated Memory
+    Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
     [Tags]                          skip_osx
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
-Should Run DMA Transaction From Mapped Memory to Verilated Memory
+Should Run DMA Transaction From Mapped Memory to Co-simulated Memory
     [Tags]                          skip_osx
     Create Machine      False
-    Test DMA Transaction From Mapped Memory to Verilated Memory
+    Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
-Should Run DMA Transaction From Verilated Memory to Mapped Memory
+Should Run DMA Transaction From Co-simulated Memory to Mapped Memory
     [Tags]                          skip_osx
     Create Machine      False
-    Test DMA Transaction From Verilated Memory to Mapped Memory
+    Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
-Should Run DMA Transaction From Verilated Memory to Verilated Memory
+Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory
     [Tags]                          skip_osx
     Create Machine      False
-    Test DMA Transaction From Verilated Memory to Verilated Memory
+    Test DMA Transaction From Co-simulated Memory to Co-simulated Memory

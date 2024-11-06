@@ -25,6 +25,6 @@ timer0: Timers.LiteX_Timer @ {
     frequency: 100000000
     -> cpu@1
 
-uart: Verilated.VerilatedUART @ sysbus <0xE0001000, +0x1000>
+uart: CoSimulated.CoSimulatedUART @ sysbus <0xE0001000, +0x1000>
     frequency: 100000000
     -> cpu@2

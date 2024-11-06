@@ -10,7 +10,7 @@ main_ram: Memory.ArrayMemory @ sysbus 0x40000000
 stack: Memory.ArrayMemory @ sysbus 0xF0000000
     size: 0x10000000
 
-cpu: Verilated.VerilatedRiscV32 @ sysbus
+cpu: CoSimulated.CoSimulatedRiscV32 @ sysbus
     cpuType: "ibex"
     
 ctrl: Miscellaneous.LiteX_SoC_Controller @ sysbus 0x82000000

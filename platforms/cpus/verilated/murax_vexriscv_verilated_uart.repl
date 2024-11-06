@@ -7,7 +7,7 @@ mem: Memory.MappedMemory @ sysbus 0x80000000
 mem2: Memory.MappedMemory @ sysbus 0x00001000
     size: 0x40000
 
-uart: Verilated.VerilatedUART @ sysbus <0xF0010000, +0x1000>
+uart: CoSimulated.CoSimulatedUART @ sysbus <0xF0010000, +0x1000>
     frequency: 50000000
     -> cpu@11
 

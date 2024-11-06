@@ -42,7 +42,7 @@ ${PLATFORM}=     SEPARATOR=${\n}
 ...  ram: Memory.MappedMemory @ sysbus 0x60000000
 ...  ${SPACE*4}size: 0x06400000
 ...
-...  uart: Verilated.VerilatedUART @ sysbus <0x70000000, +0x100>
+...  uart: CoSimulated.CoSimulatedUART @ sysbus <0x70000000, +0x100>
 ...  ${SPACE*4}frequency: 100000000
 ...  ${SPACE*4}address: "127.0.0.1"
 ...  """
@@ -88,7 +88,7 @@ Should Handle Nonexistent UARTLite Binary
     Execute Command                 $uartWindows = @nonexistent-uart-binary
     Execute Command                 $uartMacOS = @nonexistent-uart-binary
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Error starting verilated peripheral!*    Execute Script  ${UARTLITE_SCRIPT}
+    Run Keyword And Expect Error    *Error starting cosimulated peripheral!*    Execute Script  ${UARTLITE_SCRIPT}
 
 
 # Following tests use socket based communication
@@ -117,7 +117,7 @@ Should Handle UARTLite Binary Not Connecting
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_PORTS_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_PORTS_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
+    Run Keyword And Expect Error    *Connection to the cosimulated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Wrong "second" port when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Partly Connecting
@@ -125,7 +125,7 @@ Should Handle UARTLite Binary Partly Connecting
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_SECOND_PORT_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_SECOND_PORT_MACOS}
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Connection to the verilated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
+    Run Keyword And Expect Error    *Connection to the cosimulated peripheral failed!*    Create Machine With Socket Based Communication  ${uartLinux}  ${uartWindows}  ${uartMacOS}
 
 # Starting emulation without SimulationFilePath(Linux|MacOS|Windows) set
 Should Handle Empty UARTLite Binary With Socket Based Communication
@@ -139,4 +139,4 @@ Should Handle Empty UARTLite Binary With Socket Based Communication
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary With Socket Based Communication
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Error starting verilated peripheral!*    Create Machine With Socket Based Communication  nonexistent-uart-binary  nonexistent-uart-binary  nonexistent-uart-binary
+    Run Keyword And Expect Error    *Error starting cosimulated peripheral!*    Create Machine With Socket Based Communication  nonexistent-uart-binary  nonexistent-uart-binary  nonexistent-uart-binary

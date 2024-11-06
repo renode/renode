@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt", "lib\termsharp\xwt\Xw
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xwt.Gtk3", "lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj", "{3B25FD1F-CEBA-4450-8893-DC330FDB56A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VerilatorPlugin_NET", "src\Plugins\VerilatorPlugin\VerilatorPlugin_NET.csproj", "{A244A988-6ADC-4B90-912B-D66C680FA962}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoSimulationPlugin_NET", "src\Plugins\CoSimulationPlugin\CoSimulationPlugin_NET.csproj", "{A244A988-6ADC-4B90-912B-D66C680FA962}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WiresharkPlugin_NET", "src\Plugins\WiresharkPlugin\WiresharkPlugin_NET.csproj", "{1FBC3B41-D61C-4528-8BA5-20EBA17C9031}"
 EndProject

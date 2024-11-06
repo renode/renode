@@ -17,5 +17,5 @@ clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x44000000
 ram: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x06400000
 
-uart: Verilated.VerilatedUART @ sysbus <0x70000000, +0x100>
+uart: CoSimulated.CoSimulatedUART @ sysbus <0x70000000, +0x100>
     frequency: 100000000
