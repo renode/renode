@@ -25,9 +25,9 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class SocketCoSimulationConnection : ICoSimulationConnection, IDisposable
+    public class SocketConnection : ICoSimulationConnection, IDisposable
     {
-        public SocketCoSimulationConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;

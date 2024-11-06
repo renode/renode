@@ -265,7 +265,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             Write(ActionType.Interrupt, number, value ? 1ul : 0ul);
         }
 
-        public string ConnectionParameters => (cosimConnection as SocketCoSimulationConnection)?.ConnectionParameters ?? "";
+        public string ConnectionParameters => (cosimConnection as SocketConnection)?.ConnectionParameters ?? "";
 
         public delegate bool OnReceiveDelegate(ProtocolMessage message);
         public OnReceiveDelegate OnReceive { get; set; }
@@ -333,11 +333,11 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
             {
-                cosimConnection = new SocketCoSimulationConnection(this, timeout, HandleReceivedMessage, address);
+                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address);
             }
             else
             {
-                cosimConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceivedMessage);
+                cosimConnection = new LibraryConnection(this, timeout, HandleReceivedMessage);
             }
 
             // Setup time synchronization

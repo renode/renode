@@ -48,8 +48,8 @@
     <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32Registers.cs" />
     <Compile Include="Connection\ICoSimulationConnection.cs" />
-    <Compile Include="Connection\SocketCoSimulationConnection.cs" />
-    <Compile Include="Connection\LibraryCoSimulationConnection.cs" />
+    <Compile Include="Connection\SocketConnection.cs" />
+    <Compile Include="Connection\LibraryConnection.cs" />
     <Compile Include="Connection\CoSimulationConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionType.cs" />

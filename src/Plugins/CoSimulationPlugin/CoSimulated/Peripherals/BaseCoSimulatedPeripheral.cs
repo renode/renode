@@ -26,11 +26,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             started = false;
             if(address != null)
             {
-                cosimulationConnection = new SocketCoSimulationConnection(this, timeout, HandleReceivedMessage, address);
+                cosimulationConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address);
             }
             else
             {
-                cosimulationConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceivedMessage);
+                cosimulationConnection = new LibraryConnection(this, timeout, HandleReceivedMessage);
             }
 
             SimulationFilePathLinux = simulationFilePathLinux;
@@ -201,7 +201,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
-        public string ConnectionParameters => (cosimulationConnection as SocketCoSimulationConnection)?.ConnectionParameters ?? "";
+        public string ConnectionParameters => (cosimulationConnection as SocketConnection)?.ConnectionParameters ?? "";
 
         public void Start()
         {
