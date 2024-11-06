@@ -48,7 +48,7 @@
     <Compile Include="CoSimulated\Peripherals\CoSimulatedCPU.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedRiscV32Registers.cs" />
-    <Compile Include="Connection\ICoSimulatedPeripheral.cs" />
+    <Compile Include="Connection\ICoSimulationConnection.cs" />
     <Compile Include="Connection\SocketCoSimulationConnection.cs" />
     <Compile Include="Connection\LibraryCoSimulationConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
