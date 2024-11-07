@@ -30,7 +30,7 @@ struct Protocol
 
 enum Action
 {
-#include "renode_action_enumerators.txt"
+#include "../hdl/includes/renode_action_enumerators.svh"
 };
 
 enum LogLevel

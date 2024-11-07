@@ -14,7 +14,7 @@ package renode_pkg;
   typedef enum int {
     // The included file contains enumerators of the action type used by the Renode protocol.
     // The values must be in sync with ActionType from Renode (defined in C#).
-    `include "../src/renode_action_enumerators.txt"
+    `include "renode_action_enumerators.svh"
   } action_e;
 
   typedef struct {
