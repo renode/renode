@@ -49,7 +49,7 @@ function print_help() {
   echo "--profile-build                   build optimized for profiling"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
-  echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-arch)"
+  echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --tlib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
@@ -237,7 +237,7 @@ then
     if ! [ -x "$(command -v mcs)" ]
     then
         MINIMUM_MONO=`get_min_mono_version`
-        echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        echo "mcs not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
@@ -326,7 +326,7 @@ then
 fi
 
 # This list contains all cores that will be built.
-# If you are adding a new core or endianess add it here to have the correct tlib built
+# If you are adding a new core or endianness add it here to have the correct tlib built
 CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
 
 # if '--tlib-arch' was used - pick the first matching one
@@ -436,10 +436,10 @@ if $PACKAGES
 then
     if $NET
     then
-        # dotnet package on linux uses a seperate script
+        # dotnet package on linux uses a separate script
         if $ON_LINUX
         then
-            # Restore dependecies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
+            # Restore dependencies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
             dotnet restore --runtime linux-x64 Renode_NET.sln
 
             # maxcpucount:1 to avoid an error with multithreaded publish
