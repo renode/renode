@@ -52,6 +52,7 @@
 - tests/platforms/STM32F4_Discovery.robot
 - tests/platforms/NRF52840.robot
 - tests/unit-tests/riscv-custom-instructions.robot
+- tests/unit-tests/riscv-lr-sc-instructions.robot
 - tests/metrics-analyzer/metrics-analyzer.robot
 - tests/platforms/STM32W108.robot
 - tests/platforms/STM32F7.robot
