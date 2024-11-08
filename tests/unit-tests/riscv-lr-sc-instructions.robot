@@ -20,4 +20,4 @@ Should Handle LC and SC Instructions Properly
     Wait For Line On Uart              (first thread) number1: 4 (expected: 4), returned value: 1
     Wait For Line On Uart              (first thread) number1: 5 (expected: 5), returned value: 0
     Wait For Line On Uart              (first thread) number2: 6 (expected: 6), returned value: 0
-    
+
