@@ -134,6 +134,46 @@ gtm2: Timers.RenesasRZG_GTM @ {
     frequency: 100_000_000
     -> gic@48 | nvic@48
 
+scif0: SCI.RenesasRZG_SCIFA @ {
+        sysbus new Bus.BusPointRegistration { address: 0x01004B800; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x4004B800; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x5004B800; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    [0-4] -> gic@[380-384] | nvic@[380-384]
+
+scif1: SCI.RenesasRZG_SCIFA @ {
+        sysbus new Bus.BusPointRegistration { address: 0x01004BC00; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x4004BC00; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x5004BC00; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    [0-4] -> gic@[385-389] | nvic@[385-389]
+
+scif2: SCI.RenesasRZG_SCIFA @ {
+        sysbus new Bus.BusPointRegistration { address: 0x01004C000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x4004C000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x5004C000; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    [0-4] -> gic@[390-394] | nvic@[390-394]
+
+scif3: SCI.RenesasRZG_SCIFA @ {
+        sysbus new Bus.BusPointRegistration { address: 0x01004C400; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x4004C400; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x5004C400; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    [0-4] -> gic@[395-399] | nvic@[395-399]
+
+scif4: SCI.RenesasRZG_SCIFA @ {
+        sysbus new Bus.BusPointRegistration { address: 0x01004C800; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x4004C800; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x5004C800; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    [0-4] -> gic@[400-404] | nvic@[400-404]
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -152,11 +192,6 @@ sysbus:
         Tag <0x01004AC00 0x400>     "RSPI ch0 (Cortex-A55)"
         Tag <0x01004B000 0x400>     "RSPI ch1 (Cortex-A55)"
         Tag <0x01004B400 0x400>     "RSPI ch2 (Cortex-A55)"
-        Tag <0x01004B800 0x400>     "SCIF ch0 (Cortex-A55)"
-        Tag <0x01004BC00 0x400>     "SCIF ch1 (Cortex-A55)"
-        Tag <0x01004C000 0x400>     "SCIF ch2 (Cortex-A55)"
-        Tag <0x01004C400 0x400>     "SCIF ch3 (Cortex-A55)"
-        Tag <0x01004C800 0x400>     "SCIF ch4 (Cortex-A55)"
         Tag <0x01004CC00 0x400>     "IrDA (SCI) (Cortex-A55)"
         Tag <0x01004D000 0x400>     "SCI ch0 (Cortex-A55)"
         Tag <0x01004D400 0x400>     "SCI ch1 (Cortex-A55)"
@@ -181,7 +216,8 @@ sysbus:
         Tag <0x011000000 0x10000>   "SYC (Cortex-A55)"
         Tag <0x011010000 0x10000>   "CPG (Cortex-A55)"
         Tag <0x0110106C0 0x4>       "CPG_CLKMON_GPT" 0x1
-        Tag <0x0110106B4 0x4>       "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
+        Tag <0x0110106B4 0x4>       "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
+        Tag <0x011010704 0x4>       "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011030000 0x10000>   "GPIO (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
@@ -228,11 +264,6 @@ sysbus:
         Tag <0x4004AC00 0x400>      "RSPI ch0 (Cortex-M33, Non-secure)"
         Tag <0x4004B000 0x400>      "RSPI ch1 (Cortex-M33, Non-secure)"
         Tag <0x4004B400 0x400>      "RSPI ch2 (Cortex-M33, Non-secure)"
-        Tag <0x4004B800 0x400>      "SCIF ch0 (Cortex-M33, Non-secure)"
-        Tag <0x4004BC00 0x400>      "SCIF ch1 (Cortex-M33, Non-secure)"
-        Tag <0x4004C000 0x400>      "SCIF ch2 (Cortex-M33, Non-secure)"
-        Tag <0x4004C400 0x400>      "SCIF ch3 (Cortex-M33, Non-secure)"
-        Tag <0x4004C800 0x400>      "SCIF ch4 (Cortex-M33, Non-secure)"
         Tag <0x4004CC00 0x400>      "IrDA (SCI) (Cortex-M33, Non-secure)"
         Tag <0x4004D000 0x400>      "SCI ch0 (Cortex-M33, Non-secure)"
         Tag <0x4004D400 0x400>      "SCI ch1 (Cortex-M33, Non-secure)"
@@ -257,7 +288,8 @@ sysbus:
         Tag <0x41000000 0x10000>    "SYC (Cortex-M33, Non-secure)"
         Tag <0x41010000 0x10000>    "CPG (Cortex-M33, Non-secure)"
         Tag <0x410106C0 0x4>        "CPG_CLKMON_GPT" 0x1
-        Tag <0x410106B4 0x4>        "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
+        Tag <0x410106B4 0x4>        "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
+        Tag <0x41010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41030000 0x10000>    "GPIO (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
@@ -304,11 +336,6 @@ sysbus:
         Tag <0x5004AC00 0x400>      "RSPI ch0 (Cortex-M33, Secure)"
         Tag <0x5004B000 0x400>      "RSPI ch1 (Cortex-M33, Secure)"
         Tag <0x5004B400 0x400>      "RSPI ch2 (Cortex-M33, Secure)"
-        Tag <0x5004B800 0x400>      "SCIF ch0 (Cortex-M33, Secure)"
-        Tag <0x5004BC00 0x400>      "SCIF ch1 (Cortex-M33, Secure)"
-        Tag <0x5004C000 0x400>      "SCIF ch2 (Cortex-M33, Secure)"
-        Tag <0x5004C400 0x400>      "SCIF ch3 (Cortex-M33, Secure)"
-        Tag <0x5004C800 0x400>      "SCIF ch4 (Cortex-M33, Secure)"
         Tag <0x5004CC00 0x400>      "IrDA (SCI) (Cortex-M33, Secure)"
         Tag <0x5004D000 0x400>      "SCI ch0 (Cortex-M33, Secure)"
         Tag <0x5004D400 0x400>      "SCI ch1 (Cortex-M33, Secure)"
@@ -333,7 +360,8 @@ sysbus:
         Tag <0x51000000 0x10000>    "SYC (Cortex-M33, Secure)"
         Tag <0x51010000 0x10000>    "CPG (Cortex-M33, Secure)"
         Tag <0x510106C0 0x4>        "CPG_CLKMON_GPT" 0x1
-        Tag <0x510106B4 0x4>        "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
+        Tag <0x510106B4 0x4>        "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
+        Tag <0x51010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51030000 0x10000>    "GPIO (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
