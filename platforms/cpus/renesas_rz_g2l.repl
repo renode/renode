@@ -94,13 +94,28 @@ ddr_high: Memory.MappedMemory @ {
     }
     size: 0xF0000000
 
+gpt: Timers.RenesasRZG_GPT @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010048000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40048000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50048000; cpu: cpu_m33 }  // Secure
+    }
+    numberOf32BitChannels: 8
+    peripheralClockDFrequency: 24000000
+    [0x00-0x09] -> gic@[218-227] | nvic@[218-227]
+    [0x0a-0x13] -> gic@[231-240] | nvic@[231-240]
+    [0x14-0x1d] -> gic@[244-253] | nvic@[244-253]
+    [0x1e-0x27] -> gic@[257-266] | nvic@[257-266]
+    [0x28-0x31] -> gic@[270-279] | nvic@[270-279]
+    [0x32-0x3b] -> gic@[283-292] | nvic@[283-292]
+    [0x3c-0x45] -> gic@[296-305] | nvic@[296-305]
+    [0x46-0x4f] -> gic@[309-318] | nvic@[309-318]
+
 sysbus:
     init:
         // Cortex-A55 Tags:
         Tag <0x010000000 0x40000>   "MTU3a (Cortex-A55)"
         Tag <0x010040000 0x7000>    "SRC (Memory) (Cortex-A55)"
         Tag <0x010047000 0x1000>    "SRC (Reg) (Cortex-A55)"
-        Tag <0x010048000 0x800>     "GPT (Cortex-A55)"
         Tag <0x010048800 0x400>     "POEGA (Cortex-A55)"
         Tag <0x010048C00 0x400>     "POEGB (Cortex-A55)"
         Tag <0x010049000 0x400>     "POEGC (Cortex-A55)"
@@ -141,6 +156,7 @@ sysbus:
         Tag <0x010C00000 0x1000000> "CST (CoreSight) (Cortex-A55)"
         Tag <0x011000000 0x10000>   "SYC (Cortex-A55)"
         Tag <0x011010000 0x10000>   "CPG (Cortex-A55)"
+        Tag <0x0110106C0 0x4>       "CPG_CLKMON_GPT" 0x1
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011030000 0x10000>   "GPIO (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
@@ -178,7 +194,6 @@ sysbus:
         Tag <0x40000000 0x40000>    "MTU3a (Cortex-M33, Non-secure)"
         Tag <0x40040000 0x7000>     "SRC (Memory) (Cortex-M33, Non-secure)"
         Tag <0x40047000 0x1000>     "SRC (Reg) (Cortex-M33, Non-secure)"
-        Tag <0x40048000 0x800>      "GPT (Cortex-M33, Non-secure)"
         Tag <0x40048800 0x400>      "POEGA (Cortex-M33, Non-secure)"
         Tag <0x40048C00 0x400>      "POEGB (Cortex-M33, Non-secure)"
         Tag <0x40049000 0x400>      "POEGC (Cortex-M33, Non-secure)"
@@ -219,6 +234,7 @@ sysbus:
         Tag <0x40C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Non-secure)"
         Tag <0x41000000 0x10000>    "SYC (Cortex-M33, Non-secure)"
         Tag <0x41010000 0x10000>    "CPG (Cortex-M33, Non-secure)"
+        Tag <0x410106C0 0x4>        "CPG_CLKMON_GPT" 0x1
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41030000 0x10000>    "GPIO (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
@@ -256,7 +272,6 @@ sysbus:
         Tag <0x50000000 0x40000>    "MTU3a (Cortex-M33, Secure)"
         Tag <0x50040000 0x7000>     "SRC (Memory) (Cortex-M33, Secure)"
         Tag <0x50047000 0x1000>     "SRC (Reg) (Cortex-M33, Secure)"
-        Tag <0x50048000 0x800>      "GPT (Cortex-M33, Secure)"
         Tag <0x50048800 0x400>      "POEGA (Cortex-M33, Secure)"
         Tag <0x50048C00 0x400>      "POEGB (Cortex-M33, Secure)"
         Tag <0x50049000 0x400>      "POEGC (Cortex-M33, Secure)"
@@ -297,6 +312,7 @@ sysbus:
         Tag <0x50C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Secure)"
         Tag <0x51000000 0x10000>    "SYC (Cortex-M33, Secure)"
         Tag <0x51010000 0x10000>    "CPG (Cortex-M33, Secure)"
+        Tag <0x510106C0 0x4>        "CPG_CLKMON_GPT" 0x1
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51030000 0x10000>    "GPIO (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
