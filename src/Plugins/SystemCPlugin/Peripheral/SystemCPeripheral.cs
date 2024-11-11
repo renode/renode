@@ -556,18 +556,18 @@ namespace Antmicro.Renode.Peripherals.SystemC
                         }
                         var readResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
                             readFromSharedMem ? (byte)1 : (byte)0, message.Address, payload);
-                        
+
                         backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
                         break;
                     case RenodeAction.DMIReq:
                         bool allowDMI = false;
                         var targetMemory = sysbus.FindMemory(message.Address);
                         if (targetMemory != null) allowDMI = targetMemory.Peripheral.UsingSharedMemory;
-                        long memOffset = (long)message.Address;
-                        ulong segmentStart = (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
+                        long memBase = (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
+                        long memOffset = (long)message.Address - memBase;
+                        ulong segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
                         int segmentNo = 0;
                         if (allowDMI) {
-                            memOffset -= (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
                             segmentNo = (int)(memOffset / targetMemory.Peripheral.SegmentSize);
                             allowDMI = segmentNo >= 0 && segmentNo < targetMemory.Peripheral.SegmentCount;
                         }
