@@ -34,7 +34,7 @@ def mc_setup_segger_rtt(name, with_has_key = True, with_read = True):
     def add_hook(symbol, function):
         for cpu in bus.GetCPUs():
             try:
-                cpu.AddHook(bus.GetSymbolAddress(symbol), function)
+                cpu.AddHook(bus.GetSymbolAddress(symbol, cpu), function)
             except Exception as e:
                 cpu.WarningLog("Failed to add hook at '{}': {}".format(symbol, e))
                 cpu.WarningLog("Make sure the binary is loaded before calling setup_segger_rtt")
