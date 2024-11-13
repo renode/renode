@@ -110,6 +110,30 @@ gpt: Timers.RenesasRZG_GPT @ {
     [0x3c-0x45] -> gic@[296-305] | nvic@[296-305]
     [0x46-0x4f] -> gic@[309-318] | nvic@[309-318]
 
+gtm0: Timers.RenesasRZG_GTM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x012801000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x42801000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x52801000; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    -> gic@46 | nvic@46
+
+gtm1: Timers.RenesasRZG_GTM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x012801400; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x42801400; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x52801400; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    -> gic@47 | nvic@47
+
+gtm2: Timers.RenesasRZG_GTM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x012801800; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x42801800; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x52801800; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 100_000_000
+    -> gic@48 | nvic@48
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -157,6 +181,7 @@ sysbus:
         Tag <0x011000000 0x10000>   "SYC (Cortex-A55)"
         Tag <0x011010000 0x10000>   "CPG (Cortex-A55)"
         Tag <0x0110106C0 0x4>       "CPG_CLKMON_GPT" 0x1
+        Tag <0x0110106B4 0x4>       "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011030000 0x10000>   "GPIO (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
@@ -186,9 +211,6 @@ sysbus:
         Tag <0x012800400 0x400>     "WDT CM33 (Cortex-A55)"
         Tag <0x012800800 0x400>     "WDT CA55 core 0 (Cortex-A55)"
         Tag <0x012800C00 0x400>     "WDT CA55 core 1 (Cortex-A55)"
-        Tag <0x012801000 0x400>     "GTM ch0 (Cortex-A55)"
-        Tag <0x012801400 0x400>     "GTM ch1 (Cortex-A55)"
-        Tag <0x012801800 0x400>     "GTM ch2 (Cortex-A55)"
 
         // Cortex-M33 Tags (Non-secure):
         Tag <0x40000000 0x40000>    "MTU3a (Cortex-M33, Non-secure)"
@@ -235,6 +257,7 @@ sysbus:
         Tag <0x41000000 0x10000>    "SYC (Cortex-M33, Non-secure)"
         Tag <0x41010000 0x10000>    "CPG (Cortex-M33, Non-secure)"
         Tag <0x410106C0 0x4>        "CPG_CLKMON_GPT" 0x1
+        Tag <0x410106B4 0x4>        "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41030000 0x10000>    "GPIO (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
@@ -264,9 +287,6 @@ sysbus:
         Tag <0x42800400 0x400>      "WDT CM33 (Cortex-M33, Non-secure)"
         Tag <0x42800800 0x400>      "WDT CA55 core 0 (Cortex-M33, Non-secure)"
         Tag <0x42800C00 0x400>      "WDT CA55 core 1 (Cortex-M33, Non-secure)"
-        Tag <0x42801000 0x400>      "GTM ch0 (Cortex-M33, Non-secure)"
-        Tag <0x42801400 0x400>      "GTM ch1 (Cortex-M33, Non-secure)"
-        Tag <0x42801800 0x400>      "GTM ch2 (Cortex-M33, Non-secure)"
 
         // Cortex-M33 Tags (Secure):
         Tag <0x50000000 0x40000>    "MTU3a (Cortex-M33, Secure)"
@@ -313,6 +333,7 @@ sysbus:
         Tag <0x51000000 0x10000>    "SYC (Cortex-M33, Secure)"
         Tag <0x51010000 0x10000>    "CPG (Cortex-M33, Secure)"
         Tag <0x510106C0 0x4>        "CPG_CLKMON_GPT" 0x1
+        Tag <0x510106B4 0x4>        "CPG_CLKMON_GTM" 0x7 // GTM clocks are enabled
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51030000 0x10000>    "GPIO (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
@@ -342,6 +363,3 @@ sysbus:
         Tag <0x52800400 0x400>      "WDT CM33 (Cortex-M33, Secure)"
         Tag <0x52800800 0x400>      "WDT CA55 core 0 (Cortex-M33, Secure)"
         Tag <0x52800C00 0x400>      "WDT CA55 core 1 (Cortex-M33, Secure)"
-        Tag <0x52801000 0x400>      "GTM ch0 (Cortex-M33, Secure)"
-        Tag <0x52801400 0x400>      "GTM ch1 (Cortex-M33, Secure)"
-        Tag <0x52801800 0x400>      "GTM ch2 (Cortex-M33, Secure)"
