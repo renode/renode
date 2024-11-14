@@ -9,10 +9,19 @@ ${UART_ADDR_MOVED}                       0x60230000
 ${URI}                                   @https://dl.antmicro.com/projects/renode
 ${TEST_ELF}                              ${URI}/multibus_test.elf-s_3718712-8ec6b7305242b1bfce702459d75ea02d04f00360
 
-${CONFLICTING_MEMORY}=     SEPARATOR=
+${CPU1_OVERLAY_MEMORY}=     SEPARATOR=
 ...  """                                                                             ${\n}
-...  shadow_mem: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration {          ${\n}
+...  cpu1_mem: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration {            ${\n}
 ...  ${SPACE*4}address: 0x0;                                                         ${\n}
+...  ${SPACE*4}cpu: cpu1                                                             ${\n}
+...  }                                                                               ${\n}
+...  ${SPACE*4}size: 0x1000                                                          ${\n}
+...  """
+
+${CPU1_SHADOW_MEMORY}=     SEPARATOR=
+...  """                                                                             ${\n}
+...  cpu1_shadow_mem: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration {     ${\n}
+...  ${SPACE*4}address: 0xF00;                                                       ${\n}
 ...  ${SPACE*4}cpu: cpu1                                                             ${\n}
 ...  }                                                                               ${\n}
 ...  ${SPACE*4}size: 0x1000                                                          ${\n}
@@ -52,16 +61,22 @@ Create Machine With Hex File
 
 *** Test Cases ***
 Fail On Shadowing Other Registration
+           # Create machine with `ram` at 0x0 - 0x1FFFFFF.
            Create Machine                ${TEST_ELF}
 
+           # Adding a CPU-specific peripheral over a global one is OK, accesses from that CPU will reach it instead.
+           Execute Command               machine LoadPlatformDescriptionFromString ${CPU1_OVERLAY_MEMORY}
+
+  # Adding another CPU-specific peripheral at address space already occupied for the given CPU should fail though.
   ${out}=  Run Keyword And Expect Error  KeywordException:*
            ...                           Execute Command
-           ...                           machine LoadPlatformDescriptionFromString ${CONFLICTING_MEMORY}
+           ...                           machine LoadPlatformDescriptionFromString ${CPU1_SHADOW_MEMORY}
            Should Contain                ${out}     Error E39: Exception was thrown during registration
            Should Contain                ${out}     conflicts with address
 
   ${per}=  Execute Command               peripherals
-           Should Not Contain            ${per}     shadow_mem
+           Should Contain                ${per}     cpu1_mem
+           Should Not Contain            ${per}     cpu1_shadow_mem
 
 Get Same Read From Common Memory
            Create Machine                ${TEST_ELF}
