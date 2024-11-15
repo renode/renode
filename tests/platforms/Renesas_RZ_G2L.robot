@@ -2,6 +2,7 @@
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_ep.elf-s_450148-fec1da811a52fa94d39db555d0dccc28e246d28e
 ${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415532-a907c69248cf6f695c717ee7dd83cc29d6fff3b4
+${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
 
 *** Keywords ***
 Prepare Machine
@@ -56,3 +57,22 @@ Should Run GTM Sample
         ${periodic_end}=                Wait For Line On Uart  Leds are: On
         Elapsed Time Equals             ${periodic_start.timestamp}  ${periodic_end.timestamp}  5  0.3
     END
+
+Should Run SCIF UART Sample
+    Prepare Machine                 ${SCIF_UART_ELF}
+    Create Terminal Tester          sysbus.scif2
+    Execute Command                 showAnalyzer sysbus.scif2
+
+    # Let software initialize SCIF before we write to it
+    Execute Command                 emulation RunFor "0.01s"
+    Start Emulation
+
+    Write Line To Uart              10  waitForEcho=false
+    Wait For Line On Uart           Accepted value, the led is blinking with that value
+    Wait For Line On Uart           Please set the next value
+
+    Write Line To Uart              -1  waitForEcho=false
+    Wait For Line On Uart           Invalid input. Input range is from 1 - 2000
+
+    Write Line To Uart              2001  waitForEcho=false
+    Wait For Line On Uart           Invalid input. Input range is from 1 - 2000
