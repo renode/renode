@@ -151,6 +151,7 @@
 - tests/peripherals/UT32_CAN.robot
 - tests/peripherals/S32K3XX_FlexCAN.robot
 - tests/platforms/BeagleV-StarLight.robot
+- tests/platforms/BeagleV-Fire.robot
 - tests/unit-tests/virtual-time.robot
 - tests/unit-tests/platform-file-aliases.robot
 - tests/peripherals/VirtIO.robot
