@@ -18,13 +18,13 @@ struct APB3 : public BaseTargetBus
 
     uint8_t  *pclk;
     uint8_t  *prst;
-    uint8_t *paddr;        // IN
-    uint8_t  *psel;         // IN
-    uint8_t  *penable;      // IN
-    uint8_t  *pwrite;       // IN
-    uint32_t  *pwdata;      // IN
-    uint8_t  *pready;       // OUT
-    uint32_t  *prdata;      // OUT
+    uint8_t  *paddr;         // IN
+    uint8_t  *psel;          // IN
+    uint8_t  *penable;       // IN
+    uint8_t  *pwrite;        // IN
+    uint32_t *pwdata;        // IN
+    uint8_t  *pready;        // OUT
+    uint32_t *prdata;        // OUT
     uint8_t  *pslverr;
 };
 #endif
