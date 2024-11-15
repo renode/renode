@@ -20,6 +20,7 @@ struct AxiSlave : public BaseAxi, public BaseInitiatorBus
     virtual void write(uint64_t addr, uint64_t value);
     virtual uint64_t read(uint64_t addr);
     virtual void reset();
+    virtual void validateSignals();
 
     void readWord(uint64_t addr, uint8_t sel);
     void writeWord(uint64_t addr, uint64_t data, uint8_t strb);

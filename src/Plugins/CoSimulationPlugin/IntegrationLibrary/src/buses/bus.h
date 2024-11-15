@@ -8,6 +8,7 @@
 #define BaseBus_H
 
 #include <cstdint>
+#include <vector>
 
 #ifndef DEFAULT_TIMEOUT
 #define DEFAULT_TIMEOUT 2000
@@ -25,9 +26,11 @@ public:
     void (*evaluateModel)();
     virtual void setAgent(RenodeAgent *newAgent)
     {
+        validateSignals();
         agent = newAgent;
     }
 protected:
+    virtual void validateSignals() = 0;
     friend class RenodeAgent;
     RenodeAgent *agent;
     uint64_t tickCounter;
@@ -44,6 +47,9 @@ class BaseTargetBus : public BaseBus
 public:
     virtual void write(int width, uint64_t addr, uint64_t value) = 0;
     virtual uint64_t read(int width, uint64_t addr) = 0;
+protected:
+    virtual void validateSignals() = 0;
+    std::vector<uint32_t> optionalStore;
 };
 
 class BaseInitiatorBus : public BaseBus
@@ -56,5 +62,7 @@ public:
     virtual void clearSignals() = 0;
     virtual bool hasSpecifiedAdress() = 0;
     virtual uint64_t getSpecifiedAdress() = 0;
+protected:
+    virtual void validateSignals() = 0;
 };
 #endif

@@ -10,21 +10,25 @@
 
 struct APB3 : public BaseTargetBus
 {
+    APB3() { initSignals(); }
     virtual void tick(bool countEnable, uint64_t steps);
     virtual void write(int width, uint64_t addr, uint64_t value);
     virtual uint64_t read(int width, uint64_t addr);
     virtual void reset();
+    virtual void validateSignals();
+    void initSignals();
     void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
 
-    uint8_t  *pclk;
-    uint8_t  *prst;
-    uint8_t  *paddr;         // IN
-    uint8_t  *psel;          // IN
-    uint8_t  *penable;       // IN
-    uint8_t  *pwrite;        // IN
-    uint32_t *pwdata;        // IN
-    uint8_t  *pready;        // OUT
-    uint32_t *prdata;        // OUT
-    uint8_t  *pslverr;
+    uint8_t   *pclk = nullptr;
+    uint8_t   *prst = nullptr;
+    uint8_t   *paddr = nullptr;        // IN
+    uint8_t   *psel = nullptr;         // IN
+    uint8_t   *penable = nullptr;      // IN
+    uint8_t   *pwrite = nullptr;       // IN
+    uint32_t  *pwdata = nullptr;       // IN
+    uint8_t   *pready = nullptr;       // OUT
+    uint32_t  *prdata = nullptr;       // OUT
+    uint8_t   *pslverr = nullptr;      // IN
+    uint8_t   *pstrb = nullptr;        // OUT
 };
 #endif

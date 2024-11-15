@@ -6,6 +6,7 @@
 //
 #include "apb3.h"
 #include <cstdio>
+#include <stdexcept>
 
 void APB3::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -97,4 +98,24 @@ void APB3::reset()
     tick(true);
     *prst = 0;
     tick(true);
+}
+
+void APB3::initSignals()
+{
+    // Optional signals 
+    optionalStore.resize(1);
+    pstrb = (uint8_t *)&optionalStore[0];
+}
+
+void APB3::validateSignals()
+{
+    if(pclk == nullptr) throw std::runtime_error("Signal 'pclk' not assigned");
+    if(prst == nullptr) throw std::runtime_error("Signal 'prst' not assigned");
+    if(paddr == nullptr) throw std::runtime_error("Signal 'paddr' not assigned");
+    if(psel == nullptr) throw std::runtime_error("Signal 'psel' not assigned");
+    if(penable == nullptr) throw std::runtime_error("Signal 'penable' not assigned");
+    if(pwrite == nullptr) throw std::runtime_error("Signal 'pwrite' not assigned");
+    if(pwdata == nullptr) throw std::runtime_error("Signal 'pwdata' not assigned");
+    if(pready == nullptr) throw std::runtime_error("Signal 'pready' not assigned");
+    if(prdata == nullptr) throw std::runtime_error("Signal 'prdata' not assigned");
 }

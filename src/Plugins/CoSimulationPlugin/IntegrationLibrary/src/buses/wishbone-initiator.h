@@ -169,6 +169,11 @@ public:
         return *wb_cyc && *wb_stb;
     }
     
+    void validateSignals()
+    {
+        WishboneBase::validateSignals();
+    }
+
     uint64_t getSpecifiedAdress() override { return *wb_addr; }
 
     addr_t *wb_addr;

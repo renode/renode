@@ -6,6 +6,7 @@
 //
 
 #include "cfu.h"
+#include <stdexcept>
 
 void Cfu::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -83,4 +84,19 @@ void Cfu::reset()
   tick(true);
   *rst = 0;
   tick(true);
+}
+
+void Cfu::validateSignals()
+{
+    if(req_valid == nullptr) throw std::exception("Signal 'req_valid' not assigned");
+    if(req_ready == nullptr) throw std::exception("Signal 'req_ready' not assigned");
+    if(req_func_id == nullptr) throw std::exception("Signal 'req_func_id' not assigned");
+    if(req_data0 == nullptr) throw std::exception("Signal 'req_data0' not assigned");
+    if(req_data1 == nullptr) throw std::exception("Signal 'req_data1' not assigned");
+    if(resp_valid == nullptr) throw std::exception("Signal 'resp_valid' not assigned");
+    if(resp_ready == nullptr) throw std::exception("Signal 'resp_ready' not assigned");
+    if(resp_ok == nullptr) throw std::exception("Signal 'resp_ok' not assigned");
+    if(resp_data == nullptr) throw std::exception("Signal 'resp_data' not assigned");
+    if(rst == nullptr) throw std::exception("Signal 'rst' not assigned");
+    if(clk == nullptr) throw std::exception("Signal 'clk' not assigned");
 }

@@ -234,3 +234,8 @@ uint64_t AxiSlave::read(uint64_t addr)
 {
     throw "Unsupported";
 }
+
+void AxiSlave::validateSignals()
+{
+    BaseAxi::validateSignals();
+}

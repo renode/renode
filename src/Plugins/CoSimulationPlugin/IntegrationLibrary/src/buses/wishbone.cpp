@@ -6,6 +6,22 @@
 //
 #include "wishbone.h"
 #include <cstdio>
+#include <stdexcept>
+
+void WishboneBase::validateSignals()
+{
+    if(wb_clk == nullptr) throw std::runtime_error("Signal 'wb_clk' not assigned");
+    if(wb_rst == nullptr) throw std::runtime_error("Signal 'wb_rst' not assigned");
+    if(wb_addr == nullptr) throw std::runtime_error("Signal 'wb_addr' not assigned");
+    if(wb_rd_dat == nullptr) throw std::runtime_error("Signal 'wb_rd_dat' not assigned");
+    if(wb_wr_dat == nullptr) throw std::runtime_error("Signal 'wb_wr_dat' not assigned");
+    if(wb_we == nullptr) throw std::runtime_error("Signal 'wb_we' not assigned");
+    if(wb_sel == nullptr) throw std::runtime_error("Signal 'wb_sel' not assigned");
+    if(wb_stb == nullptr) throw std::runtime_error("Signal 'wb_stb' not assigned");
+    if(wb_ack == nullptr) throw std::runtime_error("Signal 'wb_ack' not assigned");
+    if(wb_cyc == nullptr) throw std::runtime_error("Signal 'wb_cyc' not assigned");
+    if(wb_stall == nullptr) throw std::runtime_error("Signal 'wb_stall' not assigned");
+}
 
 void Wishbone::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -98,4 +114,9 @@ void Wishbone::reset()
     tick(true);
     *wb_rst = 0;
     tick(true);
+}
+
+void Wishbone::validateSignals()
+{
+    WishboneBase::validateSignals();
 }

@@ -6,6 +6,7 @@
 //
 #include "axi.h"
 #include <cmath>
+#include <stdexcept>
 
 BaseAxi::BaseAxi(uint32_t dataWidth, uint32_t addrWidth)
 {
@@ -20,9 +21,48 @@ BaseAxi::BaseAxi(uint32_t dataWidth, uint32_t addrWidth)
     this->addrWidth = addrWidth;
 }
 
-Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth)
+void BaseAxi::validateSignals()
 {
+    if(aclk == nullptr) throw std::runtime_error("Signal 'aclk' not assigned");
+    if(aresetn == nullptr) throw std::runtime_error("Signal 'aresetn' not assigned");
+    if(awid == nullptr) throw std::runtime_error("Signal 'awid' not assigned");
+    if(awaddr == nullptr) throw std::runtime_error("Signal 'awaddr' not assigned");
+    if(awlen == nullptr) throw std::runtime_error("Signal 'awlen' not assigned");
+    if(awsize == nullptr) throw std::runtime_error("Signal 'awsize' not assigned");
+    if(awburst == nullptr) throw std::runtime_error("Signal 'awburst' not assigned");
+    if(awlock == nullptr) throw std::runtime_error("Signal 'awlock' not assigned");
+    if(awcache == nullptr) throw std::runtime_error("Signal 'awcache' not assigned");
+    if(awprot == nullptr) throw std::runtime_error("Signal 'awprot' not assigned");
+    if(awvalid == nullptr) throw std::runtime_error("Signal 'awvalid' not assigned");
+    if(awready == nullptr) throw std::runtime_error("Signal 'awready' not assigned");
+    if(wdata == nullptr) throw std::runtime_error("Signal 'wdata' not assigned");
+    if(wstrb == nullptr) throw std::runtime_error("Signal 'wstrb' not assigned");
+    if(wlast == nullptr) throw std::runtime_error("Signal 'wlast' not assigned");
+    if(wvalid == nullptr) throw std::runtime_error("Signal 'wvalid' not assigned");
+    if(wready == nullptr) throw std::runtime_error("Signal 'wready' not assigned");
+    if(bid == nullptr) throw std::runtime_error("Signal 'bid' not assigned");
+    if(bresp == nullptr) throw std::runtime_error("Signal 'bresp' not assigned");
+    if(bvalid == nullptr) throw std::runtime_error("Signal 'bvalid' not assigned");
+    if(bready == nullptr) throw std::runtime_error("Signal 'bready' not assigned");
+    if(arid == nullptr) throw std::runtime_error("Signal 'arid' not assigned");
+    if(araddr == nullptr) throw std::runtime_error("Signal 'araddr' not assigned");
+    if(arlen == nullptr) throw std::runtime_error("Signal 'arlen' not assigned");
+    if(arsize == nullptr) throw std::runtime_error("Signal 'arsize' not assigned");
+    if(arburst == nullptr) throw std::runtime_error("Signal 'arburst' not assigned");
+    if(arlock == nullptr) throw std::runtime_error("Signal 'arlock' not assigned");
+    if(arcache == nullptr) throw std::runtime_error("Signal 'arcache' not assigned");
+    if(arprot == nullptr) throw std::runtime_error("Signal 'arprot' not assigned");
+    if(arvalid == nullptr) throw std::runtime_error("Signal 'arvalid' not assigned");
+    if(arready == nullptr) throw std::runtime_error("Signal 'arready' not assigned");
+    if(rid == nullptr) throw std::runtime_error("Signal 'rid' not assigned");
+    if(rdata == nullptr) throw std::runtime_error("Signal 'rdata' not assigned");
+    if(rresp == nullptr) throw std::runtime_error("Signal 'rresp' not assigned");
+    if(rlast == nullptr) throw std::runtime_error("Signal 'rlast' not assigned");
+    if(rvalid == nullptr) throw std::runtime_error("Signal 'rvalid' not assigned");
+    if(rready == nullptr) throw std::runtime_error("Signal 'rready' not assigned");
 }
+
+Axi::Axi(uint32_t dataWidth, uint32_t addrWidth) : BaseAxi(dataWidth, addrWidth) { }
 
 void Axi::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -121,4 +161,9 @@ void Axi::reset()
     tick(true);
     *aresetn = 0;
     tick(true);
+}
+
+void Axi::validateSignals()
+{
+    BaseAxi::validateSignals();
 }

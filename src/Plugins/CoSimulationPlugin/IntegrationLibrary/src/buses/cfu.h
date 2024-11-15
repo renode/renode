@@ -17,19 +17,19 @@ struct Cfu
     void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout);
     void (*evaluateModel)();
 
-    uint8_t  *req_valid;     /* 1 bit */
-    uint8_t  *req_ready;     /* 1 bit */
-    uint16_t *req_func_id;   /* 10 bit */
-    uint32_t *req_data0;     /* 32 bit */
-    uint32_t *req_data1;     /* 32 bit */
+    uint8_t  *req_valid = nullptr;     /* 1 bit */
+    uint8_t  *req_ready = nullptr;     /* 1 bit */
+    uint16_t *req_func_id = nullptr;   /* 10 bit */
+    uint32_t *req_data0 = nullptr;     /* 32 bit */
+    uint32_t *req_data1 = nullptr;     /* 32 bit */
 
-    uint8_t  *resp_valid;    /* 1 bit */
-    uint8_t  *resp_ready;    /* 1 bit */
-    uint8_t  *resp_ok;       /* 1 bit */
-    uint32_t *resp_data;     /* 32 bit */
+    uint8_t  *resp_valid = nullptr;    /* 1 bit */
+    uint8_t  *resp_ready = nullptr;    /* 1 bit */
+    uint8_t  *resp_ok = nullptr;       /* 1 bit */
+    uint32_t *resp_data = nullptr;     /* 32 bit */
 
-    uint8_t  *rst;           /* 1 bit */
-    uint8_t  *clk;           /* 1 bit */
+    uint8_t  *rst = nullptr;           /* 1 bit */
+    uint8_t  *clk = nullptr;           /* 1 bit */
 
     uint64_t tickCounter;
 };

@@ -16,30 +16,30 @@ static RenodeAgent* renodeAgent;
 
 RenodeAgent::RenodeAgent(BaseTargetBus* bus)
 {
+    bus->setAgent(this);
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
     targetInterfaces[0]->tickCounter = 0;
     firstInterface = bus;
-    bus->setAgent(this);
 }
 
 RenodeAgent::RenodeAgent(BaseInitiatorBus* bus)
 {
+    bus->setAgent(this);
     initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
     initatorInterfaces[0]->tickCounter = 0;
     firstInterface = bus;
-    bus->setAgent(this);
 }
 
 void RenodeAgent::addBus(BaseTargetBus* bus)
 {
-    targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
     bus->setAgent(this);
+    targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
 }
 
 void RenodeAgent::addBus(BaseInitiatorBus* bus)
 {
-    initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
     bus->setAgent(this);
+    initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
 }
 
 void RenodeAgent::writeToBus(int width, uint64_t addr, uint64_t value)

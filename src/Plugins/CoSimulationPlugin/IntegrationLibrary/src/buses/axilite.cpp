@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "axilite.h"
+#include <stdexcept>
 
 void AxiLite::tick(bool countEnable, uint64_t steps = 1)
 {
@@ -100,4 +101,27 @@ void AxiLite::reset()
     tick(true, 2); // it's model feature to tick twice
     setSignal<uint8_t>(rst, !reset_active);
     tick(true);
+}
+
+void AxiLite::validateSignals()
+{
+    if(clk == nullptr) throw std::runtime_error("Signal 'clk' not assigned");
+    if(rst == nullptr) throw std::runtime_error("Signal 'rst' not assigned");
+    if(awvalid == nullptr) throw std::runtime_error("Signal 'awvalid' not assigned");
+    if(awready == nullptr) throw std::runtime_error("Signal 'awready' not assigned");
+    if(wstrb == nullptr) throw std::runtime_error("Signal 'wstrb' not assigned");
+    if(wvalid == nullptr) throw std::runtime_error("Signal 'wvalid' not assigned");
+    if(wready == nullptr) throw std::runtime_error("Signal 'wready' not assigned");
+    if(bresp == nullptr) throw std::runtime_error("Signal 'bresp' not assigned");
+    if(bvalid == nullptr) throw std::runtime_error("Signal 'bvalid' not assigned");
+    if(bready == nullptr) throw std::runtime_error("Signal 'bready' not assigned");
+    if(arvalid == nullptr) throw std::runtime_error("Signal 'arvalid' not assigned");
+    if(arready == nullptr) throw std::runtime_error("Signal 'arready' not assigned");
+    if(rresp == nullptr) throw std::runtime_error("Signal 'rresp' not assigned");
+    if(rvalid == nullptr) throw std::runtime_error("Signal 'rvalid' not assigned");
+    if(rready == nullptr) throw std::runtime_error("Signal 'rready' not assigned");
+    if(awaddr == nullptr) throw std::runtime_error("Signal 'awaddr' not assigned");
+    if(wdata == nullptr) throw std::runtime_error("Signal 'wdata' not assigned");
+    if(araddr == nullptr) throw std::runtime_error("Signal 'araddr' not assigned");
+    if(rdata == nullptr) throw std::runtime_error("Signal 'rdata' not assigned");
 }
