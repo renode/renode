@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$TFM/$RID
+RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DIR=renode_${VERSION}-dotnet_portable
 OS_NAME=windows

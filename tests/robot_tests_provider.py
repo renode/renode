@@ -342,14 +342,8 @@ class RobotTestSuite(object):
     def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0, remote_server_port=None):
         if options.runner == 'dotnet':
             remote_server_name = "Renode.dll"
-            if platform == "win32":
-                tfm = "net6.0-windows10.0.17763.0"
-            else:
-                tfm = "net6.0"
-            configuration = os.path.join(options.configuration, tfm)
         else:
             remote_server_name = options.remote_server_name
-            configuration = options.configuration
 
         if options.remote_server_full_directory is not None:
             if not os.path.isabs(options.remote_server_full_directory):
@@ -357,7 +351,7 @@ class RobotTestSuite(object):
 
             self.remote_server_directory = options.remote_server_full_directory
         else:
-            self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, configuration)
+            self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
 
         remote_server_binary = os.path.join(self.remote_server_directory, remote_server_name)
 

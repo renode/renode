@@ -225,11 +225,14 @@ then
   export DOTNET_CLI_TELEMETRY_OPTOUT=1
   CS_COMPILER="dotnet build -f $TFM"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
-  OUT_BIN_DIR=output/bin/$CONFIGURATION/$TFM
+  BUILD_TYPE="dotnet"
 else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
-  OUT_BIN_DIR=output/bin/$CONFIGURATION
+  BUILD_TYPE="mono"
 fi
+
+OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
+BUILD_TYPE_FILE=$(get_path "${OUT_BIN_DIR}/build_type")
 
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS && ! $NET
@@ -297,6 +300,17 @@ then
       rm -rf "${main_output_dir}"
     fi
     exit 0
+fi
+
+# Check if a full rebuild is needed
+if [[ -f "$BUILD_TYPE_FILE" ]]
+then
+  if [[ "$(cat "$BUILD_TYPE_FILE")" != "$BUILD_TYPE" ]]
+  then
+    echo "Attempted to build Renode in a different configuration than the previous build"
+    echo "Please run '$0 -c' to clean the previous build before continuing"
+    exit 1
+  fi
 fi
 
 # check weak implementations of core libraries
@@ -393,6 +407,7 @@ fi
 
 # build
 eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
+echo -n "$BUILD_TYPE" > "$BUILD_TYPE_FILE"
 
 # copy llvm library
 LLVM_LIB="libllvm-disas"

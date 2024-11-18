@@ -9,7 +9,7 @@ cd $THIS_DIR
 . common_make_packages.sh
 
 RENODE_ROOT_DIR=$THIS_DIR/../..
-RENODE_OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET/$TFM/$RID
+RENODE_OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DESTINATION=renode_${VERSION}-dotnet_portable
 OS_NAME=linux
