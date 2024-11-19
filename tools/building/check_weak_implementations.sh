@@ -39,7 +39,8 @@ do
   # the word "tlib" itself (as in "../tlib/unwind.h") which makes BSD/macOS grep
   # report that all lines match.
   ${CC:-gcc} -I tlib/include -E $PATH_WEAK | grep weak | grep -o tlib_[_A-Za-z]* | sort | uniq > $WEAKS
-  cat $PATH_IMPLEMENTATION | grep -o tlib_[_A-Za-z]* | sort | uniq > $IMPLEMENTATIONS
+  # Sort in reverse order to avoid a bug with partial matches in FreeBSD grep <2.6.0
+  cat $PATH_IMPLEMENTATION | grep -o tlib_[_A-Za-z]* | sort -r | uniq > $IMPLEMENTATIONS
   if grep -vwF -f $IMPLEMENTATIONS $WEAKS
   then
     echo $PATH_WEAK
