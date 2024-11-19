@@ -17,6 +17,7 @@ using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
+using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using Antmicro.Renode.Utilities;
@@ -914,6 +915,15 @@ namespace Antmicro.Renode.PlatformDescription
             return true;
         }
 
+        private IReadOnlyDictionary<string, int> GetStateBits(string initiator)
+        {
+            if(string.IsNullOrEmpty(initiator))
+            {
+                return null;
+            }
+            return (variableStore.GetVariableInLocalScope(initiator).Value as ICPUWithTransactionState)?.StateBits;
+        }
+
         private bool TryRegisterFromEntry(Entry entry)
         {
             if(!AreAllParentsRegistered(entry))
@@ -960,7 +970,38 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                     else if(objectRegPoint != null)
                     {
-                        registrationPoints.Add((IRegistrationPoint)CreateFromObjectValue(objectRegPoint));
+                        var registrationPoint = (IRegistrationPoint)CreateFromObjectValue(objectRegPoint);
+                        if(registrationPoint is IConditionalRegistration cr && cr.Condition != null && !machine.IgnorePeripheralRegistrationConditions)
+                        {
+                            // Split it into simple registration points (one condition per) for each initiator
+                            var condition = AccessConditionParser.ParseCondition(cr.Condition);
+                            var conditionPerInitiator = AccessConditionParser.EvaluateWithStateBits(condition, GetStateBits);
+                            foreach(var initiatorName in conditionPerInitiator.Keys)
+                            {
+                                IPeripheral initiator = null;
+                                // The empty string is used as a placeholder initiator name, the conditions grouped under it
+                                // should be global (that is have no initiator condition). The created conditional registrations
+                                // will have Initiator == null.
+                                if(!string.IsNullOrEmpty(initiatorName))
+                                {
+                                    initiator = variableStore.GetVariableInLocalScope(initiatorName).Value as IPeripheral;
+                                    if(initiator == null)
+                                    {
+                                        throw new RecoverableException($"Initiator '{initiatorName}' is not a peripheral");
+                                    }
+                                }
+                                foreach(var initiatorCond in conditionPerInitiator[initiatorName])
+                                {
+                                    registrationPoints.Add(cr.WithInitiatorAndStateMask(initiator, initiatorCond));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // If IgnorePeripheralRegistrationConditions is set, the point is added as-is, without
+                            // transforming Condition into StateMask, so the condition is inert.
+                            registrationPoints.Add(registrationPoint);
+                        }
                         UpdatePropertiesAndInterruptsOnUpdateQueue();
                     }
                     else
