@@ -929,7 +929,7 @@ namespace Antmicro.Renode.PlatformDescription
                     return true;
                 }
                 var register = variableStore.GetVariableFromReference(registrationInfo.Register).Value;
-                IRegistrationPoint registrationPoint;
+                var registrationPoints = new List<IRegistrationPoint>();
                 if(registrationInfo.Constructor != null)
                 {
                     var constructorParameters = registrationInfo.Constructor.GetParameters();
@@ -948,7 +948,7 @@ namespace Antmicro.Renode.PlatformDescription
                     {
                         FillDefaultParameter(ref constructorParameterValues[i], constructorParameters[i]);
                     }
-                    registrationPoint = (IRegistrationPoint)registrationInfo.Constructor.Invoke(constructorParameterValues);
+                    registrationPoints.Add((IRegistrationPoint)registrationInfo.Constructor.Invoke(constructorParameterValues));
                 }
                 else
                 {
@@ -956,11 +956,11 @@ namespace Antmicro.Renode.PlatformDescription
                     var objectRegPoint = registrationInfo.RegistrationPoint as ObjectValue;
                     if(referenceRegPoint != null)
                     {
-                        registrationPoint = (IRegistrationPoint)variableStore.GetVariableFromReference(referenceRegPoint).Value;
+                        registrationPoints.Add((IRegistrationPoint)variableStore.GetVariableFromReference(referenceRegPoint).Value);
                     }
                     else if(objectRegPoint != null)
                     {
-                        registrationPoint = (IRegistrationPoint)CreateFromObjectValue(objectRegPoint);
+                        registrationPoints.Add((IRegistrationPoint)CreateFromObjectValue(objectRegPoint));
                         UpdatePropertiesAndInterruptsOnUpdateQueue();
                     }
                     else
@@ -970,12 +970,15 @@ namespace Antmicro.Renode.PlatformDescription
                         {
                             HandleInternalError(registrationInfo.RegistrationPoint);
                         }
-                        registrationPoint = NullRegistrationPoint.Instance;
+                        registrationPoints.Add(NullRegistrationPoint.Instance);
                     }
                 }
                 try
                 {
-                    registrationInfo.RegistrationInterface.GetMethod("Register").Invoke(register, new[] { entry.Variable.Value, registrationPoint });
+                    foreach(var registrationPoint in registrationPoints)
+                    {
+                        registrationInfo.RegistrationInterface.GetMethod("Register").Invoke(register, new[] { entry.Variable.Value, registrationPoint });
+                    }
                 }
                 catch(TargetInvocationException exception)
                 {
