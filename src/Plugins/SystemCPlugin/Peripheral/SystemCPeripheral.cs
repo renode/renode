@@ -338,17 +338,32 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void SetupTimesync()
         {
-            // NOTE: This function blocks simulation while awaiting for the response.
-
             // Timer unit is microseconds
+            var timerName = "RenodeSystemCTimesyncTimer";
             var timesyncFrequency = 1000000;
             var timesyncLimit = (ulong)timeSyncPeriodUS;
-            var timerName = "RenodeSystemCTimesyncTimer";
-            var timer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: true, eventEnabled: true, autoUpdate: true);
-            timer.LimitReached += () =>
+
+            var timesyncTimer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: true, eventEnabled: true, autoUpdate: true);
+
+            Action<TimeInterval, TimeInterval> adjustTimesyncToQuantum = ((_, newQuantum) => {
+                if(TimeInterval.FromMicroseconds(timesyncTimer.Limit) < newQuantum)
+                {
+                    var newLimit = (ulong)newQuantum.TotalMicroseconds;
+                    this.Log(LogLevel.Warning, $"Requested time synchronization period of {timesyncTimer.Limit}us is smaller than local time source quantum - synchronization time will be changed to {newLimit}us to match it.");
+                    timesyncTimer.Limit = newLimit;
+                }
+            });
+            var currentQuantum = machine.LocalTimeSource.Quantum;
+            adjustTimesyncToQuantum(currentQuantum, currentQuantum);
+            machine.LocalTimeSource.QuantumChanged += adjustTimesyncToQuantum;
+
+            timesyncTimer.LimitReached += () =>
             {
-                var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, GetCurrentVirtualTimeUS());
-                SendRequest(request);
+                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+                {
+                    var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, GetCurrentVirtualTimeUS());
+                    SendRequest(request);
+                });
             };
         }
 
