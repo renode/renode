@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
     <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <RollForward>Major</RollForward>
     <AssemblyName>RenodeTests</AssemblyName>
     <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>7.2</LangVersion>
