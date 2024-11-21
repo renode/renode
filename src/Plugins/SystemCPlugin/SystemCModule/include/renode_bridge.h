@@ -33,6 +33,9 @@ public:
                 const char *port);
   ~renode_bridge();
 
+  // Returns true if connection with Renode has been established, false otherwise.
+  bool is_initialized() { return fw_connection_initialized; }
+
 public:
   using renode_bus_target_socket =
       tlm::tlm_target_socket<RENODE_BUSWIDTH, tlm::tlm_base_protocol_types, 1,
@@ -139,6 +142,8 @@ private:
 
   initiator_bw_handler dc_initiators[NUM_DIRECT_CONNECTIONS];
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
+
+  bool fw_connection_initialized;
 };
 
 // ================================================================================

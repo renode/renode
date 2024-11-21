@@ -242,7 +242,7 @@ static void connect_with_retry(CTCPClient* socket, const char* address, const ch
 SC_HAS_PROCESS(renode_bridge);
 renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
                              const char *port)
-    : sc_module(name), initiator_socket("initiator_socket") {
+    : sc_module(name), initiator_socket("initiator_socket"), fw_connection_initialized(false) {
   SC_THREAD(forward_loop);
   SC_THREAD(on_port_gpio);
   for (int i = 0; i < NUM_GPIO; ++i) {
@@ -289,6 +289,7 @@ void renode_bridge::forward_loop() {
     terminate_simulation(1);
     return;
   }
+  fw_connection_initialized = true;
 
   while (true) {
     memset(data, 0, sizeof(data));
@@ -421,23 +422,34 @@ void renode_bridge::on_port_gpio() {
 void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
                                              uint8_t connection_idx,
                                              sc_core::sc_time &delay) {
+  unsigned int bytes_done = 0;
+  unsigned int bytes_remaining = payload.get_data_length();
   renode_message message = {};
-  message.address = payload.get_address();
-  message.data_length = payload.get_data_length();
-  message.connection_index = connection_idx;
-
   if (payload.is_read()) {
     message.action = renode_action::READ;
   } else if (payload.is_write()) {
     message.action = renode_action::WRITE;
-    memcpy(&message.payload, payload.get_data_ptr(), message.data_length);
+  } else {
+    return;
   }
 
-  backward_connection->Send((char *)&message, sizeof(renode_message));
-  backward_connection->Receive((char *)&message, sizeof(renode_message));
+  while (bytes_remaining) {
+    message.address = payload.get_address() + bytes_done;
+    message.connection_index = connection_idx;
+    message.data_length = bytes_remaining > 8 ? 8 : bytes_remaining;
+    bytes_remaining -= message.data_length;
+    if (payload.is_write()) {
+      memcpy(&message.payload, payload.get_data_ptr() + bytes_done, message.data_length);
+    }
 
-  if (payload.is_read()) {
-    memcpy(payload.get_data_ptr(), &message.payload, message.data_length);
+    backward_connection->Send((char *)&message, sizeof(renode_message));
+    backward_connection->Receive((char *)&message, sizeof(renode_message));
+
+    if (payload.is_read()) {
+      memcpy(payload.get_data_ptr() + bytes_done, &message.payload, message.data_length);
+    }
+
+    bytes_done += 8;
   }
 
   payload.set_response_status(tlm::TLM_OK_RESPONSE);
@@ -490,9 +502,14 @@ bool renode_bridge::target_fw_handler::get_direct_mem_ptr(
 
 unsigned int renode_bridge::target_fw_handler::transport_dbg(
     tlm::tlm_generic_payload &trans) {
-  fprintf(stderr, "[ERROR] transport_dbg not implemented for "
-                  "target_fw_handler.\n");
-  return 0;
+
+  // The SystemC simulation can begin before the connection with Renode is
+  // initialized. Reject any transactions during this interval.
+  if (!bridge->is_initialized()) return 0;
+
+  sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
+  bridge->service_backward_request(trans, connection_idx, delay);
+  return trans.is_response_ok() ? trans.get_data_length() : 0;
 }
 
 // ================================================================================

@@ -123,13 +123,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 IMachine machine,
                 string address,
                 int port,
-                int timeSyncPeriodUS = 1000
+                int timeSyncPeriodUS = 1000,
+                bool disableTimeoutCheck = false
         )
         {
             this.address = address;
             this.port = port;
             this.machine = machine;
             this.timeSyncPeriodUS = timeSyncPeriodUS;
+            this.disableTimeoutCheck = disableTimeoutCheck;
             sysbus = machine.GetSystemBus(this);
 
             directAccessPeripherals = new Dictionary<int, IDirectAccessPeripheral>();
@@ -325,7 +327,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
             this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, port);
             forwardSocket = listener.Accept();
             forwardSocket.SendTimeout = 1000;
-            forwardSocket.ReceiveTimeout = 1000;
+            // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
+            if(!disableTimeoutCheck)
+            {
+                forwardSocket.ReceiveTimeout = 1000;
+            }
 
             backwardSocket = listener.Accept();
             backwardSocket.SendTimeout = 1000;
@@ -507,6 +513,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly string address;
         private readonly int port;
         private readonly int timeSyncPeriodUS;
+        private readonly bool disableTimeoutCheck;
         private readonly object messageLock;
 
         private readonly Thread backwardThread;
