@@ -345,14 +345,7 @@ class RobotTestSuite(object):
         else:
             remote_server_name = options.remote_server_name
 
-        if options.remote_server_full_directory is not None:
-            if not os.path.isabs(options.remote_server_full_directory):
-                options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
-
-            self.remote_server_directory = options.remote_server_full_directory
-        else:
-            self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
-
+        self.remote_server_directory = options.remote_server_full_directory
         remote_server_binary = os.path.join(self.remote_server_directory, remote_server_name)
 
         if not os.path.isfile(remote_server_binary):

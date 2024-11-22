@@ -29,7 +29,7 @@ do
         QUIET=true
         ;;
     --net)
-        NET=true
+        echo "'--net' flag is required only for building and is not used by launcher"
         ;;
     --trace)
         TRACE=true
@@ -59,6 +59,16 @@ do
     esac
     shift
 done
+
+BUILD_TYPE_FILE="$OUTPUT_PATH/$TARGET/build_type"
+
+if [[ -f "$BUILD_TYPE_FILE" ]]
+then
+    if [[ "$(cat "$BUILD_TYPE_FILE")" == "dotnet" ]]
+    then
+        NET=true
+    fi
+fi
 
 if ! $NET && $TRACE
 then
