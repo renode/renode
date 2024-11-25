@@ -198,6 +198,17 @@ wdt_a55_1: Timers.RenesasRZG_Watchdog @ {
     clockFrequency: 24000000
     -> gic@51 | nvic@51
 
+mhu: Miscellaneous.RenesasRZG_MHU @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010400000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40400000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50400000; cpu: cpu_m33 }  // Secure
+    }
+    [0-23] -> gic@[56-79] | nvic@[56-79]
+    SoftwareIRQ0 -> gic@80 | nvic@80
+    SoftwareIRQ1 -> gic@81 | nvic@81
+    SoftwareIRQ2 -> gic@82 | nvic@82
+    SoftwareIRQ3 -> gic@83 | nvic@83
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -228,7 +239,6 @@ sysbus:
         Tag <0x010059400 0x400>     "TSU (Cortex-A55)"
         Tag <0x010060000 0x10000>   "SPI Multi I/O (Reg) (Cortex-A55)"
         Tag <0x010070000 0x10000>   "SPI Multi I/O (Write Buf) (Cortex-A55)"
-        Tag <0x010400000 0x10000>   "MHU (Cortex-A55)"
         Tag <0x010830000 0x10000>   "CRU (Cortex-A55)"
         Tag <0x010840000 0x10000>   "ISU (Cortex-A55)"
         Tag <0x010850000 0x10000>   "DSI (PHY) (Cortex-A55)"
@@ -297,7 +307,6 @@ sysbus:
         Tag <0x40059400 0x400>      "TSU (Cortex-M33, Non-secure)"
         Tag <0x40060000 0x10000>    "SPI Multi I/O (Reg) (Cortex-M33, Non-secure)"
         Tag <0x40070000 0x10000>    "SPI Multi I/O (Write Buf) (Cortex-M33, Non-secure)"
-        Tag <0x40400000 0x10000>    "MHU (Cortex-M33, Non-secure)"
         Tag <0x40830000 0x10000>    "CRU (Cortex-M33, Non-secure)"
         Tag <0x40840000 0x10000>    "ISU (Cortex-M33, Non-secure)"
         Tag <0x40850000 0x10000>    "DSI (PHY) (Cortex-M33, Non-secure)"
@@ -366,7 +375,6 @@ sysbus:
         Tag <0x50059400 0x400>      "TSU (Cortex-M33, Secure)"
         Tag <0x50060000 0x10000>    "SPI Multi I/O (Reg) (Cortex-M33, Secure)"
         Tag <0x50070000 0x10000>    "SPI Multi I/O (Write Buf) (Cortex-M33, Secure)"
-        Tag <0x50400000 0x10000>    "MHU (Cortex-M33, Secure)"
         Tag <0x50830000 0x10000>    "CRU (Cortex-M33, Secure)"
         Tag <0x50840000 0x10000>    "ISU (Cortex-M33, Secure)"
         Tag <0x50850000 0x10000>    "DSI (PHY) (Cortex-M33, Secure)"
