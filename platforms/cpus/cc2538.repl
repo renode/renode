@@ -36,6 +36,7 @@ flash: Memory.MappedMemory @ sysbus 0x200000
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     systickFrequency: 1000000
+    haltSystickOnDeepSleep: false
     IRQ -> cpu@0
 
 cpu: CPU.CortexM @ sysbus
