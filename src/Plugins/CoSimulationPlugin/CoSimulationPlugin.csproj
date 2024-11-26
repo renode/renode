@@ -40,9 +40,8 @@
     <Reference Include="Mono.Posix" Condition=" $(CurrentPlatform) != 'Windows'" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CoSimulated\Peripherals\BaseDoubleWordCoSimulatedPeripheral.cs" />
+    <Compile Include="Connection\ICoSimulationConnectible.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedCFU.cs" />
-    <Compile Include="CoSimulated\Peripherals\BaseCoSimulatedPeripheral.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedPeripheral.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedUART.cs" />
     <Compile Include="CoSimulated\Peripherals\CoSimulatedCPU.cs" />
@@ -51,6 +50,7 @@
     <Compile Include="Connection\ICoSimulationConnection.cs" />
     <Compile Include="Connection\SocketCoSimulationConnection.cs" />
     <Compile Include="Connection\LibraryCoSimulationConnection.cs" />
+    <Compile Include="Connection\CoSimulationConnection.cs" />
     <Compile Include="Connection\Protocols\ProtocolMessage.cs" />
     <Compile Include="Connection\Protocols\ActionType.cs" />
   </ItemGroup>

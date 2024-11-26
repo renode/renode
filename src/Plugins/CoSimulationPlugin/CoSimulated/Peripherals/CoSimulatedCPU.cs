@@ -23,20 +23,23 @@ using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Time;
 using ELFSharp.ELF;
 using ELFSharp.UImage;
+using Range = Antmicro.Renode.Core.Range;
 using Machine = Antmicro.Renode.Core.Machine;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
-    public abstract class CoSimulatedCPU : BaseCPU, IGPIOReceiver, ITimeSink, IDisposable
+    public abstract class CoSimulatedCPU : BaseCPU, IGPIOReceiver, ICoSimulationConnectible, ITimeSink, IDisposable
     {
         public CoSimulatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
         {
-            coSimulatedPeripheral = new BaseCoSimulatedPeripheral(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                simulationContextLinux, simulationContextWindows, simulationContextMacOS, BaseCoSimulatedPeripheral.DefaultTimeout, address);
-            coSimulatedPeripheral.OnReceive = HandleReceived;
+            cosimConnection = new CoSimulationConnection(machine, "cpu_cosim_cosimConnection", 0,
+                        simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+                        simulationContextLinux, simulationContextWindows, simulationContextMacOS,
+                        0, 0, address);
+            cosimConnection.AttachTo(this);
 
             InitializeRegisters();
         }
@@ -44,9 +47,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         public override void Start()
         {
             base.Start();
-            if(!String.IsNullOrWhiteSpace(coSimulatedPeripheral.SimulationFilePath))
+            if(!String.IsNullOrWhiteSpace(cosimConnection.SimulationFilePath))
             {
-                coSimulatedPeripheral.Start();
+                cosimConnection.Start();
             }
         }
 
@@ -64,18 +67,18 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             instructionsExecutedThisRound = 0;
             totalExecutedInstructions = 0;
 
-            lock(coSimulatedPeripheralLock)
+            lock(cosimConnectionLock)
             {
-                coSimulatedPeripheral.Reset();
+                cosimConnection.Reset();
             }
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            lock(coSimulatedPeripheralLock)
+            lock(cosimConnectionLock)
             {
-                coSimulatedPeripheral.Dispose();
+                cosimConnection.Dispose();
             }
         }
 
@@ -86,34 +89,34 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return;
             }
-            lock(coSimulatedPeripheralLock)
+            lock(cosimConnectionLock)
             {
-                coSimulatedPeripheral.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
+                cosimConnection.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
             }
         }
 
         public virtual void SetRegisterValue32(int register, uint value)
         {
-            lock(coSimulatedPeripheralLock)
+            lock(cosimConnectionLock)
             {
                 setRegisterValue = false;
-                coSimulatedPeripheral.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
+                cosimConnection.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
                 while(!setRegisterValue) // This kind of while loops are for socket communication
                 {
-                    coSimulatedPeripheral.HandleMessage();
+                    cosimConnection.HandleMessage();
                 }
             }
         }
 
         public virtual uint GetRegisterValue32(int register)
         {
-            lock(coSimulatedPeripheralLock)
+            lock(cosimConnectionLock)
             {
                 gotRegisterValue = false;
-                coSimulatedPeripheral.Send(ActionType.RegisterGet, (ulong)register, 0);
+                cosimConnection.Send(ActionType.RegisterGet, (ulong)register, 0);
                 while(!gotRegisterValue)
                 {
-                    coSimulatedPeripheral.HandleMessage();
+                    cosimConnection.HandleMessage();
                 }
                 return (uint)registerValue;
             }
@@ -125,27 +128,27 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
             try
             {
-                lock(coSimulatedPeripheralLock)
+                lock(cosimConnectionLock)
                 {
                     if (IsSingleStepMode)
                     {
                         while(instructionsExecutedThisRound < 1)
                         {
                             gotStep = false;
-                            coSimulatedPeripheral.Send(ActionType.Step, 0, 1);
+                            cosimConnection.Send(ActionType.Step, 0, 1);
                             while(!gotStep)
                             {
-                                coSimulatedPeripheral.HandleMessage();
+                               cosimConnection.HandleMessage();
                             }
                         }
                     }
                     else
                     {
                         ticksProcessed = false;
-                        coSimulatedPeripheral.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
+                        cosimConnection.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
                         while(!ticksProcessed)
                         {
-                            coSimulatedPeripheral.HandleMessage();
+                            cosimConnection.HandleMessage();
                         }
                     }
                 }
@@ -165,15 +168,19 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             return ExecutionResult.Ok;
         }
 
-        protected abstract void InitializeRegisters();
+        public virtual void OnConnectionAttached(CoSimulationConnection connection)
+        {
+            cosimConnection.OnReceive += HandleReceived;
+        }
+
+        public virtual void OnConnectionDetached(CoSimulationConnection connection)
+        {
+            cosimConnection.OnReceive -= HandleReceived;
+        }
 
         public override ExecutionMode ExecutionMode
         {
-            get
-            {
-                return executionMode;
-            }
-
+            get => executionMode;
             set
             {
                 lock(singleStepSynchronizer.Guard)
@@ -184,23 +191,23 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     }
 
                     executionMode = value;
-                    gotSingleStepMode = false;
 
-                    lock(coSimulatedPeripheralLock)
+                    gotSingleStepMode = false;
+                    lock(cosimConnectionLock)
                     {
                         switch(executionMode)
                         {
                             case ExecutionMode.Continuous:
-                                coSimulatedPeripheral.Send(ActionType.SingleStepMode, 0, 0);
+                                cosimConnection.Send(ActionType.SingleStepMode, 0, 0);
                                 break;
                             case ExecutionMode.SingleStep:
-                                coSimulatedPeripheral.Send(ActionType.SingleStepMode, 0, 1);
+                                cosimConnection.Send(ActionType.SingleStepMode, 0, 1);
                                 break;
                         }
 
                         while(!gotSingleStepMode)
                         {
-                            coSimulatedPeripheral.HandleMessage();
+                            cosimConnection.HandleMessage();
                         }
                     }
 
@@ -212,73 +219,44 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public override ulong ExecutedInstructions => totalExecutedInstructions;
 
-        protected void HandleReceived(ProtocolMessage message)
+        protected abstract void InitializeRegisters();
+
+        protected bool HandleReceived(ProtocolMessage message)
         {
             switch(message.ActionId)
             {
-                case ActionType.PushByte:
-                    this.NoisyLog("Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
-                    Respond(ActionType.PushConfirmation, 0);
-                    break;
-                case ActionType.PushWord:
-                    this.NoisyLog("Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
-                    Respond(ActionType.PushConfirmation, 0);
-                    break;
-                case ActionType.PushDoubleWord:
-                    this.Log(LogLevel.Noisy, "Writing data: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
-                    Respond(ActionType.PushConfirmation, 0);
-                    break;
-                case ActionType.GetDoubleWord:
-                    this.Log(LogLevel.Noisy, "Requested data from address: 0x{0:X}", message.Address);
-                    var data = machine.SystemBus.ReadDoubleWord(message.Address);
-                    Respond(ActionType.WriteToBus, data);
-                    break;
                 case ActionType.TickClock:
                     ticksProcessed = true;
                     instructionsExecutedThisRound = message.Data;
-                    break;
+                    return true;
                 case ActionType.IsHalted:
                     isHaltedRequested = message.Data > 0 ? true : false;
                     this.NoisyLog("isHaltedRequested: {0}", isHaltedRequested);
-                    break;
+                    return true;
                 case ActionType.RegisterGet:
-                    gotRegisterValue = true;
                     registerValue = message.Data;
-                    break;
+                    gotRegisterValue = true;
+                    return true;
                 case ActionType.RegisterSet:
                     setRegisterValue = true;
-                    break;
+                    return true;
                 case ActionType.SingleStepMode:
                     gotSingleStepMode = true;
-                    break;
+                    return true;
                 case ActionType.Step:
                     gotStep = true;
                     instructionsExecutedThisRound = message.Data;
-                    break;
+                    return true;
                 default:
-                    this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
-                        message.ActionId, message.Address, message.Data);
                     break;
             }
-        }
 
-        private void Respond(ActionType action, ulong data)
-        {
-            lock(coSimulatedPeripheralLock)
-            {
-                coSimulatedPeripheral.Respond(action, 0, data);
-            }
+            return false;
         }
 
         public string SimulationFilePathLinux
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => SimulationFilePath;
             set
             {
 #if PLATFORM_LINUX
@@ -289,10 +267,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public string SimulationFilePathWindows
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => SimulationFilePath;
             set
             {
 #if PLATFORM_WINDOWS
@@ -303,10 +278,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public string SimulationFilePathMacOS
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => SimulationFilePath;
             set
             {
 #if PLATFORM_OSX
@@ -317,26 +289,24 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public string SimulationFilePath
         {
-            get
-            {
-                return coSimulatedPeripheral.SimulationFilePath;
-            }
+            get => cosimConnection.SimulationFilePath;
             set
             {
                 if(!String.IsNullOrWhiteSpace(value))
                 {
-                    coSimulatedPeripheral.SimulationFilePath = value;
-                    coSimulatedPeripheral.Start();
+                    cosimConnection.SimulationFilePath = value;
+                    cosimConnection.Start();
                 }
             }
         }
 
-        protected readonly object coSimulatedPeripheralLock = new object();
+        protected readonly object cosimConnectionLock = new object();
 
-        private readonly BaseCoSimulatedPeripheral coSimulatedPeripheral;
+        private readonly CoSimulationConnection cosimConnection;
+
+        private ulong registerValue;
 
         private bool gotRegisterValue;
-        private ulong registerValue;
         private bool setRegisterValue;
         private bool gotSingleStepMode;
         private bool gotStep;

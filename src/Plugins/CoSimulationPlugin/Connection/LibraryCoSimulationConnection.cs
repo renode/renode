@@ -35,7 +35,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             Abort();
             binder?.Dispose();
             Marshal.FreeHGlobal(mainResponsePointer);
+            mainResponsePointer = IntPtr.Zero;
             Marshal.FreeHGlobal(senderResponsePointer);
+            senderResponsePointer = IntPtr.Zero;
         }
 
         public bool TrySendMessage(ProtocolMessage message)

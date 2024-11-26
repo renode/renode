@@ -6,7 +6,7 @@ $name?="Zynq-FastVDMA"
 mach create $name
 
 machine LoadPlatformDescription @platforms/boards/zedboard.repl
-machine LoadPlatformDescriptionFromString 'dma: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x43c20000, +0x100> { frequency: 100000; limitBuffer: 100000; timeout: 10000; 0 -> gic@31; numberOfInterrupts: 1}'
+machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x43c20000, +0x100> { frequency: 100000; limitBuffer: 100000; timeout: 10000; 0 -> gic@31; numberOfOutputGPIOs: 1}'
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 
