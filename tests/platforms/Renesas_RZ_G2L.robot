@@ -5,6 +5,7 @@ ${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_
 ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
 ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
 ${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.elf-s_612428-2a79e42c3efdbc19207a7c1b2b3b3824e450b2ef
+${IIC_MASTER_ELF}                   ${URL}/renesas-rzg2l_evk--fsp-riic_master_rzg2l_evk_ep.elf-s_522620-d57490521dd2e4dfcd4ca4a6cade57ce58228375
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
 ...                                 led: Miscellaneous.LED @ gpio 0
@@ -120,3 +121,26 @@ Should Run FreeRTOS Blinky Sample
     Prepare LED Tester
 
     Assert LED Is Blinking          testDuration=5  onDuration=1  offDuration=1  pauseEmulation=true
+
+Should Communicate Over IIC
+    Prepare Machine                 ${IIC_MASTER_ELF}
+    Execute Command                 machine LoadPlatformDescriptionFromString "adxl345: Sensors.ADXL345 @ riic3 0x1D"
+    Prepare Segger RTT
+
+    # Sample displays raw data from the sensor, so printed values are different from loaded samples
+    Execute Command                 riic3.adxl345 FeedSample 1000 1000 1000
+    Wait For Line On Uart           X-axis = 250.00, Y-axis = 250.00, Z-axis = 250.00
+
+    Execute Command                 riic3.adxl345 FeedSample 2000 3000 4000
+    Wait For Line On Uart           X-axis = 500.00, Y-axis = 750.00, Z-axis = 1000.00
+
+    Execute Command                 riic3.adxl345 FeedSample 1468 745 8921
+    Wait For Line On Uart           X-axis = 367.00, Y-axis = 186.00, Z-axis = 2230.00
+    
+    Execute Command                 riic3.adxl345 FeedSample 3912 8888 5456
+    Wait For Line On Uart           X-axis = 978.00, Y-axis = 2222.00, Z-axis = 1364.00
+    
+    Execute Command                 riic3.adxl345 FeedSample 0 5000 0
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
+
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 

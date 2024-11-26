@@ -236,6 +236,63 @@ gpio: GPIOPort.RenesasRZG_GPIO @ {
         sysbus new Bus.BusPointRegistration { address: 0x51030000; cpu: cpu_m33 }  // Secure
     }
 
+riic0: I2C.RenesasRZG_IIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010058000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40058000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50058000; cpu: cpu_m33 }  // Secure
+    }
+    ReceiveIRQ -> gic@348 | nvic@348
+    TransmitIRQ -> gic@349 | nvic@349
+    TransmitEndIRQ -> gic@350 | nvic@350
+    NackIRQ -> gic@351 | nvic@351
+    StopIRQ -> gic@352 | nvic@352
+    StartIRQ -> gic@353 | nvic@353
+
+riic1: I2C.RenesasRZG_IIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010058400; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40058400; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50058400; cpu: cpu_m33 }  // Secure
+    }
+    ReceiveIRQ -> gic@356 | nvic@356
+    TransmitIRQ -> gic@357 | nvic@357
+    TransmitEndIRQ -> gic@358 | nvic@358
+    NackIRQ -> gic@359 | nvic@359
+    StopIRQ -> gic@360 | nvic@360
+    StartIRQ -> gic@361 | nvic@361
+
+riic2: I2C.RenesasRZG_IIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010058800; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40058800; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50058800; cpu: cpu_m33 }  // Secure
+    }
+    ReceiveIRQ -> gic@364 | nvic@364
+    TransmitIRQ -> gic@365 | nvic@365
+    TransmitEndIRQ -> gic@366 | nvic@366
+    NackIRQ -> gic@367 | nvic@367
+    StopIRQ -> gic@368 | nvic@368
+    StartIRQ -> gic@369 | nvic@369
+
+riic3: I2C.RenesasRZG_IIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x010058C00; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x40058C00; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x50058C00; cpu: cpu_m33 }  // Secure
+    }
+    ReceiveIRQ -> gic@372 | nvic@372
+    TransmitIRQ -> gic@373 | nvic@373
+    TransmitEndIRQ -> gic@374 | nvic@374
+    NackIRQ -> gic@375 | nvic@375
+    StopIRQ -> gic@376 | nvic@376
+    StartIRQ -> gic@377 | nvic@377
+
+cpg_clkmon_i2c: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x011010700; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41010700; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51010700; cpu: cpu_m33 }  // Secure
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/rolling-bit.py"
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -255,10 +312,6 @@ sysbus:
         Tag <0x01004D000 0x400>     "SCI ch0 (Cortex-A55)"
         Tag <0x01004D400 0x400>     "SCI ch1 (Cortex-A55)"
         Tag <0x010050000 0x8000>    "CANFD (Cortex-A55)"
-        Tag <0x010058000 0x400>     "I2C ch0 (Cortex-A55)"
-        Tag <0x010058400 0x400>     "I2C ch1 (Cortex-A55)"
-        Tag <0x010058800 0x400>     "I2C ch2 (Cortex-A55)"
-        Tag <0x010058C00 0x400>     "I2C ch3 (Cortex-A55)"
         Tag <0x010059000 0x400>     "ADC (Cortex-A55)"
         Tag <0x010059400 0x400>     "TSU (Cortex-A55)"
         Tag <0x010060000 0x10000>   "SPI Multi I/O (Reg) (Cortex-A55)"
@@ -320,10 +373,6 @@ sysbus:
         Tag <0x4004D000 0x400>      "SCI ch0 (Cortex-M33, Non-secure)"
         Tag <0x4004D400 0x400>      "SCI ch1 (Cortex-M33, Non-secure)"
         Tag <0x40050000 0x8000>     "CANFD (Cortex-M33, Non-secure)"
-        Tag <0x40058000 0x400>      "I2C ch0 (Cortex-M33, Non-secure)"
-        Tag <0x40058400 0x400>      "I2C ch1 (Cortex-M33, Non-secure)"
-        Tag <0x40058800 0x400>      "I2C ch2 (Cortex-M33, Non-secure)"
-        Tag <0x40058C00 0x400>      "I2C ch3 (Cortex-M33, Non-secure)"
         Tag <0x40059000 0x400>      "ADC (Cortex-M33, Non-secure)"
         Tag <0x40059400 0x400>      "TSU (Cortex-M33, Non-secure)"
         Tag <0x40060000 0x10000>    "SPI Multi I/O (Reg) (Cortex-M33, Non-secure)"
@@ -385,10 +434,6 @@ sysbus:
         Tag <0x5004D000 0x400>      "SCI ch0 (Cortex-M33, Secure)"
         Tag <0x5004D400 0x400>      "SCI ch1 (Cortex-M33, Secure)"
         Tag <0x50050000 0x8000>     "CANFD (Cortex-M33, Secure)"
-        Tag <0x50058000 0x400>      "I2C ch0 (Cortex-M33, Secure)"
-        Tag <0x50058400 0x400>      "I2C ch1 (Cortex-M33, Secure)"
-        Tag <0x50058800 0x400>      "I2C ch2 (Cortex-M33, Secure)"
-        Tag <0x50058C00 0x400>      "I2C ch3 (Cortex-M33, Secure)"
         Tag <0x50059000 0x400>      "ADC (Cortex-M33, Secure)"
         Tag <0x50059400 0x400>      "TSU (Cortex-M33, Secure)"
         Tag <0x50060000 0x10000>    "SPI Multi I/O (Reg) (Cortex-M33, Secure)"
