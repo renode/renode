@@ -917,11 +917,25 @@ namespace Antmicro.Renode.PlatformDescription
 
         private IReadOnlyDictionary<string, int> GetStateBits(string initiator)
         {
-            if(string.IsNullOrEmpty(initiator))
+            if(!string.IsNullOrEmpty(initiator))
+            {
+                return (variableStore.GetVariableInLocalScope(initiator).Value as IPeripheralWithTransactionState)?.StateBits;
+            }
+
+            var possibleInitiators = machine.GetPeripheralsOfType<IPeripheralWithTransactionState>();
+            if(!possibleInitiators.Any())
             {
                 return null;
             }
-            return (variableStore.GetVariableInLocalScope(initiator).Value as ICPUWithTransactionState)?.StateBits;
+
+            var theIntersectionOfTheirStateBitsets = possibleInitiators
+                .Select(i => i.StateBits)
+                .Aggregate((commonDict, nextDict) =>
+                    commonDict
+                        .Where(p => nextDict.TryGetValue(p.Key, out var value) && p.Value == value)
+                        .ToDictionary(p => p.Key, p => p.Value)
+                );
+            return theIntersectionOfTheirStateBitsets;
         }
 
         private bool TryRegisterFromEntry(Entry entry)
