@@ -39,8 +39,8 @@ Create Machine
     Execute Command                             using sysbus
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString 'cpu: CPU.RiscV32 @ sysbus { cpuType: "rv32imaf"; timeProvider: empty }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.CoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000

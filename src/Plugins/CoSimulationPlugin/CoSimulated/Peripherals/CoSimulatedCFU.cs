@@ -22,118 +22,117 @@ using Antmicro.Renode.Core.Structure;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
-    public class CoSimulatedCFU : ICFU, IDisposable, IHasOwnLife
+    public class CoSimulatedCFU : ICFU, ICoSimulationConnectible, IDisposable
     {
         public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
         {
-            allTicksProcessedARE = new AutoResetEvent(initialState: false);
+            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
+                    simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+                    null, null, null,
+                    limitBuffer, timeout, null);
+            connection.AttachTo(this);
+            errorPointer = IntPtr.Zero;
+        }
 
-            cosimulationConnection = new LibraryCoSimulationConnection(this, timeout, HandleReceived);
+        public virtual void OnConnectionAttached(CoSimulationConnection connection)
+        {
+        }
 
-            if(frequency != 0)
-            {
-                timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: false, eventEnabled: true, autoUpdate: true);
-                timer.LimitReached += () =>
-                {
-                    if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
-                    {
-                        AbortAndLogError("Send error!");
-                    }
-                    this.NoisyLog("Tick: TickClock sent, waiting for the cosimulated peripheral...");
-                    allTicksProcessedARE.WaitOne();
-                    this.NoisyLog("Tick: Verilated peripheral finished evaluating the model.");
-                };
-            }
-
-            SimulationFilePathLinux = simulationFilePathLinux;
-            SimulationFilePathWindows = simulationFilePathWindows;
-            SimulationFilePathMacOS = simulationFilePathMacOS;
+        public virtual void OnConnectionDetached(CoSimulationConnection connection)
+        {
         }
 
         public void Reset()
         {
-            Send(ActionType.ResetPeripheral, 0, 0);
-            timer.Reset();
+            connection?.Reset();
         }
 
         public void Dispose()
         {
-            disposeInitiated = true;
-            cosimulationConnection.Dispose();
+            connection.Dispose();
+            executeBinder?.Dispose();
             Marshal.FreeHGlobal(errorPointer);
         }
 
-        public void Pause()
-        {
-            cosimulationConnection.Pause();
-        }
+        public bool IsPaused => (bool)connection.IsPaused;
 
-        public void Resume()
+        public string SimulationContextLinux
         {
-            cosimulationConnection.Resume();
-        }
-
-        public void Start()
-        {
-            if(SimulationFilePath == null)
+            get => connection.SimulationContextLinux;
+            set
             {
-                throw new RecoverableException("Cannot start emulation. Set SimulationFilePath first!");
+                AssureIsConnected();
+                connection.SimulationContextLinux = value;
             }
-            cosimulationConnection.Start();
         }
 
-        public bool IsPaused => cosimulationConnection.IsPaused;
+        public string SimulationContextWindows
+        {
+            get => connection.SimulationContextWindows;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContextWindows = value;
+            }
+        }
+
+        public string SimulationContextMacOS
+        {
+            get => connection.SimulationContextMacOS;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContextMacOS = value;
+            }
+        }
+
+        public string SimulationContext
+        {
+            get => connection.SimulationContext;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContext = value;
+            }
+        }
 
         public string SimulationFilePathLinux
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => connection.SimulationFilePathLinux;
             set
             {
-#if PLATFORM_LINUX
-                SimulationFilePath = value;
-#endif
+                AssureIsConnected();
+                connection.SimulationFilePathLinux = value;
             }
         }
 
         public string SimulationFilePathWindows
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => connection.SimulationFilePathWindows;
             set
             {
-#if PLATFORM_WINDOWS
-                SimulationFilePath = value;
-#endif
+                AssureIsConnected();
+                connection.SimulationFilePathWindows = value;
             }
         }
 
         public string SimulationFilePathMacOS
         {
-            get
-            {
-                return SimulationFilePath;
-            }
+            get => connection.SimulationFilePathMacOS;
             set
             {
-#if PLATFORM_OSX
-                SimulationFilePath = value;
-#endif
+                AssureIsConnected();
+                connection.SimulationFilePathMacOS = value;
             }
         }
 
         public string SimulationFilePath
         {
-            get
-            {
-                return cosimulationConnection.SimulationFilePath;
-            }
+            get => connection.SimulationFilePath;
             set
             {
+                AssureIsConnected();
+
                 if(String.IsNullOrWhiteSpace(value))
                 {
                     this.Log(LogLevel.Warning, "SimulationFilePath not set!");
@@ -153,13 +152,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     {
                         errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
                         executeBinder = new NativeBinder(this, value);
-                        cosimulationConnection.SimulationFilePath = value;
-                        cosimulationConnection.Connect();
-
-                        if(timer != null)
-                        {
-                            timer.Enabled = true;
-                        }
+                        connection.SimulationFilePath = value;
                     }
                     catch(Exception e)
                     {
@@ -193,50 +186,12 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
-        protected void Send(ActionType actionId, ulong offset, ulong value)
-        {
-            if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
-            {
-                AbortAndLogError("Send error!");
-            }
-        }
-
-        protected virtual void HandleReceived(ProtocolMessage message)
-        {
-            switch(message.ActionId)
-            {
-                case ActionType.InvalidAction:
-                    this.Log(LogLevel.Warning, "Invalid action received");
-                    break;
-                case ActionType.TickClock:
-                    allTicksProcessedARE.Set();
-                    break;
-                default:
-                    this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
-                        message.ActionId, message.Address, message.Data);
-                    break;
-            }
-        }
-
         // This function is not used here but it is required to properly bind with libVtop.so
         // so it is left empty on purpose.
         [Export]
         private void HandleSenderMessage(IntPtr received)
         {
 
-        }
-
-        private void AbortAndLogError(string message)
-        {
-            if(disposeInitiated)
-            {
-                return;
-            }
-            this.Log(LogLevel.Error, message);
-            cosimulationConnection.Abort();
-
-            // Due to deadlock, we need to abort CPU instead of pausing emulation.
-            throw new CpuAbortException();
         }
 
         private void LogAndThrowRE(string info)
@@ -304,17 +259,19 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
+        private void AssureIsConnected(string message = null)
+        {
+            if(connection == null)
+            {
+                throw new RecoverableException("CoSimulatedPeripheral is not attached to a CoSimulationConnection.");
+            }
+        }
+
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
-        private bool disposeInitiated;
-        private readonly LibraryCoSimulationConnection cosimulationConnection;
         private NativeBinder executeBinder;
         private BaseRiscV connectedCpu;
         private IntPtr errorPointer;
-        private readonly AutoResetEvent allTicksProcessedARE;
-        private readonly LimitTimer timer;
-
-        private const string LimitTimerName = "CFUClock";
 
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
@@ -327,5 +284,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             CfuFail = 1,
             CfuTimeout = 2
         }
+
+        protected CoSimulationConnection connection;
     }
 }

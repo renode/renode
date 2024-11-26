@@ -1,5 +1,6 @@
 :name: Murax SoC with VexRiscv
 :description: This script runs an echo demo using a verilated UART.
+logLevel -1
 
 $name?="APB3UART"
 
@@ -10,10 +11,11 @@ $uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-1
 $uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-1116123840.dll-s_14829076-0f58c94cf875cf6ebe442dbe24426c9308eef3e7
 $uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-1116123840.dylib-s_214864-267618c5da753aa7c1629db0a518aea39fdf6ad0
 
-showAnalyzer uart
+showAnalyzer uart Antmicro.Renode.Analyzers.LoggingUartAnalyzer
 
-uart SimulationFilePathLinux $uartLinux
-uart SimulationFilePathWindows $uartWindows
+#uart SimulationFilePathLinux $uartLinux
+uart SimulationFilePathLinux @/mnt/hdd/src/renode-verilator-integration-rename-followup/samples/apb3uart/build/libVtop.so
+#uart SimulationFilePathWindows $uartWindows
 # uart SimulationFilePathMacOS $uartMacOS
 
 macro reset

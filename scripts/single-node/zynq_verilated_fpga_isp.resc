@@ -7,7 +7,7 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/boards/mars_zx3.repl
 machine LoadPlatformDescriptionFromString 'virtio: Storage.VirtIOBlockDevice @ sysbus 0x400d0000 { IRQ->gic@32 }'
-machine LoadPlatformDescriptionFromString 'isp: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x43c00000, +0x20000> { frequency: 100000; limitBuffer: 1000000; timeout: 10000; 0->gic@29; 1->gic@31; numberOfInterrupts: 2 }'
+machine LoadPlatformDescriptionFromString 'isp: CoSimulated.CoSimulatedPeripheral @ sysbus <0x43c00000, +0x20000> { frequency: 100000; limitBuffer: 1000000; timeout: 10000; 0->gic@29; 1->gic@31; numberOfOutputGPIOs: 2 }'
 
 sysbus Redirect 0xC0000000 0x0 0x10000000
 

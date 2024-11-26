@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketCoSimulationConnection : ICoSimulationConnection, IDisposable
     {
-        public SocketCoSimulationConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketCoSimulationConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
