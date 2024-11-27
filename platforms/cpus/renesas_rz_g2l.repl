@@ -230,6 +230,12 @@ spi2: SPI.RenesasRZG_SPI @ {
     }
     [0-2] -> gic@[419-421] | nvic@[419-421]
 
+gpio: GPIOPort.RenesasRZG_GPIO @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11030000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41030000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51030000; cpu: cpu_m33 }  // Secure
+    }
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -272,7 +278,6 @@ sysbus:
         Tag <0x011010704 0x4>       "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x011010710 0x4>       "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
-        Tag <0x011030000 0x10000>   "GPIO (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
         Tag <0x011050000 0x10000>   "TZC (SRAM MCPU) (Cortex-A55)"
         Tag <0x011060000 0x10000>   "TZC (SPI Multi I/O) (Cortex-A55)"
@@ -338,7 +343,6 @@ sysbus:
         Tag <0x41010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x41010710 0x4>        "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
-        Tag <0x41030000 0x10000>    "GPIO (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
         Tag <0x41050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Non-secure)"
         Tag <0x41060000 0x10000>    "TZC (SPI Multi I/O) (Cortex-M33, Non-secure)"
@@ -404,7 +408,6 @@ sysbus:
         Tag <0x51010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
         Tag <0x51010710 0x4>        "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
-        Tag <0x51030000 0x10000>    "GPIO (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
         Tag <0x51050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Secure)"
         Tag <0x51060000 0x10000>    "TZC (SPI Multi I/O) (Cortex-M33, Secure)"
