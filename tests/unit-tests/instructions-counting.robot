@@ -1,6 +1,21 @@
 *** Variables ***
 ${a0}                               0xA
+${r0}                               0x0
+${r1}                               0x1
 ${ASSEMBLY_ADDRESS}                 0x0
+${X_CHAR}                           120
+${ARM_UART_DATA_ADDRESS}            0x2000
+${WATCHPOINT_ADDRESS}               0x100
+${ARM_PLATFORM}                     SEPARATOR=\n
+...                                 """
+...                                 cpu: CPU.ARMv7A @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-a9"
+...
+...                                 mem: Memory.MappedMemory @ sysbus 0x0
+...                                 ${SPACE*4}size: 0x1000
+...
+...                                 uart: UART.TrivialUart @ sysbus 0x2000
+...                                 """
 ${ARM64_PLATFORM}                   SEPARATOR=\n
 ...                                 """
 ...                                 cpu: CPU.ARMv8A @ sysbus
@@ -119,3 +134,40 @@ Should Have Correct Instructions Count On MMU External Fault
     Create Log Tester               1
     Wait For Log Entry              MMU fault - the address 0x100000 is not specified in any of the existing ranges
     Expect Instructions Count       5
+
+Should Have Correct Instructions Count On Read Watchpoint
+    [Tags]                          instructions_counting
+    ${assembly}=                    Surround Assembly Block With Nops  ldrb r0, [r1];  7  4
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Execute Command                 sysbus.cpu SetRegister ${r1} ${WATCHPOINT_ADDRESS}
+
+    Execute Command                 sysbus AddWatchpointHook ${WATCHPOINT_ADDRESS} 1 Read "cpu.Log(LogLevel.Info, 'Watchpoint hook at PC: {}'.format(cpu.PC))"
+    Execute Command                 sysbus.cpu SetHookAtBlockBegin "cpu.Log(LogLevel.Info, 'BlockBegin hook at PC: {} with {} executed instructions'.format(cpu.PC, cpu.ExecutedInstructions))"
+
+    Create Log Tester               0
+    Expect Instructions Count       0
+
+    Execute Instructions            12
+
+    Wait For Log Entry              Watchpoint hook at PC: 0x1c  timeout=0
+    Wait For Log Entry              BlockBegin hook at PC: 0x1c with 7 executed instructions  timeout=0
+
+    Should Not Be In Log            Watchpoint hook
+    Should Not Be In Log            BlockBegin hook
+
+    Expect PC                       0x30
+    Expect Instructions Count       12
+
+Should Have Correct Instructions Count On Uart Access
+    [Tags]                          instructions_counting
+    ${assembly}=                    Surround Assembly Block With Nops  strb r0, [r1];  7  4
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Create Terminal Tester          sysbus.uart
+
+    Execute Command                 sysbus.cpu SetRegister ${r0} ${X_CHAR}
+    Execute Command                 sysbus.cpu SetRegister ${r1} ${ARM_UART_DATA_ADDRESS}
+
+    Wait For Prompt On Uart         x  pauseEmulation=true
+
+    Expect PC                       0x20
+    Expect Instructions Count       8
