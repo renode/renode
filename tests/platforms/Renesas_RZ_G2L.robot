@@ -4,6 +4,13 @@ ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_
 ${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415532-a907c69248cf6f695c717ee7dd83cc29d6fff3b4
 ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
 ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
+${LED_REPL}                         SEPARATOR=\n
+...                                 """
+...                                 led: Miscellaneous.LED @ gpio 0
+...
+...                                 gpio:
+...                                 ${SPACE*4}100 -> led@0
+...                                 """
 
 *** Keywords ***
 Prepare Machine
@@ -26,6 +33,10 @@ Elapsed Time Equals
     Should Be True                  ${diff} >= ${value} - ${margin}
     Should Be True                  ${diff} <= ${value} + ${margin}
 
+Prepare LED Tester
+    Execute Command                 machine LoadPlatformDescriptionFromString ${LED_REPL}
+    Create Led Tester               sysbus.gpio.led
+
 *** Test Cases ***
 Should Run The Timer In One Shot Mode
     Prepare Machine                 ${GPT_ELF}
@@ -41,6 +52,7 @@ Should Run The Timer In One Shot Mode
 Should Run GTM Sample
     Prepare Machine                 ${GTM_ELF}
     Prepare Segger RTT
+    Prepare LED Tester
 
     Wait For Prompt On Uart         One-shot mode:
     Write Line To Uart              10  waitForEcho=false
@@ -55,7 +67,10 @@ Should Run GTM Sample
     Wait For Line On Uart           GTM1 is Enabled in Periodic mode
     FOR  ${i}  IN RANGE  0  3
         ${periodic_start}=              Wait For Line On Uart  Leds are: Off
+        Assert Led State                False  timeout=0.01
+
         ${periodic_end}=                Wait For Line On Uart  Leds are: On
+        Assert Led State                True  timeout=0.01
         Elapsed Time Equals             ${periodic_start.timestamp}  ${periodic_end.timestamp}  5  0.3
     END
 
