@@ -131,3 +131,40 @@ Should Have Correct Instructions Count On MMU External Fault
     Create Log Tester               1
     Wait For Log Entry              MMU fault - the address 0x100000 is not specified in any of the existing ranges
     Expect Instructions Count       5
+
+Should Have Correct Instructions Count On Read Watchpoint
+    ${assembly}=                    Generate Single Opcode Assembly Block  ldrb w0, [x1];  7  4
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Execute Command                 sysbus.cpu SetRegister ${x1} ${WATCHPOINT_ADDRESS}
+
+    Execute Command                 sysbus AddWatchpointHook ${WATCHPOINT_ADDRESS} 1 Read "cpu.Log(LogLevel.Info, 'Watchpoint hook at PC: {}'.format(cpu.PC))"
+    Execute Command                 sysbus.cpu SetHookAtBlockBegin "cpu.Log(LogLevel.Info, 'BlockBegin hook at PC: {} with {} executed instructions'.format(cpu.PC, cpu.ExecutedInstructions))"
+
+    Create Log Tester               0
+    Expect Instructions Count       0
+
+    Execute Instructions            12
+
+    # This log's PC is set to 0x0 instead of 0x1c because of bug in updating PC in arm64 arch.
+    # This should be changed after PC update fix.
+    Wait For Log Entry              Watchpoint hook at PC: 0x0  timeout=0
+    Wait For Log Entry              BlockBegin hook at PC: 0x1c with 7 executed instructions
+
+    Should Not Be In Log            Watchpoint hook
+    Should Not Be In Log            BlockBegin hook
+
+    Expect PC                       0x30
+    Expect Instructions Count       12
+
+Should Have Correct Instructions Count On Uart Access
+    ${assembly}=                    Generate Single Opcode Assembly Block  strb w0, [x1];  7  4
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Create Terminal Tester          sysbus.uart
+
+    Execute Command                 sysbus.cpu SetRegister ${w0} ${X_CHAR}
+    Execute Command                 sysbus.cpu SetRegister ${x1} ${ARM_UART_DATA_ADDRESS}
+
+    Wait For Prompt On Uart         x  pauseEmulation=true
+
+    Expect PC                       0x20
+    Expect Instructions Count       8
