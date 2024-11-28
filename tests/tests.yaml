@@ -183,3 +183,4 @@
 - tests/platforms/systemc/multiple-peripherals/multiple-peripherals.robot
 - tests/platforms/systemc/transaction-delay/transaction-delay.robot
 - tests/platforms/systemc/test-synchronization/synchronization.robot
+- tests/unit-tests/instructions-counting.robot
