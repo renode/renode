@@ -3,6 +3,7 @@ ${URL}                              https://dl.antmicro.com/projects/renode
 ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_ep.elf-s_450148-fec1da811a52fa94d39db555d0dccc28e246d28e
 ${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415532-a907c69248cf6f695c717ee7dd83cc29d6fff3b4
 ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
+${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
 
 *** Keywords ***
 Prepare Machine
@@ -76,3 +77,24 @@ Should Run SCIF UART Sample
 
     Write Line To Uart              2001  waitForEcho=false
     Wait For Line On Uart           Invalid input. Input range is from 1 - 2000
+
+Should Run SPI WriteRead Sample
+    Prepare Machine                 ${RSPI_ELF}
+    Execute Command                 spi0 Register spi1 0
+    Prepare Segger RTT
+
+    Wait For Line On Uart           ** RSPI INIT SUCCESSFUL **
+    Wait For Line On Uart           Press 1 for Write() and Read()
+    Wait For Line On Uart           Press 2 for WriteRead()
+    Wait For Line On Uart           Press 3 to Exit
+    Write Line To Uart              2
+
+    Wait For Line On Uart           Enter text input for Master buffer. Data size should not exceed 64 bytes.
+    Write Line To Uart              0123456789
+
+    Wait For Line On Uart           Enter text input for Slave buffer. Data size should not exceed 64 bytes.
+    Write Line To Uart              abcdefghij
+
+    Wait For Line On Uart           Master received data: abcdefghij
+    Wait For Line On Uart           Slave received data: 0123456789
+    Wait For Line On Uart           ** RSPI WRITE_READ Demo Successful**
