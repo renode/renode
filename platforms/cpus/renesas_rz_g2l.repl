@@ -293,6 +293,22 @@ cpg_clkmon_i2c: Python.PythonPeripheral @ {
     initable: true
     filename: "scripts/pydev/rolling-bit.py"
 
+dmac_s: DMA.RenesasRZG_DMAC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x011800000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41800000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51800000; cpu: cpu_m33 }  // Secure
+    }
+    [0-15] -> gic@[108-123] | nvic@[108-123]
+    ErrorIRQ -> gic@124 | nvic@124
+
+dmac_ns: DMA.RenesasRZG_DMAC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x011820000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41820000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51820000; cpu: cpu_m33 }  // Secure
+    }
+    [0-15] -> gic@[125-140] | nvic@[125-140]
+    ErrorIRQ -> gic@141 | nvic@141
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -341,10 +357,6 @@ sysbus:
         Tag <0x0110B0000 0x10000>   "IM33 (Interrupt controller) (Cortex-A55)"
         Tag <0x011400000 0x10000>   "DDR (PHY) (Cortex-A55)"
         Tag <0x011410000 0x10000>   "DDR (Control Reg) (Cortex-A55)"
-        Tag <0x011800000 0x10000>   "Secure DMAC (DMAC_S) AXI (Cortex-A55)"
-        Tag <0x011810000 0x10000>   "Secure DMAC (DMAC_S) APB (Cortex-A55)"
-        Tag <0x011820000 0x10000>   "Non Secure DMAC (DMAC_NS) AXI (Cortex-A55)"
-        Tag <0x011830000 0x10000>   "Non Secure DMAC (DMAC_NS) APB (Cortex-A55)"
         Tag <0x011840000 0x10000>   "Mali-G31 (Cortex-A55)"
         Tag <0x011860000 0x10000>   "OTP (Cortex-A55)"
         Tag <0x011C00000 0x10000>   "SD ch0 (Cortex-A55)"
@@ -402,10 +414,6 @@ sysbus:
         Tag <0x410B0000 0x10000>    "IM33 (Interrupt controller) (Cortex-M33, Non-secure)"
         Tag <0x41400000 0x10000>    "DDR (PHY) (Cortex-M33, Non-secure)"
         Tag <0x41410000 0x10000>    "DDR (Control Reg) (Cortex-M33, Non-secure)"
-        Tag <0x41800000 0x10000>    "Secure DMAC (DMAC_S) AXI (Cortex-M33, Non-secure)"
-        Tag <0x41810000 0x10000>    "Secure DMAC (DMAC_S) APB (Cortex-M33, Non-secure)"
-        Tag <0x41820000 0x10000>    "Non Secure DMAC (DMAC_NS) AXI (Cortex-M33, Non-secure)"
-        Tag <0x41830000 0x10000>    "Non Secure DMAC (DMAC_NS) APB (Cortex-M33, Non-secure)"
         Tag <0x41840000 0x10000>    "Mali-G31 (Cortex-M33, Non-secure)"
         Tag <0x41860000 0x10000>    "OTP (Cortex-M33, Non-secure)"
         Tag <0x41C00000 0x10000>    "SD ch0 (Cortex-M33, Non-secure)"
@@ -463,10 +471,6 @@ sysbus:
         Tag <0x510B0000 0x10000>    "IM33 (Interrupt controller) (Cortex-M33, Secure)"
         Tag <0x51400000 0x10000>    "DDR (PHY) (Cortex-M33, Secure)"
         Tag <0x51410000 0x10000>    "DDR (Control Reg) (Cortex-M33, Secure)"
-        Tag <0x51800000 0x10000>    "Secure DMAC (DMAC_S) AXI (Cortex-M33, Secure)"
-        Tag <0x51810000 0x10000>    "Secure DMAC (DMAC_S) APB (Cortex-M33, Secure)"
-        Tag <0x51820000 0x10000>    "Non Secure DMAC (DMAC_NS) AXI (Cortex-M33, Secure)"
-        Tag <0x51830000 0x10000>    "Non Secure DMAC (DMAC_NS) APB (Cortex-M33, Secure)"
         Tag <0x51840000 0x10000>    "Mali-G31 (Cortex-M33, Secure)"
         Tag <0x51860000 0x10000>    "OTP (Cortex-M33, Secure)"
         Tag <0x51C00000 0x10000>    "SD ch0 (Cortex-M33, Secure)"
