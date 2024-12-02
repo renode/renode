@@ -187,3 +187,4 @@
 - tests/unit-tests/timer-reconfiguration.robot
 - tests/platforms/S32K388.robot
 - tests/unit-tests/bus-isolation.robot
+- tests/unit-tests/bus-performance.robot
