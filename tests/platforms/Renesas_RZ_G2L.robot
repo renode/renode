@@ -4,6 +4,7 @@ ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_
 ${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415532-a907c69248cf6f695c717ee7dd83cc29d6fff3b4
 ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
 ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
+${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.elf-s_612428-2a79e42c3efdbc19207a7c1b2b3b3824e450b2ef
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
 ...                                 led: Miscellaneous.LED @ gpio 0
@@ -113,3 +114,9 @@ Should Run SPI WriteRead Sample
     Wait For Line On Uart           Master received data: abcdefghij
     Wait For Line On Uart           Slave received data: 0123456789
     Wait For Line On Uart           ** RSPI WRITE_READ Demo Successful**
+
+Should Run FreeRTOS Blinky Sample
+    Prepare Machine                 ${FREERTOS_BLINKY_ELF}
+    Prepare LED Tester
+
+    Assert LED Is Blinking          testDuration=5  onDuration=1  offDuration=1  pauseEmulation=true
