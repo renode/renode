@@ -18,9 +18,9 @@ PORTABLE=false
 SOURCE_PACKAGE=false
 HEADLESS=false
 SKIP_FETCH=false
-TLIB_ONLY=false
+EXTERNAL_LIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
-TLIB_ARCH=""
+EXTERNAL_LIB_ARCH=""
 NET=false
 TFM="net462"
 GENERATE_DOTNET_BUILD_TARGET=true
@@ -33,7 +33,7 @@ HOST_ARCH="i386"
 CMAKE_COMMON=""
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--tlib-export-compile-commands] [--tlib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -53,9 +53,9 @@ function print_help() {
   echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
   echo "--tlib-coverage                   build tlib with coverage reporting"
-  echo "--tlib-only                       only build tlib"
-  echo "--tlib-arch                       build only single arch (implies --tlib-only)"
-  echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --tlib-arch)"
+  echo "--external-lib-only               only build external libraries"
+  echo "--external-lib-arch               build only single arch (implies --external-lib-only)"
+  echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --external-lib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
   echo "<ARGS>                            arguments to pass to the build system"
@@ -127,19 +127,19 @@ do
         "profile-build")
           CMAKE_COMMON+=" -DPROFILING_BUILD=ON"
           ;;
-        "tlib-only")
-          TLIB_ONLY=true
+        "external-lib-only")
+          EXTERNAL_LIB_ONLY=true
           ;;
-        "tlib-arch")
-          # This only makes sense with '--tlib-only' set; it might as well imply it
-          TLIB_ONLY=true
+        "external-lib-arch")
+          # This only makes sense with '--external-lib-only' set; it might as well imply it
+          EXTERNAL_LIB_ONLY=true
           shift $((OPTIND-1))
-          TLIB_ARCH=$1
+          EXTERNAL_LIB_ARCH=$1
           OPTIND=2
           ;;
         "tlib-export-compile-commands")
-          if [ -z $TLIB_ARCH ]; then
-              echo "--tlib-export-compile-commands requires --tlib-arch begin set"
+          if [ -z $EXTERNAL_LIB_ARCH ]; then
+              echo "--tlib-export-compile-commands requires --external-lib-arch being set"
               exit 1
           fi
           TLIB_EXPORT_COMPILE_COMMANDS=true
@@ -407,11 +407,11 @@ fi
 # If you are adding a new core or endianness add it here to have the correct tlib built
 CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
 
-# if '--tlib-arch' was used - pick the first matching one
-if [[ ! -z $TLIB_ARCH ]]; then
+# if '--external-lib-arch' was used - pick the first matching one
+if [[ ! -z $EXTERNAL_LIB_ARCH ]]; then
   NONE_MATCHED=true
   for potential_match in "${CORES[@]}"; do
-    if [[ $potential_match == "$TLIB_ARCH"* ]]; then
+    if [[ $potential_match == "$EXTERNAL_LIB_ARCH"* ]]; then
       CORES=("$potential_match")
       echo "Compiling external lib for $potential_match"
       NONE_MATCHED=false
@@ -425,7 +425,7 @@ if [[ ! -z $TLIB_ARCH ]]; then
 fi
 
 # build KVM - currently it's supported only on Linux
-if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $TLIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
+if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
     KVM_CORE_DIR="$CORES_BUILD_PATH/virt"
     mkdir -p $KVM_CORE_DIR
     pushd "$KVM_CORE_DIR" > /dev/null
@@ -479,7 +479,7 @@ do
     popd > /dev/null
 done
 
-if $TLIB_ONLY
+if $EXTERNAL_LIB_ONLY
 then
     exit 0
 fi
