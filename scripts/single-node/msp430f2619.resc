@@ -1,0 +1,21 @@
+:name: MSP430F430F2619
+:description: This script runs basic hello world program on MSP430F430F2619
+
+$name?="MSP430F2619"
+
+using sysbus
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/msp430f2619-hello_world.elf-s_7912-e951b1bdd3bb562397ca9da8da88722c503507a3
+
+machine LoadPlatformDescription @platforms/cpus/msp430f2619.repl
+
+cpu PerformanceInMips 1
+showAnalyzer usci_a0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
