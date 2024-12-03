@@ -24,34 +24,30 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         public CoSimulatedPeripheral(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency, 
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfOutputGPIOs = 0, bool createConnection = true,
-            int outputGPIOOffset = -1, int inputGPIOOffset = 0)
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null,  bool createConnection = true,
+            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
         {
             UseAbsoluteAddress = useAbsoluteAddress;
             this.maxWidth = maxWidth;
-            this.inputGPIOOffset = inputGPIOOffset;
+            this.renodeToCosimSignalsOffset = renodeToCosimSignalsOffset;
+            this.cosimToRenodeSignalRange = cosimToRenodeSignalRange;
 
             if(createConnection)
             {
-                outputGPIORange = new Range(0, (ulong)numberOfOutputGPIOs);
                 connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
                         simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                         simulationContextLinux, simulationContextWindows, simulationContextMacOS,
                         limitBuffer, timeout, address);
                 connection.AttachTo(this);
-            } else {
-                if(numberOfOutputGPIOs != 0 && outputGPIOOffset < 0)
-                {
-                    throw new ConstructionException(
-                            $"CoSimulationPeripheral uses interrupts and an external connection, but has no {nameof(outputGPIOOffset)} defined");
-                }
-                outputGPIORange = new Range((ulong)outputGPIOOffset, (ulong)numberOfOutputGPIOs);
             }
 
             var innerGPIOConnections = new Dictionary<int, IGPIO>();
-            for(int i = 0; i < numberOfOutputGPIOs; i++)
+            if(this.cosimToRenodeSignalRange.HasValue)
             {
-                innerGPIOConnections[i] = new GPIO();
+                for(int i = 0; i < (int)this.cosimToRenodeSignalRange.Value.Size; i++)
+                {
+                    innerGPIOConnections[i] = new GPIO();
+                }
             }
 
             Connections = new ReadOnlyDictionary<int, IGPIO>(innerGPIOConnections);
@@ -66,18 +62,24 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             // Connection can be null here because OnGPIO is called during initialization
             // for each input connection
-            connection?.SendGPIO((int)inputGPIOOffset + number, value);
+            connection?.SendGPIO((int)renodeToCosimSignalsOffset + number, value);
         }
 
         public virtual void OnConnectionAttached(CoSimulationConnection connection)
         {
             this.connection = connection;
-            this.connection.RegisterOnGPIOReceive(ReceiveGPIOChange, outputGPIORange);
+            if(cosimToRenodeSignalRange.HasValue)
+            {
+                this.connection.RegisterOnGPIOReceive(ReceiveGPIOChange, cosimToRenodeSignalRange.Value);
+            }
         }
 
         public virtual void OnConnectionDetached(CoSimulationConnection connection)
         {
-            this.connection.UnregisterOnGPIOReceive(outputGPIORange);
+            if(cosimToRenodeSignalRange.HasValue)
+            {
+                this.connection.UnregisterOnGPIOReceive(cosimToRenodeSignalRange.Value);
+            }
             this.connection = null;
         }
 
@@ -159,7 +161,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public virtual void ReceiveGPIOChange(int coSimNumber, bool value)
         {
-            var localNumber = coSimNumber - (int)outputGPIORange.StartAddress;
+            if(!cosimToRenodeSignalRange.HasValue)
+            {
+                this.Log(LogLevel.Warning, $"Received GPIO change from co-simulation, but no cosimToRenodeSignalRange is defined.");
+                return;
+            }
+
+            var localNumber = coSimNumber - (int)cosimToRenodeSignalRange.Value.StartAddress;
             if (!Connections.TryGetValue(localNumber, out var gpioConnection))
             {
                  this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", localNumber);
@@ -290,10 +298,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         protected CoSimulationConnection connection;
         protected const ulong LimitBuffer = 1000000;
         protected const int DefaultTimeout  = 3000;
-        readonly protected Range outputGPIORange;
+        readonly protected Range? cosimToRenodeSignalRange;
 
         private int maxWidth;
-        private int inputGPIOOffset;
+        private ulong renodeToCosimSignalsOffset;
         private ulong absoluteAddress = 0;
         private const string LimitTimerName = "CoSimulationIntegrationClock";
     }
