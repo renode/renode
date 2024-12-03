@@ -1280,6 +1280,34 @@ namespace Antmicro.Renode.PlatformDescription
             return ConversionResult.Success;
         }
 
+        private ConversionResult TryConvertRangeValue(Value value, Type expectedType, ref object result)
+        {
+            if(value == null && expectedType == typeof(Range?))
+            {
+                result = (Range?)null;
+                return ConversionResult.Success;
+            }
+
+            var tValue = value as RangeValue;
+            if(tValue == null)
+            {
+                return ConversionResult.ConversionNotApplied;
+            }
+
+            if(expectedType == typeof(Range?))
+            {
+                result = (Range?)tValue.ConvertedValue;
+                return ConversionResult.Success;
+            }
+            else if(expectedType == typeof(Range))
+            {
+                result = tValue.ConvertedValue;
+                return ConversionResult.Success;
+            }
+
+            return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, expectedType));
+        }
+
         private ConversionResult TryConvertSimpleValue(Type expectedType, Value value, out object result, bool silent = false)
         {
             result = null;
@@ -1297,7 +1325,7 @@ namespace Antmicro.Renode.PlatformDescription
             {
                 TryConvertSimplestValue<StringValue>(value, expectedType, typeof(string), "string", ref result),
                 TryConvertSimplestValue<BoolValue>(value, expectedType, typeof(bool), "bool", ref result),
-                TryConvertSimplestValue<RangeValue>(value, expectedType, typeof(Range), "range", ref result)
+                TryConvertRangeValue(value, expectedType, ref result)
             };
 
             var meaningfulResult = results.FirstOrDefault(x => x.ResultType != ConversionResultType.ConversionNotApplied);
