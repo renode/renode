@@ -458,7 +458,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 if(entry.range.Contains(gpioNumber))
                 {
                     // NOTE: Callback is responsible for translating into local interrupt offsets using
-                    // the range it registered with - local GPIO number is (gpioNumber - range.StartAddress).
+                    // the range it registered with - local GPIO number is (gpioNumber - range.start).
                     entry.callback((int)gpioNumber, newValue);
                     return;
                 }
