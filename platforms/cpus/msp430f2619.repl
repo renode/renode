@@ -7,6 +7,40 @@ ram: Memory.MappedMemory @ {
 }
     size: 0x800
 
+timer_a: Timers.MSP430_Timer @ {
+    sysbus <0x160, +0x20>;
+    sysbus new Bus.BusMultiRegistration { address: 0x012E; size: 0x2; region: "interruptVector" }
+}
+    baseFrequency: 1_048_576
+    IRQ0->cpu@6
+    IRQ_IV->cpu@7
+
+timer_b: Timers.MSP430_Timer @ {
+    sysbus <0x180, +0x20>;
+    sysbus new Bus.BusMultiRegistration { address: 0x011E; size: 0x2; region: "interruptVector" }
+}
+    baseFrequency: 1_048_576
+    IRQ0->cpu@2
+    IRQ_IV->cpu@3
+
+usci_a0: UART.MSP430_USCIA @ {
+    sysbus 0x5D;
+    sysbus new Bus.BusMultiRegistration { address: 0x0001; size: 0x1; region: "interruptEnable" };
+    sysbus new Bus.BusMultiRegistration { address: 0x0003; size: 0x1; region: "interruptStatus" }
+}
+    RxInterrupt->cpu@8
+    TxInterrupt->cpu@9
+
+usci_a1: UART.MSP430_USCIA @ {
+    sysbus 0xCD;
+    sysbus new Bus.BusMultiRegistration { address: 0x0006; size: 0x1; region: "interruptEnable" };
+    sysbus new Bus.BusMultiRegistration { address: 0x0007; size: 0x1; region: "interruptStatus" }
+}
+    RxInterrupt->cpu@14
+    TxInterrupt->cpu@15
+
+mpy: Miscellaneous.MSP430F2XXX_MPY @ sysbus <0x130, +0x10>
+
 boot: Memory.MappedMemory @ sysbus 0x0C00
     size: 0x400
 
