@@ -295,16 +295,11 @@ namespace Antmicro.Renode.PlatformDescription
                 {
                     throw new RecoverableException($"Unknown state bit '{condition.Condition}' for initiator '{initiatorName}'");
                 }
-                var bit = 1UL << bitPosition;
-                if((result.Mask & bit) != 0)
+                if(result.HasMaskBit(bitPosition))
                 {
                     throw new RecoverableException($"Condition conflict for {condition} for initiator '{initiatorName}'");
                 }
-                result.Mask |= bit;
-                if(!condition.Negated)
-                {
-                    result.State |= bit;
-                }
+                result = result.WithBitValue(bitPosition, !condition.Negated);
             }
             return result;
         }
