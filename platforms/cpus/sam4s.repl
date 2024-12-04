@@ -27,9 +27,11 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x400000
 
 usart0: UART.SAM_USART @ sysbus 0x40024000
+    enablePdc: true
     ->nvic@14
 
 usart1: UART.SAM_USART @ sysbus 0x40028000
+    enablePdc: true
     ->nvic@15
 
 PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0468
@@ -38,9 +40,13 @@ PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0468
     filename: "scripts/pydev/flipflop.py"
 
 uart0: UART.SAM_USART @ sysbus 0x400E0600
+    uartOnlyMode: true
+    enablePdc: true
     ->nvic@8
 
 uart1: UART.SAM_USART @ sysbus 0x400E0800
+    uartOnlyMode: true
+    enablePdc: true
     ->nvic@9
 
 peripheral_bb: Miscellaneous.BitBanding @ sysbus <0x42000000, 0x43FFFFFF>
