@@ -915,20 +915,7 @@ namespace Antmicro.Renode.PlatformDescription
                 return (variable.Value as IPeripheralWithTransactionState)?.StateBits;
             }
 
-            var possibleInitiators = machine.GetPeripheralsOfType<IPeripheralWithTransactionState>();
-            if(!possibleInitiators.Any())
-            {
-                return null;
-            }
-
-            var theIntersectionOfTheirStateBitsets = possibleInitiators
-                .Select(i => i.StateBits)
-                .Aggregate((commonDict, nextDict) =>
-                    commonDict
-                        .Where(p => nextDict.TryGetValue(p.Key, out var value) && p.Value == value)
-                        .ToDictionary(p => p.Key, p => p.Value)
-                );
-            return theIntersectionOfTheirStateBitsets;
+            return machine.SystemBus.GetCommonStateBits();
         }
 
         private bool TryRegisterFromEntry(Entry entry)
