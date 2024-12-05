@@ -65,6 +65,8 @@ cpu0 AssembleBlock 0x8000000 """
 // First read in privileged mode
 ldr r0, =0x10000
 ldr r3, [r0]       // expect 0x1010 in secure, 0 in nonsecure
+ldr r3, [r0]       // expect 0x1010 in secure, 0 in nonsecure
+ldr r4, [r0, #4]   // expect 0x2020 in secure, 0 in nonsecure
 ldr r4, [r0, #4]   // expect 0x2020 in secure, 0 in nonsecure
 ldr r5, [r0, #8]   // expect 0x3030
 ldr r6, [r0, #12]  // expect 0x4444
