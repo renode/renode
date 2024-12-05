@@ -56,7 +56,6 @@
     <Compile Include="PlatformDescription\PreLexerTests.cs" />
     <Compile Include="PlatformDescription\UsingTests.cs" />
     <Compile Include="PlatformDescription\VerificationTests.cs" />
-    <Compile Include="AccessCondition\ParserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Renode\Renode.csproj">
