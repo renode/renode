@@ -284,14 +284,11 @@ riic3: I2C.RenesasRZG_IIC @ {
     StopIRQ -> gic@376 | nvic@376
     StartIRQ -> gic@377 | nvic@377
 
-cpg_clkmon_i2c: Python.PythonPeripheral @ {
-        sysbus new Bus.BusPointRegistration { address: 0x011010700; cluster: cluster };
-        sysbus new Bus.BusPointRegistration { address: 0x41010700; cpu: cpu_m33 }; // Non-secure
-        sysbus new Bus.BusPointRegistration { address: 0x51010700; cpu: cpu_m33 }  // Secure
+cpg: Miscellaneous.RenesasRZG_CPG @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11010000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41010000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51010000; cpu: cpu_m33 }  // Secure
     }
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/rolling-bit.py"
 
 dmac_s: DMA.RenesasRZG_DMAC @ {
         sysbus new Bus.BusPointRegistration { address: 0x011800000; cluster: cluster };
@@ -341,11 +338,6 @@ sysbus:
         Tag <0x010890000 0x10000>   "DU (Cortex-A55)"
         Tag <0x010C00000 0x1000000> "CST (CoreSight) (Cortex-A55)"
         Tag <0x011000000 0x10000>   "SYC (Cortex-A55)"
-        Tag <0x011010000 0x10000>   "CPG (Cortex-A55)"
-        Tag <0x0110106C0 0x4>       "CPG_CLKMON_GPT" 0x1
-        Tag <0x0110106B4 0x4>       "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
-        Tag <0x011010704 0x4>       "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
-        Tag <0x011010710 0x4>       "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
         Tag <0x011050000 0x10000>   "TZC (SRAM MCPU) (Cortex-A55)"
@@ -398,11 +390,6 @@ sysbus:
         Tag <0x40890000 0x10000>    "DU (Cortex-M33, Non-secure)"
         Tag <0x40C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Non-secure)"
         Tag <0x41000000 0x10000>    "SYC (Cortex-M33, Non-secure)"
-        Tag <0x41010000 0x10000>    "CPG (Cortex-M33, Non-secure)"
-        Tag <0x410106C0 0x4>        "CPG_CLKMON_GPT" 0x1
-        Tag <0x410106B4 0x4>        "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
-        Tag <0x41010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
-        Tag <0x41010710 0x4>        "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
         Tag <0x41050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Non-secure)"
@@ -455,11 +442,6 @@ sysbus:
         Tag <0x50890000 0x10000>    "DU (Cortex-M33, Secure)"
         Tag <0x50C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Secure)"
         Tag <0x51000000 0x10000>    "SYC (Cortex-M33, Secure)"
-        Tag <0x51010000 0x10000>    "CPG (Cortex-M33, Secure)"
-        Tag <0x510106C0 0x4>        "CPG_CLKMON_GPT" 0x1
-        Tag <0x510106B4 0x4>        "CPG_CLKMON_GTM" 0x7    // GTM clocks are enabled
-        Tag <0x51010704 0x4>        "CPG_CLKMON_SCIF" 0x1f  // SCIF clocks are enabled
-        Tag <0x51010710 0x4>        "CPG_CLKMON_RSPI" 0x7   // SPI clocks are enabled
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
         Tag <0x51050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Secure)"
