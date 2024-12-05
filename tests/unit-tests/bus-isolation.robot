@@ -57,6 +57,23 @@ Should Handle Separation By State In Nonsecure World
     Register Should Be Equal           13  0x63707500
     Register Should Be Equal           14  0x63707500
 
+Should Change Access Conditions At Runtime
+    Create Bus Isolation Machine
+
+    # Execute `ldr r0, =0x10000` and `ldr r3, [r0]` (the first iteration of the first read)
+    Execute Command               cpu0 Step 2
+    Register Should Be Equal      3  0x1010  # Read OK because the condition in the repl is "(cpuSecure || !privileged) && initiator == cpu0"
+    Register Should Be Equal      4  0       # Not reached yet
+
+    # Now change the condition on the peripheral at 0x10000 to fail
+    Execute Command               sysbus ChangePeripheralAccessCondition unpriv "initiator == cpu0 && (!cpuSecure || !privileged)"
+
+    # The next instruction is another `ldr r3, [r0]`, which will now see 0 (open bus)
+    Execute Command               cpu0 Step
+    Register Should Be Equal      3  0       # Read 0 because the condition is now "(!cpuSecure || !privileged)" which fails
+    Register Should Be Equal      4  0       # Not reached yet
+
+
 Should Read Through Privilege Aware Reader
     Create Bus Isolation Machine
 
