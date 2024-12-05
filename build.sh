@@ -276,24 +276,26 @@ CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
 # clean instead of building
 if $CLEAN
 then
-    if ! $NET
-    then
-      PARAMS+=(t:Clean)
-    fi
-    for conf in Debug Release
+    for project_dir in $(find "$(get_path "${ROOT_PATH}/src")" -iname '*.csproj' -exec dirname '{}' \;)
     do
-      for build_target in Windows Mono Headless
+      for dir in {bin,obj}/{Debug,Release}
       do
-        if $NET
+        output_dir="$(get_path "${project_dir}/${dir}")"
+        if [[ -d "${output_dir}" ]]
         then
-            dotnet clean -f $TFM $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
-        else
-            $CS_COMPILER $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
+          echo "Removing: ${output_dir}"
+          rm -rf "${output_dir}"
         fi
       done
-      rm -fr $OUTPUT_DIRECTORY/bin/$conf
-      rm -rf $CORES_PATH/obj $CORES_PATH/bin
     done
+
+    # Manually clean the main output directory as it's location is non-standard
+    main_output_dir="$(get_path "${OUTPUT_DIRECTORY}/bin")"
+    if [[ -d "${main_output_dir}" ]]
+    then
+      echo "Removing: ${main_output_dir}"
+      rm -rf "${main_output_dir}"
+    fi
     exit 0
 fi
 
