@@ -487,9 +487,6 @@ then
         # dotnet package on linux uses a separate script
         if $ON_LINUX
         then
-            # Restore dependencies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
-            dotnet restore --runtime linux-x64 Renode_NET.sln
-
             # maxcpucount:1 to avoid an error with multithreaded publish
             eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
             export RID TFM
@@ -517,7 +514,6 @@ then
     PARAMS+=(p:PORTABLE=true)
     if $NET
     then
-        dotnet restore --runtime $RID Renode_NET.sln
         # maxcpucount:1 to avoid an error with multithreaded publish
         eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
