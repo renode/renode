@@ -56,8 +56,8 @@ Should Tick In The Same Block
     Wait For Log Entry          block started: PC 0x1000  timeout=0
     Should Not Be In Log        block ended: PC 0x100  timeout=0
     Should Not Be In Log        block ended: PC 0x101  timeout=0
-    Wait For Log Entry          IRQ  timeout=0
     Wait For Log Entry          block ended: PC 0x1020  timeout=0
+    Wait For Log Entry          IRQ  timeout=0
 
 Should Tick At Exact Time
     Create Machine

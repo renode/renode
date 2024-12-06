@@ -176,3 +176,4 @@
 - tests/unit-tests/aarch64-host.robot
 - tests/platforms/MSP430X.robot
 - tests/unit-tests/instructions-counting.robot
+- tests/unit-tests/timer-reconfiguration.robot
