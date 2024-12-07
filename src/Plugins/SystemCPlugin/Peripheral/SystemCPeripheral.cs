@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace Antmicro.Renode.Peripherals.SystemC
@@ -31,6 +32,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         Timesync = 3,
         GPIOWrite = 4,
         Reset = 5,
+        DMIReq = 6,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -109,6 +111,88 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public readonly byte ConnectionIndex;
         public readonly ulong Address;
         public readonly ulong Payload;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct DMIMessage
+    {
+        public DMIMessage(RenodeAction actionId, byte allowed, ulong startAddress, ulong endAddress, ulong mmfOffset, string mmfPath)
+        {
+            ActionId = actionId;
+            Allowed = allowed;
+            StartAddress = startAddress;
+            EndAddress = endAddress;
+            MMFOffset = mmfOffset;
+            unsafe {
+                byte[] cpySrc = Encoding.ASCII.GetBytes (mmfPath);
+                fixed (byte* cpyDest = MMFPath)
+                {
+                    if (mmfPath.Length < 256)
+                    {
+                        for(int i = 0; i < mmfPath.Length; i++) {
+                            cpyDest[i] = cpySrc[i];
+                        }
+                        cpyDest[mmfPath.Length] = (byte)0;
+                    }
+                    else
+                    {
+                        Logger.Log(LogLevel.Error, "MMF path name is too long");
+                        cpyDest[0] = (byte)0;
+                    }
+                }
+            }
+        }
+
+        public byte[] Serialize()
+        {
+            var size = Marshal.SizeOf(this);
+            var result = new byte[size];
+            var handler = default(GCHandle);
+
+            try
+            {
+                handler = GCHandle.Alloc(result, GCHandleType.Pinned);
+                Marshal.StructureToPtr(this, handler.AddrOfPinnedObject(), false);
+            }
+            finally
+            {
+                if(handler.IsAllocated)
+                {
+                    handler.Free();
+                }
+            }
+
+            return result;
+        }
+
+        public void Deserialize(byte[] message)
+        {
+            var handler = default(GCHandle);
+            try
+            {
+                handler = GCHandle.Alloc(message, GCHandleType.Pinned);
+                this = (DMIMessage)Marshal.PtrToStructure(handler.AddrOfPinnedObject(), typeof(DMIMessage));
+            }
+            finally
+            {
+                if(handler.IsAllocated)
+                {
+                    handler.Free();
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            return $"DMIMessage [{ActionId}@{StartAddress}:{EndAddress}]";
+        }
+
+        public readonly RenodeAction ActionId;
+        public readonly byte Allowed;
+        public readonly ulong StartAddress;
+        public readonly ulong EndAddress;
+        public readonly ulong MMFOffset;
+        public fixed byte MMFPath[256];
     }
 
     public interface IDirectAccessPeripheral : IPeripheral
@@ -421,8 +505,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
                         }
                         break;
                     case RenodeAction.Write:
+                        bool writeToSharedMem = false;
                         if(message.IsSystemBusConnection())
                         {
+                            var targetMem = sysbus.FindMemory(message.Address);
+                            if (targetMem != null)
+                            {
+                                writeToSharedMem = targetMem.Peripheral.UsingSharedMemory;
+                            }
                             sysbus.TryGetCurrentCPU(out var icpu);
                             switch(message.DataLength)
                             {
@@ -448,11 +538,19 @@ namespace Antmicro.Renode.Peripherals.SystemC
                             directAccessPeripherals[message.GetDirectConnectionIndex()].WriteDirect(
                                     message.DataLength, (long)message.Address, message.Payload, message.ConnectionIndex);
                         }
-                        backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                        var writeResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
+                            writeToSharedMem ? (byte)1 : (byte)0, message.Address, message.Payload);
+                        backwardSocket.Send(writeResponseMessage.Serialize(), SocketFlags.None);
                         break;
                     case RenodeAction.Read:
+                        bool readFromSharedMem = false;
                         if(message.IsSystemBusConnection())
                         {
+                            var targetMem = sysbus.FindMemory(message.Address);
+                            if (targetMem != null)
+                            {
+                                readFromSharedMem = targetMem.Peripheral.UsingSharedMemory;
+                            }
                             sysbus.TryGetCurrentCPU(out var icpu);
                             switch(message.DataLength)
                             {
@@ -477,9 +575,44 @@ namespace Antmicro.Renode.Peripherals.SystemC
                         {
                             payload = directAccessPeripherals[message.GetDirectConnectionIndex()].ReadDirect(message.DataLength, (long)message.Address, message.ConnectionIndex);
                         }
-                        var responseMessage = new RenodeMessage(message.ActionId, message.DataLength,
-                                message.ConnectionIndex, message.Address, payload);
-                        backwardSocket.Send(responseMessage.Serialize(), SocketFlags.None);
+                        var readResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
+                            readFromSharedMem ? (byte)1 : (byte)0, message.Address, payload);
+
+                        backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
+                        break;
+                    case RenodeAction.DMIReq:
+                        bool allowDMI = false;
+                        var targetMemory = sysbus.FindMemory(message.Address);
+                        if (targetMemory != null) allowDMI = targetMemory.Peripheral.UsingSharedMemory;
+                        long memBase = (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
+                        long memOffset = (long)message.Address - memBase;
+                        ulong segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
+                        int segmentNo = 0;
+                        if (allowDMI) {
+                            segmentNo = (int)(memOffset / targetMemory.Peripheral.SegmentSize);
+                            allowDMI = segmentNo >= 0 && segmentNo < targetMemory.Peripheral.SegmentCount;
+                        }
+                        if (allowDMI) {
+                            var responseDMIMessage = new DMIMessage (
+                                message.ActionId,
+                                1, // DMI allowed
+                                segmentStart,
+                                segmentStart + (ulong)targetMemory.Peripheral.SegmentSize - 1UL, // segment end
+                                targetMemory.Peripheral.GetSegmentAlignmentOffset(segmentNo), // offset into the MMF corresponding to the segment start address
+                                targetMemory.Peripheral.GetSegmentPath(segmentNo) // MMF path
+                            );
+                            backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                        } else {
+                            var responseDMIMessage = new DMIMessage (
+                                message.ActionId,
+                                0, // DMI rejected
+                                0UL,
+                                0UL,
+                                0UL,
+                                ""
+                            );
+                            backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                        }
                         break;
                     default:
                         this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId); 
