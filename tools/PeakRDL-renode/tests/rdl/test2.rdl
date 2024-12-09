@@ -1,0 +1,20 @@
+addrmap Peripheral {
+    regfile {
+        default regwidth = 32;
+
+        reg {
+            name = "BitFields";
+            field {
+                name = "FIRST";
+                sw = r;
+                hw = w;
+            } first [0:0];
+            field {
+                name = "SECOND";
+                sw = rw;
+                hw = rw;
+                onwrite = wzc;
+            } second [1:1];
+        } bit_fields @ 0x0;
+    } registers @ 0x100;
+};

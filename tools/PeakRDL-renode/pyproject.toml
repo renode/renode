@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "peakrdl-renode"
+dynamic = ["version"]
+requires-python = ">=3.11"
+dependencies = [
+    "systemrdl-compiler >= 1.21.0, < 2",
+    "jinja2",
+]
+
+authors = [
+    {name="Krzysztof Boroński, Antmicro"},
+]
+
+description = "Generate Renode C# files from a SystemRDL register model"
+readme = "README.md"
+
+keywords = [
+    "SystemRDL", "PeakRDL", "CSR", "compiler", "tool", "registers", "generator",
+    "C#", "renode", "header", "software",
+]
+
+[project.urls]
+Source = "https://github.com/antmicro/PeakRDL-renode"
+Tracker = "https://github.com/antmicro/PeakRDL-renode/issues"
+Changelog = "https://github.com/antmicro/PeakRDL-renode/releases"
+
+[tool.setuptools.dynamic]
+version = {attr = "peakrdl_renode.__about__.__version__"}
+
+[project.entry-points."peakrdl.exporters"]
+renode = "peakrdl_renode.__peakrdl__:Exporter"
