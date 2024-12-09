@@ -294,7 +294,6 @@ class RobotTestSuite(object):
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
-        self.tests_with_unexpected_timeouts = []
 
 
     def check(self, options, number_of_runs):
@@ -516,6 +515,12 @@ class RobotTestSuite(object):
         if self.path.endswith('renode-keywords.robot'):
             print('Ignoring helper file: {}'.format(self.path))
             return True
+
+        # The list is cleared only on the first run attempt in each iteration so
+        # that tests that time out aren't retried in the given iteration but are
+        # started as usual in subsequent iterations.
+        if suite_retry_index == 0:
+            self.tests_with_unexpected_timeouts = []
 
         # in non-parallel runs there is only one Renode process for all runs,
         # unless --keep-renode-output is enabled, in which case a new process
