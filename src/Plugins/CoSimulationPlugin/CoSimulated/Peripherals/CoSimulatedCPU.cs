@@ -35,6 +35,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
         {
+            // Multiple CoSimulatedCPUs per CoSimulationConnection are currently not supported.
+            RenodeToCosimIndex = 0;
+            CosimToRenodeIndex = 0;
+
             cosimConnection = new CoSimulationConnection(machine, "cpu_cosim_cosimConnection", 0,
                         simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                         simulationContextLinux, simulationContextWindows, simulationContextMacOS,
@@ -83,7 +87,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             this.NoisyLog("IRQ {0}, value {1}", number, value);
             lock(cosimConnectionLock)
             {
-                cosimConnection.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
+                cosimConnection.Send(this, ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
             }
         }
 
@@ -92,7 +96,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             lock(cosimConnectionLock)
             {
                 setRegisterValue = false;
-                cosimConnection.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
+                cosimConnection.Send(this, ActionType.RegisterSet, (ulong)register, (ulong) value);
                 while(!setRegisterValue) // This kind of while loops are for socket communication
                 {
                     cosimConnection.HandleMessage();
@@ -105,7 +109,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             lock(cosimConnectionLock)
             {
                 gotRegisterValue = false;
-                cosimConnection.Send(ActionType.RegisterGet, (ulong)register, 0);
+                cosimConnection.Send(this, ActionType.RegisterGet, (ulong)register, 0);
                 while(!gotRegisterValue)
                 {
                     cosimConnection.HandleMessage();
@@ -127,7 +131,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                         while(instructionsExecutedThisRound < 1)
                         {
                             gotStep = false;
-                            cosimConnection.Send(ActionType.Step, 0, 1);
+                            cosimConnection.Send(this, ActionType.Step, 0, 1);
                             while(!gotStep)
                             {
                                cosimConnection.HandleMessage();
@@ -137,7 +141,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     else
                     {
                         ticksProcessed = false;
-                        cosimConnection.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
+                        cosimConnection.Send(this, ActionType.TickClock, 0, numberOfInstructionsToExecute);
                         while(!ticksProcessed)
                         {
                             cosimConnection.HandleMessage();
@@ -190,10 +194,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                         switch(executionMode)
                         {
                             case ExecutionMode.Continuous:
-                                cosimConnection.Send(ActionType.SingleStepMode, 0, 0);
+                                cosimConnection.Send(this, ActionType.SingleStepMode, 0, 0);
                                 break;
                             case ExecutionMode.SingleStep:
-                                cosimConnection.Send(ActionType.SingleStepMode, 0, 1);
+                                cosimConnection.Send(this, ActionType.SingleStepMode, 0, 1);
                                 break;
                         }
 
@@ -290,6 +294,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 }
             }
         }
+
+        public int RenodeToCosimIndex { get; }
+        public int CosimToRenodeIndex { get; }
 
         protected readonly object cosimConnectionLock = new object();
 

@@ -26,6 +26,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     {
         public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
         {
+            // Multiple CoSimulatedCFUs per CoSimulationConnection are currently not supported.
+            RenodeToCosimIndex = 0;
+            CosimToRenodeIndex = 0;
+
             connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
                     simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                     null, null, null,
@@ -264,6 +268,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 throw new RecoverableException("CoSimulatedPeripheral is not attached to a CoSimulationConnection.");
             }
         }
+
+        public int RenodeToCosimIndex { get; }
+        public int CosimToRenodeIndex { get; }
 
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;

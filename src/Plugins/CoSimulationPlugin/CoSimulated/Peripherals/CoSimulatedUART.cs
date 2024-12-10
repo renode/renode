@@ -27,14 +27,14 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                     simulationContextLinux, simulationContextWindows, simulationContextMacOS,
                     limitBuffer, timeout, address, createConnection, renodeToCosimSignalsOffset,
-                    cosimToRenodeSignalRange)
+                    cosimToRenodeSignalRange, 0, 0)
         {
             IRQ = new GPIO();
         }
 
         public void WriteChar(byte value)
         {
-            connection.Send((ActionType)UARTActionNumber.UARTRxd, 0, value);
+            connection.Send(this, (ActionType)UARTActionNumber.UARTRxd, 0, value);
         }
 
         public bool HandleReceivedMessage(ProtocolMessage message)

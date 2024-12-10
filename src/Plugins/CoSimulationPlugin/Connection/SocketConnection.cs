@@ -150,7 +150,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             if(IsConnected)
             {
                 parentElement.DebugLog("Sending 'Disconnect' message to close peripheral gracefully...");
-                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0, ProtocolMessage.NoPeripheralIndex));
                 mainSocketComunicator.CancelCommunication();
             }
 
@@ -305,9 +305,23 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private bool TryHandshake()
         {
-            return TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0))
-                   && TryReceiveMessage(out var result)
-                   && result.ActionId == ActionType.Handshake;
+            if(!TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0, ProtocolMessage.NoPeripheralIndex)))
+            {
+                parentElement.Log(LogLevel.Error, "Failed to send handshake message to co-simulation.");
+                return false;
+            }
+            if(!TryReceiveMessage(out var result))
+            {
+                parentElement.Log(LogLevel.Error, "Failed to receive handshake response from co-simulation.");
+                return false;
+            }
+            if(result.ActionId != ActionType.Handshake)
+            {
+                parentElement.Log(LogLevel.Error, "Invalid handshake response received from co-simulation.");
+                return false;
+            }
+
+            return true;
         }
 
         private void HandleReceived(ProtocolMessage message)
