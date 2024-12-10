@@ -24,8 +24,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CoSimulatedCFU : ICFU, ICoSimulationConnectible, IDisposable
     {
-        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
+        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null, int cosimManagerIndex = 0, int cosimSubordinateIndex = 0)
         {
+            CoSimulatedManagerIndex = cosimManagerIndex;
+            CoSimulatedSubordinateIndex = cosimSubordinateIndex;
+
             connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
                     simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                     null, null, null,
@@ -264,6 +267,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 throw new RecoverableException("CoSimulatedPeripheral is not attached to a CoSimulationConnection.");
             }
         }
+
+        public int CoSimulatedManagerIndex { get; }
+        public int CoSimulatedSubordinateIndex { get; }
 
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;

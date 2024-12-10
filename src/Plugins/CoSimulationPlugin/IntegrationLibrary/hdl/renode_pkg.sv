@@ -17,10 +17,13 @@ package renode_pkg;
     `include "renode_action_enumerators.svh"
   } action_e;
 
+  const int no_peripheral_index = -1;
+
   typedef struct {
     action_e action;
     address_t address;
     data_t data;
+    int peripheral_index;
   } message_t;
 
   typedef enum data_t {
@@ -56,19 +59,22 @@ package renode_pkg;
   import "DPI-C" function bit renodeDPIReceive(
     output action_e action,
     output address_t address,
-    output data_t data
+    output data_t data,
+    output int peripheralIndex 
   );
 
   import "DPI-C" function bit renodeDPISend(
     action_e action,
     address_t address,
-    data_t data
+    data_t data,
+    int peripheralIndex
   );
 
   import "DPI-C" function bit renodeDPISendToAsync(
     action_e action,
     address_t address,
-    data_t data
+    data_t data,
+    int peripheralIndex
   );
 
   function static bit is_access_aligned(address_t address, valid_bits_e valid_bits);
@@ -146,10 +152,10 @@ package renode_pkg;
     endfunction
 
     function bit try_receive(output message_t message);
-      bit is_received = renodeDPIReceive(message.action, message.address, message.data);
+      bit is_received = renodeDPIReceive(message.action, message.address, message.data, message.peripheral_index);
       if(is_received) begin
 `ifdef RENODE_DEBUG
-      $display("Renode at %t: Received action %0s, address = 'h%h, data = 'h%h", $realtime, message.action.name(), message.address, message.data);
+      $display("Renode at %t: Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index);
 `endif
       end
       return is_received;
@@ -157,16 +163,16 @@ package renode_pkg;
 
     function void send(message_t message);
 `ifdef RENODE_DEBUG
-      $display("Renode at %t: Sent action %0s, address = 'h%h, data = 'h%h", $realtime, message.action.name(), message.address, message.data);
+      $display("Renode at %t: Sent action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index);
 `endif
-      if (!renodeDPISend(message.action, message.address, message.data)) fatal_error("Unexpected channel disconnection");
+      if (!renodeDPISend(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     function void send_to_async_receiver(message_t message);
 `ifdef RENODE_DEBUG
-      $display("Renode at %t: Sent async action %0s, address = 'h%h, data = 'h%h", $realtime, message.action.name(), message.address, message.data);
+      $display("Renode at %t: Sent async action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index);
 `endif
-      if (!renodeDPISendToAsync(message.action, message.address, message.data)) fatal_error("Unexpected channel disconnection");
+      if (!renodeDPISendToAsync(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     local function void disconnect();
@@ -174,7 +180,7 @@ package renode_pkg;
     endfunction
 
     local function void handle_disconnect();
-      send(message_t'{ok, 0, 0});
+      send(message_t'{ok, 0, 0, renode_pkg::no_peripheral_index});
       disconnect();
 `ifdef RENODE_DEBUG
       $display("Renode at %t: disconnected", $realtime);
@@ -262,8 +268,10 @@ package renode_pkg;
     const string AddressArgName = "RENODE_ADDRESS";
 
     renode_connection connection = new();
-    bus_connection controller = new();
-    bus_connection peripheral = new();
+
+    // Initialized by the Renode module
+    bus_connection controllers[];
+    bus_connection peripherals[];
 
     function void connect_plus_args();
       int receiver_port, sender_port;

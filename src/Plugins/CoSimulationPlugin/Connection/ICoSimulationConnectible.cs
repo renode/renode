@@ -13,5 +13,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     {
         void OnConnectionAttached(CoSimulationConnection connection);
         void OnConnectionDetached(CoSimulationConnection connection);
+        int CoSimulatedManagerIndex { get; }
+        int CoSimulatedSubordinateIndex { get; }
     }
 }

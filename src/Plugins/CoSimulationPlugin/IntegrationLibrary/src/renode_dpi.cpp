@@ -10,7 +10,7 @@
 
 static SocketCommunicationChannel *socketChannel;
 
-bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value)
+bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value, int32_t* peripheralIndex)
 {
     if(!socketChannel->getIsConnected())
     {
@@ -20,6 +20,8 @@ bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value)
     *actionId = message->actionId;
     *address = message->addr;
     *value = message->value;
+    *peripheralIndex = message->peripheralIndex;
+
     delete message;
     return true;
 }
@@ -43,23 +45,23 @@ bool renodeDPIIsConnected()
     return socketChannel != NULL && socketChannel->getIsConnected();
 }
 
-bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value)
+bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
 {
     if(socketChannel == NULL || !socketChannel->getIsConnected())
     {
         return false;
     }
-    socketChannel->sendMain(Protocol(actionId, address, value));
+    socketChannel->sendMain(Protocol(actionId, address, value, peripheralIndex));
     return true;
 }
 
-bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value)
+bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
 {
     if(socketChannel == NULL || !socketChannel->getIsConnected())
     {
         return false;
     }
-    socketChannel->sendSender(Protocol(actionId, address, value));
+    socketChannel->sendSender(Protocol(actionId, address, value, peripheralIndex));
     return true;
 }
 

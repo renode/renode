@@ -22,19 +22,19 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, bool createConnection = true, 
-            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
+            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null, int cosimManagerIndex = 0, int cosimSubordinateIndex = 0)
             : base(machine, maxWidth, useAbsoluteAddress, frequency, 
                     simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                     simulationContextLinux, simulationContextWindows, simulationContextMacOS,
                     limitBuffer, timeout, address, createConnection, renodeToCosimSignalsOffset,
-                    cosimToRenodeSignalRange)
+                    cosimToRenodeSignalRange, cosimManagerIndex, cosimSubordinateIndex)
         {
             IRQ = new GPIO();
         }
 
         public void WriteChar(byte value)
         {
-            connection.Send((ActionType)UARTActionNumber.UARTRxd, 0, value);
+            connection.Send((ActionType)UARTActionNumber.UARTRxd, 0, value, CoSimulatedManagerIndex);
         }
 
         public bool HandleReceivedMessage(ProtocolMessage message)

@@ -35,14 +35,14 @@ void SocketCommunicationChannel::handshakeValid()
 {
     Protocol* received = receive();
     if(received->actionId == handshake) {
-        sendMain(Protocol(handshake, 0, 0));
+        sendMain(Protocol(handshake, 0, 0, noPeripheralIndex));
         isConnected = true;
     }
 }
 
 void SocketCommunicationChannel::log(int logLevel, const char* data)
 {
-    sendSender(Protocol(logMessage, strlen(data), logLevel));
+    sendSender(Protocol(logMessage, strlen(data), logLevel, noPeripheralIndex));
     senderSocket->Send(data, strlen(data));
 }
 

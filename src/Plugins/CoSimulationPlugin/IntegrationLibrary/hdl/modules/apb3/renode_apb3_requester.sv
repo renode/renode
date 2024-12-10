@@ -9,7 +9,7 @@
 
 import renode_pkg::renode_runtime, renode_pkg::LogWarning;
 
-module renode_apb3_requester (
+module renode_apb3_requester #(int RenodeManagerIndex = 0) (
     ref renode_runtime runtime,
     renode_apb3_if bus
 );
@@ -54,7 +54,7 @@ module renode_apb3_requester (
   localparam int unsigned Back2BackNum = 1;
 
 
-  always @(runtime.controller.reset_assert_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].reset_assert_request) begin
     write_address = '0;
     read_address = '0;
     write_data = '0;
@@ -63,14 +63,14 @@ module renode_apb3_requester (
     rst_n = 0;
     // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
     repeat (2) @(posedge clk);
-    runtime.controller.reset_assert_respond();
+    runtime.controllers[RenodeManagerIndex].reset_assert_respond();
   end
 
-  always @(runtime.controller.reset_deassert_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].reset_deassert_request) begin
     rst_n = 1;
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
-    runtime.controller.reset_deassert_respond();
+    runtime.controllers[RenodeManagerIndex].reset_deassert_respond();
   end
 
   // Internal state
@@ -85,13 +85,13 @@ module renode_apb3_requester (
   // Waveform generation
   //
 
-  always @(runtime.controller.read_transaction_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].read_transaction_request) begin
     integer transaction_width;
 
-    if(!renode_pkg::is_access_aligned(runtime.controller.read_transaction_address, runtime.controller.read_transaction_data_bits)) begin
+    if(!renode_pkg::is_access_aligned(runtime.controllers[RenodeManagerIndex].read_transaction_address, runtime.controllers[RenodeManagerIndex].read_transaction_data_bits)) begin
         runtime.connection.log(LogWarning, "Unaligned access on APB bus results in unpredictable behavior");
     end
-    transaction_width = renode_pkg::valid_bits_to_transaction_width(runtime.controller.read_transaction_data_bits);
+    transaction_width = renode_pkg::valid_bits_to_transaction_width(runtime.controllers[RenodeManagerIndex].read_transaction_data_bits);
     if (bus.DataWidth > transaction_width) begin
       runtime.connection.log(LogWarning,
           $sformatf("Bus bus.bus.DataWidth is (%d) > transaction width (%d), MSB will be truncated.", bus.DataWidth, transaction_width));
@@ -100,19 +100,19 @@ module renode_apb3_requester (
           $sformatf("Bus bus.bus.DataWidth is (%d) < transaction width (%d), MSB will be zero-extended.", bus.DataWidth, transaction_width));
     end
 
-    read_address = address_t'(runtime.controller.read_transaction_address);
+    read_address = address_t'(runtime.controllers[RenodeManagerIndex].read_transaction_address);
     write_mode = 1'b0;
     start_transaction = 1'b1;
     @(posedge clk) start_transaction <= 1'b0;
   end
 
-  always @(runtime.controller.write_transaction_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].write_transaction_request) begin
     integer transaction_width;
 
-    if(!renode_pkg::is_access_aligned(runtime.controller.write_transaction_address, runtime.controller.write_transaction_data_bits)) begin
+    if(!renode_pkg::is_access_aligned(runtime.controllers[RenodeManagerIndex].write_transaction_address, runtime.controllers[RenodeManagerIndex].write_transaction_data_bits)) begin
         runtime.connection.log(LogWarning, "Unaligned access on APB bus results in unpredictable behavior");
     end
-    transaction_width = renode_pkg::valid_bits_to_transaction_width(runtime.controller.write_transaction_data_bits);
+    transaction_width = renode_pkg::valid_bits_to_transaction_width(runtime.controllers[RenodeManagerIndex].write_transaction_data_bits);
     if (bus.DataWidth > transaction_width) begin
       runtime.connection.log(LogWarning,
           $sformatf("Bus bus.bus.DataWidth is (%d) > transaction width (%d), MSB will be truncated.", bus.DataWidth, transaction_width));
@@ -121,8 +121,8 @@ module renode_apb3_requester (
           $sformatf("Bus bus.bus.DataWidth is (%d) < transaction width (%d), MSB will be zero-extended.", bus.DataWidth, transaction_width));
     end
 
-    write_address = address_t'(runtime.controller.write_transaction_address);
-    write_data = data_t'(runtime.controller.write_transaction_data);
+    write_address = address_t'(runtime.controllers[RenodeManagerIndex].write_transaction_address);
+    write_data = data_t'(runtime.controllers[RenodeManagerIndex].write_transaction_data);
     write_mode = 1'b1;
     start_transaction = 1'b1;
     @(posedge clk) start_transaction <= 1'b0;
@@ -174,9 +174,9 @@ module renode_apb3_requester (
         S_ACCESS: begin
           if (pready) begin
             if (write_mode) begin
-              runtime.controller.write_respond(1'b0);  // Notify Renode that write is done
+              runtime.controllers[RenodeManagerIndex].write_respond(1'b0);  // Notify Renode that write is done
             end else begin
-              runtime.controller.read_respond(renode_pkg::data_t'(prdata), 1'b0);
+              runtime.controllers[RenodeManagerIndex].read_respond(renode_pkg::data_t'(prdata), 1'b0);
             end
           end
         end
