@@ -306,6 +306,22 @@ dmac_ns: DMA.RenesasRZG_DMAC @ {
     [0-15] -> gic@[125-140] | nvic@[125-140]
     ErrorIRQ -> gic@141 | nvic@141
 
+ia55: IRQControllers.RenesasRZG_IRQController @ {
+        sysbus new Bus.BusPointRegistration { address: 0x110A0000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x410A0000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x510A0000; cpu: cpu_m33 }  // Secure
+    }
+    [IRQ0, IRQ1, IRQ2, IRQ3, IRQ4, IRQ5, IRQ6, IRQ7] -> gic@[1-8]
+    [0-31] -> gic@[444-475]
+
+im33: IRQControllers.RenesasRZG_IRQController @ {
+        sysbus new Bus.BusPointRegistration { address: 0x110B0000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x410B0000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x510B0000; cpu: cpu_m33 }  // Secure
+    }
+    [IRQ0, IRQ1, IRQ2, IRQ3, IRQ4, IRQ5, IRQ6, IRQ7] -> nvic@[1-8]
+    [0-31] -> nvic@[444-475]
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -345,8 +361,6 @@ sysbus:
         Tag <0x011070000 0x10000>   "TZC (DDR) (Cortex-A55)"
         Tag <0x011080000 0x10000>   "SRAM ACPU (Reg) (Cortex-A55)"
         Tag <0x011090000 0x10000>   "SRAM MCPU (Reg) (Cortex-A55)"
-        Tag <0x0110A0000 0x10000>   "IA55 (Interrupt controller) (Cortex-A55)"
-        Tag <0x0110B0000 0x10000>   "IM33 (Interrupt controller) (Cortex-A55)"
         Tag <0x011400000 0x10000>   "DDR (PHY) (Cortex-A55)"
         Tag <0x011410000 0x10000>   "DDR (Control Reg) (Cortex-A55)"
         Tag <0x011840000 0x10000>   "Mali-G31 (Cortex-A55)"
@@ -397,8 +411,6 @@ sysbus:
         Tag <0x41070000 0x10000>    "TZC (DDR) (Cortex-M33, Non-secure)"
         Tag <0x41080000 0x10000>    "SRAM ACPU (Reg) (Cortex-M33, Non-secure)"
         Tag <0x41090000 0x10000>    "SRAM MCPU (Reg) (Cortex-M33, Non-secure)"
-        Tag <0x410A0000 0x10000>    "IA55 (Interrupt controller) (Cortex-M33, Non-secure)"
-        Tag <0x410B0000 0x10000>    "IM33 (Interrupt controller) (Cortex-M33, Non-secure)"
         Tag <0x41400000 0x10000>    "DDR (PHY) (Cortex-M33, Non-secure)"
         Tag <0x41410000 0x10000>    "DDR (Control Reg) (Cortex-M33, Non-secure)"
         Tag <0x41840000 0x10000>    "Mali-G31 (Cortex-M33, Non-secure)"
@@ -449,8 +461,6 @@ sysbus:
         Tag <0x51070000 0x10000>    "TZC (DDR) (Cortex-M33, Secure)"
         Tag <0x51080000 0x10000>    "SRAM ACPU (Reg) (Cortex-M33, Secure)"
         Tag <0x51090000 0x10000>    "SRAM MCPU (Reg) (Cortex-M33, Secure)"
-        Tag <0x510A0000 0x10000>    "IA55 (Interrupt controller) (Cortex-M33, Secure)"
-        Tag <0x510B0000 0x10000>    "IM33 (Interrupt controller) (Cortex-M33, Secure)"
         Tag <0x51400000 0x10000>    "DDR (PHY) (Cortex-M33, Secure)"
         Tag <0x51410000 0x10000>    "DDR (Control Reg) (Cortex-M33, Secure)"
         Tag <0x51840000 0x10000>    "Mali-G31 (Cortex-M33, Secure)"
