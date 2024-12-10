@@ -10,7 +10,8 @@
 import renode_pkg::renode_runtime, renode_pkg::LogWarning;
 
 module renode_apb3_completer #(
-    parameter int unsigned OutputLatency = 0
+    parameter int unsigned OutputLatency = 0,
+    int RenodeSubordinateIndex = 0
 ) (
     ref renode_runtime runtime,
     renode_apb3_if bus
@@ -45,18 +46,18 @@ module renode_apb3_completer #(
   assign bus.pslverr = pslverr;
 
   // Connection initiated reset
-  always @(runtime.peripheral.reset_assert_request) begin
+  always @(runtime.peripherals[RenodeSubordinateIndex].reset_assert_request) begin
     rst_n = 0;
     // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_assert_respond();
+    runtime.peripherals[RenodeSubordinateIndex].reset_assert_respond();
   end
 
-  always @(runtime.peripheral.reset_deassert_request) begin
+  always @(runtime.peripherals[RenodeSubordinateIndex].reset_deassert_request) begin
     rst_n = 1;
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_deassert_respond();
+    runtime.peripherals[RenodeSubordinateIndex].reset_deassert_respond();
   end
 
   renode_pkg::valid_bits_e valid_bits;
@@ -106,7 +107,7 @@ module renode_apb3_completer #(
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
           begin
-            runtime.peripheral.write(renode_pkg::address_t'(paddr), valid_bits, renode_pkg::data_t'(pwdata),
+            runtime.peripherals[RenodeSubordinateIndex].write(renode_pkg::address_t'(paddr), valid_bits, renode_pkg::data_t'(pwdata),
                              is_error);
             if (is_error) begin
               runtime.connection.log(LogWarning, "Renode connection write transfer was unable to complete");
@@ -120,8 +121,8 @@ module renode_apb3_completer #(
         // Workaround::Bug::Verilator::Task call inside of always block requires using fork...join
         fork
           begin
-            // The runtime.peripheral.read call may cause elapse of a simulation time.
-            runtime.peripheral.read(renode_pkg::address_t'(paddr), valid_bits, prdata_int, is_error);
+            // The runtime.peripherals[RenodeSubordinateIndex].read call may cause elapse of a simulation time.
+            runtime.peripherals[RenodeSubordinateIndex].read(renode_pkg::address_t'(paddr), valid_bits, prdata_int, is_error);
             if (is_error) begin
               runtime.connection.log(LogWarning, "Renode connection read transfer was unable to complete");
             end

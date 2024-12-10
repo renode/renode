@@ -10,7 +10,7 @@
 
 import renode_pkg::renode_runtime, renode_pkg::LogWarning;
 
-module renode_ahb_subordinate (
+module renode_ahb_subordinate #(int RenodeSubordinateIndex = 0) (
     ref renode_runtime runtime,
     renode_ahb_if bus
 );
@@ -20,18 +20,18 @@ module renode_ahb_subordinate (
   typedef logic [bus.DataWidth-1:0] data_t;
   wire clk = bus.hclk;
 
-  always @(runtime.peripheral.reset_assert_request) begin
+  always @(runtime.peripherals[RenodeSubordinateIndex].reset_assert_request) begin
     bus.hresetn = 0;
     bus.hresp = Okay;
     bus.hreadyout = 1;
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_assert_respond();
+    runtime.peripherals[RenodeSubordinateIndex].reset_assert_respond();
   end
 
-  always @(runtime.peripheral.reset_deassert_request) begin
+  always @(runtime.peripherals[RenodeSubordinateIndex].reset_deassert_request) begin
     bus.hresetn = 1;
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_deassert_respond();
+    runtime.peripherals[RenodeSubordinateIndex].reset_deassert_respond();
   end
 
   always @(posedge clk) transaction();
@@ -46,7 +46,7 @@ module renode_ahb_subordinate (
 
     wait_for_transfer(address, valid_bits, direction, is_invalid);
 
-    // The runtime.peripheral.read call may consume an unknown number of clock cycles.
+    // The runtime.peripherals[RenodeSubordinateIndex].read call may consume an unknown number of clock cycles.
     // To to make the logic simpler both read and write transactions contain at least one cycle with a deasserted ready.
     // It also ensures that address and data phases don't overlap between transactions.
     bus.hreadyout <= 0;
@@ -54,11 +54,11 @@ module renode_ahb_subordinate (
 
     if (!is_invalid) begin
       if (direction == Read) begin
-        runtime.peripheral.read(address, valid_bits, data, is_error);
+        runtime.peripherals[RenodeSubordinateIndex].read(address, valid_bits, data, is_error);
         bus.hrdata = data_t'(data & valid_bits);
         if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h", address));
       end else begin
-        runtime.peripheral.write(address, valid_bits, renode_pkg::data_t'(bus.hwdata) & valid_bits, is_error);
+        runtime.peripherals[RenodeSubordinateIndex].write(address, valid_bits, renode_pkg::data_t'(bus.hwdata) & valid_bits, is_error);
         if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to write data to Renode at address 'h%h", address));
       end
     end

@@ -205,17 +205,17 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             cosimConnection.Connect();
         }
 
-        public void Send(ActionType actionId, ulong offset, ulong value)
+        public void Send(ActionType actionId, ulong offset, ulong value, int peripheralIdx)
         {
-            if(!cosimConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value, peripheralIdx)))
             {
                 AbortAndLogError("Send error!");
             }
         }
 
-        public void Respond(ActionType actionId, ulong offset, ulong value)
+        public void Respond(ActionType actionId, ulong offset, ulong value, int peripheralIdx)
         {
-            if(!cosimConnection.TryRespond(new ProtocolMessage(actionId, offset, value)))
+            if(!cosimConnection.TryRespond(new ProtocolMessage(actionId, offset, value, peripheralIdx)))
             {
                 AbortAndLogError("Respond error!");
             }
@@ -257,12 +257,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 timer.Reset();
             }
-            Send(ActionType.ResetPeripheral, 0, 0);
+            Send(ActionType.ResetPeripheral, 0, 0, ProtocolMessage.NoPeripheralIndex);
         }
 
         public void SendGPIO(int number, bool value)
         {
-            Write(ActionType.Interrupt, number, value ? 1ul : 0ul);
+            Write(ActionType.Interrupt, number, value ? 1ul : 0ul, ProtocolMessage.NoPeripheralIndex);
         }
 
         public string ConnectionParameters => (cosimConnection as SocketConnection)?.ConnectionParameters ?? "";
@@ -287,25 +287,25 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             gpioEntries.RemoveAll(entry => entry.range.Equals(translationRange));
         }
 
-        public void Write(ActionType type, long offset, ulong value)
+        public void Write(ActionType type, long offset, ulong value, int peripheralIndex)
         {
             if(!IsConnected)
             {
                 this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath or connect to a simulator first!");
                 return;
             }
-            Send(type, (ulong)offset, value);
+            Send(type, (ulong)offset, value, peripheralIndex);
             ValidateResponse(Receive());
         }
 
-        public ulong Read(ActionType type, long offset)
+        public ulong Read(ActionType type, long offset, int peripheralIndex)
         {
             if(!IsConnected)
             {
                 this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath or connect to a simulator first!");
                 return 0;
             }
-            Send(type, (ulong)offset, 0);
+            Send(type, (ulong)offset, 0, peripheralIndex);
             var result = Receive();
             ValidateResponse(result);
 
@@ -348,7 +348,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 timer = new LimitTimer(machine.ClockSource, frequency, null, LimitTimerName, limitBuffer, enabled: true, eventEnabled: true, autoUpdate: true);
                 timer.LimitReached += () =>
                 {
-                    if(!cosimConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                    if(!cosimConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer, ProtocolMessage.NoPeripheralIndex)))
                     {
                         AbortAndLogError("Send error!");
                     }
@@ -406,38 +406,38 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 case ActionType.PushByte:
                     this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
+                    Respond(ActionType.PushConfirmation, 0, 0, message.PeripheralIndex);
                     break;
                 case ActionType.PushWord:
                     this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
+                    Respond(ActionType.PushConfirmation, 0, 0, message.PeripheralIndex);
                     break;
                 case ActionType.PushDoubleWord:
                     this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
+                    Respond(ActionType.PushConfirmation, 0, 0, message.PeripheralIndex);
                     break;
                 case ActionType.PushQuadWord:
                     this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
                     machine.SystemBus.WriteQuadWord(message.Address, message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
+                    Respond(ActionType.PushConfirmation, 0, 0, message.PeripheralIndex);
                     break;
                 case ActionType.GetByte:
                     this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(message.Address));
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(message.Address), message.PeripheralIndex);
                     break;
                 case ActionType.GetWord:
                     this.Log(LogLevel.Noisy, "Requested word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(message.Address));
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(message.Address), message.PeripheralIndex);
                     break;
                 case ActionType.GetDoubleWord:
                     this.Log(LogLevel.Noisy, "Requested double word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(message.Address));
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(message.Address), message.PeripheralIndex);
                     break;
                 case ActionType.GetQuadWord:
                     this.Log(LogLevel.Noisy, "Requested quad word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(message.Address));
+                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(message.Address), message.PeripheralIndex);
                     break;
                 case ActionType.TickClock:
                     allTicksProcessedARE.Set();
@@ -503,6 +503,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private readonly ICoSimulationConnection cosimConnection;
 
         private const int DefaultTimeout = 3000;
+
         private string simulationFilePath;
         private IMachine machine;
         private bool started;

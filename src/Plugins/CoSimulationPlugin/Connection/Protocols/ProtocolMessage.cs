@@ -12,11 +12,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
     [StructLayout(LayoutKind.Sequential, Pack = 2)]
     public struct ProtocolMessage
     {
-        public ProtocolMessage(ActionType actionId, ulong address, ulong data)
+        public ProtocolMessage(ActionType actionId, ulong address, ulong data, int peripheralIndex)
         {
             this.ActionId = actionId;
             this.Address = address;
             this.Data = data;
+            this.PeripheralIndex = peripheralIndex;
         }
 
         public byte[] Serialize()
@@ -61,5 +62,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
         public ActionType ActionId { get; set; }
         public ulong Address { get; set; }
         public ulong Data { get; set; }
+        public int PeripheralIndex { get; set; }
+
+        // Peripheral index used for messages that are not associated with any peripherals.
+        public const int NoPeripheralIndex = -1;
     }
 }

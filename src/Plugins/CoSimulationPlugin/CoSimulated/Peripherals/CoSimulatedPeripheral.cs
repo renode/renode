@@ -25,12 +25,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null,  bool createConnection = true,
-            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
+            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null, int cosimManagerIndex = 0)
         {
             UseAbsoluteAddress = useAbsoluteAddress;
             this.maxWidth = maxWidth;
             this.renodeToCosimSignalsOffset = renodeToCosimSignalsOffset;
             this.cosimToRenodeSignalRange = cosimToRenodeSignalRange;
+            CoSimManagerIndex = cosimManagerIndex;
 
             if(createConnection)
             {
@@ -90,7 +91,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return 0;
             }
-            return (byte)connection.Read(ActionType.ReadFromBusByte, offset);
+            return (byte)connection.Read(ActionType.ReadFromBusByte, offset, CoSimManagerIndex);
         }
 
         public ushort ReadWord(long offset)
@@ -100,7 +101,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return 0;
             }
-            return (ushort)connection.Read(ActionType.ReadFromBusWord, offset);
+            return (ushort)connection.Read(ActionType.ReadFromBusWord, offset, CoSimManagerIndex);
         }
 
         public uint ReadDoubleWord(long offset)
@@ -110,7 +111,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return 0;
             }
-            return (uint)connection.Read(ActionType.ReadFromBusDoubleWord, offset);
+            return (uint)connection.Read(ActionType.ReadFromBusDoubleWord, offset, CoSimManagerIndex);
         }
 
         public ulong ReadQuadWord(long offset)
@@ -120,7 +121,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return 0;
             }
-            return connection.Read(ActionType.ReadFromBusQuadWord, offset);
+            return connection.Read(ActionType.ReadFromBusQuadWord, offset, CoSimManagerIndex);
         }
 
         public void WriteByte(long offset, byte value)
@@ -128,7 +129,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
             if(VerifyLength(8, offset, value))
             {
-                connection.Write(ActionType.WriteToBusByte, offset, value);
+                connection.Write(ActionType.WriteToBusByte, offset, value, CoSimManagerIndex);
             }
         }
 
@@ -137,7 +138,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
             if(VerifyLength(16, offset, value))
             {
-                connection.Write(ActionType.WriteToBusWord, offset, value);
+                connection.Write(ActionType.WriteToBusWord, offset, value, CoSimManagerIndex);
             }
         }
 
@@ -146,7 +147,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
             if(VerifyLength(32, offset, value))
             {
-                connection.Write(ActionType.WriteToBusDoubleWord, offset, value);
+                connection.Write(ActionType.WriteToBusDoubleWord, offset, value, CoSimManagerIndex);
             }
         }
 
@@ -155,7 +156,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
             if(VerifyLength(64, offset, value))
             {
-                connection.Write(ActionType.WriteToBusQuadWord, offset, value);
+                connection.Write(ActionType.WriteToBusQuadWord, offset, value, CoSimManagerIndex);
             }
         }
 
@@ -299,6 +300,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         protected const ulong LimitBuffer = 1000000;
         protected const int DefaultTimeout  = 3000;
         readonly protected Range? cosimToRenodeSignalRange;
+        protected int CoSimManagerIndex;
 
         private int maxWidth;
         private ulong renodeToCosimSignalsOffset;

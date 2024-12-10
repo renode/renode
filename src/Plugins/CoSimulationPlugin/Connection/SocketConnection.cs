@@ -125,7 +125,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             if(IsConnected)
             {
                 parentElement.DebugLog("Sending 'Disconnect' message to close peripheral gracefully...");
-                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0, ProtocolMessage.NoPeripheralIndex));
                 mainSocketComunicator.CancelCommunication();
             }
 
@@ -307,7 +307,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private bool TryHandshake()
         {
-            return TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0))
+            return TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0, ProtocolMessage.NoPeripheralIndex))
                    && TryReceiveMessage(out var result)
                    && result.ActionId == ActionType.Handshake;
         }

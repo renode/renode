@@ -8,9 +8,9 @@
 
 `timescale 1ns / 1ps
 
-import renode_pkg::renode_runtime, renode_pkg::LogWarning;
+import renode_pkg::renode_runtime, renode_pkg::bus_connection, renode_pkg::LogWarning;
 
-module renode_ahb_manager (
+module renode_ahb_manager #(int RenodeManagerIndex = 0) (
     ref renode_runtime runtime,
     renode_ahb_if bus
 );
@@ -20,33 +20,33 @@ module renode_ahb_manager (
   typedef logic [bus.DataWidth-1:0] data_t;
   wire clk = bus.hclk;
 
-  always @(runtime.controller.reset_assert_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].reset_assert_request) begin
     bus.hresetn = 0;
     bus.haddr   = '0;
     bus.htrans  = Idle;
     repeat (2) @(posedge clk);
-    runtime.controller.reset_assert_respond();
+    runtime.controllers[RenodeManagerIndex].reset_assert_respond();
   end
 
-  always @(runtime.controller.reset_deassert_request) begin
+  always @(runtime.controllers[RenodeManagerIndex].reset_deassert_request) begin
     bus.hresetn = 1;
     repeat (2) @(posedge clk);
-    runtime.controller.reset_deassert_respond();
+    runtime.controllers[RenodeManagerIndex].reset_deassert_respond();
   end
 
-  always @(runtime.controller.read_transaction_request) read_transaction();
-  always @(runtime.controller.write_transaction_request) write_transaction();
+  always @(runtime.controllers[RenodeManagerIndex].read_transaction_request) read_transaction();
+  always @(runtime.controllers[RenodeManagerIndex].write_transaction_request) write_transaction();
 
   task static write_transaction();
     renode_pkg::valid_bits_e valid_bits;
     data_t data;
     bit is_invalid;
 
-    valid_bits = runtime.controller.write_transaction_data_bits;
-    data = data_t'(runtime.controller.write_transaction_data & valid_bits);
-    configure_transfer(runtime.controller.write_transaction_address, valid_bits, Write, is_invalid);
+    valid_bits = runtime.controllers[RenodeManagerIndex].write_transaction_data_bits;
+    data = data_t'(runtime.controllers[RenodeManagerIndex].write_transaction_data & valid_bits);
+    configure_transfer(runtime.controllers[RenodeManagerIndex].write_transaction_address, valid_bits, Write, is_invalid);
     if (is_invalid) begin
-        runtime.controller.write_respond(is_invalid);
+        runtime.controllers[RenodeManagerIndex].write_respond(is_invalid);
         return;
     end
 
@@ -55,7 +55,7 @@ module renode_ahb_manager (
     bus.htrans <= Idle;
 
     do @(posedge clk); while (!bus.hready);
-    runtime.controller.write_respond(is_response_error(bus.hresp));
+    runtime.controllers[RenodeManagerIndex].write_respond(is_response_error(bus.hresp));
   endtask
 
   task static read_transaction();
@@ -64,10 +64,10 @@ module renode_ahb_manager (
     bit is_invalid;
     bit is_error;
 
-    valid_bits = runtime.controller.read_transaction_data_bits;
-    configure_transfer(runtime.controller.read_transaction_address, valid_bits, Read, is_invalid);
+    valid_bits = runtime.controllers[RenodeManagerIndex].read_transaction_data_bits;
+    configure_transfer(runtime.controllers[RenodeManagerIndex].read_transaction_address, valid_bits, Read, is_invalid);
     if (is_invalid) begin
-        runtime.controller.read_respond(renode_pkg::data_t'(0), is_invalid);
+        runtime.controllers[RenodeManagerIndex].read_respond(renode_pkg::data_t'(0), is_invalid);
         return;
     end
 
@@ -76,7 +76,7 @@ module renode_ahb_manager (
     do @(posedge clk); while (!bus.hready);
     data = bus.hrdata;
     is_error = is_response_error(bus.hresp);
-    runtime.controller.read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
+    runtime.controllers[RenodeManagerIndex].read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
   endtask
 
   task static configure_transfer(renode_pkg::address_t address, renode_pkg::valid_bits_e valid_bits, transfer_direction_e direction, output logic is_invalid);

@@ -32,9 +32,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     {
         public CoSimulatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
             string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
+            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null, int cosimManagerIndex = 0)
             : base(0, cpuType, machine, endianness, bitness)
         {
+            this.cosimManagerIndex = cosimManagerIndex;
+
             cosimConnection = new CoSimulationConnection(machine, "cpu_cosim_cosimConnection", 0,
                         simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
                         simulationContextLinux, simulationContextWindows, simulationContextMacOS,
@@ -91,7 +93,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
             lock(cosimConnectionLock)
             {
-                cosimConnection.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
+                cosimConnection.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0), cosimManagerIndex);
             }
         }
 
@@ -100,7 +102,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             lock(cosimConnectionLock)
             {
                 setRegisterValue = false;
-                cosimConnection.Send(ActionType.RegisterSet, (ulong)register, (ulong) value);
+                cosimConnection.Send(ActionType.RegisterSet, (ulong)register, (ulong) value, cosimManagerIndex);
                 while(!setRegisterValue) // This kind of while loops are for socket communication
                 {
                     cosimConnection.HandleMessage();
@@ -113,7 +115,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             lock(cosimConnectionLock)
             {
                 gotRegisterValue = false;
-                cosimConnection.Send(ActionType.RegisterGet, (ulong)register, 0);
+                cosimConnection.Send(ActionType.RegisterGet, (ulong)register, 0, cosimManagerIndex);
                 while(!gotRegisterValue)
                 {
                     cosimConnection.HandleMessage();
@@ -135,7 +137,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                         while(instructionsExecutedThisRound < 1)
                         {
                             gotStep = false;
-                            cosimConnection.Send(ActionType.Step, 0, 1);
+                            cosimConnection.Send(ActionType.Step, 0, 1, cosimManagerIndex);
                             while(!gotStep)
                             {
                                cosimConnection.HandleMessage();
@@ -145,7 +147,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     else
                     {
                         ticksProcessed = false;
-                        cosimConnection.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute);
+                        cosimConnection.Send(ActionType.TickClock, 0, numberOfInstructionsToExecute, cosimManagerIndex);
                         while(!ticksProcessed)
                         {
                             cosimConnection.HandleMessage();
@@ -198,10 +200,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                         switch(executionMode)
                         {
                             case ExecutionMode.Continuous:
-                                cosimConnection.Send(ActionType.SingleStepMode, 0, 0);
+                                cosimConnection.Send(ActionType.SingleStepMode, 0, 0, cosimManagerIndex);
                                 break;
                             case ExecutionMode.SingleStep:
-                                cosimConnection.Send(ActionType.SingleStepMode, 0, 1);
+                                cosimConnection.Send(ActionType.SingleStepMode, 0, 1, cosimManagerIndex);
                                 break;
                         }
 
@@ -306,6 +308,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         private ulong registerValue;
 
+        private int cosimManagerIndex;
         private bool gotRegisterValue;
         private bool setRegisterValue;
         private bool gotSingleStepMode;
