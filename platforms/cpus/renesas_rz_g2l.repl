@@ -235,6 +235,8 @@ gpio: GPIOPort.RenesasRZG_GPIO @ {
         sysbus new Bus.BusPointRegistration { address: 0x41030000; cpu: cpu_m33 }; // Non-secure
         sysbus new Bus.BusPointRegistration { address: 0x51030000; cpu: cpu_m33 }  // Secure
     }
+    [IRQ0, IRQ1, IRQ2, IRQ3, IRQ4, IRQ5, IRQ6, IRQ7] -> ia55@[1-8] | im33@[1-8]
+    [0-122] -> ia55@[9-131] | im33@[9-131]
 
 riic0: I2C.RenesasRZG_IIC @ {
         sysbus new Bus.BusPointRegistration { address: 0x010058000; cluster: cluster };
