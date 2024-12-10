@@ -174,6 +174,7 @@ scif4: SCI.RenesasRZG_SCIFA @ {
     [0-4] -> gic@[400-404] | nvic@[400-404]
 
 wdt_m33: Timers.RenesasRZG_Watchdog @ {
+        cpg_sysc 2;
         sysbus new Bus.BusPointRegistration { address: 0x012800400; cluster: cluster };
         sysbus new Bus.BusPointRegistration { address: 0x42800400; cpu: cpu_m33 }; // Non-secure
         sysbus new Bus.BusPointRegistration { address: 0x52800400; cpu: cpu_m33 }  // Secure
@@ -182,6 +183,7 @@ wdt_m33: Timers.RenesasRZG_Watchdog @ {
     -> gic@49 | nvic@49
 
 wdt_a55_0: Timers.RenesasRZG_Watchdog @ {
+        cpg_sysc 0;
         sysbus new Bus.BusPointRegistration { address: 0x012800800; cluster: cluster };
         sysbus new Bus.BusPointRegistration { address: 0x42800800; cpu: cpu_m33 }; // Non-secure
         sysbus new Bus.BusPointRegistration { address: 0x52800800; cpu: cpu_m33 }  // Secure
@@ -190,6 +192,7 @@ wdt_a55_0: Timers.RenesasRZG_Watchdog @ {
     -> gic@53 | nvic@53
 
 wdt_a55_1: Timers.RenesasRZG_Watchdog @ {
+        cpg_sysc 1;
         sysbus new Bus.BusPointRegistration { address: 0x012800C00; cluster: cluster };
         sysbus new Bus.BusPointRegistration { address: 0x42800C00; cpu: cpu_m33 }; // Non-secure
         sysbus new Bus.BusPointRegistration { address: 0x52800C00; cpu: cpu_m33 }  // Secure
@@ -285,12 +288,6 @@ riic3: I2C.RenesasRZG_IIC @ {
     StopIRQ -> gic@376 | nvic@376
     StartIRQ -> gic@377 | nvic@377
 
-cpg: Miscellaneous.RenesasRZG_CPG @ {
-        sysbus new Bus.BusPointRegistration { address: 0x11010000; cluster: cluster };
-        sysbus new Bus.BusPointRegistration { address: 0x41010000; cpu: cpu_m33 }; // Non-secure
-        sysbus new Bus.BusPointRegistration { address: 0x51010000; cpu: cpu_m33 }  // Secure
-    }
-
 dmac_s: DMA.RenesasRZG_DMAC @ {
         sysbus new Bus.BusPointRegistration { address: 0x011800000; cluster: cluster };
         sysbus new Bus.BusPointRegistration { address: 0x41800000; cpu: cpu_m33 }; // Non-secure
@@ -330,6 +327,14 @@ syc: Timers.RenesasRZG_SYC @ {
     }
     frequency: 24000000
 
+cpg_sysc: Miscellaneous.RenesasRZG_CPG_SYSC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11010000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41010000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51010000; cpu: cpu_m33 }  // Secure
+    }
+    cpu0: cpu0
+    cpu1: cpu1
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -361,7 +366,6 @@ sysbus:
         Tag <0x010880000 0x10000>   "FCPVD (Cortex-A55)"
         Tag <0x010890000 0x10000>   "DU (Cortex-A55)"
         Tag <0x010C00000 0x1000000> "CST (CoreSight) (Cortex-A55)"
-        Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
         Tag <0x011050000 0x10000>   "TZC (SRAM MCPU) (Cortex-A55)"
         Tag <0x011060000 0x10000>   "TZC (SPI Multi I/O) (Cortex-A55)"
@@ -410,7 +414,6 @@ sysbus:
         Tag <0x40880000 0x10000>    "FCPVD (Cortex-M33, Non-secure)"
         Tag <0x40890000 0x10000>    "DU (Cortex-M33, Non-secure)"
         Tag <0x40C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Non-secure)"
-        Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
         Tag <0x41050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Non-secure)"
         Tag <0x41060000 0x10000>    "TZC (SPI Multi I/O) (Cortex-M33, Non-secure)"
@@ -459,7 +462,6 @@ sysbus:
         Tag <0x50880000 0x10000>    "FCPVD (Cortex-M33, Secure)"
         Tag <0x50890000 0x10000>    "DU (Cortex-M33, Secure)"
         Tag <0x50C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Secure)"
-        Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
         Tag <0x51050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Secure)"
         Tag <0x51060000 0x10000>    "TZC (SPI Multi I/O) (Cortex-M33, Secure)"
