@@ -136,14 +136,14 @@ Should Communicate Over IIC
 
     Execute Command                 riic3.adxl345 FeedSample 1468 745 8921
     Wait For Line On Uart           X-axis = 367.00, Y-axis = 186.00, Z-axis = 2230.00
-    
+
     Execute Command                 riic3.adxl345 FeedSample 3912 8888 5456
     Wait For Line On Uart           X-axis = 978.00, Y-axis = 2222.00, Z-axis = 1364.00
-    
+
     Execute Command                 riic3.adxl345 FeedSample 0 5000 0
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
 
-    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00
 
 Should Copy Memory With DMA
     ${source}=                      Set Variable  0x60000100
