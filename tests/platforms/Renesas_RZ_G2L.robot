@@ -6,6 +6,7 @@ ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2
 ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
 ${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.elf-s_612428-2a79e42c3efdbc19207a7c1b2b3b3824e450b2ef
 ${IIC_MASTER_ELF}                   ${URL}/renesas-rzg2l_evk--fsp-riic_master_rzg2l_evk_ep.elf-s_522620-d57490521dd2e4dfcd4ca4a6cade57ce58228375
+${UBOOT_ELF}                        ${URL}/uboot.elf-s_4151104-c5de311d27f0823c3d888309795fdc0a5b31473b
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
 ...                                 led: Miscellaneous.LED @ gpio 0
@@ -179,3 +180,17 @@ Should Copy Memory With DMA
     Should Be Equal As Integers     ${flags}  0xE0  # Terminal count, DMA interrupt and register select are set
     ${result}=                      Execute Command  sysbus ReadDoubleWord ${destination} cpu_m33
     Should Be Equal As Integers     ${expected_value}  ${result}
+
+Should Run U-Boot
+    Execute Command                 set bin @${UBOOT_ELF}
+    Execute Command                 include @scripts/single-node/rzg2l_uboot.resc
+    Create Terminal Tester          sysbus.scif0  5  defaultPauseEmulation=true
+
+    Wait For Prompt On Uart         Hit any key to stop autoboot
+    Send Key To Uart                0x10
+
+    Wait For Prompt On Uart         >
+    Write Line To Uart              version
+
+    Wait For Line On Uart           U-Boot
+    Wait For Prompt On Uart         >
