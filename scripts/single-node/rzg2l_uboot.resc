@@ -1,0 +1,22 @@
+:name: Renesas SMARC EVK of RZ/G2L
+:description: This script runs U-Boot for Renesas SMARC EVK board based on RZ/G2L SoC
+
+using sysbus
+
+$name?="Renesas RZ/G2L"
+
+$bin?=@https://dl.antmicro.com/projects/renode/uboot.elf-s_4151104-c5de311d27f0823c3d888309795fdc0a5b31473b
+
+mach create $name
+include @platforms/cpus/renesas_rz_g2l.repl
+
+macro reset
+"""
+    cpu1 IsHalted true
+    cpu_m33 IsHalted true
+
+    sysbus LoadELF $bin cpu=cluster
+"""
+runMacro $reset
+
+showAnalyzer scif0
