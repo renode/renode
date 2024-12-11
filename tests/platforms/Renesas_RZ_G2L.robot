@@ -144,3 +144,38 @@ Should Communicate Over IIC
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
 
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 
+
+Should Copy Memory With DMA
+    ${source}=                      Set Variable  0x60000100
+    ${destination}=                 Set Variable  0x60000200
+    ${expected_value}=              Set Variable  0xAABBCCDD
+    ${channel_base}=                Set Variable  0x41800000
+    ${channel_status}=              Evaluate  ${channel_base} + 0x24
+    ${prog}=                        Catenate  SEPARATOR=\n
+    ...                             str r1, [r0, #0xC]  # N1SA register offset
+    ...                             str r2, [r0, #0x10]  # N1DA register offset
+    ...                             str r3, [r0, #0x14]  # N1TB register offset
+    ...                             str r4, [r0, #0x2C]  # CHCFG register offset
+    ...                             str r5, [r0, #0x28]  # CHCTRL register offset
+    ...                             str r6, [r0, #0x28]  # CHCTRL register offset
+
+    Execute Command                 mach create "Renesas RZ/G2L"
+    Execute Command                 machine LoadPlatformDescription @platforms/cpus/renesas_rz_g2l.repl
+    Execute Command                 cluster SetIsHalted true
+
+    Execute Command                 sysbus WriteDoubleWord ${source} ${expected_value} cpu_m33
+    Execute Command                 cpu_m33 SetRegister 0 ${channel_base}  # DMA Channel address
+    Execute Command                 cpu_m33 SetRegister 1 ${source}  # Source address
+    Execute Command                 cpu_m33 SetRegister 2 ${destination}  # Destination address
+    Execute Command                 cpu_m33 SetRegister 3 0x4  # Transfer 4 bytes
+    Execute Command                 cpu_m33 SetRegister 4 0x10403000  # Read access: double word, full transfer, select register bank 1
+    Execute Command                 cpu_m33 SetRegister 5 0x8  # Reset DMA
+    Execute Command                 cpu_m33 SetRegister 6 0x5  # Perform transaction
+
+    Execute Command                 cpu_m33 AssembleBlock 0x60000000 "${prog}"
+    Execute Command                 cpu_m33 PC 0x60000000
+    Execute Command                 cpu_m33 Step 6
+    ${flags}=                       Execute Command  sysbus ReadDoubleWord ${channel_status} cpu_m33
+    Should Be Equal As Integers     ${flags}  0xE0  # Terminal count, DMA interrupt and register select are set
+    ${result}=                      Execute Command  sysbus ReadDoubleWord ${destination} cpu_m33
+    Should Be Equal As Integers     ${expected_value}  ${result}
