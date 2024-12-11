@@ -7,9 +7,17 @@
 #include "renode_bridge.h"
 
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#ifdef __linux__
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 #include "socket-cpp/Socket/TCPClient.h"
 
@@ -44,6 +52,7 @@ enum renode_action : uint8_t {
   // Response:
   //     address: duration of transaction in us
   //     payload: read value
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
   //     Otherwise identical to the request message.
   WRITE = 2,
   // Socket: forward, backward
@@ -54,6 +63,7 @@ enum renode_action : uint8_t {
   //     direct connection payload: value to write
   // Response:
   //     address: duration of transaction in us
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
   //     Otherwise identical to the request message.
   TIMESYNC = 3,
   // Socket: forward only
@@ -82,6 +92,14 @@ enum renode_action : uint8_t {
   //     payload: ignored
   // Response:
   //     Identical to the request message.
+  DMIREQ = 6,
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     address: address in target's address space
+  //     payload: ignored
+  //     to write connection_index: 0 for SystemBus
+  // Response is a dmi_message.
 };
 
 #pragma pack(push, 1)
@@ -91,6 +109,15 @@ struct renode_message {
   uint8_t connection_index;
   uint64_t address;
   uint64_t payload;
+};
+
+struct dmi_message {
+  renode_action action;
+  uint8_t allowed;
+  uint64_t start_address;
+  uint64_t end_address;
+  uint64_t mmf_offset;
+  char mmf_path[256];
 };
 #pragma pack(pop)
 
@@ -452,6 +479,10 @@ void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
     bytes_done += 8;
   }
 
+  if (connection_idx == 0 && message.connection_index == 1) {
+    payload.set_dmi_allowed(true);
+  }
+
   payload.set_response_status(tlm::TLM_OK_RESPONSE);
 }
 
@@ -489,14 +520,69 @@ renode_bridge::target_fw_handler::nb_transport_bw(
 
 void renode_bridge::target_fw_handler::invalidate_direct_mem_ptr(
     sc_dt::uint64, sc_dt::uint64) {
-  fprintf(stderr, "[ERROR] invalidate_direct_mem_ptr not implemented for "
-                  "target_fw_handler.\n");
+    fprintf(stderr, "[ERROR] invalidate_direct_mem_ptr not implemented for "
+                    "target_fw_handler.\n");
 }
 
 bool renode_bridge::target_fw_handler::get_direct_mem_ptr(
     tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data) {
-  fprintf(stderr, "[ERROR] get_direct_mem_ptr not implemented for "
-                  "target_fw_handler.\n");
+  if (connection_idx != 0) {
+    fprintf(stderr, "[ERROR] get_direct_mem_ptr not implemented for "
+                    "target_fw_handler.\n");
+    return false;
+  } else return bridge->service_backward_request_dmi(trans, dmi_data);
+}
+
+bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &payload, tlm::tlm_dmi &dmi_data) {
+
+#ifdef __linux__
+  renode_message message = {};
+  message.address = payload.get_address();
+  message.data_length = payload.get_data_length();
+  message.connection_index = 0;
+  message.action = renode_action::DMIREQ;
+
+  dmi_message response;
+
+  backward_connection->Send((char *)&message, sizeof(renode_message));
+
+  backward_connection->Receive((char *)&response, sizeof(dmi_message));
+
+  bool dmi_allowed = response.allowed;
+
+  if (dmi_allowed && response.mmf_offset % sysconf (_SC_PAGESIZE)) {
+      fprintf(stderr, "[ERROR] invalid offset for MMF %s\n", response.mmf_path);
+      dmi_allowed = false;
+  }
+
+  if (dmi_allowed) {
+    dmi_data.allow_read_write();
+    dmi_data.set_start_address (response.start_address);
+    dmi_data.set_end_address (response.end_address);
+    int mmf_fd = open (response.mmf_path, O_RDWR);
+    if (mmf_fd != -1) {
+      unsigned char* mmf_base = static_cast<unsigned char*>(mmap(
+        nullptr,
+        static_cast<size_t>(dmi_data.get_end_address() - dmi_data.get_start_address() + 1),
+        PROT_WRITE|PROT_READ,
+        MAP_SHARED,
+        mmf_fd,
+        response.mmf_offset
+      ));
+      if (mmf_base != MAP_FAILED) {
+        dmi_data.set_dmi_ptr (mmf_base);
+        return true;
+      }
+    }
+  }
+#else
+  // at present DMI support has been implemented for linux only.
+  // print a one-time warning for DMI request on another operating system
+  static bool dmi_disabled_warned = false;
+  if (!dmi_disabled_warned) fprintf(stderr, "[WARNING] DMI support is unimplemented on this operating system\n");
+  dmi_disabled_warned = true;
+#endif
+
   return false;
 }
 
