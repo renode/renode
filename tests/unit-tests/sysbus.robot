@@ -329,9 +329,13 @@ Test Registering Mapped Memory In Locked Range
     Start Emulation
 
     # Now, to really test if newly registered memory has been locked correctly, try executing code (instructions don't matter here)
-    # Cpu0 should abort immediately, and Cpu1 should fall out of memory range
-    Wait For Log Entry         mockCpu0: CPU abort \[PC=0x4000\]: Trying to execute code from disabled or locked memory at 0x00004000  timeout=10
-    Wait For Log Entry         mockCpu1: CPU abort \[PC=0x6000\]: Trying to execute code outside RAM or ROM at 0x00006000  timeout=10
+    # Cpu0 should abort immediately, and Cpu1 should quickly fall out of memory range
+    Wait For Log Entry         mockCpu0: CPU abort \[PC=0x4000\]: Trying to execute code from disabled or locked memory at 0x00004000  timeout=1
+
+    # We don't wait for the exact log because occasionally it contains another PC.
+    # In such cases, because of the aborted CPUs, the test would just freeze while waiting.
+    ${log}=  Wait For Log Entry    mockCpu1: CPU abort  timeout=1
+    Should Contain    ${log}       mockCpu1: CPU abort \[PC=0x6000\]: Trying to execute code outside RAM or ROM at 0x00006000
 
 Locked MappedMemory Should Not Be Accessible From CPU
     Create Machine With CPU And Two MappedMemory Peripherals
