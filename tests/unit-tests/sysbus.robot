@@ -307,6 +307,9 @@ Test Writing To A Locked Sysbus Range Registered Per CPU
     Should Block Write Byte    0x250  ${new_value_0x200}  sysbus.mockCpu1
 
 Test Registering Mapped Memory In Locked Range
+    # This test occasionally freezes so, until the underlying issue is fixed, let's fail after much more than enough time.
+    [Timeout]                  20 seconds
+
     # We want to test IMapped memory here, so we need CPU's presence for a full test
     # relocking is trivial for anything that isn't directly mapped to CPU (unmanaged memory)
     Requires                   sysbus-with-mock-cpus
