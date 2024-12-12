@@ -65,6 +65,7 @@ sram3: Memory.MappedMemory @ sysbus 0x63000000
     size: 0x1000000
 
 crc: CRC.SAM4S_CRCCU @ sysbus 0x40044000
+    ->nvic@32
 
 pioA: GPIOPort.SAM4S_PIO @ sysbus 0x400E0E00
     ->nvic@11
