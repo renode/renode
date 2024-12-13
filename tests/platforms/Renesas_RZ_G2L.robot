@@ -11,12 +11,18 @@ ${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.e
 ${IIC_MASTER_ELF}                   ${URL}/renesas-rzg2l_evk--fsp-riic_master_rzg2l_evk_ep.elf-s_522620-d57490521dd2e4dfcd4ca4a6cade57ce58228375
 ${UBOOT_ELF}                        ${URL}/uboot.elf-s_4151104-c5de311d27f0823c3d888309795fdc0a5b31473b
 ${MHU_ELF}                          ${URL}/renesas-rz_g2l--fsp-mhu_sample.elf-s_381944-3550734db5aa723c25c77142de4b7ebdeca0f1ba
+${INTC_IRQ_ELF}                     ${URL}/renesas-rzg2l_evk--fsp-intc_irq_rzg2l_evk_ep.elf-s_413044-05d74d1def85e983f80165ae13f125cf302507d0
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
 ...                                 led: Miscellaneous.LED @ gpio 0
 ...
 ...                                 gpio:
 ...                                 ${SPACE*4}100 -> led@0
+...                                 """
+${BUTTON_REPL}                      SEPARATOR=\n
+...                                 """
+...                                 button: Miscellaneous.Button @ gpio 1
+...                                 ${SPACE*4}-> gpio@7
 ...                                 """
 
 *** Keywords ***
@@ -214,3 +220,19 @@ Should Communicate Between Cores Using MHU
     Execute Command                 sysbus WriteDoubleWord ${receive_data} ${expected_data} cpu_m33
     Execute Command                 sysbus WriteDoubleWord ${irq_trigger_register} 0x1 cpu0  # Trigger MHU interrupt
     Wait For Line On Uart           MHU message received! (Channel: ${mhu_channel}, Data: ${expected_data})
+
+Should Detect External Interrupt
+    Prepare Machine                 ${INTC_IRQ_ELF}
+    Execute Command                 machine LoadPlatformDescriptionFromString ${BUTTON_REPL}
+    Prepare LED Tester
+    Prepare Segger RTT
+
+    Wait For Line On Uart           On pressing the user push button, an external IRQ is triggered, which toggles on-board LED.
+
+    Execute Command                 sysbus.gpio.button PressAndRelease
+    Wait For Line On Uart           LED State: High{ON}
+    Assert Led State                True  timeout=0.01
+
+    Execute Command                 sysbus.gpio.button PressAndRelease
+    Wait For Line On Uart           LED State: Low{OFF}
+    Assert Led State                False  timeout=0.01
