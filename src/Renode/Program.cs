@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -107,7 +107,6 @@ namespace Antmicro.Renode
 
             // set Termsharp as a default terminal if there is none already
             ConfigurationManager.Instance.Get("general", "terminal", "Termsharp");
-            ConsoleBackend.Instance.ReportRepeatingLines = !ConfigurationManager.Instance.Get("general", "collapse-repeated-log-entries", true);
         }
 
         private static string LongVersionString
