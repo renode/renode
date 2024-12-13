@@ -41,35 +41,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure\src\UI\UI_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
     <ProjectReference Include="..\..\lib\AntShell\AntShell\AntShell_NET.csproj"/>
     <ProjectReference Include="..\..\lib\Migrant\Migrant\Migrant_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Extensions\Extensions_NET.csproj"/>
     <ProjectReference Include="..\..\lib\options-parser\OptionsParser_NET.csproj"/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt\Xwt_NET.csproj"/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3_NET.csproj" Condition=" $(OS) != 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.WPF\Xwt.WPF_NET.csproj" Condition=" $(OS) == 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
     <ProjectReference Include="..\..\lib\termsharp\TermSharp_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-x86_64_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin_NET.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Plugins\TracePlugin\TracePlugin_NET.csproj"/>
     <ProjectReference Include="..\Plugins\WiresharkPlugin\WiresharkPlugin_NET.csproj"/>
     <ProjectReference Include="..\Plugins\CoSimulationPlugin\CoSimulationPlugin_NET.csproj"/>
     <ProjectReference Include="..\Plugins\SystemCPlugin\SystemCPlugin_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64_NET.csproj"/>
     <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt_NET.csproj"/>
     <ProjectReference Include="..\..\lib\Packet.Net\PacketDotNet\PacketDotNet_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-xtensa_NET.csproj"/>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm64_NET.csproj"/>
+    <ProjectReference Include="..\Infrastructure\src\Infrastructure_NET.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\lib\resources\images\windows_setup\renode_nobg.ico">

@@ -17,7 +17,6 @@
     <Compile Remove="SystemCModule\**\*"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
+    <ProjectReference Include="..\..\Infrastructure\src\Infrastructure_NET.csproj"/>
   </ItemGroup>
 </Project>

@@ -12,8 +12,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" /> 
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
-    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Infrastructure_NET.csproj"/>
     <ProjectReference Include="..\..\..\lib\Migrant\Migrant\Migrant_NET.csproj"/>
   </ItemGroup>
   <ItemGroup>

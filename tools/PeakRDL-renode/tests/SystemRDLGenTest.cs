@@ -155,7 +155,7 @@ namespace Antmicro.Renode.PeripheralsTests
             public string FieldType { get; set; }
 
             public Type GetFieldType() =>
-                Type.GetType("Antmicro.Renode.Core.Structure.Registers." + FieldType + ", Emulator");
+                Type.GetType("Antmicro.Renode.Core.Structure.Registers." + FieldType + ", Infrastructure");
         }
 
         public class RdlRegister
@@ -180,7 +180,7 @@ namespace Antmicro.Renode.PeripheralsTests
             }
 
             public Type GetRegisterContainerClass() =>
-                Type.GetType("Antmicro.Renode.Core.Structure.Registers." + RegisterContainerClass + ", Emulator");
+                Type.GetType("Antmicro.Renode.Core.Structure.Registers." + RegisterContainerClass + ", Infrastructure");
         }
 
         public List<RdlMeta> TestCases { get; set; }
