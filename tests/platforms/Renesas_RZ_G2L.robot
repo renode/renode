@@ -1,3 +1,6 @@
+*** Settings ***
+Library                             String
+
 *** Variables ***
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_ep.elf-s_450148-fec1da811a52fa94d39db555d0dccc28e246d28e
@@ -7,6 +10,7 @@ ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk
 ${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.elf-s_612428-2a79e42c3efdbc19207a7c1b2b3b3824e450b2ef
 ${IIC_MASTER_ELF}                   ${URL}/renesas-rzg2l_evk--fsp-riic_master_rzg2l_evk_ep.elf-s_522620-d57490521dd2e4dfcd4ca4a6cade57ce58228375
 ${UBOOT_ELF}                        ${URL}/uboot.elf-s_4151104-c5de311d27f0823c3d888309795fdc0a5b31473b
+${MHU_ELF}                          ${URL}/renesas-rz_g2l--fsp-mhu_sample.elf-s_381944-3550734db5aa723c25c77142de4b7ebdeca0f1ba
 ${LED_REPL}                         SEPARATOR=\n
 ...                                 """
 ...                                 led: Miscellaneous.LED @ gpio 0
@@ -194,3 +198,19 @@ Should Run U-Boot
 
     Wait For Line On Uart           U-Boot
     Wait For Prompt On Uart         >
+
+Should Communicate Between Cores Using MHU
+    Prepare Machine                 ${MHU_ELF}
+    Prepare Segger RTT
+
+    ${mhu_channel}=                 Set Variable  1
+    ${expected_data}=               Set Variable  0xAABBCCDD
+    ${shared_mem_base}=             Execute Command  sysbus GetSymbolAddress "__mhu_shmem_start" cpu_m33
+    ${shared_mem_base}=             Strip String  ${shared_mem_base}
+    ${receive_data}=                Evaluate  ${shared_mem_base} + ${mhu_channel} * 0x8 + 0x4  # Each channel has 8 bytes available 4 for transmission and 4 for reception
+    ${irq_trigger_register}=        Evaluate  0x010400000 + ${mhu_channel} * 0x20 + 0x4  # MSG_INT_SETn register visible from Cortex-A55
+
+    Wait For Line On Uart           MHU initialized correctly
+    Execute Command                 sysbus WriteDoubleWord ${receive_data} ${expected_data} cpu_m33
+    Execute Command                 sysbus WriteDoubleWord ${irq_trigger_register} 0x1 cpu0  # Trigger MHU interrupt
+    Wait For Line On Uart           MHU message received! (Channel: ${mhu_channel}, Data: ${expected_data})
