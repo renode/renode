@@ -162,7 +162,7 @@ Should Copy Memory With DMA
 
     Execute Command                 mach create "Renesas RZ/G2L"
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/renesas_rz_g2l.repl
-    Execute Command                 cluster SetIsHalted true
+    Execute Command                 cluster IsHalted true
 
     Execute Command                 sysbus WriteDoubleWord ${source} ${expected_value} cpu_m33
     Execute Command                 cpu_m33 SetRegister 0 ${channel_base}  # DMA Channel address
