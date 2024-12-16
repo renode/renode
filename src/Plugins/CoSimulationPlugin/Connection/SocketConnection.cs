@@ -5,6 +5,7 @@
 //  Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -52,9 +53,26 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public void Connect()
         {
-            if(!mainSocketComunicator.AcceptConnection(timeout)
-                || !asyncSocketComunicator.AcceptConnection(timeout)
-                || !TryHandshake())
+            var success = true;
+            if(!mainSocketComunicator.AcceptConnection(timeout))
+            {
+                parentElement.Log(LogLevel.Error, $"Main socket failed to accept connection after timeout of {timeout}ms.");
+                success = false;
+            }
+
+            if(success && !asyncSocketComunicator.AcceptConnection(timeout))
+            {
+                parentElement.Log(LogLevel.Error, $"Async socket failed to accept connection after timeout of {timeout}ms.");
+                success = false;
+            }
+
+            if(success && !TryHandshake())
+            {
+                parentElement.Log(LogLevel.Error, "Handshake with co-simulation failed.");
+                success = false;
+            }
+
+            if(!success)
             {
                 mainSocketComunicator.ResetConnections();
                 asyncSocketComunicator.ResetConnections();
@@ -206,6 +224,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             set
             {
                 simulationFilePath = value;
+                if(!File.Exists(simulationFilePath))
+                {
+                    parentElement.Log(LogLevel.Error, $"Simulation file \"{value}\" doesn't exist.");
+                }
                 parentElement.Log(LogLevel.Debug,
                     "Trying to run and connect to the cosimulated peripheral '{0}' through ports {1} and {2}...",
                     value, mainSocketComunicator.ListenerPort, asyncSocketComunicator.ListenerPort);
