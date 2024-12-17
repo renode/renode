@@ -10,7 +10,7 @@ using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public interface ICoSimulationConnection : IDisposable, IHasOwnLife
+    public interface ICoSimulationConnection : IDisposable
     {
         void Connect();
         bool TrySendMessage(ProtocolMessage message);

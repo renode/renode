@@ -78,7 +78,7 @@ Should Handle Empty UARTLite Binary
     Execute Command                 showAnalyzer sysbus.uart
     Execute Command                 sysbus LoadELF ${URI}/${BIN}
     Execute Command                 sysbus.cpu PC `sysbus GetSymbolAddress "vinit"`
-    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath or connect to a simulator first!*    Start Emulation
+    Wait For Log Entry              Set SimulationFilePath or connect to a simulator first!
 
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary
@@ -134,7 +134,7 @@ Should Handle Empty UARTLite Binary With Socket Based Communication
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLATFORM}
     Execute Command                 sysbus LoadELF ${URI}/${BIN}
     Execute Command                 sysbus.cpu PC `sysbus GetSymbolAddress "vinit"`
-    Run Keyword And Expect Error    *Cannot start emulation. Set SimulationFilePath or connect to a simulator first!*    Start Emulation
+    Wait For Log Entry              Set SimulationFilePath or connect to a simulator first!
 
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary With Socket Based Communication

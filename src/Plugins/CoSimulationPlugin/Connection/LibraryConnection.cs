@@ -94,23 +94,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             IsConnected = false;
         }
 
-        public void Start()
-        {
-            // intentionally left empty
-        }
-
-        public void Pause()
-        {
-            // intentionally left empty
-        }
-
-        public void Resume()
-        {
-            // intentionally left empty
-        }
-
-        public bool IsPaused => false;
-
         [Export]
         public void HandleMainMessage(IntPtr received)
         {

@@ -44,15 +44,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             InitializeRegisters();
         }
 
-        public override void Start()
-        {
-            base.Start();
-            if(!String.IsNullOrWhiteSpace(cosimConnection.SimulationFilePath))
-            {
-                cosimConnection.Start();
-            }
-        }
-
         public override void Reset()
         {
             base.Reset();
@@ -84,11 +75,12 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         public void OnGPIO(int number, bool value)
         {
-            this.NoisyLog("IRQ {0}, value {1}", number, value);
-            if(!IsStarted)
+            if(!cosimConnection.IsConnected)
             {
+                this.NoisyLog("OnGPIO for IRQ {number}, value {value} will have no effect, because co-simulation is not connected.");
                 return;
             }
+            this.NoisyLog("IRQ {0}, value {1}", number, value);
             lock(cosimConnectionLock)
             {
                 cosimConnection.Send(ActionType.Interrupt, (ulong)number, (ulong)(value ? 1 : 0));
@@ -295,7 +287,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 if(!String.IsNullOrWhiteSpace(value))
                 {
                     cosimConnection.SimulationFilePath = value;
-                    cosimConnection.Start();
                 }
             }
         }
