@@ -324,6 +324,13 @@ im33: IRQControllers.RenesasRZG_IRQController @ {
     [IRQ0, IRQ1, IRQ2, IRQ3, IRQ4, IRQ5, IRQ6, IRQ7] -> nvic@[1-8]
     [0-31] -> nvic@[444-475]
 
+syc: Timers.RenesasRZG_SYC @ {
+        sysbus new Bus.BusPointRegistration { address: 0x011000000; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41000000; cpu: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51000000; cpu: cpu_m33 }  // Secure
+    }
+    frequency: 24000000
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -355,7 +362,6 @@ sysbus:
         Tag <0x010880000 0x10000>   "FCPVD (Cortex-A55)"
         Tag <0x010890000 0x10000>   "DU (Cortex-A55)"
         Tag <0x010C00000 0x1000000> "CST (CoreSight) (Cortex-A55)"
-        Tag <0x011000000 0x10000>   "SYC (Cortex-A55)"
         Tag <0x011020000 0x10000>   "SYSC (Cortex-A55)"
         Tag <0x011040000 0x10000>   "TZC (SRAM ACPU) (Cortex-A55)"
         Tag <0x011050000 0x10000>   "TZC (SRAM MCPU) (Cortex-A55)"
@@ -405,7 +411,6 @@ sysbus:
         Tag <0x40880000 0x10000>    "FCPVD (Cortex-M33, Non-secure)"
         Tag <0x40890000 0x10000>    "DU (Cortex-M33, Non-secure)"
         Tag <0x40C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Non-secure)"
-        Tag <0x41000000 0x10000>    "SYC (Cortex-M33, Non-secure)"
         Tag <0x41020000 0x10000>    "SYSC (Cortex-M33, Non-secure)"
         Tag <0x41040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Non-secure)"
         Tag <0x41050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Non-secure)"
@@ -455,7 +460,6 @@ sysbus:
         Tag <0x50880000 0x10000>    "FCPVD (Cortex-M33, Secure)"
         Tag <0x50890000 0x10000>    "DU (Cortex-M33, Secure)"
         Tag <0x50C00000 0x1000000>  "CST (CoreSight) (Cortex-M33, Secure)"
-        Tag <0x51000000 0x10000>    "SYC (Cortex-M33, Secure)"
         Tag <0x51020000 0x10000>    "SYSC (Cortex-M33, Secure)"
         Tag <0x51040000 0x10000>    "TZC (SRAM ACPU) (Cortex-M33, Secure)"
         Tag <0x51050000 0x10000>    "TZC (SRAM MCPU) (Cortex-M33, Secure)"
