@@ -54,8 +54,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             Marshal.FreeHGlobal(errorPointer);
         }
 
-        public bool IsPaused => (bool)connection.IsPaused;
-
         public string SimulationContextLinux
         {
             get => connection.SimulationContextLinux;

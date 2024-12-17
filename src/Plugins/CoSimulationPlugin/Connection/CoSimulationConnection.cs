@@ -53,7 +53,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         public const int DefaultTimeout = 3000;
     }
 
-    public partial class CoSimulationConnection : IHostMachineElement, IConnectable<ICoSimulationConnectible>, IHasOwnLife, IDisposable {
+    public partial class CoSimulationConnection : IHostMachineElement, IConnectable<ICoSimulationConnectible>, IDisposable {
         public CoSimulationConnection(IMachine machine,
                 string name,
                 long frequency,
@@ -81,7 +81,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public void DetachFrom(ICoSimulationConnectible peripheral)
         {
-            peripheral.OnConnectionDetached(this);            
+            peripheral.OnConnectionDetached(this);
         }
 
         public void Dispose()
@@ -223,32 +223,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public bool IsConnected => cosimConnection.IsConnected;
 
-        public void Start()
-        {
-            if(started)
-            {
-                return;
-            }
-            started = true;
-            if(!IsConnected)
-            {
-                throw new RecoverableException("Cannot start emulation. Set SimulationFilePath or connect to a simulator first!");
-            }
-            cosimConnection.Start();
-        }
-
-        public void Pause()
-        {
-            cosimConnection.Pause();
-        }
-
-        public bool IsPaused => cosimConnection.IsPaused;
-
-        public void Resume()
-        {
-            cosimConnection.Resume();
-        }
-
         public void Reset()
         {
             // We currently have no way to tell the simulation that a particular peripheral is resetting.
@@ -329,7 +303,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer)
         {
-            started = false;
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
             {
@@ -505,7 +478,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private const int DefaultTimeout = 3000;
         private string simulationFilePath;
         private IMachine machine;
-        private bool started;
         private volatile bool disposeInitiated;
         private const string LimitTimerName = "CoSimulationClock";
         private LimitTimer timer;

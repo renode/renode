@@ -70,6 +70,14 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
                 parentElement.Log(LogLevel.Debug, "Connected to the cosimulated peripheral!");
             }
+
+            lock(receiveThreadLock)
+            {
+                if(!receiveThread.IsAlive && disposeInitiated == 0)
+                {
+                    receiveThread.Start();
+                }
+            }
         }
 
         public bool TrySendMessage(ProtocolMessage message)
@@ -117,7 +125,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 if(receiveThread.IsAlive)
                 {
-                    Resume();
                     receiveThread.Join(timeout);
                 }
             }
@@ -151,37 +158,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             mainSocketComunicator.Dispose();
             asyncSocketComunicator.Dispose();
         }
-
-        public void Start()
-        {
-            lock(receiveThreadLock)
-            {
-                if(!receiveThread.IsAlive && disposeInitiated == 0)
-                {
-                    receiveThread.Start();
-                }
-            }
-        }
-
-        public void Pause()
-        {
-            lock(pauseLock)
-            {
-                pauseMRES.Reset();
-                IsPaused = true;
-            }
-        }
-
-        public void Resume()
-        {
-            lock(pauseLock)
-            {
-                pauseMRES.Set();
-                IsPaused = false;
-            }
-        }
-
-        public bool IsPaused { get; private set; } = false;
 
         public bool IsConnected => mainSocketComunicator.Connected;
 
