@@ -38,6 +38,7 @@ Create Machine
 
 *** Test Cases ***
 Should Tick Between Chained Blocks
+    [Tags]                      instructions_counting
     Create Machine
     Execute Command             cpu MaximumBlockSize 1
     Execute Command             cpu SetRegister 2 5  # new Compare value = 5
@@ -48,6 +49,7 @@ Should Tick Between Chained Blocks
     Wait For Log Entry          block started: PC 0x1014  timeout=0
 
 Should Tick In The Same Block
+    [Tags]                      instructions_counting
     Create Machine
     Execute Command             cpu MaximumBlockSize 8
     Execute Command             cpu SetRegister 2 6  # new Compare value = 6
@@ -60,6 +62,7 @@ Should Tick In The Same Block
     Wait For Log Entry          IRQ  timeout=0
 
 Should Tick At Exact Time
+    [Tags]                      instructions_counting
     Create Machine
     Execute Command             cpu MaximumBlockSize 8
     Execute Command             cpu SetRegister 2 6  # new Compare value = 6
