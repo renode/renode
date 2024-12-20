@@ -1,6 +1,15 @@
 *** Settings ***
 Library                       DateTime
 
+*** Variables ***
+${AUTOCOMPLETION_RESC}        scripts/single-node/sam4s.resc
+
+*** Keywords ***
+Test Autocompletion
+    [Arguments]             ${suggestion}
+    Execute Command         include @${AUTOCOMPLETION_RESC}
+    Execute Command         py "monitor.SuggestionNeeded('${suggestion}')"
+
 *** Test Cases ***
 Should Pause Renode
     # we test if pausing can interrupt the execution before the end of the quantum (hence testing against a value lower than 10)
@@ -73,3 +82,12 @@ Should Call GPIO Set
     Execute Command           uart0 IRQ Set true
     ${gpioState}=             Execute Command   uart0 IRQ
     Should Contain            ${gpioState}  GPIO: set 
+
+Should Not Crash On Bool Autocompletion
+    Test Autocompletion     cpu IsHalted
+
+Should Not Crash On Int Autocompletion
+    Test Autocompletion     cpu MaximumBlockSize
+
+Should Not Crash On String Autocompletion
+    Test Autocompletion     cpu LogFile
