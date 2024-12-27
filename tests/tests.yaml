@@ -179,3 +179,7 @@
 - tests/platforms/MSP430X.robot
 - tests/unit-tests/riscv-zve-extension.robot
 - tests/unit-tests/sync_pc.robot
+- tests/platforms/systemc/interrupts/interrupts.robot
+- tests/platforms/systemc/multiple-peripherals/multiple-peripherals.robot
+- tests/platforms/systemc/transaction-delay/transaction-delay.robot
+- tests/platforms/systemc/test-synchronization/synchronization.robot
