@@ -1,3 +1,8 @@
+*** Variables ***
+${CPU0_INITIATOR_STRING}               the initiator 'cpu0'
+${POSSIBLE_INITIATORS_STRING}          peripherals implementing IPeripheralWithTransactionState (initiator not specified)
+
+
 *** Keywords ***
 Command Result Should Be Number
     [Arguments]  ${command}  ${result}
@@ -8,6 +13,12 @@ Command Result Should Be Number
 Create Bus Isolation Machine
     ${SCRIPT_PATH}=                    Evaluate  r"${CURDIR}/bus_isolation.resc".replace(" ", "\\ ")
     Execute Script                     ${SCRIPT_PATH}
+
+Register With Condition And Expect Error
+    [Arguments]  ${condition}  ${error}
+
+    Run Keyword And Expect Error       *${error}*
+    ...  Execute Command               machine LoadPlatformDescriptionFromString "uart: UART.PL011 @ sysbus new Bus.BusPointRegistration { address: 0x0; condition: \\"${condition}\\" }"
 
 
 *** Test Cases ***
@@ -82,3 +93,52 @@ Should Not Read Directly From Sysbus
 
     # Because priv requires that the initiator is cpu0 in a specific state, this will not work either
     Command Result Should Be Number    sysbus ReadDoubleWord 0x10004  0
+
+Test Unsupported Condition Without Initiator
+    Create Bus Isolation Machine
+
+    Register With Condition And Expect Error
+    ...  !invalid
+    ...  Provided condition is unsupported by ${POSSIBLE_INITIATORS_STRING}: invalid; supported conditions: 'privileged', 'cpuSecure', 'attributionSecure'
+
+Test Unsupported Condition With Initiator
+    Create Bus Isolation Machine
+
+    Register With Condition And Expect Error
+    ...  invalid && initiator == cpu0
+    ...  Provided condition is unsupported by ${CPU0_INITIATOR_STRING}: invalid; supported conditions: 'privileged', 'cpuSecure', 'attributionSecure'
+
+Test Condition With Initiator Not Supporting States
+    Create Bus Isolation Machine
+
+    Register With Condition And Expect Error
+    ...  cpuSecure && initiator == reader && !privileged
+    ...  Conditions provided (cpuSecure && !privileged) but the initiator 'reader' doesn't implement IPeripheralWithTransactionState or has no state bits
+
+Test Conditions With Unregistered Initiator
+    Execute Command                    mach create
+
+    Register With Condition And Expect Error
+    ...  cpuSecure && initiator == reader
+    ...  Invalid initiator: reader
+
+Test Unregistered Initiator
+    Execute Command                    mach create
+
+    Register With Condition And Expect Error
+    ...  initiator == reader
+    ...  Invalid initiator: reader
+
+Test Condition With No Initiators In The Machine
+    Execute Command                    mach create
+
+    Register With Condition And Expect Error
+    ...  !privileged
+    ...  Conditions provided (!privileged) but there are no peripherals implementing IPeripheralWithTransactionState or they have no common state bits
+
+Test Conflicting Conditions
+    Create Bus Isolation Machine
+
+    Register With Condition And Expect Error
+    ...  cpuSecure && !cpuSecure
+    ...  Conditions conflict detected for ${POSSIBLE_INITIATORS_STRING}: cpuSecure

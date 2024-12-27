@@ -919,7 +919,11 @@ namespace Antmicro.Renode.PlatformDescription
         {
             if(!string.IsNullOrEmpty(initiator))
             {
-                return (variableStore.GetVariableInLocalScope(initiator).Value as IPeripheralWithTransactionState)?.StateBits;
+                if(!variableStore.TryGetVariableInLocalScope(initiator, out var variable))
+                {
+                    throw new RecoverableException($"Invalid initiator: {initiator}");
+                }
+                return (variable.Value as IPeripheralWithTransactionState)?.StateBits;
             }
 
             var possibleInitiators = machine.GetPeripheralsOfType<IPeripheralWithTransactionState>();

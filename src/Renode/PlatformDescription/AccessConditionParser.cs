@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Sprache;
@@ -24,26 +25,65 @@ namespace Antmicro.Renode.PlatformDescription
         {
             var result = new Dictionary<string, List<StateMask>>();
 
+            // A term can have multiple conditions but up to one initiator.
             foreach(var term in formula.Terms)
             {
-                var conditions = term.Conditions;
-                // There can only be one initiator condition per term
-                var initiator = conditions.OfType<InitiatorConditionNode>().SingleOrDefault()?.Initiator;
-                var initiatorKey = initiator ?? "";
-                conditions = conditions.Where(c => !(c is InitiatorConditionNode)).ToList();
+                var initiator = term.Conditions.OfType<InitiatorConditionNode>().SingleOrDefault()?.Initiator;
 
+                // Empty string is used as a key if an initiator wasn't specified.
+                var initiatorKey = initiator ?? string.Empty;
                 if(!result.ContainsKey(initiatorKey))
                 {
                     result[initiatorKey] = new List<StateMask>();
                 }
-                var stateBitsForInitiator = getStateBits(initiator);
-                if(conditions.Any() && !(stateBitsForInitiator?.Any() ?? false))
-                {
-                    throw new RecoverableException($"Encountered a condition for initiator '{initiatorKey}' but it has no state bits");
-                }
-                result[initiatorKey].Add(EvaluateOne(conditions, stateBitsForInitiator, initiatorKey));
-            }
 
+                // If `initiator` is null then `stateBits` will contain common state bits for all IPeripheralWithTransactionState.
+                //
+                // It can be null if:
+                // 1. `initiator` does not implement IPeripheralWithTransactionState,
+                // 2. `initiator` is null and there's no peripheral implementing IPeripheralWithTransactionState.
+                var stateBits = getStateBits(initiator);
+
+                var conditions = term.Conditions.Where(c => !(c is InitiatorConditionNode));
+                if(conditions.Any())
+                {
+                    if(stateBits == null || !stateBits.Any())
+                    {
+                        var message = new StringBuilder("Conditions provided (")
+                            .Append(string.Join(" && ", conditions))
+                            .Append(") but ")
+                            .Append(initiator == null
+                                    ? $"there are no peripherals implementing {nameof(Peripherals.IPeripheralWithTransactionState)} or they have no common state bits"
+                                    : $"the initiator '{initiator}' doesn't implement {nameof(Peripherals.IPeripheralWithTransactionState)} or has no state bits"
+                            ).ToString();
+                        throw new RecoverableException(message);
+                    }
+                }
+
+                var termStateMask = new StateMask();
+                foreach(var condition in conditions)
+                {
+                    var initiatorString = initiator == null
+                        ? $"peripherals implementing {nameof(Peripherals.IPeripheralWithTransactionState)} (initiator not specified)"
+                        : $"the initiator '{initiator}'";
+
+                    if(!stateBits.TryGetValue(condition.Condition, out var bitPosition))
+                    {
+                        var supportedBitsString = "'" + string.Join("', '", stateBits.Select(pair => pair.Key)) + "'";
+                        throw new RecoverableException($"Provided condition is unsupported by {initiatorString}: {condition.Condition}; supported conditions: {supportedBitsString}");
+                    }
+
+                    if(termStateMask.HasMaskBit(bitPosition))
+                    {
+                        throw new RecoverableException($"Conditions conflict detected for {initiatorString}: {condition.Condition}");
+                    }
+
+                    // The given StateMask bit should be unset if the condition is negated, otherwise set.
+                    var bitShouldBeSet = !condition.Negated;
+                    termStateMask = termStateMask.WithBitValue(bitPosition, bitShouldBeSet);
+                }
+                result[initiatorKey].Add(termStateMask);
+            }
             return result;
         }
 
@@ -281,27 +321,6 @@ namespace Antmicro.Renode.PlatformDescription
             public override string ToString() => $"{string.Join(" || ", Terms)}";
 
             public readonly IReadOnlyList<DnfTerm> Terms;
-        }
-
-        /// <remark>
-        /// Mind that stateBits might be null if the initiator does not implement <see cref="Peripherals.IPeripheralWithTransactionState">
-        /// </remark>
-        private static StateMask EvaluateOne(IReadOnlyList<ConditionNode> conditions, IReadOnlyDictionary<string, int> stateBits, string initiatorName)
-        {
-            var result = new StateMask();
-            foreach(var condition in conditions)
-            {
-                if(!stateBits.TryGetValue(condition.Condition, out var bitPosition))
-                {
-                    throw new RecoverableException($"Unknown state bit '{condition.Condition}' for initiator '{initiatorName}'");
-                }
-                if(result.HasMaskBit(bitPosition))
-                {
-                    throw new RecoverableException($"Condition conflict for {condition} for initiator '{initiatorName}'");
-                }
-                result = result.WithBitValue(bitPosition, !condition.Negated);
-            }
-            return result;
         }
     }
 }
