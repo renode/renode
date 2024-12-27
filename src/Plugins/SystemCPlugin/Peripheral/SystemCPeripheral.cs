@@ -22,6 +22,9 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+#if !PLATFORM_WINDOWS
+using Mono.Unix.Native;
+#endif
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
@@ -206,13 +209,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public SystemCPeripheral(
                 IMachine machine,
                 string address,
-                int port,
+                int port = 0,
                 int timeSyncPeriodUS = 1000,
                 bool disableTimeoutCheck = false
         )
         {
             this.address = address;
-            this.port = port;
+            this.requestedPort = port;
             this.machine = machine;
             this.timeSyncPeriodUS = timeSyncPeriodUS;
             this.disableTimeoutCheck = disableTimeoutCheck;
@@ -255,9 +258,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 try
                 {
                     systemcExecutablePath = value;
-                    var connectionParams = $"{address} {port}";
+                    var listenerSocket = CreateListenerSocket(requestedPort);
+                    var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
+                    this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
+                    var connectionParams = $"{address} {assignedPort}";
                     StartSystemCProcess(systemcExecutablePath, connectionParams);
-                    SetupConnection();
+                    SetupConnection(listenerSocket);
                     SetupTimesync();
                 }
                 catch(Exception e)
@@ -353,6 +359,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     systemcProcess.Kill();
                 }
             }
+
+            forwardSocket.Close();
+            backwardSocket.Close();
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -385,6 +394,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             try
             {
+#if !PLATFORM_WINDOWS
+                Mono.Unix.Native.Syscall.chmod(systemcExecutablePath, FilePermissions.S_IRWXU);
+#endif
                 systemcProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo(systemcExecutablePath)
@@ -402,14 +414,18 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private void SetupConnection()
+        private Socket CreateListenerSocket(int requestedPort)
         {
-            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listener.Bind(new IPEndPoint(IPAddress.Parse(address), port));
-            listener.Listen(2);
+            var listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listenerSocket.Bind(new IPEndPoint(IPAddress.Parse(address), requestedPort));
+            listenerSocket.Listen(2);
+            return listenerSocket;
+        }
 
-            this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, port);
-            forwardSocket = listener.Accept();
+        private void SetupConnection(Socket listenerSocket)
+        {
+
+            forwardSocket = listenerSocket.Accept();
             forwardSocket.SendTimeout = 1000;
             // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
             if(!disableTimeoutCheck)
@@ -417,9 +433,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 forwardSocket.ReceiveTimeout = 1000;
             }
 
-            backwardSocket = listener.Accept();
+            backwardSocket = listenerSocket.Accept();
             backwardSocket.SendTimeout = 1000;
             // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
+
+            listenerSocket.Close();
 
             SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS));
 
@@ -669,7 +687,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private const int NumberOfGPIOPins = 64;
 
         private readonly string address;
-        private readonly int port;
+        private readonly int requestedPort;
         private readonly int timeSyncPeriodUS;
         private readonly bool disableTimeoutCheck;
         private readonly object messageLock;
