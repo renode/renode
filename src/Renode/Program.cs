@@ -75,7 +75,18 @@ namespace Antmicro.Renode
         {
             //Plain mode must be set before the window title
             ConsoleBackend.Instance.PlainMode = options.Plain;
+
+#if PLATFORM_WINDOWS || NET
             ConsoleBackend.Instance.WindowTitle = "Renode";
+#else
+            // On Mono (verified on v. 6.12.0.200) writing to `Console.Title`
+            // by multiple processes concurrently causes a deadlock. Do not set
+            // the window title if we're running tests on Mono to avoid that.
+            if(options.RobotFrameworkRemoteServerPort == -1)
+            {
+                ConsoleBackend.Instance.WindowTitle = "Renode";
+            }
+#endif
 
             string configFile = null;
 
