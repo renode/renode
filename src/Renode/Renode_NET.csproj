@@ -27,7 +27,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" Condition=" $(OS) != 'Windows_NT'"/>
-    <PackageReference Include="IronPython.StdLib" Version="2.7.11" />
     <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
 
