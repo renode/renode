@@ -34,6 +34,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         GPIOWrite = 4,
         Reset = 5,
         DMIReq = 6,
+        InvalidateTBs = 7,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -622,9 +623,25 @@ namespace Antmicro.Renode.Peripherals.SystemC
                             backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
                         }
                         break;
+                    case RenodeAction.InvalidateTBs:
+                        TryToInvalidateTBs(message.Address, message.Payload);
+                        backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                        break;
                     default:
                         this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId); 
                         break;
+                }
+            }
+        }
+
+        private void TryToInvalidateTBs(ulong startAddress, ulong endAddress)
+        {
+            foreach(var cpu in machine.SystemBus.GetCPUs().OfType<CPU.ICPU>())
+            {
+                var translationCPU = cpu as TranslationCPU;
+                if(translationCPU != null)
+                {
+                    translationCPU.InvalidateTranslationBlocks(new IntPtr((int)startAddress), new IntPtr((int)endAddress));
                 }
             }
         }

@@ -101,6 +101,15 @@ enum renode_action : uint8_t {
   //     payload: ignored
   //     to write connection_index: 0 for SystemBus
   // Response is a dmi_message.
+  TBSINVALID = 7,
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: start_address
+  //     payload: end_address
+  // Response:
+  //     Identical to the request message.
 };
 
 #pragma pack(push, 1)
@@ -418,6 +427,17 @@ void renode_bridge::forward_loop() {
       terminate_simulation(1);
     }
   }
+}
+
+void renode_bridge::invalidate_translation_blocks(uint64_t start_address, uint64_t end_address) {
+    renode_message message = {};
+    message.action = renode_action::TBSINVALID;
+    message.address = start_address;
+    message.payload = end_address;
+
+    backward_connection->Send((char *)&message, sizeof(renode_message));
+    // Response is ignored.
+    backward_connection->Receive((char *)&message, sizeof(renode_message));
 }
 
 void renode_bridge::on_port_gpio() {

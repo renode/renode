@@ -75,6 +75,11 @@ public:
   // once the reset process is complete.
   reset_port reset;
 
+  // Informs Renode CPU that memory has been modified in the given range. This
+  // is necessary when using DMI (get_direct_mem_ptr) to modify memory
+  // containing CPU instructions.
+  void invalidate_translation_blocks(uint64_t start_address, uint64_t end_address);
+
 private:
   struct initiator_bw_handler: tlm::tlm_bw_transport_if<> {
     initiator_bw_handler() = default;
