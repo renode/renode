@@ -64,7 +64,8 @@ Should Read Through Privilege Aware Reader
     #                                                      ↓ raw initiator state which gets passed to the peripheral
     Command Result Should Be Number    reader Read 0x10010 0x00  0x72656100
     Command Result Should Be Number    reader Read 0x10010 0x01  0x72656101
-    Command Result Should Be Number    reader Read 0x10010 0xa5  0x726561a5
+    Command Result Should Be Number    reader Read 0x10010 0xa5  0x72656105
+    Command Result Should Be Number    reader Read 0x20010 0x02  0x72656102
 
     # Now we'll read some peripherals that have various conditions.
     Command Result Should Be Number    reader Read 0x10008 0x00  0x3030  # no condition
@@ -112,8 +113,8 @@ Test Condition With Initiator Not Supporting States
     Create Bus Isolation Machine
 
     Register With Condition And Expect Error
-    ...  cpuSecure && initiator == reader && !privileged
-    ...  Conditions provided (cpuSecure && !privileged) but the initiator 'reader' doesn't implement IPeripheralWithTransactionState or has no state bits
+    ...  cpuSecure && initiator == reader2 && !privileged
+    ...  Conditions provided (cpuSecure && !privileged) but the initiator 'reader2' doesn't implement IPeripheralWithTransactionState or has no state bits
 
 Test Conditions With Unregistered Initiator
     Execute Command                    mach create

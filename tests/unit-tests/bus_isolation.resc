@@ -1,4 +1,7 @@
 mach create
+include @scripts/single-node/bus-isolation/SampleStateAwareReaderWithTransactionState.cs
+include @scripts/single-node/bus-isolation/SampleStateAwareReader.cs
+include @scripts/single-node/bus-isolation/SampleStateAwarePeripheral.cs
 machine LoadPlatformDescriptionFromString """
 cpu0: CPU.CortexM @ sysbus
     cpuType: "cortex-m33"
@@ -46,10 +49,15 @@ priv2_unpriv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { ad
     initable: false
     script: "request.value = 0x0404"
 
-priv_aware: Miscellaneous.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10010; condition: "initiator == cpu0 || initiator == reader" }
+priv_aware: CPU.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10010; condition: "initiator == cpu0 || initiator == reader || initiator == reader2" }
     size: 0x100
 
-reader: Miscellaneous.SampleStateAwareReader @ sysbus
+priv_aware2: CPU.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x20010; condition: "cpuSecure && initiator == reader" }
+    size: 0x100
+
+reader: CPU.SampleStateAwareReaderWithTransactionState @ sysbus
+reader2: CPU.SampleStateAwareReader @ sysbus
+reader3: CPU.SampleStateAwareReader @ sysbus
 """
 
 
