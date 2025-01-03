@@ -83,6 +83,19 @@ Should Read Through Privilege Aware Reader
     Command Result Should Be Number    reader Read 0x10004 0x00  0
     Command Result Should Be Number    reader Read 0x10004 0x03  0
 
+Should Handle Readers And Log Context Access
+    Create Bus Isolation Machine
+    Create Log Tester                  1
+
+    Command Result Should Be Number    reader Read 0x10010 0x00   0x72656100
+    Wait For Log Entry                 priv_aware: Read from context
+
+    Command Result Should Be Number    reader2 Read 0x10010 0x00  0
+    Wait For Log Entry                 priv_aware: No context
+
+    Command Result Should Be Number    reader3 Read 0x10010 0x00  0
+    Wait For Log Entry                 sysbus: ReadDoubleWord from non existing peripheral at 0x10010
+
 Should Not Read Directly From Sysbus
     Create Bus Isolation Machine
 
