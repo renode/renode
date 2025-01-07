@@ -1,6 +1,6 @@
 # Renode
 
-Copyright (c) 2010-2024 [Antmicro](https://www.antmicro.com)
+Copyright (c) 2010-2025 [Antmicro](https://www.antmicro.com)
 
 [![View on Antmicro Open Source Portal](https://img.shields.io/badge/View%20on-Antmicro%20Open%20Source%20Portal-332d37?style=flat-square)](https://opensource.antmicro.com/projects/renode)
 
