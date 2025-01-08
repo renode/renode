@@ -2,12 +2,14 @@ cluster: CPU.Cluster @ sysbus
 
 cpu0: CPU.ARMv8A @ cluster
     cpuType: "cortex-a55"
-    cpuId: 0
+    // Aff1: 0, Aff0: 0
+    cpuId: 0x0
     genericInterruptController: gic
 
 cpu1: CPU.ARMv8A @ cluster
     cpuType: "cortex-a55"
-    cpuId: 1
+    // Aff1: 1, Aff0: 0
+    cpuId: 0x100
     genericInterruptController: gic
 
 cpu_m33: CPU.CortexM @ sysbus
