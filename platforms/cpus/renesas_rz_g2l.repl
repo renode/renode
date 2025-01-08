@@ -29,7 +29,6 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x51900000; size: 0x10000; region: "distributor"; cpu: cpu_m33 };
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0; visibleTo: cpu_m33; address: 0x51940000 };
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; visibleTo: cpu_m33; address: 0x51960000 }
-
     }
     architectureVersion: ARM_GenericInterruptControllerVersion.GICv3
     [0-3] -> cpu0@[0-3]
