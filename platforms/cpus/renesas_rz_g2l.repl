@@ -335,6 +335,42 @@ cpg_sysc: Miscellaneous.RenesasRZG_CPG_SYSC @ {
     cpu0: cpu0
     cpu1: cpu1
 
+sram_acpu_gatekeeper: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11040008; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41040008; cluster: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51040008; cluster: cpu_m33 }  // Secure
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/tzc400_gatekeeper.py"
+
+sram_mcpu_gatekeeper: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11050008; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41050008; cluster: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51050008; cluster: cpu_m33 }  // Secure
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/tzc400_gatekeeper.py"
+
+spi_gatekeeper: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11060008; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41060008; cluster: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51060008; cluster: cpu_m33 }  // Secure
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/tzc400_gatekeeper.py"
+
+ddr_gatekeeper: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x11070008; cluster: cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x41070008; cluster: cpu_m33 }; // Non-secure
+        sysbus new Bus.BusPointRegistration { address: 0x51070008; cluster: cpu_m33 }  // Secure
+    }
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/tzc400_gatekeeper.py"
+
 sysbus:
     init:
         // Cortex-A55 Tags:
@@ -480,3 +516,39 @@ sysbus:
         Tag <0x51C50000 0x10000>    "USB ch0 (OTG-Host) (Cortex-M33, Secure)"
         Tag <0x51C60000 0x10000>    "USB ch0 (OTG-Func) (Cortex-M33, Secure)"
         Tag <0x51C70000 0x10000>    "USB ch1 Host (Cortex-M33, Secure)"
+
+        Tag <0x11050FE0 0x4>   "Peripheral ID 0 TZC" 0x60
+        Tag <0x11050FE4 0x4>   "Peripheral ID 1 TZC" 0xB4
+        Tag <0x11050FE8 0x4>   "Peripheral ID 2 TZC" 0x2B
+
+        Tag <0x11050FF0 0x4>   "Component ID 0 TZC" 0x0D
+        Tag <0x11050FF4 0x4>   "Component ID 1 TZC" 0xF0
+        Tag <0x11050FF8 0x4>   "Component ID 2 TZC" 0x05
+        Tag <0x11050FFC 0x4>   "Component ID 3 TZC" 0xB1
+
+        Tag <0x11040FE0 0x4>   "Peripheral ID 0 TZC" 0x60
+        Tag <0x11040FE4 0x4>   "Peripheral ID 1 TZC" 0xB4
+        Tag <0x11040FE8 0x4>   "Peripheral ID 2 TZC" 0x2B
+
+        Tag <0x11040FF0 0x4>   "Component ID 0 TZC" 0x0D
+        Tag <0x11040FF4 0x4>   "Component ID 1 TZC" 0xF0
+        Tag <0x11040FF8 0x4>   "Component ID 2 TZC" 0x05
+        Tag <0x11040FFC 0x4>   "Component ID 3 TZC" 0xB1
+
+        Tag <0x11070FE0 0x4>   "Peripheral ID 0 TZC" 0x60
+        Tag <0x11070FE4 0x4>   "Peripheral ID 1 TZC" 0xB4
+        Tag <0x11070FE8 0x4>   "Peripheral ID 2 TZC" 0x2B
+
+        Tag <0x11070FF0 0x4>   "Component ID 0 TZC" 0x0D
+        Tag <0x11070FF4 0x4>   "Component ID 1 TZC" 0xF0
+        Tag <0x11070FF8 0x4>   "Component ID 2 TZC" 0x05
+        Tag <0x11070FFC 0x4>   "Component ID 3 TZC" 0xB1
+
+        Tag <0x11060FE0 0x4>   "Peripheral ID 0 TZC" 0x60
+        Tag <0x11060FE4 0x4>   "Peripheral ID 1 TZC" 0xB4
+        Tag <0x11060FE8 0x4>   "Peripheral ID 2 TZC" 0x2B
+
+        Tag <0x11060FF0 0x4>   "Component ID 0 TZC" 0x0D
+        Tag <0x11060FF4 0x4>   "Component ID 1 TZC" 0xF0
+        Tag <0x11060FF8 0x4>   "Component ID 2 TZC" 0x05
+        Tag <0x11060FFC 0x4>   "Component ID 3 TZC" 0xB1
