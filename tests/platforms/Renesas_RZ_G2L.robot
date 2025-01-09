@@ -236,3 +236,24 @@ Should Detect External Interrupt
     Execute Command                 sysbus.gpio.button PressAndRelease
     Wait For Line On Uart           LED State: Low{OFF}
     Assert Led State                False  timeout=0.01
+
+Should Boot Linux
+    Execute Command                 include @scripts/single-node/rzg2l_linux.resc
+    Create Terminal Tester          sysbus.scif0  defaultPauseEmulation=true
+
+    # Boot with ATF
+    Wait For Line On Uart           NOTICE:${SPACE*2}BL31: v2.9(release):v2.9
+
+    # Boot with U-Boot
+    Wait For Line On Uart           U-Boot 2024.10
+    Wait For Line On Uart           Starting kernel ...
+
+    # Boot Linux
+    Wait For Line On Uart           Booting Linux on physical CPU 0x0000000000 [0x411fd050]
+    Wait For Prompt On Uart         buildroot login:  timeout=140
+    Write Line To Uart              root
+
+    # Run command in userspace
+    Wait For Prompt On Uart         \#${SPACE}
+    Write Line To Uart              uname
+    Wait For Line On Uart           Linux
