@@ -131,7 +131,7 @@ public:
             {
                 *wb_stall = low;
                 *wb_ack = low;
-                readWord(*wb_addr, *wb_sel);
+                readWord(*wb_addr * sizeof(data_t), *wb_sel);
                 readState = 1;
             }
             break;
@@ -153,7 +153,7 @@ public:
             {
                 *wb_stall = low;
                 *wb_ack = low;
-                writeWord(*wb_addr, *wb_wr_dat, *wb_sel);
+                writeWord(*wb_addr * sizeof(data_t), *wb_wr_dat, *wb_sel);
                 writeState = 1;
             }
             break;
@@ -184,7 +184,7 @@ public:
         return *wb_cyc && *wb_stb;
     }
     
-    uint64_t getSpecifiedAdress() override { return *wb_addr; }
+    uint64_t getSpecifiedAdress() override { return *wb_addr * sizeof(data_t); }
 
     addr_t *wb_addr;
     data_t *wb_rd_dat;
