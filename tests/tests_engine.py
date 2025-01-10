@@ -335,7 +335,7 @@ def run_test_group(args):
     group, options, test_id = args
 
     iteration_counter = 0
-    tests_failed = False
+    group_failed = False
     log_files = set()
 
     # this function will be called in a separate
@@ -354,6 +354,7 @@ def run_test_group(args):
         for suite in group:
             retry_suites_counter = 0
             should_retry_suite = True
+            suite_failed = False
             while should_retry_suite and retry_suites_counter < options.retry_count:
                 retry_suites_counter += 1
 
@@ -369,19 +370,21 @@ def run_test_group(args):
                                                 suite_retry_index=retry_suites_counter - 1)
                 log_files.update((type(suite), log_file) for log_file in suite_log_files)
                 if ok:
-                    tests_failed = False
+                    suite_failed = False
                     should_retry_suite = False
                 else:
-                    tests_failed = True
+                    suite_failed = True
                     should_retry_suite = suite.should_retry_suite(options, iteration_counter, retry_suites_counter - 1)
                     if options.retry_count > 1 and not should_retry_suite:
                         print("No Robot<->Renode connection issues were detected to warrant a suite retry - giving up.")
 
-        if options.stop_on_error and tests_failed:
+            if suite_failed:
+                group_failed = True
+        if options.stop_on_error and group_failed:
             break
 
     options.output.flush()
-    return (tests_failed, log_files)
+    return (group_failed, log_files)
 
 def print_failed_tests(options):
     for handler in registered_handlers:
