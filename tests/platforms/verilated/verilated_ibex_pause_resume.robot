@@ -38,6 +38,7 @@ Sleep And Measure
 
 *** Test Cases ***
 Should Pause And Resume
+    [Tags]                          skip_host_arm
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!  pauseEmulation=true
@@ -46,6 +47,7 @@ Should Pause And Resume
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Pause And Resume Cpu
+    [Tags]                          skip_host_arm
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -55,6 +57,7 @@ Should Pause And Resume Cpu
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Enter Single Step Blocking
+    [Tags]                          skip_host_arm
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!
@@ -64,6 +67,7 @@ Should Enter Single Step Blocking
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Enter Single Step Non Blocking
+    [Tags]                          skip_host_arm
     Create Machine
     Execute Command             emulation SingleStepBlocking false
 
@@ -77,6 +81,7 @@ Should Enter Single Step Non Blocking
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
 Should Reset
+    [Tags]                          skip_host_arm
     Create Machine
 
     Wait For Line On Uart       Build your hardware, easily!

@@ -42,6 +42,7 @@ Step
 
 *** Test Cases ***
 Should Read Write Registers
+    [Tags]                          skip_host_arm
     Create Machine
 
     # start
@@ -73,6 +74,7 @@ Should Read Write Registers
     Provides                        ecall  Reexecution
 
 Should Be In Machine Mode
+    [Tags]                          skip_host_arm
     Requires                        ecall
     Check Register By Name          MCAUSE  0xb
     Check Register By Name          MEPC    0x86
@@ -80,10 +82,12 @@ Should Be In Machine Mode
     Provides                        continuous-mode  Reexecution
 
 Should Print Hello On Uart
+    [Tags]                          skip_host_arm
     Requires                        continuous-mode
     Wait For Line On Uart           hello
     Provides                        hello  Reexecution
 
 Should Print Hello On Uart Again
+    [Tags]                          skip_host_arm
     Requires                        hello
     Wait For Line On Uart           hello

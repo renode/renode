@@ -71,7 +71,7 @@ Handle UART Input
 
 *** Test Cases ***
 Echo On Uart With Native Communication
-    [Tags]                     skip_osx
+    [Tags]                     skip_osx  skip_host_arm
     Create Machine             ${APB3UART_NATIVE_LINUX}  ${APB3UART_NATIVE_WINDOWS}  ${APB3UART_NATIVE_MACOS}  @platforms/cpus/verilated/murax_vexriscv_verilated_uart.repl
     Create Terminal Tester     sysbus.uart
     Execute Command            showAnalyzer sysbus.uart
@@ -83,7 +83,7 @@ Echo On Uart With Native Communication
     Wait For Prompt On Uart    Ant
 
 Echo On Uart With Socket Based Communication
-    [Tags]                     skip_osx
+    [Tags]                     skip_osx  skip_host_arm
     Create Machine With Platform Description From String  ${APB3UART_SOCKET_LINUX}  ${APB3UART_SOCKET_WINDOWS}  ${APB3UART_SOCKET_MACOS}  ${PLATFORM}
     Create Terminal Tester     sysbus.uart
     Execute Command            showAnalyzer sysbus.uart

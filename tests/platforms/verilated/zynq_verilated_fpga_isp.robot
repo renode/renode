@@ -65,6 +65,7 @@ Verify Images
 
 FPGA ISP Debayer On Native Communication
     [Documentation]                      Test FPGA ISP debayering.
+    [Tags]                          skip_host_arm
 
     Create Machine
     Start Emulation

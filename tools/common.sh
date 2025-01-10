@@ -27,6 +27,14 @@ else
     PYTHON_RUNNER="py -3"
 fi
 
+ARCH_UNAME=`uname -m`
+# macOS and Linux uses different names for 64-bit Arm
+if [ "$ARCH_UNAME" == "aarch64" ] || [ "$ARCH_UNAME" == "arm64" ]
+then
+    DETECTED_ARCH="arm"
+else
+    DETECTED_ARCH="x64"
+fi
 function get_path {
     if $ON_WINDOWS
     then

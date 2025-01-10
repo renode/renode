@@ -36,6 +36,7 @@ Compare Parts Of Images
 *** Test Cases ***
 Should Boot Linux
     [Documentation]                      Boots Linux on the Zynq 7000-based Zedboard platform in co-simulation with FastVDMA.
+    [Tags]                          skip_host_arm
 
     Create Machine
     Start Emulation
@@ -46,6 +47,7 @@ Should Boot Linux
 
 Should Load Drivers
     [Documentation]                      Loads fastvdma.ko and fastvdma-demo.ko and performs image transfer via FastVDMA.
+    [Tags]                          skip_host_arm
     Requires                             booted-linux
 
 # Suppress messages from kernel space; don't wait for echo because a kernel log might be printed in the middle of writing.
@@ -74,6 +76,7 @@ Should Load Drivers
 
 Verify Image
     [Documentation]                      Verifies whether the image has been transferred correctly.
+    [Tags]                          skip_host_arm
     Requires                             output
 
 # The output image (out.rgba) should consist of img1.rgba (256x256px) in the middle of img0.rgba (512x512px)
