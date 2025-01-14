@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -103,8 +103,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathLinux;
             set
             {
-                AssureIsConnected();
-                connection.SimulationFilePathLinux = value;
+#if PLATFORM_LINUX
+                SimulationFilePath = value;
+#endif
             }
         }
 
@@ -113,8 +114,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathWindows;
             set
             {
-                AssureIsConnected();
-                connection.SimulationFilePathWindows = value;
+#if PLATFORM_WINDOWS
+                SimulationFilePath = value;
+#endif
             }
         }
 
@@ -123,9 +125,31 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathMacOS;
             set
             {
-                AssureIsConnected();
-                connection.SimulationFilePathMacOS = value;
+#if PLATFORM_OSX
+                SimulationFilePath = value;
+#endif
             }
+        }
+
+        private void AssureNoConflictingCFUs(string simulationFilePath)
+        {
+            if(connectedCpu.Children.Any(child => child.Peripheral.SimulationFilePath == simulationFilePath))
+            {
+                LogAndThrowRE("Another CFU already connected to provided library!");
+            }
+        }
+
+        private void InitNativeBinding(string simulationFilePath)
+        {
+                try
+                {
+                    errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
+                    executeBinder = new NativeBinder(this, simulationFilePath);
+                }
+                catch(Exception e)
+                {
+                    LogAndThrowRE(e.Message);
+                }
         }
 
         public string SimulationFilePath
@@ -134,33 +158,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             set
             {
                 AssureIsConnected();
-
-                if(String.IsNullOrWhiteSpace(value))
-                {
-                    this.Log(LogLevel.Warning, "SimulationFilePath not set!");
-                    return;
-                }
-                else if(!String.IsNullOrWhiteSpace(SimulationFilePath))
-                {
-                    LogAndThrowRE("CoSimulatedCFU already connected, cannot change the file name!");
-                }
-                else if(connectedCpu.Children.Any(child => child.Peripheral.SimulationFilePath == value))
-                {
-                    LogAndThrowRE("Another CFU already connected to provided library!");
-                }
-                else
-                {
-                    try
-                    {
-                        errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
-                        executeBinder = new NativeBinder(this, value);
-                        connection.SimulationFilePath = value;
-                    }
-                    catch(Exception e)
-                    {
-                        LogAndThrowRE(e.Message);
-                    }
-                }
+                AssureNoConflictingCFUs(value);
+                connection.SimulationFilePath = value;
+                InitNativeBinding(value);
             }
         }
 
@@ -219,7 +219,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                     break;
                 case 4:
                     opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC1101011";
-                    break;
+                break;
                 default:
                     this.LogAndThrowRE("Can't handle more than 4 CFUs!");
                     break;
