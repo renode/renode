@@ -8,9 +8,9 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/murax_vexriscv_verilated_uart.repl
 
 # Binaries from https://github.com/antmicro/renode-verilator-integration, rev. f9b4139
-$uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-12048046797.so-s_2075112-e22c7625fe6f6f43157c23e7100df3ae0612d4cf
-$uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-12048046797.dll-s_3237057-f212c564b7875695fa5de4059f66f64489e04c3c
-$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-12048046797.dylib-s_220448-1fc9bbfc2c7403cf9560c2a752cc96369b92d2e0
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-12746432362.so-s_2075112-cdd84640aaef40f017ea1739f3a81f07bd739908
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-12746432362.dll-s_3239943-9bb6d65ee4f7a2945d3dfb3d503f90f399ad0cf8
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-12746432362.dylib-s_220440-f0c9f7e8fd31d14f9e0eda3437cdf419494abee8
 
 showAnalyzer uart
 

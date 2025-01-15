@@ -5,9 +5,9 @@ ${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/
 ${UART}                                  sysbus.uart1
 ${FASTVDMA_DRIVER}                       /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma.ko
 ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma-demo.ko
-${FASTVDMA_NATIVE_LINUX}                 ${URI}/libVfastvdma-Linux-x86_64-10267006380.so-s_2078200-8a4a7543cce11dfefc05fb8e5251b27ebad744a8
-${FASTVDMA_NATIVE_WINDOWS}               ${URI}/libVfastvdma-Windows-x86_64-10267006380.dll-s_3239883-3a1596007ce59c548ee16a7bf16984d9422e1a18
-${FASTVDMA_NATIVE_MACOS}                 ${URI}/libVfastvdma-macOS-x86_64-10267006380.dylib-s_235688-11295715923d1462bfd1f54ecd55ab1ae94cc048
+${FASTVDMA_NATIVE_LINUX}                 ${URI}/libVfastvdma-Linux-x86_64-12746432362.so-s_2078168-e066add0a343381e311b24264f5f700434601b50
+${FASTVDMA_NATIVE_WINDOWS}               ${URI}/libVfastvdma-Windows-x86_64-12746432362.dll-s_3248733-b126ebbb295a6668560780c35b9f4652e2be833a
+${FASTVDMA_NATIVE_MACOS}                 ${URI}/libVfastvdma-macOS-x86_64-12746432362.dylib-s_235688-84b6822a41f9b46f9890284aa2129d90713fb4eb
 
 *** Keywords ***
 Create Machine

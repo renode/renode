@@ -4,12 +4,12 @@ ${BIN}                              murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7
 ${UART}                             sysbus.uart
 
 // Binaries from https://github.com/antmicro/renode-verilator-integration, rev. f9b4139
-${APB3UART_SOCKET_LINUX}            ${URI}/Vapb3uart-Linux-x86_64-12048046797-s_1620824-032429468be6348953be4dee1dd58f207de7ef7a
-${APB3UART_SOCKET_WINDOWS}          ${URI}/Vapb3uart-Windows-x86_64-12048046797.exe-s_3231205-a5ad3f3c2fbae644ea6a60c137bf24f039a901a0
-${APB3UART_SOCKET_MACOS}            ${URI}/Vapb3uart-macOS-x86_64-12048046797-s_220504-de2a1d717d2b072c80946f3a8787b7b73c00d7a4
-${APB3UART_NATIVE_LINUX}            ${URI}/libVapb3uart-Linux-x86_64-12048046797.so-s_2075112-e22c7625fe6f6f43157c23e7100df3ae0612d4cf
-${APB3UART_NATIVE_WINDOWS}          ${URI}/libVapb3uart-Windows-x86_64-12048046797.dll-s_3237057-f212c564b7875695fa5de4059f66f64489e04c3c
-${APB3UART_NATIVE_MACOS}            ${URI}/libVapb3uart-macOS-x86_64-12048046797.dylib-s_220448-1fc9bbfc2c7403cf9560c2a752cc96369b92d2e0
+${APB3UART_SOCKET_LINUX}            ${URI}/Vapb3uart-Linux-x86_64-12746432362-s_1620824-db3537be010b2ba16a63cdb7d12b01e1cb8dde4c
+${APB3UART_SOCKET_WINDOWS}          ${URI}/Vapb3uart-Windows-x86_64-12746432362.exe-s_3235087-2a59e821c7856e184d01a100d11d2d945a9f231a
+${APB3UART_SOCKET_MACOS}            ${URI}/Vapb3uart-macOS-x86_64-12746432362-s_220504-6ba77afb54a303511c1b6ee8b7ffd5f0e63bfa98
+${APB3UART_NATIVE_LINUX}            ${URI}/libVapb3uart-Linux-x86_64-12746432362.so-s_2075112-cdd84640aaef40f017ea1739f3a81f07bd739908
+${APB3UART_NATIVE_WINDOWS}          ${URI}/libVapb3uart-Windows-x86_64-12746432362.dll-s_3239943-9bb6d65ee4f7a2945d3dfb3d503f90f399ad0cf8
+${APB3UART_NATIVE_MACOS}            ${URI}/libVapb3uart-macOS-x86_64-12746432362.dylib-s_220440-f0c9f7e8fd31d14f9e0eda3437cdf419494abee8
 
 ${PLATFORM}=     SEPARATOR=
 ...  """                                                                        ${\n}
