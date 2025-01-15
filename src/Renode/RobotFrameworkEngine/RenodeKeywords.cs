@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -235,6 +235,50 @@ namespace Antmicro.Renode.RobotFramework
             {
                 masterTimeSource.BlockHook -= callback;
             }
+        }
+
+        [RobotFrameworkKeyword]
+        public void WaitForGdbConnection(int port, string machine = null, bool pauseToWait = true, bool acceptRunningServer = true)
+        {
+            IMachine machineObject;
+            if(machine == null)
+            {
+                machineObject = TestersProvider<object, IEmulationElement>.TryGetDefaultMachineOrThrowKeywordException();
+            }
+            else if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out machineObject))
+            {
+                throw new KeywordException("Machine with name {0} not found. Available machines: [{1}]", machine,
+                        string.Join(", ", EmulationManager.Instance.CurrentEmulation.Names));
+            }
+
+            if(pauseToWait)
+            {
+                machineObject.PauseAndRequestEmulationPause();
+            }
+
+            if(machineObject.IsGdbConnectedToServer(port) && acceptRunningServer)
+            {
+                // A server is already running, so no need to wait
+                return;
+            }
+
+            // Since this keyword is likely to be used to manually inspect running application or in issue reproduction cases
+            // make sure that the user is informed about the need to connect
+            machineObject.Log(LogLevel.Warning, "Awaiting GDB connection on port {0}", port);
+
+            var connectedEvent = new System.Threading.ManualResetEvent(false);
+            Action<Stream> listener = delegate
+            {
+                connectedEvent.Set();
+            };
+
+            if(!machineObject.AttachConnectionAcceptedListenerToGdbStub(port, listener))
+            {
+                throw new KeywordException($"No GDB server running on port {port}. Cannot await GDB connection");
+            }
+            connectedEvent.WaitOne();
+            // If we fail here, we can't do anything - the stub might have disconnected
+            machineObject.DetachConnectionAcceptedListenerFromGdbStub(port, listener);
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
