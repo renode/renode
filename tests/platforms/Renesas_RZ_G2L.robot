@@ -246,6 +246,10 @@ Should Boot Linux
 
     # Boot with U-Boot
     Wait For Line On Uart           U-Boot 2024.10
+    # Manually trigger boot to speed up test
+    Wait For Prompt On Uart         Hit any key to stop autoboot:${SPACE*2}2
+    Write Line To Uart              ${EMPTY}
+    Write Line To Uart              boot
     Wait For Line On Uart           Starting kernel ...
 
     # Boot Linux
