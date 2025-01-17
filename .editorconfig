@@ -113,3 +113,4 @@ dotnet_naming_rule.parameters_rule.severity             = warning
 
 # Renode specific rules
 dotnet_diagnostic.renode_copyright.severity             = warning
+dotnet_diagnostic.renode_class_members_order.severity   = warning
