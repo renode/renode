@@ -1,0 +1,19 @@
+:name: STM32WB55RG Nucleo
+:description: This script runs basic blinky on STM32WB55RG Nucleo.
+
+using sysbus
+$name?="Nucleo WB55RG"
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/nucleo_wb55rg.repl
+
+showAnalyzer usart1
+
+$bin ?= "/home/nelsmore/projects/personal/sandbox/renode-sandbox/nucleo_fw/build/zephyr/zephyr.elf"
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
