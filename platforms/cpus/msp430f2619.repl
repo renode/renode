@@ -1,7 +1,7 @@
 cpu: CPU.MSP430X @ sysbus
     cpuType: "msp430f261x"
 
-ram: Memory.MappedMemory @ {
+ram: Memory.ArrayMemory @ {
     sysbus 0x00200;
     sysbus 0x01100
 }
@@ -41,15 +41,15 @@ usci_a1: UART.MSP430_USCIA @ {
 
 mpy: Miscellaneous.MSP430F2XXX_MPY @ sysbus <0x130, +0x10>
 
-boot: Memory.MappedMemory @ sysbus 0x0C00
+boot: Memory.ArrayMemory @ sysbus 0x0C00
     size: 0x400
 
-ram_extended: Memory.MappedMemory @ sysbus 0x1900
+ram_extended: Memory.ArrayMemory @ sysbus 0x1900
     size: 0x800
 
-code: Memory.MappedMemory @ sysbus 0x2100
+code: Memory.ArrayMemory @ sysbus 0x2100
     size: 0x1df00
 
-info_mem: Memory.MappedMemory @ sysbus 0x1000
+info_mem: Memory.ArrayMemory @ sysbus 0x1000
     size: 0x100
 
