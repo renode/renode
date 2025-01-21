@@ -29,6 +29,7 @@ ${BUTTON_REPL}                      SEPARATOR=\n
 Prepare Machine
     [Arguments]                     ${elf}
     Execute Command                 mach create "Renesas RZ/G2L"
+    Execute Command                 using sysbus.cluster
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/renesas_rz_g2l.repl
     Execute Command                 macro reset "cpu0 IsHalted true; cpu1 IsHalted true; sysbus LoadELF @${elf} cpu=cpu_m33"
     Execute Command                 runMacro $reset

@@ -124,10 +124,10 @@ Test Dirty Addresses Reduction
 
     # The log below is on a Debug level and can come from any APU core.
     Create Log Tester               0
-    Execute Command                 logLevel 0 apu0
-    Execute Command                 logLevel 0 apu1
-    Execute Command                 logLevel 0 apu2
-    Execute Command                 logLevel 0 apu3
+    Execute Command                 logLevel 0 cluster0.apu0
+    Execute Command                 logLevel 0 cluster0.apu1
+    Execute Command                 logLevel 0 cluster0.apu2
+    Execute Command                 logLevel 0 cluster0.apu3
 
     Wait For Prompt On Uart         \#
     Write Line To Uart              du -sh /*

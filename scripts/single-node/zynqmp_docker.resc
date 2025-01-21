@@ -2,6 +2,9 @@
 :description: This script runs a web server under Docker on Zynq UltraScale+ MPSoC.
 
 using sysbus
+using sysbus.cluster0
+using sysbus.cluster1
+
 $name?="ZynqUS+"
 mach create $name
 

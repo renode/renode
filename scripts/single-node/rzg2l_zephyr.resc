@@ -1,6 +1,8 @@
 :name: Renesas RZ/G2L Zephyr
 :description: This script runs Zephyr on Renesas RZ/G2L.
 
+using sysbus.cluster
+
 $name?="Renesas RZ/G2L"
 
 $bin?=@https://dl.antmicro.com/projects/renode/rzg2l_smarc-r9a07g044l23gbg-cm33--zephyr-shell_module.elf-s_2433660-bf6f5e720795f0bf38ebf84c2567f85c36d2c8ef

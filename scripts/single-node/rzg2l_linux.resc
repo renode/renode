@@ -2,6 +2,8 @@
 :description: This script runs Linux on Renesas RZ/G2L.
 
 using sysbus
+using sysbus.cluster
+
 $name?="Renesas-RZ/G2l"
 mach create $name
 

@@ -2,6 +2,9 @@
 :description: This script runs Linux on Zynq UltraScale+ MPSoC with remoteproc enabled.
 
 using sysbus
+using sysbus.cluster0
+using sysbus.cluster1
+
 $name?="ZynqUS+"
 mach create $name
 

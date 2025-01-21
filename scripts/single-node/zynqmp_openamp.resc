@@ -2,6 +2,9 @@
 :description: This script runs on Zynq UltraScale+ MPSoC. It's showcasing two way communication between Linux running on Cortex-A53 and OpenAMP demo running on Cortex-R5.
 
 using sysbus
+using sysbus.cluster0
+using sysbus.cluster1
+
 $name?="ZynqUS+"
 mach create $name
 

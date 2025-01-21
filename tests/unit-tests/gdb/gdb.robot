@@ -1238,8 +1238,8 @@ Clustering Should Load Arch Cluster And Then CPU
     Execute Command                 i @platforms/cpus/zynqmp.repl
 
     Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpuCluster="cortex-r5f"
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.apu2
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.apu0
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster0.apu2
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster0.apu0
     Check and Run Gdb               aarch64-zephyr-elf-gdb
     ${x}=                           Command GDB  info threads
     Should Contain                  ${x}  Thread 1 "machine-0.rpu0"
@@ -1250,8 +1250,8 @@ Clustering Should Load Arch Cluster And Then CPU
 Clustering Should Load CPU And Then Another CPU
     Execute Command                 i @platforms/cpus/zynqmp.repl
 
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.apu2
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.rpu0
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster0.apu2
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster1.rpu0
     Check and Run Gdb               aarch64-zephyr-elf-gdb
     ${x}=                           Command GDB  info threads
     Should Contain                  ${x}  Thread 1 "machine-0.apu2"

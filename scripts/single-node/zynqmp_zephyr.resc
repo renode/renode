@@ -1,4 +1,6 @@
 using sysbus
+using sysbus.cluster0
+using sysbus.cluster1
 
 mach create
 machine LoadPlatformDescription @platforms/cpus/zynqmp.repl

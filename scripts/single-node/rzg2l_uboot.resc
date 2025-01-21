@@ -2,6 +2,7 @@
 :description: This script runs U-Boot for Renesas SMARC EVK board based on RZ/G2L SoC
 
 using sysbus
+using sysbus.cluster
 
 $name?="Renesas RZ/G2L"
 
