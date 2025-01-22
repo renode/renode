@@ -40,7 +40,7 @@
 	url = https://github.com/antmicro/bc-csharp.git
 [submodule "tools/dts2repl"]
 	path = tools/dts2repl
-	url = https://github.com/antmicro/dts2repl.git
+	url = git@dev.antmicro.com:renode-dts2repl.git
 [submodule "tools/models_analyzer"]
 	path = tools/models_analyzer
 	url = https://github.com/antmicro/renode-models-analyzer.git
