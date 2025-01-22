@@ -210,9 +210,11 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
   tlm::tlm_command command = tlm::TLM_IGNORE_COMMAND;
   switch (message->action) {
   case WRITE:
+  case WRITE_REGISTER:
     command = tlm::TLM_WRITE_COMMAND;
     break;
   case READ:
+  case READ_REGISTER:
     command = tlm::TLM_READ_COMMAND;
     break;
   default:
@@ -303,7 +305,10 @@ static void connect_with_retry(CTCPClient* socket, const char* address, const ch
 SC_HAS_PROCESS(renode_bridge);
 renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
                              const char *port)
-    : sc_module(name), initiator_socket("initiator_socket"), fw_connection_initialized(false) {
+    : sc_module(name),
+      initiator_socket("initiator_socket"),
+      register_initiator_socket("register_initiator_socket"),
+      fw_connection_initialized(false) {
   SC_THREAD(forward_loop);
   SC_THREAD(on_port_gpio);
   for (int i = 0; i < NUM_GPIO; ++i) {
@@ -311,6 +316,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   }
 
   bus_target_fw_handler.initialize(this, 0);
+  cpu_target_fw_handler.initialize(this, 0);
 
   target_socket.bind(bus_target_fw_handler.socket);
   for (int i = 0; i < NUM_DIRECT_CONNECTIONS; ++i) {
@@ -321,7 +327,9 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   }
 
   bus_initiator_bw_handler.initialize(this);
+  cpu_initiator_bw_handler.initialize(this);
   initiator_socket.bind(bus_initiator_bw_handler);
+  register_initiator_socket.bind(cpu_initiator_bw_handler);
 
   payload.reset(new tlm::tlm_generic_payload());
 
@@ -387,28 +395,16 @@ void renode_bridge::forward_loop() {
 
     switch (message.action) {
     case renode_action::WRITE: {
-      initialize_payload(payload.get(), &message, data);
-
-      *((uint64_t *)data) = message.payload;
-
-      uint64_t delay = perform_transaction(*initiator_socket, payload.get());
-
-      // NOTE: address field is re-used here to pass timing information.
-      message.address = delay;
-      forward_connection->Send((char *)&message, sizeof(renode_message));
-
-      wait(sc_core::SC_ZERO_TIME);
+      handle_write(*initiator_socket, message, data);
     } break;
     case renode_action::READ: {
-      initialize_payload(payload.get(), &message, data);
-
-      uint64_t delay = perform_transaction(*initiator_socket, payload.get());
-
-      // NOTE: address field is re-used here to pass timing information.
-      message.address = delay;
-      message.payload = *((uint64_t *)data);
-      forward_connection->Send((char *)&message, sizeof(renode_message));
-      wait(sc_core::SC_ZERO_TIME);
+      handle_read(*initiator_socket, message, data);
+    } break;
+     case renode_action::WRITE_REGISTER: {
+      handle_write(register_initiator_socket, message, data);
+    } break;
+     case renode_action::READ_REGISTER: {
+      handle_read(register_initiator_socket, message, data);
     } break;
     case renode_action::TIMESYNC: {
       // Renode drives the simulation time. This module never leaves the delta
@@ -462,6 +458,32 @@ void renode_bridge::invalidate_translation_blocks(uint64_t start_address, uint64
     backward_connection->Send((char *)&message, sizeof(renode_message));
     // Response is ignored.
     backward_connection->Receive((char *)&message, sizeof(renode_message));
+}
+
+void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
+  initialize_payload(payload.get(), &message, data);
+
+  uint64_t delay = perform_transaction(socket, payload.get());
+
+  // NOTE: address field is re-used here to pass timing information.
+  message.address = delay;
+  message.payload = *((uint64_t *)data);
+  forward_connection->Send((char *)&message, sizeof(renode_message));
+  wait(sc_core::SC_ZERO_TIME);
+}
+
+void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
+  initialize_payload(payload.get(), &message, data);
+
+  *((uint64_t *)data) = message.payload;
+
+  uint64_t delay = perform_transaction(socket, payload.get());
+
+  // NOTE: address field is re-used here to pass timing information.
+  message.address = delay;
+  forward_connection->Send((char *)&message, sizeof(renode_message));
+
+  wait(sc_core::SC_ZERO_TIME);
 }
 
 void renode_bridge::on_port_gpio() {

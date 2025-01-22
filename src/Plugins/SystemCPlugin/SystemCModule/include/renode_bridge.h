@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -13,6 +13,7 @@
 #include "tlm_utils/simple_target_socket.h"
 
 struct CTCPClient;
+struct renode_message;
 
 #ifndef RENODE_BUSWIDTH
 #define RENODE_BUSWIDTH 32
@@ -50,8 +51,11 @@ public:
   using reset_port = sc_core::sc_port<sc_core::sc_signal_inout_if<bool>, 1,
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
 
-  // Socket forwarding transactions performed in Renode to SystemC.
+  // Socket forwarding memory transactions performed in Renode to SystemC.
   renode_bus_initiator_socket initiator_socket;
+
+  // Socket forwarding register transactions performed in Renode to SystemC.
+  renode_bus_initiator_socket register_initiator_socket;
 
   // Socket forwarding transactions performed in SystemC to Renode.
   renode_bus_target_socket target_socket;
@@ -122,6 +126,8 @@ private:
   };
 
   void forward_loop();
+  void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
+  void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void on_port_gpio();
 
   void update_backward_gpio_state(uint64_t new_gpio_state);
@@ -145,7 +151,9 @@ private:
   std::unique_ptr<tlm::tlm_generic_payload> payload;
 
   initiator_bw_handler bus_initiator_bw_handler;
+  initiator_bw_handler cpu_initiator_bw_handler;
   target_fw_handler bus_target_fw_handler;
+  target_fw_handler cpu_target_fw_handler;
 
   initiator_bw_handler dc_initiators[NUM_DIRECT_CONNECTIONS];
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
