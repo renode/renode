@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -38,6 +38,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
         Reset = 5,
         DMIReq = 6,
         InvalidateTBs = 7,
+        ReadRegister = 8,
+        WriteRegister = 9,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -368,7 +370,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
         {
-            var request = new RenodeMessage(RenodeAction.Read, dataLength, connectionIndex, (ulong)offset, 0);
+            return ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex);
+        }
+
+        public ulong ReadRegister(byte dataLength, long offset, byte connectionIndex = 0)
+        {
+            return ReadInternal(RenodeAction.ReadRegister, dataLength, offset, connectionIndex);
+        }
+
+        private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex)
+        {
+            var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
             var response = SendRequest(request);
 
             TryToSkipTransactionTime(response.Address);
@@ -378,7 +390,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void Write(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
         {
-            var request = new RenodeMessage(RenodeAction.Write, dataLength, connectionIndex, (ulong)offset, value);
+            WriteInternal(RenodeAction.Write, dataLength, offset, value, connectionIndex);
+        }
+
+        public void WriteRegister(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
+        {
+            WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex);
+        }
+
+        private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex)
+        {
+            var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
             var response = SendRequest(request);
 
             TryToSkipTransactionTime(response.Address);
