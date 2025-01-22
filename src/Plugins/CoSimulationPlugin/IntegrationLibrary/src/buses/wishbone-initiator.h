@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -18,6 +18,21 @@ public:
     WishboneInitiator()
         : readState(0), writeState(0)
     {
+    }
+
+    bool areSignalsConnected()
+    {
+        return isSignalConnected(wb_clk, "wb_clk")
+            && isSignalConnected(wb_rst, "wb_rst")
+            && isSignalConnected(wb_addr, "wb_addr")
+            && isSignalConnected(wb_rd_dat, "wb_rd_dat")
+            && isSignalConnected(wb_wr_dat, "wb_wr_dat")
+            && isSignalConnected(wb_we, "wb_we")
+            && isSignalConnected(wb_sel, "wb_sel")
+            && isSignalConnected(wb_stb, "wb_stb")
+            && isSignalConnected(wb_ack, "wb_ack")
+            && isSignalConnected(wb_cyc, "wb_cyc")
+            && isSignalConnected(wb_stall, "wb_stall");
     }
 
     void tick(bool countEnable, uint64_t steps) override

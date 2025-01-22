@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -121,4 +121,45 @@ void Axi::reset()
     tick(true);
     *aresetn = 0;
     tick(true);
+}
+
+bool BaseAxi::areSignalsConnected()
+{
+    return isSignalConnected(aclk, "aclk")
+        && isSignalConnected(aresetn, "aresetn")
+        && isSignalConnected(awid, "awid")
+        && isSignalConnected(awaddr, "awaddr")
+        && isSignalConnected(awlen, "awlen")
+        && isSignalConnected(awsize, "awsize")
+        && isSignalConnected(awburst, "awburst")
+        && isSignalConnected(awlock, "awlock")
+        && isSignalConnected(awcache, "awcache")
+        && isSignalConnected(awprot, "awprot")
+        && isSignalConnected(awvalid, "awvalid")
+        && isSignalConnected(awready, "awready")
+        && isSignalConnected(wdata, "wdata")
+        && isSignalConnected(wstrb, "wstrb")
+        && isSignalConnected(wlast, "wlast")
+        && isSignalConnected(wvalid, "wvalid")
+        && isSignalConnected(wready, "wready")
+        && isSignalConnected(bid, "bid")
+        && isSignalConnected(bresp, "bresp")
+        && isSignalConnected(bvalid, "bvalid")
+        && isSignalConnected(bready, "bready")
+        && isSignalConnected(arid, "arid")
+        && isSignalConnected(araddr, "araddr")
+        && isSignalConnected(arlen, "arlen")
+        && isSignalConnected(arsize, "arsize")
+        && isSignalConnected(arburst, "arburst")
+        && isSignalConnected(arlock, "arlock")
+        && isSignalConnected(arcache, "arcache")
+        && isSignalConnected(arprot, "arprot")
+        && isSignalConnected(arvalid, "arvalid")
+        && isSignalConnected(arready, "arready")
+        && isSignalConnected(rid, "rid")
+        && isSignalConnected(rdata, "rdata")
+        && isSignalConnected(rresp, "rresp")
+        && isSignalConnected(rlast, "rlast")
+        && isSignalConnected(rvalid, "rvalid")
+        && isSignalConnected(rready, "rready");
 }

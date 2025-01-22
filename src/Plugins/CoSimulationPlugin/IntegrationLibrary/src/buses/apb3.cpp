@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -97,4 +97,17 @@ void APB3::reset()
     tick(true);
     *prst = 0;
     tick(true);
+}
+
+bool APB3::areSignalsConnected()
+{
+    return isSignalConnected(pclk, "pclk")
+        && isSignalConnected(prst, "prst")
+        && isSignalConnected(paddr, "paddr")
+        && isSignalConnected(psel, "psel")
+        && isSignalConnected(penable, "penable")
+        && isSignalConnected(pwrite, "pwrite")
+        && isSignalConnected(pwdata, "pwdata")
+        && isSignalConnected(pready, "pready")
+        && isSignalConnected(prdata, "prdata");
 }
