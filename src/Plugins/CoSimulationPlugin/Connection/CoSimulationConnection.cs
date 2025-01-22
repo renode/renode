@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 //  This file is licensed under the MIT License.
 //  Full license text is available in 'licenses/MIT.txt'.
@@ -438,6 +438,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                     break;
                 case ActionType.TickClock:
                     allTicksProcessedARE.Set();
+                    break;
+                case ActionType.Error:
+                    AbortAndLogError("Fatal error message received from a co-simulation");
                     break;
                 default:
                     this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",

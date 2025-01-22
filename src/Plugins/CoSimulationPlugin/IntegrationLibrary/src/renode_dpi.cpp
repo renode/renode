@@ -12,7 +12,7 @@ static SocketCommunicationChannel *socketChannel;
 
 bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value, int32_t* peripheralIndex)
 {
-    if(!socketChannel->getIsConnected())
+    if(!renodeDPIIsConnected())
     {
         return false;
     }
@@ -42,12 +42,12 @@ void renodeDPIDisconnect()
 
 bool renodeDPIIsConnected()
 {
-    return socketChannel != NULL && socketChannel->getIsConnected();
+    return socketChannel != NULL && socketChannel->isConnected();
 }
 
 bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
 {
-    if(socketChannel == NULL || !socketChannel->getIsConnected())
+    if(!renodeDPIIsConnected())
     {
         return false;
     }
@@ -57,7 +57,7 @@ bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t 
 
 bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
 {
-    if(socketChannel == NULL || !socketChannel->getIsConnected())
+    if(!renodeDPIIsConnected())
     {
         return false;
     }
@@ -67,7 +67,7 @@ bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, i
 
 bool renodeDPILog(int logLevel, const char* data)
 {
-    if(socketChannel == NULL || !socketChannel->getIsConnected())
+    if(!renodeDPIIsConnected())
     {
         return false;
     }

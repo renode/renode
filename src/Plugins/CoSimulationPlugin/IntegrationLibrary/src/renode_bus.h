@@ -1,21 +1,26 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #ifndef RENODE_BUS_H
 #define RENODE_BUS_H
+#include <memory>
 #include <vector>
-#include "buses/bus.h"
-#include "../../../../Infrastructure/src/Emulator/Cores/renode/include/renode_imports.h"
-#include "renode.h"
-#include "communication/socket_channel.h"
 
+#include "../../../../Infrastructure/src/Emulator/Cores/renode/include/renode_imports.h"
+#include "src/renode.h"
+#include "src/buses/bus.h"
+#include "src/communication/communication_channel.h"
+
+class BaseBus;
+class BaseInitiatorBus;
+class BaseTargetBus;
 class RenodeAgent;
 struct Protocol;
 
-extern RenodeAgent* Init(void); //definition has to be provided in sim_main.cpp of cosimulated peripheral
+extern RenodeAgent* Init(); //definition has to be provided in sim_main.cpp of cosimulated peripheral
 
 extern "C"
 {
@@ -27,8 +32,7 @@ extern "C"
 class RenodeAgent
 {
 public:
-  RenodeAgent(BaseInitiatorBus* bus);
-  RenodeAgent(BaseTargetBus* bus);
+  RenodeAgent();
   virtual void addBus(BaseInitiatorBus* bus);
   virtual void addBus(BaseTargetBus* bus);
   virtual void writeToBus(int width, uint64_t addr, uint64_t value);
@@ -42,18 +46,22 @@ public:
   virtual void tick(bool countEnable, uint64_t steps);
   virtual void timeoutTick(uint8_t* signal, uint8_t expectedValue, int timeout = 2000);
   virtual void reset();
+  virtual void fatalError();
   virtual void handleCustomRequestType(Protocol* message);
   virtual void log(int level, const char* fmt, ...);
   virtual struct Protocol* receive();
   virtual void registerInterrupt(uint8_t *irq, uint8_t irq_addr);
   virtual void handleInterrupts(void);
-  virtual void simulate(int receiverPort, int senderPort, const char* address);
+  virtual void connect(int receiverPort, int senderPort, const char* address);
+  virtual void connectNative();
+  virtual void simulate();
   virtual void handleRequest(Protocol* request);
 
   std::vector<std::unique_ptr<BaseTargetBus>> targetInterfaces;
   std::vector<std::unique_ptr<BaseInitiatorBus>> initatorInterfaces;
 
 protected:
+  void addBus(BaseBus* bus);
   struct Interrupt {
     uint8_t* irq;
     uint8_t prev_irq;
@@ -65,6 +73,7 @@ protected:
   BaseBus* firstInterface;
 
 private:
+  void handleDisconnect();
   friend void ::handle_request(Protocol* request);
   friend void ::initialize_native(void);
   friend void ::reset_peripheral(void);
@@ -78,6 +87,7 @@ public:
   void sendSender(const Protocol message) override;
   void log(int logLevel, const char* data) override;
   Protocol* receive() override;
+  bool isConnected() override;
 };
 
 #endif

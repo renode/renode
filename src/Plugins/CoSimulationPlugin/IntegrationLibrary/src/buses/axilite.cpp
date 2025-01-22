@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -100,4 +100,27 @@ void AxiLite::reset()
     tick(true, 2); // it's model feature to tick twice
     setSignal<uint8_t>(rst, !reset_active);
     tick(true);
+}
+
+bool AxiLite::areSignalsConnected()
+{
+    return isSignalConnected(clk, "clk")
+        && isSignalConnected(rst, "rst")
+        && isSignalConnected(awvalid, "awvalid")
+        && isSignalConnected(awready, "awready")
+        && isSignalConnected(wstrb, "wstrb")
+        && isSignalConnected(wvalid, "wvalid")
+        && isSignalConnected(wready, "wready")
+        && isSignalConnected(bresp, "bresp")
+        && isSignalConnected(bvalid, "bvalid")
+        && isSignalConnected(bready, "bready")
+        && isSignalConnected(arvalid, "arvalid")
+        && isSignalConnected(arready, "arready")
+        && isSignalConnected(rresp, "rresp")
+        && isSignalConnected(rvalid, "rvalid")
+        && isSignalConnected(rready, "rready")
+        && isSignalConnected(awaddr, "awaddr")
+        && isSignalConnected(wdata, "wdata")
+        && isSignalConnected(araddr, "araddr")
+        && isSignalConnected(rdata, "rdata");
 }

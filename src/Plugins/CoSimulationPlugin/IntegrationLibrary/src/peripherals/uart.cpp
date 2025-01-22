@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -7,7 +7,7 @@
 #include "uart.h"
 #include <bitset>
 
-UART::UART(BaseTargetBus* bus, uint8_t* txd, uint8_t* rxd, uint32_t prescaler, uint32_t tx_reg_addr, uint8_t* irq) : RenodeAgent(bus) {
+UART::UART(uint8_t* txd, uint8_t* rxd, uint32_t prescaler, uint32_t tx_reg_addr, uint8_t* irq) : RenodeAgent() {
     this->txd = txd;
     this->rxd = rxd;
     this->irq = irq;

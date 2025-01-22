@@ -23,12 +23,12 @@ void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const
 
 void SocketCommunicationChannel::disconnect()
 {
-    isConnected = false;
+    connected = false;
 }
 
-bool SocketCommunicationChannel::getIsConnected()
+bool SocketCommunicationChannel::isConnected()
 {
-    return isConnected;
+    return connected;
 }
 
 void SocketCommunicationChannel::handshakeValid()
@@ -36,7 +36,7 @@ void SocketCommunicationChannel::handshakeValid()
     Protocol* received = receive();
     if(received->actionId == handshake) {
         sendMain(Protocol(handshake, 0, 0, noPeripheralIndex));
-        isConnected = true;
+        connected = true;
     }
 }
 
@@ -59,7 +59,7 @@ void SocketCommunicationChannel::sendMain(const Protocol message)
         mainSocket->Send((char *)&message, sizeof(struct Protocol));
     }
     catch(const char* msg) {
-        isConnected = false;
+        connected = false;
         throw msg;
     }
 }
@@ -70,7 +70,7 @@ void SocketCommunicationChannel::sendSender(const Protocol message)
         senderSocket->Send((char *)&message, sizeof(struct Protocol));
     }
     catch(const char* msg) {
-        isConnected = false;
+        connected = false;
         throw msg;
     }
 }
