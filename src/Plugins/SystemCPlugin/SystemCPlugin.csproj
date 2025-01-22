@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="Peripheral\SystemCPeripheral.cs" />
     <Compile Include="Peripheral\SystemCCPU.cs" />
+    <Compile Include="Peripheral\SystemCCortexMCPU.cs" />
+    <Compile Include="Peripheral\SystemCCortexMRegisters.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Infrastructure\src\Emulator\Main\Emulator.csproj">
