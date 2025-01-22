@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -60,8 +60,9 @@ enum renode_action : uint8_t {
   // Request:
   //     data_length: number of bytes to write [1, 8].
   //     address: address to write to, in target's address space
+  //     payload: value to write
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
-  //     direct connection payload: value to write
+  //       direct connection
   // Response:
   //     address: duration of transaction in us
   //     connection_index: 0=DMI unsupported, 1=DMI supported
