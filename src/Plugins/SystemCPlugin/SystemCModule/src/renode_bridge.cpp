@@ -111,6 +111,29 @@ enum renode_action : uint8_t {
   //     payload: end_address
   // Response:
   //     Identical to the request message.
+  READ_REGISTER = 8,
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to read [1, 8]
+  //     address: register to read from, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
+  //       for direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     payload: read value
+  //     Otherwise identical to the request message.
+  WRITE_REGISTER = 9,
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to write [1, 8].
+  //     address: register to write to, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
+  //       direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     Otherwise identical to the request message.
 };
 
 #pragma pack(push, 1)
