@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2010-2024 Antmicro
+# Copyright (c) 2010-2025 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -16,6 +16,7 @@ from enum import Enum
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
 import dwarf
+import coverview_integration
 
 
 FILE_SIGNATURE = b"ReTrace"
@@ -276,14 +277,23 @@ def print_coverage_report(report):
 
 def handle_coverage(parser, args, trace_data):
     if args.coverage_code == None:
-        parser.error('--coverage requires --coverage-code')
+        print("No sources specified with '--coverage-code', will attempt to discover automatically")
+        coverage_code_files = dwarf.find_code_files(dwarf.get_dwarf_info(args.coverage))
+    else:
+        coverage_code_files = args.coverage_code
 
-    report = dwarf.report_coverage(trace_data, args.coverage, args.coverage_code)
-    printed_report = print_coverage_report(report)
+    report = dwarf.report_coverage(trace_data, args.coverage, coverage_code_files, args.print_unmatched_address)
+    if args.lcov_format:
+        printed_report = dwarf.convert_to_lcov(report, coverage_code_files)
+    else:
+        printed_report = print_coverage_report(report)
 
     if args.coverage_output != None:
-        for line in printed_report:
-            args.coverage_output.write(f"{line}\n")
+        if args.export_for_coverview:
+            coverview_integration.create_coverview_archive(args, printed_report, coverage_code_files)
+        else:
+            for line in printed_report:
+                args.coverage_output.write(f"{line}\n")
     else:
         for line in printed_report:
             print(line)
@@ -299,10 +309,20 @@ if __name__ == "__main__":
     parser.add_argument("--disassemble", action="store_true", default=False)
     parser.add_argument("--llvm_disas_path", default=None, help="path to libllvm-disas library")
     parser.add_argument("--coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
-    parser.add_argument("--coverage-code", default=None, type=argparse.FileType('r'), help="path to a file that contains code")
+    parser.add_argument("--coverage-code", default=None, nargs='+', type=argparse.FileType('r'), help="path to a file that contains code")
     parser.add_argument("--coverage-output", default=None, type=argparse.FileType('w'), help="path to output coverage file")
+    parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in LCOV-compatible (*.info) format")
+    parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with Coverview project (https://github.com/antmicro/coverview)")
+    parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
 
     args = parser.parse_args()
+
+    if args.export_for_coverview:
+        if not args.lcov_format:
+            print("'--export-for-coverview' implies '--lcov-format'")
+            args.lcov_format = True
+        if not args.coverage_output:
+            raise ValueError("Specify a file with '--coverage-output' when packing an archive for Coverview")
 
     # Look for the libllvm-disas library in default location
     if args.disassemble and args.llvm_disas_path == None:
