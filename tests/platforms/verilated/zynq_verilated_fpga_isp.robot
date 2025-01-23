@@ -4,9 +4,9 @@ ${PROMPT}                                zynq>
 ${UART}                                  sysbus.uart0
 ${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/zynq_verilated_fpga_isp.resc
 ${PLATFORM}                              @platforms/boards/mars_zx3.repl
-${FPGA_ISP_NATIVE_LINUX}                 ${URI}/libVfpga_isp-Linux-x86_64-12746432362.so-s_2489608-a59deb01cc5c468b4d3e6ff334111616212bed77
-${FPGA_ISP_NATIVE_WINDOWS}               ${URI}/libVfpga_isp-Windows-x86_64-12746432362.dll-s_3674314-2ce8c0c902ab1c4ea8b4768082bb8d1c8d8b4780
-${FPGA_ISP_NATIVE_MACOS}                 ${URI}/libVfpga_isp-macOS-x86_64-12746432362.dylib-s_466960-768bc1b71cf8cc6149e535c03c8d7309389f35f3
+${FPGA_ISP_NATIVE_LINUX}                 ${URI}/libVfpga_isp-Linux-x86_64-12904733885.so-s_2507680-9d567ef5ddf2569d75b2d90abd6acbfe12ffbfd4
+${FPGA_ISP_NATIVE_WINDOWS}               ${URI}/libVfpga_isp-Windows-x86_64-12904733885.dll-s_3690794-0986cf74a6351ec50710e40372316d5712659531
+${FPGA_ISP_NATIVE_MACOS}                 ${URI}/libVfpga_isp-macOS-x86_64-12904733885.dylib-s_470408-8a990124cc9ce7bd7235bef19210c2b99ba31131
 ${BIN_VM}                                ${URI}/zynq-verilated-fpga-isp--vmlinux-s_13735336-6a3e10bd5b6d301cc8846490cad6de9ec541e067
 ${ROOTFS}                                ${URI}/zynq-verilated-fpga-isp--rootfs.ext2-s_33554432-cc9664564461b5be36a4d1841e50a760dc7f5ad1
 ${DTB}                                   ${URI}/zynq-verilated-fpga-isp--video-board.dtb-s_13451-bdb696327471e2247f811b03f37be84df994379a
