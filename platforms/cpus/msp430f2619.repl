@@ -16,6 +16,8 @@ timer_a: Timers.MSP430_Timer @ {
     sysbus <0x160, +0x20>;
     sysbus new Bus.BusMultiRegistration { address: 0x012E; size: 0x2; region: "interruptVector" }
 }
+    cpu: cpu
+    acknowledgeInterrupt: 6
     baseFrequency: 1_048_576
     IRQ0->cpu@6
     IRQ_IV->cpu@7
@@ -24,6 +26,8 @@ timer_b: Timers.MSP430_Timer @ {
     sysbus <0x180, +0x20>;
     sysbus new Bus.BusMultiRegistration { address: 0x011E; size: 0x2; region: "interruptVector" }
 }
+    cpu: cpu
+    acknowledgeInterrupt: 2
     baseFrequency: 1_048_576
     IRQ0->cpu@2
     IRQ_IV->cpu@3

@@ -5,22 +5,6 @@ include @platforms/cpus/msp430f2619.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/hello-world.elf-s_50467-180b9b5262a1df6ef45668ba7b6ed6d6e62ff6d2
 
-# NOTE: Forward Interrupt Acknowledged from CPU to timers
-set setupTimers
-"""
-cpu = self.Machine['sysbus.cpu']
-timer_a = self.Machine['sysbus.timer_a']
-timer_b = self.Machine['sysbus.timer_b']
-
-def on_interrupt_ack(int):
-    if int == 6:
-        timer_a.OnInterruptAcknowledged()
-    if int == 2:
-        timer_b.OnInterruptAcknowledged()
-
-cpu.InterruptAcknowledged += on_interrupt_ack
-"""
-
 # NOTE: Simulate return from CALLA invocation
 #       This will be used to skip execution of some functions
 set callaReturn
@@ -41,8 +25,6 @@ showAnalyzer usci_a0
 macro reset
 """
 sysbus LoadELF $bin
-
-python $setupTimers
 
 # NOTE: We currently doesn't support DCO and CC2420 RF
 #       so we skip initialization of both those subsystems
