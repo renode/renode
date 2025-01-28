@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -319,19 +319,6 @@ sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.IrqSourceUsedMoreThanOnce, exception.Error);
-        }
-
-        [Test]
-        public void ShouldFailIfInterruptUsedSecondTimeInEntryAsDestination()
-        {
-            var source = @"
-receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver
-sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts
-    Irq -> receiver@0
-    AnotherIrq -> receiver@0";
-
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
-            Assert.AreEqual(ParsingError.IrqDestinationUsedMoreThanOnce, exception.Error);
         }
 
         [Test]

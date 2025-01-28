@@ -1218,7 +1218,6 @@ namespace Antmicro.Renode.PlatformDescription
         private void CheckOverlappingIrqs(IEnumerable<IrqAttribute> attributes)
         {
             var sources = new HashSet<IrqEnd>();
-            var destinations = new HashSet<Tuple<string, int?, int>>();
             foreach(var attribute in attributes)
             {
                 foreach(var source in attribute.Sources)
@@ -1231,25 +1230,6 @@ namespace Antmicro.Renode.PlatformDescription
                             // if it is - we use the whole attribute
                             HandleError(ParsingError.IrqSourceUsedMoreThanOnce, source.StartPosition != null ? (IWithPosition)source : attribute,
                                         string.Format("Interrupt '{0}' has already been used as a source in this entry.", end.ToShortString()), true);
-                        }
-                    }
-                }
-
-                foreach(var multiplexedDestination in attribute.Destinations)
-                {
-                    if(multiplexedDestination.DestinationPeripheral != null)
-                    {
-                        // for irq -> none case this test does not make sense
-                        foreach(var destination in multiplexedDestination.Destinations)
-                        {
-                            foreach(var end in destination.Ends)
-                            {
-                                if(!destinations.Add(Tuple.Create(multiplexedDestination.DestinationPeripheral.Reference.Value, multiplexedDestination.DestinationPeripheral.LocalIndex, end.Number)))
-                                {
-                                    HandleError(ParsingError.IrqDestinationUsedMoreThanOnce, destination,
-                                                string.Format("Destination '{0}:{1}' has already been used as a destination in this entry.", multiplexedDestination.DestinationPeripheral, end.ToShortString()), true);
-                                }
-                            }
                         }
                     }
                 }

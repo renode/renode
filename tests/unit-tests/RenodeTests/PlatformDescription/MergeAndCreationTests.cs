@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
+using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using Antmicro.Renode.Utilities;
@@ -652,6 +653,28 @@ sender:
             Assert.AreEqual(receiver1, sender.Connections[7].Endpoints[0].Receiver);
             Assert.AreEqual(18, sender.Connections[8].Endpoints[0].Number);
             Assert.AreEqual(receiver1, sender.Connections[8].Endpoints[0].Receiver);
+        }
+
+        [Test]
+        public void ShouldCombineIfInterruptUsedSecondTimeInEntryAsDestination()
+        {
+            var source = @"
+receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus
+sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts @ sysbus
+    Irq -> receiver@0
+    AnotherIrq -> receiver@0";
+
+            ProcessSource(source);
+            Assert.IsTrue(machine.TryGetByName("sysbus.sender", out MockIrqSenderWithTwoInterrupts sender));
+            Assert.IsTrue(machine.TryGetByName("sysbus.receiver", out MockReceiver receiver));
+
+            Assert.AreEqual(0, sender.Irq.Endpoints[0].Number);
+            Assert.AreEqual(1, sender.AnotherIrq.Endpoints[0].Number);
+            Assert.IsInstanceOf(typeof(CombinedInput), sender.Irq.Endpoints[0].Receiver);
+            var combiner = (CombinedInput)sender.Irq.Endpoints[0].Receiver;
+            Assert.AreEqual(0, combiner.OutputLine.Endpoints[0].Number);
+            Assert.AreEqual(receiver, combiner.OutputLine.Endpoints[0].Receiver);
+            Assert.AreEqual(combiner, sender.AnotherIrq.Endpoints[0].Receiver);
         }
 
         [Test]
