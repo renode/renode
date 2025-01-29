@@ -14,6 +14,14 @@ This project requires Python 3.11 or newer and [PeakRDL package](https://pypi.or
 python3 -m pip install peakrdl
 ```
 
+### Installing the exporter
+
+Execute the following from `PeakRDL-renode` directory:
+
+```
+python3 -m pip install .
+```
+
 ### Using the exporter
 
 Generation of the partial C# class is done by calling the renode plugin to the peakrdl package:
