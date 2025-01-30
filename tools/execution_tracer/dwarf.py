@@ -13,7 +13,6 @@ from typing import Dict, Iterable, List, Set, SupportsBytes
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
-DEBUG = True
 NOISY = False
 
 @dataclass
@@ -112,7 +111,7 @@ def find_code_files(dwarf_info, verbose=True):
 
     return code_files
 
-def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_address):
+def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_address, *, debug=False):
     if not trace_data.has_pc:
         raise ValueError("The trace data doesn't contain PCs.")
 
@@ -132,7 +131,7 @@ def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_ad
     # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
     files_low_address = None
     files_high_address = 0
-    for file_name, line_number, address_low, address_high, _ in get_addresses(dwarf_info):
+    for file_name, line_number, address_low, address_high, _ in get_addresses(dwarf_info, debug=debug):
         if file_name not in code_filenames:
             continue
         if line_number > len(code_lines[file_name]):
@@ -140,7 +139,7 @@ def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_ad
                 f"Unexpected line number ({line_number}) in ELF file, file with code {file_name} contains only {len(code_lines[file_name])}"
             )
         if file_name in code_lines:
-            if DEBUG:
+            if debug:
                 print(f'file: {file_name}, line {line_number}, addr_low 0x{address_low:x}, addr_high: 0x{address_high:x}')
             code_lines[file_name][line_number - 1].add_address(address_low, address_high)
             code_lines[file_name][line_number - 1].is_exec = True
@@ -165,6 +164,9 @@ def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_ad
     address_count_cache: Dict[SupportsBytes, ExecutionCount] = {}
     if print_unmatched_address:
         unmatched_address: Set[int] = set()
+
+    # This step takes some time for large traces and codebases, let's advise the user to wait
+    print('Processing the trace, please wait...')
     for address_bytes, _, _, _ in trace_data:
         if address_bytes in address_count_cache:
             address_count_cache[address_bytes].count_up()
@@ -175,7 +177,7 @@ def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_ad
                 if print_unmatched_address:
                     unmatched_address.add(address)
                 continue
-            if DEBUG and NOISY:
+            if debug and NOISY:
                 print(f'parsing new addr in trace: {address:x}')
             # Find a line, for which one of the addresses matches with the address bytes present in the trace
             for line in code_lines_with_address:
@@ -211,13 +213,13 @@ def convert_to_lcov(code_lines: List[CodeLine], code_files: List):
     for record in records.values():
         yield from record.to_lcov_format()
 
-def get_addresses(dwarf_info):
+def get_addresses(dwarf_info, *, debug=False):
     # Go over all the line programs in the DWARF information, looking for
     # one that describes the given address.
     for CU in dwarf_info.iter_CUs():
-        yield from get_addresses_for_CU(dwarf_info, CU)
+        yield from get_addresses_for_CU(dwarf_info, CU, debug=debug)
 
-def get_addresses_for_CU(dwarf_info, CU):
+def get_addresses_for_CU(dwarf_info, CU, *, debug=False):
     # First, look at line programs to find the file/line for the address
     line_program = dwarf_info.line_program_for_CU(CU)
     delta = 1 if line_program.header.version < 5 else 0
@@ -237,7 +239,7 @@ def get_addresses_for_CU(dwarf_info, CU):
             directory_path = bytes2str(
                 line_program["include_directory"][dir_index]
             )
-            if DEBUG and NOISY:
+            if debug and NOISY:
                 print('Parsing:', directory_path, filename)
             yield filename, previous_state.line, previous_state.address, entry.state.address, directory_path
         if entry.state.end_sequence:

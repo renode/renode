@@ -275,14 +275,14 @@ def print_coverage_report(report):
         yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
 
 
-def handle_coverage(parser, args, trace_data):
+def handle_coverage(args, trace_data):
     if args.coverage_code == None:
         print("No sources specified with '--coverage-code', will attempt to discover automatically")
         coverage_code_files = dwarf.find_code_files(dwarf.get_dwarf_info(args.coverage))
     else:
         coverage_code_files = args.coverage_code
 
-    report = dwarf.report_coverage(trace_data, args.coverage, coverage_code_files, args.print_unmatched_address)
+    report = dwarf.report_coverage(trace_data, args.coverage, coverage_code_files, args.print_unmatched_address, debug=args.debug)
     if args.lcov_format:
         printed_report = dwarf.convert_to_lcov(report, coverage_code_files)
     else:
@@ -302,30 +302,30 @@ def handle_coverage(parser, args, trace_data):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
     parser.add_argument("file", help="binary file")
-    parser.add_argument("-d", action="store_true", default=False,
-        help="decompress file, without the flag decompression is enabled based on a file extension")
-    parser.add_argument("--force-disable-decompression", action="store_true", default=False)
+    parser.add_argument("--debug", default=False, action="store_true", help="enable additional debug logs to stdout")
+    parser.add_argument("--decompress", action="store_true", default=False,
+        help="decompress trace file, without the flag decompression is enabled based on a file extension")
+    parser.add_argument("--force-disable-decompression", action="store_true", default=False, help="never attempt to decompress the trace file")
 
-    parser.add_argument("--disassemble", action="store_true", default=False)
-    parser.add_argument("--llvm_disas_path", default=None, help="path to libllvm-disas library")
-    parser.add_argument("--coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
-    parser.add_argument("--coverage-code", default=None, nargs='+', type=argparse.FileType('r'), help="path to a file that contains code")
-    parser.add_argument("--coverage-output", default=None, type=argparse.FileType('w'), help="path to output coverage file")
-    parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in LCOV-compatible (*.info) format")
-    parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with Coverview project (https://github.com/antmicro/coverview)")
-    parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
+    subparsers = parser.add_subparsers(title='subcommands', dest='subcommands', description="Provide a path to the trace file first, before running any commands")
+    trace_parser = subparsers.add_parser('inspect', help='Inspect the binary trace format')
+
+    trace_parser.add_argument("--disassemble", action="store_true", default=False)
+    trace_parser.add_argument("--llvm-disas-path", default=None, help="path to libllvm-disas library")
+
+    cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
+
+    cov_parser.add_argument("coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=argparse.FileType('r'), help="path to a (list of) source file(s)")
+    cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
+    cov_parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in an LCOV-compatible (*.info) format")
+    cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
+    cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
 
     args = parser.parse_args()
 
-    if args.export_for_coverview:
-        if not args.lcov_format:
-            print("'--export-for-coverview' implies '--lcov-format'")
-            args.lcov_format = True
-        if not args.coverage_output:
-            raise ValueError("Specify a file with '--coverage-output' when packing an archive for Coverview")
-
     # Look for the libllvm-disas library in default location
-    if args.disassemble and args.llvm_disas_path == None:
+    if args.subcommands == 'inspect' and args.disassemble and args.llvm_disas_path is None:
         p = platform.system()
         if p == 'Darwin':
             ext = '.dylib'
@@ -348,23 +348,36 @@ if __name__ == "__main__":
                 args.llvm_disas_path = lib_path
                 break
 
-        if args.llvm_disas_path == None:
+        if args.llvm_disas_path is None:
             raise Exception('Could not find ' + lib_name + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
 
-    try:        
-        filename, file_extension = os.path.splitext(args.file)        
-        if (args.d or file_extension == ".gz") and not args.force_disable_decompression:
+    try:
+        filename, file_extension = os.path.splitext(args.file)
+        if (args.decompress or file_extension == ".gz") and not args.force_disable_decompression:
             file_open = gzip.open
         else:
             file_open = open
 
         with file_open(args.file, "rb") as file:
-            trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
-            if args.coverage != None:
-                handle_coverage(parser, args, trace_data)
+            if args.subcommands == 'coverage':
+                trace_data = read_file(file, False, None)
+            else:
+                trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
+            if args.subcommands == 'coverage' and args.coverage != None:
+                if args.export_for_coverview:
+                    if not args.lcov_format:
+                        print("'--export-for-coverview' implies '--lcov-format'")
+                        args.lcov_format = True
+                    if not args.coverage_output:
+                        raise Exception("Specify a file with '--output' when packing an archive for Coverview")
+
+                handle_coverage(args, trace_data)
             else:
                 for entry in trace_data:
                     print(trace_data.format_entry(entry))
+    except BrokenPipeError:
+        # Avoid crashing when piping the results e.g. to less
+        sys.exit(0)
     except InvalidFileFormatException as err:
         sys.exit(f"Error: {err}")
     except KeyboardInterrupt:

@@ -91,16 +91,19 @@ Trace And Report Coverage
 
     ${trace}=                       Trace Execution  ${COVERAGE_TEST_BINARY_URL}  ${compress}
     ${script_args}=                 Create List
-    ...                             --coverage
-    ...                             ${binary_file}
-    ...                             --coverage-code
-    ...                             ${code_file}
-    ...                             --coverage-output
-    ...                             ${coverage_file}
+    ...                             ${trace}
+
     IF  ${compress} == True
-        Append To List                  ${script_args}  -d
+        Append To List                  ${script_args}  --decompress
     END
-    Append To List                  ${script_args}  ${trace}
+
+    Append To List                  ${script_args}
+    ...                             coverage
+    ...                             ${binary_file}
+    ...                             --sources
+    ...                             ${code_file}
+    ...                             --output
+    ...                             ${coverage_file}
     Execute Python Script           ${EXECUTION_TRACER}  ${script_args}
 
     ${coverage_report_content}=     Get File  ${coverage_file}
