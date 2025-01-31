@@ -9,7 +9,7 @@ import os
 import itertools
 from collections import defaultdict
 from dataclasses import dataclass, astuple
-from typing import Dict, Iterable, List, Set, SupportsBytes
+from typing import Dict, Iterable, List, Set, SupportsBytes, IO, Generator
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
@@ -33,7 +33,7 @@ class CodeLine:
         self.is_exec = is_exec
         self.address_counter = defaultdict(lambda: ExecutionCount())
 
-    def add_address(self, low, high):
+    def add_address(self, low: int, high: int):
         # Try simply merge ranges if they are continuous.
         # since they are incrementing, this check is enough
         if self.addresses and self.addresses[-1].high == low:
@@ -41,16 +41,16 @@ class CodeLine:
         else:
             self.addresses.append(AddressRange(low, high))
 
-    def count_execution(self, address):
+    def count_execution(self, address) -> 'ExecutionCount':
         self.address_counter[address].count_up()
         return self.address_counter[address]
 
-    def most_executions(self):
+    def most_executions(self) -> int:
         if len(self.address_counter) == 0:
             return 0
         return max(count.count for count in self.address_counter.values())
 
-    def to_lcov_format(self):
+    def to_lcov_format(self) -> str:
         return f"DA:{self.number},{self.most_executions()}"
 
 
@@ -62,13 +62,13 @@ class Record:
     def add_code_line(self, cl: CodeLine):
         self.lines.append(cl)
 
-    def get_exec_lines(self):
+    def get_exec_lines(self) -> Generator[CodeLine]:
         for line in self.lines:
             if not line.is_exec:
                 continue
             yield line
 
-    def to_lcov_format(self):
+    def to_lcov_format(self) -> Generator[str]:
         yield "TN:"
         yield f'SF:{self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
@@ -200,7 +200,7 @@ def report_coverage(trace_data, elf_file_handler, code_files, print_unmatched_ad
 
     return itertools.chain.from_iterable(code_lines.values())
 
-def convert_to_lcov(code_lines: List[CodeLine], code_files: List):
+def convert_to_lcov(code_lines: Iterable[CodeLine], code_files: Iterable[IO]):
     records: Dict[str, Record] = {}
     for code_file in code_files:
         file_name = os.path.basename(code_file.name)

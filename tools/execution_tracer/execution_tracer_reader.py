@@ -11,6 +11,7 @@ import platform
 import sys
 import os
 import gzip
+import typing
 from enum import Enum
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
@@ -99,15 +100,12 @@ def bytes_to_hex(bytes, zero_padded=True):
 
 
 class TraceData:
-    pc_length = 0
-    has_opcodes = False
-    file = None
     disassembler = None
     disassembler_thumb = None
     thumb_mode = False
     instructions_left_in_block = 0
 
-    def __init__(self, file, header, disassemble, llvm_disas_path):
+    def __init__(self, file: typing.IO, header: Header, disassemble: bool, llvm_disas_path: str):
         self.file = file
         self.pc_length = int(header.pc_length)
         self.has_pc = (self.pc_length != 0)
