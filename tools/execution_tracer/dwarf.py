@@ -70,8 +70,7 @@ class Record:
 
     def to_lcov_format(self):
         yield "TN:"
-        # Fixup in case we don't have a dirname
-        yield f'SF:project/{self.name}'
+        yield f'SF:{self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
         yield 'end_of_record'
 

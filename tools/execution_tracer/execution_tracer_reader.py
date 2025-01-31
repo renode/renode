@@ -290,7 +290,13 @@ def handle_coverage(args, trace_data):
 
     if args.coverage_output != None:
         if args.export_for_coverview:
-            coverview_integration.create_coverview_archive(args, printed_report, coverage_code_files)
+            if not coverview_integration.create_coverview_archive(
+                        args.coverage_output,
+                        printed_report,
+                        coverage_code_files,
+                        args.coverview_config
+                    ):
+                sys.exit(1)
         else:
             for line in printed_report:
                 args.coverage_output.write(f"{line}\n")
@@ -320,6 +326,7 @@ if __name__ == "__main__":
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
     cov_parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in an LCOV-compatible (*.info) format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
+    cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
 
     args = parser.parse_args()
