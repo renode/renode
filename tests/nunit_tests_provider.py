@@ -6,6 +6,7 @@ import signal
 import psutil
 import subprocess
 from time import monotonic
+from typing import Dict, List
 
 import xml.etree.ElementTree as ET
 import glob
@@ -199,3 +200,10 @@ class NUnitTestSuite(object):
         # Unused mechanism, this exists to keep a uniform interface with
         # robot_tests_provider.py.
         return None
+
+
+    @classmethod
+    def tests_failed_due_to_renode_crash(cls, test_groups: Dict[str, List['NUnitTestSuite']]) -> bool:
+        # Unused mechanism, this exists to keep a uniform interface with
+        # robot_tests_provider.py.
+        return False

@@ -521,6 +521,17 @@ class RobotTestSuite(object):
             # None of the previously provided states are available after closing the server.
             self._dependencies_met = set()
 
+    @classmethod
+    def _has_renode_crashed(cls, test: ET.Element) -> bool:
+        # only finds immediate children - required because `status`
+        # nodes are also present lower in the tree for example
+        # for every keyword but we only need the status of the test
+        status: ET.Element = test.find('status')
+        if status.text is not None and cls.retry_suite_regex.search(status.text):
+            return True
+        else:
+            return any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg"))
+
 
     def run(self, options, run_id=0, iteration_index=1, suite_retry_index=0):
         if self.path.endswith('renode-keywords.robot'):
@@ -704,12 +715,9 @@ class RobotTestSuite(object):
                 # Look for regular expressions signifying a crash.
                 # Suite Setup and Suite Teardown aren't checked here cause they're in the `kw` tags.
                 for test in suite.iter('test'):
-                    status = test.find('status') # only finds immediate children - important requirement
-                    if status.text is not None and self.retry_suite_regex.search(status.text):
+                    if self._has_renode_crashed(test):
                         return True
-                    for msg in test.iter("msg"):
-                        if msg.text is not None and self.retry_suite_regex.search(msg.text):
-                            return True
+
         return False
 
 
@@ -1033,11 +1041,7 @@ class RobotTestSuite(object):
                     m = cls.retry_test_regex.search(status.text) if status.text is not None else None
 
                     # Check whether renode crashed during this test
-                    has_renode_crashed = False
-                    if status.text is not None and cls.retry_suite_regex.search(status.text):
-                        has_renode_crashed = True
-                    else:
-                        has_renode_crashed = any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg"))
+                    has_renode_crashed = cls._has_renode_crashed(test)
 
                     status_str = status.attrib["status"]
                     nth = (1 + int(m.group(2))) if m else 1
@@ -1082,3 +1086,37 @@ class RobotTestSuite(object):
             break
 
         return data
+
+
+    @classmethod
+    def tests_failed_due_to_renode_crash(cls, test_groups: Dict[str, List['RobotTestSuite']]) -> bool:
+        for group in test_groups:
+            for suite in test_groups[group]:
+                for file in suite.suite_log_files:
+                    try:
+                        tree = ET.parse(file)
+                    except FileNotFoundError:
+                        continue
+
+                    root = tree.getroot()
+
+                    for suite in root.iter('suite'):
+                        if not suite.get('source', False):
+                            continue # it is a tag used to group other suites without meaning on its own
+                        for test in suite.iter('test'):
+                            # do not check skipped tests
+                            if test.find("./tags/[tag='skipped']"):
+                                continue
+
+                            # only finds immediate children - required because `status`
+                            # nodes are also present lower in the tree for example
+                            # for every keyword but we only need the status of the test
+                            status = test.find('status') 
+                            if status.attrib["status"] != "FAIL":
+                                continue # passed tests should not be checked for crashes
+
+                            # check whether renode crashed during this test
+                            if cls._has_renode_crashed(test):
+                                return True
+
+        return False

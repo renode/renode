@@ -445,6 +445,23 @@ def print_rerun_trace(options):
                     suite_retry_index += 1
         print("------")
 
+# analyzes logs before they are cleaned up to determine
+# if any test failures were caused by a Renode crash.
+#
+# returns:
+# - TRUE only when a test failed on its final run AND
+#   that last failure was caused by a crash
+# - FALSE if the test passed or when one of the runs crashed
+#   but the final retry failed for other reasons such as wrong result
+#
+# when running multiple test suites returns TRUE if ANY failed due to a crash.
+def failed_due_to_crash(options) -> bool:
+    for handler in registered_handlers:
+        handler_obj = handler['creator']
+        if handler_obj.tests_failed_due_to_renode_crash(options.tests):
+            return True
+
+    return False
 
 def run():
     parser = prepare_parser()
@@ -513,6 +530,10 @@ def run():
 
     print("Cleaning up suites")
 
+    # check if renode crash caused a failed test based on logs for tested suites
+    # before the log files are cleaned up
+    failed_due_to_crash: bool = tests_failed and failed_due_to_crash(options)
+
     for group in options.tests:
         for suite in options.tests[group]:
             type(suite).log_files = logs_per_type[type(suite)]
@@ -526,6 +547,9 @@ def run():
         print("Some tests failed :( See the list of failed tests below and logs for details!")
         print_failed_tests(options)
         print_rerun_trace(options)
+        if failed_due_to_crash:
+            print('Renode crashed during testing and caused a failure', file=sys.stderr)
+            sys.exit(2)
         sys.exit(1)
     print("Tests finished successfully :)")
     print_rerun_trace(options)
