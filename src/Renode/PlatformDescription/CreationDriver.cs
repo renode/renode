@@ -43,6 +43,7 @@ namespace Antmicro.Renode.PlatformDescription
             objectValueInitQueue = new Queue<ObjectValue>();
             usingsBeingProcessed = new Stack<string>();
             irqCombiners = new Dictionary<IrqDestination, IrqCombinerConnection>();
+            createdDisposables = new Stack<IDisposable>();
             PrepareVariables();
         }
 
@@ -218,6 +219,7 @@ namespace Antmicro.Renode.PlatformDescription
                 objectValueInitQueue.Clear();
                 usingsBeingProcessed.Clear();
                 irqCombiners.Clear();
+                createdDisposables.Clear();
                 PrepareVariables();
             }
             machine.PostCreationActions();
@@ -632,6 +634,10 @@ namespace Antmicro.Renode.PlatformDescription
                 }
                 var message = string.Format("Exception was thrown during construction of {0}:{1}{2}", friendlyName, Environment.NewLine, exceptionMessage);
                 HandleError(ParsingError.ConstructionException, responsibleSyntaxElement, message, false);
+            }
+            if(result is IDisposable disposable)
+            {
+                createdDisposables.Push(disposable);
             }
             return result;
         }
@@ -1653,6 +1659,12 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void HandleError(ParsingError error, IWithPosition failingObject, string message, bool longMark)
         {
+            foreach(var disposable in createdDisposables)
+            {
+                disposable.Dispose();
+            }
+            createdDisposables.Clear();
+
             string source, fileName;
             if(!GetElementSourceAndPath(failingObject, out fileName, out source))
             {
@@ -1762,6 +1774,7 @@ namespace Antmicro.Renode.PlatformDescription
         private readonly Queue<ObjectValue> objectValueInitQueue;
         private readonly Stack<string> usingsBeingProcessed;
         private readonly Dictionary<IrqDestination, IrqCombinerConnection> irqCombiners;
+        private readonly Stack<IDisposable> createdDisposables;
 
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>(new []
         {
