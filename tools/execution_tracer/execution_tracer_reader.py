@@ -274,15 +274,17 @@ def print_coverage_report(report):
 
 
 def handle_coverage(args, trace_data):
-    if args.coverage_code == None:
-        print("No sources specified with '--coverage-code', will attempt to discover automatically")
-        coverage_code_files = dwarf.find_code_files(dwarf.get_dwarf_info(args.coverage))
-    else:
-        coverage_code_files = args.coverage_code
+    coverage_config = dwarf.Coverage(
+        elf_file_handler=args.coverage,
+        code_filenames=args.coverage_code,
+        substitute_paths=args.sub_source_paths,
+        debug=args.debug,
+        print_unmatched_address=args.print_unmatched_address,
+    )
 
-    report = dwarf.report_coverage(trace_data, args.coverage, coverage_code_files, args.print_unmatched_address, debug=args.debug)
+    report = coverage_config.report_coverage(trace_data)
     if args.lcov_format:
-        printed_report = dwarf.convert_to_lcov(report, coverage_code_files)
+        printed_report = coverage_config.convert_to_lcov(report)
     else:
         printed_report = print_coverage_report(report)
 
@@ -291,7 +293,7 @@ def handle_coverage(args, trace_data):
             if not coverview_integration.create_coverview_archive(
                         args.coverage_output,
                         printed_report,
-                        coverage_code_files,
+                        coverage_config._code_files,
                         args.coverview_config
                     ):
                 sys.exit(1)
@@ -320,13 +322,13 @@ if __name__ == "__main__":
     cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
 
     cov_parser.add_argument("coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
-    cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=argparse.FileType('r'), help="path to a (list of) source file(s)")
+    cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
     cov_parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in an LCOV-compatible (*.info) format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
-
+    cov_parser.add_argument("--sub-source-paths", default=[], nargs='*', type=dwarf.Coverage.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
     args = parser.parse_args()
 
     # Look for the libllvm-disas library in default location
