@@ -8,7 +8,7 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/litex_vexriscv_verilated_cfu.repl
 
 $bin?=@https://dl.antmicro.com/projects/renode/verilated-cfu-test-software.elf-s_10742536-04c41fb55c3011b440a3e6eb955756268f28c151
-$cfuLinux?=@https://dl.antmicro.com/projects/renode/libVcpu_ibex-Linux-x86_64-12746432362.so-s_2224440-fb03313c1ba631156fcbbb5593a4f66e4c5fe459
+$cfuLinux?=@https://dl.antmicro.com/projects/renode/libVcpu_ibex-Linux-x86_64-13112907851.so-s_2251128-ab2dcb1801188d7f934bdeafa93f9c1edc60ad39
 
 showAnalyzer uart
 
