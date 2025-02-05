@@ -16,9 +16,13 @@ from enum import Enum
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
-import dwarf
-import coverview_integration
-
+# Allow directly using this as a script, without installation
+try:
+    import execution_tracer.dwarf as dwarf
+    import execution_tracer.coverview_integration as coverview_integration
+except ImportError:
+    import dwarf
+    import coverview_integration
 
 FILE_SIGNATURE = b"ReTrace"
 FILE_VERSION = b"\x04"
@@ -305,7 +309,7 @@ def handle_coverage(args, trace_data):
             print(line)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
     parser.add_argument("--debug", default=False, action="store_true", help="enable additional debug logs to stdout")
     parser.add_argument("--decompress", action="store_true", default=False,
@@ -390,3 +394,6 @@ if __name__ == "__main__":
         sys.exit(f"Error: {err}")
     except KeyboardInterrupt:
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
