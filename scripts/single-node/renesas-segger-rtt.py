@@ -5,20 +5,19 @@
 # Full license text is available in 'licenses/MIT.txt'.
 #
 
-def mc_setup_segger_rtt(name, with_has_key = True, with_read = True):
+def mc_setup_segger_rtt(console, with_has_key = True, with_read = True):
     # `mc_` is omitted as it isn't needed in the Monitor.
-    setup_arg_spec = 'setup_segger_rtt(name, with_has_key = True, with_read = True)'
-    segger = monitor.Machine[name]
+    setup_arg_spec = 'setup_segger_rtt(console, with_has_key = True, with_read = True)'
     bus = monitor.Machine.SystemBus
 
     def has_key(cpu, _):
-        cpu.SetRegisterUlong(0, 1 if segger.Contains(ord('\r')) else 0)
+        cpu.SetRegisterUlong(0, 1 if console.Contains(ord('\r')) else 0)
         cpu.PC = cpu.LR
 
     def read(cpu, _):
         buffer = cpu.GetRegister(1).RawValue
         size = cpu.GetRegister(2).RawValue
-        written = segger.WriteBufferToMemory(buffer, size, cpu)
+        written = console.WriteBufferToMemory(buffer, size, cpu)
         cpu.SetRegisterUlong(0, written)
         cpu.PC = cpu.LR
 
@@ -26,7 +25,7 @@ def mc_setup_segger_rtt(name, with_has_key = True, with_read = True):
         pointer = cpu.GetRegister(1).RawValue
         length = cpu.GetRegister(2).RawValue
         for i in range(length):
-            segger.DisplayChar(bus.ReadByte(pointer + i))
+            console.DisplayChar(bus.ReadByte(pointer + i))
 
         cpu.SetRegisterUlong(0, length)
         cpu.PC = cpu.LR

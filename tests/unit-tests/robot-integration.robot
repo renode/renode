@@ -12,7 +12,7 @@ Should Fail On Peripheral Method With Invalid Parameters
     Should Contain      ${msg}      Parameters did not match the signature
 
 Should Fail On Python Command With Invalid Parameters
-    ${msg}=     Run Keyword And Expect Error        *   Execute Command     next_value invalid_value
+    ${msg}=     Run Keyword And Expect Error        *   Execute Command     next_value "invalid_value"
     Should Contain      ${msg}      unsupported operand type
 
 Should Fail On Command Error
