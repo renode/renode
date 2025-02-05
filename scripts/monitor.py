@@ -90,3 +90,8 @@ externals = type('ExternalsManagerAccessor', (object,), dict(
     __getitem__ = lambda _, name: Renode.Core.Structure.IHasChildren[Renode.Core.IExternal].TryGetByName(emulationManager.CurrentEmulation.ExternalsManager, name)[0],
     __getattr__ = lambda self, name: self.__getitem__(name),
 ))()
+
+variables = type('MonitorVariablesAccessor', (object,), dict(
+    __getitem__ = lambda _, name: monitor.GetVariable(name),
+    __getattr__ = lambda self, name: self.__getitem__(name),
+))()
