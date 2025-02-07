@@ -10,7 +10,7 @@ import itertools
 import functools
 from collections import defaultdict
 from dataclasses import dataclass, astuple, field
-from typing import BinaryIO, Dict, Generator, Iterable, List, Self, Set, SupportsBytes, IO
+from typing import BinaryIO, Dict, Generator, Iterable, List, Set, SupportsBytes, IO, Optional
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
@@ -63,13 +63,13 @@ class Record:
     def add_code_line(self, cl: CodeLine):
         self.lines.append(cl)
 
-    def get_exec_lines(self) -> Generator[CodeLine]:
+    def get_exec_lines(self) -> Generator[CodeLine, None, None]:
         for line in self.lines:
             if not line.is_exec:
                 continue
             yield line
 
-    def to_lcov_format(self) -> Generator[str]:
+    def to_lcov_format(self) -> Generator[str, None, None]:
         yield "TN:"
         yield f'SF:{self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
@@ -95,7 +95,7 @@ class Coverage:
             return path.replace(self.before, self.after)
 
         @classmethod
-        def from_arg(cls, s: str) -> Self:
+        def from_arg(cls, s: str) -> 'Self':
             args = s.split(':')
             if len(args) != 2:
                 raise ValueError('Path substitution should be in old_path:new_path format')
@@ -141,7 +141,7 @@ class Coverage:
     def _apply_path_substitutions(code_filename: str, substitute_paths: Iterable[PathSubstitution]) -> str:
         return functools.reduce(lambda p, sub: sub.apply(p), substitute_paths, code_filename)
 
-    def _approx_file_match(self, file_name: str) -> str | None:
+    def _approx_file_match(self, file_name: str) -> Optional[str]:
         for file in self.code_filenames:
             if file_name == file:
                 return file_name
@@ -238,7 +238,7 @@ class Coverage:
 
         return itertools.chain.from_iterable(code_lines.values())
 
-    def convert_to_lcov(self, code_lines: Iterable[CodeLine]) -> Generator[str]:
+    def convert_to_lcov(self, code_lines: Iterable[CodeLine]) -> Generator[str, None, None]:
         records: Dict[str, Record] = {}
         for code_file in self._code_files:
             records[code_file.name] = Record(code_file.name)
