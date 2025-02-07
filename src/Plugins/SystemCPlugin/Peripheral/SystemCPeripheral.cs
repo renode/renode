@@ -337,14 +337,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             BitHelper.SetBit(ref outGPIOState, (byte)number, value);
             var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, 0, outGPIOState);
-            SendRequest(request);
+            SendRequest(request, out var response);
         }
 
         public void Reset()
         {
             outGPIOState = 0;
             var request = new RenodeMessage(RenodeAction.Reset, 0, 0, 0, 0);
-            SendRequest(request);
+            SendRequest(request, out var response);
         }
 
         public void Dispose()
@@ -354,7 +354,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 // Init message sent after connection has been established signifies Renode terminated and SystemC process
                 // should exit.
                 var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
-                SendRequest(request);
+                SendRequest(request, out var response);
 
                 if(!systemcProcess.WaitForExit(500)) {
                     this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
@@ -381,7 +381,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex)
         {
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
-            var response = SendRequest(request);
+            if(!SendRequest(request, out var response))
+            {
+                this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Read will return 0.");
+                return 0;
+            }
 
             TryToSkipTransactionTime(response.Address);
 
@@ -401,7 +405,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex)
         {
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
-            var response = SendRequest(request);
+            if(!SendRequest(request, out var response))
+            {
+                this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Write will have no effect.");
+                return;
+            }
 
             TryToSkipTransactionTime(response.Address);
         }
@@ -461,7 +469,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             listenerSocket.Close();
 
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS));
+            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
 
             backwardThread.Start();
         }
@@ -492,25 +500,33 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
                 {
                     var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, GetCurrentVirtualTimeUS());
-                    SendRequest(request);
+                    SendRequest(request, out var response);
                 });
             };
         }
 
-        private RenodeMessage SendRequest(RenodeMessage request)
+        private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
         {
             lock (messageLock)
             {
                 var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
                 var recvBytes = new byte[messageSize];
+                if(forwardSocket != null)
+                {
+                    forwardSocket.Send(request.Serialize(), SocketFlags.None);
+                    forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
 
-                forwardSocket.Send(request.Serialize(), SocketFlags.None);
-                forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
+                    responseMessage = new RenodeMessage();
+                    responseMessage.Deserialize(recvBytes);
 
-                var responseMessage = new RenodeMessage();
-                responseMessage.Deserialize(recvBytes);
-
-                return responseMessage;
+                    return true;
+                }
+                else
+                {
+                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first.");
+                    responseMessage = new RenodeMessage();
+                    return false;
+                }
             }
         }
 
