@@ -42,6 +42,19 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                         limitBuffer, timeout, address);
                 connection.AttachTo(this);
             }
+            else
+            {
+                CheckNoEffectConstructorParam(nameof(frequency), frequency, VerilogTimeunitFrequency);
+                CheckNoEffectConstructorParam(nameof(limitBuffer), limitBuffer, LimitBuffer);
+                CheckNoEffectConstructorParam(nameof(timeout), timeout, DefaultTimeout);
+                CheckNoEffectConstructorParam(nameof(address), address, null);
+                CheckNoEffectConstructorParam(nameof(simulationFilePathLinux), simulationFilePathLinux, null);
+                CheckNoEffectConstructorParam(nameof(simulationFilePathWindows), simulationFilePathWindows, null);
+                CheckNoEffectConstructorParam(nameof(simulationFilePathMacOS), simulationFilePathMacOS, null);
+                CheckNoEffectConstructorParam(nameof(simulationContextLinux), simulationContextLinux, null);
+                CheckNoEffectConstructorParam(nameof(simulationContextWindows), simulationContextWindows, null);
+                CheckNoEffectConstructorParam(nameof(simulationContextMacOS), simulationContextMacOS, null);
+            }
 
             var innerGPIOConnections = new Dictionary<int, IGPIO>();
             if(this.cosimToRenodeSignalRange.HasValue)
@@ -295,6 +308,14 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 throw new RecoverableException("CoSimulatedPeripheral is not attached to a CoSimulationConnection.");
             }
+        }
+
+        private void CheckNoEffectConstructorParam<T>(string name, T value, T defaultValue)
+        {
+                if(EqualityComparer<T>.Default.Equals(defaultValue, value) == false)
+                {
+                    this.Log(LogLevel.Error, "CoSimulatedPeripheral: Parameter \"{0}\" set to {1} will be ignored, because this peripheral uses an external CoSimulationConnection (\"createConnection\" is set to false). Change the property in the relevant CoSimulationConnection instead.", name, value);
+                }
         }
 
         public int RenodeToCosimIndex { get; }

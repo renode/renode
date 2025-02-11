@@ -59,6 +59,11 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
             }
         }
 
+        public override string ToString()
+        {
+            return $"ProtocolMessage: ActionId={ActionId}, Address=0x{Address:X}, Data=0x{Data:X}, PeripheralIndex={PeripheralIndex}";
+        }
+
         public ActionType ActionId { get; set; }
         public ulong Address { get; set; }
         public ulong Data { get; set; }

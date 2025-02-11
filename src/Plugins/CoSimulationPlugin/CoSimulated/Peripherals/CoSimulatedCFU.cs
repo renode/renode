@@ -142,7 +142,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 }
                 else if(!String.IsNullOrWhiteSpace(SimulationFilePath))
                 {
-                    LogAndThrowRE("Verilated peripheral already connected, cannot change the file name!");
+                    LogAndThrowRE("CoSimulatedCFU already connected, cannot change the file name!");
                 }
                 else if(connectedCpu.Children.Any(child => child.Peripheral.SimulationFilePath == value))
                 {

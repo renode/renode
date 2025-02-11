@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-import renode_pkg::renode_runtime, renode_pkg::no_peripheral_index;
+import renode_pkg::renode_runtime, renode_pkg::no_peripheral_index, renode_pkg::log_level_e;
 
 module renode_inputs #(
     int unsigned InputsCount = 1
@@ -33,6 +33,9 @@ module renode_inputs #(
     if (!in_reset) begin
       for (int unsigned addr = 0; addr < InputsCount; addr++) begin
         if (inputs[addr] != inputs_prev[addr]) begin
+`ifdef RENODE_DEBUG
+          runtime.connection.log(renode_pkg::LogDebug, $sformatf("GPIO %d changed: %d -> %d", addr, inputs_prev[addr], inputs[addr]));
+`endif
           runtime.connection.send_to_async_receiver(renode_pkg::message_t'{
               renode_pkg::interrupt,
               renode_pkg::address_t'(addr),

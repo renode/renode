@@ -81,7 +81,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             if(cosimIdxToPeripheral.ContainsKey(peripheral.CosimToRenodeIndex))
             {
-                throw new RecoverableException("Failed to add a peripheral to co-simulated connection. Make sure all connected peripherals have correctly assigned, unique cosimulation subordinate and manager indices in platform definition.");
+                throw new RecoverableException($"Failed to add a peripheral to co-simulated connection: Duplicate CosimToRenode index {peripheral.CosimToRenodeIndex}. Make sure all connected peripherals have unique cosimToRenodeIndex and renodeToCosimIndex parameters in platform definition.");
             }
             cosimIdxToPeripheral.Add(peripheral.CosimToRenodeIndex, peripheral);
             peripheral.OnConnectionAttached(this);
@@ -217,9 +217,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         public void Send(ICoSimulationConnectible connectible, ActionType actionId, ulong offset, ulong value)
         {
             int renodeToCosimIndex = connectible != null ? connectible.RenodeToCosimIndex : ProtocolMessage.NoPeripheralIndex;
-            if(!cosimConnection.TrySendMessage(new ProtocolMessage(actionId, offset, value, renodeToCosimIndex)))
+            var message = new ProtocolMessage(actionId, offset, value, renodeToCosimIndex);
+            if(!cosimConnection.TrySendMessage(message))
             {
-                AbortAndLogError("Send error!");
+                AbortAndLogError($"Failed to send message: {message}");
             }
         }
 
@@ -333,7 +334,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 {
                     if(!cosimConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer, ProtocolMessage.NoPeripheralIndex)))
                     {
-                        AbortAndLogError("Send error!");
+                        AbortAndLogError("Failed to send or didn't receive TickClock action response.");
                     }
                     this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
                     if(!allTicksProcessedARE.WaitOne(timeout))
