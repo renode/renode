@@ -14,8 +14,6 @@ from typing import BinaryIO, Dict, Generator, Iterable, List, Set, SupportsBytes
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
-NOISY = False
-
 @dataclass
 class AddressRange:
     low: int
@@ -105,8 +103,9 @@ class Coverage:
     elf_file_handler: BinaryIO
     code_filenames: List[str]
     substitute_paths: List[PathSubstitution]
-    debug: bool = False
     print_unmatched_address: bool = False
+    debug: bool = False
+    noisy: bool = False
 
     _code_files: List[IO] = field(init=False)
 
@@ -166,7 +165,7 @@ class Coverage:
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
         files_high_address = 0
-        for file_name, line_number, address_low, address_high, file_path in get_addresses(dwarf_info, debug=self.debug):
+        for file_name, line_number, address_low, address_high, file_path in get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
             file_full_name = os.path.join(file_path, file_name)
             file_full_name = self._apply_path_substitutions(file_full_name, self.substitute_paths)
             # If the files are provided by hand, patch their names
@@ -215,7 +214,7 @@ class Coverage:
                     if self.print_unmatched_address:
                         unmatched_address.add(address)
                     continue
-                if self.debug and NOISY:
+                if self.debug and self.noisy:
                     print(f'parsing new addr in trace: {address:x}')
                 # Find a line, for which one of the addresses matches with the address bytes present in the trace
                 for line in code_lines_with_address:
@@ -258,13 +257,13 @@ def get_dwarf_info(elf_file_handler):
         )
     return elf_file.get_dwarf_info()
 
-def get_addresses(dwarf_info, *, debug=False):
+def get_addresses(dwarf_info, *, debug=False, noisy=False):
     # Go over all the line programs in the DWARF information, looking for
     # one that describes the given address.
     for CU in dwarf_info.iter_CUs():
-        yield from get_addresses_for_CU(dwarf_info, CU, debug=debug)
+        yield from get_addresses_for_CU(dwarf_info, CU, debug=debug, noisy=noisy)
 
-def get_addresses_for_CU(dwarf_info, CU, *, debug=False):
+def get_addresses_for_CU(dwarf_info, CU, *, debug=False, noisy=False):
     # First, look at line programs to find the file/line for the address
     line_program = dwarf_info.line_program_for_CU(CU)
     delta = 1 if line_program.header.version < 5 else 0
@@ -284,7 +283,7 @@ def get_addresses_for_CU(dwarf_info, CU, *, debug=False):
             directory_path = bytes2str(
                 line_program["include_directory"][dir_index]
             )
-            if debug and NOISY:
+            if debug and noisy:
                 print('Parsing:', directory_path, filename)
             yield filename, previous_state.line, previous_state.address, entry.state.address, directory_path
         if entry.state.end_sequence:
