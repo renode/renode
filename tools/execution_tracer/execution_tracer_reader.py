@@ -275,9 +275,9 @@ def print_coverage_report(report):
 
 def handle_coverage(args, trace_data):
     coverage_config = dwarf.Coverage(
-        elf_file_handler=args.coverage,
+        elf_file_handler=args.coverage_binary,
         code_filenames=args.coverage_code,
-        substitute_paths=args.sub_source_paths,
+        substitute_paths=args.sub_source_path,
         debug=args.debug,
         print_unmatched_address=args.print_unmatched_address,
     )
@@ -307,28 +307,29 @@ def handle_coverage(args, trace_data):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
-    parser.add_argument("file", help="binary file")
     parser.add_argument("--debug", default=False, action="store_true", help="enable additional debug logs to stdout")
     parser.add_argument("--decompress", action="store_true", default=False,
         help="decompress trace file, without the flag decompression is enabled based on a file extension")
     parser.add_argument("--force-disable-decompression", action="store_true", default=False, help="never attempt to decompress the trace file")
 
-    subparsers = parser.add_subparsers(title='subcommands', dest='subcommands', description="Provide a path to the trace file first, before running any commands")
+    subparsers = parser.add_subparsers(title='subcommands', dest='subcommands', required=True)
     trace_parser = subparsers.add_parser('inspect', help='Inspect the binary trace format')
+    trace_parser.add_argument("file", help="binary trace file")
 
     trace_parser.add_argument("--disassemble", action="store_true", default=False)
     trace_parser.add_argument("--llvm-disas-path", default=None, help="path to libllvm-disas library")
 
     cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
+    cov_parser.add_argument("file", help="binary trace file")
 
-    cov_parser.add_argument("coverage", default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    cov_parser.add_argument("--binary", dest='coverage_binary', required=True, default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
     cov_parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in an LCOV-compatible (*.info) format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
-    cov_parser.add_argument("--sub-source-paths", default=[], nargs='*', type=dwarf.Coverage.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
+    cov_parser.add_argument("--sub-source-path", default=[], nargs='*', action='extend', type=dwarf.Coverage.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
     args = parser.parse_args()
 
     # Look for the libllvm-disas library in default location
@@ -370,7 +371,7 @@ if __name__ == "__main__":
                 trace_data = read_file(file, False, None)
             else:
                 trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
-            if args.subcommands == 'coverage' and args.coverage != None:
+            if args.subcommands == 'coverage':
                 if args.export_for_coverview:
                     if not args.lcov_format:
                         print("'--export-for-coverview' implies '--lcov-format'")

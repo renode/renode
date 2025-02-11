@@ -91,7 +91,6 @@ Trace And Report Coverage
 
     ${trace}=                       Trace Execution  ${COVERAGE_TEST_BINARY_URL}  ${compress}
     ${script_args}=                 Create List
-    ...                             ${trace}
 
     IF  ${compress} == True
         Append To List                  ${script_args}  --decompress
@@ -99,6 +98,8 @@ Trace And Report Coverage
 
     Append To List                  ${script_args}
     ...                             coverage
+    ...                             ${trace}
+    ...                             --binary
     ...                             ${binary_file}
     ...                             --sources
     ...                             ${code_file}
