@@ -84,23 +84,24 @@ class ExecutionCount:
         self.count += 1
 
 
+@dataclass(frozen=True)
+class PathSubstitution:
+    before: str
+    after: str
+
+    def apply(self, path: str) -> str:
+        return path.replace(self.before, self.after)
+
+    @classmethod
+    def from_arg(cls, s: str) -> 'Self':
+        args = s.split(':')
+        if len(args) != 2:
+            raise ValueError('Path substitution should be in old_path:new_path format')
+        return cls(*args)
+
+
 @dataclass
 class Coverage:
-    @dataclass(frozen=True)
-    class PathSubstitution:
-        before: str
-        after: str
-
-        def apply(self, path: str) -> str:
-            return path.replace(self.before, self.after)
-
-        @classmethod
-        def from_arg(cls, s: str) -> 'Self':
-            args = s.split(':')
-            if len(args) != 2:
-                raise ValueError('Path substitution should be in old_path:new_path format')
-            return cls(*args)
-
     elf_file_handler: BinaryIO
     code_filenames: List[str]
     substitute_paths: List[PathSubstitution]
