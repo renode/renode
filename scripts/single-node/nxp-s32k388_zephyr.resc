@@ -1,0 +1,19 @@
+:name: NXP S32K388
+:description: This script runs Zephyr Shell demo on S32K388
+
+using sysbus
+$name?="NXP S32K388"
+mach create $name
+
+include @platforms/cpus/nxp-s32k388.repl
+showAnalyzer lpuart2
+
+$bin?=@https://dl.antmicro.com/projects/renode/s32k388--zephyr-shell_module.elf-s_2351712-183ce6e8a564691d90b081ef7c94b900a048bfa8
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    sysbus.cpu0 VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+"""
+
+runMacro $reset
