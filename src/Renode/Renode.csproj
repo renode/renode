@@ -121,6 +121,7 @@
     <Compile Include="Backends\Terminals\UartPtyTerminal.cs" />
     <Compile Include="Plugins\ZephyrMode.cs" />
     <Compile Include="Plugins\UbootMode.cs" />
+    <Compile Include="Plugins\TimeSkip.cs" />
     <Compile Include="Plugins\OsSymbolHook.cs" />
     <Compile Include="Plugins\OsTimeSkipHook.cs" />
     <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
