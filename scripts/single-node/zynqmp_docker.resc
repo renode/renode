@@ -1,0 +1,44 @@
+:name: Zynqmp
+:description: This script runs a web server under Docker on Zynq UltraScale+ MPSoC.
+
+using sysbus
+$name?="ZynqUS+"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+machine LoadPlatformDescriptionFromString 'virtio: Storage.VirtIOBlockDevice @ sysbus 0xfe400000 { IRQ->apuGic@32 }'
+machine SetSerialExecution True
+showAnalyzer uart1
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp-sm-k26-revA.dtb-s_37970-07b58f745c0544715f6eabe4142e34c258b4a59b
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
+$linux?=     @https://dl.antmicro.com/projects/renode/Image-s_22458880-2573cb5cd76576081947b8ec1aebcf631b6d4bb6
+$linux_elf?= @https://dl.antmicro.com/projects/renode/vmlinux-s_28175880-4d25e9de8b56d28e76e3a58e1a45089ac08c4cd5
+$rootfs?=    @https://dl.antmicro.com/projects/renode/rootfs.ext2-s_62914560-a92499f1e488a57b212b6e6cb3c8869911feecb3
+$docker?=    @https://dl.antmicro.com/projects/renode/docker.ext2-s_188743680-2d654a862b2d316627d17fe9941586fdb5cdefa6
+
+macro reset
+"""
+    # Only set PC for the primary core - secondaries are handled by firmware during wakeup
+    apu0 PC 0x1000000
+
+    rpu0 IsHalted true
+    rpu1 IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=apu0
+
+    sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false
+    sysbus LoadBinary $uboot  0x8000000
+    sysbus LoadBinary $linux  0x10000000
+    sysbus LoadBinary $rootfs 0x20000000
+    virtio LoadImage  $docker
+
+    sysbus LoadSymbolsFrom $uboot_elf
+    sysbus LoadSymbolsFrom $linux_elf
+
+    sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
+"""
+
+runMacro $reset

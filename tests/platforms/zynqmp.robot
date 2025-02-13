@@ -47,6 +47,10 @@ Create Linux OpenAMP Machine
     ${openamp_tester}=              Create Terminal Tester         ${OPENAMP_UART}  defaultPauseEmulation=true
     RETURN                          ${linux_tester}  ${openamp_tester}
 
+Create Linux Docker Machine
+    Execute Command                 include @scripts/single-node/zynqmp_docker.resc
+    ${linux_tester}=                Create Terminal Tester          ${LINUX_UART}  defaultPauseEmulation=true
+
 Create Zephyr Machine
     [Arguments]                     ${elf}  ${uart}=${ZEPHYR_UART}
     Execute Command                 set bin ${elf}
@@ -508,3 +512,19 @@ Should Run OpenAMP Echo Sample
             Wait For Line On Uart           received payload number ${i} of size ${i + 17}                      testerId=${linux_tester}
     END
     Wait For Line On Uart                   Echo Test Round 0 Test Results: Error count = 0                     testerId=${linux_tester}
+
+Should Run Web Server In Docker
+    Create Linux Docker Machine
+    Boot Linux And Login
+
+    # The Docker daemon is not ready to accept connections as soon as the
+    # init script finishes; give it a while to warm up.
+    Execute Linux Command                   until docker ps; do sleep 1; done                                   timeout=10
+    Execute Linux Command                   docker load < /docker/webserver.tar
+    Execute Linux Command                   docker run --name webserver -d -p 80:80 localhost/webserver
+
+    Execute Linux Command Non Blocking      wget -O - http://localhost
+    Wait For Line On Uart                   <html><body><h1>Hello, world!</h1></body></html>
+
+    Execute Linux Command Non Blocking      docker logs webserver
+    Wait For Line On Uart                   response:200
