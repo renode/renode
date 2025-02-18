@@ -503,14 +503,21 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
                 var recvBytes = new byte[messageSize];
+                if(forwardSocket != null)
+                {
+                    forwardSocket.Send(request.Serialize(), SocketFlags.None);
+                    forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
 
-                forwardSocket.Send(request.Serialize(), SocketFlags.None);
-                forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
+                    var responseMessage = new RenodeMessage();
+                    responseMessage.Deserialize(recvBytes);
 
-                var responseMessage = new RenodeMessage();
-                responseMessage.Deserialize(recvBytes);
-
-                return responseMessage;
+                    return responseMessage;
+                }
+                else
+                {
+                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first.");
+                    return new RenodeMessage();
+                }
             }
         }
 
