@@ -7,6 +7,11 @@ ram: Memory.ArrayMemory @ {
 }
     size: 0x800
 
+dma: Memory.MSP430F261X_DMA @ {
+    sysbus <0x122, +0x8>;
+    sysbus new Bus.BusMultiRegistration { address: 0x1D0; size: 0x24; region: "channelRegisters" }
+}
+
 timer_a: Timers.MSP430_Timer @ {
     sysbus <0x160, +0x20>;
     sysbus new Bus.BusMultiRegistration { address: 0x012E; size: 0x2; region: "interruptVector" }
