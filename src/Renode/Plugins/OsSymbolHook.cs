@@ -14,10 +14,11 @@ using System;
 using System.Collections.Generic;
 using Antmicro.Renode.Exceptions;
 using System.Text;
+using Antmicro.Renode.Hooks;
 
 namespace Antmicro.Renode.Peripherals.Plugins
 {
-    static class OsSymbolHook
+    public static class OsSymbolHook
     {
         public static void Enable(ICPU cpu, string hookSymbol, Action<ICpuSupportingGdb, ulong> hook)
         {
@@ -43,6 +44,12 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 enabledSymbolChecks.Remove(key);
                 ConfigureHook((ICPUWithHooks)cpu, machine, hookSymbol, null, false);
             }
+        }
+
+        public static void AddSymbolHook(this ICpuSupportingGdb cpu, string hookSymbol, string pythonScript)
+        {
+            var engine = new BlockPythonEngine(cpu.GetMachine(), cpu, pythonScript);
+            Enable(cpu, hookSymbol, engine.Hook);
         }
 
         private static void ConfigureHook(ICPUWithHooks cpu, IMachine machine, string hookName, Action<ICpuSupportingGdb, ulong> hook, bool enableHook)
