@@ -29,6 +29,8 @@ namespace Antmicro.Renode.Peripherals.Plugins
 
         private static void SkipTimeHook(ICpuSupportingGdb cpu, ulong address, ulong usPerTick)
         {
+            var translationCpu = (TranslationCPU)cpu;
+
             if(!OsSymbolHook.TryGetReturnAddress(cpu, out var returnAddress))
             {
                 Logger.Log(LogLevel.Warning, "Unable to get time skip return address");
@@ -41,11 +43,13 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 return;
             }
 
-            cpu.PC = returnAddress;
             var delayUs = firstParameter;
             var timeInterval = TimeInterval.FromMicroseconds(delayUs * usPerTick);
 
-            ((BaseCPU)cpu).SkipTime(timeInterval);
+            translationCpu.SkipTime(timeInterval);
+
+            translationCpu.Profiler?.StackFramePop(address, returnAddress, translationCpu.ExecutedInstructions);
+            cpu.PC = returnAddress;
         }
     }
 }
