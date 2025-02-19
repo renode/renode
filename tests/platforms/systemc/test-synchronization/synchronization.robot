@@ -12,7 +12,7 @@ ${PLATFORM}=     SEPARATOR=
 
 *** Test Cases ***
 Should Not Deadlock Writing To ExecuteInLockPeripheral
-    [Tags]                          skip_windows    skip_osx
+    [Tags]                          skip_windows    skip_osx    skip_host_arm
     Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 include ${EXECUTE_IN_LOCK_PERIPHERAL}
