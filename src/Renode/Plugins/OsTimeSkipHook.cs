@@ -22,10 +22,9 @@ namespace Antmicro.Renode.Peripherals.Plugins
         public static void Enable(ICPU cpu, string symbolHook, ulong usPerTick = 1)
         {
             OsSymbolHook.Enable(cpu, symbolHook, (ICpuSupportingGdb c, ulong address) =>
-                {
-                    SkipTimeHook(c, address, usPerTick);
-                }
-            );
+            {
+                SkipTimeHook(c, address, usPerTick);
+            });
         }
 
         private static void SkipTimeHook(ICpuSupportingGdb cpu, ulong address, ulong usPerTick)
@@ -34,13 +33,13 @@ namespace Antmicro.Renode.Peripherals.Plugins
             {
                 Logger.Log(LogLevel.Warning, "Unable to get time skip return address");
                 return;
-            };
+            }
 
             if(!OsSymbolHook.TryGetFirstParameter(cpu, out var firstParameter))
             {
                 Logger.Log(LogLevel.Warning, "Unable to get time skip first parameter");
                 return;
-            };
+            }
 
             cpu.PC = returnAddress;
             var delayUs = firstParameter;
