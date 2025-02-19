@@ -62,6 +62,7 @@ namespace Antmicro.Renode.UI
                 if(w != null)
                 {
                     w.Hide();
+                    w.Dispose();
                 }
             });
             w = null;
