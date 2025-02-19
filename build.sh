@@ -141,7 +141,14 @@ do
           ;;
         "host-arch")
           shift $((OPTIND-1))
-          HOST_ARCH=$1
+          if [ $1 == "aarch64" ] || [ $1 == "arm64" ]; then
+            HOST_ARCH="aarch64"
+          elif [ $1 == "i386" ] || [ $1 == "x86" ] || [ $1 == "x86_64" ]; then
+            HOST_ARCH="i386"
+          else
+            echo "host architecture $1 not supported. Supported architectures are i386 and aarch64"
+            exit 1
+          fi
           OPTIND=2
           ;;
         "skip-dotnet-target-generation")
@@ -230,9 +237,23 @@ elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
     TFM="$TFM-windows10.0.17763.0"
-    RID="win-x64"
 else
     BUILD_TARGET=Mono
+fi
+
+# Set correct RID
+if $ON_LINUX; then
+    RID="linux-x64"
+    if [[ $HOST_ARCH == "aarch64" ]]; then
+        RID="linux-arm64"
+    fi
+elif $ON_OSX; then
+    RID="osx-x64"
+    if [[ $HOST_ARCH == "aarch64" ]]; then
+        RID="osx-arm64"
+    fi
+elif $ON_WINDOWS; then
+    RID="win-x64"
 fi
 
 if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
