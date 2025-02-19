@@ -225,13 +225,13 @@ namespace Antmicro.Renode.PlatformDescription
 
         private List<Entry> SortEntriesForCreation(IEnumerable<Entry> entries)
         {
-            var graph = BuildDependencyGraph(entries, entryObjectsToSkip: typeof(Antmicro.Renode.PlatformDescription.Syntax.RegistrationInfo));
+            var graph = BuildDependencyGraph(entries, creationNotRegistration: true);
             return SortEntries(entries, graph, ParsingError.CreationOrderCycle);
         }
 
         private List<Entry> SortEntriesForRegistration(IEnumerable<Entry> entries)
         {
-            var graph = BuildDependencyGraph(entries, entryObjectsToSkip: typeof(Antmicro.Renode.PlatformDescription.Syntax.ConstructorOrPropertyAttribute));
+            var graph = BuildDependencyGraph(entries, creationNotRegistration: false);
             return SortEntries(entries, graph, ParsingError.RegistrationOrderCycle);
         }
 
@@ -295,24 +295,39 @@ namespace Antmicro.Renode.PlatformDescription
         // it is incidence dictionary, so that if a depends on b, then we have entry in the dictionary
         // for a and this is another dictionary in which there is an entry for b and the value of such entry
         // is a syntax element (ReferenceValue) that states such dependency
-        private DependencyGraph BuildDependencyGraph(IEnumerable<Entry> source, Type entryObjectsToSkip)
+        private DependencyGraph BuildDependencyGraph(IEnumerable<Entry> source, bool creationNotRegistration)
         {
             var result = new DependencyGraph();
             foreach(var from in source)
             {
                 var localDictionary = new Dictionary<Entry, ReferenceValue>();
                 result.Add(from, localDictionary);
-                SyntaxTreeHelpers.VisitSyntaxTree<ConstructorOrPropertyAttribute>(from, ctorAttribute =>
+                SyntaxTreeHelpers.VisitSyntaxTree<IVisitable>(from, ctorElement =>
                 {
-                    if(ctorAttribute.IsPropertyAttribute)
+                    ReferenceValue maybeReferenceValue;
+                    if(ctorElement is ConstructorOrPropertyAttribute ctorAttribute)
+                    {
+                        if(ctorAttribute.IsPropertyAttribute)
+                        {
+                            return;
+                        }
+                        maybeReferenceValue = ctorAttribute.Value as ReferenceValue;
+                    }
+                    else if(ctorElement is RegistrationInfo ctorRegistrationInfo)
+                    {
+                        maybeReferenceValue = ctorRegistrationInfo.Register;
+                    }
+                    else
                     {
                         return;
                     }
-                    var referenceValue = ctorAttribute.Value as ReferenceValue;
-                    if(referenceValue == null)
+
+                    if(maybeReferenceValue == null)
                     {
                         return;
                     }
+                    var referenceValue = maybeReferenceValue;
+
                     // it is easier to track dependency on variables than on entries (because there is connection refVal -> variable and entry -> variable)
                     var variable = variableStore.GetVariableFromReference(referenceValue);
                     if(variable.DeclarationPlace == DeclarationPlace.BuiltinOrAlreadyRegistered)
@@ -328,9 +343,13 @@ namespace Antmicro.Renode.PlatformDescription
                 }, (obj, isChildOfEntry) =>
                 {
                     var objAsPropertyOrAttribute = (obj as ConstructorOrPropertyAttribute);
-
                     var isNotProperty = (objAsPropertyOrAttribute == null) || !objAsPropertyOrAttribute.IsPropertyAttribute;
-                    var isNotOfSkippedType = !(isChildOfEntry && (obj.GetType() == entryObjectsToSkip));
+
+                    var skipType = creationNotRegistration
+                        ? obj is RegistrationInfo
+                        : obj is IrqAttribute || obj is ConstructorOrPropertyAttribute;
+                    var isNotOfSkippedType = !(isChildOfEntry && skipType);
+
                     return isNotProperty && isNotOfSkippedType;
                 });
             }
