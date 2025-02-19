@@ -10,9 +10,13 @@ import itertools
 import functools
 from collections import defaultdict
 from dataclasses import dataclass, astuple, field
-from typing import BinaryIO, Dict, Generator, Iterable, List, Set, SupportsBytes, IO, Optional
+from typing import TYPE_CHECKING, BinaryIO, Dict, Generator, Iterable, List, Set, SupportsBytes, IO, Optional
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
+
+if TYPE_CHECKING:
+    from execution_tracer_reader import TraceData
+    from elftools.elf.elffile import DWARFInfo
 
 @dataclass
 class AddressRange:
@@ -106,6 +110,7 @@ class Coverage:
     print_unmatched_address: bool = False
     debug: bool = False
     noisy: bool = False
+    lazy_line_cache: bool = False
 
     _code_files: List[IO] = field(init=False)
 
@@ -150,7 +155,25 @@ class Coverage:
                 return file
         return None
 
-    def report_coverage(self, trace_data) -> Iterable[CodeLine]:
+    def _build_addr_map(self, code_lines_with_address: List[CodeLine], pc_length: int) -> Dict[bytes, ExecutionCount]:
+        # This is a dictionary of references, that will be used to quickly update counters for each code line.
+        # We can walk only once over all code lines and pre-generate mappings between PCs (addresses) and code lines.
+        # This way, when we'll later parse the trace, all we do are quick look-ups into this dictionary to increment the execution counters.
+        address_count_cache: Dict[bytes, ExecutionCount] = {}
+
+        for line in code_lines_with_address:
+            for addr in line.addresses:
+                addr_lo = addr.low
+                while addr_lo < addr.high:
+                    if not addr_lo in address_count_cache:
+                        address_count_cache[addr_lo.to_bytes(pc_length, byteorder='little', signed=False)] = line.address_counter[addr_lo]
+                    else:
+                        print(f'Address {addr_lo} is already mapped to another line. Ignoring this time')
+                    # This is a naive approach. If memory usage is of greater concern, find a better way to store ranges
+                    addr_lo += 1
+        return address_count_cache
+
+    def report_coverage(self, trace_data: 'TraceData') -> Iterable[CodeLine]:
         if not trace_data.has_pc:
             raise ValueError("The trace data doesn't contain PCs.")
 
@@ -198,9 +221,12 @@ class Coverage:
             code_lines_with_address.extend(line for line in code_lines[file_name] if line.addresses)
 
         # This is also a cache to ExecutionCount
-        address_count_cache: Dict[SupportsBytes, ExecutionCount] = {}
-        if self.print_unmatched_address:
-            unmatched_address: Set[int] = set()
+        address_count_cache: Dict[bytes, ExecutionCount] = {}
+        unmatched_address: Set[int] = set()
+
+        if not self.lazy_line_cache:
+            print('Populating address cache...')
+            address_count_cache = self._build_addr_map(code_lines_with_address, trace_data.pc_length)
 
         # This step takes some time for large traces and codebases, let's advise the user to wait
         print('Processing the trace, please wait...')
@@ -209,14 +235,20 @@ class Coverage:
                 address_count_cache[address_bytes].count_up()
             else:
                 address = int.from_bytes(address_bytes, byteorder="little", signed=False)
+                if address in unmatched_address:
+                    # Is marked as unmatched, short cut!
+                    # For unmatched address, a walk over all lines is very slow, since we need to check the entire map each time
+                    # So make sure that we mark the address as "unmatched" on the first try, and don't care about it later on
+                    continue
                 # Optimization: cut-off addresses from trace that for sure don't matter to us
                 if not (files_low_address <= address < files_high_address):
-                    if self.print_unmatched_address:
-                        unmatched_address.add(address)
+                    unmatched_address.add(address)
                     continue
                 if self.debug and self.noisy:
                     print(f'parsing new addr in trace: {address:x}')
                 # Find a line, for which one of the addresses matches with the address bytes present in the trace
+                # If we pre-generated the mappings earlier (in `_build_addr_map`), this function will only serve as a back-up to find not matched addresses
+                # Walking each time is slow, so it's generally better to pre-generate mappings, if we aren't running out of memory
                 for line in code_lines_with_address:
                     if any(
                         # Check for all address ranges
@@ -228,7 +260,7 @@ class Coverage:
                             address_bytes
                         )
                         break
-                if self.print_unmatched_address and address_bytes not in address_count_cache:
+                if address_bytes not in address_count_cache:
                     unmatched_address.add(address)
 
         if self.print_unmatched_address:
@@ -249,7 +281,7 @@ class Coverage:
         for record in records.values():
             yield from record.to_lcov_format()
 
-def get_dwarf_info(elf_file_handler):
+def get_dwarf_info(elf_file_handler: BinaryIO) -> 'DWARFInfo':
     elf_file = ELFFile(elf_file_handler)
     if not elf_file.has_dwarf_info():
         raise ValueError(
