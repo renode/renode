@@ -362,8 +362,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
-            forwardSocket.Close();
-            backwardSocket.Close();
+            forwardSocket?.Close();
+            backwardSocket?.Close();
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -684,7 +684,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                         backwardSocket.Send(message.Serialize(), SocketFlags.None);
                         break;
                     default:
-                        this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId); 
+                        this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
                         break;
                 }
             }
