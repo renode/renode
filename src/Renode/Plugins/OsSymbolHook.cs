@@ -22,7 +22,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
         public static void Enable(ICPU cpu, string hookSymbol, Action<ICpuSupportingGdb, ulong> hook)
         {
             IMachine machine = cpu.GetMachine();
-            if(!(cpu is BaseCPU) || !(cpu is ICPUWithHooks) || !(cpu is ICpuSupportingGdb) || !(machine.SystemBus is SystemBus))
+            if(!(cpu is TranslationCPU) || !(machine.SystemBus is SystemBus))
             {
                 throw new RecoverableException("This CPU doesn't support OS Time Skip Mode");
             }
