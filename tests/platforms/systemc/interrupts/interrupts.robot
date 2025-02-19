@@ -13,7 +13,7 @@ Create Machine
 
 *** Test Cases ***
 Should Invoke Interrupt Handlers Initiated By SystemC
-    [Tags]                          skip_windows    skip_osx
+    [Tags]                          skip_windows    skip_osx    skip_host_arm
     Create Machine
     Create Terminal Tester          ${UART}
     Start Emulation
