@@ -242,13 +242,13 @@ class LLVMDisassembler():
         try:
             self.lib = cdll.LoadLibrary(llvm_disas_path)
         except OSError:
-            raise Exception('Could not find valid `libllvm-disas` library. Please specify the correct path with the --llvm-disas-path argument.')
+            raise FileNotFoundError('Could not find valid `libllvm-disas` library. Please specify the correct path with the --llvm-disas-path argument.')
 
         self.__init_library()
 
         self._context = self.lib.llvm_create_disasm_cpu(c_char_p(triple.encode('utf-8')), c_char_p(cpu.encode('utf-8')))
         if not self._context:
-            raise Exception('CPU or triple name not detected by LLVM. Disassembling will not be possible.')
+            raise RuntimeError('CPU or triple name not detected by LLVM. Disassembling will not be possible.')
 
     def __del__(self):
         if  hasattr(self, '_context'):
@@ -363,7 +363,7 @@ def main():
                 break
 
         if args.llvm_disas_path is None:
-            raise Exception('Could not find ' + lib_name + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
+            raise FileNotFoundError('Could not find ' + lib_name + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
 
     try:
         filename, file_extension = os.path.splitext(args.file)
@@ -383,7 +383,7 @@ def main():
                         print("'--export-for-coverview' implies '--lcov-format'")
                         args.lcov_format = True
                     if not args.coverage_output:
-                        raise Exception("Specify a file with '--output' when packing an archive for Coverview")
+                        raise ValueError("Specify a file with '--output' when packing an archive for Coverview")
 
                 handle_coverage(args, trace_data)
             else:
@@ -392,8 +392,10 @@ def main():
     except BrokenPipeError:
         # Avoid crashing when piping the results e.g. to less
         sys.exit(0)
-    except InvalidFileFormatException as err:
-        sys.exit(f"Error: {err}")
+    except (ValueError, RuntimeError) as err:
+        sys.exit(f"Error during execution: {err}")
+    except (FileNotFoundError, InvalidFileFormatException) as err:
+        sys.exit(f"Error while loading file: {err}")
     except KeyboardInterrupt:
         sys.exit(1)
 
