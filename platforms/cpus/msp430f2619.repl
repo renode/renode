@@ -7,6 +7,13 @@ ram: Memory.ArrayMemory @ {
 }
     size: 0x800
 
+wdt: Timers.MSP430F2XXX_Watchdog @ {
+    sysbus 0x120;
+    sysbus new Bus.BusMultiRegistration { address: 0x0000; size: 0x1; region: "interruptEnable" };
+    sysbus new Bus.BusMultiRegistration { address: 0x0002; size: 0x1; region: "interruptStatus" }
+}
+    baseFrequency: 32768
+
 dma: Memory.MSP430F261X_DMA @ {
     sysbus <0x122, +0x8>;
     sysbus new Bus.BusMultiRegistration { address: 0x1D0; size: 0x24; region: "channelRegisters" }
