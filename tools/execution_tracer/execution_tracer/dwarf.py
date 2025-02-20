@@ -10,7 +10,7 @@ import itertools
 import functools
 from collections import defaultdict
 from dataclasses import dataclass, astuple, field
-from typing import TYPE_CHECKING, BinaryIO, Dict, Generator, Iterable, List, Set, SupportsBytes, IO, Optional
+from typing import TYPE_CHECKING, BinaryIO, Dict, Generator, Iterable, List, Set, IO, Optional, Tuple
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
@@ -173,11 +173,9 @@ class Coverage:
                     addr_lo += 1
         return address_count_cache
 
-    def report_coverage(self, trace_data: 'TraceData') -> Iterable[CodeLine]:
-        if not trace_data.has_pc:
-            raise ValueError("The trace data doesn't contain PCs.")
-
-        dwarf_info = get_dwarf_info(self.elf_file_handler)
+    # Get list of code lines, grouped by the file where they belong
+    # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
+    def _get_code_lines_by_file(self, dwarf_info: 'DWARFInfo') -> Tuple[int, int, Dict[str, List[CodeLine]]]:
         code_lines: Dict[str, List[CodeLine]] = defaultdict(list)
         for code_file in self._code_files:
             for no, line in enumerate(code_file):
@@ -213,6 +211,15 @@ class Coverage:
 
         if files_low_address is None:
             raise RuntimeError("No matching address for provided files found")
+
+        return files_low_address, files_high_address, code_lines
+
+    def report_coverage(self, trace_data: 'TraceData') -> Iterable[CodeLine]:
+        if not trace_data.has_pc:
+            raise ValueError("The trace data doesn't contain PCs.")
+
+        dwarf_info = get_dwarf_info(self.elf_file_handler)
+        files_low_address, files_high_address, code_lines = self._get_code_lines_by_file(dwarf_info)
 
         # Note, that this is just a cache to `code_lines`
         # but after eliminating lines that don't correspond to any address
