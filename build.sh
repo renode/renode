@@ -359,6 +359,8 @@ CORES_BIN_PATH="$CORES_PATH/bin/$CONFIGURATION"
 if $ON_WINDOWS
 then
     CMAKE_GEN="-GMinGW Makefiles"
+    # Cygwin should create Windows native symlinks so the Wix packaging tool can traverse the path.
+    export CYGWIN="winsymlinks:native"
 else
     CMAKE_GEN="-GUnix Makefiles"
 fi
