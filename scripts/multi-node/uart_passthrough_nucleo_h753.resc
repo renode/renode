@@ -1,0 +1,16 @@
+:name: UART Passthrough
+:Input on usart3 becomes the output on usart2.
+:See uart_hub_nucleo_h753.resc for multi-node setup.
+
+$bin?=@https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_uart_passthrough.elf-s_530608-cca49317c5a6abd6a18131c4f723b1197efc160f
+
+i @platforms/boards/nucleo_h753zi.repl
+
+showAnalyzer usart3
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset

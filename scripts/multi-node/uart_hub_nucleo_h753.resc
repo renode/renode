@@ -1,0 +1,15 @@
+:name: UART Hub
+:UART communication between two machines connected usart2<->usart2
+:with an internal passthrough within each machine between usart3<->usart2
+:What you write to m0:sysbus.usart3 is displayed on m1:sysbus.usart3 and vice versa.
+
+mach create "m0"
+i $ORIGIN/uart_passthrough_nucleo_h753.resc
+mach create "m1"
+i $ORIGIN/uart_passthrough_nucleo_h753.resc
+
+emulation CreateUARTHub "uartHub"
+mach set 0
+connector Connect sysbus.usart2 uartHub
+mach set 1
+connector Connect sysbus.usart2 uartHub
