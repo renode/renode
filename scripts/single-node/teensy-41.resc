@@ -1,0 +1,25 @@
+
+:name: Teensy 4.1
+:description: This script runs EchoBoth on Teensy 4.1.
+
+using sysbus
+$name?="teensy4.1"
+mach create $name
+machine LoadPlatformDescription @platforms/boards/teensy-41.repl
+
+# make usb PLL happy
+sysbus SetHookAfterPeripheralRead analog01 "if offset == 0x10: value = 0x80003040"
+
+showAnalyzer lpuart6
+
+$bin?=@https://gist.githubusercontent.com/xndcn/b76f45c4ce2e2537975a0e72c1415ceb/raw/b881439670b2955a9935bf08e9a68b20719fd96f/EchoBoth.ino.hex
+macro reset
+"""
+    sysbus LoadHEX $bin
+    # teensy4 hex entry located at 0x60001004
+    $entry=`sysbus ReadDoubleWord 0x60001004`
+
+    cpu PC $entry
+"""
+
+runMacro $reset
