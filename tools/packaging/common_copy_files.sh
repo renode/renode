@@ -24,10 +24,12 @@ cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/src/Plugins/CoSimulationPlugin/IntegrationLibrary $DIR/plugins
 cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
 # For now, SystemCPlugin uses socket-cpp library from CoSimulationPlugin IntegrationLibrary.
-# ln -f argument is quietly ignored in windows-package environment, so instead of updating remove the link
-# and create it again.
+#
+# The remove call here is to remove a (potential) symlink created by a prior version of this
+# script before doing a directory copy.  Windows builds under cygwin create the symlink but
+# the wix packaging program sees it as an NTFS junction and is unable to process it.
 rm -rf $DIR/plugins/SystemCModule/lib/socket-cpp
-ln -s ../../IntegrationLibrary/libs/socket-cpp $DIR/plugins/SystemCModule/lib/socket-cpp
+cp -r $DIR/plugins/IntegrationLibrary/libs/socket-cpp $DIR/plugins/SystemCModule/lib
 
 cp $BASE/tests/requirements.txt $DIR/tests
 cp $BASE/lib/resources/styles/robot.css $DIR/tests
