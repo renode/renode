@@ -114,3 +114,14 @@ dotnet_naming_rule.parameters_rule.severity             = warning
 # Renode specific rules
 dotnet_diagnostic.renode_copyright.severity             = warning
 dotnet_diagnostic.renode_class_members_order.severity   = warning
+
+# Setup StyleCop analyzers
+# List of all analyzers: https://dotnetanalyzers.github.io/StyleCopAnalyzers/
+# Opening braces should not be followed by blank line
+dotnet_diagnostic.SA1505.severity = warning
+# Code should not contain multiple blank lines in a row
+dotnet_diagnostic.SA1507.severity = warning
+# Closing braces should not be preceded by blank line
+dotnet_diagnostic.SA1508.severity = warning
+# Opening braces should not be preceded by blank line
+dotnet_diagnostic.SA1509.severity = warning
