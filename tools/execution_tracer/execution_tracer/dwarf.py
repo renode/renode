@@ -272,8 +272,7 @@ class Coverage:
 
         if self.print_unmatched_address:
             print(f'Found {len(unmatched_address)} unmatched unique addresses')
-            for address in sorted(unmatched_address):
-                print(f'Address in trace not matching any sources: 0x{address:x}')
+            print('Addresses in trace not matching any sources:', ', '.join(f'0x{addr:X}' for addr in sorted(unmatched_address)))
 
         return itertools.chain.from_iterable(code_lines.values())
 
