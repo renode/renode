@@ -22,9 +22,11 @@ led2: Miscellaneous.LED @ gpio2 18
 led3: Miscellaneous.LED @ gpio2 19
 
 button1: Miscellaneous.Button @ gpio2 30
+    invert: true
     -> gpio2@30
 
 button2: Miscellaneous.Button @ gpio2 31
+    invert: true
     -> gpio2@31
 
 button3: Miscellaneous.Button @ gpio2 28
