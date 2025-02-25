@@ -524,8 +524,9 @@ then
             exit 1
         elif $ON_OSX
         then
-            echo "dotnet packages not supported on ${DETECTED_OS}"
-            exit 1
+            eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
+            export RID TFM
+            $ROOT_PATH/tools/packaging/make_osx_dotnet_package.sh $params
         fi
     else
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
@@ -538,6 +539,7 @@ then
     if $NET
     then
         # maxcpucount:1 to avoid an error with multithreaded publish
+	echo "RID = $RID"
         eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable_dotnet.sh $params
