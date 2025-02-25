@@ -46,7 +46,7 @@ def create_coverview_archive(path: TextIO, report: Iterable[str], code_files: Li
             }
         }
         # "merge_config" will replace values from "config_file"
-        config_file = config_file | merge_config
+        config_file = {**config_file, **merge_config}
         archive.writestr('config.json', json.dumps(config_file))
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
