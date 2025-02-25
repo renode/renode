@@ -105,6 +105,7 @@ Trace And Report Coverage
     ...                             ${code_file}
     ...                             --output
     ...                             ${coverage_file}
+    ...                             --legacy
     Execute Python Script           ${EXECUTION_TRACER}  ${script_args}
 
     ${coverage_report_content}=     Get File  ${coverage_file}

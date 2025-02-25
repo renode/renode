@@ -288,10 +288,10 @@ def handle_coverage(args, trace_data):
     )
 
     report = coverage_config.report_coverage(trace_data)
-    if args.lcov_format:
-        printed_report = coverage_config.convert_to_lcov(report)
-    else:
+    if args.legacy:
         printed_report = print_coverage_report(report)
+    else:
+        printed_report = coverage_config.convert_to_lcov(report)
 
     if args.coverage_output != None:
         if args.export_for_coverview:
@@ -330,7 +330,7 @@ def main():
     cov_parser.add_argument("--binary", dest='coverage_binary', required=True, default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
-    cov_parser.add_argument("--lcov-format", default=False, action="store_true", help="Output data in an LCOV-compatible (*.info) format")
+    cov_parser.add_argument("--legacy", default=False, action="store_true", help="Output data in a legacy text-based format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
@@ -379,9 +379,9 @@ def main():
                 trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
             if args.subcommands == 'coverage':
                 if args.export_for_coverview:
-                    if not args.lcov_format:
-                        print("'--export-for-coverview' implies '--lcov-format'")
-                        args.lcov_format = True
+                    if args.legacy:
+                        print("'--export-for-coverview' implies LCOV-compatible format")
+                        args.legacy = False
                     if not args.coverage_output:
                         raise ValueError("Specify a file with '--output' when packing an archive for Coverview")
 
