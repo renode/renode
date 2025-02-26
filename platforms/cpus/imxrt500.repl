@@ -1,11 +1,6 @@
 cpu0: CPU.CortexM @ sysbus
     cpuType: "cortex-m33"
     nvic: nvic0
-    init:
-        // jump right away from the OTP_FUSE_READ_API function stored in OTP
-        // this address is hardcoded in Zephyr:
-        // https://github.com/zephyrproject-rtos/zephyr/blob/e801f1a9ad6ae0d60362ec0f576ce130659360ee/boards/nxp/mimxrt595_evk/board.c#L21
-        AssembleBlock 0x1300805c "bx lr"
 
 nvic0: IRQControllers.NVIC @ {
         sysbus 0xe000e000;
