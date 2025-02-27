@@ -8,6 +8,7 @@ using System;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Testing;
 using Antmicro.Renode.Time;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -42,7 +43,8 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null, bool? defaultPauseEmulation = null, bool? defaultMatchNextLine = null)
+        public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null,
+            bool? defaultPauseEmulation = null, bool? defaultMatchNextLine = null, bool binaryMode = false)
         {
             this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
             this.defaultMatchNextLine = defaultMatchNextLine.GetValueOrDefault();
@@ -54,11 +56,11 @@ namespace Antmicro.Renode.RobotFramework
                 TerminalTester tester;
                 if(Enum.TryParse<EndLineOption>(endLineOption, out var result))
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds), result);
+                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds), result, binaryMode: binaryMode);
                 }
                 else
                 {
-                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds));
+                    tester = new TerminalTester(TimeInterval.FromSeconds(timeoutInSeconds), binaryMode: binaryMode);
                 }
                 tester.AttachTo(uartObject);
                 return tester;
@@ -92,6 +94,17 @@ namespace Antmicro.Renode.RobotFramework
                 return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                     pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
             });
+        }
+
+        [RobotFrameworkKeyword]
+        public TerminalTesterResult WaitForBytesOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
+            bool? pauseEmulation = null, bool? matchStart = false)
+        {
+            return DoTest(timeout, testerId, (tester, timeInterval) =>
+            {
+                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine: true,
+                    pauseEmulation ?? defaultPauseEmulation, matchStart ?? defaultMatchNextLine);
+            }, expectBinaryModeTester: true);
         }
 
         [RobotFrameworkKeyword]
@@ -171,7 +184,7 @@ namespace Antmicro.Renode.RobotFramework
             tester.WriteCharDelay = TimeSpan.FromSeconds(delay);
         }
 
-        private TerminalTesterResult DoTest(float? timeout, int? testerId, Func<TerminalTester, TimeInterval?, TerminalTesterResult> test)
+        private TerminalTesterResult DoTest(float? timeout, int? testerId, Func<TerminalTester, TimeInterval?, TerminalTesterResult> test, bool expectBinaryModeTester = false)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -180,6 +193,14 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             var tester = GetTesterOrThrowException(testerId);
+            if(tester.BinaryMode != expectBinaryModeTester)
+            {
+                var waitedThing = expectBinaryModeTester ? "bytes" : "text";
+                var testerMode = tester.BinaryMode ? "binary" : "text";
+                throw new InvalidOperationException($"Attempt to wait for {waitedThing} on a tester configured in {testerMode} mode. " +
+                        $"Please set binaryMode={!tester.BinaryMode} when creating the tester.");
+            }
+
             var result = test(tester, timeInterval);
             if(result == null)
             {
