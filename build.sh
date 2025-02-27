@@ -20,7 +20,7 @@ TLIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
 TLIB_ARCH=""
 NET=false
-TFM="net8.0"
+TFM="net462"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
@@ -115,6 +115,7 @@ do
           ;;
         "net")
           NET=true
+          TFM="net8.0"
           PARAMS+=(p:NET=true)
           ;;
         "profile-build")
