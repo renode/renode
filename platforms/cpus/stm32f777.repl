@@ -1,0 +1,282 @@
+/*
+** STM32F76xxx and STM32F77xxx advanced Arm®-based 32-bit MCUs
+**
+** Data Sheet: DocID - RM0410 Rev 4, March 2018
+** Links:
+**  - https://www.st.com/resource/en/reference_manual/rm0410-stm32f76xxx-and-stm32f77xxx-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+*/
+
+fsmcBank5: Memory.MappedMemory @ sysbus 0xC0000000
+    size: 0x10000000
+
+fsmcBank6: Memory.MappedMemory @ sysbus 0xD0000000
+    size: 0x10000000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x10000000
+
+itcm: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x4000
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x200000
+
+flash_controller: MTD.STM32F4_FlashController @ {
+        sysbus 0x40023C00;
+        sysbus new Bus.BusMultiRegistration { address: 0x1FFF0000; size: 0x1F; region: "optionBytes" }
+    }
+    flash: flash
+
+rom: Memory.MappedMemory @ sysbus 0x1FF00000
+    size: 0x10000
+
+usart1: UART.STM32F7_USART @ sysbus 0x40011000
+    frequency: 200000000
+    IRQ -> nvic@37
+
+usart2: UART.STM32F7_USART @ sysbus 0x40004400
+    frequency: 200000000
+    IRQ -> nvic@38
+
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 200000000
+    IRQ -> nvic@39
+
+uart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
+    -> nvic@52
+
+uart5: UART.STM32_UART @ sysbus <0x40005000, +0x100>
+    -> nvic@53
+
+usart6: UART.STM32F7_USART @ sysbus 0x40011400
+    frequency: 200000000
+    IRQ -> nvic@71
+
+uart7: UART.STM32_UART @ sysbus <0x40007C00, +0x100>
+    -> nvic@82
+
+uart8: UART.STM32_UART @ sysbus <0x40007800, +0x100>
+    -> nvic@83
+
+can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
+    [0-3] -> nvic@[19-22]
+
+can2: CAN.STMCAN @ sysbus <0x40006800, +0x400>
+    [0-3] -> nvic@[63-66]
+
+can3: CAN.STMCAN @ sysbus <0x40003400, +0x400>
+    [0-3] -> nvic@[104-107]
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 216000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    PerformanceInMips: 462
+    fpuInterruptNumber: 81
+    nvic: nvic
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+adc1: Analog.STM32_ADC @ sysbus 0x40012000
+    IRQ-> nvic@18
+
+adc2: Analog.STM32_ADC @ sysbus 0x40012100
+    IRQ-> nvic@18
+
+adc3: Analog.STM32_ADC @ sysbus 0x40012200
+    IRQ-> nvic@18
+
+crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+    configurablePoly: true
+
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
+    numberOfOutputLines: 25
+    [0-4] -> nvic@[6-10]
+    [5-9] -> nvicInput23@[0-4]
+    [10-15] -> nvicInput40@[0-5]
+    // The eight other EXTI lines are connected as follows:
+    // • EXTI line 16 is connected to the PVD output
+    // • EXTI line 17 is connected to the RTC Alarm event
+    // • EXTI line 18 is connected to the USB OTG FS Wakeup event
+    // • EXTI line 19 is connected to the Ethernet Wakeup event
+    // • EXTI line 20 is connected to the USB OTG HS (configured in FS) Wakeup event
+    // • EXTI line 21 is connected to the RTC Tamper and TimeStamp events
+    // • EXTI line 22 is connected to the RTC Wakeup event
+    // • EXTI line 23 is connected to the LPTIM1 asynchronous event
+    // • EXTI line 24 is connected to MDIO Slave asynchronous interrupt
+
+
+nvicInput23: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 5
+    -> nvic@23
+
+nvicInput40: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@40
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40020400, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40020800, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x40020C00, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x40021000, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x40021400, +0x400>
+    modeResetValue: 0x00000000
+    pullUpPullDownResetValue: 0x00000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x40021800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x40021C00, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortI: GPIOPort.STM32_GPIOPort @ sysbus <0x40022000, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortJ: GPIOPort.STM32_GPIOPort @ sysbus <0x40022400, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x40022800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
+    -> nvic@61
+
+phy: Network.EthernetPhysicalLayer @ ethernet 0
+    Id1: 0x0007
+    Id2: 0xC0F1
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x001
+
+phy1: Network.EthernetPhysicalLayer @ ethernet 1
+    Id1: 0x0007
+    Id2: 0xC0F1
+    AutoNegotiationAdvertisement: 0x00A1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x001
+
+spi1: SPI.STM32SPI @ sysbus 0x40013000
+    IRQ -> nvic@35
+
+spi2: SPI.STM32SPI @ sysbus 0x40003800
+    IRQ -> nvic@36
+
+spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    IRQ -> nvic@51
+
+spi4: SPI.STM32SPI @ sysbus 0x40013400
+    IRQ -> nvic@84
+
+spi5: SPI.STM32SPI @ sysbus 0x40015000
+    IRQ -> nvic@85
+
+spi6: SPI.STM32SPI @ sysbus 0x40015400
+    IRQ -> nvic@86
+
+dma1: DMA.STM32DMA @ sysbus 0x40026000
+    [0-7] -> nvic@[11-17,47]
+
+dma2: DMA.STM32DMA @ sysbus 0x40026400
+    [0-7] -> nvic@[56-60,68-70]
+
+ltdc: Video.STM32LTDC @ sysbus 0x40016800
+    -> nvic@88
+
+dma2d: DMA.STM32DMA2D @ sysbus 0x4002B000
+    -> nvic@90
+
+i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+    EventInterrupt -> nvic@33
+    ErrorInterrupt -> nvic@34
+
+i2c3: I2C.STM32F7_I2C @ sysbus 0x40005C00
+    EventInterrupt -> nvic@72
+    ErrorInterrupt -> nvic@73
+
+i2c4: I2C.STM32F7_I2C @ sysbus 0x40006000
+    EventInterrupt -> nvic@95
+    ErrorInterrupt -> nvic@96
+
+syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x40013800
+    [0-15] -> exti@[0-15]
+
+lptim1Isr: Python.PythonPeripheral @ sysbus 0x40002400
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> nvic@41
+
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
+    rtcPeripheral: rtc
+
+rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
+    -> nvic@80
+
+pwrCr1: Python.PythonPeripheral @ sysbus 0x40007000
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+sdMmcSta: Python.PythonPeripheral @ sysbus 0x40012C34
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+timer5: Python.PythonPeripheral @ sysbus 0x40000C24
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/ticker.py"
+
+timer6: Timers.STM32_Timer @ sysbus <0x40001000, +0x400>
+    -> nvic@54
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+sysbus:
+    init:
+        ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
