@@ -64,9 +64,11 @@ Boot U-Boot And Launch Linux
 
 Boot Linux And Login
     [Arguments]                     ${testerId}=0
+    # Verify that GIC system register interface is not enabled
+    Should Not Be On Uart           GICv3 system registers enabled, broken firmware  testerId=${testerId}  timeout=50
     # Verify that SMP works
-    Wait For Line On Uart           SMP: Total of 4 processors activated    testerId=${testerId}  includeUnfinishedLine=true
-    Wait For Prompt On Uart         buildroot login:                        testerId=${testerId}  timeout=50
+    Wait For Line On Uart           SMP: Total of 4 processors activated    testerId=${testerId}  timeout=0  includeUnfinishedLine=true
+    Wait For Prompt On Uart         buildroot login:                        testerId=${testerId}  timeout=0
     Write Line To Uart              root                                    testerId=${testerId}
     Wait For Prompt On Uart         ${LINUX_PROMPT}                         testerId=${testerId}
 
