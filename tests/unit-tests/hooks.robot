@@ -76,5 +76,5 @@ Test Enabling Systick And Pausing Emulation From CortexM Hook
     Execute Command          cpu AddHook 0x20 "machine.PauseAndRequestEmulationPause()"
 
     # Let's wait for the systick enabling attempt and machine pausing.
-    Wait For Log Entry       Systick enabled but it won't be started as long as reload value is zero
+    Wait For Log Entry       Systick_NS enabled but it won't be started as long as the reload value is zero
     Wait For Log Entry       Machine paused
