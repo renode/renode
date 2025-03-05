@@ -24,9 +24,8 @@ keywords = [
 ]
 
 [project.urls]
-Source = "https://github.com/antmicro/PeakRDL-renode"
-Tracker = "https://github.com/antmicro/PeakRDL-renode/issues"
-Changelog = "https://github.com/antmicro/PeakRDL-renode/releases"
+Source = "https://github.com/renode/renode/tree/master/tools/PeakRDL-renode"
+Tracker = "https://github.com/renode/renode/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "peakrdl_renode.__about__.__version__"}
