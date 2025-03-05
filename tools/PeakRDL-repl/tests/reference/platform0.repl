@@ -1,0 +1,6 @@
+peripheral1_instance: @ sysbus <0x100, +0x4>
+peripheral0_instance0: @ sysbus <0x104, +0x4>
+peripheral0_instance1: @ sysbus <0x108, +0x4>
+peripheral0_instance_nested0: @ sysbus <0x200, +0x4>
+peripheral0_instance_nested1: @ sysbus <0x204, +0x4>
+peripheral0_instance_nested2: @ sysbus <0x208, +0x4>

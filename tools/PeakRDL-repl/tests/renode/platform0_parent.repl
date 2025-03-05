@@ -1,0 +1,8 @@
+using "../generated/platform0.repl"
+
+peripheral1_instance: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral
+peripheral0_instance0: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral
+peripheral0_instance1: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral
+peripheral0_instance_nested0: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral
+peripheral0_instance_nested1: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral
+peripheral0_instance_nested2: Antmicro.Renode.Peripherals.Mocks.EmptyPeripheral

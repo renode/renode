@@ -1,0 +1,19 @@
+addrmap test_platform {
+    addrmap peripheral0_definitive #( string user_parameter0 = "user_parameter0_default" ) {
+        reg {
+            field {} PLACEHOLDER_FIELD;
+        } PLACEHOLDER_REG;
+    };
+
+    addrmap peripheral1_anonymous {
+        reg {
+            field {} PLACEHOLDER_FIELD;
+        } PLACEHOLDER_REG;
+    } peripheral1_instance @ 0x100;
+
+    peripheral0_definitive peripheral0_instance[2];
+
+    addrmap nested {
+        peripheral0_definitive peripheral0_instance_nested[3];
+    } nested_instance @ 0x200;
+};
