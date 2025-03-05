@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -76,40 +76,22 @@ namespace Antmicro.Renode.RobotFramework
         public TerminalTesterResult WaitForLineOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
             bool includeUnfinishedLine = false, bool? pauseEmulation = null, bool? matchNextLine = null)
         {
-            TimeInterval? timeInterval = null;
-            if(timeout.HasValue)
+            return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                timeInterval = TimeInterval.FromSeconds(timeout.Value);
-            }
-
-            var tester = GetTesterOrThrowException(testerId);
-            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                 pauseEmulation ?? defaultPauseEmulation, matchNextLine ?? defaultMatchNextLine);
-            if(result == null)
-            {
-                OperationFail(tester);
-            }
-            return result;
+            });
         }
 
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForLinesOnUart(string[] content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
             bool includeUnfinishedLine = false, bool? pauseEmulation = null, bool? matchFromNextLine = null)
         {
-            TimeInterval? timeInterval = null;
-            if(timeout.HasValue)
+            return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                timeInterval = TimeInterval.FromSeconds(timeout.Value);
-            }
-
-            var tester = GetTesterOrThrowException(testerId);
-            var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
-                pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
-            if(result == null)
-            {
-                OperationFail(tester);
-            }
-            return result;
+                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                    pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
+            });
         }
 
         [RobotFrameworkKeyword]
@@ -133,19 +115,10 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public TerminalTesterResult WaitForNextLineOnUart(float? timeout = null, int? testerId = null, bool? pauseEmulation = null)
         {
-            TimeInterval? timeInterval = null;
-            if(timeout.HasValue)
+            return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                timeInterval = TimeInterval.FromSeconds(timeout.Value);
-            }
-
-            var tester = GetTesterOrThrowException(testerId);
-            var result = tester.NextLine(timeInterval, pauseEmulation ?? defaultPauseEmulation);
-            if(result == null)
-            {
-                OperationFail(tester);
-            }
-            return result;
+                return tester.NextLine(timeInterval, pauseEmulation ?? defaultPauseEmulation);
+            });
         }
 
         [RobotFrameworkKeyword]
@@ -196,6 +169,23 @@ namespace Antmicro.Renode.RobotFramework
         {
             var tester = GetTesterOrThrowException(testerId);
             tester.WriteCharDelay = TimeSpan.FromSeconds(delay);
+        }
+
+        private TerminalTesterResult DoTest(float? timeout, int? testerId, Func<TerminalTester, TimeInterval?, TerminalTesterResult> test)
+        {
+            TimeInterval? timeInterval = null;
+            if(timeout.HasValue)
+            {
+                timeInterval = TimeInterval.FromSeconds(timeout.Value);
+            }
+
+            var tester = GetTesterOrThrowException(testerId);
+            var result = test(tester, timeInterval);
+            if(result == null)
+            {
+                OperationFail(tester);
+            }
+            return result;
         }
 
         private void OperationFail(TerminalTester tester)
