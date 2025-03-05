@@ -27,7 +27,10 @@ cp -r $BASE/src/Plugins/SystemCPlugin/SystemCModule $DIR/plugins
 # ln -f argument is quietly ignored in windows-package environment, so instead of updating remove the link
 # and create it again.
 rm -rf $DIR/plugins/SystemCModule/lib/socket-cpp
-ln -s ../../IntegrationLibrary/libs/socket-cpp $DIR/plugins/SystemCModule/lib/socket-cpp
+mkdir -p $DIR/plugins/SystemCModule/lib
+pushd $DIR/plugins/SystemCModule/lib > /dev/null
+ln -s ../../../plugins/IntegrationLibrary/libs/socket-cpp/ ./socket-cpp
+popd  > /dev/null
 
 cp $BASE/tests/requirements.txt $DIR/tests
 cp $BASE/lib/resources/styles/robot.css $DIR/tests
