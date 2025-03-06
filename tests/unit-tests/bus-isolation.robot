@@ -11,8 +11,7 @@ Command Result Should Be Number
     Should Be Equal As Numbers         ${actual}  ${result}
 
 Create Bus Isolation Machine
-    ${SCRIPT_PATH}=                    Evaluate  r"${CURDIR}/bus_isolation.resc".replace(" ", "\\ ")
-    Execute Script                     ${SCRIPT_PATH}
+    Execute Script                     tests/unit-tests/bus_isolation.resc
 
 Register With Condition And Expect Error
     [Arguments]  ${condition}  ${error}
