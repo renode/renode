@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Linq;
+using System.Text;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Testing;
 using Antmicro.Renode.Time;
@@ -97,13 +99,15 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WaitForBytesOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
+        public BinaryTerminalTesterResult WaitForBytesOnUart(string content, float? timeout = null, int? testerId = null, bool treatAsRegex = false,
             bool? pauseEmulation = null, bool? matchStart = false)
         {
             return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine: true,
+                var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine: true,
                     pauseEmulation ?? defaultPauseEmulation, matchStart ?? defaultMatchNextLine);
+
+                return result != null ? new BinaryTerminalTesterResult(result) : null;
             }, expectBinaryModeTester: true);
         }
 
@@ -184,7 +188,7 @@ namespace Antmicro.Renode.RobotFramework
             tester.WriteCharDelay = TimeSpan.FromSeconds(delay);
         }
 
-        private TerminalTesterResult DoTest(float? timeout, int? testerId, Func<TerminalTester, TimeInterval?, TerminalTesterResult> test, bool expectBinaryModeTester = false)
+        private T DoTest<T>(float? timeout, int? testerId, Func<TerminalTester, TimeInterval?, T> test, bool expectBinaryModeTester = false)
         {
             TimeInterval? timeInterval = null;
             if(timeout.HasValue)
@@ -217,5 +221,34 @@ namespace Antmicro.Renode.RobotFramework
         private bool defaultPauseEmulation;
         private bool defaultMatchNextLine;
         private float globalTimeout = 8;
+
+        // The 'binary strings' used internally are not safe to pass through XML-RPC, probably due to special character escaping
+        // issues. See https://github.com/antmicro/renode/commit/7739c14c6275058e71da30997c8e0f80144ed81c 
+        // and Misc.StripNonSafeCharacters. Here we represent the results as byte[] which get represented as base64 in the
+        // XML-RPC body and <class 'bytes'> in the Python client.
+        public class BinaryTerminalTesterResult
+        {
+            public BinaryTerminalTesterResult(TerminalTesterResult result)
+            {
+                this.content = Encode(result.line) ?? Array.Empty<byte>();
+                this.timestamp = timestamp;
+                this.groups = result.groups.Select(Encode).ToArray();
+            }
+
+            public byte[] content { get; }
+            public double timestamp { get; }
+            public byte[][] groups { get; }
+
+            private byte[] Encode(string str)
+            {
+                if(str == null)
+                {
+                    return null;
+                }
+                // Encode using the Latin1 encoding, which maps each character directly to its
+                // corresponding byte value (that is, "\x00\x80\xff" becomes { 0x00, 0x80, 0xff }).
+                return Encoding.GetEncoding("iso-8859-1").GetBytes(str);
+            }
+        }
     }
 }
