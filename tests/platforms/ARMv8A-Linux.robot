@@ -185,14 +185,15 @@ Shell Should Handle Basic Commands
     Wait For Line On Uart         dev
     Wait For Line On Uart         etc
     Wait For Line On Uart         init
-    Wait For Prompt On Uart       \#${SPACE}
 
-    # Test 1s sleep by checking if the prompt is printed between 0.85-1.05s afterwards.
-    # It can be faster than 1s as we're pausing emulation after 'sleep 1' gets echoed.
+    ${before}=                    Wait For Prompt On Uart       \#${SPACE}
+
     Write Line To Uart            sleep 1
-    Run Keyword And Expect Error  *Line containing >># << event: failure*
-    ...  Wait For Prompt On Uart  \#${SPACE}  timeout=0.85
-    Wait For Prompt On Uart       \#${SPACE}  timeout=0.2
+    ${after}=                     Wait For Prompt On Uart       \#${SPACE}
+    # Timestamps are in milliseconds
+    Should Be True                ${after.timestamp} - ${before.timestamp} > 1000
+    Should Be True                ${after.timestamp} - ${before.timestamp} < 1050
+
 
 Test Running Coreboot With Linux And ARM Trusted Firmware
     [Arguments]    ${cpu_model}    ${coreboot_rom}
