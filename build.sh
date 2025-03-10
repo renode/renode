@@ -57,7 +57,7 @@ function print_help() {
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
-while getopts "cdvpnstb:o:B:F:a:-:" opt
+while getopts "cdvpnstb:o:B:F:-:" opt
 do
   case $opt in
     c)
