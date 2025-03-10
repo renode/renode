@@ -410,7 +410,7 @@ do
     mkdir -p $CORE_DIR
     pushd "$CORE_DIR" > /dev/null
     if [[ $ENDIAN == "be" ]]; then
-        CMAKE_CONF_FLAGS+=" -DTARGET_BIG_ENDIAN=1"
+        CMAKE_CONF_FLAGS+=" -DTARGET_WORDS_BIGENDIAN=1"
     fi
     if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
         CMAKE_CONF_FLAGS+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
