@@ -3,7 +3,8 @@
 set -u
 set -e
 
-export ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
+ROOT_PATH="$(cd "$(dirname $0)"; echo $PWD)"
+export ROOT_PATH
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
 EXPORT_DIRECTORY=""
 
@@ -109,8 +110,8 @@ do
           ;;
         "force-net-framework-version")
           shift $((OPTIND-1))
-          NET_FRAMEWORK_VER=p:TargetFrameworkVersion=v$1
-          PARAMS+=($NET_FRAMEWORK_VER)
+          NET_FRAMEWORK_VER="p:TargetFrameworkVersion=v$1"
+          PARAMS+=("$NET_FRAMEWORK_VER")
           OPTIND=2
           ;;
         "net")
@@ -350,7 +351,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
+PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
 
 # Paths for tlib
 CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION"
@@ -382,7 +383,7 @@ if [[ ! -z $TLIB_ARCH ]]; then
   NONE_MATCHED=true
   for potential_match in "${CORES[@]}"; do
     if [[ $potential_match == "$TLIB_ARCH"* ]]; then
-      CORES=($potential_match)
+      CORES=("$potential_match")
       echo "Compiling tlib for $potential_match"
       NONE_MATCHED=false
       break
@@ -416,7 +417,7 @@ do
         CMAKE_CONF_FLAGS+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
     fi
     cmake "$CMAKE_GEN" $CMAKE_COMMON $CMAKE_CONF_FLAGS -DHOST_ARCH=$HOST_ARCH $CORES_PATH
-    cmake --build . -j$(nproc)
+    cmake --build . -j"$(nproc)"
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
     mkdir -p $CORE_BIN_DIR
     if $ON_OSX; then
