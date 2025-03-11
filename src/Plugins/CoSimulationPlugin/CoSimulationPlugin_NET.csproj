@@ -18,9 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\lib\AntShell\AntShell\AntShell_NET.csproj"/>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Extensions\Extensions_NET.csproj"/>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Main\Emulator_NET.csproj"/>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Peripherals\Peripherals_NET.csproj"/>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Cores\cores-riscv_NET.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\src\Infrastructure_NET.csproj" />
   </ItemGroup>
 </Project>

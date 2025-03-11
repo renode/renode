@@ -1,0 +1,37 @@
+mach create "Zolertia Z1"
+using sysbus
+
+include @platforms/cpus/msp430f2619.repl
+
+$bin?=@https://dl.antmicro.com/projects/renode/hello-world.elf-s_50467-180b9b5262a1df6ef45668ba7b6ed6d6e62ff6d2
+
+# NOTE: Simulate return from CALLA invocation
+#       This will be used to skip execution of some functions
+set callaReturn
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
+sysbus = machine.SystemBus
+
+lr = sysbus.ReadWord(cpu.SP)
+lr |= (sysbus.ReadWord(cpu.SP.RawValue + 2) & 0xF) << 16
+cpu.SetRegister(0, RegisterValue.Create(lr, 20))
+cpu.SetRegister(1, RegisterValue.Create(cpu.SP.RawValue + 4, 20))
+"""
+
+cpu PerformanceInMips 1
+showAnalyzer usci_a0
+
+macro reset
+"""
+sysbus LoadELF $bin
+
+# NOTE: We currently doesn't support DCO and CC2420 RF
+#       so we skip initialization of both those subsystems
+cpu AddHook `sysbus GetSymbolAddress "msp430_sync_dco"` $callaReturn
+cpu AddHook `sysbus GetSymbolAddress "node_id_z1_restore"` $callaReturn
+cpu AddHook `sysbus GetSymbolAddress "cc2420_init"` $callaReturn
+cpu AddHook `sysbus GetSymbolAddress "cc2420_set_pan_addr"` $callaReturn
+"""
+
+runMacro $reset

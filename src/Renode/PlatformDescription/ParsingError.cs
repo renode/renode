@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -26,7 +26,7 @@ namespace Antmicro.Renode.PlatformDescription
         IrqSourceIsNotNumberedGpioOutput = 14,
         AmbiguousDefaultIrqSource = 15,
         IrqSourceUsedMoreThanOnce = 16,
-        IrqDestinationUsedMoreThanOnce = 17,
+        /* IrqDestinationUsedMoreThanOnce = 17, */ // not used anymore, leave the spot open
         NotLocalGpioReceiver = 18,
         MoreThanOneInitAttribute = 19,
         MissingReference = 20,

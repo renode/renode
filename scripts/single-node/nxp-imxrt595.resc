@@ -1,0 +1,19 @@
+$name?="RT595"
+mach create $name
+machine LoadPlatformDescription @platforms/cpus/imxrt500.repl
+
+$bin?=@https://dl.antmicro.com/projects/renode/mimxrt595_evk--shell_module.elf-s_2471248-db5ac4a6c0ea5bfbfbde39a708b267114f693a63
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    # jump right away from the OTP_FUSE_READ_API function stored in OTP
+    # this address is hardcoded in Zephyr:
+    # https://github.com/zephyrproject-rtos/zephyr/blob/e801f1a9ad6ae0d60362ec0f576ce130659360ee/boards/nxp/mimxrt595_evk/board.c#L21
+    sysbus WriteWord 0x1300805c 0x4770 # "bx lr"
+    cpu0 VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+"""
+
+showAnalyzer flexcomm0
+
+runMacro $reset

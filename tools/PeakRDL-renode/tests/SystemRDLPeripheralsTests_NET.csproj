@@ -1,0 +1,27 @@
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <AssemblyName>PeripheralsTests</AssemblyName>
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.18.1" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" /> 
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Infrastructure_NET.csproj"/>
+    <ProjectReference Include="..\..\..\lib\Migrant\Migrant\Migrant_NET.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="generated\**"/>
+    <Compile Include="generated\Mem1Peripheral.cs"/>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="systemrdl.json">
+      <LogicalName>Antmicro.Renode.PeripheralsTests.SystemRDLJson</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

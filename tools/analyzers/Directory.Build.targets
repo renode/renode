@@ -1,0 +1,4 @@
+<Project>
+    <!-- Empty default so that the upper level Directory.Build.targets is not used. -->
+    <!-- https://github.com/MicrosoftDocs/visualstudio-docs/blob/705d3b200e68e87d1070696cb6f483462c7be3e2/docs/msbuild/customize-your-build.md?plain=1#L42 -->
+</Project>

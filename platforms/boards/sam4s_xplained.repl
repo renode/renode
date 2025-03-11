@@ -1,0 +1,9 @@
+using "platforms/cpus/sam4s16c.repl"
+
+LED: Miscellaneous.LED @ pioC 10
+
+pioC:
+    10 -> LED@0
+
+Button: Miscellaneous.Button @ pioA 5
+    -> pioA@5

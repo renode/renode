@@ -14,11 +14,11 @@ INSTALL_DIR='$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD
 OS_NAME=linux
 SED_COMMAND="sed -i"
 
-cp $RENODE_ROOT_DIR/output/bin/$TARGET/$TFM/libllvm-disas.so $RENODE_ROOT_DIR/output/bin/$TARGET/$TFM/publish
+cp $RENODE_ROOT_DIR/output/bin/$TARGET/libllvm-disas.so $RENODE_ROOT_DIR/output/bin/$TARGET/publish
 
 # Override the TARGET variable.
 # It is used to copy files into final package directory and all required files were moved there.
-TARGET="$TARGET/$TFM/publish"
+TARGET="$TARGET/publish"
 
 . common_copy_files_package.sh
 

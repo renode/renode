@@ -414,9 +414,9 @@ Should Exit Translation Block After Invalid Instruction And Report Single Error
     Execute Command                 cpu PerformanceInMips 1
     Execute Command                 emulation SetGlobalQuantum "0.000020"
     Execute Command                 emulation RunFor "0.000010"
-    Wait For Log Entry              instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_1_pc_hex}
-    Should Not Be In Log            instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_2_pc_hex}   0
-    Should Not Be In Log            instruction set is not enabled for this CPU! PC: 0x${illegal_opcode_3_pc_hex}   0
+    Wait For Log Entry              PC: 0x${illegal_opcode_1_pc_hex}.* instruction set is not enabled for this CPU!  treatAsRegex=True 
+    Should Not Be In Log            PC: 0x${illegal_opcode_2_pc_hex}.* instruction set is not enabled for this CPU!  0  treatAsRegex=True
+    Should Not Be In Log            PC: 0x${illegal_opcode_3_pc_hex}.* instruction set is not enabled for this CPU!  0  treatAsRegex=True
 
 Should Properly Handle ResetVector After Creation And After Reset 32
     Create Machine                  bitness=32  init_pc=False

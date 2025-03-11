@@ -15,183 +15,265 @@ using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
+using Range = Antmicro.Renode.Core.Range;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
-    public class CoSimulatedPeripheral : BaseCoSimulatedPeripheral, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, IHasOwnLife, INumberedGPIOOutput, IGPIOReceiver
+    public class CoSimulatedPeripheral : ICoSimulationConnectible, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, INumberedGPIOOutput, IGPIOReceiver, IAbsoluteAddressAware
     {
-        public CoSimulatedPeripheral(Machine machine, int maxWidth, long frequency = VerilogTimeunitFrequency, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
+        public CoSimulatedPeripheral(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency, 
+            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
             string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int numberOfInterrupts = 0)
-            : base(simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, simulationContextLinux, simulationContextWindows, simulationContextMacOS, timeout, address)
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null,  bool createConnection = true,
+            ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null, int renodeToCosimIndex = 0, int cosimToRenodeIndex = 0)
         {
-            this.machine = machine;
-            allTicksProcessedARE = new AutoResetEvent(initialState: false);
-            this.OnReceive = HandleReceivedMessage;
+            UseAbsoluteAddress = useAbsoluteAddress;
             this.maxWidth = maxWidth;
+            this.renodeToCosimSignalsOffset = renodeToCosimSignalsOffset;
+            this.cosimToRenodeSignalRange = cosimToRenodeSignalRange;
+            RenodeToCosimIndex = renodeToCosimIndex;
+            CosimToRenodeIndex = cosimToRenodeIndex;
 
-            timer = new LimitTimer(machine.ClockSource, frequency, this, LimitTimerName, limitBuffer, enabled: true, eventEnabled: true, autoUpdate: true);
-            timer.LimitReached += () =>
+            if(createConnection)
             {
-                if(!cosimulationConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer)))
+                connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
+                        simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
+                        simulationContextLinux, simulationContextWindows, simulationContextMacOS,
+                        limitBuffer, timeout, address);
+                connection.AttachTo(this);
+            }
+
+            var innerGPIOConnections = new Dictionary<int, IGPIO>();
+            if(this.cosimToRenodeSignalRange.HasValue)
+            {
+                for(int i = 0; i < (int)this.cosimToRenodeSignalRange.Value.Size; i++)
                 {
-                    AbortAndLogError("Send error!");
+                    innerGPIOConnections[i] = new GPIO();
                 }
-                this.NoisyLog("Tick: TickClock sent, waiting for the cosimulated peripheral...");
-                if(!allTicksProcessedARE.WaitOne(timeout))
-                {
-                    AbortAndLogError("Timeout reached while waiting for a tick response.");
-                }
-                this.NoisyLog("Tick: Co-simulated peripheral finished evaluating the model.");
-            };
-
-            var innerConnections = new Dictionary<int, IGPIO>();
-            for(int i = 0; i < numberOfInterrupts; i++)
-            {
-                innerConnections[i] = new GPIO();
             }
 
-            Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
+            Connections = new ReadOnlyDictionary<int, IGPIO>(innerGPIOConnections);
         }
 
-        public override void Reset()
+        public void Reset()
         {
-            base.Reset();
-            timer.Reset();
-        }
-
-        public virtual byte ReadByte(long offset)
-        {
-            if(!VerifyLength(8, offset))
-            {
-                return 0;
-            }
-            return (byte)Read(ActionType.ReadFromBusByte, offset);
-        }
-
-        public virtual ushort ReadWord(long offset)
-        {
-            if(!VerifyLength(16, offset))
-            {
-                return 0;
-            }
-            return (ushort)Read(ActionType.ReadFromBusWord, offset);
-        }
-
-        public virtual uint ReadDoubleWord(long offset)
-        {
-            if(!VerifyLength(32, offset))
-            {
-                return 0;
-            }
-            return (uint)Read(ActionType.ReadFromBusDoubleWord, offset);
-        }
-
-        public virtual ulong ReadQuadWord(long offset)
-        {
-            if(!VerifyLength(64, offset))
-            {
-                return 0;
-            }
-            return Read(ActionType.ReadFromBusQuadWord, offset);
-        }
-
-        public virtual void WriteByte(long offset, byte value)
-        {
-            if(VerifyLength(8, offset, value))
-            {
-                Write(ActionType.WriteToBusByte, offset, value);
-            }
-        }
-
-        public virtual void WriteWord(long offset, ushort value)
-        {
-            if(VerifyLength(16, offset, value))
-            {
-                Write(ActionType.WriteToBusWord, offset, value);
-            }
-        }
-
-        public virtual void WriteDoubleWord(long offset, uint value)
-        {
-            if(VerifyLength(32, offset, value))
-            {
-                Write(ActionType.WriteToBusDoubleWord, offset, value);
-            }
-        }
-
-        public virtual void WriteQuadWord(long offset, ulong value)
-        {
-            if(VerifyLength(64, offset, value))
-            {
-                Write(ActionType.WriteToBusQuadWord, offset, value);
-            }
+            connection?.Reset();
         }
 
         public void OnGPIO(int number, bool value)
         {
-            Write(ActionType.Interrupt, number, (ulong)(value ? 1 : 0));
+            // Connection can be null here because OnGPIO is called during initialization
+            // for each input connection
+            connection?.SendGPIO((int)renodeToCosimSignalsOffset + number, value);
         }
 
-        public override void HandleReceivedMessage(ProtocolMessage message)
+        public virtual void OnConnectionAttached(CoSimulationConnection connection)
         {
-            switch(message.ActionId)
+            this.connection = connection;
+            if(cosimToRenodeSignalRange.HasValue)
             {
-                case ActionType.InvalidAction:
-                    this.Log(LogLevel.Warning, "Invalid action received");
-                    break;
-                case ActionType.Interrupt:
-                    HandleInterrupt(message);
-                    break;
-                case ActionType.PushByte:
-                    this.Log(LogLevel.Noisy, "Writing byte: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteByte(message.Address, (byte)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
-                    break;
-                case ActionType.PushWord:
-                    this.Log(LogLevel.Noisy, "Writing word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteWord(message.Address, (ushort)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
-                    break;
-                case ActionType.PushDoubleWord:
-                    this.Log(LogLevel.Noisy, "Writing double word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteDoubleWord(message.Address, (uint)message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
-                    break;
-                case ActionType.PushQuadWord:
-                    this.Log(LogLevel.Noisy, "Writing quad word: 0x{0:X} to address: 0x{1:X}", message.Data, message.Address);
-                    machine.SystemBus.WriteQuadWord(message.Address, message.Data);
-                    Respond(ActionType.PushConfirmation, 0, 0);
-                    break;
-                case ActionType.GetByte:
-                    this.Log(LogLevel.Noisy, "Requested byte from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadByte(message.Address));
-                    break;
-                case ActionType.GetWord:
-                    this.Log(LogLevel.Noisy, "Requested word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadWord(message.Address));
-                    break;
-                case ActionType.GetDoubleWord:
-                    this.Log(LogLevel.Noisy, "Requested double word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadDoubleWord(message.Address));
-                    break;
-                case ActionType.GetQuadWord:
-                    this.Log(LogLevel.Noisy, "Requested quad word from address: 0x{0:X}", message.Address);
-                    Respond(ActionType.WriteToBus, 0, machine.SystemBus.ReadQuadWord(message.Address));
-                    break;
-                case ActionType.TickClock:
-                    allTicksProcessedARE.Set();
-                    break;
-                default:
-                    this.Log(LogLevel.Warning, "Unhandled message: ActionId = {0}; Address: 0x{1:X}; Data: 0x{2:X}!",
-                        message.ActionId, message.Address, message.Data);
-                    break;
+                this.connection.RegisterOnGPIOReceive(ReceiveGPIOChange, cosimToRenodeSignalRange.Value);
             }
+        }
+
+        public virtual void OnConnectionDetached(CoSimulationConnection connection)
+        {
+            if(cosimToRenodeSignalRange.HasValue)
+            {
+                this.connection.UnregisterOnGPIOReceive(cosimToRenodeSignalRange.Value);
+            }
+            this.connection = null;
+        }
+
+        public byte ReadByte(long offset)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(!VerifyLength(8, offset))
+            {
+                return 0;
+            }
+            return (byte)connection.Read(this, ActionType.ReadFromBusByte, offset);
+        }
+
+        public ushort ReadWord(long offset)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(!VerifyLength(16, offset))
+            {
+                return 0;
+            }
+            return (ushort)connection.Read(this, ActionType.ReadFromBusWord, offset);
+        }
+
+        public uint ReadDoubleWord(long offset)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(!VerifyLength(32, offset))
+            {
+                return 0;
+            }
+            return (uint)connection.Read(this, ActionType.ReadFromBusDoubleWord, offset);
+        }
+
+        public ulong ReadQuadWord(long offset)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(!VerifyLength(64, offset))
+            {
+                return 0;
+            }
+            return connection.Read(this, ActionType.ReadFromBusQuadWord, offset);
+        }
+
+        public void WriteByte(long offset, byte value)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(VerifyLength(8, offset, value))
+            {
+                connection.Write(this, ActionType.WriteToBusByte, offset, value);
+            }
+        }
+
+        public void WriteWord(long offset, ushort value)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(VerifyLength(16, offset, value))
+            {
+                connection.Write(this, ActionType.WriteToBusWord, offset, value);
+            }
+        }
+
+        public void WriteDoubleWord(long offset, uint value)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(VerifyLength(32, offset, value))
+            {
+                connection.Write(this, ActionType.WriteToBusDoubleWord, offset, value);
+            }
+        }
+
+        public void WriteQuadWord(long offset, ulong value)
+        {
+            offset = UseAbsoluteAddress ? (long)absoluteAddress : offset;
+            if(VerifyLength(64, offset, value))
+            {
+                connection.Write(this, ActionType.WriteToBusQuadWord, offset, value);
+            }
+        }
+
+        public virtual void ReceiveGPIOChange(int coSimNumber, bool value)
+        {
+            if(!cosimToRenodeSignalRange.HasValue)
+            {
+                this.Log(LogLevel.Warning, $"Received GPIO change from co-simulation, but no cosimToRenodeSignalRange is defined.");
+                return;
+            }
+
+            var localNumber = coSimNumber - (int)cosimToRenodeSignalRange.Value.StartAddress;
+            if (!Connections.TryGetValue(localNumber, out var gpioConnection))
+            {
+                 this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", localNumber);
+                 return;
+            }
+
+            gpioConnection.Set(value);
+        }
+
+        public void Dispose()
+        {
+            connection?.DetachFrom(this);
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
-        protected bool VerifyLength(int length, long offset, ulong? value = null)
+        public string ConnectionParameters => connection?.ConnectionParameters ?? "";
+        public void Connect()
+        {
+            AssureIsConnected();
+            connection.Connect();
+        }
+
+        public void SetAbsoluteAddress(ulong address)
+        {
+            absoluteAddress = address;
+        }
+
+        public string SimulationContextLinux
+        {
+            get => connection.SimulationContextLinux;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContextLinux = value;
+            }
+        }
+
+        public string SimulationContextWindows
+        {
+            get => connection.SimulationContextWindows;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContextWindows = value;
+            }
+        }
+
+        public string SimulationContextMacOS
+        {
+            get => connection.SimulationContextMacOS;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContextMacOS = value;
+            }
+        }
+
+        public string SimulationContext
+        {
+            get => connection.SimulationContext;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationContext = value;
+            }
+        }
+
+        public string SimulationFilePathLinux
+        {
+            get => connection.SimulationFilePathLinux;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationFilePathLinux = value;
+            }
+        }
+
+        public string SimulationFilePathWindows
+        {
+            get => connection.SimulationFilePathWindows;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationFilePathWindows = value;
+            }
+        }
+
+        public string SimulationFilePathMacOS
+        {
+            get => connection.SimulationFilePathMacOS;
+            set
+            {
+                AssureIsConnected();
+                connection.SimulationFilePathMacOS = value;
+            }
+        }
+
+        // The following constant should be in sync with a time unit defined in the `renode` SystemVerilog module.
+        // It allows using simulation time instead of a number of clock ticks.
+        public const long VerilogTimeunitFrequency = 1000000000;
+        public bool UseAbsoluteAddress { get; set; }
+
+        private bool VerifyLength(int length, long offset, ulong? value = null)
         {
             if(length > maxWidth)
             {
@@ -207,53 +289,25 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             return true;
         }
 
-        protected void Write(ActionType type, long offset, ulong value)
+        private void AssureIsConnected(string message = null)
         {
-            if(!IsConnected)
+            if(connection == null)
             {
-                this.Log(LogLevel.Warning, "Cannot write to peripheral. Set SimulationFilePath or connect to a simulator first!");
-                return;
+                throw new RecoverableException("CoSimulatedPeripheral is not attached to a CoSimulationConnection.");
             }
-            Send(type, (ulong)offset, value);
-            CheckValidation(Receive());
         }
 
-        protected ulong Read(ActionType type, long offset)
-        {
-            if(!IsConnected)
-            {
-                this.Log(LogLevel.Warning, "Cannot read from peripheral. Set SimulationFilePath or connect to a simulator first!");
-                return 0;
-            }
-            Send(type, (ulong)offset, 0);
-            var result = Receive();
-            CheckValidation(result);
+        public int RenodeToCosimIndex { get; }
+        public int CosimToRenodeIndex { get; }
 
-            return result.Data;
-        }
-
-        protected override void HandleInterrupt(ProtocolMessage interrupt)
-        {
-            if (!Connections.TryGetValue((int)interrupt.Address, out var connection))
-            {
-                this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", interrupt.Address);
-                return;
-            }
-
-            connection.Set(interrupt.Data != 0);
-        }
-
-        protected readonly Machine machine;
-        protected readonly int maxWidth;
-
+        protected CoSimulationConnection connection;
         protected const ulong LimitBuffer = 1000000;
+        protected const int DefaultTimeout  = 3000;
+        readonly protected Range? cosimToRenodeSignalRange;
 
-        private readonly AutoResetEvent allTicksProcessedARE;
-        private readonly LimitTimer timer;
-        private const string LimitTimerName = "CosimulationClock";
-
-        // The following constant should be in sync with a time unit defined in the `renode` SystemVerilog module.
-        // It allows using simulation time instead of a number of clock ticks.
-        private const long VerilogTimeunitFrequency = 1000000000;
+        private int maxWidth;
+        private ulong renodeToCosimSignalsOffset;
+        private ulong absoluteAddress = 0;
+        private const string LimitTimerName = "CoSimulationIntegrationClock";
     }
 }

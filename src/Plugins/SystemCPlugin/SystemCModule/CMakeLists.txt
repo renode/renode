@@ -13,8 +13,10 @@ set(SOURCES_RENODE_BRIDGE
     src/renode_bridge.cpp
 )
 add_library(renode_bridge ${SOURCES_RENODE_BRIDGE})
-target_include_directories(renode_bridge PUBLIC 
-    include
-    lib)
+target_include_directories(renode_bridge PUBLIC
+    include)
+target_include_directories(renode_bridge PRIVATE
+    lib
+    ${INCLUDE_DIRS})
 
 target_link_libraries(renode_bridge socket_cpp)

@@ -1,13 +1,13 @@
 cpu0: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
     nvic: nvic0
-    id: 0
+    cpuId: 0
     numberOfMPURegions: 16
 
 cpu1: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
     nvic: nvic1
-    id: 1
+    cpuId: 1
     numberOfMPURegions: 16
     init:
         IsHalted true
@@ -15,7 +15,7 @@ cpu1: CPU.CortexM @ sysbus
 cpu2: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
     nvic: nvic2
-    id: 2
+    cpuId: 2
     numberOfMPURegions: 16
     init:
         IsHalted true
@@ -23,7 +23,7 @@ cpu2: CPU.CortexM @ sysbus
 cpu3: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
     nvic: nvic3
-    id: 3
+    cpuId: 3
     numberOfMPURegions: 16
     init:
         IsHalted true

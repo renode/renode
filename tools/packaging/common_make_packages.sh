@@ -32,7 +32,7 @@ do
             ;;
         n)
             DATE="+`date +%Y%m%d`"
-            COMMIT="git`git rev-parse --short HEAD`"
+            COMMIT="git`git rev-parse --short=9 HEAD`"
             ;;
         l)
             REMOVE_WORKDIR=false

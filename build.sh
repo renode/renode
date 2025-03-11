@@ -3,7 +3,8 @@
 set -u
 set -e
 
-export ROOT_PATH="$(cd $(dirname $0); echo $PWD)"
+ROOT_PATH="$(cd "$(dirname $0)"; echo $PWD)"
+export ROOT_PATH
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
 EXPORT_DIRECTORY=""
 
@@ -20,7 +21,8 @@ TLIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
 TLIB_ARCH=""
 NET=false
-TFM="net6.0"
+TFM="net462"
+GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
@@ -46,15 +48,17 @@ function print_help() {
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
+  echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
-  echo "--tlib-export-compile-commands    build tlibs with 'complile_commands.json' (requires --tlib-arch)"
+  echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --tlib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
+  echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
-while getopts "cdvpnstb:o:B:a:-:" opt
+while getopts "cdvpnstb:o:B:F:-:" opt
 do
   case $opt in
     c)
@@ -89,6 +93,13 @@ do
     B)
       RID=$OPTARG
       ;;
+    F)
+      if ! $NET; then
+        echo "-F requires --net being set"
+        exit 1
+      fi
+      TFM=$OPTARG
+      ;;
     -)
       case $OPTARG in
         "no-gui")
@@ -99,12 +110,13 @@ do
           ;;
         "force-net-framework-version")
           shift $((OPTIND-1))
-          NET_FRAMEWORK_VER=p:TargetFrameworkVersion=v$1
-          PARAMS+=($NET_FRAMEWORK_VER)
+          NET_FRAMEWORK_VER="p:TargetFrameworkVersion=v$1"
+          PARAMS+=("$NET_FRAMEWORK_VER")
           OPTIND=2
           ;;
         "net")
           NET=true
+          TFM="net8.0"
           PARAMS+=(p:NET=true)
           ;;
         "profile-build")
@@ -131,6 +143,9 @@ do
           shift $((OPTIND-1))
           HOST_ARCH=$1
           OPTIND=2
+          ;;
+        "skip-dotnet-target-generation")
+          GENERATE_DOTNET_BUILD_TARGET=false
           ;;
         *)
           print_help
@@ -214,22 +229,43 @@ then
 elif $ON_WINDOWS
 then
     BUILD_TARGET=Windows
-    TFM="net6.0-windows10.0.17763.0"
+    TFM="$TFM-windows10.0.17763.0"
     RID="win-x64"
 else
     BUILD_TARGET=Mono
 fi
 
+if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
+  if $ON_WINDOWS; then
+    # CsWinRTAotOptimizerEnabled is disabled due to a bug in dotnet-sdk.
+    # See: https://github.com/dotnet/sdk/issues/44026
+    OS_SPECIFIC_TARGET_OPTS='<CsWinRTAotOptimizerEnabled>false</CsWinRTAotOptimizerEnabled>'
+  fi
+
+cat <<EOF > "$(get_path "$PWD/Directory.Build.targets")"
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks>$TFM</TargetFrameworks>
+    ${OS_SPECIFIC_TARGET_OPTS:+${OS_SPECIFIC_TARGET_OPTS}}
+  </PropertyGroup>
+</Project>
+EOF
+
+fi
+
 if $NET
 then
   export DOTNET_CLI_TELEMETRY_OPTOUT=1
-  CS_COMPILER="dotnet build -f $TFM"
+  CS_COMPILER="dotnet build"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
-  OUT_BIN_DIR=output/bin/$CONFIGURATION/$TFM
+  BUILD_TYPE="dotnet"
 else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
-  OUT_BIN_DIR=output/bin/$CONFIGURATION
+  BUILD_TYPE="mono"
 fi
+
+OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
+BUILD_TYPE_FILE=$(get_path "${OUT_BIN_DIR}/build_type")
 
 # Verify Mono and mcs version on Linux and macOS
 if ! $ON_WINDOWS && ! $NET
@@ -237,7 +273,7 @@ then
     if ! [ -x "$(command -v mcs)" ]
     then
         MINIMUM_MONO=`get_min_mono_version`
-        echo "mcs not found. Renode requries Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
+        echo "mcs not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
         exit 1
     fi
 
@@ -276,25 +312,38 @@ CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
 # clean instead of building
 if $CLEAN
 then
-    if ! $NET
-    then
-      PARAMS+=(t:Clean)
-    fi
-    for conf in Debug Release
+    for project_dir in $(find "$(get_path "${ROOT_PATH}/src")" -iname '*.csproj' -exec dirname '{}' \;)
     do
-      for build_target in Windows Mono Headless
+      for dir in {bin,obj}/{Debug,Release}
       do
-        if $NET
+        output_dir="$(get_path "${project_dir}/${dir}")"
+        if [[ -d "${output_dir}" ]]
         then
-            dotnet clean -f $TFM $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
-        else
-            $CS_COMPILER $(build_args_helper ${PARAMS[@]}) $(build_args_helper p:Configuration=${conf}${build_target}) "$TARGET"
+          echo "Removing: ${output_dir}"
+          rm -rf "${output_dir}"
         fi
       done
-      rm -fr $OUTPUT_DIRECTORY/bin/$conf
-      rm -rf $CORES_PATH/obj $CORES_PATH/bin
     done
+
+    # Manually clean the main output directory as it's location is non-standard
+    main_output_dir="$(get_path "${OUTPUT_DIRECTORY}/bin")"
+    if [[ -d "${main_output_dir}" ]]
+    then
+      echo "Removing: ${main_output_dir}"
+      rm -rf "${main_output_dir}"
+    fi
     exit 0
+fi
+
+# Check if a full rebuild is needed
+if [[ -f "$BUILD_TYPE_FILE" ]]
+then
+  if [[ "$(cat "$BUILD_TYPE_FILE")" != "$BUILD_TYPE" ]]
+  then
+    echo "Attempted to build Renode in a different configuration than the previous build"
+    echo "Please run '$0 -c' to clean the previous build before continuing"
+    exit 1
+  fi
 fi
 
 # check weak implementations of core libraries
@@ -302,7 +351,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(p:Configuration=${CONFIGURATION}${BUILD_TARGET} p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
+PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
 
 # Paths for tlib
 CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION"
@@ -326,7 +375,7 @@ then
 fi
 
 # This list contains all cores that will be built.
-# If you are adding a new core or endianess add it here to have the correct tlib built
+# If you are adding a new core or endianness add it here to have the correct tlib built
 CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
 
 # if '--tlib-arch' was used - pick the first matching one
@@ -334,7 +383,7 @@ if [[ ! -z $TLIB_ARCH ]]; then
   NONE_MATCHED=true
   for potential_match in "${CORES[@]}"; do
     if [[ $potential_match == "$TLIB_ARCH"* ]]; then
-      CORES=($potential_match)
+      CORES=("$potential_match")
       echo "Compiling tlib for $potential_match"
       NONE_MATCHED=false
       break
@@ -362,13 +411,13 @@ do
     mkdir -p $CORE_DIR
     pushd "$CORE_DIR" > /dev/null
     if [[ $ENDIAN == "be" ]]; then
-        CMAKE_CONF_FLAGS+=" -DTARGET_BIG_ENDIAN=1"
+        CMAKE_CONF_FLAGS+=" -DTARGET_WORDS_BIGENDIAN=1"
     fi
     if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
         CMAKE_CONF_FLAGS+=" -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
     fi
     cmake "$CMAKE_GEN" $CMAKE_COMMON $CMAKE_CONF_FLAGS -DHOST_ARCH=$HOST_ARCH $CORES_PATH
-    cmake --build . -j$(nproc)
+    cmake --build . -j"$(nproc)"
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
     mkdir -p $CORE_BIN_DIR
     if $ON_OSX; then
@@ -391,6 +440,7 @@ fi
 
 # build
 eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
+echo -n "$BUILD_TYPE" > "$BUILD_TYPE_FILE"
 
 # copy llvm library
 LLVM_LIB="libllvm-disas"
@@ -436,12 +486,9 @@ if $PACKAGES
 then
     if $NET
     then
-        # dotnet package on linux uses a seperate script
+        # dotnet package on linux uses a separate script
         if $ON_LINUX
         then
-            # Restore dependecies for linux-x64 runtime. It prevents error NETSDK1112 during publish.
-            dotnet restore --runtime linux-x64 Renode_NET.sln
-
             # maxcpucount:1 to avoid an error with multithreaded publish
             eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
             export RID TFM
@@ -469,7 +516,6 @@ then
     PARAMS+=(p:PORTABLE=true)
     if $NET
     then
-        dotnet restore --runtime $RID Renode_NET.sln
         # maxcpucount:1 to avoid an error with multithreaded publish
         eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM

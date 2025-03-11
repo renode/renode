@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -160,6 +160,15 @@ namespace Antmicro.Renode.UI
                 IOSource.Dispose();
                 IOSource = null;
             }
+            foreach(var menuItem in terminal.ContextMenu.Items)
+            {
+                if(menuItemsDelegates.TryGetValue(menuItem, out var handler))
+                {
+                    menuItem.Clicked -= handler;
+                }
+            }
+            menuItemsDelegates.Clear();
+            terminal.Close();
         }
 
         protected override void OnBoundsChanged()
@@ -181,26 +190,29 @@ namespace Antmicro.Renode.UI
             var popup = new Menu();
 
             var copyItem = new MenuItem("Copy");
-            copyItem.Clicked += delegate
+            menuItemsDelegates[copyItem] = delegate
             {
                 CopyMarkedField();
             };
+            copyItem.Clicked += menuItemsDelegates[copyItem];
             popup.Items.Add(copyItem);
 
             var pasteItem = new MenuItem("Paste");
-            pasteItem.Clicked += delegate
+            menuItemsDelegates[pasteItem] = delegate
             {
                 PasteMarkedField();
             };
+            pasteItem.Clicked += menuItemsDelegates[pasteItem];
             popup.Items.Add(pasteItem);
 
             var lineEndingsItem = new MenuItem(lineEndingsDictionary[!modifyLineEndings]);
-            lineEndingsItem.Clicked += delegate
+            menuItemsDelegates[lineEndingsItem] = delegate
             {
                 modifyLineEndings = !modifyLineEndings;
                 lineEndingsItem.Label = lineEndingsDictionary[!modifyLineEndings];
                 ConfigurationManager.Instance.Set("termsharp", "append-CR-to-LF", modifyLineEndings);
             };
+            lineEndingsItem.Clicked += menuItemsDelegates[lineEndingsItem];
             popup.Items.Add(lineEndingsItem);
 
             return popup;
@@ -222,6 +234,8 @@ namespace Antmicro.Renode.UI
         private double defaultFontSize;
         private Terminal terminal;
         private const int MinimalBottomMargin = 2;
+
+        private readonly Dictionary<MenuItem, EventHandler> menuItemsDelegates = new Dictionary<MenuItem, EventHandler>();
 
 #if PLATFORM_LINUX
         private const double PredefinedFontSize = 10.0;

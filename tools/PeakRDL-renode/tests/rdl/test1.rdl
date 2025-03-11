@@ -1,0 +1,31 @@
+addrmap Peripheral {
+    regfile {
+        default regwidth = 32;
+
+        reg {
+            name = "Fields";
+            field {
+                name = "FIRST";
+                sw = r;
+                hw = w;
+            } first [7:0];
+            field {
+                name = "SECOND";
+                sw = w;
+                hw = r;
+            } second [15:8];
+            field {
+                name = "THIRD";
+                sw = rw;
+                hw = rw;
+                onwrite = woclr;
+            } third [23:16];
+            field {
+                name = "FOURTH";
+                sw = rw;
+                hw = rw;
+                onread = rclr;
+            } fourth [31:24];
+        } fields @ 0x0;
+    } registers @ 0x0;
+};

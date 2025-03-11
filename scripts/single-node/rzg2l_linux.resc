@@ -1,0 +1,52 @@
+:name: Renesas RZ/G2L Linux
+:description: This script runs Linux on Renesas RZ/G2L.
+
+using sysbus
+$name?="Renesas-RZ/G2l"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/renesas_rz_g2l.repl
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-u-boot.dtb-s_42736-b056beee2da1d7dc1733823c829ed934a5e7062f
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-bl31.elf-s_60984-bb0de4def112d9a18ec92dd4d42b6e1f68b9cb40
+$uboot?=     @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-u-boot.bin-s_589436-07ff0457c2493b7fe4ea8f6403ef7c068837663e
+$linux?=     @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-Image-s_22386696-39464b08db14ef3367fe4ba01c83c190a6c77430
+$rootfs?=    @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-rootfs.ext2.gz-s_14304287-c2ced2e622863d6e51d4c1a8fe248b3fbb9362c0
+
+$linux_elf?= @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-vmlinux-s_99357912-985fd09e0f0e8f70daa0ef9c23d5026e2558f836
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/renesas-rz_g2l--linux-u-boot.elf-s_653344-281e56015972c4163870ab7d18c7e005373b89f3
+
+showAnalyzer scif0
+
+macro reset
+"""
+    cpu_m33 IsHalted true
+    cpu1 IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=cluster
+    sysbus LoadBinary $uboot  0x50000000 cpu=cpu0
+    sysbus LoadFdt    $dtb    0x40000000 "earlycon console=ttySC0,115200n8 root=/dev/ram0 rw initrd=0x60000000,64M nr_cpus=1" false context=cpu0
+    sysbus LoadBinary $linux  0x51000000 cpu=cpu0
+    sysbus LoadBinary $rootfs 0x60000000 cpu=cpu0
+
+    sysbus LoadSymbolsFrom $uboot_elf context=cpu0
+    sysbus LoadSymbolsFrom $linux_elf context=cpu0
+
+    # Set address for structure passed from BL2
+    # https://github.com/renesas-rz/rzg_trusted-firmware-a/blob/c18f5c36980717d9805036a7ad5705bef8806c8f/plat/renesas/rz/common/include/rz_private.h#L25
+    cpu0 SetRegister 0 0x20000000
+    # Type
+    sysbus WriteByte 0x20000058 0x1 cpu0
+    # Version
+    sysbus WriteByte 0x20000059 0x1 cpu0
+    # Size
+    sysbus WriteWord 0x2000005A 0x0 cpu0
+    # Attr
+    sysbus WriteDoubleWord 0x2000005C 0x1 cpu0
+    # PC
+    sysbus WriteDoubleWord 0x20000060 0x50000000 cpu0
+    # SPSR
+    sysbus WriteDoubleWord 0x20000068 0x3c9 cpu0
+    sysbus WriteDoubleWord 0x2000007C 0x10000 cpu0
+"""
+runMacro $reset

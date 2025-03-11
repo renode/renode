@@ -1,11 +1,12 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "renode_bus.h"
 #include "communication/socket_channel.h"
+#include "src/renode.h"
 static RenodeAgent* renodeAgent;
 
 #define IO_THREADS 1
@@ -14,32 +15,26 @@ static RenodeAgent* renodeAgent;
 // RenodeAgent
 //=================================================
 
-RenodeAgent::RenodeAgent(BaseTargetBus* bus)
-{
-    targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
-    targetInterfaces[0]->tickCounter = 0;
-    firstInterface = bus;
-    bus->setAgent(this);
-}
+RenodeAgent::RenodeAgent() { }
 
-RenodeAgent::RenodeAgent(BaseInitiatorBus* bus)
+void RenodeAgent::addBus(BaseBus* bus)
 {
-    initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
-    initatorInterfaces[0]->tickCounter = 0;
-    firstInterface = bus;
     bus->setAgent(this);
+    if(targetInterfaces.empty())
+    {
+        firstInterface = bus;
+    }
 }
-
 void RenodeAgent::addBus(BaseTargetBus* bus)
 {
+    addBus((BaseBus*)bus);
     targetInterfaces.push_back(std::unique_ptr<BaseTargetBus>(bus));
-    bus->setAgent(this);
 }
 
 void RenodeAgent::addBus(BaseInitiatorBus* bus)
 {
+    addBus((BaseBus*)bus);
     initatorInterfaces.push_back(std::unique_ptr<BaseInitiatorBus>(bus));
-    bus->setAgent(this);
 }
 
 void RenodeAgent::writeToBus(int width, uint64_t addr, uint64_t value)
@@ -138,6 +133,12 @@ void RenodeAgent::reset()
         b->reset();
 }
 
+void RenodeAgent::fatalError()
+{
+    communicationChannel->sendSender(Protocol(error, 0, 0));
+    handleDisconnect();
+}
+
 void RenodeAgent::handleCustomRequestType(Protocol* message)
 {
     log(LOG_LEVEL_WARNING, "Unhandled request type: %d", message->actionId);
@@ -179,16 +180,26 @@ void RenodeAgent::handleInterrupts(void)
     }
 }
 
-void RenodeAgent::simulate(int receiverPort, int senderPort, const char* address)
+void RenodeAgent::connect(int receiverPort, int senderPort, const char* address)
 {
     renodeAgent = this;
     SocketCommunicationChannel* channel = new SocketCommunicationChannel();
     communicationChannel = channel;
     channel->connect(receiverPort, senderPort, address);
+}
+
+void RenodeAgent::connectNative()
+{
+    renodeAgent = this;
+    communicationChannel = new NativeCommunicationChannel;
+}
+
+void RenodeAgent::simulate()
+{
     Protocol* result;
     reset();
 
-    while(channel->getIsConnected()) {
+    while(communicationChannel->isConnected()) {
         result = receive();
         handleRequest(result);
         delete result;
@@ -243,17 +254,20 @@ void RenodeAgent::handleRequest(Protocol* request)
             reset();
             break;
         case disconnect:
-        {
-            SocketCommunicationChannel* channel;
-            if((channel = dynamic_cast<SocketCommunicationChannel*>(communicationChannel)) != nullptr) {
-                communicationChannel->sendSender(Protocol(ok, 0, 0));
-                channel->disconnect();
-            }
+            handleDisconnect();
             break;
-        }
         default:
             handleCustomRequestType(request);
             break;
+    }
+}
+
+void RenodeAgent::handleDisconnect()
+{
+    SocketCommunicationChannel* channel;
+    if((channel = dynamic_cast<SocketCommunicationChannel*>(communicationChannel)) != nullptr) {
+        communicationChannel->sendSender(Protocol(ok, 0, 0));
+        channel->disconnect();
     }
 }
 
@@ -265,9 +279,9 @@ extern void handleMainMessage(void* ptr);
 extern void handleSenderMessage(void* ptr);
 extern void receive(void* ptr);
 
-EXTERNAL_AS(action_intptr, HandleMainMessage, handleMainMessage);
-EXTERNAL_AS(action_intptr, HandleSenderMessage, handleSenderMessage);
-EXTERNAL_AS(action_intptr, Receive, receive);
+EXTERNAL_AS(void, HandleMainMessage, handleMainMessage, voidptr);
+EXTERNAL_AS(void, HandleSenderMessage, handleSenderMessage, voidptr);
+EXTERNAL_AS(void, Receive, receive, voidptr);
 
 void NativeCommunicationChannel::sendMain(const Protocol message)
 {
@@ -285,6 +299,11 @@ void NativeCommunicationChannel::log(int logLevel, const char* data)
     handleSenderMessage(new Protocol(logMessage, 0, logLevel));
 }
 
+bool NativeCommunicationChannel::isConnected()
+{
+    return true;
+}
+
 Protocol* NativeCommunicationChannel::receive()
 {
     Protocol* message = new Protocol;
@@ -299,7 +318,6 @@ Protocol* NativeCommunicationChannel::receive()
 void initialize_native()
 {
     renodeAgent = Init();
-    renodeAgent->communicationChannel = new NativeCommunicationChannel();
 }
 
 void handle_request(Protocol* request)

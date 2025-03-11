@@ -56,31 +56,24 @@
     <Compile Include="PlatformDescription\PreLexerTests.cs" />
     <Compile Include="PlatformDescription\UsingTests.cs" />
     <Compile Include="PlatformDescription\VerificationTests.cs" />
+    <Compile Include="AccessCondition\ParserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Renode\Renode.csproj">
       <Project>{5A7EF2B0-889A-488A-B296-97AF33791772}</Project>
       <Name>Renode</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Emulator.csproj">
-      <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
-      <Name>Emulator</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Main\Tests\UnitTests\UnitTests.csproj">
       <Project>{E0E61E22-8E42-4ED8-8C1F-D683D7EC9FF6}</Project>
       <Name>UnitTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Extensions\Extensions.csproj">
-      <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
-      <Name>Extensions</Name>
+    <ProjectReference Include="..\..\..\src\Infrastructure\src\Infrastructure.csproj">
+      <Project>{D3F10ED0-2A3F-45D5-8524-0D562905778B}</Project>
+      <Name>Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\lib\AntShell\AntShell\AntShell.csproj">
       <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
       <Name>AntShell</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Infrastructure\src\Emulator\Peripherals\Peripherals.csproj">
-      <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
-      <Name>Peripherals</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

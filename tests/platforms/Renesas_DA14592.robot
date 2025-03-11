@@ -166,7 +166,7 @@ freertos_retarget Should work
 
     # Wait for the bootrom to finish
     # At the end, it remaps the eflash to 0x0 and restarts the machine
-    Wait For Log Entry              Succesfully remapped eflash to address 0x0. Restarting machine.
+    Wait For Log Entry              Successfully remapped eflash to address 0x0, restarting machine
     Wait For Log Entry              cpu_m33: PC set to 0x200, SP set to 0x20005EF8
 
     Wait For Prompt On Uart           \#

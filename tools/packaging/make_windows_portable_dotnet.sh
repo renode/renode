@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$TFM/$RID
+RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DIR=renode_${VERSION}-dotnet_portable
 OS_NAME=windows
@@ -45,7 +45,6 @@ cp \
     $RENODE_OUTPUT_DIR/hostpolicy.dll \
     $RENODE_OUTPUT_DIR/clrjit.dll \
     $RENODE_OUTPUT_DIR/System.IO.Compression.Native.dll \
-    $RENODE_OUTPUT_DIR/dbgshim.dll \
     $RENODE_OUTPUT_DIR/mscordaccore.dll \
     $RENODE_OUTPUT_DIR/mscordbi.dll \
     $RENODE_OUTPUT_DIR/Renode.runtimeconfig.json \

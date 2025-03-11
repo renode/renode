@@ -13,8 +13,6 @@ gpio2:
     27 -> gpio2@31
     28 -> plic@118
 
-pseFlash: @ none
-
 led0: Miscellaneous.LED @ gpio2 16
 
 led1: Miscellaneous.LED @ gpio2 17
@@ -24,9 +22,11 @@ led2: Miscellaneous.LED @ gpio2 18
 led3: Miscellaneous.LED @ gpio2 19
 
 button1: Miscellaneous.Button @ gpio2 30
+    invert: true
     -> gpio2@30
 
 button2: Miscellaneous.Button @ gpio2 31
+    invert: true
     -> gpio2@31
 
 button3: Miscellaneous.Button @ gpio2 28
@@ -56,7 +56,7 @@ syscontroller_qspi: SPI.MPFS_QSPI @ sysbus 0x37020100
     IRQ -> plic@110
 
 sys_ctrl_flash: SPI.Micron_MT25Q @ syscontroller_qspi
-   underlyingMemory: sys_ctrl_flash_memory
+    underlyingMemory: sys_ctrl_flash_memory
 
 sys_ctrl_flash_memory: Memory.MappedMemory
     size: 0x800000

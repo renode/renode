@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -44,6 +44,7 @@ void APB3::write(int width, uint64_t addr, uint64_t value)
     }
     *psel = 1;
     *pwrite = 1;
+    *pstrb = 0xFF;  //As the bus doesn't support the strobe signal - tie all pins high to make all lanes active.
     *paddr = addr;
     *pwdata = value;
     tick(true);
@@ -70,6 +71,7 @@ uint64_t APB3::read(int width, uint64_t addr)
     }
     *psel = 1;
     *pwrite = 0;
+    *pstrb = 0;
     *paddr = addr;
     tick(true);
 
@@ -93,8 +95,28 @@ uint64_t APB3::read(int width, uint64_t addr)
 
 void APB3::reset()
 {
+#ifdef RESET_ACTIVE_LOW
+    *prst = 0;
+    tick(true);
+    *prst = 1;
+    tick(true);
+#else
     *prst = 1;
     tick(true);
     *prst = 0;
     tick(true);
+#endif
+}
+
+bool APB3::areSignalsConnected()
+{
+    return isSignalConnected(pclk, "pclk")
+        && isSignalConnected(prst, "prst")
+        && isSignalConnected(paddr, "paddr")
+        && isSignalConnected(psel, "psel")
+        && isSignalConnected(penable, "penable")
+        && isSignalConnected(pwrite, "pwrite")
+        && isSignalConnected(pwdata, "pwdata")
+        && isSignalConnected(pready, "pready")
+        && isSignalConnected(prdata, "prdata");
 }

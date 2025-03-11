@@ -1,0 +1,94 @@
+mach create
+include @scripts/single-node/bus-isolation/SampleStateAwareReaderWithTransactionState.cs
+include @scripts/single-node/bus-isolation/SampleStateAwareReader.cs
+include @scripts/single-node/bus-isolation/SampleStateAwarePeripheral.cs
+machine LoadPlatformDescriptionFromString """
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    numberOfMPURegions: 8
+    nvic: nvic
+    enableTrustZone: true
+
+nvic: IRQControllers.NVIC @ sysbus 0xe000e000
+    -> cpu0@0
+
+flash0: Memory.MappedMemory @ sysbus 0x8000000
+    size: 0x80000
+"""
+using sysbus
+
+# Look at SampleStateAwarePeripheral for an example of implementing different peripheral behavior based on the
+# transaction initiator and/or its state, and SampleStateAwareReader for an example of performing a transaction
+# with specified initiator identity.
+
+# Of course, 2 peripherals can be registered at the same address as long as they require a different cpu
+# state. See the `priv2_` ones as an example.
+machine LoadPlatformDescriptionFromString """
+unpriv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10000; condition: "(cpuSecure || !privileged) && initiator == cpu0" }
+    size: 0x4
+    initable: false
+    script: "request.value = 0x1010"
+
+priv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10004; condition: "cpuSecure && privileged && initiator == cpu0" }
+    size: 0x4
+    initable: false
+    script: "request.value = 0x2020"
+
+both: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10008 }
+    size: 0x4
+    initable: false
+    script: "request.value = 0x3030"
+
+priv2_priv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x1000c; condition: "privileged" }
+    size: 0x4
+    initable: false
+    script: "request.value = 0x4444"
+
+priv2_unpriv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x1000c; condition: "!privileged" }
+    size: 0x4
+    initable: false
+    script: "request.value = 0x0404"
+
+priv_aware: CPU.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10010; condition: "initiator == cpu0 || initiator == reader || initiator == reader2" }
+    size: 0x100
+
+priv_aware2: CPU.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x20010; condition: "cpuSecure && initiator == reader" }
+    size: 0x100
+
+reader: CPU.SampleStateAwareReaderWithTransactionState @ sysbus
+reader2: CPU.SampleStateAwareReader @ sysbus
+reader3: CPU.SampleStateAwareReader @ sysbus
+"""
+
+
+cpu0 AssembleBlock 0x8000000 """
+// First read in privileged mode
+ldr r0, =0x10000
+ldr r3, [r0]       // expect 0x1010 in secure, 0 in nonsecure
+ldr r4, [r0, #4]   // expect 0x2020 in secure, 0 in nonsecure
+ldr r5, [r0, #8]   // expect 0x3030
+ldr r6, [r0, #12]  // expect 0x4444
+ldr r7, [r0, #16]  // expect 0x63707507 in secure, 0x63707501 in nonsecure
+ldr r8, [r0, #20]  // expect 0x63707507 in secure, 0x63707501 in nonsecure
+
+// Switch to unprivileged mode
+mrs r2, CONTROL
+orr r2, r2, #1
+msr CONTROL, r2
+isb
+
+// Reread in unprivileged mode
+ldr r9, [r0]       // expect 0x1010 in both S and NS
+ldr r10, [r0, #4]  // expect 0 in both S and NS
+ldr r11, [r0, #8]  // expect 0x3030
+ldr r12, [r0, #12] // expect 0x0404
+ldr r13, [r0, #16] // expect 0x63707506 in secure, 0x63707500 in nonsecure
+ldr r14, [r0, #20] // expect 0x63707506 in secure, 0x63707500 in nonsecure
+
+b .
+"""
+
+cpu0 IDAUEnabled true
+cpu0 TryAddImplementationDefinedExemptionRegion 0x8000000 0x80000ff
+cpu0 TryAddImplementationDefinedExemptionRegion 0x10000 0x100ff
+cpu0 PC 0x8000000

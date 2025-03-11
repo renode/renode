@@ -6,9 +6,11 @@ $name?="APB3UART"
 using sysbus
 mach create $name
 machine LoadPlatformDescription @platforms/cpus/verilated/murax_vexriscv_verilated_uart.repl
-$uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-1116123840.so-s_2049920-1bca4e9cf7f3465907cea32e2be7a176b78d97f3
-$uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-1116123840.dll-s_14829076-0f58c94cf875cf6ebe442dbe24426c9308eef3e7
-$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-1116123840.dylib-s_214864-267618c5da753aa7c1629db0a518aea39fdf6ad0
+
+# Binaries from https://github.com/antmicro/renode-verilator-integration, rev. f9b4139
+$uartLinux?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Linux-x86_64-12746432362.so-s_2075112-cdd84640aaef40f017ea1739f3a81f07bd739908
+$uartWindows?=@https://dl.antmicro.com/projects/renode/libVapb3uart-Windows-x86_64-12746432362.dll-s_3239943-9bb6d65ee4f7a2945d3dfb3d503f90f399ad0cf8
+$uartMacOS?=@https://dl.antmicro.com/projects/renode/libVapb3uart-macOS-x86_64-12746432362.dylib-s_220440-f0c9f7e8fd31d14f9e0eda3437cdf419494abee8
 
 showAnalyzer uart
 

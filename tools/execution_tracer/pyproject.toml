@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=58.1.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "renode-execution-tracer-reader"
+description = "Inspect binary Renode execution traces and generate code coverage reports"
+authors= [
+    {name = "Antmicro"}
+]
+version = "1.0.1"
+requires-python = ">=3.9"
+dependencies = [
+    "pyelftools==0.30",
+]
+
+[project.scripts]
+renode-retracer = "execution_tracer.execution_tracer_reader:main"

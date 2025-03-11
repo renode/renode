@@ -102,7 +102,7 @@ Should Set Flags
     Requires                  Ready Machine
     
     # Run until the peripheral is set to `continuous sampling` but the configuration is not yet completed and no samples are read 
-    Execute Command           emulation RunFor '0.007'
+    Execute Command           emulation RunFor '0.006'
     ${OVR_DATA}=              Execute Command  ${MC3635} RegisterRead ${OVR_DATA_REG}
     ${NEW_DATA}=              Execute Command  ${MC3635} RegisterRead ${NEW_DATA_REG}
     
@@ -121,4 +121,3 @@ Should Set Flags
     Execute Command           emulation RunFor '0.05'
     ${OVR_DATA}=              Execute Command  ${MC3635} RegisterRead ${OVR_DATA_REG}
     Assert Flag               ${OVR_DATA}  ${OVR_DATA_POSITION}  0
-

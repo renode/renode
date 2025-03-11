@@ -1,0 +1,11 @@
+:name: Kendryte K210 Coverage Sample
+:description: This script generates execution traces of a binary running on the emulated Kendryte K210 SoC
+
+$bin=@https://dl.antmicro.com/projects/renode/kendryte_k210--coverage-sample-riscv64.elf-s_21808-bc3086a0de3ac8880c19c1e67190143080413cd3
+
+include @scripts/single-node/kendryte_k210.resc
+
+cpu2 IsHalted true
+cpu1 SP 0x1000
+
+cpu1 CreateExecutionTracing "trace" $CWD/trace.bin.gz PC isBinary=True compress=True

@@ -2,6 +2,7 @@ robotframework==6.1
 robotframework-retryfailed==0.2.0
 psutil==5.9.3
 pyyaml==6.0.*
+telnetlib3==2.0.*
 
 # Include dependencies of tools as it's used in robot tests
 -r ../tools/csv2resd/requirements.txt

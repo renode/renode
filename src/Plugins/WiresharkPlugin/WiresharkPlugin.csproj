@@ -45,17 +45,13 @@
     <Compile Include="LinkLayer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Main\Emulator.csproj">
-      <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
-      <Name>Emulator</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\lib\AntShell\AntShell\AntShell.csproj">
       <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
       <Name>AntShell</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Infrastructure\src\Emulator\Extensions\Extensions.csproj">
-      <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
-      <Name>Extensions</Name>
+    <ProjectReference Include="..\..\Infrastructure\src\Infrastructure.csproj">
+      <Project>{D3F10ED0-2A3F-45D5-8524-0D562905778B}</Project>
+      <Name>Infrastructure</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

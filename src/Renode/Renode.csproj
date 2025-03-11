@@ -120,6 +120,10 @@
     <Compile Include="Network\RangeMediumFunction.cs" />
     <Compile Include="Backends\Terminals\UartPtyTerminal.cs" />
     <Compile Include="Plugins\ZephyrMode.cs" />
+    <Compile Include="Plugins\UbootMode.cs" />
+    <Compile Include="Plugins\TimeSkip.cs" />
+    <Compile Include="Plugins\OsSymbolHook.cs" />
+    <Compile Include="Plugins\OsTimeSkipHook.cs" />
     <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
     <Compile Include="PlatformDescription\UserInterface\PlatformDescriptionMachineExtensions.cs" />
     <Compile Include="Connectors\GPIOConnector.cs" />
@@ -132,6 +136,7 @@
     <Compile Include="PlatformDescription\Syntax\EmptyValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqDestinations.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqAttribute.cs" />
+    <Compile Include="PlatformDescription\AccessConditionParser.cs" />
     <Compile Include="Network\ExternalControl\ExternalControlServer.cs" />
     <Compile Include="Network\NetworkServer\NetworkServer.cs" />
     <Compile Include="Network\NetworkServer\IServerModule.cs" />
@@ -163,14 +168,6 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure\src\UI\UI.csproj">
-      <Project>{AEFE490F-85AC-42AF-9CAE-2B7FC7167E0E}</Project>
-      <Name>UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Main\Emulator.csproj">
-      <Project>{2901AECB-A54F-4FD8-9AC1-033D86DC7257}</Project>
-      <Name>Emulator</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\lib\AntShell\AntShell\AntShell.csproj">
       <Project>{0A473566-F4C6-455E-A56E-B3963FBABDFF}</Project>
       <Name>AntShell</Name>
@@ -178,10 +175,6 @@
     <ProjectReference Include="..\..\lib\Migrant\Migrant\Migrant.csproj">
       <Project>{5F87C357-09FB-4F53-BE37-41FE5BD88957}</Project>
       <Name>Migrant</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Extensions\Extensions.csproj">
-      <Project>{4C636FAF-4650-4088-8EA8-2FCCC225E9CF}</Project>
-      <Name>Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\lib\options-parser\OptionsParser.csproj">
       <Project>{C56AABEF-C01E-493F-A65F-09A572FE9B2E}</Project>
@@ -203,42 +196,6 @@
       <Project>{25FAECC1-55F0-4608-88BD-4207A7F993B0}</Project>
       <Name>TermSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm.csproj">
-      <Project>{13222124-707C-5EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-arm</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm-m.csproj">
-      <Project>{43222114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-arm-m</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-i386.csproj">
-      <Project>{53222114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-i386</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-x86_64.csproj">
-      <Project>{A3222114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-x86_64</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc.csproj">
-      <Project>{23222114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-ppc</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-ppc64.csproj">
-      <Project>{44422114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-ppc64</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-sparc.csproj">
-      <Project>{13222114-707C-4EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-sparc</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv.csproj">
-      <Project>{63222124-707C-5EFD-8289-2728351FB7E9}</Project>
-      <Name>cores-riscv</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Peripherals\Peripherals.csproj">
-      <Project>{66400796-0C5B-4386-A859-50A2AC3F3DB7}</Project>
-      <Name>Peripherals</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin.csproj">
       <Project>{66A5675A-13AE-4454-88A6-29EB2D6F5988}</Project>
       <Name>SampleCommandPlugin</Name>
@@ -259,10 +216,6 @@
       <Project>{45A27C6A-1831-4E0D-84C2-FB3893E7FBE5}</Project>
       <Name>CoSimulationPlugin</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-riscv64.csproj">
-      <Project>{BB222124-707C-5EFD-8289-2728351FB7AA}</Project>
-      <Name>cores-riscv64</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\lib\InpliTftpServer\libtftp\libtftp_alt.csproj">
       <Project>{1B320B7A-BAB5-4370-9ABE-3BDAD4392BDD}</Project>
       <Name>libtftp</Name>
@@ -271,13 +224,13 @@
       <Project>{55ABBA4C-AAF9-4726-A592-0C92436CEC92}</Project>
       <Name>PacketDotNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-xtensa.csproj">
-      <Project>{28F22125-F07D-5EF2-8289-4998351FBAA4}</Project>
-      <Name>cores-xtensa</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure\src\Emulator\Cores\cores-arm64.csproj">
+    <ProjectReference Include="..\Infrastructure\src\Infrastructure.csproj">
       <Project>{D3F10ED0-2A3F-45D5-8524-0D562905778B}</Project>
-      <Name>cores-arm64</Name>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lib\ELFSharp\ELFSharp\ELFSharp.csproj">
+      <Project>{CF944E09-7C14-433C-A185-161848E989B3}</Project>
+      <Name>ELFSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

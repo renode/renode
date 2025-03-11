@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -66,7 +66,7 @@ void RenodeAgent::log(int level, const char* fmt, ...)
 //=================================================
 
 extern void handleSenderMessage(void* ptr);
-EXTERNAL_AS(action_intptr, HandleSenderMessage, handleSenderMessage);
+EXTERNAL_AS(void, HandleSenderMessage, handleSenderMessage, voidptr);
 
 void NativeCommunicationChannel::sendSender(const Protocol message)
 {

@@ -270,6 +270,7 @@ class RobotTestSuite(object):
     ])
     instances_count = 0
     robot_frontend_process = None
+    renode_pid = -1  # It's not always robot_frontend_process.pid, e.g., with `--run-gdb` option.
     hotspot_action = ['None', 'Pause', 'Serialize']
     # Used to share the port between all suites when running sequentially
     remote_server_port = -1
@@ -287,14 +288,11 @@ class RobotTestSuite(object):
         self.path = path
         self._dependencies_met = set()
         self.remote_server_directory = None
-        self.renode_pid = -1
-        self.remote_server_port = -1
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
         self.suite_log_files = None
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
-        self.tests_with_unexpected_timeouts = []
 
 
     def check(self, options, number_of_runs):
@@ -340,25 +338,15 @@ class RobotTestSuite(object):
 
 
     def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0, remote_server_port=None):
+        # Let's reset PID and check it's set before returning to prevent keeping old PID.
+        self.renode_pid = -1
+
         if options.runner == 'dotnet':
             remote_server_name = "Renode.dll"
-            if platform == "win32":
-                tfm = "net6.0-windows10.0.17763.0"
-            else:
-                tfm = "net6.0"
-            configuration = os.path.join(options.configuration, tfm)
         else:
             remote_server_name = options.remote_server_name
-            configuration = options.configuration
 
-        if options.remote_server_full_directory is not None:
-            if not os.path.isabs(options.remote_server_full_directory):
-                options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
-
-            self.remote_server_directory = options.remote_server_full_directory
-        else:
-            self.remote_server_directory = os.path.join(options.remote_server_directory_prefix, configuration)
-
+        self.remote_server_directory = options.remote_server_full_directory
         remote_server_binary = os.path.join(self.remote_server_directory, remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
@@ -462,7 +450,8 @@ class RobotTestSuite(object):
                 p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
                 self.renode_pid = p.pid
 
-        countdown = 360
+        timeout_s = 180
+        countdown = float(timeout_s)
         temp_dir = tempfile.gettempdir()
         renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
         while countdown > 0:
@@ -475,13 +464,17 @@ class RobotTestSuite(object):
                 break
             except:
                 sleep(0.5)
-                countdown -= 1
-
-        if countdown == 0:
-            print("Couldn't access port file for Renode instance pid {}".format(self.renode_pid))
+                countdown -= 0.5
+        else:
             self._close_remote_server(p, options)
-            return None
+            raise TimeoutError(f"Couldn't access port file for Renode instance pid {self.renode_pid}; timed out after {timeout_s}s")
 
+        # If a certain port was expected, let's make sure Renode uses it.
+        if remote_server_port and remote_server_port != self.remote_server_port:
+            self._close_remote_server(p, options)
+            raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
+
+        assert self.renode_pid != -1, "Renode PID has to be set before returning"
         return p
 
     def __move_perf_data(self, options):
@@ -499,6 +492,10 @@ class RobotTestSuite(object):
         if proc:
             if not silent:
                 print('Closing Renode pid {}'.format(proc.pid))
+
+            # Let's prevent using these after the server is closed.
+            self.robot_frontend_process = None
+            self.renode_pid = -1
 
             try:
                 process = psutil.Process(proc.pid)
@@ -530,6 +527,12 @@ class RobotTestSuite(object):
             print('Ignoring helper file: {}'.format(self.path))
             return True
 
+        # The list is cleared only on the first run attempt in each iteration so
+        # that tests that time out aren't retried in the given iteration but are
+        # started as usual in subsequent iterations.
+        if suite_retry_index == 0:
+            self.tests_with_unexpected_timeouts = []
+
         # in non-parallel runs there is only one Renode process for all runs,
         # unless --keep-renode-output is enabled, in which case a new process
         # is spawned for every suite to ensure logs are separate files.
@@ -540,7 +543,6 @@ class RobotTestSuite(object):
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
             RobotTestSuite.remote_server_port = self.remote_server_port
 
-        self.renode_pid = RobotTestSuite.robot_frontend_process.pid
         print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}')
 
         result = None

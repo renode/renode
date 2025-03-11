@@ -29,7 +29,7 @@ do
         QUIET=true
         ;;
     --net)
-        NET=true
+        echo "'--net' flag is required only for building and is not used by launcher"
         ;;
     --trace)
         TRACE=true
@@ -60,6 +60,16 @@ do
     shift
 done
 
+BUILD_TYPE_FILE="$OUTPUT_PATH/$TARGET/build_type"
+
+if [[ -f "$BUILD_TYPE_FILE" ]]
+then
+    if [[ "$(cat "$BUILD_TYPE_FILE")" == "dotnet" ]]
+    then
+        NET=true
+    fi
+fi
+
 if ! $NET && $TRACE
 then
     echo "Tracing is available only on the dotnet target"
@@ -85,13 +95,6 @@ fi
 if $NET
 then
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
-    if $ON_WINDOWS
-    then
-        TFM="net6.0-windows10.0.17763.0"
-    else
-        TFM="net6.0"
-    fi
-
     if ! $TRACE
     then
         TRACE_COMMAND=""
@@ -99,7 +102,7 @@ then
         TRACE_COMMAND="dotnet-trace collect --format ${TRACE_FORMAT} --"
     fi
 
-    ${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/${TFM}/Renode.dll" "${PARAMS[@]:-}"
+    ${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/Renode.dll" "${PARAMS[@]:-}"
 else
     if $ON_WINDOWS
     then

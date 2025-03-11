@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -7,9 +7,17 @@
 #include "renode_bridge.h"
 
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#ifdef __linux__
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 #include "socket-cpp/Socket/TCPClient.h"
 
@@ -38,22 +46,26 @@ enum renode_action : uint8_t {
   // Socket: forward, backward
   // Request:
   //     data_length: number of bytes to read [1, 8]
-  //     address: address to read from, in target's address space payload: value
-  //     to write connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
+  //     address: address to read from, in target's address space 
+  //     payload: ignored
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
   //     for direct connection
   // Response:
   //     address: duration of transaction in us
   //     payload: read value
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
   //     Otherwise identical to the request message.
   WRITE = 2,
   // Socket: forward, backward
   // Request:
   //     data_length: number of bytes to write [1, 8].
   //     address: address to write to, in target's address space
+  //     payload: value to write
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
-  //     direct connection payload: value to write
+  //       direct connection
   // Response:
   //     address: duration of transaction in us
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
   //     Otherwise identical to the request message.
   TIMESYNC = 3,
   // Socket: forward only
@@ -82,6 +94,46 @@ enum renode_action : uint8_t {
   //     payload: ignored
   // Response:
   //     Identical to the request message.
+  DMIREQ = 6,
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     address: address in target's address space
+  //     payload: ignored
+  //     to write connection_index: 0 for SystemBus
+  // Response is a dmi_message.
+  TBSINVALID = 7,
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: start_address
+  //     payload: end_address
+  // Response:
+  //     Identical to the request message.
+  READ_REGISTER = 8,
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to read [1, 8]
+  //     address: register to read from, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
+  //       for direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     payload: read value
+  //     Otherwise identical to the request message.
+  WRITE_REGISTER = 9,
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to write [1, 8].
+  //     address: register to write to, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
+  //       direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     Otherwise identical to the request message.
 };
 
 #pragma pack(push, 1)
@@ -91,6 +143,15 @@ struct renode_message {
   uint8_t connection_index;
   uint64_t address;
   uint64_t payload;
+};
+
+struct dmi_message {
+  renode_action action;
+  uint8_t allowed;
+  uint64_t start_address;
+  uint64_t end_address;
+  uint64_t mmf_offset;
+  char mmf_path[256];
 };
 #pragma pack(pop)
 
@@ -149,9 +210,11 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
   tlm::tlm_command command = tlm::TLM_IGNORE_COMMAND;
   switch (message->action) {
   case WRITE:
+  case WRITE_REGISTER:
     command = tlm::TLM_WRITE_COMMAND;
     break;
   case READ:
+  case READ_REGISTER:
     command = tlm::TLM_READ_COMMAND;
     break;
   default:
@@ -242,7 +305,10 @@ static void connect_with_retry(CTCPClient* socket, const char* address, const ch
 SC_HAS_PROCESS(renode_bridge);
 renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
                              const char *port)
-    : sc_module(name), initiator_socket("initiator_socket") {
+    : sc_module(name),
+      initiator_socket("initiator_socket"),
+      register_initiator_socket("register_initiator_socket"),
+      fw_connection_initialized(false) {
   SC_THREAD(forward_loop);
   SC_THREAD(on_port_gpio);
   for (int i = 0; i < NUM_GPIO; ++i) {
@@ -250,6 +316,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   }
 
   bus_target_fw_handler.initialize(this, 0);
+  cpu_target_fw_handler.initialize(this, 0);
 
   target_socket.bind(bus_target_fw_handler.socket);
   for (int i = 0; i < NUM_DIRECT_CONNECTIONS; ++i) {
@@ -260,7 +327,9 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   }
 
   bus_initiator_bw_handler.initialize(this);
+  cpu_initiator_bw_handler.initialize(this);
   initiator_socket.bind(bus_initiator_bw_handler);
+  register_initiator_socket.bind(cpu_initiator_bw_handler);
 
   payload.reset(new tlm::tlm_generic_payload());
 
@@ -289,6 +358,7 @@ void renode_bridge::forward_loop() {
     terminate_simulation(1);
     return;
   }
+  fw_connection_initialized = true;
 
   while (true) {
     memset(data, 0, sizeof(data));
@@ -325,28 +395,16 @@ void renode_bridge::forward_loop() {
 
     switch (message.action) {
     case renode_action::WRITE: {
-      initialize_payload(payload.get(), &message, data);
-
-      *((uint64_t *)data) = message.payload;
-
-      uint64_t delay = perform_transaction(*initiator_socket, payload.get());
-
-      // NOTE: address field is re-used here to pass timing information.
-      message.address = delay;
-      forward_connection->Send((char *)&message, sizeof(renode_message));
-
-      wait(sc_core::SC_ZERO_TIME);
+      handle_write(*initiator_socket, message, data);
     } break;
     case renode_action::READ: {
-      initialize_payload(payload.get(), &message, data);
-
-      uint64_t delay = perform_transaction(*initiator_socket, payload.get());
-
-      // NOTE: address field is re-used here to pass timing information.
-      message.address = delay;
-      message.payload = *((uint64_t *)data);
-      forward_connection->Send((char *)&message, sizeof(renode_message));
-      wait(sc_core::SC_ZERO_TIME);
+      handle_read(*initiator_socket, message, data);
+    } break;
+     case renode_action::WRITE_REGISTER: {
+      handle_write(register_initiator_socket, message, data);
+    } break;
+     case renode_action::READ_REGISTER: {
+      handle_read(register_initiator_socket, message, data);
     } break;
     case renode_action::TIMESYNC: {
       // Renode drives the simulation time. This module never leaves the delta
@@ -391,6 +449,43 @@ void renode_bridge::forward_loop() {
   }
 }
 
+void renode_bridge::invalidate_translation_blocks(uint64_t start_address, uint64_t end_address) {
+    renode_message message = {};
+    message.action = renode_action::TBSINVALID;
+    message.address = start_address;
+    message.payload = end_address;
+
+    backward_connection->Send((char *)&message, sizeof(renode_message));
+    // Response is ignored.
+    backward_connection->Receive((char *)&message, sizeof(renode_message));
+}
+
+void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
+  initialize_payload(payload.get(), &message, data);
+
+  uint64_t delay = perform_transaction(socket, payload.get());
+
+  // NOTE: address field is re-used here to pass timing information.
+  message.address = delay;
+  message.payload = *((uint64_t *)data);
+  forward_connection->Send((char *)&message, sizeof(renode_message));
+  wait(sc_core::SC_ZERO_TIME);
+}
+
+void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
+  initialize_payload(payload.get(), &message, data);
+
+  *((uint64_t *)data) = message.payload;
+
+  uint64_t delay = perform_transaction(socket, payload.get());
+
+  // NOTE: address field is re-used here to pass timing information.
+  message.address = delay;
+  forward_connection->Send((char *)&message, sizeof(renode_message));
+
+  wait(sc_core::SC_ZERO_TIME);
+}
+
 void renode_bridge::on_port_gpio() {
   while (true) {
     // Wait for a change in any of the GPIO ports.
@@ -421,23 +516,38 @@ void renode_bridge::on_port_gpio() {
 void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
                                              uint8_t connection_idx,
                                              sc_core::sc_time &delay) {
+  unsigned int bytes_done = 0;
+  unsigned int bytes_remaining = payload.get_data_length();
   renode_message message = {};
-  message.address = payload.get_address();
-  message.data_length = payload.get_data_length();
-  message.connection_index = connection_idx;
-
   if (payload.is_read()) {
     message.action = renode_action::READ;
   } else if (payload.is_write()) {
     message.action = renode_action::WRITE;
-    memcpy(&message.payload, payload.get_data_ptr(), message.data_length);
+  } else {
+    return;
   }
 
-  backward_connection->Send((char *)&message, sizeof(renode_message));
-  backward_connection->Receive((char *)&message, sizeof(renode_message));
+  while (bytes_remaining) {
+    message.address = payload.get_address() + bytes_done;
+    message.connection_index = connection_idx;
+    message.data_length = bytes_remaining > 8 ? 8 : bytes_remaining;
+    bytes_remaining -= message.data_length;
+    if (payload.is_write()) {
+      memcpy(&message.payload, payload.get_data_ptr() + bytes_done, message.data_length);
+    }
 
-  if (payload.is_read()) {
-    memcpy(payload.get_data_ptr(), &message.payload, message.data_length);
+    backward_connection->Send((char *)&message, sizeof(renode_message));
+    backward_connection->Receive((char *)&message, sizeof(renode_message));
+
+    if (payload.is_read()) {
+      memcpy(payload.get_data_ptr() + bytes_done, &message.payload, message.data_length);
+    }
+
+    bytes_done += 8;
+  }
+
+  if (connection_idx == 0 && message.connection_index == 1) {
+    payload.set_dmi_allowed(true);
   }
 
   payload.set_response_status(tlm::TLM_OK_RESPONSE);
@@ -476,23 +586,87 @@ renode_bridge::target_fw_handler::nb_transport_bw(
 }
 
 void renode_bridge::target_fw_handler::invalidate_direct_mem_ptr(
-    sc_dt::uint64, sc_dt::uint64) {
+  sc_dt::uint64, sc_dt::uint64) {
   fprintf(stderr, "[ERROR] invalidate_direct_mem_ptr not implemented for "
-                  "target_fw_handler.\n");
+                    "target_fw_handler.\n");
 }
 
 bool renode_bridge::target_fw_handler::get_direct_mem_ptr(
     tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data) {
-  fprintf(stderr, "[ERROR] get_direct_mem_ptr not implemented for "
-                  "target_fw_handler.\n");
+  if (connection_idx != 0) {
+    fprintf(stderr, "[ERROR] get_direct_mem_ptr not implemented for "
+                    "target_fw_handler.\n");
+    return false;
+  } else {
+    return bridge->service_backward_request_dmi(trans, dmi_data);
+  }
+}
+
+bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &payload, tlm::tlm_dmi &dmi_data) {
+
+#ifdef __linux__
+  renode_message message = {};
+  message.address = payload.get_address();
+  message.data_length = payload.get_data_length();
+  message.connection_index = 0;
+  message.action = renode_action::DMIREQ;
+
+  dmi_message response;
+
+  backward_connection->Send((char *)&message, sizeof(renode_message));
+
+  backward_connection->Receive((char *)&response, sizeof(dmi_message));
+
+  bool dmi_allowed = response.allowed;
+
+  if (dmi_allowed && response.mmf_offset % sysconf(_SC_PAGESIZE)) {
+      fprintf(stderr, "[ERROR] invalid offset for MMF %s\n", response.mmf_path);
+      dmi_allowed = false;
+  }
+
+  if (dmi_allowed) {
+    dmi_data.allow_read_write();
+    dmi_data.set_start_address(response.start_address);
+    dmi_data.set_end_address(response.end_address);
+    int mmf_fd = open(response.mmf_path, O_RDWR);
+    if (mmf_fd != -1) {
+      unsigned char* mmf_base = static_cast<unsigned char*>(mmap(
+        nullptr,
+        static_cast<size_t>(dmi_data.get_end_address() - dmi_data.get_start_address() + 1),
+        PROT_WRITE|PROT_READ,
+        MAP_SHARED,
+        mmf_fd,
+        response.mmf_offset
+      ));
+      if (mmf_base != MAP_FAILED) {
+        dmi_data.set_dmi_ptr(mmf_base);
+        return true;
+      }
+    }
+  }
+#else
+  // at present DMI support has been implemented for linux only.
+  // print a one-time warning for DMI request on another operating system
+  static bool dmi_disabled_warned = false;
+  if (!dmi_disabled_warned) {
+    fprintf(stderr, "[WARNING] DMI support is unimplemented on this operating system\n");
+  }
+  dmi_disabled_warned = true;
+#endif
+
   return false;
 }
 
 unsigned int renode_bridge::target_fw_handler::transport_dbg(
     tlm::tlm_generic_payload &trans) {
-  fprintf(stderr, "[ERROR] transport_dbg not implemented for "
-                  "target_fw_handler.\n");
-  return 0;
+
+  // The SystemC simulation can begin before the connection with Renode is
+  // initialized. Reject any transactions during this interval.
+  if (!bridge->is_initialized()) return 0;
+
+  sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
+  bridge->service_backward_request(trans, connection_idx, delay);
+  return trans.is_response_ok() ? trans.get_data_length() : 0;
 }
 
 // ================================================================================

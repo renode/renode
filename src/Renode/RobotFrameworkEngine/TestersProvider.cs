@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -30,6 +30,31 @@ namespace Antmicro.Renode.RobotFramework
             };
         }
 
+        public static IMachine TryGetDefaultMachineOrThrowKeywordException(string peripheralName = null)
+        {
+            if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())
+            {
+                string response = "There is no machine in the emulation.";
+                if(String.IsNullOrEmpty(peripheralName))
+                {
+                    throw new KeywordException(response);
+                }
+                else
+                {
+                    throw new KeywordException(response + " Could not create tester for peripheral: {0}", peripheralName);
+                }
+            }
+            var machineObject = EmulationManager.Instance.CurrentEmulation.MachinesCount == 1
+                ? EmulationManager.Instance.CurrentEmulation.Machines.First()
+                : null;
+            if(machineObject == null)
+            {
+                throw new KeywordException("No machine name provided. Don't know which one to choose. Available machines: [{0}]",
+                    string.Join(", ", EmulationManager.Instance.CurrentEmulation.Names));
+            }
+            return machineObject;
+        }
+
         public int CreateNewTester(Func<TPeripheral, TTester> creator, string peripheralOrExternalName, string machine = null)
         {
             lock(testers)
@@ -41,18 +66,7 @@ namespace Antmicro.Renode.RobotFramework
                 {
                     if(machine == null)
                     {
-                        if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())
-                        {
-                            throw new KeywordException("There is no machine in the emulation. Could not create tester for peripheral: {0}", peripheralOrExternalName);
-                        }
-                        machineObject = EmulationManager.Instance.CurrentEmulation.Machines.Count() == 1
-                            ? EmulationManager.Instance.CurrentEmulation.Machines.First()
-                            : null;
-                        if(machineObject == null)
-                        {
-                            throw new KeywordException("No machine name provided. Don't know which one to choose. Available machines: [{0}]",
-                                string.Join(", ", EmulationManager.Instance.CurrentEmulation.Machines.Select(x => EmulationManager.Instance.CurrentEmulation[x])));
-                        }
+                        machineObject = TryGetDefaultMachineOrThrowKeywordException(peripheralOrExternalName);
                     }
                     else if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(machine, out machineObject))
                     {

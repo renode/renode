@@ -1,0 +1,127 @@
+# Allow including user specific analyzers from global .editorconfig
+root = false
+
+[*.cs]
+# By default disable all analyzers
+dotnet_analyzer_diagnostic.severity = none
+
+# Whitespaces
+trim_trailing_whitespace = true
+csharp_space_after_keywords_in_control_flow_statements = false
+# Allow arbitrary number of spaces in decalrations
+csharp_space_around_declaration_statements = ignore
+
+# Indentation options
+indent_size = 4
+indent_style = space
+csharp_indent_case_contents = true
+csharp_indent_case_contents_when_block = false
+csharp_indent_switch_labels = false
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+# Prefer "var" everywhere
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Require readonly modifier
+dotnet_diagnostic.IDE0044.severity = warning
+
+# Remove unused using directives
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Sort using directives alphabetically
+dotnet_sort_system_directives_first = true
+
+# Separate using directives groups with new lines
+dotnet_separate_import_directive_groups = true
+
+# Modifiers order
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:warning
+
+# Class members must have explicit accessibility modifiers
+dotnet_style_require_accessibility_modifiers = always:warning
+
+# camel_case_style - Define the camelCase style
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+# pascal_case_style - Define the PascalCase style
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+# prefix_interface_with_i_style - Define interfaces style
+dotnet_naming_style.prefix_interface_with_i_style.capitalization = pascal_case
+dotnet_naming_style.prefix_interface_with_i_style.required_prefix = I
+
+# Interfaces use PascalCase and are prefixed with uppercase 'I'
+dotnet_naming_symbols.interface_group.applicable_kinds = interface
+dotnet_naming_rule.interface_rule.symbols              = interface_group
+dotnet_naming_rule.interface_rule.style                = prefix_interface_with_i_style
+dotnet_naming_rule.interface_rule.severity             = warning
+
+# All of the following must be PascalCase:
+# - Namespaces
+# - Classes and Enumerations
+# - Delegates
+# - Constructors, Properties, Events, Methods
+dotnet_naming_symbols.element_group.applicable_kinds = namespace, class, enum, struct, delegate, event, method, property
+dotnet_naming_rule.element_rule.symbols              = element_group
+dotnet_naming_rule.element_rule.style                = pascal_case_style
+dotnet_naming_rule.element_rule.severity             = warning
+
+# All constant fields must be PascalCase
+dotnet_naming_symbols.constant_fields_group.applicable_accessibilities = public, internal, protected_internal, protected, private_protected, private
+dotnet_naming_symbols.constant_fields_group.required_modifiers         = const
+dotnet_naming_symbols.constant_fields_group.applicable_kinds           = field
+dotnet_naming_rule.constant_fields_must_be_pascal_case_rule.symbols    = constant_fields_group
+dotnet_naming_rule.constant_fields_must_be_pascal_case_rule.style      = pascal_case_style
+dotnet_naming_rule.constant_fields_must_be_pascal_case_rule.severity   = warning
+
+# All non-public fields must be camelCase
+dotnet_naming_symbols.fields_group.applicable_accessibilities = public, internal, protected_internal, protected, private_protected, private
+dotnet_naming_symbols.fields_group.applicable_kinds           = field
+dotnet_naming_rule.fields_must_be_camel_case_rule.symbols     = fields_group
+dotnet_naming_rule.fields_must_be_camel_case_rule.style       = camel_case_style
+dotnet_naming_rule.fields_must_be_camel_case_rule.severity    = warning
+
+# All public fields must be PascalCase
+dotnet_naming_symbols.public_fields_group.applicable_accessibilities = public
+dotnet_naming_symbols.public_fields_group.applicable_kinds           = field
+dotnet_naming_rule.fields_must_be_camel_case_rule.symbols            = public_fields_group
+dotnet_naming_rule.fields_must_be_camel_case_rule.style              = pascal_case_style
+dotnet_naming_rule.fields_must_be_camel_case_rule.severity           = warning
+
+# Local variables must be camelCase
+dotnet_naming_symbols.local_variables_group.applicable_accessibilities  = local
+dotnet_naming_symbols.local_variables_group.applicable_kinds            = local
+dotnet_naming_rule.local_variables_must_be_camel_case_rule.symbols      = local_variables_group
+dotnet_naming_rule.local_variables_must_be_camel_case_rule.style        = camel_case_style
+dotnet_naming_rule.local_variables_must_be_camel_case_rule.severity     = warning
+
+# Function parameters use camelCase
+dotnet_naming_symbols.parameters_group.applicable_kinds = parameter
+dotnet_naming_rule.parameters_rule.symbols              = parameters_group
+dotnet_naming_rule.parameters_rule.style                = camel_case_style
+dotnet_naming_rule.parameters_rule.severity             = warning
+
+# Renode specific rules
+dotnet_diagnostic.renode_copyright.severity             = warning
+dotnet_diagnostic.renode_class_members_order.severity   = warning
+
+# Setup StyleCop analyzers
+# List of all analyzers: https://dotnetanalyzers.github.io/StyleCopAnalyzers/
+# Opening braces should not be followed by blank line
+dotnet_diagnostic.SA1505.severity = warning
+# Code should not contain multiple blank lines in a row
+dotnet_diagnostic.SA1507.severity = warning
+# Closing braces should not be preceded by blank line
+dotnet_diagnostic.SA1508.severity = warning
+# Opening braces should not be preceded by blank line
+dotnet_diagnostic.SA1509.severity = warning

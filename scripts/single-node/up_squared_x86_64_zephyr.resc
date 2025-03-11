@@ -12,6 +12,8 @@ showAnalyzer sysbus.uart
 
 macro reset
 """
+    sysbus GenerateACPITable 0xe0000
+
     # set the D flag for Executable code segment
     cpu0 SetDescriptor CS 0x0 0x0 0x0 0x400000
 

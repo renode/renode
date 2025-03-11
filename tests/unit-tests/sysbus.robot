@@ -307,6 +307,10 @@ Test Writing To A Locked Sysbus Range Registered Per CPU
     Should Block Write Byte    0x250  ${new_value_0x200}  sysbus.mockCpu1
 
 Test Registering Mapped Memory In Locked Range
+    # Waiting for abort logs is tricky and might hang the test if something goes wrong cause
+    # virtual timeouts don't really work with aborts; 20 seconds should be more than enough.
+    [Timeout]                  20 seconds
+
     # We want to test IMapped memory here, so we need CPU's presence for a full test
     # relocking is trivial for anything that isn't directly mapped to CPU (unmanaged memory)
     Requires                   sysbus-with-mock-cpus
@@ -323,12 +327,14 @@ Test Registering Mapped Memory In Locked Range
     Execute Command            sysbus.mockCpu0 PC 0x4000
     Execute Command            sysbus.mockCpu1 PC 0x5000
 
-    Start Emulation
-
     # Now, to really test if newly registered memory has been locked correctly, try executing code (instructions don't matter here)
-    # Cpu0 should abort immediately, and Cpu1 should fall out of memory range
-    Wait For Log Entry         mockCpu0: CPU abort \[PC=0x4000\]: Trying to execute code from disabled or locked memory at 0x00004000  timeout=10
-    Wait For Log Entry         mockCpu1: CPU abort \[PC=0x6000\]: Trying to execute code outside RAM or ROM at 0x00006000  timeout=10
+    # Cpu0 should abort immediately, and Cpu1 should fall out of memory range soon after
+    # We don't wait for the exact logs in case there's another CPU abort or a different order of aborts in which case we could wait forever.
+    ${log}=  Wait For Log Entry    CPU abort  timeout=1
+    Should Contain    ${log}       mockCpu0: CPU abort \[PC=0x4000\]: Trying to execute code from disabled or locked memory at 0x00004000
+
+    ${log}=  Wait For Log Entry    CPU abort  timeout=1
+    Should Contain    ${log}       mockCpu1: CPU abort \[PC=0x6000\]: Trying to execute code outside RAM or ROM at 0x00006000
 
 Locked MappedMemory Should Not Be Accessible From CPU
     Create Machine With CPU And Two MappedMemory Peripherals

@@ -1,17 +1,17 @@
 *** Variables ***
 ${URI}                             @https://dl.antmicro.com/projects/renode
-${FASTVDMA_SOCKET_LINUX}           ${URI}/Vfastvdma-Linux-x86_64-10267006380-s_1632096-6348313862e83feb81f8c415c6deb7b2104a8c6f
-${FASTVDMA_SOCKET_WINDOWS}         ${URI}/Vfastvdma-Windows-x86_64-10267006380.exe-s_3233455-72bc5811a53051343ae7d82b10057cc2f5c48850
-${FASTVDMA_SOCKET_MACOS}           ${URI}/Vfastvdma-macOS-x86_64-10267006380-s_235752-7cff3410d92216fce601770306cbd4e1ee751d8c
-${FASTVDMA_NATIVE_LINUX}           ${URI}/libVfastvdma-Linux-x86_64-10267006380.so-s_2078200-8a4a7543cce11dfefc05fb8e5251b27ebad744a8
-${FASTVDMA_NATIVE_WINDOWS}         ${URI}/libVfastvdma-Windows-x86_64-10267006380.dll-s_3239883-3a1596007ce59c548ee16a7bf16984d9422e1a18
-${FASTVDMA_NATIVE_MACOS}           ${URI}/libVfastvdma-macOS-x86_64-10267006380.dylib-s_235688-11295715923d1462bfd1f54ecd55ab1ae94cc048
-${RAM_SOCKET_LINUX}                ${URI}/Vram-Linux-x86_64-10267006380-s_1615752-8f60a8f37d281df6299182275a33b39e30225dc2
-${RAM_SOCKET_WINDOWS}              ${URI}/Vram-Windows-x86_64-10267006380.exe-s_3220003-44297982a17f9585ec04a61a9fe2e566719ba7f3
-${RAM_SOCKET_MACOS}                ${URI}/Vram-macOS-x86_64-10267006380-s_219400-996168311f9b1358633b8582e11dec68f8672039
-${RAM_NATIVE_LINUX}                ${URI}/libVram-Linux-x86_64-10267006380.so-s_2065920-5de934761fd389b24f8da41fe36a1ebbd7450cd0
-${RAM_NATIVE_WINDOWS}              ${URI}/libVram-Windows-x86_64-10267006380.dll-s_3226432-999306f3cf046fec7f421d7d7daddc1309bfa8d6
-${RAM_NATIVE_MACOS}                ${URI}/libVram-macOS-x86_64-10267006380.dylib-s_219336-143ebedfef1f50521da6daa23d3dd0151c1b39c9
+${FASTVDMA_SOCKET_LINUX}           ${URI}/Vfastvdma-Linux-x86_64-12904733885-s_1651016-da5e31f75673a48f4d6fbaa5b5f21fd9190df393
+${FASTVDMA_SOCKET_WINDOWS}         ${URI}/Vfastvdma-Windows-x86_64-12904733885.exe-s_3259432-da445f10460a1d6f48d470a5c631e6339a589190
+${FASTVDMA_SOCKET_MACOS}           ${URI}/Vfastvdma-macOS-x86_64-12904733885-s_239216-3c4f0c697d39916c5fc14ee560385336b4fcc062
+${FASTVDMA_NATIVE_LINUX}           ${URI}/libVfastvdma-Linux-x86_64-12904733885.so-s_2104432-8ec57bdee00c76a044024158525d4130af0afc1a
+${FASTVDMA_NATIVE_WINDOWS}         ${URI}/libVfastvdma-Windows-x86_64-12904733885.dll-s_3265828-0e1691527cfb633cf5d8865f3445529708e73f8f
+${FASTVDMA_NATIVE_MACOS}           ${URI}/libVfastvdma-macOS-x86_64-12904733885.dylib-s_239144-ebd397eb4d74c08be26cec08c022e90b78f0e020
+${RAM_SOCKET_LINUX}                ${URI}/Vram-Linux-x86_64-12904733885-s_1634672-820a0d6d950a74702808d07ad15a7f8a48f86fe0
+${RAM_SOCKET_WINDOWS}              ${URI}/Vram-Windows-x86_64-12904733885.exe-s_3245365-7151d2803f710e3f411483352aa822f63a3f405a
+${RAM_SOCKET_MACOS}                ${URI}/Vram-macOS-x86_64-12904733885-s_222840-ef7dd5bc27d5e7b13d0444491f2f1f0fb252052e
+${RAM_NATIVE_LINUX}                ${URI}/libVram-Linux-x86_64-12904733885.so-s_2088056-004e8ca045d4505d42f552b12f0408c9eb951e8a
+${RAM_NATIVE_WINDOWS}              ${URI}/libVram-Windows-x86_64-12904733885.dll-s_3252274-06f5f9b70593f9d57546c9be97791d70c9762129
+${RAM_NATIVE_MACOS}                ${URI}/libVram-macOS-x86_64-12904733885.dylib-s_222776-56574ab2821c56a41486c0233d494d7e841c57df
 
 *** Keywords ***
 Create Machine
@@ -39,8 +39,8 @@ Create Machine
     Execute Command                             using sysbus
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString 'cpu: CPU.RiscV32 @ sysbus { cpuType: "rv32imaf"; timeProvider: empty }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.BaseDoubleWordCoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
+    Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.CoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
     Execute Command                             cpu PC 0xA2000000
@@ -179,46 +179,51 @@ Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 
 *** Test Cases ***
 Should Read Write Co-simulated Memory Using Socket
+    [Tags]                          skip_host_arm
     Create Machine      True
     Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory Using Socket
+    [Tags]                          skip_host_arm
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Co-simulated Memory Using Socket
+    [Tags]                          skip_host_arm
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Mapped Memory Using Socket
+    [Tags]                          skip_host_arm
     Create Machine      True
     Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory Using Socket
+    [Tags]                          skip_host_arm
     Create Machine      True
     Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 
 Should Read Write Co-simulated Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  skip_host_arm
     Create Machine      False
     Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  skip_host_arm
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Co-simulated Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  skip_host_arm
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Mapped Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  skip_host_arm
     Create Machine      False
     Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory
-    [Tags]                          skip_osx
+    [Tags]                          skip_osx  skip_host_arm
     Create Machine      False
     Test DMA Transaction From Co-simulated Memory to Co-simulated Memory

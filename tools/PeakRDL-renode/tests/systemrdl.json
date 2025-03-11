@@ -1,0 +1,114 @@
+[
+    {
+        "peakrdl": ["peakrdl", "renode", "-N", "Mocks", "-n", "SystemRDLTest1", "-o", "generated/SystemRDLTest1.cs", "rdl/test1.rdl"],
+        "file": "generated/SystemRDLTest1.cs",
+        "class": "Antmicro.Renode.Peripherals.Mocks.SystemRDLTest1",
+        "registerContainerClass": "DoubleWordRegisterCollection",
+        "registers": [
+            {
+                "className": "FieldsType",
+                "instanceName": "Fields",
+                "offset": 0,
+                "resetValue": 0,
+                "fields": [
+                    {
+                        "name": "FIRST",
+                        "low": 0,
+                        "high": 7,
+                        "mode": ["Read"],
+                        "fieldType": "IValueRegisterField"
+                    },
+                    {
+                        "name": "SECOND",
+                        "low": 8,
+                        "high": 15,
+                        "mode": ["Write"],
+                        "fieldType": "IValueRegisterField"
+                    },
+                    {
+                        "name": "THIRD",
+                        "low": 16,
+                        "high": 23,
+                        "mode": ["Read", "WriteOneToClear"],
+                        "fieldType": "IValueRegisterField"
+                    },
+                    {
+                        "name": "FOURTH",
+                        "low": 24,
+                        "high": 31,
+                        "mode": ["ReadToClear", "Write"],
+                        "fieldType": "IValueRegisterField"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "peakrdl": ["peakrdl", "renode", "-N", "Mocks", "-n", "SystemRDLTest2", "-o", "generated/SystemRDLTest2.cs", "rdl/test2.rdl"],
+        "file": "generated/SystemRDLTest2.cs",
+        "class": "Antmicro.Renode.Peripherals.Mocks.SystemRDLTest2",
+        "registerContainerClass": "DoubleWordRegisterCollection",
+        "registers": [
+            {
+                "className": "BitFieldsType",
+                "instanceName": "BitFields",
+                "offset": 256,
+                "resetValue": 0,
+                "fields": [
+                    {
+                        "name": "FIRST",
+                        "low": 0,
+                        "high": 0,
+                        "mode": ["Read"],
+                        "fieldType": "IFlagRegisterField"
+                    },
+                    {
+                        "name": "SECOND",
+                        "low": 1,
+                        "high": 1,
+                        "mode": ["Read", "WriteZeroToClear"],
+                        "fieldType": "IFlagRegisterField"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "peakrdl": ["peakrdl", "renode", "-N", "Mocks", "-n", "SystemRDLTest3", "-o", "generated/SystemRDLTest3.cs", "rdl/test3.rdl"],
+        "file": "generated/SystemRDLTest3.cs",
+        "class": "Antmicro.Renode.Peripherals.Mocks.SystemRDLTest3",
+        "registerContainerClass": "DoubleWordRegisterCollection",
+        "registers": [
+            {
+                "className": "CoolRegisterType",
+                "instanceName": "CoolRegister",
+                "offset": 256,
+                "resetValue": 0,
+                "fields": [
+                    {
+                        "name": "COOL_FIELD",
+                        "low": 0,
+                        "high": 31,
+                        "mode": ["Set"],
+                        "fieldType": "IValueRegisterField"
+                    }
+                ]
+            },
+            {
+                "className": "UncoolRegisterType",
+                "instanceName": "UncoolRegister",
+                "offset": 260,
+                "resetValue": 4294967295,
+                "fields": [
+                    {
+                        "name": "UNCOOL_FIELD",
+                        "low": 0,
+                        "high": 31,
+                        "mode": ["Read", "WriteZeroToToggle"],
+                        "fieldType": "IValueRegisterField"
+                    }
+                ]
+            }
+        ]
+    }
+]

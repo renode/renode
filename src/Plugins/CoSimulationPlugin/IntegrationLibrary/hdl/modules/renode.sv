@@ -7,12 +7,12 @@
 
 `timescale 1ns / 1ps
 
-import renode_pkg::renode_runtime;
+import renode_pkg::renode_runtime, renode_pkg::bus_connection, renode_pkg::renode_connection, renode_pkg::no_peripheral_index;
 import renode_pkg::message_t, renode_pkg::address_t, renode_pkg::data_t, renode_pkg::valid_bits_e;
 
 module renode #(
-    int unsigned BusControllersCount = 0,
-    int unsigned BusPeripheralsCount = 0,
+    int unsigned RenodeToCosimCount = 0,
+    int unsigned CosimToRenodeCount = 0,
     int unsigned RenodeInputsCount = 1,
     int unsigned RenodeOutputsCount = 1
 ) (
@@ -23,6 +23,14 @@ module renode #(
 );
   time renode_time = 0;
 
+  event reset_assert_all;
+  int reset_assert_done_count;
+  event reset_assert_done;
+
+  event reset_deassert_all;
+  int reset_deassert_done_count;
+  event reset_deassert_done;
+
   renode_inputs #(
       .InputsCount(RenodeInputsCount)
   ) gpio (
@@ -31,8 +39,59 @@ module renode #(
       .inputs(renode_inputs)
   );
 
-  always @(runtime.peripheral.read_transaction_request) read_transaction();
-  always @(runtime.peripheral.write_transaction_request) write_transaction();
+  initial begin
+    runtime.controllers = new[RenodeToCosimCount];
+    foreach(runtime.controllers[i]) begin
+      runtime.controllers[i] = new();
+    end
+
+    runtime.peripherals = new[CosimToRenodeCount];
+    foreach(runtime.peripherals[i]) begin
+      runtime.peripherals[i] = new();
+    end
+  end
+
+  if(CosimToRenodeCount > 0) begin
+    genvar i;
+    for(i = 0; i < CosimToRenodeCount; i += 1) begin
+      always @(runtime.peripherals[i].read_transaction_request) read_transaction(i);
+      always @(runtime.peripherals[i].write_transaction_request) write_transaction(i);
+      always @(reset_assert_all) runtime.peripherals[i].reset_assert();
+      always @(runtime.peripherals[i].reset_assert_response) begin
+          reset_assert_done_count++;
+          if(reset_assert_done_count == (CosimToRenodeCount + RenodeToCosimCount)) begin
+              ->reset_assert_done;
+          end
+      end
+      always @(runtime.peripherals[i].reset_deassert_response) begin
+          reset_deassert_done_count++;
+          if(reset_deassert_done_count == (CosimToRenodeCount + RenodeToCosimCount)) begin
+              ->reset_deassert_done;
+          end
+      end
+      always @(reset_deassert_all) runtime.peripherals[i].reset_deassert();
+    end
+  end
+
+  if(RenodeToCosimCount > 0) begin
+    genvar i;
+    for(i = 0; i < RenodeToCosimCount; i += 1) begin
+      always @(reset_assert_all) runtime.controllers[i].reset_assert();
+      always @(reset_deassert_all) runtime.controllers[i].reset_deassert();
+      always @(runtime.controllers[i].reset_assert_response) begin
+          reset_assert_done_count++;
+          if(reset_assert_done_count == (CosimToRenodeCount + RenodeToCosimCount)) begin
+              ->reset_assert_done;
+          end
+      end
+      always @(runtime.controllers[i].reset_deassert_response) begin
+          reset_deassert_done_count++;
+          if(reset_deassert_done_count == (CosimToRenodeCount + RenodeToCosimCount)) begin
+              ->reset_deassert_done;
+          end
+      end
+    end
+  end
 
   task static receive_and_handle_message();
     message_t message;
@@ -54,14 +113,14 @@ module renode #(
       renode_pkg::resetPeripheral: reset();
       renode_pkg::tickClock: sync_time(time'(message.data));
       renode_pkg::interrupt: handle_renode_output(message.address, message.data[0]);
-      renode_pkg::writeRequestQuadWord: write_to_bus(message.address, renode_pkg::QuadWord, message.data);
-      renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, renode_pkg::DoubleWord, message.data);
-      renode_pkg::writeRequestWord: write_to_bus(message.address, renode_pkg::Word, message.data);
-      renode_pkg::writeRequestByte: write_to_bus(message.address, renode_pkg::Byte, message.data);
-      renode_pkg::readRequestQuadWord: read_from_bus(message.address, renode_pkg::QuadWord);
-      renode_pkg::readRequestDoubleWord: read_from_bus(message.address, renode_pkg::DoubleWord);
-      renode_pkg::readRequestWord: read_from_bus(message.address, renode_pkg::Word);
-      renode_pkg::readRequestByte: read_from_bus(message.address, renode_pkg::Byte);
+      renode_pkg::writeRequestQuadWord: write_to_bus(message.address, renode_pkg::QuadWord, message.data, message.peripheral_index);
+      renode_pkg::writeRequestDoubleWord: write_to_bus(message.address, renode_pkg::DoubleWord, message.data, message.peripheral_index);
+      renode_pkg::writeRequestWord: write_to_bus(message.address, renode_pkg::Word, message.data, message.peripheral_index);
+      renode_pkg::writeRequestByte: write_to_bus(message.address, renode_pkg::Byte, message.data, message.peripheral_index);
+      renode_pkg::readRequestQuadWord: read_from_bus(message.address, renode_pkg::QuadWord, message.peripheral_index);
+      renode_pkg::readRequestDoubleWord: read_from_bus(message.address, renode_pkg::DoubleWord, message.peripheral_index);
+      renode_pkg::readRequestWord: read_from_bus(message.address, renode_pkg::Word, message.peripheral_index);
+      renode_pkg::readRequestByte: read_from_bus(message.address, renode_pkg::Byte, message.peripheral_index);
       default: is_handled = 0;
     endcase
 
@@ -70,40 +129,32 @@ module renode #(
   endtask
 
   task static reset();
+    // Nothing to reset, return immediately.
+    if(RenodeToCosimCount + CosimToRenodeCount == 0) return;
+
     // The reset just locks the connection without using it to avoid an unexpected behaviour.
     // It also prevents from a message handling in the receive_and_handle_message until a reset deassertion.
     runtime.connection.exclusive_receive.get();
 
-    // The delay was added to avoid a race condition.
-    // It may occure when an event is triggered before executing a wait for this event.
-    // A non-blocking trigger, which is an alternative solution, isn't supported by Verilator.
+    reset_assert_done_count = 0;
     #1 fork
-      begin
-        if (BusPeripheralsCount > 0)
-          runtime.peripheral.reset_assert();
-      end
-      begin
-        if (BusControllersCount > 0)
-          runtime.controller.reset_assert();
-      end
-      gpio.reset_assert();
+        ->reset_assert_all;
+        gpio.reset_assert();
     join
+
+    @(reset_assert_done);
 
     // It's required to make values of all signals known (different than `x`) before a deassertion of resets.
     // The assignment to renode_outputs is an equivalent of a reset assertion.
     renode_outputs = 0;
 
+    reset_deassert_done_count = 0;
     fork
-      begin
-        if (BusPeripheralsCount > 0)
-          runtime.peripheral.reset_deassert();
-      end
-      begin
-        if (BusControllersCount > 0)
-          runtime.controller.reset_deassert();
-      end
+      ->reset_deassert_all;
       gpio.reset_deassert();
     join
+
+    @(reset_deassert_done);
 
     runtime.connection.exclusive_receive.put();
   endtask
@@ -112,87 +163,97 @@ module renode #(
     renode_time = renode_time + time_to_elapse;
     while ($time < renode_time) @(clk);
 
-    runtime.connection.send_to_async_receiver(message_t'{renode_pkg::tickClock, 0, 0});
+    runtime.connection.send_to_async_receiver(message_t'{renode_pkg::tickClock, 0, 0, renode_pkg::no_peripheral_index});
     runtime.connection.log(renode_pkg::LogNoisy, $sformatf("Simulation time synced to %t", $realtime));
   endtask
 
-  task automatic read_from_bus(address_t address, valid_bits_e data_bits);
+  task automatic read_from_bus(address_t address, valid_bits_e data_bits, int peripheral_index);
     data_t data = 0;
     bit is_error = 0;
-    runtime.controller.read(address, data_bits, data, is_error);
+    runtime.controllers[peripheral_index].read(address, data_bits, data, is_error);
 
-    if (is_error) runtime.connection.send(message_t'{renode_pkg::error, 0, 0});
-    else runtime.connection.send(message_t'{renode_pkg::readRequest, address, data});
+    if (is_error) runtime.connection.send(message_t'{renode_pkg::error, 0, 0, peripheral_index});
+    else runtime.connection.send(message_t'{renode_pkg::readRequest, address, data, peripheral_index});
   endtask
 
-  task automatic write_to_bus(address_t address, valid_bits_e data_bits, data_t data);
+  task automatic write_to_bus(address_t address, valid_bits_e data_bits, data_t data, int peripheral_index);
     bit is_error = 0;
-    runtime.controller.write(address, data_bits, data, is_error);
+    runtime.controllers[peripheral_index].write(address, data_bits, data, is_error);
 
-    if (is_error) runtime.connection.send(message_t'{renode_pkg::error, 0, 0});
-    else runtime.connection.send(message_t'{renode_pkg::ok, 0, 0});
+    if (is_error) runtime.connection.send(message_t'{renode_pkg::error, 0, 0, peripheral_index});
+    else runtime.connection.send(message_t'{renode_pkg::ok, 0, 0, peripheral_index});
   endtask
 
-  task static read_transaction();
+  task automatic read_transaction(int peripheral_index);
     message_t message;
 
-    case (runtime.peripheral.read_transaction_data_bits)
+    case (runtime.peripherals[peripheral_index].read_transaction_data_bits)
       renode_pkg::Byte: message.action = renode_pkg::getByte;
       renode_pkg::Word: message.action = renode_pkg::getWord;
       renode_pkg::DoubleWord: message.action = renode_pkg::getDoubleWord;
       renode_pkg::QuadWord: message.action = renode_pkg::getQuadWord;
       default: begin
-        runtime.connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", runtime.peripheral.read_transaction_data_bits));
-        runtime.peripheral.read_respond(0, 1);
+        runtime.connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", runtime.peripherals[peripheral_index].read_transaction_data_bits));
+        runtime.peripherals[peripheral_index].read_respond(0, 1);
         return;
       end
     endcase
-    message.address = runtime.peripheral.read_transaction_address;
+    message.address = runtime.peripherals[peripheral_index].read_transaction_address;
     message.data = 0;
 
     runtime.connection.exclusive_receive.get();
+    if(!runtime.connection.is_connected()) begin
+        runtime.connection.exclusive_receive.put();
+        return;
+    end
 
     runtime.connection.send_to_async_receiver(message);
 
     runtime.connection.receive(message);
     while (message.action != renode_pkg::writeRequest) begin
       handle_message(message);
+      if(message.action == renode_pkg::disconnect) break;
       runtime.connection.receive(message);
     end
 
     runtime.connection.exclusive_receive.put();
-    runtime.peripheral.read_respond(message.data, 0);
+    runtime.peripherals[peripheral_index].read_respond(message.data, 0);
   endtask
 
-  task static write_transaction();
+  task automatic write_transaction(int peripheral_index);
     message_t message;
 
-    case (runtime.peripheral.write_transaction_data_bits)
+    case (runtime.peripherals[peripheral_index].write_transaction_data_bits)
       renode_pkg::Byte: message.action = renode_pkg::pushByte;
       renode_pkg::Word: message.action = renode_pkg::pushWord;
       renode_pkg::DoubleWord: message.action = renode_pkg::pushDoubleWord;
       renode_pkg::QuadWord: message.action = renode_pkg::pushQuadWord;
       default: begin
-        runtime.connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", runtime.peripheral.read_transaction_data_bits));
-        runtime.peripheral.write_respond(1);
+        runtime.connection.fatal_error($sformatf("Renode doesn't support access with the 'b%b mask from a bus controller.", runtime.peripherals[peripheral_index].read_transaction_data_bits));
+        runtime.peripherals[peripheral_index].write_respond(1);
         return;
       end
     endcase
-    message.address = runtime.peripheral.write_transaction_address;
-    message.data = runtime.peripheral.write_transaction_data;
+    message.address = runtime.peripherals[peripheral_index].write_transaction_address;
+    message.data = runtime.peripherals[peripheral_index].write_transaction_data;
 
     runtime.connection.exclusive_receive.get();
+    if(!runtime.connection.is_connected()) begin
+        runtime.connection.exclusive_receive.put();
+        return;
+    end
 
     runtime.connection.send_to_async_receiver(message);
     runtime.connection.receive(message);
     while (message.action != renode_pkg::pushConfirmation) begin
       handle_message(message);
+      if(message.action == renode_pkg::disconnect) break;
       runtime.connection.receive(message);
     end
 
     runtime.connection.exclusive_receive.put();
 
-    runtime.peripheral.write_respond(0);
+    runtime.peripherals[peripheral_index].write_respond(0);
   endtask
 
   // calculate number of bits needed to hold the output number
@@ -202,12 +263,12 @@ module renode #(
   task automatic handle_renode_output(address_t number, bit value);
     if (number >= 64'(RenodeOutputsCount)) begin
       runtime.connection.log(renode_pkg::LogWarning, $sformatf("Output %0d is out of range of [0;%0d]", number, RenodeOutputsCount - 1));
-      runtime.connection.send(message_t'{renode_pkg::error, 0, 0});
+      runtime.connection.send(message_t'{renode_pkg::error, 0, 0, renode_pkg::no_peripheral_index});
     end
 
     @(posedge clk);
     renode_outputs[number[RenodeOutputsCountWidth-1:0]] <= value;
 
-    runtime.connection.send(message_t'{renode_pkg::ok, 0, 0});
+    runtime.connection.send(message_t'{renode_pkg::ok, 0, 0, renode_pkg::no_peripheral_index});
   endtask
 endmodule

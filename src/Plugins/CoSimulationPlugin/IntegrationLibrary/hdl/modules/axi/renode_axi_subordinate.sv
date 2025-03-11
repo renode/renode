@@ -9,7 +9,7 @@
 
 import renode_pkg::renode_runtime, renode_pkg::LogWarning;
 
-module renode_axi_subordinate (
+module renode_axi_subordinate #(int CosimToRenodeIndex = 0) (
     ref renode_runtime runtime,
     renode_axi_if bus
 );
@@ -22,20 +22,20 @@ module renode_axi_subordinate (
 
   wire clk = bus.aclk;
 
-  always @(runtime.peripheral.reset_assert_request) begin
+  always @(runtime.peripherals[CosimToRenodeIndex].reset_assert_request) begin
     bus.rvalid = 0;
     bus.bvalid = 0;
     bus.areset_n = 0;
     // The reset takes 2 cycles to prevent a race condition without usage of a non-blocking assigment.
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_assert_respond();
+    runtime.peripherals[CosimToRenodeIndex].reset_assert_respond();
   end
 
-  always @(runtime.peripheral.reset_deassert_request) begin
+  always @(runtime.peripherals[CosimToRenodeIndex].reset_deassert_request) begin
     bus.areset_n = 1;
     // There is one more wait for the clock edges to be sure that all modules aren't in a reset state.
     repeat (2) @(posedge clk);
-    runtime.peripheral.reset_deassert_respond();
+    runtime.peripherals[CosimToRenodeIndex].reset_deassert_respond();
   end
 
   always @(clk) read_transaction();
@@ -63,7 +63,7 @@ module renode_axi_subordinate (
       end
       else begin
           // The conection.read call may cause simulation time to move forward
-          runtime.peripheral.read(renode_pkg::address_t'(address), valid_bits, data, is_error);
+          runtime.peripherals[CosimToRenodeIndex].read(renode_pkg::address_t'(address), valid_bits, data, is_error);
           if (is_error) begin
             runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h, responding with 0.", address));
             data = 0;
@@ -111,7 +111,7 @@ module renode_axi_subordinate (
 
         if (bus.wlast != (address == address_last)) runtime.connection.log(LogWarning, "Unexpected state of the wlast signal.");
         // The conection.write call may cause simulation time to move forward
-        runtime.peripheral.write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
+        runtime.peripherals[CosimToRenodeIndex].write(renode_pkg::address_t'(address), valid_bits, renode_pkg::data_t'(data) & valid_bits, is_error);
         if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to write data to Renode at address 'h%h", address));
       end
 

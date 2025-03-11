@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -75,7 +75,18 @@ namespace Antmicro.Renode
         {
             //Plain mode must be set before the window title
             ConsoleBackend.Instance.PlainMode = options.Plain;
+
+#if PLATFORM_WINDOWS || NET
             ConsoleBackend.Instance.WindowTitle = "Renode";
+#else
+            // On Mono (verified on v. 6.12.0.200) writing to `Console.Title`
+            // by multiple processes concurrently causes a deadlock. Do not set
+            // the window title if we're running tests on Mono to avoid that.
+            if(options.RobotFrameworkRemoteServerPort == -1)
+            {
+                ConsoleBackend.Instance.WindowTitle = "Renode";
+            }
+#endif
 
             string configFile = null;
 
@@ -96,7 +107,6 @@ namespace Antmicro.Renode
 
             // set Termsharp as a default terminal if there is none already
             ConfigurationManager.Instance.Get("general", "terminal", "Termsharp");
-            ConsoleBackend.Instance.ReportRepeatingLines = !ConfigurationManager.Instance.Get("general", "collapse-repeated-log-entries", true);
         }
 
         private static string LongVersionString

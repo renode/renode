@@ -15,16 +15,18 @@
 struct Protocol
 {
   Protocol() = default;
-  Protocol(int actionId, uint64_t addr, uint64_t value)
+  Protocol(int actionId, uint64_t addr, uint64_t value, int peripheralIndex = 0)
   {
     this->actionId = actionId;
     this->addr = addr;
     this->value = value;
+    this->peripheralIndex = peripheralIndex;
   }
 
   int actionId;
   uint64_t addr;
   uint64_t value;
+  int peripheralIndex;
 };
 #pragma pack(pop)
 
@@ -41,5 +43,7 @@ enum LogLevel
   LOG_LEVEL_WARNING = 2,
   LOG_LEVEL_ERROR   = 3
 };
+
+const int noPeripheralIndex = -1;
 
 #endif

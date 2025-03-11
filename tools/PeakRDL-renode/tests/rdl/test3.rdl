@@ -1,0 +1,25 @@
+addrmap Peripheral {
+    regfile {
+        default regwidth = 32;
+
+        reg {
+            name = "COOL_REGISTER";
+            field {
+                name = "COOL_FIELD";
+                sw = w;
+                hw = rw;
+                woset = true;
+            } cool_field [31:0];
+        } cool_register @ 0x0;
+        reg {
+            name = "UNCOOL_REGISTER";
+            field {
+                name = "UNCOOL_FIELD";
+                sw = rw;
+                hw = rw;
+                onwrite = wzt;
+                reset = 1;
+            } uncool_field [31:0];
+        } uncool_register @ 0x4;
+    } registers @ 0x100;
+};

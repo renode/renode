@@ -1,0 +1,26 @@
+addrmap Device {
+    mem {
+        mementries = 4;
+        memwidth = 64;
+        sw = rw;
+        reg {
+            regwidth = 32;
+            field {
+                name = "FLAG1";
+                sw = rw;
+            } flag1 [0:0];
+            field {
+                name = "FLAG2";
+                sw = rw;
+            } flag2 [1:1];
+            field {
+                name = "VALUE1";
+                sw = rw;
+            } value1 [5:2];
+            field {
+                name = "VALUE2";
+                sw = rw;
+            } value2 [30:6];
+        } structure [4];
+    } external mem1 @ 0x10;
+};

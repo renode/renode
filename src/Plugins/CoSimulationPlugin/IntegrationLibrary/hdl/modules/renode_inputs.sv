@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-import renode_pkg::renode_runtime;
+import renode_pkg::renode_runtime, renode_pkg::no_peripheral_index;
 
 module renode_inputs #(
     int unsigned InputsCount = 1
@@ -36,7 +36,8 @@ module renode_inputs #(
           runtime.connection.send_to_async_receiver(renode_pkg::message_t'{
               renode_pkg::interrupt,
               renode_pkg::address_t'(addr),
-              renode_pkg::data_t'(inputs[addr])
+              renode_pkg::data_t'(inputs[addr]),
+              renode_pkg::no_peripheral_index
             });
         end
       end

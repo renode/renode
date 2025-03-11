@@ -16,9 +16,9 @@ using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class LibraryCoSimulationConnection: ICoSimulationConnection, IEmulationElement
+    public class LibraryConnection: ICoSimulationConnection, IEmulationElement
     {
-        public LibraryCoSimulationConnection(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
+        public LibraryConnection(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
         {
             this.parentElement = parentElement;
             this.timeout = timeout;
@@ -35,7 +35,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             Abort();
             binder?.Dispose();
             Marshal.FreeHGlobal(mainResponsePointer);
+            mainResponsePointer = IntPtr.Zero;
             Marshal.FreeHGlobal(senderResponsePointer);
+            senderResponsePointer = IntPtr.Zero;
         }
 
         public bool TrySendMessage(ProtocolMessage message)
@@ -91,23 +93,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             peripheralActive.Cancel();
             IsConnected = false;
         }
-
-        public void Start()
-        {
-            // intentionally left empty
-        }
-
-        public void Pause()
-        {
-            // intentionally left empty
-        }
-
-        public void Resume()
-        {
-            // intentionally left empty
-        }
-
-        public bool IsPaused => false;
 
         [Export]
         public void HandleMainMessage(IntPtr received)
@@ -252,9 +237,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
-        private ActionIntPtr handleRequest;
+        private Action<IntPtr> handleRequest;
         [Import(UseExceptionWrapper = false, Optional = true)]
-        private ActionIntPtr initializeContext;
+        private Action<IntPtr> initializeContext;
         [Import(UseExceptionWrapper = false)]
         private Action initializeNative;
         [Import(UseExceptionWrapper = false)]

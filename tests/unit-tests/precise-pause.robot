@@ -88,6 +88,7 @@ Terminal Tester Assert Should Not Start Emulation With Timeout 0
     Emulation Should Be Paused At Time  00:00:00.100000
 
 Terminal Tester Assert Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Create Machine With Button And LED  button
 
     Wait For Line On Uart    Press the button  pauseEmulation=true
@@ -95,12 +96,13 @@ Terminal Tester Assert Should Precisely Pause Emulation
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4896
+    Should Be Equal          ${l.groups[0]}  4897
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
 
 Emulation Should Pause Precisely Between Translation Blocks
+    [Tags]                   instructions_counting
     Create Machine With Button And LED  button
     # Forcing all blocks to contain a single instruction will force the precise pauses to be handled between blocks
     Execute Command          cpu MaximumBlockSize 1
@@ -110,7 +112,7 @@ Emulation Should Pause Precisely Between Translation Blocks
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4213
+    Should Be Equal          ${l.groups[0]}  4215
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
@@ -158,6 +160,7 @@ LED Tester Assert Should Not Start Emulation With Timeout 0
     Emulation Should Be Paused At Time  00:00:00.000000
 
 LED Tester Assert Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Create Machine With Button And LED  blinky
 
     Assert LED State         true  pauseEmulation=true
@@ -171,6 +174,7 @@ LED Tester Assert Should Precisely Pause Emulation
     Provides                 synced-blinky
 
 LED Tester Assert And Hold Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Requires                 synced-blinky
 
     # The expected times have 3 decimal places because the default quantum is 0.000100
@@ -182,12 +186,14 @@ LED Tester Assert And Hold Should Precisely Pause Emulation
     END
 
 LED Tester Assert Is Blinking Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Requires                 synced-blinky
 
     Assert LED Is Blinking   testDuration=5  onDuration=1  offDuration=1  pauseEmulation=true
     Emulation Should Be Paused At Time  00:00:06.000200
 
 LED Tester Assert Duty Cycle Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Requires                 synced-blinky
 
     Assert LED Duty Cycle    testDuration=5  expectedDutyCycle=0.5  pauseEmulation=true
@@ -227,6 +233,7 @@ LED Tester Assertion Triggered By PWM Should Not Log Errors
     Should Not Be In Log     ${EMPTY}  level=Error
 
 Log Tester Assert Should Precisely Pause Emulation
+    [Tags]                   instructions_counting
     Create Log Tester        5
     Create Machine With Button And LED  pwm_shell  led_port=B  led_pin=10
 

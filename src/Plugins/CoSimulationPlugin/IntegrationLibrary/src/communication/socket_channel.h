@@ -15,7 +15,7 @@ public:
   SocketCommunicationChannel();
   void connect(int receiverPort, int senderPort, const char* address);
   void disconnect();
-  bool getIsConnected();
+  bool isConnected() override;
   void handshakeValid();
   void log(int logLevel, const char* data) override;
   Protocol* receive() override;
@@ -23,7 +23,7 @@ public:
   void sendSender(const Protocol message) override;
 
 private:
-  bool isConnected;
+  bool connected;
   std::unique_ptr<CTCPClient> mainSocket;
   std::unique_ptr<CTCPClient> senderSocket;
 };

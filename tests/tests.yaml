@@ -11,6 +11,7 @@
 - tests/unit-tests/llvm-asm-disasm.robot
 - tests/unit-tests/emulation-environment.robot
 - tests/unit-tests/platform_descriptions.robot
+- tests/unit-tests/riscv-isa-string.robot
 - tests/unit-tests/sysbus.robot
 - tests/platforms/SiFive-FE310/SiFive-FE310.robot
 - tests/platforms/SiFive-FU540.robot
@@ -142,6 +143,7 @@
 - tests/platforms/Renesas_RA4M1.robot
 - tests/platforms/Renesas_RA8M1.robot
 - tests/platforms/Renesas_DA14592.robot
+- tests/platforms/Renesas_RZ_G2L.robot
 - tests/peripherals/ICP_101xx.robot
 - tests/unit-tests/grammar-number-separator.robot
 - tests/peripherals/PL330_DMA.robot
@@ -151,6 +153,7 @@
 - tests/peripherals/UT32_CAN.robot
 - tests/peripherals/S32K3XX_FlexCAN.robot
 - tests/platforms/BeagleV-StarLight.robot
+- tests/platforms/BeagleV-Fire.robot
 - tests/unit-tests/virtual-time.robot
 - tests/unit-tests/platform-file-aliases.robot
 - tests/peripherals/VirtIO.robot
@@ -159,6 +162,7 @@
 - tests/peripherals/CLIC/CLIC-preemption-01.robot
 - tests/peripherals/CLIC/CLIC-priorities-01.robot
 - tests/peripherals/CLIC/CLIC-level-prio-01.robot
+- tests/peripherals/CLIC/CLIC-mcause-mstatus-alias.robot
 - tests/platforms/NPCX9.robot
 - tests/unit-tests/arm-gic-redistributor.robot
 - tests/unit-tests/python-engine.robot
@@ -167,7 +171,20 @@
 - tests/platforms/X86.robot
 - tests/platforms/ACRN.robot
 - tests/unit-tests/zephyr-mode.robot
+- tests/unit-tests/array_memory.robot
 - tests/unit-tests/riscv-zbb-extension.robot
 - tests/unit-tests/register-read-caching.robot
 - tests/unit-tests/symbols.robot
 - tests/unit-tests/aarch64-host.robot
+- tests/platforms/MSP430X.robot
+- tests/unit-tests/riscv-zve-extension.robot
+- tests/unit-tests/sync_pc.robot
+- tests/platforms/systemc/interrupts/interrupts.robot
+- tests/platforms/systemc/multiple-peripherals/multiple-peripherals.robot
+- tests/platforms/systemc/transaction-delay/transaction-delay.robot
+- tests/platforms/systemc/test-synchronization/synchronization.robot
+- tests/unit-tests/instructions-counting.robot
+- tests/unit-tests/timer-reconfiguration.robot
+- tests/platforms/S32K388.robot
+- tests/unit-tests/bus-isolation.robot
+- tests/unit-tests/bus-performance.robot

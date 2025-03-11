@@ -5,6 +5,7 @@
 //  Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -25,9 +26,9 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class SocketCoSimulationConnection : ICoSimulationConnection, IDisposable
+    public class SocketConnection : ICoSimulationConnection, IDisposable
     {
-        public SocketCoSimulationConnection(IPeripheral parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
@@ -52,9 +53,26 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public void Connect()
         {
-            if(!mainSocketComunicator.AcceptConnection(timeout)
-                || !asyncSocketComunicator.AcceptConnection(timeout)
-                || !TryHandshake())
+            var success = true;
+            if(!mainSocketComunicator.AcceptConnection(timeout))
+            {
+                parentElement.Log(LogLevel.Error, $"Main socket failed to accept connection after timeout of {timeout}ms.");
+                success = false;
+            }
+
+            if(success && !asyncSocketComunicator.AcceptConnection(timeout))
+            {
+                parentElement.Log(LogLevel.Error, $"Async socket failed to accept connection after timeout of {timeout}ms.");
+                success = false;
+            }
+
+            if(success && !TryHandshake())
+            {
+                parentElement.Log(LogLevel.Error, "Handshake with co-simulation failed.");
+                success = false;
+            }
+
+            if(!success)
             {
                 mainSocketComunicator.ResetConnections();
                 asyncSocketComunicator.ResetConnections();
@@ -69,6 +87,14 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 asyncSocketComunicator.CloseListener();
 
                 parentElement.Log(LogLevel.Debug, "Connected to the cosimulated peripheral!");
+            }
+
+            lock(receiveThreadLock)
+            {
+                if(!receiveThread.IsAlive && disposeInitiated == 0)
+                {
+                    receiveThread.Start();
+                }
             }
         }
 
@@ -117,7 +143,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 if(receiveThread.IsAlive)
                 {
-                    Resume();
                     receiveThread.Join(timeout);
                 }
             }
@@ -125,7 +150,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             if(IsConnected)
             {
                 parentElement.DebugLog("Sending 'Disconnect' message to close peripheral gracefully...");
-                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0));
+                TrySendMessage(new ProtocolMessage(ActionType.Disconnect, 0, 0, ProtocolMessage.NoPeripheralIndex));
                 mainSocketComunicator.CancelCommunication();
             }
 
@@ -152,37 +177,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             asyncSocketComunicator.Dispose();
         }
 
-        public void Start()
-        {
-            lock(receiveThreadLock)
-            {
-                if(!receiveThread.IsAlive && disposeInitiated == 0)
-                {
-                    receiveThread.Start();
-                }
-            }
-        }
-
-        public void Pause()
-        {
-            lock(pauseLock)
-            {
-                pauseMRES.Reset();
-                IsPaused = true;
-            }
-        }
-
-        public void Resume()
-        {
-            lock(pauseLock)
-            {
-                pauseMRES.Set();
-                IsPaused = false;
-            }
-        }
-
-        public bool IsPaused { get; private set; } = false;
-
         public bool IsConnected => mainSocketComunicator.Connected;
 
         public string Context
@@ -206,6 +200,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             set
             {
                 simulationFilePath = value;
+                if(!File.Exists(simulationFilePath))
+                {
+                    parentElement.Log(LogLevel.Error, $"Simulation file \"{value}\" doesn't exist.");
+                }
                 parentElement.Log(LogLevel.Debug,
                     "Trying to run and connect to the cosimulated peripheral '{0}' through ports {1} and {2}...",
                     value, mainSocketComunicator.ListenerPort, asyncSocketComunicator.ListenerPort);
@@ -307,9 +305,23 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private bool TryHandshake()
         {
-            return TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0))
-                   && TryReceiveMessage(out var result)
-                   && result.ActionId == ActionType.Handshake;
+            if(!TrySendMessage(new ProtocolMessage(ActionType.Handshake, 0, 0, ProtocolMessage.NoPeripheralIndex)))
+            {
+                parentElement.Log(LogLevel.Error, "Failed to send handshake message to co-simulation.");
+                return false;
+            }
+            if(!TryReceiveMessage(out var result))
+            {
+                parentElement.Log(LogLevel.Error, "Failed to receive handshake response from co-simulation.");
+                return false;
+            }
+            if(result.ActionId != ActionType.Handshake)
+            {
+                parentElement.Log(LogLevel.Error, "Invalid handshake response received from co-simulation.");
+                return false;
+            }
+
+            return true;
         }
 
         private void HandleReceived(ProtocolMessage message)
@@ -346,7 +358,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private readonly string address;
         private readonly Thread receiveThread;
         private readonly object receiveThreadLock = new object();
-        private readonly object pauseLock = new object();
         private readonly ManualResetEventSlim pauseMRES;
 
         private const string DefaultAddress = "127.0.0.1";

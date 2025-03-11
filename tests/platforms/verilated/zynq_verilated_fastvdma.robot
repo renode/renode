@@ -5,9 +5,9 @@ ${SCRIPT}                                ${CURDIR}/../../../scripts/single-node/
 ${UART}                                  sysbus.uart1
 ${FASTVDMA_DRIVER}                       /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma.ko
 ${FASTVDMA_DEMO_DRIVER}                  /lib/modules/5.10.0-xilinx/kernel/drivers/dma/fastvdma/fastvdma-demo.ko
-${FASTVDMA_NATIVE_LINUX}                 ${URI}/libVfastvdma-Linux-x86_64-10267006380.so-s_2078200-8a4a7543cce11dfefc05fb8e5251b27ebad744a8
-${FASTVDMA_NATIVE_WINDOWS}               ${URI}/libVfastvdma-Windows-x86_64-10267006380.dll-s_3239883-3a1596007ce59c548ee16a7bf16984d9422e1a18
-${FASTVDMA_NATIVE_MACOS}                 ${URI}/libVfastvdma-macOS-x86_64-10267006380.dylib-s_235688-11295715923d1462bfd1f54ecd55ab1ae94cc048
+${FASTVDMA_NATIVE_LINUX}                 ${URI}/libVfastvdma-Linux-x86_64-12904733885.so-s_2104432-8ec57bdee00c76a044024158525d4130af0afc1a
+${FASTVDMA_NATIVE_WINDOWS}               ${URI}/libVfastvdma-Windows-x86_64-12904733885.dll-s_3265828-0e1691527cfb633cf5d8865f3445529708e73f8f
+${FASTVDMA_NATIVE_MACOS}                 ${URI}/libVfastvdma-macOS-x86_64-12904733885.dylib-s_239144-ebd397eb4d74c08be26cec08c022e90b78f0e020
 
 *** Keywords ***
 Create Machine
@@ -36,6 +36,7 @@ Compare Parts Of Images
 *** Test Cases ***
 Should Boot Linux
     [Documentation]                      Boots Linux on the Zynq 7000-based Zedboard platform in co-simulation with FastVDMA.
+    [Tags]                          skip_host_arm
 
     Create Machine
     Start Emulation
@@ -46,6 +47,7 @@ Should Boot Linux
 
 Should Load Drivers
     [Documentation]                      Loads fastvdma.ko and fastvdma-demo.ko and performs image transfer via FastVDMA.
+    [Tags]                          skip_host_arm
     Requires                             booted-linux
 
 # Suppress messages from kernel space; don't wait for echo because a kernel log might be printed in the middle of writing.
@@ -74,6 +76,7 @@ Should Load Drivers
 
 Verify Image
     [Documentation]                      Verifies whether the image has been transferred correctly.
+    [Tags]                          skip_host_arm
     Requires                             output
 
 # The output image (out.rgba) should consist of img1.rgba (256x256px) in the middle of img0.rgba (512x512px)
