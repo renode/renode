@@ -40,6 +40,10 @@ usart1: UART.SAM_USART @ sysbus 0x40028000
     enablePdc: true
     ->nvic@15
 
+adc: Analog.SAM4S_ADC @ sysbus 0x40038000
+    baseFrequency: 120000000
+    ->nvic@29
+
 PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0468
     size: 0x4
     initable: true
