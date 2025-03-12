@@ -1,0 +1,56 @@
+:name: TWONODE-DEMO
+:description: This script runs the configured application on BRD4186C in a two-node setup.
+
+# Change this to the actual location of the application to run
+set bin $ORIGIN/rail_soc_railtest.out
+
+using sysbus
+emulation SetGlobalSerialExecution true
+emulation CreateIEEE802_15_4Medium "wireless"
+emulation SetGlobalQuantum "0.000020"
+
+# Start wireshark with 802.15.4 decoder
+#emulation LogIEEE802_15_4Traffic
+# Start wireshark with BLE decoder
+#emulation LogBLETraffic
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    cpu VectorTableOffset `sysbus GetSymbolAddress "__Vectors"`
+    sysbus LogAllPeripheralsAccess false
+"""
+
+################################################
+# Create node1
+################################################
+mach create "node1"
+machine LoadPlatformDescription "platforms/boards/silabs/brd4186c.repl"
+runMacro $reset
+emulation CreateServerSocketTerminal 3451 "cli_node1"
+connector Connect sysbus.eusart0 cli_node1
+connector Connect sysbus.radio wireless
+logLevel 3
+### Debug
+# Uncomment to enable debugging of main CPU
+#machine StartGdbServer 3333 false cpu
+# Uncomment to enable debugging of Sequencer CPU
+#machine StartGdbServer 3333 false seqcpu
+
+mach clear
+
+################################################
+# Create node2
+################################################
+mach create "node2"
+machine LoadPlatformDescription "platforms/boards/silabs/brd4186c.repl"
+runMacro $reset
+emulation CreateServerSocketTerminal 3452 "cli_node2"
+connector Connect sysbus.eusart0 cli_node2
+connector Connect sysbus.radio wireless
+logLevel 3
+### Debug
+# Uncomment to enable debugging of main CPU
+#machine StartGdbServer 3333 false cpu
+# Uncomment to enable debugging of Sequencer CPU
+#machine StartGdbServer 3333 false seqcpu
