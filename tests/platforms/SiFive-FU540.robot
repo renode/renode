@@ -138,11 +138,13 @@ Should Ping Linux
     Write Line To Uart        root                                              testerId=${u1}
     Wait For Prompt On Uart   Password                                          testerId=${u1}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u1}
+    Wait For Prompt On Uart   \#                                                testerId=${u1}
 
     Wait For Prompt On Uart   buildroot login                                   testerId=${u2}
     Write Line To Uart        root                                              testerId=${u2}
     Wait For Prompt On Uart   Password                                          testerId=${u2}
     Write Line To Uart        root                         waitForEcho=false    testerId=${u2}
+    Wait For Prompt On Uart   \#                                                testerId=${u2}
 
     Write Line To Uart        ifconfig eth0 hw ether 02:01:03:05:04:06          testerId=${u1}
     Write Line To Uart        ifconfig eth0 192.168.0.1 netmask 255.255.255.0   testerId=${u1}
