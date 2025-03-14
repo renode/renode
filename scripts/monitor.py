@@ -1,8 +1,6 @@
 from time import sleep
 from Antmicro import Renode
 
-current_value = 0
-
 def mc_uart_connect(device_name):
     def __printer(b):
         sys.stdout.write(chr(b))
@@ -25,9 +23,10 @@ def mc_uart_connect(device_name):
     print("Disconnected from %s" % device_name)
 
 def mc_next_value(offset = 0):
-    global current_value
-    print "%d" % (current_value + offset)
-    current_value = current_value + 1
+    print "%d" % (mc_next_value.current_value + offset)
+    mc_next_value.current_value = mc_next_value.current_value + 1
+
+mc_next_value.current_value = 0
 
 def mc_sleep(time):
     sleep(float(time))
