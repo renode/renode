@@ -217,6 +217,10 @@ u54Hart3ITim: Memory.MappedMemory @ sysbus 0x01818000
 u54Hart4ITim: Memory.MappedMemory @ sysbus 0x01820000
     size: 0x7000
 
+// The exact DDR Memory Partition depends on the amount of physically connected DDR memory.
+// Both BeagleV-Fire and PolarFire SoC Icicle Kit based on this soc are equipped with 2GB,
+// so we put it here divided into ddr and ddr2 parts as a sane default.
+// Override size at a board level if different configuration is expected.
 ddr: Memory.MappedMemory @ {
         sysbus 0x80000000;
         sysbus <0xC0000000, +0x10000000>;
@@ -232,7 +236,7 @@ ddr2: Memory.MappedMemory @ {
         sysbus 0x1440000000;
         sysbus 0x1840000000
     }
-    size: 0x3c0000000
+    size: 0x40000000
 
 mem_bootloader: Memory.MappedMemory @ sysbus 0x0
     size: 0x100000
@@ -289,6 +293,14 @@ TopSystemRegisters: Miscellaneous.MPFS_Sysreg @ sysbus 0x20002000
 
 sysbus:
     init:
+        // DDR Memory Address Space is tagged below.
+        // The exact DDR Memory Partition depends on the amount of physically connected DDR memory.
+        Tag <0x80000000 0x40000000> "DDR Cached 1GB"
+        Tag <0x1000000000 0x400000000> "DDR Cached 16GB"
+        Tag <0xC0000000 0x10000000> "DDR Non-Cached 256MB"
+        Tag <0xD0000000 0x10000000> "DDR Non-Cached WCB 256MB"
+        Tag <0x1400000000 0x400000000> "DDR Non-Cached 16GB"
+        Tag <0x1800000000 0x400000000> "DDR Non-Cached WCB 16GB"
         SilenceRange <0x02010010, 0x02010FFF> # "Cache controller"
         SilenceRange <0x01700000, 0x01704FFF> # Bus error units
         Tag <0x37080000, 0x38FFFFFF> "IOSCB" 0xFFFFFFFF
