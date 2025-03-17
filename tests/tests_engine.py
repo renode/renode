@@ -532,7 +532,7 @@ def run():
 
     # check if renode crash caused a failed test based on logs for tested suites
     # before the log files are cleaned up
-    failed_due_to_crash: bool = tests_failed and failed_due_to_crash(options)
+    test_failed_due_to_crash: bool = tests_failed and failed_due_to_crash(options)
 
     for group in options.tests:
         for suite in options.tests[group]:
@@ -547,7 +547,7 @@ def run():
         print("Some tests failed :( See the list of failed tests below and logs for details!")
         print_failed_tests(options)
         print_rerun_trace(options)
-        if failed_due_to_crash:
+        if test_failed_due_to_crash:
             print('Renode crashed during testing and caused a failure', file=sys.stderr)
             sys.exit(2)
         sys.exit(1)
