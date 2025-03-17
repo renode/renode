@@ -59,6 +59,8 @@ uart1: UART.SAM_USART @ sysbus 0x400E0800
     enablePdc: true
     ->nvic@9
 
+rstc: Miscellaneous.SAM4S_RSTC @ sysbus 0x400E1400
+
 peripheral_bb: Miscellaneous.BitBanding @ sysbus <0x42000000, 0x43FFFFFF>
     peripheralBase: 0x40000000
 
