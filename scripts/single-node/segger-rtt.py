@@ -1,16 +1,16 @@
 #
-# Copyright (c) 2010-2024 Antmicro
+# Copyright (c) 2010-2025 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
 #
 
-def mc_setup_segger_rtt(console, with_has_key = True, with_read = True):
+def mc_setup_segger_rtt(console, with_has_key = True, with_read = True, with_has_data = False):
     # `mc_` is omitted as it isn't needed in the Monitor.
-    setup_arg_spec = 'setup_segger_rtt(console, with_has_key = True, with_read = True)'
+    setup_arg_spec = 'setup_segger_rtt(console, with_has_key = True, with_read = True, with_has_data = False)'
     bus = monitor.Machine.SystemBus
 
-    def has_key(cpu, _):
+    def has_data(cpu, _):
         cpu.SetRegisterUlong(0, 1 if console.Contains(ord('\r')) else 0)
         cpu.PC = cpu.LR
 
@@ -30,19 +30,24 @@ def mc_setup_segger_rtt(console, with_has_key = True, with_read = True):
         cpu.SetRegisterUlong(0, length)
         cpu.PC = cpu.LR
 
-    def add_hook(symbol, function):
+    def add_hook(symbol, function, argument_name = None):
         for cpu in bus.GetCPUs():
-            try:
-                cpu.AddHook(bus.GetSymbolAddress(symbol, cpu), function)
-            except Exception as e:
-                cpu.WarningLog("Failed to add hook at '{}': {}".format(symbol, e))
-                cpu.WarningLog("Make sure the binary is loaded before calling setup_segger_rtt")
-                if function == has_key or function == read:
-                    cpu.WarningLog("Adding this hook can be omitted by passing False to the optional 'with_{}' argument:\n{}"
-                                  .format(function.__name__, setup_arg_spec))
+            found, addresses = bus.TryGetAllSymbolAddresses(symbol, context=cpu)
+
+            if not found:
+                cpu.WarningLog("Symbol '{}' not found. Make sure the binary is loaded before calling setup_segger_rtt"
+                              .format(symbol))
+                if argument_name is not None:
+                    cpu.WarningLog("Adding this hook can be omitted by passing False to the optional '{}' argument:\n{}"
+                                  .format(argument_name, setup_arg_spec))
+
+            for address in addresses:
+                cpu.AddHook(address, function)
 
     if with_has_key:
-        add_hook("SEGGER_RTT_HasKey", has_key)
+        add_hook("SEGGER_RTT_HasKey", has_data, "with_has_key")
+    if with_has_data:
+        add_hook("SEGGER_RTT_HasData", has_data, "with_has_data")
     if with_read:
-        add_hook("SEGGER_RTT_ReadNoLock", read)
+        add_hook("SEGGER_RTT_ReadNoLock", read, "with_read")
     add_hook("SEGGER_RTT_WriteNoLock", write)
