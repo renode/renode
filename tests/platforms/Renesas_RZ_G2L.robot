@@ -36,7 +36,7 @@ Prepare Machine
 Prepare Segger RTT
     [Arguments]                     ${pauseEmulation}=true
     Execute Command                 machine CreateVirtualConsole "segger_rtt"
-    Execute Command                 include @scripts/single-node/renesas-segger-rtt.py
+    Execute Command                 include @scripts/single-node/segger-rtt.py
     Execute Command                 setup_segger_rtt sysbus.segger_rtt
     Create Terminal Tester          sysbus.segger_rtt  defaultPauseEmulation=${pauseEmulation}
 

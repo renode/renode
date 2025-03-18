@@ -10,7 +10,7 @@ $bin?=@https://dl.antmicro.com/projects/renode/renesas_ra2e1--agt.elf-s_286560-6
 
 machine LoadPlatformDescription @platforms/boards/renesas-ek_ra2e1.repl
 
-include @scripts/single-node/renesas-segger-rtt.py
+include @scripts/single-node/segger-rtt.py
 
 macro reset
 """

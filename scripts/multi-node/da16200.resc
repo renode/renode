@@ -4,7 +4,7 @@ $bin_sender=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-send
 $bin_receiver=@https://dl.antmicro.com/projects/renode/da16200-ra6m4-udp-echo-receiver.elf-s_381484-4fd4ae40c3748be11bfc7fee2fbfd3aea49425f1
 
 # Load helper attaching SEGGER read/write functions to a virtual console with `setup_segger_rtt`.
-include @scripts/single-node/renesas-segger-rtt.py
+include @scripts/single-node/segger-rtt.py
 
 # Create network
 emulation CreateDA16200Network "wifi"

@@ -61,7 +61,7 @@ Prepare Machine With CK Board
 Prepare Segger RTT
     [Arguments]                     ${with_has_key}=False  ${with_read}=False
     Execute Command                 machine CreateVirtualConsole "segger_rtt"
-    Execute Command                 include @scripts/single-node/renesas-segger-rtt.py
+    Execute Command                 include @scripts/single-node/segger-rtt.py
     Execute Command                 setup_segger_rtt sysbus.segger_rtt ${with_has_key} ${with_read}
     Create Terminal Tester          sysbus.segger_rtt
 
