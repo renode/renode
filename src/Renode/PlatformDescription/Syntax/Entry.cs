@@ -18,6 +18,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public Entry(string variableName, StringWithPosition type, IEnumerable<RegistrationInfo> registrationInfo, IEnumerable<Attribute> attributes, bool isLocal, StringWithPosition alias)
         {
             VariableName = variableName;
+            baseVariableName = variableName;
             Type = type;
             RegistrationInfos = registrationInfo;
             Attributes = attributes;
@@ -36,14 +37,22 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public void Prefix(string with)
         {
-            VariableName = with + VariableName;
+            VariableName = with + baseVariableName;
         }
 
         public Entry MergeWith(Entry entry)
         {
-            if(entry.VariableName != VariableName || entry.Type != null || entry.Variable != null || Variable != null)
+            if(Type != null && entry.Type != null && Type.Value != entry.Type.Value)
             {
-                throw new InvalidOperationException("Internal error during entry merge.");
+                throw new InvalidOperationException($"Internal error during entry merge: merging entries of different types: {entry.Type?.Value} and {Type?.Value}.");
+            }
+            if(entry.VariableName != VariableName || entry.Variable != null || Variable != null)
+            {
+                throw new InvalidOperationException($"Internal error during entry merge: merging entries for different variables: {entry.VariableName} and {VariableName}.");
+            }
+            if(entry.Type != null)
+            {
+                Type = entry.Type;
             }
             if(entry.RegistrationInfos != null)
             {
@@ -127,5 +136,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public StringWithPosition Alias { get; private set; }
         public ConstructorInfo Constructor { get; set; }
         public Variable Variable { get; set; }
+
+        private readonly string baseVariableName;
     }
 }

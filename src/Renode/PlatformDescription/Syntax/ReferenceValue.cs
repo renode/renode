@@ -14,6 +14,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public ReferenceValue(string value)
         {
             Value = value;
+            baseValue = value;
         }
 
         public override string ToString()
@@ -28,7 +29,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public void Prefix(string with)
         {
-            Value = with + Value;
+            Value = with + baseValue;
         }
 
         ReferenceValue IPositionAware<ReferenceValue>.SetPos(Position startPos, int length)
@@ -38,5 +39,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public string Value { get; private set; }
         public string Scope { get; set; }
+
+        private readonly string baseValue;
     }
 }

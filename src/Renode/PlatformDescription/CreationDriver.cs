@@ -30,7 +30,7 @@ namespace Antmicro.Renode.PlatformDescription
 {
     using DependencyGraph = Dictionary<Entry, Dictionary<Entry, ReferenceValue>>;
 
-    public sealed class CreationDriver
+    public sealed partial class CreationDriver
     {
         public CreationDriver(Machine machine, IUsingResolver usingResolver, IInitHandler initHandler)
         {
@@ -62,15 +62,95 @@ namespace Antmicro.Renode.PlatformDescription
             ProcessInner(path, source);
         }
 
+        private void ProcessVariableDeclarations(Description description, string prefix)
+        {
+            // Collect all variable declarations (entries where there is a type specified).
+            // These can be anywhere in the usings hierarchy, as long as there is only one.
+            var entries = description.Entries;
+            foreach(var entry in entries)
+            {
+                if(entry.Type != null)
+                {
+                    var wasDeclared = variableStore.TryGetVariableInLocalScope(entry.VariableName, out var variable);
+                    if(!wasDeclared)
+                    {
+                        var resolved = ResolveTypeOrThrow(entry.Type, entry.Type);
+                        variable = variableStore.DeclareVariable(entry.VariableName, resolved, entry.StartPosition, entry.IsLocal);
+                    }
+                    else
+                    {
+                        HandleDoubleDeclarationError(variable, entry);
+                    }
+                }
+            }
+        }
+
+        private void CollectVariableEntries(Description description, string prefix)
+        {
+            // Having collected all variable declarations, go through the entries again and collect them in the correct
+            // order for merging later.
+            // At this point we can also validate if there were declaration errors (e. g. variable without type).
+            var entries = description.Entries;
+
+            foreach(var entry in entries)
+            {
+                if(!entry.Attributes.Any() && entry.RegistrationInfos == null && entry.Type == null)
+                {
+                    HandleError(ParsingError.EmptyEntry, entry, "Entry cannot be empty.", false);
+                }
+
+                var wasDeclared = variableStore.TryGetVariableInLocalScope(entry.VariableName, out var variable);
+                if(!wasDeclared)
+                {
+                    HandleError(ParsingError.VariableNeverDeclared, entry,
+                                    string.Format("Variable '{0}' is never declared - type is unknown.", entry.VariableName), false);
+                }
+
+                if(entry.Type == null)
+                {
+                    var updatingCtorAttribute = entry.Attributes.OfType<ConstructorOrPropertyAttribute>().FirstOrDefault(x => !x.IsPropertyAttribute);
+                    if(updatingCtorAttribute != null)
+                    {
+                        var position = GetFormattedPosition(updatingCtorAttribute);
+                        Logger.Log(LogLevel.Debug, "At {0}: updating constructors of the entry declared earlier.", position);
+                    }
+                }
+
+                variable.AddEntry(entry);
+            }
+
+            foreach(var entry in entries)
+            {
+                ProcessEntryPreMerge(entry);
+            }
+        }
+
+        private void HandleDoubleDeclarationError(Variable variable, Entry entry)
+        {
+            string restOfErrorMessage;
+            if(variable.DeclarationPlace != DeclarationPlace.BuiltinOrAlreadyRegistered)
+            {
+                restOfErrorMessage = string.Format(", previous declaration was {0}", variable.DeclarationPlace.GetFriendlyDescription());
+            }
+            else
+            {
+                restOfErrorMessage = " as an already registered peripheral or builtin";
+            }
+            HandleError(ParsingError.VariableAlreadyDeclared, entry,
+                        string.Format("Variable '{0}' was already declared{1}.", entry.VariableName, restOfErrorMessage), false);
+        }
+
         private void ProcessInner(string file, string source)
         {
             try
             {
-                ValidatePreMerge(file, source, "");
+                var usingsGraph = new UsingsGraph(this, file, source);
+                usingsGraph.TraverseDepthFirst(ProcessVariableDeclarations);
+                usingsGraph.TraverseDepthFirst(CollectVariableEntries);
                 var mergedEntries = variableStore.GetMergedEntries();
                 foreach(var entry in mergedEntries)
                 {
-                    ValidateEntryPostMerge(entry);
+                    ProcessEntryPostMerge(entry);
                 }
 
                 var sortedForCreation = SortEntriesForCreation(mergedEntries);
@@ -143,27 +223,6 @@ namespace Antmicro.Renode.PlatformDescription
             machine.PostCreationActions();
         }
 
-        private void ValidatePreMerge(string file, string source, string prefix)
-        {
-            var parsedDescription = ParseDescription(source, file);
-            processedDescriptions.Add(parsedDescription);
-
-            foreach(var usingEntry in parsedDescription.Usings)
-            {
-                ProcessUsing(usingEntry, prefix, file);
-            }
-
-            variableStore.CurrentScope = file;
-            var currentEntries = parsedDescription.Entries.ToList();
-
-            if(!string.IsNullOrEmpty(prefix))
-            {
-                SyntaxTreeHelpers.VisitSyntaxTree<IPrefixable>(parsedDescription, x => x.Prefix(prefix));
-            }
-            SyntaxTreeHelpers.VisitSyntaxTree<ReferenceValue>(parsedDescription, x => x.Scope = file);
-			ValidateEntriesPreMerge(currentEntries);
-        }
-
         private Description ParseDescription(string description, string fileName)
         {
             var output = PreLexer.Process(description, fileName).Aggregate((x, y) => x + Environment.NewLine + y);
@@ -192,36 +251,6 @@ namespace Antmicro.Renode.PlatformDescription
             {
                 variableStore.AddBuiltinOrAlreadyRegisteredVariable(peripheral.Value, peripheral.Key);
             }
-        }
-
-        private void ProcessUsing(UsingEntry usingEntry, string parentPrefix, string includingFile)
-        {
-            var filePath = usingResolver.Resolve(usingEntry.Path, includingFile);
-            if(!File.Exists(filePath))
-            {
-                HandleError(ParsingError.UsingFileNotFound, usingEntry.Path,
-                            string.Format("Using '{0}' resolved as '{1}' does not exist.", usingEntry.Path, filePath), true);
-            }
-            var fullFilePath = Path.GetFullPath(filePath);
-            if(usingsBeingProcessed.Contains(fullFilePath))
-            {
-                var segments = new List<string> { fullFilePath };
-                string currentSegment;
-                do
-                {
-                    currentSegment = usingsBeingProcessed.Pop();
-                    segments.Add(currentSegment);
-                } while(currentSegment != fullFilePath);
-
-                HandleError(ParsingError.RecurringUsing, usingEntry,
-                            string.Format("There is a cycle in using file depenedncy. The path is as follows: {0}.",
-                                          Environment.NewLine + segments.Aggregate((x, y) => x + Environment.NewLine + "=> " + y)),
-                            false);
-            }
-            usingsBeingProcessed.Push(fullFilePath);
-            var source = File.ReadAllText(filePath);
-            ValidatePreMerge(filePath, source, parentPrefix + usingEntry.Prefix);
-            usingsBeingProcessed.Pop();
         }
 
         private List<Entry> SortEntriesForCreation(IEnumerable<Entry> entries)
@@ -357,65 +386,7 @@ namespace Antmicro.Renode.PlatformDescription
             return result;
         }
 
-        private void ValidateEntriesPreMerge(List<Entry> entries)
-        {
-            foreach(var entry in entries)
-            {
-                Variable variable;
-
-                if(!entry.Attributes.Any() && entry.RegistrationInfos == null && entry.Type == null)
-                {
-                    HandleError(ParsingError.EmptyEntry, entry, "Entry cannot be empty.", false);
-                }
-
-                var wasDeclared = variableStore.TryGetVariableInLocalScope(entry.VariableName, out variable);
-                if(entry.Type == null)
-                {
-                    if(!wasDeclared)
-                    {
-                        HandleError(ParsingError.TypeNotSpecifiedInFirstVariableUse, entry,
-                                    string.Format("First entry for variable '{0}' file does not contain a type name.", entry.VariableName), false);
-                    }
-                }
-                else
-                {
-                    if(wasDeclared)
-                    {
-                        string restOfErrorMessage;
-                        if(variable.DeclarationPlace != DeclarationPlace.BuiltinOrAlreadyRegistered)
-                        {
-                            restOfErrorMessage = string.Format(", previous declaration was {0}", variable.DeclarationPlace.GetFriendlyDescription());
-                        }
-                        else
-                        {
-                            restOfErrorMessage = " as an already registered peripheral or builtin";
-                        }
-                        HandleError(ParsingError.VariableAlreadyDeclared, entry,
-                                    string.Format("Variable '{0}' was already defined{1}.", entry.VariableName, restOfErrorMessage), false);
-                    }
-                    var resolved = ResolveTypeOrThrow(entry.Type, entry.Type);
-                    variable = variableStore.DeclareVariable(entry.VariableName, resolved, entry.StartPosition, entry.IsLocal);
-                }
-
-                variable.AddEntry(entry);
-                if(entry.Type == null)
-                {
-                    var updatingCtorAttribute = entry.Attributes.OfType<ConstructorOrPropertyAttribute>().FirstOrDefault(x => !x.IsPropertyAttribute);
-                    if(updatingCtorAttribute != null)
-                    {
-                        var position = GetFormattedPosition(updatingCtorAttribute);
-                        Logger.Log(LogLevel.Debug, "At {0}: updating constructors of the entry declared earlier.", position);
-                    }
-                }
-            }
-
-            foreach(var entry in entries)
-            {
-                ValidateEntryPreMerge(entry);
-            }
-        }
-
-        private void ValidateEntryPreMerge(Entry entry)
+        private void ProcessEntryPreMerge(Entry entry)
         {
             var entryType = variableStore.GetVariableInLocalScope(entry.VariableName).VariableType;
             if(entry.Alias != null)
@@ -567,7 +538,7 @@ namespace Antmicro.Renode.PlatformDescription
             return true;
         }
 
-        private void ValidateEntryPostMerge(Entry entry)
+        private void ProcessEntryPostMerge(Entry entry)
         {
             // we have to find a constructor for this entry - if it is to be constructed (e.g. sysbus entry is not)
             // we also have to find constructors for all of the object values within this entry

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -64,7 +64,7 @@ cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU";
         }
 
         [Test]
-        public void ShouldFailOnReverseVariableDependency()
+        public void ShouldAllowReverseVariableDependency()
         {
             var source = @"
 using ""A""
@@ -74,8 +74,7 @@ otherCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: otherCpu";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
-            Assert.AreEqual(ParsingError.MissingReference, exception.Error);
+            ProcessSource(source, a);
         }
 
         [Test]

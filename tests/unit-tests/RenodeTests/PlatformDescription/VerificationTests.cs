@@ -38,15 +38,14 @@ mock: @sysbus <0x0, +0x100>";
         }
 
         [Test]
-        public void ShouldNotProcessWithoutTypeNameInFirstEntry()
+        public void ShouldProcessWithoutTypeNameInFirstEntry()
         {
             var source = @"
 mock: @sysbus <0x0, 0x1000>
 
 mock: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
-            Assert.AreEqual(ParsingError.TypeNotSpecifiedInFirstVariableUse, exception.Error);
+            ProcessSource(source);
         }
 
         [Test]
@@ -477,7 +476,7 @@ peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ register regPoint"
         {
             var source = @"
 peripheral: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral as ""alias""";
-            
+
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.AliasWithoutRegistration, exception.Error);
         }

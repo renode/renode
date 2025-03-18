@@ -33,18 +33,9 @@ namespace Antmicro.Renode.PlatformDescription
             {
                 return null;
             }
-            Entry result;
-            if(associatedEntries.Count == 1)
-            {
-                result = associatedEntries[0];
-            }
-            else
-            {
-                var firstEntry = associatedEntries[0];
-                // shallow copy is good enough here, we just don't want to change the original entry
-                var firstEntryCopy = firstEntry.MakeShallowCopy();
-                result = associatedEntries.Skip(1).Aggregate(firstEntryCopy, (x, y) => x.MergeWith(y));
-            }
+            var entriesToMerge = associatedEntries.ToList();
+            Entry result = entriesToMerge[0];
+            result = entriesToMerge.Skip(1).Aggregate(entriesToMerge[0], (x, y) => x.MergeWith(y));
             result.Variable = this;
             return result;
         }

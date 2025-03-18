@@ -70,6 +70,7 @@
     <Compile Include="PlatformDescription\ParsingException.cs" />
     <Compile Include="PlatformDescription\PreLexer.cs" />
     <Compile Include="PlatformDescription\SerializationProvider.cs" />
+    <Compile Include="PlatformDescription\UsingsGraph.cs" />
     <Compile Include="PlatformDescription\Variable.cs" />
     <Compile Include="PlatformDescription\VariableStore.cs" />
     <Compile Include="PlatformDescription\Syntax\Attribute.cs" />
