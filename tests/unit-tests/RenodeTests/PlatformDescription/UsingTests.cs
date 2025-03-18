@@ -4,10 +4,12 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
+using System;
 using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.PlatformDescription;
 using NUnit.Framework;
+using Antmicro.Renode.UnitTests.Mocks;
 using static Antmicro.Renode.PlatformDescription.UserInterface.PlatformDescriptionMachineExtensions;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
@@ -26,7 +28,7 @@ using ""A""
 cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu1";
 
-            ProcessSource(source, a);
+            ProcessSource(null, source, a);
         }
 
         [Test]
@@ -40,7 +42,7 @@ using ""A""
 cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: cpu1";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source, a));
             Assert.AreEqual(ParsingError.MissingReference, exception.Error);
         }
 
@@ -60,7 +62,7 @@ cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU
             var b = @"
 cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
-            ProcessSource(source, a, b);
+            ProcessSource(null, source, a, b);
         }
 
         [Test]
@@ -74,7 +76,7 @@ otherCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: otherCpu";
 
-            ProcessSource(source, a);
+            ProcessSource(null, source, a);
         }
 
         [Test]
@@ -88,7 +90,7 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
             var a = @"
 cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
-            ProcessSource(source, a);
+            ProcessSource(null, source, a);
         }
 
         [Test]
@@ -109,7 +111,200 @@ using ""B"" prefixed ""b_""";
             var b = @"
 cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
-            ProcessSource(source, a, b);
+            ProcessSource(null, source, a, b);
+        }
+
+        [Test]
+        public void ShouldFollowAttributeOverrideOrder0()
+        {
+            var source = @"
+using ""A""
+using ""B""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus 0x0
+    Placeholder: ""set by source first""
+
+cpu:
+    Placeholder: ""set by source second""
+";
+
+            var a = @"
+cpu:
+    Placeholder: ""set by A""
+";
+
+            var b = @"
+using ""C""
+cpu:
+    Placeholder: ""set by B""
+";
+
+            var c = @"
+cpu:
+    Placeholder: ""set by C""
+";
+
+            var machine = new Machine();
+            ProcessSource(machine, source, a, b, c);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("set by source second", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFollowAttributeOverrideOrder1()
+        {
+            var source = @"
+using ""A""
+using ""B""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+";
+
+            var a = @"
+cpu:
+    Placeholder: ""set by A first""
+cpu:
+    Placeholder: ""set by A second""
+";
+
+            var b = @"
+using ""C""
+cpu:
+    Placeholder: ""set by B first""
+cpu:
+    Placeholder: ""set by B second""
+";
+
+            var c = @"
+cpu:
+    Placeholder: ""set by C first""
+cpu:
+    Placeholder: ""set by C second""
+";
+
+            var machine = new Machine();
+            ProcessSource(machine, source, a, b, c);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("set by B second", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFollowAttributeOverrideOrder2()
+        {
+            var source = @"
+using ""A""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus 0x0
+";
+
+            var a = @"
+using ""B""
+cpu:
+    Placeholder: ""set by A""
+";
+
+            var b = @"
+cpu:
+    Placeholder: ""set by B""
+";
+
+            var machine = new Machine();
+            ProcessSource(machine, source, a, b);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("set by A", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFollowAttributeOverrideOrder3()
+        {
+            var source = @"
+using ""A""
+using ""B""
+using ""C""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+";
+
+            var a = @"
+cpu:
+    Placeholder: ""set by A first""
+cpu:
+    Placeholder: ""set by A second""
+";
+
+            var b = @"
+cpu:
+    Placeholder: ""set by B first""
+cpu:
+    Placeholder: ""set by B second""
+";
+            var c = @"
+using ""A"";
+";
+
+            var machine = new Machine();
+            ProcessSource(machine, source, a, b, c);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("set by A second", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFollowAttributeOverrideOrder4()
+        {
+            var source = @"
+using ""A""
+using ""B""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+";
+
+            var a = @"
+cpu:
+    Placeholder: ""set by A first""
+cpu:
+    Placeholder: ""set by A second""
+";
+
+            var b = @"
+using ""A""
+cpu:
+    Placeholder: ""set by B first""
+cpu:
+    Placeholder: ""set by B second""
+";
+
+            var machine = new Machine();
+            ProcessSource(machine, source, a, b);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual("set by B second", mock.Placeholder);
+        }
+
+        [Test]
+        public void ShouldFailOnDuplicateUsingEntry()
+        {
+            var source = @"
+using ""A""
+using ""B""
+using ""A""
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+";
+
+            var a = @"
+cpu:
+    Placeholder: ""set by A first""
+cpu:
+    Placeholder: ""set by A second""
+";
+
+            var b = @"
+cpu:
+    Placeholder: ""set by B first""
+cpu:
+    Placeholder: ""set by B second""
+";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source, a, b));
+            Assert.AreEqual(ParsingError.DuplicateUsing, exception.Error);
         }
 
         [Test]
@@ -123,7 +318,7 @@ sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
             var source = @"
 using ""A"" prefixed ""sth_""";
 
-            ProcessSource(source, a);
+            ProcessSource(null, source, a);
         }
 
         [Test]
@@ -141,7 +336,7 @@ p2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 using ""B""
 p3: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a, b));
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source, a, b));
             Assert.AreEqual(ParsingError.RecurringUsing, exception.Error);
         }
 
@@ -156,7 +351,7 @@ p: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 using ""A""
 p2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source, a));
             Assert.AreEqual(ParsingError.RecurringUsing, exception.Error);
         }
 
@@ -166,7 +361,7 @@ p2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral";
             var source = @"
 using ""A""";
 
-            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source));
             Assert.AreEqual(ParsingError.UsingFileNotFound, exception.Error);
         }
 
@@ -226,7 +421,7 @@ using ""A""";
             resolver = new UsingResolver(Enumerable.Empty<string>());
         }
 
-        private static void ProcessSource(params string[] sources)
+        private static void ProcessSource(Machine machine, params string[] sources)
         {
             var letters = Enumerable.Range(0, sources.Length - 1).Select(x => (char)('A' + x)).ToArray();
             var usingResolver = new FakeUsingResolver();
@@ -234,7 +429,7 @@ using ""A""";
             {
                 usingResolver.With(letters[i - 1].ToString(), sources[i]);
             }
-            var creationDriver = new CreationDriver(new Machine(), usingResolver, new FakeInitHandler());
+            var creationDriver = new CreationDriver(machine ?? new Machine(), usingResolver, new FakeInitHandler());
         	creationDriver.ProcessDescription(sources[0]);
         }
 

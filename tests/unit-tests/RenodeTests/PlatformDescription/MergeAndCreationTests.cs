@@ -1111,6 +1111,27 @@ peripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MachineTestPeripheral @ sysbus
             Assert.DoesNotThrow(() => ProcessSource(source));
         }
 
+        [Test]
+        public void ShouldAcceptPreviousRegistrationPoint()
+        {
+            var source = @"
+mock: @ sysbus
+mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
+
+            Assert.DoesNotThrow(() => ProcessSource(source));
+        }
+
+        [Test]
+        public void ShouldRejectPreviousIncompatibleRegistrationPoint()
+        {
+            var source = @"
+mock: @ sysbus <0, 1>
+mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.NoCtorForRegistrationPoint, exception.Error);
+        }
+
         [OneTimeSetUp]
         public void Init()
         {
