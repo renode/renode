@@ -224,6 +224,14 @@ def can_be_freed_by_killing_other_job(port, autokill):
         pass
     return False
 
+def report_dead_subprocess(process):
+    exception_message = "\n".join([
+                                  f"{process.executable} process died(pid == -1)?? Here are some details",
+                                  f"\t stdout = {process.stdout}",
+                                  f"\t stderr = {process.stderr}",
+                                  f"\t return code = {process.returncode}"])
+    raise RuntimeError(exception_message)
+
 
 class KeywordsFinder(robot.model.SuiteVisitor):
     def __init__(self, keyword):
@@ -397,6 +405,9 @@ class RobotTestSuite(object):
             if options.keep_renode_output:
                 print("Note: --keep-renode-output is not supported when using --run-gdb")
 
+            if p.pid == -1:
+                report_dead_subprocess(p)
+
             print("Waiting for Renode process to start")
             while True:
                 # We strip argv[0] because if we pass just `mono` to GDB it will resolve
@@ -425,6 +436,9 @@ class RobotTestSuite(object):
             pid_file_path = os.path.join(self.remote_server_directory, pid_filename)
             perf_renode_timeout = 10
 
+            if p.pid == -1:
+                report_dead_subprocess(p)
+
             while not os.path.exists(pid_file_path) and perf_renode_timeout > 0:
                 sleep(0.5)
                 perf_renode_timeout -= 1
@@ -445,10 +459,17 @@ class RobotTestSuite(object):
                 fout = open(os.path.join(logs_dir, f"{suite_name}.renode_stdout.log"), "wb", buffering=0)
                 ferr = open(os.path.join(logs_dir, f"{suite_name}.renode_stderr.log"), "wb", buffering=0)
                 p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr)
+                if p.pid == -1:
+                    report_dead_subprocess(p)
+
                 self.renode_pid = p.pid
             else:
                 p = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
+                if p.pid == -1:
+                    report_dead_subprocess(p)
                 self.renode_pid = p.pid
+
+        assert self.renode_pid != -1, "Renode PID has to be set before trying to acces the port file"
 
         timeout_s = 180
         countdown = float(timeout_s)
@@ -474,7 +495,6 @@ class RobotTestSuite(object):
             self._close_remote_server(p, options)
             raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
 
-        assert self.renode_pid != -1, "Renode PID has to be set before returning"
         return p
 
     def __move_perf_data(self, options):
