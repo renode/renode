@@ -168,6 +168,12 @@ class NUnitTestSuite(object):
         return False
 
 
+    def tests_failed_due_to_renode_crash(self) -> bool:
+        # Unused mechanism, this exists to keep a uniform interface with
+        # robot_tests_provider.py.
+        return False
+
+
     @staticmethod
     def find_failed_tests(path, files_pattern='*.csproj.xml'):
         test_files = glob.glob(os.path.join(path, files_pattern))
@@ -200,10 +206,3 @@ class NUnitTestSuite(object):
         # Unused mechanism, this exists to keep a uniform interface with
         # robot_tests_provider.py.
         return None
-
-
-    @classmethod
-    def tests_failed_due_to_renode_crash(cls, test_groups: Dict[str, List['NUnitTestSuite']]) -> bool:
-        # Unused mechanism, this exists to keep a uniform interface with
-        # robot_tests_provider.py.
-        return False

@@ -912,6 +912,40 @@ class RobotTestSuite(object):
                 os.rename(src_fpath, dest_fpath)
 
 
+    def tests_failed_due_to_renode_crash(self) -> bool:
+        # Return false if the test has not yet run
+        if self.suite_log_files is None:
+            return
+        for file in self.suite_log_files:
+            try:
+                tree = ET.parse(file)
+            except FileNotFoundError:
+                continue
+
+            root = tree.getroot()
+
+            for suite in root.iter('suite'):
+                if not suite.get('source', False):
+                    continue # it is a tag used to group other suites without meaning on its own
+                for test in suite.iter('test'):
+                    # do not check skipped tests
+                    if test.find("./tags/[tag='skipped']"):
+                        continue
+
+                    # only finds immediate children - required because `status`
+                    # nodes are also present lower in the tree for example
+                    # for every keyword but we only need the status of the test
+                    status = test.find('status')
+                    if status.attrib["status"] != "FAIL":
+                        continue # passed tests should not be checked for crashes
+
+                    # check whether renode crashed during this test
+                    if self._has_renode_crashed(test):
+                        return True
+
+        return False
+
+
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
         ret = {'mandatory': set(), 'non_critical': set()}
@@ -1086,37 +1120,3 @@ class RobotTestSuite(object):
             break
 
         return data
-
-
-    @classmethod
-    def tests_failed_due_to_renode_crash(cls, test_groups: Dict[str, List['RobotTestSuite']]) -> bool:
-        for group in test_groups:
-            for suite in test_groups[group]:
-                for file in suite.suite_log_files:
-                    try:
-                        tree = ET.parse(file)
-                    except FileNotFoundError:
-                        continue
-
-                    root = tree.getroot()
-
-                    for suite in root.iter('suite'):
-                        if not suite.get('source', False):
-                            continue # it is a tag used to group other suites without meaning on its own
-                        for test in suite.iter('test'):
-                            # do not check skipped tests
-                            if test.find("./tags/[tag='skipped']"):
-                                continue
-
-                            # only finds immediate children - required because `status`
-                            # nodes are also present lower in the tree for example
-                            # for every keyword but we only need the status of the test
-                            status = test.find('status') 
-                            if status.attrib["status"] != "FAIL":
-                                continue # passed tests should not be checked for crashes
-
-                            # check whether renode crashed during this test
-                            if cls._has_renode_crashed(test):
-                                return True
-
-        return False

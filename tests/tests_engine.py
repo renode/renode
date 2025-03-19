@@ -456,10 +456,10 @@ def print_rerun_trace(options):
 #
 # when running multiple test suites returns TRUE if ANY failed due to a crash.
 def failed_due_to_crash(options) -> bool:
-    for handler in registered_handlers:
-        handler_obj = handler['creator']
-        if handler_obj.tests_failed_due_to_renode_crash(options.tests):
-            return True
+    for group in options.tests:
+        for suite in options.tests[group]:
+            if suite.tests_failed_due_to_renode_crash():
+                return True
 
     return False
 
