@@ -117,8 +117,7 @@ enum renode_action : uint8_t {
   //     data_length: number of bytes to read [1, 8]
   //     address: register to read from, in target's register space
   //     payload: value to write
-  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
-  //       for direct connection
+  //     connection_index: ignored
   // Response:
   //     address: duration of transaction in us
   //     payload: read value
@@ -129,8 +128,7 @@ enum renode_action : uint8_t {
   //     data_length: number of bytes to write [1, 8].
   //     address: register to write to, in target's register space
   //     payload: value to write
-  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
-  //       direct connection
+  //     connection_index: ignored
   // Response:
   //     address: duration of transaction in us
   //     Otherwise identical to the request message.
@@ -186,6 +184,18 @@ static void print_renode_message(renode_message *message) {
     break;
   case RESET:
     printf("RESET");
+    break;
+  case DMIREQ:
+    printf("DMIREQ");
+    break;
+  case TBSINVALID:
+    printf("TBSINVALID");
+    break;
+  case READ_REGISTER:
+    printf("READ_REGISTER");
+    break;
+  case WRITE_REGISTER:
+    printf("WRITE_REGISTER"); 
     break;
   default:
     printf("INVALID");
@@ -347,7 +357,9 @@ renode_bridge::~renode_bridge() {
 
 void renode_bridge::forward_loop() {
   // Processing of requests initiated by Renode.
-  uint8_t data[8] = {};
+
+  // data byte array with dword alignment, for later conversion to uint64_t*
+  alignas(8) uint8_t data[8] = {};
 
   renode_message message;
 
