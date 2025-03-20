@@ -44,6 +44,9 @@ adc: Analog.SAM4S_ADC @ sysbus 0x40038000
     baseFrequency: 120000000
     ->nvic@29
 
+dacc: Miscellaneous.SAM4S_DACC @ sysbus 0x4003C000
+    ->nvic@30
+
 PMC_SR: Python.PythonPeripheral @ sysbus 0x400E0468
     size: 0x4
     initable: true
