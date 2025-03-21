@@ -224,6 +224,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             sysbus = machine.GetSystemBus(this);
 
             directAccessPeripherals = new Dictionary<int, IDirectAccessPeripheral>();
+            IsInitialized = false;
 
             messageLock = new object();
 
@@ -274,6 +275,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
         }
+
+        public bool IsInitialized { get; private set; }
 
         public ulong ReadQuadWord(long offset)
         {
@@ -362,8 +365,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
-            forwardSocket.Close();
-            backwardSocket.Close();
+            if(forwardSocket != null)
+            {
+                forwardSocket.Close();
+                backwardSocket.Close();
+            }
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -469,7 +475,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             listenerSocket.Close();
 
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
+            IsInitialized = SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
 
             backwardThread.Start();
         }

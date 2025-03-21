@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Bus;
@@ -19,11 +20,19 @@ namespace Antmicro.Renode.Peripherals.SystemC
             : base(0, cpuType, machine, endianess, bitness)
         {
             systemCPeripheral = new SystemCPeripheral(machine, address, port, timeSyncPeriodUS, disableTimeoutCheck);
+            registersToInitialize = new Queue<Tuple<int,uint>>();
         }
 
         public virtual void SetRegisterValue32(int register, uint value)
         {
-            systemCPeripheral.WriteRegister(4, (long)register, value);
+            if (systemCPeripheral.IsInitialized)
+            {
+                systemCPeripheral.WriteRegister(4, (long)register, value);
+            }
+            else
+            {
+                registersToInitialize.Enqueue(new Tuple<int,uint>(register, value));
+            }
         }
 
         public virtual uint GetRegisterValue32(int register)
@@ -115,10 +124,22 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public string SystemCExecutablePath
         {
             get => systemCPeripheral.SystemCExecutablePath;
-            set => systemCPeripheral.SystemCExecutablePath = value;
+            set
+            {
+                systemCPeripheral.SystemCExecutablePath = value;
+                if (systemCPeripheral.IsInitialized)
+                {
+                    foreach (var regInitValue in registersToInitialize)
+                    {
+                        systemCPeripheral.WriteRegister(4, (long)regInitValue.Item1, regInitValue.Item2);
+                    }
+                    registersToInitialize.Clear();
+                }
+            }
         }
 
         private readonly SystemCPeripheral systemCPeripheral;
         private ulong totalExecutedInstructions;
+        private Queue<Tuple<int,uint>> registersToInitialize;
     }
 }
