@@ -40,6 +40,9 @@ dotnet_diagnostic.IDE0044.severity = warning
 # Remove unused using directives
 dotnet_diagnostic.IDE0005.severity = warning
 
+# Remove unused parameters
+dotnet_diagnostic.IDE0060.severity = warning
+
 # Sort using directives alphabetically
 dotnet_sort_system_directives_first = true
 
