@@ -10,6 +10,8 @@ using Antmicro.Renode.UI;
 using System.Reflection;
 using System.IO;
 using System;
+
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.RobotFramework;
 using Antmicro.Renode.Logging;
@@ -37,7 +39,7 @@ namespace Antmicro.Renode
             }
             ConfigureEnvironment(options);
 
-            /* 
+            /*
                 We noticed that the static constructors' initialization chain breaks non-deterministically on some Mono versions crashing Renode with NullReferenceException.
                 In the current version, EmulationManager's static constructor calls TypeManager that in turn uses Logger; Logger however requires EmulationManager to be functional.
                 This circular dependency seems to be a problem.
@@ -73,6 +75,9 @@ namespace Antmicro.Renode
 
         private static void ConfigureEnvironment(Options options)
         {
+            // Inform any machines created after this point about how large the store table should be.
+            Machine.StoreTableBits = options.StoreTableBits;
+
             //Plain mode must be set before the window title
             ConsoleBackend.Instance.PlainMode = options.Plain;
 
