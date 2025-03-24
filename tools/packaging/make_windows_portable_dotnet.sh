@@ -7,11 +7,6 @@ set -u
 cd "${0%/*}"
 . common_make_packages.sh
 
-if ! is_dep_available zip
-then
-    exit 1
-fi
-
 RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DIR=renode_${VERSION}-dotnet_portable
@@ -53,7 +48,8 @@ cp \
 
 ### create zip
 mkdir -p ../../output/packages
-zip -qr ../../output/packages/renode-$VERSION.windows-portable-dotnet.zip $DIR
+# Absolute path to use the Windows builtin BSD tar instead of minGW tar
+/c/Windows/SysWOW64/tar.exe -a -c -f ../../output/packages/renode-$VERSION.windows-portable-dotnet.zip $DIR
 
 echo "Created a dotnet portable package in output/packages/renode-$VERSION.windows-portable-dotnet.zip"
 

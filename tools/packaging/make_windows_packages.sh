@@ -7,11 +7,6 @@ set -u
 cd "${0%/*}"
 . common_make_packages.sh
 
-if ! is_dep_available zip
-then
-    exit 1
-fi
-
 DIR=renode_$VERSION
 ZIP=$DIR.zip
 MSI=$DIR.msi
@@ -32,11 +27,11 @@ mkdir -p $OUTPUT
 MSBuild.exe -t:Clean,Build windows/RenodeSetup/SetupProject.wixproj -p:version=${VERSION%\+*} -p:installer_name=$DIR
 
 ### create windows package
+# Absolute path to use the Windows builtin BSD tar instead of minGW tar
+/c/Windows/SysWOW64/tar.exe -a -c -f $ZIP $DIR
 if $REMOVE_WORKDIR
 then
-    zip -qrm $ZIP $DIR/
-else
-    zip -qr $ZIP $DIR/
+    rm -rf $DIR
 fi
 
 mv $ZIP $OUTPUT
