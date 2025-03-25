@@ -62,6 +62,10 @@ uart1: UART.SAM_USART @ sysbus 0x400E0800
     enablePdc: true
     ->nvic@9
 
+eefc: Miscellaneous.SAM4S_EEFC @ sysbus 0x400E0A00
+    underlyingMemory: flash
+    ->nvic@6
+
 rstc: Miscellaneous.SAM4S_RSTC @ sysbus 0x400E1400
 
 wdt: Timers.SAM4S_WDT @ sysbus 0x400E1450
