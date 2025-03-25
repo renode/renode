@@ -1,0 +1,11 @@
+using "platforms/cpus/silabs/efr32s2/efr32xg22.repl"
+
+sram:
+    size: 0x8000
+
+flash:
+    size: 0x80000
+
+msc:
+    flashSize: 0x80000
+    flashPageSize: 0x2000

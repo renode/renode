@@ -1,0 +1,317 @@
+nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu
+    }
+    -> cpu@0
+    systickFrequency: 38400000
+
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m33"
+    cpuId: 0
+
+flash: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x80000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x8000
+
+seqram: Memory.MappedMemory @ {
+        sysbus 0xA0000000; // SEQRAM_S
+        sysbus 0xB0000000  // SEQRAM_NS
+    }
+    size: 0x4000
+
+frcram: Memory.MappedMemory @ {
+        sysbus 0xA0004000; // FRCRAM_S
+        sysbus 0xB0004000  // FRCRAM_NS
+    }
+    size: 0x1000
+
+pkram: Memory.MappedMemory @ {
+        sysbus 0x4C028000; // PKRAM_MAIN_S
+        sysbus 0x5C028000  // PKRAM_MAIN_NS
+    }
+    size: 0x2000    // TODO: according to the CMSIS header, this should be 0x1000
+
+bitclear: Miscellaneous.BitAccess
+    address: 0x2000
+    mode: BitAccessMode.Clear
+
+bitset: Miscellaneous.BitAccess
+    address: 0x1000
+    mode: BitAccessMode.Set
+
+i2c0: I2C.EFR32_I2CController @ {
+        sysbus <0x4A010000, +0x4000>; // I2C0_S
+        sysbus <0x5A010000, +0x4000>  // I2C0_NS
+    }
+    -> nvic@27
+
+ldma: DMA.EFR32xG22_LDMA @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40040000; size: 0x4000; region: "ldma" };     // LDMA_S
+        sysbus new Bus.BusMultiRegistration { address: 0x50040000; size: 0x4000; region: "ldma" };     // LDMA_NS
+        sysbus new Bus.BusMultiRegistration { address: 0x40044000; size: 0x4000; region: "ldmaxbar" }; // LDMAXBAR_S
+        sysbus new Bus.BusMultiRegistration { address: 0x50044000; size: 0x4000; region: "ldmaxbar" }  // LDMAXBAR_NS
+    }
+    -> nvic@21
+
+usart0: UART.EFR32xG2_USART_0 @ {
+        sysbus <0x4005C000, +0x4000>; // USART0_S
+        sysbus <0x5005C000, +0x4000>  // USART0_NS
+    }
+    clockFrequency: 38400000
+    ReceiveIRQ -> nvic@13
+    TransmitIRQ -> nvic@14
+    RxDataAvailableRequest -> ldma@0x0040
+    RxDataAvailableSingleRequest -> ldma@0x1040
+    RxDataAvailableGpioSignal -> gpioPort@0x1201
+    TxBufferLowRequest -> ldma@0x0042
+    TxBufferLowSingleRequest -> ldma@0x1042
+    TxEmptyRequest -> ldma@0x0044
+
+usart1: UART.EFR32xG2_USART_0 @ {
+        sysbus <0x40060000, +0x4000>; // USART1_S
+        sysbus <0x50060000, +0x4000>  // USART1_NS
+    }
+    clockFrequency: 38400000
+    ReceiveIRQ -> nvic@15
+    TransmitIRQ -> nvic@16
+    RxDataAvailableRequest -> ldma@0x0050
+    RxDataAvailableSingleRequest -> ldma@0x1050
+    RxDataAvailableGpioSignal -> gpioPort@0x1202
+    TxBufferLowRequest -> ldma@0x0052
+    TxBufferLowSingleRequest -> ldma@0x1052
+    TxEmptyRequest -> ldma@0x0054
+
+// TODO: this should be MSC_1
+msc: Miscellaneous.SiLabs.EFR32xG2_MSC_3 @ {
+        sysbus <0x40030000, +0x4000>; // MSC_S
+        sysbus <0x50030000, +0x4000>  // MSC_NS
+    }
+    cpu: cpu
+    IRQ -> nvic@49
+    flashSize: 0x80000
+    flashPageSize: 0x2000
+
+gpioPort: GPIOPort.EFR32xG2_GPIO_1 @ {
+        sysbus <0x4003C000, +0x4000>; // GPIO_S
+        sysbus <0x5003C000, +0x4000>  // GPIO_NS
+    }
+    OddIRQ -> nvic@25
+    EvenIRQ -> nvic@26
+
+// TODO: this should be TIMER_0
+timer0: Timers.EFR32xG2_TIMER_1 @ {
+        sysbus <0x40048000, +0x4000>; // TIMER0_S
+        sysbus <0x50048000, +0x4000>  // TIMER0_NS
+    }
+    frequency: 38400000
+    width: 16
+    -> nvic@7
+
+// TODO: this should be TIMER_0
+timer1: Timers.EFR32xG2_TIMER_1 @ {
+        sysbus <0x4004C000, +0x4000>; // TIMER1_S
+        sysbus <0x5004C000, +0x4000>  // TIMER1_NS
+    }
+    frequency: 38400000
+    width: 16
+    -> nvic@8
+
+// TODO: this should be TIMER_0
+timer2: Timers.EFR32xG2_TIMER_1 @ {
+        sysbus <0x40050000, +0x4000>; // TIMER2_S
+        sysbus <0x50050000, +0x4000>  // TIMER2_NS
+    }
+    frequency: 38400000
+    width: 16
+    -> nvic@9
+
+// TODO: this should be TIMER_0
+timer3: Timers.EFR32xG2_TIMER_1 @ {
+        sysbus <0x40054000, +0x4000>; // TIMER3_S
+        sysbus <0x50054000, +0x4000>  // TIMER3_NS
+    }
+    frequency: 38400000
+    width: 16
+    -> nvic@10
+
+// TODO: this should be TIMER_0
+timer4: Timers.EFR32xG2_TIMER_1 @ {
+        sysbus <0x40058000, +0x4000>; // TIMER4_S
+        sysbus <0x50058000, +0x4000>  // TIMER4_NS
+    }
+    frequency: 38400000
+    width: 16
+    -> nvic@11
+
+wtimer0: Timers.EFR32_Timer @ {
+        sysbus <0x4A018000, +0x4000>; // WDOG0_S
+        sysbus <0x5A018000, +0x4000>  // WDOG0_NS
+    }
+    frequency: 0x1000000 //bogus
+    width: TimerWidth.Bit32
+    -> nvic@43
+
+// TODO: unclear what version of this block should be used here
+deviceInformation: Miscellaneous.SiLabs.EFR32xG2_DeviceInformation @ sysbus 0x0FE08000
+    // TODO: change this to BG22 once the DeviceFamily enum is updated
+    deviceFamily: DeviceFamily.EFR32MG24
+    deviceNumber: 0x1
+    flashDevice: flash
+    sramDevice: sram
+
+DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094024
+    size: 0x4
+    initable: true
+    script: "request.value = 0xffffffff"
+
+// TODO: this should be CMU_1
+cmu: Miscellaneous.SiLabs.EFR32xG2_CMU_3 @ {
+        sysbus <0x40008000, +0x4000>; // CMU_S
+        sysbus <0x50008000, +0x4000>  // CMU_NS
+    }
+    hfxo: hfxo
+
+// TODO: this should be HFRCO_1
+hfrco0: Miscellaneous.SiLabs.EFR32xG2_HFRCO_2 @ {
+        sysbus <0x40010000, +0x4000>; // HFRCO0_S
+        sysbus <0x50010000, +0x4000>  // HFRCO0_NS
+    }
+
+hfxo: Miscellaneous.SiLabs.EFR32xG2_HFXO_2 @ {
+        sysbus <0x4000C000, +0x4000>; // HFXO0_S
+        sysbus <0x5000C000, +0x4000>  // HFXO0_NS
+    }
+    startupDelayTicks: 3   //should remain <= 20 to pass early wakeup conditions
+    IRQ -> nvic@44
+
+// TODO: this should be EMU_1
+emu: Miscellaneous.SiLabs.EFR32xG2_EMU_3 @ {
+        sysbus <0x40004000, +0x4000>; // EMU_S
+        sysbus <0x50004000, +0x4000>  // EMU_NS
+    }
+
+smu: Miscellaneous.SiLabs.EFR32xG2_SMU_1 @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x44008000; size: 0x4000; region: "smu_s" }; // SMU_S
+        sysbus new Bus.BusMultiRegistration { address: 0x54008000; size: 0x4000; region: "smu_ns" } // SMU_NS
+    }
+    SecureIRQ -> nvic@3
+    SecurePriviledgedIRQ -> nvic@4
+    NonSecurePriviledgedIRQ -> nvic@5
+
+// TODO: this should be SYSCFG_1
+syscfg: Miscellaneous.SiLabs.EFR32xG2_SYSCFG_3 @ {
+        sysbus <0x4007C000, +0x4000>; // SYSCFG_S
+        sysbus <0x5007C000, +0x4000>  // SYSCFG_NS
+    }
+
+radioaes: Miscellaneous.SiLabs.EFR32xG2_AES_1 @ {
+        sysbus <0x44000000, +0x7FF>; // RADIOAES_S
+        sysbus <0x54000000, +0x7FF>  // RADIOAES_NS
+    }
+    IRQ -> nvic@47
+
+cryptoacc_rngctrl: Miscellaneous.SiLabs.EFR32xG2_RNGCTRL @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x4C021000; size: 0x7FF; region: "rngctrl_s" };  // CRYPTOACC_RNGCTRL_S
+        sysbus new Bus.BusMultiRegistration { address: 0x5C021000; size: 0x7FF; region: "rngctrl_ns" }; // CRYPTOACC_RNGCTRL_NS
+        sysbus new Bus.BusMultiRegistration { address: 0x4C024000; size: 0x4000; region: "rngfifo_s" }; // CRYPTOACC_RNGOUT_FIFO_S
+        sysbus new Bus.BusMultiRegistration { address: 0x5C024000; size: 0x4000; region: "rngfifo_ns" } // CRYPTOACC_RNGOUT_FIFO_NS
+    }
+    IRQ -> nvic@0
+
+itm : Miscellaneous.SiLabs.EFR32xG2_SLAB_ITM @ sysbus 0xE0000000
+
+sysbus:
+    init add:
+        Tag <0x40004000, 0x40007FFF> "EMU_S"
+        Tag <0x40008000, 0x4000BFFF> "CMU_S"
+        Tag <0x4000C000, 0x4000FFFF> "HFXO0_S"
+        Tag <0x40010000, 0x40013FFF> "HFRCO0_S"
+        Tag <0x40018000, 0x4001BFFF> "FSRCO_S"
+        Tag <0x4001C000, 0x4001FFFF> "DPLL0_S"
+        Tag <0x40020000, 0x40023FFF> "LFXO_S"
+        Tag <0x40024000, 0x40027FFF> "LFRCO_S"
+        Tag <0x40028000, 0x4002BFFF> "ULFRCO_S"
+        Tag <0x40030000, 0x40033FFF> "MSC_S"
+        Tag <0x40034000, 0x40037FFF> "ICACHE0_S"
+        Tag <0x40038000, 0x4003BFFF> "PRS_S"
+        Tag <0x4003C000, 0x4003FFFF> "GPIO_S"
+        Tag <0x40040000, 0x40043FFF> "LDMA_S"
+        Tag <0x40044000, 0x40047FFF> "LDMAXBAR_S"
+        Tag <0x40048000, 0x4004BFFF> "TIMER0_S"
+        Tag <0x4004C000, 0x4004FFFF> "TIMER1_S"
+        Tag <0x40050000, 0x40053FFF> "TIMER2_S"
+        Tag <0x40054000, 0x40057FFF> "TIMER3_S"
+        Tag <0x40058000, 0x4005BFFF> "TIMER4_S"
+        Tag <0x4005C000, 0x4005FFFF> "USART0_S"
+        Tag <0x40060000, 0x40063FFF> "USART1_S"
+        Tag <0x40064000, 0x40067FFF> "BURTC_S"
+        Tag <0x40068000, 0x4006BFFF> "I2C1_S"
+        Tag <0x40078000, 0x4007BFFF> "SYSCFG_S"
+        Tag <0x4007C000, 0x4007FFFF> "SYSCFG2_S"
+        Tag <0x40080000, 0x40083FFF> "BURAM_S"
+        Tag <0x40088000, 0x4008BFFF> "GPCRC_S"
+        Tag <0x40094000, 0x40097FFF> "DCDC_S"
+        Tag <0x40098000, 0x4009BFFF> "PDM_S"
+        Tag <0x4009C000, 0x4009FFFF> "RFSENSE_S"
+        Tag <0x44000000, 0x440007FF> "RADIOAES_S"
+        Tag <0x44008000, 0x4400BFFF> "SMU_S"
+        Tag <0x4400C000, 0x4400FFFF> "SMU2_S"
+        Tag <0x48000000, 0x48003FFF> "RTCC_S"
+        Tag <0x4A000000, 0x4A003FFF> "LETIMER0_S"
+        Tag <0x4A004000, 0x4A007FFF> "IADC0_S"
+        Tag <0x4A010000, 0x4A013FFF> "I2C0_S"
+        Tag <0x4A018000, 0x4A01BFFF> "WDOG0_S"
+        Tag <0x4A030000, 0x4A033FFF> "EUART0_S"
+        Tag <0x4C020000, 0x4C0207FF> "CRYPTOACC_S"
+        Tag <0x4C021000, 0x4C02107F> "CRYPTOACC_RNGCTRL_S"
+        Tag <0x4C022000, 0x4C02201F> "CRYPTOACC_PKCTRL_S"
+        Tag <0x4C024000, 0x4C027FFF> "RNGOUT_FIFO_S"
+        Tag <0x4C028000, 0x4C028FFF> "PKRAM_MAIN_S"
+        Tag <0x50004000, 0x50007FFF> "EMU_NS"
+        Tag <0x50008000, 0x5000BFFF> "CMU_NS"
+        Tag <0x5000C000, 0x5000FFFF> "HFXO0_NS"
+        Tag <0x50010000, 0x50013FFF> "HFRCO0_NS"
+        Tag <0x50018000, 0x5001BFFF> "FSRCO_NS"
+        Tag <0x5001C000, 0x5001FFFF> "DPLL0_NS"
+        Tag <0x50020000, 0x50023FFF> "LFXO_NS"
+        Tag <0x50024000, 0x50027FFF> "LFRCO_NS"
+        Tag <0x50028000, 0x5002BFFF> "ULFRCO_NS"
+        Tag <0x50030000, 0x50033FFF> "MSC_NS"
+        Tag <0x50034000, 0x50037FFF> "ICACHE0_NS"
+        Tag <0x50038000, 0x5003BFFF> "PRS_NS"
+        Tag <0x5003C000, 0x5003FFFF> "GPIO_NS"
+        Tag <0x50040000, 0x50043FFF> "LDMA_NS"
+        Tag <0x50044000, 0x50047FFF> "LDMAXBAR_NS"
+        Tag <0x50048000, 0x5004BFFF> "TIMER0_NS"
+        Tag <0x5004C000, 0x5004FFFF> "TIMER1_NS"
+        Tag <0x50050000, 0x50053FFF> "TIMER2_NS"
+        Tag <0x50054000, 0x50057FFF> "TIMER3_NS"
+        Tag <0x50058000, 0x5005BFFF> "TIMER4_NS"
+        Tag <0x5005C000, 0x5005FFFF> "USART0_NS"
+        Tag <0x50060000, 0x50063FFF> "USART1_NS"
+        Tag <0x50064000, 0x50067FFF> "BURTC_NS"
+        Tag <0x50068000, 0x5006BFFF> "I2C1_NS"
+        Tag <0x50078000, 0x5007BFFF> "SYSCFG_NS"
+        Tag <0x5007C000, 0x5007FFFF> "SYSCFG2_NS"
+        Tag <0x50080000, 0x50083FFF> "BURAM_NS"
+        Tag <0x50088000, 0x5008BFFF> "GPCRC_NS"
+        Tag <0x50094000, 0x50097FFF> "DCDC_NS"
+        Tag <0x50098000, 0x5009BFFF> "PDM_NS"
+        Tag <0x5009C000, 0x5009FFFF> "RFSENSE_NS"
+        Tag <0x54000000, 0x540007FF> "RADIOAES_NS"
+        Tag <0x54008000, 0x5400BFFF> "SMU_NS"
+        Tag <0x5400C000, 0x5400FFFF> "SMU2_NS"
+        Tag <0x58000000, 0x58003FFF> "RTCC_NS"
+        Tag <0x5A000000, 0x5A003FFF> "LETIMER0_NS"
+        Tag <0x5A004000, 0x5A007FFF> "IADC0_NS"
+        Tag <0x5A010000, 0x5A013FFF> "I2C0_NS"
+        Tag <0x5A018000, 0x5A01BFFF> "WDOG0_NS"
+        Tag <0x5A030000, 0x5A033FFF> "EUART0_NS"
+        Tag <0x5C020000, 0x5C0207FF> "CRYPTOACC_NS"
+        Tag <0x5C021000, 0x5C02107F> "CRYPTOACC_RNGCTRL_NS"
+        Tag <0x5C022000, 0x5C02201F> "CRYPTOACC3_PKCTRL_NS"
+        Tag <0x5C024000, 0x5C027FFF> "RNGOUT_FIFO_NS"
+        Tag <0x5C028000, 0x5C028FFF> "PKRAM_MAIN_NS"
