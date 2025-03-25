@@ -46,10 +46,11 @@ namespace Antmicro.Renode.RobotFramework
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null,
-            bool? defaultPauseEmulation = null, bool? defaultMatchNextLine = null, bool binaryMode = false)
+            bool? defaultPauseEmulation = null, bool? defaultWaitForEcho = null, bool? defaultMatchNextLine = null, bool binaryMode = false)
         {
             this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
             this.defaultMatchNextLine = defaultMatchNextLine.GetValueOrDefault();
+            this.defaultWaitForEcho = defaultWaitForEcho ?? true;
 
             return CreateNewTester(uartObject =>
             {
@@ -159,11 +160,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool waitForEcho = true, bool? pauseEmulation = null)
+        public TerminalTesterResult WriteLineToUart(string content = "", int? testerId = null, bool? waitForEcho = null, bool? pauseEmulation = null)
         {
             var tester = GetTesterOrThrowException(testerId);
             tester.WriteLine(content);
-            if(waitForEcho && tester.WaitFor(content, includeUnfinishedLine: true, pauseEmulation: pauseEmulation ?? defaultPauseEmulation) == null)
+            if((waitForEcho ?? defaultWaitForEcho) && tester.WaitFor(content, includeUnfinishedLine: true, pauseEmulation: pauseEmulation ?? defaultPauseEmulation) == null)
             {
                 OperationFail(tester);
             }
@@ -219,6 +220,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private bool defaultPauseEmulation;
+        private bool defaultWaitForEcho;
         private bool defaultMatchNextLine;
         private float globalTimeout = 8;
 
