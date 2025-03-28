@@ -205,6 +205,10 @@ ipi: Miscellaneous.ZynqMP_IPI @ sysbus 0xff300000
 ipiMailbox: Memory.MappedMemory @ sysbus 0xff990000
     size: 0x1000
 
+rtc: Timers.ZynqMP_RTC @ sysbus 0xffa60000
+    SecondIRQ -> apuGic@26 | rpuGic@26
+    AlarmIRQ -> apuGic@27 | rpuGic@27
+
 platformManagementUnit: Miscellaneous.ZynqMP_PlatformManagementUnit @ ipi
     apu0: apu0
     apu1: apu1
