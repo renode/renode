@@ -101,13 +101,17 @@ pioC: GPIOPort.SAM4S_PIO @ sysbus 0x400E1200
 
 spi: SPI.SAM_SPI @ sysbus 0x40008000
 
+twi1: I2C.SAM4S_TWI @ sysbus 0x4001C000
+    -> nvic@20
+
+twi0: I2C.SAM4S_TWI @ sysbus 0x40018000
+    -> nvic@19
+
 sysbus:
     init:
         Tag <0x40000000 0x20000000> "Peripherals"
         Tag <0x40000000 0x4000> "HSMCI"
         Tag <0x40004000 0x4000> "SSC"
-        Tag <0x40018000 0x4000> "TWI0"
-        Tag <0x4001C000 0x4000> "TWI1"
         Tag <0x40020000 0x4000> "PWM"
         Tag <0x40034000 0x4000> "UDP"
         Tag <0x40040000 0x4000> "ACC"
