@@ -13,6 +13,8 @@ import os
 import gzip
 import typing
 from enum import Enum
+from dataclasses import dataclass
+from typing import Optional
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
@@ -44,13 +46,13 @@ class MemoryAccessType(Enum):
     MemoryWrite = 3
     InsnFetch = 4
 
-class Header():
-    def __init__(self, pc_length, has_opcodes, extra_length=0, uses_multiple_instruction_sets=False, triple_and_model=None):
-        self.pc_length = pc_length
-        self.has_opcodes = has_opcodes
-        self.extra_length = extra_length
-        self.uses_multiple_instruction_sets = uses_multiple_instruction_sets
-        self.triple_and_model = triple_and_model
+@dataclass()
+class Header:
+    pc_length: int
+    has_opcodes: bool
+    extra_length: int = 0
+    uses_multiple_instruction_sets: bool = False
+    triple_and_model: Optional[str] = None
 
     def __str__(self):
         return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, uses_multiple_instruction_sets: {}, triple_and_model: {}".format(
