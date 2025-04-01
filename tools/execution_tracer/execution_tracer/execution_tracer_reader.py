@@ -15,9 +15,12 @@ import gzip
 import typing
 from enum import Enum
 from dataclasses import dataclass
-from typing import IO, BinaryIO, Generator, NamedTuple, Optional
+from typing import TYPE_CHECKING, IO, BinaryIO, Generator, Iterable, NamedTuple, Optional
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
+
+if TYPE_CHECKING:
+    from dwarf import CodeLine
 
 # Allow directly using this as a script, without installation
 try:
@@ -298,8 +301,10 @@ class LLVMDisassembler():
         return (bytes_read, disas_str.value)
 
 
-def print_coverage_report(report) -> Generator[str]:
+def print_legacy_coverage_report(report: Iterable[CodeLine]) -> Generator[str]:
     for line in report:
+        if line.content is None:
+            raise RuntimeError(f"No code line contents found for address: {line.addresses}, file {line.filename}, number: {line.number}")
         yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
 
 
@@ -311,11 +316,12 @@ def handle_coverage(args, trace_data) -> None:
         debug=args.debug,
         print_unmatched_address=args.print_unmatched_address,
         lazy_line_cache=args.lazy_line_cache,
+        load_whole_code_lines=args.legacy,
     )
 
     report = coverage_config.report_coverage(trace_data)
     if args.legacy:
-        printed_report = print_coverage_report(report)
+        printed_report = print_legacy_coverage_report(report)
     else:
         printed_report = coverage_config.convert_to_lcov(report)
 

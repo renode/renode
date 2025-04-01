@@ -32,7 +32,7 @@ class AddressRange:
 
 
 class CodeLine:
-    def __init__(self, content: str, number: int, filename: str, is_exec: bool) -> None:
+    def __init__(self, content: Optional[str], number: int, filename: str, is_exec: bool) -> None:
         self.content = content
         self.number = number
         self.filename = filename
@@ -115,6 +115,7 @@ class Coverage:
     debug: bool = False
     noisy: bool = False
     lazy_line_cache: bool = False
+    load_whole_code_lines: bool = True
 
     _code_files: list[IO] = field(init=False)
 
@@ -185,7 +186,7 @@ class Coverage:
             for no, line in enumerate(code_file):
                 # Right now we mark all code lines as non-executable (that is, ignore when calculating coverage)
                 # later, when parsing DWARF info, some will be marked as executable
-                code_lines[code_file.name].append(CodeLine(line, no + 1, code_file.name, False))
+                code_lines[code_file.name].append(CodeLine(None if not self.load_whole_code_lines else line, no + 1, code_file.name, False))
 
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
