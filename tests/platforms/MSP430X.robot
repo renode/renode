@@ -4,12 +4,13 @@ ${MSP430F2619_HELLO_WORLD_ELF}      ${URI}/msp430f2619-hello_world.elf-s_7912-e9
 
 *** Keywords ***
 Create MSP430F2619 Machine
-    [Arguments]                             ${ELF}
+    [Arguments]                             ${ELF}=${EMPTY}
 
     Execute Command                         mach create
     Execute Command                         machine LoadPlatformDescription @platforms/cpus/msp430f2619.repl
     Execute Command                         sysbus.cpu PerformanceInMips 1
-    Execute Command                         sysbus LoadELF ${ELF}
+    Run Keyword If                          "${ELF}" != "${EMPTY}"
+    ...  Execute Command                    sysbus LoadELF ${ELF}
 
 *** Test Cases ***
 Should Change Internal Memory Every Second
@@ -26,3 +27,40 @@ Should Change Internal Memory Every Second
         ${secondsPassed}=   Execute Command     sysbus ReadWord ${counterAddress}
         Should Be Equal     ${secondsPassed}    ${secondHex}    strip_spaces=True
    END
+
+Should Correctly Handle Constant Generators In ADDA And SUBA
+    Create MSP430F2619 Machine
+
+    # NOTE: Prepare small program using ADDA and SUBA with CG1/CG2
+    Execute Command                         sysbus WriteWord 0x2100 0x02e4  # asm: ADDA R2, R4
+    Execute Command                         sysbus WriteWord 0x2102 0x03e4  # asm: ADDA R3, R4
+    Execute Command                         sysbus WriteWord 0x2104 0x02f4  # asm: SUBA R2, R4
+    Execute Command                         sysbus WriteWord 0x2106 0x03f4  # asm: SUBA R3, R4
+    Execute Command                         cpu PC 0x2100
+
+    # NOTE: Start with zeroed R4
+    Execute Command                         cpu R4 0x00000
+
+    # NOTE: ADDA R2, R4 ==> ADDA #4, R4
+    Execute Command                         cpu Step
+    ${REG_VALUE}=  Execute Command          cpu R4
+    ${REG_VALUE}=  Convert To Integer       ${REG_VALUE}  base=16
+    Should Be Equal                         ${REG_VALUE}  ${4}
+
+    # NOTE: ADDA R3, R4 ==> ADDA #2, R4
+    Execute Command                         cpu Step
+    ${REG_VALUE}=  Execute Command          cpu R4
+    ${REG_VALUE}=  Convert To Integer       ${REG_VALUE}  base=16
+    Should Be Equal                         ${REG_VALUE}  ${6}
+
+    # NOTE: SUBA R2, R4 ==> SUBA #4, R4
+    Execute Command                         cpu Step
+    ${REG_VALUE}=  Execute Command          cpu R4
+    ${REG_VALUE}=  Convert To Integer       ${REG_VALUE}  base=16
+    Should Be Equal                         ${REG_VALUE}  ${2}
+
+    # NOTE: SUBA R3, R4 ==> SUBA #2, R4
+    Execute Command                         cpu Step
+    ${REG_VALUE}=  Execute Command          cpu R4
+    ${REG_VALUE}=  Convert To Integer       ${REG_VALUE}  base=16
+    Should Be Equal                         ${REG_VALUE}  ${0}
