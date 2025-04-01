@@ -8,7 +8,7 @@ cd "${0%/*}"
 
 RENODE_ROOT_DIR=$BASE
 OS_NAME=macos
-SED_COMMAND="sed -i.sed_backup"
+SED_COMMAND="sed -i ''"
 
 # create MacOS app structure
 MACOS_APP_DIR=Renode.app
@@ -38,9 +38,6 @@ cp macos/Info.plist $MACOS_APP_DIR/Contents/
 cp macos/renode.icns $MACOS_APP_DIR/Contents/Resources #Made with png2icns
 cp macos/macos_run_dotnet.command $MACOS_APP_DIR/Contents/MacOS/macos_run.command
 chmod +x $MACOS_APP_DIR/Contents/MacOS/macos_run.command
-
-# remove sed backups
-find $MACOS_APP_DIR -name *.sed_backup -exec rm {} \;
 
 # Create dmg file
 mkdir -p $OUTPUT

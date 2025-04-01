@@ -17,8 +17,7 @@ INSTALL_DIR=/Applications/Renode.app/Contents/MacOS
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
 OS_NAME=macos
-# OSX version of sed requires backup appendix when in-place editing, backups are removed later on
-SED_COMMAND="sed -i.sed_backup"
+SED_COMMAND="sed -i ''"
 . common_copy_files_package.sh
 
 COMMON_SCRIPT=$DIR/tests/common.sh
@@ -37,9 +36,6 @@ echo "REQUIRED_MINOR=$MONO_MINOR" >> $COMMAND_SCRIPT
 # skip the first line (with the hashbang)
 tail -n +2 macos/macos_run.command >> $COMMAND_SCRIPT
 chmod +x $COMMAND_SCRIPT
-
-# remove sed backups
-find $MACOS_APP_DIR -name *.sed_backup -exec rm {} \;
 
 mkdir -p $OUTPUT
 hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.dmg
