@@ -78,3 +78,13 @@ Test Enabling Systick And Pausing Emulation From CortexM Hook
     # Let's wait for the systick enabling attempt and machine pausing.
     Wait For Log Entry       Systick_NS enabled but it won't be started as long as the reload value is zero
     Wait For Log Entry       Machine paused
+
+Test Translation Block Fetch Hook
+    Execute Command          i @scripts/single-node/stm32l072.resc
+    Execute Command          cpu LogTranslationBlockFetch True
+    Create Log Tester        1
+
+    Wait For Log Entry       cpu: Fetching block @ 0x08004E4C - z_arm_reset
+    Wait For Log Entry       cpu: Fetching block @ 0x0800471C - stm32_clock_control_init
+    Wait For Log Entry       cpu: Fetching block @ 0x08009ED8 - idle
+    Wait For Log entry       cpu: Fetching block @ 0x0800483E - sys_clock_isr
