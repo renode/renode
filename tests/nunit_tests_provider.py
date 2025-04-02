@@ -144,6 +144,10 @@ class NUnitTestSuite(object):
             process = subprocess.Popen(args)
             print('dotnet test runner PID is {}'.format(process.pid), flush=True)
         else:
+            if platform != "win32":
+                # This is alias for '--process=Single' - means no TCP connection at all so that we can see what happens underneath
+                # This causes failure on some Windows setups
+                args.append("--inprocess")
             process = subprocess.Popen(args, cwd=options.results_directory)
             print('NUnit3 runner PID is {}'.format(process.pid), flush=True)
 
