@@ -320,10 +320,15 @@ def handle_coverage(args, trace_data) -> None:
     )
 
     report = coverage_config.report_coverage(trace_data)
+
+    remove_common_path_prefix = args.export_for_coverview
+    if args.no_shorten_paths:
+        remove_common_path_prefix = False
+
     if args.legacy:
         printed_report = print_legacy_coverage_report(report)
     else:
-        printed_report = coverage_config.convert_to_lcov(report)
+        printed_report = coverage_config.convert_to_lcov(report, remove_common_path_prefix=remove_common_path_prefix)
 
     if args.coverage_output != None:
         if args.export_for_coverview:
@@ -331,7 +336,8 @@ def handle_coverage(args, trace_data) -> None:
                         args.coverage_output,
                         printed_report,
                         coverage_config._code_files,
-                        args.coverview_config
+                        args.coverview_config,
+                        remove_common_path_prefix=remove_common_path_prefix
                     ):
                 sys.exit(1)
         else:
@@ -368,6 +374,7 @@ def main():
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
     cov_parser.add_argument("--sub-source-path", default=[], nargs='*', action='extend', type=dwarf.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
     cov_parser.add_argument("--lazy-line-cache", default=False, action="store_true", help="Disable line to address eager cache generation. For big programs, reduce memory usage, but process traces much slower")
+    cov_parser.add_argument("--no-shorten-paths", default=False, action="store_true", help="Disable removing common path prefix from coverage output. Only relevant with '--export-for-coverview'")
     args = parser.parse_args()
 
     # Look for the libllvm-disas library in default location

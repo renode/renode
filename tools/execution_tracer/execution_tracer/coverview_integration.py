@@ -9,10 +9,22 @@ import os
 import zipfile
 import tempfile
 import json
-from typing import Iterable, List, TextIO, IO
+from typing import Iterable, List, Optional, TextIO, IO
 from datetime import datetime
 
-def create_coverview_archive(path: TextIO, report: Iterable[str], code_files: List[IO], coverview_dict: str) -> bool:
+def extract_common_prefix(files: Iterable[IO]) -> str:
+    try:
+        return os.path.commonpath(code_file.name for code_file in files) + os.path.sep
+    except ValueError:
+        # Mixing relative and absolute paths throws ValueError
+        return ''
+
+def remove_prefix(text: str, prefix: Optional[str]):
+    if not prefix:
+        return text
+    return text[text.startswith(prefix) and len(prefix):]
+
+def create_coverview_archive(path: TextIO, report: Iterable[str], code_files: List[IO], coverview_dict: str, *, remove_common_path_prefix: bool = False) -> bool:
     merge_config = {}
     success = True
     if coverview_dict is not None:
@@ -51,13 +63,14 @@ def create_coverview_archive(path: TextIO, report: Iterable[str], code_files: Li
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             with open(os.path.join(tmp_dir_name, 'sources.txt'), 'w') as sources:
+                common_prefix = extract_common_prefix(code_files) if remove_common_path_prefix else None
                 for code_file in code_files:
                     # Remember to revert the pointer, as we might have read the file already before
                     code_file.seek(0)
-                    sources.write(f'### FILE: {code_file.name}\n')
+                    sources.write(f'\n### FILE: {remove_prefix(code_file.name, common_prefix)}\n')
                     sources.write(code_file.read())
             archive.write(sources.name, arcname='sources.txt')
-    
+
         print('Created archive:', archive.filename)
 
         return success

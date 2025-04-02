@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING, BinaryIO, Generator, Iterable, IO, NamedTuple,
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
+from execution_tracer.coverview_integration import extract_common_prefix, remove_prefix
+
 if TYPE_CHECKING:
     from execution_tracer_reader import TraceData
     from elftools.elf.elffile import DWARFInfo
@@ -75,9 +77,9 @@ class Record:
                 continue
             yield line
 
-    def to_lcov_format(self) -> Generator[str, None, None]:
+    def to_lcov_format(self, *, name: Optional[str] = None) -> Generator[str, None, None]:
         yield "TN:"
-        yield f'SF:{self.name}'
+        yield f'SF:{name if name else self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
         yield 'end_of_record'
 
@@ -281,8 +283,11 @@ class Coverage:
 
         return itertools.chain.from_iterable(code_lines.values())
 
-    def convert_to_lcov(self, code_lines: Iterable[CodeLine]) -> Generator[str, None, None]:
+    def convert_to_lcov(self, code_lines: Iterable[CodeLine], *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
         records: dict[str, Record] = {}
+        if remove_common_path_prefix:
+            common_prefix = extract_common_prefix(self._code_files)
+
         for code_file in self._code_files:
             records[code_file.name] = Record(code_file.name)
 
@@ -290,7 +295,9 @@ class Coverage:
             records[line.filename].add_code_line(line)
 
         for record in records.values():
-            yield from record.to_lcov_format()
+            yield from record.to_lcov_format(
+                name=remove_prefix(record.name, common_prefix) if remove_common_path_prefix else None # type: ignore
+            )
 
 def get_dwarf_info(elf_file_handler: BinaryIO) -> 'DWARFInfo':
     elf_file = ELFFile(elf_file_handler)
