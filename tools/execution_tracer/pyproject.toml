@@ -8,7 +8,7 @@ description = "Inspect binary Renode execution traces and generate code coverage
 authors= [
     {name = "Antmicro"}
 ]
-version = "1.0.1"
+version = "1.0.2"
 requires-python = ">=3.9"
 dependencies = [
     "pyelftools==0.30",
