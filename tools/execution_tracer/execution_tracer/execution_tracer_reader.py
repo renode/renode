@@ -331,18 +331,19 @@ def handle_coverage(args, trace_data) -> None:
         printed_report = coverage_config.convert_to_lcov(report, remove_common_path_prefix=remove_common_path_prefix)
 
     if args.coverage_output != None:
-        if args.export_for_coverview:
-            if not coverview_integration.create_coverview_archive(
-                        args.coverage_output,
-                        printed_report,
-                        coverage_config._code_files,
-                        args.coverview_config,
-                        remove_common_path_prefix=remove_common_path_prefix
-                    ):
-                sys.exit(1)
-        else:
-            for line in printed_report:
-                args.coverage_output.write(f"{line}\n")
+        with open(args.coverage_output, 'w') as coverage_output:
+            if args.export_for_coverview:
+                if not coverview_integration.create_coverview_archive(
+                            coverage_output,
+                            printed_report,
+                            coverage_config._code_files,
+                            args.coverview_config,
+                            remove_common_path_prefix=remove_common_path_prefix
+                        ):
+                    sys.exit(1)
+            else:
+                for line in printed_report:
+                    coverage_output.write(f"{line}\n")
     else:
         for line in printed_report:
             print(line)
@@ -367,7 +368,7 @@ def main():
 
     cov_parser.add_argument("--binary", dest='coverage_binary', required=True, default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
-    cov_parser.add_argument("--output", dest='coverage_output', default=None, type=argparse.FileType('w'), help="path to the output coverage file")
+    cov_parser.add_argument("--output", dest='coverage_output', default=None, type=str, help="path to the output coverage file")
     cov_parser.add_argument("--legacy", default=False, action="store_true", help="Output data in a legacy text-based format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
