@@ -365,7 +365,9 @@ Should Trace In ARM and Thumb State
     Execute Command                             sysbus.cpu PC 0x0
 
     ${FILE}=                                    Allocate Temporary File
+    ${logFile}=                                 Allocate Temporary File
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" @${FILE} PC
+    Execute Command                             sysbus.cpu LogFile @${logFile}
 
     Execute Command                             emulation RunFor "0.0001"
 
@@ -385,6 +387,13 @@ Should Trace In ARM and Thumb State
     Should Be Equal                             ${pcs[4]}   0x14
     Should Be Equal                             ${pcs[5]}   0x8
     Should Be Equal                             ${pcs[6]}   0xC
+
+    # translated block log should contain ARM and Thumb instructions
+    ${x}=                                       Grep File  ${logFile}  0x00000004: * fa000001 *blx*#4
+    Should Not Be Empty                         ${x}
+
+    ${x}=                                       Grep File  ${logFile}  0x00000014: * 4770 *bx*lr
+    Should Not Be Empty                         ${x}
     
 *** Test Cases ***
 Should Dump PCs
