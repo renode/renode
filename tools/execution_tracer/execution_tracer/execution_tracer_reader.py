@@ -104,8 +104,7 @@ def bytes_to_hex(bytes, zero_padded=True):
 
 
 class TraceData:
-    disassembler = None
-    disassembler_thumb = None
+    disassemblers = None
     isa_mode = 0
     instructions_left_in_block = 0
 
@@ -120,9 +119,17 @@ class TraceData:
         self.disassemble = disassemble
         if self.disassemble:
             triple, model = header.triple_and_model.split(" ")
-            self.disassembler = LLVMDisassembler(triple, model, llvm_disas_path)
+            self.disassemblers = {0: LLVMDisassembler(triple, model, llvm_disas_path)}
             if self.uses_multiple_instruction_sets:
-                self.disassembler_thumb = LLVMDisassembler("thumb", model, llvm_disas_path)
+                if triple == "armv7a":
+                    # For armv7a the flags are only 1 bit: 0 = ARM, 1 = thumb
+                    self.disassemblers[0b01] = LLVMDisassembler("thumb", model, llvm_disas_path)
+                elif triple == "arm64":
+                    # For arm64 there are two flags: bit[0] means Thumb and bit[1] means AArch32.
+                    # The valid values are 00, 10, and 11 (no 64-bit Thumb).
+                    self.disassemblers[0b10] = LLVMDisassembler("armv7a", model, llvm_disas_path)
+                    self.disassemblers[0b11] = LLVMDisassembler("thumb", model, llvm_disas_path)
+
 
     def __iter__(self):
         self.file.seek(HEADER_LENGTH + self.extra_length, 0)
@@ -223,7 +230,7 @@ class TraceData:
             output = ""
 
         if self.has_opcodes and self.disassemble:
-            disas = self.disassembler_thumb if isa_mode == 1 else self.disassembler
+            disas = self.disassemblers[isa_mode]
             _, instruction = disas.get_instruction(opcode)
             output += " " + instruction.decode("utf-8")
 
