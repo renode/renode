@@ -45,16 +45,16 @@ class MemoryAccessType(Enum):
     InsnFetch = 4
 
 class Header():
-    def __init__(self, pc_length, has_opcodes, extra_length=0, uses_thumb_flag=False, triple_and_model=None):
+    def __init__(self, pc_length, has_opcodes, extra_length=0, uses_multiple_instruction_sets=False, triple_and_model=None):
         self.pc_length = pc_length
         self.has_opcodes = has_opcodes
         self.extra_length = extra_length
-        self.uses_thumb_flag = uses_thumb_flag
+        self.uses_multiple_instruction_sets = uses_multiple_instruction_sets
         self.triple_and_model = triple_and_model
 
     def __str__(self):
-        return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, uses_thumb_flag: {}, triple_and_model: {}".format(
-            self.pc_length, self.has_opcodes, self.extra_length, self.uses_thumb_flag, self.triple_and_model)
+        return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, uses_multiple_instruction_sets: {}, triple_and_model: {}".format(
+            self.pc_length, self.has_opcodes, self.extra_length, self.uses_multiple_instruction_sets, self.triple_and_model)
 
 
 def read_header(file):
@@ -73,12 +73,12 @@ def read_header(file):
     if opcodes_raw[0] == 0:
         return Header(pc_length_raw[0], False, 0, False, None)
     elif opcodes_raw[0] == 1:
-        uses_thumb_flag_raw = file.read(1)
+        uses_multiple_instruction_sets_raw = file.read(1)
         identifier_length_raw = file.read(1)
-        if len(uses_thumb_flag_raw) != 1 or len(identifier_length_raw) != 1:
+        if len(uses_multiple_instruction_sets_raw) != 1 or len(identifier_length_raw) != 1:
             raise InvalidFileFormatException("Invalid file header")
         
-        uses_thumb_flag = uses_thumb_flag_raw[0] == 1
+        uses_multiple_instruction_sets = uses_multiple_instruction_sets_raw[0] == 1
         identifier_length = identifier_length_raw[0]
         triple_and_model_raw = file.read(identifier_length)
         if len(triple_and_model_raw) != identifier_length:
@@ -87,7 +87,7 @@ def read_header(file):
         triple_and_model = triple_and_model_raw.decode("utf-8")
         extra_length = 2 + identifier_length
 
-        return Header(pc_length_raw[0], True, extra_length, uses_thumb_flag, triple_and_model)
+        return Header(pc_length_raw[0], True, extra_length, uses_multiple_instruction_sets, triple_and_model)
     else:
         raise InvalidFileFormatException("Invalid opcodes field at file header")
 
@@ -106,7 +106,7 @@ def bytes_to_hex(bytes, zero_padded=True):
 class TraceData:
     disassembler = None
     disassembler_thumb = None
-    thumb_mode = False
+    isa_mode = 0
     instructions_left_in_block = 0
 
     def __init__(self, file: typing.IO, header: Header, disassemble: bool, llvm_disas_path: str):
@@ -115,13 +115,13 @@ class TraceData:
         self.has_pc = (self.pc_length != 0)
         self.has_opcodes = bool(header.has_opcodes)
         self.extra_length = header.extra_length
-        self.uses_thumb_flag = header.uses_thumb_flag
+        self.uses_multiple_instruction_sets = header.uses_multiple_instruction_sets
         self.triple_and_model = header.triple_and_model
         self.disassemble = disassemble
         if self.disassemble:
             triple, model = header.triple_and_model.split(" ")
             self.disassembler = LLVMDisassembler(triple, model, llvm_disas_path)
-            if self.uses_thumb_flag:
+            if self.uses_multiple_instruction_sets:
                 self.disassembler_thumb = LLVMDisassembler("thumb", model, llvm_disas_path)
 
     def __iter__(self):
@@ -131,22 +131,22 @@ class TraceData:
     def __next__(self):
         additional_data = []
 
-        if self.uses_thumb_flag and self.instructions_left_in_block == 0:
-            thumb_flag_raw = self.file.read(1)
-            if len(thumb_flag_raw) != 1:
+        if self.uses_multiple_instruction_sets and self.instructions_left_in_block == 0:
+            isa_mode_raw = self.file.read(1)
+            if len(isa_mode_raw) != 1:
                 # No more data frames to read
                 raise StopIteration
 
-            self.thumb_mode = thumb_flag_raw[0] == 1
+            self.isa_mode = isa_mode_raw[0]
             
             block_length_raw = self.file.read(8)
             if len(block_length_raw) != 8:
                 raise InvalidFileFormatException("Unexpected end of file")
             
-            # The `instructions_left_in_block` counter is kept only for traces produced by cores that can switch between ARM and Thumb mode.
+            # The `instructions_left_in_block` counter is kept only for traces produced by cores that can switch between multiple modes.
             self.instructions_left_in_block = int.from_bytes(block_length_raw, byteorder="little", signed=False)
 
-        if self.uses_thumb_flag:
+        if self.uses_multiple_instruction_sets:
             self.instructions_left_in_block -= 1
 
         pc = self.file.read(self.pc_length)
@@ -181,7 +181,7 @@ class TraceData:
                 additional_data_type = AdditionalDataType(self.file.read(1)[0])
             except IndexError:
                 break
-        return (pc, opcode, additional_data, self.thumb_mode)
+        return (pc, opcode, additional_data, self.isa_mode)
 
     def parse_memory_access_data(self):
         data = self.file.read(MEMORY_ACCESS_LENGTH)
@@ -207,7 +207,7 @@ class TraceData:
         return f"Vector configured to VL: {vl}, VTYPE: {vtype}"
 
     def format_entry(self, entry):
-        (pc, opcode, additional_data, thumb_mode) = entry
+        (pc, opcode, additional_data, isa_mode) = entry
         if self.pc_length:
             pc_str = bytes_to_hex(pc)
         if self.has_opcodes:
@@ -223,7 +223,7 @@ class TraceData:
             output = ""
 
         if self.has_opcodes and self.disassemble:
-            disas = self.disassembler_thumb if thumb_mode else self.disassembler
+            disas = self.disassembler_thumb if isa_mode == 1 else self.disassembler
             _, instruction = disas.get_instruction(opcode)
             output += " " + instruction.decode("utf-8")
 
