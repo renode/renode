@@ -158,10 +158,34 @@ Should Communicate With I2C Echo Peripheral From 32-Bit Userspace On 64-Bit Kern
     # Suppress messages from the kernel space
     Execute Linux Command           echo 0 > /proc/sys/kernel/printk
 
+    ${log}=                         Allocate Temporary File
+    Execute Command                 apu0 LogFile @${log}
+    # Clear the TB cache so all instructions are translated and appear in the log
+    Execute Command                 apu0 ClearTranslationCache
     Write Line To Uart              i2ctransfer -ya 1 w3@${I2C_ECHO_ADDRESS} 0x01 0x23 0x45 r2
     Wait For Line On Uart           0x01 0x23
     Wait For Prompt On Uart         ${LINUX_PROMPT}
+    Execute Command                 apu0 LogFile null
     Check Exit Code
+
+    # Assert that the TB log has no errors and includes A64 instructions (in the kernel),
+    # as well as A32 and Thumb instructions (in userspace)
+
+    # No errors
+    ${x}=                           Grep File  ${log}  Disassembly error detected
+    Should Be Empty                 ${x}
+
+    # A64
+    ${x}=                           Grep File  ${log}  d69f03e0 *eret
+    Should Not Be Empty             ${x}
+
+    # A32
+    ${x}=                           Grep File  ${log}  e3500000 *cmp*r0, #0
+    Should Not Be Empty             ${x}
+
+    # T32
+    ${x}=                           Grep File  ${log}  ba12 *rev*r2, r2
+    Should Not Be Empty             ${x}
 
     # Assert that the kernel is 64-bit
     Execute Linux Command           [ $(uname -m) = aarch64 ]
