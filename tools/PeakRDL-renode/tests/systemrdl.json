@@ -6,8 +6,8 @@
         "registerContainerClass": "DoubleWordRegisterCollection",
         "registers": [
             {
-                "className": "FieldsType",
-                "instanceName": "Fields",
+                "className": "Registers_FieldsType",
+                "instanceName": "Registers_Fields",
                 "offset": 0,
                 "resetValue": 0,
                 "fields": [
@@ -50,8 +50,8 @@
         "registerContainerClass": "DoubleWordRegisterCollection",
         "registers": [
             {
-                "className": "BitFieldsType",
-                "instanceName": "BitFields",
+                "className": "Registers_BitFieldsType",
+                "instanceName": "Registers_BitFields",
                 "offset": 256,
                 "resetValue": 0,
                 "fields": [
@@ -80,8 +80,8 @@
         "registerContainerClass": "DoubleWordRegisterCollection",
         "registers": [
             {
-                "className": "CoolRegisterType",
-                "instanceName": "CoolRegister",
+                "className": "Registers_CoolRegisterType",
+                "instanceName": "Registers_CoolRegister",
                 "offset": 256,
                 "resetValue": 0,
                 "fields": [
@@ -95,8 +95,8 @@
                 ]
             },
             {
-                "className": "UncoolRegisterType",
-                "instanceName": "UncoolRegister",
+                "className": "Registers_UncoolRegisterType",
+                "instanceName": "Registers_UncoolRegister",
                 "offset": 260,
                 "resetValue": 4294967295,
                 "fields": [

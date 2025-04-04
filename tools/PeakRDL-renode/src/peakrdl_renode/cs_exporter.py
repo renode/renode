@@ -21,13 +21,13 @@ from typing import Union, Optional
 
 from systemrdl.node import FieldNode, RegNode, RootNode, AddrmapNode
 from systemrdl.rdltypes import OnReadType, OnWriteType
-import caseconverter
 from itertools import chain
 from functools import reduce
 
 from .csharp import ast as ast
 from .scanner import ScannedState, RdlDesignScanner
 from .csharp.process import process_ast
+from .memory import Reg, RegArray
 
 PUBLIC = ast.AccessibilityMod.PUBLIC
 PROTECTED = ast.AccessibilityMod.PROTECTED
@@ -51,19 +51,19 @@ class CSharpGenerator:
         )
 
         self.reg_classes = {
-            reg.inst_name: self.generate_value_container_class(reg)
+            reg.type_name: self.generate_value_container_class(reg)
             for reg in scanned.registers
         }
 
-        regarray_containers = {reg_arr.name: reg_arr.generate_csharp_container_type() \
+        regarray_containers = {reg_arr.type_name: reg_arr.generate_csharp_container_type() \
                             for reg_arr in scanned.register_arrays}
 
         regarray_fields = {
-            ra.name: ast.VariableDecl(
-                name = caseconverter.pascalcase(ra.name),
-                ty = regarray_containers[ra.name].type,
+            ra.variable_name: ast.VariableDecl(
+                name = ra.variable_name,
+                ty = regarray_containers[ra.type_name].type,
                 access = PROTECTED,
-                doc = f'Memory "{ra.name}" at {hex(ra.addr)}'
+                doc = f'Memory "{ra.doc_name}" at {hex(ra.addr)}'
             )
             for ra in scanned.register_arrays
         }
@@ -89,7 +89,7 @@ class CSharpGenerator:
                 body = ast.Node.join(
                     [
                         regarray.generate_dword_read_logic(
-                            regarray_fields[regarray.name],
+                            regarray_fields[regarray.variable_name],
                             offset_arg
                         )
                         for regarray in scanned.register_arrays
@@ -114,7 +114,7 @@ class CSharpGenerator:
                 body = ast.Node.join(
                     [
                         regarray.generate_dword_write_logic(
-                            regarray_fields[regarray.name],
+                            regarray_fields[regarray.variable_name],
                             offset_arg,
                             value_arg
                         )
@@ -132,10 +132,10 @@ class CSharpGenerator:
 
         reg_instances = [
             ast.VariableDecl(
-                name = caseconverter.pascalcase(reg.inst_name),
-                ty = self.reg_classes[reg.inst_name].type,
+                name = reg.variable_name,
+                ty = self.reg_classes[reg.type_name].type,
                 access = PROTECTED,
-                doc = f'Register "{reg.inst_name}" at {hex(reg.absolute_address)}'
+                doc = f'Register "{reg.doc_name}" at {hex(reg.node.absolute_address)}'
             )
             for reg in self.scanned.registers
         ]
@@ -272,12 +272,9 @@ class CSharpGenerator:
             )
             case _: raise RuntimeError('Unhandled field configuration')
 
-    def register_class_name(self, register: RegNode) -> str:
-        return caseconverter.pascalcase(register.inst_name) + 'Type'
-
     def generate_value_container_class(
         self,
-        register: RegNode
+        register: Reg
     ) -> ast.Class:
 
         def make_var_decl(field: FieldNode):
@@ -297,7 +294,7 @@ class CSharpGenerator:
             call.breakline = True
             return call
 
-        name = self.register_class_name(register)
+        name = register.type_name
 
         methods = [
             ast.MethodDefinition(
@@ -308,11 +305,11 @@ class CSharpGenerator:
                     name = 'parent',
                     ty = self.iprovides_register_collection.type
                 ),
-                body = reduce(add_field_impl, register.fields(),
+                body = reduce(add_field_impl, register.node.fields(),
                     ast.Call(
                         'DefineRegister',
-                        ast.Arg(ast.IntLit(register.absolute_address, fmt='h')),
-                        ast.Arg(ast.IntLit(self.scanned.resets[register.inst_name], fmt='h')),
+                        ast.Arg(ast.IntLit(register.node.absolute_address, fmt='h')),
+                        ast.Arg(ast.IntLit(self.scanned.resets[register.type_name], fmt='h')),
                         ast.Arg(ast.BoolLit(True)),
                         object = ast.HardCode('parent.RegistersCollection'),
                         ret_ty=self.ty_register
@@ -324,7 +321,7 @@ class CSharpGenerator:
         return ast.Class(
             name = name,
             access = PUBLIC,
-            fields = ast.Node.join(map(make_var_decl, register.fields())),
+            fields = ast.Node.join(map(make_var_decl, register.node.fields())),
             methods = ast.Node.join(methods),
             struct = True
         )

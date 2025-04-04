@@ -17,7 +17,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from systemrdl.node import RegNode, FieldNode
+from itertools import chain
+
+from systemrdl.node import RegNode, FieldNode, RegfileNode
 import caseconverter
 from types import SimpleNamespace
 
@@ -29,11 +31,35 @@ PUBLIC = ast.AccessibilityMod.PUBLIC
 PROTECTED = ast.AccessibilityMod.PROTECTED
 PRIVATE = ast.AccessibilityMod.PRIVATE
 
+def variable_name(name: str, regfiles: list[str]) -> str:
+    return '_'.join(caseconverter.pascalcase(x) for x in chain(regfiles, (name,)))
+
+def doc_name(name: str, regfiles: list[str]) -> str:
+    return '.'.join(chain(regfiles, (name,)))
+
+class Reg:
+    def __init__(self, node: RegNode, regfiles: list[str]):
+        self.node = node
+        self.regfiles = regfiles
+
+    @property
+    def variable_name(self) -> str:
+        return variable_name(self.node.inst_name, self.regfiles)
+
+    @property
+    def type_name(self) -> str:
+        return self.variable_name + 'Type'
+
+    @property
+    def doc_name(self) -> str:
+        return doc_name(self.node.inst_name, self.regfiles)
+
 class RegArray:
-    def __init__(self, name: str, register: RegNode, address: int):
+    def __init__(self, name: str, register: RegNode, address: int, regfiles: list[str]):
         self.name = name
         self.register = register
         self.addr = address
+        self.regfiles = regfiles
 
     @property
     def count(self) -> int:
@@ -42,6 +68,18 @@ class RegArray:
     @property
     def stride(self) -> int:
         return self.register.array_stride
+
+    @property
+    def variable_name(self) -> str:
+        return variable_name(self.name, self.regfiles)
+
+    @property
+    def type_name(self) -> str:
+        return self.variable_name + 'Type'
+
+    @property
+    def doc_name(self) -> str:
+        return doc_name(self.name, self.regfiles)
 
     @staticmethod
     def m_get_underlying_field_type(field: FieldNode) -> ast.Type:
@@ -221,8 +259,7 @@ class RegArray:
         )
 
     def generate_csharp_container_type(self) -> ast.Class:
-        class_name = \
-            caseconverter.pascalcase(self.name) + '_' + caseconverter.pascalcase(self.register.inst_name) + 'Container'
+        class_name = self.type_name
 
         wrapper_type = self.generate_csharp_wrapper_type()
 

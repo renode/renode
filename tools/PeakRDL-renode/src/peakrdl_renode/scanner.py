@@ -17,16 +17,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from systemrdl.node import FieldNode, MemNode, RegNode, AddrmapNode
+from systemrdl.node import FieldNode, MemNode, RegNode, AddrmapNode, RegfileNode
 from systemrdl.walker import RDLListener, RDLWalker, WalkerAction
 
 from .csharp import ast as ast
-from .memory import RegArray
+from .memory import RegArray, Reg
 
 
 class ScannedState:
     def __init__(self, peripheral_name: str,
-                 registers: list[RegNode],
+                 registers: list[Reg],
                  register_arrays: list[RegArray],
                  resets: dict[RegNode, int]):
         self.top_name = peripheral_name
@@ -35,15 +35,17 @@ class ScannedState:
         self.resets = resets
 
 class RdlDesignScanner(RDLListener):
-    regs: list[RegNode]
+    regs: list[Reg]
     reg_arrs: list[RegArray]
     resets: dict[str, int]
     peripheral_name: str
     array: None | tuple[str, int]
     mem: None | tuple[str, int]
+    regfile_stack: list[RegfileNode]
 
     def __init__(self, top_node: AddrmapNode) -> None:
         self.top_node = top_node
+        self.regfile_stack = []
         self.regs = []
         self.reg_arrs = []
         self.mem = None
@@ -58,15 +60,28 @@ class RdlDesignScanner(RDLListener):
     def enter_Reg(self, node: RegNode) -> WalkerAction | None:
         match self.mem:
             case None:
-                self.regs.append(node)
+                reg = Reg(node, self.prefix_from_regfiles())
+                # If a field does not have a reset value it will be reset to 0
+                self.resets[reg.type_name] = 0
+                self.regs.append(reg)
             case (str() as mem_name, addr):
                 if node.is_array:
                     if len(node.array_dimensions) != 1:
                         raise RuntimeError('Multidimensional arrays are unsupported')
-                reg_array = RegArray(mem_name, node, addr)
-                self.reg_arrs.append(reg_array)
+                reg_arr = RegArray(mem_name, node, addr, self.prefix_from_regfiles())
+                # If a field does not have a reset value it will be reset to 0
+                self.resets[reg_arr.type_name] = 0
+                self.reg_arrs.append(reg_arr)
 
-        self.resets[node.inst_name] = 0
+        return WalkerAction.Continue
+
+    def enter_Regfile(self, node: RegfileNode):
+        self.regfile_stack.append(node)
+        return WalkerAction.Continue
+
+    def exit_Regfile(self, node: RegfileNode):
+        assert self.regfile_stack[-1] == node
+        self.regfile_stack.pop()
         return WalkerAction.Continue
 
     def enter_Field(self, node: FieldNode) -> WalkerAction | None:
@@ -93,4 +108,7 @@ class RdlDesignScanner(RDLListener):
         width = node.high - node.low + 1
         fullreset = (1 << width) - 1;
 
-        self.resets[self.regs[-1].inst_name] |= fullreset << node.low
+        self.resets[self.regs[-1].type_name] |= fullreset << node.low
+
+    def prefix_from_regfiles(self) -> list[str]:
+        return list(x.inst_name for x in self.regfile_stack)
