@@ -11,7 +11,7 @@ RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DESTINATION=renode_${VERSION}-dotnet_portable
 
 # create MacOS app structure
-MACOS_APP_DIR=RenodePortable.app
+MACOS_APP_DIR=Renode.app
 PACKAGES=output/packages
 OUTPUT=$BASE/$PACKAGES
 mkdir -p $MACOS_APP_DIR/Contents/{MacOS,Resources}/
