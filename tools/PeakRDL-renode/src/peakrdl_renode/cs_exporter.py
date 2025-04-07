@@ -329,12 +329,6 @@ class CSharpGenerator:
             struct = True
         )
 
-    def generate_value_container_instance(self, register: RegNode) -> ast.VariableDecl:
-        return ast.VariableDecl(
-            PascalCase(register.inst_name),
-            self.reg_classes[register.inst_name].type
-        )
-
     @staticmethod
     def add_indents(text: str, base_indent: int) -> str:
         text = str(text)
