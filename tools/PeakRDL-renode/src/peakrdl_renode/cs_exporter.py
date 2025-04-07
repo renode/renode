@@ -229,8 +229,8 @@ class CSharpGenerator:
             case OnWriteType.wzs: write_flag = 'FieldMode.WriteZeroToSet'
             case OnWriteType.wzc: write_flag = 'FieldMode.WriteZeroToClear'
             case OnWriteType.wzt: write_flag = 'FieldMode.WriteZeroToToggle'
-            case OnWriteType.wclr: write_flag = 'FieldMode.WriteToClearAll'
-            case OnWriteType.wset: write_flag = 'FieldMode.WriteToSetAll'
+            case OnWriteType.wclr: write_flag = 'FieldMode.WriteToClear'
+            case OnWriteType.wset: write_flag = 'FieldMode.WriteToSet'
             case OnWriteType.wuser:
                 write_flag = 'FieldMode.Write'
             case _: write_flag = 'FieldMode.Write' if field.is_sw_writable else None
