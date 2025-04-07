@@ -311,8 +311,8 @@ class CSharpGenerator:
                 body = reduce(add_field_impl, register.fields(),
                     ast.Call(
                         'DefineRegister',
-                        ast.Arg(register.absolute_address),
-                        ast.Arg(self.scanned.resets[register.inst_name]),
+                        ast.Arg(ast.IntLit(register.absolute_address, fmt='h')),
+                        ast.Arg(ast.IntLit(self.scanned.resets[register.inst_name], fmt='h')),
                         ast.Arg(ast.BoolLit(True)),
                         object = ast.HardCode('parent.RegistersCollection'),
                         ret_ty=self.ty_register
