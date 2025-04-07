@@ -4,12 +4,14 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Linq;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.PlatformDescription;
-using NUnit.Framework;
 using Antmicro.Renode.UnitTests.Mocks;
+
+using NUnit.Framework;
+
 using static Antmicro.Renode.PlatformDescription.UserInterface.PlatformDescriptionMachineExtensions;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
@@ -430,7 +432,7 @@ using ""A""";
                 usingResolver.With(letters[i - 1].ToString(), sources[i]);
             }
             var creationDriver = new CreationDriver(machine ?? new Machine(), usingResolver, new FakeScriptHandler());
-        	creationDriver.ProcessDescription(sources[0]);
+            creationDriver.ProcessDescription(sources[0]);
         }
 
         private string ResolvePath(string path, string includingPath)

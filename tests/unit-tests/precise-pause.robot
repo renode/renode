@@ -96,7 +96,7 @@ Terminal Tester Assert Should Precisely Pause Emulation
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4897
+    Should Be Equal          ${l.Groups[0]}  4897
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
@@ -112,7 +112,7 @@ Emulation Should Pause Precisely Between Translation Blocks
     Execute Command          gpioPortB.button Press
 
     ${l}=                    Wait For Line On Uart  Button pressed at (\\d+)  pauseEmulation=true  treatAsRegex=true
-    Should Be Equal          ${l.groups[0]}  4215
+    Should Be Equal          ${l.Groups[0]}  4215
 
     Emulation Should Be Paused At Time  00:00:00.000226
     PC Should Be Equal       0x8002c0a  # this is the next instruction after STR that writes to TDR in LL_USART_TransmitData8
@@ -220,7 +220,7 @@ LED Tester Assertion Triggered By PWM Should Not Log Errors
     Create Machine With Button And LED  pwm_shell  led_port=B  led_pin=10
 
     ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true  pauseEmulation=true
-    ${pwm}=  Set Variable    ${pwm.groups[0]}
+    ${pwm}=  Set Variable    ${pwm.Groups[0]}
 
     Write Line To Uart       pwm cycles ${pwm} 3 256 127  pauseEmulation=true
     Wait For Prompt On Uart  $  pauseEmulation=true
@@ -238,7 +238,7 @@ Log Tester Assert Should Precisely Pause Emulation
     Create Machine With Button And LED  pwm_shell  led_port=B  led_pin=10
 
     ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true  pauseEmulation=true
-    ${pwm}=  Set Variable    ${pwm.groups[0]}
+    ${pwm}=  Set Variable    ${pwm.Groups[0]}
 
     Write Line To Uart       pwm cycles ${pwm} 3 256 127  waitForEcho=false
 

@@ -6,6 +6,7 @@
 //
 
 using System.Collections.Generic;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -21,9 +22,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public IrqReceiver SetPos(Position startPos, int length)
         {
             var copy = SerializationProvider.Instance.DeepClone(this);
-        	copy.StartPosition = startPos;
-        	copy.Length = length;
-        	return copy;
+            copy.StartPosition = startPos;
+            copy.Length = length;
+            return copy;
         }
 
         public string ToShortString()
@@ -37,8 +38,11 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public ReferenceValue Reference { get; private set; }
+
         public int? LocalIndex { get; private set; }
+
         public Position StartPosition { get; private set; }
+
         public int Length { get; private set; }
     }
 }

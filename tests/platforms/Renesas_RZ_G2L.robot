@@ -76,7 +76,7 @@ Should Run GTM Sample
     Wait For Prompt On Uart         Enter any key to start or stop the timers
     ${one_shot_start}=              Write Line To Uart  waitForEcho=false
     ${one_shot_end}=                Wait For Line On Uart  One-shot mode GTM timer elapsed
-    Elapsed Time Equals             ${one_shot_start.timestamp}  ${one_shot_end.timestamp}  10
+    Elapsed Time Equals             ${one_shot_start.Timestamp}  ${one_shot_end.Timestamp}  10
 
     Wait For Line On Uart           GTM1 is Enabled in Periodic mode
     FOR  ${i}  IN RANGE  0  3
@@ -85,7 +85,7 @@ Should Run GTM Sample
 
         ${periodic_end}=                Wait For Line On Uart  Leds are: On
         Assert Led State                True  timeout=0.01
-        Elapsed Time Equals             ${periodic_start.timestamp}  ${periodic_end.timestamp}  5  0.3
+        Elapsed Time Equals             ${periodic_start.Timestamp}  ${periodic_end.Timestamp}  5  0.3
     END
 
 Should Run SCIF UART Sample

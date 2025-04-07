@@ -5,9 +5,10 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Antmicro.Renode.Testing;
+
 using Antmicro.Renode.Peripherals.Network;
 using Antmicro.Renode.Peripherals.Wireless;
+using Antmicro.Renode.Testing;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -20,17 +21,18 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateNetworkInterfaceTester(string networkInterface, string machine = null)
         {
-            return CreateNewTester(p => {
-                        if(p is IMACInterface mac)
-                        {
-                            return new NetworkInterfaceTester(mac);
-                        }
-                        if(p is IRadio radio)
-                        {
-                            return new NetworkInterfaceTester(radio);
-                        }
-                        throw new KeywordException($"Could not create NetworkInterfaceTester from {p}.");
-                    }, networkInterface, machine);
+            return CreateNewTester(p =>
+            {
+                if(p is IMACInterface mac)
+                {
+                    return new NetworkInterfaceTester(mac);
+                }
+                if(p is IRadio radio)
+                {
+                    return new NetworkInterfaceTester(radio);
+                }
+                throw new KeywordException($"Could not create NetworkInterfaceTester from {p}.");
+            }, networkInterface, machine);
         }
 
         [RobotFrameworkKeyword]
@@ -58,7 +60,7 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public void SendFrame(string bytes, int? testerId = null)
         {
-            var tester = GetTesterOrThrowException(testerId); 
+            var tester = GetTesterOrThrowException(testerId);
             try
             {
                 tester.SendFrame(bytes);

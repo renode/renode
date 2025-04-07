@@ -5,12 +5,12 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.Utilities;
+
 using NUnit.Framework;
-using Antmicro.Renode.Peripherals.CPU;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {

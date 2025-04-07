@@ -6,8 +6,9 @@
 //
 using System;
 using System.Collections.Generic;
-using Antmicro.Renode.Peripherals.Wireless;
+
 using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Wireless;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Plugins.WiresharkPlugin
@@ -132,13 +133,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
         }
 
-        private const int SnifferMetadataSizeInBytes = 10;
-        private const int MinimalBLEPacketLength = 9;
-        private const int ConnectBLEPacketLength = 43;
-        private const uint AdvertisementAccessAddress = 0x8e89bed6;
-        private const byte ConnectPDUType = 5;
-        private const byte AuxiliaryAdvertisementPDUType = 7;
-
         // Wireshark indexes channels from 0 to 39 basing on the frequency meanwhile in reality channels 37, 38 and 39
         // are in different places of frequency spectrum. This is why we have to remap channel numbers to indexed for Wireshark.
         private readonly Dictionary<int, byte> channelToWiresharkIndex = new Dictionary<int, byte>()
@@ -189,6 +183,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         // and there is only one master device associated with each access address. Other devices associated with access addressses
         // are considered to be slaves.
         private readonly Dictionary<uint, IRadio> mastersInConnections = new Dictionary<uint, IRadio>();
+
+        private const int SnifferMetadataSizeInBytes = 10;
+        private const int MinimalBLEPacketLength = 9;
+        private const int ConnectBLEPacketLength = 43;
+        private const uint AdvertisementAccessAddress = 0x8e89bed6;
+        private const byte ConnectPDUType = 5;
+        private const byte AuxiliaryAdvertisementPDUType = 7;
 
         // Flags registers are made of a bitfield and pdu type numbers
         [Flags]

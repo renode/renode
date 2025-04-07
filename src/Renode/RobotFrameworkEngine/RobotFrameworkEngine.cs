@@ -6,9 +6,7 @@
 //
 using System;
 using System.Threading.Tasks;
-using Antmicro.Renode;
-using Antmicro.Renode.Core;
-using Antmicro.Renode.UserInterface;
+
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework

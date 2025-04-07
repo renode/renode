@@ -11,7 +11,7 @@ Should Run Detection
     Wait For Line On Uart           Decoding JPEG and converting to greyscale
     Wait For Line On Uart           Image decoded and processed
     ${l}=  Wait For Line On Uart    Person score: (\\d+) No person score: (\\d+)      treatAsRegex=true
-    ${s}=  Evaluate                 int(${l.groups[0]}) - int(${l.groups[1]})
+    ${s}=  Evaluate                 int(${l.Groups[0]}) - int(${l.Groups[1]})
 
     RETURN                          ${s}
 

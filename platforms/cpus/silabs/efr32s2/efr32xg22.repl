@@ -165,7 +165,7 @@ deviceInformation: Miscellaneous.SiLabs.EFR32xG2_DeviceInformation @ sysbus 0x0F
 DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094024
     size: 0x4
     initable: true
-    script: "request.value = 0xffffffff"
+    script: "request.Value = 0xffffffff"
 
 // TODO: this should be CMU_1
 cmu: Miscellaneous.SiLabs.EFR32xG2_CMU_3 @ {

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
@@ -14,6 +15,19 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public static class IInstanceBasedCommandExtensions
     {
+        public static bool TryGetName(Command command, List<byte> data, int offset, out string name, out Response response)
+        {
+            name = default(string);
+            response = default(Response);
+
+            if(!TryDecodeNameLength(command, data, offset, out var length, out response))
+            {
+                return false;
+            }
+
+            return TryDecodeName(command, data, offset + NameLengthSize, length, out name, out response);
+        }
+
         public static Response InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, List<byte> data, Predicate<T> instanceFilter = null)
             where T : IEmulationElement
         {
@@ -55,6 +69,8 @@ namespace Antmicro.Renode.Network.ExternalControl
             return Response.Success(@this.Identifier, id.AsRawBytes());
         }
 
+        public const int HeaderSize = InstanceIdSize;
+
         private static bool TryRegisterInstance<T>(this IInstanceBasedCommand<T> @this, IMachine machine, string name, Predicate<T> instanceFilter, out int id)
             where T : IEmulationElement
         {
@@ -71,19 +87,6 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             @this.Instances.TryAdd((T)instance, out id);
             return true;
-        }
-
-        public static bool TryGetName(Command command, List<byte> data, int offset, out string name, out Response response)
-        {
-            name = default(string);
-            response = default(Response);
-
-            if(!TryDecodeNameLength(command, data, offset, out var length, out response))
-            {
-                return false;
-            }
-
-            return TryDecodeName(command, data, offset + NameLengthSize, length, out name, out response);
         }
 
         private static bool TryGetMachine(this ICommand @this, List<byte> data, out IMachine machine, out Response response)
@@ -152,8 +155,6 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             return true;
         }
-
-        public const int HeaderSize = InstanceIdSize;
 
         private const int PayloadOffset = InstanceIdOffset + InstanceIdSize;
         private const int InstanceIdOffset = 0;

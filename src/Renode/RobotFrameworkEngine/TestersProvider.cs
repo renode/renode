@@ -7,29 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
 
 namespace Antmicro.Renode.RobotFramework
 {
     internal abstract class TestersProvider<TTester, TPeripheral>
-        where TPeripheral: class, IEmulationElement
-        where TTester: class
+        where TPeripheral : class, IEmulationElement
+        where TTester : class
     {
-        public TestersProvider()
-        {
-            testers = new Dictionary<int, TTester>();
-            peripheralsWithTesters = new List<TPeripheral>();
-            EmulationManager.Instance.EmulationChanged += () =>
-            {
-                lock(testers)
-                {
-                    testers.Clear();
-                    peripheralsWithTesters.Clear();
-                }
-            };
-        }
-
         public static IMachine TryGetDefaultMachineOrThrowKeywordException(string peripheralName = null)
         {
             if(!EmulationManager.Instance.CurrentEmulation.Machines.Any())
@@ -53,6 +40,20 @@ namespace Antmicro.Renode.RobotFramework
                     string.Join(", ", EmulationManager.Instance.CurrentEmulation.Names));
             }
             return machineObject;
+        }
+
+        public TestersProvider()
+        {
+            testers = new Dictionary<int, TTester>();
+            peripheralsWithTesters = new List<TPeripheral>();
+            EmulationManager.Instance.EmulationChanged += () =>
+            {
+                lock(testers)
+                {
+                    testers.Clear();
+                    peripheralsWithTesters.Clear();
+                }
+            };
         }
 
         public int CreateNewTester(Func<TPeripheral, TTester> creator, string peripheralOrExternalName, string machine = null)

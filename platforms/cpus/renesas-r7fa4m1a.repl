@@ -347,12 +347,12 @@ port9: GPIOPort.RenesasRA4_GPIO @ {
 sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
     size: 0x4
     initable: true
-    script: "request.value = 0xFF"
+    script: "request.Value = 0xFF"
 
 sysc_vbtsr: Python.PythonPeripheral @ sysbus 0x4001E4B1
     size: 0x4
     initable: true
-    script: "request.value = 0x10"
+    script: "request.Value = 0x10"
 
 iic0: I2C.RenesasRA_IIC @ sysbus 0x40053000
     ReceiveIRQ -> icu@0x035

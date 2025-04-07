@@ -5,8 +5,9 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Xwt;
 using System.Text;
+
+using Xwt;
 
 namespace Antmicro.Renode.UI
 {

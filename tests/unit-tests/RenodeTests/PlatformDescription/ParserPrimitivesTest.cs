@@ -4,12 +4,12 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Linq;
-using Antmicro.Renode.Core;
-using Antmicro.Renode.PlatformDescription;
+
 using Antmicro.Renode.PlatformDescription.Syntax;
+
 using NUnit.Framework;
+
 using Sprache;
 
 using Range = Antmicro.Renode.Core.Range;
@@ -74,7 +74,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
 
         [Test]
         public void ShouldParseNumber(
-            [Values("0x1234", "-0x123", "- 0x36", "22", "-13", "-  45", "1.0", "-3.45")] 
+            [Values("0x1234", "-0x123", "- 0x36", "22", "-13", "-  45", "1.0", "-3.45")]
             string number)
         {
             var source = new Input(number);

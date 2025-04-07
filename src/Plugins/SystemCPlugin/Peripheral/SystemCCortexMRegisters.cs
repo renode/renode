@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System.Collections.Generic;
+
 using Antmicro.Renode.Peripherals.CPU;
 
 namespace Antmicro.Renode.Peripherals.SystemC
@@ -18,11 +19,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.Control);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.Control, value);
             }
         }
+
         [Register]
         public RegisterValue BasePri
         {
@@ -30,11 +33,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.BasePri);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.BasePri, value);
             }
         }
+
         [Register]
         public RegisterValue VecBase
         {
@@ -42,11 +47,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.VecBase);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.VecBase, value);
             }
         }
+
         [Register]
         public RegisterValue CurrentSP
         {
@@ -54,11 +61,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.CurrentSP);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.CurrentSP, value);
             }
         }
+
         [Register]
         public RegisterValue OtherSP
         {
@@ -66,11 +75,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.OtherSP);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.OtherSP, value);
             }
         }
+
         [Register]
         public RegisterValue FPCCR
         {
@@ -78,11 +89,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.FPCCR);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.FPCCR, value);
             }
         }
+
         [Register]
         public RegisterValue FPCAR
         {
@@ -90,11 +103,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.FPCAR);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.FPCAR, value);
             }
         }
+
         [Register]
         public RegisterValue FPDSCR
         {
@@ -102,11 +117,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.FPDSCR);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.FPDSCR, value);
             }
         }
+
         [Register]
         public RegisterValue CPACR
         {
@@ -114,11 +131,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.CPACR);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.CPACR, value);
             }
         }
+
         [Register]
         public RegisterValue PRIMASK
         {
@@ -126,11 +145,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.PRIMASK);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.PRIMASK, value);
             }
         }
+
         [Register]
         public RegisterValue FAULTMASK
         {
@@ -138,6 +159,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return GetRegisterValue32((int)SystemCCortexMRegisters.FAULTMASK);
             }
+
             set
             {
                 SetRegisterValue32((int)SystemCCortexMRegisters.FAULTMASK, value);

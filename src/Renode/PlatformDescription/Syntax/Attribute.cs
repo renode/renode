@@ -4,11 +4,9 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Antmicro.Migrant;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -29,6 +27,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public Position StartPosition { get; private set; }
+
         public int Length { get; private set; }
     }
 }

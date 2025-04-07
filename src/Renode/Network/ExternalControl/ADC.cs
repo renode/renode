@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Sensor;
 using Antmicro.Renode.Utilities;
@@ -38,43 +39,44 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             switch(command)
             {
-                case ADCCommand.GetCount:
-                    var channelCount = instance.ADCChannelCount;
-                    parent.Log(LogLevel.Debug, "Executing ADC GetCount command, returned {0}", channelCount);
-                    return Response.Success(Identifier, channelCount.AsRawBytes());
+            case ADCCommand.GetCount:
+                var channelCount = instance.ADCChannelCount;
+                parent.Log(LogLevel.Debug, "Executing ADC GetCount command, returned {0}", channelCount);
+                return Response.Success(Identifier, channelCount.AsRawBytes());
 
-                case ADCCommand.GetValue:
-                    DecodeChannelArgument(data, out var channel);
-                    var value = instance.GetADCValue(channel);
-                    parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, value);
-                    return Response.Success(Identifier, value.AsRawBytes());
+            case ADCCommand.GetValue:
+                DecodeChannelArgument(data, out var channel);
+                var value = instance.GetADCValue(channel);
+                parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, value);
+                return Response.Success(Identifier, value.AsRawBytes());
 
-                case ADCCommand.SetValue:
-                    DecodeSetValueArguments(data, out channel, out value);
-                    parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, value);
-                    instance.SetADCValue(channel, value);
-                    return Response.Success(Identifier);
+            case ADCCommand.SetValue:
+                DecodeSetValueArguments(data, out channel, out value);
+                parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, value);
+                instance.SetADCValue(channel, value);
+                return Response.Success(Identifier);
 
-                default:
-                    return Response.CommandFailed(Identifier, "Unexpected command format");
+            default:
+                return Response.CommandFailed(Identifier, "Unexpected command format");
             }
         }
 
         public InstanceCollection<IADC> Instances { get; }
 
         public override Command Identifier => Command.ADC;
+
         public override byte Version => 0x0;
 
         private int GetExpectedPayloadCount(ADCCommand command)
         {
             switch(command)
             {
-                case ADCCommand.GetValue:
-                    return sizeof(byte) + sizeof(uint);
-                case ADCCommand.SetValue:
-                    return sizeof(byte) + sizeof(uint) * 2;
-                default:
-                    return sizeof(byte);
+            case ADCCommand.GetValue:
+                return sizeof(byte) + sizeof(uint);
+            case ADCCommand.SetValue:
+                return sizeof(byte) + sizeof(uint) * 2;
+            default:
+                return sizeof(byte);
             }
         }
 

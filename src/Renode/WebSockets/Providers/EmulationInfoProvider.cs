@@ -41,27 +41,27 @@ namespace Antmicro.Renode.WebSockets.Providers
         }
 
         [WebSocketAPIAction("spawn", "1.5.0")]
-        private WebSocketAPIResponse SpawnAction(string name, bool gui)
+        private WebSocketAPIResponse SpawnAction(string _, bool __)
         {
             SharedData.MainConnection = SharedData.CurrentConnection;
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
         [WebSocketAPIAction("kill", "1.5.0")]
-        private WebSocketAPIResponse KillAction(string name)
+        private WebSocketAPIResponse KillAction(string _)
         {
             SharedData.ClearEmulationEvent?.Invoke();
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
         [WebSocketAPIAction("status", "1.5.0")]
-        private WebSocketAPIResponse StatusAction(string name)
+        private WebSocketAPIResponse StatusAction(string _)
         {
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
         [WebSocketAPIAction("command", "1.5.0")]
-        private WebSocketAPIResponse CommandAction(string name)
+        private WebSocketAPIResponse CommandAction(string _)
         {
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
@@ -72,12 +72,12 @@ namespace Antmicro.Renode.WebSockets.Providers
             IMachine machine = null;
             IPeripheral peripheral = null;
 
-            if(!EmulationManager.Instance.CurrentEmulation.TryGetMachine(args.machine, out machine))
+            if(!EmulationManager.Instance.CurrentEmulation.TryGetMachine(args.Machine, out machine))
             {
                 return WebSocketAPIUtils.CreateEmptyActionResponse("provided machine does not exist");
             }
 
-            if(args.peripheral != null && !machine.TryGetByName<IPeripheral>(args.peripheral, out peripheral))
+            if(args.Peripheral != null && !machine.TryGetByName<IPeripheral>(args.Peripheral, out peripheral))
             {
                 return WebSocketAPIUtils.CreateEmptyActionResponse("provided peripheral does not exist");
             }
@@ -91,15 +91,15 @@ namespace Antmicro.Renode.WebSockets.Providers
             case "leds":
                 return GPIOData.GetPeripheralsNameOfType<ILed>(machine);
             case "button-set":
-                return GPIOData.ButtonSet(machine, peripheral, args.value.ToObject<bool>());
+                return GPIOData.ButtonSet(machine, peripheral, args.Value.ToObject<bool>());
             case "machines":
                 return this.GetMachines();
             case "sensors":
                 return SensorsData.GetSensors(machine);
             case "sensor-get":
-                return SensorsData.GetSensorData(peripheral, args.type);
+                return SensorsData.GetSensorData(peripheral, args.Type);
             case "sensor-set":
-                return SensorsData.SetSensorData(peripheral, args.type, args.value);
+                return SensorsData.SetSensorData(peripheral, args.Type, args.Value);
             }
 
             return WebSocketAPIUtils.CreateEmptyActionResponse("unknown action");
@@ -204,9 +204,9 @@ namespace Antmicro.Renode.WebSockets.Providers
                     var ledPeripheral = peripheral as LED;
                     ledPeripheral.StateChanged += (led, val) => LedStateChangedEvent.RaiseEvent(new PeripheralStateChangedEventDto
                     {
-                        machineName = machineName,
-                        name = GPIOData.GetPeripheralFullName(ledPeripheral),
-                        value = val
+                        MachineName = machineName,
+                        Name = GPIOData.GetPeripheralFullName(ledPeripheral),
+                        Value = val
                     });
                 }
                 else if(peripheral is Button)
@@ -214,9 +214,9 @@ namespace Antmicro.Renode.WebSockets.Providers
                     var buttonPeripheral = peripheral as Button;
                     buttonPeripheral.StateChanged += (val) => ButtonStateChangedEvent.RaiseEvent(new PeripheralStateChangedEventDto
                     {
-                        machineName = machineName,
-                        name = GPIOData.GetPeripheralFullName(buttonPeripheral),
-                        value = val
+                        MachineName = machineName,
+                        Name = GPIOData.GetPeripheralFullName(buttonPeripheral),
+                        Value = val
                     });
                 }
             }
@@ -235,9 +235,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 UartCreatedEvent.RaiseEvent(new UartCreatedEventDto
                 {
-                    name = uartName,
-                    port = webSocketUartAnalyzer.GetUartNumber(),
-                    machineName = machineName
+                    Name = uartName,
+                    Port = webSocketUartAnalyzer.GetUartNumber(),
+                    MachineName = machineName
                 });
             }
         }
@@ -268,6 +268,8 @@ namespace Antmicro.Renode.WebSockets.Providers
         private WebSocketAPISharedData SharedData;
         private System.ConsoleColor currentMonitorPrefixColor;
 
+        // 649:  Field '...' is never assigned to, and will always have its default value null
+#pragma warning disable 649
         [WebSocketAPIEvent("uart-opened", "1.5.0")]
         private readonly WebSocketAPIEventHandler UartCreatedEvent;
 
@@ -282,31 +284,32 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         [WebSocketAPIEvent("clear-command", "1.5.0")]
         private readonly WebSocketAPIEventHandler ClearCommandEvent;
+#pragma warning restore 649
 
         public class ExecRenodeActionArgs
         {
             [JsonProperty(Required = Required.Always)]
-            public string machine;
+            public string Machine;
             [JsonProperty(Required = Required.Default)]
-            public string peripheral;
+            public string Peripheral;
             [JsonProperty(Required = Required.Default)]
-            public string type;
+            public string Type;
             [JsonProperty(Required = Required.Default)]
-            public JToken value;
+            public JToken Value;
         }
 
         private class UartCreatedEventDto
         {
-            public int port;
-            public string name;
-            public string machineName;
+            public int Port;
+            public string Name;
+            public string MachineName;
         }
 
         private class PeripheralStateChangedEventDto
         {
-            public string machineName;
-            public string name;
-            public bool value;
+            public string MachineName;
+            public string Name;
+            public bool Value;
         }
     }
 }

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Sprache;
 
 // all elements of parse tree has to be located in this namespace
@@ -260,6 +261,47 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from rightSide in HexadecimalUnsignedInt.Or(DecimalUnsignedInt).Where(x => x != leftSide).Named(string.Format("number other than {0}", leftSide))
              select MakeSimpleRange(checked((int)leftSide), checked((int)rightSide)));
 
+        public static Parser<IOption<T>> XOptional<T>(this Parser<T> parser)
+        {
+            if(parser == null) throw new ArgumentNullException(nameof(parser));
+
+            return i =>
+            {
+                var pr = parser(i);
+
+                if(pr.WasSuccessful)
+                    return Result.Success(new Some<T>(pr.Value), pr.Remainder);
+
+                if(!pr.Remainder.Equals(i))
+                {
+                    return Result.Failure<IOption<T>>(pr.Remainder, pr.Message, pr.Expectations);
+                }
+
+                return Result.Success(new None<T>(), i);
+            };
+        }
+
+        public static Parser<string> MakeKeyword(string keyword)
+        {
+            Keywords.Add(keyword);
+            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword");
+        }
+
+        public static Parser<T> MakeKeyword<T>(string keyword, T obj)
+        {
+            Keywords.Add(keyword);
+            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword").Select(x => obj);
+        }
+
+        public static IEnumerable<int> MakeSimpleRange(int begin, int end)
+        {
+            if(end >= begin)
+            {
+                return Enumerable.Range(begin, end - begin + 1);
+            }
+            return Enumerable.Range(end, begin - end + 1).Reverse();
+        }
+
         public static Parser<SingleOrMultiIrqEnd> GetIrqEnd(bool source)
         {
             var result = IrqRange.Select(x => new SingleOrMultiIrqEnd(x.Select(y => new IrqEnd(null, y))))
@@ -360,50 +402,33 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from entries in Entries.XOptional()
              select new Description(usings.GetOrElse(new UsingEntry[0]), entries.GetOrElse(new Entry[0]))).End();
 
-        public static Parser<IOption<T>> XOptional<T>(this Parser<T> parser)
-        {
-            if(parser == null) throw new ArgumentNullException(nameof(parser));
-
-            return i =>
-            {
-                var pr = parser(i);
-
-                if(pr.WasSuccessful)
-                    return Result.Success(new Some<T>(pr.Value), pr.Remainder);
-
-                if(!pr.Remainder.Equals(i))
-                {
-                    return Result.Failure<IOption<T>>(pr.Remainder, pr.Message, pr.Expectations);
-                }
-
-                return Result.Success(new None<T>(), i);
-            };
-        }
-
         internal abstract class AbstractOption<T> : IOption<T>
         {
-            public abstract bool IsEmpty { get; }
-
-            public bool IsDefined
-            {
-                get { return !IsEmpty; }
-            }
-
             public T GetOrDefault()
             {
                 return IsEmpty ? default(T) : Get();
             }
 
             public abstract T Get();
+
+            public bool IsDefined
+            {
+                get { return !IsEmpty; }
+            }
+
+            public abstract bool IsEmpty { get; }
         }
 
         internal sealed class Some<T> : AbstractOption<T>
         {
-            private readonly T _value;
-
             public Some(T value)
             {
                 _value = value;
+            }
+
+            public override T Get()
+            {
+                return _value;
             }
 
             public override bool IsEmpty
@@ -411,44 +436,20 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                 get { return false; }
             }
 
-            public override T Get()
-            {
-                return _value;
-            }
+            private readonly T _value;
         }
 
         internal sealed class None<T> : AbstractOption<T>
         {
-            public override bool IsEmpty
-            {
-                get { return true; }
-            }
-
             public override T Get()
             {
                 throw new InvalidOperationException("Cannot get value from None.");
             }
-        }
 
-        public static Parser<string> MakeKeyword(string keyword)
-        {
-            Keywords.Add(keyword);
-            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword");
-        }
-
-        public static Parser<T> MakeKeyword<T>(string keyword, T obj)
-        {
-            Keywords.Add(keyword);
-            return GeneralIdentifier.Where(x => x == keyword).Named(keyword + " keyword").Select(x => obj);
-        }
-
-        public static IEnumerable<int> MakeSimpleRange(int begin, int end)
-        {
-            if(end >= begin)
+            public override bool IsEmpty
             {
-                return Enumerable.Range(begin, end - begin + 1);
+                get { return true; }
             }
-            return Enumerable.Range(end, begin - end + 1).Reverse();
         }
     }
 }

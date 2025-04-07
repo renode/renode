@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System.Collections.Generic;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
@@ -37,6 +38,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         }
 
         public override Command Identifier => Command.GetMachine;
+
         public override byte Version => 0x0;
 
         private readonly InstanceCollection<IMachine> machines;

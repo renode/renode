@@ -174,29 +174,29 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
     size: 0x400
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     lastVal = 0     
-elif request.isRead:               
+elif request.IsRead:               
     lastVal = 1 - lastVal
-    if request.offset == 0x0:
-        request.value = lastVal * 0x83
-    elif request.offset == 0x4:
-        request.value = lastVal * 0xFFFFFFF8
-    elif request.offset == 0x24:
-        request.value = 0x0
+    if request.Offset == 0x0:
+        request.Value = lastVal * 0x83
+    elif request.Offset == 0x4:
+        request.Value = lastVal * 0xFFFFFFF8
+    elif request.Offset == 0x24:
+        request.Value = 0x0
     else:
-        request.value = lastVal * 0xFFFFFFFF
+        request.Value = lastVal * 0xFFFFFFFF
 
-self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.type), request.offset, request.value))
+self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.Type), request.Offset, request.Value))
 '''
 
 DMA: Python.PythonPeripheral @ sysbus 0x40020000
     size: 0x400
     script: '''
-if request.isWrite and request.offset in (0x10, 0x24, 0x38):
+if request.IsWrite and request.Offset in (0x10, 0x24, 0x38):
     # writing base address - we write some positive value there in case initialization awaits output
-    sysbus.WriteDoubleWord(request.value, 0x40E33333)
-    self.NoisyLog("0x%x written with value 0x40E33333" % request.value)
+    sysbus.WriteDoubleWord(request.Value, 0x40E33333)
+    self.NoisyLog("0x%x written with value 0x40E33333" % request.Value)
 '''
 
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400

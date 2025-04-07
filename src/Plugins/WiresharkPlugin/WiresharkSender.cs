@@ -26,10 +26,11 @@
 *
 *********************************************************************/
 using System;
-using System.Runtime.InteropServices;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipes;
+using System.Runtime.InteropServices;
+
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Plugins.WiresharkPlugin
@@ -139,6 +140,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
         }
 
+        private static uint DateTimeToUnixTimestamp(DateTime dateTime)
+        {
+            return (uint)(dateTime - localEpoch).TotalSeconds;
+        }
+
         private string GetPrefixedPipeName()
         {
             // Mono is using the "/var/tmp" prefix for pipes by default.
@@ -186,7 +192,6 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
 
                 // Bacnet packet
                 wiresharkPipe.Write(buffer, offset, lenght);
-
             }
             catch(Exception)
             {
@@ -198,24 +203,20 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             return true;
         }
 
-        private static uint DateTimeToUnixTimestamp(DateTime dateTime)
-        {
-            return (uint)(dateTime - localEpoch).TotalSeconds;
-        }
-
-        private NamedPipeServerStream wiresharkPipe;
-        private Process wiresharkProces;
-        private string pipeName;
-        private uint pcapNetId;
-        private string wiresharkPath;
         private bool isConnected;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
 
+        private NamedPipeServerStream wiresharkPipe;
+        private Process wiresharkProces;
+        private readonly string pipeName;
+        private readonly uint pcapNetId;
+        private readonly string wiresharkPath;
+
         private static readonly DateTime localEpoch = Misc.UnixEpoch.ToLocalTime();
 
 #if !PLATFORM_WINDOWS
-        private string namedPipePrefix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
+        private readonly string namedPipePrefix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
         private const PipeOptions NamedPipeOptions = PipeOptions.None;
 #else
         private string namedPipePrefix = @"\\.\pipe\";
@@ -244,13 +245,13 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
 
             /* timestamp seconds */
-            private uint timestampSeconds;
+            private readonly uint timestampSeconds;
             /* timestamp microseconds */
-            private uint timestampMicroseconds;
+            private readonly uint timestampMicroseconds;
             /* number of octets of packet saved in file */
-            private uint savedBytesLength;
+            private readonly uint savedBytesLength;
             /* actual length of packet */
-            private uint packetLength;
+            private readonly uint packetLength;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -279,19 +280,19 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
 
             /* magic number */
-            private uint magicNumber;
+            private readonly uint magicNumber;
             /* major version number */
-            private ushort majorVersion;
+            private readonly ushort majorVersion;
             /* minor version number */
-            private ushort minorVersion;
+            private readonly ushort minorVersion;
             /* GMT to local correction */
-            private int timezoneCorrection;
+            private readonly int timezoneCorrection;
             /* accuracy of timestamps */
-            private uint sigfigs;
+            private readonly uint sigfigs;
             /* max length of captured packets, in octets */
-            private uint maximumPacketLength;
+            private readonly uint maximumPacketLength;
             /* data link type */
-            private uint networkType;
+            private readonly uint networkType;
         }
     }
 }

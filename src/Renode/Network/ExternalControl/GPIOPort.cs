@@ -6,8 +6,8 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Utilities;
 
@@ -22,8 +22,6 @@ namespace Antmicro.Renode.Network.ExternalControl
         }
 
         public override Response Invoke(List<byte> data) => this.InvokeHandledWithInstance(data, HasGPIO);
-
-        public event Action<Response> EventReported;
 
         public Response Invoke(IPeripheral instance, List<byte> data)
         {
@@ -41,81 +39,84 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             switch(command)
             {
-                case GPIOPortCommand.GetState:
-                    DecodeIdArgument(data, out var id);
+            case GPIOPortCommand.GetState:
+                DecodeIdArgument(data, out var id);
 
-                    if(instance is INumberedGPIOOutput sender)
+                if(instance is INumberedGPIOOutput sender)
+                {
+                    if(sender.Connections.TryGetValue(id, out var gpio))
                     {
-                        if(sender.Connections.TryGetValue(id, out var gpio))
-                        {
-                            return Response.Success(Identifier, BitConverter.GetBytes(gpio.IsSet));
-                        }
-                        return Response.CommandFailed(Identifier, $"This instance does not provide GPIO output #{id}");
+                        return Response.Success(Identifier, BitConverter.GetBytes(gpio.IsSet));
                     }
+                    return Response.CommandFailed(Identifier, $"This instance does not provide GPIO output #{id}");
+                }
+                return Response.CommandFailed(Identifier, "This instance does not provide GPIO outputs");
+
+            case GPIOPortCommand.SetState:
+                DecodeSetValueArguments(data, out id, out var value);
+
+                if(instance is IGPIOReceiver receiver)
+                {
+                    receiver.OnGPIO(id, value);
+                    return Response.Success(Identifier);
+                }
+                return Response.CommandFailed(Identifier, "This instance does not provide GPIO inputs");
+
+            case GPIOPortCommand.RegisterEvent:
+                DecodeRegisterEventArguments(data, out id, out var ed);
+
+                if(!(instance is INumberedGPIOOutput gpioDriver))
+                {
                     return Response.CommandFailed(Identifier, "This instance does not provide GPIO outputs");
+                }
 
-                case GPIOPortCommand.SetState:
-                    DecodeSetValueArguments(data, out id, out var value);
-
-                    if(instance is IGPIOReceiver receiver)
-                    {
-                        receiver.OnGPIO(id, value);
-                        return Response.Success(Identifier);
-                    }
-                    return Response.CommandFailed(Identifier, "This instance does not provide GPIO inputs");
-
-                case GPIOPortCommand.RegisterEvent:
-                    DecodeRegisterEventArguments(data, out id, out var ed);
-
-                    if(!(instance is INumberedGPIOOutput gpioDriver))
-                    {
-                        return Response.CommandFailed(Identifier, "This instance does not provide GPIO outputs");
-                    }
-
-                    if(!gpioDriver.Connections.TryGetValue(id, out var pin) || !(pin is GPIO))
-                    {
-                        return Response.CommandFailed(Identifier, $"This instance does not provide GPIO output #{id}");
-                    }
+                if(!gpioDriver.Connections.TryGetValue(id, out var pin) || !(pin is GPIO))
+                {
+                    return Response.CommandFailed(Identifier, $"This instance does not provide GPIO output #{id}");
+                }
 
                     (pin as GPIO).AddStateChangedHook((state) => SendEvent(state, ed));
-                    return Response.Success(Identifier);
+                return Response.Success(Identifier);
 
-                default:
-                    return Response.CommandFailed(Identifier, "Unexpected command format");
+            default:
+                return Response.CommandFailed(Identifier, "Unexpected command format");
             }
         }
 
-        private void SendEvent(bool gpioState, int eventDescriptor)
-        {
-            var data = new EventData();
-            data.timestampMicroseconds = (ulong)EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalMicroseconds;
-            data.gpioState = gpioState;
+        public override Command Identifier => Command.GPIOPort;
 
-            EventReported?.Invoke(Response.Event(Identifier, eventDescriptor, data.AsRawBytes()));
-        }
+        public override byte Version => 0x1;
 
         public InstanceCollection<IPeripheral> Instances { get; }
 
-        public override Command Identifier => Command.GPIOPort;
-        public override byte Version => 0x1;
+        public event Action<Response> EventReported;
 
         private static bool HasGPIO(IPeripheral instance)
         {
             return instance is INumberedGPIOOutput || instance is IGPIOReceiver;
         }
 
+        private void SendEvent(bool gpioState, int eventDescriptor)
+        {
+            var data = new EventData();
+            data.TimestampMicroseconds = (ulong)EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalMicroseconds;
+            data.GpioState = gpioState;
+
+            EventReported?.Invoke(Response.Event(Identifier, eventDescriptor, data.AsRawBytes()));
+        }
+
         private int GetExpectedPayloadCount(GPIOPortCommand command)
         {
             switch(command)
             {
-                case GPIOPortCommand.GetState:
-                    return sizeof(byte) + sizeof(uint);
-                case GPIOPortCommand.SetState:
-                    return sizeof(byte) * 2 + sizeof(uint);
-                case GPIOPortCommand.RegisterEvent:
-                    return sizeof(byte) + sizeof(uint) * 2;
-                default:
-                    return sizeof(byte);
+            case GPIOPortCommand.GetState:
+                return sizeof(byte) + sizeof(uint);
+            case GPIOPortCommand.SetState:
+                return sizeof(byte) * 2 + sizeof(uint);
+            case GPIOPortCommand.RegisterEvent:
+                return sizeof(byte) + sizeof(uint) * 2;
+            default:
+                return sizeof(byte);
             }
         }
 
@@ -140,8 +141,8 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private struct EventData
         {
-            public ulong timestampMicroseconds;
-            public bool gpioState;
+            public ulong TimestampMicroseconds;
+            public bool GpioState;
         }
 
         private enum GPIOPortCommand : byte

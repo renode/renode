@@ -5,10 +5,10 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
@@ -171,4 +171,3 @@ namespace Antmicro.Renode.RobotFramework
         }
     }
 }
-

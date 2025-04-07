@@ -6,12 +6,15 @@
 //
 using System;
 using System.Linq;
+using System.Text;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.PlatformDescription.Syntax;
+
 using NUnit.Framework;
+
 using Sprache;
-using System.Text;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -33,7 +36,7 @@ namespace Antmicro.Renode.UnitTests.PlatformDescription
             var source = @"
 using ""file.pl8""
 using ""other_file.pl8""";
-            
+
             var input = GetInputFromString(source);
             var result = Grammar.Description(input);
             Assert.IsTrue(result.WasSuccessful, result.ToString());
@@ -337,7 +340,7 @@ uart:
         Method1 a b
         Method2 true
         Method3";
-            
+
             var result = Grammar.Description(GetInputFromString(source));
             Assert.IsTrue(result.WasSuccessful, result.ToString());
 

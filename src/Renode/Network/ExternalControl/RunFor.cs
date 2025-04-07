@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Time;
@@ -97,6 +98,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         }
 
         public override Command Identifier => Command.RunFor;
+
         public override byte Version => 0x0;
 
         private bool success;

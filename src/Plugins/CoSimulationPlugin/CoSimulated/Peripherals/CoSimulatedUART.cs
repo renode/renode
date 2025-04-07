@@ -5,12 +5,14 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
+
 using Range = Antmicro.Renode.Core.Range;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
@@ -51,10 +53,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
 
             var localNumber = coSimNumber - (int)cosimToRenodeSignalRange.Value.StartAddress;
-            if (localNumber != RxdInterrupt)
+            if(localNumber != RxdInterrupt)
             {
-                 this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", localNumber);
-                 return;
+                this.Log(LogLevel.Warning, "Unhandled interrupt: '{0}'", localNumber);
+                return;
             }
 
             IRQ.Set(value);
@@ -72,12 +74,16 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             base.OnConnectionDetached(connection);
         }
 
+        public GPIO IRQ { get; private set; }
+
         // StopBits, ParityBit and BaudRate are not in sync with the cosimulated model
         public Bits StopBits { get { return Bits.One; } }
+
         public Parity ParityBit { get { return Parity.None; } }
+
         public uint BaudRate { get { return 115200; } }
+
         public event Action<byte> CharReceived;
-        public GPIO IRQ { get; private set; }
 
         private const int RxdInterrupt = 1;
     }

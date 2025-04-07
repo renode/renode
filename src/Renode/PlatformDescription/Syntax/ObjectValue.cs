@@ -31,9 +31,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public StringWithPosition TypeName { get; private set; }
+
         public IEnumerable<Attribute> Attributes { get; private set; }
+
         public ConstructorInfo Constructor { get; set; }
+
         public Type ObjectValueType { get; set; }
+
         public object Object { get; set; }
     }
 }

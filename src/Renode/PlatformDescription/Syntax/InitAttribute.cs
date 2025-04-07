@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -18,9 +19,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             Lines = lines.ToArray();
             IsAdd = isAdd;
         }
-
-        public bool IsAdd { get; private set; }
-        public IEnumerable<string> Lines { get; private set; }
 
         public InitAttribute Merge(InitAttribute other)
         {
@@ -34,6 +32,10 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             }
             return other;
         }
+
+        public bool IsAdd { get; private set; }
+
+        public IEnumerable<string> Lines { get; private set; }
     }
 
     // the class is there because we are not able to have position aware IEnumerable

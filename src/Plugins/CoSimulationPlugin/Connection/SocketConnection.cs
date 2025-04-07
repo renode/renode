@@ -13,13 +13,12 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
-using Antmicro.Renode.Core;
+
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
-using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
+
 #if !PLATFORM_WINDOWS
 using Mono.Unix.Native;
 #endif
@@ -194,6 +193,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 return this.context;
             }
+
             set
             {
                 if(IsConnected)
@@ -232,7 +232,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                     return String.Format(this.context,
                         mainSocketCommunicator.ListenerPort, asyncSocketCommunicator.ListenerPort, address);
                 }
-                catch (FormatException e)
+                catch(FormatException e)
                 {
                     throw new RecoverableException(e.Message);
                 }
@@ -395,33 +395,33 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             switch(message.ActionId)
             {
-                case ActionType.LogMessage:
-                    // message.Address is used to transfer log length
-                    if(asyncSocketCommunicator.TryReceiveString(out var log, (int)message.Address))
-                    {
-                        parentElement.Log((LogLevel)(int)message.Data, $"Co-simulation: {log}");
-                    }
-                    else
-                    {
-                        parentElement.Log(LogLevel.Warning, "Failed to receive log message!");
-                    }
-                    break;
-                default:
-                    receivedHandler(message);
-                    break;
+            case ActionType.LogMessage:
+                // message.Address is used to transfer log length
+                if(asyncSocketCommunicator.TryReceiveString(out var log, (int)message.Address))
+                {
+                    parentElement.Log((LogLevel)(int)message.Data, $"Co-simulation: {log}");
+                }
+                else
+                {
+                    parentElement.Log(LogLevel.Warning, "Failed to receive log message!");
+                }
+                break;
+            default:
+                receivedHandler(message);
+                break;
             }
         }
+
+        private StreamWriter stdoutStream;
+        private StreamWriter stderrStream;
 
         private volatile int disposeInitiated;
         private string simulationFilePath;
         private string context = "{0} {1} {2}";
         private Process cosimulatedProcess;
-        private SocketCommunicator mainSocketCommunicator;
-        private SocketCommunicator asyncSocketCommunicator;
-        private Action<ProtocolMessage> receivedHandler;
-
-        private StreamWriter stdoutStream;
-        private StreamWriter stderrStream;
+        private readonly SocketCommunicator mainSocketCommunicator;
+        private readonly SocketCommunicator asyncSocketCommunicator;
+        private readonly Action<ProtocolMessage> receivedHandler;
 
         private readonly IEmulationElement parentElement;
         private readonly int timeout;
@@ -555,6 +555,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
 
             public int ListenerPort { get; private set; }
+
             public bool Connected => socket?.Connected ?? false;
 
             private int CreateListenerAndStartListening()

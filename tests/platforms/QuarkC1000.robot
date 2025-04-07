@@ -33,7 +33,7 @@ Should Run Hello World With Sleep
 
     FOR  ${i}  IN RANGE  0  ${REPEATS}
          ${r}        Wait For Line On Uart     Hello World! x86
-                     Append To List            ${l}  ${r.timestamp}
+                     Append To List            ${l}  ${r.Timestamp}
     END
 
     FOR  ${i}  IN RANGE  1  ${REPEATS}
@@ -126,7 +126,7 @@ Should Talk Over Network Using Ethernet
         ${p}=  Wait For Line On Uart       build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
         ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
     
-        Should Contain  ${n.line}  pkt_sent: Sent ${p.groups[0]} bytes
+        Should Contain  ${n.Line}  pkt_sent: Sent ${p.Groups[0]} bytes
     END
 
     FOR  ${i}  IN RANGE  1  ${REPEATS}
@@ -137,5 +137,5 @@ Should Talk Over Network Using Ethernet
         ${p}=  Wait For Line On Uart       udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
         ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
     
-        Should Contain  ${n.line}  Compared ${p.groups[0]} bytes, all ok
+        Should Contain  ${n.Line}  Compared ${p.Groups[0]} bytes, all ok
     END

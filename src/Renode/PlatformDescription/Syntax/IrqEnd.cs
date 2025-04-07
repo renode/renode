@@ -41,6 +41,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public string PropertyName { get; private set; }
+
         public int Number { get; private set; }
 
         public static bool operator ==(IrqEnd a, IrqEnd b)

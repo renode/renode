@@ -39,7 +39,7 @@ rstgen: Python.PythonPeripheral @ sysbus 0x11840000
     size: 0x20
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     regs=[0xffffffff,
           0xffffffff,
           0xffffffff,
@@ -48,47 +48,47 @@ if request.isInit:
           0xffffffe7,
           0xfffffffe,
           0xffffffff]
-elif request.isRead:
-    offset = (request.offset//4) & 0x7
+elif request.IsRead:
+    offset = (request.Offset//4) & 0x7
     if offset & 4 == 0:
-        request.value = regs[offset & 0x3] & 0xffffffff
+        request.Value = regs[offset & 0x3] & 0xffffffff
     else:
-        request.value = (regs[offset & 0x3] ^ mask[offset & 0x3]) & 0xffffffff
-elif request.isWrite:
-    offset = (request.offset//4) & 0x3
-    regs[offset] = request.value
+        request.Value = (regs[offset & 0x3] ^ mask[offset & 0x3]) & 0xffffffff
+elif request.IsWrite:
+    offset = (request.Offset//4) & 0x3
+    regs[offset] = request.Value
 '''
 
 audiorstgen: Python.PythonPeripheral @ sysbus 0x10490000
     size: 0x8
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     reg = 0xffffffff
-elif request.isRead:
-    offset = request.offset//4
+elif request.IsRead:
+    offset = request.Offset//4
     if offset == 0:
-        request.value = reg & 0xffffffff
+        request.Value = reg & 0xffffffff
     else:
-        request.value = ~reg & 0xffffffff
-elif request.isWrite:
-    reg = request.value
+        request.Value = ~reg & 0xffffffff
+elif request.IsWrite:
+    reg = request.Value
 '''
 
 voutsysrstgen: Python.PythonPeripheral @ sysbus 0x12250000
     size: 0x8
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     reg = 0xffffffff
-elif request.isRead:
-    offset = request.offset//4
+elif request.IsRead:
+    offset = request.Offset//4
     if offset == 0:
-        request.value = reg & 0xffffffff
+        request.Value = reg & 0xffffffff
     else:
-        request.value = ~reg & 0xffffffff
-elif request.isWrite:
-    reg = request.value
+        request.Value = ~reg & 0xffffffff
+elif request.IsWrite:
+    reg = request.Value
 '''
 
 uart0: UART.NS16550@sysbus 0x11870000

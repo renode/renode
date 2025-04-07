@@ -52,14 +52,14 @@ ccn508: Python.PythonPeripheral @ {
     size: 0x4
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     lastVal = 0
 else:
     lastVal = 1 - lastVal
 if lastVal == 0:
-    request.value = 0x4
+    request.Value = 0x4
 else:
-    request.value = 0xC
+    request.Value = 0xC
 '''
 
 sysbus:

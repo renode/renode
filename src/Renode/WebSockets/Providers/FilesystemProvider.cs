@@ -17,7 +17,6 @@ namespace Antmicro.Renode.WebSockets.Providers
     {
         public FilesystemProvider()
         {
-
         }
 
         public bool Start(WebSocketAPISharedData sharedData)
@@ -82,11 +81,11 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                     var result = new StatActionResponseDto
                     {
-                        success = true,
-                        size = fileInfo.Length,
-                        isfile = true,
-                        ctime = Convert.ToSingle(ctime.ToUnixTimeSeconds()),
-                        mtime = Convert.ToSingle(mtime.ToUnixTimeSeconds())
+                        Success = true,
+                        Size = fileInfo.Length,
+                        IsFile = true,
+                        CTime = Convert.ToSingle(ctime.ToUnixTimeSeconds()),
+                        MTime = Convert.ToSingle(mtime.ToUnixTimeSeconds())
                     };
 
                     return WebSocketAPIUtils.CreateActionResponse(result);
@@ -100,11 +99,11 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                     var result = new StatActionResponseDto
                     {
-                        success = true,
-                        size = -1,
-                        isfile = false,
-                        ctime = Convert.ToSingle(ctime.ToUnixTimeSeconds()),
-                        mtime = Convert.ToSingle(mtime.ToUnixTimeSeconds())
+                        Success = true,
+                        Size = -1,
+                        IsFile = false,
+                        CTime = Convert.ToSingle(ctime.ToUnixTimeSeconds()),
+                        MTime = Convert.ToSingle(mtime.ToUnixTimeSeconds())
                     };
 
                     return WebSocketAPIUtils.CreateActionResponse(result);
@@ -150,8 +149,8 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 return WebSocketAPIUtils.CreateActionResponse(new PathActionResponseDto
                 {
-                    success = true,
-                    path = path
+                    Success = true,
+                    Path = path
                 });
             }
             catch(Exception e)
@@ -170,8 +169,8 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 var result = new PathActionResponseDto
                 {
-                    success = true,
-                    path = fullPath
+                    Success = true,
+                    Path = fullPath
                 };
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
@@ -194,9 +193,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 var result = new MoveActionResponseDto
                 {
-                    success = true,
-                    from = oldPath,
-                    to = newPath
+                    Success = true,
+                    From = oldPath,
+                    To = newPath
                 };
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
@@ -218,9 +217,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 var result = new MoveActionResponseDto
                 {
-                    success = true,
-                    from = filePath,
-                    to = newFilePath
+                    Success = true,
+                    From = filePath,
+                    To = newFilePath
                 };
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
@@ -248,8 +247,8 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 var result = new PathActionResponseDto
                 {
-                    success = true,
-                    path = newFilePath
+                    Success = true,
+                    Path = newFilePath
                 };
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
@@ -278,8 +277,8 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 var result = new PathActionResponseDto
                 {
-                    success = true,
-                    path = SharedData.Cwd.Value
+                    Success = true,
+                    Path = SharedData.Cwd.Value
                 };
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
@@ -291,11 +290,11 @@ namespace Antmicro.Renode.WebSockets.Providers
         }
 
         [WebSocketAPIAction("tweak/socket", "1.5.0")]
-        private WebSocketAPIResponse TweakSocketAction(List<string> args)
+        private WebSocketAPIResponse TweakSocketAction(List<string> _)
         {
             var result = new StatusActionResponseDto
             {
-                success = true
+                Success = true
             };
 
             return WebSocketAPIUtils.CreateActionResponse(result);
@@ -324,9 +323,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
             return new PathInfoDto
             {
-                name = Path.GetFileName(path),
-                isfile = !fileAttr.HasFlag(FileAttributes.Directory),
-                islink = fileAttr.HasFlag(FileAttributes.ReparsePoint)
+                Name = Path.GetFileName(path),
+                IsFile = !fileAttr.HasFlag(FileAttributes.Directory),
+                IsLink = fileAttr.HasFlag(FileAttributes.ReparsePoint)
             };
         }
 
@@ -334,36 +333,36 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class StatusActionResponseDto
         {
-            public bool success;
+            public bool Success;
         }
 
         private class PathActionResponseDto
         {
-            public bool success;
-            public string path;
+            public bool Success;
+            public string Path;
         }
 
         private class PathInfoDto
         {
-            public string name;
-            public bool isfile;
-            public bool islink;
+            public string Name;
+            public bool IsFile;
+            public bool IsLink;
         }
 
         private class MoveActionResponseDto
         {
-            public bool success;
-            public string from;
-            public string to;
+            public bool Success;
+            public string From;
+            public string To;
         }
 
         private class StatActionResponseDto
         {
-            public bool success;
-            public long size;
-            public bool isfile;
-            public float ctime;
-            public float mtime;
+            public bool Success;
+            public long Size;
+            public bool IsFile;
+            public float CTime;
+            public float MTime;
         }
     }
 }

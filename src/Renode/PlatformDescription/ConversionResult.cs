@@ -4,19 +4,10 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
-
 namespace Antmicro.Renode.PlatformDescription
 {
     public class ConversionResult
     {
-        public ConversionResult(ConversionResultType resultType, ParsingError error, string message)
-        {
-            ResultType = resultType;
-            Error = error;
-            Message = message;
-        }
-
         public static ConversionResult Success
         {
             get
@@ -33,8 +24,17 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
+        public ConversionResult(ConversionResultType resultType, ParsingError error, string message)
+        {
+            ResultType = resultType;
+            Error = error;
+            Message = message;
+        }
+
         public ConversionResultType ResultType { get; private set; }
+
         public ParsingError Error { get; private set; }
+
         public string Message { get; private set; }
     }
 }

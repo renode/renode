@@ -6,9 +6,9 @@
 //
 using System;
 using System.Linq;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
-using Antmicro.Renode.RobotFramework;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
@@ -79,7 +79,7 @@ namespace Antmicro.Renode.RobotFramework
             {
                 cpu.Halted += callback;
                 EmulationManager.Instance.CurrentEmulation.StartAll();
-                System.Threading.WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, mre });
+                System.Threading.WaitHandle.WaitAny(new[] { timeoutEvent.WaitHandle, mre });
                 EmulationManager.Instance.CurrentEmulation.PauseAll();
 
                 if(timeoutEvent.IsTriggered)

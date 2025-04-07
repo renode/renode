@@ -261,10 +261,10 @@ Should Transmit PTP Frames
         # Wait for a PTP Follow_Up message over UDP from 192.0.2.1:320 to 224.0.1.129:320 - which should be the next transmitted packet
         ${follow_up}=                   Wait For Outgoing Packet With Bytes At Index  0800__________________11____C0000201E000018101400140________0812  12  1  1
 
-        ${packet_seconds}=              Extract Int From Bytes  ${follow_up.bytes}  76  count=6
-        ${packet_nanoseconds}=          Extract Int From Bytes  ${follow_up.bytes}  82  count=4
+        ${packet_seconds}=              Extract Int From Bytes  ${follow_up.Bytes}  76  count=6
+        ${packet_nanoseconds}=          Extract Int From Bytes  ${follow_up.Bytes}  82  count=4
         ${packet_milliseconds}=         Evaluate  (${packet_seconds} * 10**9 + ${packet_nanoseconds}) / 10**6
 
         # Emulation time and the packet timestamp should be within 100ms of one another (100ms is to account for board initialization)
-        Should Be True                  abs(${packet_milliseconds} - ${follow_up.timestamp}) < 100
+        Should Be True                  abs(${packet_milliseconds} - ${follow_up.Timestamp}) < 100
     END

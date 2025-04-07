@@ -4,12 +4,10 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
-using System.Linq;
 using System.Collections.Generic;
+
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.CPU.Registers;
-using Antmicro.Renode.Utilities.Binding;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
@@ -22,11 +20,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.ZERO);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.ZERO, value);
             }
         }
+
         [Register]
         public RegisterValue RA
         {
@@ -34,11 +34,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.RA);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.RA, value);
             }
         }
+
         [Register]
         public RegisterValue SP
         {
@@ -46,11 +48,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SP, value);
             }
         }
+
         [Register]
         public RegisterValue GP
         {
@@ -58,11 +62,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.GP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.GP, value);
             }
         }
+
         [Register]
         public RegisterValue TP
         {
@@ -70,11 +76,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.TP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.TP, value);
             }
         }
+
         [Register]
         public RegisterValue FP
         {
@@ -82,11 +90,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.FP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.FP, value);
             }
         }
+
         [Register]
         public override RegisterValue PC
         {
@@ -94,11 +104,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.PC);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.PC, value);
             }
         }
+
         [Register]
         public RegisterValue SSTATUS
         {
@@ -106,11 +118,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SSTATUS);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SSTATUS, value);
             }
         }
+
         [Register]
         public RegisterValue SIE
         {
@@ -118,11 +132,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SIE);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SIE, value);
             }
         }
+
         [Register]
         public RegisterValue STVEC
         {
@@ -130,11 +146,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.STVEC);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.STVEC, value);
             }
         }
+
         [Register]
         public RegisterValue SSCRATCH
         {
@@ -142,11 +160,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SSCRATCH);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SSCRATCH, value);
             }
         }
+
         [Register]
         public RegisterValue SEPC
         {
@@ -154,11 +174,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SEPC);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SEPC, value);
             }
         }
+
         [Register]
         public RegisterValue SCAUSE
         {
@@ -166,11 +188,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SCAUSE);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SCAUSE, value);
             }
         }
+
         [Register]
         public RegisterValue STVAL
         {
@@ -178,11 +202,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.STVAL);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.STVAL, value);
             }
         }
+
         [Register]
         public RegisterValue SIP
         {
@@ -190,11 +216,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SIP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SIP, value);
             }
         }
+
         [Register]
         public RegisterValue SATP
         {
@@ -202,11 +230,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SATP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SATP, value);
             }
         }
+
         [Register]
         public RegisterValue SPTBR
         {
@@ -214,11 +244,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.SPTBR);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.SPTBR, value);
             }
         }
+
         [Register]
         public RegisterValue MSTATUS
         {
@@ -226,11 +258,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MSTATUS);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MSTATUS, value);
             }
         }
+
         [Register]
         public RegisterValue MISA
         {
@@ -238,11 +272,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MISA);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MISA, value);
             }
         }
+
         [Register]
         public RegisterValue MEDELEG
         {
@@ -250,11 +286,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MEDELEG);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MEDELEG, value);
             }
         }
+
         [Register]
         public RegisterValue MIDELEG
         {
@@ -262,11 +300,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MIDELEG);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MIDELEG, value);
             }
         }
+
         [Register]
         public RegisterValue MIE
         {
@@ -274,11 +314,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MIE);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MIE, value);
             }
         }
+
         [Register]
         public RegisterValue MTVEC
         {
@@ -286,11 +328,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MTVEC);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MTVEC, value);
             }
         }
+
         [Register]
         public RegisterValue MSCRATCH
         {
@@ -298,11 +342,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MSCRATCH);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MSCRATCH, value);
             }
         }
+
         [Register]
         public RegisterValue MEPC
         {
@@ -310,11 +356,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MEPC);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MEPC, value);
             }
         }
+
         [Register]
         public RegisterValue MCAUSE
         {
@@ -322,11 +370,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MCAUSE);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MCAUSE, value);
             }
         }
+
         [Register]
         public RegisterValue MTVAL
         {
@@ -334,11 +384,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MTVAL);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MTVAL, value);
             }
         }
+
         [Register]
         public RegisterValue MIP
         {
@@ -346,11 +398,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.MIP);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.MIP, value);
             }
         }
+
         [Register]
         public RegisterValue PRIV
         {
@@ -358,15 +412,21 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             {
                 return GetRegisterValue32((int)CoSimulatedRiscV32Registers.PRIV);
             }
+
             set
             {
                 SetRegisterValue32((int)CoSimulatedRiscV32Registers.PRIV, value);
             }
         }
+
         public RegistersGroup X { get; private set; }
+
         public RegistersGroup T { get; private set; }
+
         public RegistersGroup S { get; private set; }
+
         public RegistersGroup A { get; private set; }
+
         public RegistersGroup F { get; private set; }
 
         protected override void InitializeRegisters()
@@ -501,7 +561,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 indexValueMapF.Keys,
                 i => GetRegister((int)indexValueMapF[i]),
                 (i, v) => SetRegister((int)indexValueMapF[i], v));
-
         }
 
         private static readonly Dictionary<CoSimulatedRiscV32Registers, CPURegister> mapping = new Dictionary<CoSimulatedRiscV32Registers, CPURegister>

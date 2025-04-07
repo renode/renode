@@ -7,7 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Antmicro.Renode.PlatformDescription.Syntax;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription
@@ -55,7 +57,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         public bool TryGetVariableFromReference(ReferenceValue reference, out Variable variable)
         {
-            return globalVariables.TryGetValue(reference.Value, out variable) || 
+            return globalVariables.TryGetValue(reference.Value, out variable) ||
                                   localVariables.TryGetValue(Tuple.Create(reference.Scope, reference.Value), out variable);
         }
 

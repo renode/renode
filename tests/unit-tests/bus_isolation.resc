@@ -27,27 +27,27 @@ machine LoadPlatformDescriptionFromString """
 unpriv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10000; condition: "(cpuSecure || !privileged) && initiator == cpu0" }
     size: 0x4
     initable: false
-    script: "request.value = 0x1010"
+    script: "request.Value = 0x1010"
 
 priv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10004; condition: "cpuSecure && privileged && initiator == cpu0" }
     size: 0x4
     initable: false
-    script: "request.value = 0x2020"
+    script: "request.Value = 0x2020"
 
 both: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10008 }
     size: 0x4
     initable: false
-    script: "request.value = 0x3030"
+    script: "request.Value = 0x3030"
 
 priv2_priv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x1000c; condition: "privileged" }
     size: 0x4
     initable: false
-    script: "request.value = 0x4444"
+    script: "request.Value = 0x4444"
 
 priv2_unpriv: Python.PythonPeripheral @ sysbus new Bus.BusPointRegistration { address: 0x1000c; condition: "!privileged" }
     size: 0x4
     initable: false
-    script: "request.value = 0x0404"
+    script: "request.Value = 0x0404"
 
 priv_aware: CPU.SampleStateAwarePeripheral @ sysbus new Bus.BusPointRegistration { address: 0x10010; condition: "initiator == cpu0 || initiator == reader || initiator == reader2" }
     size: 0x100

@@ -1,7 +1,7 @@
-if request.isInit:
+if request.IsInit:
     baseValue = 0
-elif request.isRead:
-    request.value = baseValue
+elif request.IsRead:
+    request.Value = baseValue
 else:
-    x = request.value & 0xffff
+    x = request.Value & 0xffff
     baseValue = (x << 16) | x

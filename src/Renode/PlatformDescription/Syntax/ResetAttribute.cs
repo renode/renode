@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -33,6 +34,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public bool IsAdd { get; private set; }
+
         public IEnumerable<string> Lines { get; private set; }
     }
 

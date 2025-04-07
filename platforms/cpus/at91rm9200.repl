@@ -26,17 +26,17 @@ cpu: CPU.ARMv7A @ sysbus
 ckgrPllar: Python.PythonPeripheral @ sysbus 0xFFFFFC28
     size: 0x4
     initable: false
-    script: "request.value = 0x01013F00"
+    script: "request.Value = 0x01013F00"
 
 ckgrPllbr: Python.PythonPeripheral @ sysbus 0xFFFFFC2C
     size: 0x4
     initable: false
-    script: "request.value = 0x01013F00"
+    script: "request.Value = 0x01013F00"
 
 pmcMkcr: Python.PythonPeripheral @ sysbus 0xFFFFFC30
     size: 0x4
     initable: false
-    script: "request.value = 0x2"
+    script: "request.Value = 0x2"
 
 sysbus:
     init:

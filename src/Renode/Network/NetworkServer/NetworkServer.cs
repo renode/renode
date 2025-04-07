@@ -6,20 +6,17 @@
 //
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Collections.Generic;
-
-using PacketDotNet;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Core.Structure;
-using Antmicro.Renode.Peripherals.Network;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Network;
 
-using System.Linq;
+using PacketDotNet;
 
 namespace Antmicro.Renode.Network
 {
@@ -52,7 +49,6 @@ namespace Antmicro.Renode.Network
             {
                 MAC = new MACAddress(0xdeadbeef);
             }
-
 
             IP = parsedIP;
 
@@ -111,31 +107,32 @@ namespace Antmicro.Renode.Network
 
             switch(ethernetPacket.Type)
             {
-                case EthernetPacketType.Arp:
-                    if(TryHandleArp((ARPPacket)ethernetPacket.PayloadPacket, out var arpResponse))
-                    {
-                        var ethernetResponse = new EthernetPacket((PhysicalAddress)MAC, ethernetPacket.SourceHwAddress, EthernetPacketType.None);
-                        ethernetResponse.PayloadPacket = arpResponse;
+            case EthernetPacketType.Arp:
+                if(TryHandleArp((ARPPacket)ethernetPacket.PayloadPacket, out var arpResponse))
+                {
+                    var ethernetResponse = new EthernetPacket((PhysicalAddress)MAC, ethernetPacket.SourceHwAddress, EthernetPacketType.None);
+                    ethernetResponse.PayloadPacket = arpResponse;
 
-                        this.Log(LogLevel.Noisy, "Sending response: {0}", ethernetResponse);
-                        EthernetFrame.TryCreateEthernetFrame(ethernetResponse.Bytes, true, out var response);
-                        FrameReady?.Invoke(response);
-                    }
-                    break;
+                    this.Log(LogLevel.Noisy, "Sending response: {0}", ethernetResponse);
+                    EthernetFrame.TryCreateEthernetFrame(ethernetResponse.Bytes, true, out var response);
+                    FrameReady?.Invoke(response);
+                }
+                break;
 
-                case EthernetPacketType.IpV4:
-                    var ipv4Packet = (IPv4Packet)ethernetPacket.PayloadPacket;
-                    arpTable[ipv4Packet.SourceAddress] = ethernetPacket.SourceHwAddress;
-                    HandleIPv4(ipv4Packet);
-                    break;
+            case EthernetPacketType.IpV4:
+                var ipv4Packet = (IPv4Packet)ethernetPacket.PayloadPacket;
+                arpTable[ipv4Packet.SourceAddress] = ethernetPacket.SourceHwAddress;
+                HandleIPv4(ipv4Packet);
+                break;
 
-                default:
-                    this.Log(LogLevel.Warning, "Unsupported packet type: {0}", ethernetPacket.Type);
-                    break;
+            default:
+                this.Log(LogLevel.Warning, "Unsupported packet type: {0}", ethernetPacket.Type);
+                break;
             }
         }
 
         public MACAddress MAC { get; set; }
+
         public IPAddress IP { get; set; }
 
         public event Action<EthernetFrame> FrameReady;
@@ -146,13 +143,13 @@ namespace Antmicro.Renode.Network
 
             switch(packet.Protocol)
             {
-                case PacketDotNet.IPProtocolType.UDP:
-                    HandleUdp((UdpPacket)packet.PayloadPacket);
-                    break;
+            case PacketDotNet.IPProtocolType.UDP:
+                HandleUdp((UdpPacket)packet.PayloadPacket);
+                break;
 
-                default:
-                    this.Log(LogLevel.Warning, "Unsupported protocol: {0}", packet.Protocol);
-                    break;
+            default:
+                this.Log(LogLevel.Warning, "Unsupported protocol: {0}", packet.Protocol);
+                break;
             }
         }
 
@@ -182,7 +179,7 @@ namespace Antmicro.Renode.Network
             this.Log(LogLevel.Noisy, "Sending UDP response: {0}", response);
 
             EthernetFrame.TryCreateEthernetFrame(ethernetPacket.Bytes, true, out var ethernetFrame);
-            ethernetFrame.FillWithChecksums(new EtherType[] { EtherType.IpV4 }, new [] { IPProtocolType.UDP });
+            ethernetFrame.FillWithChecksums(new EtherType[] { EtherType.IpV4 }, new[] { IPProtocolType.UDP });
 
             FrameReady?.Invoke(ethernetFrame);
         }

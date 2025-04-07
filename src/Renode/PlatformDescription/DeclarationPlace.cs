@@ -5,13 +5,10 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-using System;
-using System.Collections.Generic;
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription
 {
-
     public sealed class DeclarationPlace
     {
         static DeclarationPlace()
@@ -27,8 +24,9 @@ namespace Antmicro.Renode.PlatformDescription
             File = file;
         }
 
-        private DeclarationPlace()
+        public override string ToString()
         {
+            return string.Format("[DeclarationPlace: Position={0}, File={1}]", Position, File);
         }
 
         public string GetFriendlyDescription()
@@ -40,13 +38,12 @@ namespace Antmicro.Renode.PlatformDescription
             return string.Format("at {2}{0}:{1}", Position.Line, Position.Column, File == "" ? "" : File + ':');
         }
 
-        public override string ToString()
-        {
-            return string.Format("[DeclarationPlace: Position={0}, File={1}]", Position, File);
-        }
-
         public Position Position { get; private set; }
-        public string File { get; private set; }
-    }
 
+        public string File { get; private set; }
+
+        private DeclarationPlace()
+        {
+        }
+    }
 }

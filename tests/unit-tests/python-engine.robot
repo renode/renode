@@ -76,12 +76,12 @@ PyDev Should Handle QuadWord Accesses
     ${init_value_32}=               Evaluate  ${init_value} & 0xFFFFFFFF
     ${pydev_script}=                Catenate  SEPARATOR=\n
     ...                             """
-    ...                             if request.isInit:
+    ...                             if request.IsInit:
     ...                             \ \ value = ${init_value}
-    ...                             elif request.isRead:
-    ...                             \ \ request.value = value
-    ...                             elif request.isWrite:
-    ...                             \ \ value = request.value
+    ...                             elif request.IsRead:
+    ...                             \ \ request.Value = value
+    ...                             elif request.IsWrite:
+    ...                             \ \ value = request.Value
     ...                             """
     ${pydev_address}=               Set Variable  0x8
 

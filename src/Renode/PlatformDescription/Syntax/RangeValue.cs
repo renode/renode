@@ -5,9 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-using System;
-using Antmicro.Renode.Core;
-
 using Range = Antmicro.Renode.Core.Range;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -39,6 +36,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public ulong Begin { get; private set; }
+
         public ulong End { get; private set; }
     }
 }

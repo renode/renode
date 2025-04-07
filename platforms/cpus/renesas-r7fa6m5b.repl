@@ -30,7 +30,7 @@ icu: IRQControllers.RenesasRA_ICU @ sysbus 0x40006000
 sysc_oscsf: Python.PythonPeripheral @ sysbus 0x4001E03C
     size: 0x4
     initable: true
-    script: "request.value = 0xFF"
+    script: "request.Value = 0xFF"
 
 gpt: Timers.RenesasRA_GPT @ sysbus 0x40169000
     numberOf32BitChannels: 4

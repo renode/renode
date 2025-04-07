@@ -29,7 +29,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public string Name { get; private set; }
+
         public Value Value { get; private set; }
+
         public PropertyInfo Property { get; set; }
 
         public bool IsPropertyAttribute

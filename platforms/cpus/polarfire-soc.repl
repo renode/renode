@@ -265,7 +265,7 @@ athena: Miscellaneous.Crypto.AthenaX5200 @ sysbus 0x22000000
 
 ioscb: Python.PythonPeripheral @ sysbus 0x37080000
     size: 0x1f7ffff
-    script: '''request.value = 0xFFFFFFFF'''
+    script: '''request.Value = 0xFFFFFFFF'''
 
 // There are 8 BootRom registers covering range from 0x20003120 to 0x2000313F,
 // but because of Renode's memory alignment limitations they are mapped as a single memory
@@ -281,12 +281,12 @@ CacheConfig_WayEnable: Python.PythonPeripheral @ sysbus 0x02010008
     size: 0x8
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     reg = 0x0
-elif request.isRead:
-    request.value = reg
-elif request.isWrite:
-    reg = request.value
+elif request.IsRead:
+    request.Value = reg
+elif request.IsWrite:
+    reg = request.Value
 '''
 
 TopSystemRegisters: Miscellaneous.MPFS_Sysreg @ sysbus 0x20002000

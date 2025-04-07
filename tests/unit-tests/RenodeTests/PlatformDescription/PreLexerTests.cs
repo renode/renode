@@ -6,7 +6,9 @@
 //
 using System;
 using System.Linq;
+
 using Antmicro.Renode.PlatformDescription;
+
 using NUnit.Framework;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
@@ -97,7 +99,7 @@ line2");
 line1
 
 line2";
-           var result = PreLexer.Process(source);
+            var result = PreLexer.Process(source);
 
             var expectedResult = SplitUsingNewline(@"
 line1;
@@ -127,7 +129,7 @@ line2
         [Test]
         public void ShouldNotProcessIndentInBraces()
         {
-var source = @"
+            var source = @"
 line1 { 
     line2 }";
 
@@ -136,7 +138,7 @@ line1 {
             var expectedResult = SplitUsingNewline(@"
 line1 { 
     line2 }");
-            
+
             CollectionAssert.AreEqual(expectedResult, result);
         }
 

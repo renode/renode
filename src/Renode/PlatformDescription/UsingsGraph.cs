@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Antmicro.Renode.PlatformDescription.Syntax;
 
 namespace Antmicro.Renode.PlatformDescription
@@ -22,8 +23,6 @@ namespace Antmicro.Renode.PlatformDescription
                 this.creationDriver = creationDriver;
                 usingsMap = new Dictionary<string, GraphNode>();
             }
-
-            public delegate void UsingsFileVisitor(Description description, string prefix);
 
             public void TraverseDepthFirst(UsingsFileVisitor visitor)
             {
@@ -148,8 +147,23 @@ namespace Antmicro.Renode.PlatformDescription
                 }
             }
 
+            private readonly CreationDriver creationDriver;
+            private readonly string rootFilePath;
+            private readonly string rootFileSource;
+            private readonly Dictionary<string, GraphNode> usingsMap;
+
+            public delegate void UsingsFileVisitor(Description description, string prefix);
+
             private class GraphNode
             {
+                public static string MakeGraphId(string parentGraphId, string prefix, string path)
+                {
+                    // Path can be empty, as is the case when loading a platform description from string.
+                    // This is not a problem and doesn't require special handling, since there is at most one using like
+                    // that in the usings hierarchy (the root).
+                    return parentGraphId + prefix + path;
+                }
+
                 public GraphNode(string path, string source, string prefix, Description parsedDescription, GraphNode parent)
                 {
                     Path = path;
@@ -162,20 +176,18 @@ namespace Antmicro.Renode.PlatformDescription
                     SetupScopeInDescription(ParsedDescription, Prefix);
                 }
 
-                public static string MakeGraphId(string parentGraphId, string prefix, string path)
-                {
-                    // Path can be empty, as is the case when loading a platform description from string.
-                    // This is not a problem and doesn't require special handling, since there is at most one using like
-                    // that in the usings hierarchy (the root).
-                    return parentGraphId + prefix + path;
-                }
-
                 public string GraphId { get; }
+
                 public string FileId { get; }
+
                 public string Path { get; }
+
                 public string Source { get; }
+
                 public string Prefix { get; }
+
                 public Description ParsedDescription { get; }
+
                 public GraphNode Parent { get; set; }
 
                 private void SetupScopeInDescription(Description description, string prefix)
@@ -185,11 +197,6 @@ namespace Antmicro.Renode.PlatformDescription
                     SyntaxTreeHelpers.VisitSyntaxTree<ReferenceValue>(description, x => x.Scope = description.FileName);
                 }
             };
-
-            private readonly CreationDriver creationDriver;
-            private readonly string rootFilePath;
-            private readonly string rootFileSource;
-            private readonly Dictionary<string, GraphNode> usingsMap;
         }
     }
 }

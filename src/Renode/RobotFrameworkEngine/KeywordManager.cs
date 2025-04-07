@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
@@ -86,6 +86,7 @@ namespace Antmicro.Renode.RobotFramework
                 obj.Value.Dispose();
             }
         }
+
         private readonly Dictionary<string, List<Keyword>> keywords;
         private readonly Dictionary<Type, IRobotFrameworkKeywordProvider> objects;
 
@@ -97,4 +98,3 @@ namespace Antmicro.Renode.RobotFramework
         }
     }
 }
-

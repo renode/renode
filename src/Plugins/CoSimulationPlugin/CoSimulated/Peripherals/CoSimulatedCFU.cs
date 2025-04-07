@@ -6,19 +6,16 @@
 //
 using System;
 using System.Linq;
-using System.Threading;
 using System.Runtime.InteropServices;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
-using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.CFU;
-using Antmicro.Renode.Peripherals.Timers;
+using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection;
-using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Binding;
-using Antmicro.Renode.Core.Structure;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
 {
@@ -54,6 +51,47 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             executeBinder?.Dispose();
             Marshal.FreeHGlobal(errorPointer);
         }
+
+        public string SimulationFilePath
+        {
+            get => connection.SimulationFilePath;
+            set
+            {
+                AssureIsConnected();
+                AssureNoConflictingCFUs(value);
+                connection.SimulationFilePath = value;
+                InitNativeBinding(value);
+            }
+        }
+
+        public ICPU ConnectedCpu
+        {
+            get
+            {
+                return connectedCpu;
+            }
+
+            set
+            {
+                if(ConnectedCpu != null)
+                {
+                    LogAndThrowRE("CFU already connected to CPU, cannot change CPU!");
+                }
+                else
+                {
+                    connectedCpu = value as BaseRiscV;
+                    if(connectedCpu == null)
+                    {
+                        LogAndThrowRE("CFU is supported for RISCV-V CPUs only!");
+                    }
+                    RegisterCFU();
+                }
+            }
+        }
+
+        public int RenodeToCosimIndex { get; }
+
+        public int CosimToRenodeIndex { get; }
 
         public string SimulationContextLinux
         {
@@ -128,6 +166,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
+        protected CoSimulationConnection connection;
+
+        protected const ulong LimitBuffer = 100000;
+        protected const int DefaultTimeout = 3000;
+
         private void AssureNoConflictingCFUs(string simulationFilePath)
         {
             if(connectedCpu.Children.Any(child => child.Peripheral.SimulationFilePath == simulationFilePath))
@@ -138,59 +181,22 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         private void InitNativeBinding(string simulationFilePath)
         {
-                try
-                {
-                    errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
-                    executeBinder = new NativeBinder(this, simulationFilePath);
-                }
-                catch(Exception e)
-                {
-                    LogAndThrowRE(e.Message);
-                }
-        }
-
-        public string SimulationFilePath
-        {
-            get => connection.SimulationFilePath;
-            set
+            try
             {
-                AssureIsConnected();
-                AssureNoConflictingCFUs(value);
-                connection.SimulationFilePath = value;
-                InitNativeBinding(value);
+                errorPointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(int)));
+                executeBinder = new NativeBinder(this, simulationFilePath);
             }
-        }
-
-        public ICPU ConnectedCpu
-        {
-            get
+            catch(Exception e)
             {
-                return connectedCpu;
-            }
-            set
-            {
-                if(ConnectedCpu != null)
-                {
-                    LogAndThrowRE("CFU already connected to CPU, cannot change CPU!");
-                }
-                else
-                {
-                    connectedCpu = value as BaseRiscV;
-                    if(connectedCpu == null)
-                    {
-                        LogAndThrowRE("CFU is supported for RISCV-V CPUs only!");
-                    }
-                    RegisterCFU();
-                }
+                LogAndThrowRE(e.Message);
             }
         }
 
         // This function is not used here but it is required to properly bind with libVtop.so
         // so it is left empty on purpose.
         [Export]
-        private void HandleSenderMessage(IntPtr received)
+        private void HandleSenderMessage(IntPtr _)
         {
-
         }
 
         private void LogAndThrowRE(string info)
@@ -205,21 +211,21 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             int connectedCfus = connectedCpu.ChildCollection.Count;
             switch(connectedCfus)
             {
-                case 1:
-                    opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC0001011";
-                    break;
-                case 2:
-                    opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC0101011";
-                    break;
-                case 3:
-                    opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC1001011";
-                    break;
-                case 4:
-                    opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC1101011";
+            case 1:
+                opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC0001011";
                 break;
-                default:
-                    this.LogAndThrowRE("Can't handle more than 4 CFUs!");
-                    break;
+            case 2:
+                opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC0101011";
+                break;
+            case 3:
+                opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC1001011";
+                break;
+            case 4:
+                opcodePattern = "FFFFFFFAAAAABBBBBIIICCCCC1101011";
+                break;
+            default:
+                this.LogAndThrowRE("Can't handle more than 4 CFUs!");
+                break;
             }
             connectedCpu.InstallCustomInstruction(pattern: opcodePattern, handler: opcode => HandleCustomInstruction(opcode));
             this.Log(LogLevel.Noisy, "CFU {0} registered", connectedCfus);
@@ -243,22 +249,22 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
             switch(status)
             {
-                case CfuStatus.CfuOk:
-                    connectedCpu.SetRegister(rD, result);
-                    break;
-                case CfuStatus.CfuFail:
-                    this.Log(LogLevel.Error, "CFU custom instruction error, opcode: 0x{0:x}, error: {1}", opcode, status);
-                    break;
-                case CfuStatus.CfuTimeout:
-                    this.Log(LogLevel.Error, "CFU operation timeout, opcode: 0x{0:x}, error: {1}", opcode, status);
-                    break;
-                default:
-                    this.Log(LogLevel.Error, "CFU unknown error, opcode: 0x{0:x}, error: {1}", opcode, status);
-                    break;
+            case CfuStatus.CfuOk:
+                connectedCpu.SetRegister(rD, result);
+                break;
+            case CfuStatus.CfuFail:
+                this.Log(LogLevel.Error, "CFU custom instruction error, opcode: 0x{0:x}, error: {1}", opcode, status);
+                break;
+            case CfuStatus.CfuTimeout:
+                this.Log(LogLevel.Error, "CFU operation timeout, opcode: 0x{0:x}, error: {1}", opcode, status);
+                break;
+            default:
+                this.Log(LogLevel.Error, "CFU unknown error, opcode: 0x{0:x}, error: {1}", opcode, status);
+                break;
             }
         }
 
-        private void AssureIsConnected(string message = null)
+        private void AssureIsConnected()
         {
             if(connection == null)
             {
@@ -266,18 +272,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             }
         }
 
-        public int RenodeToCosimIndex { get; }
-        public int CosimToRenodeIndex { get; }
-
-        protected const ulong LimitBuffer = 100000;
-        protected const int DefaultTimeout = 3000;
         private NativeBinder executeBinder;
         private BaseRiscV connectedCpu;
         private IntPtr errorPointer;
 
 #pragma warning disable 649
         [Import(UseExceptionWrapper = false)]
-        private Func<uint, uint, uint, IntPtr, ulong> execute;
+        private readonly Func<uint, uint, uint, IntPtr, ulong> execute;
 #pragma warning restore 649
 
         private enum CfuStatus
@@ -286,7 +287,5 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             CfuFail = 1,
             CfuTimeout = 2
         }
-
-        protected CoSimulationConnection connection;
     }
 }

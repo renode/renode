@@ -5,15 +5,16 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
+
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.UserInterface;
 using Antmicro.Renode.Utilities;
-using Antmicro.Renode.Logging;
-using Antmicro.Renode.Exceptions;
-using System.Runtime.ExceptionServices;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -133,36 +134,36 @@ namespace Antmicro.Renode.RobotFramework
             var isStarted = EmulationManager.Instance.CurrentEmulation.IsStarted;
             switch(action)
             {
-                case HotSpotAction.None:
-                    // do nothing
-                    break;
-                case HotSpotAction.Pause:
-                    if(isStarted)
-                    {
-                        EmulationManager.Instance.CurrentEmulation.PauseAll();
-                        EmulationManager.Instance.CurrentEmulation.StartAll();
-                    }
-                    break;
-                case HotSpotAction.Serialize:
-                    var fileName = TemporaryFilesManager.Instance.GetTemporaryFile();
-                    var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
-                    if(monitor.Machine != null)
-                    {
-                        EmulationManager.Instance.CurrentEmulation.AddOrUpdateInBag("monitor_machine", monitor.Machine);
-                    }
-                    EmulationManager.Instance.Save(fileName);
-                    EmulationManager.Instance.Load(fileName);
-                    if(EmulationManager.Instance.CurrentEmulation.TryGetFromBag<Machine>("monitor_machine", out var mac))
-                    {
-                        monitor.Machine = mac;
-                    }
-                    if(isStarted)
-                    {
-                        EmulationManager.Instance.CurrentEmulation.StartAll();
-                    }
-                    break;
-                default:
-                    throw new KeywordException("Hot spot action {0} is not currently supported", action);
+            case HotSpotAction.None:
+                // do nothing
+                break;
+            case HotSpotAction.Pause:
+                if(isStarted)
+                {
+                    EmulationManager.Instance.CurrentEmulation.PauseAll();
+                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                }
+                break;
+            case HotSpotAction.Serialize:
+                var fileName = TemporaryFilesManager.Instance.GetTemporaryFile();
+                var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+                if(monitor.Machine != null)
+                {
+                    EmulationManager.Instance.CurrentEmulation.AddOrUpdateInBag("monitor_machine", monitor.Machine);
+                }
+                EmulationManager.Instance.Save(fileName);
+                EmulationManager.Instance.Load(fileName);
+                if(EmulationManager.Instance.CurrentEmulation.TryGetFromBag<Machine>("monitor_machine", out var mac))
+                {
+                    monitor.Machine = mac;
+                }
+                if(isStarted)
+                {
+                    EmulationManager.Instance.CurrentEmulation.StartAll();
+                }
+                break;
+            default:
+                throw new KeywordException("Hot spot action {0} is not currently supported", action);
             }
         }
 
@@ -196,7 +197,7 @@ namespace Antmicro.Renode.RobotFramework
             if(isSerialized)
             {
                 EmulationManager.Instance.Load(savepoint.Filename);
-                if(savepoint.SelectedMachine!= null)
+                if(savepoint.SelectedMachine != null)
                 {
                     ExecuteCommand($"mach set \"{savepoint.SelectedMachine}\"");
                 }
@@ -229,7 +230,7 @@ namespace Antmicro.Renode.RobotFramework
             try
             {
                 masterTimeSource.BlockHook += callback;
-                System.Threading.WaitHandle.WaitAny(new [] { timeoutEvent.WaitHandle, mre });
+                System.Threading.WaitHandle.WaitAny(new[] { timeoutEvent.WaitHandle, mre });
 
                 if(timeoutEvent.IsTriggered)
                 {
@@ -452,16 +453,22 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        private readonly Dictionary<string, Savepoint> savepoints;
-
         private LogTester logTester;
         private string cachedLogFilePath;
         private bool defaultPauseEmulation;
+
+        private readonly Dictionary<string, Savepoint> savepoints;
 
         private readonly Monitor monitor;
 
         private const string CachedLogBackendName = "cache";
         private const int MaxLogContextPrintedOnException = 1000;
+
+        public enum ProviderType
+        {
+            Serialization = 0,
+            Reexecution = 1,
+        }
 
         private struct Savepoint
         {
@@ -472,14 +479,8 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             public string SelectedMachine { get; }
-            public string Filename { get; }
-        }
 
-        public enum ProviderType
-        {
-            Serialization = 0,
-            Reexecution = 1,
+            public string Filename { get; }
         }
     }
 }
-

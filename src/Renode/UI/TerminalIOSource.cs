@@ -5,12 +5,14 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+
+using Antmicro.Migrant;
+using Antmicro.Renode.Logging;
+
 using AntShell.Terminal;
+
 using TermSharp;
 using TermSharp.Vt100;
-using Antmicro.Renode.Logging;
-using Antmicro.Renode.UI;
-using Antmicro.Migrant;
 
 namespace Antmicro.Renode.UI
 {
@@ -61,6 +63,7 @@ namespace Antmicro.Renode.UI
         public bool IsAnythingAttached { get { return ByteRead != null; } }
 
         public event Action<int> ByteRead;
+
         public event Action<byte> BeforeWrite;
 
         private readonly TermSharp.Vt100.Decoder vt100decoder;
@@ -82,4 +85,3 @@ namespace Antmicro.Renode.UI
         }
     }
 }
-

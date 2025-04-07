@@ -14,6 +14,84 @@ namespace Antmicro.Renode.PlatformDescription
 {
     public static class PreLexer
     {
+        public static IEnumerable<string> HandleMultilineStrings(IEnumerable<string> sourceLine, string path)
+        {
+            var multilineQuoteRegex = new Regex(MultilineStringDelimiter);
+            var multilineString = new List<string>();
+            var inMultilineString = false;
+            var openingQuoteLine = new Tuple<int, string, int>(-1, "", -1);
+
+            foreach(var currentLine in sourceLine.Select((value, index) => new { index, value }))
+            {
+                var line = currentLine.value;
+                var validQuotes = CountUnescapedCharacters(line, multilineQuoteRegex, out List<int> validQuotesIndexes);
+                var lastQuoteIndex = (validQuotesIndexes.Count != 0) ? validQuotesIndexes[validQuotesIndexes.Count - 1] : -1;
+
+                if(inMultilineString)
+                {
+                    multilineString.Add(line);
+                    if(validQuotes >= 1)
+                    {
+                        inMultilineString = false;
+                        var str = string.Join("\n", multilineString);
+                        multilineString.Clear();
+                        yield return str;
+                    }
+                }
+                else
+                {
+                    if(validQuotes == 0 || validQuotes == 2) // no quotes at all or opening and closing quote
+                    {
+                        yield return line;
+                        continue;
+                    }
+                    else if(validQuotes != 1) // invalid multiple quotes in line
+                    {
+                        throw GetException(ParsingError.SyntaxError, currentLine.index, validQuotesIndexes[2], line,
+                            "The start of one multiline string cannot be on the same line as the end of another", path);
+                    }
+                    openingQuoteLine = new Tuple<int, string, int>(currentLine.index, currentLine.value, lastQuoteIndex);
+                    inMultilineString = true;
+                    multilineString.Add(line);
+                }
+            }
+
+            if(inMultilineString) //if closing quote was never found
+            {
+                var errorLine = openingQuoteLine.Item2;
+                var errorQuoteIndex = openingQuoteLine.Item3;
+                throw GetException(ParsingError.SyntaxError, openingQuoteLine.Item1, errorQuoteIndex, errorLine,
+                                   "Unclosed multiline string", path);
+            }
+        }
+
+        public static int CountUnescapedCharacters(string line, Regex regexCharacterToFind, out List<int> validQuotesIndexes, char escapeCharacter = '\\')
+        {
+            var matches = regexCharacterToFind.Matches(line);
+            var validQuotesCount = 0;
+            validQuotesIndexes = new List<int>();
+
+            foreach(Match ma in matches)
+            {
+                var index = ma.Index - 1;
+                var startIndex = index;
+                var backslashCount = 0;
+
+                while(index >= 0 && line[index] == escapeCharacter)
+                {
+                    backslashCount++;
+                    index--;
+                }
+
+                if(backslashCount % 2 == 0)
+                {
+                    validQuotesCount++;
+                    validQuotesIndexes.Add(startIndex);
+                }
+            }
+            return validQuotesCount;
+        }
+
         public static IEnumerable<string> Process(string source, string path = "")
         {
             // We remove '\r' so that we don't have to worry about line endings.
@@ -97,7 +175,7 @@ namespace Antmicro.Renode.PlatformDescription
                 oldLine = newLine;
             }
             while(enumerator.MoveNext());
-finish:
+        finish:
             AccountBraceLevel(oldLine, ref inputBraceLevel);
             oldLine = DecorateLineIfNecessary(oldLine, oldIndentLevel, 0, true);
             yield return oldLine;
@@ -189,7 +267,7 @@ finish:
                         }
                         if(localBraceLevel == 0)
                         {
-                            if(line.Length - line.TrimStart().Length  + 1 == currentIndex && // comment is the first meaningful thing in line
+                            if(line.Length - line.TrimStart().Length + 1 == currentIndex && // comment is the first meaningful thing in line
                                line.TrimEnd().Length != nextIndex) // but not the last one
                             {
                                 throw GetException(ParsingError.SyntaxError, lineNo, currentIndex, originalLine,
@@ -249,84 +327,6 @@ finish:
             return FindResult.Nothing;
         }
 
-        public static IEnumerable<string> HandleMultilineStrings(IEnumerable<string> sourceLine, string path)
-        {
-            var multilineQuoteRegex = new Regex(MultilineStringDelimiter);
-            var multilineString = new List<string>();
-            var inMultilineString = false;
-            var openingQuoteLine = new Tuple<int, string, int>(-1, "", -1);
-
-            foreach(var currentLine in sourceLine.Select((value, index) => new { index, value }))
-            {
-                var line = currentLine.value;
-                var validQuotes = CountUnescapedCharacters(line, multilineQuoteRegex, out List<int> validQuotesIndexes);
-                var lastQuoteIndex = (validQuotesIndexes.Count != 0) ? validQuotesIndexes[validQuotesIndexes.Count - 1] : -1;
-
-                if(inMultilineString)
-                {
-                    multilineString.Add(line);
-                    if(validQuotes >= 1)
-                    {
-                        inMultilineString = false;
-                        var str = string.Join("\n", multilineString);
-                        multilineString.Clear();
-                        yield return str;
-                    }
-                }
-                else
-                {
-                    if(validQuotes == 0 || validQuotes == 2) // no quotes at all or opening and closing quote
-                    {
-                        yield return line;
-                        continue;
-                    }
-                    else if(validQuotes != 1) // invalid multiple quotes in line
-                    {
-                        throw GetException(ParsingError.SyntaxError, currentLine.index, validQuotesIndexes[2], line,
-                            "The start of one multiline string cannot be on the same line as the end of another", path);
-                    }
-                    openingQuoteLine = new Tuple<int, string, int>(currentLine.index, currentLine.value, lastQuoteIndex);
-                    inMultilineString = true;
-                    multilineString.Add(line);
-                }
-            }
-
-            if(inMultilineString) //if closing quote was never found
-            {
-                var errorLine = openingQuoteLine.Item2;
-                var errorQuoteIndex = openingQuoteLine.Item3;
-                throw GetException(ParsingError.SyntaxError, openingQuoteLine.Item1, errorQuoteIndex, errorLine,
-                                   "Unclosed multiline string", path);
-            }
-        }
-
-        public static int CountUnescapedCharacters(string line, Regex regexCharacterToFind, out List<int> validQuotesIndexes, char escapeCharacter = '\\')
-        {
-            var matches = regexCharacterToFind.Matches(line);
-            var validQuotesCount = 0;
-            validQuotesIndexes = new List<int>();
-
-            foreach(Match ma in matches)
-            {
-                var index = ma.Index - 1;
-                var startIndex = index;
-                var backslashCount = 0;
-
-                while(index >= 0 && line[index] == escapeCharacter)
-                {
-                    backslashCount++;
-                    index--; 
-                }
-               
-                if(backslashCount % 2 == 0)
-                {
-                    validQuotesCount++;
-                    validQuotesIndexes.Add(startIndex);
-                }
-            }
-            return validQuotesCount; 
-        }
-
         private static string DecorateLineIfNecessary(string line, int oldIndentLevel, int newIndentLevel, bool doNotInsertSemicolon)
         {
             var builder = new StringBuilder(line);
@@ -356,7 +356,6 @@ finish:
                                            string.Format("At {0}{1}:{2}:", path == "" ? "" : path + ':', lineNo + 1, columnNo + 1) + Environment.NewLine +
                                            line + Environment.NewLine + new string(' ', columnNo) + "^";
             throw new ParsingException(error, message);
-                
         }
 
         private static int GetIndentLevel(string line, int lineNo, string path)
@@ -364,7 +363,7 @@ finish:
             var spacesNo = line.TakeWhile(x => x == ' ').Count();
             if((spacesNo % SpacesPerIndent) != 0)
             {
-                throw GetException(ParsingError.WrongIndent, lineNo, spacesNo - 1, line, 
+                throw GetException(ParsingError.WrongIndent, lineNo, spacesNo - 1, line,
                                    string.Format("Indent's length has to be multiple of {0}, this one is {1} spaces long.", SpacesPerIndent, spacesNo), path);
             }
             return spacesNo / SpacesPerIndent;

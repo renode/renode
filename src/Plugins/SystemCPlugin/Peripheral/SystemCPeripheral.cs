@@ -12,6 +12,7 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
 using Antmicro.Renode.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +23,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+
 #if !PLATFORM_WINDOWS
 using Mono.Unix.Native;
 #endif
@@ -99,6 +101,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         public bool IsSystemBusConnection() => ConnectionIndex == MainSystemBusConnectionIndex;
+
         public bool IsDirectConnection() => !IsSystemBusConnection();
 
         public byte GetDirectConnectionIndex()
@@ -203,6 +206,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
     public interface IDirectAccessPeripheral : IPeripheral
     {
         ulong ReadDirect(byte dataLength, long offset, byte connectionIndex);
+
         void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex);
     };
 
@@ -241,6 +245,108 @@ namespace Antmicro.Renode.Peripherals.SystemC
             Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
         }
 
+        public ulong ReadQuadWord(long offset)
+        {
+            return Read(8, offset);
+        }
+
+        public void WriteRegister(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
+        {
+            WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex);
+        }
+
+        public void Dispose()
+        {
+            if(systemcProcess != null && !systemcProcess.HasExited)
+            {
+                // Init message sent after connection has been established signifies Renode terminated and SystemC process
+                // should exit.
+                var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
+                SendRequest(request, out var response);
+
+                if(!systemcProcess.WaitForExit(500))
+                {
+                    this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
+                    systemcProcess.Kill();
+                }
+            }
+
+            forwardSocket?.Close();
+            backwardSocket?.Close();
+        }
+
+        public void Reset()
+        {
+            outGPIOState = 0;
+            var request = new RenodeMessage(RenodeAction.Reset, 0, 0, 0, 0);
+            SendRequest(request, out var response);
+        }
+
+        public void OnGPIO(int number, bool value)
+        {
+            // When GPIO connections are initialized, OnGPIO is called with
+            // false value. The socket is not yet initialized in that case. We
+            // can safely return, no special initialization is required.
+            if(forwardSocket == null)
+            {
+                return;
+            }
+
+            BitHelper.SetBit(ref outGPIOState, (byte)number, value);
+            var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, 0, outGPIOState);
+            SendRequest(request, out var response);
+        }
+
+        public void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex)
+        {
+            Write(dataLength, offset, value, connectionIndex);
+        }
+
+        public ulong ReadDirect(byte dataLength, long offset, byte connectionIndex)
+        {
+            return Read(dataLength, offset, connectionIndex);
+        }
+
+        public ulong ReadRegister(byte dataLength, long offset, byte connectionIndex = 0)
+        {
+            return ReadInternal(RenodeAction.ReadRegister, dataLength, offset, connectionIndex);
+        }
+
+        public byte ReadByte(long offset)
+        {
+            return (byte)Read(1, offset);
+        }
+
+        public void WriteWord(long offset, ushort value)
+        {
+            Write(2, offset, value);
+        }
+
+        public ushort ReadWord(long offset)
+        {
+            return (ushort)Read(2, offset);
+        }
+
+        public void WriteDoubleWord(long offset, uint value)
+        {
+            Write(4, offset, value);
+        }
+
+        public uint ReadDoubleWord(long offset)
+        {
+            return (uint)Read(4, offset);
+        }
+
+        public void WriteQuadWord(long offset, ulong value)
+        {
+            Write(8, offset, value);
+        }
+
+        public void WriteByte(long offset, byte value)
+        {
+            Write(1, offset, value);
+        }
+
         public void AddDirectConnection(byte connectionIndex, IDirectAccessPeripheral target)
         {
             if(directAccessPeripherals.ContainsKey(connectionIndex))
@@ -275,107 +381,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        public ulong ReadQuadWord(long offset)
-        {
-            return Read(8, offset);
-        }
-
-        public void WriteQuadWord(long offset, ulong value)
-        {
-            Write(8, offset, value);
-        }
-
-        public uint ReadDoubleWord(long offset)
-        {
-            return (uint)Read(4, offset);
-        }
-
-        public void WriteDoubleWord(long offset, uint value)
-        {
-            Write(4, offset, value);
-        }
-
-        public ushort ReadWord(long offset)
-        {
-            return (ushort)Read(2, offset);
-        }
-
-        public void WriteWord(long offset, ushort value)
-        {
-            Write(2, offset, value);
-        }
-
-        public byte ReadByte(long offset)
-        {
-            return (byte)Read(1, offset);
-        }
-
-        public void WriteByte(long offset, byte value)
-        {
-            Write(1, offset, value);
-        }
-
-        public ulong ReadDirect(byte dataLength, long offset, byte connectionIndex)
-        {
-            return Read(dataLength, offset, connectionIndex);
-        }
-
-        public void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex)
-        {
-            Write(dataLength, offset, value, connectionIndex);
-        }
-
-        public void OnGPIO(int number, bool value)
-        {
-            // When GPIO connections are initialized, OnGPIO is called with
-            // false value. The socket is not yet initialized in that case. We
-            // can safely return, no special initialization is required.
-            if(forwardSocket == null)
-            {
-                return;
-            }
-
-            BitHelper.SetBit(ref outGPIOState, (byte)number, value);
-            var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, 0, outGPIOState);
-            SendRequest(request, out var response);
-        }
-
-        public void Reset()
-        {
-            outGPIOState = 0;
-            var request = new RenodeMessage(RenodeAction.Reset, 0, 0, 0, 0);
-            SendRequest(request, out var response);
-        }
-
-        public void Dispose()
-        {
-            if(systemcProcess != null && !systemcProcess.HasExited)
-            {
-                // Init message sent after connection has been established signifies Renode terminated and SystemC process
-                // should exit.
-                var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
-                SendRequest(request, out var response);
-
-                if(!systemcProcess.WaitForExit(500)) {
-                    this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
-                    systemcProcess.Kill();
-                }
-            }
-
-            forwardSocket?.Close();
-            backwardSocket?.Close();
-        }
-
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
         {
             return ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex);
-        }
-
-        public ulong ReadRegister(byte dataLength, long offset, byte connectionIndex = 0)
-        {
-            return ReadInternal(RenodeAction.ReadRegister, dataLength, offset, connectionIndex);
         }
 
         private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex)
@@ -395,11 +405,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private void Write(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
         {
             WriteInternal(RenodeAction.Write, dataLength, offset, value, connectionIndex);
-        }
-
-        public void WriteRegister(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
-        {
-            WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex);
         }
 
         private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex)
@@ -454,7 +459,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void SetupConnection(Socket listenerSocket)
         {
-
             forwardSocket = listenerSocket.Accept();
             forwardSocket.SendTimeout = 1000;
             // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
@@ -483,7 +487,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             var timesyncTimer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: true, eventEnabled: true, autoUpdate: true);
 
-            Action<TimeInterval, TimeInterval> adjustTimesyncToQuantum = ((_, newQuantum) => {
+            Action<TimeInterval, TimeInterval> adjustTimesyncToQuantum = ((_, newQuantum) =>
+            {
                 if(TimeInterval.FromMicroseconds(timesyncTimer.Limit) < newQuantum)
                 {
                     var newLimit = (ulong)newQuantum.TotalMicroseconds;
@@ -507,7 +512,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
         {
-            lock (messageLock)
+            lock(messageLock)
             {
                 var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
                 var recvBytes = new byte[messageSize];
@@ -538,7 +543,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var recvBytes = new byte[messageSize];
 
                 var nbytes = backwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
-                if(nbytes == 0) {
+                if(nbytes == 0)
+                {
                     this.Log(LogLevel.Info, "Backward connection to SystemC process closed.");
                     return;
                 }
@@ -549,113 +555,113 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 ulong payload = 0;
                 switch(message.ActionId)
                 {
-                    case RenodeAction.GPIOWrite:
-                        // We have to respond before GPIO state is changed, because SystemC is blocked until
-                        // it receives the response. Setting the GPIO may require it to respond, e. g. when it
-                        // is interracted with from an interrupt handler.
-                        backwardSocket.Send(message.Serialize(), SocketFlags.None);
-                        for(int pin = 0; pin < NumberOfGPIOPins; pin++)
+                case RenodeAction.GPIOWrite:
+                    // We have to respond before GPIO state is changed, because SystemC is blocked until
+                    // it receives the response. Setting the GPIO may require it to respond, e. g. when it
+                    // is interracted with from an interrupt handler.
+                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                    for(int pin = 0; pin < NumberOfGPIOPins; pin++)
+                    {
+                        bool irqval = (message.Payload & (1UL << pin)) != 0;
+                        Connections[pin].Set(irqval);
+                    }
+                    break;
+                case RenodeAction.Write:
+                    bool writeToSharedMem = false;
+                    if(message.IsSystemBusConnection())
+                    {
+                        var targetMem = sysbus.FindMemory(message.Address);
+                        if(targetMem != null)
                         {
-                            bool irqval = (message.Payload & (1UL << pin)) != 0;
-                            Connections[pin].Set(irqval);
+                            writeToSharedMem = targetMem.Peripheral.UsingSharedMemory;
                         }
-                        break;
-                    case RenodeAction.Write:
-                        bool writeToSharedMem = false;
-                        if(message.IsSystemBusConnection())
+                        sysbus.TryGetCurrentCPU(out var icpu);
+                        switch(message.DataLength)
                         {
-                            var targetMem = sysbus.FindMemory(message.Address);
-                            if(targetMem != null)
-                            {
-                                writeToSharedMem = targetMem.Peripheral.UsingSharedMemory;
-                            }
-                            sysbus.TryGetCurrentCPU(out var icpu);
-                            switch(message.DataLength)
-                            {
-                                case 1:
-                                    sysbus.WriteByte(message.Address, (byte)message.Payload, context: icpu);
-                                    break;
-                                case 2:
-                                    sysbus.WriteWord(message.Address, (ushort)message.Payload, context: icpu);
-                                    break;
-                                case 4:
-                                    sysbus.WriteDoubleWord(message.Address, (uint)message.Payload, context: icpu);
-                                    break;
-                                case 8:
-                                    sysbus.WriteQuadWord(message.Address, message.Payload, context: icpu);
-                                    break;
-                                default:
-                                    this.Log(LogLevel.Error, "SystemC integration error - invalid data length {0} sent through backward connection from the SystemC process.", message.DataLength);
-                                    break;
-                            }
+                        case 1:
+                            sysbus.WriteByte(message.Address, (byte)message.Payload, context: icpu);
+                            break;
+                        case 2:
+                            sysbus.WriteWord(message.Address, (ushort)message.Payload, context: icpu);
+                            break;
+                        case 4:
+                            sysbus.WriteDoubleWord(message.Address, (uint)message.Payload, context: icpu);
+                            break;
+                        case 8:
+                            sysbus.WriteQuadWord(message.Address, message.Payload, context: icpu);
+                            break;
+                        default:
+                            this.Log(LogLevel.Error, "SystemC integration error - invalid data length {0} sent through backward connection from the SystemC process.", message.DataLength);
+                            break;
                         }
-                        else
-                        {
-                            directAccessPeripherals[message.GetDirectConnectionIndex()].WriteDirect(
-                                    message.DataLength, (long)message.Address, message.Payload, message.ConnectionIndex);
-                        }
-                        var writeResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
+                    }
+                    else
+                    {
+                        directAccessPeripherals[message.GetDirectConnectionIndex()].WriteDirect(
+                                message.DataLength, (long)message.Address, message.Payload, message.ConnectionIndex);
+                    }
+                    var writeResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
                             writeToSharedMem ? (byte)RenodeMessage.DMIAllowed : (byte)RenodeMessage.DMINotAllowed, message.Address, message.Payload);
-                        backwardSocket.Send(writeResponseMessage.Serialize(), SocketFlags.None);
-                        break;
-                    case RenodeAction.Read:
-                        bool readFromSharedMem = false;
-                        if(message.IsSystemBusConnection())
+                    backwardSocket.Send(writeResponseMessage.Serialize(), SocketFlags.None);
+                    break;
+                case RenodeAction.Read:
+                    bool readFromSharedMem = false;
+                    if(message.IsSystemBusConnection())
+                    {
+                        var targetMem = sysbus.FindMemory(message.Address);
+                        if(targetMem != null)
                         {
-                            var targetMem = sysbus.FindMemory(message.Address);
-                            if(targetMem != null)
-                            {
-                                readFromSharedMem = targetMem.Peripheral.UsingSharedMemory;
-                            }
-                            sysbus.TryGetCurrentCPU(out var icpu);
-                            switch(message.DataLength)
-                            {
-                                case 1:
-                                    payload = (ulong)sysbus.ReadByte(message.Address, context: icpu);
-                                    break;
-                                case 2:
-                                    payload = (ulong)sysbus.ReadWord(message.Address, context: icpu);
-                                    break;
-                                case 4:
-                                    payload = (ulong)sysbus.ReadDoubleWord(message.Address, context: icpu);
-                                    break;
-                                case 8:
-                                    payload = (ulong)sysbus.ReadQuadWord(message.Address, context: icpu);
-                                    break;
-                                default:
-                                    this.Log(LogLevel.Error, "SystemC integration error - invalid data length {0} sent through backward connection from the SystemC process.", message.DataLength);
-                                    break;
-                            }
+                            readFromSharedMem = targetMem.Peripheral.UsingSharedMemory;
                         }
-                        else
+                        sysbus.TryGetCurrentCPU(out var icpu);
+                        switch(message.DataLength)
                         {
-                            payload = directAccessPeripherals[message.GetDirectConnectionIndex()].ReadDirect(message.DataLength, (long)message.Address, message.ConnectionIndex);
+                        case 1:
+                            payload = (ulong)sysbus.ReadByte(message.Address, context: icpu);
+                            break;
+                        case 2:
+                            payload = (ulong)sysbus.ReadWord(message.Address, context: icpu);
+                            break;
+                        case 4:
+                            payload = (ulong)sysbus.ReadDoubleWord(message.Address, context: icpu);
+                            break;
+                        case 8:
+                            payload = (ulong)sysbus.ReadQuadWord(message.Address, context: icpu);
+                            break;
+                        default:
+                            this.Log(LogLevel.Error, "SystemC integration error - invalid data length {0} sent through backward connection from the SystemC process.", message.DataLength);
+                            break;
                         }
-                        var readResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
+                    }
+                    else
+                    {
+                        payload = directAccessPeripherals[message.GetDirectConnectionIndex()].ReadDirect(message.DataLength, (long)message.Address, message.ConnectionIndex);
+                    }
+                    var readResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
                             readFromSharedMem ? (byte)RenodeMessage.DMIAllowed : (byte)RenodeMessage.DMINotAllowed, message.Address, payload);
 
-                        backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
-                        break;
-                    case RenodeAction.DMIReq:
-                        bool allowDMI = false;
-                        var targetMemory = sysbus.FindMemory(message.Address);
-                        if(targetMemory != null)
-                        {
-                            allowDMI = targetMemory.Peripheral.UsingSharedMemory;
-                        }
-                        long memBase = (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
-                        long memOffset = (long)message.Address - memBase;
-                        ulong segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
-                        int segmentNo = 0;
-                        if(allowDMI)
-                        {
-                            segmentNo = (int)(memOffset / targetMemory.Peripheral.SegmentSize);
-                            allowDMI = segmentNo >= 0 && segmentNo < targetMemory.Peripheral.SegmentCount;
-                        }
-                        if(allowDMI)
-                        {
-                            // DMI allowed
-                            var responseDMIMessage = new DMIMessage(
+                    backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
+                    break;
+                case RenodeAction.DMIReq:
+                    bool allowDMI = false;
+                    var targetMemory = sysbus.FindMemory(message.Address);
+                    if(targetMemory != null)
+                    {
+                        allowDMI = targetMemory.Peripheral.UsingSharedMemory;
+                    }
+                    long memBase = (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
+                    long memOffset = (long)message.Address - memBase;
+                    ulong segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
+                    int segmentNo = 0;
+                    if(allowDMI)
+                    {
+                        segmentNo = (int)(memOffset / targetMemory.Peripheral.SegmentSize);
+                        allowDMI = segmentNo >= 0 && segmentNo < targetMemory.Peripheral.SegmentCount;
+                    }
+                    if(allowDMI)
+                    {
+                        // DMI allowed
+                        var responseDMIMessage = new DMIMessage(
                                 message.ActionId,
                                 RenodeMessage.DMIAllowed,
                                 segmentStart,
@@ -663,12 +669,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
                                 targetMemory.Peripheral.GetSegmentAlignmentOffset(segmentNo), // offset into the MMF corresponding to the segment start address
                                 targetMemory.Peripheral.GetSegmentPath(segmentNo) // MMF path
                             );
-                            backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
-                        }
-                        else
-                        {
-                            // DMI rejected
-                            var responseDMIMessage = new DMIMessage(
+                        backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                    }
+                    else
+                    {
+                        // DMI rejected
+                        var responseDMIMessage = new DMIMessage(
                                 message.ActionId,
                                 RenodeMessage.DMINotAllowed,
                                 0UL,
@@ -676,16 +682,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
                                 0UL,
                                 ""
                             );
-                            backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
-                        }
-                        break;
-                    case RenodeAction.InvalidateTBs:
-                        TryToInvalidateTBs(message.Address, message.Payload);
-                        backwardSocket.Send(message.Serialize(), SocketFlags.None);
-                        break;
-                    default:
-                        this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
-                        break;
+                        backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                    }
+                    break;
+                case RenodeAction.InvalidateTBs:
+                    TryToInvalidateTBs(message.Address, message.Payload);
+                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                    break;
+                default:
+                    this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
+                    break;
                 }
             }
         }
@@ -709,7 +715,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var baseCPU = icpu as BaseCPU;
                 if(baseCPU != null)
                 {
-                     baseCPU.SkipTime(TimeInterval.FromMicroseconds(timeUS));
+                    baseCPU.SkipTime(TimeInterval.FromMicroseconds(timeUS));
                 }
                 else
                 {
@@ -718,27 +724,28 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        private Socket backwardSocket;
+
+        private Socket forwardSocket;
+
+        private ulong outGPIOState;
+        private Process systemcProcess;
+        private string systemcExecutablePath;
+
+        private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
+
+        private readonly Thread backwardThread;
+        private readonly bool disableTimeoutCheck;
+        private readonly int requestedPort;
+
+        private readonly string address;
+        private readonly object messageLock;
+        private readonly int timeSyncPeriodUS;
+
         private readonly IBusController sysbus;
         private readonly IMachine machine;
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
         private const int NumberOfGPIOPins = 64;
-
-        private readonly string address;
-        private readonly int requestedPort;
-        private readonly int timeSyncPeriodUS;
-        private readonly bool disableTimeoutCheck;
-        private readonly object messageLock;
-
-        private readonly Thread backwardThread;
-
-        private Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
-        private string systemcExecutablePath;
-        private Process systemcProcess;
-
-        private ulong outGPIOState;
-
-        private Socket forwardSocket;
-        private Socket backwardSocket;
     }
 }

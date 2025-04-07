@@ -6,20 +6,20 @@
 //
 
 using System;
-using System.IO;
-using System.Net;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-using libtftp;
-using PacketDotNet;
-
-using Antmicro.Renode.Core;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
+
+using libtftp;
+
+using PacketDotNet;
 
 namespace Antmicro.Renode.Network
 {
@@ -91,28 +91,28 @@ namespace Antmicro.Renode.Network
 
             switch(args.Severity)
             {
-                case ETftpLogSeverity.Debug:
-                    logLevel = LogLevel.Debug;
-                    break;
+            case ETftpLogSeverity.Debug:
+                logLevel = LogLevel.Debug;
+                break;
 
-                case ETftpLogSeverity.Informational:
-                case ETftpLogSeverity.Notice:
-                    logLevel = LogLevel.Info;
-                    break;
+            case ETftpLogSeverity.Informational:
+            case ETftpLogSeverity.Notice:
+                logLevel = LogLevel.Info;
+                break;
 
-                case ETftpLogSeverity.Warning:
-                    logLevel = LogLevel.Warning;
-                    break;
+            case ETftpLogSeverity.Warning:
+                logLevel = LogLevel.Warning;
+                break;
 
-                case ETftpLogSeverity.Error:
-                case ETftpLogSeverity.Critical:
-                case ETftpLogSeverity.Alert:
-                case ETftpLogSeverity.Emergency:
-                    logLevel = LogLevel.Error;
-                    break;
+            case ETftpLogSeverity.Error:
+            case ETftpLogSeverity.Critical:
+            case ETftpLogSeverity.Alert:
+            case ETftpLogSeverity.Emergency:
+                logLevel = LogLevel.Error;
+                break;
 
-                default:
-                    throw new ArgumentException($"Unhandled log severity: {args.Severity}");
+            default:
+                throw new ArgumentException($"Unhandled log severity: {args.Severity}");
             }
 
             this.Log(logLevel, args.Message);
@@ -149,14 +149,14 @@ namespace Antmicro.Renode.Network
 
             try
             {
-                using (var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using(var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var buffer = new byte[stream.Length];
                     await stream.ReadAsync(buffer, 0, (int)stream.Length);
                     args.Result = new MemoryStream(buffer);
                 }
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 this.Log(LogLevel.Warning, "There was an error when reading {0} file: {1}", path, e.Message);
             }

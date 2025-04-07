@@ -25,15 +25,15 @@ pci: Python.PythonPeripheral @ sysbus 0xE0000CF8
     size: 0x400
     initable: false
     script: '''
-if request.isRead:
+if request.IsRead:
     if addr == 0x0:
         # ns16550 vendor and device ID
-        request.value = 0x5abc8086
+        request.Value = 0x5abc8086
     elif addr == 0x10:
         # address to memory-mapped accesses, it should be the same as 'uart' point of registration
-        request.value = 0xa0000000
+        request.Value = 0xa0000000
 else:
-    addr = request.value & 0xFF
+    addr = request.Value & 0xFF
 '''
 
 sysbus:

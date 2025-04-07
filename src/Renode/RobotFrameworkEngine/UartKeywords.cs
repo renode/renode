@@ -97,9 +97,9 @@ namespace Antmicro.Renode.RobotFramework
             {
                 var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                 pauseEmulation ?? defaultPauseEmulation, matchNextLine ?? defaultMatchNextLine);
-                if(result?.isFailingString == true)
+                if(result?.IsFailingString == true)
                 {
-                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.Line}");
                 }
                 return result;
             });
@@ -113,9 +113,9 @@ namespace Antmicro.Renode.RobotFramework
             {
                 var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                     pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
-                if(result?.isFailingString == true)
+                if(result?.IsFailingString == true)
                 {
-                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.Line}");
                 }
                 return result;
             });
@@ -129,9 +129,9 @@ namespace Antmicro.Renode.RobotFramework
             {
                 var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine: true,
                     pauseEmulation ?? defaultPauseEmulation, matchStart ?? defaultMatchNextLine);
-                if(result?.isFailingString == true)
+                if(result?.IsFailingString == true)
                 {
-                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.Line}");
                 }
                 return result != null ? new BinaryTerminalTesterResult(result) : null;
             }, expectBinaryModeTester: true);
@@ -151,7 +151,7 @@ namespace Antmicro.Renode.RobotFramework
             var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine, false);
             if(result != null)
             {
-                throw new InvalidOperationException($"Terminal tester failed!\n\nUnexpected entry has been found on UART#:\n{result.line}");
+                throw new InvalidOperationException($"Terminal tester failed!\n\nUnexpected entry has been found on UART#:\n{result.Line}");
             }
         }
 
@@ -257,14 +257,16 @@ namespace Antmicro.Renode.RobotFramework
         {
             public BinaryTerminalTesterResult(TerminalTesterResult result)
             {
-                this.content = Encode(result.line) ?? Array.Empty<byte>();
-                this.timestamp = timestamp;
-                this.groups = result.groups.Select(Encode).ToArray();
+                this.Content = Encode(result.Line) ?? Array.Empty<byte>();
+                this.Timestamp = Timestamp;
+                this.Groups = result.Groups.Select(Encode).ToArray();
             }
 
-            public byte[] content { get; }
-            public double timestamp { get; }
-            public byte[][] groups { get; }
+            public byte[] Content { get; }
+
+            public double Timestamp { get; }
+
+            public byte[][] Groups { get; }
 
             private byte[] Encode(string str)
             {

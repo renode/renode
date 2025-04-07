@@ -5,9 +5,10 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Antmicro.Renode.Peripherals.Wireless;
-using Antmicro.Renode.Exceptions;
+
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Peripherals.Wireless;
 
 namespace Antmicro.Renode.Network
 {
@@ -51,11 +52,12 @@ namespace Antmicro.Renode.Network
         public int LossRange { get; set; }
 
         public float TxRatio
-        { 
+        {
             get
             {
                 return txRatio;
             }
+
             set
             {
                 if(value < 0 || value > 1.0f)
@@ -70,11 +72,12 @@ namespace Antmicro.Renode.Network
         }
 
         public float RxRatio
-        { 
+        {
             get
             {
                 return rxRatio;
             }
+
             set
             {
                 if(value < 0 || value > 1.0f)
@@ -95,4 +98,3 @@ namespace Antmicro.Renode.Network
         private const string Name = "range_loss_medium_function";
     }
 }
-

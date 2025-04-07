@@ -191,8 +191,8 @@ Shell Should Handle Basic Commands
     Write Line To Uart            sleep 1
     ${after}=                     Wait For Prompt On Uart       \#${SPACE}
     # Timestamps are in milliseconds
-    Should Be True                ${after.timestamp} - ${before.timestamp} > 1000
-    Should Be True                ${after.timestamp} - ${before.timestamp} < 1050
+    Should Be True                ${after.Timestamp} - ${before.Timestamp} > 1000
+    Should Be True                ${after.Timestamp} - ${before.Timestamp} < 1050
 
 
 Test Running Coreboot With Linux And ARM Trusted Firmware

@@ -236,7 +236,7 @@ Should Support RTC
     ${h}=                           Wait For Line On Uart  Thu Jan${SPACE*2}1 00:00:(\\d+) 1970${SPACE*2}0.000000 seconds  treatAsRegex=true
 
     # Allow for 1 second of difference between the hwclock and the kernel's view
-    ${diff}=                        Evaluate  abs(int(${d.groups[0]}) - int(${h.groups[0]}))
+    ${diff}=                        Evaluate  abs(int(${d.Groups[0]}) - int(${h.Groups[0]}))
     Should Be True                  ${diff} <= 1
 
 Should Display Output on GPIO

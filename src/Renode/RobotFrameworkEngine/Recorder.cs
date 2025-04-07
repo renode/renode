@@ -19,7 +19,7 @@ namespace Antmicro.Renode.RobotFramework
 
         public void RecordEvent(string name, object[] args, Replay replayMode = Replay.InReexecutionMode)
         {
-            events.Add(new Event { Name = name, Arguments = args, ReplayMode = replayMode});
+            events.Add(new Event { Name = name, Arguments = args, ReplayMode = replayMode });
         }
 
         public void SaveCurrentState(string name)
@@ -50,7 +50,9 @@ namespace Antmicro.Renode.RobotFramework
         public struct Event
         {
             public string Name { get; set; }
+
             public object[] Arguments { get; set; }
+
             public Replay ReplayMode { get; set; }
         }
     }

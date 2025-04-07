@@ -71,7 +71,7 @@ emu_pwrcfg: Python.PythonPeripheral @ sysbus 0x400E3038
 emu_if: Python.PythonPeripheral @ sysbus 0x400E3024
     size: 0x4
     initable: true
-    script: "request.value = 0xffffffff"
+    script: "request.Value = 0xffffffff"
 
 bitclear: @ sysbus <0x44000000, +0x1000000>
 

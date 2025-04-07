@@ -5,15 +5,14 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
-using Antmicro.Renode.Testing;
-using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
@@ -213,13 +212,14 @@ namespace Antmicro.Renode.RobotFramework
 
         private bool MatchFailingStrings(LogEntry entry)
         {
-            return failingStrings.Any(failingString => {
-                if(failingString.treatAsRegex)
+            return failingStrings.Any(failingString =>
+            {
+                if(failingString.TreatAsRegex)
                 {
-                    var regex = new Regex(failingString.pattern);
+                    var regex = new Regex(failingString.Pattern);
                     return regex.IsMatch(entry.FullMessage);
                 }
-                return entry.FullMessage.Contains(failingString.pattern);
+                return entry.FullMessage.Contains(failingString.Pattern);
             });
         }
 
@@ -233,13 +233,13 @@ namespace Antmicro.Renode.RobotFramework
 
         private struct FailingString
         {
-            public string pattern;
-            public bool treatAsRegex;
+            public string Pattern;
+            public bool TreatAsRegex;
 
             public FailingString(string pattern, bool treatAsRegex)
             {
-                this.pattern = pattern;
-                this.treatAsRegex = treatAsRegex;
+                this.Pattern = pattern;
+                this.TreatAsRegex = treatAsRegex;
             }
         }
     }

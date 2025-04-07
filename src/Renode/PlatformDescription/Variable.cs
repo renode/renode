@@ -8,8 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Antmicro.Renode.PlatformDescription.Syntax;
-using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription
 {
@@ -41,10 +41,11 @@ namespace Antmicro.Renode.PlatformDescription
         }
 
         public Type VariableType { get; set; }
+
         public DeclarationPlace DeclarationPlace { get; set; }
+
         public object Value { get; set; }
 
         private readonly List<Entry> associatedEntries;
     }
-
 }

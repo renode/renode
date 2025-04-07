@@ -1,9 +1,9 @@
 *** Variables ***
 ${csr_script}=  SEPARATOR=
-...  if request.isRead:                                                  ${\n}${SPACE}
+...  if request.IsRead:                                                  ${\n}${SPACE}
 ...      cpu.DebugLog('CSR read!')                                       ${\n}
-...  elif request.isWrite:                                               ${\n}${SPACE}
-...      cpu.DebugLog('CSR written: {}!'.format(hex(request.value)))
+...  elif request.IsWrite:                                               ${\n}${SPACE}
+...      cpu.DebugLog('CSR written: {}!'.format(hex(request.Value)))
 
 ${xadd}=  SEPARATOR=
 ...  src_reg_a = (instruction >> 3) & 0xF                                                            ${\n}

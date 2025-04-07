@@ -4,15 +4,15 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System.Threading;
-using Antmicro.Renode;
-using Antmicro.Renode.UI;
-using System.Reflection;
-using System.IO;
 using System;
-using Antmicro.Renode.Utilities;
-using Antmicro.Renode.RobotFramework;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+
 using Antmicro.Renode.Logging;
+using Antmicro.Renode.RobotFramework;
+using Antmicro.Renode.UI;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode
 {
@@ -26,7 +26,7 @@ namespace Antmicro.Renode
             var options = new Options();
             var optionsParser = new OptionsParser.OptionsParser();
             var optionsParsed = optionsParser.Parse(options, args);
-            if (!optionsParsed)
+            if(!optionsParsed)
             {
                 return;
             }
@@ -54,7 +54,7 @@ namespace Antmicro.Renode
                     Console.Out.WriteLine($"[ERROR] Couldn't launch server - {reason}");
                     return;
                 }
-                
+
                 Emulator.BeforeExit += WebSockets.WebSocketsManager.Instance.Dispose;
             }
 #endif

@@ -183,7 +183,7 @@ Fault Callback Works Only When Enabled
 
 Peripheral Can Be Attached To The Sysbus
     Create Platform
-    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 4}"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; numberOfWindows: 4}"
     Define Window In Peripheral     mmu1  0  0x0  0x1000  0x0  ${PRIV_EXEC_ONLY}
     Provides                        SingleMMU
 
@@ -196,8 +196,8 @@ Peripheral Can Be Configured Using The Registers Inteface
 
 CPU Can Have Two MMUs
     Create Platform
-    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 2}"
-    Execute Command                 machine LoadPlatformDescriptionFromString "mmu2: Miscellaneous.ExternalWindowMMU @ sysbus 0x47001000 {cpu: cpu; startAddress: 0x1000; windowSize: 0x1000; numberOfWindows: 2}"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; numberOfWindows: 2}"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mmu2: Miscellaneous.ExternalWindowMMU @ sysbus 0x47001000 {cpu: cpu; numberOfWindows: 2}"
     Define Window In Peripheral     mmu1  0  0x0  0x1000  0x0  ${PRIV_EXEC_ONLY}
     Define Window In Peripheral     mmu2  0  0x0  0x1000  0x0  ${PRIV_EXEC_ONLY}
     Provides                        TwoMmus
@@ -228,7 +228,7 @@ Peripheral Does Not Throw When no_page_fault Is Set
 Peripheal Throws On Illegal Instruction Fetch
     Create Platform
     Create Log Tester               0
-    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; startAddress: 0x0; windowSize: 0x1000; numberOfWindows: 4}"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; numberOfWindows: 4}"
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_WRITE_ONLY}
     Execute Command                 logLevel 0 mmu1
 

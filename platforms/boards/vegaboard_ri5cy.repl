@@ -4,26 +4,26 @@ SCG_CSR: Python.PythonPeripheral @ sysbus 0x4002C010
     size: 0x4
     initable: true
     script: '''
-if request.isInit: firstRead = True
-if request.isRead: request.value = 0x2000000 if firstRead else 0x3000001; firstRead = False
+if request.IsInit: firstRead = True
+if request.IsRead: request.Value = 0x2000000 if firstRead else 0x3000001; firstRead = False
 '''
 
 pcc0: Python.PythonPeripheral @ sysbus 0x4002B000
     initable: true
     size: 0x204
     script: '''
-if request.isInit: regs = [0x80000000] * (size / 4)
-if request.isRead: request.value = regs[request.offset >> 2]
-if request.isWrite: regs[request.offset >> 2] = request.value
+if request.IsInit: regs = [0x80000000] * (size / 4)
+if request.IsRead: request.Value = regs[request.Offset >> 2]
+if request.IsWrite: regs[request.Offset >> 2] = request.Value
 '''
 
 pcc1: Python.PythonPeripheral @ sysbus 0x41027000
     initable: true
     size: 0x208
     script: '''
-if request.isInit: regs = [0x80000000] * (size / 4)
-if request.isRead: request.value = regs[request.offset >> 2]
-if request.isWrite: regs[request.offset >> 2] = request.value
+if request.IsInit: regs = [0x80000000] * (size / 4)
+if request.IsRead: request.Value = regs[request.Offset >> 2]
+if request.IsWrite: regs[request.Offset >> 2] = request.Value
 '''
 
 sysbus: 

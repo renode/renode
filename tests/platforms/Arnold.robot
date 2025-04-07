@@ -56,7 +56,7 @@ Should Print to UART Using a Timer
 
     FOR  ${i}  IN RANGE  0  ${REPEATS}
          ${r}        Wait For Line On Uart     Entered user handler
-                     Append To List            ${l}  ${r.timestamp}
+                     Append To List            ${l}  ${r.Timestamp}
     END
 
     FOR  ${i}  IN RANGE  1  ${REPEATS}

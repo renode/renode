@@ -4,7 +4,6 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,8 +23,11 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public IEnumerable<UsingEntry> Usings { get; private set; }
+
         public IEnumerable<Entry> Entries { get; private set; }
+
         public string Source { get; set; }
+
         public string FileName { get; set; }
     }
 }

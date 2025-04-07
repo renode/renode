@@ -6,13 +6,19 @@
 //
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
+
 #if !PLATFORM_WINDOWS
 using System;
+
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Utilities;
+
 using AntShell.Terminal;
+
 using Antmicro.Migrant;
+
 using Mono.Unix;
+
 using System.IO;
 #endif
 
@@ -35,7 +41,6 @@ namespace Antmicro.Renode.Backends.Terminals
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
         {
-
             this.linkName = linkName;
             this.forceCreate = forceCreate;
 
@@ -112,15 +117,15 @@ namespace Antmicro.Renode.Backends.Terminals
             }
         }
 
-        private UnixSymbolicLinkInfo symlink;
-
-        private readonly bool forceCreate;
-        private readonly string linkName;
         [Transient]
         private PtyUnixStream ptyStream;
         [Transient]
         private IOProvider io;
+
+        private UnixSymbolicLinkInfo symlink;
+
+        private readonly bool forceCreate;
+        private readonly string linkName;
     }
 #endif
 }
-

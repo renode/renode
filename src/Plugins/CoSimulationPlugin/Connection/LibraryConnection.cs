@@ -5,18 +5,19 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Threading;
-using System.Runtime.InteropServices;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Threading;
+
 using Antmicro.Renode.Debugging;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Exceptions;
-using Antmicro.Renode.Utilities.Binding;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols;
+using Antmicro.Renode.Utilities.Binding;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class LibraryConnection: ICoSimulationConnection, IEmulationElement
+    public class LibraryConnection : ICoSimulationConnection, IEmulationElement
     {
         public LibraryConnection(IEmulationElement parentElement, int timeout, Action<ProtocolMessage> receiveAction)
         {
@@ -149,6 +150,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 return this.context;
             }
+
             set
             {
                 if(IsConnected)
@@ -165,6 +167,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 return simulationFilePath;
             }
+
             set
             {
                 if(value == null)
@@ -186,7 +189,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                         initializeNative();
                         mainResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
                         senderResponsePointer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ProtocolMessage)));
-                        resetPeripheral();
+                        ResetPeripheral();
                     }
                     catch(Exception e)
                     {
@@ -198,24 +201,27 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
         }
 
+        [Import(UseExceptionWrapper = false)]
+        public Action ResetPeripheral;
+
         private void HandleReceived(ProtocolMessage message)
         {
             switch(message.ActionId)
             {
-                case ActionType.LogMessage:
-                    try
-                    {
-                        var logMessage = senderData.Take(peripheralActive.Token);
-                        parentElement.Log((LogLevel)(int)message.Data, logMessage);
-                    }
-                    catch(OperationCanceledException)
-                    {
-                        return;
-                    }
-                    break;
-                default:
-                    receivedHandler(message);
-                    break;
+            case ActionType.LogMessage:
+                try
+                {
+                    var logMessage = senderData.Take(peripheralActive.Token);
+                    parentElement.Log((LogLevel)(int)message.Data, logMessage);
+                }
+                catch(OperationCanceledException)
+                {
+                    return;
+                }
+                break;
+            default:
+                receivedHandler(message);
+                break;
             }
         }
 
@@ -225,8 +231,16 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private IntPtr mainResponsePointer;
         private IntPtr senderResponsePointer;
         private ProtocolMessage? receivedMessage;
-        private IEmulationElement parentElement;
-        private Action<ProtocolMessage> receivedHandler;
+
+#pragma warning disable 649
+        [Import(UseExceptionWrapper = false)]
+        private readonly Action<IntPtr> handleRequest;
+        [Import(UseExceptionWrapper = false, Optional = true)]
+        private readonly Action<IntPtr> initializeContext;
+        [Import(UseExceptionWrapper = false)]
+        private readonly Action initializeNative;
+        private readonly IEmulationElement parentElement;
+        private readonly Action<ProtocolMessage> receivedHandler;
 
         private readonly AutoResetEvent mainReceived;
         private readonly CancellationTokenSource peripheralActive;
@@ -234,16 +248,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private readonly BlockingCollection<string> senderData;
         private readonly int timeout;
         private readonly object nativeLock;
-
-#pragma warning disable 649
-        [Import(UseExceptionWrapper = false)]
-        private Action<IntPtr> handleRequest;
-        [Import(UseExceptionWrapper = false, Optional = true)]
-        private Action<IntPtr> initializeContext;
-        [Import(UseExceptionWrapper = false)]
-        private Action initializeNative;
-        [Import(UseExceptionWrapper = false)]
-        public Action resetPeripheral;
 #pragma warning restore 649
     }
 }

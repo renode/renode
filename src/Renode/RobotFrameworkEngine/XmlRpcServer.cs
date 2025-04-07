@@ -10,8 +10,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using CookComputing.XmlRpc;
+
 using Antmicro.Renode.Core;
+
+using CookComputing.XmlRpc;
 
 namespace Antmicro.Renode.RobotFramework
 {
@@ -106,4 +108,3 @@ namespace Antmicro.Renode.RobotFramework
         private const string KeywordResultFail = "FAIL";
     }
 }
-

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
@@ -28,7 +27,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             VisitSyntaxTreeInner<TValue>(root, visitorAction, null);
         }
 
-        public static void VisitSyntaxTree<TValue>(object root, Action<TValue> visitorAction, Func<object, bool, bool> filter) where TValue : class 
+        public static void VisitSyntaxTree<TValue>(object root, Action<TValue> visitorAction, Func<object, bool, bool> filter) where TValue : class
         {
             VisitSyntaxTreeInner(root, visitorAction, filter);
         }

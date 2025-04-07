@@ -5,8 +5,10 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using Antmicro.Renode.UserInterface;
+
 using TermSharp;
 using TermSharp.Rows;
+
 using Xwt;
 using Xwt.Drawing;
 

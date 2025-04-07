@@ -11,17 +11,18 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Core.Structure;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
-using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription.Syntax;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Collections;
+
 using Sprache;
 
 using Range = Antmicro.Renode.Core.Range;
@@ -61,6 +62,38 @@ namespace Antmicro.Renode.PlatformDescription
             var source = File.ReadAllText(path);
             usingsBeingProcessed.Push(Path.GetFullPath(path)); // don't need to pop since stack is cleared within ProcessInner
             ProcessInner(path, source);
+        }
+
+        private static string GetTypeListing(Type[] typesToAssign)
+        {
+            return typesToAssign.Length == 1 ? string.Format("type '{0}'", typesToAssign[0])
+                                                   : "possible types " + typesToAssign.Select(x => string.Format("'{0}'", x.Name)).Aggregate((x, y) => x + ", " + y);
+        }
+
+        private static string GetFriendlyConstructorName(ConstructorInfo ctor)
+        {
+            var parameters = ctor.GetParameters();
+            if(parameters.Length == 0)
+            {
+                return string.Format("{0} with no parameters", ctor.DeclaringType);
+            }
+            return string.Format("{0} with the following parameters: [{1}]", ctor.DeclaringType, parameters.Select(x => x.ParameterType + (x.HasDefaultValue ? " (optional)" : ""))
+                                 .Aggregate((x, y) => x + ", " + y));
+        }
+
+        private static IEnumerable<PropertyInfo> GetGpioProperties(Type type)
+        {
+            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => typeof(GPIO).IsAssignableFrom(x.PropertyType));
+        }
+
+        private static string GetValidEnumValues(Type expectedType)
+        {
+            var validValues = new StringBuilder();
+            foreach(var field in Enum.GetValues(expectedType))
+            {
+                validValues.AppendLine($"       {expectedType.Name}.{field},");
+            }
+            return validValues.ToString();
         }
 
         private void ProcessVariableDeclarations(Description description, string prefix)
@@ -817,7 +850,7 @@ namespace Antmicro.Renode.PlatformDescription
                     else
                     {
                         // any manual irq connection should remove all automatic connections
-                        if (objectToSetOn is IHasAutomaticallyConnectedGPIOOutputs objectWithAutomaticConnections)
+                        if(objectToSetOn is IHasAutomaticallyConnectedGPIOOutputs objectWithAutomaticConnections)
                         {
                             objectWithAutomaticConnections.DisconnectAutomaticallyConnectedGPIOOutputs();
                         }
@@ -854,12 +887,12 @@ namespace Antmicro.Renode.PlatformDescription
                     {
                         // Connect the first one to the old destination
                         var combiner = combinerConnection.Combiner;
-                        if(combinerConnection.nextConnectionIndex == 0)
+                        if(combinerConnection.NextConnectionIndex == 0)
                         {
                             combiner.OutputLine.Connect(destinationReceiver, index);
                         }
                         destinationReceiver = combiner;
-                        index = combinerConnection.nextConnectionIndex++;
+                        index = combinerConnection.NextConnectionIndex++;
                     }
 
                     source.Connect(destinationReceiver, index);
@@ -1119,7 +1152,6 @@ namespace Antmicro.Renode.PlatformDescription
                         var gpioProperties = GetGpioProperties(objectType).ToArray();
                         if(gpioProperties.Length == 0)
                         {
-
                             HandleError(ParsingError.IrqSourceDoesNotExist, irqAttribute,
                                         string.Format("Type '{0}' does not contain any property of type GPIO.", objectType), false);
                         }
@@ -1323,7 +1355,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private ConversionResult TryConvertSimplestValue<T>(Value value, Type expectedType, Type comparedType, string typeName, ref object result) where T : Value, ISimplestValue
+        private ConversionResult TryConvertSimplestValue<T>(Value value, Type expectedType, Type comparedType, ref object result) where T : Value, ISimplestValue
         {
             var tValue = value as T;
             if(tValue == null)
@@ -1382,8 +1414,8 @@ namespace Antmicro.Renode.PlatformDescription
 
             var results = new[]
             {
-                TryConvertSimplestValue<StringValue>(value, expectedType, typeof(string), "string", ref result),
-                TryConvertSimplestValue<BoolValue>(value, expectedType, typeof(bool), "bool", ref result),
+                TryConvertSimplestValue<StringValue>(value, expectedType, typeof(string), ref result),
+                TryConvertSimplestValue<BoolValue>(value, expectedType, typeof(bool), ref result),
                 TryConvertRangeValue(value, expectedType, ref result)
             };
 
@@ -1754,38 +1786,6 @@ namespace Antmicro.Renode.PlatformDescription
             return false;
         }
 
-        private static string GetTypeListing(Type[] typesToAssign)
-        {
-	        return typesToAssign.Length == 1 ? string.Format("type '{0}'", typesToAssign[0])
-												   : "possible types " + typesToAssign.Select(x => string.Format("'{0}'", x.Name)).Aggregate((x, y) => x + ", " + y);
-        }
-
-        private static string GetFriendlyConstructorName(ConstructorInfo ctor)
-        {
-            var parameters = ctor.GetParameters();
-            if(parameters.Length == 0)
-            {
-                return string.Format("{0} with no parameters", ctor.DeclaringType);
-            }
-            return string.Format("{0} with the following parameters: [{1}]", ctor.DeclaringType, parameters.Select(x => x.ParameterType + (x.HasDefaultValue ? " (optional)" : ""))
-                                 .Aggregate((x, y) => x + ", " + y));
-        }
-
-        private static IEnumerable<PropertyInfo> GetGpioProperties(Type type)
-        {
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => typeof(GPIO).IsAssignableFrom(x.PropertyType));
-        }
-
-        private static string GetValidEnumValues(Type expectedType)
-        {
-            var validValues = new StringBuilder();
-            foreach(var field in Enum.GetValues(expectedType))
-            {
-                validValues.AppendLine($"       {expectedType.Name}.{field},");
-            }
-            return validValues.ToString();
-        }
-
         private readonly Machine machine;
         private readonly IUsingResolver usingResolver;
         private readonly IScriptHandler scriptHandler;
@@ -1807,6 +1807,19 @@ namespace Antmicro.Renode.PlatformDescription
         private const string DefaultNamespace = "Antmicro.Renode.Peripherals.";
         private const string TypeMismatchMessage = "Type mismatch. Expected {0}.";
 
+        private class IrqCombinerConnection
+        {
+            public IrqCombinerConnection(CombinedInput combiner)
+            {
+                Combiner = combiner;
+                NextConnectionIndex = 0;
+            }
+
+            public int NextConnectionIndex;
+
+            public readonly CombinedInput Combiner;
+        }
+
         private class WithPositionForSyntaxErrors : IWithPosition
         {
             public static WithPositionForSyntaxErrors FromResult<T>(IResult<T> result, string fileName, string source)
@@ -1816,14 +1829,17 @@ namespace Antmicro.Renode.PlatformDescription
             }
 
             public int Length { get; private set; }
+
             public Position StartPosition { get; private set; }
+
             public string FileName { get; private set; }
+
             public string Source { get; private set; }
 
             private WithPositionForSyntaxErrors(int length, Position startPosition, string fileName, string source)
             {
-            	Length = length;
-            	StartPosition = startPosition;
+                Length = length;
+                StartPosition = startPosition;
                 FileName = fileName;
                 Source = source;
             }
@@ -1839,7 +1855,9 @@ namespace Antmicro.Renode.PlatformDescription
             }
 
             public ReferenceValueStack Previous { get; private set; }
+
             public ReferenceValue Value { get; private set; }
+
             public Entry Entry { get; private set; }
         }
 
@@ -1855,19 +1873,6 @@ namespace Antmicro.Renode.PlatformDescription
             public readonly string PeripheralName;
             public readonly int? LocalIndex;
             public readonly int Index;
-        }
-
-        private class IrqCombinerConnection
-        {
-            public IrqCombinerConnection(CombinedInput combiner)
-            {
-                Combiner = combiner;
-                nextConnectionIndex = 0;
-            }
-
-            public int nextConnectionIndex;
-
-            public readonly CombinedInput Combiner;
         }
     }
 }

@@ -159,7 +159,7 @@ Should Allow Waiting For Byte String Containing All Byte Values
 
     # Exact match required
     ${m}=  Wait For Bytes On Uart  ${{$bytes.hex()}}  matchStart=true
-    Should Be Equal         ${m.content}  ${bytes}
+    Should Be Equal         ${m.Content}  ${bytes}
 
 Should Allow Waiting For Byte String Containing All Byte Values As Regex
     Create Trivial Machine
@@ -174,19 +174,19 @@ Should Allow Waiting For Byte String Containing All Byte Values As Regex
     # First one verbatim (might as well not have used a regex)
     ${bytes_re}=  Evaluate  "".join(rf"\\x{b:02x}" for b in $bytes)
     ${m}=  Wait For Bytes On Uart  ${bytes_re}  matchStart=true  treatAsRegex=true
-    Should Be Equal         ${m.content}  ${bytes}
+    Should Be Equal         ${m.Content}  ${bytes}
 
     # Note that due to how the tester works (evaluating the pattern after every byte written)
     # if the entire string hadn't already been printed at assertion time then the ? would not
     # be required for a non-greedy match
     ${m}=  Wait For Bytes On Uart  \\x00.*?\\xff  matchStart=true  treatAsRegex=true
-    Should Be Equal         ${m.content}  ${bytes}
+    Should Be Equal         ${m.Content}  ${bytes}
 
     # And now with some groups
     ${m}=  Wait For Bytes On Uart  (\\x11.*)\\x41.*?([\\x50-\\x5f]+).*?\\xfd  treatAsRegex=true
-    Should Be Equal         ${m.content}  ${{$bytes[0x11:-2]}}
-    Should Be Equal         ${m.groups[0]}  ${{bytes(range(0x11, 0x41))}}
-    Should Be Equal         ${m.groups[1]}  ${{bytes(range(0x50, 0x60))}}
+    Should Be Equal         ${m.Content}  ${{$bytes[0x11:-2]}}
+    Should Be Equal         ${m.Groups[0]}  ${{bytes(range(0x11, 0x41))}}
+    Should Be Equal         ${m.Groups[1]}  ${{bytes(range(0x50, 0x60))}}
 
 Should Fail On Failing String
     Create Tock Machine

@@ -9,6 +9,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
@@ -24,6 +25,21 @@ namespace Antmicro.Renode.RobotFramework
                 Name = "Robot Framework listener thread",
                 IsBackground = true
             };
+        }
+
+        public void Shutdown()
+        {
+            quit = true;
+            if(Thread.CurrentThread != listenerThread)
+            {
+                listener?.Close();
+                listenerThread.Join();
+            }
+        }
+
+        public void Dispose()
+        {
+            xmlRpcServer.Dispose();
         }
 
         // port == 0 is special as it means "select any available port"
@@ -50,6 +66,8 @@ namespace Antmicro.Renode.RobotFramework
             listenerThread.Start();
             listenerThread.Join();
         }
+
+        public XmlRpcServer Processor { get { return xmlRpcServer; } }
 
         private bool TryCreatePortFile(int actualPort)
         {
@@ -103,23 +121,6 @@ namespace Antmicro.Renode.RobotFramework
             return false;
         }
 
-        public void Shutdown()
-        {
-            quit = true;
-            if(Thread.CurrentThread != listenerThread)
-            {
-                listener?.Close();
-                listenerThread.Join();
-            }
-        }
-
-        public void Dispose()
-        {
-            xmlRpcServer.Dispose();
-        }
-
-        public XmlRpcServer Processor { get { return xmlRpcServer; } }
-
         private void Runner()
         {
             while(!quit)
@@ -138,4 +139,3 @@ namespace Antmicro.Renode.RobotFramework
         private const string RobotPortFile = "robot_port";
     }
 }
-

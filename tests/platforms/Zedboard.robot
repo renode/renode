@@ -151,7 +151,7 @@ Get Linux Elapsed Seconds
     ${date}=                        Wait For Line On Uart  ^([0-9]+)$  treatAsRegex=true
     Wait For Prompt On Uart         ${PROMPT}
     Check Exit Code
-    ${seconds}=                     Convert To Integer  ${date.line}
+    ${seconds}=                     Convert To Integer  ${date.Line}
     RETURN                          ${seconds}
 
 Generate Random File

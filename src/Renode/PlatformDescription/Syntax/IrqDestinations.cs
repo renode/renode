@@ -24,6 +24,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public IrqReceiver DestinationPeripheral { get; private set; }
+
         public IEnumerable<SingleOrMultiIrqEnd> Destinations { get; private set; }
 
         private static string PrettyPrintIrqEnds(IEnumerable<IrqEnd> ends)

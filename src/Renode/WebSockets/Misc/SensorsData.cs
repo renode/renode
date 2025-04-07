@@ -23,8 +23,8 @@ namespace Antmicro.Renode.WebSockets.Misc
             var peripherals = machine.GetPeripheralsOfType<ISensor>();
             var data = peripherals.Select(p => new SensorInfo
             {
-                name = GPIOData.GetPeripheralFullName(p, machine),
-                types = GetSensorTypes(p)
+                Name = GPIOData.GetPeripheralFullName(p, machine),
+                Types = GetSensorTypes(p)
             }).ToArray();
 
             return WebSocketAPIUtils.CreateActionResponse(data);
@@ -70,9 +70,9 @@ namespace Antmicro.Renode.WebSockets.Misc
         {
             return new MagneticSensorData
             {
-                x = magneticSensor.MagneticFluxDensityX,
-                y = magneticSensor.MagneticFluxDensityY,
-                z = magneticSensor.MagneticFluxDensityZ
+                X = magneticSensor.MagneticFluxDensityX,
+                Y = magneticSensor.MagneticFluxDensityY,
+                Z = magneticSensor.MagneticFluxDensityZ
             };
         }
 
@@ -93,9 +93,9 @@ namespace Antmicro.Renode.WebSockets.Misc
 
         private static void SetMagneticSensorData(IMagneticSensor sensor, MagneticSensorData data)
         {
-            sensor.MagneticFluxDensityX = data.x;
-            sensor.MagneticFluxDensityY = data.y;
-            sensor.MagneticFluxDensityZ = data.z;
+            sensor.MagneticFluxDensityX = data.X;
+            sensor.MagneticFluxDensityY = data.Y;
+            sensor.MagneticFluxDensityZ = data.Z;
         }
 
         private static string[] GetSensorTypes(ISensor sensor)
@@ -106,15 +106,15 @@ namespace Antmicro.Renode.WebSockets.Misc
 
         private class SensorInfo
         {
-            public string name;
-            public string[] types;
+            public string Name;
+            public string[] Types;
         }
 
         private class MagneticSensorData
         {
-            public int x;
-            public int y;
-            public int z;
+            public int X;
+            public int Y;
+            public int Z;
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Antmicro.Renode.PlatformDescription.Syntax;
 
 namespace Antmicro.Renode.PlatformDescription

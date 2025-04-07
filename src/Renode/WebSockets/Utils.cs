@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.IO;
 
 using Antmicro.Renode.Utilities;
 
@@ -45,8 +44,8 @@ namespace Antmicro.Renode.WebSockets
 
     public class WebSocketAPIResponse
     {
-        public object data;
-        public string error;
+        public object Data;
+        public string Error;
     }
 
     public interface IWebSocketAPIProvider : IAutoLoadType
@@ -62,8 +61,8 @@ namespace Antmicro.Renode.WebSockets
         {
             return new WebSocketAPIResponse
             {
-                data = response,
-                error = errorMessage
+                Data = response,
+                Error = errorMessage
             };
         }
 
@@ -71,8 +70,8 @@ namespace Antmicro.Renode.WebSockets
         {
             return new WebSocketAPIResponse
             {
-                data = new object(),
-                error = errorMessage
+                Data = new object(),
+                Error = errorMessage
             };
         }
 

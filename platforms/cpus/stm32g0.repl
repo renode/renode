@@ -195,45 +195,45 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
     size: 0x400
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
    lastVal = 0
    data = {'hsion': 1, 'pllon': 0, 'sw': 0, 'lsion': 0}
-self.NoisyLog("%s on FLIPFLOP at offset 0x%x, value 0x%x, length %d, %s" % (str(request.type), request.offset, request.value, request.length, str(data)))
+self.NoisyLog("%s on FLIPFLOP at offset 0x%x, value 0x%x, length %d, %s" % (str(request.Type), request.Offset, request.Value, request.Length, str(data)))
 
-if request.isWrite:
-    if request.offset == 0x0:
+if request.IsWrite:
+    if request.Offset == 0x0:
         # HSION [doc = "Bit 8 - HSI16 clock enable"]
-        data['hsion'] = (request.value >> 8) & 0x1
+        data['hsion'] = (request.Value >> 8) & 0x1
         # PLLON [doc = "Bit 24 - PLL enable"]
-        data['pllon'] = (request.value >> 24) & 0x1
-    elif request.offset == 0x8:
+        data['pllon'] = (request.Value >> 24) & 0x1
+    elif request.Offset == 0x8:
         # SW_W [doc = "Bits 0:2 - System clock switch"]
-        data['sw'] = request.value & 0x7
-    elif request.offset == 0x60:
-        data['lsion'] = request.value & 0x1
-elif request.isRead:
+        data['sw'] = request.Value & 0x7
+    elif request.Offset == 0x60:
+        data['lsion'] = request.Value & 0x1
+elif request.IsRead:
     lastVal = 1 - lastVal
-    if request.offset == 0x0:
-        # request.value = lastVal * 0x83
+    if request.Offset == 0x0:
+        # request.Value = lastVal * 0x83
 
         # RCC_CR [doc = "0x00 - Clock control register"]
         # HSION_RW [doc = "Bit 8 - HSI16 clock enable flag"]
         # HSIRDY_R [doc = "Bit 10 - HSI16 clock ready flag"] # HSIRDY == HISON for this model
         # PLLRDY [doc = "Bit 25 - PLL clock ready flag"]
-        request.value = (data['hsion'] << 8) | (data['hsion'] << 10) | (data['pllon'] << 25)
-    elif request.offset == 0x4:
-        request.value = lastVal * 0xFFFFFFF8
-    elif request.offset == 0x24:
-        request.value = 0x0
-    elif request.offset == 0x60:
-        request.value = (data['lsion'] << 1)
+        request.Value = (data['hsion'] << 8) | (data['hsion'] << 10) | (data['pllon'] << 25)
+    elif request.Offset == 0x4:
+        request.Value = lastVal * 0xFFFFFFF8
+    elif request.Offset == 0x24:
+        request.Value = 0x0
+    elif request.Offset == 0x60:
+        request.Value = (data['lsion'] << 1)
     else:
         # RCC_CFGR [doc = "0x08 - Clock configuration register"]
         # SWS_R [doc = "Bits 3:5 - System clock switch status"]
-        # request.value = lastVal * 0xFFFFFFFF
-        request.value = data['sw'] << 3
+        # request.Value = lastVal * 0xFFFFFFFF
+        request.Value = data['sw'] << 3
 
-self.NoisyLog("  0x%x (%s)" % (request.value, str(data)))
+self.NoisyLog("  0x%x (%s)" % (request.Value, str(data)))
 '''
 
 dma1: DMA.STM32G0DMA @ sysbus 0x40020000

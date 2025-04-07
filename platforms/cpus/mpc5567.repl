@@ -28,7 +28,7 @@ emios: GPIOPort.Emios @ sysbus 0xC3FA0000
 fmpllSynsr: Python.PythonPeripheral @ sysbus 0xC3F80004
     size: 0x4
     initable: false
-    script: "request.value = 0x8"
+    script: "request.Value = 0x8"
 
 sysbus:
     init:

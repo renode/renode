@@ -6,6 +6,7 @@
 //
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
+
 using ELFSharp.ELF;
 
 namespace Antmicro.Renode.Peripherals.SystemC

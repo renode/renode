@@ -6,8 +6,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.PlatformDescription.Syntax;

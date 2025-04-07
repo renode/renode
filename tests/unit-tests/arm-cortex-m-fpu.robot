@@ -35,7 +35,7 @@ Should Pass Zephyr FPU Sharing Generic Tests
 
     Start Emulation
     ${result}=                      Wait For Line On Uart  PROJECT EXECUTION (SUCCESSFUL|FAILED)  timeout=32  treatAsRegex=true
-    Should Contain                  ${result.line}  SUCCESSFUL
+    Should Contain                  ${result.Line}  SUCCESSFUL
 
 Should Pass Context Stacking Preservation Test v7-M
     Execute Command                 mach create

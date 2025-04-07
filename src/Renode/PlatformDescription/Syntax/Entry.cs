@@ -5,11 +5,11 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using Antmicro.Migrant;
-using Sprache;
+using System.Linq;
 using System.Reflection;
+
+using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
@@ -24,7 +24,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             Attributes = attributes;
             IsLocal = isLocal;
             Alias = alias;
-
         }
 
         public Entry SetPos(Position startPos, int length)
@@ -138,14 +137,23 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public string VariableName { get; private set; }
+
         public StringWithPosition Type { get; private set; }
+
         public IEnumerable<RegistrationInfo> RegistrationInfos { get; private set; }
+
         public IEnumerable<Attribute> Attributes { get; private set; }
+
         public bool IsLocal { get; private set; }
+
         public Position StartPosition { get; private set; }
+
         public int Length { get; private set; }
+
         public StringWithPosition Alias { get; private set; }
+
         public ConstructorInfo Constructor { get; set; }
+
         public Variable Variable { get; set; }
 
         private readonly string baseVariableName;

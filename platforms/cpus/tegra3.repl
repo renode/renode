@@ -99,142 +99,142 @@ syncPts: Video.TegraSyncpts @ sysbus 0x50000000
 nvPaPmcBase: Python.PythonPeripheral @ sysbus 0x7000E400
     size: 0x4
     initable: false
-    script: "request.value = 1"
+    script: "request.Value = 1"
 
 pgUpTag0: Python.PythonPeripheral @ sysbus 0x60000000
     size: 0x4
     initable: true
-    script: "request.value = 0x55555555"
+    script: "request.Value = 0x55555555"
 
 memoryControllerMemsize: Python.PythonPeripheral @ sysbus 0x7000F410
     size: 0x4
     initable: true
-    script: "request.value = 0x60000"
+    script: "request.Value = 0x60000"
 
 nandHack1: Python.PythonPeripheral @ sysbus 0x70008000
     size: 0x4
     initable: true
-    script: "request.value = 0x0"
+    script: "request.Value = 0x0"
 
 nandHackNandStatus: Python.PythonPeripheral @ sysbus 0x70008004
     size: 0x4
     initable: true
-    script: "request.value = 0x1 | (1<<8)"
+    script: "request.Value = 0x1 | (1<<8)"
 
 nandHackIsr: Python.PythonPeripheral @ sysbus 0x70008008
     size: 0x4
     initable: true
-    script: "request.value = 0xFFFFFFFF"
+    script: "request.Value = 0xFFFFFFFF"
 
 oscFreqDetStatus: Python.PythonPeripheral @ sysbus 0x6000605C
     size: 0x4
     initable: true
-    script: "request.value = 732"
+    script: "request.Value = 732"
 
 pllC: Python.PythonPeripheral @ sysbus 0x60006080
     size: 0x4
     initable: true
-    script: "request.value = ((1<<30) | (50 << 8) | 0xEC)"
+    script: "request.Value = ((1<<30) | (50 << 8) | 0xEC)"
 
 pllM: Python.PythonPeripheral @ sysbus 0x60006090
     size: 0x4
     initable: true
-    script: "request.value = ((1<<30) | (300 << 8) | 0xEC)"
+    script: "request.Value = ((1<<30) | (300 << 8) | 0xEC)"
 
 pllP: Python.PythonPeripheral @ sysbus 0x600060A0
     size: 0x4
     initable: true
-    script: "request.value = ((1<<28) | (408 << 8) | 0xEC)"
+    script: "request.Value = ((1<<28) | (408 << 8) | 0xEC)"
 
 superclock1: Python.PythonPeripheral @ sysbus 0x60006368
     size: 0x4
     initable: true
-    script: "request.value = 0x20000000"
+    script: "request.Value = 0x20000000"
 
 superclock2: Python.PythonPeripheral @ sysbus 0x60006370
     size: 0x4
     initable: true
-    script: "request.value = 0x20000000"
+    script: "request.Value = 0x20000000"
 
 sdmmc3: Python.PythonPeripheral @ sysbus 0x600061BC
     size: 0x4
     initable: true
-    script: "request.value = 0x4"
+    script: "request.Value = 0x4"
 
 clkSrc: Python.PythonPeripheral @ sysbus 0x60006104
     size: 0x20
     initable: true
-    script: "request.value = (1<<30)"
+    script: "request.Value = (1<<30)"
 
 clkSrcA: Python.PythonPeripheral @ sysbus 0x60006124
     size: 0x4
     initable: true
-    script: "request.value = (0<<30) | (100<<8)"
+    script: "request.Value = (0<<30) | (100<<8)"
 
 clkSrc_: Python.PythonPeripheral @ sysbus 0x60006128
     size: 0x6c
     initable: true
-    script: "request.value = (0<<30) | 8"
+    script: "request.Value = (0<<30) | 8"
 
 pllSomething2: Python.PythonPeripheral @ sysbus 0x600060D0
     size: 0x4
     initable: true
-    script: "request.value = 0x8000000"
+    script: "request.Value = 0x8000000"
 
 pllSomething3: Python.PythonPeripheral @ sysbus 0x600060DC
     size: 0x4
     initable: true
-    script: "request.value = 0x8000000"
+    script: "request.Value = 0x8000000"
 
 pllSomething: Python.PythonPeripheral @ sysbus 0x60006004
     size: 0x4
     initable: true
-    script: "request.value = 0x8000000"
+    script: "request.Value = 0x8000000"
 
 test111: Python.PythonPeripheral @ sysbus 0x7000F204
     size: 0x4
     initable: true
-    script: "request.value=0xFFFFFFFF"
+    script: "request.Value=0xFFFFFFFF"
 
 apbMiscGpHidrev0: Python.PythonPeripheral @ sysbus 0x70000804
     size: 0x4
     initable: true
-    script: "request.value = 0x12300003 | (0x1 << 4) | (0x3 << 16) | (0x30 << 8)"
+    script: "request.Value = 0x12300003 | (0x1 << 4) | (0x3 << 16) | (0x30 << 8)"
 
 clockHack: Python.PythonPeripheral @ sysbus 0x60006020
     size: 0x4
     initable: true
-    script: "request.value = 0x20000000"
+    script: "request.Value = 0x20000000"
 
 clkRstControllerSclkBurstpolicy0: Python.PythonPeripheral @ sysbus 0x60006028
     size: 0x4
     initable: true
-    script: "request.value = 0x20000000"
+    script: "request.Value = 0x20000000"
 
 kfuseHack: Python.PythonPeripheral @ sysbus 0x7000F800
     size: 0x4
     initable: true
-    script: "request.value = (0x4 << 16)"
+    script: "request.Value = (0x4 << 16)"
 
 kfuseHack2: Python.PythonPeripheral @ sysbus 0x7000F9FC
     size: 0x4
     initable: true
-    script: "request.value = (0x1)"
+    script: "request.Value = (0x1)"
 
 kfuseSkuInfo: Python.PythonPeripheral @ sysbus 0x7000F910
     size: 0x4
     initable: true
-    script: "request.value = (0x81)"
+    script: "request.Value = (0x81)"
 
 kfuseTestProgRevision: Python.PythonPeripheral @ sysbus 0x7000F928
     size: 0x4
     initable: true
-    script: "request.value = 36"
+    script: "request.Value = 36"
 
 fuseSpeedoCalib: Python.PythonPeripheral @ sysbus 0x7000F914
     size: 0x4
     initable: true
-    script: "request.value = 0x01000100"
+    script: "request.Value = 0x01000100"
 
 pwrGateStatus: Python.PythonPeripheral @ sysbus 0x7000E438
     size: 0x4
@@ -244,12 +244,12 @@ pwrGateStatus: Python.PythonPeripheral @ sysbus 0x7000E438
 miscDebug: Python.PythonPeripheral @ sysbus 0x70000014
     size: 0x4
     initable: true
-    script: "request.value = 0xFFFFFFFF"
+    script: "request.Value = 0xFFFFFFFF"
 
 tegraId: Python.PythonPeripheral @ sysbus 0x70000860
     size: 0x4
     initable: true
-    script: "request.value = 0xFFFFFFFF"
+    script: "request.Value = 0xFFFFFFFF"
 
 sysbus:
     init:

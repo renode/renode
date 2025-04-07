@@ -38,6 +38,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public string Value { get; private set; }
+
         public string Scope { get; set; }
 
         private readonly string baseValue;

@@ -24,9 +24,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public ReferenceValue Register { get; private set; }
+
         public Value RegistrationPoint { get; private set; }
+
         public ConstructorInfo Constructor { get; set; }
+
         public object ConvertedValue { get; set; }
+
         public Type RegistrationInterface { get; set; }
     }
 }

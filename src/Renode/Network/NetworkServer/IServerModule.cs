@@ -7,7 +7,6 @@
 
 using System;
 using System.Net;
-using System.Collections.Generic;
 
 using PacketDotNet;
 
@@ -18,4 +17,3 @@ namespace Antmicro.Renode.Network
         void HandleUdp(IPEndPoint source, UdpPacket packet, Action<IPEndPoint, UdpPacket> callback);
     }
 }
-

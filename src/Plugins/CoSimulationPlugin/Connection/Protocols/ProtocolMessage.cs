@@ -65,8 +65,11 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection.Protocols
         }
 
         public ActionType ActionId { get; set; }
+
         public ulong Address { get; set; }
+
         public ulong Data { get; set; }
+
         public int PeripheralIndex { get; set; }
 
         // Peripheral index used for messages that are not associated with any peripherals.

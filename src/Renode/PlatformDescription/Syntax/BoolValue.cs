@@ -7,7 +7,6 @@
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-
     public sealed class BoolValue : Value, ISimplestValue
     {
         public BoolValue(bool value)
@@ -30,5 +29,4 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             }
         }
     }
-    
 }

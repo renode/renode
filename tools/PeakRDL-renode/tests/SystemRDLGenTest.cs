@@ -259,9 +259,9 @@ namespace Antmicro.Renode.PeripheralsTests
 
                     var fieldInst = fieldField.GetValue(regInst);
 
-                    var fieldMode = this.RegisterField.GetField("fieldMode").GetValue(fieldInst);
-                    var position = this.RegisterField.GetField("position").GetValue(fieldInst);
-                    var width = this.RegisterField.GetField("width").GetValue(fieldInst);
+                    var fieldMode = this.RegisterField.GetField("FieldMode").GetValue(fieldInst);
+                    var position = this.RegisterField.GetField("Position").GetValue(fieldInst);
+                    var width = this.RegisterField.GetField("Width").GetValue(fieldInst);
                     Assert.AreEqual(field.Mode, fieldMode);
                     Assert.AreEqual(field.Low, position);
                     Assert.AreEqual(field.High - field.Low + 1, width);

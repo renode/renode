@@ -5,13 +5,13 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 
-using Sprache;
 using System.Collections.Generic;
 using System.Linq;
 
+using Sprache;
+
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-
     public sealed class EnumValue : Value
     {
         public EnumValue(IEnumerable<string> elements)
@@ -37,7 +37,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public IEnumerable<string> ReversedNamespace { get; private set; }
+
         public string Value { get; private set; }
+
         public string TypeName { get; }
     }
 }

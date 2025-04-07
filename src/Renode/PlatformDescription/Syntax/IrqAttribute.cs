@@ -51,6 +51,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public IEnumerable<SingleOrMultiIrqEnd> Sources { get; private set; }
+
         public IEnumerable<IrqDestinations> Destinations { get; private set; }
 
         private static string PrettyPrintDestinations(IEnumerable<IrqDestinations> destinations)

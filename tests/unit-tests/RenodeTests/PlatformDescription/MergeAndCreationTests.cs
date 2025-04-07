@@ -6,17 +6,20 @@
 //
 using System;
 using System.Linq;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.PlatformDescription.Syntax;
-using Antmicro.Renode.Utilities;
-using Moq;
-using NUnit.Framework;
 using Antmicro.Renode.UnitTests.Mocks;
+using Antmicro.Renode.Utilities;
+
+using Moq;
+
+using NUnit.Framework;
+
 using static Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute;
-using System.Security.Policy;
 
 namespace Antmicro.Renode.UnitTests.PlatformDescription
 {
@@ -114,7 +117,7 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
 cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
     Placeholder: '''this is
 multiline
-string'''";  
+string'''";
 
             ProcessSource(source);
             MockCPU mock;
@@ -727,7 +730,7 @@ newCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus 2
         }
 
         [Test]
-        public void  ShouldNotDetectCycleInPerCoreRegistration()
+        public void ShouldNotDetectCycleInPerCoreRegistration()
         {
             var source = @"
 core1_nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration { 
@@ -752,7 +755,7 @@ cpu2: CPU.CortexM @ sysbus
         }
 
         [Test]
-        public void  ShouldNotDetectCycleInSignalConnection()
+        public void ShouldNotDetectCycleInSignalConnection()
         {
             var source = @"
 clint: IRQControllers.CoreLevelInterruptor @ {
@@ -830,7 +833,7 @@ using ""A""
 peri:
     init:
         Increment";
-            
+
             var errorMessage = "Invalid init section";
             scriptHandlerMock.Setup(x => x.ValidateInit(It.IsAny<IScriptable>(), out errorMessage)).Returns(false);
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));

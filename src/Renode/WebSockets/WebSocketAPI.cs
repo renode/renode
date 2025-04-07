@@ -153,7 +153,7 @@ namespace Antmicro.Renode.WebSockets
                     handlerList = newHandlers;
                 }
 
-                if(handlerList.Where(h => h.version == methodAttr.Attribute.Version).Count() != 0)
+                if(handlerList.Where(h => h.Version == methodAttr.Attribute.Version).Count() != 0)
                 {
                     continue;
                 }
@@ -161,8 +161,8 @@ namespace Antmicro.Renode.WebSockets
                 Logger.Log(LogLevel.Info, $"- Registered action handler: {methodAttr.Method.Name} for: {methodAttr.Attribute.Name}");
                 handlerList.Add(new ActionHandler
                 {
-                    action = methodAttr.Method,
-                    version = methodAttr.Attribute.Version
+                    Action = methodAttr.Method,
+                    Version = methodAttr.Attribute.Version
                 });
             }
 
@@ -209,9 +209,9 @@ namespace Antmicro.Renode.WebSockets
                 return;
             }
 
-            if(actionHandlers.TryGetValue(apiRequest.action, out var handlers))
+            if(actionHandlers.TryGetValue(apiRequest.Action, out var handlers))
             {
-                var actionHandler = handlers.entries.Where(h => h.version <= apiRequest.version)?.OrderBy(h => h.version)?.First();
+                var actionHandler = handlers.entries.Where(h => h.Version <= apiRequest.Version)?.OrderBy(h => h.Version)?.First();
 
                 if(actionHandler == null)
                 {
@@ -219,7 +219,7 @@ namespace Antmicro.Renode.WebSockets
                     return;
                 }
 
-                var handlerParams = actionHandler.action.GetParameters();
+                var handlerParams = actionHandler.Action.GetParameters();
                 var callArgs = new object[handlerParams.Length];
 
                 int arg = 0;
@@ -228,25 +228,25 @@ namespace Antmicro.Renode.WebSockets
                 {
                     foreach(var param in handlerParams)
                     {
-                        callArgs[arg] = apiRequest.payload[param.Name].ToObject(param.ParameterType);
+                        callArgs[arg] = apiRequest.Payload[param.Name].ToObject(param.ParameterType);
                         arg++;
                     }
                 }
                 catch(Exception)
                 {
-                    SendErrorMessage(apiRequest.version.ToString(), apiRequest.id);
+                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
                     return;
                 }
 
-                var result = actionHandler.action.Invoke(handlers.handlerInstance, callArgs);
+                var result = actionHandler.Action.Invoke(handlers.handlerInstance, callArgs);
                 var handlerResponse = (result as WebSocketAPIResponse);
                 var apiResponse = new APIResponse
                 {
-                    version = apiRequest.version.ToString(),
-                    status = handlerResponse.error == null ? "success" : "fail",
-                    id = apiRequest.id,
-                    data = handlerResponse.data,
-                    error = handlerResponse.error
+                    Version = apiRequest.Version.ToString(),
+                    Status = handlerResponse.Error == null ? "success" : "fail",
+                    Id = apiRequest.Id,
+                    Data = handlerResponse.Data,
+                    Error = handlerResponse.Error
                 };
 
                 var serializedResponse = JsonConvert.SerializeObject(apiResponse);
@@ -255,7 +255,7 @@ namespace Antmicro.Renode.WebSockets
             }
             else
             {
-                Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Requested unknown action - {apiRequest.action}");
+                Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Requested unknown action - {apiRequest.Action}");
             }
         }
 
@@ -263,9 +263,9 @@ namespace Antmicro.Renode.WebSockets
         {
             var eventResponse = new APIEvent
             {
-                version = version,
-                eventName = eventName,
-                data = data
+                Version = version,
+                EventName = eventName,
+                Data = data
             };
 
             var serializedEvent = JsonConvert.SerializeObject(eventResponse);
@@ -278,9 +278,9 @@ namespace Antmicro.Renode.WebSockets
         {
             var apiResponse = new APIResponse
             {
-                version = version,
-                id = id,
-                status = "fail"
+                Version = version,
+                Id = id,
+                Status = "fail"
             };
 
             var serializedResponse = JsonConvert.SerializeObject(apiResponse);
@@ -299,53 +299,56 @@ namespace Antmicro.Renode.WebSockets
 
         private class APIRequest
         {
+            // 649:  Field '...' is never assigned to, and will always have its default value null
+#pragma warning disable 649
             [JsonProperty("action", Required = Required.Always)]
-            public string action;
+            public string Action;
 
             [JsonProperty("payload", Required = Required.Always)]
-            public JToken payload;
+            public JToken Payload;
 
             [JsonProperty("version", Required = Required.Always)]
-            public Version version;
+            public Version Version;
 
             [JsonProperty("id", Required = Required.Always)]
-            public int id;
+            public int Id;
+#pragma warning restore 649
         }
 
         private class APIResponse
         {
             [JsonProperty("version", Required = Required.Always)]
-            public string version;
+            public string Version;
 
             [JsonProperty("status", Required = Required.Always)]
-            public string status;
+            public string Status;
 
             [JsonProperty("id", Required = Required.Always)]
-            public int id;
+            public int Id;
 
             [JsonProperty("data", Required = Required.AllowNull)]
-            public object data;
+            public object Data;
 
             [JsonProperty("error", Required = Required.AllowNull)]
-            public string error;
+            public string Error;
         }
 
         private class APIEvent
         {
             [JsonProperty("version", Required = Required.Always)]
-            public string version;
+            public string Version;
 
             [JsonProperty("event", Required = Required.Always)]
-            public string eventName;
+            public string EventName;
 
             [JsonProperty("data", Required = Required.AllowNull)]
-            public object data;
+            public object Data;
         }
 
         private class ActionHandler
         {
-            public MethodInfo action;
-            public Version version;
+            public MethodInfo Action;
+            public Version Version;
         }
     }
 }

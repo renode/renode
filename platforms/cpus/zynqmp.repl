@@ -238,7 +238,7 @@ L3_PLL_STATUS_READ_1_SERDES_REGISTER: Memory.ArrayMemory @ sysbus 0xfd40e3e4
 // It is a PythonPeripheral instead of a Tag to supress warnings on read/write access
 PS_CTRL_STATUS_AMS_REGISTER: Python.PythonPeripheral @ sysbus 0xffa50040
     size: 0x4
-    script: "request.value = 0x08010000"
+    script: "request.Value = 0x08010000"
 
 qspi: SPI.ZynqMP_GQSPI @ sysbus 0xff0f0000
     -> apuGic@15 | rpuGic@15

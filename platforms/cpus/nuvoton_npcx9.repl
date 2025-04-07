@@ -195,24 +195,24 @@ DEV_CTL4: Python.PythonPeripheral @ sysbus 0x400C3006
     size: 0x1
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     value = 0xA
     is_locked = False
     WRITE_PROTECTION = (1 << 5)
 
-elif request.isRead:
-    request.value = value
+elif request.IsRead:
+    request.Value = value
 
-elif request.isWrite:
+elif request.IsWrite:
     if is_locked:
-        request.value |= WRITE_PROTECTION
-    elif request.value & WRITE_PROTECTION:
+        request.Value |= WRITE_PROTECTION
+    elif request.Value & WRITE_PROTECTION:
         is_locked = True
         # This signal (WP) is active-low
         self.GetMachine()["sysbus.fiu.internal_flash_controller"].OnGPIO(0, False)
-        value = request.value
+        value = request.Value
 
-    value = request.value
+    value = request.Value
 '''
 
 // SWRST_CTL4 register from the System Configuration peripheral
@@ -220,10 +220,10 @@ SWRST_CTL4: Python.PythonPeripheral @ sysbus 0x400C3110
     size: 0x4
     initable: true
     script: '''
-if request.isInit:
+if request.IsInit:
     MDMA2_RESET = (1 << 25)
-elif request.isWrite:
-    if request.value & MDMA2_RESET:
+elif request.IsWrite:
+    if request.Value & MDMA2_RESET:
         self.GetMachine()["sysbus.mdma2"].Reset()
 '''
 

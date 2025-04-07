@@ -282,7 +282,7 @@ clock_manager: Miscellaneous.OpenTitan_ClockManager @ sysbus 0x40420000
 RV_CORE_IBEX_RND_DATA: Python.PythonPeripheral @ sysbus 0x411F0058
     size: 0x4
     initable: true
-    script: "import random; rand = int(random.random()*2**32); request.value = rand"
+    script: "import random; rand = int(random.random()*2**32); request.Value = rand"
 
 sysbus:
     init:

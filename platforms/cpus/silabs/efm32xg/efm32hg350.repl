@@ -64,9 +64,9 @@ sysbus:
 cmuStatusOscillator: Python.PythonPeripheral @ sysbus 0x400C802C
     size: 0x4
     initable: false
-    script: "request.value = 0xFFFFFFFF"
+    script: "request.Value = 0xFFFFFFFF"
 
 vcmpStatus: Python.PythonPeripheral @ sysbus 0x40000008
     size: 0x4
     initable: false
-    script: "request.value = 0xFFFFFFFF"
+    script: "request.Value = 0xFFFFFFFF"

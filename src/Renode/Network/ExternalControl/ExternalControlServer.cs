@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 
 using Antmicro.Renode.Core;
@@ -91,6 +90,8 @@ namespace Antmicro.Renode.Network
 
         public IMachineContainer Machines { get; }
 
+        public bool EventsEnabled = false;
+
         private bool IsHeaderValid()
         {
             if(!header.HasValue)
@@ -103,7 +104,7 @@ namespace Antmicro.Renode.Network
                 return false;
             }
 
-            if(header.Value.dataSize > (uint)Int32.MaxValue)
+            if(header.Value.DataSize > (uint)Int32.MaxValue)
             {
                 return false;
             }
@@ -140,87 +141,87 @@ namespace Antmicro.Renode.Network
         {
             switch(currentState)
             {
-                case State.Handshake:
-                    if(buffer.Count < HandshakeHeaderSize)
+            case State.Handshake:
+                if(buffer.Count < HandshakeHeaderSize)
+                {
+                    return null;
+                }
+                commandsToActivate = BitConverter.ToUInt16(buffer.GetRange(0, HandshakeHeaderSize).ToArray(), 0);
+                buffer.RemoveRange(0, HandshakeHeaderSize);
+                this.Log(LogLevel.Noisy, "{0} commands to activate", commandsToActivate);
+
+                return State.WaitingForHandshakeData;
+
+            case State.WaitingForHandshakeData:
+                if(commandsToActivate > 0 && buffer.Count >= 2)
+                {
+                    var toActivate = (int)Math.Min(commandsToActivate, buffer.Count / 2);
+
+                    lock(locker)
                     {
-                        return null;
-                    }
-                    commandsToActivate = BitConverter.ToUInt16(buffer.GetRange(0, HandshakeHeaderSize).ToArray(), 0);
-                    buffer.RemoveRange(0, HandshakeHeaderSize);
-                    this.Log(LogLevel.Noisy, "{0} commands to activate", commandsToActivate);
-
-                    return State.WaitingForHandshakeData;
-
-                case State.WaitingForHandshakeData:
-                    if(commandsToActivate > 0 && buffer.Count >= 2)
-                    {
-                        var toActivate = (int)Math.Min(commandsToActivate, buffer.Count / 2);
-
-                        lock(locker)
+                        AssertNotDisposed();
+                        if(!TryActivateCommands(buffer.GetRange(0, toActivate * 2)))
                         {
-                            AssertNotDisposed();
-                            if(!TryActivateCommands(buffer.GetRange(0, toActivate * 2)))
-                            {
-                                socketServerProvider.Stop();
-                                return null;
-                            }
-                        }
-
-                        buffer.RemoveRange(0, toActivate * 2);
-                        commandsToActivate -= toActivate;
-                    }
-
-                    if(commandsToActivate > 0)
-                    {
-                        return null;
-                    }
-
-                    SendResponse(Response.SuccessfulHandshake());
-
-                    return State.WaitingForHeader;
-
-                case State.WaitingForHeader:
-                    if(buffer.Count < HeaderSize)
-                    {
-                        return null;
-                    }
-
-                    header = Packet.Decode<ExternalControlProtocolHeader>(buffer);
-                    if(!IsHeaderValid())
-                    {
-                        var message = $"Encountered invalid header: {header}";
-                        this.Log(LogLevel.Error, message);
-                        lock(locker)
-                        {
-                            SendResponse(Response.FatalError(message));
                             socketServerProvider.Stop();
+                            return null;
                         }
-                        return null;
                     }
 
-                    this.Log(LogLevel.Noisy, "Received header: {0}", header);
-                    buffer.RemoveRange(0, HeaderSize);
+                    buffer.RemoveRange(0, toActivate * 2);
+                    commandsToActivate -= toActivate;
+                }
 
-                    return State.WaitingForData;
+                if(commandsToActivate > 0)
+                {
+                    return null;
+                }
 
-                case State.WaitingForData:
-                    if(buffer.Count < header.Value.dataSize)
+                SendResponse(Response.SuccessfulHandshake());
+
+                return State.WaitingForHeader;
+
+            case State.WaitingForHeader:
+                if(buffer.Count < HeaderSize)
+                {
+                    return null;
+                }
+
+                header = Packet.Decode<ExternalControlProtocolHeader>(buffer);
+                if(!IsHeaderValid())
+                {
+                    var message = $"Encountered invalid header: {header}";
+                    this.Log(LogLevel.Error, message);
+                    lock(locker)
                     {
-                        return null;
+                        SendResponse(Response.FatalError(message));
+                        socketServerProvider.Stop();
                     }
+                    return null;
+                }
 
-                    TryHandleCommand(out var response, header.Value.command, buffer.GetRange(0, (int)header.Value.dataSize));
+                this.Log(LogLevel.Noisy, "Received header: {0}", header);
+                buffer.RemoveRange(0, HeaderSize);
 
-                    buffer.RemoveRange(0, (int)header.Value.dataSize);
-                    header = null;
+                return State.WaitingForData;
 
-                    SendResponse(response);
+            case State.WaitingForData:
+                if(buffer.Count < header.Value.DataSize)
+                {
+                    return null;
+                }
 
-                    return State.WaitingForHeader;
+                TryHandleCommand(out var response, header.Value.Command, buffer.GetRange(0, (int)header.Value.DataSize));
 
-                case State.NotConnected:
-                default:
-                    throw new Exception("Unreachable");
+                buffer.RemoveRange(0, (int)header.Value.DataSize);
+                header = null;
+
+                SendResponse(response);
+
+                return State.WaitingForHeader;
+
+            case State.NotConnected:
+            default:
+                throw new Exception("Unreachable");
             }
         }
 
@@ -326,8 +327,6 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        public bool EventsEnabled = false;
-
         private State state = State.NotConnected;
         private int commandsToActivate = 0;
         private ExternalControlProtocolHeader? header;
@@ -341,39 +340,6 @@ namespace Antmicro.Renode.Network
         private const int HeaderSize = 7;
         private const int HandshakeHeaderSize = 2;
         private const string Magic = "RE";
-
-        [LeastSignificantByteFirst]
-        private struct ExternalControlProtocolHeader
-        {
-            public override string ToString()
-            {
-                return $"{{ magic: {Misc.PrettyPrintCollectionHex(magic)} ({Magic}), command: 0x{(byte)command} ({command}), dataSize: {dataSize} }}";
-            }
-
-            public string Magic
-            {
-                get
-                {
-                    try
-                    {
-                        return Encoding.ASCII.GetString(magic);
-                    }
-                    catch
-                    {
-                        return "<invalid>";
-                    }
-                }
-            }
-
-#pragma warning disable 649
-            [PacketField, Width(2)]
-            public byte[] magic;
-            [PacketField, Width(8)]
-            public Command command;
-            [PacketField, Width(32)]
-            public uint dataSize;
-#pragma warning restore 649
-        }
 
         private class CommandHandlerCollection : IDisposable
         {
@@ -432,7 +398,7 @@ namespace Antmicro.Renode.Network
             {
                 if(!activeCommandHandlers.TryGetValue(id, out var command))
                 {
-                    return null;;
+                    return null; ;
                 }
                 return command;
             }
@@ -461,6 +427,39 @@ namespace Antmicro.Renode.Network
                 : base()
             {
             }
+        }
+
+        [LeastSignificantByteFirst]
+        private struct ExternalControlProtocolHeader
+        {
+            public override string ToString()
+            {
+                return $"{{ magic: {Misc.PrettyPrintCollectionHex(MagicField)} ({Magic}), command: 0x{(byte)Command} ({Command}), dataSize: {DataSize} }}";
+            }
+
+            public string Magic
+            {
+                get
+                {
+                    try
+                    {
+                        return Encoding.ASCII.GetString(MagicField);
+                    }
+                    catch
+                    {
+                        return "<invalid>";
+                    }
+                }
+            }
+
+#pragma warning disable 649
+            [PacketField, Width(2)]
+            public byte[] MagicField;
+            [PacketField, Width(8)]
+            public Command Command;
+            [PacketField, Width(32)]
+            public uint DataSize;
+#pragma warning restore 649
         }
 
         private enum State

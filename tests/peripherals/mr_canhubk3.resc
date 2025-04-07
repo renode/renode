@@ -5,7 +5,7 @@ machine LoadPlatformDescription $ORIGIN/mr_canhubk3.repl
 
 macro reset
 """
-    sysbus LoadELF $bin false true sysbus.cpu0
+    sysbus LoadELF $bin false sysbus.cpu0
     sysbus.cpu0 VectorTableOffset `sysbus GetSymbolAddress "_vector_table" sysbus.cpu0`
 """
 

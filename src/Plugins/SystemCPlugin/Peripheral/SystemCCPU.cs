@@ -5,10 +5,11 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals.CPU;
-using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Time;
+
 using ELFSharp.ELF;
 
 namespace Antmicro.Renode.Peripherals.SystemC
@@ -118,7 +119,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             set => systemCPeripheral.SystemCExecutablePath = value;
         }
 
-        private readonly SystemCPeripheral systemCPeripheral;
         private ulong totalExecutedInstructions;
+
+        private readonly SystemCPeripheral systemCPeripheral;
     }
 }

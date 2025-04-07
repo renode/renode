@@ -197,7 +197,7 @@ wdt: Timers.AmbiqApollo4_Watchdog @ sysbus 0x40024000
 cpu_complex: Python.PythonPeripheral @ sysbus 0x48000000
     size: 0x1000
     // DAXI Control = 0x4 - DAXIREADY bit set
-    script: "request.value = 0x4 if request.offset == 0x54 else 0"
+    script: "request.Value = 0x4 if request.Offset == 0x54 else 0"
 
 sysbus:
     init:

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Antmicro.Migrant;
 using Antmicro.Migrant.Hooks;
 using Antmicro.Renode.Core;
@@ -90,6 +91,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             {
                 return sensorValueAndUpdateDelegates[typeof(ITemperatureSensor)].Value;
             }
+
             set
             {
                 sensorValueAndUpdateDelegates[typeof(ITemperatureSensor)].Value = value;
@@ -103,6 +105,7 @@ namespace Antmicro.Renode.EmulationEnvironment
             {
                 return sensorValueAndUpdateDelegates[typeof(IHumiditySensor)].Value;
             }
+
             set
             {
                 sensorValueAndUpdateDelegates[typeof(IHumiditySensor)].Value = value;

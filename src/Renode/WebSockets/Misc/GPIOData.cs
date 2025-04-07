@@ -53,7 +53,7 @@ namespace Antmicro.Renode.WebSockets.Misc
             return WebSocketAPIUtils.CreateActionResponse(peripheralsNames);
         }
 
-        public static WebSocketAPIResponse ButtonSet(IMachine machine, IPeripheral peripheral, bool value)
+        public static WebSocketAPIResponse ButtonSet(IMachine _, IPeripheral peripheral, bool value)
         {
             var button = peripheral as Button;
 

@@ -160,5 +160,5 @@ rccCsr: Python.PythonPeripheral @ sysbus 0x40023834
 rccIcscr: Python.PythonPeripheral @ sysbus 0x40023804
     size: 0x4
     initable: false
-    script: "request.value=0xB000"
+    script: "request.Value=0xB000"
 

@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
 using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
@@ -45,7 +46,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public Position StartPosition { get; private set; }
+
         public int Length { get; private set; }
+
         public IEnumerable<IrqEnd> Ends { get; private set; }
 
         private static string PrettyPrintEnds(IEnumerable<IrqEnd> ends)

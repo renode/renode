@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+
 using Antmicro.Renode.Peripherals.Wireless;
 
 namespace Antmicro.Renode.Network
@@ -43,4 +44,3 @@ namespace Antmicro.Renode.Network
         private const string Name = "range_medium_function";
     }
 }
-

@@ -5,14 +5,15 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using Xwt;
-using Antmicro.Renode.Peripherals.UART;
-using AntShell.Terminal;
-using Antmicro.Renode.Utilities;
-using Antmicro.Renode.Logging;
-using TermSharp;
 using System.Collections.Generic;
+
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Utilities;
+
+using TermSharp;
 using TermSharp.Rows;
+
+using Xwt;
 using Xwt.Drawing;
 
 namespace Antmicro.Renode.UI
@@ -128,29 +129,6 @@ namespace Antmicro.Renode.UI
             Content = terminal;
         }
 
-        public void Clear()
-        {
-            terminal.Clear();
-        }
-
-        public TerminalIOSource IOSource
-        {
-            get;
-            set;
-        }
-
-        public event Action Initialized
-        {
-            add
-            {
-                terminal.Initialized += value;
-            }
-            remove
-            {
-                terminal.Initialized -= value;
-            }
-        }
-
         public void Close()
         {
             base.Dispose(true);
@@ -169,6 +147,30 @@ namespace Antmicro.Renode.UI
             }
             menuItemsDelegates.Clear();
             terminal.Close();
+        }
+
+        public void Clear()
+        {
+            terminal.Clear();
+        }
+
+        public TerminalIOSource IOSource
+        {
+            get;
+            set;
+        }
+
+        public event Action Initialized
+        {
+            add
+            {
+                terminal.Initialized += value;
+            }
+
+            remove
+            {
+                terminal.Initialized -= value;
+            }
         }
 
         protected override void OnBoundsChanged()
@@ -223,19 +225,20 @@ namespace Antmicro.Renode.UI
             return new KeyEventArgs(key, modifierKeys, false, 0);
         }
 
-        private Dictionary<bool, string> lineEndingsDictionary = new Dictionary<bool, string>
+        private bool modifyLineEndings;
+
+        private readonly Dictionary<bool, string> lineEndingsDictionary = new Dictionary<bool, string>
         {
             {true, "Append '\\r' to line ending"},
             {false, "Do not append '\\r' to line ending"}
         };
 
-        private bool modifyLineEndings;
-        private bool isMonitorWindow;
-        private double defaultFontSize;
-        private Terminal terminal;
-        private const int MinimalBottomMargin = 2;
+        private readonly bool isMonitorWindow;
+        private readonly double defaultFontSize;
+        private readonly Terminal terminal;
 
         private readonly Dictionary<MenuItem, EventHandler> menuItemsDelegates = new Dictionary<MenuItem, EventHandler>();
+        private const int MinimalBottomMargin = 2;
 
 #if PLATFORM_LINUX
         private const double PredefinedFontSize = 10.0;

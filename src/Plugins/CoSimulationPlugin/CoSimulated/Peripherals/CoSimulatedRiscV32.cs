@@ -5,16 +5,15 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
-using ELFSharp.ELF;
-using Antmicro.Renode.Logging;
-using Antmicro.Renode.Utilities;
+using System.Linq;
+
 using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.CPU;
-using Antmicro.Renode.Peripherals.CPU.Registers;
+
+using ELFSharp.ELF;
+
 using Machine = Antmicro.Renode.Core.Machine;
 
 namespace Antmicro.Renode.Peripherals.CoSimulated
@@ -26,12 +25,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             : base(cpuType, machine, endianness, bitness, address)
         {
         }
-
-        public override string Architecture { get { return "riscv"; } }
-
-        public string GDBArchitecture { get { return "riscv:rv32"; } }
-
-        public List<GDBFeatureDescriptor> GDBFeatures { get { return new List<GDBFeatureDescriptor>(); } }
 
         public void SetRegister(int register, RegisterValue value)
         {
@@ -117,5 +110,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         {
             this.Log(LogLevel.Warning, "RemoveAllHooks not implemented");
         }
+
+        public override string Architecture { get { return "riscv"; } }
+
+        public string GDBArchitecture { get { return "riscv:rv32"; } }
+
+        public List<GDBFeatureDescriptor> GDBFeatures { get { return new List<GDBFeatureDescriptor>(); } }
     }
 }

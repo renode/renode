@@ -4,16 +4,12 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System.Linq;
-using Antmicro.Renode.Core;
-using Antmicro.Renode.Logging;
-using Antmicro.Renode.Peripherals.CPU;
-using Antmicro.Renode.Time;
-using Antmicro.Renode.Peripherals.Bus;
 using System;
 using System.Collections.Generic;
-using Antmicro.Renode.Exceptions;
-using System.Text;
+using System.Linq;
+
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.CPU;
 
 namespace Antmicro.Renode.Peripherals.Plugins
 {

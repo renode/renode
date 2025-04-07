@@ -66,7 +66,7 @@ Should Run Zephyr From Array Memory
 Should Execute From Mixed Memory Page
     Create Machine From Repl        ${PLATFORM_MIV_MIXED_OVERLAPPING}
     # cpu context passed to LoadELF command is important because of the CPU-specific overlay
-    Execute Command                 sysbus LoadELF ${BIN} false true cpu
+    Execute Command                 sysbus LoadELF ${BIN} false cpu
     # ensure overlayed mapped memory was not loaded with code and therefore that program executes from the array memory overlay
     Ensure Mapped Memory Is Overlayed With Array Memory
     Zephyr Console Should Work

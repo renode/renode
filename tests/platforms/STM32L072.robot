@@ -127,7 +127,7 @@ PWM Should Support GPIO Output
     Start Emulation
 
     ${pwm}=  Wait For Line On Uart  pwm device: (\\w+)  treatAsRegex=true
-    ${pwm}=  Set Variable    ${pwm.groups[0]}
+    ${pwm}=  Set Variable    ${pwm.Groups[0]}
 
     # The expected percentage in each test is approximately duty/period
     #                        pwm    ch period duty expected %

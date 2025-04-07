@@ -4,9 +4,9 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Collections.Generic;
 using System.IO;
+
 using Antmicro.Renode.PlatformDescription;
 using Antmicro.Renode.Utilities;
 
