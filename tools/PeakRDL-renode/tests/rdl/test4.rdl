@@ -1,0 +1,17 @@
+addrmap Peripheral {
+    default regwidth = 32;
+
+    reg {
+        field {
+            name = "FIRST";
+            sw = r;
+        } first [7:0];
+    } reg1 @ 0x0;
+
+    reg {
+        field {
+            name = "SECOND";
+            sw = w;
+        } second [7:0];
+    } reg2 @ 0x0;
+};

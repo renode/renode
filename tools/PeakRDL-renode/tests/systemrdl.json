@@ -110,5 +110,28 @@
                 ]
             }
         ]
+    },
+    {
+        "peakrdl": ["peakrdl", "renode", "-N", "Mocks", "-n", "SystemRDLTest4", "-o", "generated/SystemRDLTest4.cs", "rdl/test4.rdl"],
+        "file": "generated/SystemRDLTest4.cs",
+        "class": "Antmicro.Renode.Peripherals.Mocks.SystemRDLTest4",
+        "registerContainerClass": "DoubleWordRegisterCollection",
+        "registers": [
+            {
+                "className": "Reg1Reg2Type",
+                "instanceName": "Reg1Reg2",
+                "offset": 0,
+                "resetValue": 0,
+                "fields": [
+                    {
+                        "name": "FIRST_SECOND",
+                        "low": 0,
+                        "high": 7,
+                        "mode": ["Read", "Write"],
+                        "fieldType": "IValueRegisterField"
+                    }
+                ]
+            }
+        ]
     }
 ]

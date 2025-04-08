@@ -22,10 +22,14 @@ from itertools import chain
 from systemrdl.node import RegNode, FieldNode, RegfileNode
 import caseconverter
 from types import SimpleNamespace
+from typing import TYPE_CHECKING
 
 from .csharp import ast as ast
 from .csharp.helper import TemplatedAST, TemplateHole
 from .csharp import operators as op
+
+if TYPE_CHECKING:
+    from .scanner import ScannedState
 
 PUBLIC = ast.AccessibilityMod.PUBLIC
 PROTECTED = ast.AccessibilityMod.PROTECTED
@@ -37,22 +41,92 @@ def variable_name(name: str, regfiles: list[str]) -> str:
 def doc_name(name: str, regfiles: list[str]) -> str:
     return '.'.join(chain(regfiles, (name,)))
 
+
+class Field:
+    def __init__(self, node: 'FieldNode | Field'):
+        self.high = node.high
+        self.low = node.low
+        self.is_sw_writable = node.is_sw_writable
+        self.is_sw_readable = node.is_sw_readable
+        if isinstance(node, FieldNode):
+            self.name = node.inst_name
+            self.onread = node.get_property('onread')
+            self.onwrite = node.get_property('onwrite')
+        else:
+            self.name = node.name
+            self.onread = node.onread
+            self.onwrite = node.onwrite
+
+
 class Reg:
-    def __init__(self, node: RegNode, regfiles: list[str]):
-        self.node = node
+    def __init__(self, node: 'RegNode | Reg', regfiles: list[str]):
         self.regfiles = regfiles
+        self.absolute_address = node.absolute_address
+        if isinstance(node, RegNode):
+            self.name = node.inst_name
+            self.fields = [Field(x) for x in node.fields()]
+        else:
+            self.name = node.name
+            self.fields = []
 
     @property
     def variable_name(self) -> str:
-        return variable_name(self.node.inst_name, self.regfiles)
+        return variable_name(self.name, self.regfiles)
+
+    @property
+    def doc_name(self) -> str:
+        return doc_name(self.name, self.regfiles)
 
     @property
     def type_name(self) -> str:
         return self.variable_name + 'Type'
 
-    @property
-    def doc_name(self) -> str:
-        return doc_name(self.node.inst_name, self.regfiles)
+    @staticmethod
+    def try_merge(scanned: 'ScannedState', reg1: 'Reg', reg2: 'Reg') -> 'Reg':
+        # This function will attempt to merge two SystemRDL registers into one
+        # register that can be created in Renode. For registers to be merged the following
+        # conditions have to be met:
+        # * One register has to be fully read-only and the other fully write-only
+        # * Both registers have to have a single field of the same width on the same offset
+        # Merging is sometimes needed as Renode generally expects a single register on a given
+        # offset and the separate read/write behavior can be achieved using the appropriate
+        # register access callbacks.
+
+        error_obj = RuntimeError(f'Registers {reg1.doc_name} and {reg2.doc_name} cannot be merged')
+
+        if len(reg1.fields) != 1 or len(reg2.fields) != 1:
+            raise error_obj
+
+        field1 = reg1.fields[0]
+        field2 = reg2.fields[0]
+
+        if field1.low != field2.low or field2.high != field2.high:
+            raise error_obj
+
+        new_reg = Reg(reg1, reg1.regfiles)
+        new_reg.name = f'{reg1.name}_{reg2.name}'
+
+        new_field = Field(field1)
+        new_field.name = f'{field1.name}_{field2.name}'
+        # The match statements below will create a read/write register
+        new_field.is_sw_readable = True
+        new_field.is_sw_writable = True
+
+        match (field1.is_sw_readable, field1.is_sw_writable, field2.is_sw_readable, field2.is_sw_writable):
+            case (True, False, False, True):
+                scanned.resets[new_reg.type_name] = scanned.resets[reg1.type_name]
+                new_field.onread = field1.onread
+                new_field.onwrite = field2.onwrite
+            case (False, True, True, False):
+                scanned.resets[new_reg.type_name] = scanned.resets[reg2.type_name]
+                new_field.onread = field2.onread
+                new_field.onwrite = field1.onwrite
+            case _:
+                raise RuntimeError('Unsupported field access configuration')
+
+        new_reg.fields.append(new_field)
+        return new_reg
+
 
 class RegArray:
     def __init__(self, name: str, register: RegNode, address: int, regfiles: list[str]):
