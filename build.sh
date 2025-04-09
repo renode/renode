@@ -482,6 +482,21 @@ else
 fi
 cp lib/resources/llvm/$LLVM_LIB.$LIB_EXT $OUT_BIN_DIR/libllvm-disas.$LIB_EXT
 
+# on arm64 macOS System.Drawing.Common can't find libgdiplus so we symlink it to the output directory
+# this is only used for `FrameBufferTester`
+if [[ $RID == "osx-arm64" ]]; then
+  GDIPLUS_PATH="/opt/homebrew/lib/libgdiplus.dylib"
+  if [ -e $GDIPLUS_PATH ]; then
+    # For some reason System.Drawing.Common does not search the binary root when running from a source build
+    # but does for a package, so just link it to both locations so the packaging scripts do not have to be updated
+    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/runtimes/osx-arm64/native/libgdiplus.dylib
+    mkdir -p $OUT_BIN_DIR/osx-arm64
+    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/osx-arm64/libgdiplus.dylib
+  else
+    echo "libgdiplus.dylib not found by build.sh, FrameBufferTester might not work"
+  fi
+fi
+
 # build packages after successful compilation
 params=""
 
