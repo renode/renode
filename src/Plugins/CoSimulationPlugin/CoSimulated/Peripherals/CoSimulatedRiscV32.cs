@@ -22,9 +22,8 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     public partial class CoSimulatedRiscV32 : CoSimulatedCPU, ICpuSupportingGdb
     {
         public CoSimulatedRiscV32(string cpuType, Machine machine, Endianess endianness = Endianess.LittleEndian,
-        CpuBitness bitness = CpuBitness.Bits32, string simulationFilePathLinux = null,
-        string simulationFilePathWindows = null, string simulationFilePathMacOS = null, string address = null)
-            : base(cpuType, machine, endianness, bitness, simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS, address)
+        CpuBitness bitness = CpuBitness.Bits32, string address = null)
+            : base(cpuType, machine, endianness, bitness, address)
         {
         }
 

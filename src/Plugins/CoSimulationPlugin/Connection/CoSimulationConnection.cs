@@ -26,12 +26,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                                                  string machineName,
                                                  string name = null,
                                                  long frequency = DefaultTimeunitFrequency,
-                                                 string simulationFilePathLinux = null,
-                                                 string simulationFilePathWindows = null,
-                                                 string simulationFilePathMacOS = null,
-                                                 string simulationContextLinux = null,
-                                                 string simulationContextWindows = null,
-                                                 string simulationContextMacOS = null,
                                                  ulong limitBuffer = DefaultLimitBuffer,
                                                  int timeout = DefaultTimeout,
                                                  string address = null
@@ -43,10 +37,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 throw new ConstructionException($"Machine {machineName} does not exist.");
             }
 
-            var cosimConnection = new CoSimulationConnection(machine, name, frequency,
-                    simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                    simulationContextLinux, simulationContextWindows, simulationContextMacOS,
-                    limitBuffer, timeout, address);
+            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address);
         }
 
         public const ulong DefaultLimitBuffer = 1000000;
@@ -58,12 +49,6 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         public CoSimulationConnection(IMachine machine,
                 string name,
                 long frequency,
-                string simulationFilePathLinux,
-                string simulationFilePathWindows,
-                string simulationFilePathMacOS,
-                string simulationContextLinux,
-                string simulationContextWindows,
-                string simulationContextMacOS,
                 ulong limitBuffer,
                 int timeout,
                 string address)
@@ -261,7 +246,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 if(entry.range.Intersects(translationRange))
                 {
-                    throw new ConfigurationException($"Cannot register cosimulation GPIO receive callback on range [{translationRange.StartAddress}, {translationRange.EndAddress}] - there already is a callback registered on intersecting range [{entry.range.StartAddress}, {entry.range.EndAddress}]"); 
+                    throw new ConfigurationException($"Cannot register cosimulation GPIO receive callback on range [{translationRange.StartAddress}, {translationRange.EndAddress}] - there already is a callback registered on intersecting range [{entry.range.StartAddress}, {entry.range.EndAddress}]");
                 }
             }
             gpioEntries.Add(new GPIOEntry(translationRange, callback));

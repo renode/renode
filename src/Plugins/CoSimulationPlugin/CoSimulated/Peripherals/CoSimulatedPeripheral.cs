@@ -21,9 +21,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CoSimulatedPeripheral : ICoSimulationConnectible, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, INumberedGPIOOutput, IGPIOReceiver, IAbsoluteAddressAware
     {
-        public CoSimulatedPeripheral(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency, 
-            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
+        public CoSimulatedPeripheral(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null,  bool createConnection = true,
             ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null, int renodeToCosimIndex = 0, int cosimToRenodeIndex = 0)
         {
@@ -36,10 +34,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
             if(createConnection)
             {
-                connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
-                        simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                        simulationContextLinux, simulationContextWindows, simulationContextMacOS,
-                        limitBuffer, timeout, address);
+                connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, address);
                 connection.AttachTo(this);
             }
             else
@@ -48,12 +43,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
                 CheckNoEffectConstructorParam(nameof(limitBuffer), limitBuffer, LimitBuffer);
                 CheckNoEffectConstructorParam(nameof(timeout), timeout, DefaultTimeout);
                 CheckNoEffectConstructorParam(nameof(address), address, null);
-                CheckNoEffectConstructorParam(nameof(simulationFilePathLinux), simulationFilePathLinux, null);
-                CheckNoEffectConstructorParam(nameof(simulationFilePathWindows), simulationFilePathWindows, null);
-                CheckNoEffectConstructorParam(nameof(simulationFilePathMacOS), simulationFilePathMacOS, null);
-                CheckNoEffectConstructorParam(nameof(simulationContextLinux), simulationContextLinux, null);
-                CheckNoEffectConstructorParam(nameof(simulationContextWindows), simulationContextWindows, null);
-                CheckNoEffectConstructorParam(nameof(simulationContextMacOS), simulationContextMacOS, null);
             }
 
             var innerGPIOConnections = new Dictionary<int, IGPIO>();

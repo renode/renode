@@ -18,16 +18,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     [AllowedTranslations(AllowedTranslation.ByteToDoubleWord)]
     public class CoSimulatedUART : CoSimulatedPeripheral, IUART
     {
-        public CoSimulatedUART(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency, 
-            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, bool createConnection = true, 
+        public CoSimulatedUART(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency,
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, bool createConnection = true,
             ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
-            : base(machine, maxWidth, useAbsoluteAddress, frequency, 
-                    simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                    simulationContextLinux, simulationContextWindows, simulationContextMacOS,
-                    limitBuffer, timeout, address, createConnection, renodeToCosimSignalsOffset,
-                    cosimToRenodeSignalRange, 0, 0)
+            : base(machine, maxWidth, useAbsoluteAddress, frequency, limitBuffer, timeout, address, createConnection, renodeToCosimSignalsOffset, cosimToRenodeSignalRange, 0, 0)
         {
             IRQ = new GPIO();
         }

@@ -24,16 +24,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CoSimulatedCFU : ICFU, ICoSimulationConnectible, IDisposable
     {
-        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null)
+        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
         {
             // Multiple CoSimulatedCFUs per CoSimulationConnection are currently not supported.
             RenodeToCosimIndex = 0;
             CosimToRenodeIndex = 0;
 
-            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency,
-                    simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                    null, null, null,
-                    limitBuffer, timeout, null);
+            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, null);
             connection.AttachTo(this);
             errorPointer = IntPtr.Zero;
         }

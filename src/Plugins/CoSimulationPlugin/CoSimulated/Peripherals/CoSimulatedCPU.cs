@@ -30,9 +30,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public abstract class CoSimulatedCPU : BaseCPU, IGPIOReceiver, ICoSimulationConnectible, ITimeSink, IDisposable
     {
-        public CoSimulatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, 
-            string simulationFilePathLinux = null, string simulationFilePathWindows = null, string simulationFilePathMacOS = null,
-            string simulationContextLinux = null, string simulationContextWindows = null, string simulationContextMacOS = null, string address = null)
+        public CoSimulatedCPU(string cpuType, Machine machine, Endianess endianness, CpuBitness bitness = CpuBitness.Bits32, string address = null)
             : base(0, cpuType, machine, endianness, bitness)
         {
             // Multiple CoSimulatedCPUs per CoSimulationConnection are currently not supported.
@@ -40,8 +38,6 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             CosimToRenodeIndex = 0;
 
             cosimConnection = new CoSimulationConnection(machine, "cpu_cosim_cosimConnection", 0,
-                        simulationFilePathLinux, simulationFilePathWindows, simulationFilePathMacOS,
-                        simulationContextLinux, simulationContextWindows, simulationContextMacOS,
                         0, 0, address);
             cosimConnection.AttachTo(this);
 
