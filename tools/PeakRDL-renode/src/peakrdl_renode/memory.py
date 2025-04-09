@@ -18,12 +18,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from systemrdl.node import RegNode, FieldNode
+import caseconverter
 from types import SimpleNamespace
 
 from .csharp import ast as ast
 from .csharp.helper import TemplatedAST, TemplateHole
 from .csharp import operators as op
-from .util import PascalCase, camelCase
 
 PUBLIC = ast.AccessibilityMod.PUBLIC
 PROTECTED = ast.AccessibilityMod.PROTECTED
@@ -70,7 +70,7 @@ class RegArray:
     @staticmethod
     def m_generate_underlying_field_decl(field: FieldNode) -> ast.VariableDecl:
         return ast.VariableDecl(
-            name = camelCase(field.inst_name),
+            name = caseconverter.camelcase(field.inst_name),
             ty = RegArray.m_get_underlying_field_type(field)
         )
 
@@ -187,7 +187,7 @@ class RegArray:
         )
 
     def generate_csharp_wrapper_type(self) -> ast.Class:
-        class_name = PascalCase(self.name) + '_' + PascalCase(self.register.inst_name) + 'Wrapper'
+        class_name = caseconverter.pascalcase(self.name) + '_' + caseconverter.pascalcase(self.register.inst_name) + 'Wrapper'
 
         return ast.Class(
             name = class_name,
@@ -222,7 +222,7 @@ class RegArray:
 
     def generate_csharp_container_type(self) -> ast.Class:
         class_name = \
-            PascalCase(self.name) + '_' + PascalCase(self.register.inst_name) + 'Container'
+            caseconverter.pascalcase(self.name) + '_' + caseconverter.pascalcase(self.register.inst_name) + 'Container'
 
         wrapper_type = self.generate_csharp_wrapper_type()
 

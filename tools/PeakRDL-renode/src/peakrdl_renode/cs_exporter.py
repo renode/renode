@@ -21,11 +21,11 @@ from typing import Union, Optional
 
 from systemrdl.node import FieldNode, RegNode, RootNode, AddrmapNode
 from systemrdl.rdltypes import OnReadType, OnWriteType
+import caseconverter
 from itertools import chain
 from functools import reduce
 
 from .csharp import ast as ast
-from .util import PascalCase
 from .scanner import ScannedState, RdlDesignScanner
 from .csharp.process import process_ast
 
@@ -60,7 +60,7 @@ class CSharpGenerator:
 
         regarray_fields = {
             ra.name: ast.VariableDecl(
-                name = PascalCase(ra.name),
+                name = caseconverter.pascalcase(ra.name),
                 ty = regarray_containers[ra.name].type,
                 access = PROTECTED,
                 doc = f'Memory "{ra.name}" at {hex(ra.addr)}'
@@ -132,7 +132,7 @@ class CSharpGenerator:
 
         reg_instances = [
             ast.VariableDecl(
-                name = PascalCase(reg.inst_name),
+                name = caseconverter.pascalcase(reg.inst_name),
                 ty = self.reg_classes[reg.inst_name].type,
                 access = PROTECTED,
                 doc = f'Register "{reg.inst_name}" at {hex(reg.absolute_address)}'
@@ -273,7 +273,7 @@ class CSharpGenerator:
             case _: raise RuntimeError('Unhandled field configuration')
 
     def register_class_name(self, register: RegNode) -> str:
-        return PascalCase(register.inst_name) + 'Type'
+        return caseconverter.pascalcase(register.inst_name) + 'Type'
 
     def generate_value_container_class(
         self,
