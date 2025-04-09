@@ -28,14 +28,14 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketConnection : ICoSimulationConnection, IDisposable
     {
-        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null)
+        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null, int mainListenPort = 0, int asyncListenPort = 0)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
             timeout = timeoutInMilliseconds;
             receivedHandler = receiveAction;
-            mainSocketCommunicator = new SocketCommunicator(parentElement, timeout, this.address);
-            asyncSocketCommunicator = new SocketCommunicator(parentElement, Timeout.Infinite, this.address);
+            mainSocketCommunicator = new SocketCommunicator(parentElement, timeout, this.address, mainListenPort);
+            asyncSocketCommunicator = new SocketCommunicator(parentElement, Timeout.Infinite, this.address, asyncListenPort);
 
             pauseMRES = new ManualResetEventSlim(initialState: true);
             receiveThread = new Thread(ReceiveLoop)
@@ -366,12 +366,13 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private class SocketCommunicator
         {
-            public SocketCommunicator(IEmulationElement logger, int timeoutInMilliseconds, string address)
+            public SocketCommunicator(IEmulationElement logger, int timeoutInMilliseconds, string address, int listenPort)
             {
                 disposalCTS = new CancellationTokenSource();
                 channelTaskFactory = new TaskFactory<int>(disposalCTS.Token);
                 this.logger = logger;
                 this.address = address;
+                this.listenPort = listenPort;
                 timeout = timeoutInMilliseconds;
                 ListenerPort = CreateListenerAndStartListening();
             }
@@ -484,7 +485,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             private int CreateListenerAndStartListening()
             {
                 listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                listener.Bind(new IPEndPoint(IPAddress.Parse(address), 0));
+                listener.Bind(new IPEndPoint(IPAddress.Parse(address), listenPort));
 
                 listener.Listen(MaxPendingConnections);
                 return (listener.LocalEndPoint as IPEndPoint).Port;
@@ -537,6 +538,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             private Socket socket;
 
             private readonly int timeout;
+            private readonly int listenPort;
             private readonly string address;
             private readonly CancellationTokenSource disposalCTS;
             private readonly TaskFactory<int> channelTaskFactory;

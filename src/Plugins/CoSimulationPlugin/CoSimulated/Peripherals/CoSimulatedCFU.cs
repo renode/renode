@@ -30,7 +30,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             RenodeToCosimIndex = 0;
             CosimToRenodeIndex = 0;
 
-            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, null);
+            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, null, 0, 0);
             connection.AttachTo(this);
             errorPointer = IntPtr.Zero;
         }

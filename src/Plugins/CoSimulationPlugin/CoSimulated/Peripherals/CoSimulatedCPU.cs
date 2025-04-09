@@ -38,7 +38,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             CosimToRenodeIndex = 0;
 
             cosimConnection = new CoSimulationConnection(machine, "cpu_cosim_cosimConnection", 0,
-                        0, 0, address);
+                        0, 0, address, 0, 0);
             cosimConnection.AttachTo(this);
 
             InitializeRegisters();

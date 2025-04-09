@@ -19,9 +19,9 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     public class CoSimulatedUART : CoSimulatedPeripheral, IUART
     {
         public CoSimulatedUART(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, bool createConnection = true,
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int mainListenPort = 0, int asyncListenPort = 0, bool createConnection = true,
             ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
-            : base(machine, maxWidth, useAbsoluteAddress, frequency, limitBuffer, timeout, address, createConnection, renodeToCosimSignalsOffset, cosimToRenodeSignalRange, 0, 0)
+            : base(machine, maxWidth, useAbsoluteAddress, frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort, createConnection, renodeToCosimSignalsOffset, cosimToRenodeSignalRange, 0, 0)
         {
             IRQ = new GPIO();
         }

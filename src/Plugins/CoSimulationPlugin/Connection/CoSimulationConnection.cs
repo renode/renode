@@ -28,7 +28,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                                                  long frequency = DefaultTimeunitFrequency,
                                                  ulong limitBuffer = DefaultLimitBuffer,
                                                  int timeout = DefaultTimeout,
-                                                 string address = null
+                                                 string address = null,
+                                                 int mainListenPort = 0,
+                                                 int asyncListenPort = 0
                                                  )
         {
             EmulationManager.Instance.CurrentEmulation.TryGetMachine(machineName, out var machine);
@@ -37,7 +39,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 throw new ConstructionException($"Machine {machineName} does not exist.");
             }
 
-            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address);
+            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort);
         }
 
         public const ulong DefaultLimitBuffer = 1000000;
@@ -51,13 +53,15 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 long frequency,
                 ulong limitBuffer,
                 int timeout,
-                string address)
+                string address,
+                int mainListenPort,
+                int asyncListenPort)
         {
             this.machine = machine;
             this.gpioEntries = new List<GPIOEntry>();
 
             RegisterInHostMachine(name);
-            cosimConnection = SetupConnection(address, timeout, frequency, limitBuffer);
+            cosimConnection = SetupConnection(address, timeout, frequency, limitBuffer, mainListenPort, asyncListenPort);
 
             cosimIdxToPeripheral = new Dictionary<int, ICoSimulationConnectible>();
         }
@@ -297,12 +301,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             throw new CpuAbortException();
         }
 
-        private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer)
+        private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort)
         {
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
             {
-                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address);
+                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address, mainListenPort, asyncListenPort);
             }
             else
             {
