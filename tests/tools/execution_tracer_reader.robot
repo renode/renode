@@ -61,13 +61,24 @@ ${TRACED_CPU}                       cpu1
 ...                                 DA:44,1
 ...                                 end_of_record
 
+${LINUX_32BIT_ROOTFS}               https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
+
 *** Keywords ***
 Execute Python Script
-    [Arguments]                     ${path}  ${args}
+    [Arguments]                     ${path}  ${args}  ${outputPath}=${None}
     ${all_args}=                    Create List  ${path}  @{args}
 
-    ${output}=                      Evaluate  subprocess.run([sys.executable] + ${all_args})  sys,subprocess
-    RETURN                          ${output}
+    IF  $outputPath
+        ${out}=                     Evaluate  open($outputPath, "w")
+    ELSE
+        ${out}=                     Set Variable  ${None}
+    END
+
+    Evaluate                        subprocess.run([sys.executable] + ${all_args}, stdout=$out)  sys,subprocess
+
+    IF  $out
+        Evaluate                    $out.close()
+    END
 
 Download File And Rename
     [Arguments]                     ${url}  ${filename}
@@ -84,11 +95,11 @@ Create Platform
     Execute Command                 cpu2 IsHalted true
 
 Trace Execution
-    [Arguments]                     ${cpu}  ${mode}  ${compress}
+    [Arguments]                     ${cpu}  ${mode}  ${compress}=False  ${synchronous}=False
 
     ${trace_file}=                  Allocate Temporary File
 
-    Execute Command                 ${cpu} CreateExecutionTracing "trace" @${trace_file} ${mode} true ${compress}
+    Execute Command                 ${cpu} CreateExecutionTracing "trace" @${trace_file} ${mode} isBinary=true compress=${compress} isSynchronous=${synchronous}
     Execute Command                 emulation RunFor "0.017"
     Execute Command                 ${cpu} DisableExecutionTracing
     RETURN                          ${trace_file}
@@ -167,3 +178,40 @@ Trace With Compressed Output And Report Coverage
 
 Trace With Compressed Output And Report Coverage In Legacy Format
     Trace And Report Coverage       True  True
+
+Trace Mixed A64, A32 and T32 Code
+    ${disassembly_file}=            Allocate Temporary File
+
+    Execute Command                 $rootfs=@${LINUX_32BIT_ROOTFS}
+    Execute Command                 include @scripts/single-node/zynqmp_linux.resc
+    Execute Command                 machine SetSerialExecution True
+    Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
+
+    Wait For Prompt On Uart         buildroot login:  timeout=50
+    Write Line To Uart              root
+
+    Wait For Prompt On Uart         \#
+    Write Line To Uart              uname -a
+
+    ${trace}=                       Trace Execution  apu1  PCAndOpcode  synchronous=True
+
+    ${script_args}=                 Create List
+
+    Append To List                  ${script_args}
+    ...                             inspect
+    ...                             --disassemble
+    ...                             ${trace}
+
+    Execute Python Script           ${EXECUTION_TRACER}  ${script_args}  outputPath=${disassembly_file}
+
+    # A64
+    ${x}=                           Grep File  ${disassembly_file}  0x0000000010011FE4:*0xD69F03E0*eret
+    Should Not Be Empty             ${x}
+
+    # A32
+    ${x}=                           Grep File  ${disassembly_file}  0x000000087EE4DE10:*0xE92D40F0*push*{r4,*r5,*r6,*r7,*lr}
+    Should Not Be Empty             ${x}
+
+    # T32
+    ${x}=                           Grep File  ${disassembly_file}  0x000000087B4734D8:*0xBF04*itt*eq
+    Should Not Be Empty             ${x}
