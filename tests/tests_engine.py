@@ -31,7 +31,8 @@ class IncludeLoader(yaml.SafeLoader):
                 if isinstance(val, str):
                     lst[idx] = os.path.join(prefix, lst[idx])
                 elif isinstance(val, dict):
-                    _append_prefix(val.values()[0], prefix)
+                    v = next(iter(val.values()))
+                    _append_prefix(v, prefix)
                 else:
                     raise Exception('Unsupported list element: ' + val)
 
