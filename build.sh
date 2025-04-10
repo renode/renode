@@ -522,11 +522,11 @@ then
             # No Non portable dotnet package on windows yet
             echo "Only portable dotnet packages are supported on windows. Rerun build.sh with -t flag to build portable"
             exit 1
-        elif $ON_OSX
+        elif $ON_OSX && ! $PORTABLE
         then
-            eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
-            export RID TFM
-            $ROOT_PATH/tools/packaging/make_osx_dotnet_package.sh $params
+            # No Non portable dotnet package on macOS
+            echo "Only portable dotnet packages are supported on macOS. Rerun build.sh with -t flag to build portable"
+            exit 1
         fi
     else
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
