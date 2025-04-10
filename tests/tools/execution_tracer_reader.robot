@@ -84,15 +84,13 @@ Create Platform
     Execute Command                 cpu2 IsHalted true
 
 Trace Execution
-    [Arguments]                     ${executable}  ${compress}
-
-    Create Platform                 ${executable}
+    [Arguments]                     ${cpu}  ${mode}  ${compress}
 
     ${trace_file}=                  Allocate Temporary File
 
-    Execute Command                 ${TRACED_CPU} CreateExecutionTracing "trace" @${trace_file} PC true ${compress}
+    Execute Command                 ${cpu} CreateExecutionTracing "trace" @${trace_file} ${mode} true ${compress}
     Execute Command                 emulation RunFor "0.017"
-    Execute Command                 ${TRACED_CPU} DisableExecutionTracing
+    Execute Command                 ${cpu} DisableExecutionTracing
     RETURN                          ${trace_file}
 
 Line Should Report Executions
@@ -123,7 +121,9 @@ Trace And Report Coverage
     ${binary_file}=                 Download File  ${COVERAGE_TEST_BINARY_URL}
     ${code_file}=                   Download File And Rename  ${COVERAGE_TEST_CODE_URL}  ${COVERAGE_TEST_CODE_FILENAME}
 
-    ${trace}=                       Trace Execution  ${COVERAGE_TEST_BINARY_URL}  ${compress}
+    Create Platform                 ${COVERAGE_TEST_BINARY_URL}
+
+    ${trace}=                       Trace Execution  ${TRACED_CPU}  PC  ${compress}
     ${script_args}=                 Create List
 
     IF  ${compress} == True
