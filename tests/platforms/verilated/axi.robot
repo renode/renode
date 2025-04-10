@@ -13,9 +13,12 @@ ${RAM_NATIVE_LINUX}                ${URI}/libVram-Linux-x86_64-12904733885.so-s_
 ${RAM_NATIVE_WINDOWS}              ${URI}/libVram-Windows-x86_64-12904733885.dll-s_3252274-06f5f9b70593f9d57546c9be97791d70c9762129
 ${RAM_NATIVE_MACOS}                ${URI}/libVram-macOS-x86_64-12904733885.dylib-s_222776-56574ab2821c56a41486c0233d494d7e841c57df
 
+${MAIN_LISTEN_PORT}         3335
+${ASYNC_LISTEN_PORT}        3336
+
 *** Keywords ***
 Create Machine
-    [Arguments]         ${use_socket}
+    [Arguments]         ${use_socket}   ${custom_ports}=False
     IF      ${use_socket}
         Set Test Variable   ${dma_args}             ; address: "127.0.0.1"
         Set Test Variable   ${fastvdma_linux}       ${FASTVDMA_SOCKET_LINUX}
@@ -39,7 +42,11 @@ Create Machine
     Execute Command                             using sysbus
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescriptionFromString 'cpu: CPU.RiscV32 @ sysbus { cpuType: "rv32imaf"; timeProvider: empty }'
-    Execute Command                             machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
+    IF      ${custom_ports}
+        Execute Command                         machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args}; mainListenPort: ${MAIN_LISTEN_PORT}; asyncListenPort: ${ASYNC_LISTEN_PORT} }'
+    ELSE
+        Execute Command                         machine LoadPlatformDescriptionFromString 'dma: CoSimulated.CoSimulatedPeripheral @ sysbus <0x10000000, +0x100> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${dma_args} }'
+    END
     Execute Command                             machine LoadPlatformDescriptionFromString 'mem: CoSimulated.CoSimulatedPeripheral @ sysbus <0x20000000, +0x100000> { frequency: 100000; limitBuffer: 10000; timeout: 240000 ${mem_args} }'
     Execute Command                             machine LoadPlatformDescriptionFromString 'ram: Memory.MappedMemory @ sysbus 0xA0000000 { size: 0x06400000 }'
     Execute Command                             sysbus WriteDoubleWord 0xA2000000 0x10500073   # wfi
@@ -181,6 +188,11 @@ Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 Should Read Write Co-simulated Memory Using Socket
     [Tags]                          skip_host_arm
     Create Machine      True
+    Test Read Write Co-simulated Memory
+
+Should Read Write Co-simulated Memory Using Socket With Custom Ports
+    [Tags]                          skip_host_arm
+    Create Machine      True    True
     Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory Using Socket

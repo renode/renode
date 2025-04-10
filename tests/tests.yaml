@@ -32,7 +32,6 @@
 - tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
 - tests/platforms/Fomu.robot
 - tests/platforms/verilated/UARTLite.robot
-- tests/platforms/verilated/axi.robot
 - tests/platforms/verilated/MuraxAPB3.robot
 - tests/platforms/verilated/zynq_verilated_fastvdma.robot
 - tests/platforms/verilated/zynq_verilated_fpga_isp.robot
@@ -191,3 +190,6 @@
 - tests/unit-tests/bus-isolation.robot
 - tests/unit-tests/bus-performance.robot
 - tests/unit-tests/profiler-trace.robot
+
+- ports_3335_3336:
+  - tests/platforms/verilated/axi.robot
