@@ -1,0 +1,23 @@
+python
+"""
+# List of functions to be stubbed out
+stub_list = []
+
+def skip_function_hook(cpu, addr):
+    cpu.PC = cpu.LR
+
+def sl_add_stub_hook(func_name):
+    sysbus = self.Machine["sysbus"]
+    cpu = self.Machine["sysbus.cpu"]
+    # TryGetAllSymbolAddresses returns a tuple (true/false if there are any symbols and the list of symbols)
+    addresses = sysbus.TryGetAllSymbolAddresses(func_name, cpu)[1]
+    for addr in addresses:
+        cpu.AddHook(addr, skip_function_hook)
+
+def sl_add_stub(stub):
+    stub_list.append(stub)
+
+def sl_add_hooks():
+    for func in stub_list:
+        sl_add_stub_hook(func)
+"""
