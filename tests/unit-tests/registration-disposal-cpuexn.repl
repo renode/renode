@@ -1,0 +1,10 @@
+// This file intentionally fails to load. See `Should Not Leave References To Unregistered CPU When Exception Thrown During Its Registration`
+// in sysbus.robot.
+sram1: Memory.MappedMemory @ sysbus 0x3fc80000
+    size: 0x1 // not page-aligned
+
+cpu0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32i"
+    timeProvider: empty
+    hartId: 0
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10

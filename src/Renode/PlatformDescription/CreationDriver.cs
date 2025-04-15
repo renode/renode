@@ -43,7 +43,7 @@ namespace Antmicro.Renode.PlatformDescription
             objectValueInitQueue = new Queue<ObjectValue>();
             usingsBeingProcessed = new Stack<string>();
             irqCombiners = new Dictionary<IrqDestination, IrqCombinerConnection>();
-            createdDisposables = new Stack<IDisposable>();
+            createdDisposables = new List<IDisposable>();
             PrepareVariables();
         }
 
@@ -637,7 +637,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
             if(result is IDisposable disposable)
             {
-                createdDisposables.Push(disposable);
+                createdDisposables.Add(disposable);
             }
             return result;
         }
@@ -1014,6 +1014,12 @@ namespace Antmicro.Renode.PlatformDescription
                     foreach(var registrationPoint in registrationPoints)
                     {
                         registrationInfo.RegistrationInterface.GetMethod("Register").Invoke(register, new[] { entry.Variable.Value, registrationPoint });
+                        // Remove this entry from the list of dangling disposables if it was registered. This has to be done before
+                        // HandleError, so it is not disposed if for example registering at the second point throws.
+                        if(entry.Variable.Value is IDisposable disposable)
+                        {
+                            createdDisposables.Remove(disposable);
+                        }
                     }
                 }
                 catch(TargetInvocationException exception)
@@ -1659,9 +1665,9 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void HandleError(ParsingError error, IWithPosition failingObject, string message, bool longMark)
         {
-            foreach(var disposable in createdDisposables)
+            for(int i = createdDisposables.Count - 1; i >= 0; --i)
             {
-                disposable.Dispose();
+                createdDisposables[i].Dispose();
             }
             createdDisposables.Clear();
 
@@ -1774,7 +1780,7 @@ namespace Antmicro.Renode.PlatformDescription
         private readonly Queue<ObjectValue> objectValueInitQueue;
         private readonly Stack<string> usingsBeingProcessed;
         private readonly Dictionary<IrqDestination, IrqCombinerConnection> irqCombiners;
-        private readonly Stack<IDisposable> createdDisposables;
+        private readonly List<IDisposable> createdDisposables;
 
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>(new []
         {

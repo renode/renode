@@ -1,0 +1,17 @@
+// This file intentionally fails to load. See `Should Not Dispose Registered Peripheral When Exception Thrown During Registration`
+// in sysbus.robot.
+sram1: Memory.MappedMemory @ sysbus 0x3fc80000
+    size: 0x60000
+
+sram0: Memory.MappedMemory @ sysbus 0x4037c000
+    size: 0x64000
+
+// To make sure no references to the disposed CPU remain which would call TlibExportState after free/dlclose.
+// See `Should Not Leave References To Unregistered CPU When Exception Thrown During Registration` in sysbus.robot
+cpu0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32i"
+    timeProvider: empty
+    hartId: 0
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+
+sram0: @ { sysbus 0x3fc7c000; sysbus 0x4037c000 }

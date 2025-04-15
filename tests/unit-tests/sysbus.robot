@@ -518,3 +518,28 @@ Should Not Register Region When Only Read Method Is Implemented
     Run Keyword And Expect Error   *WriteDoubleWord is not specified for region*
     ...                            Execute Command   machine LoadPlatformDescriptionFromString ${platform_only_region_read}
 
+Should Not Dispose Registered Peripheral When Exception Thrown During Registration
+    Execute Command                mach create
+    Run Keyword And Expect Error   *Could not register*
+    ...                            Execute Command  machine LoadPlatformDescription "${CURDIR}${/}registration-disposal.repl"
+
+    Execute Command                allowPrivates true
+    ${x}=                          Execute Command  sram1 disposed
+    Should Be Equal                ${x}  False  strip_spaces=True
+
+Should Not Leave References To Unregistered CPU When Exception Thrown During Another Peripheral's Registration
+    Execute Command                mach create
+    Run Keyword And Expect Error   *Could not register*
+    ...                            Execute Command  machine LoadPlatformDescription "${CURDIR}${/}registration-disposal.repl"
+
+    # see if there are any stale references to cpu0 by attempting to save, which will cause a crash if there are
+    ${x}=                          Allocate Temporary File
+    Execute Command                Save @${x}
+
+Should Not Leave References To Unregistered CPU When Exception Thrown During Its Registration
+    Execute Command                mach create
+    Run Keyword And Expect Error   *Could not register*
+    ...                            Execute Command  machine LoadPlatformDescription "${CURDIR}${/}registration-disposal-cpuexn.repl"
+
+    # will cause a crash if there are stale references
+    Execute Command                Clear
