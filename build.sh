@@ -15,6 +15,7 @@ CLEAN=false
 PACKAGES=false
 NIGHTLY=false
 PORTABLE=false
+SOURCE_PACKAGE=false
 HEADLESS=false
 SKIP_FETCH=false
 TLIB_ONLY=false
@@ -32,14 +33,15 @@ HOST_ARCH="i386"
 CMAKE_COMMON=""
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--tlib-export-compile-commands] [--tlib-arch <arch>] [--host-arch i386|aarch64] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--tlib-only] [--tlib-export-compile-commands] [--tlib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
   echo "-v                                verbose output"
   echo "-p                                create packages after building"
-  echo "-n                                create nightly packages after building"
-  echo "-t                                create a portable package (experimental, Linux only)"
+  echo "-t                                create a portable package"
+  echo "--source-package                  build a source package (dotnet on Linux only)"
+  echo "-n                                tag built packages as nightly"
   echo "-s                                update submodules"
   echo "-b                                custom build properties file"
   echo "-o                                custom output directory"
@@ -75,7 +77,6 @@ do
       ;;
     n)
       NIGHTLY=true
-      PACKAGES=true
       ;;
     t)
       PORTABLE=true
@@ -118,6 +119,9 @@ do
           NET=true
           TFM="net8.0"
           PARAMS+=(p:NET=true)
+          ;;
+        "source-package")
+          SOURCE_PACKAGE=true
           ;;
         "profile-build")
           CMAKE_COMMON="-DPROFILING_BUILD=ON"
@@ -498,9 +502,23 @@ then
     echo "Renode built to $EXPORT_DIRECTORY"
 fi
 
-if $PACKAGES && $NIGHTLY
+if $NIGHTLY
 then
     params="$params -n"
+fi
+
+if $SOURCE_PACKAGE
+then
+    if $NET && $ON_LINUX
+    then
+        # Source package bundles nuget dependencies required for building the dotnet version of Renode
+        # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
+        # Source packages are best built first, so it does not have to copy and then delete the packages from the `output` directory
+        $ROOT_PATH/tools/packaging/make_source_package.sh $params
+    else
+        echo "Source package can only be built using .NET on Linux. Exiting!"
+        exit 1
+    fi
 fi
 
 if $PACKAGES
@@ -514,15 +532,12 @@ then
             eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
             export RID TFM
             $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
-            # Source package bundles nuget dependencies required for building the dotnet version of Renode
-            # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
-            $ROOT_PATH/tools/packaging/make_source_package.sh $params
-        elif $ON_WINDOWS && ! $PORTABLE
+        elif $ON_WINDOWS
         then
             # No Non portable dotnet package on windows yet
             echo "Only portable dotnet packages are supported on windows. Rerun build.sh with -t flag to build portable"
             exit 1
-        elif $ON_OSX && ! $PORTABLE
+        elif $ON_OSX
         then
             # No Non portable dotnet package on macOS
             echo "Only portable dotnet packages are supported on macOS. Rerun build.sh with -t flag to build portable"
@@ -539,7 +554,7 @@ then
     if $NET
     then
         # maxcpucount:1 to avoid an error with multithreaded publish
-	echo "RID = $RID"
+        echo "RID = $RID"
         eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
         $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable_dotnet.sh $params
@@ -553,3 +568,4 @@ then
         fi
     fi
 fi
+
