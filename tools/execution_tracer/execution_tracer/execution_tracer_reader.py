@@ -382,10 +382,14 @@ def main():
         else:
             ext = '.so'
 
+        if platform.uname().machine.lower() in ('arm64', 'aarch64'):
+            ext = '-aarch64' + ext
+
         lib_name = 'libllvm-disas' + ext
 
         lib_search_paths = [
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, "lib", "resources", "llvm"), 
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin"),
             os.path.dirname(os.path.realpath(__file__)), 
             os.getcwd()
         ]
