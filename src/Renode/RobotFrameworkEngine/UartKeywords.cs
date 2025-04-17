@@ -44,6 +44,18 @@ namespace Antmicro.Renode.RobotFramework
             GetTesterOrThrowException(testerId).ClearReport();
         }
 
+        [RobotFrameworkKeyword]
+        public void RegisterFailingUartString(string pattern, bool treatAsRegex = false, int? testerId = null)
+        {
+            GetTesterOrThrowException(testerId).RegisterFailingString(pattern, treatAsRegex);
+        }
+
+        [RobotFrameworkKeyword]
+        public void UnregisterFailingUartString(string pattern, bool treatAsRegex = false, int? testerId = null)
+        {
+            GetTesterOrThrowException(testerId).UnregisterFailingString(pattern, treatAsRegex);
+        }
+
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public int CreateTerminalTester(string uart, float? timeout = null, string machine = null, string endLineOption = null,
             bool? defaultPauseEmulation = null, bool? defaultWaitForEcho = null, bool? defaultMatchNextLine = null, bool binaryMode = false)
@@ -83,8 +95,13 @@ namespace Antmicro.Renode.RobotFramework
         {
             return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                 pauseEmulation ?? defaultPauseEmulation, matchNextLine ?? defaultMatchNextLine);
+                if(result?.isFailingString == true)
+                {
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                }
+                return result;
             });
         }
 
@@ -94,8 +111,13 @@ namespace Antmicro.Renode.RobotFramework
         {
             return DoTest(timeout, testerId, (tester, timeInterval) =>
             {
-                return tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
+                var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine,
                     pauseEmulation ?? defaultPauseEmulation, matchFromNextLine ?? defaultMatchNextLine);
+                if(result?.isFailingString == true)
+                {
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                }
+                return result;
             });
         }
 
@@ -107,7 +129,10 @@ namespace Antmicro.Renode.RobotFramework
             {
                 var result = tester.WaitFor(content, timeInterval, treatAsRegex, includeUnfinishedLine: true,
                     pauseEmulation ?? defaultPauseEmulation, matchStart ?? defaultMatchNextLine);
-
+                if(result?.isFailingString == true)
+                {
+                    throw new InvalidOperationException($"Terminal tester failed!\n\nTest failing entry has been found on UART:\n{result.line}");
+                }
                 return result != null ? new BinaryTerminalTesterResult(result) : null;
             }, expectBinaryModeTester: true);
         }
@@ -225,7 +250,7 @@ namespace Antmicro.Renode.RobotFramework
         private float globalTimeout = 8;
 
         // The 'binary strings' used internally are not safe to pass through XML-RPC, probably due to special character escaping
-        // issues. See https://github.com/antmicro/renode/commit/7739c14c6275058e71da30997c8e0f80144ed81c 
+        // issues. See https://github.com/antmicro/renode/commit/7739c14c6275058e71da30997c8e0f80144ed81c
         // and Misc.StripNonSafeCharacters. Here we represent the results as byte[] which get represented as base64 in the
         // XML-RPC body and <class 'bytes'> in the Python client.
         public class BinaryTerminalTesterResult
