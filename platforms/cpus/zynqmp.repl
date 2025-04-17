@@ -192,6 +192,15 @@ gem2: Network.CadenceGEM @ sysbus 0xff0d0000
 gem3: Network.CadenceGEM @ sysbus 0xff0e0000
     -> apuGic@63 | rpuGic@63
 
+phy: Network.EthernetPhysicalLayer @ gem0 0
+    BasicStatus: 0x62A4
+    Id1: 0x0141
+    Id2: 0x0e40
+    AutoNegotiationAdvertisement: 0x1e1
+    AutoNegotiationLinkPartnerBasePageAbility: 0x1e1
+    MasterSlaveControl: 0x300
+    MasterSlaveStatus: 0x3000
+
 gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
     numberOfGpioBanks: 6
 
