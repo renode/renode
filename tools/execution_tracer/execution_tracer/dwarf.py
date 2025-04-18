@@ -243,7 +243,7 @@ class Coverage:
             address_count_cache = self._build_addr_map(code_lines_with_address, trace_data.pc_length)
 
         # This step takes some time for large traces and codebases, let's advise the user to wait
-        print('Processing the trace, please wait...')
+        print(f'Processing trace file {trace_data.file.name}, please wait...')
         for address_bytes, _, _, _ in trace_data:
             if address_bytes in address_count_cache:
                 address_count_cache[address_bytes].count_up()

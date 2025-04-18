@@ -8,11 +8,11 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import platform
 import sys
 import os
 import gzip
-import typing
 from enum import Enum
 from dataclasses import dataclass
 from typing import IO, BinaryIO, NamedTuple, Optional
@@ -297,7 +297,7 @@ class LLVMDisassembler():
 
         return (bytes_read, disas_str.value)
 
-def handle_coverage(args, trace_data) -> None:
+def handle_coverage(args, trace_data_per_file) -> None:
     coverage_config = dwarf.Coverage(
         elf_file_handler=args.coverage_binary,
         code_filenames=args.coverage_code,
@@ -312,7 +312,8 @@ def handle_coverage(args, trace_data) -> None:
     if args.no_shorten_paths:
         remove_common_path_prefix = False
 
-    coverage_config.aggregate_coverage(trace_data)
+    for trace_data in trace_data_per_file:
+        coverage_config.aggregate_coverage(trace_data)
     printed_report = coverage_config.get_printed_report(
         args.legacy,
         remove_common_path_prefix=remove_common_path_prefix
@@ -345,13 +346,13 @@ def main():
 
     subparsers = parser.add_subparsers(title='subcommands', dest='subcommands', required=True)
     trace_parser = subparsers.add_parser('inspect', help='Inspect the binary trace format')
-    trace_parser.add_argument("file", help="binary trace file")
+    trace_parser.add_argument("files", nargs='+', help="binary trace files")
 
     trace_parser.add_argument("--disassemble", action="store_true", default=False)
     trace_parser.add_argument("--llvm-disas-path", default=None, help="path to libllvm-disas library")
 
     cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
-    cov_parser.add_argument("file", help="binary trace file")
+    cov_parser.add_argument("files", nargs='+', help="binary trace files")
 
     cov_parser.add_argument("--binary", dest='coverage_binary', required=True, default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
@@ -393,17 +394,20 @@ def main():
             raise FileNotFoundError('Could not find ' + lib_name + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
 
     try:
-        filename, file_extension = os.path.splitext(args.file)
-        if (args.decompress or file_extension == ".gz") and not args.force_disable_decompression:
-            file_open = typing.cast(typing.Callable[..., BinaryIO], gzip.open)
-        else:
-            file_open = open
+        with contextlib.ExitStack() as stack:
+            files = []
+            for file in args.files:
+                _, file_extension = os.path.splitext(file)
+                if (args.decompress or file_extension == ".gz") and not args.force_disable_decompression:
+                    files.append(stack.enter_context(gzip.open(file, "rb")))
+                else:
+                    files.append(stack.enter_context(open(file, "rb")))
 
-        with file_open(args.file, "rb") as file:
             if args.subcommands == 'coverage':
-                trace_data = read_file(file, False, None)
+                trace_data_per_file = [read_file(file, False, None) for file in files]
             else:
-                trace_data = read_file(file, args.disassemble, args.llvm_disas_path)
+                trace_data_per_file = [read_file(file, args.disassemble, args.llvm_disas_path) for file in files]
+
             if args.subcommands == 'coverage':
                 if args.export_for_coverview:
                     if args.legacy:
@@ -412,10 +416,12 @@ def main():
                     if not args.coverage_output:
                         raise ValueError("Specify a file with '--output' when packing an archive for Coverview")
 
-                handle_coverage(args, trace_data)
+                handle_coverage(args, trace_data_per_file)
             else:
-                for entry in trace_data:
-                    print(trace_data.format_entry(entry))
+                for trace_data in trace_data_per_file:
+                    for entry in trace_data:
+                        print(trace_data.format_entry(entry))
+                    print()
     except BrokenPipeError:
         # Avoid crashing when piping the results e.g. to less
         sys.exit(0)
