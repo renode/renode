@@ -125,6 +125,10 @@ class TraceData:
         self.triple_and_model = header.triple_and_model
         self.disassemble = disassemble
         if self.disassemble:
+            if not header.triple_and_model:
+                raise RuntimeError("No architecture triple available in disassembly mode. Trace file might be corrupted")
+            if not llvm_disas_path:
+                raise RuntimeError("No path to decompiler library provided")
             triple, model = header.triple_and_model.split(" ")
             self.disassemblers = {0: LLVMDisassembler(triple, model, llvm_disas_path)}
             if self.uses_multiple_instruction_sets:
@@ -237,6 +241,8 @@ class TraceData:
             output = ""
 
         if self.has_opcodes and self.disassemble:
+            if not self.disassemblers:
+                raise RuntimeError("No disassembly library loaded")
             disas = self.disassemblers[isa_mode]
             _, instruction = disas.get_instruction(opcode)
             output += " " + instruction.decode("utf-8")
@@ -282,6 +288,9 @@ class LLVMDisassembler():
         disas_str = cast((c_byte * 1024)(), c_char_p)
 
         bytes_read = self.lib.llvm_disasm_instruction(self._context, opcode_buf, c_uint64(len(opcode)), disas_str, 1024)
+
+        if disas_str.value is None:
+            raise RuntimeError("Unexpected null pointer when disassembling instruction")
 
         return (bytes_read, disas_str.value)
 
