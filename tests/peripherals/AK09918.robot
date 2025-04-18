@@ -36,6 +36,18 @@ Create RESD File
     Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
     RETURN                          ${resd_path}
 
+Create Timestamped RESD File
+    [Arguments]                     ${path}
+    ${resd_path}=                   Allocate Temporary File
+    ${args}=                        Catenate  SEPARATOR=,
+    ...                             "--input", r"${path}"
+    ...                             "--map", "magnetic_flux_density:magnetic_flux_density_x,magnetic_flux_density_y,magnetic_flux_density_z:x,y,z"
+    ...                             "--start-time", "0"
+    ...                             "--timestamp", "timestamp"
+    ...                             r"${resd_path}"
+    Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
+    RETURN                          ${resd_path}
+
 *** Test Cases ***
 Should Read Magnetic Flux Density
     Create Machine
@@ -61,6 +73,24 @@ Should Read Samples From RESD
     Create Machine
 
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
+    Execute Command                 ${SENSOR} FeedMagneticSamplesFromRESD @${resd_path}
+
+    # sensor input value is in nanotesla
+    # SW outputs in Gauss, so expected value is `value * 0.00001`
+
+    Set Enviroment                  x=150   y=300  z=450
+
+    Check Enviroment                x=0.150000  y=0.300000  z=0.450000
+    Check Enviroment                x=0.300000  y=0.450000  z=0.600000
+    Check Enviroment                x=0.450000  y=0.600000  z=0.750000
+    # Sensor shouldn't go back to the default values after the RESD file finishes
+    Check Enviroment                x=0.450000  y=0.600000  z=0.750000
+    Check Enviroment                x=0.450000  y=0.600000  z=0.750000
+
+Should Read Samples From Timestamped RESD
+    Create Machine
+
+    ${resd_path}=                   Create Timestamped RESD File  ${SAMPLES_CSV}
     Execute Command                 ${SENSOR} FeedMagneticSamplesFromRESD @${resd_path}
 
     # sensor input value is in nanotesla

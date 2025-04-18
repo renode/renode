@@ -1,5 +1,4 @@
-magnetic_flux_density_x,magnetic_flux_density_y,magnetic_flux_density_z
-15000,30000,45000
-30000,45000,60000
-45000,60000,75000
-
+timestamp,magnetic_flux_density_x,magnetic_flux_density_y,magnetic_flux_density_z
+0000000000,15000,30000,45000
+1000000000,30000,45000,60000
+2000000000,45000,60000,75000
