@@ -96,6 +96,15 @@ class RESDBlock:
     def _samples_sizeof(self):
         pass
 
+    @classmethod
+    def _wrap_sample(cls, sample):
+        if isinstance(sample, bytes):
+            sample = {
+                'size': len(sample),
+                'data': sample,
+            }
+        return sample
+
 
 class RESDBlockConstantFrequency(RESDBlock):
     __period = int(1e9)
@@ -126,7 +135,7 @@ class RESDBlockConstantFrequency(RESDBlock):
         self.__start_time = value
 
     def add_sample(self, sample):
-        self.samples.append({'sample': sample})
+        self.samples.append({'sample': RESDBlock._wrap_sample(sample)})
 
     def _subheader(self):
         return {
@@ -150,7 +159,7 @@ class RESDBlockArbitraryTimestamp(RESDBlock):
         self.__start_time = value
 
     def add_sample(self, sample, timestamp):
-        self.samples.append({'sample': sample, 'timestamp': timestamp})
+        self.samples.append({'sample': RESDBlock._wrap_sample(sample), 'timestamp': timestamp})
 
     def _subheader(self):
         return {

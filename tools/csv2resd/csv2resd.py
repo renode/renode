@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2010-2023 Antmicro
+# Copyright (c) 2010-2025 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -8,6 +8,7 @@
 
 import argparse
 import sys
+import string
 from dataclasses import dataclass
 from typing import List, Optional
 import csv
@@ -28,7 +29,7 @@ class Mapping:
         if self.map_to:
             output = dict(zip(self.map_to, output))
         if isinstance(output, list) and len(output) == 1:
-            output = int(output[0])
+            output = output[0]
         return output
 
     def _retype(self, value):
@@ -39,6 +40,8 @@ class Mapping:
                 return float(value)
             elif value[0] == '"' and value[-1] == '"':
                 return value[1:-1]
+            elif value[0] == '#' and all(c in string.hexdigits for c in value[1:]):
+                return bytes.fromhex(value[1:])
         except ValueError:
             return value
 
