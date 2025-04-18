@@ -104,6 +104,11 @@ def bytes_to_hex(bytes, zero_padded=True):
     format_string = "0{}X".format(len(bytes)*2) if zero_padded else "X"
     return "0x{0:{fmt}}".format(integer, fmt=format_string)
 
+class TraceEntry(NamedTuple):
+    pc: bytes
+    opcode: bytes
+    additional_data: list[str]
+    isa_mode: int
 
 class TraceData:
     disassemblers = None
@@ -190,7 +195,7 @@ class TraceData:
                 additional_data_type = AdditionalDataType(self.file.read(1)[0])
             except IndexError:
                 break
-        return (pc, opcode, additional_data, self.isa_mode)
+        return TraceEntry(pc, opcode, additional_data, self.isa_mode)
 
     def parse_memory_access_data(self):
         data = self.file.read(MEMORY_ACCESS_LENGTH)

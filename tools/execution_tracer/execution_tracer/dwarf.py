@@ -301,7 +301,14 @@ def get_addresses(dwarf_info, *, debug=False, noisy=False):
     for CU in dwarf_info.iter_CUs():
         yield from get_addresses_for_CU(dwarf_info, CU, debug=debug, noisy=noisy)
 
-def get_addresses_for_CU(dwarf_info, CU, *, debug=False, noisy=False):
+class DWARFLineProgramEntry(NamedTuple):
+    file_name: str
+    file_path: str
+    line_number: int
+    address_low: int
+    address_high: int
+
+def get_addresses_for_CU(dwarf_info: DWARFInfo, CU: CompileUnit, *, debug=False, noisy=False) -> Generator[DWARFLineProgramEntry]:
     # First, look at line programs to find the file/line for the address
     line_program = dwarf_info.line_program_for_CU(CU)
     delta = 1 if line_program.header.version < 5 else 0
@@ -323,7 +330,7 @@ def get_addresses_for_CU(dwarf_info, CU, *, debug=False, noisy=False):
             )
             if debug and noisy:
                 print('Parsing:', directory_path, filename)
-            yield filename, previous_state.line, previous_state.address, entry.state.address, directory_path
+            yield DWARFLineProgramEntry(filename, directory_path, previous_state.line, previous_state.address, entry.state.address)
         if entry.state.end_sequence:
             # For the state with `end_sequence`, `address` means the address
             # of the first byte after the target machine instruction
