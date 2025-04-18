@@ -125,6 +125,7 @@ class TraceData:
         self.uses_multiple_instruction_sets = header.uses_multiple_instruction_sets
         self.triple_and_model = header.triple_and_model
         self.disassemble = disassemble
+        self.filename = os.path.basename(file.name).split('.')[0]
         if self.disassemble:
             if not header.triple_and_model:
                 raise RuntimeError("No architecture triple available in disassembly mode. Trace file might be corrupted")

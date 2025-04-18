@@ -41,6 +41,7 @@ class CodeLine:
         self.addresses: list[AddressRange] = []
         self.is_exec = is_exec
         self.address_counter = defaultdict(lambda: ExecutionCount())
+        self.labels = set()
 
     def add_address(self, low: int, high: int) -> None:
         # Try simply merge ranges if they are continuous.
@@ -50,8 +51,9 @@ class CodeLine:
         else:
             self.addresses.append(AddressRange(low, high))
 
-    def count_execution(self, address):
+    def count_execution(self, address, label):
         self.address_counter[address].count_up()
+        self.labels.add(label)
 
     def most_executions(self) -> int:
         if len(self.address_counter) == 0:
@@ -60,6 +62,9 @@ class CodeLine:
 
     def to_lcov_format(self) -> str:
         return f"DA:{self.number},{self.most_executions()}"
+
+    def to_desc_format(self) -> str:
+        return f"TEST:{self.number},{';'.join(self.labels)}"
 
 
 class Record:
@@ -80,6 +85,11 @@ class Record:
         yield "TN:"
         yield f'SF:{name if name else self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
+        yield 'end_of_record'
+
+    def to_desc_format(self, *, name: Optional[str] = None) -> Generator[str, None, None]:
+        yield f'SN:{name if name else self.name}'
+        yield from (l.to_desc_format() for l in self.get_exec_lines() if l.most_executions() > 0)
         yield 'end_of_record'
 
 
@@ -245,7 +255,7 @@ class Coverage:
         print(f'Processing trace file {trace_data.file.name}, please wait...')
         for address_bytes, _, _, _ in trace_data:
             if address_bytes in address_count_cache:
-                address_count_cache[address_bytes].count_execution(address_bytes)
+                address_count_cache[address_bytes].count_execution(address_bytes, trace_data.filename)
             else:
                 address = int.from_bytes(address_bytes, byteorder="little", signed=False)
                 if address in unmatched_address:
@@ -269,7 +279,7 @@ class Coverage:
                         for address_range in line.addresses
                     ):
                         # One line is likely to exist at several addresses
-                        line.count_execution(address_bytes)
+                        line.count_execution(address_bytes, trace_data.filename)
                         address_count_cache[address_bytes] = line
                         break
                 if address_bytes not in address_count_cache:
@@ -308,6 +318,23 @@ class Coverage:
 
         for record in records.values():
             yield from record.to_lcov_format(
+                name=remove_prefix(record.name, common_prefix) if remove_common_path_prefix else None # type: ignore
+            )
+
+    def get_desc_printed_report(self, *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
+        records: dict[str, Record] = {}
+
+        if remove_common_path_prefix:
+            common_prefix = extract_common_prefix(self._code_files)
+
+        for code_file in self._code_files:
+            records[code_file.name] = Record(code_file.name)
+
+        for line in self.get_report():
+            records[line.filename].add_code_line(line)
+
+        for record in records.values():
+            yield from record.to_desc_format(
                 name=remove_prefix(record.name, common_prefix) if remove_common_path_prefix else None # type: ignore
             )
 

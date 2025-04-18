@@ -32,15 +32,20 @@ def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_
     with zipfile.ZipFile(path.name, 'w') as archive:
         # In case of very large coverage files it might be better to create a temporary file instead of in-memory string
         info_filename = 'coverage.info'
+        desc_filename = 'coverage.desc'
         archive.writestr(
             info_filename,
             '\n'.join(line for line in coverage_config.get_lcov_printed_report(remove_common_path_prefix=remove_common_path_prefix))
+        )
+        archive.writestr(
+            desc_filename,
+            '\n'.join(line for line in coverage_config.get_desc_printed_report(remove_common_path_prefix=remove_common_path_prefix))
         )
 
         config_file = {
             "datasets": {
                 "application": {
-                    "line": [info_filename]
+                    "line": [info_filename, desc_filename]
                 }
             },
             "title": "Coverage dashboard",
