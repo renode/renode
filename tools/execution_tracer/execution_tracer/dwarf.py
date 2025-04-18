@@ -4,19 +4,23 @@
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
 #
+from __future__ import annotations
 
 import os
 import itertools
 import functools
+import typing
 from collections import defaultdict
 from dataclasses import dataclass, astuple, field
-from typing import TYPE_CHECKING, BinaryIO, Dict, Generator, Iterable, List, Set, IO, Optional, Tuple
+from typing import TYPE_CHECKING, BinaryIO, Generator, Iterable, IO, NamedTuple, Optional
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
 if TYPE_CHECKING:
     from execution_tracer_reader import TraceData
     from elftools.elf.elffile import DWARFInfo
+    from elftools.dwarf.compileunit import CompileUnit
+    from elftools.dwarf.lineprogram import LineProgramEntry
 
 @dataclass
 class AddressRange:
@@ -28,15 +32,15 @@ class AddressRange:
 
 
 class CodeLine:
-    def __init__(self, content: str, number: int, filename: str, is_exec: bool):
+    def __init__(self, content: str, number: int, filename: str, is_exec: bool) -> None:
         self.content = content
         self.number = number
         self.filename = filename
-        self.addresses: List[AddressRange] = []
+        self.addresses: list[AddressRange] = []
         self.is_exec = is_exec
         self.address_counter = defaultdict(lambda: ExecutionCount())
 
-    def add_address(self, low: int, high: int):
+    def add_address(self, low: int, high: int) -> None:
         # Try simply merge ranges if they are continuous.
         # since they are incrementing, this check is enough
         if self.addresses and self.addresses[-1].high == low:
@@ -60,9 +64,9 @@ class CodeLine:
 class Record:
     def __init__(self, name: str):
         self.name = name
-        self.lines: List[CodeLine] = []
+        self.lines: list[CodeLine] = []
 
-    def add_code_line(self, cl: CodeLine):
+    def add_code_line(self, cl: CodeLine) -> None:
         self.lines.append(cl)
 
     def get_exec_lines(self) -> Generator[CodeLine, None, None]:
@@ -82,7 +86,7 @@ class ExecutionCount:
     def __init__(self):
         self.count = 0
 
-    def count_up(self):
+    def count_up(self) -> None:
         self.count += 1
 
 
@@ -95,7 +99,7 @@ class PathSubstitution:
         return path.replace(self.before, self.after)
 
     @classmethod
-    def from_arg(cls, s: str) -> 'Self':
+    def from_arg(cls, s: str) -> PathSubstitution:
         args = s.split(':')
         if len(args) != 2:
             raise ValueError('Path substitution should be in old_path:new_path format')
@@ -105,14 +109,14 @@ class PathSubstitution:
 @dataclass
 class Coverage:
     elf_file_handler: BinaryIO
-    code_filenames: List[str]
-    substitute_paths: List[PathSubstitution]
+    code_filenames: list[str]
+    substitute_paths: list[PathSubstitution]
     print_unmatched_address: bool = False
     debug: bool = False
     noisy: bool = False
     lazy_line_cache: bool = False
 
-    _code_files: List[IO] = field(init=False)
+    _code_files: list[IO] = field(init=False)
 
     def __post_init__(self):
         if not self.code_filenames:
@@ -123,13 +127,13 @@ class Coverage:
             self._code_files = [open(file) for file in self.code_filenames]
 
     @staticmethod
-    def _find_code_files(dwarf_info, substitute_paths: Iterable[PathSubstitution], verbose=True) -> List[IO]:
-        unique_files: Set[str] = set()
-        code_files: List[IO] = []
+    def _find_code_files(dwarf_info: 'DWARFInfo', substitute_paths: Iterable[PathSubstitution], verbose=True) -> list[IO]:
+        unique_files: set[str] = set()
+        code_files: list[IO] = []
         if verbose:
             print('Attempting to resolve source files by scanning DWARF data...')
-        for file_name, _, _, _, directory in get_addresses(dwarf_info):
-            absolute_path = os.path.join(directory, file_name)
+        for entry in get_addresses(dwarf_info):
+            absolute_path = os.path.join(entry.file_path, entry.file_name)
             unique_files.add(absolute_path)
 
         for code_filename in unique_files:
@@ -155,11 +159,11 @@ class Coverage:
                 return file
         return None
 
-    def _build_addr_map(self, code_lines_with_address: List[CodeLine], pc_length: int) -> Dict[bytes, ExecutionCount]:
+    def _build_addr_map(self, code_lines_with_address: list[CodeLine], pc_length: int) -> dict[bytes, ExecutionCount]:
         # This is a dictionary of references, that will be used to quickly update counters for each code line.
         # We can walk only once over all code lines and pre-generate mappings between PCs (addresses) and code lines.
         # This way, when we'll later parse the trace, all we do are quick look-ups into this dictionary to increment the execution counters.
-        address_count_cache: Dict[bytes, ExecutionCount] = {}
+        address_count_cache: dict[bytes, ExecutionCount] = {}
 
         for line in code_lines_with_address:
             for addr in line.addresses:
@@ -175,8 +179,8 @@ class Coverage:
 
     # Get list of code lines, grouped by the file where they belong
     # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
-    def _get_code_lines_by_file(self, dwarf_info: 'DWARFInfo') -> Tuple[int, int, Dict[str, List[CodeLine]]]:
-        code_lines: Dict[str, List[CodeLine]] = defaultdict(list)
+    def _get_code_lines_by_file(self, dwarf_info: 'DWARFInfo') -> tuple[int, int, dict[str, list[CodeLine]]]:
+        code_lines: dict[str, list[CodeLine]] = defaultdict(list)
         for code_file in self._code_files:
             for no, line in enumerate(code_file):
                 # Right now we mark all code lines as non-executable (that is, ignore when calculating coverage)
@@ -186,7 +190,7 @@ class Coverage:
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
         files_high_address = 0
-        for file_name, line_number, address_low, address_high, file_path in get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
+        for file_name, file_path, line_number, address_low, address_high in get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
             file_full_name = os.path.join(file_path, file_name)
             file_full_name = self._apply_path_substitutions(file_full_name, self.substitute_paths)
             # If the files are provided by hand, patch their names
@@ -223,13 +227,13 @@ class Coverage:
 
         # Note, that this is just a cache to `code_lines`
         # but after eliminating lines that don't correspond to any address
-        code_lines_with_address: List[CodeLine] = []
+        code_lines_with_address: list[CodeLine] = []
         for file_name in code_lines.keys():
             code_lines_with_address.extend(line for line in code_lines[file_name] if line.addresses)
 
         # This is also a cache to ExecutionCount
-        address_count_cache: Dict[bytes, ExecutionCount] = {}
-        unmatched_address: Set[int] = set()
+        address_count_cache: dict[bytes, ExecutionCount] = {}
+        unmatched_address: set[int] = set()
 
         if not self.lazy_line_cache:
             print('Populating address cache...')
@@ -277,7 +281,7 @@ class Coverage:
         return itertools.chain.from_iterable(code_lines.values())
 
     def convert_to_lcov(self, code_lines: Iterable[CodeLine]) -> Generator[str, None, None]:
-        records: Dict[str, Record] = {}
+        records: dict[str, Record] = {}
         for code_file in self._code_files:
             records[code_file.name] = Record(code_file.name)
 
@@ -295,7 +299,7 @@ def get_dwarf_info(elf_file_handler: BinaryIO) -> 'DWARFInfo':
         )
     return elf_file.get_dwarf_info()
 
-def get_addresses(dwarf_info, *, debug=False, noisy=False):
+def get_addresses(dwarf_info: 'DWARFInfo', *, debug=False, noisy=False) -> Generator[DWARFLineProgramEntry]:
     # Go over all the line programs in the DWARF information, looking for
     # one that describes the given address.
     for CU in dwarf_info.iter_CUs():
@@ -311,9 +315,11 @@ class DWARFLineProgramEntry(NamedTuple):
 def get_addresses_for_CU(dwarf_info: DWARFInfo, CU: CompileUnit, *, debug=False, noisy=False) -> Generator[DWARFLineProgramEntry]:
     # First, look at line programs to find the file/line for the address
     line_program = dwarf_info.line_program_for_CU(CU)
+    if not line_program:
+        raise RuntimeError("Couldn't extract line program data. Try to recompile the binary with debugging information enabled")
     delta = 1 if line_program.header.version < 5 else 0
     previous_state = None
-    for entry in line_program.get_entries():
+    for entry in typing.cast(Iterable['LineProgramEntry'], line_program.get_entries()):
         # We're interested in those entries where a new state is assigned
         if entry.state is None:
             continue

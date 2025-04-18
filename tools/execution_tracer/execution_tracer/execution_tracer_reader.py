@@ -5,6 +5,7 @@
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
 #
+from __future__ import annotations
 
 import argparse
 import platform
@@ -14,7 +15,7 @@ import gzip
 import typing
 from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
+from typing import IO, BinaryIO, Generator, NamedTuple, Optional
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
@@ -54,12 +55,12 @@ class Header:
     uses_multiple_instruction_sets: bool = False
     triple_and_model: Optional[str] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, uses_multiple_instruction_sets: {}, triple_and_model: {}".format(
             self.pc_length, self.has_opcodes, self.extra_length, self.uses_multiple_instruction_sets, self.triple_and_model)
 
 
-def read_header(file):
+def read_header(file: BinaryIO) -> Header:
     if file.read(len(FILE_SIGNATURE)) != FILE_SIGNATURE:
         raise InvalidFileFormatException("File signature isn't detected.")
 
@@ -94,12 +95,12 @@ def read_header(file):
         raise InvalidFileFormatException("Invalid opcodes field at file header")
 
 
-def read_file(file, disassemble, llvm_disas_path):
+def read_file(file: BinaryIO, disassemble: bool, llvm_disas_path: Optional[str]) -> TraceData:
     header = read_header(file)
     return TraceData(file, header, disassemble, llvm_disas_path)
 
 
-def bytes_to_hex(bytes, zero_padded=True):
+def bytes_to_hex(bytes: bytes, zero_padded=True) -> str:
     integer = int.from_bytes(bytes, byteorder="little", signed=False)
     format_string = "0{}X".format(len(bytes)*2) if zero_padded else "X"
     return "0x{0:{fmt}}".format(integer, fmt=format_string)
@@ -111,11 +112,11 @@ class TraceEntry(NamedTuple):
     isa_mode: int
 
 class TraceData:
-    disassemblers = None
-    isa_mode = 0
+    disassemblers: Optional[dict[int, 'LLVMDisassembler']] = None
+    isa_mode: int = 0
     instructions_left_in_block = 0
 
-    def __init__(self, file: typing.IO, header: Header, disassemble: bool, llvm_disas_path: str):
+    def __init__(self, file: IO, header: Header, disassemble: bool, llvm_disas_path: Optional[str]):
         self.file = file
         self.pc_length = int(header.pc_length)
         self.has_pc = (self.pc_length != 0)
@@ -146,7 +147,7 @@ class TraceData:
         self.file.seek(HEADER_LENGTH + self.extra_length, 0)
         return self
 
-    def __next__(self):
+    def __next__(self) -> TraceEntry:
         additional_data = []
 
         if self.uses_multiple_instruction_sets and self.instructions_left_in_block == 0:
@@ -201,7 +202,7 @@ class TraceData:
                 break
         return TraceEntry(pc, opcode, additional_data, self.isa_mode)
 
-    def parse_memory_access_data(self):
+    def parse_memory_access_data(self) -> str:
         data = self.file.read(MEMORY_ACCESS_LENGTH)
         if len(data) != MEMORY_ACCESS_LENGTH:
             raise InvalidFileFormatException("Unexpected end of file")
@@ -216,7 +217,7 @@ class TraceData:
             return f"{type.name} with address {address} => {address_physical}, value {value}"
 
 
-    def parse_riscv_vector_configuration_data(self):
+    def parse_riscv_vector_configuration_data(self) -> str:
         data = self.file.read(RISCV_VECTOR_CONFIGURATION_LENGTH)
         if len(data) != RISCV_VECTOR_CONFIGURATION_LENGTH:
             raise InvalidFileFormatException("Unexpected end of file")
@@ -224,8 +225,10 @@ class TraceData:
         vtype = bytes_to_hex(data[8:16], zero_padded=False)
         return f"Vector configured to VL: {vl}, VTYPE: {vtype}"
 
-    def format_entry(self, entry):
+    def format_entry(self, entry: TraceEntry) -> str:
         (pc, opcode, additional_data, isa_mode) = entry
+        pc_str: str = ""
+        opcode_str: str = ""
         if self.pc_length:
             pc_str = bytes_to_hex(pc)
         if self.has_opcodes:
@@ -258,7 +261,7 @@ class InvalidFileFormatException(Exception):
 
 
 class LLVMDisassembler():
-    def __init__(self, triple, cpu, llvm_disas_path):
+    def __init__(self, triple: str, cpu: str, llvm_disas_path: str):
         try:
             self.lib = cdll.LoadLibrary(llvm_disas_path)
         except OSError:
@@ -274,7 +277,7 @@ class LLVMDisassembler():
         if  hasattr(self, '_context'):
             self.lib.llvm_disasm_dispose(self._context)
 
-    def __init_library(self):
+    def __init_library(self) -> None:
         self.lib.llvm_create_disasm_cpu.argtypes = [c_char_p, c_char_p]
         self.lib.llvm_create_disasm_cpu.restype = POINTER(c_void_p)
 
@@ -283,7 +286,7 @@ class LLVMDisassembler():
         self.lib.llvm_disasm_instruction.argtypes = [POINTER(c_void_p), POINTER(c_ubyte), c_uint64, c_char_p, c_size_t]
         self.lib.llvm_disasm_instruction.restype = c_size_t
 
-    def get_instruction(self, opcode):
+    def get_instruction(self, opcode) -> tuple[int, bytes]:
         opcode_buf = cast(c_char_p(opcode), POINTER(c_ubyte))
         disas_str = cast((c_byte * 1024)(), c_char_p)
 
@@ -295,12 +298,12 @@ class LLVMDisassembler():
         return (bytes_read, disas_str.value)
 
 
-def print_coverage_report(report):
+def print_coverage_report(report) -> Generator[str]:
     for line in report:
         yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
 
 
-def handle_coverage(args, trace_data):
+def handle_coverage(args, trace_data) -> None:
     coverage_config = dwarf.Coverage(
         elf_file_handler=args.coverage_binary,
         code_filenames=args.coverage_code,
@@ -391,7 +394,7 @@ def main():
     try:
         filename, file_extension = os.path.splitext(args.file)
         if (args.decompress or file_extension == ".gz") and not args.force_disable_decompression:
-            file_open = gzip.open
+            file_open = typing.cast(typing.Callable[..., BinaryIO], gzip.open)
         else:
             file_open = open
 
