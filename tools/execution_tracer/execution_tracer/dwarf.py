@@ -50,9 +50,8 @@ class CodeLine:
         else:
             self.addresses.append(AddressRange(low, high))
 
-    def count_execution(self, address) -> 'ExecutionCount':
+    def count_execution(self, address):
         self.address_counter[address].count_up()
-        return self.address_counter[address]
 
     def most_executions(self) -> int:
         if len(self.address_counter) == 0:
@@ -165,18 +164,18 @@ class Coverage:
                 return file
         return None
 
-    def _build_addr_map(self, code_lines_with_address: list[CodeLine], pc_length: int) -> dict[bytes, ExecutionCount]:
+    def _build_addr_map(self, code_lines_with_address: list[CodeLine], pc_length: int) -> dict[bytes, CodeLine]:
         # This is a dictionary of references, that will be used to quickly update counters for each code line.
         # We can walk only once over all code lines and pre-generate mappings between PCs (addresses) and code lines.
-        # This way, when we'll later parse the trace, all we do are quick look-ups into this dictionary to increment the execution counters.
-        address_count_cache: dict[bytes, ExecutionCount] = {}
+        # This way, when we'll later parse the trace, all we do are quick look-ups into this dictionary to get relevant code line by address.
+        address_count_cache: dict[bytes, CodeLine] = {}
 
         for line in code_lines_with_address:
             for addr in line.addresses:
                 addr_lo = addr.low
                 while addr_lo < addr.high:
                     if not addr_lo in address_count_cache:
-                        address_count_cache[addr_lo.to_bytes(pc_length, byteorder='little', signed=False)] = line.address_counter[addr_lo]
+                        address_count_cache[addr_lo.to_bytes(pc_length, byteorder='little', signed=False)] = line
                     else:
                         print(f'Address {addr_lo} is already mapped to another line. Ignoring this time')
                     # This is a naive approach. If memory usage is of greater concern, find a better way to store ranges
@@ -234,8 +233,8 @@ class Coverage:
         for file_name in self.code_lines.keys():
             code_lines_with_address.extend(line for line in self.code_lines[file_name] if line.addresses)
 
-        # This is also a cache to ExecutionCount
-        address_count_cache: dict[bytes, ExecutionCount] = {}
+        # This is also a cache to CodeLines
+        address_count_cache: dict[bytes, CodeLine] = {}
         unmatched_address: set[int] = set()
 
         if not self.lazy_line_cache:
@@ -246,7 +245,7 @@ class Coverage:
         print(f'Processing trace file {trace_data.file.name}, please wait...')
         for address_bytes, _, _, _ in trace_data:
             if address_bytes in address_count_cache:
-                address_count_cache[address_bytes].count_up()
+                address_count_cache[address_bytes].count_execution(address_bytes)
             else:
                 address = int.from_bytes(address_bytes, byteorder="little", signed=False)
                 if address in unmatched_address:
@@ -270,9 +269,8 @@ class Coverage:
                         for address_range in line.addresses
                     ):
                         # One line is likely to exist at several addresses
-                        address_count_cache[address_bytes] = line.count_execution(
-                            address_bytes
-                        )
+                        line.count_execution(address_bytes)
+                        address_count_cache[address_bytes] = line
                         break
                 if address_bytes not in address_count_cache:
                     unmatched_address.add(address)
