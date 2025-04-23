@@ -322,12 +322,13 @@ def handle_coverage(args, trace_data_per_file) -> None:
     if args.coverage_output != None:
         with open(args.coverage_output, 'w') as coverage_output:
             if args.export_for_coverview:
-                if not coverview_integration.create_coverview_archive(
-                            coverage_output,
-                            coverage_config,
-                            args.coverview_config,
-                            remove_common_path_prefix=remove_common_path_prefix
-                        ):
+                archive_created = coverview_integration.create_coverview_archive(
+                    coverage_output,
+                    coverage_config,
+                    args.coverview_config,
+                    remove_common_path_prefix=remove_common_path_prefix
+                )
+                if not archive_created:
                     sys.exit(1)
             else:
                 for line in printed_report:
