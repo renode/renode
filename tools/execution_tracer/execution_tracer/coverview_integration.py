@@ -9,20 +9,9 @@ import os
 import zipfile
 import tempfile
 import json
-from typing import Iterable, List, Optional, TextIO, IO
+from typing import Iterable, List, TextIO, IO
 from datetime import datetime
-
-def extract_common_prefix(files: Iterable[IO]) -> str:
-    try:
-        return os.path.commonpath(code_file.name for code_file in files) + os.path.sep
-    except ValueError:
-        # Mixing relative and absolute paths throws ValueError
-        return ''
-
-def remove_prefix(text: str, prefix: Optional[str]):
-    if not prefix:
-        return text
-    return text[text.startswith(prefix) and len(prefix):]
+from execution_tracer.common_utils import extract_common_prefix, remove_prefix
 
 def create_coverview_archive(path: TextIO, report: Iterable[str], code_files: List[IO], coverview_dict: str, *, remove_common_path_prefix: bool = False) -> bool:
     merge_config = {}

@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, BinaryIO, Generator, Iterable, IO, NamedTuple,
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
 
-from execution_tracer.coverview_integration import extract_common_prefix, remove_prefix
+from execution_tracer.common_utils import extract_common_prefix, remove_prefix
 
 if TYPE_CHECKING:
     from execution_tracer_reader import TraceData
