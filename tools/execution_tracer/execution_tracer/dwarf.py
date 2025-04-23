@@ -129,6 +129,9 @@ class Coverage:
         else:
             self._code_files = [open(file) for file in self.code_filenames]
 
+        dwarf_info = get_dwarf_info(self.elf_file_handler)
+        self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file(dwarf_info)
+
     @staticmethod
     def _find_code_files(dwarf_info: 'DWARFInfo', substitute_paths: Iterable[PathSubstitution], verbose=True) -> list[IO]:
         unique_files: set[str] = set()
@@ -225,14 +228,11 @@ class Coverage:
         if not trace_data.has_pc:
             raise ValueError("The trace data doesn't contain PCs.")
 
-        dwarf_info = get_dwarf_info(self.elf_file_handler)
-        files_low_address, files_high_address, code_lines = self._get_code_lines_by_file(dwarf_info)
-
         # Note, that this is just a cache to `code_lines`
         # but after eliminating lines that don't correspond to any address
         code_lines_with_address: list[CodeLine] = []
-        for file_name in code_lines.keys():
-            code_lines_with_address.extend(line for line in code_lines[file_name] if line.addresses)
+        for file_name in self.code_lines.keys():
+            code_lines_with_address.extend(line for line in self.code_lines[file_name] if line.addresses)
 
         # This is also a cache to ExecutionCount
         address_count_cache: dict[bytes, ExecutionCount] = {}
@@ -255,7 +255,7 @@ class Coverage:
                     # So make sure that we mark the address as "unmatched" on the first try, and don't care about it later on
                     continue
                 # Optimization: cut-off addresses from trace that for sure don't matter to us
-                if not (files_low_address <= address < files_high_address):
+                if not (self.files_low_address <= address < self.files_high_address):
                     unmatched_address.add(address)
                     continue
                 if self.debug and self.noisy:
@@ -281,7 +281,7 @@ class Coverage:
             print(f'Found {len(unmatched_address)} unmatched unique addresses')
             print('Addresses in trace not matching any sources:', ', '.join(f'0x{addr:X}' for addr in sorted(unmatched_address)))
 
-        return itertools.chain.from_iterable(code_lines.values())
+        return itertools.chain.from_iterable(self.code_lines.values())
 
     def convert_to_lcov(self, code_lines: Iterable[CodeLine], *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
         records: dict[str, Record] = {}
