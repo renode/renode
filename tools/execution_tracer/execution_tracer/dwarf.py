@@ -224,7 +224,7 @@ class Coverage:
 
         return files_low_address, files_high_address, code_lines
 
-    def report_coverage(self, trace_data: 'TraceData') -> Iterable[CodeLine]:
+    def aggregate_coverage(self, trace_data: 'TraceData'):
         if not trace_data.has_pc:
             raise ValueError("The trace data doesn't contain PCs.")
 
@@ -281,17 +281,31 @@ class Coverage:
             print(f'Found {len(unmatched_address)} unmatched unique addresses')
             print('Addresses in trace not matching any sources:', ', '.join(f'0x{addr:X}' for addr in sorted(unmatched_address)))
 
+    def get_report(self) -> Iterable[CodeLine]:
         return itertools.chain.from_iterable(self.code_lines.values())
 
-    def convert_to_lcov(self, code_lines: Iterable[CodeLine], *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
+    def get_printed_report(self, legacy=False, *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
+        if legacy:
+            yield from self.get_legacy_printed_report()
+        else:
+            yield from self.get_lcov_printed_report(remove_common_path_prefix=remove_common_path_prefix)
+
+    def get_legacy_printed_report(self) -> Generator[str, None, None]:
+        for line in self.get_report():
+            if line.content is None:
+                raise RuntimeError(f"No code line contents found for address: {line.addresses}, file {line.filename}, number: {line.number}")
+            yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
+
+    def get_lcov_printed_report(self, *, remove_common_path_prefix: bool = False) -> Generator[str, None, None]:
         records: dict[str, Record] = {}
+
         if remove_common_path_prefix:
             common_prefix = extract_common_prefix(self._code_files)
 
         for code_file in self._code_files:
             records[code_file.name] = Record(code_file.name)
 
-        for line in code_lines:
+        for line in self.get_report():
             records[line.filename].add_code_line(line)
 
         for record in records.values():

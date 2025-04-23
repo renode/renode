@@ -15,12 +15,9 @@ import gzip
 import typing
 from enum import Enum
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, IO, BinaryIO, Generator, Iterable, NamedTuple, Optional
+from typing import IO, BinaryIO, NamedTuple, Optional
 
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
-
-if TYPE_CHECKING:
-    from dwarf import CodeLine
 
 # Allow directly using this as a script, without installation
 try:
@@ -300,14 +297,6 @@ class LLVMDisassembler():
 
         return (bytes_read, disas_str.value)
 
-
-def print_legacy_coverage_report(report: Iterable[CodeLine]) -> Generator[str]:
-    for line in report:
-        if line.content is None:
-            raise RuntimeError(f"No code line contents found for address: {line.addresses}, file {line.filename}, number: {line.number}")
-        yield f"{line.most_executions():5d}:\t {line.content.rstrip()}"
-
-
 def handle_coverage(args, trace_data) -> None:
     coverage_config = dwarf.Coverage(
         elf_file_handler=args.coverage_binary,
@@ -319,24 +308,22 @@ def handle_coverage(args, trace_data) -> None:
         load_whole_code_lines=args.legacy,
     )
 
-    report = coverage_config.report_coverage(trace_data)
-
     remove_common_path_prefix = args.export_for_coverview
     if args.no_shorten_paths:
         remove_common_path_prefix = False
 
-    if args.legacy:
-        printed_report = print_legacy_coverage_report(report)
-    else:
-        printed_report = coverage_config.convert_to_lcov(report, remove_common_path_prefix=remove_common_path_prefix)
+    coverage_config.aggregate_coverage(trace_data)
+    printed_report = coverage_config.get_printed_report(
+        args.legacy,
+        remove_common_path_prefix=remove_common_path_prefix
+    )
 
     if args.coverage_output != None:
         with open(args.coverage_output, 'w') as coverage_output:
             if args.export_for_coverview:
                 if not coverview_integration.create_coverview_archive(
                             coverage_output,
-                            printed_report,
-                            coverage_config._code_files,
+                            coverage_config,
                             args.coverview_config,
                             remove_common_path_prefix=remove_common_path_prefix
                         ):
