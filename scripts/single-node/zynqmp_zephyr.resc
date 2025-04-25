@@ -9,8 +9,9 @@ $bin?=@https://dl.antmicro.com/projects/renode/zephyr-subsys_shell_shell_module-
 
 macro reset
 """
-    rpu1 IsHalted true
-    apu0 IsHalted true
+    cluster0 IsHalted true
+    cluster1 IsHalted true
+    rpu0 IsHalted false
 
     sysbus LoadELF $bin cpu=rpu0
 """

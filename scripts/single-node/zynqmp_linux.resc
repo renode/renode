@@ -19,11 +19,12 @@ $rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-
 
 macro reset
 """
-    # Only set PC for the primary core - secondaries are handled by firmware during wakeup
+    # Only set PC for and start the primary core - secondaries are handled by firmware during wakeup
     apu0 PC 0x1000000
+    cluster0 IsHalted true
+    apu0 IsHalted false
 
-    rpu0 IsHalted true
-    rpu1 IsHalted true
+    cluster1 IsHalted true
 
     sysbus LoadELF    $atf_elf cpu=apu0
 
