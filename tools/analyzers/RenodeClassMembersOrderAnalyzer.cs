@@ -28,6 +28,8 @@ namespace Antmicro.Renode.CustomAnalyzers
             context.RegisterSyntaxTreeAction(CheckClassMembersOrder);
         }
 
+        public const string DiagnosticId = "renode_class_members_order";
+
         private void CheckClassMembersOrder(SyntaxTreeAnalysisContext context)
         {
             var classes = context
@@ -63,7 +65,7 @@ namespace Antmicro.Renode.CustomAnalyzers
             }
         }
 
-        private static bool TryGetClassMemberOrder(MemberDeclarationSyntax node, out ClassMemberOrder classMemberOrder)
+        public static bool TryGetClassMemberOrder(MemberDeclarationSyntax node, out ClassMemberOrder classMemberOrder)
         {
             var modifiers = node
                 .Modifiers
@@ -77,20 +79,9 @@ namespace Antmicro.Renode.CustomAnalyzers
             return false;
         }
 
-        private static readonly DiagnosticDescriptor ClassMembersOrderRule = new DiagnosticDescriptor(
-            "renode_class_members_order",
-            "Class Members Order",
-            "Wrong Class Members Order: {1} should be placed before {0}",
-            "Design",
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault: false,
-            description: "Checks if class members order is preserved."
-        );
-
-
 #pragma warning disable SA1509
         // SA1509 - No space before opening braces
-        private static readonly Dictionary<string, ClassMemberOrder> ClassMembersOrderMap = new Dictionary<string, ClassMemberOrder>
+        public static readonly Dictionary<string, ClassMemberOrder> ClassMembersOrderMap = new Dictionary<string, ClassMemberOrder>
         {
             {"_static_ConstructorDeclaration",                      ClassMemberOrder.StaticConstructor},
             {"_public_static_MethodDeclaration",                    ClassMemberOrder.PublicStaticMethod},
@@ -139,9 +130,19 @@ namespace Antmicro.Renode.CustomAnalyzers
         };
 #pragma warning restore SA1509
 
+        private static readonly DiagnosticDescriptor ClassMembersOrderRule = new DiagnosticDescriptor(
+            DiagnosticId,
+            "Class Members Order",
+            "Wrong Class Members Order: {1} should be placed before {0}",
+            "Design",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: false,
+            description: "Checks if class members order is preserved."
+        );
+
         // Order of fileds in this Enum is important.
         // It specifies allowed order of class members.
-        private enum ClassMemberOrder
+        public enum ClassMemberOrder
         {
             StaticConstructor,
             PublicStaticMethod,
