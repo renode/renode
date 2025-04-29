@@ -39,6 +39,7 @@
 - tests/unit-tests/riscv-isa-string.robot
 - tests/unit-tests/sysbus.robot
 - tests/unit-tests/sysbus-tag.robot
+- tests/unit-tests/sysbus-fault.robot
 - tests/platforms/SiFive-FE310/SiFive-FE310.robot
 - tests/platforms/SiFive-FU740.robot
 - tests/platforms/PicoSoC.robot
