@@ -7,10 +7,10 @@
 using System;
 using System.Linq;
 using System.Text;
+
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Testing;
 using Antmicro.Renode.Time;
-using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
 {
