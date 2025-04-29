@@ -56,3 +56,31 @@ Should Correctly Handle Constant Generators In ADDA And SUBA
     # NOTE: SUBA R3, R4 ==> SUBA #2, R4
     Execute Command                 cpu Step
     Register Should Be Equal        4  0
+
+Should Correctly Assemble And Disassemble
+    Create MSP430F2619 Machine
+
+    # NOTE: Prepare simple assembly
+    ${ASSEMBLY}=                    Catenate  SEPARATOR=${\n}
+    ...                             mov\t#1, r4
+    ...                             mov\t#2, r5
+    ...                             mov\t#4, r6
+    ...                             add\tr5, r4
+    ...                             add\tr6, r4
+
+    Execute Command                 cpu AssembleBlock 0x2100 """${ASSEMBLY}"""
+    Execute Command                 cpu PC 0x2100
+
+    # NOTE: Run assembly and check register value
+    Execute Command                 cpu Step 5
+    Register Should Be Equal        4  7
+
+    # NOTE: Compare disassembled block to assembly
+    ${DISASSEBLED}=                 Execute Command  cpu DisassembleBlock 0x2100 10
+    @{ORIG_LINES}=                  Split To Lines  ${ASSEMBLY}
+    @{GEN_LINES}=                   Evaluate  [line for line in $DISASSEBLED.splitlines() if line]
+    ${NUM_INSTR}=                   Get Length  ${ORIG_LINES}
+
+    FOR  ${index}  IN RANGE  ${NUM_INSTR}
+        Should Contain                  ${GEN_LINES}[${index}]  ${ORIG_LINES}[${index}]
+    END

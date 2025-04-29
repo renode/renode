@@ -1,5 +1,5 @@
 cpu: CPU.MSP430X @ sysbus
-    cpuType: "msp430f261x"
+    cpuType: "msp430x"
 
 ram: Memory.ArrayMemory @ {
     sysbus 0x00200;
