@@ -43,24 +43,16 @@ Should Correctly Handle Constant Generators In ADDA And SUBA
 
     # NOTE: ADDA R2, R4 ==> ADDA #4, R4
     Execute Command                 cpu Step
-    ${REG_VALUE}=                   Execute Command  cpu R4
-    ${REG_VALUE}=                   Convert To Integer  ${REG_VALUE}  base=16
-    Should Be Equal                 ${REG_VALUE}  ${4}
+    Register Should Be Equal        4  4
 
     # NOTE: ADDA R3, R4 ==> ADDA #2, R4
     Execute Command                 cpu Step
-    ${REG_VALUE}=                   Execute Command  cpu R4
-    ${REG_VALUE}=                   Convert To Integer  ${REG_VALUE}  base=16
-    Should Be Equal                 ${REG_VALUE}  ${6}
+    Register Should Be Equal        4  6
 
     # NOTE: SUBA R2, R4 ==> SUBA #4, R4
     Execute Command                 cpu Step
-    ${REG_VALUE}=                   Execute Command  cpu R4
-    ${REG_VALUE}=                   Convert To Integer  ${REG_VALUE}  base=16
-    Should Be Equal                 ${REG_VALUE}  ${2}
+    Register Should Be Equal        4  2
 
     # NOTE: SUBA R3, R4 ==> SUBA #2, R4
     Execute Command                 cpu Step
-    ${REG_VALUE}=                   Execute Command  cpu R4
-    ${REG_VALUE}=                   Convert To Integer  ${REG_VALUE}  base=16
-    Should Be Equal                 ${REG_VALUE}  ${0}
+    Register Should Be Equal        4  0
