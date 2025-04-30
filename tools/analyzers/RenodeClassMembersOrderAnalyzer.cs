@@ -93,9 +93,9 @@ namespace Antmicro.Renode.CustomAnalyzers
             {"_public_MethodDeclaration",                           ClassMemberOrder.PublicMethod},
             {"_public_abstract_MethodDeclaration",                  ClassMemberOrder.PublicAbstractMethod},
             {"_public_PropertyDeclaration",                         ClassMemberOrder.PublicProperty},
-            {"_public_EventDeclaration",                            ClassMemberOrder.PublicEvent},
+            {"_public_EventFieldDeclaration",                       ClassMemberOrder.PublicEvent},
             {"_public_readonly_FieldDeclaration",                   ClassMemberOrder.PublicReadonlyField},
-            {"_public_ConstDeclaration",                            ClassMemberOrder.PublicConst},
+            {"_public_const_FieldDeclaration",                      ClassMemberOrder.PublicConst},
 
             {"_protected_static_MethodDeclaration",                 ClassMemberOrder.ProtectedStaticMethod},
             {"_protected_static_PropertyDeclaration",               ClassMemberOrder.ProtectedStaticProperty},
@@ -105,8 +105,8 @@ namespace Antmicro.Renode.CustomAnalyzers
             {"_protected_ConstructorDeclaration",                   ClassMemberOrder.ProtectedConstructor},
             {"_protected_MethodDeclaration",                        ClassMemberOrder.ProtectedMethod},
             {"_protected_PropertyDeclaration",                      ClassMemberOrder.ProtectedProperty},
-            {"_protected_EventDeclaration",                         ClassMemberOrder.ProtectedEvent},
-            {"_protected_ConstDeclaration",                         ClassMemberOrder.ProtectedConst},
+            {"_protected_EventFieldDeclaration",                    ClassMemberOrder.ProtectedEvent},
+            {"_protected_const_FieldDeclaration",                   ClassMemberOrder.ProtectedConst},
 
             {"_private_static_MethodDeclaration",                   ClassMemberOrder.PrivateStaticMethod},
             {"_private_static_FieldDeclaration",                    ClassMemberOrder.PrivateStaticField},
@@ -114,7 +114,7 @@ namespace Antmicro.Renode.CustomAnalyzers
             {"_private_MethodDeclaration",                          ClassMemberOrder.PrivateMethod},
             {"_private_PropertyDeclaration",                        ClassMemberOrder.PrivateProperty},
             {"_private_FieldDeclaration",                           ClassMemberOrder.PrivateField},
-            {"_private_ConstDeclaration",                           ClassMemberOrder.PrivateConst},
+            {"_private_const_FieldDeclaration",                     ClassMemberOrder.PrivateConst},
 
             {"_public_ClassDeclaration",                            ClassMemberOrder.PublicClass},
             {"_public_DelegateDeclaration",                         ClassMemberOrder.PublicDelegate},
