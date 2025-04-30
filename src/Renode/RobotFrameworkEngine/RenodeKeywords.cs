@@ -304,6 +304,22 @@ namespace Antmicro.Renode.RobotFramework
             return result;
         }
 
+        [RobotFrameworkKeyword]
+        public void RegisterFailingLogString(string pattern, bool treatAsRegex = false)
+        {
+            CheckLogTester();
+
+            logTester.RegisterFailingString(pattern, treatAsRegex);
+        }
+
+        [RobotFrameworkKeyword]
+        public void UnregisterFailingLogString(string pattern, bool treatAsRegex = false)
+        {
+            CheckLogTester();
+
+            logTester.UnregisterFailingString(pattern, treatAsRegex);
+        }
+
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
         public void CreateLogTester(float timeout, bool? defaultPauseEmulation = null)
         {
@@ -318,7 +334,7 @@ namespace Antmicro.Renode.RobotFramework
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, timeout, keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
+            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, out var isFailingString, timeout, keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result == null)
             {
                 // We must limit the length of the resulting string to Int32.MaxValue to avoid OutOfMemoryException. 
@@ -328,6 +344,10 @@ namespace Antmicro.Renode.RobotFramework
                 var logContextMessages = bufferedMessages.TakeLast(MaxLogContextPrintedOnException);
                 var logMessages = string.Join("\n ", logContextMessages);
                 throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\nLast {logContextMessages.Count()} buffered log messages are: \n {logMessages}");
+            }
+            if(isFailingString)
+            {
+                throw new InvalidOperationException($"Log tester failed!\n\nTest failing entry has been found in log:\n{result}");
             }
             return result;
         }
@@ -339,7 +359,7 @@ namespace Antmicro.Renode.RobotFramework
 
             // Passing `level` as a named argument causes a compiler crash in Mono 6.8.0.105+dfsg-3.4
             // from Debian
-            var result = logTester.WaitForEntry(pattern, out var _, timeout, true, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
+            var result = logTester.WaitForEntry(pattern, out var _, out var __, timeout, true, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");

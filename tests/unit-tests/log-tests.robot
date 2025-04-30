@@ -148,3 +148,25 @@ Should Set Machine Log Level 3
     Should Contain                  ${l}  machine-1:sysbus : ERROR  collapse_spaces=True
     Should Contain                  ${l}  machine-1:sysbus.cpu : ERROR  collapse_spaces=True
     Should Contain                  ${l}  machine-1:sysbus.mem : ERROR  collapse_spaces=True
+
+Should Fail On Failing String In Log
+    Create Log Tester               0
+    Execute Command                 mach create
+    Execute Command                 sysbus ReadDoubleWord 0x0
+
+    Register Failing Log String     ReadDoubleWord from non existing peripheral at 0x.  treatAsRegex=true
+
+    Run Keyword And Expect Error
+    ...                             *Test failing entry*
+    ...                             Wait For Log Entry  ReadDoubleWord from non existing peripheral at 0x0
+
+Should Unregister Failing String In Log
+    Create Log Tester               0
+    Execute Command                 mach create
+    Execute Command                 sysbus ReadDoubleWord 0x0
+
+    Register Failing Log String     ReadDoubleWord from non existing peripheral at 0x.  treatAsRegex=true
+
+    Unregister Failing Log String   ReadDoubleWord from non existing peripheral at 0x.  treatAsRegex=true
+
+    Wait For Log Entry  ReadDoubleWord from non existing peripheral at 0x0
