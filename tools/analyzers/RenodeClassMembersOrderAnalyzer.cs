@@ -147,7 +147,7 @@ namespace Antmicro.Renode.CustomAnalyzers
             description: "Checks if class members order is preserved."
         );
 
-        // Order of fileds in this Enum is important.
+        // Order of fields in this Enum is important.
         // It specifies allowed order of class members.
         public enum ClassMemberOrder
         {
