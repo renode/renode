@@ -45,7 +45,7 @@
                     "text": "set breakpoint pending on"
                 },
                 {
-                    "text": "handle SIGXCPU SIG33 SIG35 SIG36 SIG37 SIGPWR nostop noprint"
+                    "text": "handle SIGXCPU SIG33 SIG34 SIG35 SIG36 SIG37 SIGPWR nostop noprint"
                 },
                 {
                     "text": "set architecture i386:x86-64"
