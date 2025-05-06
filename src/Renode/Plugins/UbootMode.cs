@@ -46,8 +46,18 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 Logger.Log(LogLevel.Warning, "Post-relocation symbol reloading failed. Unable to get U-Boot relocation address");
                 return;
             }
+            try
+            {
+                ReloadSymbols((SystemBus) sysbus, relocaddr);
+            }
+            catch(System.OverflowException)
+            {
+                // Catching OverflowException to handle cases where SymbolLookup::LoadELF<uint> fails due to the text section address (relocAddr)
+                // being greater than minLoadAddress. This is a workaround, and the downstream logic should be improved to allow for such cases.
+                Logger.Log(LogLevel.Warning, "Post-relocation symbol reloading failed.");
+                return;
+            }
             Logger.Log(LogLevel.Info, "U-Boot relocated to 0x{0:X}", relocaddr);
-            ReloadSymbols((SystemBus) sysbus, relocaddr);
         }
 
         private static void ReloadSymbols(SystemBus sysbus, ulong relocaddr)
