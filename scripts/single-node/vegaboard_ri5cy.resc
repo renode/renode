@@ -16,7 +16,6 @@ showAnalyzer lpuart0
 
 sysbus LoadELF $bin
 
-sysbus Tag <0x4004f000 0x1e4> "INTMUX0: Interrupt Multiplexer 0"
 sysbus Tag <0x4002b000 0x204> "PCC0: Peripheral Clock Controller 0"
 sysbus Tag <0x41027000 0x204> "PCC1: Peripheral Clock Controller 1"
 
@@ -73,10 +72,6 @@ sysbus Tag <0x4002c500 4> "LPFFLCSR" 0xFFFFFFFF
 
 # Slow IRC Configuration Register: configured as high range clock (8 MHz)
 sysbus Tag <0x4002c208 4> "SIRCFFG" 0x1
-
-# INTMUX0 Channel0 IRQ Source Register
-# the value is hardcoded to the one corresponding to lptmr0
-sysbus Tag <0x4004f004 4> "intmux0_channel0_source" 0xdc
 
 # EVENT0: Clear Interrupt Pending Register
 # this is silenced because CPU writes 1 to this register

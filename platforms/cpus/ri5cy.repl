@@ -10,14 +10,17 @@ lpuart0: UART.NXP_LPUART @ sysbus 0x40042000
 
 lpuart1: UART.NXP_LPUART @ sysbus 0x40043000
     fifoSize: 8
+    IRQ -> intmux0#0@13
 
 lptmr0: UART.LowPower_Timer @ sysbus 0x40032000
-    // normally it should be routed via intmux, but we connect it directly to CPU
-    -> cpu@24
+    -> intmux0#0@24
 
 lptmr1: UART.LowPower_Timer @ sysbus 0x40033000
 
 lptmr2: UART.LowPower_Timer @ sysbus 0x4102B000
+
+intmux0: IRQControllers.NXP_INTMUX @ sysbus 0x4004F000
+    [0, 1, 2, 3, 4, 5, 6, 7] -> cpu@[24, 25, 26, 27, 28, 29, 30, 31]
 
 cpu: CPU.Ri5cy @ sysbus
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10

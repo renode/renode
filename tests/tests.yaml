@@ -146,6 +146,7 @@
 - tests/platforms/Renesas_DA14592.robot
 - tests/platforms/Renesas_RZ_G2L.robot
 - tests/peripherals/ICP_101xx.robot
+- tests/peripherals/NXP_INTMUX.robot
 - tests/unit-tests/grammar-number-separator.robot
 - tests/peripherals/PL330_DMA.robot
 - tests/platforms/GR712RC.robot
