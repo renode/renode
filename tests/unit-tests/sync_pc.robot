@@ -102,9 +102,7 @@ Configure Machine
     # Needed to check PC between the blocks on a hook
     Execute Command                 cpu MaximumBlockSize 1
     Execute Command                 cpu SetHookAtBlockBegin "self.DebugLog('block started: ' + 'PC '+ str(self.PC))"
-
-    # Chaining is disabled by default on aarch64
-    Execute Command		    cpu ChainingEnabled True
+    Execute Command		            cpu ChainingEnabled True
 
     Create Log Tester               0.01  defaultPauseEmulation=true
     Execute Command                 logLevel -1
