@@ -450,11 +450,12 @@ class RobotTestSuite(object):
                 self.renode_pid = pid_file.read()
         else:
             # Start Renode
+            file_name = os.path.splitext(os.path.basename(self.path))[0]
+            os.environ["GCOV_PREFIX"] = os.path.join(os.getcwd(), f"output/coverage/{file_name}")
             if options.keep_renode_output:
                 output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
                 logs_dir = os.path.join(output_dir, 'logs')
                 os.makedirs(logs_dir, exist_ok=True)
-                file_name = os.path.splitext(os.path.basename(self.path))[0]
                 suite_name = RobotTestSuite._create_suite_name(file_name, None)
                 fout = open(os.path.join(logs_dir, f"{suite_name}.renode_stdout.log"), "wb", buffering=0)
                 ferr = open(os.path.join(logs_dir, f"{suite_name}.renode_stderr.log"), "wb", buffering=0)

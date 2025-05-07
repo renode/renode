@@ -52,6 +52,7 @@ function print_help() {
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
+  echo "--tlib-coverage                   build tlib with coverage reporting"
   echo "--tlib-only                       only build tlib"
   echo "--tlib-arch                       build only single arch (implies --tlib-only)"
   echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --tlib-arch)"
@@ -124,7 +125,7 @@ do
           SOURCE_PACKAGE=true
           ;;
         "profile-build")
-          CMAKE_COMMON="-DPROFILING_BUILD=ON"
+          CMAKE_COMMON+=" -DPROFILING_BUILD=ON"
           ;;
         "tlib-only")
           TLIB_ONLY=true
@@ -142,6 +143,9 @@ do
               exit 1
           fi
           TLIB_EXPORT_COMPILE_COMMANDS=true
+          ;;
+        "tlib-coverage")
+          CMAKE_COMMON+=" -DCOVERAGE_REPORTING=ON"
           ;;
         "host-arch")
           shift $((OPTIND-1))
