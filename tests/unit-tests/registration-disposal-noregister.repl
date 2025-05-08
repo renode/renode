@@ -1,0 +1,8 @@
+// This file intentionally fails to load. See `Should Not Leave References To A Peripheral That Obtained The System Bus In Its Constructor If This Peripheral Fails Registration`
+// in sysbus.robot.
+gic: IRQControllers.ARM_GenericInterruptController @ sysbus <0x801000000000, +0x10000>
+
+cpu0: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a55"
+    cpuId: 0x0
+    genericInterruptController: gic

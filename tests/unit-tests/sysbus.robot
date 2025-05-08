@@ -543,3 +543,11 @@ Should Not Leave References To Unregistered CPU When Exception Thrown During Its
 
     # will cause a crash if there are stale references
     Execute Command                Clear
+
+Should Not Leave References To A Peripheral That Obtained The System Bus In Its Constructor If This Peripheral Fails Registration
+    Execute Command                mach create
+    Run Keyword And Expect Error   *Cannot register peripheral*
+    ...                            Execute Command  machine LoadPlatformDescription "${CURDIR}${/}registration-disposal-noregister.repl"
+
+    ${x}=                          Allocate Temporary File
+    Execute Command                Save @${x}
