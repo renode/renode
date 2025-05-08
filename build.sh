@@ -380,7 +380,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"")
+PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"" p:Architecture="$HOST_ARCH")
 
 # Paths for tlib
 CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION"

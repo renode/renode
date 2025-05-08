@@ -1,5 +1,6 @@
 # pylint: disable=C0301,C0103,C0111
 from sys import platform
+from platform import machine
 import os
 import signal
 import psutil
@@ -52,9 +53,10 @@ class NUnitTestSuite(object):
     def prepare(self, options):
         if not options.skip_building:
             print("Building {0}".format(self.path))
+            arch = 'arm' if machine() in ['aarch64', 'arm64'] else 'i386'
             if options.runner == 'dotnet':
                 self.builder = 'dotnet'
-                params = ['build', '--verbosity', 'quiet', '--configuration', options.configuration, '/p:NET=true']
+                params = ['build', '--verbosity', 'quiet', '--configuration', options.configuration, '/p:NET=true', f'/p:Architecture={arch}']
             else:
                 if platform == "win32":
                     self.builder = 'MSBuild.exe'
@@ -66,7 +68,8 @@ class NUnitTestSuite(object):
                     'nologo',
                     'verbosity:quiet',
                     'p:OutputDir=tests_output',
-                    f'p:Configuration={options.configuration}')
+                    f'p:Configuration={options.configuration}',
+                    f'p:Architecture={arch}')
                 if options.framework_ver_override:
                     params += self.build_params(f'p:TargetFrameworkVersion=v{options.framework_ver_override}')
             result = subprocess.call([self.builder, *params, self.path])
