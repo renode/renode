@@ -26,9 +26,9 @@ class NUnitTestSuite(object):
     def __init__(self, path):
         #super(NUnitTestSuite, self).__init__(path)
         self.path = path
-    
-    def check(self, options, number_of_runs): #API requires this method 
-        pass 
+
+    def check(self, options, number_of_runs): #API requires this method
+        pass
 
 
     def get_output_dir(self, options, iteration_index, suite_retry_index):
