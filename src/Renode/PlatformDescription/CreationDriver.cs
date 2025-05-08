@@ -1024,6 +1024,12 @@ namespace Antmicro.Renode.PlatformDescription
                 }
                 catch(TargetInvocationException exception)
                 {
+                    // If this is a bus peripheral, its constructor might have called GetSystemBus(this), which leaves a
+                    // reference to the peripheral even if it fails to get registered. Clean up this reference.
+                    if(entry.Variable.Value is IBusPeripheral busPeripheral)
+                    {
+                        machine.TryRemoveBusController(busPeripheral);
+                    }
                     var recoverableException = exception.InnerException as RecoverableException;
                     if(recoverableException == null)
                     {
