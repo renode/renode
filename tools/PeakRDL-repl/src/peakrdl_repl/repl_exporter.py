@@ -1,7 +1,7 @@
 from typing import Union, Any
 
 from systemrdl import RDLListener, RDLWalker
-from systemrdl.node import Node, RootNode, AddrmapNode, RegNode, FieldNode, RegfileNode
+from systemrdl.node import Node, RootNode, AddrmapNode, RegNode, FieldNode, RegfileNode, MemNode
 
 from . import repl
 
@@ -15,6 +15,7 @@ def _is_peripheral(node: Node) -> bool:
         isinstance(child, RegNode)
         or isinstance(child, RegfileNode)
         or isinstance(child, FieldNode)
+        or isinstance(child, MemNode)
         for child in node.children()
     )
 
