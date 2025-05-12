@@ -90,7 +90,7 @@ class NUnitTestSuite(object):
                     print('KILLING A DANGLING {} test process {}'.format(test_agent_name, proc.info['pid']))
                     os.kill(proc.info['pid'], signal.SIGTERM)
 
-    def run(self, options, run_id, iteration_index=1, suite_retry_index=0):
+    def run(self, options, iteration_index=1, suite_retry_index=0):
         # The iteration_index and suite_retry_index arguments are not implemented.
         # They exist for the sake of a uniform interface with robot_tests_provider.
         print('Running ' + self.path)

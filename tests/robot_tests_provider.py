@@ -303,11 +303,6 @@ class RobotTestSuite(object):
         self.tests_without_hotspots = []
 
 
-    def check(self, options, number_of_runs):
-        # Checking if there are no other jobs is moved to `prepare` as it is now possible to skip used ports
-        pass
-
-
     def get_output_dir(self, options, iteration_index, suite_retry_index):
         return os.path.join(
             options.results_directory,
@@ -580,7 +575,7 @@ class RobotTestSuite(object):
             return any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg"))
 
 
-    def run(self, options, run_id=0, iteration_index=1, suite_retry_index=0):
+    def run(self, options, iteration_index=1, suite_retry_index=0):
         if self.path.endswith('renode-keywords.robot'):
             print('Ignoring helper file: {}'.format(self.path))
             return True
