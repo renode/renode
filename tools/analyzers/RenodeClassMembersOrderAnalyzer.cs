@@ -67,9 +67,22 @@ namespace Antmicro.Renode.CustomAnalyzers
 
         public static bool TryGetClassMemberOrder(MemberDeclarationSyntax node, out ClassMemberOrder classMemberOrder)
         {
+            var ignoredModifiers = ImmutableHashSet.Create
+            (
+                "async",
+                "extern",
+                "internal",
+                "override",
+                "partial",
+                "sealed",
+                "unsafe",
+                "virtual",
+                "volatile"
+            );
+
             var modifiers = node
                 .Modifiers
-                .Aggregate("", (acc, val) => $"{acc}_{val}");
+                .Aggregate("", (acc, val) => ignoredModifiers.Contains(val.ToString()) ? acc : $"{acc}_{val}");
             var id = $"{modifiers}_{node.Kind()}";
 
             if(ClassMembersOrderMap.TryGetValue(id, out classMemberOrder))
