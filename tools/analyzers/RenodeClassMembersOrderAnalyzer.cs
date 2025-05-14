@@ -80,8 +80,20 @@ namespace Antmicro.Renode.CustomAnalyzers
                 "volatile"
             );
 
+            var modifiersOrder = new Dictionary<string, int>
+            {
+                {"public",      0},
+                {"protected",   0},
+                {"private",     0},
+                {"static",      1},
+                {"abstract",    2},
+                {"readonly",    3},
+                {"const",       3},
+            }.ToImmutableDictionary();
+
             var modifiers = node
                 .Modifiers
+                .OrderBy(mod => modifiersOrder.GetValueOrDefault(mod.ToString(), -1))
                 .Aggregate("", (acc, val) => ignoredModifiers.Contains(val.ToString()) ? acc : $"{acc}_{val}");
             var id = $"{modifiers}_{node.Kind()}";
 
