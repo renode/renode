@@ -1,0 +1,90 @@
+:name: 1 x IMXRT500, 3 x nRF52840 Pigweed Bluetooth advertiser
+:description: This demo consist of two pairs of machines, each pair being host and controller. First pair runs the Pigweed Bluetooth advertiser sample on IMXRT500 (host), and the Zephyr HCI-UART sample on nRF52840 (controller). Second pair runs the Zephyr Bluetooth Observer demo on the first nRF52840 (host) and the Zephyr HCI-UART sample on the second nRF52840 (controller). In both cases host and controller communicate with each other using HCI-UART.
+
+using sysbus
+
+emulation CreateUARTHub "hci_beacon"
+emulation CreateUARTHub "hci_observer"
+emulation CreateBLEMedium "wireless"
+
+$beacon_host_bin?=@https://dl.antmicro.com/projects/renode/imxrt500-pigweed-bt-advertiser.elf-s_16609580-06fee2105c819251f7d3ff57524d73f971355067
+$observer_host_bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk--zephyr-ble_observer_hci_uart.elf-s_1322896-3cdf09a1f95f708618a3600a360696b7d5c3a988
+$controller_bin?=@https://dl.antmicro.com/projects/renode/nrf52840dk--zephyr-ble_hci_uart.elf-s_2437336-4bf9cccb70ca95fb12667896eec3f777f39f90ee
+
+set skip_function_script
+"""
+cpu.PC = cpu.LR
+"""
+
+set skip_function_return_0_script
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+cpu.SetRegister(0, RegisterValue.Create(0, 64))
+cpu.PC = cpu.LR
+"""
+
+set skip_function_return_1_script
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+cpu.SetRegister(0, RegisterValue.Create(1, 64))
+cpu.PC = cpu.LR
+"""
+
+mach create "beacon_host"
+machine LoadPlatformDescription @platforms/cpus/imxrt500.repl
+connector Connect flexcomm0 hci_beacon
+showAnalyzer flexcomm12
+
+mach create "beacon_controller"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect uart1 hci_beacon
+connector Connect radio wireless
+
+mach create "observer_host"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect uart1 hci_observer
+showAnalyzer uart0
+
+mach create "observer_controller"
+machine LoadPlatformDescription @platforms/boards/nrf52840dk_nrf52840.repl
+connector Connect uart1 hci_observer
+connector Connect radio wireless
+
+macro reset
+"""
+    mach set "observer_controller"
+    sysbus LoadELF $controller_bin
+
+    mach set "beacon_controller"
+    sysbus LoadELF $controller_bin
+
+    mach set "observer_host"
+    sysbus LoadELF $observer_host_bin
+    cpu IsHalted true
+
+    mach set "beacon_host"
+    sysbus LoadELF $beacon_host_bin
+    cpu0 VectorTableOffset `sysbus GetSymbolAddress "vector_table"`
+    cpu0 IsHalted true
+
+    # Skip delays
+    cpu0 AddHook `sysbus GetSymbolAddress "vTaskDelay"` $skip_function_script
+
+    # Skip controller firmware downloading
+    cpu0 AddHook `sysbus GetSymbolAddress "sdio_init"` $skip_function_return_0_script
+    cpu0 AddHook `sysbus GetSymbolAddress "fwdnld_intf_init"` $skip_function_return_1_script
+    cpu0 AddHook `sysbus GetSymbolAddress "sdio_ioport_init"` $skip_function_return_0_script
+    cpu0 AddHook `sysbus GetSymbolAddress "firmware_download"` $skip_function_return_0_script
+
+    # Controllers need to be started earlier as they need time to configure UART devices for reception.
+    # Hosts begin UART transmission early so without the delay the initial part of the communication would be dropped.
+    emulation RunFor "1"
+
+    mach set "observer_host"
+    cpu IsHalted false
+
+    mach set "beacon_host"
+    cpu0 IsHalted false
+"""
+runMacro $reset
+
