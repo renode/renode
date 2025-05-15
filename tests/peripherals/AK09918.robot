@@ -71,6 +71,6 @@ Should Read Samples From RESD
     Check Enviroment                x=0.150000  y=0.300000  z=0.450000
     Check Enviroment                x=0.300000  y=0.450000  z=0.600000
     Check Enviroment                x=0.450000  y=0.600000  z=0.750000
-    # Sensor should go back to the default values after the RESD file finishes
-    Check Enviroment                x=0.001500  y=0.003000  z=0.004500
-    Check Enviroment                x=0.001500  y=0.003000  z=0.004500
+    # Sensor shouldn't go back to the default values after the RESD file finishes
+    Check Enviroment                x=0.450000  y=0.600000  z=0.750000
+    Check Enviroment                x=0.450000  y=0.600000  z=0.750000
