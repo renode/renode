@@ -9,16 +9,16 @@
             "preLaunchTask": "Build - Debug",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/output/bin/Debug/Renode.exe",
-            "cwd": "${workspaceRoot}",
+            "program": "${config:workspacePointer}/output/bin/Debug/Renode.exe",
+            "cwd": "${config:workspacePointer}",
         },
         {
             "name": "Launch - Release",
             "preLaunchTask": "Build - Release",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/output/bin/Release/Renode.exe",
-            "cwd": "${workspaceRoot}"
+            "program": "${config:workspacePointer}/output/bin/Release/Renode.exe",
+            "cwd": "${config:workspacePointer}"
         },
         {
             "name": "Attach",
@@ -29,10 +29,27 @@
             "port": 55555
         },
         {
+            "name": ".NET Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${config:workspacePointer}/output/bin/Debug/Renode.dll",
+            "cwd": "${config:workspacePointer}",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+        {
             "name": "(gdb) Tlib Attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "${workspaceRoot}/output/bin/Debug/Renode.exe",
+            // When attaching to .NET process (as opposed to Mono), change Renode.exe to Renode.dll
+            "program": "${config:workspacePointer}/output/bin/Debug/Renode.exe",
             "processId": "${command:pickProcess}",
             "MIMode": "gdb",
             "setupCommands": [
