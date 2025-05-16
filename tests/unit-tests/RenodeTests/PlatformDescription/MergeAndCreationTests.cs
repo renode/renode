@@ -293,7 +293,7 @@ not a single line '''";
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.SyntaxError, exception.Error);
             var position = exception.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[1];
-            Assert.AreEqual("At 4:18:", position);
+            Assert.AreEqual("At 3:37:", position);
         }
 
         [Test]
