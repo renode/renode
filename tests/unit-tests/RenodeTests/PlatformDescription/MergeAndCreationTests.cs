@@ -352,6 +352,24 @@ not a single line '''";
             Assert.AreEqual("this is \'''\nnot a single line ", mock.Placeholder);
         }
 
+        [Test]
+        public void ShouldNotTreatDoubleSlashInMultilineStringAsComment()
+        {
+            var source = @"
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    Placeholder: ''' // this is //
+// not
+a comment // neither is this
+or //this
+or// this
+or this // '''";
+
+            ProcessSource(source);
+            MockCPU mock;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu", out mock));
+            Assert.AreEqual(" // this is //\n// not\na comment // neither is this\nor //this\nor// this\nor this // ", mock.Placeholder);
+        }
+
         [Test, Ignore("Ignored")]
         public void ShouldHandleMultipleBackslashesAsEscapingCharacters()
         {

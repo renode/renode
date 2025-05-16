@@ -146,7 +146,8 @@ finish:
                 }
                 while(true)
                 {
-                    switch(FindInLine(line, ref currentIndex))
+                    FindResult found;
+                    switch(found = FindInLine(line, ref currentIndex))
                     {
                     case FindResult.Nothing:
                         AccountBraceLevel(line, ref localBraceLevel);
@@ -158,16 +159,19 @@ finish:
                         yield return line;
                         goto next;
                     case FindResult.StringStart:
-                        currentIndex++;
+                    case FindResult.MultilineStringStart: // multiline strings are already rolled into one string containing \n here
+                        var delimiter = found == FindResult.StringStart ? StringDelimiter : MultilineStringDelimiter;
+                        currentIndex += delimiter.Length;
                         while(true)
                         {
-                            currentIndex = line.IndexOf('"', currentIndex) + 1;
-                            if(currentIndex == 0) // means that IndexOf returned -1
+                            var nextDelimiterIndex = line.IndexOf(delimiter, currentIndex);
+                            if(nextDelimiterIndex == -1)
                             {
                                 throw GetException(ParsingError.SyntaxError, lineNo, originalLine.Length - 1, originalLine, "Unterminated string.", path);
                             }
+                            currentIndex = nextDelimiterIndex + delimiter.Length;
                             // if this is escaped quote, just ignore it
-                            if(!IsEscapedPosition(line, currentIndex - 1))
+                            if(!IsEscapedPosition(line, nextDelimiterIndex))
                             {
                                 break;
                             }
@@ -215,6 +219,13 @@ finish:
                 {
                 case '"':
                     return FindResult.StringStart;
+                case '\'':
+                    if(line.Length >= currentIndex + MultilineStringDelimiter.Length && line.Substring(currentIndex, MultilineStringDelimiter.Length) == MultilineStringDelimiter)
+                    {
+                        currentIndex += MultilineStringDelimiter.Length;
+                        return FindResult.MultilineStringStart;
+                    }
+                    break;
                 case '/':
                     if(line.Length > currentIndex + 1)
                     {
@@ -389,12 +400,14 @@ finish:
         }
 
         private const int SpacesPerIndent = 4;
+        private const string StringDelimiter = "\"";
         private const string MultilineStringDelimiter = "'''";
 
         private enum FindResult
         {
             Nothing,
             StringStart,
+            MultilineStringStart,
             MultilineCommentStart,
             SingleLineCommentStart
         }
