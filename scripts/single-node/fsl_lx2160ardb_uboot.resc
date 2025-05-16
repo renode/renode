@@ -7,7 +7,7 @@ showAnalyzer uart0
 
 macro reset
 """
-    cpu0 StubPSCICalls true
+    cpu0 PSCIEmulationMethod SMC
     sysbus LoadELF $bin
 """
 
@@ -15,7 +15,7 @@ macro reset
 # atf implementation can be found here:
 # https://github.com/Xilinx/arm-trusted-firmware/blob/e4a37b000fb9a708112da1e06da0e8fad939dc86/plat/nxp/common/sip_svc/sip_svc.c#L115
 # Basically it returns available dram regions size
-cpu0 AddCustomPSCIStub 0xc200ff12 """
+cpu0 AddCustomPSCIHandler 0xc200ff12 """
 from Antmicro.Renode.Peripherals.CPU import RegisterValue
 
 x1 = self.GetRegisterUlong(1)
