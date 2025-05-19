@@ -173,18 +173,18 @@ class RESDBlockMetadata:
 
         method = name[len(prefix):]
         type_idx = ({
-            'int8':   0x00,
-            'uint8':  0x01,
-            'int16':  0x02,
-            'uint16': 0x03,
-            'int32':  0x04,
-            'uint32': 0x05,
-            'int64':  0x06,
-            'uint64': 0x07,
-            'float':  0x08,
-            'double': 0x09,
-            'text':   0x0A,
-            'blob':   0x0B,
+            'int8':   0x01,
+            'uint8':  0x02,
+            'int16':  0x03,
+            'uint16': 0x04,
+            'int32':  0x05,
+            'uint32': 0x06,
+            'int64':  0x07,
+            'uint64': 0x08,
+            'float':  0x09,
+            'double': 0x0A,
+            'text':   0x0B,
+            'blob':   0x0C,
         }).get(method, None)
 
         if method is None:
