@@ -208,7 +208,7 @@ class RESDBlockMetadata:
     def _insert(self, type_idx, key, value):
         self.remove(key)
         self.keys.add(key)
-        self.metadata.push({
+        self.metadata.append({
             'type': type_idx,
             'key': key,
             'value': value
