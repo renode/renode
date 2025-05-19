@@ -66,7 +66,7 @@ Should Boot And Login
 Should Read Temperature And Pressure
     Requires                        booted-linux
 
-    # The values set and received from the sensor will not match 1:1, 
+    # The values set and received from the sensor will not match 1:1,
     # since the sensor has finite precision, but they fit within sensor's accuracy range
 
     Check Enviroment                temperature=-.306624  pressure=29.999993
