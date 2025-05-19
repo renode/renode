@@ -91,7 +91,9 @@ python3 $CONDA_PREFIX/opt/renode/tests/run_tests.py --robot-framework-remote-ser
 RESULT_CODE=$?
 if [ -n "${STTY_CONFIG:-}" ]
 then
+    trap "" SIGTTOU
     stty "$STTY_CONFIG"
+    trap - SIGTTOU
 fi
 exit $RESULT_CODE
 EOF

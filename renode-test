@@ -18,6 +18,9 @@ RESULT_CODE=$?
 set -e
 if [ -n "${STTY_CONFIG:-}" ]
 then
+    # SIGTTOU might be sent when trying to change the terminal settings when "renode-test" runs in the background so trap the signal.
+    trap "" SIGTTOU
     stty "$STTY_CONFIG"
+    trap - SIGTTOU
 fi
 exit $RESULT_CODE
