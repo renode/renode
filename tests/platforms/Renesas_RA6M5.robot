@@ -357,14 +357,14 @@ Should Communicate Over IIC
 
     Execute Command                 iic1.adxl345 FeedSample 1468 745 8921
     Wait For Line On Uart           X-axis = 367.00, Y-axis = 186.00, Z-axis = 2230.00
-    
+
     Execute Command                 iic1.adxl345 FeedSample 3912 8888 5456
     Wait For Line On Uart           X-axis = 978.00, Y-axis = 2222.00, Z-axis = 1364.00
-    
+
     Execute Command                 iic1.adxl345 FeedSample 0 5000 0
     Wait For Line On Uart           X-axis = 0.00, Y-axis = 1250.00, Z-axis = 0.00
 
-    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00 
+    Wait For Line On Uart           X-axis = 0.00, Y-axis = 0.00, Z-axis = 0.00
 
 CK IIC Board Should Work
     Prepare Machine With CK Board   ${AWS_CC_ELF}
@@ -393,10 +393,10 @@ CK IIC Board Should Work
     Wait For Line On Uart           ETOH: 000.008
     Wait For Line On Uart           ECO2: 404.384
 
-    Wait For Line On Uart           OAQ Sensor Data 
+    Wait For Line On Uart           OAQ Sensor Data
     Wait For Line On Uart           OAQ: 231.935
 
-    Wait For Line On Uart           HS3001 Sensor Data 
+    Wait For Line On Uart           HS3001 Sensor Data
     Wait For Line On Uart           Humidity: 050.099
     Wait For Line On Uart           Temperature: 013.500
 
