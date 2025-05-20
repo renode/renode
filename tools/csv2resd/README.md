@@ -6,7 +6,8 @@ This directory contains the CSV2RESD tool, which allows converting CSV files to 
 
 ### Syntax
 `./csv2resd.py [GROUP1] [GROUP2] [GROUP2] ...`
-`GROUP ::= --input <csv-file> [--map <type>:<field(s)>:<target(s)>*:<channel>*] --start-time <start-time> --frequency <frequency> --timestamp <timestamp>`
+
+`GROUP ::= --input <csv-file> [--offset <offset>] [--count <count>] [--map <type>:<field(s)>:<target(s)>*:<channel>*] --start-time <start-time> --frequency <frequency> --timestamp <timestamp>`
 
 Syntax allows for multiple specification of group, where `--input` is a delimiter between groups.
 For each `--input`, multiple mappings (`--map`) can be specified. The `*` in `--map` signs, that given property is optional:
