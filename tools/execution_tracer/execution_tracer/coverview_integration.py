@@ -14,7 +14,7 @@ from datetime import datetime
 from execution_tracer.common_utils import extract_common_prefix, remove_prefix
 from execution_tracer.dwarf import Coverage
 
-def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_dict: str, *, remove_common_path_prefix: bool = False) -> bool:
+def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_dict: str, *, tests_as_total: bool, remove_common_path_prefix: bool = False) -> bool:
     merge_config = {}
     success = True
     if coverview_dict is not None:
@@ -59,6 +59,8 @@ def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_
         }
         # "merge_config" will replace values from "config_file"
         config_file = {**config_file, **merge_config}
+        if tests_as_total:
+            config_file["tests_as_total"] = True
         archive.writestr('config.json', json.dumps(config_file))
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
