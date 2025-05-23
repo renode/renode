@@ -11,7 +11,6 @@ import argparse
 import pexpect
 import psutil
 import re
-import telnetlib
 import difflib
 from time import time
 from os import path
@@ -74,12 +73,6 @@ parser.add_argument("--renode-gdb-port",
                     action="store",
                     default=RENODE_GDB_PORT,
                     help="Port on which Renode will comunicate with GDB server")
-parser.add_argument("-P", "--renode-telnet-port",
-                    type=int,
-                    dest="renode_telnet_port",
-                    action="store",
-                    default=RENODE_TELNET_PORT,
-                    help="Port on which Renode will comunicate with telnet")
 parser.add_argument("-b", "--binary",
                     dest="debug_binary",
                     action="store",
@@ -123,23 +116,16 @@ Stack = list[tuple[str, int]]
 
 class Renode:
     """A class for communicating with a remote instance of Renode."""
-    def __init__(self, binary: str, port: int):
-        """Spawns a new instance of Renode and connects to it through Telnet."""
-        print(f"* Starting Renode instance on telnet port {port}")
-        # making sure there is only one instance of Renode on this port
-        for p in psutil.process_iter():
-            process_name = p.name().casefold()
-            if "renode" in process_name and str(port) in process_name:
-                print("!!! Found another instance of Renode running on the same port. Killing it before proceeding")
-                p.kill()
+    def __init__(self, binary: str):
+        """Spawns a new instance of Renode."""
+        print(f"* Starting Renode instance")
         try:
-            self.proc = pexpect.spawn(f"{binary} --disable-gui --plain --port {port}", timeout=20)
+            self.proc = pexpect.spawn(f"{binary} --disable-gui --console --plain", timeout=20)
             self.proc.stripcr = True
-            self.proc.expect("Monitor available in telnet mode on port")
+            self.proc.expect('(monitor)')
         except pexpect.exceptions.EOF as err:
-            print("!!! Renode failed to start telnet server! (is --renode-path correct? is --renode-telnet-port available?)")
+            print("!!! Renode failed to start! (is --renode-path correct?)")
             raise err
-        self.connection = telnetlib.Telnet("localhost", port)
         # Sometimes first command does not work, hence we send this dummy one to make sure we got functional connection right after initialization
         self.command("echo 'Connected to GDB comparator'")
 
@@ -155,8 +141,7 @@ class Renode:
             print(str(self.proc))
             raise RuntimeError
 
-        input = input + "\n"
-        self.connection.write(input.encode())
+        self.proc.sendline(input.encode())
         if expected_log != "":
             try:
                 self.proc.expect([expected_log.encode()])
@@ -169,10 +154,6 @@ class Renode:
                 print(SECTION_SEPARATOR)
                 print(f"{err=} ; {type(err)=}")
                 exit(1)
-
-    def get_output(self) -> bytes:
-        """Reads all output from the Telnet connection."""
-        return self.connection.read_all()
 
 
 class GDBInstance:
@@ -457,7 +438,7 @@ class GDBComparator:
 def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GDBComparator]:
     """Spawns Renode, the reference process, `GDBComparator` and returns their handles (in that order)."""
     reference = pexpect.spawn(args.reference_command, timeout=10)
-    renode = Renode(args.renode_path, args.renode_telnet_port)
+    renode = Renode(args.renode_path)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
     renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
     gdb_comparator = GDBComparator(args, renode.proc, reference)
@@ -582,8 +563,6 @@ async def main() -> None:
     args = parser.parse_args()
     assert 0 <= args.reference_gdb_port <= 65535, "Illegal reference GDB port"
     assert 0 <= args.renode_gdb_port <= 65535, "Illegal Renode GDB port"
-    assert 0 <= args.renode_telnet_port <= 65535, "Illegal Renode Telnet port"
-    assert args.reference_gdb_port != args.renode_gdb_port != args.renode_telnet_port, "Overlapping port numbers"
     if args.stop_address:
         args.stop_address = int(args.stop_address, 16)
 

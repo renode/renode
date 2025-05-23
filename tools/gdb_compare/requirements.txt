@@ -1,4 +1,3 @@
-asyncio==3.4.3
-psutil==5.8.0
-pexpect==4.8.0
-telnetlib3==1.0.4
+asyncio~=3.4.3
+psutil~=5.8.0
+pexpect~=4.9.0
