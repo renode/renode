@@ -100,6 +100,7 @@
 - tests/unit-tests/external-mmu.robot
 - tests/unit-tests/iommu.robot
 - tests/unit-tests/file-paths.robot
+- tests/unit-tests/load-command.robot
 - tests/platforms/PolarFireSoC.robot
 - tests/platforms/SLTB004A.robot
 - tests/platforms/ambiq-apollo4.robot
