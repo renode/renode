@@ -180,7 +180,7 @@ class GDBInstance:
 
     def progress_by(self, delta: int, type: str = "stepi") -> None:
         """Steps `delta` times."""
-        adjusted_timeout = max(120, int(delta) / 5)
+        adjusted_timeout = max(1200, int(delta) / 5)
         self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
     def get_symbol_at(self, addr: str) -> str:
@@ -192,7 +192,7 @@ class GDBInstance:
         """Deletes all breakpoints."""
         self.run_command("clear", async_=False)
 
-    def run_command(self, command: str, timeout: float = 10, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
+    def run_command(self, command: str, timeout: float = 100, confirm: bool = False, dont_wait_for_output: bool = False, async_: bool = True) -> None:
         """Send an arbitrary command to the underlying GDB instance."""
         if not self.process.isalive():
             print(f"!!! The {self.name} GDB process has died!")
@@ -270,7 +270,7 @@ class GDBInstance:
         else:
             raise TypeError
 
-    async def expect(self, timeout: float = 10) -> None:
+    async def expect(self, timeout: float = 100) -> None:
         """Await execution of the last command to finish and update `self.last_output`."""
         try:
             await self.task
@@ -388,7 +388,7 @@ class GDBComparator:
 
     async def progress_by(self, delta: int, type: str = "stepi") -> None:
         """Steps `delta` times in all owned instances."""
-        adjusted_timeout = max(120, int(delta) / 5)
+        adjusted_timeout = max(1200, int(delta) / 5)
         await self.run_command(type + (f" {delta}" if int(delta) > 1 else ""), timeout=adjusted_timeout)
 
     async def compare_instances(self, previous_pc: str) -> None:
