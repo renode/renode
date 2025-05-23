@@ -334,7 +334,7 @@ namespace Antmicro.Renode.Network
 
         private readonly List<byte> buffer = new List<byte>();
         private readonly CommandHandlerCollection commandHandlers;
-        private readonly SocketServerProvider socketServerProvider = new SocketServerProvider(emitConfigBytes: false);
+        private readonly SocketServerProvider socketServerProvider = new SocketServerProvider(telnetMode: false);
 
         private readonly object locker = new object();
 
