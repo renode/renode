@@ -809,6 +809,11 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                     else
                     {
+                        // any manual irq connection should remove all automatic connections
+                        if (objectToSetOn is IHasAutomaticallyConnectedGPIOOutputs objectWithAutomaticConnections)
+                        {
+                            objectWithAutomaticConnections.DisconnectAutomaticallyConnectedGPIOOutputs();
+                        }
                         var connections = ((INumberedGPIOOutput)objectToSetOn).Connections;
                         if(!connections.ContainsKey(irqEnd.Number))
                         {
