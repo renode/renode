@@ -27,9 +27,9 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x6000000; size: 0x010000; region: "distributor" };
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0; address: 0x6200000 }
     }
-    [0-3] -> cpu0@[0-3]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
     supportsTwoSecurityStates: true
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 i2c0: I2C.VybridI2C @ sysbus 0x2000000
     ->gic@34

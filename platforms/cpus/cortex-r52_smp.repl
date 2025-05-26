@@ -10,7 +10,7 @@ gic: @ {
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu;  address: 0xAF100000 };
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; address: 0xAF120000 }
     }
-    [4-7] -> cpu1@[0-3]
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 timer1: Timers.ARM_GenericTimer @ cpu1
     frequency: 100000000

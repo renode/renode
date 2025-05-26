@@ -63,11 +63,8 @@ apuGic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9010000; size: 0x010000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xf9020000; size: 0x010000; region: "cpuInterface" }
     }
-    [0-3] -> apu0@[0-3]
-    [4-7] -> apu1@[0-3]
-    [8-11]  -> apu2@[0-3]
-    [12-15] -> apu3@[0-3]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 // RPU
 
@@ -97,9 +94,8 @@ rpuGic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xf9000000; size: 0x1000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0xf9001000; size: 0x100; region: "cpuInterface" }
     }
-    [0-1] -> rpu0@[0-1]
-    [4-5] -> rpu1@[0-1]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 // MEMORY
 

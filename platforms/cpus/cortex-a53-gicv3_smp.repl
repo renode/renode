@@ -52,6 +52,4 @@ gic: @ {
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu2; address: 0x80e0000 };
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu3; address: 0x8100000 }
     }
-    [4-7]   -> cpu1@[0-3]
-    [8-11]  -> cpu2@[0-3]
-    [12-15] -> cpu3@[0-3]
+    // GIC -> ARM CPU interrupt connections are generated automatically

@@ -33,8 +33,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; visibleTo: cpu_m33; address: 0x51960000 }
     }
     architectureVersion: ARM_GenericInterruptControllerVersion.GICv3
-    [0-3] -> cpu0@[0-3]
-    [4-7] -> cpu1@[0-3]
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 timer0: Timers.ARM_GenericTimer @ cpu0
     frequency: 24000000
