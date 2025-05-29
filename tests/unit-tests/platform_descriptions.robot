@@ -4,6 +4,7 @@ Suite Setup                   Get Test Cases
 *** Variables ***
 ${platforms_path}=            ${CURDIR}${/}..${/}..${/}platforms
 @{pattern}=                   *.repl
+${invalid_using_error}=       REGEXP: (?s:.)* Using 'invalid' does not exist(?s:.)*
 # Some repls are not standalone and need to be included by other repls with "using" syntax
 # or added dynamically to the existing platform with "machine LoadPlatformDescription" command.
 # We maintain the known list of such repls to exclude from a standalone testing.
@@ -39,3 +40,8 @@ Should Load Repls
     FOR  ${test}  IN  @{platforms}
         ${test}
     END
+
+Should Gracefully Fail At Invalid Using
+  Execute Command               mach create
+  Run Keyword And Expect Error  ${invalid_using_error}  Execute Command  machine LoadPlatformDescriptionFromString "using \\"invalid\\""
+

@@ -49,7 +49,16 @@ namespace Antmicro.Renode.PlatformDescription
                     // description - usings later in the description are pushed to the stack first, so they are popped last.
                     foreach(var usingEntry in currentFile.ParsedDescription.Usings.Reverse())
                     {
-                        var filePath = Path.GetFullPath(creationDriver.usingResolver.Resolve(usingEntry.Path, currentFile.Path));
+                        var resolver = creationDriver.usingResolver.Resolve(usingEntry.Path, currentFile.Path);
+
+                        if(resolver == null)
+                        {
+                            creationDriver.HandleError(ParsingError.UsingFileNotFound, usingEntry.Path,
+                                    string.Format("Using '{0}' does not exist.", usingEntry.Path), true);
+                        }
+
+                        var filePath = Path.GetFullPath(resolver);
+
                         if(!File.Exists(filePath))
                         {
                             creationDriver.HandleError(ParsingError.UsingFileNotFound, usingEntry.Path,
