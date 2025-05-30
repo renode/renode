@@ -35,7 +35,7 @@ Should Boot Linux
     Wait For Prompt On Uart   \#
 
     # This platform must use an old approach as it fails to deserialize on Windows and macOS
-    Provides                  booted-linux  Reexecution
+    Provides                  booted-linux
 
 Should Ls
     [Documentation]           Tests shell responsiveness in Linux on SiFive Freedom U540 platform.
