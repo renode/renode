@@ -396,6 +396,7 @@ class RobotTestSuite(object):
             options.exclude.append('skip_dotnet')
 
         renode_command = command
+        stdout_path, stderr_path = None, None
 
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
@@ -423,14 +424,14 @@ class RobotTestSuite(object):
 
             command = ['perf', 'record', '-q', '-g', '-F', 'max'] + command + ['--pid-file', pid_filename]
 
-            perf_stdout_stderr_file_name = "perf_stdout_stderr"
+            stdout_path = "perf_stdout_stderr"
 
             if options.keep_renode_output:
                 print("Note: --keep-renode-output is not supported when using --perf-output-path")
 
-            print(f"WARNING: perf stdout and stderr is being redirected to {perf_stdout_stderr_file_name}")
+            print(f"WARNING: perf stdout and stderr is being redirected to {stdout_path}")
 
-            perf_stdout_stderr_file = open(perf_stdout_stderr_file_name, "w")
+            perf_stdout_stderr_file = open(stdout_path, "w")
             process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file)
 
             pid_file_path = os.path.join(self.remote_server_directory, pid_filename)
@@ -457,8 +458,10 @@ class RobotTestSuite(object):
                 logs_dir = os.path.join(output_dir, 'logs')
                 os.makedirs(logs_dir, exist_ok=True)
                 suite_name = RobotTestSuite._create_suite_name(file_name, None)
-                fout = open(os.path.join(logs_dir, f"{suite_name}.renode_stdout.log"), "wb", buffering=0)
-                ferr = open(os.path.join(logs_dir, f"{suite_name}.renode_stderr.log"), "wb", buffering=0)
+                stdout_path = os.path.join(logs_dir, f"{suite_name}.renode_stdout.log")
+                stderr_path = os.path.join(logs_dir, f"{suite_name}.renode_stderr.log")
+                fout = open(stdout_path, "wb", buffering=0)
+                ferr = open(stderr_path, "wb", buffering=0)
                 process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr)
                 if process.pid == -1:
                     report_dead_subprocess(process)
@@ -488,8 +491,11 @@ class RobotTestSuite(object):
                 sleep(0.5)
                 countdown -= 0.5
         else:
+            # PID is preserved for error message as the field gets reset in `self._close_remote_server`.
+            process_pid = self.renode_pid
+            self.log_process_data(process, stdout_path, stderr_path)
             self._close_remote_server(process, options)
-            raise TimeoutError(f"Couldn't access port file for Renode instance pid {self.renode_pid}; timed out after {timeout_s}s")
+            raise TimeoutError(f"Couldn't access port file for Renode instance pid {process_pid}; timed out after {timeout_s}s")
 
         # If a certain port was expected, let's make sure Renode uses it.
         if remote_server_port and remote_server_port != self.remote_server_port:
@@ -497,6 +503,26 @@ class RobotTestSuite(object):
             raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
 
         return process
+
+    def log_process_data(self, process, stdout_path, stderr_path):
+        process.poll()
+
+        separator = "=" * 80
+        process_summary = "\n".join(
+            [
+                separator,
+                f"Process `{' '.join(process.args)}` [pid: {process.pid}] state:",
+                f"return code: {process.returncode}",
+            ]
+        )
+        if stdout_path:
+            with open(stdout_path, 'rt') as stdout:
+                process_summary += f"\nstdout: \n{stdout.read()}"
+        if stderr_path:
+            with open(stderr_path, 'rt') as stderr:
+                process_summary += f"\nstderr: \n{stderr.read()}"
+        process_summary += separator
+        print(process_summary)
 
     def __move_perf_data(self, options):
         perf_data_path = os.path.join(self.remote_server_directory, "perf.data")
