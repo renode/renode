@@ -55,9 +55,9 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x1C81000; size: 0x1000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0x1C82000; size: 0x100; region: "cpuInterface" }
     }
-    0 -> cpu@0
     supportsTwoSecurityStates: false
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 // The cpuType, the frequency of the timer and the timer interrupt id are extracted from the legacy CPU.CortexA7 class
 cpu: CPU.ARMv7A @ sysbus

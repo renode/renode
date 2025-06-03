@@ -21,11 +21,6 @@ cpu3: CPU.ARMv7R @ sysbus
     cpuId: 3
     signalsUnit: signalsUnit
 
-gic:
-    [4,5] -> cpu1@[0,1]
-    [8,9] -> cpu2@[0,1]
-    [12,13] -> cpu3@[0,1]
-
 privateTimer1: Timers.ARM_PrivateTimer @ {
         sysbus new Bus.BusPointRegistration { address: 0xae000600; cpu: cpu1 }
     }

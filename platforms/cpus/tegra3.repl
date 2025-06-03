@@ -39,9 +39,9 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x50041000; size: 0x1000; region: "distributor" };
         sysbus new Bus.BusMultiRegistration { address: 0x50040100; size: 0x100; region: "cpuInterface" }
     }
-    0 -> cpu@0
     supportsTwoSecurityStates: false
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 tmr1: Timers.TegraTimer @ sysbus 0x60005000
     -> gic@0

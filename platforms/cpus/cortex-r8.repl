@@ -14,9 +14,9 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0xae000100; size: 0x100; region: "cpuInterface" };
         sysbus new Bus.BusMultiRegistration { address: 0xae001000; size: 0x1000; region: "distributor" }
     }
-    [0,1] -> cpu0@[0,1]
     architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
     supportsTwoSecurityStates: false
+    // GIC -> ARM CPU interrupt connections are generated automatically
 
 privateTimer0: Timers.ARM_PrivateTimer @ {
         sysbus new Bus.BusPointRegistration { address: 0xae000600; cpu: cpu0 }
