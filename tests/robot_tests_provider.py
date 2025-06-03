@@ -487,7 +487,7 @@ class RobotTestSuite(object):
                         continue
                     self.remote_server_port = int(port_num)
                 break
-            except:
+            except FileNotFoundError:
                 sleep(0.5)
                 countdown -= 0.5
         else:
