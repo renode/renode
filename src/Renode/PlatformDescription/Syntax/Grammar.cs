@@ -50,7 +50,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         //not set as a token, as it may be used inside strings where we want to preserve spaces
         public static readonly Parser<char> QuotationMark = Parse.Char('"');
 
-        public static readonly Parser<string> MultiQuotationMark = Parse.String("'''").Text(); 
+        public static readonly Parser<string> MultiQuotationMark = Parse.String("'''").Text();
 
         public static readonly Parser<char> EscapeCharacter = Parse.Char('\\');
 
@@ -140,7 +140,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from content in QuotedStringElement.Many().Text()
              from closingQuote in QuotationMark
              select content).Token().Named("quoted string");
-       
+
         public static readonly Parser<string> MultilineQuotedString =
             (from openingQuote in MultiQuotationMark
              from content in MultiQuotedStringElement.Many().Select(x => string.Join(String.Empty, x))
@@ -217,7 +217,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from colon in Colon
              from value in Value.Named("constructor or property value").Or(NoneKeyword).Or(EmptyKeyword)
              select new ConstructorOrPropertyAttribute(identifier, value)).Named("constructor or property name and value");
- 
+
         public static readonly Parser<string> QuotedMonitorStatementElement =
             (from openingQuote in QuotationMark
              from content in QuotedStringElement.Many().Text()
