@@ -838,6 +838,41 @@ peri:
         }
 
         [Test]
+        public void ShouldReplaceReset()
+        {
+            var source = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus <0, 1>
+    reset:
+        Increment
+
+peri:
+    reset:
+        Increment
+        Increment";
+
+            ProcessSource(source);
+            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment", "Increment" }, It.IsAny<Action<string>>()));
+        }
+
+        [Test]
+        public void ShouldAddReset()
+        {
+            var source = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
+    reset:
+        Increment
+
+peri:
+    reset add:
+        Increment
+        Increment";
+
+
+            ProcessSource(source);
+            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment", "Increment", "Increment" }, It.IsAny<Action<string>>()));
+        }
+
+        [Test]
         public void ShouldFindCyclicDependency()
         {
             var source = @"
