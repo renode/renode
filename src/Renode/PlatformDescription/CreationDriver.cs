@@ -32,11 +32,11 @@ namespace Antmicro.Renode.PlatformDescription
 
     public sealed partial class CreationDriver
     {
-        public CreationDriver(Machine machine, IUsingResolver usingResolver, IInitHandler initHandler)
+        public CreationDriver(Machine machine, IUsingResolver usingResolver, IScriptHandler scriptHandler)
         {
             this.usingResolver = usingResolver;
             this.machine = machine;
-            this.initHandler = initHandler;
+            this.scriptHandler = scriptHandler;
             variableStore = new VariableStore();
             processedDescriptions = new List<Description>();
             objectValueUpdateQueue = new Queue<ObjectValue>();
@@ -198,8 +198,8 @@ namespace Antmicro.Renode.PlatformDescription
                 while(objectValueInitQueue.Count > 0)
                 {
                     var objectValue = objectValueInitQueue.Dequeue();
-                    initHandler.Execute(objectValue, objectValue.Attributes.OfType<InitAttribute>().Single().Lines,
-                                        x => HandleInitableError(x, objectValue));
+                    scriptHandler.Execute(objectValue, objectValue.Attributes.OfType<InitAttribute>().Single().Lines,
+                                        x => HandleInitSectionError(x, objectValue));
                 }
                 foreach(var entry in sortedForRegistration)
                 {
@@ -208,7 +208,7 @@ namespace Antmicro.Renode.PlatformDescription
                     {
                         continue;
                     }
-                    initHandler.Execute(entry, initAttribute.Lines, x => HandleInitableError(x, entry));
+                    scriptHandler.Execute(entry, initAttribute.Lines, x => HandleInitSectionError(x, entry));
                 }
             }
             finally
@@ -566,22 +566,22 @@ namespace Antmicro.Renode.PlatformDescription
             });
             if(entry.Attributes.Any(x => x is InitAttribute))
             {
-                ValidateInitable(entry);
+                ValidateInitSection(entry);
             }
         }
 
-        private void ValidateInitable(IInitable initable)
+        private void ValidateInitSection(IScriptable scriptable)
         {
             string errorMessage;
-            if(!initHandler.Validate(initable, out errorMessage))
+            if(!scriptHandler.ValidateInit(scriptable, out errorMessage))
             {
-                HandleInitableError(errorMessage, initable);
+                HandleInitSectionError(errorMessage, scriptable);
             }
         }
 
-        private void HandleInitableError(string message, IInitable initable)
+        private void HandleInitSectionError(string message, IScriptable scriptable)
         {
-            HandleError(ParsingError.InitSectionValidationError, initable.Attributes.Single(x => x is InitAttribute), message, false);
+            HandleError(ParsingError.InitSectionValidationError, scriptable.Attributes.Single(x => x is InitAttribute), message, false);
         }
 
         private void CreateFromEntry(Entry entry)
@@ -1272,7 +1272,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
             if(value.Attributes.Any(x => x is InitAttribute))
             {
-                ValidateInitable(value);
+                ValidateInitSection(value);
             }
             return result;
         }
@@ -1784,7 +1784,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         private readonly Machine machine;
         private readonly IUsingResolver usingResolver;
-        private readonly IInitHandler initHandler;
+        private readonly IScriptHandler scriptHandler;
         private readonly VariableStore variableStore;
         private readonly List<Description> processedDescriptions;
         private readonly Queue<ObjectValue> objectValueUpdateQueue;

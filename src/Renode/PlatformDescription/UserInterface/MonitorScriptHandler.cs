@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -14,17 +14,17 @@ using Antmicro.Renode.UserInterface;
 
 namespace Antmicro.Renode.PlatformDescription.UserInterface
 {
-    public sealed class MonitorInitHandler : IInitHandler
+    public sealed class MonitorScriptHandler : IScriptHandler
     {
-        public MonitorInitHandler(Machine machine, Monitor monitor)
+        public MonitorScriptHandler(Machine machine, Monitor monitor)
         {
             this.machine = machine;
             this.monitor = monitor;
         }
 
-        public void Execute(IInitable initable, IEnumerable<string> statements, Action<string> errorHandler)
+        public void Execute(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler)
         {
-            var entry = initable as Entry;
+            var entry = scriptable as Entry;
             string name;
             if(entry.Variable.Value is Machine)
             {
@@ -41,9 +41,9 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
             }
         }
 
-        public bool Validate(IInitable initable, out string message)
+        public bool ValidateInit(IScriptable scriptable, out string message)
         {
-            var entry = initable as Entry;
+            var entry = scriptable as Entry;
             if(entry == null)
             {
                 message = "The init section is only allowed for entries.";

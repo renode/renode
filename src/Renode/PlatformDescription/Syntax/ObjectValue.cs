@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-    public class ObjectValue : Value, IInitable
+    public class ObjectValue : Value, IScriptable
     {
         public ObjectValue(StringWithPosition typeName, IEnumerable<Attribute> attributes)
         {

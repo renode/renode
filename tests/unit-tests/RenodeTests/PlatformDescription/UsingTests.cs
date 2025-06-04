@@ -429,7 +429,7 @@ using ""A""";
             {
                 usingResolver.With(letters[i - 1].ToString(), sources[i]);
             }
-            var creationDriver = new CreationDriver(machine ?? new Machine(), usingResolver, new FakeInitHandler());
+            var creationDriver = new CreationDriver(machine ?? new Machine(), usingResolver, new FakeScriptHandler());
         	creationDriver.ProcessDescription(sources[0]);
         }
 

@@ -558,7 +558,7 @@ p: Antmicro.Renode.UnitTests.Mocks.MockPeripheralWithProtectedConstructor @ sysb
 
         private static void ProcessSource(string source)
         {
-            var creationDriver = new CreationDriver(new Machine(), new FakeUsingResolver(), new FakeInitHandler());
+            var creationDriver = new CreationDriver(new Machine(), new FakeUsingResolver(), new FakeScriptHandler());
             creationDriver.ProcessDescription(source);
         }
     }

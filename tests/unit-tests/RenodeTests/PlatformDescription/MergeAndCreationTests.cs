@@ -782,7 +782,7 @@ peri:
         Increment";
 
             ProcessSource(source);
-            initHandlerMock.Verify(x => x.Execute(It.IsAny<IInitable>(), new[] { "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment", "Increment" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -800,7 +800,7 @@ peri:
 
 
             ProcessSource(source);
-            initHandlerMock.Verify(x => x.Execute(It.IsAny<IInitable>(), new[] { "Increment", "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment", "Increment", "Increment" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -812,7 +812,7 @@ sysbus:
         WriteByte 0 1";
 
             ProcessSource(source);
-            initHandlerMock.Verify(x => x.Execute(It.IsAny<IInitable>(), new[] { "WriteByte 0 1" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "WriteByte 0 1" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -832,7 +832,7 @@ peri:
         Increment";
             
             var errorMessage = "Invalid init section";
-            initHandlerMock.Setup(x => x.Validate(It.IsAny<IInitable>(), out errorMessage)).Returns(false);
+            scriptHandlerMock.Setup(x => x.ValidateInit(It.IsAny<IScriptable>(), out errorMessage)).Returns(false);
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
             Assert.AreEqual(ParsingError.InitSectionValidationError, exception.Error);
         }
@@ -1165,9 +1165,9 @@ mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
         {
             machine = new Machine();
             EmulationManager.Instance.CurrentEmulation.AddMachine(machine, "machine");
-            initHandlerMock = new Mock<IInitHandler>();
+            scriptHandlerMock = new Mock<IScriptHandler>();
             string nullMessage = null;
-            initHandlerMock.Setup(x => x.Validate(It.IsAny<IInitable>(), out nullMessage)).Returns(true);
+            scriptHandlerMock.Setup(x => x.ValidateInit(It.IsAny<IScriptable>(), out nullMessage)).Returns(true);
         }
 
         [TearDown]
@@ -1185,11 +1185,11 @@ mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
             {
                 usingResolver.With(letters[i - 1].ToString(), sources[i]);
             }
-            var creationDriver = new CreationDriver(machine, usingResolver, initHandlerMock.Object);
+            var creationDriver = new CreationDriver(machine, usingResolver, scriptHandlerMock.Object);
             creationDriver.ProcessDescription(sources[0]);
         }
 
-        private Mock<IInitHandler> initHandlerMock;
+        private Mock<IScriptHandler> scriptHandlerMock;
         private Machine machine;
     }
 }

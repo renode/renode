@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -67,8 +67,8 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
         {
             var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
             var usingResolver = new UsingResolver(monitor.CurrentPathPrefixes);
-            var monitorInitHandler = new MonitorInitHandler(machine, monitor);
-            var driver = new CreationDriver(machine, usingResolver, monitorInitHandler);
+            var monitorScriptHandler = new MonitorScriptHandler(machine, monitor);
+            var driver = new CreationDriver(machine, usingResolver, monitorScriptHandler);
             return driver;
         }
     }

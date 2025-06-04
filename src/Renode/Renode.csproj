@@ -63,8 +63,8 @@
     <Compile Include="PlatformDescription\ConversionResultType.cs" />
     <Compile Include="PlatformDescription\CreationDriver.cs" />
     <Compile Include="PlatformDescription\DeclarationPlace.cs" />
-    <Compile Include="PlatformDescription\FakeInitHandler.cs" />
-    <Compile Include="PlatformDescription\IInitHandler.cs" />
+    <Compile Include="PlatformDescription\FakeScriptHandler.cs" />
+    <Compile Include="PlatformDescription\IScriptHandler.cs" />
     <Compile Include="PlatformDescription\IUsingResolver.cs" />
     <Compile Include="PlatformDescription\ParsingError.cs" />
     <Compile Include="PlatformDescription\ParsingException.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="PlatformDescription\Syntax\Entry.cs" />
     <Compile Include="PlatformDescription\Syntax\EnumValue.cs" />
     <Compile Include="PlatformDescription\Syntax\Grammar.cs" />
-    <Compile Include="PlatformDescription\Syntax\IInitable.cs" />
+    <Compile Include="PlatformDescription\Syntax\IScriptable.cs" />
     <Compile Include="PlatformDescription\Syntax\InitAttribute.cs" />
     <Compile Include="PlatformDescription\Syntax\IPrefixable.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqReceiver.cs" />
@@ -93,6 +93,7 @@
     <Compile Include="PlatformDescription\Syntax\RangeValue.cs" />
     <Compile Include="PlatformDescription\Syntax\ReferenceValue.cs" />
     <Compile Include="PlatformDescription\Syntax\RegistrationInfo.cs" />
+    <Compile Include="PlatformDescription\Syntax\ResetAttribute.cs" />
     <Compile Include="PlatformDescription\Syntax\SingleOrMultiIrqEnd.cs" />
     <Compile Include="PlatformDescription\Syntax\StringValue.cs" />
     <Compile Include="PlatformDescription\Syntax\StringWithPosition.cs" />
@@ -125,7 +126,7 @@
     <Compile Include="Plugins\TimeSkip.cs" />
     <Compile Include="Plugins\OsSymbolHook.cs" />
     <Compile Include="Plugins\OsTimeSkipHook.cs" />
-    <Compile Include="PlatformDescription\UserInterface\MonitorInitHandler.cs" />
+    <Compile Include="PlatformDescription\UserInterface\MonitorScriptHandler.cs" />
     <Compile Include="PlatformDescription\UserInterface\PlatformDescriptionMachineExtensions.cs" />
     <Compile Include="Connectors\GPIOConnector.cs" />
     <Compile Include="UI\TerminalWidget.cs" />

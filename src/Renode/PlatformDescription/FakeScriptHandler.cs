@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -10,13 +10,13 @@ using Antmicro.Renode.PlatformDescription.Syntax;
 
 namespace Antmicro.Renode.PlatformDescription
 {
-    public class FakeInitHandler : IInitHandler
+    public class FakeScriptHandler : IScriptHandler
     {
-        public void Execute(IInitable initable, IEnumerable<string> statements, Action<string> errorHandler)
+        public void Execute(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler)
         {
         }
 
-        public bool Validate(IInitable initable, out string message)
+        public bool ValidateInit(IScriptable scriptable, out string message)
         {
             message = null;
             return true;
