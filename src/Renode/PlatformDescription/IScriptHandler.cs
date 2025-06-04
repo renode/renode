@@ -13,6 +13,7 @@ namespace Antmicro.Renode.PlatformDescription
     public interface IScriptHandler
     {
         bool ValidateInit(IScriptable scriptable, out string message);
+        void RegisterReset(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler);
         void Execute(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler);
     }
 }

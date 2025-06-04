@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Linq;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
@@ -39,6 +40,35 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
             {
                 monitor.Parse(monitorCommand);
             }
+        }
+
+        public void RegisterReset(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler)
+        {
+            var entry = scriptable as Entry;
+            string name;
+            IPeripheral receiver;
+
+            if(entry.Variable.Value is Machine)
+            {
+                name = Machine.MachineKeyword;
+                receiver = null;
+            }
+            else if(machine.TryGetAnyName((IPeripheral)entry.Variable.Value, out name))
+            {
+                receiver = (IPeripheral)entry.Variable.Value;
+            }
+            else
+            {
+                errorHandler("The reset section is only allowed for peripherals that are registered.");
+                return;
+            }
+
+            var macroContent = new StringBuilder();
+            foreach(var monitorCommand in statements.Select(x => string.Format("{0} {1}", name, x)))
+            {
+                macroContent.AppendLine(monitorCommand);
+            }
+            monitor.SetPeripheralMacro(receiver, "reset", macroContent.ToString(), machine);
         }
 
         public bool ValidateInit(IScriptable scriptable, out string message)

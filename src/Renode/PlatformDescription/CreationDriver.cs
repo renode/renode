@@ -204,11 +204,17 @@ namespace Antmicro.Renode.PlatformDescription
                 foreach(var entry in sortedForRegistration)
                 {
                     var initAttribute = entry.Attributes.OfType<InitAttribute>().SingleOrDefault();
-                    if(initAttribute == null)
+                    if(initAttribute != null)
                     {
-                        continue;
+                        scriptHandler.Execute(entry, initAttribute.Lines, x => HandleInitSectionError(x, entry));
                     }
-                    scriptHandler.Execute(entry, initAttribute.Lines, x => HandleInitSectionError(x, entry));
+
+                    var resetAttribute = entry.Attributes.OfType<ResetAttribute>().SingleOrDefault();
+                    if(resetAttribute != null)
+                    {
+                        scriptHandler.RegisterReset(entry, resetAttribute.Lines, x =>
+                            HandleError(ParsingError.ResetSectionRegistrationError, resetAttribute, x, false));
+                    }
                 }
             }
             finally
@@ -505,6 +511,7 @@ namespace Antmicro.Renode.PlatformDescription
             var ctorOrPropertyAttributes = entry.Attributes.OfType<ConstructorOrPropertyAttribute>();
             CheckRepeatedCtorAttributes(ctorOrPropertyAttributes);
             CheckRepeatedInitAttributes(entry.Attributes.OfType<InitAttribute>());
+            CheckRepeatedResetAttributes(entry.Attributes.OfType<ResetAttribute>());
 
             foreach(var attribute in entry.Attributes)
             {
@@ -1317,6 +1324,15 @@ namespace Antmicro.Renode.PlatformDescription
             if(secondInitAttribute != null)
             {
                 HandleError(ParsingError.MoreThanOneInitAttribute, secondInitAttribute, "Entry can contain only one init attribute.", false);
+            }
+        }
+
+        private void CheckRepeatedResetAttributes(IEnumerable<ResetAttribute> attributes)
+        {
+            var secondResetAttribute = attributes.Skip(1).FirstOrDefault();
+            if(secondResetAttribute != null)
+            {
+                HandleError(ParsingError.MoreThanOneResetAttribute, secondResetAttribute, "Entry can contain only one reset attribute.", false);
             }
         }
 

@@ -89,6 +89,17 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                     mergedAttributes.Add(ourInit.Merge(theirInit));
                 }
 
+                var ourReset = Attributes.OfType<ResetAttribute>().SingleOrDefault();
+                var theirReset = entry.Attributes.OfType<ResetAttribute>().SingleOrDefault();
+                if(ourReset == null ^ theirReset == null)
+                {
+                    mergedAttributes.Add(ourReset ?? theirReset);
+                }
+                else if(ourReset != null)
+                {
+                    mergedAttributes.Add(ourReset.Merge(theirReset));
+                }
+
                 Attributes = mergedAttributes;
             }
             return this;

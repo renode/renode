@@ -16,6 +16,10 @@ namespace Antmicro.Renode.PlatformDescription
         {
         }
 
+        public void RegisterReset(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler)
+        {
+        }
+
         public bool ValidateInit(IScriptable scriptable, out string message)
         {
             message = null;

@@ -56,5 +56,7 @@ namespace Antmicro.Renode.PlatformDescription
         UninitializedSourceIrqObject = 44,
         RegistrationOrderCycle = 45,
         AliasedAndNormalArgumentName = 46,
+        ResetSectionRegistrationError = 47,
+        MoreThanOneResetAttribute = 48,
     }
 }
