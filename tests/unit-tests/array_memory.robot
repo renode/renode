@@ -46,6 +46,17 @@ Ensure Mapped Memory Is Overlayed With Array Memory
     Should Be Equal                 ${res2}  ${res3}
     Should Contain                  ${res2}  0x00000297
 
+Write Hooks Program
+    [Arguments]                     ${program_addr}  ${pc}=${program_addr}
+    ${program}=                     Catenate  SEPARATOR=${\n}
+    ...                             nop  # Hook will be attached to this instruction
+    ...                             loop:
+    ...                                nop
+    ...                                j loop
+    Execute Command                 cpu AssembleBlock ${program_addr} "${program}"
+    Execute Command                 cpu AddHook ${pc} "self.InfoLog('Hook Encountered')"
+    Execute Command                 cpu PC ${pc}
+
 *** Test Cases ***
 Should Run Zephyr From Array Memory
     Create Machine From Repl        ${PLATFORM_MIV_EXECUTABLE_ARRAY_MEM}
@@ -59,3 +70,26 @@ Should Execute From Mixed Memory Page
     # ensure overlayed mapped memory was not loaded with code and therefore that program executes from the array memory overlay
     Ensure Mapped Memory Is Overlayed With Array Memory
     Zephyr Console Should Work
+
+Should Not Repeat Hooks From Array Memory
+    Create Machine From Repl        ${PLATFORM_MIV_EXECUTABLE_ARRAY_MEM}
+    Write Hooks Program             0x80000000
+
+    Create Log Tester               1  defaultPauseEmulation=true
+    Wait For Log Entry              Hook Encountered
+    Should Not Be In Log            Hook Encountered  # The hook should only be executed once
+
+Should Not Repeat Hooks From Array Memory Using Virtual Addressing
+    Create Machine From Repl        ${PLATFORM_MIV_EXECUTABLE_ARRAY_MEM}
+    Write Hooks Program             0x81000000  0x80000000
+
+    Execute Command                 cpu EnableExternalWindowMmu true
+    ${window_index}=                Execute Command  cpu AcquireExternalMmuWindow 7  # 7 - rwx permissions
+    Execute Command                 cpu SetMmuWindowStart ${window_index} 0x80000000
+    Execute Command                 cpu SetMmuWindowEnd ${window_index} 0x80001000
+    Execute Command                 cpu SetMmuWindowAddend ${window_index} 0x1000000
+    Execute Command                 cpu SetMmuWindowPrivileges ${window_index} 7  # 7 - rwx permissions
+
+    Create Log Tester               1  defaultPauseEmulation=true
+    Wait For Log Entry              Hook Encountered
+    Should Not Be In Log            Hook Encountered  # The hook should only be executed once
