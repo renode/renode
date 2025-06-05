@@ -20,7 +20,7 @@ Create Machine
 Should Pass CLIC-level-prio-01
     Create Machine
     Create Terminal Tester          ${UART}
-    Execute Command                 showAnalyzer uart Antmicro.Renode.Analyzers.LoggingUartAnalyzer
+    Execute Command                 showAnalyzer uart LoggingUartAnalyzer
 
     Wait For Line On Uart           Init complete
 
