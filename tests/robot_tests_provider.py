@@ -168,24 +168,19 @@ def verify_cli_arguments(options):
     # port is not available on Windows
     if platform != "win32":
         if options.port == str(options.remote_server_port):
-            print('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
-            sys.exit(1)
+            Exception('Port {} is reserved for Robot Framework remote server and cannot be used for remote debugging.'.format(options.remote_server_port))
         if options.port is not None and options.jobs != 1:
-            print("Debug port cannot be used in parallel runs")
-            sys.exit(1)
+            Exception("Debug port cannot be used in parallel runs")
 
     if options.css_file:
         if not os.path.isabs(options.css_file):
             options.css_file = os.path.join(this_path, options.css_file)
 
         if not os.path.isfile(options.css_file):
-            print("Unable to find provided CSS file: {0}.".format(options.css_file))
-            sys.exit(1)
+            Exception("Unable to find provided CSS file: {0}.".format(options.css_file))
 
     if options.remote_server_port != 0 and options.jobs != 1:
-        print("Parallel execution and fixed Robot port number options cannot be used together")
-        sys.exit(1)
-
+        Exception("Parallel execution and fixed Robot port number options cannot be used together")
 
 def is_process_running(pid):
     if not psutil.pid_exists(pid):
@@ -361,15 +356,13 @@ class RobotTestSuite(object):
         remote_server_binary = os.path.join(self.remote_server_directory, remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
-            print("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
-            sys.exit(1)
+            Exception("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
 
         if remote_server_port is None:
             remote_server_port = options.remote_server_port
 
         if remote_server_port != 0 and not is_port_available(remote_server_port, options.autokill_renode):
-            print("The selected port {} is not available".format(remote_server_port))
-            sys.exit(1)
+            Exception("The selected port {} is not available".format(remote_server_port))
 
         command = [remote_server_binary, '--robot-server-port', str(remote_server_port)]
         if not options.show_log and not options.keep_renode_output:
@@ -896,8 +889,7 @@ class RobotTestSuite(object):
             # during timeout handling. Their timeout won't be influenced by the global timeout option.
             if self.timeout_expected_tag in test.tags:
                 if not test.timeout:
-                    print(f"!!!!! Test with a `{self.timeout_expected_tag}` tag must have `[Timeout]` set: {test.longname}")
-                    sys.exit(1)
+                    Exception(f"!!!!! Test with a `{self.timeout_expected_tag}` tag must have `[Timeout]` set: {test.longname}")
             elif options.timeout:
                 # Timeout from tags is used if it's shorter than the global timeout.
                 if not test.timeout or Time(test.timeout).seconds >= options.timeout.seconds:
