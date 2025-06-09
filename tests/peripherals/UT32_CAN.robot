@@ -5,9 +5,10 @@ ${UART}                                            sysbus.usart3
 ${CAN}                                             sysbus.utcan
 ${CAN_HUB}                                         canHub
 ${PROMPT}                                          \#${SPACE}
-${UT32_CAN_REPL}                                   SEPARATOR=\n
+${UT32_CAN_REPL}                                   utcan: CAN.UT32_CAN @ sysbus 0x40cccc00
+${UT32_CAN_REPL_WITH_IRQ}                          SEPARATOR=\n
 ...                                                """
-...                                                utcan: CAN.UT32_CAN @ sysbus 0x40cccc00
+...                                                ${UT32_CAN_REPL}
 ...                                                ${SPACE*4}-> nvic@19
 ...                                                """
 # All Zephyr tests work in loopback mode
@@ -32,7 +33,7 @@ Create STM32H7 Machine
     Execute Command           machine LoadPlatformDescription @platforms/cpus/stm32h753.repl
     # The Zephyr binaries used here would not work on a real STM32H753 as they expect a UT32-compatible CAN controller
     # to be present at 0x40cccc00. Add it to the platform
-    Execute Command           machine LoadPlatformDescriptionFromString ${UT32_CAN_REPL}
+    Execute Command           machine LoadPlatformDescriptionFromString ${UT32_CAN_REPL_WITH_IRQ}
     Execute Command           macro reset "sysbus LoadELF ${bin}"
     Execute Command           runMacro $reset
     Execute Command           connector Connect ${CAN} ${CAN_HUB}
@@ -41,6 +42,11 @@ Create STM32H7 Machine
 Set Emulation Parameters For Better Synchronization Between Machines
     Execute Command           emulation SetGlobalQuantum "0.000025"
     Execute Command           emulation SetGlobalSerialExecution True
+
+Assert Command Result Is
+    [Arguments]               ${command}  ${result}
+    ${x}=                     Execute Command  ${command}
+    Should Be Equal           ${x}  ${result}  strip_spaces=True
 
 *** Test Cases ***
 Should Pass Zephyr CAN Net Socket Test
@@ -129,3 +135,18 @@ Should Run Zephyr CAN Counter Sample To Exchange Messages Between Machines
         Wait For Line On Uart     Counter received: ${i}  testerId=${tester-0}
         Wait For Line On Uart     Counter received: ${i}  testerId=${tester-1}
     END
+
+Should Allow Setting A Reset-Mode-Only Bit And Leaving Reset Mode In The Same Write
+    Execute Command           mach create
+    Execute Command           machine LoadPlatformDescriptionFromString "${UT32_CAN_REPL}"
+
+    Execute Command           utcan WriteByte 0x00 0x00  # leave reset mode
+
+    Execute Command           utcan WriteByte 0x00 0x02  # try to enable listen-only mode
+    Assert Command Result Is  utcan ReadByte 0x00  0x00  # wasn't allowed so the bit got restored
+
+    Execute Command           utcan WriteByte 0x00 0x03  # enter reset mode and try to enable listen-only mode simultaneously
+    Assert Command Result Is  utcan ReadByte 0x00  0x01  # only reset mode takes
+
+    Execute Command           utcan WriteByte 0x00 0x02  # request leaving reset mode and enable listen-only mode simultaneously
+    Assert Command Result Is  utcan ReadByte 0x00  0x02  # listen-only mode is set, reset is unset
