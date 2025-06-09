@@ -413,7 +413,7 @@ class RobotTestSuite(object):
             while True:
                 # We strip argv[0] because if we pass just `mono` to GDB it will resolve
                 # it to a full path to mono on the PATH, for example /bin/mono
-                renode_child = next((c for c in p.children() if c.cmdline()[1:] == renode_command[1:]), None)
+                renode_child = next((c for c in process.children() if c.cmdline()[1:] == renode_command[1:]), None)
                 if renode_child:
                     break
                 sleep(0.5)
