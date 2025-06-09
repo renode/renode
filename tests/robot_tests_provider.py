@@ -481,13 +481,13 @@ class RobotTestSuite(object):
         renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
         while countdown > 0:
             try:
-                with open(renode_port_file) as f:
+                with open(renode_port_file, 'r') as f:
                     port_num = f.readline()
                     if port_num == '':
                         continue
                     self.remote_server_port = int(port_num)
                 break
-            except FileNotFoundError:
+            except (FileNotFoundError, PermissionError):
                 sleep(0.5)
                 countdown -= 0.5
         else:
