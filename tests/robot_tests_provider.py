@@ -11,6 +11,7 @@ import shutil
 import tempfile
 import uuid
 import re
+import signal
 from collections import OrderedDict, defaultdict
 from time import monotonic, sleep
 from typing import List, Dict, Tuple, Set
@@ -121,7 +122,14 @@ def install_cli_arguments(parser):
                         action="store",
                         default=3,
                         type=int,
-                        help="Robot frontend process cleanup timeout.")
+                        help="Robot frontend process cleanup timeout in seconds.")
+
+    parser.add_argument("--kill-timeout",
+                        dest="kill_timeout",
+                        action="store",
+                        default=15,
+                        type=int,
+                        help="Robot frontend process kill timeout in seconds if cleanup attempt fails.")
 
     parser.add_argument("--listener",
                         action="append",
@@ -530,38 +538,53 @@ class RobotTestSuite(object):
 
         shutil.move(perf_data_path, options.perf_output_path)
 
-    def _close_remote_server(self, proc, options, cleanup_timeout_override=None, silent=False):
-        if proc:
-            if not silent:
-                print('Closing Renode pid {}'.format(proc.pid))
+    def _close_remote_server(self, proc, options):
+        if not proc:
+            return
 
-            # Let's prevent using these after the server is closed.
-            self.robot_frontend_process = None
-            self.renode_pid = -1
+        renode = f"Renode pid {proc.pid}"
+        renode_killed = False
 
+        # Let's prevent using these after the server is closed.
+        self.robot_frontend_process = None
+        self.renode_pid = -1
+
+        # None of the previously provided states will be available.
+        self._dependencies_met = set()
+
+        # poll returns exit code if process exited which means it doesn't need to be closed.
+        if (exit_code := proc.poll()) is None:
+            print(f"Closing {renode}")
             try:
                 process = psutil.Process(proc.pid)
-                os.kill(proc.pid, 2)
-                if cleanup_timeout_override is not None:
-                    cleanup_timeout = cleanup_timeout_override
-                else:
-                    cleanup_timeout = options.cleanup_timeout
-                process.wait(timeout=cleanup_timeout)
+                os.kill(proc.pid, signal.SIGINT)
+                process.wait(timeout=options.cleanup_timeout)
 
                 if options.perf_output_path:
                     self.__move_perf_data(options)
             except psutil.TimeoutExpired:
-                process.kill()
-                process.wait()
-            except psutil.NoSuchProcess:
-                #evidently closed by other means
-                pass
+                # SIGKILL isn't available on Windows
+                kill_signal = signal.SIGTERM if sys.platform == 'win32' else signal.SIGKILL
 
-            if options.perf_output_path and proc.stdout:
-                proc.stdout.close()
+                print(f"{renode} didn't close in {options.cleanup_timeout}s, sending {kill_signal}")
+                os.kill(proc.pid, kill_signal)
 
-            # None of the previously provided states are available after closing the server.
-            self._dependencies_met = set()
+                try:
+                    process.wait(timeout=options.kill_timeout)
+                    renode_killed = True
+                except psutil.TimeoutExpired:
+                    raise RuntimeError(f"{renode} didn't respond to {kill_signal} in "
+                                       + f"{options.kill_timeout}s")
+
+        if options.perf_output_path and proc.stdout:
+            proc.stdout.close()
+
+        if exit_code:
+            print(f"{renode} exited before close request, exit code: {exit_code}")
+        elif renode_killed:
+            print(f"{renode} killed")
+        else:
+            print(f"{renode} closed")
 
     @classmethod
     def _has_renode_crashed(cls, test: ET.Element) -> bool:
@@ -921,7 +944,7 @@ class RobotTestSuite(object):
             print(f"{message_start} after {Time(test.timeout).seconds}s: {test.parent.name}.{test.name}")
             print(f"----- Skipped flushing emulation log and saving state due to the timeout, restarting Renode...")
 
-            self._close_remote_server(RobotTestSuite.robot_frontend_process, options, cleanup_timeout_override=0, silent=True)
+            self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index, self.remote_server_port)
 
             # It's typically used in suite setup (renode-keywords.robot:Setup) but we don't need to
