@@ -14,12 +14,12 @@ Create Platform
 
     Execute Command                 machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
     Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { timeProvider: clint; cpuType: \\"rv32gc\\" }"
-    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100000 }"    
+    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100000 }"
     Execute Command                 machine LoadPlatformDescriptionFromString "iommu0: Miscellaneous.WindowIOMMU @ sysbus ${IOMMU_ADDR} { IRQ -> cpu@1 }"
     Execute Command                 machine LoadPlatformDescriptionFromString "dma0: SimpleDMA @ { sysbus ${DMA_ADDR}; iommu0 0 }"
 
     Execute Command                 sysbus WriteDoubleWord ${START_PC} 0x000000ef  # jal  ra, 0
-    Execute Command                 cpu PC ${START_PC} 
+    Execute Command                 cpu PC ${START_PC}
 
 Write Range With Doublewords
     [Arguments]                     ${start_addr}  ${length}  ${value}
@@ -40,11 +40,11 @@ Read From Address By DMA
     ${dma_addr}=                    Convert To Integer  ${dma_addr_hex}
     Execute Command                 sysbus WriteDoubleWord ${dma_addr+8} ${addr}
     ${read_value}=                  Execute Command  sysbus ReadDoubleWord ${dma_addr+0}
-    RETURN                          ${read_value}                   
+    RETURN                          ${read_value}
 
 Define Window
     [Arguments]                     ${window_index}  ${start_addr}  ${end_addr}  ${offset}  ${priv}
-    
+
     ${window_register}=             Evaluate  4 * ${window_index} + ${IOMMU_ADDR}
     ${start_register}=              Evaluate  0x0 + ${window_register}
     ${end_register}=                Evaluate  0x400 + ${window_register}
@@ -91,7 +91,7 @@ Address Are Translated
     ${read_value}=                  Execute Command  sysbus ReadDoubleWord 0x1000
     Should Be Equal As Integers     ${read_value}  0x0
 
-IOMMU Fault Triggers IRQ    
+IOMMU Fault Triggers IRQ
     Create Platform
     Create Log Tester               0
     Execute Command                 logLevel -1
@@ -101,7 +101,7 @@ IOMMU Fault Triggers IRQ
 
     Read From Address By DMA        ${DMA_ADDR}  0x0FFA
     Wait For Log Entry              IOMMU fault at 0xFFA when trying to access as Read
-    Wait For Log Entry              Setting the IRQ 
+    Wait For Log Entry              Setting the IRQ
     Wait For Log Entry              Setting CPU IRQ #1
 
 Permissions Are Respected
@@ -121,7 +121,7 @@ Permissions Are Respected
 
     Write To Address By DMA         ${DMA_ADDR}  0x0FFC  0x0
     Wait For Log Entry              IOMMU fault at 0xFFC
-    
+
     Write To Address By DMA         ${DMA_ADDR}  0x1000  0x0
     Should Not Be In Log            IOMMU fault at 0x1000
 
@@ -131,7 +131,7 @@ Permissions Are Respected
 
     Write To Address By DMA         ${DMA_ADDR}  0x2000  0x0
     Wait For Log Entry              IOMMU fault at 0x2000
-    
+
     Write To Address By DMA         ${DMA_ADDR}  0x3000  0x0
     Should Not Be In Log            IOMMU fault at 0x3000
 
@@ -182,11 +182,11 @@ Restrict Access From Two Peripherals
 
     Define Window                   0  0x0000  0x1000  0x0  ${PRIV_NONE}
     Define Window                   1  0x1000  0x2000  0x0  ${PRIV_ALL}
-    Write Range With Doublewords    0x1000  0x1FFF  0x01234567    
+    Write Range With Doublewords    0x1000  0x1FFF  0x01234567
 
     Write To Address By DMA         ${DMA_ADDR}  0x0FFC  0x0
     Wait For Log Entry              IOMMU fault at 0xFFC
-    
+
     Write To Address By DMA         ${DMA_ADDR}  0x1000  0x0
     Should Not Be In Log            IOMMU fault at 0x1000
 
