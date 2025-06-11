@@ -154,6 +154,7 @@ Throws Error On Registering Two IOMMUs For One Peripheral
 Defining Invalid Window Throws
     # This test case doesn't check 64-bit unsigned integer overflow
     Create Platform
+    Create Log Tester               0
 
     Define Window                   0  0x0  0xffffffff  0x7fffffff  ${PRIV_NONE}
     Define Window                   0  0x100  0x100  0x0  ${PRIV_NONE}

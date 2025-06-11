@@ -401,6 +401,7 @@ Locked MappedMemory Should Not Be Accessible From CPU
 Partial MappedMemory Locking Should Not Be Allowed With ICPUWithMappedMemory
     # CPU is important; partial MappedMemory locking isn't allowed only with ICPUWithMappedMemory.
     Create Machine With CPU And Two MappedMemory Peripherals
+    Create Log Tester             0
 
     ${mem1_size}  ${mem1_addr}  ${mem1_range}=  Get mem1 Size, Address And Range
     ${mem2_size}  ${mem2_addr}  ${mem2_range}=  Get mem2 Size, Address And Range

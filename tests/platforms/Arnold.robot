@@ -188,6 +188,7 @@ SPI Should Send Bytes Async
 SPI Should Receive Bytes
     Create Machine           arnold--pulp-rt-examples--spim-receive.elf-s_414528-ba2983aef41f1493d1f6b13c58ea0d7b843bf57a
     Execute Command          machine LoadPlatformDescriptionFromString "dummySlave: Mocks.DummySPISlave @ spi"
+    Create Log Tester        0.1
     Execute Command          logLevel 0 spi.dummySlave
 
     ${res}=  Execute Command         sysbus ReadDoubleWord 0x1C00A7F8
