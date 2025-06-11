@@ -170,3 +170,8 @@ Should Unregister Failing String In Log
     Unregister Failing Log String   ReadDoubleWord from non existing peripheral at 0x.  treatAsRegex=true
 
     Wait For Log Entry  ReadDoubleWord from non existing peripheral at 0x0
+
+# It is important that this tests is placed after some tests that creates a log tester
+Should Not Preserve Log Tester Between Tests
+    Run Keyword And Expect Error    *Log tester is not available*
+    ...                             Should Not Be In Log  Non existing log message
