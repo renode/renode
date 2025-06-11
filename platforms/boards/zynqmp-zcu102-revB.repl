@@ -1,0 +1,3 @@
+using "./zynqmp-zcu102-revA.repl"
+
+phy3: @ gem3 12
