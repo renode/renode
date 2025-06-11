@@ -41,6 +41,11 @@ namespace Antmicro.Renode.RobotFramework
         {
             EmulationManager.Instance.Clear();
             Recorder.Instance.ClearEvents();
+            if(logTester != null)
+            {
+                Logger.RemoveBackend(logTester);
+                logTester = null;
+            }
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
