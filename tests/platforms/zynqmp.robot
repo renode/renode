@@ -159,13 +159,16 @@ Should Communicate With I2C Echo Peripheral From 32-Bit Userspace On 64-Bit Kern
     Execute Linux Command           echo 0 > /proc/sys/kernel/printk
 
     ${log}=                         Allocate Temporary File
-    Execute Command                 apu0 LogFile @${log}
+    # It was checked empirically that i2ctransfer process is executed on apu2.
+    # Determinism during the emulation is guaranteed by SerialExecution mode,
+    # but it may end up on a different core if the boot flow is changed or binaries modified.
+    Execute Command                 apu2 LogFile @${log}
     # Clear the TB cache so all instructions are translated and appear in the log
-    Execute Command                 apu0 ClearTranslationCache
+    Execute Command                 apu2 ClearTranslationCache
     Write Line To Uart              i2ctransfer -ya 1 w3@${I2C_ECHO_ADDRESS} 0x01 0x23 0x45 r2
     Wait For Line On Uart           0x01 0x23
     Wait For Prompt On Uart         ${LINUX_PROMPT}
-    Execute Command                 apu0 LogFile null
+    Execute Command                 apu2 LogFile null
     Check Exit Code
 
     # Assert that the TB log has no errors and includes A64 instructions (in the kernel),
