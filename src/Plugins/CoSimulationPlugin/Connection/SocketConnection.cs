@@ -28,10 +28,13 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketConnection : ICoSimulationConnection, IDisposable
     {
-        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction, string address = null, int mainListenPort = 0, int asyncListenPort = 0)
+        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
+            string address = null, int mainListenPort = 0, int asyncListenPort = 0, string stdoutFile = null, string stderrFile = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
+            this.stderrFile = stderrFile;
+            this.stdoutFile = stdoutFile;
             timeout = timeoutInMilliseconds;
             receivedHandler = receiveAction;
             mainSocketCommunicator = new SocketCommunicator(parentElement, timeout, this.address, mainListenPort);
@@ -174,6 +177,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 cosimulatedProcess.Dispose();
             }
 
+            // Close output streams
+            stdoutStream?.Close();
+            stderrStream?.Close();
+
             mainSocketCommunicator.Dispose();
             asyncSocketCommunicator.Dispose();
         }
@@ -255,16 +262,61 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             try
             {
+                bool redirectStdout = !String.IsNullOrWhiteSpace(stdoutFile);
+                bool redirectStderr = !String.IsNullOrWhiteSpace(stderrFile);
                 cosimulatedProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo(filePath)
                     {
                         UseShellExecute = false,
-                        Arguments = ConnectionParameters
+                        Arguments = ConnectionParameters,
+                        RedirectStandardOutput = redirectStdout,
+                        RedirectStandardError = redirectStderr,
                     }
                 };
 
+                // Discard/write any data to prevent the stream from filling up and blocking the process
+                if(redirectStdout)
+                {
+                    if(stdoutFile.ToLowerInvariant() == StreamDiscardConstant)
+                    {
+                        cosimulatedProcess.OutputDataReceived += (s, e) => { };
+                    }
+                    else
+                    {
+                        stdoutStream = new StreamWriter(stdoutFile);
+                        cosimulatedProcess.OutputDataReceived += (s, e) =>
+                        {
+                            stdoutStream.WriteLine(e.Data);
+                        };
+                    }
+                }
+                if(redirectStderr)
+                {
+                    if(stderrFile.ToLowerInvariant() == StreamDiscardConstant)
+                    {
+                        cosimulatedProcess.ErrorDataReceived += (s, e) => { };
+                    }
+                    else
+                    {
+                        stderrStream = new StreamWriter(stderrFile);
+                        cosimulatedProcess.OutputDataReceived += (s, e) =>
+                        {
+                            stderrStream.WriteLine(e.Data);
+                        };
+                    }
+                }
+
                 cosimulatedProcess.Start();
+
+                if(redirectStdout)
+                {
+                    cosimulatedProcess.BeginOutputReadLine();
+                }
+                if(redirectStderr)
+                {
+                    cosimulatedProcess.BeginErrorReadLine();
+                }
             }
             catch(Exception e)
             {
@@ -354,12 +406,20 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private SocketCommunicator asyncSocketCommunicator;
         private Action<ProtocolMessage> receivedHandler;
 
+        private StreamWriter stdoutStream;
+        private StreamWriter stderrStream;
+
         private readonly IEmulationElement parentElement;
         private readonly int timeout;
         private readonly string address;
         private readonly Thread receiveThread;
         private readonly object receiveThreadLock = new object();
         private readonly ManualResetEventSlim pauseMRES;
+
+        private readonly string stdoutFile;
+        private readonly string stderrFile;
+
+        private const string StreamDiscardConstant = "[discard]";
 
         private const string DefaultAddress = "127.0.0.1";
         private const int MaxPendingConnections = 1;
