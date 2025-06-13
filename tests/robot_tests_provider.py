@@ -556,18 +556,14 @@ class RobotTestSuite(object):
                 if options.perf_output_path:
                     self.__move_perf_data(options)
             except psutil.TimeoutExpired:
-                # SIGKILL isn't available on Windows
-                kill_signal = signal.SIGTERM if sys.platform == 'win32' else signal.SIGKILL
-
-                print(f"{renode} didn't close in {options.cleanup_timeout}s, sending {kill_signal}")
-                os.kill(proc.pid, kill_signal)
+                print(f"{renode} didn't close in {options.cleanup_timeout}s, killing it")
+                process.kill()
 
                 try:
                     process.wait(timeout=options.kill_timeout)
                     renode_killed = True
                 except psutil.TimeoutExpired:
-                    raise RuntimeError(f"{renode} didn't respond to {kill_signal} in "
-                                       + f"{options.kill_timeout}s")
+                    raise RuntimeError(f"{renode} didn't react to kill in {options.kill_timeout}s")
 
         if options.perf_output_path and proc.stdout:
             proc.stdout.close()
