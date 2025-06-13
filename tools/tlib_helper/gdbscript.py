@@ -452,6 +452,11 @@ def cache_memory_mappings():
         mapping = MemoryMapping(*match.groups())
         if '-Antmicro.Renode.translate-' not in mapping.path:
             continue
+        if not mapping.executable:
+            # objfile_for_address() returns None when used with an address from the segment that
+            # contains the ELF headers (the first one), so skip all segments except the one that
+            # contains .text (the only executable mapping backed by the translation libary file)
+            continue
 
         MEMORY_MAPPINGS.append(mapping)
     MEMORY_MAPPINGS.sort(key=lambda m: m.path)
