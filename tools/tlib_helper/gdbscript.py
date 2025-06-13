@@ -96,10 +96,6 @@ class MemoryMapping:
     def executable(self):
         return 'x' in self.perms
 
-    @property
-    def data(self):
-        return 'rw' in self.perms
-
     def __post_init__(self):
         for field in dataclasses.fields(self):
             value = getattr(self, field.name)
@@ -465,14 +461,16 @@ def cache_memory_mappings():
 def update_cpu_pointers():
     global CPU_POINTERS, MEMORY_MAPPINGS
 
-    current_cpu = int(gdb.parse_and_eval('cpu').address)
-    current_cpu_objfile = gdb.current_progspace().objfile_for_address(current_cpu)
-    current_mapping = next((m for m in MEMORY_MAPPINGS if m.data and current_cpu_objfile.filename == m.path), None)
-    if current_mapping is None:
-        return
+    def get_cpu_pointer_for_mapping(m):
+        return (
+            gdb.current_progspace()
+            .objfile_for_address(m.start)
+            .lookup_global_symbol("cpu")
+            .value()
+            .address
+        )
 
-    offset = current_cpu - current_mapping.start
-    CPU_POINTERS = [m.start + offset for m in MEMORY_MAPPINGS if m.data]
+    CPU_POINTERS = [get_cpu_pointer_for_mapping(m) for m in MEMORY_MAPPINGS]
 
 
 def before_prompt():
