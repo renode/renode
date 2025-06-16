@@ -7,7 +7,6 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
 machine SetSerialExecution True
-sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
 showAnalyzer uart1
 
 $dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp--sm-k26-revA-openamp.dtb-s_39689-4a8f42bbd45093526b1beddb36d39e9486dd328d

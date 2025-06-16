@@ -12,3 +12,11 @@ phy3: Network.EthernetPhysicalLayer @ gem3 12
 i2c_mux: I2C.PCA9548 @ i2c1 0x74
 
 tca6416_u97: I2C.TCA6416 @ i2c1 0x20
+
+// mt25qu512a
+spiFlash: SPI.GenericSpiFlash @ qspi
+    underlyingMemory: quadSpiFlash
+    manufacturerId: 0x20
+    memoryType: 0xbb
+    extendedDeviceId: 0x44
+    capacityCode: 0x20

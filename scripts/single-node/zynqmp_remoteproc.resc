@@ -7,7 +7,6 @@ mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
 machine SetSerialExecution True
-sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
 showAnalyzer uart0
 showAnalyzer uart1
 

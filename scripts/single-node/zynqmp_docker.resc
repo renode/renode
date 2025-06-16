@@ -8,7 +8,6 @@ mach create $name
 machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
 machine LoadPlatformDescriptionFromString 'virtio: Storage.VirtIOBlockDevice @ sysbus 0xfe400000 { IRQ->apuGic@32 }'
 machine SetSerialExecution True
-sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
 showAnalyzer uart1
 
 $dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp-sm-k26-revA.dtb-s_37970-07b58f745c0544715f6eabe4142e34c258b4a59b

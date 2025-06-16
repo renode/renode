@@ -14,3 +14,11 @@ i2c_mux: I2C.PCA9548 @ i2c0 0x75
 tca6416_u97: I2C.TCA6416 @ i2c0 0x20
 
 tca6416_u61: I2C.TCA6416 @ i2c0 0x21
+
+// mt25qu512a
+spiFlash: SPI.GenericSpiFlash @ qspi
+    underlyingMemory: quadSpiFlash
+    manufacturerId: 0x20
+    memoryType: 0xbb
+    extendedDeviceId: 0x44
+    capacityCode: 0x20

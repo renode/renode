@@ -6,7 +6,6 @@ $name?="ZynqUS+"
 mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
-sysbus SilenceRange <0xFF0F0104 0x100>  # Silencing QSPI accesses to speed up boot time
 showAnalyzer uart1
 
 $dtb?=       @https://dl.antmicro.com/projects/renode/zynq-us_plus--sm-k26-revA.dtb-s_37854-cc08802e65ac86f1415bfd58b5bfc2f2fbc9c3f0
