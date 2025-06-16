@@ -129,7 +129,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
 
         private static void ConfigureHook(ICPUWithHooks cpu, IMachine machine, string hookName, CpuAddressHook hook, bool enableHook)
         {
-            bool foundAddresses = ((SystemBus)machine.SystemBus).TryGetAllSymbolAddresses(hookName, out var addresses);
+            bool foundAddresses = ((SystemBus)machine.SystemBus).TryGetAllSymbolAddresses(hookName, out var addresses, context: cpu);
             if(!foundAddresses)
             {
                 return;
