@@ -145,3 +145,43 @@ dotnet_diagnostic.SA1509.severity = warning
 dotnet_diagnostic.SA1516.severity = warning
 # File must not start with blank line
 dotnet_diagnostic.SA1517.severity = warning
+
+# Exclude files from formatting
+[src/Infrastructure/src/Emulator/Extensions/Config/SimpleJson.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_CMU_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_DPLL_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_EMU_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_HFRCO_2.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_HFXO_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_LFRCO_2.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_LFXO_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_PRS_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_SYSCFG_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/EFR32xG2_DCDC_2.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Timers/EFR32xG2_TIMER_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/I3C/Caliptra_I3C_generated.cs]
+generated_code = true
