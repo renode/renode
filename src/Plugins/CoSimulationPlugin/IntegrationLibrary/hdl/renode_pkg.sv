@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -121,7 +121,7 @@ package renode_pkg;
 
     function void fatal_error(string message);
       string error_msg;
-      error_msg = $sformatf("Renode at %t: Error! %s", $realtime, message);
+      error_msg = $sformatf("Error! %s", message);
       log(LogError, error_msg);
       disconnect();
       $error(error_msg);
@@ -155,7 +155,7 @@ package renode_pkg;
       bit is_received = renodeDPIReceive(message.action, message.address, message.data, message.peripheral_index);
       if(is_received) begin
 `ifdef RENODE_DEBUG
-      log(LogDebug, $sformatf("Renode at %t: Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index));
+      log(LogDebug, $sformatf("Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
       end
       return is_received;
@@ -163,14 +163,14 @@ package renode_pkg;
 
     function void send(message_t message);
 `ifdef RENODE_DEBUG
-      log(LogDebug, $sformatf("Renode at %t: Sent action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index));
+      log(LogDebug, $sformatf("Sent action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
       if (!renodeDPISend(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     function void send_to_async_receiver(message_t message);
 `ifdef RENODE_DEBUG
-      log(LogDebug, $sformatf("Renode at %t: Sent async action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", $realtime, message.action.name(), message.address, message.data, message.peripheral_index));
+      log(LogDebug, $sformatf("Sent async action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
       if (!renodeDPISendToAsync(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
