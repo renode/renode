@@ -32,7 +32,8 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                                                  int mainListenPort = 0,
                                                  int asyncListenPort = 0,
                                                  string stdoutFile = null,
-                                                 string stderrFile = null
+                                                 string stderrFile = null,
+                                                 string renodeLogLevel = null
                                                  )
         {
             EmulationManager.Instance.CurrentEmulation.TryGetMachine(machineName, out var machine);
@@ -41,7 +42,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 throw new ConstructionException($"Machine {machineName} does not exist.");
             }
 
-            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile);
+            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
         }
 
         public const ulong DefaultLimitBuffer = 1000000;
@@ -59,13 +60,20 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 int mainListenPort,
                 int asyncListenPort,
                 string stdoutFile = null,
-                string stderrFile = null)
+                string stderrFile = null,
+                string renodeLogLevel = null)
         {
             this.machine = machine;
             this.gpioEntries = new List<GPIOEntry>();
 
+            LogLevel logLevel = null;
+            if(renodeLogLevel != null && !LogLevel.TryParse(renodeLogLevel, out logLevel))
+            {
+                throw new ConstructionException($"Unable to parse log level: {renodeLogLevel}");
+            }
+
             RegisterInHostMachine(name);
-            cosimConnection = SetupConnection(address, timeout, frequency, limitBuffer, mainListenPort, asyncListenPort, stdoutFile, stderrFile);
+            cosimConnection = SetupConnection(address, timeout, frequency, limitBuffer, mainListenPort, asyncListenPort, stdoutFile, stderrFile, logLevel);
 
             cosimIdxToPeripheral = new Dictionary<int, ICoSimulationConnectible>();
         }
@@ -305,12 +313,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             throw new CpuAbortException();
         }
 
-        private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile)
+        private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile, LogLevel renodeLogLevel)
         {
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
             {
-                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile);
+                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
             }
             else
             {

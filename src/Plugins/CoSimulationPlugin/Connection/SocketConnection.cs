@@ -26,15 +26,16 @@ using Mono.Unix.Native;
 
 namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
-    public class SocketConnection : ICoSimulationConnection, IDisposable
+    public class SocketConnection : ICoSimulationConnection, IEmulationElement, IDisposable
     {
         public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
-            string address = null, int mainListenPort = 0, int asyncListenPort = 0, string stdoutFile = null, string stderrFile = null)
+            string address = null, int mainListenPort = 0, int asyncListenPort = 0, string stdoutFile = null, string stderrFile = null, LogLevel renodeLogLevel = null)
         {
             this.parentElement = parentElement;
             this.address = address ?? DefaultAddress;
             this.stderrFile = stderrFile;
             this.stdoutFile = stdoutFile;
+            this.renodeLogLevel = renodeLogLevel;
             timeout = timeoutInMilliseconds;
             receivedHandler = receiveAction;
             mainSocketCommunicator = new SocketCommunicator(parentElement, timeout, this.address, mainListenPort);
@@ -262,58 +263,71 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             try
             {
-                bool redirectStdout = !String.IsNullOrWhiteSpace(stdoutFile);
-                bool redirectStderr = !String.IsNullOrWhiteSpace(stderrFile);
+                bool redirectStdoutToFile = !String.IsNullOrWhiteSpace(stdoutFile);
+                bool redirectStderrToFile = !String.IsNullOrWhiteSpace(stderrFile);
+                bool redirectOutputToLog = renodeLogLevel != null;
                 cosimulatedProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo(filePath)
                     {
                         UseShellExecute = false,
                         Arguments = ConnectionParameters,
-                        RedirectStandardOutput = redirectStdout,
-                        RedirectStandardError = redirectStderr,
+                        RedirectStandardOutput = redirectStdoutToFile || redirectOutputToLog,
+                        RedirectStandardError = redirectStderrToFile || redirectOutputToLog,
                     }
                 };
 
                 // Discard/write any data to prevent the stream from filling up and blocking the process
-                if(redirectStdout)
+                if(redirectStdoutToFile)
                 {
-                    if(stdoutFile.ToLowerInvariant() == StreamDiscardConstant)
+                    if(stdoutFile.ToLowerInvariant() != StreamDiscardConstant)
+                    {
+                        stdoutStream = new StreamWriter(stdoutFile);
+                        cosimulatedProcess.OutputDataReceived += (s, e) => stdoutStream.WriteLine(e.Data);
+                    }
+                    else if(!redirectOutputToLog)
                     {
                         cosimulatedProcess.OutputDataReceived += (s, e) => { };
                     }
-                    else
-                    {
-                        stdoutStream = new StreamWriter(stdoutFile);
-                        cosimulatedProcess.OutputDataReceived += (s, e) =>
-                        {
-                            stdoutStream.WriteLine(e.Data);
-                        };
-                    }
                 }
-                if(redirectStderr)
+                if(redirectStderrToFile)
                 {
-                    if(stderrFile.ToLowerInvariant() == StreamDiscardConstant)
+                    if(stderrFile.ToLowerInvariant() != StreamDiscardConstant)
+                    {
+                        stderrStream = new StreamWriter(stderrFile);
+                        cosimulatedProcess.ErrorDataReceived += (s, e) => stderrStream.WriteLine(e.Data);
+                    }
+                    else if(!redirectOutputToLog)
                     {
                         cosimulatedProcess.ErrorDataReceived += (s, e) => { };
                     }
-                    else
+                }
+
+                if(redirectOutputToLog)
+                {
+                    cosimulatedProcess.OutputDataReceived += (s, e) =>
                     {
-                        stderrStream = new StreamWriter(stderrFile);
-                        cosimulatedProcess.OutputDataReceived += (s, e) =>
+                        if(!String.IsNullOrWhiteSpace(e.Data))
                         {
-                            stderrStream.WriteLine(e.Data);
-                        };
-                    }
+                            this.Log(renodeLogLevel, "cosimulation: {0}", e.Data);
+                        }
+                    };
+                    cosimulatedProcess.ErrorDataReceived += (s, e) =>
+                    {
+                        if(!String.IsNullOrWhiteSpace(e.Data))
+                        {
+                            this.Log(LogLevel.Error, "cosimulation: {0}", e.Data);
+                        }
+                    };
                 }
 
                 cosimulatedProcess.Start();
 
-                if(redirectStdout)
+                if(redirectStdoutToFile || redirectOutputToLog)
                 {
                     cosimulatedProcess.BeginOutputReadLine();
                 }
-                if(redirectStderr)
+                if(redirectStderrToFile || redirectOutputToLog)
                 {
                     cosimulatedProcess.BeginErrorReadLine();
                 }
@@ -418,6 +432,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private readonly string stdoutFile;
         private readonly string stderrFile;
+        private readonly LogLevel renodeLogLevel;
 
         private const string StreamDiscardConstant = "[discard]";
 
