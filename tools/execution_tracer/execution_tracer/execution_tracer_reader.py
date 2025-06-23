@@ -328,6 +328,7 @@ def handle_coverage(args, trace_data_per_file) -> None:
                     coverage_config,
                     args.coverview_config,
                     tests_as_total=args.tests_as_total,
+                    warning_threshold=args.warning_threshold,
                     remove_common_path_prefix=remove_common_path_prefix,
                 )
                 if not archive_created:
@@ -368,6 +369,7 @@ def main():
     cov_parser.add_argument("--lazy-line-cache", default=False, action="store_true", help="Disable line to address eager cache generation. For big programs, reduce memory usage, but process traces much slower")
     cov_parser.add_argument("--no-shorten-paths", default=False, action="store_true", help="Disable removing common path prefix from coverage output. Only relevant with '--export-for-coverview'")
     cov_parser.add_argument("--tests-as-total", default=False, action="store_true", help="Show executed tests out of total tests in line coverage in coverview. Only relevant with '--export-for-coverview'")
+    cov_parser.add_argument("--warning-threshold", required=False, help="Set warning threshold for line coverage in coverview. Only relevant with '--export-for-coverview'")
     args = parser.parse_args()
 
     # Look for the libllvm-disas library in default location
