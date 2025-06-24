@@ -127,7 +127,7 @@ Should Have Correct Instructions Count On WFI
 
 Should Have Correct Instructions Count On MMU External Fault
     [Tags]                          instructions_counting
-    ${assembly}=                    Surround Assembly Block With Nops  lw a1, 0(a0);  4  0
+    ${assembly}=                    Surround Assembly Block With Nops  lw a1, 0(a0);  4  4
     Create Platform                 ${RISCV_PLATFORM}  ${assembly}
     Execute Command                 cpu EnableExternalWindowMmu true
     Execute Command                 cpu SetRegister ${a0} 0x100000
