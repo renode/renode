@@ -120,15 +120,10 @@ namespace Antmicro.Renode.Integrations
                 value = value.Replace(mapping.Item1, mapping.Item2);
             }
             var builder = new StringBuilder();
-            var nonPrintable = new UnicodeCategory[]
-            {
-                UnicodeCategory.Control,
-                UnicodeCategory.OtherNotAssigned,
-                UnicodeCategory.Surrogate
-            };
             foreach(var c in value)
             {
-                if(nonPrintable.Contains(char.GetUnicodeCategory(c)) || char.IsControl(c))
+                bool isAscii = c < 128;
+                if(!isAscii || char.IsControl(c))
                 {
                     var encodedValue = "\\u" + ((int)c).ToString("x4");
                     builder.Append(encodedValue);
