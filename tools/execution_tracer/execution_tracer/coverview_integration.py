@@ -14,7 +14,7 @@ from datetime import datetime
 from execution_tracer.common_utils import extract_common_prefix, remove_prefix
 from execution_tracer.dwarf import Coverage
 
-def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_dict: str, *, tests_as_total: bool, warning_threshold: str | None, remove_common_path_prefix: bool = False) -> bool:
+def create_coverview_archive(path: TextIO, coverage_config: Coverage, coverview_dict: str, *, tests_as_total: bool, warning_threshold: str, remove_common_path_prefix: bool = False) -> bool:
     merge_config = {}
     success = True
     if coverview_dict is not None:
