@@ -51,6 +51,11 @@ mkdir -p ../../output/packages
 # Absolute path to use the Windows builtin BSD tar instead of minGW tar
 /c/Windows/SysWOW64/tar.exe -a -c -f ../../output/packages/renode-$VERSION.windows-portable-dotnet.zip $DIR
 
+# Build installer
+export BASE
+export VERSION
+windows_package_src=$DIR iscc "windows/renode.iss"
+
 echo "Created a dotnet portable package in output/packages/renode-$VERSION.windows-portable-dotnet.zip"
 
 # Cleanup
