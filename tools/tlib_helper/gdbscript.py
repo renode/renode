@@ -252,7 +252,12 @@ def read_guest_bytes(ptr, len):
 
 
 def read_guest_byte(ptr):
-    return int(gdb.parse_and_eval(f'tlib_read_byte_callback$({ptr})').const_value())
+    return int(
+        gdb.parse_and_eval(
+            f"tlib_read_byte_callback$({ptr}, "
+            + f"cpu_get_state_for_memory_transaction(cpu, {ptr}, ACCESS_DATA_LOAD))"
+        ).const_value()
+    )
 
 
 def decode_sleb128(ptr):
