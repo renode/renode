@@ -196,12 +196,9 @@ class RenodeNextInstruction(gdb.Command):
     def invoke(self, arg, from_tty):
         global GUEST_PC
 
-        cpu = '$current_cpu'
+        cpu = 'cpu'
         if arg:
             cpu = f'$_cpu({arg})'
-        elif gdb.convenience_variable('current_cpu') is None:
-            gdb.write(f'Could not detect active CPU. Re-run command with specified cpu-index (0-{len(CPU_POINTERS)})\n')
-            return
 
         current_tb = get_current_tb(cpu)
         if current_tb is None:
@@ -238,7 +235,7 @@ class RenodePrintTranslationBlock(gdb.Command):
         if current_tb is None:
             return
 
-        guest_pc = GUEST_PC or int(gdb.parse_and_eval('$current_cpu->pc').const_value())
+        guest_pc = GUEST_PC or int(gdb.parse_and_eval('cpu->pc').const_value())
 
         for guest, host, _ in current_tb:
             _, instr = disassemble_instruction(guest)
@@ -287,13 +284,7 @@ def decode_sleb128(ptr):
     return val, ptr
 
 
-def get_current_tb(cpu=None):
-    if cpu is None and gdb.convenience_variable('current_cpu') is None:
-        return None
-
-    if cpu is None:
-        cpu = '$current_cpu'
-
+def get_current_tb(cpu='cpu'):
     tb_defined = int(gdb.parse_and_eval(f'{cpu}->current_tb').const_value()) != 0
     if not tb_defined:
         return None
@@ -362,10 +353,10 @@ def get_current_instruction():
 def detect_architecture():
     # NOTE: Check if arm
     try:
-        gdb.parse_and_eval('$current_cpu->thumb')
+        gdb.parse_and_eval('cpu->thumb')
         try:
             # NOTE: Check aarch64
-            gdb.parse_and_eval('$current_cpu->aarch64')
+            gdb.parse_and_eval('cpu->aarch64')
             return Architecture.AARCH64
         except:
             return Architecture.AARCH32
@@ -374,21 +365,21 @@ def detect_architecture():
 
     # NOTE: Check if RISC-V
     try:
-        gdb.parse_and_eval('$current_cpu->mhartid')
+        gdb.parse_and_eval('cpu->mhartid')
         return Architecture.RISCV
     except:
         pass
 
     # NOTE: Check if xtensa
     try:
-        gdb.parse_and_eval('$current_cpu->config')
+        gdb.parse_and_eval('cpu->config')
         return Architecture.XTENSA
     except:
         pass
 
     # NOTE: Check if I386
     try:
-        gdb.parse_and_eval('$current_cpu->eip')
+        gdb.parse_and_eval('cpu->eip')
         return Architecture.I386
     except:
         pass
@@ -402,7 +393,7 @@ def get_model_and_triple():
         return None, None
 
     if arch is Architecture.AARCH32 or arch is Architecture.AARCH64:
-        this_cpu_id = int(gdb.parse_and_eval('$current_cpu->cp15.c0_cpuid').const_value())
+        this_cpu_id = int(gdb.parse_and_eval('cpu->cp15.c0_cpuid').const_value())
         arm_cpu_names = gdb.parse_and_eval('arm_cpu_names')
         index = 0
 
@@ -425,7 +416,7 @@ def get_model_and_triple():
             else:
                 triple = 'armv7a'
 
-        if triple == 'armv7a' and int(gdb.parse_and_eval('$current_cpu->thumb').const_value()) > 0:
+        if triple == 'armv7a' and int(gdb.parse_and_eval('cpu->thumb').const_value()) > 0:
             triple = 'thumb'
 
         return model, triple
@@ -439,7 +430,7 @@ def get_model_and_triple():
             triple = 'riscv32'
             model = 'rv32'
 
-        misa = gdb.parse_and_eval('$current_cpu->misa_mask')
+        misa = gdb.parse_and_eval('cpu->misa_mask')
         extensions = {chr(ord('a') + index) for index in range(32) if misa & (1 << index) > 0}
         extensions &= set('imafdcv')
 
@@ -479,28 +470,9 @@ def update_cpu_pointers():
     CPU_POINTERS = [m.start + offset for m in MEMORY_MAPPINGS if m.data]
 
 
-def update_current_cpu_variable():
-    global CPU_POINTERS, MEMORY_MAPPINGS
-
-    if len(CPU_POINTERS) <= 1:
-        # NOTE: If we are debugging single CPU platform, just fallback to cpu
-        gdb.set_convenience_variable('current_cpu', gdb.parse_and_eval('cpu'))
-        return
-
-    current_pc = int(gdb.parse_and_eval('$pc').const_value())
-    current_mapping = next((m for m in MEMORY_MAPPINGS if current_pc >= m.start and current_pc < m.end), None)
-    if current_mapping is None:
-        return
-
-    index = next(index for index, mapping in enumerate(m for m in MEMORY_MAPPINGS if m.data) if mapping.path == current_mapping.path)
-    current_cpu = gdb.Value(CPU_POINTERS[index]).cast(gdb.lookup_type('CPUState').pointer().pointer()).referenced_value()
-    gdb.set_convenience_variable('current_cpu', current_cpu)
-
-
 def before_prompt():
     cache_memory_mappings()
     update_cpu_pointers()
-    update_current_cpu_variable()
 
     guest_pc, opcode, instruction = get_current_instruction()
     if guest_pc is None:
@@ -534,9 +506,6 @@ def stop_event(event):
     is_env_breakpoint = any(bkpt == ENV_BREAKPOINT for bkpt in event.breakpoints)
     if not ENV_BREAKPOINT or not is_env_breakpoint:
         return
-
-    # NOTE: Update current CPU variable
-    update_current_cpu_variable()
 
     current_tb = get_current_tb()
     if current_tb is None:
