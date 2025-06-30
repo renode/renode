@@ -458,19 +458,20 @@ def cache_memory_mappings():
     MEMORY_MAPPINGS.sort(key=lambda m: m.path)
 
 
+def get_symbol_within_library(sym, lib_address):
+    objfile = gdb.current_progspace().objfile_for_address(lib_address)
+    if objfile is None:
+        return None
+
+    return objfile.lookup_global_symbol(sym) or objfile.lookup_static_symbol(sym)
+
+
 def update_cpu_pointers():
-    global CPU_POINTERS, MEMORY_MAPPINGS
+    global CPU_POINTERS
 
-    def get_cpu_pointer_for_mapping(m):
-        return (
-            gdb.current_progspace()
-            .objfile_for_address(m.start)
-            .lookup_global_symbol("cpu")
-            .value()
-            .address
-        )
-
-    CPU_POINTERS = [get_cpu_pointer_for_mapping(m) for m in MEMORY_MAPPINGS]
+    CPU_POINTERS = [
+        get_symbol_within_library("cpu", m.start).value().address for m in MEMORY_MAPPINGS
+    ]
 
 
 def before_prompt():
