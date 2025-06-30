@@ -393,7 +393,7 @@ def get_model_and_triple():
         arm_cpu_names = gdb.parse_and_eval('arm_cpu_names')
         index = 0
 
-        while arm_cpu_names[index]['name'] != None:
+        while arm_cpu_names[index]['name'] != 0:
             cpu_id = int(arm_cpu_names[index]['id'].const_value())
             if cpu_id == this_cpu_id:
                 model = str(arm_cpu_names[index]['name'].string())
