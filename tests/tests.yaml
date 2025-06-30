@@ -192,6 +192,7 @@
 - tests/unit-tests/bus-performance.robot
 - tests/unit-tests/profiler-trace.robot
 - tests/platforms/imxrt500.robot
+- tests/unit-tests/function-names.robot
 
 - ports_3335_3336:
   - tests/platforms/verilated/axi.robot
