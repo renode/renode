@@ -121,6 +121,13 @@ class Architecture(IntEnum):
             Architecture.I386: 2,
         }).get(self, 1)
 
+    @property
+    def pc(self):
+        expr = ({
+            Architecture.AARCH32: 'cpu->regs[15]',
+        }).get(self, 'cpu->pc')
+        return int(gdb.parse_and_eval(expr).const_value())
+
 
 def source(callable):
     """Convenience decorator for sourcing gdb commands"""
@@ -231,7 +238,7 @@ class RenodePrintTranslationBlock(gdb.Command):
         if current_tb is None:
             return
 
-        guest_pc = GUEST_PC or int(gdb.parse_and_eval('cpu->pc').const_value())
+        guest_pc = GUEST_PC or detect_architecture().pc
 
         for guest, host, _ in current_tb:
             _, instr = disassemble_instruction(guest)
