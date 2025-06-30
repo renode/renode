@@ -10,6 +10,7 @@
     <StartupObject>Antmicro.Renode.Program</StartupObject>
     <AssemblyName>Renode</AssemblyName>
     <RollForward>Major</RollForward>
+    <ApplicationIcon>..\..\lib\resources\images\windows_setup\renode.ico</ApplicationIcon>
     <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
