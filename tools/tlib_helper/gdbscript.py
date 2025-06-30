@@ -389,8 +389,14 @@ def get_model_and_triple():
         return None, None
 
     if arch is Architecture.AARCH32 or arch is Architecture.AARCH64:
+        this_cpu_addr = gdb.parse_and_eval('&cpu')
         this_cpu_id = int(gdb.parse_and_eval('cpu->cp15.c0_cpuid').const_value())
-        arm_cpu_names = gdb.parse_and_eval('arm_cpu_names')
+        # For some reason parse_and_eval('arm_cpu_names') can pick up the wrong one, so use the
+        # per-objfile lookup.
+        cpu_names_sym = get_symbol_within_library('arm_cpu_names', this_cpu_addr)
+        if cpu_names_sym is None:
+            return None, None
+        arm_cpu_names = cpu_names_sym.value()
         index = 0
 
         while arm_cpu_names[index]['name'] != 0:
