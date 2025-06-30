@@ -152,7 +152,7 @@ class ConvenienceCpu(gdb.Function):
 
     def invoke(self, index):
         global CPU_POINTERS
-        return gdb.Value(CPU_POINTERS[index]).cast(gdb.lookup_type('CPUState').pointer().pointer()).referenced_value()
+        return gdb.Value(CPU_POINTERS[index]).referenced_value()
 
 
 @source
