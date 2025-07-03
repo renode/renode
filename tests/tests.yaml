@@ -4,6 +4,19 @@
 - tests/unit-tests/RenodeTests/RenodeTests.csproj
 - lib/options-parser/OptionsParserTests.csproj
 
+- heavy_tests:
+  - tests/peripherals/MCAN.robot
+  - tests/platforms/Zedboard.robot
+  - tests/peripherals/VirtIO.robot
+  - tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
+  - tests/platforms/BeagleV-StarLight.robot
+  - tests/platforms/NRF52840.robot
+  - tests/platforms/PolarFireSoC.robot
+  - tests/platforms/Renesas_DA14592.robot
+  - tests/platforms/Renesas_RZ_G2L.robot
+  - tests/platforms/SiFive-FU540.robot
+
+- tests/platforms/zynqmp.robot
 - tests/example.robot
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 - tests/platforms/QuarkC1000.robot
@@ -14,7 +27,6 @@
 - tests/unit-tests/riscv-isa-string.robot
 - tests/unit-tests/sysbus.robot
 - tests/platforms/SiFive-FE310/SiFive-FE310.robot
-- tests/platforms/SiFive-FU540.robot
 - tests/platforms/SiFive-FU740.robot
 - tests/platforms/PicoSoC.robot
 - tests/platforms/MiV/MiV.robot
@@ -29,7 +41,6 @@
 - tests/platforms/Murax.robot
 - tests/unit-tests/monitor-tests.robot
 - tests/platforms/LiteX/Arty_LiteX_VexRiscv.robot
-- tests/platforms/LiteX/LiteX_Linux_VexRiscv.robot
 - tests/platforms/Fomu.robot
 - tests/platforms/verilated/UARTLite.robot
 - tests/platforms/verilated/MuraxAPB3.robot
@@ -52,7 +63,6 @@
 - tests/platforms/LiteX/LiteX_VexRiscv_I2S.robot
 - tests/platforms/NXP-K64F.robot
 - tests/platforms/STM32F4_Discovery.robot
-- tests/platforms/NRF52840.robot
 - tests/unit-tests/riscv-custom-instructions.robot
 - tests/unit-tests/riscv-lr-sc-instructions.robot
 - tests/metrics-analyzer/metrics-analyzer.robot
@@ -65,7 +75,6 @@
 - tests/peripherals/LIS2DS12.robot
 - tests/peripherals/LSM303.robot
 - tests/peripherals/MC3635.robot
-- tests/peripherals/MCAN.robot
 - tests/peripherals/HS3001.robot
 - tests/peripherals/DA16200.robot
 - tests/unit-tests/AdHocCompiler/adhoc-compiler.robot
@@ -81,7 +90,6 @@
 - tests/platforms/GR716.robot
 - tests/platforms/MPC5567.robot
 - tests/platforms/xtensa.robot
-- tests/platforms/Zedboard.robot
 - tests/unit-tests/InterruptHooks/arm-m.robot
 - tests/unit-tests/arm-cortex-m-fpu.robot
 - tests/unit-tests/log-tests.robot
@@ -101,7 +109,6 @@
 - tests/unit-tests/iommu.robot
 - tests/unit-tests/file-paths.robot
 - tests/unit-tests/load-command.robot
-- tests/platforms/PolarFireSoC.robot
 - tests/platforms/SLTB004A.robot
 - tests/platforms/ambiq-apollo4.robot
 - tests/unit-tests/cpu-step.robot
@@ -125,7 +132,6 @@
 - tests/unit-tests/page-access-via-io.robot
 - tests/unit-tests/precise-pause.robot
 - tests/unit-tests/peripheral-hooks.robot
-- tests/platforms/zynqmp.robot
 - tests/unit-tests/uart-tester.robot
 - tests/platforms/ARMv8A-Linux.robot
 - tests/peripherals/SHT45.robot
@@ -144,8 +150,6 @@
 - tests/platforms/Renesas_RA6M5.robot
 - tests/platforms/Renesas_RA4M1.robot
 - tests/platforms/Renesas_RA8M1.robot
-- tests/platforms/Renesas_DA14592.robot
-- tests/platforms/Renesas_RZ_G2L.robot
 - tests/peripherals/ICP_101xx.robot
 - tests/peripherals/NXP_INTMUX.robot
 - tests/unit-tests/grammar-number-separator.robot
@@ -155,11 +159,9 @@
 - tests/platforms/Renesas_EK-RA2E1.robot
 - tests/peripherals/UT32_CAN.robot
 - tests/peripherals/S32K3XX_FlexCAN.robot
-- tests/platforms/BeagleV-StarLight.robot
 - tests/platforms/BeagleV-Fire.robot
 - tests/unit-tests/virtual-time.robot
 - tests/unit-tests/platform-file-aliases.robot
-- tests/peripherals/VirtIO.robot
 - tests/peripherals/CLIC/CLIC-riscv-arch-tests.robot
 - tests/peripherals/CLIC/CLIC-indirect-csr.robot
 - tests/peripherals/CLIC/CLIC-preemption-01.robot
