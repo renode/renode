@@ -303,6 +303,7 @@ sysbus:
         Tag <0x1800000000 0x400000000> "DDR Non-Cached WCB 16GB"
         SilenceRange <0x02010010, 0x02010FFF> # "Cache controller"
         SilenceRange <0x01700000, 0x01704FFF> # Bus error units
+        Tag <0x30000000, 0x3FFFFFFF> "IOSCB_DATA"
         Tag <0x37080000, 0x38FFFFFF> "IOSCB" 0xFFFFFFFF
         Tag <0x20005000, 0x20005FFF> "MPU Config"
 
@@ -315,7 +316,7 @@ sysbus:
         Tag <0x2000784C, 0x2000784F> "DQDQS_WINDOW" 0x8
         Tag <0x20007C20, 0x20007C23> "PVT_STAT" 0x4040
 
-        Tag <0x20080000, 0x2009FFFF> "DDRCFG"
+        Tag <0x20080000, 0x200BFFFF> "DDRCFG"
         Tag <0x20084428, 0x2008442B> "CSR_APB_MT_DONE_ACK" 0x1
         Tag <0x20090034, 0x20090037> "CSR_APB_STAT_DFI_INIT_COMPLETE" 0x1
         Tag <0x20090038, 0x2009003B> "CSR_APB_STAT_DFI_TRAINING_COMPLETE" 0x1
