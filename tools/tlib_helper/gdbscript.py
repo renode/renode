@@ -158,7 +158,6 @@ class ConvenienceCpu(gdb.Function):
         super(self.__class__, self).__init__('_cpu')
 
     def invoke(self, index):
-        global CPU_POINTERS
         return gdb.Value(CPU_POINTERS[index]).referenced_value()
 
 
@@ -197,8 +196,6 @@ class RenodeNextInstruction(gdb.Command):
         ENV_BREAKPOINT = gdb.Breakpoint(f'{cpu}->current_tb', gdb.BP_WATCHPOINT, gdb.WP_WRITE, True)
 
     def invoke(self, arg, from_tty):
-        global GUEST_PC
-
         cpu = 'cpu'
         if arg:
             cpu = f'$_cpu({arg})'
