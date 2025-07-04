@@ -189,14 +189,10 @@ IT_cond:
   Bit denoting end of sequence always equals 1.
 
 
-*** Settings ***
-Library                ${CURDIR}/../gdb/gdb_library.py
-
 *** Variables ***
 ${URI}                 @https://dl.antmicro.com/projects/renode
 ${ITSTATE_BIN}         arm-itte-block-test-s_66284-3482e7f2e0d8849841c6ca6cafbf03104d2c4a31
 ${CONDITION_BIN}       arm-itte-condition-codes-test-s_65976-6ec62f42daaf672789f066bceaf75dc1e7865e6e
-${GDB_REMOTE_PORT}     3333
 *** Keywords ***
 Create Machine
             [Arguments]     ${elf}
