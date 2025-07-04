@@ -194,5 +194,13 @@
 - tests/platforms/imxrt500.robot
 - tests/unit-tests/function-names.robot
 
+# Do not use port 3333 in unit tests
+
+- port_3334:
+  - tests/unit-tests/gdb/gdb.robot
+
 - ports_3335_3336:
   - tests/platforms/verilated/axi.robot
+
+- port_3337:
+  - tests/unit-tests/gdb/ArmVfpGDB.robot
