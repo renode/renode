@@ -73,6 +73,13 @@ namespace Antmicro.Renode
                                 context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
                                 rf.Start(options.RobotFrameworkRemoteServerPort);
                             }
+#if NET
+                            if(options.ServerMode)
+                            {
+                                var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
+                                Emulator.BeforeExit += wsAPI.Dispose;
+                            }
+#endif
                         });
                     }
                 }
@@ -82,6 +89,7 @@ namespace Antmicro.Renode
                 }
             });
             thread.Start();
+            
             Emulator.ExecuteAsMainThread();
         }
 
