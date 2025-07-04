@@ -45,6 +45,20 @@ namespace Antmicro.Renode
             */
             Core.EmulationManager.RebuildInstance();
 
+#if NET
+            if(options.ServerMode)
+            {
+                if(!WebSockets.WebSocketsManager.Instance.Start(options.ServerModePort))
+                {
+                    string reason = options.ServerModePort != 21234 ? $"specified port ({options.ServerModePort}) is unavailable" : "port range (21234 - 31234) is unavailable";
+                    Console.Out.WriteLine($"[ERROR] Couldn't launch server - {reason}");
+                    return;
+                }
+                
+                Emulator.BeforeExit += WebSockets.WebSocketsManager.Instance.Dispose;
+            }
+#endif
+
             var thread = new Thread(() =>
             {
                 try
