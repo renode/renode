@@ -15,6 +15,7 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.RobotFramework;
 using Antmicro.Renode.Utilities;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -24,59 +25,102 @@ namespace Antmicro.Renode.WebSockets
     {
         public WebSocketAPI(string workingDir)
         {
-            alreadyDisposed = false;
-            SharedData = new WebSocketAPISharedData();
-            SharedData.cwd = Path.Combine(Environment.CurrentDirectory, workingDir);
+            locker = new object();
+            isDisposed = false;
+            isRunning = false;
+            workingDirName = workingDir;
 
-            if(!Directory.Exists(SharedData.cwd))
-            {
-                Directory.CreateDirectory(SharedData.cwd);
-            }
-
-            actionHandlers = new Dictionary<string, (object, List<ActionHandler>)>();
+            actionHandlers = new Dictionary<string, (IWebSocketAPIProvider, List<ActionHandler>)>();
+            apiProviders = new List<IWebSocketAPIProvider>();
             TypeManager.Instance.AutoLoadedType += RegisterType;
 
-            webSocketServerProvider = new WebSocketServerProvider(false, "/proxy");
-            webSocketServerProvider.DataBlockReceived += HandleRequest;
+            webSocketServerProvider = new WebSocketServerProvider("/proxy", true);
+            webSocketServerProvider.DataBlockReceived += ReceiveData;
             webSocketServerProvider.NewConnection += OnNewClientConnection;
             webSocketServerProvider.Disconnected += OnClientDisconnect;
         }
 
+        public bool Start()
+        {
+            if(isDisposed || isRunning)
+            {
+                return false;
+            }
+
+            if(!TemporaryFilesManager.Instance.TryCreateDirectory(workingDirName, out var workDirTempPath))
+            {
+                return false;
+            }
+
+            SharedData = new WebSocketAPISharedData(workDirTempPath);
+            SharedData.ClearEmulationEvent += ClearEmulation;
+
+            if(!webSocketServerProvider.Start())
+            {
+                return false;
+            }
+
+            foreach(var apiProvider in apiProviders)
+            {
+                if(!apiProvider.Start(SharedData))
+                {
+                    return false;
+                }
+            }
+
+            isRunning = true;
+            return true;
+        }
+
         public void Dispose()
         {
-            if(alreadyDisposed)
+            if(isDisposed || !isRunning)
             {
                 return;
             }
 
-            alreadyDisposed = true;
+            isDisposed = true;
             webSocketServerProvider.Dispose();
             webSocketServerProvider = null;
         }
 
-        private void OnNewClientConnection(List<string> extraSegments)
+        private void OnNewClientConnection(WebSocketConnection sender, List<string> extraSegments)
         {
             var extraSegmentsCount = extraSegments.Count();
 
             if(extraSegmentsCount >= 1)
             {
-                SetCwd("working-dir/" + extraSegments[0]);
+                var newPath = Path.Combine(SharedData.Cwd.DefaultValue, extraSegments[0]);
+                Directory.CreateDirectory(newPath);
+                SharedData.Cwd.Value = newPath;
+            }
+
+            SharedData.NewClientConnection?.Invoke();
+        }
+
+        private void OnClientDisconnect(WebSocketConnection sender)
+        {
+            if(sender != SharedData.MainConnection)
+            {
+                return;
+            }
+
+            SharedData.ClearEmulationEvent?.Invoke();
+
+            foreach(var endp in new List<string> { "/telnet/29169", "/telnet/29170" })
+            {
+                foreach(var conn in WebSocketsManager.Instance.GetConnections(endp))
+                {
+                    conn.Dispose();
+                }
             }
         }
 
-        private void OnClientDisconnect()
+        private void ClearEmulation()
         {
             EmulationManager.Instance.Clear();
             Recorder.Instance.ClearEvents();
             SharedData.SetDefaults();
-        }
-
-        private void SetCwd(string newCwd)
-        {
-            var cwd = Path.Combine(Environment.CurrentDirectory, newCwd);
-            Directory.CreateDirectory(cwd);
-
-            SharedData.cwd = cwd;
         }
 
         private void RegisterType(Type t)
@@ -87,7 +131,8 @@ namespace Antmicro.Renode.WebSockets
             }
 
             Logger.Log(LogLevel.Info, $"Found new API Provider: {t.Name}");
-            object apiProviderInstance = Activator.CreateInstance(t, new[] { SharedData });
+            IWebSocketAPIProvider apiProviderInstance = (IWebSocketAPIProvider)Activator.CreateInstance(t);
+            apiProviders.Add(apiProviderInstance);
 
             foreach(var methodAttr in t.GetMethodsWithAttribute<WebSocketAPIActionAttribute>())
             {
@@ -138,10 +183,20 @@ namespace Antmicro.Renode.WebSockets
             }
         }
 
+        private void ReceiveData(WebSocketConnection sender, byte[] data)
+        {
+            lock(locker)
+            {
+                SharedData.CurrentConnection = sender;
+                HandleRequest(data);
+                SharedData.CurrentConnection = null;
+            }
+        }
+
         private void HandleRequest(byte[] data)
         {
             string request = System.Text.Encoding.UTF8.GetString(data);
-            Logger.Log(LogLevel.Debug, $"\tReceived request: {request}");
+            Logger.Log(LogLevel.Debug, $"Received request: {request}");
             APIRequest apiRequest = null;
 
             try
@@ -153,7 +208,7 @@ namespace Antmicro.Renode.WebSockets
                 SendErrorMessage(DefaultVersion, -1);
                 return;
             }
-            
+
             if(actionHandlers.TryGetValue(apiRequest.action, out var handlers))
             {
                 var actionHandler = handlers.entries.Where(h => h.version <= apiRequest.version)?.OrderBy(h => h.version)?.First();
@@ -195,8 +250,8 @@ namespace Antmicro.Renode.WebSockets
                 };
 
                 var serializedResponse = JsonConvert.SerializeObject(apiResponse);
-                Logger.Log(LogLevel.Debug, $"\tSending response: {serializedResponse.ToString()}\n");
-                webSocketServerProvider.Send(Encoding.UTF8.GetBytes(serializedResponse));
+                Logger.Log(LogLevel.Debug, $"Sending response: {serializedResponse.ToString()}");
+                SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
             }
             else
             {
@@ -215,8 +270,8 @@ namespace Antmicro.Renode.WebSockets
 
             var serializedEvent = JsonConvert.SerializeObject(eventResponse);
 
-            Logger.Log(LogLevel.Debug, $"\tEvent raised: {serializedEvent.ToString()}");
-            webSocketServerProvider.Send(Encoding.UTF8.GetBytes(serializedEvent));
+            Logger.Log(LogLevel.Debug, $"Event raised: {serializedEvent.ToString()}");
+            SharedData.MainConnection?.Send(Encoding.UTF8.GetBytes(serializedEvent));
         }
 
         private void SendErrorMessage(string version, int id)
@@ -229,13 +284,17 @@ namespace Antmicro.Renode.WebSockets
             };
 
             var serializedResponse = JsonConvert.SerializeObject(apiResponse);
-            webSocketServerProvider.Send(Encoding.UTF8.GetBytes(serializedResponse));
+            SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
         }
 
-        private bool alreadyDisposed;
+        private bool isDisposed;
+        private bool isRunning;
+        private WebSocketAPISharedData SharedData;
         private WebSocketServerProvider webSocketServerProvider;
-        private readonly WebSocketAPISharedData SharedData;
-        private readonly Dictionary<string, (object handlerInstance, List<ActionHandler> entries)> actionHandlers;
+        private readonly string workingDirName;
+        private readonly object locker;
+        private readonly Dictionary<string, (IWebSocketAPIProvider handlerInstance, List<ActionHandler> entries)> actionHandlers;
+        private readonly List<IWebSocketAPIProvider> apiProviders;
         private static readonly string DefaultVersion = "1.5.0";
 
         private class APIRequest

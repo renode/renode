@@ -78,6 +78,7 @@ namespace Antmicro.Renode
                             {
                                 var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
                                 Emulator.BeforeExit += wsAPI.Dispose;
+                                wsAPI.Start();
                             }
 #endif
                         });
@@ -89,7 +90,6 @@ namespace Antmicro.Renode
                 }
             });
             thread.Start();
-            
             Emulator.ExecuteAsMainThread();
         }
 

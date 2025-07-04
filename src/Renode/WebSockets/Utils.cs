@@ -45,7 +45,7 @@ namespace Antmicro.Renode.WebSockets
 
     public interface IWebSocketAPIProvider : IAutoLoadType
     {
-
+        bool Start(WebSocketAPISharedData sharedData);
     }
 
     public delegate void WebSocketAPIEventHandler(object eventData);
@@ -83,11 +83,37 @@ namespace Antmicro.Renode.WebSockets
 
     public class WebSocketAPISharedData
     {
-        public void SetDefaults()
+        public WebSocketAPISharedData(string cwd)
         {
-            cwd = Path.Combine(Environment.CurrentDirectory, "working-dir");
+            this.Cwd = new DefaultVariable<string>(cwd);
         }
 
-        public string cwd;
+        public void SetDefaults()
+        {
+            Cwd.SetDefault();
+        }
+
+        public WebSocketConnection CurrentConnection;
+        public WebSocketConnection MainConnection;
+        public Action ClearEmulationEvent;
+        public Action NewClientConnection;
+        public readonly DefaultVariable<string> Cwd;
+
+        public class DefaultVariable<T>
+        {
+            public DefaultVariable(T defaultValue)
+            {
+                DefaultValue = defaultValue;
+                Value = defaultValue;
+            }
+
+            public void SetDefault()
+            {
+                Value = DefaultValue;
+            }
+
+            public T Value;
+            public readonly T DefaultValue;
+        }
     }
 }
