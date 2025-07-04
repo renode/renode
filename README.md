@@ -18,6 +18,7 @@ Supported architectures include:
 * SPARC
 * POWER
 * Xtensa
+* MSP430X
 
 ## Why use Renode?
 
