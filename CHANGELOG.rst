@@ -3,6 +3,466 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.16.0 - 2025.08.02
+-------------------
+
+Added and improved architecture support:
+
+    * added support for MSP430/MSP430X architecture, as the first interpreted ISA in Renode
+    * ARM
+
+      * added automatic connection of all ARM-A/R CPUs to GIC
+      * added new registers for Cortex-A55
+      * added definitions of Cortex-R5 specific CP15 registers
+      * added TrustZone support for ARMv8-M
+      * added `FEAT_IDST` support
+      * added Thumb2 support on ARMv8
+      * added support for 32-bit code in EL0
+      * added ability to choose whether to emulate PSCI conduit with SMC or HVC
+      * exposed 64 bit VFP registers
+      * fixed `RBAR`/`RLAR` aliases by adding offset to the current region number
+      * fixed a crash on not-completely initialized MMU mode
+      * fixed issues with registers affecting code translation
+      * fixed handling of the `GE` flag in `sadd{8,16}`, `ssub{8,16}`, `usub{8,16}` instructions
+      * fixed Cortex-A78 core number value
+      * fixed accessing 64-bit CSRs
+      * fixed section descriptor decoding in LPAE
+      * fixed PMSAv8 MPU control register behavior
+      * fixed Cortex-M FPU context saving upon an IRQ
+      * fixed swapping low and high portions of FPU registers on exception entry, when lazy preservation is not enabled
+      * fixed wrong TB size reported for some Thumb instructions
+      * fixed GICv3 CPU system registers incorrectly being enabled for older GIC versions
+      * fixed access to system registers in 32-bit mode on a 64-bit core
+      * fixed VFP instructions in 32-bit EL0 with 64-bit EL1
+      * fixed a crash when performing a TLB fill while executing AArch32 code in certain conditions
+      * fixed incorrect reporting of the IL field in the syndrome of data aborts taken to Hyp mode
+      * fixed low bits of `ATS1CP[RW]` incorrectly treated as flags in the result (PAR) register
+      * fixed handling of scalar `VMOV`
+      * fixed the Thumb flag being set in block flags in traces in A64 state in some circumstances
+      * changed `lda`/`stl` instructions on Armv8-M to not require address reservations as they are not exclusive
+      * fixed PC synchronization in AArch64 state
+      * improved `SMC` calls emulation
+      * added non-secure aliases for v8 MPU (TrustZone)
+      * reduced the verbosity of sysreg-related logs
+
+    * RISC-V
+
+      * improved handling of the `MSTATUS.FS` flag
+      * improved parsing of ISA strings to support more granular extension descriptions and custom extensions
+      * fixed setting of the `mtval` register with the opcode that caused an exception
+      * various fixes in `Zb*` Bit Manipulation instructions
+      * fixed atomic `LR`/`SC` instructions
+      * fixed incorrect log messages resulting from all-zero instruction translation
+      * fixed the `vmsbc` instruction
+      * fixed extension checking for compressed float load/store
+      * added handling of the RV32E base integer instruction set in cpuType string parsing
+      * added mirroring of the `MCAUSE` fields `MPP` and `MPIE` to `MSTATUS` in CLIC mode
+      * added support for the `Zacas` extension for performing atomic Compare-and-Swap (CAS) operations
+      * added support for `Zve*` and `Zvfh` vector extensions
+
+    * added support for single vector trapping in selected SPARC cores
+    * added mechanism for dynamic ACPI table generation in X86
+    * added initial SMP support for x86
+    * added initial x86 KVM-based CPU support
+
+Added and improved platform descriptions:
+
+    * ZynqMP UltraScale+ with ZCU102 and ZCU104 boards
+    * Renesas RZ/G2L
+    * Silicon Labs Series-2- xG24, xG26, xG22 with a range of peripherals, including xG24 radio
+    * BeagleV Fire
+    * Polarfire SoC with Icicle Kit
+    * Atmel SAM4S8B
+    * Atmel SAM4S16C with SAM4S XPLAINED
+    * Atmel SAMD21J17D
+    * NXP IMXRT500
+    * NXP Layerscape lx2160ardb
+    * Nuvoton NPCX9
+    * UP Squared
+    * Virtualized x86 KVM
+    * LiteX-based platforms
+
+Added demos:
+
+    * MSP430F2619 Hello World demo
+    * BeagleV-Fire booting up Linux Buildroot
+    * Contiki-NG Hello World demo for Zolteria Z1
+    * Web server running in Docker on ZynqMP
+    * SAM4S series based demo running Zephyr shell sample
+    * i386 KVM Linux demo
+    * i386 KVM U-Boot demo
+    * Renesas RZ/G2L Linux demo
+    * Renesas RZ/G2L U-Boot based demo
+    * lx2160ardb U-Boot based demo
+    * IMXRT500 demo running Zephyr's `shell_module` sample
+    * UP Squared demo running Zephyr's `hello_world`` sample
+    * NXP S32K388 demo running Zephyr's `shell module` sample
+    * VeeR_EL2 Tock OS demo
+
+Added tests:
+
+    * infrastructure for GDB testing in Robot
+    * 32-bit userspace with 64-bit kernel on ZynqMP
+    * Cortex-M FPU context saving upon an IRQ
+    * 64 bit VFP Arm registers access test
+    * IMXRT500 test running Pigweed bluetooth advertiser
+    * SAM4S XPLAINED Zephyr blinky and button
+    * RISC-V LR/SC operations
+    * MSP430F2619 memory read
+    * i386 KVM Linux
+    * i386 KVM U-Boot
+    * Renesas RZ/G2L MHU
+    * Renesas RZ/G2L Linux
+    * Renesas RZ/G2L U-Boot
+    * VexRiscv CFU
+    * lx2160ardb U-Boot
+    * VeeR_EL2 Tock OS
+    * UP Squared test running Zephyr `hello_world`` sample
+    * NXP S32K388 test running Zephyr `shell module` sample
+    * Zephyr `tickless_kernel` test suite on Icicle Kit with ZephyrMode skipped
+    * Zephyr LLEXT test on ARM Cortex-R8
+    * LLVM assembler
+    * LLVM assemble and disassemble test for `rv32gc_xandes`
+    * code execution from ArrayMemory
+    * verification of selective memory range caching
+    * SystemC cosimulation
+    * fetching symbols in Monitor and Python
+    * timestamp based variant of RESD tests for AK09918 sensor
+    * execution_tracer LCOV format
+    * CPU hooks on addresses backed by ArrayMemory
+    * autocompletion tests
+    * instructions counting tests
+    * REPL `using` statement test
+    * LogFunctionNames filtered symbol LUT unit test
+
+Added features:
+
+    * support for creating .NET packages for Debian, Fedora and Arch
+    * support for running Renode natively on Aarch64 macOS and Linux
+    * atomic instrinsics for Aarch64 hosts
+    * assembler and disassembler for MSP430
+    * U-Boot Mode support for Arm, Arm-M and RISC-V
+    * SystemCCPU model in SystemCPlugin
+    * wrapper for a Cortex-M CPU in SystemCPlugin
+    * dynamic TCP ports allocation for SystemC co-simulation
+    * custom include directories in SystemC integration build
+    * sharing a single connection by multiple co-simulated peripherals, allowing for more complex scenarios supported by a single simulator instance
+    * LLVM assembler and dissasembler support for Aarch64 hosts
+    * PeakRDL plugin for generating models stubs based on RDL
+    * PeakRDL plugin for generating platform description files from RDL
+    * alternative profile collection based on stack pointer changes, available in collapsed stack profiling
+    * support for code execution from ArrayMemory
+    * support for changing peripheral access conditions at runtime
+    * `Wait For Gdb Connection` Robot keyword, to await a GDB connection to a GDB server running on a specific port
+    * `WriteToClear` mode for register fields
+    * `WriteToSet` mode for register fields
+    * configurable mechanism for caching of consecutive reads from a single address, to improve performance of register polling
+    * Bus Isolation concept to filter access to peripherals based on the bus transaction state
+    * parameter to ZephyrMode plugin allowing it to skip ZephyrMode for provided symbols
+    * keyword argument support for Monitor Python commands (`kwargs`)
+    * access to Monitor variabless in Python scripts
+    * support for creating testers on externals
+    * support for multiple HDL controllers and peripherals connected to a single renode module without an interconnect
+    * support for detecting strings that will fail a test
+    * support for the `reset` attribute in REPL files, which will be executed for each peripheral upon machine reset
+    * arbitrary timestamp block support for RESD
+    * config `window-allow-outside-viewport` to control the behavior of snapping to a visible portion of the screen
+    * config `window-initial-offset-{x,y}` for configuring initial Renode Window position from screen edge
+    * mechanism for sending signals from Renode to DPI peripherals
+    * time skip hook for an arbitrary symbol
+    * the `if` helper function for Monitor
+    * support for passing array arguments using `[1, 2]` syntax in the Monitor, positional and named alike, including `params T[]`
+    * option for synchronous execution tracing
+    * option to limit maximum profile trace file size
+    * option to limit maximum number of nested thread contexts in profilers
+    * option to load a binary starting from a specified offset
+    * ability to wait for a byte-encoded string with the `TerminalTester`
+    * ability to assemble instructions into memory from the Monitor
+    * ability to disassemble x86 instructions using the Intel syntax
+    * ability to feed UART with arbitrary binary data using RESD files
+    * explicit ports assignment in connection to HDL co-simulation
+    * memory dumping to file in binary and Intel hex formats
+    * coloring option for the network logger
+    * option to load a string as bytes into memory
+    * custom Python hooks for handling SMC instruction
+    * API for accessing CPU registers by name in Python
+    * binary data sample type for RESD
+    * socket UART analyzer
+    * new instructions `atomic_fetch_add_intrinsic_i32/64` in code generator
+    * support for Coverview in Execution Tracer
+    * support for the LCOV format in Execution Tracer
+    * Execution Tracer option to process multiple trace files and produce a desc file with aggregated results
+
+Changed:
+
+    * improved compatibility with HDL simulators of the DPI integration
+    * replaced temporary file overwrite mechanism with directory removal
+    * temporary files path is now configurable
+    * significantly sped up coverage report generation via execution_tracer
+    * log aggregation is now performed at the `Logger` level for all backends
+    * dynamically compiled assemblies are now loaded right away after compilation to reduce the usage of 'EnsureTypeIsLoaded'
+    * a failing Python command is now reported in the Monitor when ran interactively
+    * added optional signals for APB3 in integration with Verilator
+    * added validation of signal connections in integration with Verilator
+    * the CoSimulationPlugin can now be configured to redirect stdout/stderr to files or discard them completely
+    * improved support for detecting connections between machines and externals
+    * improvements in Execution Tracer
+    * made Renode target net8.0 by default when built with `--net`
+    * removed Cygwin as a dependency on Windows
+    * renamed `renesas-segger-rtt.py` to `segger-rtt.py` helper
+    * improved the `segger-rtt.py` helper
+    * switched to CMake for building c libraries
+    * switched to using DebugHelper.Assert instead of System.Diagnostics.Debug.Assert
+    * extended logs on robot_tests_provider failure to create a port file
+    * miscellaneous fixes and changes to execution_tracer
+    * PC is synced before every instruction
+    * C imports no longer need to be typed with the generated FuncInt32
+    * cleaning the previous build no longer depends on the MSBuild build system
+    * literals are now passed to IronPython functions as objects
+    * renode-test now exits with code 2 on when the failure was caused by a crash of the Renode process
+    * when running under .NET Core the .NET CLI telemetry is disabled by default
+    * relaxed declaration and variable reference ordering rules for REPL platform format
+    * made the image size parameter optional when loading data to CFIFlash
+    * updated the LLVM version used for (dis)assembly to 20.1.2
+    * unsupported RISC-V extensions are now stripped automatically before passing to LLVM when assembling and disassembling
+    * CPU register index is now printed when listing registers values
+    * NUnit-Console does not spawn separate thread for supervising tests
+    * `ReceiveFrame` callback in IRadio now includes the frame's sender
+    * `AsciinemaRecorder` now supports CDC ACM UART
+    * `LoadELF` can now load into non-ICPU contexts
+    * `using sysbus` is now set by default in Monitor
+    * `uart_connect` Monitor command now accepting device objects instead of strings with their names
+    * `CpuKeywords` now use CPU name instead of ID to identify CPUs
+    * execution tracer reader test now covers A64/A32/T32 switching
+    * save files now contain a proper metadata structure, including the Renode version and runtime version, displayed when a snapshot fails to load
+
+Fixed:
+
+    * compatibility with the new exception handling mechanism in the .NET 9 runtime
+    * building SystemCPlugin in dotnet
+    * building cosimulated peripherals against a packaged build of Renode
+    * binding imports with protected parameter types on .NET Framework
+    * crash on failure to reload symbols in the U-Boot mode
+    * crash on UI cursor dispose
+    * crash on Monitor path autocompletion in certain cases
+    * crash when the image for VirtIO filesystem is not loaded
+    * crash when using the `using` statement with an invalid path
+    * crash of ExecutionTracing on CPU abort
+    * crash when modyfing PerformanceInMips during simulation
+    * crash when disposing profiler due to file size limits
+    * crash while running multiple Renode instances, caused by incorrect cache files accesses
+    * crash on loading incorrect Python peripheral script
+    * rare crash on reading registers from simultaneously aborting CPU
+    * selecting exported methods in NativeBinder
+    * deadlock in BaseCPU on race condition between starting/pausing from different threads
+    * deadlock when FrameBufferTester is used on a paused emulation
+    * deadlock caused by running multiple instances of `robot-tests` concurrently
+    * logging errors from parallel `renode-test` testing
+    * skipping timed-out tests in subsequent `renode-test` iterations
+    * issues with crash detection mechanism in `renode-test`
+    * `renode-test` never finishing when ran in the background
+    * robot_tests_provider `--run-gdb` handling
+    * robot_tests_provider `renode_port_file` awaiting on Windows
+    * killing Renode on Windows by robot_tests_provider
+    * test execution getting stuck when some of the tests fail to setup correctly
+    * possible memory leak if a CPU constructor throws an exception
+    * possible memory leak if platform loading fails
+    * possible memory leaks in `SymbolLookup`
+    * possible memory leak in `termsharp`
+    * possible issues with running Renode in container multiple times with the same process ID
+    * usage of the current CPU context in `Virtqueue` for DMA to allow DMA from and to CPU-local memory
+    * uncontrolled flags state on `PhysPageDesc` allocation in tlib
+    * reservations on memory read in tlib
+    * returning of the last sample on the `After Stream` RESD status
+    * handling of `//` in a multiline string literal in a platform description
+    * fatal exceptions on invalid accesses in AXI peripherals cosimulated through DPI
+    * `LogDisassembly` for mixed A32/T32/A64 code
+    * synchronization issues when using `SystemCPeripheral` with `ClockSource.ExecuteInLock`
+    * CPU hooks on addresses backed by ArrayMemory
+    * 64bit floating point multiply-add operation inaccuracy
+    * handling of the `--profile-build` flag
+    * clearing of address reservation for atomic instructions
+    * collapsed stack behavior in Zephyr mode
+    * cached translation blocks not being invalidated on guest write
+    * conflicting peripherals lookup for CPU-specific peripherals during registration
+    * Renode windows sometimes spawning outside visible viewport
+    * handling of memory ranges up to 64-bit max
+    * choosing peripheral access method for region accesses
+    * not hiding CDC-to-UART converter on emulation clear
+    * registers with the same names but different regfiles not being properly generated by PeakRDL
+    * platform definition dependency resolution for registration
+    * silent accepting of Renode start timeouts
+    * metadata support in csv2resd Python library
+    * `telnet` network tests on Python 3.13
+    * handling of failing/unsuccessful subprocess spawning from Python
+    * GUI not working on macOS/arm64
+    * Apple silicon x86 host builds under Rosetta
+    * a bug in translation block caching logic
+    * tcg `bswap16` fallback logic
+    * serialization in regards to pyrenode3 where PeripheralBackendAnalyzerCreated is used
+    * emulation deserialization across Renode versions
+    * linking issue on Windows
+    * occasional crashes when using `UartPtyTerminal`
+    * problem with the instructions counter being broken in certain situations
+    * unnecessary sleeping when pause is requested
+    * blinking of terminal cursor on WPF
+    * running exclusive test groups, which include multiple test suites, in parallel
+    * Wishbone initiator address semantics
+    * building Arm core on big-endian hosts
+    * serialization of UartFileBackend
+    * Zephyr Mode support for Armv8-R cores
+    * context management for Monitor variable accesses from IronPython runtime
+    * default llvm-disas path in execution_tracer_reader
+    * execution tracer output file not being closed in synchronous mode
+    * log tester being accessible in tests that didn't create one
+    * logger backend removal
+    * NULL character decoding in shell and tests
+    * incorrect block lengths in execution traces
+    * expansion of the peripheral reset macro in a machine context
+    * unwanted boolean conversion to other types in Monitor
+
+Added peripheral models:
+
+    * Amlogic Meson SoC UART
+    * Caliptra I3C
+    * CDC-UART converter
+    * ESP32 UART
+    * Generic I2C EEPROM
+    * High Precision Event Timer (HPET)
+    * logic gate
+    * MSP430 Timer
+    * MSP430 USCI_A
+    * MSP430 eUSCI (extended USCI)
+    * MSP430F261x DMA
+    * MSP430F2xxx Hardware Multiplier (MPY)
+    * MSP430F2xxx Watchdog
+    * NRF54H20 GRTC
+    * NRF54H20 UARTE
+    * NRF54L CLOCK
+    * NRF Bellboard
+    * NRF SharedMemory
+    * NRF USBD
+    * NRF USBREG
+    * NRF VPREventInterface
+    * NXP IMXRT700 ClockControl
+    * NXP IMXRT700 MessagingUnit
+    * NXP IMXRT700 OSC32KNP
+    * NXP INTMUX
+    * NXP FLEXCOMM
+    * PCA9548 I2C-bus switch
+    * Renesas RZ/G2L CPG/SYSC
+    * Renesas RZ/G2L DMAC
+    * Renesas RZ/G2L GPIO
+    * Renesas RZ/G2L GPT
+    * Renesas RZ/G2L GTM
+    * Renesas RZ/G2L I2C
+    * Renesas RZ/G2L Interrupt Manager
+    * Renesas RZ/G2L MHU
+    * Renesas RZ/G2L SCIFA
+    * Renesas RZ/G2L SYC
+    * Renesas RZ/G2L Watchdog
+    * Renesas RZ/G2L SPI
+    * Rockchip I2C
+    * SAM PDC
+    * SAM SPI
+    * SAM4S ADC
+    * SAM4S CRCCU
+    * SAM4S DACC
+    * SAM4S Enchanced Embedded Flash Controller
+    * SAM4S Parallel Input/Output Controller (GPIO)
+    * SAM4S Reset Controller
+    * SAM4S TWI
+    * SAM4S Timer Counter
+    * SAM4S Watchdog
+    * SAMD21 GPIO
+    * SAMD21 I2C
+    * SAMD21 RTC
+    * SAMD21 Timer
+    * Silicon Labs Series 2 peripherals, e.g.:
+      * EFR32xG24 Radio
+      * AES
+      * CMU
+      * DC-to-DC converter
+      * DPLL
+      * EMU
+      * EUSART
+      * GPCRC
+      * GPIO
+      * HFRCO
+      * HFXO
+      * ITM
+      * LDMA
+      * LFRCO
+      * LFXO
+      * MSC
+      * PRS
+      * RNGCTRL
+      * SEMAILBOX
+      * SMU
+      * SYSCFG
+      * SYSRTC
+      * TIMER
+      * USART
+    * STM32F3 ADC
+    * TCA6416 I/O Expander
+    * USBHost
+    * ZynqMP GQSPI
+    * ZynqMP RTC
+
+Improvements in peripherals:
+
+    * AmbiqApollo4 IOMaster
+    * Arm Generic Interrupt Controller
+    * Arm NVIC
+    * Arm DWT
+    * Array Memory
+    * Cadence GEM
+    * Cadence UART
+    * CoSimulated Peripheral
+    * Generic SPI Flash
+    * HS3001
+    * LBA Backend
+    * LiteX UART
+    * Mapped Memory
+    * MAX32655 UART
+    * MCAN
+    * MiV CoreLevelInterruptor
+    * MPFS CAN
+    * MPFS GPIO
+    * MPFS DDR Mock
+    * MPFS QSPI
+    * MPFS SystemServices
+    * MPFS SD Controller
+    * NPCX ITIM
+    * NRF CLOCK
+    * NRF52840 UART
+    * NXP LPUART
+    * PAC1934
+    * RenesasDA14 Clock Generation Controller
+    * RenesasDA I2C
+    * RenesasDA DMA
+    * RenesasRA6M5 SCI
+    * RenesasRA8M1 SCI
+    * RenesasRA GPT
+    * S32K3XX FlexCAN
+    * SAM PDC
+    * SAM SPI
+    * SAM USART
+    * SAM4S ADC
+    * SAM4S DACC
+    * SDCard
+    * SocketCAN
+    * SocketCANBridge
+    * STM CAN
+    * STM32F7 I2C
+    * STM32F3 ADC
+    * Synopsys DWC Ethernet Quality Of Service
+    * Synopsys DWC Ethernet Quality Of Service DMA
+    * SystemC Peripheral
+    * UT32 CAN
+    * RCAR UART
+    * USBHost
+
 1.15.3 - 2024.09.17
 -------------------
 
