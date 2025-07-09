@@ -220,8 +220,9 @@ Peripheral Does Not Throw When no_page_fault Is Set
     Execute Command                 logLevel 0 mmu1
 
     # cpu TranslateAddress uses the cpu_handle_mmu_fault with no_page_fault set to 1
-    ${returned value}=              Execute Command  cpu TranslateAddress 0x1100 Read
-    Should Be Equal As Integers     ${returned value}    ${-1u64}
+    Run Keyword And Expect Error
+    ...   *Failed to translate address*
+    ...   Execute Command  cpu TranslateAddress 0x1100 Read
     Should Not Be In Log            mmu1: MMU fault occured
 
 Peripheal Throws On Illegal Instruction Fetch
