@@ -20,7 +20,7 @@ ${ASSEMBLY}                         SEPARATOR=\n
 ...                                 li t1, 1  // +0e
 ...                                 sw t1, UART_TXCTRL(t0)  // +12
 ...
-...                                 call putc  // +12, +16
+...                                 call stars  // +16, +1a
 ...
 ...                                 hang:
 ...                                 j hang  // +1c
@@ -29,6 +29,19 @@ ${ASSEMBLY}                         SEPARATOR=\n
 ...                                 li a0, '*'  // +20
 ...                                 sw a0, UART_TXDATA(t0)  // +24
 ...                                 ret  // +28
+...
+...                                 stars:
+...                                 addi sp, sp, -16 // +2a
+...                                 sw ra, 12(sp) // +2c
+...                                 sw s0, 8(sp)
+...                                 addi s0, sp, 16
+...                                 1: addi t3, t3, 1 // +2e
+...                                 call putc // +30, 34
+...                                 blt t3, t4, 1b // +42
+...                                 lw s0, 8(sp) // restore frame pointer
+...                                 lw ra, 12(sp) // +44
+...                                 addi sp, sp, 16 // +46
+...                                 ret // +40
 
 *** Keywords ***
 Create HiFive1 Demo
@@ -201,3 +214,66 @@ Should Step Three Steps Back
 
     Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
     Should Be Equal As Numbers      ${expected_icount}  ${result_icount}
+
+Should Stop At Breakpoint On Previous Instruction
+    [Tags]                          skip_windows
+    Check And Run Gdb               riscv64-zephyr-elf-gdb
+    Execute Command                 reverseExecMode true
+    Command Gdb                     break *${ENTRYPOINT}+0x08
+    
+    Command Gdb                     continue
+    ${expected_pc}=                 Execute Command  sysbus.cpu PC
+    Command Gdb                     stepi
+    Command Gdb                     reverse-continue
+    ${result_pc}=                   Execute Command  sysbus.cpu PC
+
+    Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
+
+Should Revert To The Beginning
+    [Tags]                          skip_windows
+    Check And Run Gdb               riscv64-zephyr-elf-gdb
+    Execute Command                 reverseExecMode true
+    Command Gdb                     break *${ENTRYPOINT}+0x08
+    
+    Command Gdb                     continue
+    Command Gdb                     reverse-continue
+    ${result_icount}=               Execute Command  sysbus.cpu GetCurrentInstructionsCount
+
+    Should Be Equal As Numbers      ${result_icount}  0
+
+Should Not Stop On Deleted Breakpoint
+    [Tags]                          skip_windows
+    Check And Run Gdb               riscv64-zephyr-elf-gdb
+    Execute Command                 reverseExecMode true
+    Command Gdb                     break *${ENTRYPOINT}+0x08
+    Command Gdb                     break *${ENTRYPOINT}+0x1a
+    
+    Command Gdb                     continue
+    ${expected_pc}=                 Execute Command  sysbus.cpu PC
+    Command Gdb                     continue
+    Command Gdb                     stepi
+    Command Gdb                     delete 2
+    Command Gdb                     reverse-continue
+    ${result_pc}=                   Execute Command  sysbus.cpu PC
+    Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
+
+Should Ignore First Breakpoint Occurence
+    [Tags]                          skip_windows
+    Check And Run GDB               riscv64-zephyr-elf-gdb
+    Execute Command                 reverseExecMode true
+    Command GDB                     break *${ENTRYPOINT}+0x34
+
+    Command GDB                     continue
+
+    Command GDB                     continue
+    ${expected_pc}=                 Execute Command  sysbus.cpu PC
+    ${expected_icount}=             Execute Command  sysbus.cpu GetCurrentInstructionsCount
+
+    Command GDB                     continue 2
+    Command GDB                     reverse-continue 2
+    ${result_pc}=                   Execute Command  sysbus.cpu PC
+    ${result_icount}=               Execute Command  sysbus.cpu GetCurrentInstructionsCount
+
+    Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
+    Should Be Equal As Numbers      ${expected_icount}  ${result_icount}
+
