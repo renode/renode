@@ -1,6 +1,6 @@
 using "platforms/cpus/litex_vexriscv.repl"
 
-timer0:
+timer:
     -> cpu@1
 
 uart:

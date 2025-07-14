@@ -3,13 +3,13 @@ using "./litex_common.repl"
 cpu: CPU.VexRiscv @ sysbus
     cpuType: "rv32im_zicsr_zifencei"
 
-timer0: Timers.LiteX_Timer @ {
+timer: Timers.LiteX_Timer @ {
         sysbus 0x60002800;
         sysbus 0xE0002800 // shadow
     }
     frequency: 100000000
 
-timer0:
+timer:
     -> cpu@1
 
 uart:
