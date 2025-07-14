@@ -267,6 +267,12 @@ Should Assemble And Disassemble RISCV32GC
     Assemble And Disassemble RV32FD
     Assemble And Disassemble RV32C
 
+Should Assemble And Disassemble RISCV32GC_XANDES
+    Create Machine         RiscV32     rv32gc_xandes
+    Assemble And Disassemble RV32IMA    compressed=True
+    Assemble And Disassemble RV32FD
+    Assemble And Disassemble RV32C
+
 Should Assemble And Disassemble RISCV32GV
     Create Machine         RiscV32     rv32gv
     Assemble And Disassemble RV32IMA
