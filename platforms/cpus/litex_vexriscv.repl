@@ -3,6 +3,8 @@ using "./litex_common.repl"
 cpu: CPU.VexRiscv @ sysbus
     cpuType: "rv32im_zicsr_zifencei"
 
+clock0: Miscellaneous.LiteX_MMCM_CSR32 @ sysbus 0xe0004800
+
 timer: Timers.LiteX_Timer_CSR32 @ {
         sysbus 0x60002800;
         sysbus 0xE0002800 // shadow
