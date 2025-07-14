@@ -7,6 +7,7 @@ timer0: Timers.LiteX_Timer @ sysbus 0xE0002000
     frequency: 100000000
 
 uart:
+    txFifoCapacity: 0 // Disable UART buffering for compatibility with older firmware
     -> cpu@3
 
 timer0:
