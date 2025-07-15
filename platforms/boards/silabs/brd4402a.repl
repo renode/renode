@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efr32s2/efr32xg22.repl"
+using "platforms/cpus/silabs/efr32s2/efr32xG22.repl"
 
 sram:
     size: 0x8000

@@ -1,4 +1,4 @@
-using "platforms/cpus/silabs/efr32s2/efr32mg26.repl"
+using "platforms/cpus/silabs/efr32s2/efr32xG26.repl"
 
 led0: Miscellaneous.LED @ gpioPort 66
 led1: Miscellaneous.LED @ gpioPort 67
@@ -20,7 +20,7 @@ sram:
 flash:
     size: 0x31E000
 
-lockbitsdata: Miscellaneous.SiLabs.EFR32xG2_LockbitsData @ sysbus 0x0831E000
+lockbitsdata: Miscellaneous.SiLabs.SiLabs_LockbitsData @ sysbus 0x0831E000
     size: 0x2000
 
 msc:
