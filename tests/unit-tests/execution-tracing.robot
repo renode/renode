@@ -394,7 +394,53 @@ Should Trace In ARM and Thumb State
 
     ${x}=                                       Grep File  ${logFile}  0x00000014: * 4770 *bx*lr
     Should Not Be Empty                         ${x}
-    
+
+Should Trace in ARM and Thumb State ARMv8R
+    Execute Command                             mach create
+    Execute Command                             machine LoadPlatformDescription "${CURDIR}/../../platforms/cpus/cortex-r52.repl"
+    # ARM
+    # mov r0, r0
+    Execute Command                             sysbus WriteDoubleWord 0x10000 0xe1a00000 cpu
+    # nop
+    Execute Command                             sysbus WriteDoubleWord 0x10004 0xe320f000 cpu
+    # add r1, r6, r2
+    Execute Command                             sysbus WriteDoubleWord 0x10008 0xe0861002 cpu
+    # blx #65516
+    Execute Command                             sysbus WriteDoubleWord 0x1000c 0xfa003ffb cpu
+    # wfi
+    Execute Command                             sysbus WriteDoubleWord 0x10010 0xe320f003 cpu
+
+    # Thumb
+    # movs r0, #0 ; mov r1, r0
+    Execute Command                             sysbus WriteDoubleWord 0x20000 0x46012000 cpu
+    # cmp r4, r2
+    Execute Command                             sysbus WriteWord 0x20004 0x4294 cpu
+    # sbcs.w r9, r5, r3
+    Execute Command                             sysbus WriteDoubleWord 0x20006 0x0903eb75 cpu
+    # bx lr ; nop
+    Execute Command                             sysbus WriteDoubleWord 0x2000a 0x46c04770 cpu
+
+    ${trace_file}=                              Allocate Temporary File
+    Execute Command                             sysbus.cpu PC 0x10000
+    Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_file}" Disassembly
+    Execute Command                             emulation RunFor "0.0001"
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+
+    ${content}=                                 Get File        ${trace_file}
+    @{trace}=                                   Split To Lines  ${content}
+    Length Should Be                            ${trace}        10
+    Should Match                                ${trace[0]}     0x00010000: *e1a00000 *mov r0, r0
+    Should Match                                ${trace[1]}     0x00010004: *e320f000 *nop
+    Should Match                                ${trace[2]}     0x00010008: *e0861002 *add r1, r6, r2
+    Should Match                                ${trace[3]}     0x0001000c: *fa003ffb *blx #65516
+    Should Match                                ${trace[4]}     0x00020000: *2000 *movs r0, #0
+    Should Match                                ${trace[5]}     0x00020002: *4601 *mov r1, r0
+    Should Match                                ${trace[6]}     0x00020004: *4294 *cmp r4, r2
+    Should Match                                ${trace[7]}     0x00020006: *eb750903 *sbcs.w r9, r5, r3
+    Should Match                                ${trace[8]}     0x0002000a: *4770 *bx lr
+    Should Match                                ${trace[9]}     0x00010010: *e320f003 *wfi
+
+
 *** Test Cases ***
 Should Dump PCs
     ${pcs}=                                     Trace The Execution On The Versatile Platform  PC
@@ -504,6 +550,9 @@ Should Trace ARM Core
 
 Should Trace ARM Core With Isolated Memory
     Should Trace In ARM and Thumb State         memory_per_cpu=True
+
+Should Trace ARMv8R Core
+    Should Trace in ARM and Thumb State ARMv8R
     
 Should Trace The RISC-V Vector Configuration
     Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=False
