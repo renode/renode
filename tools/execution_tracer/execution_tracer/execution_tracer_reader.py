@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import itertools
 import platform
 import sys
 import os
@@ -382,10 +383,12 @@ def main():
         else:
             ext = '.so'
 
-        if platform.uname().machine.lower() in ('arm64', 'aarch64'):
-            ext = '-aarch64' + ext
+        # In portable packages, the name does not contain 'aarch64', so handle both cases, trying the
+        # aarch64 version first.
+        lib_names = ['libllvm-disas' + ext]
 
-        lib_name = 'libllvm-disas' + ext
+        if platform.uname().machine.lower() in ('arm64', 'aarch64'):
+            lib_names.insert(0, 'libllvm-disas-aarch64' + ext)
 
         lib_search_paths = [
             os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
@@ -395,14 +398,14 @@ def main():
             os.getcwd()
         ]
 
-        for search_path in lib_search_paths:
+        for search_path, lib_name in itertools.product(lib_search_paths, lib_names):
             lib_path = os.path.join(search_path, lib_name)
             if os.path.isfile(lib_path):
                 args.llvm_disas_path = lib_path
                 break
 
         if args.llvm_disas_path is None:
-            raise FileNotFoundError('Could not find ' + lib_name + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
+            raise FileNotFoundError('Could not find ' + " or ".join(lib_names) + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
 
     try:
         with contextlib.ExitStack() as stack:
