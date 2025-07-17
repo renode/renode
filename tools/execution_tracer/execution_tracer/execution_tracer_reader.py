@@ -390,6 +390,7 @@ def main():
         lib_search_paths = [
             os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
             os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin"),
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir),
             os.path.dirname(os.path.realpath(__file__)), 
             os.getcwd()
         ]
