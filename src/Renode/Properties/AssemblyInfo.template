@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
+#pragma warning disable IDE0005
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
+#pragma warning restore IDE0005
 
 // Information about this assembly is defined by the following attributes.
 // Change them to the values specific to your project.
