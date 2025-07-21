@@ -1,0 +1,87 @@
+$name?="i386_64-kvm"
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/virt_x86_64--linux.bin-s_9012224-95afda97d7185427a02333412baa95daac72270a
+$bios?=@https://dl.antmicro.com/projects/renode/virt_x86--kvmtool-bios.bin-s_687-dfaa7e98ad587f40df43a0d8eff5c320de72f9bf
+
+machine LoadPlatformDescription @platforms/cpus/i386_64-kvm.repl
+
+showAnalyzer uart
+
+macro reset
+"""
+    # Load linux headers (assuming 'setup_sects' = 0x1f)
+    sysbus LoadBinary $bin 0x10000 sysbus.cpu offset=0x0 size=0x4000
+    
+    # Load bios
+    sysbus LoadBinary $bios 0xf0000 sysbus.cpu
+
+    # Load linux -- skip the header (assuming 'setup_sects' = 0x1f)
+    sysbus LoadBinary $bin 0x100000 sysbus.cpu offset=0x4000
+
+
+    # Setup e820 memory map at address 0x9fc00
+    # Set e820_entries
+    sysbus WriteDoubleWord 0x9fc00 4
+    # Set bios RAM
+    sysbus WriteQuadWord 0x9fc04 0           # Start address
+    sysbus WriteQuadWord 0x9fc0c 0x9fc00     # Size
+    sysbus WriteDoubleWord 0x9fc14 1         # Type RAM
+    # Set e820 Map
+    sysbus WriteQuadWord 0x9fc18 0x9fc00     # Start address
+    sysbus WriteQuadWord 0x9fc20 0x400       # Size
+    sysbus WriteDoubleWord 0x9fc28 2         # Type reserved
+    # Set BIOS ROM
+    sysbus WriteQuadWord 0x9fc2c 0xf0000     # Start address
+    sysbus WriteQuadWord 0x9fc34 0x10000     # Size
+    sysbus WriteDoubleWord 0x9fc3c 2         # Type reserved
+    # Set RAM 
+    sysbus WriteQuadWord 0x9fc40 0x100000    # Start address
+    sysbus WriteQuadWord 0x9fc48 0x1ff00000  # Size
+    sysbus WriteDoubleWord 0x9fc50 1         # Type RAM
+
+
+    # Setup Interrupt Vector
+    # kvmtool's fake interrupt handler is loaded at address 0xf0030
+    sysbus FillWithConstantDoubleWord 0xf0000030 256
+    # Setup real 15-th interrupt handler loaded at address 0xf0080
+    sysbus WriteDoubleWord 0x54 0xf0000080
+
+
+    # Override kernel header values.
+    # For more info please refer to https://docs.kernel.org/arch/x86/zero-page.html
+
+    # Set 'cmd_line'. Do not use APIC/ACPI as it is not implemented yet.
+    sysbus WriteASCIIString 0x20000 "noapic noacpi earlyprintk=serial console=ttyS0 root=/dev/vda rw"
+    # Set address of 'cmd_line' in `cmd_line_ptr` field
+    sysbus WriteDoubleWord 0x10228 0x20000
+
+    # Set 'type_of_loader' to undefined
+    sysbus WriteByte 0x10210 0xff
+
+    # Set 'heap_end_ptr'
+    sysbus WriteWord 0x10212 0xfe00
+    # Set 'loadflags' with 'LOADED_HIGH' and 'CAN_USE_HEAP' flags
+    sysbus WriteByte 0x10211 0x81
+
+  
+    # Set SegmentRegisters to start in real-mode
+    sysbus.cpu SetDescriptor CS 0x1000 0x10000 0xffff 0x9b00
+    sysbus.cpu SetDescriptor DS 0x1000 0x10000 0xffff 0x9300
+    sysbus.cpu SetDescriptor ES 0x1000 0x10000 0xffff 0x9300
+    sysbus.cpu SetDescriptor SS 0x1000 0x10000 0xffff 0x9300
+    sysbus.cpu SetDescriptor FS 0x1000 0x10000 0xffff 0x9300
+    sysbus.cpu SetDescriptor GS 0x1000 0x10000 0xffff 0x9300
+
+    # Set entrypoint to 0x10200 = (CS << 4) + RIP
+    sysbus.cpu RIP 0x200
+    # Set to safe, available memory
+    sysbus.cpu RBP 0x8000
+    sysbus.cpu RSP 0x8000
+
+    # Set IF flag
+    sysbus.cpu EFLAGS 0x202
+"""
+runMacro $reset
+
+logLevel 3
