@@ -136,6 +136,11 @@ echo "Created an Arch package in $PACKAGES/$arch"
 PKG=renode-$VERSION.linux-dotnet.tar.gz
 
 # Create tar
+# Requires a separate scripts because we don't know it's location
+INSTALL_DIR='$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD)'
+rm ${COMMAND_SCRIPT}
+cp linux/renode-dotnet-template $COMMAND_SCRIPT
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT $RUNNER
 mkdir -p $BASE/output/packages
 cp $COMMAND_SCRIPT $DIR
 cp $TEST_SCRIPT $DIR
