@@ -261,3 +261,11 @@ Should Boot Linux
     Wait For Prompt On Uart         \#${SPACE}
     Write Line To Uart              uname
     Wait For Line On Uart           Linux
+
+Should Run Zephyr Shell Module Sample
+    Execute Command                 include @scripts/single-node/rzg2l_zephyr.resc
+    Create Terminal Tester          sysbus.scif2  defaultPauseEmulation=true
+
+    Wait For Prompt On Uart         uart:~$
+    Write Line To Uart              demo board
+    Wait For Line On Uart           rzg2l_smarc

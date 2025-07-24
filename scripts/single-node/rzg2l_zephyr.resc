@@ -1,0 +1,20 @@
+:name: Renesas RZ/G2L Zephyr
+:description: This script runs Zephyr on Renesas RZ/G2L.
+
+$name?="Renesas RZ/G2L"
+
+$bin?=@https://dl.antmicro.com/projects/renode/rzg2l_smarc-r9a07g044l23gbg-cm33--zephyr-shell_module.elf-s_2433660-bf6f5e720795f0bf38ebf84c2567f85c36d2c8ef
+
+mach create $name
+include @platforms/cpus/renesas_rz_g2l.repl
+
+macro reset
+"""
+    cpu0 IsHalted true
+    cpu1 IsHalted true
+
+    sysbus LoadELF $bin cpu=cpu_m33
+"""
+runMacro $reset
+
+showAnalyzer scif2
