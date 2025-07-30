@@ -196,6 +196,23 @@
 - tests/unit-tests/profiler-trace.robot
 - tests/platforms/imxrt500.robot
 - tests/unit-tests/function-names.robot
+- tests/peripherals/AK09918.robot
+- tests/peripherals/STM32SDMMC.robot
+- tests/platforms/Andes-AE350_N25.robot
+- tests/platforms/ARM_Cortex-R8.robot
+- tests/platforms/atsamd51g19a.robot
+- tests/platforms/fsl_lx2160ardb.robot
+- tests/platforms/SAM4S_XPLAINED.robot
+- tests/platforms/systemc/dma/dma.robot
+- tests/platforms/UP_Squared.robot
+- tests/platforms/Veer_EL2.robot
+- tests/unit-tests/arm-dsp-examples-cortex-m4.robot
+- tests/unit-tests/arm-ge-flag.robot
+- tests/unit-tests/pause-without-sleep.robot
+- tests/unit-tests/riscv-amo-instructions.robot
+- tests/unit-tests/riscv-interrupt-mode.robot
+- tests/unit-tests/snapshot-tracking.robot
+- tests/unit-tests/stm32f4-erase.robot
 
 # Do not use port 3333 in unit tests
 
