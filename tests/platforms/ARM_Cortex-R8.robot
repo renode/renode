@@ -1,3 +1,6 @@
+*** Variables ***
+${CORTEX_R8_VIRTUAL_LLEXT_BIN}      @https://dl.antmicro.com/projects/renode/zephyr-cortex-r8-test_llext_devices_by_hash_slid_linking.elf-s_1357088-cd7e6979a2bf010f39f16a330ad02bb8bd9b248a
+
 *** Keywords ***
 Create Machine
     [Arguments]                     ${elf_file}
@@ -79,6 +82,15 @@ Should Run Philosophers 3.4.0
 
 Should Run Shell Module 3.4.0
     Run Shell Module                https://dl.antmicro.com/projects/renode/zephyr-3.4.0--samples_subsys_shell_shell_module--kv260_r8.elf-s_1276220-ad5d7f3f1f7c813135c874bd77e1e25cc4510298
+
+Should Run Zephyr LLEXT Test
+    Execute Command                 include "${CURDIR}${/}ARM_Cortex-R8-llext-test${/}cortex_r8_virtual.repl"
+    Execute Command                 cpu PerformanceInMips 5
+
+    Execute Command                 sysbus LoadELF ${CORTEX_R8_VIRTUAL_LLEXT_BIN}
+    Create Terminal Tester          sysbus.uart0    timeout=5   defaultPauseEmulation=true
+
+    Wait For Line On Uart           PROJECT EXECUTION SUCCESSFUL
 
 Test Remapping Exception Vector
     ${default_vector_base}          Set Variable    0x0
