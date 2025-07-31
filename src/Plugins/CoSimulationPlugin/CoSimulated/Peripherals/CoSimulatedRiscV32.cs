@@ -111,6 +111,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             this.Log(LogLevel.Warning, "RemoveAllHooks not implemented");
         }
 
+        public void RemoveHooks(CpuAddressHook hook)
+        {
+            this.Log(LogLevel.Warning, "RemoveHooks not implemented");
+        }
+
         public override string Architecture { get { return "riscv"; } }
 
         public string GDBArchitecture { get { return "riscv:rv32"; } }
