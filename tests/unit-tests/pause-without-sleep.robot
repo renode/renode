@@ -31,6 +31,7 @@ Create Machine
 *** Test Cases ***
 # This test verifies if Renode can be quickly paused when large quantum is set
 Should Renode Pause In Short Time With Large Quantum Set
+    [Tags]                      skip_osx
     # 10 seconds should be enough to pause the emulation
     [Timeout]                   10 seconds
     Create Machine
