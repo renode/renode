@@ -1369,6 +1369,7 @@ namespace Antmicro.Renode.PlatformDescription
         private ConversionResult TryConvertSimpleValue(Type expectedType, Value value, out object result, bool silent = false)
         {
             result = null;
+            expectedType = Nullable.GetUnderlyingType(expectedType) ?? expectedType;
 
             if(value is EmptyValue)
             {
