@@ -362,6 +362,7 @@ ethernet: Network.SynopsysDWCEthernetQualityOfService @ {
     sysbus new Bus.BusMultiRegistration { address: 0x40029000; size: 0x200; region: "dma" }
     }
     systemClockFrequency: 50000000
+    dmaBusWidth: BusWidth.Bits32
     -> nvic@61
 
 qspi: SPI.STM32H7_QuadSPI @ sysbus 0x52005000

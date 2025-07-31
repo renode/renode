@@ -14,6 +14,7 @@ ${EthernetDescription}  SEPARATOR=\n
 ...  ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0x40029000; size: 0x200; region: "dma" }
 ...  }
 ...  ${SPACE*4}systemClockFrequency: 433333333
+...  ${SPACE*4}dmaBusWidth: BusWidth.Bits32
 ...  ${SPACE*4}IRQ -> gic@22
 ...
 ...  phy0: Network.EthernetPhysicalLayer @ ethernet 0
