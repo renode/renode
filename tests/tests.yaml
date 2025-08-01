@@ -214,6 +214,7 @@
 - tests/unit-tests/snapshot-tracking.robot
 - tests/unit-tests/stm32f4-erase.robot
 - tests/unit-tests/memory-access.robot
+- tests/unit-tests/resd-serialization.robot
 
 # Do not use port 3333 in unit tests
 
