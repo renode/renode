@@ -8,6 +8,12 @@ Create Machine
 
     Execute Command                 cpu PC 0x1000
 
+Tag Area And Access It From Sysbus
+    [Arguments]                     ${address}  ${tag}  ${silent}=false
+    Execute Command                 sysbus Tag <${address}, ${address}> "${tag}" silent=${silent}
+
+    Execute Command                 sysbus WriteByte ${address} 0x4
+
 *** Test Cases ***
 Should Log Unhandled Read From Monitor
     Create Log Tester               0
@@ -66,6 +72,16 @@ Should Log Unhandled Write From Software To Tagged Area
     Start Emulation
 
     Wait For Log Entry              [cpu: 0x1000] (tag: 'tagged_region') WriteDoubleWord to non existing peripheral at 0x4, value 0x0
+
+Should Not Log Unhandled Access As Warning On Silent Tag
+    Create Log Tester               0
+    Create Machine
+    Execute Command                 logLevel 0
+
+    ${tag}=                         Set Variable  test1
+    Tag Area And Access It From Sysbus  address=0x06  tag=${tag}  silent=true
+    Wait For Log Entry              (tag: '${tag}')  keep=true  level=Debug
+    Should Not Be In Log            (tag: '${tag}')  level=Warning
 
 Should Log From Subobject
     Create Log Tester               1
