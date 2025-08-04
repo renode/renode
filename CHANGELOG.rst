@@ -95,7 +95,7 @@ Added demos:
 * Renesas RZ/G2L U-Boot based demo
 * lx2160ardb U-Boot based demo
 * IMXRT500 demo running Zephyr's `shell_module` sample
-* UP Squared demo running Zephyr's `hello_world`` sample
+* UP Squared demo running Zephyr's `hello_world` sample
 * NXP S32K388 demo running Zephyr's `shell module` sample
 * VeeR_EL2 Tock OS demo
 
@@ -117,7 +117,7 @@ Added tests:
 * VexRiscv CFU
 * lx2160ardb U-Boot
 * VeeR_EL2 Tock OS
-* UP Squared test running Zephyr `hello_world`` sample
+* UP Squared test running Zephyr `hello_world` sample
 * NXP S32K388 test running Zephyr `shell module` sample
 * Zephyr `tickless_kernel` test suite on Icicle Kit with ZephyrMode skipped
 * Zephyr LLEXT test on ARM Cortex-R8
