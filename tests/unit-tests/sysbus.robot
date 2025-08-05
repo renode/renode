@@ -496,7 +496,7 @@ Symbols Should Be Dynamically Loaded and Unloaded On Request
     ...                            Execute Command   sysbus GetSymbolAddress ${main_symbol_name}
 
 Should Log All Peripherals Accesses Only When Enabled
-    ${log}=                        Set Variable   peripheral: ReadByte from 0x0 (unknown), returned 0x0.
+    ${log}=                        Set Variable   peripheral: ReadByte from 0x0 (unknown), returned 0x0
     Create Log Tester              0
     Execute Command                mach create
     Execute Command                machine LoadPlatformDescriptionFromString "peripheral: Mocks.MockBytePeripheralWithoutTranslations @ sysbus <0x0, +0x8>"
