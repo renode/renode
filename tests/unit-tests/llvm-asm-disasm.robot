@@ -79,7 +79,13 @@ DisasTest Thumb
     ${b_write}=       Set Variable      ${w2}${w1}
     ${b_disas}=       Set Variable      ${w1}${w2}
 
-    DisasTest Core    ${hex_addr}    ${b_write}    ${b_disas}    ${mnemonic}    ${operands}    ${code_size}
+    # `flags` is an internal parameter use by Renode in LLVMArchitectureMapping.cs:GetTripleAndModelKey to choose
+    # the correct LLVM triple that represents the ARM* processor's state:
+    #  - bit 0 specifies whether we're in Thumb mode  -  both for ARMv7 and ARMv8
+    #  - bit 1 specifies whether we're in AArch32/32-bit mode (when set) or AArch64/64-bit mode (when unset) for ARMv8
+    # Since the ARMv7 branch only checks `flags > 0` to switch to Thumb, and the ARMv8 branch _requires_ both bits
+    # to be set for Thumb mode (no 64-bit Thumb), we set flags to 3 = 0b11, ie. "32-bit Thumb", to guarantee Thumb mode
+    DisasTest Core    ${hex_addr}    ${b_write}    ${b_disas}    ${mnemonic}    ${operands}    ${code_size}  flags=3
 
 
 RoundTrip Thumb
@@ -88,7 +94,8 @@ RoundTrip Thumb
     # For Thumb, reverse the bytes in each word
     ${expected}=      Reverse Bytes     ${hex_code}
     ${expected}=      Reverse Bytes     ${expected}  group_size=${4}
-    AsTest            ${expected}    ${mnemonic}   ${operands}   address=0x${hex_addr}
+    # See comment in `DisasTest Thumb` for meaning of flags
+    AsTest            ${expected}    ${mnemonic}   ${operands}   address=0x${hex_addr}  flags=3
     DisasTest Thumb   ${hex_code}    ${mnemonic}   ${operands}   ${code_size}   ${hex_addr}
 
 
@@ -149,9 +156,11 @@ Create Machine
     # "extra" will be appended to the cpu creation string after cpuType (at least it has to close curly brackets opened before cpuType)
     ${extra}=          Set Variable       }
 
+    ${ARMv8_gic}=      Set Variable       genericInterruptController: gic }; gic: IRQControllers.ARM_GenericInterruptController @ { sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: \\"distributor\\" }; sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x80a0000 } } { [0-1] -> cpu@[0-1]; architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3; supportsTwoSecurityStates: true }
     # the last ${extra} field covers the "else" case, keeping the previous value of "extra"; by default, "else" case sets variables to "None"
     ${extra}=          Set Variable If    "${cpu}" == "CortexM"        ; nvic: nvic }; nvic: IRQControllers.NVIC    ${extra}
-    ${extra}=          Set Variable If    "${cpu}" == "ARMv8A"         ; genericInterruptController: gic }; gic: IRQControllers.ARM_GenericInterruptController @ { sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: \\"distributor\\" }; sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x80a0000 } } { [0-1] -> cpu@[0-1]; architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3; supportsTwoSecurityStates: true }  ${extra}
+    ${extra}=          Set Variable If    "${cpu}" == "ARMv8A"         ; ${ARMv8_gic}                               ${extra}
+    ${extra}=          Set Variable If    "${cpu}" == "ARMv8R"         ; ${ARMv8_gic}                               ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "PowerPc64"      ; endianness: Endianess.LittleEndian }       ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "RiscV32"        ; timeProvider: empty }                      ${extra}
     ${extra}=          Set Variable If    "${cpu}" == "RiscV64"        ; timeProvider: empty }                      ${extra}
@@ -245,6 +254,16 @@ Should Assemble And Disassemble ARM Cortex-M
     RoundTrip Thumb        58c8        ldr      r0, [r1, r3]    2
     RoundTrip Thumb        f44f426d    mov.w    r2, \#60672          hex_addr=9e8
     RoundTrip Thumb        10b6        asrs     r6, r6, \#2     2    ad88
+
+Should Assemble And Disassemble ARM Cortex-R52
+    Create Machine         ARMv8R      cortex-r52
+
+    RoundTrip LE           e320f000    nop
+    RoundTrip LE           43855040    orrmi    r5, r5, #64
+    RoundTrip LE           e6ff3072    uxth     r3, r2
+    RoundTrip Thumb        eb750903    sbcs.w   r9, r5, r3
+    RoundTrip Thumb        ebb272e1    subs.w   r2, r2, r1, asr #31
+    RoundTrip Thumb        fb821002    smull    r1, r0, r2, r2
 
 Should Assemble And Disassemble RISCV32IMA
     Create Machine         RiscV32     rv32ima
