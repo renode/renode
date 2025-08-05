@@ -1,6 +1,4 @@
 *** Variables ***
-${URI}                   @https://dl.antmicro.com/projects/renode
-
 ${PLATFORM}=    SEPARATOR=
 ...  """                                                                ${\n}
 ...  mem: Memory.MappedMemory @sysbus 0x0                               ${\n}
@@ -28,16 +26,18 @@ Create Machine
 
     Execute Command             cpu PC 0x0
 
+Should Pause In Reasonable Time
+  # This should finish much quicker. This value is set to account for high loads in the CI
+  [Timeout]                     3 seconds
+  Execute Command               pause
+
 *** Test Cases ***
 # This test verifies if Renode can be quickly paused when large quantum is set
 Should Renode Pause In Short Time With Large Quantum Set
-    [Tags]                      skip_osx
-    # 10 seconds should be enough to pause the emulation
-    [Timeout]                   10 seconds
     Create Machine
 
     Execute Command             emulation SetGlobalQuantum "1000000"
     Execute Command             start
     # wait few seconds to created larger difference between virtual and host time
     Sleep                       3s
-    Execute Command             pause
+    Should Pause In Reasonable Time
