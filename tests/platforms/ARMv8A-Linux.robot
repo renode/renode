@@ -239,6 +239,7 @@ Test Running Coreboot Without Payload
     Wait For Line On Uart         Payload not loaded.
 
 Test Running Coreboot With Linux And ARM Trusted Firmware On Cortex-A53 With GICv2
+    [Tags]                        basic-tests
     Create Machine                gic_version=2
     Execute Command               sysbus LoadBinary ${COREBOOT_ARMv8A_GICv2_ROM_LINUX} 0x0
     Configure UART For Boot Logs  ${UART}
@@ -295,6 +296,7 @@ Test Running Oreboot With Linux And Rust Shell With GICv2
     Linux Should Start Rust Userspace
 
 Test Running Oreboot With Linux And Rust Shell With GICv3
+    [Tags]                        basic-tests
     Create Machine                el2_el3_disabled=True  gic_security_disabled=True
 
     Execute Command               sysbus LoadBinary ${OREBOOT_GICv3_DTB} 0x40000000
@@ -321,6 +323,7 @@ Test Running Oreboot With Linux And Rust Shell With GICv3
     Linux Should Start Rust Userspace
 
 Test Running U-Boot With Linux
+    [Tags]                        basic-tests
     # U-Boot doesn't properly support GIC Security Extensions.
     Create Machine                gic_version=2  gic_security_disabled=True
 

@@ -234,6 +234,7 @@ Assemble And Disassemble RVV
 #    HEX_ADDR                   hex address of the instruction, verified with the disassembler output but not influencing the opcode itself; don't prefix with "0x"
 
 Should Assemble And Disassemble ARM Cortex-A
+    [Tags]                 basic-tests
     Create Machine         ARMv7A      arm926
 
     RoundTrip LE           32855001    addlo    r5, r5, \#1     hex_addr=8000
@@ -266,6 +267,7 @@ Should Assemble And Disassemble ARM Cortex-R52
     RoundTrip Thumb        fb821002    smull    r1, r0, r2, r2
 
 Should Assemble And Disassemble RISCV32IMA
+    [Tags]                 basic-tests
     Create Machine         RiscV32     rv32ima
     Assemble And Disassemble RV32IMA
 
@@ -322,6 +324,7 @@ Should Assemble And Disassemble RISCV64GCV
     Assemble And Disassemble RVV
 
 Should Assemble And Disassemble PPC
+    [Tags]                 basic-tests
     Create Machine         PowerPc     e200z6
 
     RoundTrip LE           4800007c    b         .+124
@@ -329,6 +332,7 @@ Should Assemble And Disassemble PPC
     RoundTrip LE           7ce40034    cntlzw    4, 7
 
 Should Assemble And Disassemble PPC64 LE
+    [Tags]                 basic-tests
     Create Machine         PowerPc64   620
 
     # RoundTrip BE is used because of the output formatting in DisasTest BE
@@ -338,6 +342,7 @@ Should Assemble And Disassemble PPC64 LE
     RoundTrip BE           71790248    bl        .+162160
 
 Should Assemble And Disassemble Sparc
+    [Tags]                 basic-tests
     Create Machine         Sparc       leon3
 
     RoundTrip LE           85e8a018    restore    %g2, 24, %g2    hex_addr=abc
@@ -345,6 +350,7 @@ Should Assemble And Disassemble Sparc
     RoundTrip LE           10680047    ba         %xcc, 71
 
 Should Assemble And Disassemble X86 Using Intel Syntax
+    [Tags]                 basic-tests
     Create Machine         X86         x86
 
     RoundTrip BE           6b7b0c14            imul      edi, dword ptr [ebx + 12], 20                  flags=1    reverse=False
@@ -354,6 +360,7 @@ Should Assemble And Disassemble X86 Using Intel Syntax
     RoundTrip BE           0f011d5e00fc00      lidtd     [16515166]                         7    abd    flags=1    reverse=False
 
 Should Assemble And Disassemble X86 Using GAS Syntax
+    [Tags]                 basic-tests
     Create Machine         X86         x86
 
     RoundTrip BE           6b7b0c14            imull     $20, 12(%ebx), %edi                            reverse=False
@@ -363,6 +370,7 @@ Should Assemble And Disassemble X86 Using GAS Syntax
     RoundTrip BE           0f011d5e00fc00      lidtl     16515166                           7    abd    reverse=False
 
 Should Assemble And Disassemble X86_64 Using Intel Syntax
+    [Tags]                 basic-tests
     Create Machine         X86_64      x86_64
 
     RoundTrip BE           676b7b0c14            imul    edi, dword ptr [ebx + 12], 20      5           flags=1    reverse=False
@@ -373,6 +381,7 @@ Should Assemble And Disassemble X86_64 Using Intel Syntax
     RoundTrip BE           65488b06              mov     rax, qword ptr gs:[rsi]                        flags=1    reverse=False
 
 Should Assemble And Disassemble X86_64 Using GAS Syntax
+    [Tags]                 basic-tests
     Create Machine         X86_64      x86_64
 
     RoundTrip BE           676b7b0c14            imull   $20, 12(%ebx), %edi                5           reverse=False

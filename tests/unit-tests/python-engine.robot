@@ -1,3 +1,6 @@
+*** Settings ***
+Test Tags                           skip_windows  basic-tests
+
 *** Keywords ***
 Create Platform
     Execute Command                 mach create
@@ -21,7 +24,6 @@ Read Should Be Equal
 
 *** Test Cases ***
 Should Return Syntax Error
-    [Tags]                          skip_windows
     Create Platform
 
     # BlockPythonEngine
@@ -54,7 +56,6 @@ Should Return Syntax Error
     ...                             machine AddUserStateHook "foobar" "if error"
 
 Should Abort On Runtime Error
-    [Tags]                          skip_windows
     Create Platform
     Create Log Tester               1
 
@@ -68,7 +69,6 @@ Should Abort On Runtime Error
     Wait For Log Entry              CPU abort detected, halting.
 
 PyDev Should Handle QuadWord Accesses
-    [Tags]                          skip_windows
     Execute Command                 mach create
     Execute Command                 numbersMode Hexadecimal
 
@@ -94,7 +94,6 @@ PyDev Should Handle QuadWord Accesses
     Read Should Be Equal            QuadWord  ${pydev_address}  ${new_value}
 
 Should Handle Unsupported Variable Types
-    [Tags]                          skip_windows
     Execute Command                 $a=1
 
     ${out}=                         Run Keyword And Expect Error  KeywordException:*
