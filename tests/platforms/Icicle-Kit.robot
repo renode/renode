@@ -7,7 +7,8 @@ ${UART}                       sysbus.mmuart1
 Prepare Machine
     # we use special FDT that contains spi sensors
     Execute Script            ${SCRIPT}
-    Set Default Uart Timeout  300
+    Execute Command           logLevel 3 sysbus.mmc
+    Execute Command           logLevel 3 sysbus
 
 *** Test Cases ***
 Should Boot HSS
@@ -19,11 +20,12 @@ Should Boot HSS
 
     Start Emulation
 
-    Wait For Line On Uart     Timeout in (\\d+) seconds       testerId=${hss}  treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      testerId=${hss}  treatAsRegex=true
+    Wait For Line On Uart     Timeout in (\\d+) seconds       treatAsRegex=true
+    Send Key To Uart          0x1B
+    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
 
     Provides                  booted-hss
 
@@ -32,13 +34,16 @@ Should Boot U-Boot
     [Tags]                    bootloader  uart
     Requires                  booted-hss
 
-    ${uart}=                  Create Terminal Tester          ${UART}
+    ${uart}=                  Create Terminal Tester          ${UART}  defaultPauseEmulation=true
+    SetDefaultTester          ${uart}
 
-    Wait For Prompt On Uart   Hit any key to stop autoboot    testerId=${uart}  treatAsRegex=true
-    Wait For Line On Uart     Loading kernel from FIT Image   testerId=${uart}  treatAsRegex=true
-    Wait For Line On Uart     Loading ramdisk from FIT Image  testerId=${uart}  treatAsRegex=true
-    Wait For Line On Uart     Loading fdt from FIT Image      testerId=${uart}  treatAsRegex=true
-    Wait For Line On Uart     Starting kernel ...             testerId=${uart}  treatAsRegex=true
+    Wait For Prompt On Uart   Hit any key to stop autoboot
+    Send Key To Uart          0x1B
+    Write Line To Uart        boot
+    Wait For Line On Uart     Loading kernel from FIT Image     treatAsRegex=true
+    Wait For Line On Uart     Loading ramdisk from FIT Image    treatAsRegex=true
+    Wait For Line On Uart     Loading fdt from FIT Image        treatAsRegex=true
+    Wait For Line On Uart     Starting kernel ...               treatAsRegex=true
 
     Provides                  booted-uboot
 
@@ -47,23 +52,17 @@ Should Boot Linux
     [Tags]                    linux  uart  interrupts
     Requires                  booted-uboot
 
-    ${uart}=                  Create Terminal Tester          ${UART}
-
-    Wait For Prompt On Uart   buildroot login:  testerId=${uart}
-    Write Line To Uart        root              testerId=${uart}
-    Wait For Prompt On Uart   Password          testerId=${uart}
-    Write Line To Uart        root              testerId=${uart}  waitForEcho=false
-    Wait For Prompt On Uart   \#                testerId=${uart}
-
+    Wait For Line On Uart     Starting network  timeout=5
+    Wait For Prompt On Uart   buildroot login:  timeout=10
+    Write Line To Uart        root
+    Wait For Prompt On Uart   Password
+    Write Line To Uart        root              waitForEcho=false
+    Wait For Prompt On Uart   \#
     Provides                  booted-linux
 
 Should Ls
     [Documentation]           Tests shell responsiveness in Linux on Icicle Kit
     [Tags]                    linux  uart  interrupts
     Requires                  booted-linux
-
-    ${uart}=                  Create Terminal Tester          ${UART}
-
-    Write Line To Uart        ls /              testerId=${uart}
-    Wait For Line On Uart     proc              testerId=${uart}
-
+    Write Line To Uart        ls /
+    Wait For Line On Uart     proc
