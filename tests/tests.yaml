@@ -220,6 +220,7 @@
 - tests/unit-tests/tlib/arm/thumb2-data-processing-instr.robot
 - tests/peripherals/VirtioMMIOEntropy.robot
 - tests/unit-tests/riscv-stack-access-hook.robot
+- tests/unit-tests/auto-save.robot
 
 # Do not use port 3333 in unit tests
 
