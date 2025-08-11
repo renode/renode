@@ -5,6 +5,14 @@ ${emulation_time}                   "0.00002"
 
 # Platform definitions
 ${PLAT_ARM64}                       SEPARATOR=\n  """
+...                                 cpu: CPU.ARMv8A @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-a53"
+...                                 ${SPACE*4}genericInterruptController: gic
+...
+...                                 gic: IRQControllers.ARM_GenericInterruptController
+...                                 ${SPACE*4}architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+...                                 """
+${PLAT_ARMv8R}                      SEPARATOR=\n  """
 ...                                 cpu: CPU.ARMv8R @ sysbus
 ...                                 ${SPACE*4}cpuType: "cortex-r52"
 ...                                 ${SPACE*4}genericInterruptController: gic
@@ -150,6 +158,7 @@ Should Report Wrong PC Between Chained Blocks
     [Template]                      Syncing Disabled Template
     ${PLAT_ARM}                     ${PROG_ARM}
     ${PLAT_ARM64}                   ${PROG_ARM}
+    ${PLAT_ARMv8R}                  ${PROG_ARM}
     ${PLAT_ARM-M}                   ${PROG_ARM}
     ${PLAT_POWERPC}                 ${PROG_POWERPC}
     ${PLAT_SPARC}                   ${PROG_SPARC}
@@ -160,6 +169,7 @@ Should Report Correct PC Between Chained Blocks
     ${PLAT_RISCV}                   ${PROG_RISCV}
     ${PLAT_ARM}                     ${PROG_ARM}
     ${PLAT_ARM64}                   ${PROG_ARM}
+    ${PLAT_ARMv8R}                  ${PROG_ARM}
     ${PLAT_ARM-M}                   ${PROG_ARM}
     ${PLAT_POWERPC}                 ${PROG_POWERPC}
     ${PLAT_X86}                     ${PROG_X86}
