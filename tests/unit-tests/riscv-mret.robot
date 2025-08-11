@@ -8,6 +8,19 @@ ${mret}                             0x30200073 # mret
 ${user_level}                       0b0
 ${machine_level}                    0b11
 
+${invalidate_test_plat}             SEPARATOR=\n  """
+...                                 cpu: CPU.RiscV32 @ sysbus
+...                                 ${SPACE*4}cpuType: "rv32im_zicsr"
+...
+...                                 ram: Memory.MappedMemory @ sysbus 0x10000
+...                                 ${SPACE*4}size: 0x8000
+...
+...                                 forbidden: Memory.MappedMemory @ sysbus 0x2000
+...                                 ${SPACE*4}size: 0x2000
+...                                 """
+
+${invalidate_test_elf}              https://dl.antmicro.com/projects/renode/riscv-mret-test.elf-s_13308-257bec1c8918772e95eb9fdc1a432c852f052f99
+
 *** Keywords ***
 Create Machine
     [Arguments]                     ${bitness}  ${privilege}
@@ -63,3 +76,13 @@ User Level Does Not Exists 64Bits
 User Level Does Not Exists 32Bits
     Create Machine                  bitness=32  privilege=PrivilegeLevels.Machine
     Test Mret                       ${machine_level}
+
+Should Invalidate TLB After Mode Change
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescriptionFromString ${invalidate_test_plat}
+    Execute Command                 sysbus LoadELF @${invalidate_test_elf}
+    Execute Command                 cpu LogFunctionNames true
+
+    Create Log Tester               1
+    Register Failing Log String     Entering function fail_loop
+    Wait For Log Entry              Entering function unrecoverable
