@@ -101,3 +101,35 @@ Test SingleStepBlocking Change After Blocking Steps
 
     # Other cores should be able to reach it.
     Wait For Line On Uart       smp: Bringing up secondary CPUs
+
+Should Step Multiple CPUs Alternately
+    Create Machine              step_blocking=True
+    Execute Command             u54_1 ExecutionMode Continuous
+    Wait For Line On Uart       smp: Brought up 1 node, 4 CPUs
+    Execute Command             e51 Step
+    Execute Command             u54_1 Step
+
+Should Handle Muliple Single Step CPUs In Serial Execution
+    Create Machine              step_blocking=True
+    Execute Command             u54_1 ExecutionMode Continuous
+    Wait For Line On Uart       smp: Brought up 1 node, 4 CPUs
+    Execute Command             emulation SetGlobalSerialExecution true
+    Execute Command             u54_1 ExecutionMode SingleStep
+    Execute Command             e51 Step
+    Execute Command             u54_1 Step
+
+Should Step Over Time Quantum With Multiple CPUs Active
+    Create Machine              step_blocking=True
+    Execute Command             u54_1 ExecutionMode Continuous
+    Execute Command             emulation SetGlobalSerialExecution true
+    Wait For Line On Uart       smp: Brought up 1 node, 4 CPUs      pauseEmulation=true
+    Execute Command             emulation SetQuantum "00:00:00.000000050"
+    Execute Command             emulation RunToNearestSyncPoint
+
+    ${tsInfo}=                  Execute Command  emulation GetTimeSourceInfo
+    Should Contain              ${tsInfo}   Elapsed Virtual Time: 00:00:00.243100000
+
+    Execute Command             e51 Step 6
+
+    ${tsInfo}=                  Execute Command  emulation GetTimeSourceInfo
+    Should Contain              ${tsInfo}   Elapsed Virtual Time: 00:00:00.243100060
