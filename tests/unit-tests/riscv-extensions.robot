@@ -16,6 +16,8 @@ Create Machine
 *** Test Cases ***
 Should Create CPUs With Supported ISAs
     [Template]                      Create Machine
+    RV32I_Smepmp
+    RV32I_Sscofpmf
     RV32I_V
     RV32I_Zvfh
     RV32I_Zve32x
