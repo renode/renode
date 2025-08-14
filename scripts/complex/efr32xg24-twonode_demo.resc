@@ -1,8 +1,7 @@
 :name: TWONODE-DEMO
 :description: This script runs the configured application on BRD4186C in a two-node setup.
 
-# Change this to the actual location of the application to run
-set bin $ORIGIN/rail_soc_railtest.out
+$bin?=@https://dl.antmicro.com/projects/renode/rail_soc_railtest.elf-s_1899684-c9f23b19dfa9e424d9728c2a8818aaa09ab7a5d2
 
 using sysbus
 emulation SetGlobalSerialExecution true
@@ -36,6 +35,7 @@ logLevel 3
 #machine StartGdbServer 3333 false cpu
 # Uncomment to enable debugging of Sequencer CPU
 #machine StartGdbServer 3333 false seqcpu
+showAnalyzer eusart0
 
 mach clear
 
@@ -54,3 +54,4 @@ logLevel 3
 #machine StartGdbServer 3333 false cpu
 # Uncomment to enable debugging of Sequencer CPU
 #machine StartGdbServer 3333 false seqcpu
+showAnalyzer eusart0
