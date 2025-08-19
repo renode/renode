@@ -1,3 +1,6 @@
+*** Variables ***
+${initial_pc}                       0x0
+
 *** Keywords ***
 # WriteDoubleWord:  reversed bytes
 # Disassembly output:  spaces between bytes
@@ -141,6 +144,23 @@ AsTest
     END
 
     Should Be Equal                 ${hex_bytes}  ${expected}
+
+Execute Instruction
+    [Arguments]                     ${instruction}
+    Execute Command                 cpu PC ${initial_pc}
+    Execute Command                 cpu AssembleBlock ${initial_pc} "${instruction}"
+    Execute Command                 cpu Step 1
+
+Memory Should Be Equal
+    [Arguments]                     ${address}  ${value}
+    ${res}=                         Execute Command  sysbus ReadDoubleWord ${address}
+    Should Be Equal As Numbers      ${res}  ${value}
+
+# Ordinary 'Register Should Be Equal  ${register_number}  ${value}' checks register with number one below than expected
+Xtensa Register Should Be Equal
+    [Arguments]                     ${register}  ${value}  ${cpu}=cpu
+    ${res}=                         Execute Command  ${cpu} GetRegister '${register}'
+    Should Be Equal As Numbers      ${value}  ${res}
 
 Create Machine
     [Arguments]                     ${cpu}  ${model}
@@ -378,6 +398,51 @@ Should Assemble And Disassemble X86_64 Using GAS Syntax
     RoundTrip BE                    48890cc516a9fd00  movq  %rcx, 16623894(,%rax,8)  8  reverse=False
     RoundTrip BE                    48ffc0  incq  %rax  3  reverse=False
     RoundTrip BE                    65488b06  movq  %gs:(%rsi), %rax  reverse=False
+
+Should Assemble And Disassemble Xtensa
+    Create Machine                  Xtensa  sample_controller
+
+    RoundTrip BE                    802160  abs  a2, a8  3  reverse=False
+    RoundTrip BE                    301280  add  a1, a2, a3  3  reverse=False
+    RoundTrip BE                    f02000  nop  ${EMPTY}  3  reverse=False
+    RoundTrip BE                    27811b  bany  a1, a2, . +31  3  reverse=False
+    RoundTrip BE                    c60600  j  . +31  3  reverse=False
+    RoundTrip BE                    050000  call0  . +4  3  reverse=False
+    # Test Xtensa 'dense' option
+    RoundTrip BE                    1812  l32i.n  a1, a2, 4  2  reverse=False
+    RoundTrip BE                    1922  s32i.n  a1, a2, 8  2  reverse=False
+    RoundTrip BE                    0df0  ret.n  ${EMPTY}  2  reverse=False
+    RoundTrip BE                    0df0  ret.n  ${EMPTY}  2  reverse=False
+
+Should Assemble And Execute Xtensa
+    Create Machine                  Xtensa  sample_controller
+
+    Execute Instruction             movi.n a1, 0x10
+    Xtensa Register Should Be Equal  A1  0x10
+
+    ${A1}=                          Set Variable  0x1234
+    ${A2}=                          Set Variable  0x5432
+    Execute Command                 cpu SetRegister 'A1' ${A1}
+    Execute Command                 cpu SetRegister 'A2' ${A2}
+    Execute Instruction             add a3, a1, a2
+    Xtensa Register Should Be Equal  A3  0x6666
+
+    ${arbitrary_jump_target}=       Set Variable  0x10
+    Execute Command                 cpu SetRegister 'A1' ${arbitrary_jump_target}
+    Execute Instruction             jx a1
+    PC Should be Equal              ${arbitrary_jump_target}
+
+    ${some_value}=                  Set Variable  0x11223344
+    Execute Command                 cpu SetRegister 'A1' 0x100
+    Execute Command                 sysbus WriteDoubleWord 0x100 ${some_value}
+    Execute Instruction             l32i.n a2, a1, 0
+    Xtensa Register Should Be Equal  A2  ${some_value}
+
+    ${some_value}=                  Set Variable  0x88112233
+    Execute Command                 cpu SetRegister 'A0' ${some_value}
+    Execute Command                 cpu SetRegister 'A1' 0x100
+    Execute Instruction             s32i.n a0, a1, 0
+    Memory Should Be Equal          0x100  ${some_value}
 
 Should Handle Illegal Instruction When Disassembling
     Create Machine                  RiscV64  rv64g
