@@ -1,6 +1,11 @@
 *** Settings ***
 Test Setup         Create Machine
 *** Variables ***
+${CODE_BASE_ADDRESS}                0x8000000
+${TCM_A_VALUE}                      0x12121212
+${TCM_B_VALUE}                      0x34343434
+${TCM_C_VALUE}                      0x56565656
+
 ${PLAT}                             SEPARATOR=\n  """
 ...                                 cpu: CPU.ARMv8R @ sysbus
 ...                                 ${SPACE*4}cpuType: "cortex-r52"
@@ -23,15 +28,69 @@ ${PLAT}                             SEPARATOR=\n  """
 ...                                 ${SPACE*4}\[0-1] -> cpu@[0-1]
 ...                                 ${SPACE*4}supportsTwoSecurityStates: false
 ...
+...                                 code: Memory.MappedMemory @ sysbus ${CODE_BASE_ADDRESS}
+...                                 ${SPACE*4}size: 0x10000
+...
 ...                                 atcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x10000
+...                                 ${SPACE*4}init:
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_A_VALUE}
 ...
 ...                                 btcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x20000
+...                                 ${SPACE*4}init:
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_B_VALUE}
 ...
 ...                                 ctcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x40000; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x40000
+...                                 ${SPACE*4}init:
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_C_VALUE}
 ...                                 """
+
+${NEW_TCM_A_ADDRESS}                0x60000
+${NEW_TCM_B_ADDRESS}                0x00000
+${NEW_TCM_C_ADDRESS}                0x20000
+
+${TCM_TEST_ASSEMBLY}                SEPARATOR=\n  """
+...                                 // Store mask in R2
+...                                 MOV r2, 0x1fff
+...
+...                                 // Move TCM A to ${NEW_TCM_A_ADDRESS}
+...                                 MRC p15, 0, r0, c9, c1, 0
+...                                 AND r0, r2
+...                                 MOV r1, ${NEW_TCM_A_ADDRESS}
+...                                 ORR r0, r1, LSL #13
+...                                 MCR p15, 0, r0, c9, c1, 0
+...
+...                                 // Move TCM B to ${NEW_TCM_B_ADDRESS}
+...                                 MRC p15, 0, r0, c9, c1, 1
+...                                 AND r0, r2
+...                                 MOV r1, ${NEW_TCM_B_ADDRESS}
+...                                 ORR r0, r1, LSL #13
+...                                 MCR p15, 0, r0, c9, c1, 1
+...
+...                                 // Move TCM C to ${NEW_TCM_C_ADDRESS}
+...                                 MRC p15, 0, r0, c9, c1, 2
+...                                 AND r0, r2
+...                                 MOV r1, ${NEW_TCM_C_ADDRESS}
+...                                 ORR r0, r1, LSL #13
+...                                 MCR p15, 0, r0, c9, c1, 2
+...
+...                                 // Read values to registers
+...                                 MOV r0, ${NEW_TCM_A_ADDRESS}
+...                                 LDR r0, [r0] // ${TCM_A_VALUE}
+...                                 MOV r1, ${NEW_TCM_B_ADDRESS}
+...                                 LDR r1, [r1] // ${TCM_B_VALUE}
+...                                 MOV r2, ${NEW_TCM_C_ADDRESS}
+...                                 LDR r2, [r2] // ${TCM_C_VALUE}
+...
+...                                 // Loop indefinitely
+...                                 B .
+...                                 """
+
+${R0_REGISTER_INDEX}                100
+${R1_REGISTER_INDEX}                101
+${R2_REGISTER_INDEX}                102
 
 *** Keywords ***
 Get System Register As Int
@@ -75,3 +134,12 @@ IMP_.TCMREGIONR Should Have Correct Value
    "IMP_BTCMREGIONR"  0  0xFFFFF000  0x20000  TCM B region base address mismatch
    "IMP_CTCMREGIONR"  2  0b11111     0b01001  TCM C region size mismatch
    "IMP_CTCMREGIONR"  0  0xFFFFF000  0x40000  TCM C region base address mismatch
+
+Should Remap TCM Regions
+    Execute Command                 cpu AssembleBlock ${CODE_BASE_ADDRESS} ${TCM_TEST_ASSEMBLY}
+    Execute Command                 cpu PC ${CODE_BASE_ADDRESS}
+    Execute Command                 emulation RunFor "0.01"
+
+    Register Should Be Equal        ${R0_REGISTER_INDEX}  ${TCM_A_VALUE}
+    Register Should Be Equal        ${R1_REGISTER_INDEX}  ${TCM_B_VALUE}
+    Register Should Be Equal        ${R2_REGISTER_INDEX}  ${TCM_C_VALUE}
