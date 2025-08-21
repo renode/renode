@@ -115,6 +115,30 @@ Should Boot And Login
     Write Line To Uart              nproc
     Wait For Line On Uart           4
 
+    Provides                        linux-shell
+
+Test Dirty Addresses Reduction
+    [Tags]                          skip_host_arm
+    Requires                        linux-shell
+    Execute Command                 showAnalyzer uart1
+
+    # The log below is on a Debug level and can come from any APU core.
+    Create Log Tester               0
+    Execute Command                 logLevel 0 apu0
+    Execute Command                 logLevel 0 apu1
+    Execute Command                 logLevel 0 apu2
+    Execute Command                 logLevel 0 apu3
+
+    Wait For Prompt On Uart         \#
+    Write Line To Uart              du -sh /*
+    Wait For Prompt On Uart         \#
+
+    # No such log should be triggered by `du`. If the reduction logic is incorrectly waiting for RPU cores
+    # to fetch dirty addresses, then the list has more than 60k addresses after boot and `du` adds 200k+
+    # more. This results in two failed reduction log entries (128k and 256k) which won't be present if the
+    # reduction logic works correctly.
+    Should Not Be In Log            Attempted reduction of arm64 dirty addresses list failed
+
 Should Detect I2C Peripherals
     Create Linux Machine
 
