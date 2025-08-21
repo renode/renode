@@ -35,8 +35,8 @@ Should Handle Separation By State In Secure World
     Register Should Be Equal           10  0
     Register Should Be Equal           11  0x3030
     Register Should Be Equal           12  0x0404
-    Register Should Be Equal           13  0x63707506
-    Register Should Be Equal           14  0x63707506
+    Register Should Be Equal           1   0x63707506
+    Register Should Be Equal           2   0x63707506
 
 
 Should Handle Separation By State In Nonsecure World
@@ -54,8 +54,8 @@ Should Handle Separation By State In Nonsecure World
     Register Should Be Equal           10  0
     Register Should Be Equal           11  0x3030
     Register Should Be Equal           12  0x0404
-    Register Should Be Equal           13  0x63707500
-    Register Should Be Equal           14  0x63707500
+    Register Should Be Equal           1   0x63707500
+    Register Should Be Equal           2   0x63707500
 
 Should Change Access Conditions At Runtime
     Create Bus Isolation Machine

@@ -84,8 +84,8 @@ ldr r9, [r0]       // expect 0x1010 in both S and NS
 ldr r10, [r0, #4]  // expect 0 in both S and NS
 ldr r11, [r0, #8]  // expect 0x3030
 ldr r12, [r0, #12] // expect 0x0404
-ldr r13, [r0, #16] // expect 0x63707506 in secure, 0x63707500 in nonsecure
-ldr r14, [r0, #20] // expect 0x63707506 in secure, 0x63707500 in nonsecure
+ldr r1, [r0, #16]  // expect 0x63707506 in secure, 0x63707500 in nonsecure
+ldr r2, [r0, #20]  // expect 0x63707506 in secure, 0x63707500 in nonsecure
 
 b .
 """
