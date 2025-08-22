@@ -335,6 +335,7 @@ cpg_sysc: Miscellaneous.RenesasRZG_CPG_SYSC @ {
     }
     cpu0: cpu0
     cpu1: cpu1
+    cpu_m33: cpu_m33
 
 sram_acpu_gatekeeper: Python.PythonPeripheral @ {
         sysbus new Bus.BusPointRegistration { address: 0x11040008; cluster: cluster };
