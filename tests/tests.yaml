@@ -240,3 +240,7 @@
 
 - port_3338:
   - tests/unit-tests/gdb/armv8.robot
+
+- port_3339:
+  - tests/unit-tests/gdb/gdb_reverse_execution.robot
+
