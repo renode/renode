@@ -43,11 +43,68 @@ ${ASSEMBLY}                         SEPARATOR=\n
 ...                                 addi sp, sp, 16 // +46
 ...                                 ret // +40
 
+${WORKSHOP_ASSEMBLY}                SEPARATOR=\n
+...                                 .equ UART0_BASE, 0x10013000
+...                                 .equ UART_TXDATA, 0x00
+...                                 .equ UART_TXCTRL, 0x08
+...
+...                                 li sp, 0x80004000
+...                                 // UART Setup
+...                                 li t0, UART0_BASE
+...                                 li t1, 1
+...                                 sw t1, UART_TXCTRL(t0)
+...
+...                                 // Our test
+...                                 li t3, 0x1337
+...                                 beq t3, t4, ok
+...
+...                                 wrong:
+...                                 la a0, wrong_str
+...                                 call uart_puts
+...                                 j hang
+...
+...                                 ok:
+...                                 la a0, ok_str
+...                                 call uart_puts
+...
+...                                 hang:
+...                                 j hang
+...
+...                                 uart_putc:
+...                                 li t2, UART0_BASE
+...                                 sw a0, UART_TXDATA(t2)
+...                                 ret
+...
+...                                 uart_puts:
+...                                 addi sp, sp, -16
+...                                 sw ra, 12(sp)
+...                                 mv t0, a0
+...                                 1:  lbu a0, 0(t0)  # load next byte
+...                                 beqz a0, 2f  # end on NUL
+...                                 addi t0, t0, 1
+...                                 call uart_putc
+...                                 j 1b
+...                                 2:  lw ra, 12(sp)
+...                                 addi sp, sp, 16
+...                                 ret
+...
+...                                 wrong_str:
+...                                 .string \\":(\\r\\n\\"
+...                                 ok_str:
+...                                 .string \\"OK\\r\\n\\"
+
 *** Keywords ***
 Create HiFive1 Demo
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
     Execute Command                 cpu AssembleBlock ${ENTRYPOINT} "${ASSEMBLY}"
+    Execute Command                 cpu PC ${ENTRYPOINT}
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT}
+
+Create HiFive1 Workshop Demo
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
+    Execute Command                 cpu AssembleBlock ${ENTRYPOINT} "${WORKSHOP_ASSEMBLY}"
     Execute Command                 cpu PC ${ENTRYPOINT}
     Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT}
 
@@ -276,4 +333,28 @@ Should Ignore First Breakpoint Occurence
 
     Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
     Should Be Equal As Numbers      ${expected_icount}  ${result_icount}
+
+Should Visit Both Branches
+    [Setup]                         Create HiFive1 Workshop Demo
+    Check And Run Gdb               riscv64-zephyr-elf-gdb
+    Execute Command                 reverseExecMode true
+    Create Terminal Tester          sysbus.uart0
+    Execute Command                 showAnalyzer uart0
+
+    # beq
+    Command Gdb                     break *${ENTRYPOINT}+0x14
+
+    # hang
+    Command Gdb                     break *${ENTRYPOINT}+0x3a
+
+    Command Gdb                     continue
+    Command Gdb                     continue
+    Wait For Line On Uart           :(
+    Command Gdb                     reverse-continue
+
+    Create Terminal Tester          sysbus.uart0
+    Execute Command                 showAnalyzer uart0
+    Execute Command                 cpu SetRegister "T4" 0x1337
+    Command Gdb                     continue
+    Wait For Line On Uart           OK
 
