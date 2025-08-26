@@ -21,6 +21,21 @@ Run Zephyr Hello World
     Wait For Line On Uart     Booting Zephyr OS
     Wait For Line On Uart     Hello World! stm32f4_disco
 
+Peripheral Export File Created
+    Execute Command            mach create
+    Execute Command            machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+
+    ${temp_file} =             Allocate Temporary File
+    Execute Command            peripherals export @${temp_file}
+    File Should Exist          ${temp_file}
+    File Should Not Be Empty   ${temp_file}
+
+    ${export} =                Get File     ${temp_file}
+    Should Contain             ${export}    Peripheral Map 1.0
+    Should Contain             ${export}    SynopsysEthernetMAC
+    Should Contain             ${export}    STM32_GPIOPort
+    Should Contain             ${export}    STM32F4_RCC
+
 Configure RTC Alarm
     Execute Command           mach create
     # Use an RTC frequency of exactly 32 kHz as expected by the test binary
