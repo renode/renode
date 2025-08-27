@@ -58,6 +58,7 @@ function print_help() {
   echo "--tlib-export-compile-commands    build tlibs with 'compile_commands.json' (requires --external-lib-arch)"
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
+  echo "--tcg-opcode-backtrace            collect a backtrace for each emitted TCG opcode, to track internal TCG errors (implies Debug configuration)"
   echo "<ARGS>                            arguments to pass to the build system"
 }
 
@@ -161,6 +162,12 @@ do
           ;;
         "skip-dotnet-target-generation")
           GENERATE_DOTNET_BUILD_TARGET=false
+          ;;
+        "tcg-opcode-backtrace")
+          # Doesn't make sense without debug.
+          CONFIGURATION="Debug"
+
+          CMAKE_COMMON+=" -DTCG_OPCODE_BACKTRACE=ON"
           ;;
         *)
           print_help
