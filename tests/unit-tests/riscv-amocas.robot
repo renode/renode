@@ -1,5 +1,6 @@
 *** Settings ***
 Test Setup                          Create Machine
+Test Tags                           atomics
 
 *** Variables ***
 ${MEMORY_START}                     0x80000000

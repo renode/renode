@@ -1,3 +1,6 @@
+*** Settings ***
+Test Tags                           atomics
+
 *** Variables ***
 ${MEMORY_START}                     0x80000000
 ${PLATFORM}                         SEPARATOR=\n
