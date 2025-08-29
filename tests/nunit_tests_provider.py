@@ -52,6 +52,7 @@ class NUnitTestSuite(object):
 
     def prepare(self, options):
         if not options.skip_building:
+            self._adjust_path(options)
             print("Building {0}".format(self.path))
             arch = 'arm' if machine() in ['aarch64', 'arm64'] else 'i386'
             if options.runner == 'dotnet':
@@ -80,6 +81,21 @@ class NUnitTestSuite(object):
             print('Skipping the build')
 
         return 0
+
+    def _adjust_path(self, options):
+        path, proj = os.path.split(self.path)
+        _match = (options.runner == 'dotnet', proj.endswith("_NET.csproj"))
+        if _match == (True, False):
+                proj_alt = proj[:-7] + "_NET.csproj"
+        elif _match == (False, True):
+                proj_alt = proj[:-11] + ".csproj"
+        else:
+                proj_alt = proj
+        if proj != proj_alt and os.path.exists(path_alt := os.path.join(path, proj_alt)):
+            print(f"{options.runner} runner detected, switching: {proj} -> {proj_alt}")
+            self.path = path_alt
+            return True
+        return False
 
     def _cleanup_dangling(self, process, proc_name, test_agent_name):
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
