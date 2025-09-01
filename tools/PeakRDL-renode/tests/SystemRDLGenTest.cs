@@ -59,7 +59,7 @@ namespace Antmicro.Renode.PeripheralsTests
                 var adhocPath = Path.Join(Assembly.GetExecutingAssembly().Location, "../../../../", meta.File);
                 if(!Assemblies.TryGetValue(adhocPath, out var assembly))
                 {
-                    var assemblyPath = compiler.Compile(adhocPath);
+                    var assemblyPath = compiler.Compile(new[] { adhocPath });
                     assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
                     Assemblies[adhocPath] = assembly;
                     TypeManager.Instance.ScanFile(assemblyPath);
