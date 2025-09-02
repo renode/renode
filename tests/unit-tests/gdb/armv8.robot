@@ -42,3 +42,6 @@ Cortex-R52 Performance Monitor Register Should Show Up In GDB
 
 Cortex-R52 Implementation-Defined Register Should Show Up In GDB
     Cortex-R52 Should Show Register IMP_SLAVEPCTLR
+
+Cortex-R52 64-Bit Register Should Show Up In GDB
+    Cortex-R52 Should Show Register CPUACTLR
