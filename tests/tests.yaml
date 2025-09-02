@@ -218,6 +218,7 @@
 - tests/unit-tests/memory-access.robot
 - tests/unit-tests/resd-serialization.robot
 - tests/unit-tests/tlib/arm/thumb2-data-processing-instr.robot
+- tests/unit-tests/gdb/armv8.robot
 
 # Do not use port 3333 in unit tests
 
