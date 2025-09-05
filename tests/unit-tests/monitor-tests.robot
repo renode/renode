@@ -88,3 +88,23 @@ Should Not Crash On Int Autocompletion
 
 Should Not Crash On String Autocompletion
     Test Autocompletion       cpu LogFile
+
+Should Allow Passing An Array To A Property Setter
+    Execute Command           mach create
+    Execute Command           using sysbus
+    Execute Command           i @platforms/boards/beaglev-fire.repl
+
+    Execute Command           qspi.pseFlash SFDPSignature [1]
+    ${sig}=                   Execute Command  qspi.pseFlash SFDPSignature
+    Should Be Equal As Strings  ${sig}  [ 0x01, ]  strip_spaces=True  collapse_spaces=True
+
+    Execute Command           qspi.pseFlash SFDPSignature [1, 2, 3]
+    ${sig}=                   Execute Command  qspi.pseFlash SFDPSignature
+    Should Be Equal As Strings  ${sig}  [ 0x01, 0x02, 0x03, ]  strip_spaces=True  collapse_spaces=True
+
+    Execute Command           qspi.pseFlash SFDPSignature []
+    ${sig}=                   Execute Command  qspi.pseFlash SFDPSignature
+    Should Be Equal As Strings  ${sig}  [ ]  strip_spaces=True  collapse_spaces=True
+
+    Run Keyword And Expect Error  *Could not convert [[]NumericToken: Value*1*[]] to System.Byte[[][]]*
+    ...                       Execute Command  qspi.pseFlash SFDPSignature 1

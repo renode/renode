@@ -15,7 +15,7 @@ Create Machine
     Create Terminal Tester          ${UART}
 
 Set Enviroment
-    [Arguments]                     ${x}=0.000000  ${y}=0.000000    ${z}=0.000000
+    [Arguments]                     ${x}=0  ${y}=0    ${z}=0
     Execute Command                 ${SENSOR} DefaultMagneticFluxDensityX ${x}
     Execute Command                 ${SENSOR} DefaultMagneticFluxDensityY ${y}
     Execute Command                 ${SENSOR} DefaultMagneticFluxDensityZ ${z}

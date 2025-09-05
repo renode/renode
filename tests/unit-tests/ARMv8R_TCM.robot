@@ -34,17 +34,17 @@ ${PLAT}                             SEPARATOR=\n  """
 ...                                 atcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x10000
 ...                                 ${SPACE*4}init:
-...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_A_VALUE}
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData [${TCM_A_VALUE}] // NB. the value gets truncated to a byte here
 ...
 ...                                 btcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x20000; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x20000
 ...                                 ${SPACE*4}init:
-...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_B_VALUE}
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData [${TCM_B_VALUE}]
 ...
 ...                                 ctcm0: Memory.MappedMemory @ {sysbus new Bus.BusPointRegistration { address: 0x40000; cpu: cpu }}
 ...                                 ${SPACE*4}size: 0x40000
 ...                                 ${SPACE*4}init:
-...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData ${TCM_C_VALUE}
+...                                 ${SPACE*4}${SPACE*4}FillWithRepeatingData [${TCM_C_VALUE}]
 ...                                 """
 
 ${NEW_TCM_A_ADDRESS}                0x60000
