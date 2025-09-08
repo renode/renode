@@ -261,6 +261,11 @@ class RegArray:
                     rhs = ast.IntLit(mask, unsigned = True, fmt='h')
                 )
 
+            def get_field_value_masked_upcast(mask: int) -> ast.Expr:
+                if shift > 0 and field_type in [ast.Type.byte, ast.Type.ushort]:
+                    return ast.Cast(ast.Type.uint, get_field_value_masked(mask))
+                return get_field_value_masked(mask)
+
             return ast.Node.join(
                 # for idx in range(bytes_to_access)
                 ast.Assign(
@@ -272,7 +277,7 @@ class RegArray:
                         ),
                         rhs = # if idx == 0
                             op.SHL(
-                                lhs = get_field_value_masked((1 << width) - 1),
+                                lhs = get_field_value_masked_upcast((1 << width) - 1),
                                 rhs = ast.IntLit(shift)
                             )
                             if idx == 0 else
