@@ -9,11 +9,31 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.WebSockets.Providers
 {
-    class FilesystemProvider : IWebSocketAPIProvider
+    public static class HttpClientExtensions
+    {
+        public static void DownloadFile(this HttpClient client, Uri address, WriteFilePath fileName)
+        {
+            client.DownloadFileAsync(address, fileName).GetAwaiter().GetResult();
+        }
+
+        public static async Task DownloadFileAsync(this HttpClient client, Uri address, WriteFilePath fileName)
+        {
+            var sourceStream = await client.GetStreamAsync(address);
+            using(var destinationStream = new FileStream(fileName, FileMode.CreateNew))
+            {
+                await sourceStream.CopyToAsync(destinationStream);
+            }
+        }
+    }
+
+    public class FilesystemProvider : IWebSocketAPIProvider
     {
         public FilesystemProvider()
         {
@@ -235,14 +255,13 @@ namespace Antmicro.Renode.WebSockets.Providers
         {
             try
             {
-                var url = args[0];
-                var uri = new Uri(url);
+                var uri = new Uri(args[0]);
                 var fileName = System.IO.Path.GetFileName(uri.LocalPath);
                 var newFilePath = ResolvePath(fileName);
 
-                using(var client = new WebClient())
+                using(var client = new HttpClient())
                 {
-                    client.DownloadFile(url, newFilePath);
+                    client.DownloadFile(uri, newFilePath);
                 }
 
                 var result = new PathActionResponseDto
@@ -264,13 +283,12 @@ namespace Antmicro.Renode.WebSockets.Providers
         {
             try
             {
-                var url = args[0];
-                var uri = new Uri(url);
+                var uri = new Uri(args[0]);
                 var tempZipPath = ResolvePath("temp.zip");
 
-                using(var client = new WebClient())
+                using(var client = new HttpClient())
                 {
-                    client.DownloadFile(url, tempZipPath);
+                    client.DownloadFile(uri, tempZipPath);
                 }
 
                 ZipFile.ExtractToDirectory(tempZipPath, SharedData.Cwd.Value, true);
