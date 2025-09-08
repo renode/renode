@@ -43,7 +43,7 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 return WebSocketAPIUtils.CreateActionResponse(result);
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return WebSocketAPIUtils.CreateEmptyActionResponse();
             }
