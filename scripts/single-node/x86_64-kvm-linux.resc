@@ -1,10 +1,10 @@
-$name?="i386_64-kvm"
+$name?="x86_64-kvm"
 mach create $name
 
 $bin?=@https://dl.antmicro.com/projects/renode/virt_x86_64--linux.bin-s_9012224-95afda97d7185427a02333412baa95daac72270a
 $bios?=@https://dl.antmicro.com/projects/renode/virt_x86--kvmtool-bios.bin-s_687-dfaa7e98ad587f40df43a0d8eff5c320de72f9bf
 
-machine LoadPlatformDescription @platforms/cpus/i386_64-kvm.repl
+machine LoadPlatformDescription @platforms/cpus/x86_64-kvm.repl
 
 showAnalyzer uart
 

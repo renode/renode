@@ -1,7 +1,7 @@
 *** Variables ***
 ${UART}                       sysbus.uart
-${SCRIPT_BIOS}                @scripts/single-node/i386_64-kvm-bios.resc
-${SCRIPT_LINUX}               @scripts/single-node/i386_64-kvm-linux.resc
+${SCRIPT_BIOS}                @scripts/single-node/x86_64-kvm-bios.resc
+${SCRIPT_LINUX}               @scripts/single-node/x86_64-kvm-linux.resc
 
 *** Test Cases ***
 Should Run SeaBIOS
