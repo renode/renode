@@ -9,10 +9,9 @@ flash: Memory.MappedMemory @ sysbus 0x40000000
 
 lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
     IRQ -> cpu@0
+    id: 0
 
 ioapic: IRQControllers.IOAPIC @ sysbus 0xFEC00000
-    [16-255] -> lapic@[16-255]
-    lapic: lapic
 
 spi0: SPI.Quark_SPI @ sysbus 0xB0001000
     IRQ -> ioapic@2
