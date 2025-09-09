@@ -1,7 +1,7 @@
 :name: ACRN x86_64
 :description: This script runs Zephyr hello_world sample on a bare x86_64 platform.
 
-$name?="i386"
+$name?="x86_64"
 using sysbus
 mach create $name
 
