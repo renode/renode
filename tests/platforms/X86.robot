@@ -1,7 +1,7 @@
 *** Variables ***
 ${UART}                       sysbus.uart
-${SCRIPT_UBOOT}               @scripts/single-node/i386.resc
-${SCRIPT_ZEPHYR}              @scripts/single-node/i386_zephyr.resc
+${SCRIPT_UBOOT}               @scripts/single-node/x86.resc
+${SCRIPT_ZEPHYR}              @scripts/single-node/x86-zephyr.resc
 
 *** Test Cases ***
 Should Run U-Boot

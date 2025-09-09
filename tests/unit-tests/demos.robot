@@ -12,8 +12,8 @@ Get Test Cases
     Setup
 
     &{conditional_blacklist}=           Create Dictionary
-    ...  ${scripts_path}${/}single-node${/}i386-kvm-linux.resc          '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
-    ...  ${scripts_path}${/}single-node${/}i386-kvm-bios.resc           '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
+    ...  ${scripts_path}${/}single-node${/}x86-kvm-linux.resc           '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
+    ...  ${scripts_path}${/}single-node${/}x86-kvm-bios.resc            '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
     ...  ${scripts_path}${/}single-node${/}x86_64-kvm-linux.resc        '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
     ...  ${scripts_path}${/}single-node${/}x86_64-kvm-bios.resc         '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
 

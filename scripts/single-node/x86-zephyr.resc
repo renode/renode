@@ -1,12 +1,12 @@
-:name: I386
+:name: X86
 :description: This script runs Zephyr hello_world sample on a bare x86 platform.
 
-$name?="i386"
+$name?="x86"
 using sysbus
 mach create $name
 
 $bin?=@https://dl.antmicro.com/projects/renode/virt_x86--zephyr-hello_world.elf-s_520128-5c9e280582e8d48eaf28399cd5dda7406f31bcec
-machine LoadPlatformDescription @platforms/cpus/i386.repl
+machine LoadPlatformDescription @platforms/cpus/x86.repl
 
 # set the D flag for Executable code segment
 cpu SetDescriptor CS 0x0 0x0 0x0 0x400000

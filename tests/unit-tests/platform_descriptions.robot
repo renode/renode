@@ -23,7 +23,7 @@ Get Test Cases
     Setup
 
     &{conditional_blacklist}=          Create Dictionary
-    ...  ${platforms_path}${/}cpus${/}i386-kvm.repl                  '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
+    ...  ${platforms_path}${/}cpus${/}x86-kvm.repl                   '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
     ...  ${platforms_path}${/}cpus${/}x86_64-kvm.repl                '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
 
     ${system}=                Evaluate    platform.system()    modules=platform
