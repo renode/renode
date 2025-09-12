@@ -145,4 +145,4 @@ Should Handle Empty UARTLite Binary With Socket Based Communication
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary With Socket Based Communication
     Create Log Tester               ${LOG_TIMEOUT}
-    Run Keyword And Expect Error    *Error starting cosimulated peripheral!*    Create Machine With Socket Based Communication  nonexistent-uart-binary  nonexistent-uart-binary  nonexistent-uart-binary
+    Run Keyword And Expect Error    *Error starting cosimulated peripheral!*    Create Machine With Socket Based Communication  @nonexistent-uart-binary  @nonexistent-uart-binary  @nonexistent-uart-binary
