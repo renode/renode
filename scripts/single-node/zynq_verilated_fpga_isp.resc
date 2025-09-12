@@ -32,7 +32,7 @@ cpu SetRegister 2 0x100 # device tree address
 
 ### load binaries ###
 sysbus LoadELF $bin
-sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw earlyprintk initrd=0x1a000000,32M" false
+sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,32M" false
 sysbus ZeroRange 0x1a000000 0x800000
 sysbus LoadBinary $rootfs 0x1a000000
 
