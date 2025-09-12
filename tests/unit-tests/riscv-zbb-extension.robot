@@ -107,4 +107,4 @@ Should Handle SLLI.UW Properly
     Execute Command                             sysbus.cpu Step
     Register Should Be Equal                    10  0x0000000040000000
     Execute Command                             sysbus.cpu Step
-    Register Should Be Equal                    10  0xFFFFFFFF80000000
+    Register Should Be Equal                    10  0x0000000080000000
