@@ -20,7 +20,6 @@ RENODE_GDB_PORT = 2222
 RENODE_TELNET_PORT = 12348
 RE_HEX = re.compile(r"0x[0-9A-Fa-f]+")
 RE_VEC_REGNAME = re.compile(r"v\d+")
-RE_FLOAT_REGNAME = re.compile(r"f[tsa]\d+")
 RE_GDB_ERRORS = (
     re.compile(r"\bUndefined .*?\.", re.MULTILINE),
     re.compile(r"\bThe \"remote\" target does not support \".*?\"\.", re.MULTILINE),
@@ -308,8 +307,23 @@ class GDBComparator:
     CommandsBuilder = Callable[[list[str]], list[str]]  # cmd_builder_func type
     REGISTER_CASES: list[tuple[RegNameTester, CommandsBuilder]] = [
         (lambda reg: RE_VEC_REGNAME.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}.b" for reg in regs]),
-        (lambda reg: RE_FLOAT_REGNAME.fullmatch(reg) is not None, lambda regs: [f"p/x (char[])${reg}" for reg in regs]),
-        (lambda _: True, lambda regs: ["printf \"" + ":  0x%x\\n".join(regs) + ":  0x%x\\n\",$" + ",$".join(regs)]),
+        # From `info gdb Arrays` (GDB docs, 10.4 Artificial Arrays):
+        #   > Another way to create an artificial array is to use a cast.  This
+        #   > re-interprets a value as if it were an array.  The value need not be in
+        #   > memory:
+        #   >      (gdb) p/x (short[2])0x12345678
+        #   >      $1 = {0x1234, 0x5678}
+        #   >
+        #   > As a convenience, if you leave the array length out (as in
+        #   > '(TYPE[])VALUE') GDB calculates the size to fill the value (as
+        #   > 'sizeof(VALUE)/sizeof(TYPE)':
+        #   >      (gdb) p/x (short[])0x12345678
+        #   >      $2 = {0x1234, 0x5678}
+        # This means we don't have to special-case registers if we're comparing their
+        # raw bytes, as `p/x (char[])$reg` will print the full value of the register as
+        # a byte (char) array - this also works with vector registers.
+        # This is what this fallback does - prints the whole register as a byte array.
+        (lambda _: True, lambda regs: [f"p/x (char[])${reg}" for reg in regs]),
     ]
 
     def __init__(self, args: argparse.Namespace, renode_proc: pexpect.spawn, ref_proc: pexpect.spawn):
