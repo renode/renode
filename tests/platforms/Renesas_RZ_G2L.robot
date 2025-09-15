@@ -51,6 +51,11 @@ Prepare LED Tester
     Execute Command                 machine LoadPlatformDescriptionFromString ${LED_REPL}
     Create Led Tester               sysbus.gpio.led
 
+Execute Linux Command
+    [Arguments]                     ${command}
+    Write Line To Uart              ${command}  waitForEcho=false
+    Wait For Prompt On Uart         root@smarc-rzg2l:~#  timeout=600
+
 *** Test Cases ***
 Should Run The Timer In One Shot Mode
     Prepare Machine                 ${GPT_ELF}
@@ -270,3 +275,27 @@ Should Run Zephyr Shell Module Sample
     Wait For Prompt On Uart         uart:~$
     Write Line To Uart              demo board
     Wait For Line On Uart           rzg2l_smarc
+
+Should Run OpenAMP Echo Sample
+    Execute Command                 include @scripts/single-node/rzg2l_openamp.resc
+
+    #Can set defaultPauseEmulation=true when #84075 is fixed (but it will cost around a minute in test duration)
+    Create Terminal Tester          sysbus.scif0  defaultPauseEmulation=false
+    Execute Command                 showAnalyzer sysbus.scif0
+
+    Wait For Prompt On Uart         smarc-rzg2l login:  timeout=900
+    Execute Linux Command           root
+    Execute Linux Command           echo rzg2l_cm33_rpmsg_linux-rtos_demo.elf > /sys/class/remoteproc/remoteproc0/firmware
+    Execute Linux Command           echo start > /sys/class/remoteproc/remoteproc0/state
+    Write Line To Uart              rpmsg_sample_client
+    Wait For Line On Uart           please input
+    Wait For Line On Uart           >  includeUnfinishedLine=true
+    Write Line To Uart              1
+
+    FOR  ${i}  IN RANGE  0  471
+        Wait For Line On Uart           sending payload number ${i} of size ${i + 17}
+        Wait For Line On Uart           echo test: sent : ${i + 17}
+        Wait For Line On Uart           received payload number ${i} of size ${i + 17}
+    END
+    Wait For Line On Uart           Test Results: Error count = 0
+

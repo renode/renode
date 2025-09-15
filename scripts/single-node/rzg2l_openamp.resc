@@ -1,0 +1,56 @@
+:name: Renesas RZ/G2L OpenAMP
+:description: This script runs Linux on Renesas RZ/G2L. It's showcasing two way communication between Linux running on Cortex-A55 and OpenAMP demo running on Cortex-M33.
+
+using sysbus
+using sysbus.cluster
+
+$name?="Renesas-RZ/G2l"
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/renesas_rz_g2l.repl
+
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/renesas_rzg2l-bl31.elf-s_60936-06cc2a2879b3573f5bb928bbf0d7b74e6fda8010
+$linux?=     @https://dl.antmicro.com/projects/renode/renesas_rzg2l-openamp-Image-s_24375808-9b309c976b8f5de7403877ac7119a8d632edaf6c
+$rootfs?=    @https://dl.antmicro.com/projects/renode/renesas_rzg2l-openamp-rootfs.ext4-s_78290944-232d4e897c90f98a690bdf73ae855e3c8977937a
+$dtb?=       @https://dl.antmicro.com/projects/renode/renesas_rzg2l-openamp-dtb-s_33268-cd683bda7a260d86de73cea5cab33677a98035c7
+$linux_elf?= @https://dl.antmicro.com/projects/renode/renesas_rzg2l-openamp-vmlinux-s_108671944-1358b975d3bbe82c56a89707db54be65d87c1966
+$uboot?=     @https://dl.antmicro.com/projects/renode/renesas_rzg2l-u-boot.bin-s_704424-93d5b042761f5371ff774c6ef594df63624b7ff3
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/renesas_rzg2l-u-boot.elf-s_4944568-b8c532412cf6234bf74745439d48305687d1ac1a
+
+showAnalyzer scif0
+
+macro reset
+"""
+    cpu_m33 IsHalted true
+    cpu0 RNDRSupported true
+    cpu1 IsHalted true
+    machine SetSerialExecution true
+
+    sysbus LoadELF    $atf_elf cpu=cluster
+    sysbus LoadBinary $uboot  0x50000000 cpu=cpu0
+    sysbus LoadFdt    $dtb    0x40000000 "earlycon retain_initrd console=ttySC0,115200n8 root=/dev/ram0 rw initrd=0x60000000,512M nr_cpus=1" false context=cpu0
+    sysbus LoadBinary $linux  0x51000000 cpu=cpu0
+    sysbus LoadBinary $rootfs 0x60000000 cpu=cpu0
+
+    sysbus LoadSymbolsFrom $uboot_elf context=cpu0
+    sysbus LoadSymbolsFrom $linux_elf context=cpu0
+
+    # Set address for structure passed from BL2
+    # https://github.com/renesas-rz/rzg_trusted-firmware-a/blob/c18f5c36980717d9805036a7ad5705bef8806c8f/plat/renesas/rz/common/include/rz_private.h#L25
+    cpu0 SetRegister 0 0x20000000
+    # Type
+    sysbus WriteByte 0x20000058 0x1 cpu0
+    # Version
+    sysbus WriteByte 0x20000059 0x1 cpu0
+    # Size
+    sysbus WriteWord 0x2000005A 0x0 cpu0
+    # Attr
+    sysbus WriteDoubleWord 0x2000005C 0x1 cpu0
+    # PC
+    sysbus WriteDoubleWord 0x20000060 0x50000000 cpu0
+    # SPSR
+    sysbus WriteDoubleWord 0x20000068 0x3c9 cpu0
+    sysbus WriteDoubleWord 0x2000007C 0x10000 cpu0
+"""
+
+runMacro $reset
