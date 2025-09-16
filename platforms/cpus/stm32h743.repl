@@ -135,7 +135,7 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
     WakeupIRQ -> exti@19
 
 spi4: SPI.STM32H7_SPI @ sysbus 0x40013400
-    DMARecieve -> dma2@4
+    DMARecieve -> dmamux1@83
 
 i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
     EventInterrupt -> exti@62
@@ -167,6 +167,12 @@ dma2: DMA.STM32DMA @ sysbus 0x40020400
 
 dma1: DMA.STM32DMA @ sysbus 0x40020000
     [0-7] -> nvic@[11-17, 47]
+
+dmamux1: Miscellaneous.STM32_DMAMUX @ sysbus 0x40020800
+    numberOfOutputRequestChannels: 16
+    numberOfRequestGeneratorChannels: 8
+    [0-7] -> dma1@[0-7]
+    [8-15] -> dma2@[0-7]
 
 timer17: Timers.STM32_Timer @ sysbus 0x40014800
     initialLimit: 0xffff
@@ -394,7 +400,6 @@ sysbus:
         Tag <0x48020000, 0x480203FF> "DCMI"
         Tag <0x40080000, 0x400BFFFF> "USB2_OTG_FS"
         Tag <0x40040000, 0x4007FFFF> "USB1_OTG_HS"
-        Tag <0x40020800, 0x40020BFF> "DMAMUX1"
         Tag <0x40017400, 0x400177FF> "HRTIM"
         Tag <0x40017000, 0x400173FF> "DFSDM1"
         Tag <0x40016000, 0x400163FF> "SAI3"
