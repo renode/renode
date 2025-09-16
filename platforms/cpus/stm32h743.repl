@@ -162,10 +162,10 @@ adcM1S2: Analog.STM32F0_ADC @ sysbus 0x40022000
 rng: Miscellaneous.STM32F4_RNG @ sysbus 0x48021800
     -> nvic@80
 
-dma2: DMA.STM32DMA_Deprecated @ sysbus 0x40020400
+dma2: DMA.STM32DMA @ sysbus 0x40020400
     [0-7] -> nvic@[56-60, 68-70]
 
-dma1: DMA.STM32DMA_Deprecated @ sysbus 0x40020000
+dma1: DMA.STM32DMA @ sysbus 0x40020000
     [0-7] -> nvic@[11-17, 47]
 
 dmamux1: Miscellaneous.STM32_DMAMUX @ sysbus 0x40020800
