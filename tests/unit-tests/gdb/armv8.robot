@@ -35,13 +35,13 @@ Cortex-R52 System Control Register Should Show Up In GDB
     Cortex-R52 Should Show Register HSCTLR
 
 Cortex-R52 Debug Register Should Show Up In GDB
-    Cortex-R52 Should Show Register DSPSR
+    Cortex-R52 Should Show Register HDCR
 
 Cortex-R52 Performance Monitor Register Should Show Up In GDB
     Cortex-R52 Should Show Register PMCR
 
 Cortex-R52 Implementation-Defined Register Should Show Up In GDB
-    Cortex-R52 Should Show Register IMP_SLAVEPCTLR
+    Cortex-R52 Should Show Register IMP_CTCMREGIONR
 
 Cortex-R52 64-Bit Register Should Show Up In GDB
-    Cortex-R52 Should Show Register CPUACTLR
+    Cortex-R52 Should Show Register PAR
