@@ -153,6 +153,7 @@
     <Compile Include="Network\ExternalControl\GetMachine.cs" />
     <Compile Include="Network\ExternalControl\ADC.cs" />
     <Compile Include="Network\ExternalControl\GPIOPort.cs" />
+    <Compile Include="Network\ExternalControl\SystemBus.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
