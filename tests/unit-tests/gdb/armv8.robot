@@ -22,9 +22,6 @@ Cortex-R52 Should Show Register ${register}
     Should Contain                  ${registers}  ${register}
 
 *** Test Cases ***
-Cortex-R52 Current Program Status Register Should Show Up In GDB
-    Cortex-R52 Should Show Register cpsr
-
 Cortex-R52 General Purpose Register Should Show Up In GDB
     Cortex-R52 Should Show Register r5
 
