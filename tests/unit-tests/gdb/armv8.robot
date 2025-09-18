@@ -35,13 +35,24 @@ ${register} Should Be Readable
     Should Be Equal As Integers     ${value}  ${expected_value}  Expected register `${register}` to contain `${expected_value}` but it contains `${value}`
 
 ${register} Should Be Writable
-    ${new_value}=                   Set Variable  0xdeadbeef
+    ${current_value}=               Get GDB Register Value Of ${register}  pad=True
+    ${current_hex_chars}=           Set Variable  ${current_value}[2:]
+    ${number_of_hex_chars}=         Get Length  ${current_hex_chars}
+    IF  ${number_of_hex_chars} == 16
+        ${new_value}=                   Set Variable  0xdeadbeef1badb002
+    ELSE
+        ${new_value}=                   Set Variable  0xdeadbeef
+    END
     Set GDB Register Value Of ${register} To ${new_value}
     ${value}=                       Get Value Of ${register}
     Should Be Equal As Integers     ${value}  ${new_value}  Expected register `${register}` to contain `${new_value}` but it contains `${value}`
 
 Get GDB Register Value Of ${register}
-    ${output}=                      Command GDB  print/x $${register}
+    [Arguments]                     ${pad}=False
+    ${format}=                      Set Variable If  ${pad}
+    ...                             z  # hexadecimal, padded to register width
+    ...                             x  # hexadecimal
+    ${output}=                      Command GDB  print/${format} $${register}
     # Output is in the format $1 = 0x3010006
     ${value}=                       Fetch From Right  ${output}  =
     ${stripped}=                    Set Variable  ${value.strip()}
