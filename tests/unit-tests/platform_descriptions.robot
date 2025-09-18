@@ -25,6 +25,7 @@ Get Test Cases
     &{conditional_blacklist}=          Create Dictionary
     ...  ${platforms_path}${/}cpus${/}x86-kvm.repl                   '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
     ...  ${platforms_path}${/}cpus${/}x86_64-kvm.repl                '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
+    ...  ${platforms_path}${/}cpus${/}x86_64-kvm-virtio.repl         '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'
 
     ${system}=                Evaluate    platform.system()    modules=platform
     ${arch}=                  Evaluate    'arm' if platform.machine() in ['aarch64', 'arm64'] else 'x64'    modules=platform

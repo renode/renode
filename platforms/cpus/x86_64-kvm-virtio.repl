@@ -1,0 +1,32 @@
+using "./x86_64-kvm.repl"
+
+virtio_disk: Storage.VirtIOBlockDevice @ sysbus 0x40001000
+    IRQ -> cpu@5
+
+cmos: Python.PythonPeripheral @ sysbus 0xE0000070
+    size: 0x2
+    initable: true
+    script: '''
+if request.IsInit:
+    RAM_SIZE = 0x20000000
+    HIGH_MEM_SIZE = (RAM_SIZE - (16 << 20)) # Size of memory above 16MB
+    cmos_index = 0
+    cmos_fields = {
+        0x34: (HIGH_MEM_SIZE >> 16) & 0xff,
+        0x35: (HIGH_MEM_SIZE >> 24) & 0xff,
+    }
+
+elif request.IsRead:
+    if request.Offset == 1: # Port 71
+        request.Value = cmos_fields.get(cmos_index, 0)
+        
+elif request.IsWrite:
+    if request.Offset == 0: # Port 70
+        cmos_index = request.Value & 0x7f
+
+self.NoisyLog("%s on CMOS at port 0x%x, value 0x%x" % (str(request.Type), request.Offset + 0x70, request.Value))
+'''
+
+sysbus:
+    init:
+        Tag <0xE0000064 1> "PS2" 0xff

@@ -256,6 +256,7 @@ def try_get_category(platform):
         "vegaboard_ri5cy": "OTHER RISC-V",
         "x86-kvm": "X86",
         "x86_64-kvm": "X86-64",
+        "x86_64-kvm-virtio": "X86-64",
     }
 
     if platform.get_name() not in mapping:

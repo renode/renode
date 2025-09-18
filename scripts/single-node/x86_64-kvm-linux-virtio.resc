@@ -1,0 +1,24 @@
+:name: X86_64 KVM Linux via VirtIO
+:description: This script boots linux from a VirtIO block device using U-Boot
+
+$name?="x86_64-kvm"
+mach create $name
+
+$bin?=@https://dl.antmicro.com/projects/renode/x86-u-boot.rom-s_1048576-924bbde179a245a54ebb4defc11c6be99c8402d5
+$rootfs?=@https://dl.antmicro.com/projects/renode/disk-x86_64--linux.img-s_33554944-8d37db421b08a50a7927fe8421ea4191738a822b
+
+machine LoadPlatformDescription @platforms/cpus/x86_64-kvm-virtio.repl
+
+showAnalyzer sysbus.uart
+
+macro reset
+"""
+	sysbus LoadBinary $bin 0xfff00000 sysbus.cpu
+
+	virtio_disk LoadImage $rootfs true
+
+	# CPU starts in 16 bit real-mode with CS set to 0xffff0000.
+	# U-Boot reset vector is located at 0xfffffff0 == (0xffff0000 + 0xfff0)
+	sysbus.cpu PC 0xfff0
+"""
+runMacro $reset
