@@ -219,6 +219,8 @@
 - tests/unit-tests/resd-serialization.robot
 - tests/unit-tests/tlib/arm/thumb2-data-processing-instr.robot
 - tests/peripherals/VirtioMMIOEntropy.robot
+- tests/unit-tests/riscv-stack-access-hook.robot
+
 # Do not use port 3333 in unit tests
 
 - port_3334:
