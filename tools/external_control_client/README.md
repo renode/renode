@@ -117,3 +117,21 @@ The usage is:
 Usage:
   ./gpio <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]
 ```
+
+### `sysbus` example
+
+The example application using Renode API can be found in `examples/sysbus`.
+
+It can be built in the `build` directory from the Renode repository's root directory with:
+```bash
+renode$ mkdir build && cmake -DAPP_NAME=sysbus -DAPP_SOURCES_DIR=tools/external_control_client/examples/sysbus -S tools/external_control_client -B build && cmake --build build
+```
+
+After starting the server in Renode, the `sysbus` application can be used to write a value to Renode's system bus at a specified address and read it back using various access widths.
+The same operation is then repeated using a peripheral context, which enables the bus access to see the bus as the specified peripheral does.
+
+The usage is:
+```
+Usage:
+  ./sysbus <PORT> <MACHINE_NAME> <PERIPHERAL_NAME> <ADDRESS>
+```
