@@ -38,6 +38,7 @@ typedef struct renode renode_t;
 typedef struct renode_machine renode_machine_t;
 typedef struct renode_adc renode_adc_t;
 typedef struct renode_gpio renode_gpio_t;
+typedef struct renode_bus_context renode_bus_context_t;
 
 renode_error_t *renode_connect(const char *port, renode_t **renode);
 renode_error_t *renode_disconnect(renode_t **renode);
@@ -76,3 +77,18 @@ typedef struct {
 } renode_gpio_event_data_t;
 
 renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, int32_t id, void *user_data, void (*callback)(void *, renode_gpio_event_data_t *));
+
+/* System bus */
+
+typedef enum {
+    AW_MULTI_BYTE  = 0,
+    AW_BYTE        = 1,
+    AW_WORD        = 2,
+    AW_DOUBLE_WORD = 4,
+    AW_QUAD_WORD   = 8,
+} renode_access_width_t;
+
+renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **ctx);
+renode_error_t *renode_get_sysbus(renode_machine_t *machine, renode_bus_context_t **sysbus);
+renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, void *buffer, uint32_t count);
+renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count);

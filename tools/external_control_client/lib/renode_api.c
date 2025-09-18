@@ -39,6 +39,11 @@ struct renode_gpio {
     int32_t id;
 };
 
+struct renode_bus_context {
+    renode_machine_t *machine;
+    int32_t id;
+};
+
 #define SERVER_START_COMMAND "emulation CreateExternalControlServer \"<NAME>\""
 #define SOCKET_INVALID -1
 
@@ -144,6 +149,7 @@ typedef enum {
     GET_MACHINE,
     ADC,
     GPIO,
+    SYSTEM_BUS,
     EVENT = -1,
 } api_command_t;
 
@@ -154,6 +160,7 @@ static uint8_t command_versions[][2] = {
     { GET_MACHINE, 0x0 },
     { ADC, 0x0 },
     { GPIO, 0x1 },
+    { SYSTEM_BUS, 0x0 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -830,5 +837,107 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
 
     assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **peripheral)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, SYSTEM_BUS, name, &id));
+
+    *peripheral = xmalloc(sizeof(renode_bus_context_t));
+    (*peripheral)->machine = machine;
+    (*peripheral)->id = id;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_get_sysbus(renode_machine_t *machine, renode_bus_context_t **sysbus)
+{
+    return renode_get_bus_context(machine, "sysbus", sysbus);
+}
+
+typedef enum {
+    SYSBUS_READ = 0,
+    SYSBUS_WRITE = 1,
+} sysbus_operation_t;
+
+typedef struct __attribute__((packed)) {
+    int32_t id;
+    uint8_t operation;
+    uint8_t access_width;
+    uint64_t address;
+    uint32_t data_count;
+    uint8_t data[];
+} sysbus_command_t;
+
+static renode_error_t *sysbus_data_count_to_byte_count(renode_access_width_t width, size_t count, uint64_t *byte_count)
+{
+    if (width == AW_MULTI_BYTE) {
+        *byte_count = count;
+        return NO_ERROR;
+    }
+
+    uint32_t result;
+    switch (width) {
+    case AW_BYTE:
+    case AW_WORD:
+    case AW_DOUBLE_WORD:
+    case AW_QUAD_WORD:
+        result = (uint32_t)width * count;
+        // Handle overflow
+        if (result / (uint32_t)width != count) {
+            return create_fatal_error("Payload size exceeds %u bytes", UINT32_MAX);
+        }
+        *byte_count = result;
+        return NO_ERROR;
+    default:
+        return create_fatal_error("Invalid bus access width: %d", width);
+    }
+}
+
+renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, void *buffer, uint32_t count)
+{
+    size_t data_bytes;
+    return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
+    size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
+    sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
+    *command = (sysbus_command_t){
+        .id = ctx->id,
+        .operation = SYSBUS_READ,
+        .access_width = width,
+        .address = address,
+        .data_count = count,
+    };
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(ctx->machine->renode, SYSTEM_BUS, command, payload_size, sizeof(sysbus_command_t), &response_size));
+    assert_msg(response_size == data_bytes, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+    // `renode_execute_command` returns the resulting data into the same buffer that contained the command
+    // to send, effectively overriding the command bytes. This causes the returned data to be to be present
+    // at the start of the command structure not at `sysbus_command_t::data`
+    memcpy(buffer, command, data_bytes);
+    return NO_ERROR;
+}
+
+renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count)
+{
+    size_t data_bytes;
+    return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
+    size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
+    sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
+    *command = (sysbus_command_t){
+        .id = ctx->id,
+        .operation = SYSBUS_WRITE,
+        .access_width = width,
+        .address = address,
+        .data_count = count,
+    };
+    memcpy(command->data, buffer, data_bytes);
+
+    uint32_t response_size;
+    return_error_if_fails(renode_execute_command(ctx->machine->renode, SYSTEM_BUS, command, payload_size, payload_size, &response_size));
+    assert_msg(response_size == 0, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
     return NO_ERROR;
 }
