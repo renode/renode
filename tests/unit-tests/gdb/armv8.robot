@@ -102,3 +102,9 @@ Cortex-R52 Implementation-Defined Register Should Show Up In GDB
 
 Cortex-R52 64-Bit Register Should Show Up In GDB
     Cortex-R52 Should Have Read/Writable Register PAR
+
+Cortex-R52 System Timer Register Should Show Up In GDB
+    Cortex-R52 Should Have Readonly Register CNTVCT
+
+Cortex-R52 GIC Register Should Show Up In GDB
+    Cortex-R52 Should Have Readable Register ICC_BPR0
