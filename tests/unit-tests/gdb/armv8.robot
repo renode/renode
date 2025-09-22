@@ -25,6 +25,15 @@ Cortex-R52 Should Have Read/Writable Register ${register}
     Cortex-R52 Should Have Readable Register ${register}
     ${register} Should Be Writable
 
+Cortex-R52 Should Have Readonly Register ${register}
+    Cortex-R52 Should Have Readable Register ${register}
+
+    # Try to write to the register, and verify that its contents remain unchanged.
+    ${old_value}=                   Get Value Of ${register}
+    Set GDB Register Value Of ${register} To 0xdeadbeef
+    ${current_value}=               Get Value Of ${register}
+    Should Be Equal As Integers     ${old_value}  ${current_value}  Expected register value to remain unchanged (old value was `${old_value}`) but it was changed to `${current_value}`
+
 Should Have Register ${register}
     ${registers}=                   Command GDB  info all-registers
     Should Contain                  ${registers}  ${register}  Register `${register}` did not show up in `info all-registers`  ignore_case=True
@@ -77,7 +86,7 @@ Cortex-R52 General Purpose Register Should Show Up In GDB
     Cortex-R52 Should Have Read/Writable Register r5
 
 Cortex-R52 ID Register Should Show Up In GDB
-    Cortex-R52 Should Have Readable Register ID_DFR0
+    Cortex-R52 Should Have Readonly Register ID_DFR0
 
 Cortex-R52 System Control Register Should Show Up In GDB
     Cortex-R52 Should Have Read/Writable Register HSCTLR
