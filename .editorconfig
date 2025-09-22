@@ -54,6 +54,9 @@ dotnet_sort_system_directives_first = true
 # Separate using directives groups with new lines
 dotnet_separate_import_directive_groups = true
 
+# Check for unassigned fields
+dotnet_diagnostic.CS0649.severity = warning
+
 # Modifiers order
 dotnet_diagnostic.IDE0036.severity = warning
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:warning
