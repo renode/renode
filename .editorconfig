@@ -29,10 +29,14 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
 
+# "var" instead of type
+dotnet_diagnostic.IDE0007.severity = suggestion
+# type instead of "var"
+dotnet_diagnostic.IDE0008.severity = none
 # Prefer "var" everywhere
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_for_built_in_types = true
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = true
 
 # Require readonly modifier
 dotnet_diagnostic.IDE0044.severity = warning
@@ -50,10 +54,14 @@ dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
 
 # Modifiers order
+dotnet_diagnostic.IDE0036.severity = warning
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:warning
 
 # Class members must have explicit accessibility modifiers
 dotnet_style_require_accessibility_modifiers = always:warning
+
+# Enable checking naming rules
+dotnet_diagnostic.IDE1006.severity = warning
 
 # camel_case_style - Define the camelCase style
 dotnet_naming_style.camel_case_style.capitalization = camel_case
