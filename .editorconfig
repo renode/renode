@@ -88,7 +88,7 @@ dotnet_naming_rule.constant_fields_must_be_pascal_case_rule.style      = pascal_
 dotnet_naming_rule.constant_fields_must_be_pascal_case_rule.severity   = warning
 
 # All non-public fields must be camelCase
-dotnet_naming_symbols.fields_group.applicable_accessibilities = public, internal, protected_internal, protected, private_protected, private
+dotnet_naming_symbols.fields_group.applicable_accessibilities = internal, protected_internal, protected, private_protected, private
 dotnet_naming_symbols.fields_group.applicable_kinds           = field
 dotnet_naming_rule.fields_must_be_camel_case_rule.symbols     = fields_group
 dotnet_naming_rule.fields_must_be_camel_case_rule.style       = camel_case_style
