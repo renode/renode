@@ -215,12 +215,8 @@ rtc: Timers.ZynqMP_RTC @ sysbus 0xffa60000
     AlarmIRQ -> apuGic@27 | rpuGic@27
 
 platformManagementUnit: Miscellaneous.ZynqMP_PlatformManagementUnit @ ipi
-    apu0: apu0
-    apu1: apu1
-    apu2: apu2
-    apu3: apu3
-    rpu0: rpu0
-    rpu1: rpu1
+    apus: [apu0, apu1, apu2, apu3]
+    rpus: [rpu0, rpu1]
 
 pmu0: Miscellaneous.ArmPerformanceMonitoringUnit @ rpu0
     -> rpuGic@5
