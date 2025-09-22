@@ -1718,24 +1718,26 @@ namespace Antmicro.Renode.PlatformDescription
             }
             createdDisposables.Clear();
 
-            string source, fileName;
-            if(!GetElementSourceAndPath(failingObject, out fileName, out source))
-            {
-                HandleInternalError();
-            }
+            // Ignoring failure as the location is optional here. It won't be present when calling
+            // Monitor.Parse directly (as in unit tests for example) and we don't want to lose the
+            // actual error by overwriting it with an error that no location was found.
+            GetElementSourceAndPath(failingObject, out var fileName, out var source);
 
             var lineNumber = failingObject.StartPosition.Line;
             var columnNumber = failingObject.StartPosition.Column;
             var messageBuilder = new StringBuilder();
             messageBuilder.AppendFormat("Error E{0:D2}: ", (int)error);
             messageBuilder.AppendLine(message);
-            messageBuilder.AppendFormat("At {2}{0}:{1}:", lineNumber, columnNumber, fileName == "" ? "" : fileName + ':');
+            messageBuilder.AppendFormat("At {2}{0}:{1}:", lineNumber, columnNumber, string.IsNullOrEmpty(fileName) ? "" : fileName + ':');
             messageBuilder.AppendLine();
-            var sourceInLines = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
-            var problematicLine = sourceInLines[lineNumber - 1];
-            messageBuilder.AppendLine(problematicLine);
-            messageBuilder.Append(' ', columnNumber - 1);
-            messageBuilder.Append('^', longMark ? Math.Min(problematicLine.Length - (columnNumber - 1), failingObject.Length) : 1);
+            if(source != null)
+            {
+                var sourceInLines = source.Replace("\r", string.Empty).Split(new[] { '\n' }, StringSplitOptions.None);
+                var problematicLine = sourceInLines[lineNumber - 1];
+                messageBuilder.AppendLine(problematicLine);
+                messageBuilder.Append(' ', columnNumber - 1);
+                messageBuilder.Append('^', longMark ? Math.Min(problematicLine.Length - (columnNumber - 1), failingObject.Length) : 1);
+            }
             throw new ParsingException(error, messageBuilder.ToString());
         }
 
