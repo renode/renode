@@ -88,6 +88,7 @@
     <Compile Include="PlatformDescription\Syntax\ISimplestValue.cs" />
     <Compile Include="PlatformDescription\Syntax\IVisitable.cs" />
     <Compile Include="PlatformDescription\Syntax\IWithPosition.cs" />
+    <Compile Include="PlatformDescription\Syntax\ListValue.cs" />
     <Compile Include="PlatformDescription\Syntax\NumericalValue.cs" />
     <Compile Include="PlatformDescription\Syntax\ObjectValue.cs" />
     <Compile Include="PlatformDescription\Syntax\RangeValue.cs" />

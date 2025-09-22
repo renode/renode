@@ -186,10 +186,25 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<BoolValue> BoolValue =
             TrueKeyword.Or(FalseKeyword).Select(x => new BoolValue(x)).Named("bool");
 
+        public static readonly Parser<ListValue> EmptyList =
+            (from opening in OpeningSquareBracket
+             from closing in ClosingSquareBracket
+             select new ListValue(Enumerable.Empty<Value>()));
+
+        public static readonly Parser<ListValue> NonEmptyList =
+            (from opening in OpeningSquareBracket
+             from values in Value.DelimitedBy(Comma)
+             from trailing in Comma.Optional()
+             from closing in ClosingSquareBracket
+             select new ListValue(values));
+
+        public static readonly Parser<ListValue> ListValue = NonEmptyList.Or(EmptyList);
+
         public static readonly Parser<Value> Value = (SingleLineQuotedString.Or(MultilineQuotedString)).Select(x => new StringValue(x))
                                                                  .XOr<Value>(Range)
                                                                  .XOr(Number.Select(x => new NumericalValue(x)))
                                                                  .XOr(ObjectValue)
+                                                                 .XOr(ListValue)
                                                                  .Or(Enum)
                                                                  .Or(BoolValue)
                                                                  .Or(ReferenceValue)
