@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -513,6 +513,103 @@ device: Something @ somewhere
             Assert.AreEqual(2, values.Length);
             Assert.AreEqual(true, values[0].Value);
             Assert.AreEqual(false, values[1].Value);
+        }
+
+        [Test]
+        public void ShouldParseEmptyList()
+        {
+            var source = @"
+device: Something
+    list: []";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var list = (ListValue)attribute.Value;
+
+            Assert.IsEmpty(list.Items);
+        }
+
+        [Test]
+        public void ShouldParseListOfNumbersWithTrailingComma()
+        {
+            var source = @"
+device: Something
+    list: [1, 0x10, 3,]";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var list = (ListValue)attribute.Value;
+
+            var values = list.Items.OfType<NumericalValue>().Select(x => x.Value).ToArray();
+            CollectionAssert.AreEqual(new[] { "1", "0x10", "3" }, values);
+        }
+
+        [Test]
+        public void ShouldParseNestedLists()
+        {
+            var source = @"
+device: Something
+    eye: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var outerList = (ListValue)attribute.Value;
+
+            Assert.AreEqual(3, outerList.Items.Count());
+            outerList.Items.ForEach(Assert.IsInstanceOf<ListValue>);
+
+            var firstInner = ((ListValue)outerList.Items.ElementAt(0)).Items.OfType<NumericalValue>().Select(x => x.Value).ToArray();
+            CollectionAssert.AreEqual(new[] { "1", "0", "0" }, firstInner);
+        }
+
+        [Test]
+        public void ShouldParseListWithMixedSimpleValues()
+        {
+            var source = @"
+device: Something
+    list: [1, ""hello"", true, other, <0, +10>]";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var list = (ListValue)attribute.Value;
+
+            Assert.AreEqual(5, list.Items.Count());
+            Assert.AreEqual("1", ((NumericalValue)list.Items.ElementAt(0)).Value);
+            Assert.AreEqual("hello", ((StringValue)list.Items.ElementAt(1)).Value);
+            Assert.AreEqual(true, ((BoolValue)list.Items.ElementAt(2)).Value);
+            Assert.AreEqual("other", ((ReferenceValue)list.Items.ElementAt(3)).Value);
+            Assert.AreEqual(0.By(10), ((RangeValue)list.Items.ElementAt(4)).ToRange());
+        }
+
+        [Test]
+        public void ShouldParseListWithInlineObject()
+        {
+            var source = @"
+display: Display
+    resolutions: [new Point { x: 640; y: 480 }, new Point { x: 5120; y: 2160 }]
+";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+            Console.WriteLine(result);
+
+            var listValue = ((ListValue)((ConstructorOrPropertyAttribute)result.Value.Entries.Single().Attributes.Single()).Value);
+            var items = listValue.Items.Cast<ObjectValue>().ToList();
+            Assert.AreEqual(2, items.Count);
+            var attributes = items.Select(p => p.Attributes.Cast<ConstructorOrPropertyAttribute>().ToDictionary(x => x.Name, x => x.Value)).ToList();
+            Assert.AreEqual(2, attributes.Count);
+            Assert.AreEqual("640", ((NumericalValue)attributes[0]["x"]).Value);
+            Assert.AreEqual("480", ((NumericalValue)attributes[0]["y"]).Value);
+            Assert.AreEqual("5120", ((NumericalValue)attributes[1]["x"]).Value);
+            Assert.AreEqual("2160", ((NumericalValue)attributes[1]["y"]).Value);
         }
 
         [Test]
