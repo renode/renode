@@ -28,6 +28,7 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
+insert_final_newline = false
 
 # "var" instead of type
 dotnet_diagnostic.IDE0007.severity = suggestion
@@ -138,3 +139,5 @@ dotnet_diagnostic.SA1508.severity = warning
 dotnet_diagnostic.SA1509.severity = warning
 # Seperate class members with blank line
 dotnet_diagnostic.SA1516.severity = warning
+# File must not start with blank line
+dotnet_diagnostic.SA1517.severity = warning
