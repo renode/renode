@@ -2,7 +2,7 @@
 Library                             ${CURDIR}/gdb_library.py
 
 *** Variables ***
-${GDB_REMOTE_PORT}                  3334
+${GDB_REMOTE_PORT}                  3338
 
 *** Keywords ***
 Check And Run Gdb
