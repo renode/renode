@@ -108,3 +108,12 @@ Should Allow Passing An Array To A Property Setter
 
     Run Keyword And Expect Error  *Could not convert [[]NumericToken: Value*1*[]] to System.Byte[[][]]*
     ...                       Execute Command  qspi.pseFlash SFDPSignature 1
+
+Should Allow Select On Byte Array
+    Execute Command           mach create
+    Execute Command           using sysbus
+    Execute Command           i @platforms/boards/beaglev-fire.repl
+
+    Execute Command           qspi.pseFlash SFDPSignature [1, 2, 3]
+    ${sig}=                   Execute Command  qspi.pseFlash SFDPSignature Select ToString "x4"
+    Should Be Equal As Strings  ${sig}  [ 0001, 0002, 0003, ]  strip_spaces=True  collapse_spaces=True
