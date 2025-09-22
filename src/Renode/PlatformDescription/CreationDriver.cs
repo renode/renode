@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1398,6 +1399,38 @@ namespace Antmicro.Renode.PlatformDescription
             return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, expectedType));
         }
 
+        private ConversionResult TryConvertListValue(Value value, Type expectedType, ref object result)
+        {
+            if(!(value is ListValue listValue))
+            {
+                return ConversionResult.ConversionNotApplied;
+            }
+            var elementType = expectedType.GetEnumerableElementType();
+            if(elementType == null || !(typeof(IList).IsAssignableFrom(expectedType) || expectedType.IsArray))
+            {
+                var enumerableType = typeof(IEnumerable<>).MakeGenericType(elementType);
+                return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, enumerableType));
+            }
+
+            var items = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType));
+            foreach(var item in listValue.Items)
+            {
+                items.Add(ConvertFromValue(elementType, item));
+            }
+
+            if(expectedType.IsArray)
+            {
+                var array = Array.CreateInstance(elementType, items.Count);
+                items.CopyTo(array, 0);
+                result = array;
+            }
+            else
+            {
+                result = items;
+            }
+            return ConversionResult.Success;
+        }
+
         private ConversionResult TryConvertSimpleValue(Type expectedType, Value value, out object result, bool silent = false)
         {
             result = null;
@@ -1416,7 +1449,8 @@ namespace Antmicro.Renode.PlatformDescription
             {
                 TryConvertSimplestValue<StringValue>(value, expectedType, typeof(string), ref result),
                 TryConvertSimplestValue<BoolValue>(value, expectedType, typeof(bool), ref result),
-                TryConvertRangeValue(value, expectedType, ref result)
+                TryConvertRangeValue(value, expectedType, ref result),
+                TryConvertListValue(value, expectedType, ref result),
             };
 
             var meaningfulResult = results.FirstOrDefault(x => x.ResultType != ConversionResultType.ConversionNotApplied);
