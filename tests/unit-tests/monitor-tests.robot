@@ -117,3 +117,11 @@ Should Allow Select On Byte Array
     Execute Command           qspi.pseFlash SFDPSignature [1, 2, 3]
     ${sig}=                   Execute Command  qspi.pseFlash SFDPSignature Select ToString "x4"
     Should Be Equal As Strings  ${sig}  [ 0001, 0002, 0003, ]  strip_spaces=True  collapse_spaces=True
+
+Should Not Crash On Invalid Scalar Type
+    Execute Command           mach create
+    Execute Command           using sysbus
+    Execute Command           i @platforms/boards/beaglev-fire.repl
+
+    Run Keyword And Expect Error  *Cannot convert type 'string' to 'Antmicro.Renode.Peripherals.CPU.RegisterValue'*
+    ...                       Execute Command  e51 STVEC a
