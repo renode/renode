@@ -70,6 +70,14 @@ namespace Antmicro.Renode.UI
             w = null;
         }
 
+        public void Clear()
+        {
+            ApplicationExtensions.InvokeInUIThreadAndWait(() =>
+            {
+                terminalWidget.Clear();
+            });
+        }
+
         public void Dispose()
         {
             OnClose = null;

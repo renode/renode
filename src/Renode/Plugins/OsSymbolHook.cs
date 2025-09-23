@@ -95,7 +95,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
             return false;
         }
 
-        public static void Enable(ICPU cpu, string hookSymbol, Action<ICpuSupportingGdb, ulong> hook)
+        public static void Enable(ICPU cpu, string hookSymbol, CpuAddressHook hook)
         {
             IMachine machine = cpu.GetMachine();
             if(!(cpu is TranslationCPU) || !(machine.SystemBus is SystemBus))
@@ -127,7 +127,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
             Enable(cpu, hookSymbol, engine.Hook);
         }
 
-        private static void ConfigureHook(ICPUWithHooks cpu, IMachine machine, string hookName, Action<ICpuSupportingGdb, ulong> hook, bool enableHook)
+        private static void ConfigureHook(ICPUWithHooks cpu, IMachine machine, string hookName, CpuAddressHook hook, bool enableHook)
         {
             bool foundAddresses = ((SystemBus)machine.SystemBus).TryGetAllSymbolAddresses(hookName, out var addresses);
             if(!foundAddresses)
