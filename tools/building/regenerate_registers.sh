@@ -14,4 +14,6 @@ for file in ${FILES[@]}; do
     # dotnet tool install -g dotnet-t4
     # https://github.com/mono/t4/pkgs/nuget/dotnet-t4
     t4 -p:BASE_PATH=$BASE_PATH -o $CORES_PATH/${file}Registers.{cs,tt}
+    # Remove trailing invisible newline
+    truncate -s -1 $CORES_PATH/${file}Registers.cs
 done
