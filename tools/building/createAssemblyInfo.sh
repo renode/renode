@@ -10,6 +10,7 @@ PARAMS=()
 if ! grep "$CURRENT_VERSION" $FILE_NAME.cs > /dev/null 2>/dev/null \
     || ! grep "$CURRENT_INFORMATIONAL_VERSION" $FILE_NAME.cs > /dev/null 2>/dev/null
 then
-    sed -e "s;%VERSION%;$CURRENT_VERSION;" -e "s;%INFORMATIONAL_VERSION%;$CURRENT_INFORMATIONAL_VERSION-`date +%Y%m%d%H%M`;" $FILE_NAME.template > $FILE_NAME.cs
+    content=$(sed -e "s;%VERSION%;$CURRENT_VERSION;" -e "s;%INFORMATIONAL_VERSION%;$CURRENT_INFORMATIONAL_VERSION-`date +%Y%m%d%H%M`;" $FILE_NAME.template)
+    echo -n "$content" > $FILE_NAME.cs
 fi
 
