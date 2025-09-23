@@ -152,6 +152,10 @@ namespace Antmicro.Renode.UI
         public void Clear()
         {
             terminal.Clear();
+
+            // (from ctor) this empty dummy row is required as this is where first
+            // characters will be displayed
+            terminal.AppendRow(new MonospaceTextRow(""));
         }
 
         public TerminalIOSource IOSource
