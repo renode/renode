@@ -11,8 +11,8 @@ $bin?=@https://dl.antmicro.com/projects/renode/zephyr-subsys_shell_shell_module-
 
 macro reset
 """
-    cluster0 IsHalted true
-    cluster1 IsHalted true
+    cluster0 ForEach IsHalted true
+    cluster1 ForEach IsHalted true
     rpu0 IsHalted false
 
     sysbus LoadELF $bin cpu=rpu0

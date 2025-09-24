@@ -24,10 +24,10 @@ $rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-
 macro reset
 """
     apu0 PC 0x1000000
-    cluster0 IsHalted true
+    cluster0 ForEach IsHalted true
     apu0 IsHalted false
 
-    cluster1 IsHalted true
+    cluster1 ForEach IsHalted true
 
     # We register ttc0 to rpu0 because it is used by philosophers sample
     # running on rpu0.
