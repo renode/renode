@@ -485,6 +485,19 @@ mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollecti
         }
 
         [Test]
+        public void ShouldHandleEmptyArrayValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntArray: empty";
+
+            ProcessSource(source);
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(int[]), mockPeripheral.MockIntArray);
+        }
+
+        [Test]
         public void ShouldHandleEmptyBoolValue()
         {
             var source = @"
@@ -610,6 +623,20 @@ mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollecti
         }
 
         [Test]
+        public void ShouldHandleArrayOfIntegers()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntArray: [1, 2, 34]";
+
+            ProcessSource(source);
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+
+            CollectionAssert.AreEqual(new[] { 1, 2, 34 }, mockPeripheral.MockIntArray);
+        }
+
+        [Test]
         public void ShouldHandleListOfStrings()
         {
             var source = @"
@@ -629,6 +656,17 @@ mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollecti
             var source = @"
 mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
     mockIntList: [1, ""b"", 3]";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
+        }
+
+        [Test]
+        public void ShouldFailOnTypeMismatchInArray()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntArray: [1, ""b"", 3]";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.TypeMismatch, exception.Error);
