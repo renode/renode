@@ -11,6 +11,7 @@ ${BLINKY}                           ${PROJECT_URL}/zephyr--nucleo-h753zi-blinky.
 ${BUTTON}                           ${PROJECT_URL}/zephyr--nucleo_h753zi_button_sample.elf-s_582696-3d5e6775a24c75e8fff6b812d5bc850b361e3d93
 ${CRYPTO_GCM}                       ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM.elf-s_2136368-45a90683e4f954667a464fc8fa9ce57d0b74ac09
 ${CRYPTO_GCM_IT}                    ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM_IT.elf-s_2137876-ee038aa93bf68cb91af9894e0be9584eec3057e5
+${CRYPTO_AES_DMA}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESModes_DMA.elf-s_2152168-edf19388077bb230a242d2dfc7392ea881f29051
 ${QSPI_RW}                          ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ReadWrite_IT.elf-s_2146460-5c6870c2698fe33a9ef78ce791d9e83439328cc4
 ${QSPI_MemMapped}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_MemoryMapped.elf-s_2152312-faec8bb984c61aabb52ae9eec1598999ea906a1c
 ${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ExecuteInPlace.elf-s_2233412-67befe44572c483b242a95ce8e714f75f4e7dc69
@@ -268,3 +269,15 @@ Should Transmit PTP Frames
         # Emulation time and the packet timestamp should be within 100ms of one another (100ms is to account for board initialization)
         Should Be True                  abs(${packet_milliseconds} - ${follow_up.Timestamp}) < 100
     END
+
+Should Encrypt And Decrypt Using DMA
+    Create Machine                      ${CRYPTO_AES_DMA}  crypt
+    Execute Command                     machine LoadPlatformDescriptionFromString ${EVAL_STUB}
+
+    ${led3_tester}=                     Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
+    ${led1_tester}=                     Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
+
+    # LED3 would be set if at any point of the test a failure occurred
+    # LED1 is set at the very end of the test, when the entire procedure is complete with no failures
+    Assert LED State                    false    testerId=${led3_tester}
+    Assert LED State                    true     testerId=${led1_tester}
