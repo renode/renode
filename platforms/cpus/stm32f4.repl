@@ -93,6 +93,26 @@ gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x40021400, +0x400>
     numberOfAFs: 16
     [0-15] -> exti@[0-15]
 
+gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x40021800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x40021c00, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortI: GPIOPort.STM32_GPIOPort @ sysbus <0x40022000, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortJ: GPIOPort.STM32_GPIOPort @ sysbus <0x40022400, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x40022800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
 ethernet: Network.SynopsysEthernetMAC @ sysbus 0x40028000
     -> nvic@61
 
