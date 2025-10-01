@@ -453,7 +453,7 @@ namespace Antmicro.Renode.Network
             }
 
 #pragma warning disable 649
-            [PacketField, Width(2)]
+            [PacketField, Width(bytes: 2)]
             public byte[] MagicField;
             [PacketField, Width(8)]
             public Command Command;
