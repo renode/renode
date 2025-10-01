@@ -2,3 +2,4 @@ using "./stm32h743.repl"
 
 crypto: Miscellaneous.Crypto.STM32H7_CRYPTO @ sysbus 0x48021000
     -> nvic@79
+    OutDMA -> dmamux1@77
