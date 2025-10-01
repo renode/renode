@@ -129,7 +129,8 @@ btcm1: Memory.MappedMemory @ {
     size: 0x10000
 
 ddrLowApu: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: cluster0 }
+        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: cluster0 };
+        sysbus new Bus.BusPointRegistration { address: 0x0; condition: "initiator == gem0 || initiator == gem1 || initiator == gem2 || initiator == gem3" }
     }
     size: 0x30000
 
@@ -143,7 +144,8 @@ ocm: Memory.MappedMemory @ sysbus 0xfffc0000
     size: 0x40000
 
 ddrHigh: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x800000000; cluster: cluster0 }
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; cluster: cluster0 };
+        sysbus new Bus.BusPointRegistration { address: 0x800000000; condition: "initiator == gem0 || initiator == gem1 || initiator == gem2 || initiator == gem3" }
     }
     size: 0x80000000
 
