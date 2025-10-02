@@ -5,31 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch - Debug",
-            "preLaunchTask": "Build - Debug",
-            "type": "mono",
-            "request": "launch",
-            "program": "${config:workspacePointer}/output/bin/Debug/Renode.exe",
-            "cwd": "${config:workspacePointer}",
-        },
-        {
-            "name": "Launch - Release",
-            "preLaunchTask": "Build - Release",
-            "type": "mono",
-            "request": "launch",
-            "program": "${config:workspacePointer}/output/bin/Release/Renode.exe",
-            "cwd": "${config:workspacePointer}"
-        },
-        {
-            "name": "Attach",
-            "internalConsoleOptions": "openOnSessionStart",
-            "type": "mono",
-            "request": "attach",
-            "address": "localhost",
-            "port": 55555
-        },
-        {
-            "name": ".NET Launch (console)",
+            "name": "Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "program": "${config:workspacePointer}/output/bin/Debug/Renode.dll",
@@ -39,17 +15,41 @@
             "stopAtEntry": false
         },
         {
-            "name": ".NET Attach",
+            "name": "Attach",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
         },
         {
+            "name": "Mono Launch - Debug",
+            "preLaunchTask": "Mono Build - Debug",
+            "type": "mono",
+            "request": "launch",
+            "program": "${config:workspacePointer}/output/bin/Debug/Renode.exe",
+            "cwd": "${config:workspacePointer}",
+        },
+        {
+            "name": "Mono Launch - Release",
+            "preLaunchTask": "Mono Build - Release",
+            "type": "mono",
+            "request": "launch",
+            "program": "${config:workspacePointer}/output/bin/Release/Renode.exe",
+            "cwd": "${config:workspacePointer}"
+        },
+        {
+            "name": "Mono Attach",
+            "internalConsoleOptions": "openOnSessionStart",
+            "type": "mono",
+            "request": "attach",
+            "address": "localhost",
+            "port": 55555
+        },
+        {
             "name": "(gdb) Tlib Attach",
             "type": "cppdbg",
             "request": "attach",
-            // When attaching to .NET process (as opposed to Mono), change Renode.exe to Renode.dll
-            "program": "${config:workspacePointer}/output/bin/Debug/Renode.exe",
+            // When attaching to Mono process (as opposed to .NET), change Renode.dll to Renode.exe
+            "program": "${config:workspacePointer}/output/bin/Debug/Renode.dll",
             "processId": "${command:pickProcess}",
             "MIMode": "gdb",
             "setupCommands": [
@@ -62,7 +62,10 @@
                     "text": "set breakpoint pending on"
                 },
                 {
-                    "text": "handle SIGXCPU SIG33 SIG34 SIG35 SIG36 SIG37 SIGPWR nostop noprint"
+                    // When attaching to Mono process, add these signals:
+                    // (https://www.mono-project.com/docs/debug+profile/debug/)
+                    // SIGXCPU SIG33 SIG35 SIG36 SIG37 SIGPWR
+                    "text": "handle SIG34 nostop noprint"
                 },
                 {
                     "text": "set architecture i386:x86-64"
