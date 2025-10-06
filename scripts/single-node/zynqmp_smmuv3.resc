@@ -1,0 +1,48 @@
+:name: Zynqmp
+:description: This script runs Linux on Zynq UltraScale+ MPSoC. The device tree is modified to feature an SMMUv3, and gem3 is put behind it.
+
+using sysbus.cluster0
+using sysbus.cluster1
+
+$name?="ZynqUS+"
+mach create $name
+emulation SetGlobalSerialExecution true
+
+machine LoadPlatformDescriptionFromString """
+using "platforms/boards/zynqmp-zcu102-revB.repl"
+
+smmu: MemoryControllers.ARM_SMMUv3 @ sysbus 0xfd800000
+    context: apu0
+
+gem3: @ { sysbus 0xff0e0000; smmu 172 }
+"""
+showAnalyzer uart0
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp--zcu102-revB-smmuv3.dtb-s_40047-89923d32139bf64ef9e696625784d09fa4de50b9
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
+$linux?=     @https://dl.antmicro.com/projects/renode/zynqmp--linux-Image-openamp-s_23429632-e9ff8dd5c5963153dd87791cc250dea3c039cbbc
+$linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-s_62914560-3d4dd1f233b7be349e7ec48d64d6081cb5350d77
+
+macro reset
+"""
+    # Only start the primary core - secondaries are handled by firmware during wakeup
+    cluster0 ForEach IsHalted true
+    apu0 IsHalted false
+
+    cluster1 ForEach IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=apu0
+
+    sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS0,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false
+    sysbus LoadBinary $uboot  0x8000000
+    sysbus LoadBinary $linux  0x10000000
+    sysbus LoadBinary $rootfs 0x20000000
+
+    sysbus LoadSymbolsFrom $uboot_elf
+    sysbus LoadSymbolsFrom $linux_elf
+"""
+
+runMacro $reset
