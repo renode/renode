@@ -228,11 +228,11 @@ namespace Antmicro.Renode.WebSockets
                 {
                     foreach(var param in handlerParams)
                     {
-                        callArgs[arg] = apiRequest.Payload[param.Name].ToObject(param.ParameterType);
+                        callArgs[arg] = apiRequest.Payload[param.Name]?.ToObject(param.ParameterType);
                         arg++;
                     }
                 }
-                catch(Exception)
+                catch(Exception e)
                 {
                     SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
                     return;

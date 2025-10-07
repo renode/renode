@@ -69,37 +69,44 @@ namespace Antmicro.Renode.WebSockets.Providers
         [WebSocketAPIAction("exec-renode", "1.5.0")]
         private WebSocketAPIResponse ExecRenodeAction(string command, ExecRenodeActionArgs args)
         {
-            IMachine machine = null;
-            IPeripheral peripheral = null;
-
-            if(!EmulationManager.Instance.CurrentEmulation.TryGetMachine(args.Machine, out machine))
+            var argData = new ExecRenodeArgParserData()
             {
-                return WebSocketAPIUtils.CreateEmptyActionResponse("provided machine does not exist");
-            }
-
-            if(args.Peripheral != null && !machine.TryGetByName<IPeripheral>(args.Peripheral, out peripheral))
-            {
-                return WebSocketAPIUtils.CreateEmptyActionResponse("provided peripheral does not exist");
-            }
+                MachineName = args?.Machine,
+                PeripheralName = args?.Peripheral
+            };
 
             switch(command)
             {
-            case "uarts":
-                return GPIOData.GetPeripheralsNameOfType<IUART>(machine);
-            case "buttons":
-                return GPIOData.GetPeripheralsNameOfType<Button>(machine);
-            case "leds":
-                return GPIOData.GetPeripheralsNameOfType<ILed>(machine);
-            case "button-set":
-                return GPIOData.ButtonSet(machine, peripheral, args.Value.ToObject<bool>());
             case "machines":
                 return this.GetMachines();
+            case "uarts":
+                return ExecRenodeArgParser(argData, true, false) ?
+                    GPIOData.GetPeripheralsNameOfType<IUART>(argData.Machine) :
+                    argData.ErrorMessage;
+            case "buttons":
+                return ExecRenodeArgParser(argData, true, false) ?
+                    GPIOData.GetPeripheralsNameOfType<Button>(argData.Machine) :
+                    argData.ErrorMessage;
+            case "leds":
+                return ExecRenodeArgParser(argData, true, false) ?
+                    GPIOData.GetPeripheralsNameOfType<ILed>(argData.Machine) :
+                    argData.ErrorMessage;
+            case "button-set":
+                return ExecRenodeArgParser(argData, true, true) ?
+                    GPIOData.ButtonSet(argData.Machine, argData.Peripheral, args.Value.ToObject<bool>()) :
+                    argData.ErrorMessage;
             case "sensors":
-                return SensorsData.GetSensors(machine);
+                return ExecRenodeArgParser(argData, true, false) ?
+                    SensorsData.GetSensors(argData.Machine) :
+                    argData.ErrorMessage;
             case "sensor-get":
-                return SensorsData.GetSensorData(peripheral, args.Type);
+                return ExecRenodeArgParser(argData, false, true) ?
+                    SensorsData.GetSensorData(argData.Peripheral, args.Type) :
+                    argData.ErrorMessage;
             case "sensor-set":
-                return SensorsData.SetSensorData(peripheral, args.Type, args.Value);
+                return ExecRenodeArgParser(argData, false, true) ?
+                    SensorsData.SetSensorData(argData.Peripheral, args.Type, args.Value) :
+                    argData.ErrorMessage;
             }
 
             return WebSocketAPIUtils.CreateEmptyActionResponse("unknown action");
@@ -262,6 +269,23 @@ namespace Antmicro.Renode.WebSockets.Providers
             return interaction.GetContents();
         }
 
+        private bool ExecRenodeArgParser(ExecRenodeArgParserData data, bool machineRequired, bool peripheralRequired)
+        {
+            if((machineRequired || peripheralRequired) && (data.MachineName is null || !EmulationManager.Instance.CurrentEmulation.TryGetMachine(data.MachineName, out data.Machine)))
+            {
+                data.ErrorMessage = WebSocketAPIUtils.CreateEmptyActionResponse("provided machine does not exists");
+                return false;
+            }
+
+            if(peripheralRequired && (data.PeripheralName is null || !data.Machine.TryGetByName<IPeripheral>(data.PeripheralName, out data.Peripheral)))
+            {
+                data.ErrorMessage = WebSocketAPIUtils.CreateEmptyActionResponse("provided peripheral does not exists");
+                return false;
+            }
+
+            return true;
+        }
+
         private bool isEmulationCleared;
         private string currentMonitorPrefix;
         private Monitor monitor;
@@ -288,7 +312,7 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         public class ExecRenodeActionArgs
         {
-            [JsonProperty(Required = Required.Always)]
+            [JsonProperty(Required = Required.Default)]
             public string Machine;
             [JsonProperty(Required = Required.Default)]
             public string Peripheral;
@@ -310,6 +334,15 @@ namespace Antmicro.Renode.WebSockets.Providers
             public string MachineName;
             public string Name;
             public bool Value;
+        }
+
+        private class ExecRenodeArgParserData
+        {
+            public string MachineName;
+            public string PeripheralName;
+            public IMachine Machine;
+            public IPeripheral Peripheral;
+            public WebSocketAPIResponse ErrorMessage;
         }
     }
 }
