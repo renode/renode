@@ -226,7 +226,20 @@ namespace Antmicro.Renode.PlatformDescription
                 var entriesToRegister = sortedForRegistration.Where(x => x.RegistrationInfos != null);
                 do
                 {
+                    var numberOfEntriesToRegisterBefore = entriesToRegister.Count();
                     entriesToRegister = RegisterFromEntries(entriesToRegister);
+                    var numberOfEntriesToRegisterAfter = entriesToRegister.Count();
+                    if(numberOfEntriesToRegisterBefore != 0 && numberOfEntriesToRegisterBefore == numberOfEntriesToRegisterAfter)
+                    {
+                        // If there was no progress, it must have been due to 'AreAllParentsRegistered' returning false
+                        // and up to that point backtraced methods between 'AreAllParentsRegistered' and 'RegisterFromEntries'
+                        // are re-entrant so deadlock can't be resolved by retrying with the same collection of entries.
+                        var entry = entriesToRegister.First();
+                        var registrationInfoRegisters = entry.RegistrationInfos.Select(x => $"'{x.Register.Value}'");
+                        HandleError(ParsingError.RegistrationException, entry,
+                                string.Format("Unable to finish the registration of '{0}'. Are all parents: {1}, registered?",
+                                              entry.VariableName, Misc.PrettyPrintCollection<string>(registrationInfoRegisters)), false);
+                    }
                 } while(entriesToRegister.Any());
 
                 while(objectValueInitQueue.Count > 0)

@@ -1220,6 +1220,19 @@ mockRegister2: Antmicro.Renode.UnitTests.Mocks.MockRegister @ sysbus 0x100
         }
 
         [Test]
+        public void ShouldFailRegistrationOnUnregisteredParent()
+        {
+            var source = @"
+unregisteredParent: Antmicro.Renode.UnitTests.Mocks.MockRegister
+
+cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ unregisteredParent
+";
+
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
+            Assert.AreEqual(ParsingError.RegistrationException, exception.Error);
+        }
+
+        [Test]
         public void ShouldProcessValidEnum()
         {
             var source = @"
