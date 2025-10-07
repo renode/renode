@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2025 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -79,7 +79,7 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
     S_SETUP,
     S_ACCESS
   } state_t;
-  state_t state = S_IDLE;
+  state_t state;
 
   //
   // Waveform generation
