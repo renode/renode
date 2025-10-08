@@ -1,3 +1,6 @@
+:name: X86-KVM Bios
+:description: This script runs Seabios on a bare x86 platform in KVM.
+
 $name?="x86-kvm"
 mach create $name
 
