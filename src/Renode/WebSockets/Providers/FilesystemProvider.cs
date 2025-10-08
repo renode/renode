@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 
 using Antmicro.Renode.Utilities;
 
+using Newtonsoft.Json;
+
 namespace Antmicro.Renode.WebSockets.Providers
 {
     public static class HttpClientExtensions
@@ -351,35 +353,49 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class StatusActionResponseDto
         {
+            [JsonProperty("success")]
             public bool Success;
         }
 
         private class PathActionResponseDto
         {
+            [JsonProperty("success")]
             public bool Success;
+            [JsonProperty("path")]
             public string Path;
         }
 
         private class PathInfoDto
         {
+            [JsonProperty("name")]
             public string Name;
+            [JsonProperty("isfile")]
             public bool IsFile;
+            [JsonProperty("islink")]
             public bool IsLink;
         }
 
         private class MoveActionResponseDto
         {
+            [JsonProperty("success")]
             public bool Success;
+            [JsonProperty("from")]
             public string From;
+            [JsonProperty("to")]
             public string To;
         }
 
         private class StatActionResponseDto
         {
+            [JsonProperty("success")]
             public bool Success;
+            [JsonProperty("size")]
             public long Size;
+            [JsonProperty("isfile")]
             public bool IsFile;
+            [JsonProperty("ctime")]
             public float CTime;
+            [JsonProperty("mtime")]
             public float MTime;
         }
     }

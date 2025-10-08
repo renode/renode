@@ -12,6 +12,7 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Sensor;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Antmicro.Renode.WebSockets.Misc
@@ -106,14 +107,19 @@ namespace Antmicro.Renode.WebSockets.Misc
 
         private class SensorInfo
         {
+            [JsonProperty("name")]
             public string Name;
+            [JsonProperty("types")]
             public string[] Types;
         }
 
         private class MagneticSensorData
         {
+            [JsonProperty("x")]
             public int X;
+            [JsonProperty("y")]
             public int Y;
+            [JsonProperty("z")]
             public int Z;
         }
     }

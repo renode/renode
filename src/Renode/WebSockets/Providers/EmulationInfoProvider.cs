@@ -312,36 +312,47 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         public class ExecRenodeActionArgs
         {
-            [JsonProperty(Required = Required.Default)]
+            [JsonProperty("machine", Required = Required.Default)]
             public string Machine;
-            [JsonProperty(Required = Required.Default)]
+            [JsonProperty("peripheral", Required = Required.Default)]
             public string Peripheral;
-            [JsonProperty(Required = Required.Default)]
+            [JsonProperty("type", Required = Required.Default)]
             public string Type;
-            [JsonProperty(Required = Required.Default)]
+            [JsonProperty("value", Required = Required.Default)]
             public JToken Value;
         }
 
         private class UartCreatedEventDto
         {
+            [JsonProperty("port")]
             public int Port;
+            [JsonProperty("name")]
             public string Name;
+            [JsonProperty("machineName")]
             public string MachineName;
         }
 
         private class PeripheralStateChangedEventDto
         {
+            [JsonProperty("machineName")]
             public string MachineName;
+            [JsonProperty("name")]
             public string Name;
+            [JsonProperty("value")]
             public bool Value;
         }
 
         private class ExecRenodeArgParserData
         {
+            [JsonProperty("machineName")]
             public string MachineName;
+            [JsonProperty("peripheralName")]
             public string PeripheralName;
+            [JsonProperty("machine")]
             public IMachine Machine;
+            [JsonProperty("peripheral")]
             public IPeripheral Peripheral;
+            [JsonProperty("errorMessage")]
             public WebSocketAPIResponse ErrorMessage;
         }
     }
