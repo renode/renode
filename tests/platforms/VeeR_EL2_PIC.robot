@@ -37,6 +37,9 @@ ${meicidpl}         0xBCB
 ${meicurpl}         0xBCC
 ${meihap}           0xFC8
 
+# VeeR custom CSR
+${mpmc}             0x7C6
+
 # PIC memory-mapped registers
 
 ${PIC_CONFIGURATION_REGISTER}  ${${PIC_BASE_ADDRESS} + 0x3000}  # mpiccfg
@@ -520,3 +523,57 @@ Test MaxPriorityIRQ And Interrupt Handling With Standard Priority Order
 Test MaxPriorityIRQ And Interrupt Handling With Reversed Priority Order
     Test MaxPriorityIRQ And Interrupt Handling
     ...    priord=1
+
+
+Only MaxPriorityIRQ Should Wake Core From FwHalt
+    Create Machine
+
+    ${loop_pc}=  Add Init Program   destination=${INIT_PC}  priord=0  threshold=5  source_id=5  priority=10
+
+    Execute Command                 emulation RunFor "0.000001"
+    Pc Should Be Equal              ${loop_pc}
+    PIC IRQ Should Be Unset
+
+    Execute Command                 logLevel -1
+
+    # Put core into FwHalt
+    ${length}=  Execute Command        cpu AssembleBlock ${loop_pc} "li t0, 1; csrw ${mpmc}, t0; loop: j loop"
+    ${loop_pc}=  Evaluate              ${loop_pc} + (${length} - 2)
+
+    Execute Command                    emulation RunFor "0.000001"
+    Pc Should Be Equal                 ${loop_pc}
+    ${count_before}=  Execute Command  cpu GetCurrentInstructionsCount
+
+    Set External Source 5 Interrupt Request
+    PIC Should Have Interrupt Source 5 Pending
+    PIC IRQ Should Be Set
+    PIC MaxPriorityIRQ Should Be Unset
+
+    # Check that the core is still sleeping
+    Execute Command                   emulation RunFor "0.000001"
+    Pc Should Be Equal                ${loop_pc}
+    ${count_after}=  Execute Command  cpu GetCurrentInstructionsCount
+    Should Be Equal                   ${count_before}  ${count_after}
+
+    # It has a priority over source 5 and it's a max priority level for the given priority order.
+    Set Source 2 Priority To 15
+    Enable Source 2
+
+    Set External Source 2 Interrupt Request
+    PIC Should Have Interrupt Source 2 Pending
+    PIC IRQ Should Be Set
+    PIC MaxPriorityIRQ Should Be Set
+
+    # Core should now have woken up
+    External IRQ Should Be Handled
+    ...    source_id=2  handler_address=${PIC_INT2_HANDLER_ADDRESS}  loop_pc=${loop_pc}
+    Pc Should Be Equal              ${MTVEC_MIE_ENTRY_ADDRESS}
+
+    # IRQ should remain set but only the main one as source 5 isn't set to a max priority level.
+    PIC IRQ Should Be Set
+    PIC MaxPriorityIRQ Should Be Unset
+
+    # IRQ from source 5 should now be handled the same as in cases of single IRQs.
+    Single External IRQ Should Be Handled
+    ...    source_id=5  handler_address=${PIC_INT5_HANDLER_ADDRESS}  loop_pc=${loop_pc}
+    PIC MaxPriorityIRQ Should Be Unset

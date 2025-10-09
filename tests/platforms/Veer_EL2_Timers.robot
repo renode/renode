@@ -7,6 +7,8 @@ ${mitctl0}                          0x7D4
 ${mitcnt1}                          0x7D5
 ${mitb1}                            0x7D6
 ${mitctl1}                          0x7D7
+${mpmc}                             0x7C6
+${mcpc}                             0x7C2
 
 ${timer0Int}                        29
 ${timer1Int}                        28
@@ -93,6 +95,80 @@ Pc Should Not Be Equal
     ${pc}=  Execute Command         cpu PC
     Should Not Be Equal As Integers  ${pc}  ${value}
 
+Timer ${number:(0|1)} Should Handle FwHalt ${enabled:(With|Without)} HaltEnable
+    Create Machine
+
+    ${control_bits}=  Evaluate      0x1 if "${enabled}" == "Without" else 0x3  # enabled and halt_en bits
+
+    ${PROG}=  Catenate              SEPARATOR=\n
+    ...                             li a1, ${1 << ${timer${number}Int}}
+    ...                             csrw mie, a1
+    ...                             li a1, 0x1808
+    ...                             csrw mstatus, a1
+    ...                             li a1, ${control_bits}
+    ...                             csrw ${mitctl${number}}, a1
+    ...                             li a1, 600000 # 0.001s with a 600MHz timer
+    ...                             csrw ${mitb${number}}, a1
+    ...                             li a1, 1
+    ...                             csrw ${mpmc}, a1
+    ...                             loop:
+    ...                             j loop
+
+    Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${PROG}"""
+    Execute Command                 emulation RunFor "0.0011s"
+
+    IF  $enabled == "With"
+        Pc Should Be Equal          ${mtvec}
+        # Return to the loop to check that the interrupt got cleared properly
+        Execute Command             cpu AssembleBlock `cpu PC` "mret"
+        Execute Command             emulation RunFor "0.0005s"
+        Pc Should Not Be Equal      ${mtvec}
+    ELSE
+        Pc Should Not Be Equal      ${mtvec}
+    END
+    Reset Emulation
+
+Timer ${number:(0|1)} Should Handle PAUSE ${enabled:(With|Without)} PauseEnable
+    Create Machine
+
+    ${control_bits}=  Evaluate      0x1 if "${enabled}" == "Without" else 0x5  # enabled and pause_en bits
+
+    ${PROG}=  Catenate              SEPARATOR=\n
+    ...                             li a1, ${1 << ${timer${number}Int}}
+    ...                             csrw mie, a1
+    ...                             li a1, 0x1808
+    ...                             csrw mstatus, a1
+    ...                             li a1, ${control_bits}
+    ...                             csrw ${mitctl${number}}, a1
+    ...                             li a1, 600000 # 0.001s with a 600MHz timer
+    ...                             csrw ${mitb${number}}, a1
+    ...                             li a1, 1200000 # 0.002s with a 600MHz timer
+    ...                             csrw ${mcpc}, a1
+    ...                             li t0, 0xdeadbeef
+    ...                             loop:
+    ...                             j loop
+
+    Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${PROG}"""
+    Execute Command                 emulation RunFor "0.0001s"
+    # Timer has not fired yet, should still be in pause
+    Register Should Be Equal        T0  0
+    Pc Should Not Be Equal          ${mtvec}
+    Execute Command                 emulation RunFor "0.001s"
+    # Timer has now fired
+    IF  $enabled == "With"
+        Pc Should Be Equal          ${mtvec}
+        Register Should Be Equal    T0  0
+    ELSE
+        # Should still be in PAUSE
+        Pc Should Not Be Equal      ${mtvec}
+        Register Should Be Equal    T0  0
+
+        Execute Command             emulation RunFor "0.0011s"
+        # Should now have exited PAUSE
+        Pc Should Not Be Equal      ${mtvec}
+        Register Should Be Equal    T0  0xdeadbeef
+    END
+    Reset Emulation
 
 *** Test Cases ***
 
