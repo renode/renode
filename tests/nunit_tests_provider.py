@@ -160,7 +160,11 @@ class NUnitTestSuite(object):
                 args.append('--where= ' + ' and '.join(['({})'.format(x) for x in where_conditions]))
 
         if options.run_gdb:
-            args = ['gdb', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + args
+            if options.runner == 'dotnet':
+                signals_to_handle = 'SIG34'
+            else:
+                signals_to_handle = 'SIGXCPU SIG33 SIG35 SIG36 SIGPWR'
+            command = ['gdb', '-nx', '-ex', 'handle ' + signals_to_handle + ' nostop noprint', '--args'] + args
 
         startTimestamp = monotonic()
         if options.runner == 'dotnet':

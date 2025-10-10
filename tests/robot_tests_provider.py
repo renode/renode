@@ -396,7 +396,11 @@ class RobotTestSuite(object):
 
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
-            command = ['gdb', '-nx', '-ex', 'handle SIGXCPU SIG33 SIG35 SIG36 SIGPWR nostop noprint', '--args'] + command
+            if options.runner == 'dotnet':
+                signals_to_handle = 'SIG34'
+            else:
+                signals_to_handle = 'SIGXCPU SIG33 SIG35 SIG36 SIGPWR'
+            command = ['gdb', '-nx', '-ex', 'handle ' + signals_to_handle + ' nostop noprint', '--args'] + command
             process = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
 
             if options.keep_renode_output:
