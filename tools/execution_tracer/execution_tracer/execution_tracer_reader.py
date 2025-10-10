@@ -342,6 +342,43 @@ def handle_coverage(args, trace_data_per_file) -> None:
             print(line)
 
 
+def find_llvm_disas() -> str:
+    p = platform.system()
+    if p == 'Darwin':
+        ext = '.dylib'
+    elif p == 'Windows':
+        ext = '.dll'
+    else:
+        ext = '.so'
+
+    # In portable packages, the name does not contain 'aarch64', so handle both cases, trying the
+    # aarch64 version first.
+    lib_names = ['libllvm-disas' + ext]
+
+    if platform.uname().machine.lower() in ('arm64', 'aarch64'):
+        lib_names.insert(0, 'libllvm-disas-aarch64' + ext)
+
+    lib_search_paths = [
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin"),
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir),
+        os.path.dirname(os.path.realpath(__file__)), 
+        os.getcwd()
+    ]
+
+    llvm_disas_path = None
+
+    for search_path, lib_name in itertools.product(lib_search_paths, lib_names):
+        lib_path = os.path.join(search_path, lib_name)
+        if os.path.isfile(lib_path):
+            llvm_disas_path = lib_path
+            break
+
+    if llvm_disas_path is None:
+        raise FileNotFoundError('Could not find ' + " or ".join(lib_names) + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
+    
+    return llvm_disas_path
+
 def main():
     parser = argparse.ArgumentParser(description="Renode's ExecutionTracer binary format reader")
     parser.add_argument("--debug", default=False, action="store_true", help="enable additional debug logs to stdout")
@@ -375,37 +412,7 @@ def main():
 
     # Look for the libllvm-disas library in default location
     if args.subcommands == 'inspect' and args.disassemble and args.llvm_disas_path is None:
-        p = platform.system()
-        if p == 'Darwin':
-            ext = '.dylib'
-        elif p == 'Windows':
-            ext = '.dll'
-        else:
-            ext = '.so'
-
-        # In portable packages, the name does not contain 'aarch64', so handle both cases, trying the
-        # aarch64 version first.
-        lib_names = ['libllvm-disas' + ext]
-
-        if platform.uname().machine.lower() in ('arm64', 'aarch64'):
-            lib_names.insert(0, 'libllvm-disas-aarch64' + ext)
-
-        lib_search_paths = [
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin"),
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir),
-            os.path.dirname(os.path.realpath(__file__)), 
-            os.getcwd()
-        ]
-
-        for search_path, lib_name in itertools.product(lib_search_paths, lib_names):
-            lib_path = os.path.join(search_path, lib_name)
-            if os.path.isfile(lib_path):
-                args.llvm_disas_path = lib_path
-                break
-
-        if args.llvm_disas_path is None:
-            raise FileNotFoundError('Could not find ' + " or ".join(lib_names) + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
+        args.llvm_disas_path = find_llvm_disas()
 
     try:
         with contextlib.ExitStack() as stack:
