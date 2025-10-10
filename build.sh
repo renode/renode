@@ -587,7 +587,13 @@ then
             exit 1
         fi
     else
-        $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+        if $ON_WINDOWS
+        then
+            # Only dotnet packages are supported on Windows
+            echo "Only dotnet packages are supported on Windows. Rerun build.sh with --net -t to build a Windows package"
+        else
+            $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+        fi
     fi
 fi
 
