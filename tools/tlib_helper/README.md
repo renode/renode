@@ -17,7 +17,7 @@ All functionality is self-contained in the single `gdbscript.py`, therefore it i
 
 ```sh
 $ gdb -ex 'source tools/tlib_helper/gdbscript.py' \
-      -ex 'handle SIGXCPU SIG33 SIG34 SIG35 SIG36 SIG37 SIGPWR nostop noprint' \
+      -ex 'handle SIG34 nostop noprint' \
       -p $(pgrep --full 'dotnet.*Renode.dll')"
 ```
 
