@@ -1,6 +1,27 @@
+*** Settings ***
+Library                             ../../tools/execution_tracer/execution_tracer_keywords.py
+
 *** Variables ***
-${bin_out_signature}=                           ReTrace\x04
-${triple_and_model}=                            riscv32 rv32imacv
+${bin_out_signature}                ReTrace\x04
+${triple_and_model}                 riscv32 rv32imacv
+${64_triple_and_model}              riscv64 rv64imacv
+
+${riscv_amoadd_d}                   amoadd.d.aqrl a5, a4, (a3)
+${riscv_amoadd_d_address}           0x2010
+${riscv_amoadd_d_memory_before}     0xF00D
+${64_bit_value_1}                   0xD00D1337BABEBEEF
+${64_bit_value_2}                   0xFEE1FACED0D0CACA
+${riscv_amoadd_d_expected_sum}      0xFEE1FACED0D1BAD7  # Can't calculate it due to not being able to call keywords here
+${riscv_amoadd_d_operands_before}   SEPARATOR=${SPACE}
+...                                 AMO operands before - RD: ${64_bit_value_1},
+...                                 RS1: ${riscv_amoadd_d_address}
+...                                 (memory value: ${riscv_amoadd_d_memory_before}),
+...                                 RS2: ${64_bit_value_2}
+${riscv_amoadd_d_operands_after}    SEPARATOR=${SPACE}
+...                                 AMO operands after - RD: ${riscv_amoadd_d_memory_before},
+...                                 RS1: ${riscv_amoadd_d_address}
+...                                 (memory value: ${riscv_amoadd_d_expected_sum}),
+...                                 RS2: ${64_bit_value_2}
 
 *** Keywords ***
 Create Machine Versatile
@@ -81,6 +102,17 @@ Run RISC-V Program With Vcfg Instruction
     Execute Command                             sysbus WriteDoubleWord ${pc+6} 0x04007057  # vsetvli zero, zero, e8, m1, ta, mu
 
     Execute Command                             sysbus.cpu Step 3
+
+Run RISC-V Program With Amoadd Instruction
+    [Arguments]                     ${pc}
+    Execute Command                 sysbus.cpu PC ${pc}
+    Execute Command                 sysbus.cpu SetRegister "A5" ${64_bit_value_1}
+    Execute Command                 sysbus.cpu SetRegister "A4" ${64_bit_value_2}
+    Execute Command                 sysbus.cpu SetRegister "A3" ${riscv_amoadd_d_address}
+    Execute Command                 sysbus WriteDoubleWord ${riscv_amoadd_d_address} ${riscv_amoadd_d_memory_before} cpu
+    Execute Command                 sysbus.cpu AssembleBlock ${pc} "amoadd.d.aqrl a5, a4, (a3)"
+
+    Execute Command                 sysbus.cpu Step 1
 
 Run RISC-V Program With Memory Access
     [Arguments]                                 ${pc_hex}
@@ -604,3 +636,40 @@ Should Show Error When Format Is Incorrect
 
     ${trace_filepath}=                          Allocate Temporary File
     Run Keyword And Expect Error                *don't support binary output file with the*formatting*  Execute Command  sysbus.cpu CreateExecutionTracing "tracer" "${trace_filepath}" Disassembly true
+
+Should Trace RISC-V Amo Operands
+    Create Machine RISC-V 64-bit                0x2000  memory_per_cpu=False
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" Disassembly
+    Execute Command                             trace_name TrackRiscvAtomics
+    Run RISC-V Program With Amoadd Instruction  0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+
+    ${output_file}=                             Get File  ${trace_filepath}
+    Log                                         ${output_file}
+    ${output_lines}=                            Split To Lines  ${output_file}
+    Length Should Be                            ${output_lines}  3
+    Should Contain                              ${output_lines}[0]  ${riscv_amoadd_d} 
+    Should Contain                              ${output_lines}[1]  ${riscv_amoadd_d_operands_before} 
+    Should Contain                              ${output_lines}[2]  ${riscv_amoadd_d_operands_after}
+
+Should Be Able To Add Amo Operands To The Trace In Binary Format
+    Create Machine RISC-V 64-bit                0x2000  memory_per_cpu=False
+
+    ${trace_filepath}=                          Allocate Temporary File
+    Execute Command                             sysbus.cpu CreateExecutionTracing "trace_name" "${trace_filepath}" PCAndOpcode true
+    Execute Command                             trace_name TrackRiscvAtomics
+    Run RISC-V Program With Amoadd Instruction  0x2000
+    Execute Command                             sysbus.cpu DisableExecutionTracing
+
+    # Parse Binary Trace is from renode/tools/execution_tracer/execution_tracer_keywords.py
+    ${trace_entries}=                           Parse Binary Trace   path=${trace_filepath}   disassemble=True
+    Length Should Be                            ${trace_entries}  1
+    ${entry}=                                   Evaluate   $trace_entries[0].split("\\n")
+
+    Length Should Be                            ${entry}  3
+    Should Contain                              ${entry}[0]  ${riscv_amoadd_d}   collapse_spaces=True
+    Should Contain                              ${entry}[1]  ${riscv_amoadd_d_operands_before}
+    Should Contain                              ${entry}[2]  ${riscv_amoadd_d_operands_after}
+
