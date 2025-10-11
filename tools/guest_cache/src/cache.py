@@ -30,7 +30,7 @@ class CacheLine:
         self.free = free
         self.use_count: int = 0
         self.insertion_time: float = time.time()
-        self.last_access_time: float = 0
+        self.last_access_time: float = time.time()
 
     def __str__(self) -> str:
         return f"[CacheLine]: tag: {self.tag:b}, free: {self.free}, use: {self.use_count}, insertion: {self.insertion_time}, last access: {self.last_access_time}"
