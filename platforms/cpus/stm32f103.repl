@@ -74,6 +74,76 @@ gpioPortF: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011C00, +0x400>
 gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
     [0-15] -> exti@[0-15]
 
+timer1: Timers.STM32_Timer @ sysbus 0x40012c00
+    -> nvic@25
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
+    -> nvic@28
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
+    -> nvic@29
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer4: Timers.STM32_Timer @ sysbus 0x40000800
+    -> nvic@30
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer5: Timers.STM32_Timer @ sysbus 0x40000C00
+    -> nvic@50
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer6: Timers.STM32_Timer @ sysbus 0x40001000
+    -> nvic@54
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer7: Timers.STM32_Timer @ sysbus 0x40001400
+    -> nvic@55
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer8: Timers.STM32_Timer @ sysbus 0x40013400
+    -> nvic@44
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer9: Timers.STM32_Timer @ sysbus 0x40014c00
+    -> nvic@24
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer10: Timers.STM32_Timer @ sysbus 0x40015000
+    -> nvic@25
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer11: Timers.STM32_Timer @ sysbus 0x40015400
+    -> nvic@26
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer12: Timers.STM32_Timer @ sysbus 0x40001800
+    -> nvic@43
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer13: Timers.STM32_Timer @ sysbus 0x40001C00
+    -> nvic@44
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
+timer14: Timers.STM32_Timer @ sysbus 0x40002000
+    -> nvic@45
+    frequency: 10000000
+    initialLimit: 0xFFFF
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F103.svd.gz
