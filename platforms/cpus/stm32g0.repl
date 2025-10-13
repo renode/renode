@@ -89,12 +89,14 @@ gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x50000000, +0x400>
     modeResetValue: 0xEBFFFFFF
     pullUpPullDownResetValue: 0x24000000
     numberOfAFs: 8
+    invertedAFPins: [[7, 2]]
     [0-15] -> exti@[0-15]
 
 gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x50000400, +0x400>
     modeResetValue: 0xFFFFFFFF
     pullUpPullDownResetValue: 0x00000000
     numberOfAFs: 8
+    invertedAFPins: [[0, 2], [1, 2], [6, 2], [7, 2], [13, 2], [14, 2], [15, 2]]
     [0-15] -> exti@[0-15]
 
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x50000800, +0x400>
@@ -107,6 +109,7 @@ gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x50000C00, +0x400>
     modeResetValue: 0xFFFFFFFF
     pullUpPullDownResetValue: 0x00000000
     numberOfAFs: 8
+    invertedAFPins: [[2, 2], [3, 2]]
     [0-15] -> exti@[0-15]
 
 gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x50001000, +0x400>
@@ -256,6 +259,34 @@ iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
 
 flash_ctrl: MTD.STM32F4_FlashController @ sysbus 0x40022000
     flash: flash
+
+// Alternate function mapping connections. For more details see `stm32l071.repl`.
+timer1:
+    0 -> gpioPortA#07@2 | gpioPortA#08@2 | gpioPortB#13@2 | gpioPortD#02@2
+    1 -> gpioPortA#09@2 | gpioPortB#00@2 | gpioPortB#03@1 | gpioPortB#14@2 | gpioPortD#03@2
+    2 -> gpioPortA#10@2 | gpioPortB#01@2 | gpioPortB#06@1 | gpioPortB#15@2
+    3 -> gpioPortA#11@2
+
+timer2:
+    0 -> gpioPortA#00@2 | gpioPortA#05@2 | gpioPortA#15@2
+    1 -> gpioPortA#01@2 | gpioPortB#03@2
+    2 -> gpioPortA#02@2 | gpioPortB#10@2 | gpioPortC#06@2
+    3 -> gpioPortA#03@2 | gpioPortB#11@2 | gpioPortC#07@2
+
+timer3:
+    0 -> gpioPortA#06@1 | gpioPortB#04@1 | gpioPortC#06@1
+    1 -> gpioPortA#07@1 | gpioPortB#05@1 | gpioPortC#07@1
+    2 -> gpioPortB#00@1
+    3 -> gpioPortB#01@1
+
+timer14:
+    0 -> gpioPortA#04@4 | gpioPortA#07@4 | gpioPortB#01@0 | gpioPortF#00@2
+
+timer16:
+    0 -> gpioPortA#06@5 | gpioPortB#06@2 | gpioPortB#08@2 | gpioPortD#00@2
+
+timer17:
+    0 -> gpioPortA#07@5 | gpioPortB#07@2 | gpioPortB#09@2 | gpioPortD#01@2
 
 sysbus:
     init:

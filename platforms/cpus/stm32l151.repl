@@ -139,6 +139,41 @@ timer11: Timers.STM32_Timer @ sysbus 0x40011000
     frequency: 10000000
     initialLimit: 0xFFFF
 
+// Alternate function mapping connections. For more details see `stm32l071.repl`.
+timer2:
+    0 -> gpioPortA#00@01 | gpioPortA#05@01 | gpioPortA#15@01 | gpioPortE#09@01
+    1 -> gpioPortA#01@01 | gpioPortB#03@01 | gpioPortE#10@01
+    2 -> gpioPortA#02@01 | gpioPortB#10@01 | gpioPortE#11@01
+    3 -> gpioPortA#03@01 | gpioPortB#11@01 | gpioPortE#12@01
+
+timer3:
+    0 -> gpioPortA#06@02 | gpioPortB#04@02 | gpioPortC#06@02 | gpioPortE#03@02
+    1 -> gpioPortA#07@02 | gpioPortB#05@02 | gpioPortC#07@02 | gpioPortE#04@02
+    2 -> gpioPortB#00@02 | gpioPortC#08@02
+    3 -> gpioPortB#01@02 | gpioPortC#09@02
+
+timer4:
+    0 -> gpioPortB#06@02 | gpioPortD#12@02
+    1 -> gpioPortB#07@02 | gpioPortD#13@02
+    2 -> gpioPortB#08@02 | gpioPortD#14@02
+    3 -> gpioPortB#09@02 | gpioPortD#15@02
+
+timer5:
+    0 -> gpioPortA#00@02
+    1 -> gpioPortA#01@02 | gpioPortF#07@02
+    2 -> gpioPortA#02@02 | gpioPortF#08@02
+    3 -> gpioPortA#03@02 | gpioPortF#09@02
+
+timer9:
+    0 -> gpioPortA#02@03 | gpioPortB#13@03 | gpioPortD#00@03 | gpioPortE#05@03
+    1 -> gpioPortA#03@03 | gpioPortB#14@03 | gpioPortD#07@03 | gpioPortE#06@03
+
+timer10:
+    0 -> gpioPortA#06@03 | gpioPortB#08@03 | gpioPortB#12@03 | gpioPortE#00@03
+
+timer11:
+    0 -> gpioPortA#07@03 | gpioPortB#09@03 | gpioPortB#15@03 | gpioPortE#01@03
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L1xx.svd.gz

@@ -89,10 +89,12 @@ bdma: DMA.STM32LDMA @ sysbus 0x58025400
 
 gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x58022800, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[0, 1], [1, 3]]
     [0-7] -> syscfg#10@[0-7]
 
 gpioPortJ: GPIOPort.STM32_GPIOPort @ sysbus <0x58022400, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[7, 3], [8, 1], [9, 3], [10, 1], [11, 3]]
     [0-15] -> syscfg#9@[0-15]
 
 gpioPortI: GPIOPort.STM32_GPIOPort @ sysbus <0x58022000, +0x400>
@@ -101,6 +103,7 @@ gpioPortI: GPIOPort.STM32_GPIOPort @ sysbus <0x58022000, +0x400>
 
 gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x58021C00, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[13, 3], [14, 3], [15, 3]]
     [0-15] -> syscfg#7@[0-15]
 
 gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x58021800, +0x400>
@@ -109,10 +112,13 @@ gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x58021800, +0x400>
 
 gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x58021400, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[8, 1], [9, 1]]
+
     [0-15] -> syscfg#5@[0-15]
 
 gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x58021000, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[4, 4], [8, 1], [10, 1], [12, 1]]
     [0-15] -> syscfg#4@[0-15]
 
 gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x58020C00, +0x400>
@@ -125,10 +131,13 @@ gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x58020800, +0x400>
 
 gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x58020400, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[0, 1, 3], [1, 1, 3], [6, 1], [7, 1], [13, 1], [14, 1, 3], [15, 1, 3]]
+
     [0-15] -> syscfg#1@[0-15]
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x58020000, +0x400>
     numberOfAFs: 16
+    invertedAFPins: [[5, 3], [7, 1, 3]]
     [0-15] -> syscfg#0@[0-15]
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
@@ -377,6 +386,63 @@ ethernet: Network.SynopsysDWCEthernetQualityOfService @ {
 
 qspi: SPI.STM32H7_QuadSPI @ sysbus 0x52005000
     -> nvic@92
+
+// Alternate function mapping connections. For more details see `stm32l071.repl`.
+timer1:
+    0 -> gpioPortA#07@01 | gpioPortA#08@01 | gpioPortB#13@01 | gpioPortE#08@01 | gpioPortE#09@01 | gpioPortK#00@01 | gpioPortK#01@01
+    1 -> gpioPortA#09@01 | gpioPortB#00@01 | gpioPortB#14@01 | gpioPortE#10@01 | gpioPortE#11@01 | gpioPortJ#10@01 | gpioPortJ#11@01
+    2 -> gpioPortA#10@01 | gpioPortB#01@01 | gpioPortB#15@01 | gpioPortE#12@01 | gpioPortE#13@01 | gpioPortJ#08@01 | gpioPortJ#09@01
+    3 -> gpioPortA#11@01 | gpioPortE#14@01
+
+timer2:
+    0 -> gpioPortA#00@01 | gpioPortA#05@01 | gpioPortA#15@01
+    1 -> gpioPortA#01@01 | gpioPortB#03@01
+    2 -> gpioPortA#02@01 | gpioPortB#10@01
+    3 -> gpioPortA#03@01 | gpioPortB#11@01
+
+timer3:
+    0 -> gpioPortA#06@02 | gpioPortB#04@02 | gpioPortC#06@02
+    1 -> gpioPortA#07@02 | gpioPortB#05@02 | gpioPortC#07@02
+    2 -> gpioPortB#00@02 | gpioPortC#08@02
+    3 -> gpioPortB#01@02 | gpioPortC#09@02
+
+timer4:
+    0 -> gpioPortB#06@02 | gpioPortD#12@02
+    1 -> gpioPortB#07@02 | gpioPortD#13@02
+    2 -> gpioPortB#08@02 | gpioPortD#14@02
+    3 -> gpioPortB#09@02 | gpioPortD#15@02
+
+timer5:
+    0 -> gpioPortA#00@02 | gpioPortH#10@02
+    1 -> gpioPortA#01@02 | gpioPortH#11@02
+    2 -> gpioPortA#02@02 | gpioPortH#12@02
+    3 -> gpioPortA#03@02 | gpioPortI#00@02
+
+timer8:
+    0 -> gpioPortA#05@03 | gpioPortA#07@03 | gpioPortC#06@03 | gpioPortI#05@03 | gpioPortJ#08@03 | gpioPortJ#09@03
+    1 -> gpioPortB#00@03 | gpioPortB#14@03 | gpioPortC#07@03 | gpioPortI#06@03 | gpioPortJ#06@03 | gpioPortJ#07@03 | gpioPortJ#10@03 | gpioPortJ#11@03
+    2 -> gpioPortB#01@03 | gpioPortB#15@03 | gpioPortC#08@03 | gpioPortI#07@03 | gpioPortK#00@03 | gpioPortK#01@03
+    3 -> gpioPortC#09@03 | gpioPortI#02@03
+
+timer12:
+    0 -> gpioPortB#14@02 | gpioPortH#06@02
+    1 -> gpioPortB#15@02 | gpioPortH#09@02
+
+timer13:
+    0 -> gpioPortA#06@09 | gpioPortF#08@09
+
+timer14:
+    0 -> gpioPortA#07@09 | gpioPortF#09@09
+
+timer15:
+    0 -> gpioPortA#01@04 | gpioPortA#02@04 | gpioPortE#04@04 | gpioPortE#05@04
+    1 -> gpioPortA#03@04 | gpioPortE#06@04
+
+timer16:
+    0 -> gpioPortB#06@01 | gpioPortB#08@01 | gpioPortF#06@01 | gpioPortF#08@01
+
+timer17:
+    0 -> gpioPortB#07@01 | gpioPortB#09@01 | gpioPortF#07@01 | gpioPortF#09@01
 
 sysbus:
     init:

@@ -156,6 +156,37 @@ timer17: Timers.STM32_Timer @ sysbus 0x40014800
     frequency: 10000000
     initialLimit: 0xFFFF
 
+// Alternate function mapping connections. For more details see `stm32l071.repl`.
+timer1:
+    0 -> gpioPortA#07@01 | gpioPortA#08@01 | gpioPortB#13@01 | gpioPortE#08@01 | gpioPortE#09@01
+    1 -> gpioPortA#09@01 | gpioPortB#00@01 | gpioPortB#14@01 | gpioPortE#10@01 | gpioPortE#11@01
+    2 -> gpioPortA#10@01 | gpioPortB#01@01 | gpioPortB#15@01 | gpioPortE#12@01 | gpioPortE#13@01
+    3 -> gpioPortA#11@01 | gpioPortE#14@01
+
+timer2:
+    0 -> gpioPortA#00@01 | gpioPortA#05@01 | gpioPortA#15@01
+    1 -> gpioPortA#01@01 | gpioPortB#03@01
+    2 -> gpioPortA#02@01 | gpioPortB#10@01
+    3 -> gpioPortA#03@01 | gpioPortB#11@01
+
+timer3:
+    0 -> gpioPortA#06@02 | gpioPortB#04@02 | gpioPortC#06@02 | gpioPortE#03@02
+    1 -> gpioPortA#07@02 | gpioPortB#05@02 | gpioPortC#07@02 | gpioPortE#04@02
+    2 -> gpioPortB#00@02 | gpioPortC#08@02 | gpioPortE#05@02
+    3 -> gpioPortB#01@02 | gpioPortC#09@02 | gpioPortE#06@02
+
+timer4:
+    0 -> gpioPortB#06@02 | gpioPortB#12@02
+    1 -> gpioPortB#07@02 | gpioPortB#13@02
+    2 -> gpioPortB#08@02 | gpioPortB#14@02
+    3 -> gpioPortB#09@02 | gpioPortB#15@02
+
+timer5:
+    0 -> gpioPortB#00@02 | gpioPortF#06@02
+    1 -> gpioPortB#01@02 | gpioPortF#07@02
+    2 -> gpioPortB#02@02 | gpioPortF#08@02
+    3 -> gpioPortB#03@02 | gpioPortF#09@02
+
 sysbus:
     init:
         // Hard set all oscillator RDY bits

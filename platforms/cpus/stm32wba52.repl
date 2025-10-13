@@ -52,6 +52,7 @@ gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x42020000, +0x400>
     outputSpeedResetValue: 0x08000000
     pullUpPullDownResetValue: 0x64000000
     numberOfAFs: 16
+    invertedAFPins: [[0, 1], [1, 1], [3, 14]]
     [0-15] -> exti#0@[0-15]
 
 gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x42020400, +0x400>
@@ -59,6 +60,7 @@ gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x42020400, +0x400>
     outputSpeedResetValue: 0x00000080
     pullUpPullDownResetValue: 0x00000100
     numberOfAFs: 16
+    invertedAFPins: [[0, 1], [1, 1], [2, 1], [3, 14], [7, 1], [8, 14], [9, 1]]
     [0-15] -> exti#1@[0-15]
 
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x42020800, +0x400>
@@ -130,6 +132,31 @@ rcc: Miscellaneous.STM32WBA_RCC @ sysbus 0x46020C00
     nvic: nvic
     lptim1: lptim1
     lptim2: lptim2
+
+// Alternate function mapping connections. For more details see `stm32l071.repl`.
+timer1:
+    0 -> gpioPortA#01@01 | gpioPortA#11@01 | gpioPortB#02@01 | gpioPortB#08@01
+    1 -> gpioPortA#00@01 | gpioPortA#12@01 | gpioPortB#01@01
+    2 -> gpioPortB#00@01 | gpioPortB#04@01 | gpioPortB#09@01
+    3 -> gpioPortB#03@01 | gpioPortB#07@01
+
+timer2:
+    0 -> gpioPortA#05@01 | gpioPortB#06@01 | gpioPortB#12@01
+    1 -> gpioPortA#08@01
+    2 -> gpioPortA#07@01
+    3 -> gpioPortA#06@01
+
+timer3:
+    0 -> gpioPortA#02@02 | gpioPortA#10@02 | gpioPortB#05@02
+    1 -> gpioPortA#01@02 | gpioPortA#09@02
+    2 -> gpioPortA#00@02 | gpioPortB#14@02
+    3 -> gpioPortB#09@02 | gpioPortB#13@02
+
+timer16:
+    0 -> gpioPortA#02@14 | gpioPortA#03@14 | gpioPortB#08@14 | gpioPortB#09@14
+
+timer17:
+    0 -> gpioPortA#01@14 | gpioPortB#03@14 | gpioPortB#04@14
 
 sysbus:
     init:
