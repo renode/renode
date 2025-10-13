@@ -9,6 +9,31 @@ include @scripts/single-node/segger-rtt.py
 # Create network
 emulation CreateDA16200Network "wifi"
 
+# Create Receiver
+mach create "Receiver"
+machine LoadPlatformDescription @platforms/boards/renesas-ck_ra6m5.repl
+
+machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
+sci0.da16200 CommandResponseDelayMilliseconds 50
+sci0.da16200 TransferBandwidth 960
+sci0.da16200 DataResponseDelayMilliseconds 100
+sci0.da16200 IpAddress "192.0.2.1"
+
+connector Connect sci0.da16200 wifi
+
+macro reset
+"""
+    sysbus LoadELF $bin_receiver
+"""
+runMacro $reset
+
+machine CreateVirtualConsole "segger"
+setup_segger_rtt sysbus.segger false false
+showAnalyzer segger
+
+# Let 'Receiver' set up its wifi connection before running the 'Sender'
+emulation RunFor "13.09"
+
 # Create sender
 mach create "Sender"
 machine LoadPlatformDescription @platforms/boards/renesas-ck_ra6m5.repl
@@ -24,28 +49,6 @@ connector Connect sci0.da16200 wifi
 macro reset
 """
     sysbus LoadELF $bin_sender
-"""
-runMacro $reset
-
-machine CreateVirtualConsole "segger"
-setup_segger_rtt sysbus.segger false false
-showAnalyzer segger
-
-# Create receiver
-mach create "Receiver"
-machine LoadPlatformDescription @platforms/boards/renesas-ck_ra6m5.repl
-
-machine LoadPlatformDescriptionFromString "da16200: Network.DA16200 @ sci0"
-sci0.da16200 CommandResponseDelayMilliseconds 50
-sci0.da16200 TransferBandwidth 960
-sci0.da16200 DataResponseDelayMilliseconds 100
-sci0.da16200 IpAddress "192.0.2.1"
-
-connector Connect sci0.da16200 wifi
-
-macro reset
-"""
-    sysbus LoadELF $bin_receiver
 """
 runMacro $reset
 
