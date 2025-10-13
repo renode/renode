@@ -232,7 +232,7 @@ namespace Antmicro.Renode.WebSockets
                         arg++;
                     }
                 }
-                catch(Exception e)
+                catch(Exception)
                 {
                     SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
                     return;
