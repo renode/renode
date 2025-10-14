@@ -1,6 +1,19 @@
 *** Variables ***
 ${CPU0_INITIATOR_STRING}            the initiator 'cpu0'
 ${POSSIBLE_INITIATORS_STRING}       peripherals implementing IPeripheralWithTransactionState (initiator not specified)
+${SIMPLE_M33_REPL}                  SEPARATOR=\n
+...                                 """
+...                                 nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+...                                 ${SPACE*8}address: 0xE000E000;
+...                                 ${SPACE*8}cpu: cpu
+...                                 ${SPACE*4}}
+...                                 ${SPACE*4}-> cpu@0
+...                                 cpu: CPU.CortexM @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-m33"
+...                                 ${SPACE*4}nvic: nvic
+...                                 ${SPACE*4}cpuId: 0
+...                                 mem: Memory.ArrayMemory @ sysbus new Bus.BusPointRegistration { address: 0x10000; condition: "privileged && cpuSecure && attributionSecure"}
+...                                 ${SPACE*4}size: 0x1000
 
 *** Keywords ***
 Command Result Should Be Number
@@ -17,6 +30,11 @@ Register With Condition And Expect Error
 
     Run Keyword And Expect Error    *${error}*
     ...                             Execute Command  machine LoadPlatformDescriptionFromString "uart: UART.PL011 @ sysbus new Bus.BusPointRegistration { address: 0x0; condition: \\"${condition}\\" }"
+
+Create Simple M33 Machine
+    [Arguments]                     ${enableTrustZone}=true
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SIMPLE_M33_REPL}\ncpu: { enableTrustZone: ${enableTrustZone} }"""
 
 *** Test Cases ***
 Should Handle Separation By State In Secure World
@@ -168,3 +186,21 @@ Test Conflicting Conditions
     Register With Condition And Expect Error
     ...                             cpuSecure && !cpuSecure
     ...                             Conditions conflict detected for ${POSSIBLE_INITIATORS_STRING}: cpuSecure
+
+Should Access VTOR in Secure State
+    Create Simple M33 Machine
+    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10234
+    Execute Command                 sysbus.cpu VectorTableOffset 0x10000
+    Start Emulation
+    PC Should Be Equal              0x10234
+    Register Should Be Equal        SP  0x10100
+
+Should Access VTOR Without TrustZone Enabled
+    Create Simple M33 Machine       enableTrustZone=false
+    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10234
+    Execute Command                 sysbus.cpu VectorTableOffset 0x10000
+    Start Emulation
+    PC Should Be Equal              0x10234
+    Register Should Be Equal        SP  0x10100
