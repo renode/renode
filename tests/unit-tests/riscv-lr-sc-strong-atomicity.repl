@@ -1,0 +1,41 @@
+dram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x80000000
+
+mmio: Memory.ArrayMemory @ sysbus 0x100000
+    size: 0x10000
+
+cpu_0: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc_zicsr_zifencei"
+    hartId: 1
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    allowUnalignedAccesses: true
+    init:
+        ExecutionMode SingleStep
+
+cpu_1: CPU.RiscV64 @ sysbus
+    cpuType: "rv64gc_zicsr_zifencei"
+    hartId: 1
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    allowUnalignedAccesses: true
+    init:
+        ExecutionMode SingleStep
+
+cpu32_0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32gc_zicsr_zifencei"
+    hartId: 2
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    allowUnalignedAccesses: true
+    init:
+        ExecutionMode SingleStep
+
+cpu32_1: CPU.RiscV32 @ sysbus
+    cpuType: "rv32gc_zicsr_zifencei"
+    hartId: 2
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    allowUnalignedAccesses: true
+    init:
+        ExecutionMode SingleStep
