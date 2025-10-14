@@ -1,0 +1,44 @@
+cpu0_a64: CPU.ARMv8A @ sysbus
+    cpuType: "cortex-a78"
+    genericInterruptController: gic
+    cpuId: 0
+    init:
+        ExecutionMode SingleStep
+
+cpu1_a64: CPU.ARMv8A @ sysbus 
+    cpuType: "cortex-a78"
+    genericInterruptController: gic
+    cpuId: 0x100
+    init:
+        ExecutionMode SingleStep
+
+cpu0_a32: CPU.ARMv8R @ sysbus 
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+    cpuId: 3
+    init:
+        ExecutionMode SingleStep
+
+cpu1_a32: CPU.ARMv8R @ sysbus
+    cpuType: "cortex-r52"
+    genericInterruptController: gic
+    cpuId: 4
+    init:
+        ExecutionMode SingleStep
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: "distributor" };
+    sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0_a64; address: 0x80a0000 };
+    sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1_a64; address: 0x80c0000 };
+    sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0_a32; address: 0x80e0000 };
+    sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1_a32; address: 0x8100000 }
+    }
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
+    supportsTwoSecurityStates: false
+
+ram: Memory.MappedMemory @ sysbus 0x40000000{
+    size: 0x80000000
+}
+mmio: Memory.ArrayMemory @ sysbus 0x100000{
+    size: 0x10000
+}
