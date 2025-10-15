@@ -188,9 +188,23 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             cosimIdxToPeripheral.Remove(peripheral.CosimToRenodeIndex);
         }
 
+        public void DisconnectAll()
+        {
+            /* After this operation then only way to use this perpiheral is to connect again.
+               Most important reason to call it is to make sure we won't block cleaning the emulation until connection timeout */
+            timer?.Reset();
+            timer = null;
+
+            Monitor.Enter(abortInitiated);
+            cosimConnection?.Abort();
+            Monitor.Exit(abortInitiated);
+
+            allTicksProcessedARE?.Set();
+        }
+
         public void Dispose()
         {
-            disposeInitiated = true;
+            DisconnectAll();
             cosimConnection.Dispose();
         }
 
@@ -473,15 +487,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private void AbortAndLogError(string message)
         {
-            // It's safe to call AbortAndLogError from any thread.
-            // Calling it from many threads may cause throwing more than one exception.
-            if(disposeInitiated)
-            {
-                return;
-            }
             this.Log(LogLevel.Error, message);
-            cosimConnection.Abort();
-
+            if(Monitor.TryEnter(abortInitiated))
+            {
+                cosimConnection.Abort();
+                Monitor.Exit(abortInitiated);
+            }
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
         }
@@ -497,11 +508,11 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         }
 
         private LimitTimer timer;
-        private volatile bool disposeInitiated;
         private AutoResetEvent allTicksProcessedARE;
         private string simulationFilePath;
         private readonly IMachine machine;
         private readonly List<GPIOEntry> gpioEntries;
+        private readonly Object abortInitiated = new Object();
 
         private readonly ICoSimulationConnection cosimConnection;
 
