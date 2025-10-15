@@ -98,7 +98,7 @@
                 "className": "Registers_UncoolRegisterType",
                 "instanceName": "Registers_UncoolRegister",
                 "offset": 260,
-                "resetValue": 4294967295,
+                "resetValue": 1,
                 "fields": [
                     {
                         "name": "UNCOOL_FIELD",

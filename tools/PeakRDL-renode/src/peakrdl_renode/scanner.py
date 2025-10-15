@@ -104,11 +104,7 @@ class RdlDesignScanner(RDLListener):
     def add_field_reset_value(self, node: FieldNode, reset: int) -> None:
         if reset == 0:
             return
-
-        width = node.high - node.low + 1
-        fullreset = (1 << width) - 1;
-
-        self.resets[self.regs[-1].type_name] |= fullreset << node.low
+        self.resets[self.regs[-1].type_name] |= reset << node.low
 
     def prefix_from_regfiles(self) -> list[str]:
         return list(x.inst_name for x in self.regfile_stack)
