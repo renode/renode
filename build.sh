@@ -21,8 +21,8 @@ SKIP_FETCH=false
 EXTERNAL_LIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
 EXTERNAL_LIB_ARCH=""
-NET=false
-TFM="net462"
+NET=true
+TFM="net8.0"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
@@ -49,6 +49,7 @@ function print_help() {
   echo "--no-gui                          build with GUI disabled"
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
   echo "--net                             build with dotnet"
+  echo "--mono                            build with mono"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
@@ -118,8 +119,11 @@ do
           OPTIND=2
           ;;
         "net")
-          NET=true
-          TFM="net8.0"
+          echo "'--net' flag is a default, use --mono to target an old runtime"
+          ;;
+        "mono")
+          NET=false
+          TFM="net462"
           ;;
         "source-package")
           SOURCE_PACKAGE=true
