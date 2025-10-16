@@ -120,7 +120,6 @@ do
         "net")
           NET=true
           TFM="net8.0"
-          PARAMS+=(p:NET=true)
           ;;
         "source-package")
           SOURCE_PACKAGE=true
@@ -295,6 +294,7 @@ then
   CS_COMPILER="dotnet build"
   TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
   BUILD_TYPE="dotnet"
+  PARAMS+=(p:NET=true)
 else
   TARGET="`get_path \"$PWD/Renode.sln\"`"
   BUILD_TYPE="mono"
