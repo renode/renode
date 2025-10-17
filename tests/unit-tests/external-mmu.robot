@@ -120,17 +120,12 @@ Can Reset The Windows
     ${window1}=                     Define Window Using CPU API     0x1000  0x2000  0x100  ${PRIV_ALL}
     ${window2}=                     Define Window Using CPU API     0x2000  0x3000  0x100  ${PRIV_ALL}
     ${window3}=                     Define Window Using CPU API     0x3000  0x4000  0x100  ${PRIV_ALL}
-    Execute Command                 cpu ResetMmuWindow ${window2}
+    ${number_of_windows}=           Execute Command    cpu ExternalMmuWindowsCount
+    Should Be Equal As Integers     3  ${number_of_windows}
 
-    # Removed window
-    ${range_start}=                 Execute Command    cpu GetMmuWindowStart ${window2}
-    ${range_end}=                   Execute Command    cpu GetMmuWindowEnd ${window2}
-    ${addend}=                      Execute Command    cpu GetMmuWindowAddend ${window2}
-    ${priv}=                        Execute Command    cpu GetMmuWindowPrivileges ${window2}
-    Should Be Equal As Integers     0  ${range_start}  "Range start incorrect"
-    Should Be Equal As Integers     0  ${range_end}  "Range end incorrect"
-    Should Be Equal As Integers     0  ${addend}  "Range adden incorrect"
-    Should Be Equal As Integers     0  ${priv}  "Range privileges incorrect"
+    Execute Command                 cpu ResetMmuWindow ${window2}
+    ${number_of_windows}=           Execute Command    cpu ExternalMmuWindowsCount
+    Should Be Equal As Integers     2  ${number_of_windows}
 
     # Surrounding windows should remain untouched
     ${range_start}=                 Execute Command    cpu GetMmuWindowStart ${window1}
