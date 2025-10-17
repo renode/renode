@@ -96,6 +96,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 this.Log(LogLevel.Warning, "The co-simulated peripheral is already connected.");
                 return;
             }
+            afterDisconnectRequest.Reset();
             cosimConnection.Connect();
         }
 
@@ -126,6 +127,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 timer.Reset();
             }
             Send(null, ActionType.ResetPeripheral, 0, 0);
+            afterDisconnectRequest.Reset();
         }
 
         public void SendGPIO(int number, bool value)
@@ -195,13 +197,15 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             /* After this operation then only way to use this perpiheral is to connect again.
                Most important reason to call it is to make sure we won't block cleaning the emulation until connection timeout */
+            if(afterDisconnectRequest.IsSet)
+            {
+                return;
+            }
+            afterDisconnectRequest.Set();
             timer?.Reset();
             timer = null;
 
-            Monitor.Enter(abortInitiated);
             cosimConnection?.Abort();
-            Monitor.Exit(abortInitiated);
-
             allTicksProcessedARE?.Set();
         }
 
@@ -472,12 +476,16 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 timer = new LimitTimer(machine.ClockSource, frequency, null, LimitTimerName, limitBuffer, enabled: true, eventEnabled: true, autoUpdate: true);
                 timer.LimitReached += () =>
                 {
-                    if(!cosimConnection.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer, ProtocolMessage.NoPeripheralIndex)))
+                    if(afterDisconnectRequest.IsSet)
+                    {
+                        return;
+                    }
+                    if(true != cosimConnection?.TrySendMessage(new ProtocolMessage(ActionType.TickClock, 0, limitBuffer, ProtocolMessage.NoPeripheralIndex)))
                     {
                         AbortAndLogError("Failed to send or didn't receive TickClock action response.");
                     }
                     this.NoisyLog("Tick: TickClock sent, waiting for the verilated peripheral...");
-                    if(!allTicksProcessedARE.WaitOne(timeout))
+                    if(true != allTicksProcessedARE?.WaitOne(timeout))
                     {
                         AbortAndLogError("Timeout reached while waiting for a tick response.");
                     }
@@ -491,10 +499,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private void AbortAndLogError(string message)
         {
             this.Log(LogLevel.Error, message);
-            if(Monitor.TryEnter(abortInitiated))
+            if(!afterDisconnectRequest.IsSet)
             {
-                cosimConnection.Abort();
-                Monitor.Exit(abortInitiated);
+                // This method is thread-safe and can be called many times.
+                cosimConnection?.Abort();
             }
             // Due to deadlock, we need to abort CPU instead of pausing emulation.
             throw new CpuAbortException();
@@ -513,9 +521,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private LimitTimer timer;
         private AutoResetEvent allTicksProcessedARE;
         private string simulationFilePath;
+        private readonly ManualResetEventSlim afterDisconnectRequest = new ManualResetEventSlim(false);
         private readonly IMachine machine;
         private readonly List<GPIOEntry> gpioEntries;
-        private readonly Object abortInitiated = new Object();
 
         private readonly ICoSimulationConnection cosimConnection;
 
