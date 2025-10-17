@@ -81,7 +81,7 @@ Setting MMU Window Parameters Before Enabling Throws
 Using Too High MMU Window Index Throws
     Create Platform
     Execute Command                 cpu EnableExternalWindowMmu true
-    Run Keyword And Expect Error    KeywordException: *There was an error executing command 'cpu SetMmuWindowAddend 256 256'Window index to high, maximum number: 255, got 256*
+    Run Keyword And Expect Error    CpuAbortException: Failed to find external MMU window with ID 256*
     ...  Execute Command            cpu SetMmuWindowAddend 256 0x100
 
 Read/Write From Address Outside The Defined MMU Windows Throws
