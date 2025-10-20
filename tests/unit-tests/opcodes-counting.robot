@@ -1,7 +1,7 @@
 *** Keywords ***
 Create Machine
     Execute Command                             mach create
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacv_zicsr\\"; timeProvider: empty }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV64 @ sysbus { cpuType: \\"rv64imacbv_zicsr\\"; timeProvider: empty }"
     Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x1000 }"
 
     Execute Command                             sysbus.cpu PC 0x0
@@ -125,3 +125,31 @@ Should Count RISC-V Opcodes
     Should Be Equal As Numbers                  ${c}  1
     ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "csrrw"
     Should Be Equal As Numbers                  ${c}  1
+
+Should Count RISC-V Opcodes By B Extension
+    Create Machine
+
+    # this should only enable opcodes supported by the B extension
+    Execute Command                             sysbus.cpu EnableRiscvOpcodesCountingByExtension B
+
+    # sh2add (from Zba extension)
+    Execute Command                             sysbus WriteDoubleWord 0x0 0x20004033
+    # andn (from Zbb extension)
+    Execute Command                             sysbus WriteDoubleWord 0x4 0x40007033
+    # bclr (from Zbs extension)
+    Execute Command                             sysbus WriteDoubleWord 0x8 0x48001033
+    # addi (not part of the B extension)
+    Execute Command                             sysbus WriteDoubleWord 0xC 0x01028293
+
+    Execute Command                             sysbus.cpu Step 4
+
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "sh2add"
+    Should Be Equal As Numbers                  ${c}  1
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "andn"
+    Should Be Equal As Numbers                  ${c}  1
+    ${c}=  Execute Command                      sysbus.cpu GetOpcodeCounter "bclr"
+    Should Be Equal As Numbers                  ${c}  1
+
+    Run Keyword And Expect Error
+    ...                                         *KeywordException: Could not execute command 'sysbus.cpu GetOpcodeCounter "addi"'*
+    ...                                         Execute Command  sysbus.cpu GetOpcodeCounter "addi"
