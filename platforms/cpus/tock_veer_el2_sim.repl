@@ -22,7 +22,7 @@ clint: IRQControllers.CoreLevelInterruptor  @ sysbus 0x02000000
     [0,1] -> cpu@[3,7]
     frequency: 1000000
 
-plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf00c0000
-    [0,1] -> cpu@[11,9]
-    numberOfSources: 64
-    numberOfContexts: 2
+pic: IRQControllers.VeeR_EL2_PIC @ sysbus 0xf00c0000
+    cpu: cpu
+    interruptSourcesCount: 31
+    -> cpu@11

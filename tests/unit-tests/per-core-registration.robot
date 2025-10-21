@@ -72,7 +72,7 @@ Fail On Shadowing Other Registration
            ...                           Execute Command
            ...                           machine LoadPlatformDescriptionFromString ${CPU1_SHADOW_MEMORY}
            Should Contain                ${out}     Error E39: Exception was thrown during registration
-           Should Contain                ${out}     conflicts with address
+           Should Contain                ${out}     conflicts with peripheral
 
   ${per}=  Execute Command               peripherals
            Should Contain                ${per}     cpu1_mem

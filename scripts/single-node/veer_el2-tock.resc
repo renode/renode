@@ -36,8 +36,5 @@ bus.AddWatchpointHook(0xd0580000, SysbusAccessWidth.Byte, Access.Write, handle_c
 # This address above might seem arbitrary, but it's hard-coded into the VeeR_EL2 platform definition in Tock
 # That's the location of htif uart
 
-# Silencing plic logs because the driver in Tock currently is a stub and generates a lot of "unhalted write" messages
-logLevel 3 plic
-
 showAnalyzer htif
 runMacro $reset
