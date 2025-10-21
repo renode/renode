@@ -21,6 +21,17 @@ Create Platform
 
     Execute Command                 cpu PC ${START_PC}
 
+Create ARM Platform
+    [Arguments]                     ${type}=cortex-a53-gicv2
+    Execute Command                 using sysbus
+    Execute Command                 mach create "${type}"
+
+    Execute Command                 machine LoadPlatformDescriptionFromString "using \\"platforms/cpus/${type}.repl\\"; smmu: MemoryControllers.ARM_SMMUv3 @ sysbus 0xfd800000 { context: cpu }; cpu: @ { sysbus; smmu 29 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "highmem: Memory.MappedMemory @ sysbus 0x100000000 { size: 0x1000 }"
+    Execute Command                 include @tests/unit-tests/external-mmu.py
+
+    Execute Command                 cpu PC ${START_PC}
+
 Expect Value Read From Address
     [Arguments]                     ${address}  ${value}
     Execute Command                 cpu PC ${START_PC}
@@ -283,3 +294,17 @@ Works With The Last Page Of Memory
     Requires                        SingleMMU
     Define Typed Window Using CPU API  0x0  0x100000000  0x0  ${PRIV_EXEC_ONLY}  ${PRIV_EXEC_ONLY}
     Execute Command                 sysbus ReadWord 0xFFFFFFFF
+
+SMMUv3 Can Translate Accesses From CPU
+    Create ARM Platform            cortex-r52
+    Execute Command                setup_smmu 29
+    Execute Command                sysbus WriteDoubleWord 0x100000000 0xfeedface
+
+    ${prog}=                       Catenate  SEPARATOR=\n
+    ...                            // Identity mapping tested by the mere fact that this code can execute from 0x0.
+    ...                            mov r0, 0x1000
+    ...                            ldr r1, [r0]
+
+    Execute Command                cpu AssembleBlock 0 "${prog}"
+    Execute Command                cpu Step 2
+    Register Should Be Equal       R1  0xfeedface
