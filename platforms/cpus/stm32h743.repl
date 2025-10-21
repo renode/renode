@@ -64,6 +64,7 @@ sdramBank1: Memory.MappedMemory @ sysbus 0xC0000000
 flashController: MTD.STM32H7_FlashController @ sysbus 0x52002000
     flash1: flashBank1
     flash2: flashBank2
+    -> nvic@4
 
 externalFlash: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x10000000
