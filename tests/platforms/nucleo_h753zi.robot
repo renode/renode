@@ -16,6 +16,7 @@ ${QSPI_RW}                          ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI
 ${QSPI_MemMapped}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_MemoryMapped.elf-s_2152312-faec8bb984c61aabb52ae9eec1598999ea906a1c
 ${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ExecuteInPlace.elf-s_2233412-67befe44572c483b242a95ce8e714f75f4e7dc69
 ${PTP}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_net_ptp.elf-s_4678660-79097838e7a15377e3d9ce083917220bd0705312
+${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -272,6 +273,18 @@ Should Transmit PTP Frames
 
 Should Encrypt And Decrypt Using DMA
     Create Machine                      ${CRYPTO_AES_DMA}  crypt
+    Execute Command                     machine LoadPlatformDescriptionFromString ${EVAL_STUB}
+
+    ${led3_tester}=                     Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
+    ${led1_tester}=                     Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
+
+    # LED3 would be set if at any point of the test a failure occurred
+    # LED1 is set at the very end of the test, when the entire procedure is complete with no failures
+    Assert LED State                    false    testerId=${led3_tester}
+    Assert LED State                    true     testerId=${led1_tester}
+
+Should Erase And Program Flash Memory
+    Create Machine                      ${FLASH_EraseProgram}  flash
     Execute Command                     machine LoadPlatformDescriptionFromString ${EVAL_STUB}
 
     ${led3_tester}=                     Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
