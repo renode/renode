@@ -41,7 +41,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new Bus.BusMultiRegistration { address: 0x40002100; size: 0x100; region: "cpuInterface" }
     }
     supportsTwoSecurityStates: false
-    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv1
+    architectureVersion: .GICv1
     // GIC -> ARM CPU interrupt connections are generated automatically
 
 cpuA5: CPU.ARMv7A @ sysbus

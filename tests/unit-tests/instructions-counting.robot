@@ -30,7 +30,7 @@ ${ARM64_PLATFORM}                   SEPARATOR=\n
 ...                                 ${SPACE*8}sysbus new Bus.BusMultiRegistration { address: 0x8010000; size: 0x010000; region: "cpuInterface" }
 ...                                 ${SPACE*4}}
 ...                                 ${SPACE*4}\[0-1\] -> cpu@\[0-1\]
-...                                 ${SPACE*4}architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+...                                 ${SPACE*4}architectureVersion: .GICv2
 ...                                 ${SPACE*4}supportsTwoSecurityStates: true
 ...                                 """
 ${RISCV_PLATFORM}                   SEPARATOR=\n

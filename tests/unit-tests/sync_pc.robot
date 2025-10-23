@@ -10,7 +10,7 @@ ${PLAT_ARM64}                       SEPARATOR=\n  """
 ...                                 ${SPACE*4}genericInterruptController: gic
 ...
 ...                                 gic: IRQControllers.ARM_GenericInterruptController
-...                                 ${SPACE*4}architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+...                                 ${SPACE*4}architectureVersion: .GICv2
 ...                                 """
 ${PLAT_ARMv8R}                      SEPARATOR=\n  """
 ...                                 cpu: CPU.ARMv8R @ sysbus

@@ -168,7 +168,7 @@ Create Machine
     # "extra" will be appended to the cpu creation string after cpuType (at least it has to close curly brackets opened before cpuType)
     ${extra}=                       Set Variable  }
 
-    ${ARMv8_gic}=                   Set Variable  genericInterruptController: gic }; gic: IRQControllers.ARM_GenericInterruptController @ { sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: \\"distributor\\" }; sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x80a0000 } } { [0-1] -> cpu@[0-1]; architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3; supportsTwoSecurityStates: true }
+    ${ARMv8_gic}=                   Set Variable  genericInterruptController: gic }; gic: IRQControllers.ARM_GenericInterruptController @ { sysbus new Bus.BusMultiRegistration { address: 0x8000000; size: 0x010000; region: \\"distributor\\" }; sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x80a0000 } } { [0-1] -> cpu@[0-1]; architectureVersion: .GICv3; supportsTwoSecurityStates: true }
     # the last ${extra} field covers the "else" case, keeping the previous value of "extra"; by default, "else" case sets variables to "None"
     ${extra}=                       Set Variable If  "${cpu}" == "CortexM"  ; nvic: nvic }; nvic: IRQControllers.NVIC  ${extra}
     ${extra}=                       Set Variable If  "${cpu}" == "ARMv8A"  ; ${ARMv8_gic}  ${extra}

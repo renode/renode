@@ -68,7 +68,7 @@ ${GIC_V2_SMP}                                                                   
 ...  ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0xAF000000; size: 0x010000; region: \"distributor\" };    ${\n}
 ...  ${SPACE*4}sysbus new Bus.BusMultiRegistration { address: 0xAF100000; size: 0x200000; region: \"cpuInterface\" }    ${\n}
 ...  }                                                                                                                  ${\n}
-...  ${SPACE*4}architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2                          ${\n}
+...  ${SPACE*4}architectureVersion: .GICv2                                                                              ${\n}
 ...  """
 
 *********************************** Keywords **********************************

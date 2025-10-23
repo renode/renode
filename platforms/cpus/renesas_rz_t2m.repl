@@ -11,7 +11,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
         sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu; address: 0x94100000 }
     }
     supportsTwoSecurityStates: false
-    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
+    architectureVersion: .GICv3
     // GIC -> ARM CPU interrupt connections are generated automatically
 
 timer: Timers.ARM_GenericTimer @ cpu
