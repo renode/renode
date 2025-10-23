@@ -170,10 +170,17 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from closing in ClosingChevron
              select new RangeValue(begin, end)).Named("range");
 
-        public static readonly Parser<EnumValue> Enum =
+        public static readonly Parser<EnumValue> EnumFull =
             (from firstElement in Identifier
              from rest in Parse.Char('.').Then(x => Identifier).XAtLeastOnce()
              select new EnumValue(new[] { firstElement }.Concat(rest))).Named("enum");
+
+        public static readonly Parser<EnumValue> EnumShorthand =
+            (from dot in Parse.Char('.')
+             from id in Identifier
+             select new EnumValue(id));
+
+        public static readonly Parser<EnumValue> Enum = EnumFull.XOr(EnumShorthand);
 
         public static readonly Parser<ObjectValue> ObjectValue =
             (from newKeyword in NewKeyword

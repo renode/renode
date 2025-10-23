@@ -1494,23 +1494,28 @@ namespace Antmicro.Renode.PlatformDescription
                     return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.TypeMismatch, string.Format(TypeMismatchMessage, expectedType));
                 }
 
-                // Compare types first as enum's type may use an alias
-                if(!TypeNameMatches(enumValue.TypeName, expectedType, silent))
+                // If the enum was specified in full (and not as just .Value) then verify whether
+                // the given namespace and type name matches
+                if(enumValue.IsFullyQualified)
                 {
-                    return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.EnumMismatch,
-                                                $"Enum type mismatch, expected '{expectedType.Name}' instead of '{enumValue.TypeName}'.");
-                }
-
-                var expectedNamespace = expectedType.Namespace.Split('.');
-                var givenNamespace = enumValue.ReversedNamespace;
-
-                // Compare namespaces
-                foreach(var names in givenNamespace.Zip(expectedNamespace.Reverse(), (first, second) => Tuple.Create(first, second)))
-                {
-                    if(names.Item1 != names.Item2)
+                    // Compare types first as enum's type may use an alias
+                    if(!TypeNameMatches(enumValue.TypeName, expectedType, silent))
                     {
                         return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.EnumMismatch,
-                                                    $"Enum namespace mismatch, expected '{names.Item2}' instead of '{names.Item1}'.");
+                                                    $"Enum type mismatch, expected '{expectedType.Name}' instead of '{enumValue.TypeName}'.");
+                    }
+
+                    var expectedNamespace = expectedType.Namespace.Split('.');
+                    var givenNamespace = enumValue.ReversedNamespace;
+
+                    // Compare namespaces
+                    foreach(var names in givenNamespace.Zip(expectedNamespace.Reverse(), (first, second) => Tuple.Create(first, second)))
+                    {
+                        if(names.Item1 != names.Item2)
+                        {
+                            return new ConversionResult(ConversionResultType.ConversionUnsuccesful, ParsingError.EnumMismatch,
+                                                        $"Enum namespace mismatch, expected '{names.Item2}' instead of '{names.Item1}'.");
+                        }
                     }
                 }
 
