@@ -323,7 +323,7 @@ axiSram: Memory.MappedMemory @ sysbus 0x24000000
 dtcm: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x20000
 
-ram: Memory.MappedMemory @ sysbus 0x1FF00000
+system_flash_ro: Memory.MappedMemory @ sysbus 0x1FF00000
     size: 0x20000
 
 flashBank2: Memory.MappedMemory @ sysbus 0x08100000
