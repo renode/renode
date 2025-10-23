@@ -1247,6 +1247,20 @@ mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttr
         }
 
         [Test]
+        public void ShouldProcessValidShorthandEnum()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute @ sysbus <0, 1>
+    mockEnum: .ValidValue
+";
+
+            ProcessSource(source);
+            var result = machine.TryGetByName("sysbus.mockPeripheral", out Tests.UnitTests.Mocks.MockPeripheralWithEnumAttribute mockPeripheral);
+            Assert.IsTrue(result);
+            Assert.AreEqual(MockEnum.ValidValue, mockPeripheral.MockEnumValue);
+        }
+
+        [Test]
         public void ShouldFailOnInvalidEnum()
         {
             var source = @"

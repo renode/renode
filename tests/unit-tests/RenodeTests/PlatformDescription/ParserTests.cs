@@ -139,7 +139,27 @@ uart:
 
             var attribute = (ConstructorOrPropertyAttribute)entry.Attributes.Single();
             Assert.AreEqual("baudRate", attribute.Name);
-            Assert.AreEqual("B9600", ((EnumValue)attribute.Value).Value);
+            var value = (EnumValue)attribute.Value;
+            Assert.AreEqual("BaudRate", value.TypeName);
+            Assert.AreEqual("B9600", value.Value);
+            Assert.IsTrue(value.IsFullyQualified);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithShorthandEnumValue()
+        {
+            var source = @"
+uart:
+    baudRate: .B9600
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            var attribute = (ConstructorOrPropertyAttribute)entry.Attributes.Single();
+            var value = (EnumValue)attribute.Value;
+            Assert.AreEqual("B9600", value.Value);
+            Assert.IsFalse(value.IsFullyQualified);
         }
 
         [Test]
