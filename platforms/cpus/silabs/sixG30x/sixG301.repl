@@ -1,0 +1,533 @@
+i2c0: I2C.EFR32_I2CController @ {
+        sysbus <0x40200000, +0x4000>; // I2C0_NS
+        sysbus <0x50200000, +0x4000>  // I2C0_S
+    }
+    -> nvic@44
+
+gpioPort: GPIOPort.SiLabs_GPIO_8 @ {
+        sysbus <0x4083C000, +0x4000>; // GPIO_NS
+        sysbus <0x5083C000, +0x4000>  // GPIO_S
+    }
+    EvenIRQ -> nvic@43
+    OddIRQ -> nvic@42
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x20000000; // SRAM_NS
+        sysbus 0x30000000; // SRAM_S
+        sysbus 0x00800000; // SRAM_ALIAS_NS (execute only)
+        sysbus 0x10800000 // SRAM_ALIAS_S (execute only)
+    }
+    size: 0x80000
+
+ahblpw0: Memory.MappedMemory @ {
+        sysbus 0xA0000000; // Port 0 Non Secure 
+        sysbus 0xA0100000; // Port 1 Non Secure 
+        sysbus 0xB0000000; // Port 0 Secure
+        sysbus 0xB0100000  // Port 1 Secure
+    }
+    size: 0x10000
+
+fswram: Memory.MappedMemory @ {
+        sysbus 0xA0010000;
+        sysbus 0xB0010000
+    }
+    size: 0x1000
+
+frcram: Memory.MappedMemory @ {
+        sysbus 0xA0011000;
+        sysbus 0xB0011000
+    }
+    size: 0x2000
+
+flash: Memory.MappedMemory @ {
+        sysbus 0x01000000; // FLASH_NS
+        sysbus 0x11000000  // FLASH_S
+    }
+    size: 0x400000
+
+nvic: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu };
+        sysbus new Bus.BusMultiRegistration { address: 0xE002E000; size: 0x1000; region: "NonSecure"; cpu: cpu }
+    }
+    -> cpu@0
+    systickFrequency: 39000000
+
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m33"
+    cpuId: 0
+
+seqcpu: CPU.CV32E40P @ sysbus
+    hartId: 0
+    cpuType: "rv32imc_zicsr_zifencei_zba_zbb_zbs"
+    privilegedArchitecture: PrivilegedArchitecture.PrivUnratified
+    timeProvider: empty
+    IsHalted: true
+    init:
+        RegisterCustomCSR "MachineIntStatusH" 0x310 Machine    
+
+clic: IRQControllers.CoreLocalInterruptController @ { 
+        sysbus <0xF1000000, +0x4000>
+    } 
+    cpu: seqcpu
+    modeBits: 0
+
+rvconfig1: Miscellaneous.SiLabs.SiLabs_RvCfg_2 @ {
+        sysbus <0xA0248000, +0x4000>; // RVCFG1_NS
+        sysbus <0xB0248000, +0x4000>  // RVCFG1_S
+    }
+
+rvconfig2: Miscellaneous.SiLabs.SiLabs_RvCfg_2 @ {
+        sysbus <0xA024C000, +0x4000>; // RVCFG2_NS
+        sysbus <0xB024C000, +0x4000>  // RVCFG2_S
+    }
+
+lpwBufferController: Miscellaneous.SiLabs.SiLabs_BUFC_5 @ {
+        sysbus <0xA0300000, +0x4000>;  // BUFC_NS
+        sysbus <0xB0300000, +0x4000>   // BUFC_S
+    }
+    IRQ -> nvic@47
+    SequencerIRQ -> clic@13
+
+radio: Wireless.SiLabs_xG301_LPW @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xA0228000; size: 0x4000; region: "fswmailbox_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0228000; size: 0x4000; region: "fswmailbox_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA022C000; size: 0x4000; region: "rfmailbox_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB022C000; size: 0x4000; region: "rfmailbox_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA0204000; size: 0x4000; region: "frc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0204000; size: 0x4000; region: "frc_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA020C000; size: 0x4000; region: "agc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB020C000; size: 0x4000; region: "agc_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA0210000; size: 0x4000; region: "crc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0210000; size: 0x4000; region: "crc_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA0214000; size: 0x4000; region: "modem_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0214000; size: 0x4000; region: "modem_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA0218000; size: 0x4000; region: "synth_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0218000; size: 0x4000; region: "synth_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA021C000; size: 0x4000; region: "protimer_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB021C000; size: 0x4000; region: "protimer_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA0220000; size: 0x4000; region: "rac_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB0220000; size: 0x4000; region: "rac_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA3018000; size: 0x4000; region: "hostportal_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB3018000; size: 0x4000; region: "hostportal_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA3014000; size: 0x4000; region: "lpw0portal_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB3014000; size: 0x4000; region: "lpw0portal_s" }
+    }
+    sequencer: seqcpu
+    sequencerConfig: rvconfig1
+    bufferController: lpwBufferController
+    // Main CPU interrupts
+    Lpw0PortalIRQ -> nvic@8
+    FrameControllerPrioritizedIRQ -> nvic@48
+    FrameControllerIRQ -> nvic@49
+    ProtocolTimerIRQ -> nvic@50
+    RadioControllerRadioStateMachineIRQ -> nvic@51
+    RadioControllerSequencerIRQ -> nvic@52
+    SynthesizerIRQ -> nvic@53
+    ModulatorAndDemodulatorIRQ -> nvic@56
+    AutomaticGainControlIRQ -> nvic@57
+    RfTimerIRQ -> nvic@58
+    // Sequencer CPU interrupts
+    SeqOffIRQ -> clic@26
+    SeqRxWarmIRQ -> clic@25
+    SeqRxSearchIRQ -> clic@24
+    SeqRxFrameIRQ -> clic@23
+    SeqRxWrapUpIRQ -> clic@22
+    SeqTxWarmIRQ -> clic@21
+    SeqTxIRQ -> clic@20
+    SeqTxWrapUpIRQ -> clic@19
+    SeqShutdownIRQ -> clic@18
+    SeqFrameControllerIRQ -> clic@16
+    SeqRadioControllerIRQ -> clic@17
+    SeqProtocolTimerIRQ -> clic@11
+    SeqModulatorAndDemodulatorIRQ -> clic@14
+    SeqAutomaticGainControlIRQ -> clic@12
+    SeqSynthesizerIRQ -> clic@9
+    SeqHostPortalIRQ -> clic@34
+    SeqRfMailboxIRQ -> clic@8
+
+seqacc: Miscellaneous.SiLabs.SiLabs_SEQACC_1 @ {
+        sysbus <0xA025C000, +0x4000>; // SEQACC_NS
+        sysbus <0xB025C000, +0x4000>  // SEQACC_S
+    }
+    frequency: 38400000
+    protocolTimer: radio
+    HostIRQ -> nvic@59
+    SequencerIRQ -> clic@27
+
+itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
+
+timer0: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x40848000, +0x4000>; // TIMER0_NS
+        sysbus <0x50848000, +0x4000>  // TIMER0_S
+    }
+    frequency: 38400000
+    -> nvic@10
+
+timer1: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x4084C000, +0x4000>; // TIMER1_NS
+        sysbus <0x5084C000, +0x4000>  // TIMER1_S
+    }
+    frequency: 38400000
+    -> nvic@11
+
+timer2: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x40850000, +0x4000>; // TIMER2_NS
+        sysbus <0x50850000, +0x4000>  // TIMER2_S
+    }
+    frequency: 38400000
+    -> nvic@12
+
+timer3: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x40854000, +0x4000>; // TIMER3_NS
+        sysbus <0x50854000, +0x4000>  // TIMER3_S
+    }
+    frequency: 38400000
+    -> nvic@13
+
+cmu: Miscellaneous.SiLabs.SiLabs_CMU_8 @ {
+        sysbus <0x40804000, +0x4000>; // CMU_NS
+        sysbus <0x50804000, +0x4000>  // CMU_S
+    }
+
+hfxo: Miscellaneous.SiLabs.SiLabs_HFXO_5 @ {
+        sysbus <0x40104000, +0x4000>; // HFXO0_NS
+        sysbus <0x50104000, +0x4000>  // HFXO0_S
+    }
+    -> nvic@66    
+
+hfrcodpll: Miscellaneous.SiLabs.SiLabs_HFRCO_3 @ {
+        sysbus <0x40810000, +0x4000>; // HFRCO0_NS
+        sysbus <0x50810000, +0x4000>  // HFRCO0_S
+    }
+
+hfrcoem23: Miscellaneous.SiLabs.SiLabs_HFRCO_3 @ {
+        sysbus <0x40100000, +0x4000>; // HFRCOEM23_NS
+        sysbus <0x50100000, +0x4000>  // HFRCOEM23_S
+    }
+
+hydraram: Miscellaneous.SiLabs.SiLabs_HYDRARAM_1 @ {
+        sysbus <0x40808000, +0x4000>; // HOSTDMEM_NS
+        sysbus <0x50808000, +0x4000>  // HOSTDMEM_S
+    }
+
+dpll: Miscellaneous.SiLabs.SiLabs_DPLL_1 @ {
+        sysbus <0x4081C000, +0x4000>; // DPLL0_NS
+        sysbus <0x5081C000, +0x4000>  // DPLL0_S
+    }
+
+lfxo: Miscellaneous.SiLabs.SiLabs_LFXO_2 @ {
+        sysbus <0x40820000, +0x4000>; // LFXO_NS
+        sysbus <0x50820000, +0x4000>  // LFXO_S
+    }
+
+lfrco: Miscellaneous.SiLabs.SiLabs_LFRCO_4 @ {
+        sysbus <0x40824000, +0x4000>; // LFRCO_NS
+        sysbus <0x50824000, +0x4000>  // LFRCO_S
+    }
+
+socpll: Miscellaneous.SiLabs.SiLabs_SOCPLL_1 @ {
+        sysbus <0x40800000, +0x4000>; // SOCPLL_NS
+        sysbus <0x50800000, +0x4000>  // SOCPLL_S
+    }
+
+ksu: Miscellaneous.SiLabs.SiLabs_KSU_1 @ {
+        sysbus <0x4089C000, +0x4000>; // KSU_NS
+        sysbus <0x5089C000, +0x4000>  // KSU_S
+    }
+
+semailbox: Miscellaneous.SiLabs.SiLabs_SEMAILBOX_2 @ {
+        sysbus <0x42800000, +0x4000>; // SEMAILBOX_NS
+        sysbus <0x52800000, +0x4000>  // SEMAILBOX_S
+    }
+    flashSize: 0x400000
+    flashPageSize: 0x1000    
+    flashRegionSize: 0x8000
+    flashCodeRegionStart: 0x30000
+    flashCodeRegionEnd: 0x1E7FFF
+    flashDataRegionStart: 0x1E8000
+    ksu: ksu
+    RxIRQ -> nvic@1
+    TxIRQ -> nvic@2
+
+symcrypto: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
+        sysbus <0x41000000, +0x4000>; // SYMCRYPTO_NS
+        sysbus <0x51000000, +0x4000>  // SYMCRYPTO_S
+    }
+    ksu: ksu
+    -> nvic@74
+
+lpwaes: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
+        sysbus <0x41004000, +0x4000>; // LPWAES_NS
+        sysbus <0x51004000, +0x4000>  // LPWAES_S
+    }
+    ksu: ksu
+    -> nvic@75
+
+devinfo: Miscellaneous.SiLabs.SiLabs_DEVINFO_1 @ {
+        sysbus <0x0FE08000, +0x4000>; // DEVINFO_NS
+        sysbus <0x1FE08000, +0x4000>  // DEVINFO_S
+    }
+
+syscfg: Miscellaneous.SiLabs.SiLabs_SYSCFG_10 @ {
+        sysbus <0x40874000, +0x4000>; // SYSCFG_NS
+        sysbus <0x50874000, +0x4000>  // SYSCFG_S
+    }
+
+sysrtc: Timers.SiLabs_SYSRTC_2 @ {
+        sysbus <0xA3000000, +0x4000>; // SYSRTC0_NS
+        sysbus <0xB3000000, +0x4000>  // SYSRTC0_S
+    }
+    frequency: 32768
+    MsIRQ -> nvic@16
+    AppIRQ -> nvic@15
+    AppAlternateIRQ -> clic@10
+
+ldma: DMA.SiLabs_LDMA_3_3 @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40814000; size: 0x4000; region: "ldma_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50814000; size: 0x4000; region: "ldma_s" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40844000; size: 0x4000; region: "ldmaxbar_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50844000; size: 0x4000; region: "ldmaxbar_s" }
+    }
+    Channel0IRQ -> nvic@31
+    Channel1IRQ -> nvic@32
+    Channel2IRQ -> nvic@33
+    Channel3IRQ -> nvic@34
+    Channel4IRQ -> nvic@35
+    Channel5IRQ -> nvic@36
+    Channel6IRQ -> nvic@37
+    Channel7IRQ -> nvic@38
+
+eusart0: UART.SiLabs_EUSART_4 @ {
+        sysbus <0x40208000, +0x4000>; // EUSART0_NS
+        sysbus <0x50208000, +0x4000>  // EUSART0_S
+    }
+    clockFrequency: 39000000 // RENODE-140: properly configure this
+    ReceiveIRQ -> nvic@17
+    TransmitIRQ -> nvic@18
+    RxFifoLevelRequest -> ldma@0x0090
+    RxFifoLevelGpioSignal -> gpioPort@0x1201
+    TxFifoLevelRequest -> ldma@0x0091
+
+eusart1: UART.SiLabs_EUSART_4 @ {
+        sysbus <0x40884000, +0x4000>; // EUSART1_NS
+        sysbus <0x50884000, +0x4000>  // EUSART1_S
+    }
+    clockFrequency: 39000000 // RENODE-140: properly configure this
+    ReceiveIRQ -> nvic@19
+    TransmitIRQ -> nvic@20
+    RxFifoLevelRequest -> ldma@0x0080
+    RxFifoLevelGpioSignal -> gpioPort@0x1202
+    TxFifoLevelRequest -> ldma@0x0081
+
+eusart2: UART.SiLabs_EUSART_4 @ {
+        sysbus <0x40888000, +0x4000>; // EUSART2_NS
+        sysbus <0x50888000, +0x4000>  // EUSART2_S
+    }
+    clockFrequency: 39000000 // RENODE-140: properly configure this
+    ReceiveIRQ -> nvic@21
+    TransmitIRQ -> nvic@22
+    RxFifoLevelRequest -> ldma@0x00F0
+    RxFifoLevelGpioSignal -> gpioPort@0x1203
+    TxFifoLevelRequest -> ldma@0x00F1
+
+wtimer0: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x40204000, +0x4000>; // WDOG0_NS
+        sysbus <0x50204000, +0x4000>  // WDOG0_S
+    }
+    frequency: 38400000
+    -> nvic@64
+
+wtimer1: Timers.SiLabs_TIMER_2 @ {
+        sysbus <0x40894000, +0x4000>; // WDOG1_NS
+        sysbus <0x50894000, +0x4000>  // WDOG1_S
+    }
+    frequency: 38400000
+    -> nvic@65
+
+semaphore0: Miscellaneous.SiLabs.SiLabs_SEMAPHORE_1 @ {
+        sysbus <0x4082C000, +0x4000>; // SEMAPHORE0_NS
+        sysbus <0x5082C000, +0x4000>  // SEMAPHORE0_S
+    }
+
+semaphore1: Miscellaneous.SiLabs.SiLabs_SEMAPHORE_1 @ {
+        sysbus <0x40830000, +0x4000>; // SEMAPHORE1_NS
+        sysbus <0x50830000, +0x4000>  // SEMAPHORE1_S
+    }
+
+emu: Miscellaneous.SiLabs.SiLabs_EMU_9 @ {
+        sysbus <0xA3008000, +0x4000>; // EMU_NS
+        sysbus <0xB3008000, +0x4000>  // EMU_S
+    }
+
+sysbus:
+    init add:
+        Tag <0x0FE08000, 0x0FE0BFFF> "DEVINFO_NS"
+        Tag <0x40000000, 0x40003FFF> "LETIMER0_NS"
+        Tag <0x40004000, 0x40007FFF> "ADC0_NS"
+        Tag <0x40008000, 0x4000BFFF> "ACMP0_NS"
+        Tag <0x4000C000, 0x4000FFFF> "ACMP1_NS"
+        Tag <0x40010000, 0x40013FFF> "AMUXCP0_NS"
+        Tag <0x40040000, 0x40043FFF> "PCNT0_NS"
+        Tag <0x40100000, 0x40103FFF> "HFRCOEM23_NS"
+        Tag <0x40104000, 0x40107FFF> "HFXO0_NS"
+        Tag <0x40200000, 0x40203FFF> "I2C0_NS"
+        Tag <0x40204000, 0x40207FFF> "WDOG0_NS"
+        Tag <0x40208000, 0x4020BFFF> "EUSART0_NS"
+        Tag <0x40800000, 0x40803FFF> "SOCPLL_NS" 
+        Tag <0x40804000, 0x40807FFF> "CMU_NS"        
+        Tag <0x40808000, 0x4080BFFF> "HOSTDMEM_NS"       
+        Tag <0x40810000, 0x40813FFF> "HFRCO0_NS"
+        Tag <0x40814000, 0x40817FFF> "LDMA_NS"
+        Tag <0x40818000, 0x4081BFFF> "FSRCO_NS"
+        Tag <0x4081C000, 0x4081FFFF> "DPLL0_NS"
+        Tag <0x40820000, 0x40823FFF> "LFXO_NS"
+        Tag <0x40824000, 0x40827FFF> "LFRCO_NS"
+        Tag <0x40828000, 0x4082BFFF> "ULFRCO_NS"
+        Tag <0x4082C000, 0x4082FFFF> "SEMAPHORE0_NS"
+        Tag <0x40830000, 0x40833FFF> "SEMAPHORE1_NS"        
+        Tag <0x40834000, 0x40837FFF> "L1ICACHE0_NS"
+        Tag <0x40838000, 0x4083BFFF> "PRS_NS"
+        Tag <0x4083C000, 0x4083FFFF> "GPIO_NS"
+        Tag <0x40844000, 0x40847FFF> "LDMAXBAR_NS"
+        Tag <0x40848000, 0x4084BFFF> "TIMER0_NS"
+        Tag <0x4084C000, 0x4084FFFF> "TIMER1_NS"
+        Tag <0x40850000, 0x40853FFF> "TIMER2_NS"
+        Tag <0x40854000, 0x40857FFF> "TIMER3_NS"
+        Tag <0x40858000, 0x4085BFFF> "ETAMPDET_NS"
+        Tag <0x4085C000, 0x4085FFFF> "L2ICACHE_NS"
+        Tag <0x40860000, 0x40863FFF> "PIXELRZ0_NS"
+        Tag <0x40864000, 0x40867FFF> "BURTC_NS"
+        Tag <0x40868000, 0x4086BFFF> "I2C1_NS"
+        Tag <0x4086C000, 0x4086FFFF> "CHIPTESTCTRL_NS"
+        Tag <0x40870000, 0x40873FFF> "SYSCFG_NS_CFGNS"
+        Tag <0x40874000, 0x40877FFF> "SYSCFG_NS"
+        Tag <0x40878000, 0x4087BFFF> "BURAM_NS"
+        Tag <0x4087C000, 0x4087FFFF> "GPCRC_NS"
+        Tag <0x40880000, 0x40883FFF> "LEDDRV0_NS"
+        Tag <0x40884000, 0x40887FFF> "EUSART1_NS"
+        Tag <0x40888000, 0x4088BFFF> "EUSART2_NS"
+        Tag <0x4088C000, 0x4088FFFF> "PIXELRZ1_NS"
+        Tag <0x40890000, 0x40893FFF> "I2C2_NS"        
+        Tag <0x40894000, 0x40897FFF> "WDOG1_NS"
+        Tag <0x40898000, 0x4089BFFF> "RPA_NS"
+        Tag <0x4089C000, 0x4089FFFF> "KSU_NS"
+        Tag <0x41000000, 0x41003FFF> "SYMCRYPTO_NS"
+        Tag <0x41004000, 0x41007FFF> "LPWAES_NS"
+        Tag <0x41008000, 0x4100BFFF> "SMU_NS"
+        Tag <0x4100C000, 0x4100FFFF> "SMU_NS_CFGNS"  
+        Tag <0x42800000, 0x42803FFF> "SEMAILBOX_NS"
+        Tag <0x4FC00000, 0x4FC03FFF> "QSPI0_NS_MANUAL"
+        Tag <0xA0204000, 0xA0207FFF> "FRC_NS"
+        Tag <0xA020C000, 0xA020FFFF> "AGC_NS"
+        Tag <0xA0210000, 0xA0213FFF> "RFCRC_NS"
+        Tag <0xA0214000, 0xA0217FFF> "MODEM_NS"
+        Tag <0xA0218000, 0xA021BFFF> "SYNTH_NS"
+        Tag <0xA021C000, 0xA021FFFF> "PROTIMER_NS"
+        Tag <0xA0220000, 0xA0223FFF> "RAC_NS"
+        Tag <0xA0224000, 0xA0227FFF> "RFSCRATCHPAD_NS"
+        Tag <0xA0228000, 0xA022BFFF> "FSWMAILBOX_NS"
+        Tag <0xA022C000, 0xA022FFFF> "RFMAILBOX_NS"
+        Tag <0xA0230000, 0xA0233FFF> "RFECA0_NS"
+        Tag <0xA0234000, 0xA0237FFF> "RFECA1_NS"
+        Tag <0xA0238000, 0xA023BFFF> "ECAIFADC_NS"
+        Tag <0xA0240000, 0xA0243FFF> "HYDRARAMLPW1_NS"
+        Tag <0xA0244000, 0xA0247FFF> "SRWCMU_NS"
+        Tag <0xA0248000, 0xA024BFFF> "RVCFG1_NS"
+        Tag <0xA024C000, 0xA024FFFF> "RVCFG2_NS"
+        Tag <0xA0250000, 0xA0253FFF> "RFTIMER_NS"
+        Tag <0xA0254000, 0xA0257FFF> "DPLLLPW_NS"
+        Tag <0xA0258000, 0xA025BFFF> "HFRCOLPW_NS"
+        Tag <0xA025C000, 0xA025FFFF> "SEQACC_NS"
+        Tag <0xA0300000, 0xA0303FFF> "BUFC_NS"
+        Tag <0xA3000000, 0xA3003FFF> "SYSRTC0_NS"
+        Tag <0xA3004000, 0xA3007FFF> "SCRATCHPAD_NS"
+        Tag <0xA3008000, 0xA300BFFF> "EMU_NS"
+        Tag <0xA300C000, 0xA300FFFF> "EMU_NS_CFGNS_NS"
+        Tag <0xA3010000, 0xA3013FFF> "SEPORTAL_NS"
+        Tag <0xA3014000, 0xA3017FFF> "LPW0PORTAL_NS" 
+        Tag <0xA3018000, 0xA301BFFF> "HOSTPORTAL_NS"       
+        Tag <0x1FE08000, 0x1FE0BFFF> "DEVINFO_S"                           
+        Tag <0x50000000, 0x50003FFF> "LETIMER0_S"
+        Tag <0x50004000, 0x50007FFF> "ADC0_S"
+        Tag <0x50008000, 0x5000BFFF> "ACMP0_S"
+        Tag <0x5000C000, 0x5000FFFF> "ACMP1_S"
+        Tag <0x50010000, 0x50013FFF> "AMUXCP0_S"
+        Tag <0x50040000, 0x50043FFF> "PCNT0_S"
+        Tag <0x50100000, 0x50103FFF> "HFRCOEM23_S"
+        Tag <0x50104000, 0x50107FFF> "HFXO0_S"
+        Tag <0x50200000, 0x50203FFF> "I2C0_S"
+        Tag <0x50204000, 0x50207FFF> "WDOG0_S"
+        Tag <0x50208000, 0x5020BFFF> "EUSART0_S"
+        Tag <0x50800000, 0x50803FFF> "SOCPLL_S"                  
+        Tag <0x50804000, 0x50807FFF> "CMU_S"
+        Tag <0x50808000, 0x5080BFFF> "HOSTDMEM_S"           
+        Tag <0x50810000, 0x50813FFF> "HFRCO0_S"
+        Tag <0x50814000, 0x50817FFF> "LDMA_S"
+        Tag <0x50818000, 0x5081BFFF> "FSRCO_S"
+        Tag <0x5081C000, 0x5081FFFF> "DPLL0_S"
+        Tag <0x50820000, 0x50823FFF> "LFXO_S"
+        Tag <0x50824000, 0x50827FFF> "LFRCO_S"
+        Tag <0x50828000, 0x5082BFFF> "ULFRCO_S"
+        Tag <0x5082C000, 0x5082FFFF> "SEMAPHORE0_S"
+        Tag <0x50830000, 0x50833FFF> "SEMAPHORE1_S"         
+        Tag <0x50834000, 0x50837FFF> "L1ICACHE0_S"
+        Tag <0x50838000, 0x5083BFFF> "PRS_S"
+        Tag <0x5083C000, 0x5083FFFF> "GPIO_S"
+        Tag <0x50844000, 0x50847FFF> "LDMAXBAR_S"
+        Tag <0x50848000, 0x5084BFFF> "TIMER0_S"
+        Tag <0x5084C000, 0x5084FFFF> "TIMER1_S"
+        Tag <0x50850000, 0x50853FFF> "TIMER2_S"
+        Tag <0x50854000, 0x50857FFF> "TIMER3_S"
+        Tag <0x50858000, 0x5085BFFF> "ETAMPDET_S"
+        Tag <0x5085C000, 0x5085FFFF> "L2ICACHE_S"
+        Tag <0x50860000, 0x50863FFF> "PIXELRZ0_S"
+        Tag <0x50864000, 0x50867FFF> "BURTC_S"
+        Tag <0x50868000, 0x5086BFFF> "I2C1_S"
+        Tag <0x5086C000, 0x5086FFFF> "CHIPTESTCTRL_S"
+        Tag <0x50870000, 0x50873FFF> "SYSCFG_S_CFGNS"
+        Tag <0x50874000, 0x50877FFF> "SYSCFG_S"
+        Tag <0x50878000, 0x5087BFFF> "BURAM_S"
+        Tag <0x5087C000, 0x5087FFFF> "GPCRC_S"
+        Tag <0x50880000, 0x50883FFF> "LEDDRV0_S"        
+        Tag <0x50884000, 0x50887FFF> "EUSART1_S"
+        Tag <0x50888000, 0x5088BFFF> "EUSART2_S"
+        Tag <0x5088C000, 0x5088FFFF> "PIXELRZ1_S" 
+        Tag <0x50890000, 0x50893FFF> "I2C2_S"                  
+        Tag <0x50894000, 0x50897FFF> "WDOG1_S"
+        Tag <0x50898000, 0x5089BFFF> "RPA_S"
+        Tag <0x5089C000, 0x5089FFFF> "KSU_S"
+        Tag <0x51000000, 0x51003FFF> "SYMCRYPTO_S"
+        Tag <0x51004000, 0x51007FFF> "LPWAES_S"
+        Tag <0x51008000, 0x5100BFFF> "SMU_S"
+        Tag <0x5100C000, 0x5100FFFF> "SMU_S_CFGNS"
+        Tag <0x52800000, 0x52803FFF> "SEMAILBOX_S"
+        Tag <0xB0204000, 0xB0207FFF> "FRC_S"
+        Tag <0xB020C000, 0xB020FFFF> "AGC_S"
+        Tag <0xB0210000, 0xB0213FFF> "RFCRC_S"
+        Tag <0xB0214000, 0xB0217FFF> "MODEM_S"
+        Tag <0xB0218000, 0xB021BFFF> "SYNTH_S"
+        Tag <0xB021C000, 0xB021FFFF> "PROTIMER_S"
+        Tag <0xB0220000, 0xB0223FFF> "RAC_S"
+        Tag <0xB0224000, 0xB0227FFF> "RFSCRATCHPAD_S"
+        Tag <0xB0228000, 0xB022BFFF> "FSWMAILBOX_S"
+        Tag <0xB022C000, 0xB022FFFF> "RFMAILBOX_S"
+        Tag <0xB0230000, 0xB0233FFF> "RFECA0_S"
+        Tag <0xB0234000, 0xB0237FFF> "RFECA1_S"
+        Tag <0xB0238000, 0xB023BFFF> "ECAIFADC_S"
+        Tag <0xB0240000, 0xB0243FFF> "HYDRARAMLPW1_S"
+        Tag <0xB0244000, 0xB0247FFF> "SRWCMU_S"
+        Tag <0xB0248000, 0xB024BFFF> "RVCFG1_S"
+        Tag <0xB024C000, 0xB024FFFF> "RVCFG2_S"
+        Tag <0xB0250000, 0xB0253FFF> "RFTIMER_S"
+        Tag <0xB0254000, 0xB0257FFF> "DPLLLPW_S"
+        Tag <0xB0258000, 0xB025BFFF> "HFRCOLPW_S"
+        Tag <0xB025C000, 0xB025FFFF> "SEQACC_S"
+        Tag <0xB0300000, 0xB0303FFF> "BUFC_S"
+        Tag <0xB3000000, 0xB3003FFF> "SYSRTC0_S"
+        Tag <0xB3004000, 0xB3007FFF> "SCRATCHPAD_S"
+        Tag <0xB3008000, 0xB300BFFF> "EMU_S"
+        Tag <0xB300C000, 0xB300FFFF> "EMU_S_CFGNS"
+        Tag <0xB3010000, 0xB3013FFF> "SEPORTAL_S"
+        Tag <0xB3014000, 0xB3017FFF> "LPW0PORTAL_S" 
+        Tag <0xB3018000, 0xB301BFFF> "HOSTPORTAL_S"

@@ -1,0 +1,29 @@
+using "platforms/cpus/silabs/sixG30x/sixG301.repl"
+
+led0: Miscellaneous.LED @ gpioPort 50  // PD02
+
+led1: Miscellaneous.LED @ gpioPort 51  // PD03
+
+gpioPort:
+    50 -> led0@0
+    51 -> led1@0
+
+button0: Miscellaneous.Button @ gpioPort 17  // PB01
+    -> gpioPort@17
+
+button1: Miscellaneous.Button @ gpioPort 37  // PC05
+    -> gpioPort@37
+
+sram:
+    size: 0x80000
+
+flash:
+    size: 0x400000
+
+semailbox:
+    flashSize: 0x400000
+    flashPageSize: 0x1000    
+    flashRegionSize: 0x8000
+    flashCodeRegionStart: 0x30000 // Starts after SE area, which is 192kB for Rainier
+    flashCodeRegionEnd: 0x1E7FFF // Initial code region end address: (flashSize - codeRegionStart)/2
+    flashDataRegionStart: 0x1E8000 // Initial start of data portion

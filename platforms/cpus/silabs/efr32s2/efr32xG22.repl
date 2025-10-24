@@ -1,30 +1,25 @@
-nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
-        address: 0xE000E000;
-        cpu: cpu
-    }
-    -> cpu@0
-    systickFrequency: 38400000
-
-cpu: CPU.CortexM @ sysbus
-    nvic: nvic
-    cpuType: "cortex-m33"
-    cpuId: 0
-
-flash: Memory.MappedMemory @ sysbus 0x00000000
-    size: 0x80000
-
 sram: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x8000
 
 seqram: Memory.MappedMemory @ {
-        sysbus 0xA0000000; // SEQRAM_S
-        sysbus 0xB0000000  // SEQRAM_NS
+        sysbus 0xA0000000;
+        sysbus 0xB0000000;
+
+        sysbus new Bus.BusPointRegistration {
+            address: 0x0;
+            cpu: seqcpu
+        }
     }
     size: 0x4000
 
 frcram: Memory.MappedMemory @ {
-        sysbus 0xA0004000; // FRCRAM_S
-        sysbus 0xB0004000  // FRCRAM_NS
+        sysbus 0xA0004000;
+        sysbus 0xB0004000;
+
+        sysbus new Bus.BusPointRegistration {
+            address: 0x00004000;
+            cpu: seqcpu
+        }
     }
     size: 0x1000
 
@@ -32,15 +27,34 @@ pkram: Memory.MappedMemory @ {
         sysbus 0x4C028000; // PKRAM_MAIN_S
         sysbus 0x5C028000  // PKRAM_MAIN_NS
     }
-    size: 0x2000    // TODO: according to the CMSIS header, this should be 0x1000
+    size: 0x2000
 
-bitclear: Miscellaneous.BitAccess
-    address: 0x2000
-    mode: BitAccessMode.Clear
+flash: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x80000
 
-bitset: Miscellaneous.BitAccess
-    address: 0x1000
-    mode: BitAccessMode.Set
+nvic: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu };
+        sysbus new Bus.BusMultiRegistration { address: 0xE002E000; size: 0x1000; region: "NonSecure"; cpu: cpu }
+    }
+    -> cpu@0
+    systickFrequency: 38400000
+
+seqnvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: seqcpu
+    }
+    -> seqcpu@0
+
+cpu: CPU.CortexM @ sysbus
+    nvic: nvic
+    cpuType: "cortex-m33"
+    cpuId: 0
+
+seqcpu: CPU.CortexM @ sysbus
+    nvic: seqnvic
+    cpuType: "cortex-m0+"
+    cpuId: 1
+    IsHalted: true
 
 i2c0: I2C.EFR32_I2CController @ {
         sysbus <0x4A010000, +0x4000>; // I2C0_S
@@ -48,15 +62,12 @@ i2c0: I2C.EFR32_I2CController @ {
     }
     -> nvic@27
 
-ldma: DMA.EFR32xG22_LDMA @ {
-        sysbus new Bus.BusMultiRegistration { address: 0x40040000; size: 0x4000; region: "ldma" };     // LDMA_S
-        sysbus new Bus.BusMultiRegistration { address: 0x50040000; size: 0x4000; region: "ldma" };     // LDMA_NS
-        sysbus new Bus.BusMultiRegistration { address: 0x40044000; size: 0x4000; region: "ldmaxbar" }; // LDMAXBAR_S
-        sysbus new Bus.BusMultiRegistration { address: 0x50044000; size: 0x4000; region: "ldmaxbar" }  // LDMAXBAR_NS
+i2c1: I2C.EFR32_I2CController @ {
+        sysbus <0x40068000, +0x4000>; // I2C1_S
+        sysbus <0x50068000, +0x4000>  // I2C1_NS
     }
-    -> nvic@21
 
-usart0: UART.EFR32xG2_USART_0 @ {
+usart0: UART.SiLabs_USART_0 @ {
         sysbus <0x4005C000, +0x4000>; // USART0_S
         sysbus <0x5005C000, +0x4000>  // USART0_NS
     }
@@ -70,7 +81,7 @@ usart0: UART.EFR32xG2_USART_0 @ {
     TxBufferLowSingleRequest -> ldma@0x1042
     TxEmptyRequest -> ldma@0x0044
 
-usart1: UART.EFR32xG2_USART_0 @ {
+usart1: UART.SiLabs_USART_0 @ {
         sysbus <0x40060000, +0x4000>; // USART1_S
         sysbus <0x50060000, +0x4000>  // USART1_NS
     }
@@ -84,67 +95,174 @@ usart1: UART.EFR32xG2_USART_0 @ {
     TxBufferLowSingleRequest -> ldma@0x1052
     TxEmptyRequest -> ldma@0x0054
 
-// TODO: this should be MSC_1
-msc: Miscellaneous.SiLabs.EFR32xG2_MSC_3 @ {
+eusart0: UART.SiLabs_EUART_0 @ {
+        sysbus <0x4A030000, +0x4000>; // EUART0_S
+        sysbus <0x5A030000, +0x4000>  // EUART0_NS
+    }
+    clockFrequency: 38400000
+    ReceiveIRQ -> nvic@62
+    TransmitIRQ -> nvic@63
+    RxFifoLevel -> ldma@0x0100
+    RxFifoLevelGpioSignal -> gpioPort@0x1203
+    TxFifoLevel -> ldma@0x0101
+
+lpwBufferController: Miscellaneous.SiLabs.SiLabs_BUFC_1 @ {
+        sysbus <0xAA000000, +0x4000>; // BUFC_S
+        sysbus <0xBA000000, +0x4000>  // BUFC_NS
+    }
+    IRQ -> nvic@32
+    SequencerIRQ -> seqnvic@18
+
+radio: Wireless.SiLabs_xG22_LPW @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xA8028000; size: 0x4000; region: "hostmailbox" }; // rdmailbox0
+        sysbus new Bus.BusMultiRegistration { address: 0xA802C000; size: 0x4000; region: "rfmailbox" }; // rdmailbox1
+        sysbus new Bus.BusMultiRegistration { address: 0xA8004000; size: 0x4000; region: "frc" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA800C000; size: 0x4000; region: "agc" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA8010000; size: 0x4000; region: "crc" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA8014000; size: 0x4000; region: "modem" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA8018000; size: 0x4000; region: "synth" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA801C000; size: 0x4000; region: "protimer" };
+        sysbus new Bus.BusMultiRegistration { address: 0xA8020000; size: 0x4000; region: "rac" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB8028000; size: 0x4000; region: "hostmailbox_ns" }; // rdmailbox0_ns
+        sysbus new Bus.BusMultiRegistration { address: 0xB802C000; size: 0x4000; region: "rfmailbox_ns" }; // rdmailbox1_ns
+        sysbus new Bus.BusMultiRegistration { address: 0xB8004000; size: 0x4000; region: "frc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB800C000; size: 0x4000; region: "agc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB8010000; size: 0x4000; region: "crc_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB8014000; size: 0x4000; region: "modem_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB8018000; size: 0x4000; region: "synth_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB801C000; size: 0x4000; region: "protimer_ns" };
+        sysbus new Bus.BusMultiRegistration { address: 0xB8020000; size: 0x4000; region: "rac_ns" }
+    }
+    sequencer: seqcpu
+    bufferController: lpwBufferController
+    prortc: prortc
+    // Main CPU interrupts
+    AutomaticGainControlIRQ -> nvic@31
+    FrameControllerPrioritizedIRQ -> nvic@33
+    FrameControllerIRQ -> nvic@34
+    ModulatorAndDemodulatorIRQ -> nvic@35
+    ProtocolTimerIRQ -> nvic@36
+    RadioControllerRadioStateMachineIRQ -> nvic@37
+    RadioControllerSequencerIRQ -> nvic@38
+    HostMailboxIRQ -> nvic@39
+    //ProRtcIrq -> nvic@41
+    SynthesizerIRQ -> nvic@42
+    // Sequencer CPU interrupts
+    SeqOffIRQ ->seqnvic@0
+    SeqRxWarmIRQ ->seqnvic@1
+    SeqRxSearchIRQ ->seqnvic@2
+    SeqRxFrameIRQ ->seqnvic@3
+    SeqRxPoweringDownIRQ ->seqnvic@4
+    SeqRx2RxIRQ ->seqnvic@5
+    SeqRxOverflowIRQ ->seqnvic@6
+    SeqRx2TxIRQ ->seqnvic@7
+    SeqTxWarmIRQ ->seqnvic@8
+    SeqTxIRQ ->seqnvic@9
+    SeqTxPoweringDownIRQ ->seqnvic@10
+    SeqTx2RxIRQ ->seqnvic@11
+    SeqTx2TxIRQ ->seqnvic@12
+    SeqShutdownIRQ ->seqnvic@13
+    SeqRadioControllerIRQ ->seqnvic@14
+    SeqFrameControllerIRQ ->seqnvic@15
+    SeqFrameControllerPriorityIRQ ->seqnvic@16
+    SeqModulatorAndDemodulatorIRQ ->seqnvic@17
+    SeqAutomaticGainControlIRQ ->seqnvic@19
+    SeqProtocolTimerIRQ -> seqnvic@20
+    SeqSynthesizerIRQ -> seqnvic@22
+    SeqRfMailboxIRQ -> seqnvic@23
+
+smu: Miscellaneous.SiLabs.SiLabs_SMU_1 @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x44008000; size: 0x4000; region: "smu_s" }; // SMU_S
+        sysbus new Bus.BusMultiRegistration { address: 0x54008000; size: 0x4000; region: "smu_ns" } // SMU_NS
+    }
+    cpu0: cpu
+    SecureIRQ -> nvic@3
+    SecurePriviledgedIRQ -> nvic@4
+    NonSecurePriviledgedIRQ -> nvic@5
+
+// TODO: Technically this should be MSC_1 but register map is compatible with MSC_3.
+msc: Miscellaneous.SiLabs.SiLabs_MSC_3 @ {
         sysbus <0x40030000, +0x4000>; // MSC_S
         sysbus <0x50030000, +0x4000>  // MSC_NS
     }
     cpu: cpu
-    IRQ -> nvic@49
     flashSize: 0x80000
     flashPageSize: 0x2000
+    flashBaseAddress: 0x00000000
+    IRQ -> nvic@49
 
-gpioPort: GPIOPort.EFR32xG2_GPIO_1 @ {
+gpioPort: GPIOPort.SiLabs_GPIO_1 @ {
         sysbus <0x4003C000, +0x4000>; // GPIO_S
         sysbus <0x5003C000, +0x4000>  // GPIO_NS
     }
     OddIRQ -> nvic@25
     EvenIRQ -> nvic@26
 
-// TODO: this should be TIMER_0
-timer0: Timers.EFR32xG2_TIMER_1 @ {
+bitclear: Miscellaneous.BitAccess
+    address: 0x2000
+    mode: BitAccessMode.Clear
+
+bitset: Miscellaneous.BitAccess
+    address: 0x1000
+    mode: BitAccessMode.Set
+
+rtcc: Timers.SiLabs_RTCC_1 @ {
+        sysbus <0x48000000, +0x4000>; // RTCC_S
+        sysbus <0x58000000, +0x4000>  // RTCC_NS
+    }   
+    frequency: 32768
+    IRQ -> nvic@12
+
+prortc: Timers.SiLabs_RTCC_1 @ {
+        sysbus <0xA8000000, +0x4000>; // RTCC_S
+        sysbus <0xB8000000, +0x4000>  // RTCC_NS
+    }   
+    frequency: 32768
+    IRQ -> nvic@41
+    SeqIRQ -> seqnvic@21
+
+timer0: Timers.SiLabs_TIMER_0 @ {
         sysbus <0x40048000, +0x4000>; // TIMER0_S
         sysbus <0x50048000, +0x4000>  // TIMER0_NS
     }
     frequency: 38400000
-    width: 16
     -> nvic@7
 
-// TODO: this should be TIMER_0
-timer1: Timers.EFR32xG2_TIMER_1 @ {
+timer1: Timers.SiLabs_TIMER_0 @ {
         sysbus <0x4004C000, +0x4000>; // TIMER1_S
         sysbus <0x5004C000, +0x4000>  // TIMER1_NS
     }
     frequency: 38400000
-    width: 16
     -> nvic@8
 
-// TODO: this should be TIMER_0
-timer2: Timers.EFR32xG2_TIMER_1 @ {
+timer2: Timers.SiLabs_TIMER_0 @ {
         sysbus <0x40050000, +0x4000>; // TIMER2_S
         sysbus <0x50050000, +0x4000>  // TIMER2_NS
     }
     frequency: 38400000
-    width: 16
     -> nvic@9
 
-// TODO: this should be TIMER_0
-timer3: Timers.EFR32xG2_TIMER_1 @ {
+timer3: Timers.SiLabs_TIMER_0 @ {
         sysbus <0x40054000, +0x4000>; // TIMER3_S
         sysbus <0x50054000, +0x4000>  // TIMER3_NS
     }
     frequency: 38400000
-    width: 16
     -> nvic@10
 
-// TODO: this should be TIMER_0
-timer4: Timers.EFR32xG2_TIMER_1 @ {
+timer4: Timers.SiLabs_TIMER_0 @ {
         sysbus <0x40058000, +0x4000>; // TIMER4_S
         sysbus <0x50058000, +0x4000>  // TIMER4_NS
     }
     frequency: 38400000
-    width: 16
     -> nvic@11
+
+ldma: DMA.SiLabs_LDMA_0_1 @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40040000; size: 0x4000; region: "ldma" };     // LDMA_S
+        sysbus new Bus.BusMultiRegistration { address: 0x50040000; size: 0x4000; region: "ldma" };     // LDMA_NS
+        sysbus new Bus.BusMultiRegistration { address: 0x40044000; size: 0x4000; region: "ldmaxbar" }; // LDMAXBAR_S
+        sysbus new Bus.BusMultiRegistration { address: 0x50044000; size: 0x4000; region: "ldmaxbar" }  // LDMAXBAR_NS
+    }
+    -> nvic@21
 
 wtimer0: Timers.EFR32_Timer @ {
         sysbus <0x4A018000, +0x4000>; // WDOG0_S
@@ -154,74 +272,90 @@ wtimer0: Timers.EFR32_Timer @ {
     width: TimerWidth.Bit32
     -> nvic@43
 
-// TODO: unclear what version of this block should be used here
-deviceInformation: Miscellaneous.SiLabs.EFR32xG2_DeviceInformation @ sysbus 0x0FE08000
-    // TODO: change this to BG22 once the DeviceFamily enum is updated
-    deviceFamily: DeviceFamily.EFR32MG24
+deviceInformation: Miscellaneous.SiLabs.SiLabs_DeviceInformation @ sysbus 0x0FE08000
+    deviceFamily: DeviceFamily.EFR32MG22
     deviceNumber: 0x1
     flashDevice: flash
     sramDevice: sram
 
-DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094024
-    size: 0x4
-    initable: true
-    script: "request.Value = 0xffffffff"
-
-// TODO: this should be CMU_1
-cmu: Miscellaneous.SiLabs.EFR32xG2_CMU_3 @ {
+cmu: Miscellaneous.SiLabs.SiLabs_CMU_1 @ {
         sysbus <0x40008000, +0x4000>; // CMU_S
         sysbus <0x50008000, +0x4000>  // CMU_NS
     }
     hfxo: hfxo
+    dpll: dpll
 
-// TODO: this should be HFRCO_1
-hfrco0: Miscellaneous.SiLabs.EFR32xG2_HFRCO_2 @ {
+lfxo: Miscellaneous.SiLabs.SiLabs_LFXO_0 @ {
+        sysbus <0x40020000, +0x4000>; // LFXO_S
+        sysbus <0x50020000, +0x4000>  // LFXO_NS
+    }
+
+hfrco0: Miscellaneous.SiLabs.SiLabs_HFRCO_1 @ {
         sysbus <0x40010000, +0x4000>; // HFRCO0_S
         sysbus <0x50010000, +0x4000>  // HFRCO0_NS
     }
 
-hfxo: Miscellaneous.SiLabs.EFR32xG2_HFXO_2 @ {
+dpll: Miscellaneous.SiLabs.SiLabs_DPLL_0 @ {
+        sysbus <0x4001C000, +0x4000>; // DPLL0_S
+        sysbus <0x5001C000, +0x4000>  // DPLL0_NS
+    }
+
+lfrco: Miscellaneous.SiLabs.SiLabs_LFRCO_1 @ {
+        sysbus <0x40024000, +0x4000>; // LFRCO_S
+        sysbus <0x50024000, +0x4000>  // LFRCO_NS
+    }
+
+hfxo: Miscellaneous.SiLabs.SiLabs_HFXO_2 @ {
         sysbus <0x4000C000, +0x4000>; // HFXO0_S
         sysbus <0x5000C000, +0x4000>  // HFXO0_NS
     }
     startupDelayTicks: 3   //should remain <= 20 to pass early wakeup conditions
     IRQ -> nvic@44
 
-// TODO: this should be EMU_1
-emu: Miscellaneous.SiLabs.EFR32xG2_EMU_3 @ {
+emu: Miscellaneous.SiLabs.SiLabs_EMU_1 @ {
         sysbus <0x40004000, +0x4000>; // EMU_S
         sysbus <0x50004000, +0x4000>  // EMU_NS
     }
 
-smu: Miscellaneous.SiLabs.EFR32xG2_SMU_1 @ {
-        sysbus new Bus.BusMultiRegistration { address: 0x44008000; size: 0x4000; region: "smu_s" }; // SMU_S
-        sysbus new Bus.BusMultiRegistration { address: 0x54008000; size: 0x4000; region: "smu_ns" } // SMU_NS
-    }
-    SecureIRQ -> nvic@3
-    SecurePriviledgedIRQ -> nvic@4
-    NonSecurePriviledgedIRQ -> nvic@5
-
-// TODO: this should be SYSCFG_1
-syscfg: Miscellaneous.SiLabs.EFR32xG2_SYSCFG_3 @ {
+syscfg: Miscellaneous.SiLabs.SiLabs_SYSCFG_1 @ {
         sysbus <0x4007C000, +0x4000>; // SYSCFG_S
         sysbus <0x5007C000, +0x4000>  // SYSCFG_NS
     }
 
-radioaes: Miscellaneous.SiLabs.EFR32xG2_AES_1 @ {
+radioaes: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
         sysbus <0x44000000, +0x7FF>; // RADIOAES_S
         sysbus <0x54000000, +0x7FF>  // RADIOAES_NS
     }
     IRQ -> nvic@47
 
-cryptoacc_rngctrl: Miscellaneous.SiLabs.EFR32xG2_RNGCTRL @ {
+cryptoacc: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
+        sysbus <0x4C020000, +0x7FF>; // CRYPTOACC_S
+        sysbus <0x5C020000, +0x7FF>  // CRYPTOACC_NS
+    }
+    IRQ -> nvic@0
+
+cryptoacc_rngctrl: Miscellaneous.SiLabs.SiLabs_RNGCTRL @ {
         sysbus new Bus.BusMultiRegistration { address: 0x4C021000; size: 0x7FF; region: "rngctrl_s" };  // CRYPTOACC_RNGCTRL_S
         sysbus new Bus.BusMultiRegistration { address: 0x5C021000; size: 0x7FF; region: "rngctrl_ns" }; // CRYPTOACC_RNGCTRL_NS
         sysbus new Bus.BusMultiRegistration { address: 0x4C024000; size: 0x4000; region: "rngfifo_s" }; // CRYPTOACC_RNGOUT_FIFO_S
         sysbus new Bus.BusMultiRegistration { address: 0x5C024000; size: 0x4000; region: "rngfifo_ns" } // CRYPTOACC_RNGOUT_FIFO_NS
     }
-    IRQ -> nvic@0
 
-itm : Miscellaneous.SiLabs.EFR32xG2_SLAB_ITM @ sysbus 0xE0000000
+prs: Miscellaneous.SiLabs.SiLabs_PRS_1 @ {
+        sysbus <0x40038000, +0x4000>; // PRS_S
+        sysbus <0x50038000, +0x4000>  // PRS_NS
+    }
+    prortc: prortc
+    lpw: radio
+
+itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
+
+flashuserdata: Miscellaneous.SiLabs.SiLabs_FlashUserData @ sysbus <0x0FE00000, +0x7F>
+
+DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094024
+    size: 0x4
+    initable: true
+    script: "request.Value = 0xffffffff"
 
 sysbus:
     init add:
