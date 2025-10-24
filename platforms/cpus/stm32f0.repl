@@ -138,6 +138,7 @@ timer3: Timers.STM32_Timer @ sysbus 0x40000400
 timer6: Timers.STM32_Timer @ sysbus 0x40001000
     frequency: 10000000
     initialLimit: 0xFFFF
+    -> nvic@17
 
 timer7: Timers.STM32_Timer @ sysbus 0x40001400
     frequency: 10000000
