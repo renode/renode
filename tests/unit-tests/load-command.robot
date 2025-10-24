@@ -11,19 +11,30 @@ Try Execute Load Operation
     ${error_msg}=                   Run Keyword And Expect Error  *  Execute Command  Load @${REMOTE}/${file}
     Should Match Regexp             ${error_msg}  ${error_msg_regex}
 
+Verify Snapshot Load
+    [Arguments]                     ${file}
+    Execute Command                 Load @${file}
+    Execute Command                 mach set 0
+    Create Terminal Tester          sysbus.uart0  timeout=5  defaultPauseEmulation=true
+    Wait For Line On Uart           uart:~$  includeUnfinishedLine=true
+    Write Line To Uart              demo ping
+    Wait For Line On Uart           pong  includeUnfinishedLine=true
+
 *** Test Cases ***
 Create Save For Current Build
     Execute Command                 include @scripts/single-node/zynqmp_zephyr.resc
     Execute Command                 start
     Execute Command                 Save @current_build_snapshot
 
-Try Load Snapshot From Same Build
-    Execute Command                 Load @current_build_snapshot
-    Execute Command                 mach set 0
-    Create Terminal Tester          sysbus.uart0  timeout=5  defaultPauseEmulation=true
-    Wait For Line On Uart           uart:~$  includeUnfinishedLine=true
-    Write Line To Uart              demo ping
-    Wait For Line On Uart           pong  includeUnfinishedLine=true
+Load Snapshot From Same Build
+    Verify Snapshot Load            current_build_snapshot
+
+Load Gzipped Snapshot From Same Build
+    Gzip File                       current_build_snapshot  current_build_snapshot.gz
+    Verify Snapshot Load            current_build_snapshot.gz
+
+    Remove File                     current_build_snapshot
+    Remove File                     current_build_snapshot.gz
 
 Try Load Snapshot With Corrupted Simulation State
     Try Execute Load Operation      renode_snapshot_corrupted_simulation_state--renode-1.15.3  ${CORRUPTED_STATE_ERROR_MESSAGE_REGEX}

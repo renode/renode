@@ -4,6 +4,7 @@ import os
 import sys
 import psutil
 import socket
+import gzip
 
 def network_interface_should_exist(name):
     if name not in psutil.net_if_addrs():
@@ -51,3 +52,9 @@ def list_files_in_directory_recursively(directory_name, pattern, excludes=None):
         for filename in fnmatch.filter(filenames, pattern):
             files.append(os.path.join(root, filename))
     return files
+
+def gzip_file(ipath, opath):
+    with open(ipath, 'rb') as f:
+        data = f.read()
+    with open(opath, 'wb') as ff:
+        ff.write(gzip.compress(data))
