@@ -13,22 +13,24 @@ emulation SetGlobalQuantum "0.000020"
 # Start wireshark with BLE decoder
 #emulation LogBLETraffic
 
-macro reset
-"""
-    sysbus LoadELF $bin
-    cpu VectorTableOffset `sysbus GetSymbolAddress "__Vectors"`
-    sysbus LogAllPeripheralsAccess false
-"""
-
 ################################################
 # Create node1
 ################################################
 mach create "node1"
 machine LoadPlatformDescription "platforms/boards/silabs/brd4186c.repl"
+macro reset
+"""
+    sysbus LoadSymbolsFrom $bin
+    cpu VectorTableOffset `sysbus GetSymbolAddress "__Vectors"`
+"""
+sysbus LoadELF $bin
 runMacro $reset
-emulation CreateServerSocketTerminal 3451 "cli_node1"
+emulation CreateServerSocketTerminal 3451 "cli_node1" false
 connector Connect sysbus.eusart0 cli_node1
 connector Connect sysbus.radio wireless
+# Optional: Create a debug adapter for packet trace
+# emulation CreateServerSocketTerminal 3551 "dch_term_node1" false
+# emulation CreatePacketTraceDebugAdapter sysbus.radio dch_term_node1 "dch_node1"
 logLevel 3
 ### Debug
 # Uncomment to enable debugging of main CPU
@@ -44,10 +46,19 @@ mach clear
 ################################################
 mach create "node2"
 machine LoadPlatformDescription "platforms/boards/silabs/brd4186c.repl"
+macro reset
+"""
+    sysbus LoadSymbolsFrom $bin
+    cpu VectorTableOffset `sysbus GetSymbolAddress "__Vectors"`
+"""
+sysbus LoadELF $bin
 runMacro $reset
-emulation CreateServerSocketTerminal 3452 "cli_node2"
+emulation CreateServerSocketTerminal 3452 "cli_node2" false
 connector Connect sysbus.eusart0 cli_node2
 connector Connect sysbus.radio wireless
+# Optional: Create a debug adapter for packet trace
+# emulation CreateServerSocketTerminal 3552 "dch_term_node2" false
+# emulation CreatePacketTraceDebugAdapter sysbus.radio dch_term_node2 "dch_node2"
 logLevel 3
 ### Debug
 # Uncomment to enable debugging of main CPU

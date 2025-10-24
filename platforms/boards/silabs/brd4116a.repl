@@ -1,10 +1,18 @@
-using "platforms/cpus/silabs/efr32s2/efr32mg26.repl"
+using "platforms/cpus/silabs/efr32s2/efr32xG26.repl"
 
-led0: Miscellaneous.LED @ gpioPort 66
-led1: Miscellaneous.LED @ gpioPort 67
+led0: Miscellaneous.LED @ gpioPort 18  // PB02
 
-button0: Miscellaneous.Button @ gpioPort 64
-button1: Miscellaneous.Button @ gpioPort 65
+led1: Miscellaneous.LED @ gpioPort 20  // PB04
+
+gpioPort:
+    18 -> led0@0
+    20 -> led1@0
+
+button0: Miscellaneous.Button @ gpioPort 17  // PB01
+    -> gpioPort@17
+
+button1: Miscellaneous.Button @ gpioPort 19  // PB03
+    -> gpioPort@19
 
 deviceInformation:
     deviceNumber: 1410
@@ -20,7 +28,7 @@ sram:
 flash:
     size: 0x31E000
 
-lockbitsdata: Miscellaneous.SiLabs.EFR32xG2_LockbitsData @ sysbus 0x0831E000
+lockbitsdata: Miscellaneous.SiLabs.SiLabs_LockbitsData @ sysbus 0x0831E000
     size: 0x2000
 
 msc:
