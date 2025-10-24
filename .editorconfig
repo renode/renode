@@ -28,7 +28,6 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
-insert_final_newline = false
 end_of_line = lf
 
 # "var" instead of type
