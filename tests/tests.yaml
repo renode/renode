@@ -207,6 +207,7 @@
 - tests/platforms/systemc/dma/dma.robot
 - tests/platforms/UP_Squared.robot
 - tests/platforms/Veer_EL2.robot
+- tests/platforms/VeeR_EL2_PIC.robot
 - tests/platforms/Veer_EL2_Timers.robot
 - tests/unit-tests/arm-dsp-examples-cortex-m4.robot
 - tests/unit-tests/arm-ge-flag.robot
