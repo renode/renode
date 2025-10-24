@@ -1,0 +1,36 @@
+using "platforms/cpus/silabs/efr32s2/efr32xG24.repl"
+
+led0: Miscellaneous.LED @ gpioPort 18  // PB02
+
+led1: Miscellaneous.LED @ gpioPort 20  // PB04
+
+gpioPort:
+    18 -> led0@0
+    20 -> led1@0
+
+button0: Miscellaneous.Button @ gpioPort 17  // PB01
+    -> gpioPort@17
+
+button1: Miscellaneous.Button @ gpioPort 19  // PB03
+    -> gpioPort@19
+
+deviceInformation:
+    deviceNumber: 1020
+
+radio:
+    pa0DbmSupport: true
+    pa10DbmSupport: true
+    pa20DbmSupport: false
+
+sram:
+    size: 0x40000
+
+flash:
+    size: 0x17E000
+
+lockbitsdata: Miscellaneous.SiLabs.SiLabs_LockbitsData @ sysbus 0x0817E000
+    size: 0x2000
+
+msc:
+    flashSize: 0x180000
+    flashPageSize: 0x2000

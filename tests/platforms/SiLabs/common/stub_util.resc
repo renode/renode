@@ -1,0 +1,42 @@
+python
+"""
+# List of functions to be stubbed out
+stub_list = []
+
+def skip_function_hook(cpu, addr, return_value):
+    # Set the return value in R0 using the correct RegisterValue type
+    try:
+        import clr
+        # Import the RegisterValue type from Renode
+        clr.AddReference("Renode")
+        from Antmicro.Renode.Peripherals.CPU import RegisterValue
+        
+        # Create a RegisterValue from the integer (32-bit for ARM R0)
+        reg_value = RegisterValue.Create(return_value, 32)
+        
+        # Use SetRegister (preferred API) instead of SetRegisterUnsafe
+        cpu.SetRegister(0, reg_value)
+        
+    except Exception as e:
+        print("Warning: Could not set R0 register to {} for stubbed function at 0x{:x}. Error: {}".format(return_value, addr, str(e)))
+    
+    # Skip the function by setting PC to LR
+    cpu.PC = cpu.LR
+
+def sl_add_stub_hook(func_name, return_value):
+    sysbus = self.Machine["sysbus"]
+    cpu = self.Machine["sysbus.cpu"]
+    # TryGetAllSymbolAddresses returns a tuple (true/false if there are any symbols and the list of symbols)
+    addresses = sysbus.TryGetAllSymbolAddresses(func_name, cpu)[1]
+    for addr in addresses:
+        # Create a lambda that captures the return_value
+        hook = lambda cpu, addr, rv=return_value: skip_function_hook(cpu, addr, rv)
+        cpu.AddHook(addr, hook)
+
+def sl_add_stub(stub, return_value=0):
+    stub_list.append((stub, return_value))
+
+def sl_add_hooks():
+    for func, ret_val in stub_list:
+        sl_add_stub_hook(func, ret_val)
+"""

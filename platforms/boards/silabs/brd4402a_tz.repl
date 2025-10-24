@@ -1,0 +1,4 @@
+using "platforms/boards/silabs/brd4402a.repl"
+
+cpu:
+    enableTrustZone: true
