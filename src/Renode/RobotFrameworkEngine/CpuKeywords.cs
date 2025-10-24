@@ -35,20 +35,13 @@ namespace Antmicro.Renode.RobotFramework
         [RobotFrameworkKeyword]
         public void RegisterShouldBeEqual(int register, ulong value, string machine = null, string cpuName = null)
         {
-            var machineObj = GetMachineByNameOrSingle(machine);
+            RegisterShouldBeEqualInner(register, value, machine, cpuName);
+        }
 
-            var cpu = GetCPU(machineObj, cpuName) as ICPUWithRegisters;
-            if(cpu == null)
-            {
-                throw new KeywordException("This CPU does not allow to access registers");
-            }
-
-            var actual = cpu.GetRegister(register).RawValue;
-
-            if(actual != value)
-            {
-                throw new KeywordException($"Register {register} value assertion failed, actual: 0x{actual:x}, expected: 0x{value:x}");
-            }
+        [RobotFrameworkKeyword]
+        public void RegisterShouldBeEqual(string register, ulong value, string machine = null, string cpuName = null)
+        {
+            RegisterShouldBeEqualInner(register, value, machine, cpuName);
         }
 
         [RobotFrameworkKeyword]
@@ -156,6 +149,24 @@ namespace Antmicro.Renode.RobotFramework
             }
 
             return selectedCpu;
+        }
+
+        private void RegisterShouldBeEqualInner<T>(T register, ulong value, string machine = null, string cpuName = null)
+        {
+            var machineObj = GetMachineByNameOrSingle(machine);
+
+            var cpu = GetCPU(machineObj, cpuName) as ICPUWithRegisters;
+            if(cpu == null)
+            {
+                throw new KeywordException("This CPU does not allow to access registers");
+            }
+
+            var actual = (register is string r ? cpu.GetRegister(r) : cpu.GetRegister((register as int?).Value)).RawValue;
+
+            if(actual != value)
+            {
+                throw new KeywordException($"Register {register} value assertion failed, actual: 0x{actual:x}, expected: 0x{value:x}");
+            }
         }
     }
 }
