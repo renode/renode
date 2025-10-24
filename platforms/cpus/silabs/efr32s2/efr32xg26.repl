@@ -40,7 +40,7 @@ eusart1: UART.SiLabs_EUSART_2 @ {
     RxFifoLevelGpioSignal -> gpioPort@0x1203
     TxFifoLevel -> ldma@0x0101
 
-radio: Wireless.EFR32xG24_Radio @ {
+radio: Wireless.SiLabs_xG24_LPW @ {
         sysbus new Bus.BusMultiRegistration { address: 0x4009C000; size: 0x4000; region: "hostmailbox" };
         sysbus new Bus.BusMultiRegistration { address: 0xA8004000; size: 0x4000; region: "frc" };
         sysbus new Bus.BusMultiRegistration { address: 0xA800C000; size: 0x4000; region: "agc" };
@@ -101,7 +101,7 @@ radio: Wireless.EFR32xG24_Radio @ {
     SeqSynthesizerIRQ -> seqnvic@22
     SeqRfMailboxIRQ -> seqnvic@23
 
-msc: Miscellaneous.SiLabs.EFR32xG2_MSC_3 @ {
+msc: Miscellaneous.SiLabs.SiLabs_MSC_3 @ {
         sysbus <0x40030000, +0x4000>; // MSC_S
         sysbus <0x50030000, +0x4000>  // MSC_NS
     }
@@ -110,7 +110,7 @@ msc: Miscellaneous.SiLabs.EFR32xG2_MSC_3 @ {
     flashSize: 0x320000
     flashPageSize: 0x2000
 
-gpioPort: GPIOPort.EFR32xG2_GPIO_3 @ {
+gpioPort: GPIOPort.SiLabs_GPIO_3 @ {
         sysbus <0x4003C000, +0x4000>; // GPIO_S
         sysbus <0x5003C000, +0x4000>  // GPIO_NS
     }
@@ -254,7 +254,7 @@ timer9: Timers.EFR32_Timer @ {
     width: TimerWidth.Bit16
     -> nvic@13
 
-ldma: DMA.EFR32MG24_LDMA @ {
+ldma: DMA.SiLabs_LDMA_0_3 @ {
         sysbus new Bus.BusMultiRegistration { address: 0x40040000; size: 0x4000; region: "ldma" };     // LDMA_S
         sysbus new Bus.BusMultiRegistration { address: 0x50040000; size: 0x4000; region: "ldma" };     // LDMA_NS
         sysbus new Bus.BusMultiRegistration { address: 0x40044000; size: 0x4000; region: "ldmaxbar" }; // LDMAXBAR_S
@@ -278,7 +278,7 @@ wtimer1: Timers.EFR32_Timer @ {
     width: TimerWidth.Bit32
     -> nvic@59
 
-deviceInformation: Miscellaneous.SiLabs.EFR32xG2_DeviceInformation @ sysbus 0x0FE08000
+deviceInformation: Miscellaneous.SiLabs.SiLabs_DeviceInformation @ sysbus 0x0FE08000
     deviceFamily: DeviceFamily.EFR32MG26
     deviceNumber: 0x1
     flashDevice: flash
@@ -292,49 +292,49 @@ DCDC_IF: Python.PythonPeripheral @ sysbus 0x50098028
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x31E000
 
-cmu: Miscellaneous.SiLabs.EFR32xG2_CMU_3 @ {
+cmu: Miscellaneous.SiLabs.SiLabs_CMU_3 @ {
         sysbus <0x40008000, +0x4000>; // CMU_S
         sysbus <0x50008000, +0x4000>  // CMU_NS
     }
     hfxo: hfxo
     dpll: dpll
 
-lfxo: Miscellaneous.SiLabs.EFR32xG2_LFXO_1 @ {
+lfxo: Miscellaneous.SiLabs.SiLabs_LFXO_1 @ {
         sysbus <0x40020000, +0x4000>; // LFXO_S
         sysbus <0x50020000, +0x4000>  // LFXO_NS
     }
 
-hfrco0: Miscellaneous.SiLabs.EFR32xG2_HFRCO_2 @ {
+hfrco0: Miscellaneous.SiLabs.SiLabs_HFRCO_2 @ {
         sysbus <0x40010000, +0x4000>; // HFRCO_S
         sysbus <0x50010000, +0x4000>  // HFRCO_NS
     }
 
-dpll: Miscellaneous.SiLabs.EFR32xG2_DPLL_1 @ {
+dpll: Miscellaneous.SiLabs.SiLabs_DPLL_1 @ {
         sysbus <0x4001C000, +0x4000>; // DPLL0_S
         sysbus <0x5001C000, +0x4000>  // DPLL0_NS
     }
 
-lfrco: Miscellaneous.SiLabs.EFR32xG2_LFRCO_2 @ {
+lfrco: Miscellaneous.SiLabs.SiLabs_LFRCO_2 @ {
         sysbus <0x40024000, +0x4000>; // LFRCO_S
         sysbus <0x50024000, +0x4000>  // LFRCO_NS
     }
 
-hfxo: Miscellaneous.SiLabs.EFR32xG2_HFXO_3 @ {
+hfxo: Miscellaneous.SiLabs.SiLabs_HFXO_3 @ {
         sysbus <0x4A004000, +0x4000>; // HFXO0_S
         sysbus <0x5A004000, +0x4000>  // HFXO0_NS
     }
 
-hfrcoem23: Miscellaneous.SiLabs.EFR32xG2_HFRCO_2 @ {
+hfrcoem23: Miscellaneous.SiLabs.SiLabs_HFRCO_2 @ {
         sysbus <0x4A000000, +0x4000>; // HFRCOEM23_S
         sysbus <0x5A000000, +0x4000>  // HFRCOEM23_NS
     }
 
-emu: Miscellaneous.SiLabs.EFR32xG2_EMU_3 @ {
+emu: Miscellaneous.SiLabs.SiLabs_EMU_3 @ {
         sysbus <0x40004000, +0x4000>; // EMU_S
         sysbus <0x50004000, +0x4000>  // EMU_NS
     }
 
-syscfg: Miscellaneous.SiLabs.EFR32xG2_SYSCFG_3 @ {
+syscfg: Miscellaneous.SiLabs.SiLabs_SYSCFG_3 @ {
         sysbus <0x4007C000, +0x4000>; // SYSCFG_S
         sysbus <0x5007C000, +0x4000>  // SYSCFG_NS
     }
@@ -346,7 +346,7 @@ sysrtc: Miscellaneous.SiLabs.EFR32xG2_SYSRTC_1 @ {
     frequency: 32768
     IRQ -> nvic@83
 
-semailbox: Miscellaneous.SiLabs.EFR32xG2_SEMAILBOX_1 @ {
+semailbox: Miscellaneous.SiLabs.SiLabs_SEMAILBOX_1 @ {
         sysbus <0x4C000000, +0x4000>; // SEMAILBOX_S
         sysbus <0x5C000000, +0x4000>  // SEMAILBOX_NS
     }
@@ -359,7 +359,7 @@ radioaes: Miscellaneous.SiLabs.EFR32xG2_AES_1 @ {
     }
     IRQ -> nvic@64
 
-flashuserdata: Miscellaneous.SiLabs.EFR32xG24_FlashUserData @ sysbus <0x0FE00000, +0x7F>
+flashuserdata: Miscellaneous.SiLabs.SiLabs_FlashUserData @ sysbus <0x0FE00000, +0x7F>
 
 sysbus:
     init add:
