@@ -13,7 +13,7 @@ AppCopyright=Copyright (C) 2010-2025 Antmicro
 ; Architecture settings
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-OutputBaseFilename=RenodeSetup-{#version}
+OutputBaseFilename=renode-{#version}.setup
 ; Default install directory
 DefaultDirName={autopf}\Renode
 DefaultGroupName=Renode
