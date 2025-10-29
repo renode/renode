@@ -88,6 +88,26 @@ ${TCM_TEST_ASSEMBLY}                SEPARATOR=\n  """
 ...                                 B .
 ...                                 """
 
+# This snippet assumes that target EL configuration is in R1
+${TCM_EL_ACCESS_TEST_ASSEMBLY}      SEPARATOR=\n  """
+...                                 // Store mask in R2
+...                                 MVN r2, 0x3
+...
+...                                 // Enable TCM at given EL
+...                                 MRC p15, 0, r0, c9, c1, 0
+...                                 AND r0, r2
+...                                 ORR r0, r1
+...                                 MCR p15, 0, r0, c9, c1, 0
+...
+...                                 read_label:
+...                                 // Read values to registers
+...                                 MOV r0, 0x0
+...                                 LDR r0, [r0] // ${TCM_A_VALUE}
+...
+...                                 // Loop indefinitely
+...                                 B read_label
+...                                 """
+
 ${R0_REGISTER_INDEX}                100
 ${R1_REGISTER_INDEX}                101
 ${R2_REGISTER_INDEX}                102
@@ -143,3 +163,29 @@ Should Remap TCM Regions
     Register Should Be Equal        ${R0_REGISTER_INDEX}  ${TCM_A_VALUE}
     Register Should Be Equal        ${R1_REGISTER_INDEX}  ${TCM_B_VALUE}
     Register Should Be Equal        ${R2_REGISTER_INDEX}  ${TCM_C_VALUE}
+
+Should Disable TCM Region At EL0 and EL1
+    Create Log Tester               0
+
+    Execute Command                 cpu PC ${CODE_BASE_ADDRESS}
+    Execute Command                 cpu AssembleBlock `cpu PC` ${TCM_EL_ACCESS_TEST_ASSEMBLY}
+    Execute Command                 cpu SetRegister "R1" 0x2
+
+    Execute Command                 allowPrivates true
+
+    Execute Command                 cpu Step 5
+
+    Execute Command                 cpu ExceptionLevel EL2_HypervisorMode
+    Execute Command                 cpu Step 3
+    Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  ${TCM_A_VALUE}
+
+    Execute Command                 cpu ExceptionLevel EL1_SystemMode
+    Execute Command                 cpu Step 3
+    Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  0
+
+    Execute Command                 cpu ExceptionLevel EL0_UserMode
+    Execute Command                 cpu Step 3
+    Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  0
