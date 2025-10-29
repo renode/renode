@@ -189,3 +189,29 @@ Should Disable TCM Region At EL0 and EL1
     Execute Command                 cpu Step 3
     Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
     Register Should Be Equal        R0  0
+
+Should Disable TCM Region At EL2
+    Create Log Tester               0
+
+    Execute Command                 cpu PC ${CODE_BASE_ADDRESS}
+    Execute Command                 cpu AssembleBlock `cpu PC` ${TCM_EL_ACCESS_TEST_ASSEMBLY}
+    Execute Command                 cpu SetRegister "R1" 0x1
+
+    Execute Command                 allowPrivates true
+
+    Execute Command                 cpu Step 5
+
+    Execute Command                 cpu ExceptionLevel EL2_HypervisorMode
+    Execute Command                 cpu Step 3
+    Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  0
+
+    Execute Command                 cpu ExceptionLevel EL1_SystemMode
+    Execute Command                 cpu Step 3
+    Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  ${TCM_A_VALUE}
+
+    Execute Command                 cpu ExceptionLevel EL0_UserMode
+    Execute Command                 cpu Step 3
+    Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
+    Register Should Be Equal        R0  ${TCM_A_VALUE}
