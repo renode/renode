@@ -95,11 +95,9 @@ fpm -s dir -t deb\
     -d "dotnet-runtime-8.0 >= $DOTNET_VERSION"\
     -d "python3 >= $PYTHONVERSION"\
     -d python3-pip\
-    -d gtk-sharp2-gapi\
-    -d libglade2.0-cil-dev\
-    -d libglib2.0-cil-dev\
-    -d libgtk2.0-cil-dev\
     -d screen\
+    -d libgtk-3-0\
+    -d libgdiplus\
     -d policykit-1\
     -d libc6-dev\
     -d gcc\
@@ -115,7 +113,8 @@ fpm -s dir -t rpm\
      -d "dotnet-runtime-8.0 >= $DOTNET_VERSION"\
      -d python3-pip\
      -d gcc\
-     -d gtk-sharp2\
+     -d gtk3\
+     -d libgdiplus\
      -d screen\
      -d polkit\
      "${GENERAL_FLAGS[@]}" >/dev/null
@@ -125,7 +124,7 @@ mv $rpm $OUTPUT
 echo "Created a Fedora package in $PACKAGES/$rpm"
 ### create arch package
 fpm -s dir -t pacman --pacman-compression xz \
-    -d mono -d gtk-sharp-2 -d screen -d polkit -d gcc -d python3 -d python-pip \
+    -d libgdiplus -d gtk3 -d screen -d polkit -d gcc -d python3 -d python-pip \
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 arch=(renode*.pkg.tar.xz)
