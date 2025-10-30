@@ -44,6 +44,10 @@ ${PTP_PLATFORM}=    SEPARATOR=${\n}
 ...    nvic:
 ...    ${SPACE*4}systickFrequency: 480000000  # Set frequency to match what software expects
 
+${FLASH_WRITE_ADDRESS}              0x08040000
+${FLASH_WRITE_ERROR_HANDLER}        HAL_FLASH_OperationErrorCallback
+${FLASH_WRITE_ERROR_MSG}            Flash Write Error Detected
+
 *** Keywords ***
 Create Setup
     Execute Command                 emulation CreateSwitch "switch"
@@ -294,3 +298,15 @@ Should Erase And Program Flash Memory
     # LED1 is set at the very end of the test, when the entire procedure is complete with no failures
     Assert LED State                    false    testerId=${led3_tester}
     Assert LED State                    true     testerId=${led1_tester}
+
+Should Manually Trigger Flash Error
+    Create Machine                      ${FLASH_EraseProgram}  flash
+    Create Log Tester                   5
+
+    # Set up hook to notify about error during write
+    Execute Command                     cpu AddHook `sysbus GetSymbolAddress "${FLASH_WRITE_ERROR_HANDLER}" cpu` "self.ErrorLog('${FLASH_WRITE_ERROR_MSG}')"
+
+    # Set up hook to trigger error on flash write
+    Execute Command                     sysbus AddWatchpointHook ${FLASH_WRITE_ADDRESS} DoubleWord Write "cpu.GetMachine()['sysbus.flashController'].TriggerOperationError(1)"
+
+    Wait For Log Entry                  ${FLASH_WRITE_ERROR_MSG}
