@@ -1,0 +1,82 @@
+###### Structure ######
+# Hubris architecture is composed of two elements: kernel and tasks.
+# The kernel is the main piece of code which runs tasks. In the zip archive, you will find:
+# - 'config' and 'README' files
+# - 'elf' directory, contains task and kernel binaries
+# - 'img' directory, contains a 'flattened' ELF file with all tasks from the 'elf' folder (this one is used to run Hubris in Renode)
+#
+###### List of tasks included in this build ######
+# - sys - interrupt handler
+# - jefe - supervisor
+# - hiffy - HIF commands interpreter, used by the humility tool to communicate with Hubris
+# - uartecho - echo program on UART (USART2)
+# - user_leds - blinking LED
+# - user_button - LED switch
+# - net - main task (and driver) for network operations
+# - udpecho - echo via UDP
+# - udprpc - remote procedure call via UDP
+#
+###### How to use ######
+#
+# -- uartecho --
+# Serial loopback. Test by writing to the terminal window.
+#
+# -- user_leds --
+# GPIO output test. Works on its own without external input. 
+# Test with: `logLevel -1 gpioPortB.greenled` or `watch "gpioPortB.greenled State" 100`
+#
+# -- user_button --
+# GPIO input test. Pressing a button will toggle the LED state.
+# Test with: `gpioPortC.user_button Toggle`
+#
+# -- udpecho --
+# UDP loopback. Test by sending a UDP datagram (IPv6 only) via the 'tap0' network interface (created in this .repl file).
+# Test with: `echo "Hello Hubris!" | sudo socat - UDP6-DATAGRAM:[ff02::1%tap0]:10`
+# Note:
+#     - Port 10 was selected for this task during the build process.
+#     - ff02::1 is the all-nodes multicast IPv6 address.
+#
+# -- udprpc --
+# RPC test.
+# Install 'humility' with `cargo install --git https://github.com/oxidecomputer/humility.git --locked humility-bin`.
+# Download `https://dl.antmicro.com/projects/renode/hubris-stm32h753-udprpc-s_1139557-94130dc90db156d955404f49ceec5eeac835c392.zip`
+#
+# Test by switching an LED:
+# `humility -a HUBRIS_ARCHIVE.zip rpc --ip fe80::c1d:ff:fe00:0%tap0 -c UserLeds.led_on -a index=2`
+# Note:
+#    - UserLeds - interface
+#    - led_on - command
+#    - index=2 - argument (2 = yellow LED)
+#
+# To see all available 'humility' RPC commands, run:
+# `humility -a HUBRIS_ARCHIVE.zip rpc --list`
+
+$name?="Nucleo H753ZI Hubris"
+$bin?=@https://dl.antmicro.com/projects/renode/hubris-stm32h753-udprpc.elf-s_131296-5caee99b2a6bb995702570dcbde1171c61225a3f
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/stm32h753.repl
+
+emulation CreateSwitch "switch"
+emulation CreateTap "tap0" "tap" true
+connector Connect host.tap switch
+connector Connect ethernet switch
+
+showAnalyzer usart2
+
+# Used in 'user_button' sample
+logLevel -1 gpioPortE.yellowled
+
+sysbus Tag <0x58024800 4> "PWR_CR1_DBP_SET" 0x100
+sysbus Tag <0x58024804 4> "PWR_CSR1" 0x2000
+sysbus Tag <0x58024808 4> "PWR_CR2_BREN_SET" 0x1
+
+macro reset
+"""
+    cpu VectorTableOffset 0x8000000
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
