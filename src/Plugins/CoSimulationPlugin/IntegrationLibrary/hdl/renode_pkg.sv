@@ -269,9 +269,21 @@ package renode_pkg;
 
     renode_connection connection = new();
 
-    // Initialized by the Renode module
+    // Initialized in the constructor
     bus_connection controllers[];
     bus_connection peripherals[];
+
+    function new(int RenodeToCosimCount, int CosimToRenodeCount);
+      controllers = new[RenodeToCosimCount];
+      foreach(controllers[i]) begin
+        controllers[i] = new();
+      end
+
+      peripherals = new[CosimToRenodeCount];
+      foreach(peripherals[i]) begin
+        peripherals[i] = new();
+      end
+    endfunction
 
     function void connect_plus_args();
       int receiver_port, sender_port;

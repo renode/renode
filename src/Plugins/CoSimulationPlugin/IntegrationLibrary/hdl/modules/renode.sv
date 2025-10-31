@@ -39,18 +39,6 @@ module renode #(
       .inputs(renode_inputs)
   );
 
-  initial begin
-    runtime.controllers = new[RenodeToCosimCount];
-    foreach(runtime.controllers[i]) begin
-      runtime.controllers[i] = new();
-    end
-
-    runtime.peripherals = new[CosimToRenodeCount];
-    foreach(runtime.peripherals[i]) begin
-      runtime.peripherals[i] = new();
-    end
-  end
-
   if(CosimToRenodeCount > 0) begin
     genvar i;
     for(i = 0; i < CosimToRenodeCount; i += 1) begin
