@@ -620,9 +620,9 @@ Should Run OpenAMP Echo Sample
     # Check if demo works correctly
     Wait For Line On Uart                   Echo Test Round 0                                                   testerId=${linux_tester}
     FOR  ${i}  IN RANGE  0  471
-            Wait For Line On Uart           sending payload number ${i} of size ${i + 17}                       testerId=${linux_tester}
-            Wait For Line On Uart           echo test: sent : ${i + 17}                                         testerId=${linux_tester}
-            Wait For Line On Uart           received payload number ${i} of size ${i + 17}                      testerId=${linux_tester}
+            Wait For Line On Uart           sending payload number ${i} of size ${i + 17}                       testerId=${linux_tester}  pauseEmulation=false
+            Wait For Line On Uart           echo test: sent : ${i + 17}                                         testerId=${linux_tester}  pauseEmulation=false
+            Wait For Line On Uart           received payload number ${i} of size ${i + 17}                      testerId=${linux_tester}  pauseEmulation=false
     END
     Wait For Line On Uart                   Echo Test Round 0 Test Results: Error count = 0                     testerId=${linux_tester}
 
