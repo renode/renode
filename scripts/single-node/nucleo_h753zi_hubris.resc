@@ -23,11 +23,11 @@
 #
 # -- user_leds --
 # GPIO output test. Works on its own without external input. 
-# Test with: `logLevel -1 gpioPortB.greenled` or `watch "gpioPortB.greenled State" 100`
+# Test with: `logLevel -1 gpioPortB.GreenLED` or `watch "gpioPortB.GreenLED State" 100`
 #
 # -- user_button --
 # GPIO input test. Pressing a button will toggle the LED state.
-# Test with: `gpioPortC.user_button Toggle`
+# Test with: `gpioPortC.UserButton1 Toggle`
 #
 # -- udpecho --
 # UDP loopback. Test by sending a UDP datagram (IPv6 only) via the 'tap0' network interface (created in this .repl file).
@@ -57,7 +57,11 @@ $bin?=@https://dl.antmicro.com/projects/renode/hubris-stm32h753-udprpc.elf-s_131
 using sysbus
 mach create $name
 
-machine LoadPlatformDescription @platforms/cpus/stm32h753.repl
+machine LoadPlatformDescriptionFromString """
+using "platforms/boards/nucleo_h753zi.repl"
+nvic:
+    priorityMask: 0xFF
+"""
 
 emulation CreateSwitch "switch"
 emulation CreateTap "tap0" "tap" true
@@ -67,7 +71,7 @@ connector Connect ethernet switch
 showAnalyzer usart2
 
 # Used in 'user_button' sample
-logLevel -1 gpioPortE.yellowled
+logLevel -1 gpioPortE.YellowLED
 
 sysbus Tag <0x58024800 4> "PWR_CR1_DBP_SET" 0x100
 sysbus Tag <0x58024804 4> "PWR_CSR1" 0x2000

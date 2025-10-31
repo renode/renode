@@ -3,17 +3,3 @@ using "./stm32h743.repl"
 crypto: Miscellaneous.Crypto.STM32H7_CRYPTO @ sysbus 0x48021000
     -> nvic@79
     OutDMA -> dmamux1@77
-
-nvic:
-    priorityMask: 0xFF
-
-yellowled: Miscellaneous.LED @ gpioPortE 0x1
-gpioPortE:
-    1 -> yellowled@0
-
-greenled: Miscellaneous.LED @ gpioPortB 0x0
-gpioPortB:
-    0 -> greenled@0
-
-user_button: Miscellaneous.Button @ gpioPortC 0xd
-    -> gpioPortC@13
