@@ -29,6 +29,11 @@
 # GPIO input test. Pressing a button will toggle the LED state.
 # Test with: `gpioPortC.UserButton1 Toggle`
 #
+# --- NOTE ---
+# To run the 'udp' samples, execute the following commands in Renode’s monitor:
+# `emulation CreateTap "tap0" "tap" true`
+# `connector Connect host.tap switch`
+#
 # -- udpecho --
 # UDP loopback. Test by sending a UDP datagram (IPv6 only) via the 'tap0' network interface (created in this .repl file).
 # Test with: `echo "Hello Hubris!" | sudo socat - UDP6-DATAGRAM:[ff02::1%tap0]:10`
@@ -64,8 +69,6 @@ nvic:
 """
 
 emulation CreateSwitch "switch"
-emulation CreateTap "tap0" "tap" true
-connector Connect host.tap switch
 connector Connect ethernet switch
 
 showAnalyzer usart2
