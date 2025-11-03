@@ -3,6 +3,23 @@
 set -u
 set -e
 
+USE_PARALLEL=false
+if command -v env_parallel &> /dev/null
+then
+    # The env_parallel command stores ignored values in this variable
+    # so it needs to be defined for the `set -u` flag to not error
+    PARALLEL_IGNORED_NAMES=""
+    # Source the env_parallel init script
+    . env_parallel.bash
+    # If the `--session` start fails it mean that the installed
+    # version of GNU parallel is too old to have the features we need
+    if env_parallel --session &> /dev/null
+    then
+        USE_PARALLEL=true
+    fi
+fi
+
+
 ROOT_PATH="$(cd "$(dirname $0)"; echo $PWD)"
 export ROOT_PATH
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
@@ -448,9 +465,9 @@ if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${C
     popd > /dev/null
 fi
 
-# build tlib
-for core_config in "${CORES[@]}"
-do
+build_core () {
+    set -e
+    core_config=$1
     if [[ $core_config == *"kvm"* ]]; then
         continue
     fi
@@ -488,7 +505,20 @@ do
        command cp -v -f $CORE_DIR/compile_commands.json $CORES_PATH/tlib/
     fi
     popd > /dev/null
-done
+}
+
+# build tlib
+if $USE_PARALLEL
+then
+    echo "Starting parallel tlib build"
+    env_parallel --color-failed build_core ::: "${CORES[@]}"
+    env_parallel --end-session
+else
+    for core_config in "${CORES[@]}"
+    do
+        build_core $core_config
+    done
+fi
 
 if $EXTERNAL_LIB_ONLY
 then
