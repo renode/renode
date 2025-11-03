@@ -187,9 +187,9 @@
       <Project>{92494904-35FA-4DC9-BDE9-3A3E87AC49D3}</Project>
       <Name>Xwt</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk.csproj" Condition=" $(CurrentPlatform) != 'Windows' And $(GUI_DISABLED) != 'true' ">
-      <Project>{C3887A93-B2BD-4097-8E2F-3A063EFF32FD}</Project>
-      <Name>Xwt.Gtk</Name>
+    <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3.csproj" Condition=" $(CurrentPlatform) != 'Windows' And $(GUI_DISABLED) != 'true' ">
+      <Project>{3B25FD1F-CEBA-4450-8893-DC330FDB56A7}</Project>
+      <Name>Xwt.Gtk3</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.WPF\Xwt.WPF.csproj" Condition=" $(CurrentPlatform) == 'Windows' And $(GUI_DISABLED) != 'true' ">
       <Project>{c93d746e-1586-4d4f-b411-bf5a966e6a08}</Project>
