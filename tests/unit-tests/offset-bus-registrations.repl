@@ -1,0 +1,21 @@
+cpu: CPU.RiscV64 @ sysbus {
+    cpuType: "rv64g";
+    timeProvider: empty
+}
+
+code: Memory.MappedMemory @ sysbus 0x2000 {
+    size: 0x10000
+}
+
+dram: Memory.MappedMemory @ {
+        sysbus new Bus.BusRangeRegistration { address: 0x81000000; size: 0x1000; offset: 0x4000; cpu: cpu};
+        sysbus 0x80000000
+    }
+    size: 0x10000000
+
+mmio: Memory.ArrayMemory @ {
+        sysbus new Bus.BusRangeRegistration { address: 0x91000000; size: 0x1000; offset: 0x4000; cpu: cpu};
+        sysbus 0x90000000
+    }
+    size: 0x10000000
+

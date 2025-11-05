@@ -224,6 +224,7 @@
 - tests/peripherals/VirtioMMIOEntropy.robot
 - tests/unit-tests/riscv-stack-access-hook.robot
 - tests/unit-tests/auto-save.robot
+- tests/unit-tests/offset-bus-registrations.robot
 
 # Do not use port 3333 in unit tests
 
