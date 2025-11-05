@@ -7,6 +7,7 @@ PAGE_TABLE_L1_ADDR = 0x40031000
 PAGE_TABLE_L2_ADDR = 0x40032000
 PAGE_TABLE_L3_ADDR = 0x40033000
 
+SMMU_CR0 = 0x20
 SMMU_STRTAB_BASE = 0x80
 SMMU_STRTAB_BASE_CFG = 0x88
 STREAM_TABLE_ENTRY_SIZE = 64
@@ -69,6 +70,7 @@ def mc_setup_smmu(stream_id):
     ste_addr = STREAM_TABLE_ADDR + stream_id * STREAM_TABLE_ENTRY_SIZE
     ste = 0
     ste |= 1 << 0  # V
+    ste |= 0b101 << 1  # Config = TranslateStage1
     ste |= CONTEXT_DESCRIPTOR_ADDR  # s1ContextPtr, aligned to 2⁶
     poke(ste_addr, ste)
     # Rest as zeroes
@@ -78,6 +80,8 @@ def mc_setup_smmu(stream_id):
     # Put that stream table into the SMMU
     poke(SMMU_BASE + SMMU_STRTAB_BASE, STREAM_TABLE_ADDR)  # aligned to 2⁶
     poke32(SMMU_BASE + SMMU_STRTAB_BASE_CFG, 5)  # log2size
+    # Enable SMMU translations
+    poke32(SMMU_BASE + SMMU_CR0, 1)  # SMMUEN
     # Invalidate the STE
     self.Parse("allowPrivates true")
     self.Parse("smmu InvalidateSte %d" % stream_id)
