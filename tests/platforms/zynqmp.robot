@@ -164,6 +164,7 @@ Should Detect I2C Peripherals
 
 Should Communicate With I2C Echo Peripheral
     Create Linux Machine
+    Execute Command                 ${LINUX_UART} CharacterTransmitDelayMicroseconds 20
 
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cEcho: Mocks.EchoI2CDevice @ i2c1 ${I2C_ECHO_ADDRESS}"
 

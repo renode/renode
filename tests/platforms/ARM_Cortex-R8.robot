@@ -9,6 +9,12 @@ Create Machine
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/cortex-r8.repl
 
     Execute Command                 sysbus LoadELF @${elf_file}
+    # Older versions of Zephyr have a bug where they never clear UART interrupts causing the software
+    # to get stuck in the handler. This has been addressed in: https://github.com/zephyrproject-rtos/zephyr/commit/df5ffc916521aa9cb153d397f1ad7905382209f3,
+    # but the tests use an older version of Zephyr. As a workaround enable clearing interrupt status while
+    # reading the status register
+    Execute Command                 sysbus.uart1 ClearInterruptStatusOnRead true
+    Execute Command                 sysbus.uart1 CharacterTransmitDelayMicroseconds 20
     Create Terminal Tester          sysbus.uart1    timeout=5   defaultPauseEmulation=true
 
 Run Hello World
