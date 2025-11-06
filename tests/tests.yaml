@@ -226,6 +226,7 @@
 - tests/unit-tests/riscv-stack-access-hook.robot
 - tests/unit-tests/auto-save.robot
 - tests/unit-tests/offset-bus-registrations.robot
+- tests/unit-tests/arm-cortex-m-trustzone.robot
 
 # Do not use port 3333 in unit tests
 
