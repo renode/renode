@@ -47,7 +47,7 @@ NET_FRAMEWORK_VER=
 RID="linux-x64"
 HOST_ARCH="i386"
 # Common cmake flags
-CMAKE_COMMON=""
+CMAKE_COMMON="${RENODE_EXTRA_CMAKE_ARGS:-}"
 
 function print_help() {
   echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [-- <ARGS>]"
