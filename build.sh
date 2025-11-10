@@ -511,7 +511,7 @@ build_core () {
 if $USE_PARALLEL
 then
     echo "Starting parallel tlib build"
-    env_parallel --color-failed build_core ::: "${CORES[@]}"
+    env_parallel build_core ::: "${CORES[@]}"
     env_parallel --end-session
 else
     for core_config in "${CORES[@]}"
