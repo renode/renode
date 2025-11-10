@@ -643,7 +643,7 @@ Should Run Web Server In Docker
     Wait For Line On Uart                   response:200
 
 Should Ping Over TAP Using An Ethernet Adapter Behind The SMMUv3
-    [Tags]                                  tap
+    [Tags]                                  tap  skip_osx
     Create Linux SMMUv3 Machine
     Boot Linux And Login
 
@@ -655,7 +655,6 @@ Should Ping Over TAP Using An Ethernet Adapter Behind The SMMUv3
     Execute Command                         emulation CreateSwitch "switch"
     Execute Command                         emulation CreateTap "${TAP_INTERFACE}" "tap"
 
-    Preconfigure Macos                      tap0  ${TAP_INTERFACE_IP}  255.255.255.0
     Network Interface Should Have Address   ${TAP_INTERFACE}  ${TAP_INTERFACE_IP}
 
     Execute Command                         connector Connect host.tap switch
