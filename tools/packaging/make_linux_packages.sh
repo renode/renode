@@ -80,7 +80,7 @@ fpm -s dir -t deb\
     -d libgtk-3-0\
     -d libgdiplus\
     -d screen\
-    -d policykit-1\
+    -d polkit-1-auth-agent\
     -d libc6-dev\
     -d gcc\
     --deb-no-default-config-files\

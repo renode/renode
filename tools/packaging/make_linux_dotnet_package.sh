@@ -98,7 +98,7 @@ fpm -s dir -t deb\
     -d screen\
     -d libgtk-3-0\
     -d libgdiplus\
-    -d policykit-1\
+    -d polkit-1-auth-agent\
     -d libc6-dev\
     -d gcc\
     --deb-no-default-config-files\
