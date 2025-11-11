@@ -8,11 +8,11 @@ ${mitcnt1}                          0x7D5
 ${mitb1}                            0x7D6
 ${mitctl1}                          0x7D7
 
-${a0}                               10
-${a1}                               11
+${timer0Int}                        29
+${timer1Int}                        28
 
-${Timer0IntBit}                     0x20000000
-${Timer1IntBit}                     0x10000000
+${mcauseForTimer0}                  0x8000001D
+${mcauseForTimer1}                  0x8000001C
 
 ${BASIC_PROG}                       SEPARATOR=\n
 ...                                 csrr a0, ${mitctl0}
@@ -31,7 +31,7 @@ ${HANDLER_PROG}                     SEPARATOR=\n
 ...                                 j trap
 
 ${INTERRUPT0_PROG}                  SEPARATOR=\n
-...                                 li a1, ${Timer0IntBit}
+...                                 li a1, ${1 << ${timer0Int}}
 ...                                 csrw mie, a1
 ...                                 li a1, 0x1808
 ...                                 csrw mstatus, a1
@@ -41,7 +41,7 @@ ${INTERRUPT0_PROG}                  SEPARATOR=\n
 ...                                 j loop
 
 ${INTERRUPT1_PROG}                  SEPARATOR=\n
-...                                 li a1, ${Timer1IntBit}
+...                                 li a1, ${1 << ${timer1Int}}
 ...                                 csrw mie, a1
 ...                                 li a1, 0x1808
 ...                                 csrw mstatus, a1
@@ -67,7 +67,7 @@ ${INTERRUPT1_DISABLED_PROG}         SEPARATOR=\n
 ...                                 j loop
 
 ${CASCADE_MODE_PROG}                SEPARATOR=\n
-...                                 li a1, ${Timer1IntBit}
+...                                 li a1, ${1 << ${timer1Int}}
 ...                                 csrw mie, a1
 ...                                 li a1, 0x9
 ...                                 csrw ${mitctl1}, a1
@@ -88,65 +88,62 @@ Create Machine
     Execute Command                 cpu PC ${PROGRAM_COUNTER}
     Execute Command                 cpu AssembleBlock ${mtvec} """${HANDLER_PROG}"""
 
+Pc Should Not Be Equal
+    [Arguments]                     ${value}
+    ${pc}=  Execute Command         cpu PC
+    Should Not Be Equal As Integers  ${pc}  ${value}
+
+
 *** Test Cases ***
 
 MITCTL Should Have Correct Default Values
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${BASIC_PROG}"""
     Execute Command                 cpu Step
-    Register Should Be Equal        ${a0}   0x1
+    Register Should Be Equal        A0   0x1
     Execute Command                 cpu Step
-    Register Should Be Equal        ${a0}   0x1
+    Register Should Be Equal        A0   0x1
 
 MITCNT Should Increment
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${BASIC_PROG}"""
     Execute Command                 emulation RunFor "0.001s"
-    ${val}=                         Execute Command         cpu GetRegister ${a0}
+    ${val}=  Execute Command        cpu GetRegister "A0"
     Should Not Be Equal As Integers     ${val}      0
-    ${val}=                         Execute Command         cpu GetRegister ${a1}
+    ${val}=  Execute Command        cpu GetRegister "A1"
     Should Not Be Equal As Integers     ${val}      0
 
 Timer 0 Should Trigger Interrupt
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${INTERRUPT0_PROG}"""
     Execute Command                 emulation RunFor "0.00167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Be Equal As Integers     ${pc}       ${mtvec}
-    ${mcause}=                      Execute Command         cpu MCAUSE
-    Should Be Equal As Integers     ${mcause}    0x8000001D
+    Pc Should Be Equal              ${mtvec}
+    Register Should Be Equal        MCAUSE  ${mcauseForTimer0}
 
 Timer 0 Should Not Trigger Interrupt When MIE Bit Not Set
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${INTERRUPT0_DISABLED_PROG}"""
     Execute Command                 emulation RunFor "0.00167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Not Be Equal As Integers     ${pc}       ${mtvec}
+    Pc Should Not Be Equal          ${mtvec}
 
 Timer 1 Should Trigger Interrupt
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${INTERRUPT1_PROG}"""
     Execute Command                 emulation RunFor "0.00167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Be Equal As Integers     ${pc}       ${mtvec}
-    ${mcause}=                      Execute Command         cpu MCAUSE
-    Should Be Equal As Integers     ${mcause}    0x8000001C
+    Pc Should Be Equal              ${mtvec}
+    Register Should Be Equal        MCAUSE    ${mcauseForTimer1}
 
 Timer 1 Should Not Trigger Interrupt When MIE Bit Not Set
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${INTERRUPT1_DISABLED_PROG}"""
     Execute Command                 emulation RunFor "0.00167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Not Be Equal As Integers     ${pc}       ${mtvec}
+    Pc Should Not Be Equal          ${mtvec}
 
 Cascade Mode Should Fire Interrupt1 After Correct Amount of Time
     Create Machine
     Execute Command                 cpu AssembleBlock ${PROGRAM_COUNTER} """${CASCADE_MODE_PROG}"""
     Execute Command                 emulation RunFor "0.00167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Not Be Equal As Integers     ${pc}       ${mtvec}
+    Pc Should Not Be Equal          ${mtvec}
     Execute Command                 emulation RunFor "0.0167s"
-    ${pc}=                          Execute Command         cpu PC
-    Should Be Equal As Integers     ${pc}       ${mtvec}
-    ${mcause}=                      Execute Command         cpu MCAUSE
-    Should Be Equal As Integers     ${mcause}    0x8000001C
+    Pc Should Be Equal              ${mtvec}
+    Register Should Be Equal        MCAUSE  ${mcauseForTimer1}
