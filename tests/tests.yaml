@@ -228,6 +228,7 @@
 - tests/unit-tests/auto-save.robot
 - tests/unit-tests/offset-bus-registrations.robot
 - tests/unit-tests/arm-cortex-m-trustzone.robot
+- tests/platforms/egis_et171-zephyr.robot
 - tests/peripherals/AndesATCPIT100.robot
 - tests/unit-tests/andes-atcgpio100-gpio.robot
 
