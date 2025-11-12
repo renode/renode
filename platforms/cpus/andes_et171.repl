@@ -1,0 +1,50 @@
+mtimer: Timers.NEORV32_MachineSystemTimer @ sysbus 0xe6000000
+    frequency: 32000000
+    ->cpu0@7
+
+plic: IRQControllers.PlatformLevelInterruptController @ sysbus <0xe4000000, +0x2000000>
+    numberOfContexts: 16
+    prioritiesEnabled: true
+    numberOfSources: 1023
+    0->cpu0@11
+
+plic1: IRQControllers.PlatformLevelInterruptController @ sysbus <0xe6400000, +0x400000>
+    numberOfContexts: 16
+    prioritiesEnabled: true
+    numberOfSources: 1023
+    0->cpu0@3
+
+sram: Memory.MappedMemory @ {
+      sysbus 0x0;
+      sysbus <0x90000000, +0x20000> // Should only alias part of the memory.
+    }
+    size: 0x60000
+
+flash0: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x100000
+
+cpu0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32gc_xandes"
+    timeProvider: empty
+    hartId: 0
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+
+uart0: UART.NS16550 @ sysbus 0xf0200020
+    wideRegisters: true
+    ->plic@20
+
+sysbus:
+    init:
+        Tag <0xe8100000 0x10000> "USB2 CSR"
+        Tag <0xf0100000 0x1000> "syscon"
+        Tag <0xf0400000 0x1000> "pit0"
+        Tag <0xf0500000 0x1000> "wdt"
+        Tag <0xf0600000 0x1000> "rtc0"
+        Tag <0xf0700000 0x1000> "gpio0"
+        Tag <0xf0a00000 0x1000> "i2c0"
+        Tag <0xf0b00000 0x100000> "SPIM1 master for Flash"
+        Tag <0xf0c00000 0x1000> "dma0"
+        Tag <0xf0e00000 0x100000> "smu2"
+        Tag <0xf0f00000 0x100000> "SPIM2 master for FPS"
+        Tag <0xf1000000 0x1000000> "otpc"
+
