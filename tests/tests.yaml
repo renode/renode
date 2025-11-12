@@ -232,6 +232,7 @@
 - tests/platforms/X86KVM.robot
 - tests/platforms/X86_64KVM.robot
 - tests/unit-tests/riscv-external-pmp.robot
+- tests/platforms/egis_et171-zephyr.robot
 - tests/peripherals/AndesATCPIT100.robot
 - tests/peripherals/AndesATCGPIO100.robot
 

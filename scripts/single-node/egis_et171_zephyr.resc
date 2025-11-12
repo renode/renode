@@ -1,5 +1,5 @@
-$name?="andes_et171"
-$bin?=@https://zephyr-dashboard.renode.io/zephyr/112871afa4f32da694164b668559b1108c96f5cc/egis_et171/hello_world/hello_world.elf
+$name?="egis_et171"
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr-egis_et171-shell_module.elf-s_1482184-28d8276402948a403d1037214b76a2115d1b2882
 $repl?=@platforms/cpus/egis_et171.repl
 
 using sysbus
@@ -10,7 +10,10 @@ showAnalyzer uart0
 
 macro reset
 """
-    sysbus LoadELF $bin 
+    # Don't re-load the ELF here, only adjust the PC.
+    # Otherwise, an important `.noinit` region of memory will be cleared, breaking tests.
+    cpu0 PC 0x80000000
 """
 
+sysbus LoadELF $bin
 runMacro $reset
