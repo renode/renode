@@ -101,6 +101,7 @@ def try_get_category(platform):
         "efr32mg24":   "EFM",
         "efr32mg26":   "EFM",
         "efr32xg22":   "EFM",
+        "egis_et171": "EGIS",
         "eos-s3":  "EOS",
         "eos-s3-qomu": "EOS",
         "eos-s3-quickfeather": "EOS",

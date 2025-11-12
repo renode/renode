@@ -1,0 +1,16 @@
+$name?="andes_et171"
+$bin?=@https://zephyr-dashboard.renode.io/zephyr/112871afa4f32da694164b668559b1108c96f5cc/egis_et171/hello_world/hello_world.elf
+$repl?=@platforms/cpus/egis_et171.repl
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription $repl
+showAnalyzer uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin 
+"""
+
+runMacro $reset
