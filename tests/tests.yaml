@@ -231,6 +231,7 @@
 - tests/platforms/egis_et171-zephyr.robot
 - tests/peripherals/AndesATCPIT100.robot
 - tests/unit-tests/andes-atcgpio100-gpio.robot
+- tests/peripherals/AndesATCWDT200_Watchdog.robot
 
 # Do not use port 3333 in unit tests
 
