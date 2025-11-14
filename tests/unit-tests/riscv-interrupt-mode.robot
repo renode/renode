@@ -50,7 +50,7 @@ Set STVEC By Software
     Sleep                                       1s
     
 *** Test Cases ***
-Should Not Correct MTVEC From Monitor in Auto Mode
+Should Correct MTVEC From Monitor in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
 
@@ -65,19 +65,19 @@ Should Not Correct MTVEC From Monitor in Auto Mode
     Should Not Be In Log                        modifying MTVEC
 
     Execute Command                             cpu MTVEC 0x52
-    MTVEC Should Be Equal                       0x52
-    Should Not Be In Log                        modifying MTVEC
+    MTVEC Should Be Equal                       0x50
+    Wait For Log Entry                          modifying MTVEC
 
     Execute Command                             cpu MTVEC 0x53
-    MTVEC Should Be Equal                       0x53
-    Should Not Be In Log                        modifying MTVEC
+    MTVEC Should Be Equal                       0x51
+    Wait For Log Entry                          modifying MTVEC
 
     Execute Command                             cpu MTVEC 0x54
     MTVEC Should Be Equal                       0x54
     Should Not Be In Log                        modifying MTVEC
 
 
-Should Not Correct STVEC From Monitor in Auto Mode
+Should Correct STVEC From Monitor in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
 
@@ -92,19 +92,19 @@ Should Not Correct STVEC From Monitor in Auto Mode
     Should Not Be In Log                        modifying STVEC
 
     Execute Command                             cpu STVEC 0x52
-    STVEC Should Be Equal                       0x52
-    Should Not Be In Log                        modifying STVEC
+    STVEC Should Be Equal                       0x50
+    Wait For Log Entry                          modifying STVEC
 
     Execute Command                             cpu STVEC 0x53
-    STVEC Should Be Equal                       0x53
-    Should Not Be In Log                        modifying STVEC
+    STVEC Should Be Equal                       0x51
+    Wait For Log Entry                          modifying STVEC
 
     Execute Command                             cpu STVEC 0x54
     STVEC Should Be Equal                       0x54
     Should Not Be In Log                        modifying STVEC
 
 
-Should Not Correct MTVEC Written By Software in Auto Mode
+Should Correct MTVEC Written By Software in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
 
@@ -131,7 +131,7 @@ Should Not Correct MTVEC Written By Software in Auto Mode
     Should Not Be In Log                        MTVEC value written to CSR corrected
 
 
-Should Not Correct STVEC Written By Software in Auto Mode
+Should Correct STVEC Written By Software in Auto Mode
     Create Log Tester                           0
     Create Machine                              Auto
 
