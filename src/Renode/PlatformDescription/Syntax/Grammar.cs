@@ -347,7 +347,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static Parser<IrqReceiver> IrqReceiver =
             (from destinationName in ReferenceValue.Named("destination peripheral reference")
-             from localIndex in Parse.Char('#').Then(x => Parse.Number.Select(y => (int?)int.Parse(y))).Named("local index").XOptional()
+             from localIndex in Parse.Char('#').Then(x => HexadecimalInt.Or(DecimalInt)).Select(y => (int?)y).Named("local index").XOptional()
              select new IrqReceiver(destinationName, localIndex.GetOrDefault())).Positioned();
 
         public static readonly Parser<IrqDestinations> SimpleDestination =
