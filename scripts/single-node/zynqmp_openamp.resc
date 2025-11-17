@@ -12,13 +12,13 @@ machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
 machine SetSerialExecution True
 showAnalyzer uart1
 
-$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp--sm-k26-revA-openamp.dtb-s_39689-4a8f42bbd45093526b1beddb36d39e9486dd328d
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp--sm-k26-revA-openamp.dtb-s_39685-7bc435ab006028eab6e7da35bff8f7ce891cfce9
 $atf_elf?=   @https://dl.antmicro.com/projects/renode/zynq-us_plus--bl31.elf-s_770984-aad9c28d989600caa8fd436bca66eb500e0606dd
 $uboot?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.bin-s_1351888-8291c2fd5e7fed3bda101e4c0694991fb40af277
 $uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s_1418000-23d4b0115d096ce9ed85c7e146f687a528382326
 $linux?=     @https://dl.antmicro.com/projects/renode/zynqmp--linux-Image-openamp-s_23429632-e9ff8dd5c5963153dd87791cc250dea3c039cbbc
 $linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
-$rootfs?=    @https://dl.antmicro.com/projects/renode/zynqmp--linux-rootfs-openamp.ext2-s_62914560-8b8fde7705a876b05d6f1a0f98540f28ba1dd924
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynqmp--linux-rootfs-openamp.ext2-s_62914560-56183cdaeef8af742ea31ee9044b733ccf49c0d1
 
 macro reset
 """
