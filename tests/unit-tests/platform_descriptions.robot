@@ -63,3 +63,6 @@ Should Gracefully Fail At Invalid Using
   Execute Command               mach create
   Run Keyword And Expect Error  ${invalid_using_error}  Execute Command  machine LoadPlatformDescriptionFromString "using \\"invalid\\""
 
+Should Not Crash On Empty Platform String
+    Execute Command          mach create
+    Execute Command          machine LoadPlatformDescriptionFromString ""
