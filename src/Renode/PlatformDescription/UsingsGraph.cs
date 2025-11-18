@@ -116,6 +116,12 @@ namespace Antmicro.Renode.PlatformDescription
 
             private GraphNode CreateGraphNode(CreationDriver creationDriver, string filePath, string source, string prefix, GraphNode parent)
             {
+                if(source == null)
+                {
+                    // Treat null `source` as an empty source
+                    source = "";
+                }
+
                 if(source == "" && filePath != "")
                 {
                     source = File.ReadAllText(filePath);
