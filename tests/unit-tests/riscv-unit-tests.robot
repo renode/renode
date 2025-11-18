@@ -11,7 +11,7 @@ ${register_0}                 0x0
 ${illegal_opcode}             0x00008000
 ${illegal_csr}                0xf120d073
 ${nonexisting_csr}            0xfff0d073
-
+${divide_by_zero_flag}        ${{ 1 << 3 }}
 
 *** Keywords ***
 Create Machine
@@ -425,3 +425,24 @@ Should Properly Handle ResetVector After Creation And After Reset 32
 Should Properly Handle ResetVector After Creation And After Reset 64
     Create Machine                  bitness=64  init_pc=False
     Should Properly Handle ResetVector At Init And After Reset
+
+Should Set Flag On Single Precision Floating Point Division By Zero
+    [Tags]    floating-point
+    Create Machine 64
+    
+    Execute Command                 cpu SetRegister "F0" 0xffffffff00000000  # 0
+    Execute Command                 cpu SetRegister "F1" 0xffffffff40490fdb  # pi
+    Execute Command                 cpu SetRegister "F2" 0x0  # register where result will be stored
+    # Expected result: pi/0 = 0xFFFFFFFF7F800000 (Infinity) and Divide by Zero flag set.
+    Execute Command                 cpu AssembleBlock ${starting_pc} "fdiv.s f2, f1, f0"
+
+    Register Should Be Equal        F2  0x0
+    ${fflags}=  Execute Command     cpu GetRegister "FFLAGS"
+    Should Be True                  (${fflags} & ${divide_by_zero_flag}) == 0
+
+    Execute Command                 cpu Step
+    PC Should Be Equal              ${{ ${starting_pc} + 4 }}
+
+    Register Should Be Equal        F2  0xFFFFFFFF7F800000
+    ${fflags}=  Execute Command     cpu GetRegister "FFLAGS"
+    Should Be True                  (${fflags} & ${divide_by_zero_flag}) != 0
