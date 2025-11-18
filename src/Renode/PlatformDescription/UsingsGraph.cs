@@ -65,7 +65,7 @@ namespace Antmicro.Renode.PlatformDescription
                         }
 
                         var prefix = currentFile.Prefix + usingEntry.Prefix;
-                        GraphNode node = GetOrCreateGraphNode(creationDriver, filePath, null, prefix, currentFile);
+                        GraphNode node = GetOrCreateGraphNode(creationDriver, filePath, "", prefix, currentFile);
 
                         if(!graphNodeFinished.ContainsKey(node))
                         {
@@ -116,7 +116,7 @@ namespace Antmicro.Renode.PlatformDescription
 
             private GraphNode CreateGraphNode(CreationDriver creationDriver, string filePath, string source, string prefix, GraphNode parent)
             {
-                if(source == null)
+                if(source == "" && filePath != "")
                 {
                     source = File.ReadAllText(filePath);
                 }
