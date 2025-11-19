@@ -51,6 +51,10 @@ namespace Antmicro.Renode.PlatformDescription
 
         public void ProcessDescription(string description)
         {
+            if (String.IsNullOrEmpty(description))
+            {
+                return;
+            }
             ProcessInner("", description);
         }
 
