@@ -45,11 +45,11 @@ timer0: Timers.ARM_GenericTimer @ cpu0
 
 timer1: Timers.ARM_GenericTimer @ cpu1
     frequency: 24000000
-    NonSecureEL2PhysicalTimerIRQ -> gic#1@26
-    EL1VirtualTimerIRQ -> gic#1@27
-    NonSecureEL2VirtualTimerIRQ -> gic#1@28
-    EL3PhysicalTimerIRQ -> gic#1@29
-    EL1PhysicalTimerIRQ -> gic#1@30
+    NonSecureEL2PhysicalTimerIRQ -> gic#0x100@26
+    EL1VirtualTimerIRQ -> gic#0x100@27
+    NonSecureEL2VirtualTimerIRQ -> gic#0x100@28
+    EL3PhysicalTimerIRQ -> gic#0x100@29
+    EL1PhysicalTimerIRQ -> gic#0x100@30
 
 nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
         address: 0xE000E000;
