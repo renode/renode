@@ -23,11 +23,14 @@ showAnalyzer scif0
 macro reset
 """
     cpu_m33 IsHalted true
+    cpu0 RNDRSupported true
     cpu1 IsHalted true
+
+    emulation SetGlobalSerialExecution true
 
     sysbus LoadELF    $atf_elf cpu=cluster
     sysbus LoadBinary $uboot  0x50000000 cpu=cpu0
-    sysbus LoadFdt    $dtb    0x40000000 "earlycon console=ttySC0,115200n8 root=/dev/ram0 rw initrd=0x60000000,64M nr_cpus=1" false context=cpu0
+    sysbus LoadFdt    $dtb    0x40000000 "earlycon console=ttySC0,115200n8 root=/dev/ram0 rw initrd=0x60000000,64M" false context=cpu0
     sysbus LoadBinary $linux  0x51000000 cpu=cpu0
     sysbus LoadBinary $rootfs 0x60000000 cpu=cpu0
 

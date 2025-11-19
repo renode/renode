@@ -260,6 +260,7 @@ Should Boot Linux
 
     # Boot Linux
     Wait For Line On Uart           Booting Linux on physical CPU 0x0000000000 [0x411fd050]
+    Wait For Line On Uart           SMP: Total of 2 processors activated.
     Wait For Prompt On Uart         buildroot login:  timeout=140
     Write Line To Uart              root
 
