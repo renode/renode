@@ -406,11 +406,11 @@ Should Run Philosophers Sample
     Create Zephyr Machine           ${ZEPHYR_PHILOSOPHERS}
 
     FOR  ${p}  IN RANGE  0  5
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           treatAsRegex=true
     END
 
 Should Interact Via Shell
@@ -594,11 +594,11 @@ Should Start And Stop Remoteproc
 
     # Check if demo works correctly
     FOR  ${p}  IN RANGE  0  5
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    testerId=${zephyr_tester}  treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  testerId=${zephyr_tester}  treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true 
-            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           testerId=${zephyr_tester}  treatAsRegex=true 
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*7}STARVING${SPACE*7}                                    testerId=${zephyr_tester}  treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}HOLDING ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*2}EATING${SPACE*2}\\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}  testerId=${zephyr_tester}  treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE*3}DROPPED ONE FORK${SPACE*3}                            testerId=${zephyr_tester}  treatAsRegex=true
+            Wait For Line On Uart   Philosopher ${p} \\[[PC]:[ -]\\d\\] ${SPACE}THINKING \\[ ${SPACE}?\\d{1,3} ms \\]${SPACE}           testerId=${zephyr_tester}  treatAsRegex=true
     END
 
     # Stop demo
