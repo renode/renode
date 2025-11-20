@@ -183,6 +183,7 @@ Trace Mixed A64, A32 and T32 Code
     ${disassembly_file}=            Allocate Temporary File
 
     Execute Command                 $rootfs=@${LINUX_32BIT_ROOTFS}
+    Execute Command                 $bootargs="earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M nr_cpus=1"
     Execute Command                 include @scripts/single-node/zynqmp_linux.resc
     Execute Command                 machine SetSerialExecution True
     Create Terminal Tester          sysbus.uart1  defaultPauseEmulation=true
@@ -193,7 +194,7 @@ Trace Mixed A64, A32 and T32 Code
     Wait For Prompt On Uart         \#
     Write Line To Uart              uname -a
 
-    ${trace}=                       Trace Execution  apu1  PCAndOpcode  synchronous=True
+    ${trace}=                       Trace Execution  apu0  PCAndOpcode  synchronous=True
 
     ${script_args}=                 Create List
 
@@ -204,14 +205,17 @@ Trace Mixed A64, A32 and T32 Code
 
     Execute Python Script           ${EXECUTION_TRACER}  ${script_args}  outputPath=${disassembly_file}
 
+    # Note: The specific opcodes and PCs don't really matter, we only want to ensure that each of the
+    # instruction categories was disassembled correctly.
+
     # A64
     ${x}=                           Grep File  ${disassembly_file}  0x0000000010011FE4:*0xD69F03E0*eret
     Should Not Be Empty             ${x}
 
     # A32
-    ${x}=                           Grep File  ${disassembly_file}  0x000000087EE4DE10:*0xE92D40F0*push*{r4,*r5,*r6,*r7,*lr}
+    ${x}=                           Grep File  ${disassembly_file}  0x000000087F052D0C:*0xE92D40F0*push*{r4,*r5,*r6,*r7,*lr}
     Should Not Be Empty             ${x}
 
     # T32
-    ${x}=                           Grep File  ${disassembly_file}  0x000000087B4734D8:*0xBF04*itt*eq
+    ${x}=                           Grep File  ${disassembly_file}  0x000000087F07E4D8:*0xBF04*itt*eq
     Should Not Be Empty             ${x}
