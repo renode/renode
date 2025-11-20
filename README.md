@@ -47,8 +47,8 @@ The following packages formats are available:
 * [`renode-latest.x86_64.rpm`](https://builds.renode.io/renode-latest.x86_64.rpm) - Red Hat / Fedora package
 * [`renode-latest.deb`](https://builds.renode.io/renode-latest.deb) - Debian-based distribution package
 * [`renode-latest.dmg`](https://builds.renode.io/renode-latest.dmg) - macOS package
-* [`renode-latest.zip`](https://builds.renode.io/renode-latest.zip) - Windows portable package, without installer
-* [`renode-latest.msi`](https://builds.renode.io/renode-latest.msi) - Windows installer
+* [`renode-latest.windows-portable-dotnet.zip`](https://builds.renode.io/renode-latest.windows-portable-dotnet.zip) - Windows portable package, without installer
+* [`renode-latest.setup.exe`](https://builds.renode.io/renode-latest.setup.exe) - Windows installer
 * [`renode-latest.tar.xz`](https://builds.renode.io/renode-latest.tar.xz) - Renode sources
 
 #### Stable releases
