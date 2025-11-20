@@ -229,6 +229,8 @@
 - tests/unit-tests/auto-save.robot
 - tests/unit-tests/offset-bus-registrations.robot
 - tests/unit-tests/arm-cortex-m-trustzone.robot
+- tests/platforms/X86KVM.robot
+- tests/platforms/X86_64KVM.robot
 
 # Do not use port 3333 in unit tests
 
