@@ -179,27 +179,26 @@ Should Communicate With I2C Echo Peripheral
     Check Exit Code
 
 Should Communicate With I2C Echo Peripheral From 32-Bit Userspace On 64-Bit Kernel
+    Execute Command                 $bootargs="earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M nr_cpus=1"
     Create Linux 32-Bit Userspace Machine
 
     Execute Command                 machine LoadPlatformDescriptionFromString "i2cEcho: Mocks.EchoI2CDevice @ i2c1 ${I2C_ECHO_ADDRESS}"
 
     Boot U-Boot And Launch Linux
-    Boot Linux And Login
+    Boot Linux And Login            smp_count=1
 
     # Suppress messages from the kernel space
     Execute Linux Command           echo 0 > /proc/sys/kernel/printk
 
     ${log}=                         Allocate Temporary File
-    # It was checked empirically that i2ctransfer process is executed on apu2.
-    # Determinism during the emulation is guaranteed by SerialExecution mode,
-    # but it may end up on a different core if the boot flow is changed or binaries modified.
-    Execute Command                 apu2 LogFile @${log}
+    # Linux is booted with `nr_cpus=1` to guarantee that i2ctransfer will be executed on apu0
+    Execute Command                 apu0 LogFile @${log}
     # Clear the TB cache so all instructions are translated and appear in the log
-    Execute Command                 apu2 ClearTranslationCache
+    Execute Command                 apu0 ClearTranslationCache
     Write Line To Uart              i2ctransfer -ya 1 w3@${I2C_ECHO_ADDRESS} 0x01 0x23 0x45 r2
     Wait For Line On Uart           0x01 0x23
     Wait For Prompt On Uart         ${LINUX_PROMPT}
-    Execute Command                 apu2 LogFile null
+    Execute Command                 apu0 LogFile null
     Check Exit Code
 
     # Assert that the TB log has no errors and includes A64 instructions (in the kernel),
