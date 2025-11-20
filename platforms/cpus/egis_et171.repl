@@ -37,13 +37,15 @@ pit0: Timers.AndesATCPIT100 @ sysbus 0xf0400000
     clockFrequency: 60000000
     ->plic@22
 
+gpio0: GPIOPort.AndesATCGPIO100 @ sysbus 0xf0700000
+    IRQ -> plic@21
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
         Tag <0xf0100000 0x1000> "syscon"
         Tag <0xf0500000 0x1000> "wdt"
         Tag <0xf0600000 0x1000> "rtc0"
-        Tag <0xf0700000 0x1000> "gpio0"
         Tag <0xf0a00000 0x1000> "i2c0"
         Tag <0xf0b00000 0x100000> "SPIM1 master for Flash"
         Tag <0xf0c00000 0x1000> "dma0"
