@@ -18,6 +18,7 @@ $uboot_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--u-boot.elf-s
 $linux?=     @https://dl.antmicro.com/projects/renode/zynq-us_plus--linux.Image-s_21039616-74b4831df919e21f699cc0d647874bfa99d69fb6
 $linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26614776-efb126bb528fb25d022b3cec1c1a08d555608e65
 $rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-s_62914560-3d4dd1f233b7be349e7ec48d64d6081cb5350d77
+$bootargs?=  "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M"
 
 macro reset
 """
@@ -30,7 +31,7 @@ macro reset
 
     sysbus LoadELF    $atf_elf cpu=apu0
 
-    sysbus LoadFdt    $dtb    0x100000   "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M" false
+    sysbus LoadFdt    $dtb    0x100000   $bootargs false
     sysbus LoadBinary $uboot  0x8000000
     sysbus LoadBinary $linux  0x10000000
     sysbus LoadBinary $rootfs 0x20000000
