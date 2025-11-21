@@ -239,6 +239,7 @@ def try_get_category(platform):
         "nuvoton_npcx9": "NUVOTON",
         "nuvoton_npcx9m6fb_evb": "NUVOTON",
         "andes_ae350_n25": "ANDES",
+        "andes_et171": "ANDES",
         "renesas-r7fa8m1a": "RENESAS",
         "renesas-r7fa2l1a": "RENESAS",
         "renesas-r7fa2e1a9": "RENESAS",
