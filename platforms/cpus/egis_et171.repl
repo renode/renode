@@ -33,11 +33,14 @@ uart0: UART.NS16550 @ sysbus 0xf0200020
     wideRegisters: true
     ->plic@20
 
+pit0: Timers.AndesATCPIT100 @ sysbus 0xf0400000
+    clockFrequency: 60000000
+    ->plic@22
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
         Tag <0xf0100000 0x1000> "syscon"
-        Tag <0xf0400000 0x1000> "pit0"
         Tag <0xf0500000 0x1000> "wdt"
         Tag <0xf0600000 0x1000> "rtc0"
         Tag <0xf0700000 0x1000> "gpio0"

@@ -232,6 +232,7 @@
 - tests/platforms/X86KVM.robot
 - tests/platforms/X86_64KVM.robot
 - tests/unit-tests/riscv-external-pmp.robot
+- tests/peripherals/AndesATCPIT100.robot
 
 # Do not use port 3333 in unit tests
 
