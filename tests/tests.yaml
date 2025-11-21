@@ -228,6 +228,7 @@
 - tests/unit-tests/auto-save.robot
 - tests/unit-tests/offset-bus-registrations.robot
 - tests/unit-tests/arm-cortex-m-trustzone.robot
+- tests/peripherals/AndesATCPIT100.robot
 
 # Do not use port 3333 in unit tests
 
