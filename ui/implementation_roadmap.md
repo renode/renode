@@ -65,7 +65,7 @@ This document breaks down the development of the Renode Async UI into small, ver
  ### Task 4.1: Memory Watch Widget Layout
  *   **Goal**: Create the visual component for the watch list.
  *   **Instructions**:
-     1.  Create `ui/widgets/memory_watch.py`.
+     1.  Create `ui/memory_watch.py` (consolidated into `ui/` folder).
      2.  Implement a `QTableWidget` with columns: Address, Name, Type, Value.
      3.  Add "Add Watch" and "Remove Watch" buttons.
      4.  Implement a dialog to add a new watch (Address, Name, Type).

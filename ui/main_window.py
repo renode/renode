@@ -3,7 +3,7 @@ import logging
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QFileDialog, QMessageBox, QTextEdit
 
-from ui.widgets.memory_watch import MemoryWatchWidget
+from ui.memory_watch import MemoryWatchWidget
 
 class LogHandler(logging.Handler, QObject):
     log_signal = Signal(str)

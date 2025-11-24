@@ -73,15 +73,16 @@ The **Memory Watch** section allows you to inspect specific memory addresses in 
     *   **Address**: Enter the hex address (e.g., `0x8000`).
     *   **Name**: Give it a friendly name (e.g., "Buffer").
     *   **Type**: Select the data type (Byte, Word, DWord, String).
-2.  **View Values**: The table displays the current value at the watched addresses. Values update periodically when the simulation is running.
+2.  **View Values**: The table displays the current value at the watched addresses.
+    *   *Note: Currently, the memory monitor uses a mock backend and will display placeholder values (e.g., `0xDEADBEEF`) instead of real simulation data.*
 3.  **Remove Watch**: Select a row and click "Remove Watch" to stop monitoring that address.
 
 ### Logs
 
 The **System Logs** area at the bottom displays important information:
 *   Application startup and status messages.
-*   Renode log output (standard output from the simulation).
-*   Error messages and warnings (e.g., if a script fails to load).
+*   Internal application logs.
+*   *Note: Currently, standard Renode simulation output is not captured in this view.*
 
 ## Troubleshooting
 

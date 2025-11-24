@@ -83,7 +83,8 @@ renode_ui/
 ├── main.py              # Entry point
 ├── ui/
 │   ├── main_window.py   # Main Window definition (PySide6)
-│   └── widgets/         # Custom widgets (MemoryWatch, LogView)
+│   ├── memory_watch.py  # MemoryWatch widget
+│   └── ...              # Other UI components
 ├── backend/
 │   ├── renode_wrapper.py # Blocking calls to pyrenode3
 │   └── async_bridge.py   # Async wrappers around renode_wrapper
