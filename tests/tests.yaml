@@ -104,6 +104,7 @@
 - tests/unit-tests/per-core-registration.robot
 - tests/unit-tests/it-status.robot
 - tests/unit-tests/arm-thumb.robot
+- tests/unit-tests/arm-thumb2-srs-rfe.robot
 - tests/unit-tests/emulation-mode.robot
 - tests/unit-tests/tb_overwrite.robot
 - tests/tools/sel4_extensions.robot
