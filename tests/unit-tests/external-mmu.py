@@ -2,10 +2,9 @@
 SMMU_BASE = 0xFD800000
 STREAM_TABLE_ADDR = 0x40010000  # aligned to 2⁶
 CONTEXT_DESCRIPTOR_ADDR = 0x40020000  # aligned to 2⁶
-PAGE_TABLE_L0_ADDR = 0x40030000
-PAGE_TABLE_L1_ADDR = 0x40031000
-PAGE_TABLE_L2_ADDR = 0x40032000
-PAGE_TABLE_L3_ADDR = 0x40033000
+PAGE_TABLE_L1_ADDR = 0x40030000
+PAGE_TABLE_L2_ADDR = 0x40031000
+PAGE_TABLE_L3_ADDR = 0x40032000
 
 SMMU_CR0 = 0x20
 SMMU_STRTAB_BASE = 0x80
@@ -30,10 +29,9 @@ def mc_setup_smmu(stream_id):
     # 0x0 -> 0x0
     # 0x1000 -> 0x00000001'00000000
 
-    # L0 Table -> L1 Table, Valid=1, Table=1
-    poke(PAGE_TABLE_L0_ADDR, PAGE_TABLE_L1_ADDR | 0b11)
+    # L0 Table is not used in VMSAv8-32
 
-    # L1 Table -> L2 Table
+    # L1 Table -> L2 Table, Valid=1, Table=1
     poke(PAGE_TABLE_L1_ADDR, PAGE_TABLE_L2_ADDR | 0b11)
 
     # L2 Table -> L3 Table
@@ -60,8 +58,9 @@ def mc_setup_smmu(stream_id):
     cd |= 0b00 << 6  # TG0
     cd |= 16 << 16  # T1SZ
     cd |= 0b10 << 22  # TG1
+    cd |= 0 << 41 # AA64
     poke(CONTEXT_DESCRIPTOR_ADDR + 0, cd)
-    poke(CONTEXT_DESCRIPTOR_ADDR + 8, PAGE_TABLE_L0_ADDR)
+    poke(CONTEXT_DESCRIPTOR_ADDR + 8, PAGE_TABLE_L1_ADDR)
     # Rest as zeroes
     for i in range(2, 8):
         poke(CONTEXT_DESCRIPTOR_ADDR + i * 8, 0)
