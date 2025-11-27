@@ -43,15 +43,19 @@ gpio0: GPIOPort.AndesATCGPIO100 @ sysbus 0xf0700000
 watchdog: Timers.AndesATCWDT200_Watchdog @ sysbus 0xf0500000
     clockFrequency: 32768
 
+spi0: SPI.AndesACTSPI200 @ sysbus 0xf0b00000
+    ->plic@17
+
+spi1: SPI.AndesACTSPI200 @ sysbus 0xf0f00000
+    ->plic@18
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
         Tag <0xf0100000 0x1000> "syscon"
         Tag <0xf0600000 0x1000> "rtc0"
         Tag <0xf0a00000 0x1000> "i2c0"
-        Tag <0xf0b00000 0x100000> "SPIM1 master for Flash"
         Tag <0xf0c00000 0x1000> "dma0"
         Tag <0xf0e00000 0x100000> "smu2"
-        Tag <0xf0f00000 0x100000> "SPIM2 master for FPS"
         Tag <0xf1000000 0x1000000> "otpc"
 
