@@ -49,6 +49,12 @@ spi0: SPI.AndesATCSPI200 @ sysbus 0xf0b00000
 spi1: SPI.AndesATCSPI200 @ sysbus 0xf0f00000
     ->plic@18
 
+p25q16: SPI.Puya_P25Q @ spi0
+    underlyingMemory: p25q16_flash_mem
+
+p25q16_flash_mem: Memory.MappedMemory
+    size: 0x00800000
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
