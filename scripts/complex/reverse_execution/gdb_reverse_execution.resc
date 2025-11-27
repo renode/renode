@@ -1,0 +1,59 @@
+mach create
+machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
+
+cpu AssembleBlock 0x80000000 """
+.equ UART0_BASE, 0x10013000
+.equ UART_TXDATA, 0x00
+.equ UART_TXCTRL, 0x08
+
+li sp, 0x80004000
+// UART Setup
+li t0, UART0_BASE
+li t1, 1
+sw t1, UART_TXCTRL(t0)
+
+// Our test
+li t3, 0x1337
+beq t3, t4, ok
+
+wrong:
+la a0, wrong_str
+call uart_puts
+j hang
+
+ok:
+la a0, ok_str
+call uart_puts
+
+hang:
+j hang
+
+uart_putc:
+li t2, UART0_BASE
+sw a0, UART_TXDATA(t2)
+ret
+
+uart_puts:
+addi sp, sp, -16
+sw ra, 12(sp)
+mv t0, a0
+1:  lbu a0, 0(t0)
+beqz a0, 2f
+addi t0, t0, 1
+call uart_putc
+j 1b
+2:  lw ra, 12(sp)
+addi sp, sp, 16
+ret
+
+wrong_str:
+.string ":("
+ok_str:
+.string "OK"
+"""
+
+cpu PC 0x80000000
+
+showAnalyzer uart0
+machine StartGdbServer 3333
+reverseExecMode true
