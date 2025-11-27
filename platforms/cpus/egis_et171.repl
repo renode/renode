@@ -1,4 +1,4 @@
-mtimer: Timers.NEORV32_MachineSystemTimer @ sysbus 0xe6000000
+mtimer: Timers.RiscVMachineTimer @ sysbus 0xe6000000
     frequency: 32000000
     ->cpu0@7
 
