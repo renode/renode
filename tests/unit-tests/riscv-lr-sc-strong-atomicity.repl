@@ -6,7 +6,7 @@ mmio: Memory.ArrayMemory @ sysbus 0x100000
 
 cpu_0: CPU.RiscV64 @ sysbus
     cpuType: "rv64gc_zicsr_zifencei"
-    hartId: 1
+    hartId: 0
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: empty
     allowUnalignedAccesses: true
@@ -33,7 +33,7 @@ cpu32_0: CPU.RiscV32 @ sysbus
 
 cpu32_1: CPU.RiscV32 @ sysbus
     cpuType: "rv32gc_zicsr_zifencei"
-    hartId: 2
+    hartId: 3
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: empty
     allowUnalignedAccesses: true
