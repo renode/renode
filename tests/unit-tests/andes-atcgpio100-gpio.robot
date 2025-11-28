@@ -3,7 +3,7 @@ ${ZEPHYR_GPIO_BASIC_API}            @https://dl.antmicro.com/projects/renode/zep
 
 ${GPIO_TEST_PLATFORM}               SEPARATOR=\n
 ...                                 """
-...                                 using "platforms/cpus/andes_et171.repl"
+...                                 using "platforms/cpus/egis_et171.repl"
 ...                                 gpio0:
 ...                                 ${SPACE*4}4 -> gpio0@5
 ...                                 """
