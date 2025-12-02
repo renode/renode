@@ -2,13 +2,13 @@ mtimer: Timers.NEORV32_MachineSystemTimer @ sysbus 0xe6000000
     frequency: 32000000
     ->cpu0@7
 
-plic: IRQControllers.PlatformLevelInterruptController @ sysbus <0xe4000000, +0x2000000>
+plic: IRQControllers.AndesNCEPLIC100 @ sysbus <0xe4000000, +0x2000000>
     numberOfContexts: 16
     prioritiesEnabled: true
     numberOfSources: 1023
     0->cpu0@11
 
-plic1: IRQControllers.PlatformLevelInterruptController @ sysbus <0xe6400000, +0x400000>
+plic1: IRQControllers.AndesNCEPLIC100 @ sysbus <0xe6400000, +0x400000>
     numberOfContexts: 16
     prioritiesEnabled: true
     numberOfSources: 1023
