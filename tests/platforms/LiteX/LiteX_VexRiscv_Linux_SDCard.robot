@@ -36,10 +36,10 @@ Should Mount Filesystem From SD Card
 
     Start Emulation
 
-    Wait For Line On Uart      mmc0: new SD card at address 0000
+    Wait For Line On Uart      mmc0: new SD card at address 0001
     Wait For Line On Uart      blk_queue_max_hw_sectors: set to minimum 8
     Wait For Line On Uart      blk_queue_max_segment_size: set to minimum 4096
-    Wait For Line On Uart      mmcblk0: mmc0:0000 RENOD 64.0 MiB 
+    Wait For Line On Uart      mmcblk0: mmc0:0001 RENOD 64.0 MiB 
     Wait For Line On Uart      mmcblk0: p1
 
     Wait For Prompt On Uart    buildroot login:
@@ -93,10 +93,10 @@ Should Load RootFS From SD Card
 
     Start Emulation
 
-    Wait For Line On Uart      mmc0: new SD card at address 0000
+    Wait For Line On Uart      mmc0: new SD card at address 0001
     Wait For Line On Uart      blk_queue_max_hw_sectors: set to minimum 8
     Wait For Line On Uart      blk_queue_max_segment_size: set to minimum 4096
-    Wait For Line On Uart      mmcblk0: mmc0:0000 RENOD
+    Wait For Line On Uart      mmcblk0: mmc0:0001 RENOD
 
     Wait For Line On Uart      VFS: Mounted root (ext4 filesystem) readonly 
     Wait For Line On Uart      Run /sbin/init as init process

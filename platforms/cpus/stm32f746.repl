@@ -173,7 +173,7 @@ pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
-sdmmc: SD.STM32SDMMC @ sysbus 0x40012c00
+sdmmc: SD.STM32FSDMMC @ sysbus 0x40012c00
     IRQ -> nvic@49
     DMAReceive -> dma2@3
 
