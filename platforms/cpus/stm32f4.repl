@@ -66,6 +66,7 @@ nvicInput40: Miscellaneous.CombinedInput @ none
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
     modeResetValue: 0xA8000000
+    outputSpeedResetValue: 0x0C000000
     pullUpPullDownResetValue: 0x64000000
     numberOfAFs: 16
     invertedAFPins: [[5, 3], [7, 1, 3]]
