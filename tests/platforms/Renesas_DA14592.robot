@@ -53,22 +53,6 @@ UART Should Work
     Wait For Line On Uart           Hello, world!    pauseEmulation=true
     Provides                        machine-after-hello-world
 
-Watchdog Should Reset Machine Continuously If Not Frozen
-    Requires                        machine-after-hello-world
-    Create Log Tester               5
-
-    # Let's check this sample without GeneralPurposeRegisters containing Watchdog freeze register.
-    # It should reset over and over again without the ability to freeze it.
-    Execute Command                 sysbus Unregister sysbus.gp_regs
-
-    # Failed attempt to freeze watchdog.
-    Wait For Log Entry              WriteDoubleWord to non existing peripheral at 0x50050300, value 0x8
-
-    # And resets all over the place.
-    Wait For Log Entry              sys_wdog: Reseting machine
-    Wait For Log Entry              sys_wdog: Reseting machine
-    Wait For Log Entry              sys_wdog: Reseting machine
-
 Freezing Watchdog Should Work
     Requires                        machine-after-hello-world
     Create Log Tester               5
@@ -112,6 +96,27 @@ Test Watchdog
     # It should take about 160ms of virtual time after NMI to reset the machine.
     Wait For Log Entry      sys_wdog: Limit reached    timeout=0.17
     Wait For Log Entry      sys_wdog: Reseting machine
+    Provides                machine-after-reset
+
+Watchdog Should Reset Machine Continuously If Not Frozen
+    Requires                machine-after-reset
+    Create Log Tester       5
+
+    # Remove the possibility of freezing Watchdog by unregistering
+    # GeneralPurposeRegisters containing Watchdog freeze register.
+    Execute Command         sysbus Unregister sysbus.gp_regs
+
+    # Failed attempt to freeze watchdog.
+    Wait For Log Entry      WriteDoubleWord to non existing peripheral at 0x50050300, value 0x8
+
+    # Speed up the wait for the machine reset by setting quantum and advancing immediatly.
+    Execute Command         emulation SetGlobalQuantum "0.001"
+    Execute Command         emulation SetAdvanceImmediately true
+
+    # With GeneralPurpouseRegisters removed the machine should keep on reseting.
+    Wait For Log Entry      sys_wdog: Reseting machine    timeout=85
+    Wait For Log Entry      sys_wdog: Reseting machine    timeout=85
+    Wait For Log Entry      sys_wdog: Reseting machine    timeout=85
 
 Test GPADC
     Create Machine                  ${ADC_BIN}   ${ADC_ELF}
