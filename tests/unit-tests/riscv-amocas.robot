@@ -319,10 +319,10 @@ Amocas.d On RV64 Shouldn't Set Value At Single-Page Memory Location
 Amocas.d On RV32 Shouldn't Set Value At Single-Page Memory Location
     Amocas.d On RV32 Shouldn't Set Value At ${ORDINARY_ADDRESS} To ${new_64} If Expecting ${wrong_expected_64}
 
-Amocas.d On RV64 Shouldn't Set Value At Single-Page Memory Location
+Amocas.d On RV64 Shouldn't Set Value At Page-Spanning Memory Location
     Amocas.d On RV64 Shouldn't Set Value At ${PAGE_SPANNING_ADDRESS} To ${new_64} If Expecting ${wrong_expected_64}
 
-Amocas.d On RV64 Shouldn't Set Value At Single-Page Memory Location
+Amocas.d On RV64 Shouldn't Set Value At MMIO Memory Location
     Amocas.d On RV64 Shouldn't Set Value At ${MMIO_ADDRESS} To ${new_64} If Expecting ${wrong_expected_64}
 
 # q should tests
