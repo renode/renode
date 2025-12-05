@@ -8,7 +8,7 @@ ${UART}                             sysbus.usart2
 ${SENSOR}                           sysbus.i2c1.hs3001
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
 ${SAMPLES_CSV}                      ${CURDIR}/../../peripherals/HS3001-samples.csv
-${GDB_REMOTE_PORT}                  3333
+${GDB_REMOTE_PORT}                  3340
 
 *** Keywords ***
 Download Bin File

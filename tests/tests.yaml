@@ -246,5 +246,6 @@
 
 - port_3339:
   - tests/unit-tests/gdb/gdb_reverse_execution.robot
-  - tests/unit-tests/gdb/gdb_reverse_execution_resd.robot
 
+- port_3340:
+  - tests/unit-tests/gdb/gdb_reverse_execution_resd.robot
