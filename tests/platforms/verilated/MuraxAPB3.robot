@@ -3,7 +3,7 @@ ${URI}                              @https://dl.antmicro.com/projects/renode
 ${BIN}                              murax--demo.elf-s_26952-7635fc30d0a3ed10c5b7cba622131b02d103f629
 ${UART}                             sysbus.uart
 
-// Binaries from https://github.com/antmicro/renode-verilator-integration, rev. f9b4139
+# Binaries from https://github.com/antmicro/renode-verilator-integration, rev. f9b4139
 ${APB3UART_SOCKET_LINUX}            ${URI}/Vapb3uart-Linux-x86_64-12904733885-s_1639760-a15bb0221a8ae95ecd8554f5a2c78e783bc3d806
 ${APB3UART_SOCKET_WINDOWS}          ${URI}/Vapb3uart-Windows-x86_64-12904733885.exe-s_3250718-de16e82b644a368079af147cad0a7bc6a8dea82e
 ${APB3UART_SOCKET_MACOS}            ${URI}/Vapb3uart-macOS-x86_64-12904733885-s_224032-16d279cf20b3e9e07039d29f000e954c567dd9c8
