@@ -22,5 +22,4 @@ cpu PC 0x40f00000
 $sock_path?=@/tmp/libfuse-passthrough-hp.sock
 $virtiofs_tag?="MySharedDir"
 
-machine StartGdbServer 3333
 virtiofs Create $sock_path $virtiofs_tag
