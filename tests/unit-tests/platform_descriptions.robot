@@ -5,6 +5,7 @@ Suite Setup                   Get Test Cases
 ${platforms_path}=            ${CURDIR}${/}..${/}..${/}platforms
 @{pattern}=                   *.repl
 ${invalid_using_error}=       REGEXP: (?s:.)* Using 'invalid' does not exist(?s:.)*
+${abstract_type_error}=       REGEXP: (?s:.)* Antmicro.Renode.Peripherals.CPU.TranslationCPU is an abstract type. Try constructing one of the following concrete types: (?s:.)*
 ${eq}=                        ==
 # Some repls are not standalone and need to be included by other repls with "using" syntax
 # or added dynamically to the existing platform with "machine LoadPlatformDescription" command.
@@ -66,3 +67,7 @@ Should Gracefully Fail At Invalid Using
 Should Not Crash On Empty Platform String
     Execute Command          mach create
     Execute Command          machine LoadPlatformDescriptionFromString ""
+
+Should Gracefully Fail At Abstract Class Construction
+    Execute Command            mach create
+    Run Keyword And Expect Error  ${abstract_type_error}  Execute Command  machine LoadPlatformDescriptionFromString "cpu: CPU.TranslationCPU {}"

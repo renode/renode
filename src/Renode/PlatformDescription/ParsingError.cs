@@ -57,5 +57,6 @@ namespace Antmicro.Renode.PlatformDescription
         AliasedAndNormalArgumentName = 46,
         ResetSectionRegistrationError = 47,
         MoreThanOneResetAttribute = 48,
+        AbstractType = 49,
     }
 }

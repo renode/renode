@@ -1565,6 +1565,14 @@ namespace Antmicro.Renode.PlatformDescription
 
         private ConstructorInfo FindConstructor(Type type, IEnumerable<ConstructorOrPropertyAttribute> attributes, IWithPosition responsibleObject)
         {
+            if(type.IsAbstract)
+            {
+                var subclasses = TypeManager.Instance.GetConcreteSubclasses(type);
+                var message = $"{type} is an abstract type. Try constructing one of the following concrete types: {String.Join(", ", subclasses)}";
+                HandleError(ParsingError.AbstractType, responsibleObject, message, false);
+                return null;
+            }
+
             var constructorSelectionReport = new LazyList<string>();
             var result = new List<ConstructorInfo>();
             var availableCtors = type.GetConstructors();
