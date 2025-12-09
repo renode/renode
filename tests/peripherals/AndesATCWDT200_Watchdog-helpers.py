@@ -1,4 +1,5 @@
 import decimal
+from typing import Union
 
 
 def get_interrupt_timeout_seconds(control_register_value, clock_frequency):
@@ -36,7 +37,7 @@ def get_timeout_seconds(interval_power, power_offset, clock_frequency):
     return round_to_n_significant_digits(timeout_seconds, 3)
 
 
-def round_to_n_significant_digits(value: str | float, digits: int):
+def round_to_n_significant_digits(value: Union[str, float], digits: int):
     with decimal.localcontext() as context:
         # Adjust precision to match the number of significant digits we want.
         context.prec = digits
