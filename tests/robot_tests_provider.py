@@ -27,6 +27,9 @@ from tests_engine import TestResult
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
+keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
+keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
+
 
 class Timeout:
     def __init__(self, value: str):
@@ -596,6 +599,22 @@ class RobotTestSuite(object):
             print('Ignoring helper file: {}'.format(self.path))
             return True
 
+        tests_len = 0
+        suites_with_hotspots = []
+        if any(self.tests_without_hotspots):
+            suite_without_hotspots = self._get_test_suite(options, self.tests_without_hotspots, options.fixture, None)
+            tests_len = len(suite_without_hotspots.tests)
+        if any(self.tests_with_hotspots):
+            for hotspot in RobotTestSuite.hotspot_action:
+                if options.hotspot and options.hotspot != hotspot:
+                    continue
+                suite_with_hotspots = self._get_test_suite(options, self.tests_with_hotspots, options.fixture, hotspot)
+                suites_with_hotspots.append((hotspot, suite_with_hotspots))
+                tests_len += len(suite_with_hotspots.tests)
+
+        if tests_len == 0:
+            return TestResult(True, [])
+
         # The list is cleared only on the first run attempt in each iteration so
         # that tests that time out aren't retried in the given iteration but are
         # started as usual in subsequent iterations.
@@ -621,17 +640,16 @@ class RobotTestSuite(object):
         start_timestamp = monotonic()
 
         if any(self.tests_without_hotspots):
-            result = get_result().ok and self._run_inner(options.fixture,
+            result = get_result().ok and self._run_inner(suite_without_hotspots,
+                                                         options.fixture,
                                                          None,
                                                          self.tests_without_hotspots,
                                                          options,
                                                          iteration_index,
                                                          suite_retry_index)
-        if any(self.tests_with_hotspots):
-            for hotspot in RobotTestSuite.hotspot_action:
-                if options.hotspot and options.hotspot != hotspot:
-                    continue
-                result = get_result().ok and self._run_inner(options.fixture,
+        for hotspot, suite in suites_with_hotspots:
+                result = get_result().ok and self._run_inner(suite,
+                                                             options.fixture,
                                                              hotspot,
                                                              self.tests_with_hotspots,
                                                              options,
@@ -789,10 +807,32 @@ class RobotTestSuite(object):
         if not any(test_cases_names):
             return True
         self._dependencies_met.update(test_cases_names)
-        return self._run_inner(None, None, test_cases_names, options, iteration_index, suite_retry_index)
+        suite = self._get_test_suite(options, test_cases_names, None, None)
+        return self._run_inner(suite, None, None, test_cases_names, options, iteration_index, suite_retry_index)
 
+    def _get_test_suite(self, options, test_cases_names, fixture, hotspot):
+        file_name = os.path.splitext(os.path.basename(self.path))[0]
+        suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-    def _run_inner(self, fixture, hotspot, test_cases_names, options, iteration_index=1, suite_retry_index=0):
+        test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
+        if fixture:
+            test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], '*' + fixture + '*')]
+        suite_builder = robot.running.builder.TestSuiteBuilder()
+        suite = suite_builder.build(self.path)
+        suite.resource.imports.create(type="Resource", name=keywords_path)
+
+        metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
+        suite.configure(include_tags=options.include, exclude_tags=options.exclude,
+                            include_tests=[t[1] for t in test_cases], metadata=metadata,
+                            name=suite_name, empty_suite_ok=True)
+        # Provide default values for {Suite,Test}{Setup,Teardown}
+        if not suite.setup:
+            suite.setup.config(name="Setup")
+        if not suite.teardown:
+            suite.teardown.config(name="Teardown")
+        return suite
+
+    def _run_inner(self, suite, fixture, hotspot, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
@@ -823,11 +863,8 @@ class RobotTestSuite(object):
         if options.variables:
             variables += options.variables
 
-        test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
+        test_cases = [(test.name, '{0}.{1}'.format(suite_name, test.name)) for test in suite.tests]
         if fixture:
-            test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], '*' + fixture + '*')]
-            if len(test_cases) == 0:
-                return None
             deps = set()
             for test_name in (t[0] for t in test_cases):
                 deps.update(self._get_dependencies(test_name))
@@ -844,29 +881,13 @@ class RobotTestSuite(object):
         if options.listener:
             listeners += options.listener
 
-        metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
         log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
 
-        keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
-        keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
         # This variable is provided for compatibility with Robot files that use Resource ${RENODEKEYWORDS}
         variables.append('RENODEKEYWORDS:{}'.format(keywords_path))
         tools_path = os.path.join(os.path.dirname(this_path), "tools")
         tools_path = tools_path.replace(os.path.sep, "/")
         variables.append('RENODETOOLS:{}'.format(tools_path))
-        suite_builder = robot.running.builder.TestSuiteBuilder()
-        suite = suite_builder.build(self.path)
-        suite.resource.imports.create(type="Resource", name=keywords_path)
-
-        suite.configure(include_tags=options.include, exclude_tags=options.exclude,
-                        include_tests=[t[1] for t in test_cases], metadata=metadata,
-                        name=suite_name, empty_suite_ok=True)
-
-        # Provide default values for {Suite,Test}{Setup,Teardown}
-        if not suite.setup:
-            suite.setup.config(name="Setup")
-        if not suite.teardown:
-            suite.teardown.config(name="Teardown")
 
         for test in suite.tests:
             if not test.setup:
