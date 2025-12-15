@@ -359,6 +359,7 @@ class LLVMDisassembler():
 def handle_coverage(args, trace_data_per_file) -> None:
     coverage_config = coverage.Coverage(
         elf_file_handler=args.coverage_binary,
+        pc2line_file_stream=args.pc2line_file,
         code_filenames=args.coverage_code,
         substitute_paths=args.sub_source_path,
         debug=args.debug,
@@ -453,7 +454,9 @@ def main():
     cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
     cov_parser.add_argument("files", nargs='+', help="binary trace files")
 
-    cov_parser.add_argument("--binary", dest='coverage_binary', required=True, default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    source_map_parser = cov_parser.add_mutually_exclusive_group(required=True)
+    source_map_parser.add_argument("--binary", dest='coverage_binary', default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    source_map_parser.add_argument("--pc2line", dest='pc2line_file', default=None, type=argparse.FileType('r'), help="path to a file containing PC to line number mappings")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=str, help="path to the output coverage file")
     cov_parser.add_argument("--legacy", default=False, action="store_true", help="Output data in a legacy text-based format")

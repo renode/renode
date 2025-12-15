@@ -19,6 +19,7 @@ from elftools.elf.elffile import ELFFile
 
 from execution_tracer.common_utils import extract_common_prefix, remove_prefix, PathSubstitution, apply_path_substitutions
 import execution_tracer.dwarf as dwarf
+import execution_tracer.pc2line as pc2line
 
 if TYPE_CHECKING:
     from execution_tracer_reader import TraceData # type: ignore
@@ -105,6 +106,7 @@ class ExecutionCount:
 @dataclass
 class Coverage:
     elf_file_handler: BinaryIO
+    pc2line_file_stream: TextIO
     code_filenames: list[str]
     substitute_paths: list[PathSubstitution]
     print_unmatched_address: bool = False
@@ -116,10 +118,13 @@ class Coverage:
     _code_files: list[IO] = field(init=False)
 
     def __post_init__(self):
+        assert self.elf_file_handler or self.pc2line_file_stream
         if not self.code_filenames:
             print("No sources provided, will attempt to discover automatically")
             if self.elf_file_handler:
                 self._code_files = dwarf.find_code_files(dwarf.get_dwarf_info(self.elf_file_handler), self.substitute_paths)
+            if self.pc2line_file_stream:
+                self._code_files = pc2line.find_code_files(self.pc2line_file_stream, self.substitute_paths)
             self.code_filenames = [apply_path_substitutions(code_filename.name, self.substitute_paths) for code_filename in self._code_files]
         else:
             self._code_files = [open(file) for file in self.code_filenames]
@@ -127,6 +132,8 @@ class Coverage:
         if self.elf_file_handler:
             dwarf_info = dwarf.get_dwarf_info(self.elf_file_handler)
             self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file_from_dwarf(dwarf_info)
+        if self.pc2line_file_stream:
+            self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file_from_pc2line(self.pc2line_file_stream)
 
 
     def _approx_file_match(self, file_name: str) -> Optional[str]:
@@ -156,15 +163,19 @@ class Coverage:
                     addr_lo += 1
         return address_count_cache
 
+    def _build_code_lines_dict(self) -> dict[str, list[CodeLine]]:
+        code_lines: dict[str, list[CodeLine]] = defaultdict(list)
+        for code_file in self._code_files:
+            for line_no, line in enumerate(code_file, start=1):
+                # Right now we mark all code lines as non-executable (that is, ignore when calculating coverage)
+                # later, when parsing the DWARF/PC2Line# file, some will be marked as executable
+                code_lines[code_file.name].append(CodeLine(None if not self.load_whole_code_lines else line, line_no, code_file.name, False))
+        return code_lines
+    
     # Get list of code lines, grouped by the file where they belong
     # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
     def _get_code_lines_by_file_from_dwarf(self, dwarf_info: 'DWARFInfo') -> tuple[int, int, dict[str, list[CodeLine]]]:
-        code_lines: dict[str, list[CodeLine]] = defaultdict(list)
-        for code_file in self._code_files:
-            for no, line in enumerate(code_file):
-                # Right now we mark all code lines as non-executable (that is, ignore when calculating coverage)
-                # later, when parsing DWARF info, some will be marked as executable
-                code_lines[code_file.name].append(CodeLine(None if not self.load_whole_code_lines else line, no + 1, code_file.name, False))
+        code_lines: dict[str, list[CodeLine]] = self._build_code_lines_dict()
 
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
@@ -191,6 +202,45 @@ class Coverage:
             else:
                 files_low_address = min(files_low_address, address_low)
                 files_high_address = max(files_high_address, address_high)
+
+        if files_low_address is None:
+            raise RuntimeError("No matching address for provided files found")
+
+        return files_low_address, files_high_address, code_lines
+
+    # Get list of code lines, grouped by the file where they belong
+    # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
+    def _get_code_lines_by_file_from_pc2line(self, pc2line_file_handle: TextIO) -> tuple[int, int, dict[str, list[CodeLine]]]:
+        code_lines: dict[str, list[CodeLine]] = self._build_code_lines_dict()
+
+        # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
+        files_low_address = None
+        files_high_address = 0
+
+        for file_path, line_number, address in pc2line.get_entries(pc2line_file_handle):
+            file = apply_path_substitutions(file_path, self.substitute_paths)
+
+            if (file := self._approx_file_match(file)) is None:
+                continue
+            if line_number > len(code_lines[file]):
+                raise ValueError(
+                    f"Unexpected line number ({line_number}) in pc2line file, file with code {file} contains only {len(code_lines[file])}"
+                )
+
+            if file in code_lines:
+                if self.debug:
+                    print(f'file: {file}, line {line_number}, addr 0x{address:x}')
+                # Pessimisticly assuming all instructions are 1 byte long. 
+                # The end address is only used for merging entries for performance reasons
+                # so having a smaller than actual value here is fine
+                code_lines[file][line_number - 1].add_address(address, address + 1)
+                code_lines[file][line_number - 1].is_exec = True
+
+            if files_low_address is None:
+                files_low_address = address
+            
+            files_low_address = min(files_low_address, address)
+            files_high_address = max(files_high_address, address + 1)
 
         if files_low_address is None:
             raise RuntimeError("No matching address for provided files found")
