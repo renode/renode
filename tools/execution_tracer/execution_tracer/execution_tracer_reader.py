@@ -22,10 +22,10 @@ from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte,
 
 # Allow directly using this as a script, without installation
 try:
-    import execution_tracer.dwarf as dwarf
+    import execution_tracer.coverage as coverage
     import execution_tracer.coverview_integration as coverview_integration
 except ImportError:
-    import dwarf
+    import coverage
     import coverview_integration
 
 FILE_SIGNATURE = b"ReTrace"
@@ -357,7 +357,7 @@ class LLVMDisassembler():
         return (bytes_read, disas_str.value)
 
 def handle_coverage(args, trace_data_per_file) -> None:
-    coverage_config = dwarf.Coverage(
+    coverage_config = coverage.Coverage(
         elf_file_handler=args.coverage_binary,
         code_filenames=args.coverage_code,
         substitute_paths=args.sub_source_path,
@@ -460,7 +460,7 @@ def main():
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
-    cov_parser.add_argument("--sub-source-path", default=[], nargs='*', action='extend', type=dwarf.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
+    cov_parser.add_argument("--sub-source-path", default=[], nargs='*', action='extend', type=coverage.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
     cov_parser.add_argument("--lazy-line-cache", default=False, action="store_true", help="Disable line to address eager cache generation. For big programs, reduce memory usage, but process traces much slower")
     cov_parser.add_argument("--no-shorten-paths", default=False, action="store_true", help="Disable removing common path prefix from coverage output. Only relevant with '--export-for-coverview'")
     cov_parser.add_argument("--tests-as-total", default=False, action="store_true", help="Show executed tests out of total tests in line coverage in coverview. Only relevant with '--export-for-coverview'")
