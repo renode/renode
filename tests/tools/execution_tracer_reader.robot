@@ -1,6 +1,8 @@
 *** Variables ***
 ${COVERAGE_TEST_BINARY_URL}         https://dl.antmicro.com/projects/renode/coverage-tests/coverage-test.elf-s_3603888-0f7cfe992528c2576a9ac6a4dcc3a41b03d1d6eb
 ${COVERAGE_TEST_CODE_URL}           https://dl.antmicro.com/projects/renode/coverage-tests/main.c
+${COVERAGE_TEST_PC_LINE_SHORT_URL}  https://dl.antmicro.com/projects/renode/coverage-test-long.pclin-s_3793722-41205f1fbb53838ef9e1f22ac5f93da33dd7b819
+${COVERAGE_TEST_PC_LINE_LONG_URL}   https://dl.antmicro.com/projects/renode/coverage-test-short.pclin-s_798598-efe5d5bbf5738887e0720a5c7673917139bfff76
 ${COVERAGE_TEST_CODE_FILENAME}      main.c
 ${EXECUTION_TRACER}                 ${RENODETOOLS}/execution_tracer/execution_tracer_reader.py
 ${TRACED_CPU}                       cpu1
@@ -127,7 +129,7 @@ Should Report Proper Coverage LCOV
     Should Be Equal As Strings      ${report}  ${expected_lines}  strip_spaces=True
 
 Trace And Report Coverage
-    [Arguments]                     ${is_legacy}  ${compress}=False
+    [Arguments]                     ${is_legacy}  ${compress}=False  ${use_pc2line}="no"
     ${coverage_file}=               Allocate Temporary File
     ${binary_file}=                 Download File  ${COVERAGE_TEST_BINARY_URL}
     ${code_file}=                   Download File And Rename  ${COVERAGE_TEST_CODE_URL}  ${COVERAGE_TEST_CODE_FILENAME}
@@ -144,8 +146,6 @@ Trace And Report Coverage
     Append To List                  ${script_args}
     ...                             coverage
     ...                             ${trace}
-    ...                             --binary
-    ...                             ${binary_file}
     ...                             --sources
     ...                             ${code_file}
     ...                             --output
@@ -153,6 +153,22 @@ Trace And Report Coverage
 
     IF  ${is_legacy} == True
         Append To List              ${script_args}  --legacy
+    END
+
+    IF  $use_pc2line == "short"
+        ${pclin_short_file}=        Download File  ${COVERAGE_TEST_PC_LINE_SHORT_URL}
+        Append To List              ${script_args}
+        ...                         --pc2line
+        ...                         ${pclin_short_file}
+    ELSE IF  $use_pc2line == "long"
+        ${pclin_long_file}=         Download File  ${COVERAGE_TEST_PC_LINE_LONG_URL}
+        Append To List              ${script_args}
+        ...                         --pc2line
+        ...                         ${pclin_long_file}
+    ELSE
+        Append To List              ${script_args}
+        ...                         --binary
+        ...                         ${binary_file}
     END
 
     Execute Python Script           ${EXECUTION_TRACER}  ${script_args}
@@ -178,6 +194,12 @@ Trace With Compressed Output And Report Coverage
 
 Trace With Compressed Output And Report Coverage In Legacy Format
     Trace And Report Coverage       True  True
+
+Trace And Report Coverage Using Short Pc2Line Mappings
+    Trace And Report Coverage       False  False  short
+
+Trace And Report Coverage Using Long Pc2Line Mappings
+    Trace And Report Coverage       False  False  long
 
 Trace Mixed A64, A32 and T32 Code
     ${disassembly_file}=            Allocate Temporary File
