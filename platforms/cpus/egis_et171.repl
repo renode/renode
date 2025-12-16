@@ -20,6 +20,9 @@ sram: Memory.MappedMemory @ {
     }
     size: 0x60000
 
+rom: Memory.MappedMemory @ sysbus 0x70000000
+    size: 0x10000
+
 flash0: Memory.MappedMemory @ sysbus 0x80000000
     size: 0x100000
 
@@ -28,6 +31,8 @@ cpu0: CPU.RiscV32 @ sysbus
     timeProvider: empty
     hartId: 0
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    reset:
+        PC `syscon ResetVector`
 
 uart0: UART.NS16550 @ sysbus 0xf0200020
     wideRegisters: true
@@ -58,10 +63,15 @@ p25q16_flash_mem: Memory.MappedMemory
 rtc0: Timers.AndesATCRTC100 @ sysbus 0xf0600000
     IRQ -> plic@31
 
+syscon: Miscellaneous.EgisET171_AOSMU @ sysbus 0xf0100000
+    mtimer: mtimer
+    pit: pit0
+
+smu2: Miscellaneous.EgisET171_SMU2 @ sysbus 0xf0e00000
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
-        Tag <0xf0100000 0x1000> "syscon"
         Tag <0xf0a00000 0x1000> "i2c0"
         Tag <0xf0c00000 0x1000> "dma0"
         Tag <0xf0e00000 0x100000> "smu2"

@@ -239,6 +239,7 @@
 - tests/peripherals/AndesATCWDT200_Watchdog.robot
 - tests/unit-tests/et171-pmp.robot
 - tests/peripherals/AndesATCRTC100.robot
+- tests/platforms/egis_et171.robot
 
 # Do not use port 3333 in unit tests
 

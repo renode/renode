@@ -13,7 +13,7 @@ ${GPIO_TEST_PLATFORM}               SEPARATOR=\n
 Should Pass Zephyr GPIO Basic API test
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${GPIO_TEST_PLATFORM}
-    Create Terminal Tester          sysbus.uart0  defaultPauseEmulation=True  timeout=15
+    Create Terminal Tester          sysbus.uart0  defaultPauseEmulation=True  timeout=25
 
     Execute Command                 sysbus LoadELF ${ZEPHYR_GPIO_BASIC_API}
 

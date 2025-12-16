@@ -21,12 +21,14 @@ Channel ${number:(0|1|2|3)} ${interrupt_enable:(Should|Should Not)} Fire And Cle
     ${reload_offset}=  Evaluate     ${CH0_RELOAD_OFFSET} + (${number} * ${CHANNEL_STEP})
     ${channel_bit}=  Evaluate       1 << (${number} * 4)
     ${interrupt_bit}=  Evaluate     ${channel_bit} if "${interrupt_enable}" == "Should" else 0
+    ${frequency}=  Execute Command  syscon APBClockFrequency
+    ${delay}=  Evaluate             int(${frequency} / 10) #delay of 0.1 second
 
     ${PROG}=  Catenate              SEPARATOR=\n
     ...                             li a0, ${PIT_ADDRESS}
     ...                             li t0, 1  # 32-bit timer mode
     ...                             sw t0, ${ctrl_offset}(a0)
-    ...                             li t0, 6000000 #delay of 0.1 seconds
+    ...                             li t0, ${delay}
     ...                             sw t0, ${reload_offset}(a0)
     ...                             li t0, ${interrupt_bit}
     ...                             sw t0, ${INTERRUPT_ENABLE_OFFSET}(a0)
