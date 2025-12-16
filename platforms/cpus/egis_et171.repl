@@ -55,11 +55,13 @@ p25q16: SPI.Puya_P25Q @ spi0
 p25q16_flash_mem: Memory.MappedMemory
     size: 0x00800000
 
+rtc0: Timers.AndesATCRTC100 @ sysbus 0xf0600000
+    IRQ -> plic@31
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
         Tag <0xf0100000 0x1000> "syscon"
-        Tag <0xf0600000 0x1000> "rtc0"
         Tag <0xf0a00000 0x1000> "i2c0"
         Tag <0xf0c00000 0x1000> "dma0"
         Tag <0xf0e00000 0x100000> "smu2"
