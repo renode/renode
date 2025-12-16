@@ -14,6 +14,8 @@ import platform
 import sys
 import os
 import gzip
+import urllib.request
+import urllib.error
 from enum import Enum
 from dataclasses import dataclass
 from typing import IO, BinaryIO, NamedTuple, Optional
@@ -357,8 +359,14 @@ class LLVMDisassembler():
         return (bytes_read, disas_str.value)
 
 def handle_coverage(args, trace_data_per_file) -> None:
+    if args.coverage_binary_url:
+        fpath, _ = urllib.request.urlretrieve(args.coverage_binary_url)
+        elf_file_handle = open(fpath, "rb")
+    else:
+        elf_file_handle = args.coverage_binary
+
     coverage_config = coverage.Coverage(
-        elf_file_handler=args.coverage_binary,
+        elf_file_handler=elf_file_handle,
         pc2line_file_stream=args.pc2line_file,
         code_filenames=args.coverage_code,
         substitute_paths=args.sub_source_path,
@@ -398,6 +406,10 @@ def handle_coverage(args, trace_data_per_file) -> None:
     else:
         for line in printed_report:
             print(line)
+
+    if args.coverage_binary_url:
+        elf_file_handle.close()
+        urllib.request.urlcleanup()
 
 
 def find_llvm_disas() -> str:
@@ -456,6 +468,7 @@ def main():
 
     source_map_parser = cov_parser.add_mutually_exclusive_group(required=True)
     source_map_parser.add_argument("--binary", dest='coverage_binary', default=None, type=argparse.FileType('rb'), help="path to an ELF file with DWARF data")
+    source_map_parser.add_argument("--binary-url", dest='coverage_binary_url', default=None, type=str, help="Network address to an ELF file with DWARF data")
     source_map_parser.add_argument("--pc2line", dest='pc2line_file', default=None, type=argparse.FileType('r'), help="path to a file containing PC to line number mappings")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=str, help="path to the output coverage file")
@@ -510,6 +523,8 @@ def main():
         sys.exit(f"Error during execution: {err}")
     except (FileNotFoundError, InvalidFileFormatException) as err:
         sys.exit(f"Error while loading file: {err}")
+    except (urllib.error.URLError, urllib.error.HTTPError) as err:
+        sys.exit(f"Error while fetching file: {err}")
     except KeyboardInterrupt:
         sys.exit(1)
 
