@@ -169,7 +169,7 @@ timer17: Timers.STM32_Timer @ sysbus 0x40014800
 can: CAN.STMCAN @ sysbus <0x40006400, +0x400>
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
-    // missing TamperIRQ, TimeStampIRQ, WakeupEventIRQ 
+    // missing TamperIRQ, TimeStampIRQ, WakeupEventIRQ
     AlarmIRQ -> exti@17
 
 rcc: Python.PythonPeripheral @ sysbus 0x40021000
@@ -177,8 +177,8 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
     initable: true
     script: '''
 if request.IsInit:
-    lastVal = 0     
-elif request.IsRead:               
+    lastVal = 0
+elif request.IsRead:
     lastVal = 1 - lastVal
     if request.Offset == 0x0:
         request.Value = lastVal * 0x83
