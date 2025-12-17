@@ -191,7 +191,7 @@ sysbus:
     init:
         // Hard set all oscillator RDY bits
         Tag <0x40021000 4> "RCC_CR" 0x2A020402
-        
+
         // Hard set HSI16 oscillator as system clock
         Tag <0x40021008 4> "RCC_CFGR" 0x4
 
