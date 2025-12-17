@@ -5,9 +5,9 @@
 # Full license text is available in 'licenses/MIT.txt'.
 #
 
-def mc_setup_segger_rtt(console, with_has_key = True, with_read = True, with_has_data = False):
+def mc_setup_segger_rtt(console, with_has_key = True, with_read = True, with_write = True, with_has_data = False, with_putchar = False):
     # `mc_` is omitted as it isn't needed in the Monitor.
-    setup_arg_spec = 'setup_segger_rtt(console, with_has_key = True, with_read = True, with_has_data = False)'
+    setup_arg_spec = 'setup_segger_rtt(console, with_has_key = True, with_read = True, with_write = True, with_has_data = False, with_putchar = False)'
     bus = monitor.Machine.SystemBus
 
     def has_data(cpu, _):
@@ -30,6 +30,11 @@ def mc_setup_segger_rtt(console, with_has_key = True, with_read = True, with_has
         cpu.SetRegisterUlong(0, length)
         cpu.PC = cpu.LR
 
+    def write_char(cpu, _):
+        char = cpu.GetRegister(1).RawValue
+        console.DisplayChar(char)
+        cpu.PC = cpu.LR
+
     def add_hook(symbol, function, argument_name = None):
         for cpu in bus.GetCPUs():
             found, addresses = bus.TryGetAllSymbolAddresses(symbol, context=cpu)
@@ -50,4 +55,7 @@ def mc_setup_segger_rtt(console, with_has_key = True, with_read = True, with_has
         add_hook("SEGGER_RTT_HasData", has_data, "with_has_data")
     if with_read:
         add_hook("SEGGER_RTT_ReadNoLock", read, "with_read")
-    add_hook("SEGGER_RTT_WriteNoLock", write)
+    if with_write:
+        add_hook("SEGGER_RTT_WriteNoLock", write, "with_write")
+    if with_putchar:
+        add_hook("SEGGER_RTT_PutChar", write_char, "with_putchar")
