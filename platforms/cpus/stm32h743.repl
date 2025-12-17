@@ -210,10 +210,18 @@ usart1: UART.STM32F7_USART @ sysbus 0x40011000
 timer8: Timers.STM32_Timer @ sysbus 0x40010400
     initialLimit: 0xffff
     frequency: 250000000
+    BreakInterrupt -> nvic@43
+    UpdateInterrupt -> nvic@44
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[45, 45]
+    CaptureCompareInterrupt -> nvic@46
 
 timer1: Timers.STM32_Timer @ sysbus 0x40010000
     initialLimit: 0xffff
     frequency: 250000000
+    BreakInterrupt -> nvic@24
+    UpdateInterrupt -> nvic@25
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
+    CaptureCompareInterrupt -> nvic@27
 
 uart8: UART.STM32F7_USART @ sysbus 0x40007C00
     frequency: 125000000
