@@ -101,7 +101,10 @@ rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
     -> exti@17
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012c00
-    -> nvic@42
+    BreakInterrupt -> nvic@41
+    UpdateInterrupt -> nvic@42
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[43, 43]
+    CaptureCompareInterrupt -> nvic@44
     frequency: 10000000
     initialLimit: 0xFFFF
 
@@ -137,7 +140,10 @@ timer7: Timers.STM32_Timer @ sysbus 0x40001400
     initialLimit: 0xFFFF
 
 timer8: Timers.STM32_Timer @ sysbus 0x40013400
-    -> nvic@52
+    BreakInterrupt -> nvic@51
+    UpdateInterrupt -> nvic@52
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[53, 53]
+    CaptureCompareInterrupt -> nvic@54
     frequency: 10000000
     initialLimit: 0xFFFF
 
