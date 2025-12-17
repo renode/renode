@@ -181,7 +181,10 @@ flash_regs: Memory.MappedMemory @ sysbus 0x40023C00
     size: 0x400
 
 timer1: Timers.STM32_Timer @ sysbus 0x40010000
-    -> nvic@25
+    BreakInterrupt -> nvic@24
+    UpdateInterrupt -> nvic@25
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
+    CaptureCompareInterrupt -> nvic@27
     frequency: 10000000
     initialLimit: 0xFFFF
 
@@ -216,7 +219,10 @@ timer7: Timers.STM32_Timer @ sysbus 0x40001400
     initialLimit: 0xFFFF
 
 timer8: Timers.STM32_Timer @ sysbus 0x40010400
-    -> nvic@44
+    BreakInterrupt -> nvic@43
+    UpdateInterrupt -> nvic@44
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[45, 45]
+    CaptureCompareInterrupt -> nvic@46
     frequency: 10000000
     initialLimit: 0xFFFF
 
