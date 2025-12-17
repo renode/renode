@@ -172,7 +172,7 @@ pwrCsr1: Python.PythonPeripheral @ sysbus 0x40007004
     size: 0x4
     initable: true
     filename: "scripts/pydev/flipflop.py"
-                                   
+
 sdmmc: SD.STM32SDMMC @ sysbus 0x40012c00
     IRQ -> nvic@49
     DMAReceive -> dma2@3
@@ -309,5 +309,5 @@ timer14:
 
 sysbus:
     init:
-        Tag <0xE0001000, 0xE0001FFF> "M4_DWT" 
+        Tag <0xE0001000, 0xE0001FFF> "M4_DWT"
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32F7x6.svd.gz
