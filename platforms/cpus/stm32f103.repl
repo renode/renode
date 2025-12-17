@@ -78,7 +78,10 @@ gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
     [0-15] -> exti@[0-15]
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012c00
-    -> nvic@25
+    BreakInterrupt -> nvic@24
+    UpdateInterrupt -> nvic@25
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
+    CaptureCompareInterrupt -> nvic@27
     frequency: 10000000
     initialLimit: 0xFFFF
 
@@ -113,7 +116,10 @@ timer7: Timers.STM32_Timer @ sysbus 0x40001400
     initialLimit: 0xFFFF
 
 timer8: Timers.STM32_Timer @ sysbus 0x40013400
-    -> nvic@44
+    BreakInterrupt -> nvic@43
+    UpdateInterrupt -> nvic@44
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[45, 45]
+    CaptureCompareInterrupt -> nvic@46
     frequency: 10000000
     initialLimit: 0xFFFF
 
