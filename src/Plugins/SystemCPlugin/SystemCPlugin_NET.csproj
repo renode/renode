@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="SystemCModule\**\*"/>
+    <Compile Remove="SystemCNativeModule\**\*"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Infrastructure\src\Infrastructure_NET.csproj"/>
