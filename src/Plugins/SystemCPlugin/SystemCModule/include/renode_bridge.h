@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -8,9 +8,9 @@
 
 #include <memory>
 
-#include "tlm.h"
-#include "tlm_utils/simple_initiator_socket.h"
-#include "tlm_utils/simple_target_socket.h"
+#include <tlm>
+#include <tlm_utils/simple_initiator_socket.h>
+#include <tlm_utils/simple_target_socket.h>
 
 struct CTCPClient;
 struct renode_message;
