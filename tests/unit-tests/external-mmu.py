@@ -9,6 +9,7 @@ PAGE_TABLE_L3_ADDR = 0x40032000
 SMMU_CR0 = 0x20
 SMMU_STRTAB_BASE = 0x80
 SMMU_STRTAB_BASE_CFG = 0x88
+SMMU_S_INIT = 0x803c
 STREAM_TABLE_ENTRY_SIZE = 64
 
 
@@ -81,6 +82,5 @@ def mc_setup_smmu(stream_id):
     poke32(SMMU_BASE + SMMU_STRTAB_BASE_CFG, 5)  # log2size
     # Enable SMMU translations
     poke32(SMMU_BASE + SMMU_CR0, 1)  # SMMUEN
-    # Invalidate the STE
-    self.Parse("allowPrivates true")
-    self.Parse("smmu InvalidateSte %d" % stream_id)
+    # Invalidate everything to load STEs
+    poke32(SMMU_BASE + SMMU_S_INIT, 1)  # INV_ALL
