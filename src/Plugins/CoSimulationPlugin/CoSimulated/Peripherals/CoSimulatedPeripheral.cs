@@ -22,7 +22,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     public class CoSimulatedPeripheral : ICoSimulationConnectible, IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, IBusPeripheral, IDisposable, INumberedGPIOOutput, IGPIOReceiver, IAbsoluteAddressAware
     {
         public CoSimulatedPeripheral(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency,
-            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, string address = null, int mainListenPort = 0, int asyncListenPort = 0, bool createConnection = true,
+            ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, int exitTimeout = DefaultExitTimeout, string address = null, int mainListenPort = 0, int asyncListenPort = 0, bool createConnection = true,
             ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null, int renodeToCosimIndex = 0, int cosimToRenodeIndex = 0, string stdoutFile = null, string stderrFile = null, string renodeLogLevel = null)
         {
             UseAbsoluteAddress = useAbsoluteAddress;
@@ -34,7 +34,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
             if(createConnection)
             {
-                connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
+                connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, exitTimeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
                 connection.AttachTo(this);
             }
             else
@@ -288,6 +288,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
         protected readonly Range? cosimToRenodeSignalRange;
         protected const ulong LimitBuffer = 1000000;
         protected const int DefaultTimeout  = 3000;
+        protected const int DefaultExitTimeout  = 500;
 
         private bool VerifyLength(int length, long offset, ulong? value = null)
         {

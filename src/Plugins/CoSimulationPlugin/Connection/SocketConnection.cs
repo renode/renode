@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketConnection : ICoSimulationConnection, IEmulationElement, IDisposable
     {
-        public SocketConnection(IEmulationElement parentElement, int connectionTimeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
+        public SocketConnection(IEmulationElement parentElement, int connectionTimeoutInMilliseconds, int exitTimeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
             string address = null, int mainListenPort = 0, int asyncListenPort = 0, string stdoutFile = null, string stderrFile = null, LogLevel renodeLogLevel = null)
         {
             this.parentElement = parentElement;
@@ -36,6 +36,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             this.stdoutFile = stdoutFile;
             this.renodeLogLevel = renodeLogLevel;
             connectionTimeout = connectionTimeoutInMilliseconds;
+            exitTimeout = exitTimeoutInMilliseconds;
             receivedHandler = receiveAction;
             mainSocketCommunicator = new SocketCommunicator(parentElement, connectionTimeout, this.address, mainListenPort);
             asyncSocketCommunicator = new SocketCommunicator(parentElement, Timeout.Infinite, this.address, asyncListenPort);
@@ -164,7 +165,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 if(!cosimulatedProcess.HasExited)
                 {
                     parentElement.DebugLog($"Co-simulated process '{simulationFilePath}' is still working...");
-                    if(cosimulatedProcess.WaitForExit(500))
+                    if(cosimulatedProcess.WaitForExit(exitTimeout))
                     {
                         parentElement.DebugLog("Co-simulated process exited gracefully.");
                     }
@@ -425,6 +426,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private readonly IEmulationElement parentElement;
         private readonly int connectionTimeout;
+        private readonly int exitTimeout;
         private readonly string address;
         private readonly Thread receiveThread;
         private readonly object receiveThreadLock = new object();

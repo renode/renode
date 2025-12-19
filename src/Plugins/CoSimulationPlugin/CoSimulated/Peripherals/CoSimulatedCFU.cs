@@ -21,13 +21,13 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CoSimulatedCFU : ICFU, ICoSimulationConnectible, IDisposable
     {
-        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout)
+        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, int exitTimeout = DefaultExitTimeout)
         {
             // Multiple CoSimulatedCFUs per CoSimulationConnection are currently not supported.
             RenodeToCosimIndex = 0;
             CosimToRenodeIndex = 0;
 
-            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, null, 0, 0);
+            connection = new CoSimulationConnection(machine, "cosimulation_connection", frequency, limitBuffer, timeout, exitTimeout, null, 0, 0);
             connection.AttachTo(this);
             errorPointer = IntPtr.Zero;
         }
@@ -170,6 +170,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 
         protected const ulong LimitBuffer = 100000;
         protected const int DefaultTimeout = 3000;
+        protected const int DefaultExitTimeout = 500;
 
         private void AssureNoConflictingCFUs(string simulationFilePath)
         {
