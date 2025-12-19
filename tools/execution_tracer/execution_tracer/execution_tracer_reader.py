@@ -370,6 +370,7 @@ def handle_coverage(args, trace_data_per_file) -> None:
         pc2line_file_stream=args.pc2line_file,
         code_filenames=args.coverage_code,
         substitute_paths=args.sub_source_path,
+        test_name=args.test_name,
         debug=args.debug,
         print_unmatched_address=args.print_unmatched_address,
         lazy_line_cache=args.lazy_line_cache,
@@ -472,6 +473,7 @@ def main():
     source_map_parser.add_argument("--pc2line", dest='pc2line_file', default=None, type=argparse.FileType('r'), help="path to a file containing PC to line number mappings")
     cov_parser.add_argument("--sources", dest='coverage_code', default=None, nargs='+', type=str, help="path to a (list of) source file(s)")
     cov_parser.add_argument("--output", dest='coverage_output', default=None, type=str, help="path to the output coverage file")
+    cov_parser.add_argument("--name", dest='test_name', default="", type=str, help="Provide test name")
     cov_parser.add_argument("--legacy", default=False, action="store_true", help="Output data in a legacy text-based format")
     cov_parser.add_argument("--export-for-coverview", default=False, action="store_true", help="Pack data to a format compatible with the Coverview project (https://github.com/antmicro/coverview)")
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")

@@ -85,7 +85,6 @@ class Record:
             yield line
 
     def to_lcov_format(self, *, name: Optional[str] = None) -> Generator[str, None, None]:
-        yield "TN:"
         yield f'SF:{name if name else self.name}'
         yield from (l.to_lcov_format() for l in self.get_exec_lines())
         yield 'end_of_record'
@@ -109,6 +108,7 @@ class Coverage:
     pc2line_file_stream: TextIO
     code_filenames: list[str]
     substitute_paths: list[PathSubstitution]
+    test_name: str
     print_unmatched_address: bool = False
     debug: bool = False
     noisy: bool = False
@@ -330,6 +330,7 @@ class Coverage:
         for line in self.get_report():
             records[line.filename].add_code_line(line)
 
+        yield f'TN:{self.test_name}'
         for record in records.values():
             yield from record.to_lcov_format(
                 name=remove_prefix(record.name, common_prefix) if remove_common_path_prefix else None # type: ignore
