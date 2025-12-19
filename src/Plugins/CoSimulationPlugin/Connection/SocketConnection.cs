@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 {
     public class SocketConnection : ICoSimulationConnection, IEmulationElement, IDisposable
     {
-        public SocketConnection(IEmulationElement parentElement, int timeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
+        public SocketConnection(IEmulationElement parentElement, int connectionTimeoutInMilliseconds, Action<ProtocolMessage> receiveAction,
             string address = null, int mainListenPort = 0, int asyncListenPort = 0, string stdoutFile = null, string stderrFile = null, LogLevel renodeLogLevel = null)
         {
             this.parentElement = parentElement;
@@ -35,9 +35,9 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             this.stderrFile = stderrFile;
             this.stdoutFile = stdoutFile;
             this.renodeLogLevel = renodeLogLevel;
-            timeout = timeoutInMilliseconds;
+            connectionTimeout = connectionTimeoutInMilliseconds;
             receivedHandler = receiveAction;
-            mainSocketCommunicator = new SocketCommunicator(parentElement, timeout, this.address, mainListenPort);
+            mainSocketCommunicator = new SocketCommunicator(parentElement, connectionTimeout, this.address, mainListenPort);
             asyncSocketCommunicator = new SocketCommunicator(parentElement, Timeout.Infinite, this.address, asyncListenPort);
 
             pauseMRES = new ManualResetEventSlim(initialState: true);
@@ -57,15 +57,15 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         public void Connect()
         {
             var success = true;
-            if(!mainSocketCommunicator.AcceptConnection(timeout))
+            if(!mainSocketCommunicator.AcceptConnection(connectionTimeout))
             {
-                parentElement.Log(LogLevel.Error, $"Main socket failed to accept connection after timeout of {timeout}ms.");
+                parentElement.Log(LogLevel.Error, $"Main socket failed to accept connection after timeout of {connectionTimeout}ms.");
                 success = false;
             }
 
-            if(success && !asyncSocketCommunicator.AcceptConnection(timeout))
+            if(success && !asyncSocketCommunicator.AcceptConnection(connectionTimeout))
             {
-                parentElement.Log(LogLevel.Error, $"Async socket failed to accept connection after timeout of {timeout}ms.");
+                parentElement.Log(LogLevel.Error, $"Async socket failed to accept connection after timeout of {connectionTimeout}ms.");
                 success = false;
             }
 
@@ -147,7 +147,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 if(receiveThread.IsAlive)
                 {
-                    receiveThread.Join(timeout);
+                    receiveThread.Join(connectionTimeout);
                 }
             }
 
@@ -424,7 +424,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         private readonly Action<ProtocolMessage> receivedHandler;
 
         private readonly IEmulationElement parentElement;
-        private readonly int timeout;
+        private readonly int connectionTimeout;
         private readonly string address;
         private readonly Thread receiveThread;
         private readonly object receiveThreadLock = new object();
@@ -441,28 +441,28 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         private class SocketCommunicator
         {
-            public SocketCommunicator(IEmulationElement logger, int timeoutInMilliseconds, string address, int listenPort)
+            public SocketCommunicator(IEmulationElement logger, int connectionTimeoutInMilliseconds, string address, int listenPort)
             {
                 disposalCTS = new CancellationTokenSource();
                 channelTaskFactory = new TaskFactory<int>(disposalCTS.Token);
                 this.logger = logger;
                 this.address = address;
                 this.listenPort = listenPort;
-                timeout = timeoutInMilliseconds;
+                connectionTimeout = connectionTimeoutInMilliseconds;
                 ListenerPort = CreateListenerAndStartListening();
             }
 
             public void Dispose()
             {
-                listener?.Close(timeout);
-                socket?.Close(timeout);
+                listener?.Close(connectionTimeout);
+                socket?.Close(connectionTimeout);
                 disposalCTS.Dispose();
             }
 
-            public bool AcceptConnection(int timeoutInMilliseconds)
+            public bool AcceptConnection(int connectionTimeoutInMilliseconds)
             {
                 // Check if there's any connection waiting to be accepted (with timeout in MICROseconds)
-                var acceptAttempt = listener.Poll(timeoutInMilliseconds * 1000, SelectMode.SelectRead);
+                var acceptAttempt = listener.Poll(connectionTimeoutInMilliseconds * 1000, SelectMode.SelectRead);
                 if(acceptAttempt)
                 {
                     socket = listener.Accept();
@@ -571,7 +571,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             {
                 try
                 {
-                    task.Wait(timeout, channelTaskFactory.CancellationToken);
+                    task.Wait(connectionTimeout, channelTaskFactory.CancellationToken);
                 }
                 // Exceptions thrown from the task are always packed in AggregateException
                 catch(AggregateException aggregateException)
@@ -613,7 +613,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             private Socket listener;
             private Socket socket;
 
-            private readonly int timeout;
+            private readonly int connectionTimeout;
             private readonly int listenPort;
             private readonly string address;
             private readonly CancellationTokenSource disposalCTS;
