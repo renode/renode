@@ -30,6 +30,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                                                  long frequency = DefaultTimeunitFrequency,
                                                  ulong limitBuffer = DefaultLimitBuffer,
                                                  int timeout = DefaultTimeout,
+                                                 int exitTimeout = DefaultExitTimeout,
                                                  string address = null,
                                                  int mainListenPort = 0,
                                                  int asyncListenPort = 0,
@@ -44,12 +45,13 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 throw new ConstructionException($"Machine {machineName} does not exist.");
             }
 
-            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
+            var cosimConnection = new CoSimulationConnection(machine, name, frequency, limitBuffer, timeout, exitTimeout, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
         }
 
         public const ulong DefaultLimitBuffer = 1000000;
         public const long DefaultTimeunitFrequency = 1000000000;
         public const int DefaultTimeout = 3000;
+        public const int DefaultExitTimeout = 500;
     }
 
     public partial class CoSimulationConnection : IHostMachineElement, IConnectable<ICoSimulationConnectible>, IDisposable
@@ -59,6 +61,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 long frequency,
                 ulong limitBuffer,
                 int timeout,
+                int exitTimeout,
                 string address,
                 int mainListenPort,
                 int asyncListenPort,
@@ -76,7 +79,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
 
             RegisterInHostMachine(name);
-            cosimConnection = SetupConnection(address, timeout, frequency, limitBuffer, mainListenPort, asyncListenPort, stdoutFile, stderrFile, logLevel);
+            cosimConnection = SetupConnection(address, timeout, exitTimeout, frequency, limitBuffer, mainListenPort, asyncListenPort, stdoutFile, stderrFile, logLevel);
 
             cosimIdxToPeripheral = new Dictionary<int, ICoSimulationConnectible>();
         }
@@ -444,12 +447,12 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
         }
 
-        private ICoSimulationConnection SetupConnection(string address, int timeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile, LogLevel renodeLogLevel)
+        private ICoSimulationConnection SetupConnection(string address, int timeout, int exitTimeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile, LogLevel renodeLogLevel)
         {
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
             {
-                cosimConnection = new SocketConnection(this, timeout, HandleReceivedMessage, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
+                cosimConnection = new SocketConnection(this, timeout, exitTimeout, HandleReceivedMessage, address, mainListenPort, asyncListenPort, stdoutFile, stderrFile, renodeLogLevel);
             }
             else
             {
