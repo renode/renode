@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -21,7 +21,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
 {
     public class CoSimulatedCFU : ICFU, ICoSimulationConnectible, IDisposable
     {
-        public CoSimulatedCFU(Machine machine, long frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, int exitTimeout = DefaultExitTimeout)
+        public CoSimulatedCFU(Machine machine, ulong frequency = 0, ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, int exitTimeout = DefaultExitTimeout)
         {
             // Multiple CoSimulatedCFUs per CoSimulationConnection are currently not supported.
             RenodeToCosimIndex = 0;

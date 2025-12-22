@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -20,7 +20,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
     [AllowedTranslations(AllowedTranslation.ByteToDoubleWord)]
     public class CoSimulatedUART : CoSimulatedPeripheral, IUART
     {
-        public CoSimulatedUART(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, long frequency = VerilogTimeunitFrequency,
+        public CoSimulatedUART(Machine machine, int maxWidth = 64, bool useAbsoluteAddress = false, ulong frequency = VerilogTimeunitFrequency,
             ulong limitBuffer = LimitBuffer, int timeout = DefaultTimeout, int exitTimeout = DefaultExitTimeout, string address = null, int mainListenPort = 0, int asyncListenPort = 0, bool createConnection = true,
             ulong renodeToCosimSignalsOffset = 0, Range? cosimToRenodeSignalRange = null)
             : base(machine, maxWidth, useAbsoluteAddress, frequency, limitBuffer, timeout, exitTimeout, address, mainListenPort, asyncListenPort, createConnection, renodeToCosimSignalsOffset, cosimToRenodeSignalRange, 0, 0)

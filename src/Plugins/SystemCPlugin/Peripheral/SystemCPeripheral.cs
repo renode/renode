@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -482,7 +482,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             // Timer unit is microseconds
             var timerName = "RenodeSystemCTimesyncTimer";
-            var timesyncFrequency = 1000000;
+            var timesyncFrequency = 1000000UL;
             var timesyncLimit = (ulong)timeSyncPeriodUS;
 
             var timesyncTimer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: true, eventEnabled: true, autoUpdate: true);

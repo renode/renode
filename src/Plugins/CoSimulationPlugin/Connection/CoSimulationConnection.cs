@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         public static void ConnectToCoSimulation(this Emulation _,
                                                  string machineName,
                                                  string name = null,
-                                                 long frequency = DefaultTimeunitFrequency,
+                                                 ulong frequency = DefaultTimeunitFrequency,
                                                  ulong limitBuffer = DefaultLimitBuffer,
                                                  int timeout = DefaultTimeout,
                                                  int exitTimeout = DefaultExitTimeout,
@@ -58,7 +58,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
     {
         public CoSimulationConnection(IMachine machine,
                 string name,
-                long frequency,
+                ulong frequency,
                 ulong limitBuffer,
                 int timeout,
                 int exitTimeout,
@@ -447,7 +447,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
         }
 
-        private ICoSimulationConnection SetupConnection(string address, int timeout, int exitTimeout, long frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile, LogLevel renodeLogLevel)
+        private ICoSimulationConnection SetupConnection(string address, int timeout, int exitTimeout, ulong frequency, ulong limitBuffer, int mainListenPort, int asyncListenPort, string stdoutFile, string stderrFile, LogLevel renodeLogLevel)
         {
             ICoSimulationConnection cosimConnection = null;
             if(address != null)
