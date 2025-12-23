@@ -13,6 +13,9 @@ using "platforms/boards/zynqmp-zcu102-revB.repl"
 
 smmu: MemoryControllers.ARM_SMMUv3 @ sysbus 0xfd800000
     context: apu0
+    NonSecureEventQueueIRQ -> apuGic@150
+    NonSecureGlobalErrorIRQ -> apuGic@151
+    CommandSyncIRQ -> apuGic@153
 
 gem3: @ { sysbus 0xff0e0000; smmu 172 }
 """
