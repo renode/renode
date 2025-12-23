@@ -59,7 +59,8 @@ def mc_setup_smmu(stream_id):
     cd |= 0b00 << 6  # TG0
     cd |= 16 << 16  # T1SZ
     cd |= 0b10 << 22  # TG1
-    cd |= 0 << 41 # AA64
+    cd |= 0b1 << 31  # V
+    cd |= 0 << 41  # AA64
     poke(CONTEXT_DESCRIPTOR_ADDR + 0, cd)
     poke(CONTEXT_DESCRIPTOR_ADDR + 8, PAGE_TABLE_L1_ADDR)
     # Rest as zeroes
