@@ -555,7 +555,6 @@ sysbus:
 
         // Modes and Power Management
         Tag <0x402E8000 0x10> "PMC"
-        Tag <0x402DC000 0x53C> "MC_ME"
         Tag <0x402B4000 0x74> "WKPU"
 
         // Safety
