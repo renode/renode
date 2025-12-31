@@ -147,6 +147,10 @@ quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
     size: 0x8000000
 
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
+    [0-3] -> nvic0@[0-3]
+    [4-7] -> nvic1@[0-3]
+    [8-11] -> nvic2@[0-3]
+    [12-15] -> nvic3@[0-3]
 
 siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
     IRQ1 -> nvic0@53
