@@ -1,12 +1,16 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
+#if !NET
+using Antmicro.Renode.Exceptions;
+#endif
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Utilities;
@@ -70,7 +74,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 PerformWrite(sysbus, context, address, accessWidth, writeData.ToArray());
                 return Response.Success(Identifier);
             default:
-                throw new Exception("Unreachable");
+                throw new UnreachableException();
             }
         }
 
@@ -143,7 +147,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                         data.SetBytesFromValue(bus.ReadQuadWord(address + (ulong)i, context), i);
                         break;
                     default:
-                        throw new Exception("Unreachable");
+                        throw new UnreachableException();
                     }
                 }
             }
@@ -175,7 +179,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                         bus.WriteQuadWord(address + (ulong)i, BitConverter.ToUInt64(data, i), context);
                         break;
                     default:
-                        throw new Exception("Unreachable");
+                        throw new UnreachableException();
                     }
                 }
             }
