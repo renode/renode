@@ -66,6 +66,7 @@ rtc0: Timers.AndesATCRTC100 @ sysbus 0xf0600000
 syscon: Miscellaneous.EgisET171_AOSMU @ sysbus 0xf0100000
     mtimer: mtimer
     pit: pit0
+    wdt: watchdog
 
 smu2: Miscellaneous.EgisET171_SMU2 @ sysbus 0xf0e00000
 

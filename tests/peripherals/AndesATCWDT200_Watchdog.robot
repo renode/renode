@@ -5,7 +5,6 @@ Library                             ${CURDIR}/AndesATCWDT200_Watchdog-helpers.py
 *** Variables ***
 ${PLATFORM_PATH}                    @platforms/cpus/egis_et171.repl
 ${CORE_0_PC}                        0x80000000
-${CLOCK_FREQUENCY}                  32768
 
 # Register offsets
 ${IdAndRevision}                    0x00
@@ -116,7 +115,8 @@ Watchdog IRQ Should Be ${expected_state:(High|Low)}
 
 Get Interrupt Timeout
     ${control}=                     Execute Command  watchdog ReadDoubleWord ${Control}
-    ${seconds}=                     Get Interrupt Timeout Seconds  ${control}  ${CLOCK_FREQUENCY}
+    ${frequency}=                   Execute Command  syscon APBClockFrequency
+    ${seconds}=                     Get Interrupt Timeout Seconds  ${control}  ${frequency}
     Log To Console                  interrupt timeout is ${seconds}s
     [return]                        ${seconds}
 
@@ -126,7 +126,8 @@ Wait For Interrupt Timeout
 
 Wait For Reset Timeout
     ${control}=                     Execute Command  watchdog ReadDoubleWord ${Control}
-    ${seconds}=                     Get Reset Timeout Seconds  ${control}  ${CLOCK_FREQUENCY}
+    ${frequency}=                   Execute Command  syscon APBClockFrequency
+    ${seconds}=                     Get Reset Timeout Seconds  ${control}  ${frequency}
     Log To Console                  reset timeout is ${seconds}s
     Execute Command                 emulation RunFor "${seconds}s"
 
