@@ -159,10 +159,7 @@ siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
     IRQ4 -> nvic0@56
 
 mc_me: Miscellaneous.S32KXX_ModeEntryModule @ sysbus 0x402DC000
-    core0: cpu0
-    core1: cpu1
-    core4: cpu2
-    core3: cpu3
+    cores: [cpu0, cpu1, empty, cpu3, cpu2]
 
 swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
     -> nvic0@42
