@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -200,7 +200,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<ListValue> NonEmptyList =
             (from opening in OpeningSquareBracket
-             from values in Value.DelimitedBy(Comma)
+             from values in Value.Or(EmptyKeyword).DelimitedBy(Comma)
              from trailing in Comma.Optional()
              from closing in ClosingSquareBracket
              select new ListValue(values));
