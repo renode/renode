@@ -70,6 +70,8 @@ syscon: Miscellaneous.EgisET171_AOSMU @ sysbus 0xf0100000
 
 smu2: Miscellaneous.EgisET171_SMU2 @ sysbus 0xf0e00000
 
+crypto: Miscellaneous.EgisET171_Crypto @ sysbus 0xe8000000
+
 sysbus:
     init:
         Tag <0xe8100000 0x10000> "USB2 CSR"
