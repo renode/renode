@@ -195,7 +195,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public void DisconnectAll()
         {
-            /* After this operation then only way to use this perpiheral is to connect again.
+            /* After this operation then only way to use this peripheral is to connect again.
                Most important reason to call it is to make sure we won't block cleaning the emulation until connection timeout */
             if(afterDisconnectRequest.IsSet)
             {
