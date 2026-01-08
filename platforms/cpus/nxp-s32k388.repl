@@ -238,86 +238,104 @@ lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x404C0000
 flex_io: Miscellaneous.S32K3XX_FlexIO @ sysbus 0x40324000
     Frequency: 48000000
     IRQ -> nvic0@139
+    [Shifter0DMA, Shifter1DMA, Shifter2DMA, Shifter3DMA] -> dma_mux0@[33-36]
+    [Shifter4DMA, Shifter5DMA, Shifter6DMA, Shifter7DMA] -> dma_mux1@[34-37]
 
 lpuart0: UART.NXP_LPUART @ sysbus 0x40328000
     frequency: 24000000
     fifoSize: 16
     IRQ -> nvic0@141
+    [TransmitDMA, ReceiveDMA] -> dma_mux0@[37-38]
 
 lpuart1: UART.NXP_LPUART @ sysbus 0x4032C000
     frequency: 24000000
     fifoSize: 16
     IRQ -> nvic0@142
+    [TransmitDMA, ReceiveDMA] -> dma_mux0@[39-40]
 
 lpuart2: UART.NXP_LPUART @ sysbus 0x40330000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@143
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[38-39]
 
 lpuart3: UART.NXP_LPUART @ sysbus 0x40334000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@144
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[40-41]
 
 lpuart4: UART.NXP_LPUART @ sysbus 0x40338000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@145
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[42-43]
 
 lpuart5: UART.NXP_LPUART @ sysbus 0x4033C000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@146
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[44-45]
 
 lpuart6: UART.NXP_LPUART @ sysbus 0x40340000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@147
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[46-47]
 
 lpuart7: UART.NXP_LPUART @ sysbus 0x40344000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@148
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
 lpuart8: UART.NXP_LPUART @ sysbus 0x4048C000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@149
+    [TransmitDMA, ReceiveDMA] -> dma_mux0@[37-38]
 
 lpuart9: UART.NXP_LPUART @ sysbus 0x40490000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@150
+    [TransmitDMA, ReceiveDMA] -> dma_mux0@[39-40]
 
 lpuart10: UART.NXP_LPUART @ sysbus 0x40494000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@151
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[38-39]
 
 lpuart11: UART.NXP_LPUART @ sysbus 0x40498000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@152
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[40-41]
 
 lpuart12: UART.NXP_LPUART @ sysbus 0x4049C000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@153
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[42-43]
 
 lpuart13: UART.NXP_LPUART @ sysbus 0x404A0000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@154
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[44-45]
 
 lpuart14: UART.NXP_LPUART @ sysbus 0x404A4000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@155
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[46-47]
 
 lpuart15: UART.NXP_LPUART @ sysbus 0x404A8000
     frequency: 24000000
     fifoSize: 4
     IRQ -> nvic0@156
+    [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
 can0: CAN.S32K3XX_FlexCAN @ sysbus 0x40304000
     numberOfMessageBuffers: 96
@@ -461,6 +479,26 @@ gmac1: Network.S32K3XX_GMAC @ sysbus 0x40488000
     Channel2TX -> nvic0@236
     Channel2RX -> nvic0@237
 
+dma: DMA.NXP_eDMA @ sysbus 0x4020C000
+    numberOfChannels: 32
+
+dma_channels0_11: DMA.NXP_eDMA_Channels @ sysbus 0x40210000
+    dma: dma
+    count: 12
+    channelSize: 0x4000
+
+dma_channels12_32: DMA.NXP_eDMA_Channels @ sysbus 0x40410000
+    dma: dma
+    count: 20
+    firstChannel: 12
+    channelSize: 0x4000
+
+dma_mux0: DMA.S32K3XX_DMAMUX @ sysbus 0x40280000
+    [0-15] -> dma@[0-15]
+
+dma_mux1: DMA.S32K3XX_DMAMUX @ sysbus 0x40284000
+    [0-15] -> dma@[16-31]
+
 sysbus:
     init:
         // Core and Systems
@@ -474,41 +512,6 @@ sysbus:
         Tag <0x402A8000 0x804> "VIRT_WRAPPER"
         Tag <0x402C4000 0xA8> "TSPC"
         Tag <0x40200000 0x714> "AXBS"
-        Tag <0x40280000 0x10> "DMAMUX_0"
-        Tag <0x40284000 0x10> "DMAMUX_1"
-        Tag <0x4020C000 0x180> "eDMA"
-        Tag <0x40210000 0x40> "TCD_0"
-        Tag <0x40214000 0x40> "TCD_1"
-        Tag <0x40218000 0x40> "TCD_2"
-        Tag <0x4021C000 0x40> "TCD_3"
-        Tag <0x40220000 0x40> "TCD_4"
-        Tag <0x40224000 0x40> "TCD_5"
-        Tag <0x40228000 0x40> "TCD_6"
-        Tag <0x4022C000 0x40> "TCD_7"
-        Tag <0x40230000 0x40> "TCD_8"
-        Tag <0x40234000 0x40> "TCD_9"
-        Tag <0x40238000 0x40> "TCD_10"
-        Tag <0x4023C000 0x40> "TCD_11"
-        Tag <0x40410000 0x40> "TCD_12"
-        Tag <0x40414000 0x40> "TCD_13"
-        Tag <0x40418000 0x40> "TCD_14"
-        Tag <0x4041C000 0x40> "TCD_15"
-        Tag <0x40420000 0x40> "TCD_16"
-        Tag <0x40424000 0x40> "TCD_17"
-        Tag <0x40428000 0x40> "TCD_18"
-        Tag <0x4042C000 0x40> "TCD_19"
-        Tag <0x40430000 0x40> "TCD_20"
-        Tag <0x40434000 0x40> "TCD_21"
-        Tag <0x40438000 0x40> "TCD_22"
-        Tag <0x4043C000 0x40> "TCD_23"
-        Tag <0x40440000 0x40> "TCD_24"
-        Tag <0x40444000 0x40> "TCD_25"
-        Tag <0x40448000 0x40> "TCD_26"
-        Tag <0x4044C000 0x40> "TCD_27"
-        Tag <0x40450000 0x40> "TCD_28"
-        Tag <0x40454000 0x40> "TCD_29"
-        Tag <0x40458000 0x40> "TCD_30"
-        Tag <0x4045C000 0x40> "TCD_31"
         Tag <0x4027C000 0x48> "INTM"
         Tag <0x40460000 0x44> "SEMA42"
         Tag <0x40204000 0x10> "XBIC_AXBS"

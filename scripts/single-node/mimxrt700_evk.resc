@@ -26,4 +26,4 @@ showAnalyzer flexcomm0
 # File can be imported in Audacity for a visual inspection of wave shape
 # or converted to a wav file and played with VLC or other audio player:
 # sox -t raw -r 16000 -b 16 -c 2 -L -e signed-integer sai0_output.pcm sai0_output.wav
-sai0 SetOutputFile @sai0_output.pcm True
+sai0 SetOutputFile @output/sai0_output.pcm True

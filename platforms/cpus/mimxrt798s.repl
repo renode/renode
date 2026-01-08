@@ -132,7 +132,7 @@ flexcomm20: UART.NXP_FLEXCOMM @ {
     }
     IRQ -> nvic1@14
 
-edma0: DMA.IMXRT700_eDMA @ {
+edma0: DMA.NXP_eDMA @ {
         dmaMux 0;
         sysbus new Bus.BusPointRegistration { address: 0x40140000; cpu: cpu0 };
         sysbus new Bus.BusPointRegistration { address: 0x50140000; cpu: cpu0 }
@@ -140,7 +140,14 @@ edma0: DMA.IMXRT700_eDMA @ {
     numberOfChannels: 16
     [0-15] -> nvic0@[59-74]
 
-edma1: DMA.IMXRT700_eDMA @ {
+edma0_channels: DMA.NXP_eDMA_Channels @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40141000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50141000; cpu: cpu0 }
+    }
+    dma: edma0
+    count: 16
+
+edma1: DMA.NXP_eDMA @ {
         dmaMux 1;
         sysbus new Bus.BusPointRegistration { address: 0x40160000; cpu: cpu0 };
         sysbus new Bus.BusPointRegistration { address: 0x50160000; cpu: cpu0 }
@@ -148,7 +155,14 @@ edma1: DMA.IMXRT700_eDMA @ {
     numberOfChannels: 16
     [0-15] -> nvic0@[75-90]
 
-edma2: DMA.IMXRT700_eDMA @ {
+edma1_channels: DMA.NXP_eDMA_Channels @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40161000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50161000; cpu: cpu0 }
+    }
+    dma: edma1
+    count: 16
+
+edma2: DMA.NXP_eDMA @ {
         dmaMux 2;
         sysbus new Bus.BusPointRegistration { address: 0x40300000; cpu: cpu1 };
         sysbus new Bus.BusPointRegistration { address: 0x50300000; cpu: cpu1 }
@@ -156,13 +170,27 @@ edma2: DMA.IMXRT700_eDMA @ {
     numberOfChannels: 8
     [0-7] -> nvic1@[45-52]
 
-edma3: DMA.IMXRT700_eDMA @ {
+edma2_channels: DMA.NXP_eDMA_Channels @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40301000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50301000; cpu: cpu1 }
+    }
+    dma: edma2
+    count: 8
+
+edma3: DMA.NXP_eDMA @ {
         dmaMux 3;
         sysbus new Bus.BusPointRegistration { address: 0x40310000; cpu: cpu1 };
         sysbus new Bus.BusPointRegistration { address: 0x50310000; cpu: cpu1 }
     }
     numberOfChannels: 8
     [0-7] -> nvic1@[53-60]
+
+edma3_channels: DMA.NXP_eDMA_Channels @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40311000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50311000; cpu: cpu1 }
+    }
+    dma: edma3
+    count: 8
 
 // GPIO receiver used to connect peripheral request signals to DMA slots.
 dmaMux: DMA.IMXRT700_DmaMux @ sysbus
