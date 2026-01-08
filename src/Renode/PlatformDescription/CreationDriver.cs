@@ -477,7 +477,7 @@ namespace Antmicro.Renode.PlatformDescription
                     }
 
                     var registerInterfaces = registerVariable.VariableType.GetInterfaces().Where(x => x.IsGenericType &&
-                                                                                x.GetGenericTypeDefinition() == typeof(IPeripheralRegister<,>)
+                                                                                x.GetGenericTypeDefinition() == typeof(IRegisterablePeripheral<,>)
                                                                                 && x.GetGenericArguments()[0].IsAssignableFrom(entryType)).ToArray();
                     if(registerInterfaces.Length == 0)
                     {
@@ -550,7 +550,7 @@ namespace Antmicro.Renode.PlatformDescription
                                                   usefulRegistreeTypes[usefulRegistreeTypes.Count - 1],
                                                   usefulRegistrationPointTypes[0]), false);
                     }
-                    registrationInfo.RegistrationInterface = typeof(IPeripheralRegister<,>).MakeGenericType(new[] { usefulRegistreeTypes[0], usefulRegistrationPointTypes[0] });
+                    registrationInfo.RegistrationInterface = typeof(IRegisterablePeripheral<,>).MakeGenericType(new[] { usefulRegistreeTypes[0], usefulRegistrationPointTypes[0] });
                 }
             }
 
