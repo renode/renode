@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -29,6 +29,7 @@ namespace Antmicro.Renode.WebSockets
             isDisposed = false;
             isRunning = false;
             workingDirName = workingDir;
+            streamProxy = new WebSocketStreamProxy();
 
             actionHandlers = new Dictionary<string, (IWebSocketAPIProvider, List<ActionHandler>)>();
             apiProviders = new List<IWebSocketAPIProvider>();
@@ -68,6 +69,8 @@ namespace Antmicro.Renode.WebSockets
                 }
             }
 
+            streamProxy.Start();
+
             isRunning = true;
             return true;
         }
@@ -78,6 +81,8 @@ namespace Antmicro.Renode.WebSockets
             {
                 return;
             }
+
+            streamProxy.Dispose();
 
             isDisposed = true;
             webSocketServerProvider.Dispose();
@@ -295,6 +300,7 @@ namespace Antmicro.Renode.WebSockets
         private readonly object locker;
         private readonly Dictionary<string, (IWebSocketAPIProvider handlerInstance, List<ActionHandler> entries)> actionHandlers;
         private readonly List<IWebSocketAPIProvider> apiProviders;
+        private readonly WebSocketStreamProxy streamProxy;
         private static readonly string DefaultVersion = "1.5.0";
 
         private class APIRequest
