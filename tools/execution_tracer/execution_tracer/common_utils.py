@@ -7,6 +7,7 @@
 
 import functools
 import os
+from pathlib import Path
 from typing import Iterable, Optional, IO
 from dataclasses import dataclass
 
@@ -28,7 +29,11 @@ class PathSubstitution:
     after: str
 
     def apply(self, path: str) -> str:
-        return path.replace(self.before, self.after)
+        try:
+            relative = Path(path).relative_to(self.before)
+            return os.fspath(Path(self.after) / relative)
+        except ValueError:
+            return path
 
     @classmethod
     def from_arg(cls, s: str):
