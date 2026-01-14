@@ -71,7 +71,7 @@ Should Read Samples From RESD
     Execute Command                 ${SENSOR} FeedTemperatureSamplesFromRESD @${RESD}
     Execute Command                 ${SENSOR} FeedHumiditySamplesFromRESD @${RESD}
     Execute Command                 showAnalyzer ${UART}
-    Check And Run Gdb               name=arm-none-eabi-gdb  bin=${bin}
+    Check And Run Gdb               name=arm-zephyr-eabi-gdb  bin=${bin}
 
     Command Gdb                     break printk
 
