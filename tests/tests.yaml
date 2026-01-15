@@ -241,6 +241,7 @@
 - tests/peripherals/AndesATCRTC100.robot
 - tests/platforms/egis_et171.robot
 - tests/platforms/ARMv8M-MVE.robot
+- tests/platforms/focaltech-ft9001-zephyr.robot
 
 # Do not use port 3333 in unit tests
 
