@@ -9,6 +9,12 @@ ${COMPLEX_PLATFORM}=     SEPARATOR=
 ...  simple: ReferencingPeripheral @ sysbus 0x0                 ${\n}
 ...  """
 
+${UNSAFE_PLATFORM}=     SEPARATOR=
+...  """                                                        ${\n}
+...  simple: UnsafePeripheral @ sysbus 0x0                      ${\n}
+...  """
+
+
 *** Keywords ***
 Use Peripheral
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
@@ -50,6 +56,14 @@ Should Compile Multiple Files Referencing Each Other
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${COMPLEX_PLATFORM}
+
+        Use Peripheral
+
+Should Compile Unsafe Peripheral
+        Execute Command          include "${CURDIR}/UnsafePeripheral.cs"
+
+        Execute Command          mach create
+        Execute Command          machine LoadPlatformDescriptionFromString ${UNSAFE_PLATFORM}
 
         Use Peripheral
 
