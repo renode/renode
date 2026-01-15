@@ -102,6 +102,7 @@ def try_get_category(platform):
         "efr32mg26":   "EFM",
         "efr32xg22":   "EFM",
         "egis_et171": "EGIS",
+        "focaltech_ft9001": "FOCALTECH",
         "eos-s3":  "EOS",
         "eos-s3-qomu": "EOS",
         "eos-s3-quickfeather": "EOS",

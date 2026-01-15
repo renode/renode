@@ -1,0 +1,17 @@
+$name?="FocalTech FT9001"
+$bin?=@https://zephyr-dashboard.renode.io/zephyr/f931c5a44f65946e6ff56fa65334908f2b402122/ft9001_eval/shell_module/shell_module.elf
+$repl?=@platforms/cpus/focaltech_ft9001.repl
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription $repl
+showAnalyzer usart2
+
+macro reset
+"""
+    cpu0 FpuEnabled true
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset

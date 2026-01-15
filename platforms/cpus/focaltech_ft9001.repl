@@ -1,0 +1,52 @@
+sysbus:
+    init:
+        Tag <0x40000000 0x1000> "pinctrl"
+        Tag <0x40001000 0x1000> "ccm"
+        Tag <0x40003000 0x1000> "flash_ctrl"
+        Tag <0x40005000 0x1000> "wdt0"
+        Tag <0x40006000 0x1000> "tc0"
+        Tag <0x40019000 0x1000> "eport0"
+        Tag <0x4001a000 0x1000> "eport1"
+        Tag <0x4001d000 0x1000> "usart3"
+        Tag <0x40024000 0x1000> "eport2"
+        Tag <0x40025000 0x1000> "eport3"
+        Tag <0x40026000 0x1000> "eport4"
+        Tag <0x40027000 0x1000> "eport5"
+        Tag <0x40028000 0x1000> "eport6"
+        Tag <0x40029000 0x1000> "eport7"
+        Tag <0x4003b000 0x1000> "trng"
+        Tag <0x4004c000 0x1000> "usb"
+        Tag <0x40051000 0x1000> "icache"
+        Tag <0x40055000 0x1000> "dcache"
+        Tag <0xe000ed90 0x40> "mpu"
+        Tag <0xe000e010 0x10> "systick"
+
+secure_rom: Memory.MappedMemory @ sysbus 0x80000
+    size: 0x1000
+
+cpm: Miscellaneous.FocalTechFT9001_CPM @ sysbus 0x40004000
+
+usart2: UART.FT9001_USART @ sysbus 0x40014000
+    IRQ -> nvic0@33
+
+flash0: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x200000
+
+sramd0: Memory.MappedMemory @ sysbus 0x1fff8000
+    size: 0x8000
+
+sram0: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x38000
+
+nvic0: IRQControllers.NVIC @ {
+    sysbus new Bus.BusPointRegistration { address: 0xe000e000; cpu: cpu0 }
+}
+    -> cpu0@0
+    systickFrequency: 160000000
+
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic0
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
