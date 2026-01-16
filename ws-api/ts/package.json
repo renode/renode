@@ -1,0 +1,56 @@
+{
+  "name": "renode-ws-api",
+  "version": "0.0.1",
+  "description": "",
+  "browser": "./dist/web.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "check:lint": "eslint",
+    "check:fmt": "prettier --check .",
+    "check": "npm-run-all check:*",
+    "fix:lint": "eslint --fix",
+    "fix:fmt": "prettier --write .",
+    "fix": "npm-run-all fix:*",
+    "compile:js": "node esbuild.js --production",
+    "compile:types": "dts-bundle-generator -o dist/index.d.ts src/index.ts",
+    "precompile": "npm-run-all check",
+    "compile": "npm-run-all --parallel compile:*",
+    "prepare": "npm-run-all compile"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.5.5",
+    "@types/ws": "^8.5.12",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "@types/semver": "^7.7.1",
+    "dts-bundle-generator": "^9.5.1",
+    "esbuild": "^0.25.0",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "eslint": "^9.11.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.3",
+    "typescript": "~5.6.0",
+    "typescript-eslint": "^8.11.0"
+  },
+  "dependencies": {
+    "isomorphic-ws": "^5.0.0",
+    "semver": "^7.7.3",
+    "zod": "^3.23.8"
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "avoid"
+  }
+}
