@@ -11,8 +11,8 @@ cd $THIS_DIR
 RENODE_ROOT_DIR=$THIS_DIR/../..
 RENODE_OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET
 RENODE_BIN=$RENODE_OUTPUT_DIR/Renode.exe
-DESTINATION=renode_${VERSION}_portable
-WORKDIR=$THIS_DIR/renode_${VERSION}_portable-workdir
+DESTINATION=renode_${VERSION}-mono_portable
+WORKDIR=$THIS_DIR/renode_${VERSION}-mono_portable-workdir
 MONO_VERSION=4.5
 OS_NAME=linux
 SED_COMMAND="sed -i"
@@ -156,9 +156,9 @@ cp `find_file libgdksharpglue-2.so` $DESTINATION
 
 # Create tar
 mkdir -p ../../output/packages
-tar -czf ../../output/packages/renode-$VERSION.linux-portable.tar.gz $DESTINATION
+tar -czf ../../output/packages/renode-$VERSION.linux-mono-portable.tar.gz $DESTINATION
 
-echo "Created a portable package in output/packages/renode-$VERSION.linux-portable.tar.gz"
+echo "Created a portable package in output/packages/renode-$VERSION.linux-mono-portable.tar.gz"
 
 # Cleanup
 

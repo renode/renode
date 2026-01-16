@@ -38,7 +38,7 @@ tail -n +2 macos/macos_run.command >> $COMMAND_SCRIPT
 chmod +x $COMMAND_SCRIPT
 
 mkdir -p $OUTPUT
-hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.dmg
+hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode_$VERSION.mono.dmg
 
 #cleanup unless user requests otherwise
 if $REMOVE_WORKDIR

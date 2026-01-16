@@ -626,7 +626,7 @@ then
             # Only dotnet packages are supported on Windows
             echo "Only dotnet packages are supported on Windows. Rerun build.sh with --net -t to build a Windows package"
         else
-            $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_packages.sh $params
+            $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_mono_packages.sh $params
         fi
     fi
 fi
@@ -644,7 +644,7 @@ then
     else
         if $ON_LINUX
         then
-            $ROOT_PATH/tools/packaging/make_linux_portable.sh $params
+            $ROOT_PATH/tools/packaging/make_linux_mono_portable.sh $params
         else
             echo "Portable packages for Mono are only available on Linux. Exiting!"
             exit 1

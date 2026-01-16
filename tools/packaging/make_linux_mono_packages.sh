@@ -87,6 +87,11 @@ fpm -s dir -t deb\
     "${GENERAL_FLAGS[@]}" >/dev/null
 
 mkdir -p $OUTPUT
+
+# Add '.mono' infix
+deb=(renode*deb)
+mv $deb ${deb%.deb}.mono.deb
+
 deb=(renode*deb)
 mv $deb $OUTPUT
 echo "Created a Debian package in $PACKAGES/$deb"
@@ -103,6 +108,10 @@ fpm -s dir -t rpm\
      -d polkit\
      "${GENERAL_FLAGS[@]}" >/dev/null
  
+# Add '.mono' infix
+rpm=(renode*rpm)
+mv $rpm ${rpm%.rpm}.mono.rpm
+
 rpm=(renode*rpm)
 mv $rpm $OUTPUT
 echo "Created a Fedora package in $PACKAGES/$rpm"
@@ -125,6 +134,10 @@ arch=(renode*.pkg.tar.xz)
 ZST=(renode*.pkg.tar.zst)
 if [ -f "$arch" ]
 then
+    # Add '.mono' infix
+    mv $arch ${arch%.pkg.tar.xz}.mono.pkg.tar.xz
+
+    arch=(renode*.pkg.tar.xz)
     mv $arch $OUTPUT
     echo "Created an Arch package in $PACKAGES/$arch"
 elif [ -f "$ZST" ]
@@ -132,7 +145,8 @@ then
     file $ZST | grep "XZ compressed data" >> /dev/null
     if [ $? -eq 0 ]
     then
-        mv "$ZST" "${ZST%.zst}.xz"
+        # Add '.mono' infix
+        mv "$ZST" "${ZST%.pkg.tar.zst}.mono.pkg.tar.xz"
         arch=(renode*.pkg.tar.xz)
         mv $arch $OUTPUT
         echo "Warning: .zst file was detected during the process and was renamed to .xz manually. \
