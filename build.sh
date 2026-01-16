@@ -608,7 +608,7 @@ then
             # maxcpucount:1 to avoid an error with multithreaded publish
             eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
             export RID TFM
-            $ROOT_PATH/tools/packaging/make_linux_dotnet_package.sh $params
+            $ROOT_PATH/tools/packaging/make_linux_package.sh $params
         elif $ON_WINDOWS
         then
             # No Non portable dotnet package on windows yet
@@ -640,7 +640,7 @@ then
         echo "RID = $RID"
         eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
         export RID TFM
-        $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable_dotnet.sh $params
+        $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
     else
         if $ON_LINUX
         then
