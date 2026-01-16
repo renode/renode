@@ -9,7 +9,7 @@ cd "${0%/*}"
 
 RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
-DIR=renode_${VERSION}-dotnet_portable
+DIR=renode_${VERSION}-portable
 OS_NAME=windows
 SED_COMMAND="sed -i"
 
@@ -49,14 +49,14 @@ cp \
 ### create zip
 mkdir -p ../../output/packages
 # Absolute path to use the Windows builtin BSD tar instead of minGW tar
-/c/Windows/SysWOW64/tar.exe -a -c -f ../../output/packages/renode-$VERSION.windows-portable-dotnet.zip $DIR
+/c/Windows/SysWOW64/tar.exe -a -c -f ../../output/packages/renode-$VERSION.windows-portable.zip $DIR
 
 # Build installer
 export BASE
 export VERSION
 windows_package_src=$DIR iscc "windows/renode.iss"
 
-echo "Created a dotnet portable package in output/packages/renode-$VERSION.windows-portable-dotnet.zip"
+echo "Created a dotnet portable package in output/packages/renode-$VERSION.windows-portable.zip"
 
 # Cleanup
 if $REMOVE_WORKDIR

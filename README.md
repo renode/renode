@@ -40,14 +40,14 @@ Nightly builds of Renode for all systems are available at [builds.renode.io](htt
 
 The latest builds are always available as `renode-latest.*` packages.
 The following packages formats are available:
-* [`renode-latest.linux-portable-dotnet.tar.gz`](https://builds.renode.io/renode-latest.linux-portable-dotnet.tar.gz) -  portable Linux package, embeds dotnet runtime
-* [`renode-latest.linux-portable.tar.gz`](https://builds.renode.io/renode-latest.linux-portable.tar.gz) - portable Linux package, embeds Mono runtime
-* [`renode-latest.linux-dotnet.tar.gz`](https://builds.renode.io/renode-latest.linux-dotnet.tar.gz) - Linux prebuilt archive, requires dotnet installed on host
+* [`renode-latest.linux-portable.tar.gz`](https://builds.renode.io/renode-latest.linux-portable.tar.gz) - portable Linux package, embeds dotnet runtime
+* [`renode-latest.linux-portable-mono.tar.gz`](https://builds.renode.io/renode-latest.linux-portable-mono.tar.gz) - portable Linux package, embeds Mono runtime
+* [`renode-latest.linux.tar.gz`](https://builds.renode.io/renode-latest.linux.tar.gz) - Linux prebuilt archive, requires dotnet installed on host
 * [`renode-latest.pkg.tar.xz`](https://builds.renode.io/renode-latest.pkg.tar.xz) - Arch Linux package
 * [`renode-latest.x86_64.rpm`](https://builds.renode.io/renode-latest.x86_64.rpm) - Red Hat / Fedora package
 * [`renode-latest.deb`](https://builds.renode.io/renode-latest.deb) - Debian-based distribution package
 * [`renode-latest.dmg`](https://builds.renode.io/renode-latest.dmg) - macOS package
-* [`renode-latest.windows-portable-dotnet.zip`](https://builds.renode.io/renode-latest.windows-portable-dotnet.zip) - Windows portable package, without installer
+* [`renode-latest.windows-portable.zip`](https://builds.renode.io/renode-latest.windows-portable.zip) - Windows portable package, without installer
 * [`renode-latest.setup.exe`](https://builds.renode.io/renode-latest.setup.exe) - Windows installer
 * [`renode-latest.tar.xz`](https://builds.renode.io/renode-latest.tar.xz) - Renode sources
 

@@ -40,7 +40,7 @@ OUTPUT=$BASE/$PACKAGES
 
 # Create dmg file
 mkdir -p $OUTPUT
-hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode-$VERSION-dotnet.$RID-portable.dmg
+hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode-$VERSION.$RID-portable.dmg
 
 # Cleanup
 rm -rf $MACOS_APP_DIR

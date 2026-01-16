@@ -24,7 +24,7 @@ then
     exit 1
 fi
 
-DIR=renode_$VERSION--dotnet
+DIR=renode_$VERSION
 
 # Contents of this variable should be pasted verbatim into renode-test script.
 INSTALL_DIR=/opt/renode
@@ -132,7 +132,7 @@ mv $arch $OUTPUT
 echo "Created an Arch package in $PACKAGES/$arch"
 
 ### create portable package
-PKG=renode-$VERSION.linux-dotnet.tar.gz
+PKG=renode-$VERSION.linux.tar.gz
 
 # Create tar
 # Requires a separate scripts because we don't know it's location
