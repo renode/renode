@@ -125,7 +125,6 @@ namespace Antmicro.Renode.WebSockets
         {
             EmulationManager.Instance.Clear();
             Recorder.Instance.ClearEvents();
-            SharedData.SetDefaults();
         }
 
         private void RegisterType(Type t)
