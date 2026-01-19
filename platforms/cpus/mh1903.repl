@@ -1,0 +1,172 @@
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+    enableTrustZone: false
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    IRQ -> cpu@0
+    systickFrequency: 168000000
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
+boot: Memory.MappedMemory @ sysbus 0x0
+    size: 0x400000
+
+flash: Memory.MappedMemory @ sysbus 0x1000000
+    size: 0x400000
+
+sram_bb: Miscellaneous.BitBanding @ sysbus <0x21000000, 0x23FFFFFF>
+    peripheralBase: 0x20000000
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x100000
+
+peripheral_bb: Miscellaneous.BitBanding @ sysbus <0x42000000, 0x43FFFFFF>
+    peripheralBase: 0x40000000
+
+ssc: Miscellaneous.MH1903_SSC @ sysbus 0x40000000
+    -> nvic@20
+
+dma: DMA.MH1903_DMA @ sysbus 0x40000800
+    -> nvic@0
+
+bpu: Miscellaneous.MH1903_BPU @ sysbus 0x40030000
+
+sysctrl: Miscellaneous.MH1903_SYSCTRL @ sysbus 0x4001f000
+
+qspi: SPI.MH1903_QSPI @ sysbus 0x400a2000
+
+internalFlash: SPI.GenericSpiFlash @ qspi 0
+    underlyingMemory: flash
+    manufacturerId: 0x20
+    memoryType: 0x40
+    capacityCode: 0x18
+
+gpioa: GPIOPort.MH1903_GPIO @ sysbus 0x4001d000
+gpiob: GPIOPort.MH1903_GPIO @ sysbus 0x4001d010
+gpioc: GPIOPort.MH1903_GPIO @ sysbus 0x4001d020
+gpiod: GPIOPort.MH1903_GPIO @ sysbus 0x4001d030
+gpioe: GPIOPort.MH1903_GPIO @ sysbus 0x4001d040
+gpiof: GPIOPort.MH1903_GPIO @ sysbus 0x4001d050
+gpiog: GPIOPort.MH1903_GPIO @ sysbus 0x4001d060
+gpioh: GPIOPort.MH1903_GPIO @ sysbus 0x4001d070
+
+gpio_control: GPIOPort.MH1903_GPIO_Control @ sysbus 0x4001d100
+
+UserLED: Miscellaneous.LED @ gpiod 15
+
+gpiod:
+    15 -> UserLED@0
+
+uart0: UART.MH1903_UART @ sysbus 0x40016000
+    pclkFrequency: 51000000
+    -> nvic@5
+
+uart1: UART.MH1903_UART @ sysbus 0x40017000
+    pclkFrequency: 51000000
+    -> nvic@6
+
+uart2: UART.MH1903_UART @ sysbus 0x40044000
+    pclkFrequency: 51000000
+    -> nvic@32
+
+uart3: UART.MH1903_UART @ sysbus 0x40045000
+    pclkFrequency: 51000000
+    -> nvic@33
+
+otp: Miscellaneous.MH1903_OTP @ sysbus 0x40008000
+
+crc: Miscellaneous.MH1903_CRC @ sysbus 0x40012000
+
+timer: Timers.MH1903_Timer @ sysbus 0x40013000
+    frequency: 24000000
+    [0-7] -> nvic@[9, 10, 11, 12, 21, 22, 39, 40]
+
+adc: Analog.MH1903_ADC @ sysbus 0x40014000
+    -> nvic@19
+
+spim0: SPI.MH1903_SPIM @ sysbus 0x4001a000
+    -> nvic@7
+
+spim1: SPI.MH1903_SPIM @ sysbus 0x40018000
+    -> nvic@26
+
+spim2: SPI.MH1903_SPIM @ sysbus 0x40019000
+    -> nvic@27
+
+spim3: SPI.MH1903_SPIM @ sysbus 0x40040000
+    -> nvic@29
+
+trng: Miscellaneous.MH1903_TRNG @ sysbus 0x4001e000
+    -> nvic@18
+
+watchdog: Timers.MH1903_Watchdog @ sysbus 0x4001c000
+    frequency: 24000000
+
+cache: Cache.MH1903_CACHE @ sysbus 0x40080000
+
+st7735: Video.ST7735_SPI @ spim3 0
+    width: 160
+    height: 128
+
+gpiog:
+    13 -> st7735@0
+    15 -> st7735@1
+
+gpiof:
+    5 -> extFlash@0
+
+extFlashMem: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x2000000
+
+extFlash: SPI.GenericSpiFlash @ spim2 0
+    underlyingMemory: extFlashMem
+    manufacturerId: 0x20
+    memoryType: 0x40
+    capacityCode: 0x18
+
+sysbus:
+    init:
+        Tag <0x00000000 0x20000> "Boot ROM"
+        Tag <0x01000000 0x400000> "Primary Flash"
+        Tag <0x40000000 0x20000000> "Peripherals"
+        Tag <0x40000000 0x400> "SSC"
+        Tag <0x40000800 0x400> "DMA"
+        Tag <0x40000c00 0x400> "USB"
+        Tag <0x40001000 0x400> "LCD"
+        Tag <0x40008000 0x6c00> "OTP"
+        Tag <0x40010000 0x1000> "CRC"
+        Tag <0x40012000 0x1000> "SCI0"
+        Tag <0x40013000 0x1000> "Timer0"
+        Tag <0x40014000 0x1000> "ADC"
+        Tag <0x40015000 0x1000> "SCI2"
+        Tag <0x40016000 0x100> "UART0"
+        Tag <0x40017000 0x100> "UART1"
+        Tag <0x40018000 0x1000> "SPIM1"
+        Tag <0x40019000 0x1000> "SPIM2"
+        Tag <0x4001a000 0x1000> "SPIM0"
+        Tag <0x4001b000 0x1000> "SPIS0"
+        Tag <0x4001d000 0x1000> "GPIO"
+        Tag <0x4001c000 0x1000> "Watchdog"
+        Tag <0x4001e000 0x1000> "TRNG"
+        Tag <0x4001f000 0x1000> "System Controller"
+        Tag <0x40020000 0x10000> "MSR"
+        Tag <0x40030000 0x8000> "BPU"
+        Tag <0x40044000 0x1000> "UART2"
+        Tag <0x40045000 0x1000> "UART3"
+        Tag <0x40048000 0x1000> "Keyboard"
+        Tag <0x40049000 0x1000> "I2C0"
+        Tag <0x40060000 0x10000> "DCMI"
+        Tag <0x40080000 0x10000> "CACHE"
+        Tag <0x400a2000 0x1000> "QSPI"
+        Tag <0x400a3000 0x1000> "SPIM5"
+        Tag <0xe0000000 0x100000> "SYS"
+        Tag <0xE0000000 0x1000> "ITM"
+        Tag <0xE0001000 0x1000> "DWT"
+        Tag <0xE0040000 0xFD0> "TPI"
+        Tag <0xE000ED00 140> "SCB"
+        Tag <0xE000E000 12> "SCnSCB"
+        Tag <0xE000E010 16> "SysTick"
+        Tag <0xE000E100 140> "NVIC"
+        Tag <0xE000EDF0 16> "CoreDebug"
