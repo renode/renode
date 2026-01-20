@@ -1,0 +1,39 @@
+using sysbus.cluster0
+using sysbus.cluster1
+
+$name?="ZynqUS+"
+mach create $name
+emulation SetGlobalSerialExecution true
+
+machine LoadPlatformDescription @platforms/boards/zynqmp-zcu106-vcu.repl
+
+showAnalyzer uart0
+
+$dtb?=       @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-dtb-s_54820-8cff7ad83c1c930e238378b7353d65ea83e9097e
+$atf_elf?=   @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-bl31.elf-s_147512-e8d27c6bb5301fff3b2cf474486a1ffaee9e4085
+$uboot?=     @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-u-boot.bin-s_1423160-56d5e61a36af8dabd4a3a23b843c642fbfa90a5a
+$uboot_elf?= @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-u-boot.elf-s_1489272-bb364065f2a82957f55661ef6b7a35505a8b13c9
+$linux?=     @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-Image-s_24269312-0baa98096d7d3aca2042eb6af0de4ad85a68574e
+$rootfs?=    @https://dl.antmicro.com/projects/renode/zynqmp-vcu-yuv444-rootfs.ext4-s_288434176-4c2e4b46fd98f05ecea1dd01d7b7f74069ff2aee
+$bootargs?=  "earlycon console=ttyPS0,115200n8 root=/dev/vda rw module_blacklist=al5d,mali initcall_blacklist=zynqmp_qspi_driver_init"
+
+macro reset
+"""
+    # Only start the primary core - secondaries are handled by firmware during wakeup
+    cluster0 ForEach IsHalted true
+    cluster0 ForEach RNDRSupported true
+    apu0 IsHalted false
+
+    cluster1 ForEach IsHalted true
+
+    sysbus LoadELF    $atf_elf cpu=apu0
+
+    sysbus LoadFdt    $dtb    0x100000   $bootargs false
+    sysbus LoadBinary $uboot  0x8000000
+    sysbus LoadBinary $linux  0x10000000
+    virtio LoadImage  $rootfs
+
+    sysbus LoadSymbolsFrom $uboot_elf
+"""
+
+runMacro $reset

@@ -274,6 +274,7 @@ def try_get_category(platform):
         "zynqmp-zcu102-revA":   "ZYNQ",
         "zynqmp-zcu102-revB":   "ZYNQ",
         "zynqmp-zcu104":   "ZYNQ",
+        "zynqmp-zcu106-vcu":    "ZYNQ",
     }
 
     if platform.get_name() not in mapping:
