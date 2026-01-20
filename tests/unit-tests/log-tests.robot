@@ -1,9 +1,14 @@
+*** Variables ***
+${test_peripheral_addr}=            0x20000000
+
 *** Keywords ***
 Create Machine
+    Execute Command                 include "${CURDIR}/UnimplementedRegistersPeripheral.cs"
     Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty }"
     Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x10000000 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "test_peripheral: UnimplementedRegistersPeripheral @ sysbus ${test_peripheral_addr}"
     Execute Command                 sysbus Tag <0x4, 0x4> "tagged_region"
 
     Execute Command                 cpu PC 0x1000
@@ -191,3 +196,21 @@ Should Unregister Failing String In Log
 Should Not Preserve Log Tester Between Tests
     Run Keyword And Expect Error    *Log tester is not available*
     ...                             Should Not Be In Log  Non existing log message
+
+Should Include Register Name In Unhandled Software Read Log
+    Create Log Tester               timeout=0.000001
+    Create Machine
+
+    Execute Command                 cpu SetRegister "a0" ${test_peripheral_addr}  
+    Execute Command                 cpu AssembleBlock 0x1000 "lw x0, 8(a0); j 0"
+
+    Wait For Log Entry              test_peripheral: Unhandled read from offset 0x8 (Third).
+
+Should Include Register Name In Unhandled Software Write Log
+    Create Log Tester               timeout=0.000001
+    Create Machine
+
+    Execute Command                 cpu SetRegister "a0" ${test_peripheral_addr}  
+    Execute Command                 cpu AssembleBlock 0x1000 "sw x0, 8(a0); j 0"
+
+    Wait For Log Entry              test_peripheral: Unhandled write to offset 0x8 (Third), value 0x0.
