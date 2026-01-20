@@ -9,15 +9,19 @@ flash: Memory.MappedMemory @ sysbus 0x00000000
 
 usart1: UART.STM32_UART @ sysbus <0x40013800, +0x100>
     -> nvic@37
+    DMARequest -> dma1@4 | dma1@5
 
 usart2: UART.STM32_UART @ sysbus <0x40004400, +0x100>
     -> nvic@38
+    DMARequest -> dma1@6 | dma1@7
 
 usart3: UART.STM32_UART @ sysbus <0x40004800, +0x100>
     -> nvic@39
+    DMARequest -> dma1@2 | dma1@3
 
 usart4: UART.STM32_UART @ sysbus <0x40004C00, +0x100>
     -> nvic@52
+    DMARequest -> dma2@3 | dma2@5
 
 usart5: UART.STM32_UART @ sysbus <0x40005000, +0x100>
     -> nvic@53
@@ -79,79 +83,100 @@ gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012c00
     BreakInterrupt -> nvic@24
-    UpdateInterrupt -> nvic@25
-    [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
-    CaptureCompareInterrupt -> nvic@27
+    UpdateInterrupt -> nvic@25 | dma1@5
+    TriggerInterrupt -> nvic@26 | dma1@4
+    CommutationInterrupt -> nvic@26 | dma1@4
+    CaptureCompareInterrupt -> nvic@27 | dma1@2
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer2: Timers.STM32_Timer @ sysbus 0x40000000
-    -> nvic@28
+    IRQ -> nvic@28
+    UpdateInterrupt -> dma1@2
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer3: Timers.STM32_Timer @ sysbus 0x40000400
-    -> nvic@29
+    IRQ -> nvic@29
+    UpdateInterrupt -> dma1@3
+    TriggerInterrupt -> dma1@6
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer4: Timers.STM32_Timer @ sysbus 0x40000800
-    -> nvic@30
+    IRQ -> nvic@30
+    UpdateInterrupt -> dma1@7
+    [0-2] -> dma1@[1, 4, 5]
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer5: Timers.STM32_Timer @ sysbus 0x40000C00
-    -> nvic@50
+    IRQ -> nvic@50
+    TriggerInterrupt -> dma2@1
+    UpdateInterrupt -> dma2@2
+    [0-2] -> dma2@[5, 4, 2]
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer6: Timers.STM32_Timer @ sysbus 0x40001000
-    -> nvic@54
+    IRQ -> nvic@54
+    UpdateInterrupt -> dma2@3
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer7: Timers.STM32_Timer @ sysbus 0x40001400
-    -> nvic@55
+    IRQ -> nvic@55
+    UpdateInterrupt -> dma2@4
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer8: Timers.STM32_Timer @ sysbus 0x40013400
     BreakInterrupt -> nvic@43
-    UpdateInterrupt -> nvic@44
-    [TriggerInterrupt, CommutationInterrupt] -> nvic@[45, 45]
+    UpdateInterrupt -> nvic@44 | dma2@1
+    TriggerInterrupt -> nvic@45 | dma2@2
+    CommutationInterrupt -> nvic@45 | dma2@2
     CaptureCompareInterrupt -> nvic@46
+    [0-3] -> dma2@[3, 5, 1, 2]
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer9: Timers.STM32_Timer @ sysbus 0x40014c00
-    -> nvic@24
+    IRQ -> nvic@24
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer10: Timers.STM32_Timer @ sysbus 0x40015000
-    -> nvic@25
+    IRQ -> nvic@25
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer11: Timers.STM32_Timer @ sysbus 0x40015400
-    -> nvic@26
+    IRQ -> nvic@26
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer12: Timers.STM32_Timer @ sysbus 0x40001800
-    -> nvic@43
+    IRQ -> nvic@43
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer13: Timers.STM32_Timer @ sysbus 0x40001C00
-    -> nvic@44
+    IRQ -> nvic@44
     frequency: 10000000
     initialLimit: 0xFFFF
 
 timer14: Timers.STM32_Timer @ sysbus 0x40002000
-    -> nvic@45
+    IRQ -> nvic@45
     frequency: 10000000
     initialLimit: 0xFFFF
+
+dma1: DMA.STM32G0DMA @ sysbus 0x40020000
+    numberOfChannels: 7
+    [0-6] -> nvic@[11-17]
+
+dma2: DMA.STM32G0DMA @ sysbus 0x40020400
+    numberOfChannels: 5
+    [0-4] -> nvic@[56-60]
 
 afio: GPIOPort.STM32F1AFIO @ sysbus 0x40010000
     gpioPorts: [gpioPortA, gpioPortB, gpioPortC, gpioPortD, gpioPortE, gpioPortF, gpioPortG]
@@ -161,22 +186,22 @@ afio: GPIOPort.STM32F1AFIO @ sysbus 0x40010000
 //     gpioPort#pinNumber@timerNumber
 // Meaning `1 -> gpioPortA#2@5` connects output 1 to pin 2 of GPIO port A and it receives its signal from timer 5
 timer1:
-    0 -> gpioPortA#08@01 | gpioPortE#09@01 | gpioPortB#13@01 | gpioPortA#07@01 | gpioPortE#08@01
+    0 -> gpioPortA#08@01 | gpioPortE#09@01 | gpioPortB#13@01 | gpioPortA#07@01 | gpioPortE#08@01 | dma1@2
     1 -> gpioPortA#09@01 | gpioPortE#11@01 | gpioPortB#14@01 | gpioPortB#00@01 | gpioPortE#10@01
-    2 -> gpioPortA#10@01 | gpioPortE#13@01 | gpioPortB#15@01 | gpioPortB#01@01 | gpioPortE#12@01
-    3 -> gpioPortA#11@01 | gpioPortE#14@01
+    2 -> gpioPortA#10@01 | gpioPortE#13@01 | gpioPortB#15@01 | gpioPortB#01@01 | gpioPortE#12@01 | dma1@6
+    3 -> gpioPortA#11@01 | gpioPortE#14@01 | dma1@4
 
 timer2:
-    0 -> gpioPortA#00@02 | gpioPortA#15@02
-    1 -> gpioPortA#01@02 | gpioPortB#03@02
-    2 -> gpioPortA#02@02 | gpioPortB#10@02
-    3 -> gpioPortA#03@02 | gpioPortB#11@02
+    0 -> gpioPortA#00@02 | gpioPortA#15@02 | dma1@5
+    1 -> gpioPortA#01@02 | gpioPortB#03@02 | dma1@7
+    2 -> gpioPortA#02@02 | gpioPortB#10@02 | dma1@1
+    3 -> gpioPortA#03@02 | gpioPortB#11@02 | dma1@7
 
 timer3:
-    0 -> gpioPortA#06@03 | gpioPortB#04@03 | gpioPortC#06@03
+    0 -> gpioPortA#06@03 | gpioPortB#04@03 | gpioPortC#06@03 | dma1@6
     1 -> gpioPortA#07@03 | gpioPortB#05@03 | gpioPortC#07@03
-    2 -> gpioPortB#00@03 | gpioPortC#08@03
-    3 -> gpioPortB#01@03 | gpioPortC#09@03
+    2 -> gpioPortB#00@03 | gpioPortC#08@03 | dma1@2
+    3 -> gpioPortB#01@03 | gpioPortC#09@03 | dma1@3
 
 timer4:
     0 -> gpioPortB#06@04 | gpioPortD#12@04
@@ -185,7 +210,7 @@ timer4:
     3 -> gpioPortB#09@04 | gpioPortD#15@04
 
 timer5:
-    3 -> gpioPortA#03@05
+    3 -> gpioPortA#03@05 | dma2@1
 
 timer9:
     0 -> gpioPortA#02@09 | gpioPortE#05@09
