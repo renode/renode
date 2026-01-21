@@ -53,9 +53,15 @@ namespace Antmicro.Renode.WebSockets
             lock(sync)
             {
                 string program = defaultProgram;
-                if(extraArgs.Count == 1)
+                if(extraArgs.Count > 0)
                 {
-                    program = extraArgs[0];
+                    // Added for compatibility with ws-proxy, but in new api path to gdb should be handled properly
+                    program = "";
+                    foreach(var item in extraArgs.Take(extraArgs.Count - 1))
+                    {
+                        program += item + "/";
+                    }
+                    program += extraArgs.Last();
                 }
 
                 var newProcess = new ProxyProcess(program, gdbArgs, sender);
