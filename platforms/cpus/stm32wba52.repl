@@ -161,6 +161,35 @@ timer16:
 timer17:
     0 -> gpioPortA#01@14 | gpioPortB#03@14 | gpioPortB#04@14
 
+gpioPortA:
+    0 -> timer1@01 | timer3@02
+    1 -> timer1@00 | timer3@01 | timer17@00
+    2 -> timer3@00 | timer16@00
+    3 -> timer16@00
+    5 -> timer2@00
+    6 -> timer2@03
+    7 -> timer2@02
+    8 -> timer2@01
+    9 -> timer3@01
+    10 -> timer3@00
+    11 -> timer1@00
+    12 -> timer1@01
+
+gpioPortB:
+    0 -> timer1@02
+    1 -> timer1@01
+    2 -> timer1@00
+    3 -> timer1@03 | timer17@00
+    4 -> timer1@02 | timer17@00
+    5 -> timer3@00
+    6 -> timer2@00
+    7 -> timer1@03
+    8 -> timer1@00 | timer16@00
+    9 -> timer1@02 | timer3@03 | timer16@00
+    12 -> timer2@00
+    13 -> timer3@03
+    14 -> timer3@02
+
 sysbus:
     init:
         Tag <0xE0001004, 0xE0001008> "DWT_CYCCNT" 100

@@ -225,6 +225,63 @@ timer5:
     2 -> gpioPortB#02@02 | gpioPortF#08@02
     3 -> gpioPortB#03@02 | gpioPortF#09@02
 
+gpioPortA:
+    0 -> timer2@00
+    1 -> timer2@01
+    2 -> timer2@02
+    3 -> timer2@03
+    5 -> timer2@00
+    6 -> timer3@00
+    7 -> timer1@00 | timer3@01
+    8 -> timer1@00
+    9 -> timer1@01
+    10 -> timer1@02
+    11 -> timer1@03
+    15 -> timer2@00
+
+gpioPortB:
+    0 -> timer1@01 | timer3@02 | timer5@00
+    1 -> timer1@02 | timer3@03 | timer5@01
+    2 -> timer5@02
+    3 -> timer2@01 | timer5@03
+    4 -> timer3@00
+    5 -> timer3@01
+    6 -> timer4@00
+    7 -> timer4@01
+    8 -> timer4@02
+    9 -> timer4@03
+    10 -> timer2@02
+    11 -> timer2@03
+    12 -> timer4@00
+    13 -> timer1@00 | timer4@01
+    14 -> timer1@01 | timer4@02
+    15 -> timer1@02 | timer4@03
+
+gpioPortC:
+    6 -> timer3@00
+    7 -> timer3@01
+    8 -> timer3@02
+    9 -> timer3@03
+
+gpioPortE:
+    3 -> timer3@00
+    4 -> timer3@01
+    5 -> timer3@02
+    6 -> timer3@03
+    8 -> timer1@00
+    9 -> timer1@00
+    10 -> timer1@01
+    11 -> timer1@01
+    12 -> timer1@02
+    13 -> timer1@02
+    14 -> timer1@03
+
+gpioPortF:
+    6 -> timer5@00
+    7 -> timer5@01
+    8 -> timer5@02
+    9 -> timer5@03
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L552.svd

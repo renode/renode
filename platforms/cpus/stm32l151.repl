@@ -177,6 +177,64 @@ timer10:
 timer11:
     0 -> gpioPortA#07@03 | gpioPortB#09@03 | gpioPortB#15@03 | gpioPortE#01@03
 
+gpioPortA:
+    0 -> timer2@00 | timer5@00
+    1 -> timer2@01 | timer5@01
+    2 -> timer2@02 | timer5@02 | timer9@00
+    3 -> timer2@03 | timer5@03 | timer9@01
+    5 -> timer2@00
+    6 -> timer3@00 | timer10@00
+    7 -> timer3@01 | timer11@00
+    15 -> timer2@00
+
+gpioPortB:
+    0 -> timer3@02
+    1 -> timer3@03
+    3 -> timer2@01
+    4 -> timer3@00
+    5 -> timer3@01
+    6 -> timer4@00
+    7 -> timer4@01
+    8 -> timer4@02 | timer10@00
+    9 -> timer4@03 | timer11@00
+    10 -> timer2@02
+    11 -> timer2@03
+    12 -> timer10@00
+    13 -> timer9@00
+    14 -> timer9@01
+    15 -> timer11@00
+
+gpioPortC:
+    6 -> timer3@00
+    7 -> timer3@01
+    8 -> timer3@02
+    9 -> timer3@03
+
+gpioPortD:
+    0 -> timer9@00
+    7 -> timer9@01
+    12 -> timer4@00
+    13 -> timer4@01
+    14 -> timer4@02
+    15 -> timer4@03
+
+gpioPortE:
+    0 -> timer10@00
+    1 -> timer11@00
+    3 -> timer3@00
+    4 -> timer3@01
+    5 -> timer9@00
+    6 -> timer9@01
+    9 -> timer2@00
+    10 -> timer2@01
+    11 -> timer2@02
+    12 -> timer2@03
+
+gpioPortF:
+    7 -> timer5@01
+    8 -> timer5@02
+    9 -> timer5@03
+
 sysbus:
     init:
         ApplySVD @https://dl.antmicro.com/projects/renode/svd/STM32L1xx.svd.gz

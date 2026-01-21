@@ -239,6 +239,37 @@ timer16:
 timer17:
     0 -> gpioPortA#07@5 | gpioPortB#07@2 | gpioPortB#09@2
 
+gpioPortA:
+    1 -> timer15@00
+    2 -> timer15@00
+    3 -> timer15@01
+    4 -> timer14@00
+    6 -> timer3@00 | timer16@00
+    7 -> timer1@00 | timer3@01 | timer14@00 | timer17@00
+    8 -> timer1@00
+    9 -> timer1@01
+    10 -> timer1@02
+    11 -> timer1@03
+
+gpioPortB:
+    0 -> timer1@01 | timer3@02
+    1 -> timer1@02 | timer3@03 | timer14@00
+    4 -> timer3@00
+    5 -> timer3@01
+    6 -> timer16@00
+    7 -> timer17@00
+    8 -> timer16@00
+    9 -> timer17@00
+    13 -> timer1@00
+    14 -> timer1@01 | timer15@00
+    15 -> timer1@02 | timer15@00 | timer15@01
+
+gpioPortC:
+    6 -> timer3@00
+    7 -> timer3@01
+    8 -> timer3@02
+    9 -> timer3@03
+
 sysbus:
     init:
         Tag <0x40002C00, 0x40002FFF> "WWDG"

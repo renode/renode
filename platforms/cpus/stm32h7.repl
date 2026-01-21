@@ -452,6 +452,92 @@ timer16:
 timer17:
     0 -> gpioPortB#07@01 | gpioPortB#09@01 | gpioPortF#07@01 | gpioPortF#09@01
 
+gpioPortA:
+    0 -> timer2@00 | timer5@00
+    1 -> timer2@01 | timer5@01 | timer15@00
+    2 -> timer2@02 | timer5@02 | timer15@00
+    3 -> timer2@03 | timer5@03 | timer15@01
+    5 -> timer2@00 | timer8@00
+    6 -> timer3@00 | timer13@00
+    7 -> timer1@00 | timer3@01 | timer8@00 | timer14@00
+    8 -> timer1@00
+    9 -> timer1@01
+    10 -> timer1@02
+    11 -> timer1@03
+    15 -> timer2@00
+
+gpioPortB:
+    0 -> timer1@01 | timer3@02 | timer8@01
+    1 -> timer1@02 | timer3@03 | timer8@02
+    3 -> timer2@01
+    4 -> timer3@00
+    5 -> timer3@01
+    6 -> timer4@00 | timer16@00
+    7 -> timer4@01 | timer17@00
+    8 -> timer4@02 | timer16@00
+    9 -> timer4@03 | timer17@00
+    10 -> timer2@02
+    11 -> timer2@03
+    13 -> timer1@00
+    14 -> timer1@01 | timer8@01 | timer12@00
+    15 -> timer1@02 | timer8@02 | timer12@01
+
+gpioPortC:
+    6 -> timer3@00 | timer8@00
+    7 -> timer3@01 | timer8@01
+    8 -> timer3@02 | timer8@02
+    9 -> timer3@03 | timer8@03
+
+gpioPortD:
+    12 -> timer4@00
+    13 -> timer4@01
+    14 -> timer4@02
+    15 -> timer4@03
+
+gpioPortE:
+    4 -> timer15@00
+    5 -> timer15@00
+    6 -> timer15@01
+    8 -> timer1@00
+    9 -> timer1@00
+    10 -> timer1@01
+    11 -> timer1@01
+    12 -> timer1@02
+    13 -> timer1@02
+    14 -> timer1@03
+
+gpioPortF:
+    6 -> timer16@00
+    7 -> timer17@00
+    8 -> timer13@00 | timer16@00
+    9 -> timer14@00 | timer17@00
+
+gpioPortH:
+    6 -> timer12@00
+    9 -> timer12@01
+    10 -> timer5@00
+    11 -> timer5@01
+    12 -> timer5@02
+
+gpioPortI:
+    0 -> timer5@03
+    2 -> timer8@03
+    5 -> timer8@00
+    6 -> timer8@01
+    7 -> timer8@02
+
+gpioPortJ:
+    6 -> timer8@01
+    7 -> timer8@01
+    8 -> timer1@02 | timer8@00
+    9 -> timer1@02 | timer8@00
+    10 -> timer1@01 | timer8@01
+    11 -> timer1@01 | timer8@01
+
+gpioPortK:
+    0 -> timer1@00 | timer8@02
+    1 -> timer1@00 | timer8@02
+
 sdmmc: SD.STM32HSDMMC @ sysbus 0x52007000
     IRQ -> nvic@49
 

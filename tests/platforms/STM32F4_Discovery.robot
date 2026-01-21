@@ -8,7 +8,58 @@ ${RTC_32KHZ}=  SEPARATOR=
 ...  ${SPACE*4}wakeupTimerFrequency: 32000    ${\n}
 ...  """
 
+*** Keywords ***
+Should Be Equal Within Range
+    [Arguments]              ${value0}  ${value1}  ${range}
+    ${diff}=                 Evaluate  abs(${value0} - ${value1})
+    Should Be True           ${diff} <= ${range}
+
+PWM Capture
+    [Arguments]                      ${bin}
+
+    Execute Command                  mach create
+    Execute Command                  machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command                  sysbus LoadELF ${bin}
+    Execute Command                  showAnalyzer sysbus.usart2
+    Create Terminal Tester           sysbus.usart2
+    Execute Command                  machine LoadPlatformDescriptionFromString "gpioPortA: { 6 -> gpioPortD@12 }"
+
+    Start Emulation
+
+    # ignore first matched line
+    Wait For Line On Uart            .*freq=(\\w+) .*             treatAsRegex=true
+    ${line}=  Wait For Line On Uart  .*freq=(\\w+) .*duty=(\\w+)  treatAsRegex=true
+    ${freq}=  Set Variable           ${line.Groups[0]}
+    ${duty}=  Set Variable           ${line.Groups[1]}
+    Should Be Equal Within Range     1000  ${freq}  25
+    Should Be Equal Within Range     33    ${duty}  1
+
 *** Test Cases ***
+PWM Capture
+    PWM Capture  @https://dl.antmicro.com/projects/renode/stm32f4disco-pwm-capture.elf-s_575008-5743073970bd27bb63e78a9a3990ed0b9e8db373
+
+PWM Capture Four Channel Capture Support
+    PWM Capture  @https://dl.antmicro.com/projects/renode/stm32f4disco-pwm-capture-four-channel-capture-support.elf-s_575008-af21ada0861c0be7406f52dbe4280d413b96fbd4
+
+Quadrature Decoder
+    Execute Command                  mach create
+    Execute Command                  machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command                  sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-qdec.elf-s_728468-c521785d34d4e4afd660947f14dd6123972a7ff8
+    Execute Command                  showAnalyzer sysbus.usart2
+    Create Terminal Tester           sysbus.usart2
+    Execute Command                  machine LoadPlatformDescriptionFromString "gpioPortD: { 12 -> gpioPortA@6 }"
+    Execute Command                  machine LoadPlatformDescriptionFromString "gpioPortD: { 13 -> gpioPortA@7 }"
+
+    Start Emulation
+
+    ${line}=  Wait For Line On Uart  Position = (\\w+) degrees    treatAsRegex=true
+    ${degrees}=  Set Variable        ${line.Groups[0]}
+    Should Be Equal Within Range     10  ${degrees}  1
+
+    ${line}=  Wait For Line On Uart  Position = (\\w+) degrees    treatAsRegex=true
+    ${degrees}=  Set Variable        ${line.Groups[0]}
+    Should Be Equal Within Range     20  ${degrees}  1
+
 Run Zephyr Hello World
     Execute Command           set bin @https://dl.antmicro.com/projects/renode/stm32f4_discovery--zephyr-hello_world.elf-s_515008-2180a4018e82fcbc8821ef4330c9b5f3caf2dcdb
     Execute Command           include @scripts/single-node/stm32f4_discovery.resc
