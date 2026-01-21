@@ -23,8 +23,10 @@ def register_bootrom_hook(addr, func):
     self["sysbus.cpu"].AddHook(addr, func)
     # Fill the bootrom's function pointer entry with the address that the hook is registered to.
     # For simplicity hooks are added on function pointer locations, no the actual function addresses.
-    self.SystemBus.WriteDoubleWord(addr, addr)
-    self.InfoLog("Registering bootrom function at 0x{0:X}", addr)
+    # The hook address is odd for Thumb mode on ARM_V7.
+    hook_addr = addr | 1
+    self.SystemBus.WriteDoubleWord(addr, hook_addr)
+    self.InfoLog("Registering bootrom function at 0x{0:X}", hook_addr)
 
 
 # Based on: https://chromium.googlesource.com/chromiumos/platform/ec/+/6898a6542ed0238cc182948f56e3811534db1a38/chip/npcx/header.c#43
