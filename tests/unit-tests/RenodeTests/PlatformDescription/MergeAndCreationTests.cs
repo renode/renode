@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -923,15 +923,15 @@ cpu_rv: CPU.RiscV32 @ sysbus
             var source = @"
 peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus <0, 1>
     init:
-        Increment
+        Increment 1
 
 peri:
     init:
-        Increment
-        Increment";
+        Increment 2
+        Increment 3";
 
             ProcessSource(source);
-            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -940,16 +940,16 @@ peri:
             var source = @"
 peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
     init:
-        Increment
+        Increment 1
 
 peri:
     init add:
-        Increment
-        Increment";
+        Increment 2
+        Increment 3";
 
 
             ProcessSource(source);
-            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment", "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment 1", "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -992,15 +992,15 @@ peri:
             var source = @"
 peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus <0, 1>
     reset:
-        Increment
+        Increment 1
 
 peri:
     reset:
-        Increment
-        Increment";
+        Increment 2
+        Increment 3";
 
             ProcessSource(source);
-            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
@@ -1009,16 +1009,16 @@ peri:
             var source = @"
 peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
     reset:
-        Increment
+        Increment 1
 
 peri:
     reset add:
-        Increment
-        Increment";
+        Increment 2
+        Increment 3";
 
 
             ProcessSource(source);
-            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment", "Increment", "Increment" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment 1", "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));
         }
 
         [Test]
