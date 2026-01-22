@@ -14,6 +14,14 @@ ${UNSAFE_PLATFORM}=     SEPARATOR=
 ...  simple: UnsafePeripheral @ sysbus 0x0                      ${\n}
 ...  """
 
+# SimplePeripheral2 to avoid assembly reuse because all test cases run in the same Renode instance.
+# See the comment above `Should Compile Multiple Files Referencing Each Other` for more details.
+${SIMPLE_PLATFORM_WITH_PREINIT}=     SEPARATOR=
+...  """                                                        ${\n}
+...  simple: SimplePeripheral2 @ sysbus 0x0                     ${\n}
+...  ${SPACE*4}preinit:                                         ${\n}
+...  ${SPACE*8}include '${CURDIR}/SimplePeripheral2.cs'         ${\n}
+...  """
 
 *** Keywords ***
 Use Peripheral
@@ -64,6 +72,12 @@ Should Compile Unsafe Peripheral
 
         Execute Command          mach create
         Execute Command          machine LoadPlatformDescriptionFromString ${UNSAFE_PLATFORM}
+
+        Use Peripheral
+
+Should Compile Simple Peripheral Through Preinit
+        Execute Command          mach create
+        Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM_WITH_PREINIT}
 
         Use Peripheral
 
