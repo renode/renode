@@ -920,6 +920,110 @@ cpu_rv: CPU.RiscV32 @ sysbus
         }
 
         [Test]
+        public void ShouldUpdateSysbusPreinit()
+        {
+            var source = @"
+sysbus:
+    preinit:
+        echo 'a'";
+
+            ProcessSource(source);
+            scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "echo 'a'" }, It.IsAny<Action<string>>()));
+        }
+
+        [Test]
+        public void ShouldFailOnNotValidatedPreinit()
+        {
+            var a = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
+    preinit:
+        echo 'a'
+        echo 'b'";
+
+            var source = @"
+using ""A""
+
+peri:
+    preinit:
+        echo 'c'";
+
+            var errorMessage = "Invalid preinit section";
+            scriptHandlerMock.Setup(x => x.ValidateIsEntry(It.IsAny<IScriptable>(), It.IsAny<string>(), out errorMessage)).Returns(false);
+            var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
+            Assert.AreEqual(ParsingError.PreinitSectionValidationError, exception.Error);
+        }
+
+        [Test]
+        public void ShouldReplacePreinit()
+        {
+            var source = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral @ sysbus <0, 1>
+    preinit:
+        echo 'test 1'
+
+peri:
+    preinit:
+        echo 'test 2'
+        echo 'test 3'";
+
+            ProcessSource(source);
+            scriptHandlerMock.Verify(x => x.Execute(null, new[] { "echo 'test 2'", "echo 'test 3'" }, It.IsAny<Action<string>>()));
+        }
+
+        [Test]
+        public void ShouldAddPreinit()
+        {
+            var source = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
+    preinit:
+        echo 'test 1'
+
+peri:
+    preinit add:
+        echo 'test 2'
+        echo 'test 3'";
+
+
+            ProcessSource(source);
+            scriptHandlerMock.Verify(x => x.Execute(null, new[] { "echo 'test 1'", "echo 'test 2'", "echo 'test 3'" }, It.IsAny<Action<string>>()));
+        }
+
+        [Test]
+        [Property(nameof(MockBehavior), nameof(MockBehavior.Strict))]
+        public void ShouldRespectPreinitOrder()
+        {
+            var source = @"
+peri: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
+    preinit:
+        echo '3 peri preinit'
+
+sysbus:
+    preinit:
+        echo '1 sysbus preinit'
+
+peri2: Antmicro.Renode.UnitTests.Mocks.EmptyPeripheral
+    preinit:
+        echo '5 peri2 preinit'
+
+peri:
+    preinit add:
+        echo '4 peri preinit add'
+
+sysbus:
+    preinit add:
+        echo '2 sysbus preinit add'";
+
+            scriptHandlerMock.Setup(x => x.PushDirectory(null)).Returns((IDisposable)null);
+
+            var seq = new MockSequence();
+            scriptHandlerMock.InSequence(seq).Setup(x => x.Execute(null, new[] { "echo '1 sysbus preinit'", "echo '2 sysbus preinit add'" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.InSequence(seq).Setup(x => x.Execute(null, new[] { "echo '3 peri preinit'", "echo '4 peri preinit add'" }, It.IsAny<Action<string>>()));
+            scriptHandlerMock.InSequence(seq).Setup(x => x.Execute(null, new[] { "echo '5 peri2 preinit'" }, It.IsAny<Action<string>>()));
+
+            ProcessSource(source);
+        }
+
+        [Test]
         public void ShouldReplaceInit()
         {
             var source = @"
@@ -1378,7 +1482,10 @@ mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
         {
             machine = new Machine();
             EmulationManager.Instance.CurrentEmulation.AddMachine(machine, "machine");
-            scriptHandlerMock = new Mock<IScriptHandler>();
+
+            var behaviorName = (string)TestContext.CurrentContext.Test.Properties.Get(nameof(MockBehavior));
+            var mockBehavior = behaviorName != null ? (MockBehavior)Enum.Parse(typeof(MockBehavior), behaviorName) : MockBehavior.Default;
+            scriptHandlerMock = new Mock<IScriptHandler>(mockBehavior);
             string nullMessage = null;
             scriptHandlerMock.Setup(x => x.ValidateIsEntry(It.IsAny<IScriptable>(), It.IsAny<string>(), out nullMessage)).Returns(true);
         }
