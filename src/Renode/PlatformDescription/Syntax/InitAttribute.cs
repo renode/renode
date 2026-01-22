@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -25,7 +25,7 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             if(other.IsAdd)
             {
                 // the result is a modified init attribute, which has the same position information as the original init attribute
-                // this can be a problem if validation depends on specific stamements of init, not on the existence of init per se
+                // this can be a problem if validation depends on specific statements of init, not on the existence of init per se
                 // in such case an init statement should be changed to be a separate grammar unit which is .Positioned
                 Lines = Lines.Concat(other.Lines);
                 return this;
