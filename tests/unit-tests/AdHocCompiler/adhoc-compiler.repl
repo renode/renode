@@ -1,0 +1,5 @@
+using "./nested/nested.repl"
+
+simple: SimplePeripheral3 @ sysbus 0x0
+    preinit:
+        include @SimplePeripheral3.cs

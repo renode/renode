@@ -39,6 +39,10 @@ Use Peripheral
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x8
         Should Be Equal As Numbers   ${r}  5
 
+Use Nested Peripheral
+        ${r}=  Execute Command   sysbus ReadDoubleWord 0x10c
+        Should Be Equal As Numbers   ${r}  1
+
 *** Test Cases ***
 Should Compile Simple Peripheral
         Execute Command          include "${CURDIR}/SimplePeripheral.cs"
@@ -80,6 +84,12 @@ Should Compile Simple Peripheral Through Preinit
         Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM_WITH_PREINIT}
 
         Use Peripheral
+
+Should Compile Simple Peripherals Through Preinit In Repl File With Relative Path Lookup
+        Execute Command         include "${CURDIR}/adhoc-compiler.repl"
+
+        Use Peripheral
+        Use Nested Peripheral
 
 EnsureTypeIsLoaded Should Throw Type Not Found
         ${TEST_TYPE}             SetVariable    Antmicro.NotExistingType
