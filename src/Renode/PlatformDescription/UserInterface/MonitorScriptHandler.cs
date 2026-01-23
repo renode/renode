@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -26,6 +26,17 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
 
         public void Execute(IScriptable scriptable, IEnumerable<string> statements, Action<string> errorHandler)
         {
+            if(scriptable == null)
+            {
+                // This is something global, like a preinit section (which does not apply to a peripheral,
+                // as it hasn't yet been created). Just run it as monitor commands without any prefix.
+                foreach(var monitorCommand in statements)
+                {
+                    monitor.Parse(monitorCommand);
+                }
+                return;
+            }
+
             var entry = scriptable as Entry;
             string name;
             if(entry.Variable.Value is Machine)
@@ -72,12 +83,12 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
             monitor.SetPeripheralMacro(receiver, "reset", macroContent.ToString(), machine);
         }
 
-        public bool ValidateInit(IScriptable scriptable, out string message)
+        public bool ValidateIsEntry(IScriptable scriptable, string sectionName, out string message)
         {
             var entry = scriptable as Entry;
             if(entry == null)
             {
-                message = "The init section is only allowed for entries.";
+                message = $"The {sectionName} section is only allowed for entries.";
                 return false;
             }
             message = null;

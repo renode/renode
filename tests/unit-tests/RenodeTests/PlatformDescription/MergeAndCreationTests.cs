@@ -983,7 +983,7 @@ peri:
         Increment";
 
             var errorMessage = "Invalid init section";
-            scriptHandlerMock.Setup(x => x.ValidateInit(It.IsAny<IScriptable>(), out errorMessage)).Returns(false);
+            scriptHandlerMock.Setup(x => x.ValidateIsEntry(It.IsAny<IScriptable>(), It.IsAny<string>(), out errorMessage)).Returns(false);
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source, a));
             Assert.AreEqual(ParsingError.InitSectionValidationError, exception.Error);
         }
@@ -1380,7 +1380,7 @@ mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
             EmulationManager.Instance.CurrentEmulation.AddMachine(machine, "machine");
             scriptHandlerMock = new Mock<IScriptHandler>();
             string nullMessage = null;
-            scriptHandlerMock.Setup(x => x.ValidateInit(It.IsAny<IScriptable>(), out nullMessage)).Returns(true);
+            scriptHandlerMock.Setup(x => x.ValidateIsEntry(It.IsAny<IScriptable>(), It.IsAny<string>(), out nullMessage)).Returns(true);
         }
 
         [TearDown]

@@ -111,6 +111,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<string> AsKeyword = MakeKeyword("as");
 
+        public static readonly Parser<string> PreinitKeyword = MakeKeyword("preinit");
+
         public static readonly Parser<string> InitKeyword = MakeKeyword("init");
 
         public static readonly Parser<string> ResetKeyword = MakeKeyword("reset");
@@ -263,6 +265,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from closingBrace in ClosingBrace.Named("init statement list end")
              select new[] { firstLine }.Concat(rest));
 
+        public static readonly Parser<PreinitAttribute> PreinitAttribute =
+            (from preinitKeyword in PreinitKeyword
+             from addSuffix in Identifier.Where(x => x == "add").Optional()
+             from colon in Colon
+             from preinitValue in MonitorStatements("preinit")
+             select new PreinitAttribute(preinitValue, !addSuffix.IsEmpty)).Named("preinit section");
+
         public static readonly Parser<InitAttribute> InitAttribute =
             (from initKeyword in InitKeyword
              from addSuffix in Identifier.Where(x => x == "add").Optional()
@@ -382,7 +391,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
              from noneKeyword in NoneKeyword
              select new IrqAttribute(source.GetOrDefault(), new[] { new IrqDestinations(null, null) }));
 
-        public static readonly Parser<Attribute> Attribute = InitAttribute
+        public static readonly Parser<Attribute> Attribute = PreinitAttribute
+            .Or<Attribute>(InitAttribute)
             .Or<Attribute>(ResetAttribute)
             .Or<Attribute>(ConstructorOrPropertyAttribute)
             .Or(NoneIrqAttribute)

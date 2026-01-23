@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -58,5 +58,7 @@ namespace Antmicro.Renode.PlatformDescription
         ResetSectionRegistrationError = 47,
         MoreThanOneResetAttribute = 48,
         AbstractType = 49,
+        MoreThanOnePreinitAttribute = 50,
+        PreinitSectionValidationError = 51,
     }
 }

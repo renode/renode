@@ -21,7 +21,7 @@ namespace Antmicro.Renode.PlatformDescription
         {
         }
 
-        public bool ValidateInit(IScriptable scriptable, out string message)
+        public bool ValidateIsEntry(IScriptable scriptable, string sectionName, out string message)
         {
             message = null;
             return true;

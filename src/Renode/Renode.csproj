@@ -91,6 +91,7 @@
     <Compile Include="PlatformDescription\Syntax\ListValue.cs" />
     <Compile Include="PlatformDescription\Syntax\NumericalValue.cs" />
     <Compile Include="PlatformDescription\Syntax\ObjectValue.cs" />
+    <Compile Include="PlatformDescription\Syntax\PreinitAttribute.cs" />
     <Compile Include="PlatformDescription\Syntax\RangeValue.cs" />
     <Compile Include="PlatformDescription\Syntax\ReferenceValue.cs" />
     <Compile Include="PlatformDescription\Syntax\RegistrationInfo.cs" />

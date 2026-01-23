@@ -192,6 +192,15 @@ namespace Antmicro.Renode.PlatformDescription
                 var mergedEntries = variableStore.GetMergedEntries().ToList();
                 foreach(var entry in mergedEntries)
                 {
+                    // First, run the preinit for each entry
+                    var preinitAttribute = entry.Attributes.OfType<PreinitAttribute>().SingleOrDefault();
+                    if(preinitAttribute != null)
+                    {
+                        scriptHandler.Execute(null, preinitAttribute.Lines, x =>
+                            HandleError(ParsingError.PreinitSectionValidationError, preinitAttribute, x, false));
+                    }
+
+                    // The preinit may have compiled the peripheral it is under, so only attempt to resolve the type now
                     if(entry.Variable.VariableType == null && entry.Variable.TypeName != null)
                     {
                         entry.Variable.VariableType = ResolveTypeOrThrow(entry.Variable.TypeName, entry);
@@ -272,14 +281,14 @@ namespace Antmicro.Renode.PlatformDescription
                 {
                     var objectValue = objectValueInitQueue.Dequeue();
                     scriptHandler.Execute(objectValue, objectValue.Attributes.OfType<InitAttribute>().Single().Lines,
-                                        x => HandleInitSectionError(x, objectValue));
+                                        x => HandleSectionError<InitAttribute>(ParsingError.InitSectionValidationError, x, objectValue));
                 }
                 foreach(var entry in sortedForRegistration)
                 {
                     var initAttribute = entry.Attributes.OfType<InitAttribute>().SingleOrDefault();
                     if(initAttribute != null)
                     {
-                        scriptHandler.Execute(entry, initAttribute.Lines, x => HandleInitSectionError(x, entry));
+                        scriptHandler.Execute(entry, initAttribute.Lines, x => HandleSectionError<InitAttribute>(ParsingError.InitSectionValidationError, x, entry));
                     }
 
                     var resetAttribute = entry.Attributes.OfType<ResetAttribute>().SingleOrDefault();
@@ -490,6 +499,7 @@ namespace Antmicro.Renode.PlatformDescription
 
             var ctorOrPropertyAttributes = entry.Attributes.OfType<ConstructorOrPropertyAttribute>();
             CheckRepeatedCtorAttributes(ctorOrPropertyAttributes);
+            CheckRepeatedAttributes<PreinitAttribute>(entry.Attributes, ParsingError.MoreThanOnePreinitAttribute);
             CheckRepeatedAttributes<InitAttribute>(entry.Attributes, ParsingError.MoreThanOneInitAttribute);
             CheckRepeatedAttributes<ResetAttribute>(entry.Attributes, ParsingError.MoreThanOneResetAttribute);
         }
@@ -541,9 +551,13 @@ namespace Antmicro.Renode.PlatformDescription
                 objectValue.Constructor = FindConstructor(objectValue.ObjectValueType,
                                                           objectValue.Attributes.OfType<ConstructorOrPropertyAttribute>().Where(x => !x.IsPropertyAttribute), objectValue);
             });
+            if(entry.Attributes.Any(x => x is PreinitAttribute))
+            {
+                ValidateSection<PreinitAttribute>(entry, ParsingError.PreinitSectionValidationError);
+            }
             if(entry.Attributes.Any(x => x is InitAttribute))
             {
-                ValidateInitSection(entry);
+                ValidateSection<InitAttribute>(entry, ParsingError.InitSectionValidationError);
             }
 
             var entryType = variableStore.GetVariableInLocalScope(entry.VariableName).VariableType;
@@ -651,18 +665,19 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private void ValidateInitSection(IScriptable scriptable)
+        private void ValidateSection<T>(IScriptable scriptable, ParsingError error) where T : Syntax.Attribute
         {
+            var sectionName = nameof(T).Replace("Attribute", "").ToLower();
             string errorMessage;
-            if(!scriptHandler.ValidateInit(scriptable, out errorMessage))
+            if(!scriptHandler.ValidateIsEntry(scriptable, sectionName, out errorMessage))
             {
-                HandleInitSectionError(errorMessage, scriptable);
+                HandleSectionError<T>(error, errorMessage, scriptable);
             }
         }
 
-        private void HandleInitSectionError(string message, IScriptable scriptable)
+        private void HandleSectionError<T>(ParsingError error, string message, IScriptable scriptable) where T : Syntax.Attribute
         {
-            HandleError(ParsingError.InitSectionValidationError, scriptable.Attributes.Single(x => x is InitAttribute), message, false);
+            HandleError(error, scriptable.Attributes.Single(x => x is T), message, false);
         }
 
         private void CreateFromEntry(Entry entry)
@@ -1339,9 +1354,13 @@ namespace Antmicro.Renode.PlatformDescription
             {
                 ValidateAttributePostMerge(objectValueType, attribute);
             }
+            if(value.Attributes.Any(x => x is PreinitAttribute))
+            {
+                ValidateSection<PreinitAttribute>(value, ParsingError.PreinitSectionValidationError);
+            }
             if(value.Attributes.Any(x => x is InitAttribute))
             {
-                ValidateInitSection(value);
+                ValidateSection<InitAttribute>(value, ParsingError.InitSectionValidationError);
             }
             return result;
         }

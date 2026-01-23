@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -79,6 +79,17 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
                 // add all interrupts from both entries for validation and flattening later
                 mergedAttributes.AddRange(Attributes.OfType<IrqAttribute>());
                 mergedAttributes.AddRange(entry.Attributes.OfType<IrqAttribute>());
+
+                var ourPreinit = Attributes.OfType<PreinitAttribute>().SingleOrDefault();
+                var theirPreinit = entry.Attributes.OfType<PreinitAttribute>().SingleOrDefault();
+                if(ourPreinit == null ^ theirPreinit == null)
+                {
+                    mergedAttributes.Add(ourPreinit ?? theirPreinit);
+                }
+                else if(ourPreinit != null)
+                {
+                    mergedAttributes.Add(ourPreinit.Merge(theirPreinit));
+                }
 
                 var ourInit = Attributes.OfType<InitAttribute>().SingleOrDefault();
                 var theirInit = entry.Attributes.OfType<InitAttribute>().SingleOrDefault();
