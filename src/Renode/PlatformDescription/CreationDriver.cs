@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -565,8 +565,8 @@ namespace Antmicro.Renode.PlatformDescription
 
             var ctorOrPropertyAttributes = entry.Attributes.OfType<ConstructorOrPropertyAttribute>();
             CheckRepeatedCtorAttributes(ctorOrPropertyAttributes);
-            CheckRepeatedInitAttributes(entry.Attributes.OfType<InitAttribute>());
-            CheckRepeatedResetAttributes(entry.Attributes.OfType<ResetAttribute>());
+            CheckRepeatedAttributes<InitAttribute>(entry.Attributes, ParsingError.MoreThanOneInitAttribute);
+            CheckRepeatedAttributes<ResetAttribute>(entry.Attributes, ParsingError.MoreThanOneResetAttribute);
 
             foreach(var attribute in entry.Attributes)
             {
@@ -1359,21 +1359,12 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private void CheckRepeatedInitAttributes(IEnumerable<InitAttribute> attributes)
+        private void CheckRepeatedAttributes<T>(IEnumerable<Syntax.Attribute> attributes, ParsingError error) where T : Syntax.Attribute
         {
-            var secondInitAttribute = attributes.Skip(1).FirstOrDefault();
-            if(secondInitAttribute != null)
+            var secondAttribute = attributes.OfType<T>().Skip(1).FirstOrDefault();
+            if(secondAttribute != null)
             {
-                HandleError(ParsingError.MoreThanOneInitAttribute, secondInitAttribute, "Entry can contain only one init attribute.", false);
-            }
-        }
-
-        private void CheckRepeatedResetAttributes(IEnumerable<ResetAttribute> attributes)
-        {
-            var secondResetAttribute = attributes.Skip(1).FirstOrDefault();
-            if(secondResetAttribute != null)
-            {
-                HandleError(ParsingError.MoreThanOneResetAttribute, secondResetAttribute, "Entry can contain only one reset attribute.", false);
+                HandleError(error, secondAttribute, $"Entry can contain only one {nameof(T).Replace("Attribute", "").ToLower()} attribute.", false);
             }
         }
 
