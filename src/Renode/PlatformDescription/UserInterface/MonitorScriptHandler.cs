@@ -84,6 +84,11 @@ namespace Antmicro.Renode.PlatformDescription.UserInterface
             return true;
         }
 
+        public IDisposable PushDirectory(string directory)
+        {
+            return monitor.PushDirectory(directory);
+        }
+
         private readonly Machine machine;
         private readonly Monitor monitor;
     }

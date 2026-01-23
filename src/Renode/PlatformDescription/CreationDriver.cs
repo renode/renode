@@ -65,8 +65,12 @@ namespace Antmicro.Renode.PlatformDescription
                 throw new RecoverableException(string.Format("Could not find file '{0}'.", path));
             }
             var source = File.ReadAllText(path);
-            usingsBeingProcessed.Push(Path.GetFullPath(path)); // don't need to pop since stack is cleared within ProcessInner
-            ProcessInner(path, source);
+            var fullPath = Path.GetFullPath(path);
+            usingsBeingProcessed.Push(fullPath); // don't need to pop since stack is cleared within ProcessInner
+            using(var enteredDirectory = scriptHandler.PushDirectory((Path.GetDirectoryName(fullPath))))
+            {
+                ProcessInner(path, source);
+            }
         }
 
         private static string GetTypeListing(Type[] typesToAssign)
