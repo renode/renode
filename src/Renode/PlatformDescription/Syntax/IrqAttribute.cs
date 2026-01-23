@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2010-2019 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -22,13 +22,13 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         {
             var copy = SerializationProvider.Instance.DeepClone(this);
             copy.Sources = new[] { source };
-            copy.Destinations = new[] { new IrqDestinations(destinationPeripheral, new[] { destination }) };
+            copy.Destinations = new[] { new IrqDestinations(destinationPeripheral, destination == null ? null : new[] { destination }) };
             return copy;
         }
 
         public void SetDefaultSource(string propertyName)
         {
-            Sources = new[] { new SingleOrMultiIrqEnd(new[] { new IrqEnd(propertyName, 0) }) };
+            Sources = new[] { new SingleOrMultiIrqEnd(new[] { new IrqEnd(propertyName, 0) }).SetPos(StartPosition, Length) };
         }
 
         public override string ToString()

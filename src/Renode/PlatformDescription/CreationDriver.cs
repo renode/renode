@@ -117,8 +117,7 @@ namespace Antmicro.Renode.PlatformDescription
                     var wasDeclared = variableStore.TryGetVariableInLocalScope(entry.VariableName, out var variable);
                     if(!wasDeclared)
                     {
-                        var resolved = ResolveTypeOrThrow(entry.Type, entry.Type);
-                        variable = variableStore.DeclareVariable(entry.VariableName, resolved, entry.StartPosition, entry.IsLocal);
+                        variable = variableStore.DeclareVariable(entry.VariableName, entry.Type, entry.StartPosition, entry.IsLocal);
                     }
                     else
                     {
@@ -190,9 +189,28 @@ namespace Antmicro.Renode.PlatformDescription
                 var usingsGraph = new UsingsGraph(this, file, source);
                 usingsGraph.TraverseDepthFirst(ProcessVariableDeclarations);
                 usingsGraph.TraverseDepthFirst(CollectVariableEntries);
-                var mergedEntries = variableStore.GetMergedEntries();
+                var mergedEntries = variableStore.GetMergedEntries().ToList();
                 foreach(var entry in mergedEntries)
                 {
+                    if(entry.Variable.VariableType == null && entry.Variable.TypeName != null)
+                    {
+                        entry.Variable.VariableType = ResolveTypeOrThrow(entry.Variable.TypeName, entry);
+                    }
+
+                    // Also resolve types for inline object values under this entry
+                    SyntaxTreeHelpers.VisitSyntaxTree<ObjectValue>(entry, objectValue =>
+                    {
+                        if(objectValue.ObjectValueType == null && objectValue.TypeName != null)
+                        {
+                            objectValue.ObjectValueType = ResolveTypeOrThrow(objectValue.TypeName, objectValue);
+                        }
+                    });
+                }
+
+                foreach(var entry in mergedEntries)
+                {
+                    // This verifies IRQ and other connections so it requires *all* entries' types to be resolved, not
+                    // just the entry currently being processed, hence the separate loop.
                     ProcessEntryPostMerge(entry);
                 }
 
@@ -451,7 +469,6 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void ProcessEntryPreMerge(Entry entry)
         {
-            var entryType = variableStore.GetVariableInLocalScope(entry.VariableName).VariableType;
             if(entry.Alias != null)
             {
                 if(entry.RegistrationInfos == null)
@@ -465,6 +482,81 @@ namespace Antmicro.Renode.PlatformDescription
                                 string.Format("Entry '{0}' has an alias '{1}', while having a none registration info.", entry.VariableName, entry.Alias.Value), true);
                 }
             }
+
+            if(entry.Attributes == null)
+            {
+                return;
+            }
+
+            var ctorOrPropertyAttributes = entry.Attributes.OfType<ConstructorOrPropertyAttribute>();
+            CheckRepeatedCtorAttributes(ctorOrPropertyAttributes);
+            CheckRepeatedAttributes<InitAttribute>(entry.Attributes, ParsingError.MoreThanOneInitAttribute);
+            CheckRepeatedAttributes<ResetAttribute>(entry.Attributes, ParsingError.MoreThanOneResetAttribute);
+        }
+
+        private bool FindMostDerived(List<Type> types)
+        {
+            while(types.Count > 1)
+            {
+                var type1 = types[types.Count - 2];
+                var type2 = types[types.Count - 1];
+                // note that if (*) and (**) are true, then type1 == type2
+                if(type1.IsAssignableFrom(type2)) // (*)
+                {
+                    types.Remove(type1);
+                }
+                else if(type2.IsAssignableFrom(type1)) // (**)
+                {
+                    types.Remove(type2);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void ProcessEntryPostMerge(Entry entry)
+        {
+            // we have to find a constructor for this entry - if it is to be constructed (e.g. sysbus entry is not)
+            // we also have to find constructors for all of the object values within this entry
+
+            if(entry.Type != null)
+            {
+                entry.Constructor = FindConstructor(entry.Variable.VariableType,
+                                                    entry.Attributes.OfType<ConstructorOrPropertyAttribute>().Where(x => !x.IsPropertyAttribute), entry.Type);
+            }
+            else
+            {
+                var constructorAttribute = entry.Attributes.OfType<ConstructorOrPropertyAttribute>().FirstOrDefault(x => !x.IsPropertyAttribute);
+                if(constructorAttribute != null)
+                {
+                    HandleError(ParsingError.CtorAttributesInNonCreatingEntry, constructorAttribute, "Constructor attribute within entry for variable that is not created.", false);
+                }
+            }
+
+            SyntaxTreeHelpers.VisitSyntaxTree<ObjectValue>(entry, objectValue =>
+            {
+                objectValue.Constructor = FindConstructor(objectValue.ObjectValueType,
+                                                          objectValue.Attributes.OfType<ConstructorOrPropertyAttribute>().Where(x => !x.IsPropertyAttribute), objectValue);
+            });
+            if(entry.Attributes.Any(x => x is InitAttribute))
+            {
+                ValidateInitSection(entry);
+            }
+
+            var entryType = variableStore.GetVariableInLocalScope(entry.VariableName).VariableType;
+            foreach(var attribute in entry.Attributes)
+            {
+                ValidateAttributePostMerge(entryType, attribute);
+            }
+
+            // checking overlapping irqs is here because ValidateAttributePreMerge will find sources for default irqs
+            // and this method assumes that such operation has already happened
+            CheckOverlappingIrqs(entry.Attributes.OfType<IrqAttribute>());
+            entry.FlattenIrqAttributes();
+
             if(entry.RegistrationInfos != null)
             {
                 foreach(var registrationInfo in entry.RegistrationInfos)
@@ -501,7 +593,7 @@ namespace Antmicro.Renode.PlatformDescription
                     var objectRegPoint = registrationPoint as ObjectValue;
                     if(referenceRegPoint != null)
                     {
-                        usefulRegistrationPointTypes.AddRange(ValidateReference(friendlyName, possibleTypes, referenceRegPoint));
+                        usefulRegistrationPointTypes.AddRange(ValidateReferenceType(friendlyName, possibleTypes, referenceRegPoint));
                     }
                     else if(objectRegPoint != null)
                     {
@@ -556,79 +648,6 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                     registrationInfo.RegistrationInterface = typeof(IRegisterablePeripheral<,>).MakeGenericType(new[] { usefulRegistreeTypes[0], usefulRegistrationPointTypes[0] });
                 }
-            }
-
-            if(entry.Attributes == null)
-            {
-                return;
-            }
-
-            var ctorOrPropertyAttributes = entry.Attributes.OfType<ConstructorOrPropertyAttribute>();
-            CheckRepeatedCtorAttributes(ctorOrPropertyAttributes);
-            CheckRepeatedAttributes<InitAttribute>(entry.Attributes, ParsingError.MoreThanOneInitAttribute);
-            CheckRepeatedAttributes<ResetAttribute>(entry.Attributes, ParsingError.MoreThanOneResetAttribute);
-
-            foreach(var attribute in entry.Attributes)
-            {
-                ValidateAttributePreMerge(entryType, attribute);
-            }
-            // checking overlapping irqs is here because ValidateAttributePreMerge will find sources for default irqs
-            // and this method assumes that such operation has already happened
-            CheckOverlappingIrqs(entry.Attributes.OfType<IrqAttribute>());
-
-            entry.FlattenIrqAttributes();
-        }
-
-        private bool FindMostDerived(List<Type> types)
-        {
-            while(types.Count > 1)
-            {
-                var type1 = types[types.Count - 2];
-                var type2 = types[types.Count - 1];
-                // note that if (*) and (**) are true, then type1 == type2
-                if(type1.IsAssignableFrom(type2)) // (*)
-                {
-                    types.Remove(type1);
-                }
-                else if(type2.IsAssignableFrom(type1)) // (**)
-                {
-                    types.Remove(type2);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private void ProcessEntryPostMerge(Entry entry)
-        {
-            // we have to find a constructor for this entry - if it is to be constructed (e.g. sysbus entry is not)
-            // we also have to find constructors for all of the object values within this entry
-
-            if(entry.Type != null)
-            {
-                entry.Constructor = FindConstructor(entry.Variable.VariableType,
-                                                    entry.Attributes.OfType<ConstructorOrPropertyAttribute>().Where(x => !x.IsPropertyAttribute), entry.Type);
-            }
-            else
-            {
-                var constructorAttribute = entry.Attributes.OfType<ConstructorOrPropertyAttribute>().FirstOrDefault(x => !x.IsPropertyAttribute);
-                if(constructorAttribute != null)
-                {
-                    HandleError(ParsingError.CtorAttributesInNonCreatingEntry, constructorAttribute, "Constructor attribute within entry for variable that is not created.", false);
-                }
-            }
-
-            SyntaxTreeHelpers.VisitSyntaxTree<ObjectValue>(entry, objectValue =>
-            {
-                objectValue.Constructor = FindConstructor(objectValue.ObjectValueType,
-                                                          objectValue.Attributes.OfType<ConstructorOrPropertyAttribute>().Where(x => !x.IsPropertyAttribute), objectValue);
-            });
-            if(entry.Attributes.Any(x => x is InitAttribute))
-            {
-                ValidateInitSection(entry);
             }
         }
 
@@ -1106,10 +1125,9 @@ namespace Antmicro.Renode.PlatformDescription
             return true;
         }
 
-        private void ValidateAttributePreMerge(Type objectType, Syntax.Attribute syntaxAttribute)
+        private void ValidateAttributePostMerge(Type objectType, Syntax.Attribute syntaxAttribute)
         {
             var ctorOrPropertyAttribute = syntaxAttribute as ConstructorOrPropertyAttribute;
-            // at this point we can only fully validate properties, because only after merge we will know which ctor to choose
             if(ctorOrPropertyAttribute != null)
             {
                 if(ctorOrPropertyAttribute.IsPropertyAttribute)
@@ -1129,13 +1147,11 @@ namespace Antmicro.Renode.PlatformDescription
                     return;
                 }
 
-                // for ctor attributes we only check object values and whether reference exists
                 var objectValue = ctorOrPropertyAttribute.Value as ObjectValue;
                 var referenceValue = ctorOrPropertyAttribute.Value as ReferenceValue;
                 if(referenceValue != null)
                 {
-                    // we only check whether this reference exists, its type cannot be checked at this point, therefore friendly name does not matter
-                    ValidateReference("", new[] { typeof(object) }, referenceValue);
+                    ValidateReference(referenceValue);
                 }
                 if(objectValue != null)
                 {
@@ -1272,7 +1288,7 @@ namespace Antmicro.Renode.PlatformDescription
             var objectValue = attribute.Value as ObjectValue;
             if(referenceValue != null)
             {
-                ValidateReference(propertyFriendlyName, new[] { propertyInfo.PropertyType }, referenceValue);
+                ValidateReferenceType(propertyFriendlyName, new[] { propertyInfo.PropertyType }, referenceValue);
             }
             else if(objectValue != null)
             {
@@ -1284,13 +1300,18 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private IEnumerable<Type> ValidateReference(string friendlyName, Type[] typesToAssign, ReferenceValue value)
+        private Variable ValidateReference(ReferenceValue value)
         {
-            Variable referenceVariable;
-            if(!variableStore.TryGetVariableFromReference(value, out referenceVariable))
+            if(!variableStore.TryGetVariableFromReference(value, out var referenceVariable))
             {
                 HandleError(ParsingError.MissingReference, value, string.Format("Undefined reference '{0}'.", value.Value), true);
             }
+            return referenceVariable;
+        }
+
+        private IEnumerable<Type> ValidateReferenceType(string friendlyName, Type[] typesToAssign, ReferenceValue value)
+        {
+            var referenceVariable = ValidateReference(value);
 
             var result = typesToAssign.Where(x => x.IsAssignableFrom(referenceVariable.VariableType));
             if(!result.Any())
@@ -1305,7 +1326,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         private IEnumerable<Type> ValidateObjectValue(string friendlyName, Type[] typesToAssign, ObjectValue value)
         {
-            var objectValueType = ResolveTypeOrThrow(value.TypeName, value);
+            var objectValueType = value.ObjectValueType ?? ResolveTypeOrThrow(value.TypeName, value);
             value.ObjectValueType = objectValueType;
             var result = typesToAssign.Where(x => x.IsAssignableFrom(objectValueType));
             if(!result.Any())
@@ -1316,7 +1337,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
             foreach(var attribute in value.Attributes)
             {
-                ValidateAttributePreMerge(objectValueType, attribute);
+                ValidateAttributePostMerge(objectValueType, attribute);
             }
             if(value.Attributes.Any(x => x is InitAttribute))
             {
@@ -1340,18 +1361,16 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void CheckOverlappingIrqs(IEnumerable<IrqAttribute> attributes)
         {
-            var sources = new HashSet<IrqEnd>();
-            foreach(var attribute in attributes)
+            foreach(var entry in attributes.GroupBy(x => x.OriginalEntry))
             {
-                foreach(var source in attribute.Sources)
+                var sources = new HashSet<IrqEnd>();
+                foreach(var source in entry.SelectMany(e => e.Sources))
                 {
                     foreach(var end in source.Ends)
                     {
                         if(!sources.Add(end))
                         {
-                            // source position information can only be obtained if this is not a default irq source
-                            // if it is - we use the whole attribute
-                            HandleError(ParsingError.IrqSourceUsedMoreThanOnce, source.StartPosition != null ? (IWithPosition)source : attribute,
+                            HandleError(ParsingError.IrqSourceUsedMoreThanOnce, source,
                                         string.Format("Interrupt '{0}' has already been used as a source in this entry.", end.ToShortString()), true);
                         }
                     }
@@ -1643,7 +1662,7 @@ namespace Antmicro.Renode.PlatformDescription
                     var referenceValue = correspondingAttribute.Value as ReferenceValue;
                     if(referenceValue != null)
                     {
-                        if(argument.ParameterType.IsAssignableFrom(variableStore.GetVariableFromReference(referenceValue).VariableType))
+                        if(argument.ParameterType.IsAssignableFrom(ValidateReference(referenceValue).VariableType))
                         {
                             constructorSelectionReport.Add(() => "    Parameter is assignable from the reference value.");
                             unusedAttributes.Remove(correspondingAttribute);

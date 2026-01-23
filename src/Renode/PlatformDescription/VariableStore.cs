@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -24,13 +24,15 @@ namespace Antmicro.Renode.PlatformDescription
 
         public void AddBuiltinOrAlreadyRegisteredVariable(string name, object value)
         {
-            var variable = new Variable(value.GetType(), DeclarationPlace.BuiltinOrAlreadyRegistered) { Value = value };
+            var type = value.GetType();
+            var typeName = new StringWithPosition(type.Name);
+            var variable = new Variable(typeName, DeclarationPlace.BuiltinOrAlreadyRegistered, type) { Value = value };
             globalVariables.Add(name, variable);
         }
 
-        public Variable DeclareVariable(string name, Type type, Position position, bool local = false)
+        public Variable DeclareVariable(string name, StringWithPosition typeName, Position position, bool local = false)
         {
-            var variable = new Variable(type, new DeclarationPlace(position, CurrentScope));
+            var variable = new Variable(typeName, new DeclarationPlace(position, CurrentScope));
             if(local)
             {
                 localVariables.Add(Tuple.Create(CurrentScope, name), variable);

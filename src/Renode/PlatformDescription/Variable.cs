@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -15,9 +15,10 @@ namespace Antmicro.Renode.PlatformDescription
 {
     public sealed class Variable
     {
-        public Variable(Type variableType, DeclarationPlace declarationPlace)
+        public Variable(StringWithPosition typeName, DeclarationPlace declarationPlace, Type variableType = null)
         {
             associatedEntries = new List<Entry>();
+            TypeName = typeName;
             VariableType = variableType;
             DeclarationPlace = declarationPlace;
         }
@@ -39,6 +40,8 @@ namespace Antmicro.Renode.PlatformDescription
             result.Variable = this;
             return result;
         }
+
+        public StringWithPosition TypeName { get; }
 
         public Type VariableType { get; set; }
 

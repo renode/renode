@@ -835,8 +835,10 @@ sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSenderWithTwoInterrupts @ sysbus
             Assert.IsTrue(machine.TryGetByName("sysbus.sender", out MockIrqSenderWithTwoInterrupts sender));
             Assert.IsTrue(machine.TryGetByName("sysbus.receiver", out MockReceiver receiver));
 
-            Assert.AreEqual(0, sender.Irq.Endpoints[0].Number);
-            Assert.AreEqual(1, sender.AnotherIrq.Endpoints[0].Number);
+            // Interrupt attributes are processed in reverse order, this is
+            // observable if automatic combined input generation is used.
+            Assert.AreEqual(1, sender.Irq.Endpoints[0].Number);
+            Assert.AreEqual(0, sender.AnotherIrq.Endpoints[0].Number);
             Assert.IsInstanceOf(typeof(CombinedInput), sender.Irq.Endpoints[0].Receiver);
             var combiner = (CombinedInput)sender.Irq.Endpoints[0].Receiver;
             Assert.AreEqual(0, combiner.OutputLine.Endpoints[0].Number);
