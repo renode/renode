@@ -46,6 +46,7 @@ namespace Antmicro.Renode.PlatformDescription
             usingsBeingProcessed = new Stack<string>();
             irqCombiners = new Dictionary<IrqDestination, IrqCombinerConnection>();
             createdDisposables = new List<IDisposable>();
+            preinitDefinitionPaths = new Dictionary<PreinitAttribute, string>();
             PrepareVariables();
         }
 
@@ -158,6 +159,11 @@ namespace Antmicro.Renode.PlatformDescription
                     }
                 }
 
+                foreach(var preinit in entry.Attributes.OfType<PreinitAttribute>())
+                {
+                    preinitDefinitionPaths[preinit] = path;
+                }
+
                 variable.AddEntry(entry);
             }
 
@@ -193,11 +199,23 @@ namespace Antmicro.Renode.PlatformDescription
                 foreach(var entry in mergedEntries)
                 {
                     // First, run the preinit for each entry
+                    // TODO: `preinit add` in a separate file is not handled in the most intuitive way:
+                    // the lines added there will be considered to be part of the file where the variable
+                    // was defined, which does make some kind of sense, but it's not what I would prefer
                     var preinitAttribute = entry.Attributes.OfType<PreinitAttribute>().SingleOrDefault();
                     if(preinitAttribute != null)
                     {
-                        scriptHandler.Execute(null, preinitAttribute.Lines, x =>
-                            HandleError(ParsingError.PreinitSectionValidationError, preinitAttribute, x, false));
+                        var definitionPath = preinitDefinitionPaths[preinitAttribute];
+                        IDisposable chdir = null;
+                        if(!string.IsNullOrEmpty(definitionPath))
+                        {
+                            chdir = scriptHandler.PushDirectory(Path.GetDirectoryName(definitionPath));
+                        }
+                        using(chdir)
+                        {
+                            scriptHandler.Execute(null, preinitAttribute.Lines, x =>
+                                HandleError(ParsingError.PreinitSectionValidationError, preinitAttribute, x, false));
+                        }
                     }
 
                     // The preinit may have compiled the peripheral it is under, so only attempt to resolve the type now
@@ -308,6 +326,7 @@ namespace Antmicro.Renode.PlatformDescription
                 usingsBeingProcessed.Clear();
                 irqCombiners.Clear();
                 createdDisposables.Clear();
+                preinitDefinitionPaths.Clear();
                 PrepareVariables();
             }
             machine.PostCreationActions();
@@ -1895,6 +1914,7 @@ namespace Antmicro.Renode.PlatformDescription
         private readonly Stack<string> usingsBeingProcessed;
         private readonly Dictionary<IrqDestination, IrqCombinerConnection> irqCombiners;
         private readonly List<IDisposable> createdDisposables;
+        private readonly Dictionary<PreinitAttribute, string> preinitDefinitionPaths;
 
         private static readonly HashSet<Type> NumericTypes = new HashSet<Type>(new []
         {
