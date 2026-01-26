@@ -454,7 +454,9 @@ def setup_processes(args: argparse.Namespace) -> tuple[Renode, pexpect.spawn, GD
     reference = pexpect.spawn(args.reference_command, timeout=10)
     renode = Renode(args.renode_path)
     renode.command("include @" + path.abspath(args.renode_script), expected_log="System bus created")
+    renode.command("logLevel 0 console")
     renode.command(f"machine StartGdbServer {args.renode_gdb_port}", expected_log=f"started on port :{args.renode_gdb_port}")
+    renode.command("logLevel 2 console")
     gdb_comparator = GDBComparator(args, renode.proc, reference)
     renode.command("start")
     return renode, reference, gdb_comparator
