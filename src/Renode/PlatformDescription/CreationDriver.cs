@@ -105,7 +105,7 @@ namespace Antmicro.Renode.PlatformDescription
             return validValues.ToString();
         }
 
-        private void ProcessVariableDeclarations(Description description, string prefix)
+        private void ProcessVariableDeclarations(Description description, string prefix, string path)
         {
             // Collect all variable declarations (entries where there is a type specified).
             // These can be anywhere in the usings hierarchy, as long as there is only one.
@@ -127,7 +127,7 @@ namespace Antmicro.Renode.PlatformDescription
             }
         }
 
-        private void CollectVariableEntries(Description description, string prefix)
+        private void CollectVariableEntries(Description description, string prefix, string path)
         {
             // Having collected all variable declarations, go through the entries again and collect them in the correct
             // order for merging later.

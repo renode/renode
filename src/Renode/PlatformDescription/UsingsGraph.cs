@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -97,7 +97,7 @@ namespace Antmicro.Renode.PlatformDescription
 
                     if(finished)
                     {
-                        visitor(currentFile.ParsedDescription, currentFile.Prefix);
+                        visitor(currentFile.ParsedDescription, currentFile.Prefix, currentFile.Path);
                         graphNodeFinished[currentFile] = true;
                         currentFile = nodesToProcess.Pop();
                         fileCurrentlyProcessed[currentFile.FileId] = false;
@@ -152,7 +152,7 @@ namespace Antmicro.Renode.PlatformDescription
             private readonly string rootFileSource;
             private readonly Dictionary<string, GraphNode> usingsMap;
 
-            public delegate void UsingsFileVisitor(Description description, string prefix);
+            public delegate void UsingsFileVisitor(Description description, string prefix, string filePath);
 
             private class GraphNode
             {
