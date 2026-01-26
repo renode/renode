@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -38,6 +38,21 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public override string ToString()
         {
             return PrettyPrintEnds(Ends);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SingleOrMultiIrqEnd end && Enumerable.SequenceEqual(Ends, end.Ends);
+        }
+
+        public override int GetHashCode()
+        {
+            var code = 19;
+            foreach(var end in Ends)
+            {
+                code = code * 31 + end.GetHashCode();
+            }
+            return code;
         }
 
         public IEnumerable<object> Visit()
