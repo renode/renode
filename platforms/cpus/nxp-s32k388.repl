@@ -237,7 +237,7 @@ lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x404C0000
 
 flex_io: Miscellaneous.S32K3XX_FlexIO @ sysbus 0x40324000
     Frequency: 48000000
-    -> nvic0@139
+    IRQ -> nvic0@139
 
 lpuart0: UART.NXP_LPUART @ sysbus 0x40328000
     frequency: 24000000
