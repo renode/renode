@@ -64,7 +64,8 @@ itcm0: Memory.MappedMemory @ {
             address: 0x00000000;
             cpu: cpu0
         };
-        sysbus 0x11000000
+        sysbus 0x11000000;
+        xrdc [3, 0]
     }
     size: 0x8000
 
@@ -73,7 +74,8 @@ itcm1: Memory.MappedMemory @ {
             address: 0x00000000;
             cpu: cpu1
         };
-        sysbus 0x11400000
+        sysbus 0x11400000;
+        xrdc [3, 1]
     }
     size: 0x8000
 
@@ -82,7 +84,8 @@ itcm2: Memory.MappedMemory @ {
             address: 0x00000000;
             cpu: cpu2
         };
-        sysbus 0x11800000
+        sysbus 0x11800000;
+        xrdc [3, 2]
     }
     size: 0x8000
 
@@ -91,14 +94,15 @@ itcm3: Memory.MappedMemory @ {
             address: 0x00000000;
             cpu: cpu3
         };
-        sysbus 0x11C00000
+        sysbus 0x11C00000;
+        xrdc [3, 3]
     }
     size: 0x8000
 
-program_flash: Memory.MappedMemory @ sysbus 0x00400000
+program_flash: Memory.MappedMemory @ { sysbus 0x00400000; xrdc [0, 0] }
     size: 0x800000
 
-data_flash: Memory.MappedMemory @ sysbus 0x10000000
+data_flash: Memory.MappedMemory @ { sysbus 0x10000000; xrdc [0, 1] }
     size: 0x20000
 
 utest: Memory.MappedMemory @ sysbus 0x1B000000
@@ -109,7 +113,8 @@ dtcm0: Memory.MappedMemory @ {
             address: 0x20000000;
             cpu: cpu0
         };
-        sysbus 0x21000000
+        sysbus 0x21000000;
+        xrdc [3, 4]
     }
     size: 0x10000
 
@@ -118,7 +123,8 @@ dtcm1: Memory.MappedMemory @ {
             address: 0x20000000;
             cpu: cpu1
         };
-        sysbus 0x21400000
+        sysbus 0x21400000;
+        xrdc [3, 5]
     }
     size: 0x10000
 
@@ -127,7 +133,8 @@ dtcm2: Memory.MappedMemory @ {
             address: 0x20000000;
             cpu: cpu2
         };
-        sysbus 0x21800000
+        sysbus 0x21800000;
+        xrdc [3, 6]
     }
     size: 0x10000
 
@@ -136,14 +143,21 @@ dtcm3: Memory.MappedMemory @ {
             address: 0x20000000;
             cpu: cpu3
         };
-        sysbus 0x21C00000
+        sysbus 0x21C00000;
+        xrdc [3, 7]
     }
     size: 0x10000
 
-sram: Memory.MappedMemory @ sysbus 0x20400000
-    size: 0xc0000
+sram0: Memory.MappedMemory @ { sysbus 0x20400000; xrdc [1, 0] }
+    size: 0x40000
 
-quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
+sram1: Memory.MappedMemory @ { sysbus 0x20440000; xrdc [1, 1] }
+    size: 0x40000
+
+sram2: Memory.MappedMemory @ { sysbus 0x20480000; xrdc [3, 8] }
+    size: 0x40000
+
+quad_spi_flash: Memory.MappedMemory @ { sysbus 0x68000000; xrdc [2, 0] }
     size: 0x8000000
 
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
@@ -334,27 +348,27 @@ lpuart15: UART.NXP_LPUART @ sysbus 0x404A8000
     IRQ -> mscm@156
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
-can0: CAN.S32K3XX_FlexCAN @ sysbus 0x40304000
+can0: CAN.S32K3XX_FlexCAN @ { sysbus 0x40304000; xrdc [1, 193] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can1: CAN.S32K3XX_FlexCAN @ sysbus 0x40308000
+can1: CAN.S32K3XX_FlexCAN @ { sysbus 0x40308000; xrdc [1, 194] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can2: CAN.S32K3XX_FlexCAN @ sysbus 0x4030C000
+can2: CAN.S32K3XX_FlexCAN @ { sysbus 0x4030C000; xrdc [1, 195] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can3: CAN.S32K3XX_FlexCAN @ sysbus 0x40310000
+can3: CAN.S32K3XX_FlexCAN @ { sysbus 0x40310000; xrdc [1, 196] }
 
-can4: CAN.S32K3XX_FlexCAN @ sysbus 0x40314000
+can4: CAN.S32K3XX_FlexCAN @ { sysbus 0x40314000; xrdc [1, 197] }
 
-can5: CAN.S32K3XX_FlexCAN @ sysbus 0x40318000
+can5: CAN.S32K3XX_FlexCAN @ { sysbus 0x40318000; xrdc [1, 198] }
 
-can6: CAN.S32K3XX_FlexCAN @ sysbus 0x4031C000
+can6: CAN.S32K3XX_FlexCAN @ { sysbus 0x4031C000; xrdc [1, 199] }
 
-can7: CAN.S32K3XX_FlexCAN @ sysbus 0x40320000
+can7: CAN.S32K3XX_FlexCAN @ { sysbus 0x40320000; xrdc [1, 200] }
 
 mc_cgm_mux_0_css: Python.PythonPeripheral @ sysbus 0x402D8304
     size: 0x4
@@ -476,7 +490,7 @@ gmac1: Network.S32K3XX_GMAC @ sysbus 0x40488000
     Channel2TX -> mscm@236
     Channel2RX -> mscm@237
 
-dma: DMA.NXP_eDMA @ sysbus 0x4020C000
+dma: DMA.NXP_eDMA @ { sysbus 0x4020C000; xrdc [1, 131] }
     numberOfChannels: 32
     [0-31] -> mscm@[4-35]
 
@@ -496,6 +510,13 @@ dma_mux0: DMA.S32K3XX_DMAMUX @ sysbus 0x40280000
 
 dma_mux1: DMA.S32K3XX_DMAMUX @ sysbus 0x40284000
     [0-15] -> dma@[16-31]
+
+xrdc: Miscellaneous.NXP_XRDC @ sysbus 0x40278000
+    busInitiators: [cpu0, dma, empty, empty, cpu1, gmac0, cpu2, gmac1, cpu3, empty]
+    numberOfMemoryRegionDescriptors: [16, 16, 4, 16, 1, 1]
+    numberOfPeripheralsControllers: 3
+    numberOfDomainIds: 5
+    masterIdDomains: [empty, empty, 1, 3, 5, 8, 7, 0, 4, empty, 6, empty, empty, empty, empty, empty]
 
 sysbus:
     init:
@@ -519,7 +540,6 @@ sysbus:
         Tag <0x40408000 0x10> "XBIC_AXBS_PRAM_TCM"
         Tag <0x40400000 0x10> "XBIC_AXBS_TCM"
         Tag <0x40404000 0x10> "XBIC_AXBS_eDMA"
-        Tag <0x40278000 0x2870> "XRDC"
 
         // Memory and Memory Interfaces
         Tag <0x402EC000 0x180> "c40asf_flash"
