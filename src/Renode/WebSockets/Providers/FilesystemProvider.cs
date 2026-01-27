@@ -187,7 +187,16 @@ namespace Antmicro.Renode.WebSockets.Providers
             try
             {
                 var fullPath = ResolvePath(args[0]);
-                File.Delete(fullPath);
+                var attr = File.GetAttributes(fullPath);
+
+                if(attr.HasFlag(FileAttributes.Directory))
+                {
+                    Directory.Delete(fullPath, true);
+                }
+                else
+                {
+                    File.Delete(fullPath);
+                }
 
                 var result = new PathActionResponseDto
                 {
