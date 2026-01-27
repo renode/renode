@@ -14,7 +14,6 @@ sysbus:
         Tag <0x40027000 0x1000> "eport5"
         Tag <0x40028000 0x1000> "eport6"
         Tag <0x40029000 0x1000> "eport7"
-        Tag <0x4003b000 0x1000> "trng"
         Tag <0x4004c000 0x1000> "usb"
         Tag <0x40051000 0x1000> "icache"
         Tag <0x40055000 0x1000> "dcache"
@@ -27,6 +26,8 @@ secure_rom: Memory.MappedMemory @ sysbus 0x80000
 cpm: Miscellaneous.FocalTechFT9001_CPM @ sysbus 0x40004000
 
 rst: Miscellaneous.FocalTechFT9001_Reset @ sysbus 0x40002000
+
+trng: Miscellaneous.FocalTechFT9001_TRNG @ sysbus 0x4003b000
 
 usart2: UART.FT9001_USART @ sysbus 0x40014000
     IRQ -> nvic0@33
