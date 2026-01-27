@@ -425,8 +425,8 @@ void renode_bridge::forward_loop() {
     } break;
     case renode_action::GPIOWRITE: {
       for (int i = 0; i < NUM_GPIO; ++i) {
-        sc_core::sc_interface *interface = gpio_ports_out[i].get_interface();
-        if (interface != nullptr) {
+        sc_core::sc_interface *iface = gpio_ports_out[i].get_interface();
+        if (iface != nullptr) {
           gpio_ports_out[i]->write((message.payload & (1 << i)) != 0);
         }
       }
@@ -436,8 +436,8 @@ void renode_bridge::forward_loop() {
       terminate_simulation(0);
     } break;
     case renode_action::RESET: {
-      sc_core::sc_interface *interface = reset.get_interface();
-      if (interface != nullptr) {
+      sc_core::sc_interface *iface = reset.get_interface();
+      if (iface != nullptr) {
         reset->write(true);
       }
       forward_connection->Send((char *)&message, sizeof(renode_message));
@@ -493,8 +493,8 @@ void renode_bridge::on_port_gpio() {
 
     uint64_t gpio_state = 0;
     for (int i = 0; i < NUM_GPIO; ++i) {
-      sc_core::sc_interface *interface = gpio_ports_in[i].get_interface();
-      if (interface != nullptr) {
+      sc_core::sc_interface *iface = gpio_ports_in[i].get_interface();
+      if (iface != nullptr) {
         if (gpio_ports_in[i]->read()) {
           gpio_state |= (1ull << i);
         } else {
