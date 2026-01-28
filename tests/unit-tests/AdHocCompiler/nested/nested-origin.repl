@@ -1,0 +1,5 @@
+nested_simple: NestedSimplePeripheral @ sysbus 0x100
+    preinit:
+        # ORIGIN is not affected by repl usings, so we have to manually
+        # specify the /nested subdirectory
+        include $ORIGIN/nested/SimplePeripheral3.cs

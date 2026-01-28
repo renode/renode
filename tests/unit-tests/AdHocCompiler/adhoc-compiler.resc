@@ -1,0 +1,2 @@
+mach create
+machine LoadPlatformDescription $ORIGIN/adhoc-compiler-origin.repl

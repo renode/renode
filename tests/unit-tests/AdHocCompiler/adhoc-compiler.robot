@@ -91,6 +91,16 @@ Should Compile Simple Peripherals Through Preinit In Repl File With Relative Pat
         Use Peripheral
         Use Nested Peripheral
 
+Should Find Simple Peripherals Through Preinit In Repl File With Origin Path Lookup
+        # If this test case runs after one that has already used SimplePeripheral3.cs, like
+        # `Should Compile Simple Peripherals Through Preinit In Repl File With Relative Path Lookup`, then
+        # the preinit block will not actually compile the peripheral as it will have already been compiled,
+        # but the important part of this test is to test the $ORIGIN-based path lookup
+        Execute Script          ${CURDIR}/adhoc-compiler.resc
+
+        Use Peripheral
+        Use Nested Peripheral
+
 EnsureTypeIsLoaded Should Throw Type Not Found
         ${TEST_TYPE}             SetVariable    Antmicro.NotExistingType
         Run Keyword And Expect Error    *Given type ${TEST_TYPE} was not found*    Execute Command         EnsureTypeIsLoaded "${TEST_TYPE}"
