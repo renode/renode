@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -20,10 +20,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public UsingEntry SetPos(Position startPos, int length)
         {
-            var copy = SerializationProvider.Instance.DeepClone(this);
-            copy.StartPosition = startPos;
-            copy.Length = length;
-            return copy;
+            StartPosition = startPos;
+            Length = length;
+            return this;
         }
 
         public IEnumerable<object> Visit()

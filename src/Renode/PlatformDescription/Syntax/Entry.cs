@@ -33,10 +33,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public Entry SetPos(Position startPos, int length)
         {
-            var copy = SerializationProvider.Instance.DeepClone(this);
-            copy.StartPosition = startPos;
-            copy.Length = length;
-            return copy;
+            StartPosition = startPos;
+            Length = length;
+            return this;
         }
 
         public void Prefix(string with)

@@ -22,15 +22,15 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public SingleOrMultiIrqEnd SetPos(Position startPos, int length)
         {
-            var copy = SerializationProvider.Instance.DeepClone(this);
-            copy.StartPosition = startPos;
-            copy.Length = length;
-            return copy;
+            StartPosition = startPos;
+            Length = length;
+            return this;
         }
 
         public SingleOrMultiIrqEnd WithEnds(IEnumerable<IrqEnd> ends)
         {
-            var copy = SerializationProvider.Instance.DeepClone(this);
+            // Shallow copy, points to the original Entry and StartPosition
+            var copy = (SingleOrMultiIrqEnd)MemberwiseClone();
             copy.Ends = ends;
             return copy;
         }

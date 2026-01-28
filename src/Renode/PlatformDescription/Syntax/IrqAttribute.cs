@@ -20,7 +20,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public IrqAttribute SingleAttributeWithInheritedPosition(SingleOrMultiIrqEnd source, IrqReceiver destinationPeripheral, SingleOrMultiIrqEnd destination)
         {
-            var copy = SerializationProvider.Instance.DeepClone(this);
+            // Shallow copy, points to the original Entry and StartPosition
+            var copy = (IrqAttribute)MemberwiseClone();
             copy.Sources = new[] { source };
             copy.Destinations = new[] { new IrqDestinations(destinationPeripheral, destination == null ? null : new[] { destination }) };
             return copy;

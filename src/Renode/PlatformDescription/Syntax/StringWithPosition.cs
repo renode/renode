@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -20,10 +20,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public StringWithPosition SetPos(Position startPos, int length)
         {
-            var result = new StringWithPosition(Value);
-            result.Length = length;
-            result.StartPosition = startPos;
-            return result;
+            Length = length;
+            StartPosition = startPos;
+            return this;
         }
 
         public override string ToString()
