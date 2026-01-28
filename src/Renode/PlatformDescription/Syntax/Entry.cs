@@ -157,11 +157,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             Attributes = Attributes.Except(multiplexedAttributes).Concat(result).ToArray();
         }
 
-        public Entry MakeShallowCopy()
-        {
-            return new Entry(VariableName, Type, RegistrationInfos, Attributes, IsLocal, Alias);
-        }
-
         public string VariableName { get; private set; }
 
         public StringWithPosition Type { get; private set; }
