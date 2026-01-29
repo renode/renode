@@ -258,11 +258,11 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             (from elements in MonitorStatementElement.Many()
              select elements.Aggregate((x, y) => x + y)).Token().Named("monitor statement");
 
-        public static readonly Parser<IEnumerable<string>> MonitorStatements =
-            (from openingBrace in OpeningBrace.Named("init statement list")
+        public static Parser<IEnumerable<string>> MonitorStatements(string name) =>
+            (from openingBrace in OpeningBrace.Named($"{name} statement list")
              from firstLine in MonitorStatement
              from rest in Separator.Then(x => MonitorStatement).XMany()
-             from closingBrace in ClosingBrace.Named("init statement list end")
+             from closingBrace in ClosingBrace.Named($"{name} statement list end")
              select new[] { firstLine }.Concat(rest));
 
         public static readonly Parser<PreinitAttribute> PreinitAttribute =
@@ -276,14 +276,14 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             (from initKeyword in InitKeyword
              from addSuffix in Identifier.Where(x => x == "add").Optional()
              from colon in Colon
-             from initValue in MonitorStatements
+             from initValue in MonitorStatements("init")
              select new InitAttribute(initValue, !addSuffix.IsEmpty)).Named("init section");
 
         public static readonly Parser<ResetAttribute> ResetAttribute =
             (from resetKeyword in ResetKeyword
              from addSuffix in Identifier.Where(x => x == "add").Optional()
              from colon in Colon
-             from resetValue in MonitorStatements
+             from resetValue in MonitorStatements("reset")
              select new ResetAttribute(resetValue, !addSuffix.IsEmpty)).Named("reset section");
 
         public static readonly Parser<IEnumerable<int>> IrqRange =
