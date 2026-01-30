@@ -1,0 +1,7 @@
+using "platforms/cpus/stm32h7.repl"
+
+nvic:
+    systickFrequency: 400_000_000
+
+dsi0: Memory.MappedMemory @ sysbus 0x50000000
+    size: 0x1000

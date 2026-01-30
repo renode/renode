@@ -1,0 +1,8 @@
+using "platforms/cpus/stm32h747.repl"
+
+touchscreen: Input.FT5336 @ i2c4 0x38
+    isRotated: true
+    isInvertedY: true
+    MaxX: 800
+    MaxY: 480
+    -> gpioPortK@7
