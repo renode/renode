@@ -39,15 +39,8 @@ ${EXTERNAL_FLASH}=   SEPARATOR=
 ...    qspiMappedFlashMemory: Memory.MappedMemory @ sysbus 0x90000000 { size: 0x10000000 }  ${\n}
 ...    """
 
-${PTP_PLATFORM}=    SEPARATOR=${\n}
-...    using "${PLATFORM}"
-...    nvic:
-...    ${SPACE*4}systickFrequency: 480000000  # Set frequency to match what software expects
-
 ${SMMU_PLATFORM}=    SEPARATOR=${\n}
 ...    using "${PLATFORM}"
-...    nvic:
-...    ${SPACE*4}systickFrequency: 480000000  # Set frequency to match what software expects
 ...    smmu: MemoryControllers.ARM_SMMUv3 @ sysbus 0x53000000  # This peripheral is not a part of the real platform
 ...    ethernet: @ {
 ...    ${SPACE*4}sysbus 0x40028000;
@@ -77,12 +70,6 @@ Create Machine
     Execute Command                 mach set "${name}"
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
 
-    Execute Command                 sysbus LoadELF @${elf}
-
-Create PTP Machine
-    [Arguments]                     ${elf}  ${name}
-    Execute Command                 mach create "${name}"
-    Execute Command                 machine LoadPlatformDescriptionFromString """${PTP_PLATFORM}"""
     Execute Command                 sysbus LoadELF @${elf}
 
 Create SMMU Machine
@@ -259,7 +246,7 @@ Should Program Flash With QSPI and use XIP
     Assert PC Equals                0x90000010
 
 Should Read Correct Time From the PTP Clock
-    Create PTP Machine              ${PTP}  ptp
+    Create Machine                  ${PTP}  ptp
     Create Terminal Tester          ${UART}  defaultPauseEmulation=True
     # Use AdvanceImmediately to make the RunFor take less real time
     Execute Command                 emulation SetGlobalAdvanceImmediately true
@@ -274,7 +261,7 @@ Should Read Correct Time From the PTP Clock
     Wait For Line On Uart           32.48
 
 Should Transmit PTP Frames
-    Create PTP Machine              ${PTP}  ptp
+    Create Machine                  ${PTP}  ptp
     Create Terminal Tester          ${UART}  defaultPauseEmulation=True
     Create Network Interface Tester  sysbus.ethernet
 
