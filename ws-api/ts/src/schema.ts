@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { z, ZodRawShape } from 'zod';
-import semver from 'semver';
+import * as semver from 'semver';
 
 export const BaseResponse = z.object({
   status: z.string(),

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import semver from 'semver';
+import * as semver from 'semver';
 
 export const version: string = '1.5.0';
 export const clientVersion: semver.SemVer = semver.parse(version)!;
