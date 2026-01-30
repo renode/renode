@@ -238,6 +238,13 @@ You can add more `-v` switches to the command to mount your own directories.
 
 For more information and the underlying Dockerfile, visit the [repository on GitHub](https://github.com/renode/renode-docker).
 
+## Renode Async UI
+
+This repository includes a modern, asynchronous UI for Renode.
+
+*   **User Guide**: [ui/USER_GUIDE.md](ui/USER_GUIDE.md)
+*   **Launch**: Run `python main.py` to start the UI.
+
 ## Documentation
 
 Documentation is available on [Read the Docs](https://renode.readthedocs.io).
