@@ -1,0 +1,23 @@
+:name: STM32H747
+:description: Grvl calendar demo on STM32H747.
+
+$name ?= "STM32H747"
+$bin ?= @https://dl.antmicro.com/projects/renode/zephyr-stm32h747i_disco-grvl-calendar.elf-s_14745972-32d3c62251025152004c12929eda662695125e68
+$sdcard ?= @https://dl.antmicro.com/projects/renode/zephyr-stm32h747i_disco-grvl-calendar.sdcard.img-s_8388608-193a6ecb1de588526ba57b6097f9c341c4c55094
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/boards/stm32h747-disco.repl
+
+machine SdCardFromFile $sdcard sysbus.sdmmc 0x800000 false
+
+showAnalyzer usart1
+showAnalyzer ltdc
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
