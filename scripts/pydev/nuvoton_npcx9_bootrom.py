@@ -229,6 +229,92 @@ def register_download_from_flash():
     register_bootrom_hook(0x40, download_from_flash)
 
 
+# Based on:
+# - https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/ec-legacy/chip/npcx/rom_chip.c;l=9;drc=a3e247e7d1b81c8f4bd0746af1747f955880ab1f
+# - https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/ec/common/mock/otpi_mock.c;l=10;drc=c45797708aa5a69f51dc74945bf3c7125c0734f2
+def register_otpi_functions():
+    OTPI_BASE_ADDRESS = 0x0000004C
+    OTP_KEY_ADDR = 0x300
+
+    FAKE_OTP_KEY = [0xDE, 0xAD, 0xBE, 0xEF] * 8  # Needs to be "non-trivial"
+
+    API_RET_OTP_STATUS_OK = 0xA5A5
+    API_RET_OTP_STATUS_FAIL = 0x5A5A
+
+    POINTER_SIZE = 4
+
+    class MockOTP:
+        powered_on = False
+        otp_key_buffer = System.Array[System.Byte](FAKE_OTP_KEY)
+
+    def set_return_value_and_pc(cpu, value):
+        cpu.SetRegister(0, RegisterValue.Create(value, 32))
+        cpu.PC = cpu.LR
+
+    def otpi_power(cpu, addr):
+        on = cpu.GetRegister(0).RawValue
+        cpu.DebugLog("Entering 'otpi_power' hook with arg on=0x{0:X}", on)
+
+        MockOTP.powered_on = bool(on)
+        set_return_value_and_pc(cpu, API_RET_OTP_STATUS_OK)
+
+    def otpi_read(cpu, addr):
+        address = cpu.GetRegister(0).RawValue
+        data_addr = cpu.GetRegister(1).RawValue
+        cpu.DebugLog(
+            "Entering 'otpi_read' hook with args address=0x{0:X}, data_addr=0x{1:X}",
+            address,
+            data_addr,
+        )
+
+        if not MockOTP.powered_on:
+            set_return_value_and_pc(cpu, API_RET_OTP_STATUS_FAIL)
+            return
+
+        result = MockOTP.otp_key_buffer[address - OTP_KEY_ADDR]
+        bytes = System.Array[System.Byte]([result])
+        self.SystemBus.WriteBytes(bytes, data_addr)
+
+        set_return_value_and_pc(cpu, API_RET_OTP_STATUS_OK)
+
+    def otpi_write(cpu, addr):
+        address = cpu.GetRegister(0).RawValue
+        data = cpu.GetRegister(1).RawValue
+        cpu.DebugLog(
+            "Entering 'otpi_write' hook with args address=0x{0:X}, data=0x{1:X}",
+            address,
+            data,
+        )
+
+        if not MockOTP.powered_on:
+            set_return_value_and_pc(cpu, API_RET_OTP_STATUS_FAIL)
+            return
+
+        MockOTP.otp_key_buffer[address - OTP_KEY_ADDR] |= data
+
+        set_return_value_and_pc(cpu, API_RET_OTP_STATUS_OK)
+
+    def otpi_write_protect(cpu, addr):
+        cpu.DebugLog("Entering 'otpi_write_protect' hook")
+
+        if not MockOTP.powered_on:
+            set_return_value_and_pc(cpu, API_RET_OTP_STATUS_FAIL)
+            return
+
+        set_return_value_and_pc(cpu, API_RET_OTP_STATUS_OK)
+
+    OTPI_FUNCTIONS = [
+        otpi_power,
+        otpi_read,
+        otpi_write,
+        otpi_write_protect,
+    ]
+
+    for i, func in enumerate(OTPI_FUNCTIONS):
+        register_bootrom_hook(OTPI_BASE_ADDRESS + i * POINTER_SIZE, func)
+
+
 register_bootloader()
 register_ncl_functions()
 register_download_from_flash()
+register_otpi_functions()
