@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -24,7 +24,7 @@ namespace Antmicro.Renode.Connectors
         }
     }
 
-    public class GPIOConnector : IExternal, IConnectable<IPeripheral>, IGPIOReceiver
+    public class GPIOConnector : IExternal, IMassConnectable<IPeripheral>, IGPIOReceiver
     {
         public GPIOConnector()
         {
@@ -100,6 +100,14 @@ namespace Antmicro.Renode.Connectors
                 }
             }
             peripherals.Remove(peripheral);
+        }
+
+        public void DetachAll()
+        {
+            foreach(var peripheral in peripherals.ToArray())
+            {
+                DetachFrom(peripheral);
+            }
         }
 
         public void Reset()
