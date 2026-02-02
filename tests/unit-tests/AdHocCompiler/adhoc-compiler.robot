@@ -23,6 +23,19 @@ ${SIMPLE_PLATFORM_WITH_PREINIT}=     SEPARATOR=
 ...  ${SPACE*8}include '${CURDIR}/SimplePeripheral2.cs'         ${\n}
 ...  """
 
+# Init is used because dependency cycles are not allowed in platform descriptions.
+${MUTUALLY_REFERENCING_PLATFORM_WITH_PREINIT}=     SEPARATOR=
+...  """                                                                                                            ${\n}
+...  peri1: MutuallyReferencingPeripheral1 @ sysbus 0x0                                                             ${\n}
+...  ${SPACE*4}Other: peri2                                                                                         ${\n}
+...  peri2: MutuallyReferencingPeripheral2 @ sysbus 0x100                                                           ${\n}
+...  ${SPACE*4}init:                                                                                                ${\n}
+...  ${SPACE*8}Other peri1                                                                                          ${\n}
+...  sysbus:                                                                                                        ${\n}
+...  ${SPACE*4}preinit add:                                                                                         ${\n}
+...  ${SPACE*8}include '${CURDIR}/MutuallyReferencingPeripheral1.cs' '${CURDIR}/MutuallyReferencingPeripheral2.cs'  ${\n}
+...  """
+
 *** Keywords ***
 Use Peripheral
         ${r}=  Execute Command   sysbus ReadDoubleWord 0x4
@@ -62,7 +75,7 @@ Should Compile Simple Peripheral
 # there is no way to unload an individual assembly without unloading all of the application domains that contain it.
 # See: https://github.com/dotnet/docs/blob/376d4347ab1d83256c81d2427051e6ff705bcd30/docs/standard/assembly/load-unload.md
 # It isn't worth the effort, so legacy command was just removed.
-Should Compile Multiple Files Referencing Each Other
+Should Compile Multiple Files With One Referencing The Other
         Execute Command          include "${CURDIR}/ReferencedType.cs"
         Execute Command          include "${CURDIR}/ReferencingPeripheral.cs"
 
@@ -84,6 +97,18 @@ Should Compile Simple Peripheral Through Preinit
         Execute Command          machine LoadPlatformDescriptionFromString ${SIMPLE_PLATFORM_WITH_PREINIT}
 
         Use Peripheral
+
+Should Compile Two Peripherals Referencing Each Other Through Preinit
+        Execute Command          mach create
+        Execute Command          machine LoadPlatformDescriptionFromString ${MUTUALLY_REFERENCING_PLATFORM_WITH_PREINIT}
+
+        Execute Command          sysbus WriteDoubleWord 0x0 0x859
+        Execute Command          sysbus WriteDoubleWord 0x4 0x314
+
+        ${r}=  Execute Command   sysbus ReadDoubleWord 0x100
+        Should Be Equal As Numbers   ${r}  0x314
+        ${r}=  Execute Command   sysbus ReadDoubleWord 0x104
+        Should Be Equal As Numbers   ${r}  0x859
 
 Should Compile Simple Peripherals Through Preinit In Repl File With Relative Path Lookup
         Execute Command         include "${CURDIR}/adhoc-compiler.repl"
