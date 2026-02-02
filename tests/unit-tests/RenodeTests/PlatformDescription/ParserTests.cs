@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -104,6 +104,25 @@ uart: @ sysbus ""something""";
         }
 
         [Test]
+        public void ShouldParseSingleRegistrationPointInBraces()
+        {
+            var source = @"
+uart: @{ sysbus 0x100 }";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldParseSingleRegistrationPointInBracesWithSemicolon()
+        {
+            var source = @"
+uart: @{ sysbus 0x100; }";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
+
+        [Test]
         public void ShouldParseEntryWithManyRegistrationPoints()
         {
             var source = @"
@@ -121,6 +140,66 @@ uart: @{ sysbus 0x100;
 
             Assert.AreEqual("sysbus", registrationInfos[1].Register.Value);
             Assert.AreEqual("0x200", ((NumericalValue)registrationInfos[1].RegistrationPoint).Value);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithManyRegistrationPointsWithSemicolons()
+        {
+            var source = @"
+uart: @{ sysbus 0x100;
+         sysbus 0x200;}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierRegistrationPointInBraces()
+        {
+            var source = @"
+uart: @{ _nonIdentifier }";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierRegistrationPointInBracesWithSemicolon()
+        {
+            var source = @"
+uart: @{ _nonIdentifier; }";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierRegistrationPointInBracesWithLeadingSemicolon()
+        {
+            var source = @"
+uart: @{ ;_nonIdentifier }";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnMultipleRegistrationPointsWithNonIdentifierInBracesWithSemicolons()
+        {
+            var source = @"
+uart: @{
+    sysbus 0x100;
+    sysbus 0x200;
+    _nonIdentifier
+}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldParseEntryWithManyAttributesWithSemicolons()
+        {
+            var source = @"
+other: Display @ sysbus <0x0, +0x100> { refreshMode: Automatic; -> ic@3; }
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
         }
 
         [Test]
@@ -143,6 +222,88 @@ uart:
             Assert.AreEqual("BaudRate", value.TypeName);
             Assert.AreEqual("B9600", value.Value);
             Assert.IsTrue(value.IsFullyQualified);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithNoAttrbutes()
+        {
+            var source = @"
+uart: {}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnEntryWithNoAttrbutesAndSemicolon()
+        {
+            var source = @"
+uart: {;}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierInBraces()
+        {
+            var source = @"
+uart: {_nonIdentifier}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierInBracesAndSemicolon()
+        {
+            var source = @"
+uart: {;_nonIdentifier}";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldParseEntryWithOneAttributeInBraces()
+        {
+            var source = @"
+uart: {baudRate: BaudRate.B9600}
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            Assert.AreEqual("uart", entry.VariableName);
+            Assert.IsNull(entry.Type);
+
+            var attribute = (ConstructorOrPropertyAttribute)entry.Attributes.Single();
+            Assert.AreEqual("baudRate", attribute.Name);
+            Assert.AreEqual("B9600", ((EnumValue)attribute.Value).Value);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithOneAttributeInBracesWithSemicolon()
+        {
+            var source = @"
+uart: {baudRate: BaudRate.B9600;}
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            Assert.AreEqual("uart", entry.VariableName);
+            Assert.IsNull(entry.Type);
+
+            var attribute = (ConstructorOrPropertyAttribute)entry.Attributes.Single();
+            Assert.AreEqual("baudRate", attribute.Name);
+            Assert.AreEqual("B9600", ((EnumValue)attribute.Value).Value);
+        }
+
+        [Test]
+        public void ShouldParseEntryWithOneAttributeInBracesWithSemicolon2()
+        {
+            var source = @"
+uart: {; baudRate: BaudRate.B9600;}
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
         }
 
         [Test]
@@ -177,6 +338,67 @@ uart:
             var entry = result.Value.Entries.Single();
             var attributes = entry.Attributes;
             Assert.AreEqual(2, attributes.Count());
+        }
+
+        [Test]
+        public void ShouldParseEntryWithTwoAttributesInBracesAndOneSemicolon()
+        {
+            var source = @"
+uart: {
+    friendlyName: ""some name"";
+    size: 0x1000
+}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            var attributes = entry.Attributes;
+            Assert.AreEqual(2, attributes.Count());
+        }
+
+        [Test]
+        public void ShouldFailOnEntryWithAttributeAndNonIdentifierInBraces()
+        {
+            var source = @"
+uart: {
+    friendlyName: ""some name"";
+    _nonIdentifier
+}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldParseEntryWithTwoAttributesInBracesAndAllSemicolons()
+        {
+            var source = @"
+uart: {
+    friendlyName: ""some name"";
+    size: 0x1000;
+}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var entry = result.Value.Entries.Single();
+            var attributes = entry.Attributes;
+            Assert.AreEqual(2, attributes.Count());
+        }
+
+        [Test]
+        public void ShouldFailOnEntryWithTwoAttributesAndNonIdentifierInBracesAndSemicolons()
+        {
+            var source = @"
+uart: {
+    friendlyName: ""some name"";
+    size: 0x1000;
+    _nonIdentifier
+}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
         }
 
         [Test]
