@@ -166,6 +166,7 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
 
 rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
+    Timer9Reset -> timer9@255
 
 timer1: Timers.STM32_Timer @ sysbus 0x40010000
     BreakInterrupt -> nvic@24
