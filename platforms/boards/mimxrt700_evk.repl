@@ -1,0 +1,4 @@
+using "platforms/cpus/mimxrt798s.repl"
+
+xspi0_memory: Memory.MappedMemory @ sysbus 0x38000000
+    size: 0x8000000

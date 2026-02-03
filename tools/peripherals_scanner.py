@@ -118,6 +118,8 @@ def try_get_category(platform):
         "ice40up5k-mdp-evn":   "LITEX",
         "imxrt1064":   "NXP I.MX",
         "imxrt500":    "NXP I.MX",
+        "mimxrt798s":  "NXP I.MX",
+        "mimxrt700_evk":  "NXP I.MX",
         "kendryte_k210":   "KENDRYTE",
         "leon3":   "GAISLER",
         "leon3-externals": "GAISLER",

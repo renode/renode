@@ -1,0 +1,706 @@
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic0
+
+cpu1: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic1
+
+nvic0: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xe000e000; cpu: cpu0 }
+    }
+    -> cpu0@0
+    systickFrequency: 237500000
+
+nvic1: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xe000e000; cpu: cpu1 }
+    }
+    -> cpu1@0
+    systickFrequency: 100000000
+
+flexcomm0: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40110000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50110000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@7
+
+flexcomm1: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40111000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50111000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@8
+
+flexcomm2: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40112000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50112000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@9
+
+flexcomm3: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40113000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50113000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@10
+
+flexcomm4: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40171000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50171000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@11
+
+flexcomm5: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40172000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50172000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@12
+
+flexcomm6: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40173000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50173000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@35
+
+flexcomm7: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40174000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50174000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@36
+
+flexcomm8: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40199000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50199000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@47
+
+flexcomm9: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4019A000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x5019A000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@48
+
+flexcomm10: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4019B000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x5019B000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@49
+
+flexcomm11: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4019C000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x5019C000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@50
+
+flexcomm12: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4019D000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x5019D000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@51
+
+flexcomm13: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4019E000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x5019E000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@52
+
+lpi2c15: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ {
+    sysbus 0x40213000;
+    sysbus 0x50213000
+    }
+    IRQ -> nvic0@14 | nvic1@10
+
+flexcomm17: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40326000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50326000; cpu: cpu1 }
+    }
+    IRQ -> nvic1@11
+
+flexcomm18: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40327000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50327000; cpu: cpu1 }
+    }
+    IRQ -> nvic1@12
+
+flexcomm19: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40328000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50328000; cpu: cpu1 }
+    }
+    IRQ -> nvic1@13
+
+flexcomm20: UART.NXP_FLEXCOMM @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40329000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50329000; cpu: cpu1 }
+    }
+    IRQ -> nvic1@14
+
+edma0: DMA.IMXRT700_eDMA @ {
+        dmaMux 0;
+        sysbus new Bus.BusPointRegistration { address: 0x40140000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50140000; cpu: cpu0 }
+    }
+    numberOfChannels: 16
+    [0-15] -> nvic0@[59-74]
+
+edma1: DMA.IMXRT700_eDMA @ {
+        dmaMux 1;
+        sysbus new Bus.BusPointRegistration { address: 0x40160000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50160000; cpu: cpu0 }
+    }
+    numberOfChannels: 16
+    [0-15] -> nvic0@[75-90]
+
+edma2: DMA.IMXRT700_eDMA @ {
+        dmaMux 2;
+        sysbus new Bus.BusPointRegistration { address: 0x40300000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50300000; cpu: cpu1 }
+    }
+    numberOfChannels: 8
+    [0-7] -> nvic1@[45-52]
+
+edma3: DMA.IMXRT700_eDMA @ {
+        dmaMux 3;
+        sysbus new Bus.BusPointRegistration { address: 0x40310000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50310000; cpu: cpu1 }
+    }
+    numberOfChannels: 8
+    [0-7] -> nvic1@[53-60]
+
+// GPIO receiver used to connect peripheral request signals to DMA slots.
+dmaMux: DMA.IMXRT700_DmaMux @ sysbus
+
+syscon0: Miscellaneous.IMXRT700_SYSCON0 @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40002000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50002000; cpu: cpu0 }
+    }
+    dmaMux: dmaMux
+
+syscon1: Miscellaneous.IMXRT700_SYSCON1 @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40042000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50042000; cpu: cpu1 }
+    }
+    dmaMux: dmaMux
+
+sai0: Sound.IMXRT700_SAI @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40152000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50152000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@115
+    DmaReceiveRequest -> dmaMux#0@81 | dmaMux#1@81
+    DmaTransmitRequest -> dmaMux#0@82 | dmaMux#1@82
+
+sai1: Sound.IMXRT700_SAI @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40153000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50153000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@116
+    DmaReceiveRequest -> dmaMux#0@83 | dmaMux#1@83
+    DmaTransmitRequest -> dmaMux#0@84 | dmaMux#1@84
+
+sai2: Sound.IMXRT700_SAI @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40154000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50154000; cpu: cpu0 }
+    }
+    IRQ -> nvic0@117
+    DmaReceiveRequest -> dmaMux#0@85 | dmaMux#1@85
+    DmaTransmitRequest -> dmaMux#0@86 | dmaMux#1@86
+
+sai3: Sound.IMXRT700_SAI @ {
+        sysbus new Bus.BusPointRegistration { address: 0x4031C000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x5031C000; cpu: cpu1 }
+    }
+    IRQ -> nvic1@73
+    DmaReceiveRequest -> dmaMux#2@43 | dmaMux#3@43
+    DmaTransmitRequest -> dmaMux#2@44 | dmaMux#3@44
+
+micfil: Sound.IMXRT700_MICFIL @ sysbus 0x4020E000
+    IRQ -> nvic0@18 | nvic1@19
+    HWVAD -> nvic0@19 | nvic1@22
+    DmaRequest -> dmaMux#0@1 | dmaMux#1@1 | dmaMux#2@1 | dmaMux#3@1
+
+mu1: Miscellaneous.IMXRT700_MessagingUnit @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40202000; size: 0x1000; cpu: cpu0; region: "aInstance" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40203000; size: 0x1000; cpu: cpu1; region: "bInstance" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50202000; size: 0x1000; cpu: cpu0; region: "aInstance" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50203000; size: 0x1000; cpu: cpu1; region: "bInstance" }
+    }
+    AInstanceIRQ -> nvic0@30
+    BInstanceIRQ -> nvic1@26
+
+ostimer: Timers.NXP_OsTimer @ {
+        sysbus new Bus.BusPointRegistration { address: 0x40207000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x40209000; cpu: cpu1 };
+        sysbus new Bus.BusPointRegistration { address: 0x50207000; cpu: cpu0 };
+        sysbus new Bus.BusPointRegistration { address: 0x50209000; cpu: cpu1 }
+    }
+    frequency: 1000000
+    ->nvic0@34 | nvic1@30
+
+clkctl0_fro1: Miscellaneous.IMXRT700_ClockControl @ {
+        sysbus 0x40001000;
+        sysbus 0x50001000
+    }
+    instanceIndex: 0
+
+clkctl1: Miscellaneous.IMXRT700_ClockControl @ {
+        sysbus 0x40041000;
+        sysbus 0x50041000
+    }
+    instanceIndex: 1
+
+clkctl2: Miscellaneous.IMXRT700_ClockControl @ {
+        sysbus 0x40065000;
+        sysbus 0x50065000
+    }
+    instanceIndex: 2
+
+clkctl3_fro2: Miscellaneous.IMXRT700_ClockControl @ {
+        sysbus 0x40061000;
+        sysbus 0x50061000
+    }
+    instanceIndex: 3
+
+clkctl4: Miscellaneous.IMXRT700_ClockControl @ {
+        sysbus 0x400a1000;
+        sysbus 0x500a1000
+    }
+    instanceIndex: 4
+
+sram_cpu0: Memory.MappedMemory @ {
+        // SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x10000000; cpu: cpu0};
+        sysbus 0x30000000;
+
+        // NON-SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x0; cpu: cpu0};
+        sysbus 0x20000000
+    }
+    size: 0x580000
+
+sram_shared: Memory.MappedMemory @ {
+        // SECURE
+        sysbus 0x580000;
+        sysbus 0x20580000;
+
+        // NON-SECURE
+        sysbus 0x10580000;
+        sysbus 0x30580000
+    }
+    size: 0x200000
+
+ezhv_itcm: Memory.MappedMemory @ {
+        // SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x34100000; cpu: cpu0};
+        sysbus new Bus.BusPointRegistration{address: 0x34100000; cpu: cpu1};
+
+        // NON-SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x24100000; cpu: cpu0};
+        sysbus new Bus.BusPointRegistration{address: 0x24100000; cpu: cpu1}
+    }
+    size: 0x8000
+
+ezhv_dtcm: Memory.MappedMemory @ {
+        // SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x34108000; cpu: cpu0};
+        sysbus new Bus.BusPointRegistration{address: 0x34108000; cpu: cpu1};
+
+        // NON-SECURE
+        sysbus new Bus.BusPointRegistration{address: 0x24108000; cpu: cpu0};
+        sysbus new Bus.BusPointRegistration{address: 0x24108000; cpu: cpu1}
+    }
+    size: 0x8000
+
+xspi1: Memory.MappedMemory @ sysbus 0x8000000
+    size: 0x8000000
+
+xspi2: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x1000000
+
+osc32knp: Timers.IMXRT700_OSC32KNP @ {
+        // SECURE
+        sysbus 0x50063000;
+
+        // NON-SECURE
+        sysbus 0x40063000
+    }
+
+// Spoofed peripherals
+
+rstctl1_i3c0: Python.PythonPeripheral @ sysbus 0x40040010
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+i3c0_rst_cpu1: Python.PythonPeripheral @ sysbus 0x4000001C
+    size: 0x4
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+rstctl1_i3c3: Python.PythonPeripheral @ sysbus 0x40057000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+iprstclp0_clr_cpu1 : Python.PythonPeripheral @ sysbus 0x40060070
+    size: 0x4
+    initable: true
+    script: '''
+if request.IsInit:
+    sysbus = emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus
+    cpu1 = sysbus.GetCPUs()[1]
+elif (request.Value & 0x80000000) and cpu1.IsHalted:
+    self.WarningLog("Clearing Reset requested using RSTCTL3")
+    cpu1.IsHalted = False;
+'''
+
+syscon3_nsvtor: Python.PythonPeripheral @ sysbus 0x4006209C
+    size: 4
+    initable: true
+    script: '''
+if request.IsInit:
+    sysbus = emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus
+    cpu1 = sysbus.GetCPUs()[1]
+elif request.IsWrite:
+    vt = request.Value << 7;
+    print("About to set Vtor for core1 to {}".format(hex(vt)))
+    cpu1.VectorTableOffset = vt
+else:
+    print("core1 vtor been read")
+'''
+
+sysbus:
+    init add:
+        // NON-SECURE MODE TAGS
+        Tag <0x40000000 0x1000> "RSTCTL0"
+        Tag <0x40002000 0x1000> "SYSCON0"
+        Tag <0x40003000 0x1000> "SLEEPCON0"
+        Tag <0x40004000 0x1000> "IOCON"
+        Tag <0x40004000 0x1000> "IOPCTL0"
+        Tag <0x40005000 0x1000> "PVTS0"
+        Tag <0x4000E000 0x1000> "WWDT0"
+        Tag <0x4000F000 0x1000> "UTICK0"
+        Tag <0x40011000 0x1000> "PKC"
+        Tag <0x40012000 0x1000> "ITRC"
+        Tag <0x40013000 0x1000> "GDET0"
+        Tag <0x40014000 0x1000> "GDET1"
+        Tag <0x40018000 0x1000> "OCOTP"
+        Tag <0x4001A000 0x1000> "OSCCA"
+        Tag <0x40023000 0x1000> "FREQME"
+        Tag <0x40025000 0x1000> "PINT0"
+        Tag <0x40026000 0x1000> "INPUTMUX0"
+        Tag <0x40028000 0x1000> "CTIMER0"
+        Tag <0x40029000 0x1000> "CTIMER1"
+        Tag <0x4002A000 0x1000> "CTIMER2"
+        Tag <0x4002B000 0x1000> "CTIMER3"
+        Tag <0x4002C000 0x1000> "CTIMER4"
+        Tag <0x4002D000 0x1000> "MRT0"
+        Tag <0x4002E000 0x1000> "WWDT1"
+        Tag <0x40030000 0x1000> "MMU0"
+        Tag <0x40031000 0x1000> "MMU1"
+        Tag <0x40033000 0x1000> "XCACHE0" silent=true
+        Tag <0x40034000 0x1000> "XCACHE1" silent=true
+        Tag <0x40035000 0x1000> "CACHE64_CTRL0"
+        Tag <0x40035000 0x1000> "CACHE64_POLSEL0"
+        Tag <0x40036000 0x1000> "CACHE64_CTRL1"
+        Tag <0x40036000 0x1000> "CACHE64_POLSEL1"
+        Tag <0x40037000 0x1000> "I3C0"
+        Tag <0x40038000 0x1000> "I3C1"
+        Tag <0x40040000 0x1000> "RSTCTL1"
+        Tag <0x40042000 0x1000> "SYSCON1"
+        Tag <0x40043000 0x1000> "PVTS1"
+        Tag <0x40044000 0x1000> "SLEEPCON1"
+        Tag <0x40045000 0x1000> "PINT1"
+        Tag <0x40046000 0x1000> "INPUTMUX1"
+        Tag <0x40048000 0x1000> "CTIMER5"
+        Tag <0x40049000 0x1000> "CTIMER6"
+        Tag <0x4004A000 0x1000> "CTIMER7"
+        Tag <0x4004D000 0x1000> "MRT1"
+        Tag <0x40050000 0x1000> "WWDT2"
+        Tag <0x40051000 0x1000> "WWDT3"
+        Tag <0x40052000 0x1000> "UTICK1"
+        Tag <0x40056000 0x1000> "I3C2"
+        Tag <0x40057000 0x1000> "I3C3"
+        Tag <0x40060000 0x1000> "RSTCTL3"
+        Tag <0x40062000 0x1000> "SYSCON3"
+        Tag <0x40063000 0x1000> "OSC32KNP"
+        Tag <0x40064000 0x1000> "IOCON1"
+        Tag <0x40064000 0x1000> "IOPCTL1"
+        Tag <0x40066000 0x1000> "SYSCON2"
+        Tag <0x40067000 0x1000> "RSTCTL2"
+        Tag <0x40068000 0x1000> "RTC0"
+        Tag <0x40069000 0x1000> "RTC1"
+        Tag <0x4006A000 0x1000> "GDET2"
+        Tag <0x4006B000 0x1000> "GDET3"
+        Tag <0x400A0000 0x1000> "RSTCTL4"
+        Tag <0x400A2000 0x1000> "SYSCON4"
+        Tag <0x400a5000 0x1000> "IOCON2"
+        Tag <0x400A5000 0x1000> "IOPCTL2"
+        Tag <0x400A6000 0x1000> "JPGDECWRP"
+        Tag <0x400A7000 0x1000> "PNGDEC"
+        Tag <0x400A8000 0x1000> "MMU2"
+        Tag <0x40100000 0x1000> "GPIO0"
+        Tag <0x40101000 0x1000> "GPIO0_ALIAS"
+        Tag <0x40102000 0x1000> "GPIO1"
+        Tag <0x40103000 0x1000> "GPIO1_ALIAS"
+        Tag <0x40104000 0x1000> "GPIO2"
+        Tag <0x40105000 0x1000> "GPIO2_ALIAS"
+        Tag <0x40106000 0x1000> "GPIO3"
+        Tag <0x40107000 0x1000> "GPIO3_ALIAS"
+        Tag <0x40108000 0x1000> "GPIO4"
+        Tag <0x40109000 0x1000> "GPIO4_ALIAS"
+        Tag <0x4010A000 0x1000> "GPIO5"
+        Tag <0x4010B000 0x1000> "GPIO5_ALIAS"
+        Tag <0x4010C000 0x1000> "GPIO6"
+        Tag <0x4010D000 0x1000> "GPIO6_ALIAS"
+        Tag <0x4010E000 0x1000> "GPIO7"
+        Tag <0x4010F000 0x1000> "GPIO7_ALIAS"
+        Tag <0x40114000 0x1000> "SCT0"
+        Tag <0x40115000 0x1000> "CDOG0"
+        Tag <0x40116000 0x1000> "CDOG1"
+        Tag <0x40117000 0x1000> "CDOG2"
+        Tag <0x40140000 0x1000> "DMA0"
+        Tag <0x40151000 0x1000> "CRC"
+        Tag <0x40152000 0x1000> "SAI0"
+        Tag <0x40153000 0x1000> "SAI1"
+        Tag <0x40154000 0x1000> "SAI2"
+        Tag <0x40160000 0x1000> "DMA1"
+        Tag <0x4017C000 0x1000> "AHBSC0"
+        Tag <0x4017D000 0x1000> "AHBSC0_ALIAS1"
+        Tag <0x4017E000 0x1000> "AHBSC0_ALIAS2"
+        Tag <0x4017F000 0x1000> "AHBSC0_ALIAS3"
+        Tag <0x40182000 0x1000> "ROMCP"
+        Tag <0x40184000 0x1000> "XSPI0"
+        Tag <0x40184000 0x1000> "XSPI0 - CTRL"
+        Tag <0x40185000 0x1000> "XSPI1"
+        Tag <0x40185000 0x1000> "XSPI1 - CTRL"
+        Tag <0x40185000 0x1000> "XSPI2 - CTRL"
+        Tag <0x40187000 0x1000> "TRNG"
+        Tag <0x40189000 0x1000> "MU4_MUA"
+        Tag <0x4018A000 0x1000> "SEMA42_4"
+        Tag <0x4018C000 0x1000> "CMX_PERFMON0"
+        Tag <0x4018D000 0x1000> "CMX_PERFMON1"
+        Tag <0x4018E000 0x1000> "CMX_PERFMON2"
+        Tag <0x4018F000 0x1000> "CMX_PERFMON3"
+        Tag <0x40190000 0x1000> "ELS"
+        Tag <0x40191000 0x1000> "ELS_ALIAS1"
+        Tag <0x40192000 0x1000> "ELS_ALIAS2"
+        Tag <0x40193000 0x1000> "ELS_ALIAS3"
+        Tag <0x40194000 0x1000> "PUF"
+        Tag <0x40195000 0x1000> "PUF_ALIAS1"
+        Tag <0x40196000 0x1000> "PUF_ALIAS2"
+        Tag <0x40197000 0x1000> "PUF_ALIAS3"
+        Tag <0x40198000 0x1000> "DEBUG_MAILBOX"
+        Tag <0x40200000 0x1000> "MU0_MUA"
+        Tag <0x40205000 0x1000> "MU2_MUB"
+        Tag <0x40206000 0x1000> "SEMA42_0"
+        Tag <0x40207000 0x1000> "OSTIMER_CPU0"
+        Tag <0x40209000 0x1000> "OSTIMER_CPU1"
+        Tag <0x4020B000 0x1000> "ACMP0"
+        Tag <0x4020C000 0x1000> "ADC0"
+        Tag <0x4020D000 0x1000> "SDADC"
+        Tag <0x4020E000 0x1000> "PDM"
+        Tag <0x4020F000 0x1000> "PMC0"
+        Tag <0x40210000 0x1000> "PMC1"
+        Tag <0x40213000 0x1000> "LPI2C15"
+        Tag <0x40220000 0x1000> "AHBSC3"
+        Tag <0x40221000 0x1000> "AHBSC3_ALIAS1"
+        Tag <0x40222000 0x1000> "AHBSC3_ALIAS2"
+        Tag <0x40223000 0x1000> "AHBSC3_ALIAS3"
+        Tag <0x40300000 0x1000> "DMA2"
+        Tag <0x40310000 0x1000> "DMA3"
+        Tag <0x40319000 0x1000> "MU3_MUA"
+        Tag <0x4031B000 0x1000> "SEMA42_3"
+        Tag <0x4031C000 0x1000> "SAI3"
+        Tag <0x40320000 0x1000> "GPIO8"
+        Tag <0x40321000 0x1000> "GPIO8_ALIAS"
+        Tag <0x40322000 0x1000> "GPIO9"
+        Tag <0x40323000 0x1000> "GPIO9_ALIAS"
+        Tag <0x40324000 0x1000> "GPIO10"
+        Tag <0x40325000 0x1000> "GPIO10_ALIAS"
+        Tag <0x4032A000 0x1000> "CDOG4"
+        Tag <0x4032B000 0x1000> "CDOG3"
+        Tag <0x40400000 0x1000> "AHBSC4"
+        Tag <0x40401000 0x1000> "AHBSC4_ALIAS1"
+        Tag <0x40402000 0x1000> "AHBSC4_ALIAS2"
+        Tag <0x40403000 0x1000> "AHBSC4_ALIAS3"
+        Tag <0x40411000 0x1000> "XSPI2"
+        Tag <0x40412000 0x1000> "USDHC0"
+        Tag <0x40413000 0x1000> "USDHC1"
+        Tag <0x40414000 0x1000> "USBPHY"
+        Tag <0x40416000 0x1000> "FLEXIO"
+        Tag <0x40417000 0x1000> "MIPI_DSI_HOST"
+        Tag <0x40418000 0x1000> "USB0"
+        Tag <0x40419000 0x1000> "USB1"
+        Tag <0x40480000 0x1000> "LCDIF"
+        Tag <0x404C0000 0x1000> "NIC_MEDIA1"
+
+        Tag <0x4018412c 0x4> "XSPI0_DLLSR_NON_SECURE" 0xffffffff
+        Tag <0x4018512c 0x4> "XSPI1_DLLSR_NON_SECURE" 0xffffffff
+
+        // SECURE MODE TAGS
+        // All pepipherals tags come from zephyr's hal/nxp/mcux/mcux-sdk/devices/MIMXRT798S/MIMXRT798S_cm33_core[01].h
+        Tag <0x50000000 0x1000> "RSTCTL0"
+        Tag <0x50002000 0x1000> "SYSCON0"
+        Tag <0x50003000 0x1000> "SLEEPCON0"
+        Tag <0x50004000 0x1000> "IOCON"
+        Tag <0x50004000 0x1000> "IOPCTL0"
+        Tag <0x50005000 0x1000> "PVTS0"
+        Tag <0x5000E000 0x1000> "WWDT0"
+        Tag <0x5000F000 0x1000> "UTICK0"
+        Tag <0x50011000 0x1000> "PKC"
+        Tag <0x50012000 0x1000> "ITRC"
+        Tag <0x50013000 0x1000> "GDET0"
+        Tag <0x50014000 0x1000> "GDET1"
+        Tag <0x50018000 0x1000> "OCOTP"
+        Tag <0x5001A000 0x1000> "OSCCA"
+        Tag <0x50023000 0x1000> "FREQME"
+        Tag <0x50025000 0x1000> "PINT0"
+        Tag <0x50026000 0x1000> "INPUTMUX0"
+        Tag <0x50028000 0x1000> "CTIMER0"
+        Tag <0x50029000 0x1000> "CTIMER1"
+        Tag <0x5002A000 0x1000> "CTIMER2"
+        Tag <0x5002B000 0x1000> "CTIMER3"
+        Tag <0x5002C000 0x1000> "CTIMER4"
+        Tag <0x5002D000 0x1000> "MRT0"
+        Tag <0x5002E000 0x1000> "WWDT1"
+        Tag <0x50030000 0x1000> "MMU0"
+        Tag <0x50031000 0x1000> "MMU1"
+        Tag <0x50033000 0x1000> "XCACHE0" silent=true
+        Tag <0x50034000 0x1000> "XCACHE1" silent=true
+        Tag <0x50035000 0x1000> "CACHE64_CTRL0"
+        Tag <0x50035000 0x1000> "CACHE64_POLSEL0"
+        Tag <0x50036000 0x1000> "CACHE64_CTRL1"
+        Tag <0x50036000 0x1000> "CACHE64_POLSEL1"
+        Tag <0x50037000 0x1000> "I3C0"
+        Tag <0x50038000 0x1000> "I3C1"
+        Tag <0x50040000 0x1000> "RSTCTL1"
+        Tag <0x50042000 0x1000> "SYSCON1"
+        Tag <0x50043000 0x1000> "PVTS1"
+        Tag <0x50044000 0x1000> "SLEEPCON1"
+        Tag <0x50045000 0x1000> "PINT1"
+        Tag <0x50046000 0x1000> "INPUTMUX1"
+        Tag <0x50048000 0x1000> "CTIMER5"
+        Tag <0x50049000 0x1000> "CTIMER6"
+        Tag <0x5004A000 0x1000> "CTIMER7"
+        Tag <0x5004D000 0x1000> "MRT1"
+        Tag <0x50050000 0x1000> "WWDT2"
+        Tag <0x50051000 0x1000> "WWDT3"
+        Tag <0x50052000 0x1000> "UTICK1"
+        Tag <0x50056000 0x1000> "I3C2"
+        Tag <0x50057000 0x1000> "I3C3"
+        Tag <0x50060000 0x1000> "RSTCTL3"
+        Tag <0x50062000 0x1000> "SYSCON3"
+        Tag <0x50063000 0x1000> "OSC32KNP"
+        Tag <0x50064000 0x1000> "IOCON1"
+        Tag <0x50064000 0x1000> "IOPCTL1"
+        Tag <0x50066000 0x1000> "SYSCON2"
+        Tag <0x50067000 0x1000> "RSTCTL2"
+        Tag <0x50068000 0x1000> "RTC0"
+        Tag <0x50069000 0x1000> "RTC1"
+        Tag <0x5006A000 0x1000> "GDET2"
+        Tag <0x5006B000 0x1000> "GDET3"
+        Tag <0x500A0000 0x1000> "RSTCTL4"
+        Tag <0x500A2000 0x1000> "SYSCON4"
+        Tag <0x500a5000 0x1000> "IOCON2"
+        Tag <0x500A5000 0x1000> "IOPCTL2"
+        Tag <0x500A6000 0x1000> "JPGDECWRP"
+        Tag <0x500A7000 0x1000> "PNGDEC"
+        Tag <0x500A8000 0x1000> "MMU2"
+        Tag <0x50100000 0x1000> "GPIO0"
+        Tag <0x50101000 0x1000> "GPIO0_ALIAS"
+        Tag <0x50102000 0x1000> "GPIO1"
+        Tag <0x50103000 0x1000> "GPIO1_ALIAS"
+        Tag <0x50104000 0x1000> "GPIO2"
+        Tag <0x50105000 0x1000> "GPIO2_ALIAS"
+        Tag <0x50106000 0x1000> "GPIO3"
+        Tag <0x50107000 0x1000> "GPIO3_ALIAS"
+        Tag <0x50108000 0x1000> "GPIO4"
+        Tag <0x50109000 0x1000> "GPIO4_ALIAS"
+        Tag <0x5010A000 0x1000> "GPIO5"
+        Tag <0x5010B000 0x1000> "GPIO5_ALIAS"
+        Tag <0x5010C000 0x1000> "GPIO6"
+        Tag <0x5010D000 0x1000> "GPIO6_ALIAS"
+        Tag <0x5010E000 0x1000> "GPIO7"
+        Tag <0x5010F000 0x1000> "GPIO7_ALIAS"
+        Tag <0x50114000 0x1000> "SCT0"
+        Tag <0x50115000 0x1000> "CDOG0"
+        Tag <0x50116000 0x1000> "CDOG1"
+        Tag <0x50117000 0x1000> "CDOG2"
+        Tag <0x50140000 0x1000> "DMA0"
+        Tag <0x50151000 0x1000> "CRC"
+        Tag <0x50152000 0x1000> "SAI0"
+        Tag <0x50153000 0x1000> "SAI1"
+        Tag <0x50154000 0x1000> "SAI2"
+        Tag <0x50160000 0x1000> "DMA1"
+        Tag <0x5017C000 0x1000> "AHBSC0"
+        Tag <0x5017D000 0x1000> "AHBSC0_ALIAS1"
+        Tag <0x5017E000 0x1000> "AHBSC0_ALIAS2"
+        Tag <0x5017F000 0x1000> "AHBSC0_ALIAS3"
+        Tag <0x50182000 0x1000> "ROMCP"
+        Tag <0x50184000 0x1000> "XSPI0"
+        Tag <0x50184000 0x1000> "XSPI0 - CTRL"
+        Tag <0x50185000 0x1000> "XSPI1"
+        Tag <0x50185000 0x1000> "XSPI1 - CTRL"
+        Tag <0x50185000 0x1000> "XSPI2 - CTRL"
+        Tag <0x50187000 0x1000> "TRNG"
+        Tag <0x50189000 0x1000> "MU4_MUA"
+        Tag <0x5018A000 0x1000> "SEMA42_4"
+        Tag <0x5018C000 0x1000> "CMX_PERFMON0"
+        Tag <0x5018D000 0x1000> "CMX_PERFMON1"
+        Tag <0x5018E000 0x1000> "CMX_PERFMON2"
+        Tag <0x5018F000 0x1000> "CMX_PERFMON3"
+        Tag <0x50190000 0x1000> "ELS"
+        Tag <0x50191000 0x1000> "ELS_ALIAS1"
+        Tag <0x50192000 0x1000> "ELS_ALIAS2"
+        Tag <0x50193000 0x1000> "ELS_ALIAS3"
+        Tag <0x50194000 0x1000> "PUF"
+        Tag <0x50195000 0x1000> "PUF_ALIAS1"
+        Tag <0x50196000 0x1000> "PUF_ALIAS2"
+        Tag <0x50197000 0x1000> "PUF_ALIAS3"
+        Tag <0x50198000 0x1000> "DEBUG_MAILBOX"
+        Tag <0x50200000 0x1000> "MU0_MUA"
+        Tag <0x50205000 0x1000> "MU2_MUB"
+        Tag <0x50206000 0x1000> "SEMA42_0"
+        Tag <0x50207000 0x1000> "OSTIMER_CPU0"
+        Tag <0x50209000 0x1000> "OSTIMER_CPU1"
+        Tag <0x5020B000 0x1000> "ACMP0"
+        Tag <0x5020C000 0x1000> "ADC0"
+        Tag <0x5020D000 0x1000> "SDADC"
+        Tag <0x5020E000 0x1000> "PDM"
+        Tag <0x5020F000 0x1000> "PMC0"
+        Tag <0x50210000 0x1000> "PMC1"
+        Tag <0x50213000 0x1000> "LPI2C15"
+        Tag <0x50220000 0x1000> "AHBSC3"
+        Tag <0x50221000 0x1000> "AHBSC3_ALIAS1"
+        Tag <0x50222000 0x1000> "AHBSC3_ALIAS2"
+        Tag <0x50223000 0x1000> "AHBSC3_ALIAS3"
+        Tag <0x50300000 0x1000> "DMA2"
+        Tag <0x50310000 0x1000> "DMA3"
+        Tag <0x50319000 0x1000> "MU3_MUA"
+        Tag <0x5031B000 0x1000> "SEMA42_3"
+        Tag <0x5031C000 0x1000> "SAI3"
+        Tag <0x50320000 0x1000> "GPIO8"
+        Tag <0x50321000 0x1000> "GPIO8_ALIAS"
+        Tag <0x50322000 0x1000> "GPIO9"
+        Tag <0x50323000 0x1000> "GPIO9_ALIAS"
+        Tag <0x50324000 0x1000> "GPIO10"
+        Tag <0x50325000 0x1000> "GPIO10_ALIAS"
+        Tag <0x5032A000 0x1000> "CDOG4"
+        Tag <0x5032B000 0x1000> "CDOG3"
+        Tag <0x50400000 0x1000> "AHBSC4"
+        Tag <0x50401000 0x1000> "AHBSC4_ALIAS1"
+        Tag <0x50402000 0x1000> "AHBSC4_ALIAS2"
+        Tag <0x50403000 0x1000> "AHBSC4_ALIAS3"
+        Tag <0x50411000 0x1000> "XSPI2"
+        Tag <0x50412000 0x1000> "USDHC0"
+        Tag <0x50413000 0x1000> "USDHC1"
+        Tag <0x50414000 0x1000> "USBPHY"
+        Tag <0x50416000 0x1000> "FLEXIO"
+        Tag <0x50417000 0x1000> "MIPI_DSI_HOST"
+        Tag <0x50418000 0x1000> "USB0"
+        Tag <0x50419000 0x1000> "USB1"
+        Tag <0x50480000 0x1000> "LCDIF"
+        Tag <0x504C0000 0x1000> "NIC_MEDIA1"
+        Tag <0xE000E010 0x10> "SYSTICK"
+        Tag <0xE000ED90 0x40> "MPU"
+
+        Tag <0x5018412c 0x4> "XSPI0_DLLSR_SECURE" 0xffffffff
+        Tag <0x5018512c 0x4> "XSPI1_DLLSR_SECURE" 0xffffffff

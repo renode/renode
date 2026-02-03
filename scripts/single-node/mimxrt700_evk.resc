@@ -1,0 +1,29 @@
+:name: MIMXRT700-EVK (i.MX RT700)
+:description: This script runs Zephyr I2S audio samples on MIMXRT700-EVK.
+
+i @platforms/boards/mimxrt700_evk.repl
+
+# Signed 16-bit PCM, Little-endian, 2 Channels (Stereo), Sample rate: 16000 Hz
+# https://github.com/zephyrproject-rtos/zephyr/tree/e98920d6958525e74f14b0250b56241388c88bf4/samples/drivers/i2s/i2s_codec
+$bin?=@https://dl.antmicro.com/projects/renode/mimxrt700_evk_mimxrt798s_cm33_cpu0--i2s_codec.elf-s_1121296-b18498a6a644064540398709fe0ce0035d95edf4
+
+# Signed 16-bit PCM, Little-endian, 2 Channels (Stereo), Sample rate: 44100 Hz
+# https://github.com/zephyrproject-rtos/zephyr/tree/e98920d6958525e74f14b0250b56241388c88bf4/samples/drivers/i2s/output
+#$bin?=@https://dl.antmicro.com/projects/renode/mimxrt700_evk_mimxrt798s_cm33_cpu0--i2s_output.elf-s_988896-929bd1739cfa2fd185f1954434ced7453fcb0b60
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    cpu0 VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+    cpu1 IsHalted true
+"""
+
+runMacro $reset
+
+showAnalyzer flexcomm0
+
+# Save transmitted audio samples to a file.
+# File can be imported in Audacity for a visual inspection of wave shape
+# or converted to a wav file and played with VLC or other audio player:
+# sox -t raw -r 16000 -b 16 -c 2 -L -e signed-integer sai0_output.pcm sai0_output.wav
+sai0 SetOutputFile @sai0_output.pcm True
