@@ -9,6 +9,7 @@ using System;
 using Antmicro.Migrant;
 using Antmicro.Renode.Logging;
 
+using AntShell.Helpers;
 using AntShell.Terminal;
 
 using TermSharp;
@@ -17,12 +18,13 @@ using TermSharp.Vt100;
 namespace Antmicro.Renode.UI
 {
     [Transient]
-    public class TerminalIOSource : IActiveIOSource, IDisposable
+    public class TerminalIOSource : IActiveIOSource, IDisposable, ISizeSource
     {
         public TerminalIOSource(Terminal terminal)
         {
             vt100decoder = new TermSharp.Vt100.Decoder(terminal, b => HandleInput(b), new TerminalToRenodeLogger(terminal));
             utfDecoder = new ByteUtf8Decoder(x => ApplicationExtensions.InvokeInUIThread(() => vt100decoder.Feed(x)));
+            this.terminal = terminal;
         }
 
         public void Dispose()
@@ -60,12 +62,24 @@ namespace Antmicro.Renode.UI
             }
         }
 
+        public event Action Resized { add => terminal.Resized += value; remove => terminal.Resized -= value; }
+
+        public Position Size
+        {
+            get
+            {
+                var size = terminal.TerminalSize;
+                return new Position(size.X, size.Y);
+            }
+        }
+
         public bool IsAnythingAttached { get { return ByteRead != null; } }
 
         public event Action<int> ByteRead;
 
         public event Action<byte> BeforeWrite;
 
+        private readonly Terminal terminal;
         private readonly TermSharp.Vt100.Decoder vt100decoder;
         private readonly ByteUtf8Decoder utfDecoder;
 

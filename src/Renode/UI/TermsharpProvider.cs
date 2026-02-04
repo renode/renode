@@ -18,13 +18,14 @@ namespace Antmicro.Renode.UI
 {
     public class TermsharpProvider : IConsoleBackendAnalyzerProvider, IDisposable
     {
-        public bool TryOpen(string consoleName, out IIOSource ioSource, bool isMonitorWindow = false)
+        public bool TryOpen(string consoleName, out IIOSource ioSource, out ISizeSource sizeSource, bool isMonitorWindow = false)
         {
             ApplicationExtensions.InvokeInUIThreadAndWait(() =>
             {
                 terminalWidget = new TerminalWidget(() => window?.HasFocus ?? false, isMonitorWindow);
             });
             ioSource = terminalWidget.IOSource;
+            sizeSource = terminalWidget.IOSource;
 
             var mre = new ManualResetEventSlim();
             ApplicationExtensions.InvokeInUIThread(() =>
