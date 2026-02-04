@@ -434,6 +434,8 @@ void renode_bridge::forward_loop() {
       forward_connection->Send((char *)&message, sizeof(renode_message));
     } break;
     case renode_action::INIT: {
+      forward_connection->Disconnect();
+      backward_connection->Disconnect();
       terminate_simulation(0);
     } break;
     case renode_action::RESET: {
