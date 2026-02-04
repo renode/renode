@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
+#include <inttypes.h>
 #ifdef __linux__
 #include <fcntl.h>
 #include <unistd.h>
@@ -167,7 +168,7 @@ static void print_renode_message(renode_message *message) {
     std::hash<std::thread::id> hasher;
     thread_id = hasher(std::this_thread::get_id());
   }
-  printf("[0x%08lX][RENODE MESSAGE] Action: ", thread_id);
+  printf("[0x%" PRIX64 "][RENODE MESSAGE] Action: ", thread_id);
   switch (message->action) {
   case INIT:
     printf("INIT");
@@ -190,8 +191,8 @@ static void print_renode_message(renode_message *message) {
   default:
     printf("INVALID");
   }
-  printf(" | Address: 0x%08lX", message->address);
-  printf(" | Payload: 0x%08lX", message->payload);
+  printf(" | Address: 0x%" PRIX64, message->address);
+  printf(" | Payload: 0x%" PRIX64, message->payload);
   printf(" | ConnIdx: %u\n", message->connection_index);
 }
 
@@ -259,7 +260,7 @@ static bool initialize_connection(CTCPClient *connection,
   // Acknowledge initialization is done.
   connection->Send((char *)message, sizeof(renode_message));
 #ifdef VERBOSE
-  printf("Connection to Renode initialized with timesync period %lu us.\n",
+  printf("Connection to Renode initialized with timesync period %" PRId64 " us.\n",
          *out_max_desync_us);
 #endif
   return true;
