@@ -20,3 +20,7 @@ target_include_directories(renode_bridge PRIVATE
     ${INCLUDE_DIRS})
 
 target_link_libraries(renode_bridge socket_cpp)
+
+if (MSVC)
+    target_compile_options(renode_bridge PRIVATE /vmg)
+endif()
