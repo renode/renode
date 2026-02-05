@@ -103,6 +103,7 @@ def prepare_parser():
     parser.add_argument("-T", "--type",
                         dest="test_type",
                         action="store",
+                        choices=("all", "robot", "nunit"),
                         default="all",
                         help="Type of test to execute (all by default).")
 
