@@ -147,194 +147,191 @@ quad_spi_flash: Memory.MappedMemory @ sysbus 0x68000000
     size: 0x8000000
 
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
-    [0-3] -> nvic0@[0-3]
-    [4-7] -> nvic1@[0-3]
-    [8-11] -> nvic2@[0-3]
-    [12-15] -> nvic3@[0-3]
+    nvics: [nvic0, nvic1, nvic2, nvic3]
 
 siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
-    IRQ1 -> nvic0@53
-    IRQ2 -> nvic0@54
-    IRQ3 -> nvic0@55
-    IRQ4 -> nvic0@56
+    IRQ1 -> mscm@53
+    IRQ2 -> mscm@54
+    IRQ3 -> mscm@55
+    IRQ4 -> mscm@56
 
 mc_me: Miscellaneous.S32KXX_ModeEntryModule @ sysbus 0x402DC000
     cores: [cpu0, cpu1, empty, cpu3, cpu2]
 
 swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
-    -> nvic0@42
+    -> mscm@42
 
 swt1: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x4046C000
-    -> nvic0@43
+    -> mscm@43
 
 swt2: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40470000
-    -> nvic0@44
+    -> mscm@44
 
 swt3: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40070000
-    -> nvic0@58
+    -> mscm@58
 
 stm0: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40274000
     clockFrequency: 48_000_000
-    -> nvic0@39
+    -> mscm@39
 
 stm1: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40474000
     clockFrequency: 48_000_000
-    -> nvic0@40
+    -> mscm@40
 
 stm2: Timers.S32K3XX_SystemTimerModule @ sysbus 0x40478000
     clockFrequency: 48_000_000
-    -> nvic0@41
+    -> mscm@41
 
 stm3: Timers.S32K3XX_SystemTimerModule @ sysbus 0x4047C000
     clockFrequency: 48_000_000
-    -> nvic0@57
+    -> mscm@57
 
 pit0: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B0000
     oscillatorFrequency: 12_000_000
     hasRealTimeInterrupt: true
     hasLifetimeTimer: true
     supportsTimersChaining: true
-    -> nvic0@96
+    -> mscm@96
 
 pit1: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B4000
     oscillatorFrequency: 12_000_000
-    -> nvic0@97
+    -> mscm@97
 
 pit2: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x402FC000
     oscillatorFrequency: 12_000_000
-    -> nvic0@98
+    -> mscm@98
 
 pit3: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x40300000
     oscillatorFrequency: 12_000_000
-    -> nvic0@99
+    -> mscm@99
 
 rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000
-    -> nvic0@102
+    -> mscm@102
 
 lpi2c0: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ sysbus 0x40350000
-    -> nvic0@161
+    -> mscm@161
 
 lpi2c1: I2C.S32K3XX_LowPowerInterIntegratedCircuit @ sysbus 0x40354000
-    -> nvic0@162
+    -> mscm@162
 
 lpspi0: SPI.IMXRT_LPSPI @ sysbus 0x40358000
-    -> nvic0@165
+    -> mscm@165
 
 lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x4035C000
-    -> nvic0@166
+    -> mscm@166
 
 lpspi2: SPI.IMXRT_LPSPI @ sysbus 0x40360000
-    -> nvic0@167
+    -> mscm@167
 
 lpspi3: SPI.IMXRT_LPSPI @ sysbus 0x40364000
-    -> nvic0@168
+    -> mscm@168
 
 lpspi4: SPI.IMXRT_LPSPI @ sysbus 0x404BC000
-    -> nvic0@169
+    -> mscm@169
 
 lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x404C0000
-    -> nvic0@170
+    -> mscm@170
 
 flex_io: Miscellaneous.S32K3XX_FlexIO @ sysbus 0x40324000
     Frequency: 48000000
-    IRQ -> nvic0@139
+    IRQ -> mscm@139
     [Shifter0DMA, Shifter1DMA, Shifter2DMA, Shifter3DMA] -> dma_mux0@[33-36]
     [Shifter4DMA, Shifter5DMA, Shifter6DMA, Shifter7DMA] -> dma_mux1@[34-37]
 
 lpuart0: UART.NXP_LPUART @ sysbus 0x40328000
     frequency: 24000000
     fifoSize: 16
-    IRQ -> nvic0@141
+    IRQ -> mscm@141
     [TransmitDMA, ReceiveDMA] -> dma_mux0@[37-38]
 
 lpuart1: UART.NXP_LPUART @ sysbus 0x4032C000
     frequency: 24000000
     fifoSize: 16
-    IRQ -> nvic0@142
+    IRQ -> mscm@142
     [TransmitDMA, ReceiveDMA] -> dma_mux0@[39-40]
 
 lpuart2: UART.NXP_LPUART @ sysbus 0x40330000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@143
+    IRQ -> mscm@143
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[38-39]
 
 lpuart3: UART.NXP_LPUART @ sysbus 0x40334000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@144
+    IRQ -> mscm@144
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[40-41]
 
 lpuart4: UART.NXP_LPUART @ sysbus 0x40338000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@145
+    IRQ -> mscm@145
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[42-43]
 
 lpuart5: UART.NXP_LPUART @ sysbus 0x4033C000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@146
+    IRQ -> mscm@146
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[44-45]
 
 lpuart6: UART.NXP_LPUART @ sysbus 0x40340000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@147
+    IRQ -> mscm@147
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[46-47]
 
 lpuart7: UART.NXP_LPUART @ sysbus 0x40344000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@148
+    IRQ -> mscm@148
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
 lpuart8: UART.NXP_LPUART @ sysbus 0x4048C000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@149
+    IRQ -> mscm@149
     [TransmitDMA, ReceiveDMA] -> dma_mux0@[37-38]
 
 lpuart9: UART.NXP_LPUART @ sysbus 0x40490000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@150
+    IRQ -> mscm@150
     [TransmitDMA, ReceiveDMA] -> dma_mux0@[39-40]
 
 lpuart10: UART.NXP_LPUART @ sysbus 0x40494000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@151
+    IRQ -> mscm@151
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[38-39]
 
 lpuart11: UART.NXP_LPUART @ sysbus 0x40498000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@152
+    IRQ -> mscm@152
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[40-41]
 
 lpuart12: UART.NXP_LPUART @ sysbus 0x4049C000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@153
+    IRQ -> mscm@153
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[42-43]
 
 lpuart13: UART.NXP_LPUART @ sysbus 0x404A0000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@154
+    IRQ -> mscm@154
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[44-45]
 
 lpuart14: UART.NXP_LPUART @ sysbus 0x404A4000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@155
+    IRQ -> mscm@155
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[46-47]
 
 lpuart15: UART.NXP_LPUART @ sysbus 0x404A8000
     frequency: 24000000
     fifoSize: 4
-    IRQ -> nvic0@156
+    IRQ -> mscm@156
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
 can0: CAN.S32K3XX_FlexCAN @ sysbus 0x40304000
@@ -461,27 +458,27 @@ mc_cgm_mux_19_css: Python.PythonPeripheral @ sysbus 0x402D87C4
 
 gmac0: Network.S32K3XX_GMAC @ sysbus 0x40484000
     systemClockFrequency: 50000000
-    -> nvic0@224
-    Channel0TX -> nvic0@225
-    Channel0RX -> nvic0@226
-    Channel1TX -> nvic0@227
-    Channel1RX -> nvic0@228
-    Channel2TX -> nvic0@229
-    Channel2RX -> nvic0@230
+    -> mscm@224
+    Channel0TX -> mscm@225
+    Channel0RX -> mscm@226
+    Channel1TX -> mscm@227
+    Channel1RX -> mscm@228
+    Channel2TX -> mscm@229
+    Channel2RX -> mscm@230
 
 gmac1: Network.S32K3XX_GMAC @ sysbus 0x40488000
     systemClockFrequency: 50000000
-    -> nvic0@171
-    Channel0TX -> nvic0@172
-    Channel0RX -> nvic0@233
-    Channel1TX -> nvic0@234
-    Channel1RX -> nvic0@235
-    Channel2TX -> nvic0@236
-    Channel2RX -> nvic0@237
+    -> mscm@171
+    Channel0TX -> mscm@172
+    Channel0RX -> mscm@233
+    Channel1TX -> mscm@234
+    Channel1RX -> mscm@235
+    Channel2TX -> mscm@236
+    Channel2RX -> mscm@237
 
 dma: DMA.NXP_eDMA @ sysbus 0x4020C000
     numberOfChannels: 32
-    [0-31] -> nvic0@[4-35] | nvic1@[4-35] | nvic2@[4-35] | nvic3@[4-35]
+    [0-31] -> mscm@[4-35]
 
 dma_channels0_11: DMA.NXP_eDMA_Channels @ sysbus 0x40210000
     dma: dma
