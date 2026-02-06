@@ -18,7 +18,8 @@ function esbuildContext(entryPoint, outfile, browser) {
     platform: browser ? 'browser' : 'node',
     outfile,
     plugins: browser ? [polyfillNode({})] : [],
-    packages: 'external',
+    packages: 'bundle',
+    external: ['isomorphic-ws', 'zod'],
   });
 }
 
