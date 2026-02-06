@@ -12,7 +12,7 @@ OUTPUT_PATH="$ROOT_PATH/output/bin"
 TARGET="Release"
 QUIET=false
 TRACE=false
-NET=false
+NET=true
 
 PARAMS=()
 while [[ "$#" -gt 0 ]]
@@ -64,9 +64,9 @@ BUILD_TYPE_FILE="$OUTPUT_PATH/$TARGET/build_type"
 
 if [[ -f "$BUILD_TYPE_FILE" ]]
 then
-    if [[ "$(cat "$BUILD_TYPE_FILE")" == "dotnet" ]]
+    if [[ "$(cat "$BUILD_TYPE_FILE")" == "mono" ]]
     then
-        NET=true
+        NET=false
     fi
 fi
 
