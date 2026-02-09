@@ -481,6 +481,7 @@ gmac1: Network.S32K3XX_GMAC @ sysbus 0x40488000
 
 dma: DMA.NXP_eDMA @ sysbus 0x4020C000
     numberOfChannels: 32
+    [0-31] -> nvic0@[4-35] | nvic1@[4-35] | nvic2@[4-35] | nvic3@[4-35]
 
 dma_channels0_11: DMA.NXP_eDMA_Channels @ sysbus 0x40210000
     dma: dma
