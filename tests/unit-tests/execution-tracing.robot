@@ -3,8 +3,8 @@ Library                             ../../tools/execution_tracer/execution_trace
 
 *** Variables ***
 ${bin_out_signature}                ReTrace\x04
-${triple_and_model}                 riscv32 rv32imacv
-${64_triple_and_model}              riscv64 rv64imacv
+${riscv_triple_and_model}           riscv32 rv32imacv
+${riscv_64_triple_and_model}        riscv64 rv64imacv
 
 ${riscv_amoadd_d}                   amoadd.d.aqrl a5, a4, (a3)
 ${riscv_amoadd_d_address}           0x2010
@@ -179,9 +179,9 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
                                                 # [0]: pc_width; [1]: include_opcode
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
-                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
     Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${riscv_triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
     Should Be Equal As Bytes                    ${output_file}[29:39]  \x00\x20\x00\x00\x04\xb7\x05\x03\x00\x00
@@ -229,9 +229,9 @@ Should Dump Opcodes As Binary On RISC-V
     Length Should Be                            ${trace}  45
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x00\x01
-                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
     Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${trace}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${trace}[12:29]  ${riscv_triple_and_model}
 
     Should Be Equal As Bytes                    ${trace}[29:35]  \x04\x13\x00\x00\x00\x00
     Should Be Equal As Bytes                    ${trace}[35:39]  \x02\x01\x00\x00
@@ -245,9 +245,9 @@ Should Dump PCs And Opcodes As Binary On RISC-V
     Length Should Be                            ${trace}  57
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x01
-                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
     Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${trace}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${trace}[12:29]  ${riscv_triple_and_model}
 
     Should Be Equal As Bytes                    ${trace}[29:33]  \x00\x20\x00\x00
     Should Be Equal As Bytes                    ${trace}[33:39]  \x04\x13\x00\x00\x00\x00
@@ -618,9 +618,9 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
 
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
-                                                # [0]: uses_thumb_flag; [1]: triple_and_model_length;
+                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
     Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
-    Should Be Equal As Bytes                    ${output_file}[12:29]  ${triple_and_model}
+    Should Be Equal As Bytes                    ${output_file}[12:29]  ${riscv_triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
     Should Be Equal As Bytes                    ${output_file}[29:39]  \x00\x20\x00\x00\x04\x13\x00\x00\x00\x00
