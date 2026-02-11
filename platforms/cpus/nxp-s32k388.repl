@@ -172,6 +172,9 @@ siul2: Miscellaneous.S32K3XX_SystemIntegrationUnitLite2 @ sysbus 0x40290000
 mc_me: Miscellaneous.S32KXX_ModeEntryModule @ sysbus 0x402DC000
     cores: [cpu0, cpu1, empty, cpu3, cpu2]
 
+sema4: Miscellaneous.SEMA42 @ { sysbus 0x40460000; xrdc [2, 280] }
+    xrdc: xrdc
+
 swt0: Timers.S32K3XX_SoftwareWatchdogTimer @ sysbus 0x40270000
     -> mscm@42
 
@@ -532,7 +535,6 @@ sysbus:
         Tag <0x402C4000 0xA8> "TSPC"
         Tag <0x40200000 0x714> "AXBS"
         Tag <0x4027C000 0x48> "INTM"
-        Tag <0x40460000 0x44> "SEMA42"
         Tag <0x40204000 0x10> "XBIC_AXBS"
         Tag <0x4040C000 0x10> "XBIC_AXBS_ACE"
         Tag <0x40008000 0x10> "XBIC_AXBS_ACE_HSE"
