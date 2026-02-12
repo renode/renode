@@ -54,7 +54,7 @@ Register Q${index} Should Contain ${value_128_bit}
         Run Keyword And Continue On Failure  Register Should Be Equal  s${register}  ${value}  message=${message}
     END
 
-${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct Result
+Vector-Vector ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct Result
     Reset Emulation
     Create Machine
 
@@ -66,9 +66,30 @@ ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct
     Load Program And Execute        ${instruction}.${sign}${element_size} q2, q0, q1
 
     ${is_signed}=                   Evaluate  $sign.lower() == "s"
-    # Calls a helper function defined in mve-helpers.py: `compute_$insn_result`.
+    # Calls a helper function defined in mve-helpers.py: `compute_vector_$insn_result`.
     # They're the partial functions at the very bottom (there's no def, just an assignment).
-    ${expected_value}=              Run Keyword  Compute ${instruction} Result
+    ${expected_value}=              Run Keyword  Compute Vector ${instruction} Result
+    ...                             ${element_size}
+    ...                             ${op1}
+    ...                             ${op2}
+    ...                             treat_elements_as_signed=${is_signed}
+    Register Q2 Should Contain ${expected_value}  message=${instruction}.${sign}${element_size}
+
+Vector-Scalar ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct Result
+    Reset Emulation
+    Create Machine
+
+    ${op1}=                         Set Variable  0x80003000b00070007000b00030007fff
+    ${op2}=                         Set Variable  0x7E
+    Set Register Q0 To ${op1}
+    Execute Command                 cpu SetRegister "R0" ${op2}
+
+    Load Program And Execute        ${instruction}.${sign}${element_size} q2, q0, r0
+
+    ${is_signed}=                   Evaluate  $sign.lower() == "s"
+    # Calls a helper function defined in mve-helpers.py: `compute_scalar_$insn_result`.
+    # They're the partial functions at the very bottom (there's no def, just an assignment).
+    ${expected_value}=              Run Keyword  Compute Scalar ${instruction} Result
     ...                             ${element_size}
     ...                             ${op1}
     ...                             ${op2}
@@ -76,8 +97,19 @@ ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct
     Register Q2 Should Contain ${expected_value}  message=${instruction}.${sign}${element_size}
 
 *** Test Cases ***
-Vector Instructions Should Produce Correct Results
-    [Template]                      ${instruction}.${sign}${element_size} Should Produce Correct Result
+Vector-Vector Instructions Should Produce Correct Results
+    [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
+
+    FOR  ${instruction}  IN  vhadd  vhsub
+        FOR  ${sign}  IN  s  u
+            FOR  ${element_size}  IN  8  16  32
+                ${instruction}                  ${sign}  ${element_size}
+            END
+        END
+    END
+
+Vector-Scalar Instructions Should Produce Correct Results
+    [Template]                      Vector-Scalar ${instruction}.${sign}${element_size} Should Produce Correct Result
 
     FOR  ${instruction}  IN  vhadd  vhsub
         FOR  ${sign}  IN  s  u

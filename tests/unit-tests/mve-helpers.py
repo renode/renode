@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import partial
+from typing import Tuple
 
 
 def assert_starts_with_0x_prefix(string: str):
@@ -48,13 +49,9 @@ def combine_n_into_128_bit_value(n: int, values_n_bit: list[str]) -> str:
     return "0x" + "".join([value.zfill(chars_in_n_bit_hex) for value in values_n_bit])
 
 
-def compute_vector_op(
-    op: Callable[[int, int], int],
-    element_size_str: str,
-    operand1_128_bit: str,
-    operand2_128_bit: str,
-    treat_elements_as_signed: bool,
-) -> str:
+def prepare_vector_op(
+    element_size_str: str, treat_elements_as_signed: bool
+) -> Tuple[Callable[[str], int], Callable[[int], str], int]:
     element_size = int(element_size_str)  # Robot insists on passing it as a string :(
 
     if treat_elements_as_signed:
@@ -69,6 +66,21 @@ def compute_vector_op(
     assert (
         128 % element_size == 0
     ), f"128 must be divisible by element size, {element_size} is not"
+
+    return hex_to_int, int_to_hex, element_size
+
+
+def compute_vector_vector_op(
+    op: Callable[[int, int], int],
+    element_size_str: str,
+    operand1_128_bit: str,
+    operand2_128_bit: str,
+    treat_elements_as_signed: bool,
+) -> str:
+    hex_to_int, int_to_hex, element_size = prepare_vector_op(
+        element_size_str, treat_elements_as_signed
+    )
+
     elements1 = [
         hex_to_int(value)
         for value in split_into_n_bit_values(element_size, operand1_128_bit)
@@ -78,6 +90,26 @@ def compute_vector_op(
         for value in split_into_n_bit_values(element_size, operand2_128_bit)
     ]
     result_elements = [int_to_hex(op(e1, e2)) for (e1, e2) in zip(elements1, elements2)]
+    return combine_n_into_128_bit_value(element_size, result_elements)
+
+
+def compute_vector_scalar_op(
+    op: Callable[[int, int], int],
+    element_size_str: str,
+    operand1_128_bit: str,
+    operand2_32_bit: str,
+    treat_elements_as_signed: bool,
+) -> str:
+    hex_to_int, int_to_hex, element_size = prepare_vector_op(
+        element_size_str, treat_elements_as_signed
+    )
+
+    elements1 = [
+        hex_to_int(value)
+        for value in split_into_n_bit_values(element_size, operand1_128_bit)
+    ]
+    op2 = hex_to_int(operand2_32_bit)
+    result_elements = [int_to_hex(op(e1, op2)) for e1 in elements1]
     return combine_n_into_128_bit_value(element_size, result_elements)
 
 
@@ -102,5 +134,19 @@ def twos_complement(bits: int, hexstr: str) -> int:
 # Partial applications of `compute_vector_op`.
 # The functions below only provide the first argument (`op`),
 # leaving the others to be specified by the caller.
-compute_vhadd_result = partial(compute_vector_op, lambda a, b: (a + b) // 2)
-compute_vhsub_result = partial(compute_vector_op, lambda a, b: (a - b) // 2)
+
+# Vector-vector variants
+compute_vector_vhadd_result = partial(
+    compute_vector_vector_op, lambda a, b: (a + b) // 2
+)
+compute_vector_vhsub_result = partial(
+    compute_vector_vector_op, lambda a, b: (a - b) // 2
+)
+
+# Vector-scalar variants
+compute_scalar_vhadd_result = partial(
+    compute_vector_scalar_op, lambda a, b: (a + b) // 2
+)
+compute_scalar_vhsub_result = partial(
+    compute_vector_scalar_op, lambda a, b: (a - b) // 2
+)
