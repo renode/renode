@@ -33,15 +33,15 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void RegisterShouldBeEqual(int register, ulong value, string machine = null, string cpuName = null)
+        public void RegisterShouldBeEqual(int register, ulong value, string machine = null, string cpuName = null, string message = null)
         {
-            RegisterShouldBeEqualInner(register, value, machine, cpuName);
+            RegisterShouldBeEqualInner(register, value, machine, cpuName, message);
         }
 
         [RobotFrameworkKeyword]
-        public void RegisterShouldBeEqual(string register, ulong value, string machine = null, string cpuName = null)
+        public void RegisterShouldBeEqual(string register, ulong value, string machine = null, string cpuName = null, string message = null)
         {
-            RegisterShouldBeEqualInner(register, value, machine, cpuName);
+            RegisterShouldBeEqualInner(register, value, machine, cpuName, message);
         }
 
         [RobotFrameworkKeyword]
@@ -151,21 +151,22 @@ namespace Antmicro.Renode.RobotFramework
             return selectedCpu;
         }
 
-        private void RegisterShouldBeEqualInner<T>(T register, ulong value, string machine = null, string cpuName = null)
+        private void RegisterShouldBeEqualInner<T>(T register, ulong value, string machine = null, string cpuName = null, string message = null)
         {
             var machineObj = GetMachineByNameOrSingle(machine);
 
             var cpu = GetCPU(machineObj, cpuName) as ICPUWithRegisters;
             if(cpu == null)
             {
-                throw new KeywordException("This CPU does not allow to access registers");
+                throw new KeywordException($"CPU `{cpuName}` does not allow access to registers");
             }
 
             var actual = (register is string r ? cpu.GetRegister(r) : cpu.GetRegister((register as int?).Value)).RawValue;
 
             if(actual != value)
             {
-                throw new KeywordException($"Register {register} value assertion failed, actual: 0x{actual:x}, expected: 0x{value:x}");
+                var prefix = message is string s ? $"{s}: " : "";
+                throw new KeywordException($"{prefix}Register {register} value assertion failed, actual: 0x{actual:x}, expected: 0x{value:x}");
             }
         }
     }
