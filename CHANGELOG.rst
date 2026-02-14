@@ -3,6 +3,344 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.16.1 - 2026.02.16
+-------------------
+
+Added and improved architecture support:
+
+* ARM:
+
+  * added initial support for ARM Helium M-Profile Vector Extension (MVE) along with exposing the registers to GDB
+  * added support for FPv5 in ARMv8-M along with exposing registers to GDB
+  * added support for Cortex-M55
+  * added support for the RNDR system register, which can be enabled on cores that don\'t support it in hardware using ``cpu EnableRNDR true``
+    * this may be helpful for Linux RNG initialization, for example
+  * added initial Cortex-R52 system register support for Trace32 and GDB
+  * extended Cortex-R52 system register support with 64-bit CP14/15 registers
+  * added basic support for `IMP_xTCMREGIONR` registers
+  * added support for accessing GIC and Timer system registers from GDB
+  * added support for enabling and disabling TCM at given EL
+  * enabled use of secure memory access in PC and SP initialization for Cortex-M
+  * for ARMv8.2 platforms, GIC no longer ignores Aff0
+    * the full `cpuId` needs to be specified as a local interrupt target (e.g. `gic#1@26` needs to be changed to `gic#0x100@26`), for CPU with `cpuId: 0x100`.
+  * improved Cortex-R52 system register GDB tests
+  * fixed ARMv8-M Thumb2 data processing instructions
+  * fixed Cortex-M bus isolation tests
+  * fixed Stack Pointer bits [1-0] handling on Cortex-M
+  * fixed Cortex-R52 execution tracing disassembly
+  * fixed setting and getting the `FPSCR` Cortex-M register
+  * fixed `SRS` instruction
+  * fixed load/store exclusive correctness issues
+  * fixed ARM `vcvtp` decoding
+  * fixed wrong exception being raised when FPU is disabled on Cortex-M
+  * fixed `VCVTB`/`VCVTT` issues on 32-bit ARM
+
+* RISC-V:
+
+  * added a stub of `Sscofpmf` extension
+  * added tracing of `Zaamo` operand contents
+  * added `clmul`, `clmulh` and `clmulr` RISC-V instructions
+  * fixed the behavior of several instructions from the `Zba` and `Zbb` RISC-V extensions
+  * fixed half precision floating point instructions so that they respect rounding mode in `frm` and reflect set exception flags in `fflags`
+  * fixed `lr`/`sc` correctness issues
+  * added missing RISC-V `rv32b` and `rv64b` extension opcodes to `opcodesFilesMap`
+  * added support for external RISC-V PMP implementations
+  * added a mechanism for ensuring that memory access outside of the physical address space on RISC-V are handled
+  * added a stub of RV32-only `mstatush` CSR
+  * added a warning when software attempts to set unsupported data access endianess
+  * increased RISC-V physical address space size from 50 to 56 bits
+  * added the ability to inspect `fflags`, `frm` and `fcsr` unprivileged floating point CSRs from GDB and the Monitor
+  * added support for core internal interrupts
+  * added a `PreStackAccessHook` functionality
+  * fixed RISC-V `mtvec`/`stvec` CSR values when accessing them through the Monitor
+  * fixed various vector instructions
+  * fixed RISC-V PMP not being properly set after machine reset
+  * fixed overly aggressive cached translation block matching
+
+* x86/x86-64:
+
+  * added initial x86-64 KVM-based CPU support with enabled GDB debugging
+
+* Xtensa:
+
+  * added experimental assembler and disassembler for Xtensa
+
+Added and improved platform descriptions:
+
+* Egis ET171
+* FocalTech FT9001
+* ZynqMP
+* NXP S32K388
+* NXP MIMXRT700-EVK
+* X86_64KVM CPU
+* Tock VeeR EL2 Sim platform
+* Nuvoton NPCX9 OTPI ROM function mocks
+* Added alternative timer function handling in:
+
+  * STM32F0
+  * STM32F4
+  * STM32F103
+  * STM32F746
+  * STM32G0
+  * STM32H743
+  * STM32L151
+  * STM32L552
+  * STM32WBA52
+
+* Added individual interrupt signals in:
+
+  * STM32F0
+  * STM32F103
+  * STM32F4
+  * STM32F746
+  * STM32G0
+  * STM32L552
+  * STM32WBA52
+
+Added demos and tests:
+
+* EFR32xG24 running railtest
+* Nucleo H753ZI running the Zephyr net/ptp sample
+* i386_64-bios test and sample
+* i386_64-linux test and sample
+* Egis ET171 Zephyr tests and script
+* RenesasRZ/G2L OpenAMP demo
+* Nucleo H753ZI running the Hubris kernel
+* X86_64 KVM Linux on VirtIO test and sample
+* FocalTech FT9001 running Zephyr and ChromeOS EC Fingerprint software
+* demo and tests for MIMXRT700-EVK running hello_world, shell_module, philosophers and I2S Zephyr samples
+* reverse execution demo
+* basic Cortex-R52 execution tracer disassembly test
+* ARM FPv5 unit tests
+* `sync_pc` test for Cortex-A53
+* round-trip assembly/disassembly test for Cortex-R52
+* test checking for `SRS`/`RFE` ARM guest Renode crashes
+* opcodes counting test for the RISC-V B extension
+* Ethernet test on ZynqMP with SMMUv3
+* STM32H7 Flash erase and program test
+* VeeR EL2 PIC tests
+* sysbus `overridePeripheralAccesses` tags tests
+* sysbus `silent` tags tests
+* test suite for the auto-save functionality
+* `GuestCacheAnalyzer` testsuite
+* test infrastructure for `riscv-tests` unit tests
+
+Added features:
+
+* Renode server mode for WebSocket communication, along with a TypeScript API library
+* support for multiple *.cs files provided for ad-hoc compilation
+* support for unsafe code during ad-hoc compilation
+* optional TCG ops backtrace in debug mode on Linux
+* optional `overridePeripheralAccesses` parameter for sysbus tags
+* optional `silent` parameter for sysbus tags
+* peripheral access profiling in host time
+* readline-like key bindings
+* forward search in the terminal after pressing C-s
+* text selection in the terminal by word/line on double/triple click
+* system bus access via the External Control API
+* auto-save mechanism, used e.g. for backward debugging, along with an option to load the latest snapshot
+* support for the `reverse-continue` GDB command
+* support for the `reverse-stepi` GDB command
+* ability to preserve configuration across emulation reload
+* handling of Trace32's batched register requests
+* creating unlimited number of external MMU regions at runtime
+* ability to place the external MMU before or after the CPU's internal MMU
+
+* shadow reload and shadow registers API
+* mechanism for loading SFDP data for SPI flash
+* common mechanism of encoding and decoding SFDP via Packets
+* loading gzip-compressed files using `DataStorage` (`VirtIOBlockdevice`, `SDCard`, `USBPendrive`, `CDROM`, `SamsungK9NANDFlash`)
+* `IADC` extension for setting/getting channel values in volts
+* support for NV12 pixel format in VideoAnalyzer
+* new data transmission and routing events for UART hub
+* support for custom underlying types in UART
+* support for delaying UART transmissions
+* API to disconnect co-simulated blocks
+* `exitTimeout` option for co-simulation connection termination
+
+* support for passing arrays to property and field setters in the Monitor
+* support for providing peripheral references to field and property setters
+* `export` sub-command to the `peripherals` command
+* specifying enum values in repl using just `.Value` without the full namespace/type name
+* support for `ForEach` and `Select` on enumerables in the Monitor
+  * for example `cluster0 ForEach PC 0x8000` or `qspi.spiFlash SFDPSignature Select ToString "x4"`
+* support for passing lists as property/argument values in platform descriptions
+* `preinit` attribute in repl, executed before any peripherals from the description being loaded are created
+  * useful to load ad-hoc models from the platform description level
+* Execution Tracer can now accept arbitrary pc-to-line mappings in the absence of DWARF data
+* logging of peripheral register names in unhandled access warnings of `BasicDoubleWordPeripheral`
+
+Changed:
+
+* `./renode` now defaults to dotnet
+* formatted Renode code and added autoformat rules
+* dotnet is now a default runtime, use the --mono flag to target an old runtime
+* changed the Windows installer for the .NET version of Renode
+* allowed delaying invalidation of translation blocks on writes
+* optimized memory accesses
+* optimized HST based atomics for single core machines
+* renamed several x86 and x86-64 demos:
+
+  * acrn_x86_64_zephyr demo to acrn_x86_64-zephyr
+  * i386-kvm platform to x86-kvm
+  * i386-kvm-bios demo to x86-kvm-bios
+  * i386-kvm-linux demo to x86-kvm-linux - i386 platform and demo to x86
+  * i386_64-kvm platform to x86_64-kvm
+  * i386_64-kvm-bios demo to x86_64-kvm-bios
+  * i386_64-kvm-linux demo to x86_64-kvm-linux
+  * i386_zephyr demo to x86-zephyr
+
+* set dotnet as default target in VS Code tasks
+* renamed `EnableRiscvOpcodesCounting` to `EnableRiscvOpcodesCountingByExtension`
+* local interrupt targets now accept hexadecimal values (syntax- `->peripheral@0x1@1`)
+* moved from Gtk2 to Gtk3 on Mono
+* removed support for Conda package
+* `Align`, `Offet`, `PaddingBefore` and `Width` packet field attributes should now only be used with named arguments
+* improved TCG backtrace debug printing
+* changed timeout measuring to only include the pause command in pause-without-sleep.robot
+* if GNU `parallel` is installed, tlib will be built in parallel
+* renamed `NEORV32_MachineSystemTimer` to `RiscVMachineTimer`
+* changed `ClockEntry` frequency type to ulong
+* renamed `IMXRT700_eDMA` to `NXP_eDMA`
+* improved and simplified `PixelManipuationTools` blending and conversion
+* GPIO connectors now detach their connections on machine disposal
+* reverse search in terminal now ignores duplicate entries
+
+Fixed:
+
+* GIC crashing the simulation when parsing SGI `InterruptEnd`
+* handling of large (>8 bytes) writes to the bus
+* hook addresses in NPCX9 bootrom for Thumb mode
+* Monitor crashing when setting a variable
+* GDB integration on address translation failure
+* infinitely growing dirty addresses list
+* parsing of IPv6 frame headers
+* serialization of RESD-enabled peripherals
+* various freezes appearing when single stepping on multicore platforms
+* CPU registration in clusters
+* crash on older arm64 hosts (e.g. Raspberry Pi 4)
+* PeakRDL-renode generating incorrect register reset values
+* conversion related warnings generated by PeakRDL-renode
+* initial state for APB3 Requester, now the state is initialized only in reset
+* crash when loading \`.gz\` snapshots
+* WebSocket exec-renode action
+* deadlock when trying to register peripheral in an unregistered parent
+* exception message for registration conflict
+* renode-models-analyzer skipping peripherals on partial register/field overlap
+* TCG buffer overflow
+* CPU symbol hooks not querying per-CPU loaded symbols
+* crash when `TranslationCPU.Dispose` is called multiple times
+* `policykit` dependency for Debian packages
+* ending/deactivating interrupts in GIC for non-SGI interrupts without provided `cpuId`
+* GIC occasionally ignoring affinity bits above the first meaningful byte, when registering CPUs
+* KVM CPU abort on `EINTR` in initialization
+* occasional null reference exception in DPI integration library
+* possible timer event loss between `kvm_run` calls
+* race condition when interrupting KVM core execution
+* file descriptor leakage on KVM cores
+* handling of abstract class construction in platform string
+* handling of non-existent `DataStore` image files
+* handling of unregistered domain thread for `RunFor` command
+* handling recursive substitution in `ExecutionTracer`
+* printing sources with .NET ad-hoc compilation diagnostics
+* single-step mode persisting on KVM cores
+* sysbus not respecting registration offsets
+* fixed race on access to `ContextKeyDictionary` in `SystemBus`
+* crash when loading empty string with `LoadPlatformDescriptionFromString`
+* race condition when initialising LLVM disassemblers
+* `CoSimulationConnection` state after `DisconnectAll`
+* SystemC Plugin compilation with MSVC
+* compilation on .NET 10
+
+Added peripheral models:
+
+* Andes ATCGPIO100
+* Andes ATCPIT100
+* Andes ATCSPI200
+* Andes ATCWDT200
+* ARM SMMUv3 (System Memory Management Unit v3)
+* Allegro E310 video encoder
+* Cadence USB stub
+* eDMA for i.MX RT700
+* Egis ET171 AOSMU
+* FocalTech FT9001 Clock & Power Manager (CPM)
+* FocalTech FT9001 Reset
+* FocalTech FT9001 True Random Number Generator (TRNG)
+* FocalTech FT9001 USART
+* i.MX RT700 SYSCON0 and SYSCON1
+* ISSI IS25WP
+* MICFIL for i.MX RT700
+* Puya P25Q Flash
+* S32K3XX DMA multiplexer
+* SAI for i.MX RT700
+* S32K3XX DMA multiplexer
+* STM32 DMAMUX
+* STM32F1 AFIO
+* STM32H SDMMC
+* STM32H7 System Window Watchdog
+* TAS2572 mock
+* VeeR EL2 PIC
+* VeeR EL2 internal timers
+* VirtIO MMIO Console Device
+* VirtIO MMIO Entropy Device
+
+Improvements in peripherals:
+
+* ADXL345
+* Arm GIC
+* Cadence GEM
+* Cadence UART
+* Cadence xSPI
+* Caliptra I3C
+* FT5336
+* Generic SPI Flash
+* i.MX RT700 CLKCTL
+* IOAPIC
+* LAPIC
+* LIS2DS12
+* LiteX UART
+* MAX32650 over I2C
+* MCAN
+* NRF54H20 GRTC
+* NRF54L Clock
+* NVIC
+* NXP eDMA
+* NXP LPUART
+* OMAP GPTimer
+* OpenTitan SPI Host
+* PL330 DMA
+* Renesas SCI
+* Renesas RA* GPIO
+* Renesas RZG SCIFA
+* RenesasDA Watchdog
+* S32K3XX FlexIO
+* S32K3XX Mode Entry Module
+* S32K3XX MSCM
+* SAM PDC
+* SAM TC
+* SAM USART
+* SAM4S ADC
+* SAM4S PIO
+* SAM4S TWI
+* SAM4S USART
+* SD Card
+* Segger RTT
+* STM32 ADC Common
+* STM32 DMA
+* STM32 DMA2D
+* STM32 LTDC
+* STM32 Timer
+* STM32 UART
+* STM32F SDMMC
+* STM32F4 RCC
+* STM32F7 I2C
+* STM32H7 Crypto
+* STM32H7 Flash
+* Synopsys DWC Ethernet Quality Of Service
+* Universal Flash Storage (JESD220F)
+* VeeR EL2 RISC-V core
+* ZynqMP GQSPI
+
 1.16.0 - 2025.08.02
 -------------------
 
