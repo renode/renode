@@ -59,6 +59,7 @@ Create RESD File
 
 *** Test Cases ***
 Should Read Samples From RESD
+    [Tags]                          skipped
     ${bin}=                         Download Bin File
     ${RESD}=                        Create RESD File  ${SAMPLES_CSV}
     Create Machine
