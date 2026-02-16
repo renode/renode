@@ -35,6 +35,7 @@ FILE_VERSION = b"\x04"
 HEADER_LENGTH = 10
 MEMORY_ACCESS_LENGTH = 25
 RISCV_VECTOR_CONFIGURATION_LENGTH = 16
+BYTE_ORDER = "little"
 
 
 class AdditionalDataType(Enum):
@@ -124,7 +125,7 @@ def read_file(file: BinaryIO, disassemble: bool, llvm_disas_path: Optional[str])
 
 
 def bytes_to_hex(bytes: bytes, zero_padded=True) -> str:
-    integer = int.from_bytes(bytes, byteorder="little", signed=False)
+    integer = int.from_bytes(bytes, byteorder=BYTE_ORDER, signed=False)
     format_string = "0{}X".format(len(bytes)*2) if zero_padded else "X"
     return "0x{0:{fmt}}".format(integer, fmt=format_string)
 
@@ -208,7 +209,7 @@ class TraceData:
                 raise InvalidFileFormatException("Unexpected end of file")
             
             # The `instructions_left_in_block` counter is kept only for traces produced by cores that can switch between multiple modes.
-            self.instructions_left_in_block = int.from_bytes(block_length_raw, byteorder="little", signed=False)
+            self.instructions_left_in_block = int.from_bytes(block_length_raw, byteorder=BYTE_ORDER, signed=False)
 
         if self.uses_multiple_instruction_sets:
             self.instructions_left_in_block -= 1
