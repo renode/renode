@@ -1,6 +1,7 @@
 *** Settings ***
 Library                             ${CURDIR}/mve-helpers.py
 Library                             Collections
+Library                             String
 
 *** Variables ***
 ${START_ADDRESS}                    0x100
@@ -98,7 +99,7 @@ Vector-Vector ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should P
     ...                             treat_elements_as_signed=${is_signed}
     Register Q2 Should Contain ${expected_value}  message=${instruction}.${sign}${element_size}  element_size=${element_size}
 
-VCADD.I${element_size} ${rotation} Should Produce Correct Result
+Complex Vector-Vector ${instruction:(vcadd.i|vhcadd.s)}${element_size} ${rotation} Should Produce Correct Result
     Reset Emulation
     Create Machine
 
@@ -107,10 +108,11 @@ VCADD.I${element_size} ${rotation} Should Produce Correct Result
     Set Register Q0 To ${op1}
     Set Register Q1 To ${op2}
 
-    Load Program And Execute        vcadd.i${element_size} q2, q0, q1, #${rotation}
+    Load Program And Execute        ${instruction}${element_size} q2, q0, q1, #${rotation}
 
     # Calls a helper function defined in mve-helpers.py: `compute_vector_vcadd_result`.
-    ${expected_value}=              Compute Vector VCADD Result
+    ${instruction_name}=            Split String  ${instruction}  .
+    ${expected_value}=              Run Keyword  Compute Vector ${instruction_name}[0] Result
     ...                             ${element_size}
     ...                             ${op1}
     ...                             ${op2}
@@ -150,12 +152,14 @@ Vector-Vector Instructions Should Produce Correct Results
         END
     END
 
-VCADD Should Produce Correct Results
-    [Template]                      VCADD.I${element_size} ${rotation} Should Produce Correct Result
+Vector-Vector Complex Number Instructions Should Produce Correct Results
+    [Template]                      Complex Vector-Vector ${instruction}${element_size} ${rotation} Should Produce Correct Result
 
-    FOR  ${rotation}  IN  90  270
-        FOR  ${element_size}  IN  8  16  32
-            ${element_size}                 ${rotation}
+    FOR  ${instruction}  IN  vhcadd.s  vcadd.i
+        FOR  ${rotation}  IN  90  270
+            FOR  ${element_size}  IN  8  16  32
+                ${instruction}                  ${element_size}  ${rotation}
+            END
         END
     END
 

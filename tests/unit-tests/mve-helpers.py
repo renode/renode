@@ -103,14 +103,12 @@ def compute_vector_vector_op(
     return combine_n_into_128_bit_value(element_size, result_elements)
 
 
-# As this is a special case, handle it separately from the other vector operations.
-def compute_vector_vcadd_result(
-    element_size_str: str,
-    operand1_128_bit: str,
-    operand2_128_bit: str,
-    rotation_str: str,
-) -> str:
-    rotation = int(rotation_str)
+def op_with_complex_rotation(
+    op: Callable[[complex, complex], complex],
+    op1: complex,
+    op2: complex,
+    rotation: int,
+) -> complex:
     assert (
         rotation == 90 or rotation == 270
     ), f"`rotation` must be 90 or 270, but it is {rotation}"
@@ -121,12 +119,22 @@ def compute_vector_vcadd_result(
         # j is the imaginary number i in python
         return operand * 1j if rotation == 90 else operand * -1j
 
+    return op(op1, rotate_operand(op2))
+
+
+# As this is a special case, handle it separately from the other vector operations.
+def compute_vector_complex_rotation_op_result(
+    op: Callable[[complex, complex], complex],
+    element_size_str: str,
+    operand1_128_bit: str,
+    operand2_128_bit: str,
+    rotation_str: str,
+) -> str:
+    rotation = int(rotation_str)
+
     hex_to_int, int_to_hex, element_size = prepare_vector_op(
         element_size_str, treat_elements_as_signed=True
     )
-
-    def add_with_rotation(op1: complex, op2: complex) -> complex:
-        return op1 + rotate_operand(op2)
 
     def split_into_ints(val: complex) -> Tuple[int, int]:
         return int(val.real), int(val.imag)
@@ -150,10 +158,13 @@ def compute_vector_vcadd_result(
         complex(elements2[i], elements2[i + 1]) for i in range(0, len(elements2), 2)
     ]
 
+    # For now, we always apply rotation to the second operand.
+    op_with_rotation = partial(op_with_complex_rotation, op)
+
     result_elements = [
         int_to_hex(component)
         for (e1, e2) in zip(complex1, complex2)
-        for component in split_into_ints(add_with_rotation(e1, e2))
+        for component in split_into_ints(op_with_rotation(e1, e2, rotation))
     ]
     return combine_n_into_128_bit_value(element_size, result_elements)
 
@@ -197,6 +208,11 @@ def twos_complement(bits: int, hexstr: str) -> int:
     return value
 
 
+def floor_div_complex(number: complex, divisor: int) -> complex:
+    """Performs integer division on a complex number."""
+    return complex(number.real // divisor, number.imag // divisor)
+
+
 # Partial applications of `compute_vector_op`.
 # The functions below only provide the first argument (`op`),
 # leaving the others to be specified by the caller.
@@ -207,6 +223,15 @@ compute_vector_vhadd_result = partial(
 )
 compute_vector_vhsub_result = partial(
     compute_vector_vector_op, lambda a, b: (a - b) // 2
+)
+
+
+# Vector-vector complex number variants
+compute_vector_vcadd_result = partial(
+    compute_vector_complex_rotation_op_result, lambda a, b: a + b
+)
+compute_vector_vhcadd_result = partial(
+    compute_vector_complex_rotation_op_result, lambda a, b: floor_div_complex(a + b, 2)
 )
 
 # Vector-scalar variants
