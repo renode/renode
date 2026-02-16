@@ -190,6 +190,40 @@ Run RISC-V Program With Memory Access
 
     Execute Command                             sysbus.cpu Step 3
 
+Run Program and Trace Registers on ARM
+    [Arguments]                     ${binary_trace}=false
+    ...                             ${mask}=0x0
+    ...                             ${value}=0x0
+
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescription @platforms/cpus/a20.repl
+
+    ${start_address}=               Set Variable  0x0
+    # Load Program And Execute
+    ${program}=                     Catenate  SEPARATOR=\n
+    ...                             .arm  # Instructions in arm mode
+    ...                             movs r0, #1
+    ...                             add r1, r0, r1
+    ...                             blx thumb
+    ...                             wfi  # Wait for interrupt - program will stop execution at this instruction.
+    ...                               # It's here, so we can let emulation run to this point, instead of having to precisely step to it
+    ...                             .thumb  # Instructions in thumb mode
+    ...                             thumb:
+    ...                             movs r0, #0
+    ...                             cmp r0, r1
+    ...                             bx lr
+    Execute Command                 cpu AssembleBlock ${start_address} """${program}"""
+
+    ${trace_file}=                  Allocate Temporary File
+
+    Execute Command                 sysbus.cpu PC ${start_address}
+    Execute Command                 sysbus.cpu CreateExecutionTracing "tracer" "${trace_file}" Opcode ${binary_trace}
+    Execute Command                 tracer TrackRegisters ["R0", "R1", "PC", "LR"] ${mask} ${value}
+    Execute Command                 emulation RunFor "0.0001"
+    Execute Command                 sysbus.cpu DisableExecutionTracing
+
+    [Return]                        ${trace_file}
+
 Should Be Equal As Bytes
     [Arguments]                                 ${bytes}  ${str}
     ${str_bytes}                                Convert To Bytes  ${str}
@@ -745,6 +779,70 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
     Should Be Equal As Bytes                    ${output_file}[47:57]  \x06\x20\x00\x00\x04\x57\x70\x00\x04\x02
                                                 # [0:8]: vl; [8:16]: vtype; [16]: additional_data_type = None
     Should Be Equal As Bytes                    ${output_file}[57:74]  \x00\x00\x00\x00\x00\x00\x00\x00\x40\x00\x00\x00\x00\x00\x00\x00\x00
+
+Should Trace Registers on ARM
+    ${trace_file}=                  Run Program and Trace Registers on ARM  binary_trace=false
+    ${trace_content}=               Get File  ${trace_file}
+    @{trace}=                       Split To Lines  ${trace_content}
+
+    Length Should Be                ${trace}  21
+    Should Match                    ${trace[0]}  0xE3B00001
+    Should Match                    ${trace[1]}  ${SPACE}Pre: R0: 0x0 | R1: 0x0 | PC / R15: 0x0 | LR / R14: 0x0
+    Should Match                    ${trace[2]}  Post: R0: 0x1 | R1: 0x0 | PC / R15: 0x0 | LR / R14: 0x0
+    Should Match                    ${trace[3]}  0xE0801001
+    Should Match                    ${trace[4]}  ${SPACE}Pre: R0: 0x1 | R1: 0x0 | PC / R15: 0x4 | LR / R14: 0x0
+    Should Match                    ${trace[5]}  Post: R0: 0x1 | R1: 0x1 | PC / R15: 0x4 | LR / R14: 0x0
+    Should Match                    ${trace[6]}  0xFA000000
+    Should Match                    ${trace[7]}  ${SPACE}Pre: R0: 0x1 | R1: 0x1 | PC / R15: 0x8 | LR / R14: 0x0
+    Should Match                    ${trace[8]}  Post: R0: 0x1 | R1: 0x1 | PC / R15: 0x10 | LR / R14: 0xC
+    Should Match                    ${trace[9]}  0x2000
+    Should Match                    ${trace[10]}  ${SPACE}Pre: R0: 0x1 | R1: 0x1 | PC / R15: 0x10 | LR / R14: 0xC
+    Should Match                    ${trace[11]}  Post: R0: 0x0 | R1: 0x1 | PC / R15: 0x10 | LR / R14: 0xC
+    Should Match                    ${trace[12]}  0x4288
+    Should Match                    ${trace[13]}  ${SPACE}Pre: R0: 0x0 | R1: 0x1 | PC / R15: 0x12 | LR / R14: 0xC
+    Should Match                    ${trace[14]}  Post: R0: 0x0 | R1: 0x1 | PC / R15: 0x12 | LR / R14: 0xC
+    Should Match                    ${trace[15]}  0x4770
+    Should Match                    ${trace[16]}  ${SPACE}Pre: R0: 0x0 | R1: 0x1 | PC / R15: 0x14 | LR / R14: 0xC
+    Should Match                    ${trace[17]}  Post: R0: 0x0 | R1: 0x1 | PC / R15: 0xC | LR / R14: 0xC
+    Should Match                    ${trace[18]}  0xE320F003
+    Should Match                    ${trace[19]}  ${SPACE}Pre: R0: 0x0 | R1: 0x1 | PC / R15: 0xC | LR / R14: 0xC
+    Should Match                    ${trace[20]}  Post: R0: 0x0 | R1: 0x1 | PC / R15: 0x10 | LR / R14: 0xC
+
+Should Trace Registers on ARM With Masks
+    #  Mask: 0b1111 0000 0000 0000 0000 0000 0000 0000
+    # Value: 0b1110 0000 0000 0000 0000 0000 0000 0000
+    # TrackRegisters should only write out registers for ARM instructions beside blx
+    ${trace_file}=                  Run Program and Trace Registers on ARM  binary_trace=false  mask=0xF0000000  value=0xE0000000
+    ${trace_content}=               Get File  ${trace_file}
+    @{trace}=                       Split To Lines  ${trace_content}
+
+    Length Should Be                ${trace}  13
+    Should Match                    ${trace[0]}  0xE3B00001
+    Should Match                    ${trace[1]}  ${SPACE}Pre: R0: 0x0 | R1: 0x0 | PC / R15: 0x0 | LR / R14: 0x0
+    Should Match                    ${trace[2]}  Post: R0: 0x1 | R1: 0x0 | PC / R15: 0x0 | LR / R14: 0x0
+    Should Match                    ${trace[3]}  0xE0801001
+    Should Match                    ${trace[4]}  ${SPACE}Pre: R0: 0x1 | R1: 0x0 | PC / R15: 0x4 | LR / R14: 0x0
+    Should Match                    ${trace[5]}  Post: R0: 0x1 | R1: 0x1 | PC / R15: 0x4 | LR / R14: 0x0
+    Should Match                    ${trace[6]}  0xFA000000
+    Should Match                    ${trace[7]}  0x2000
+    Should Match                    ${trace[8]}  0x4288
+    Should Match                    ${trace[9]}  0x4770
+    Should Match                    ${trace[10]}  0xE320F003
+    Should Match                    ${trace[11]}  ${SPACE}Pre: R0: 0x0 | R1: 0x1 | PC / R15: 0xC | LR / R14: 0xC
+    Should Match                    ${trace[12]}  Post: R0: 0x0 | R1: 0x1 | PC / R15: 0x10 | LR / R14: 0xC
+
+Should Match Registers in Text and Binary Trace on ARM
+    ${trace_text_file}=             Run Program and Trace Registers on ARM  binary_trace=false
+    Execute Command                 Clear
+    ${trace_bin_file}=              Run Program and Trace Registers on ARM  binary_trace=true
+
+    # Parse Binary Trace is from renode/tools/execution_tracer/execution_tracer_keywords.py
+    ${trace_bin_entries}=           Parse Binary Trace  path=${trace_bin_file}  disassemble=False
+    ${trace_bin_content}=           Catenate  SEPARATOR=\n  @{trace_bin_entries}
+
+    ${trace_text_content}=          Get File  ${trace_text_file}
+
+    Should Be Equal As Strings      ${trace_bin_content}  ${trace_text_content}[0:-1]  # Skip last newline character when comparing
 
 Should Show Error When Format Is Incorrect
     Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=False
