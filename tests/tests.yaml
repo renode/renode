@@ -272,3 +272,6 @@
 
 - port_3341:
   - tests/network-logging/network-logging.robot
+
+- port_3342:
+  - tests/unit-tests/gdb/gdb_should_crash.robot
