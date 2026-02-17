@@ -499,14 +499,19 @@ dma: DMA.NXP_eDMA @ { sysbus 0x4020C000; xrdc [1, 131] }
 
 dma_channels0_11: DMA.NXP_eDMA_Channels @ sysbus 0x40210000
     dma: dma
+    xrdc: xrdc
     count: 12
     channelSize: 0x4000
+    defaultMasterId: 0x2
+
 
 dma_channels12_32: DMA.NXP_eDMA_Channels @ sysbus 0x40410000
     dma: dma
+    xrdc: xrdc
     count: 20
     firstChannel: 12
     channelSize: 0x4000
+    defaultMasterId: 0x2
 
 dma_mux0: DMA.S32K3XX_DMAMUX @ sysbus 0x40280000
     [0-15] -> dma@[0-15]
