@@ -374,7 +374,7 @@ Should Trace Consecutive Blocks On RISC-V
 Should Trace In ARM and Thumb State
     [Arguments]                                 ${memory_per_cpu}
     Execute Command                             mach create
-    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a9\\" }"
+    Execute Command                             machine LoadPlatformDescriptionFromString "cpu: CPU.ARMv7A @ sysbus { cpuType: \\"cortex-a7\\" }"
     IF  ${memory_per_cpu}
         Execute Command                             machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu } { size: 0x1000 }"
     ELSE
