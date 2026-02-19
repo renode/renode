@@ -128,6 +128,14 @@ def bytes_to_hex(bytes: bytes, zero_padded=True) -> str:
     format_string = "0{}X".format(len(bytes)*2) if zero_padded else "X"
     return "0x{0:{fmt}}".format(integer, fmt=format_string)
 
+def bytes_to_thumb_hex(bytes: bytes) -> str:
+    if len(bytes) != 4:
+        return bytes_to_hex(bytes)
+    # Long Thumb instructions are effectively mixed endian - they're two pairs of 16bit ints
+    high = int.from_bytes(bytes[0:2], byteorder="little", signed=False)
+    low = int.from_bytes(bytes[2:4], byteorder="little", signed=False)
+    return f"0x{high:04X}{low:04X}"
+
 class TraceEntry(NamedTuple):
     pc: bytes
     opcode: bytes
@@ -135,7 +143,7 @@ class TraceEntry(NamedTuple):
     isa_mode: int
 
 class TraceData:
-    disassemblers: Optional[dict[int, 'LLVMDisassembler']] = None
+    disassemblers: dict[str, LLVMDisassembler] = {}
     isa_mode: int = 0
     instructions_left_in_block = 0
 
@@ -146,26 +154,39 @@ class TraceData:
         self.has_opcodes = bool(header.has_opcodes)
         self.extra_length = header.extra_length
         self.uses_multiple_instruction_sets = header.uses_multiple_instruction_sets
-        self.triple_and_model = header.triple_and_model
         self.disassemble = disassemble
         self.filename = os.path.basename(file.name).split('.')[0]
+        self.llvm_disas_path = llvm_disas_path
+        if header.triple_and_model:
+            self.triple, self.model = header.triple_and_model.split(" ")
         if self.disassemble:
             if not header.triple_and_model:
                 raise RuntimeError("No architecture triple available in disassembly mode. Trace file might be corrupted")
             if not llvm_disas_path:
                 raise RuntimeError("No path to decompiler library provided")
-            triple, model = header.triple_and_model.split(" ")
-            self.disassemblers = {0: LLVMDisassembler(triple, model, llvm_disas_path)}
-            if self.uses_multiple_instruction_sets:
-                if triple == "armv7a":
-                    # For armv7a the flags are only 1 bit: 0 = ARM, 1 = thumb
-                    self.disassemblers[0b01] = LLVMDisassembler("thumb", model, llvm_disas_path)
-                elif triple == "arm64":
-                    # For arm64 there are two flags: bit[0] means Thumb and bit[1] means AArch32.
-                    # The valid values are 00, 10, and 11 (no 64-bit Thumb).
-                    self.disassemblers[0b10] = LLVMDisassembler("armv7a", model, llvm_disas_path)
-                    self.disassemblers[0b11] = LLVMDisassembler("thumb", model, llvm_disas_path)
 
+    def get_active_triple(self) -> str:
+        # ARMv7 Thumb mode
+        if self.triple == "armv7a" and self.isa_mode == 0b1:
+            return "thumb"
+        # ARMv8 AArch32 mode
+        if self.triple == "arm64" and self.isa_mode == 0b10:
+            return "armv7a"
+        # ARMv8 Thumb mode
+        if self.triple == "arm64" and self.isa_mode == 0b11:
+            return "thumb"
+        # Default mode
+        if self.isa_mode == 0:
+            return self.triple
+        raise RuntimeError(f"Unknown ISA mode {self.isa_mode} for {self.triple}")
+
+    def get_disas(self) -> LLVMDisassembler:
+        triple = self.get_active_triple()
+        if triple in self.disassemblers:
+            return self.disassemblers[triple]
+        disas = LLVMDisassembler(triple, self.model, self.llvm_disas_path)
+        self.disassemblers[triple] = disas
+        return disas
 
     def __iter__(self):
         self.file.seek(HEADER_LENGTH + self.extra_length, 0)
@@ -293,7 +314,8 @@ class TraceData:
         if self.pc_length:
             pc_str = bytes_to_hex(pc)
         if self.has_opcodes:
-            opcode_str = bytes_to_hex(opcode)
+            is_thumb = self.get_active_triple() == "thumb"
+            opcode_str = bytes_to_thumb_hex(opcode) if is_thumb else bytes_to_hex(opcode)
         output = ""
         if self.pc_length and self.has_opcodes:
             output = f"{pc_str}: {opcode_str}"
@@ -305,9 +327,7 @@ class TraceData:
             output = ""
 
         if self.has_opcodes and self.disassemble:
-            if not self.disassemblers:
-                raise RuntimeError("No disassembly library loaded")
-            disas = self.disassemblers[isa_mode]
+            disas = self.get_disas()
             _, instruction = disas.get_instruction(opcode)
             output += " " + instruction.decode("utf-8")
 
@@ -332,7 +352,7 @@ class LLVMDisassembler():
 
         self._context = self.lib.llvm_create_disasm_cpu(c_char_p(triple.encode('utf-8')), c_char_p(cpu.encode('utf-8')))
         if not self._context:
-            raise RuntimeError('CPU or triple name not detected by LLVM. Disassembling will not be possible.')
+            raise RuntimeError(f'Triple {triple} on CPU {cpu} not detected by LLVM. Disassembling will not be possible.')
 
     def __del__(self):
         if  hasattr(self, '_context'):
