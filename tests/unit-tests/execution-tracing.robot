@@ -69,6 +69,36 @@ Trace The Execution On The Versatile Platform
     ${output_lines}=                            Split To Lines  ${output}
     RETURN  ${output_lines}
 
+Prepare Program With ARM and Thumb
+    # ARM
+    # mov r0, r0
+    Execute Command                             sysbus WriteDoubleWord 0x10000 0xe1a00000 cpu
+    # nop
+    Execute Command                             sysbus WriteDoubleWord 0x10004 0xe320f000 cpu
+    # add r1, r6, r2
+    Execute Command                             sysbus WriteDoubleWord 0x10008 0xe0861002 cpu
+    # blx #65516
+    Execute Command                             sysbus WriteDoubleWord 0x1000c 0xfa003ffb cpu
+    # wfi
+    Execute Command                             sysbus WriteDoubleWord 0x10010 0xe320f003 cpu
+
+    # Thumb
+    # movs r0, #0
+    Execute Command                             sysbus WriteWord 0x20000 0x2000 cpu
+    # mov r1, r0
+    Execute Command                             sysbus WriteWord 0x20002 0x4601 cpu
+    # cmp r4, r2
+    Execute Command                             sysbus WriteWord 0x20004 0x4294 cpu
+    # sbcs.w r9, r5, r3
+    Execute Command                             sysbus WriteWord 0x20006 0xeb75 cpu
+    Execute Command                             sysbus WriteWord 0x20008 0x0903 cpu
+    # bx lr
+    Execute Command                             sysbus WriteWord 0x2000a 0x4770 cpu
+    # nop
+    Execute Command                             sysbus WriteWord 0x2000c 0x46c0 cpu
+
+    Execute Command                             sysbus.cpu PC 0x10000
+
 Run And Trace Simple Program On RISC-V
     [Arguments]                                 ${pc_start_hex}  ${trace_format}  ${is_binary}
     ${trace_file}=                              Allocate Temporary File
@@ -430,30 +460,10 @@ Should Trace In ARM and Thumb State
 Should Trace in ARM and Thumb State ARMv8R
     Execute Command                             mach create
     Execute Command                             machine LoadPlatformDescription "${CURDIR}/../../platforms/cpus/cortex-r52.repl"
-    # ARM
-    # mov r0, r0
-    Execute Command                             sysbus WriteDoubleWord 0x10000 0xe1a00000 cpu
-    # nop
-    Execute Command                             sysbus WriteDoubleWord 0x10004 0xe320f000 cpu
-    # add r1, r6, r2
-    Execute Command                             sysbus WriteDoubleWord 0x10008 0xe0861002 cpu
-    # blx #65516
-    Execute Command                             sysbus WriteDoubleWord 0x1000c 0xfa003ffb cpu
-    # wfi
-    Execute Command                             sysbus WriteDoubleWord 0x10010 0xe320f003 cpu
 
-    # Thumb
-    # movs r0, #0 ; mov r1, r0
-    Execute Command                             sysbus WriteDoubleWord 0x20000 0x46012000 cpu
-    # cmp r4, r2
-    Execute Command                             sysbus WriteWord 0x20004 0x4294 cpu
-    # sbcs.w r9, r5, r3
-    Execute Command                             sysbus WriteDoubleWord 0x20006 0x0903eb75 cpu
-    # bx lr ; nop
-    Execute Command                             sysbus WriteDoubleWord 0x2000a 0x46c04770 cpu
+    Prepare Program With ARM and Thumb
 
     ${trace_file}=                              Allocate Temporary File
-    Execute Command                             sysbus.cpu PC 0x10000
     Execute Command                             sysbus.cpu CreateExecutionTracing "tracer" "${trace_file}" Disassembly
     Execute Command                             emulation RunFor "0.0001"
     Execute Command                             sysbus.cpu DisableExecutionTracing
@@ -471,7 +481,6 @@ Should Trace in ARM and Thumb State ARMv8R
     Should Match                                ${trace[7]}     0x00020006: *eb750903 *sbcs.w r9, r5, r3
     Should Match                                ${trace[8]}     0x0002000a: *4770 *bx lr
     Should Match                                ${trace[9]}     0x00010010: *e320f003 *wfi
-
 
 *** Test Cases ***
 Should Dump PCs
