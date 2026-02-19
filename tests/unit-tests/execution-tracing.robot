@@ -788,3 +788,25 @@ Should Be Able To Add Amo Operands To The Trace In Binary Format
     Should Contain                              ${entry}[1]  ${riscv_amoadd_d_operands_before}
     Should Contain                              ${entry}[2]  ${riscv_amoadd_d_operands_after}
 
+Should Trace in ZynQMP
+    Execute Command                             mach create
+    Execute Command                             machine LoadPlatformDescription @platforms/cpus/zynqmp.repl
+
+    Execute Command                             sysbus WriteDoubleWord 0x00006000 0xE321F0D1 sysbus.cluster1.rpu0
+    Execute Command                             sysbus WriteDoubleWord 0x00006004 0xEE113F10 sysbus.cluster1.rpu0
+    Execute Command                             sysbus WriteDoubleWord 0x00006008 0x3F10EE11 sysbus.cluster1.rpu0
+
+    ${trace_file}=                              Allocate Temporary File
+    Execute Command                             sysbus.cluster1.rpu0 PC 0x00006000
+    Execute Command                             sysbus.cluster1.rpu0 CreateExecutionTracing "tracer" "${trace_file}" Disassembly
+    Execute Command                             sysbus.cluster1.rpu0 Step
+    Execute Command                             sysbus.cluster1.rpu0 Step
+    Execute Command                             sysbus.cluster1.rpu0 Step
+    Execute Command                             sysbus.cluster1.rpu0 DisableExecutionTracing
+
+    ${content}=                                 Get File        ${trace_file}
+    @{trace}=                                   Split To Lines  ${content}
+    Length Should Be                            ${trace}        3
+    Should Match                                ${trace[0].strip()}     0x00006000: *e321f0d1 *msr CPSR_c, #209
+    Should Match                                ${trace[1].strip()}     0x00006004: *ee113f10 *mrc p15, #0, r3, c1, c0, #0
+    Should Match                                ${trace[2].strip()}     0x00006008: *3f10ee11 *svclo #1109521
