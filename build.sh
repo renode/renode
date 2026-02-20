@@ -32,6 +32,7 @@ CLEAN=false
 PACKAGES=false
 NIGHTLY=false
 PORTABLE=false
+UI=false
 SOURCE_PACKAGE=false
 HEADLESS=false
 SKIP_FETCH=false
@@ -50,7 +51,7 @@ HOST_ARCH="i386"
 CMAKE_COMMON="${RENODE_EXTRA_CMAKE_ARGS:-}"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [--ui] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -77,6 +78,7 @@ function print_help() {
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
   echo "--tcg-opcode-backtrace            collect a backtrace for each emitted TCG opcode, to track internal TCG errors (implies Debug configuration)"
+  echo "--ui                              rebuild the web-based UI"
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
 
@@ -189,6 +191,9 @@ do
 
           CMAKE_COMMON+=" -DTCG_OPCODE_BACKTRACE=ON"
           ;;
+        "ui")
+          UI=true
+          ;;
         *)
           print_help
           exit 1
@@ -279,16 +284,21 @@ fi
 # Set correct RID
 if $ON_LINUX; then
     RID="linux-x64"
+    UI_RID="linux_x64"
     if [[ $HOST_ARCH == "aarch64" ]]; then
         RID="linux-arm64"
+        UI_RID="linux_arm64"
     fi
 elif $ON_OSX; then
     RID="osx-x64"
+    UI_RID="mac_x64"
     if [[ $HOST_ARCH == "aarch64" ]]; then
         RID="osx-arm64"
+        UI_RID="mac_arm64"
     fi
 elif $ON_WINDOWS; then
     RID="win-x64"
+    UI_RID="win_x64"
 fi
 
 if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
@@ -365,6 +375,7 @@ then
 fi
 
 CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
+UI_PATH="$ROOT_PATH/src/UI"
 
 # clean instead of building
 if $CLEAN
@@ -555,6 +566,18 @@ if [[ $RID == "osx-arm64" ]]; then
   else
     echo "libgdiplus.dylib not found by build.sh, FrameBufferTester might not work"
   fi
+fi
+
+BIN_EXT=""
+if [[ "$DETECTED_OS" == "windows" ]]; then
+  BIN_EXT=".exe"
+fi
+UI_BIN=$(readlink -f "$OUT_BIN_DIR/renode-ui$BIN_EXT")
+
+
+if $UI; then
+  "$UI_PATH/scripts/build_neutralino.sh"
+  cp "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$UI_RID$BIN_EXT" "$UI_BIN"
 fi
 
 # build packages after successful compilation
