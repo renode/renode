@@ -369,27 +369,25 @@ CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
 # clean instead of building
 if $CLEAN
 then
-    for project_dir in $(find "$(get_path "${ROOT_PATH}/src")" -iname '*.csproj' -exec dirname '{}' \;)
-    do
-      for dir in {bin,obj}/{Debug,Release}
-      do
-        output_dir="$(get_path "${project_dir}/${dir}")"
-        if [[ -d "${output_dir}" ]]
-        then
-          echo "Removing: ${output_dir}"
-          rm -rf "${output_dir}"
-        fi
-      done
-    done
-
-    # Manually clean the main output directory as it's location is non-standard
-    main_output_dir="$(get_path "${OUTPUT_DIRECTORY}/bin")"
-    if [[ -d "${main_output_dir}" ]]
+  remove_dir() {
+    output_dir="$(get_path "$1")"
+    if [[ -d "${output_dir}" ]]
     then
-      echo "Removing: ${main_output_dir}"
-      rm -rf "${main_output_dir}"
+      echo "Removing: ${output_dir}"
+      rm -rf "${output_dir}"
     fi
-    exit 0
+  }
+  for project_dir in $(find "$(get_path "${ROOT_PATH}/src")" -iname '*.csproj' -exec dirname '{}' \;)
+  do
+    for dir in {bin,obj}/{Debug,Release}
+    do
+      remove_dir "${project_dir}/${dir}"
+    done
+  done
+
+  # Manually clean the main output directories as it's location is non-standard
+  remove_dir "${OUTPUT_DIRECTORY}/bin"
+  exit 0
 fi
 
 # Check if a full rebuild is needed
