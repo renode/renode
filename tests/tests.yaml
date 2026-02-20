@@ -272,6 +272,7 @@
 - tests/peripherals/LSM6DSO_IMU.robot
 - tests/unit-tests/cpu-pause-halt.robot
 - tests/peripherals/AD4011.robot
+- tests/platforms/ArmExperimental/tgau-zedboard.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot

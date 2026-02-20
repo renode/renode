@@ -1,0 +1,123 @@
+usbEhci2: USBDeprecated.EHCIHostController @ sysbus <0xE0003000, +0x1000>
+    -> gic@44
+
+usbEhci: USBDeprecated.EHCIHostController @ sysbus <0xE0002000, +0x1000>
+    -> gic@21
+
+pl310: Cache.PL310 @ sysbus <0xF8F02000, +0x1000>
+
+gem0: Network.CadenceGEM @ sysbus <0xE000B000, +0x1000>
+    -> gic@22
+
+gem1: Network.CadenceGEM @ sysbus <0xE000C000, +0x1000>
+    -> gic@45
+
+uart0: UART.Cadence_UART @ sysbus 0xE0000000
+    -> gic@27
+
+uart1: UART.Cadence_UART @ sysbus 0xE0001000
+    -> gic@50
+
+i2c1: I2C.Cadence_I2C @ sysbus 0xE0005000
+    -> gic@48
+
+i2c0: I2C.Cadence_I2C @ sysbus 0xE0004000
+    -> gic@25
+
+spi0: SPI.Cadence_SPI @ sysbus 0xE0006000
+    -> gic@26
+
+spi1: SPI.Cadence_SPI @ sysbus 0xE0007000
+    -> gic@49
+
+sdhci0: SD.SDHCI @ sysbus <0xE0100000, +0x1000>
+
+sdhci1: SD.SDHCI @ sysbus <0xE0101000, +0x1000>
+
+memory: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000000
+
+onChipMemory: Memory.MappedMemory @ sysbus 0xFFFC0000
+    size:0x40000
+
+ttc0: Timers.Cadence_TTC @ sysbus 0xF8001000
+    [0-2] -> gic@[10-12]
+    frequency: 33333333
+
+ttc1: Timers.Cadence_TTC @ sysbus 0xF8002000
+    [0-2] -> gic@[37-39]
+    frequency: 33333333
+
+watchdog0: Timers.Cadence_WDT @ sysbus 0xF8005000
+    frequency: 33333333
+    -> gic@9
+
+privateTimer: Timers.ARM_PrivateTimer @ {
+        sysbus new Bus.BusPointRegistration { address: 0xF8F00600; cpu: cpu }
+    }
+    -> gic#0@29
+    frequency: 667000000
+
+globalTimer: Timers.ARM_GlobalTimer @ sysbus 0xF8F00200
+    0 -> gic#0@27
+    frequency: 433333333
+    irqController: gic
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0xF8F01000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0xF8F00100; size: 0x100; region: "cpuInterface" }
+    }
+    supportsTwoSecurityStates: false
+    architectureVersion: .GICv1
+    CPUInterfaceProductIdentifier: 0x390
+    CPUInterfaceRevision: 0x2
+    CPUInterfaceImplementer: 0x43B
+    // GIC -> ARM CPU interrupt connections are generated automatically
+
+scu: Miscellaneous.ArmSnoopControlUnit @ sysbus 0xF8F00000
+
+cpu: CPU.ARMv7AExperimental @ sysbus
+    cpuType: "cortex-a9"
+    genericInterruptController: gic
+
+qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
+    -> gic@19
+
+gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
+
+xadc: Analog.Xilinx_XADC @ sysbus 0xF8007100
+    -> gic@7
+
+slcr: Miscellaneous.Zynq7000_SystemLevelControlRegisters @ sysbus 0xF8000000
+    cpu0: cpu
+
+nand: Python.PythonPeripheral @ sysbus 0xE000E000
+    size: 0x4
+    initable: false
+    script: "request.Value = 0xFFFFFFFF"
+
+dma_pl330: DMA.PL330_DMA @ sysbus 0xF8003000
+    numberOfSupportedEventsAndInterrupts: 16
+    numberOfSupportedPeripheralRequestInterfaces: 4
+    AXIBusWidth: 64
+    DataBufferDepth: 1
+    InstructionCacheLinesNumber: 8
+    InstructionCacheLineLength: 16
+    ReadQueueDepth: 16
+    WriteQueueDepth: 16
+    WriteIssuingCapability: 8
+    ReadIssuingCapability: 8
+    AbortIRQ -> gic@13
+    [0-3] -> gic@[14-17]
+    [4-7] -> gic@[40-43]
+
+sysbus:
+    init:
+        Tag <0xF8007000,0xF8007FFF> "Xilinx_DeviceConfigurationInterface"
+        Tag <0xF8801000,0xF8801FFF> "ARM_CoreSightEmbeddedTraceBuffer"
+        Tag <0xF8803000,0xF8803FFF> "ARM_CoreSightTracePacketOutput"
+        Tag <0xF8804000,0xF8804FFF> "ARM_CoreSightTraceFunnel"
+        Tag <0xF8891000,0xF8892FFF> "ARM_PerformanceMonitorUnit_cpu0"
+        Tag <0xF8893000,0xF8894FFF> "ARM_PerformanceMonitorUnit_cpu1"
+        Tag <0xF889C000,0xF889CFFF> "ARM_CoreSightProgramTraceMacrocell_cpu0"
+        Tag <0xF889D000,0xF889DFFF> "ARM_CoreSightProgramTraceMacrocell_cpu1"

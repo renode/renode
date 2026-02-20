@@ -436,7 +436,7 @@ fi
 
 # This list contains all cores that will be built.
 # If you are adding a new core or endianness add it here to have the correct tlib built
-CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
+CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le arm-experimental.le)
 
 # if '--external-lib-arch' was used - pick the first matching one
 if [[ ! -z $EXTERNAL_LIB_ARCH ]]; then
@@ -479,6 +479,10 @@ build_core () {
     BITS=32
     # Check if core is 64-bit
     if [[ $CORE =~ "64" ]]; then
+      BITS=64
+    fi
+    # TGAU: this is related to TARGET_WORD_SIZE in tlib CMakeLists.txt
+    if [[ $CORE =~ ^arm-experimental ]]; then
       BITS=64
     fi
     # Core specific flags to cmake
