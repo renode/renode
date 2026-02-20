@@ -1,0 +1,35 @@
+using "platforms/cpus/nxp-s32k388.repl"
+
+// SW10 / PTA1
+userButton0: Miscellaneous.Button @ siul2 1
+    -> siul2@1
+
+// SW11 / PTB8
+userButton1: Miscellaneous.Button @ siul2 28
+    -> siul2@28
+
+// D77 / PTF17
+led2_red: Miscellaneous.LED @ siul2 177
+
+// D77 / PTF18
+led2_green: Miscellaneous.LED @ siul2 178
+
+// D77 / PTF19
+led2_blue: Miscellaneous.LED @ siul2 179
+
+// D78 / PTF22
+led1_red: Miscellaneous.LED @ siul2 182
+
+// D78 / PTF23
+led1_green: Miscellaneous.LED @ siul2 183
+
+// D78 / PTF24
+led1_blue: Miscellaneous.LED @ siul2 184
+
+siul2:
+    177 -> led2_red@0
+    178 -> led2_green@0
+    179 -> led2_blue@0
+    182 -> led1_red@0
+    183 -> led1_green@0
+    184 -> led1_blue@0

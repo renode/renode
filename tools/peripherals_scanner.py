@@ -177,6 +177,7 @@ def try_get_category(platform):
         "riscv_virt":   "OTHER RISC-V",
         "s32k118": "NXP S32K",
         "nxp-s32k388": "NXP S32K",
+        "nxp-s32k388evb": "NXP S32K",
         "sam_e70": "MICROCHIP",
         "sam4s": "MICROCHIP",
         "sam4s8b": "MICROCHIP",
