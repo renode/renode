@@ -621,6 +621,7 @@ fi
 
 if $PACKAGES
 then
+    export UI_BIN
     if $NET
     then
         # dotnet package on linux uses a separate script
@@ -654,6 +655,7 @@ fi
 
 if $PORTABLE
 then
+    export UI_BIN
     PARAMS+=(p:PORTABLE=true)
     if $NET
     then

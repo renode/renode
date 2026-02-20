@@ -7,6 +7,8 @@ mkdir -p $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll $DIR/bin
 cp -r $BASE/output/bin/$TARGET/libllvm-disas.* $DIR/bin
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
+# UI is built optionally and thus may not be present
+cp $UI_BIN $DIR/bin 2>/dev/null || true
 
 if ls $BASE/output/bin/$TARGET/*.exe
 then

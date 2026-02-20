@@ -5,6 +5,8 @@ rm -rf $DIR
 . common_copy_files.sh
 
 cp -r $BASE/renode-test $DIR
+# UI is built optionally and thus may not be present
+cp -r $UI_BIN $DIR 2>/dev/null || true
 cp -r $BASE/tools/common.sh $DIR/tests
 
 $SED_COMMAND 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DIR/renode-test
