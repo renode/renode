@@ -44,3 +44,6 @@
 [submodule "tools/models_analyzer"]
 	path = tools/models_analyzer
 	url = https://github.com/antmicro/renode-models-analyzer.git
+[submodule "src/UI"]
+	path = src/UI
+	url = https://github.com/antmicro/renode-ui.git
