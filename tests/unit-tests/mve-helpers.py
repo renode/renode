@@ -18,6 +18,7 @@ def split_into_n_bit_values(n: int, value_128_bit: str) -> list[str]:
     """
     Converts a string containing a base-16 number (with 0x prefix) into
     a list of strings containing base-16 n-bit values (with 0x prefix).
+    The list is ordered such that the indices correspond to lane numbers.
     """
     assert_starts_with_0x_prefix(value_128_bit)
     value_128_bit = value_128_bit[2:]
@@ -27,7 +28,8 @@ def split_into_n_bit_values(n: int, value_128_bit: str) -> list[str]:
     chars_in_n_bit_hex = n // 4
     return [
         "0x" + value_128_bit[i : i + chars_in_n_bit_hex]
-        for i in range(0, len(value_128_bit), chars_in_n_bit_hex)
+        # The indexing is reversed because we place the most significant bits first in the list.
+        for i in reversed(range(0, len(value_128_bit), chars_in_n_bit_hex))
     ]
 
 
@@ -35,6 +37,7 @@ def combine_n_into_128_bit_value(n: int, values_n_bit: list[str]) -> str:
     """
     Converts a list of strings containing base-16 n-bit values (with 0x prefix)
     into a string containing a base-16 number (with 0x prefix).
+    The input list is expected to be ordered such that indices correspond to lane numbers.
     """
     list(map(assert_starts_with_0x_prefix, values_n_bit))
     assert 128 % n == 0, f"128 must be divisible by `n`, but {n} is not"
@@ -46,7 +49,14 @@ def combine_n_into_128_bit_value(n: int, values_n_bit: list[str]) -> str:
     values_n_bit = [value[2:] for value in values_n_bit]
 
     chars_in_n_bit_hex = n // 4
-    return "0x" + "".join([value.zfill(chars_in_n_bit_hex) for value in values_n_bit])
+    return "0x" + "".join(
+        [
+            value.zfill(chars_in_n_bit_hex)
+            # The values are reversed because we want to place the most significant bits
+            # (i.e. the higher indices/lane numbers) first in the hexadecimal string.
+            for value in reversed(values_n_bit)
+        ]
+    )
 
 
 def prepare_vector_op(
@@ -93,6 +103,61 @@ def compute_vector_vector_op(
     return combine_n_into_128_bit_value(element_size, result_elements)
 
 
+# As this is a special case, handle it separately from the other vector operations.
+def compute_vector_vcadd_result(
+    element_size_str: str,
+    operand1_128_bit: str,
+    operand2_128_bit: str,
+    rotation_str: str,
+) -> str:
+    rotation = int(rotation_str)
+    assert (
+        rotation == 90 or rotation == 270
+    ), f"`rotation` must be 90 or 270, but it is {rotation}"
+
+    def rotate_operand(operand):
+        # Rotating by 90 degrees in the complex plane is the same as multiplying by i.
+        # Rotating by 270 degrees in the complex plane is the same as multiplying by -i.
+        # j is the imaginary number i in python
+        return operand * 1j if rotation == 90 else operand * -1j
+
+    hex_to_int, int_to_hex, element_size = prepare_vector_op(
+        element_size_str, treat_elements_as_signed=True
+    )
+
+    def add_with_rotation(op1: complex, op2: complex) -> complex:
+        return op1 + rotate_operand(op2)
+
+    def split_into_ints(val: complex) -> Tuple[int, int]:
+        return int(val.real), int(val.imag)
+
+    elements1 = [
+        hex_to_int(value)
+        for value in split_into_n_bit_values(element_size, operand1_128_bit)
+    ]
+    elements2 = [
+        hex_to_int(value)
+        for value in split_into_n_bit_values(element_size, operand2_128_bit)
+    ]
+
+    # The complex numbers are encoded as pairs of elements,
+    # where the element with the even lane number is the real part
+    # and the odd lane-numbered one is the imaginary part.
+    complex1 = [
+        complex(elements1[i], elements1[i + 1]) for i in range(0, len(elements1), 2)
+    ]
+    complex2 = [
+        complex(elements2[i], elements2[i + 1]) for i in range(0, len(elements2), 2)
+    ]
+
+    result_elements = [
+        int_to_hex(component)
+        for (e1, e2) in zip(complex1, complex2)
+        for component in split_into_ints(add_with_rotation(e1, e2))
+    ]
+    return combine_n_into_128_bit_value(element_size, result_elements)
+
+
 def compute_vector_scalar_op(
     op: Callable[[int, int], int],
     element_size_str: str,
@@ -120,7 +185,8 @@ def mask(bits: int) -> int:
 
 def signed_to_hex(bits: int, signed_value: int) -> str:
     """Converts a signed python integer into an unsigned hexadecimal value of size `bits`."""
-    return hex(signed_value & mask(bits))
+    result = hex(signed_value & mask(bits))
+    return result
 
 
 def twos_complement(bits: int, hexstr: str) -> int:
