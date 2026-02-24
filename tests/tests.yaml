@@ -184,6 +184,7 @@
 - tests/platforms/X86.robot
 - tests/platforms/ACRN.robot
 - tests/unit-tests/zephyr-mode.robot
+- tests/unit-tests/zephyr-ram-console.robot
 - tests/unit-tests/array_memory.robot
 - tests/unit-tests/riscv-zbb-extension.robot
 - tests/unit-tests/register-read-caching.robot
