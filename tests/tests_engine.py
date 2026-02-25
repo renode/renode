@@ -13,6 +13,7 @@ from dataclasses import dataclass
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
 TestResult = namedtuple('TestResult', ('ok', 'log_file'))
+shared_suite_counter = None
 
 
 class IncludeLoader(yaml.SafeLoader):
@@ -347,7 +348,8 @@ def configure_output(options):
 
 def run_test_group(args):
 
-    group, options = args
+    global shared_suite_counter
+    group, total_number_of_suites, options = args
 
     iteration_counter = 0
     group_failed = False
@@ -398,6 +400,19 @@ def run_test_group(args):
                 import traceback
                 traceback.print_exception(e)
                 raise
+
+            if shared_suite_counter is None:
+                print("warning: `shared_suite_counter` must be set for suite counting to work")
+                current_counter_value = -1 
+            elif isinstance(shared_suite_counter, int):
+                shared_suite_counter += 1
+                current_counter_value = shared_suite_counter 
+            else:
+                with shared_suite_counter.get_lock():
+                    shared_suite_counter.value += 1
+                    current_counter_value = shared_suite_counter.value
+
+            print(f"+++++ Finished suite \033[95m{current_counter_value}/{total_number_of_suites}\033[0m")
 
             if suite_failed:
                 group_failed = True
@@ -536,6 +551,11 @@ def segment_groups(options):
     return segment_num, max_segments, segment_test_file_paths, groups_segment
 
 
+def init_worker_process(counter):
+    global shared_suite_counter
+    shared_suite_counter = counter 
+
+
 def run():
     parser = prepare_parser()
     for handler in registered_handlers:
@@ -558,8 +578,9 @@ def run():
 
     args = []
     segment_num, max_segments, segment_test_file_paths, groups_segment = segment_groups(options)
+    total_number_of_suites = len(segment_test_file_paths)
     for (_, group_suites) in groups_segment:
-        args.append((group_suites, options))
+        args.append((group_suites, total_number_of_suites, options))
 
     test_file_path_count = len(segment_test_file_paths)
     if max_segments > 1: 
@@ -584,10 +605,20 @@ def run():
     options.output = None
 
     if options.jobs == 1:
+        global shared_suite_counter
+        shared_suite_counter = 0
         tests_failed, logs = zip(*map(run_test_group, args))
     else:
         multiprocessing.set_start_method("spawn")
-        pool = multiprocessing.Pool(processes=options.jobs)
+        # To share a counter between all the worker processes, we must create a 
+        # multiprocessing.Value that gets passed to each worker process through
+        # its initializer function (by assigning a global variable).
+        shared_suite_counter_object = multiprocessing.Value('i', 0)
+        pool = multiprocessing.Pool(
+            initializer=init_worker_process, 
+            initargs=(shared_suite_counter_object,), # args must be a tuple
+            processes=options.jobs,
+        )
         # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
         # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
         # otherwise it would not be possible to abort tests in progress
