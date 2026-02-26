@@ -346,3 +346,26 @@ Should Manually Trigger Flash Error
     Execute Command                     sysbus AddWatchpointHook ${FLASH_WRITE_ADDRESS} DoubleWord Write "cpu.GetMachine()['sysbus.flashController'].TriggerOperationError(1)"
 
     Wait For Log Entry                  ${FLASH_WRITE_ERROR_MSG}
+
+Should Passthrough Characters Via Uart Hub
+    Execute Command                     i @scripts/multi-node/uart_hub_nucleo_h753.resc
+
+    ${tester-0}=                        Create Terminal Tester  sysbus.usart3  machine=m0  binaryMode=true
+    ${tester-1}=                        Create Terminal Tester  sysbus.usart3  machine=m1  binaryMode=true
+
+    # We run for a while instead of waiting for the boot banner with Wait For Line On Uart,
+    # because we can't have terminal tester for both binary and text mode.
+    Execute Command                     emulation RunFor "0.01"
+
+    # Test bidirectional communication between machines.
+    FOR  ${ch}  IN RANGE  0  256
+        ${hexch}=                           Convert To Hex  ${ch}  length=2
+
+        # ... from machine 0 to machine 1
+        Send Key To Uart                    ${ch}  testerId=${tester-0}
+        Wait For Bytes On Uart              ${hexch}  testerId=${tester-1}
+
+        # ... and from machine 1 to machine 0
+        Send Key To Uart                    ${ch}  testerId=${tester-1}
+        Wait For Bytes On Uart              ${hexch}  testerId=${tester-0}
+    END
