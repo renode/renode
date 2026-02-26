@@ -2,6 +2,7 @@
 from __future__ import print_function
 from sys import platform
 import os
+import threading
 import sys
 import socket
 import fnmatch
@@ -14,10 +15,11 @@ import re
 import signal
 from collections import OrderedDict, defaultdict
 from time import monotonic, sleep
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict, Tuple, Set, Optional, Union
 from argparse import Namespace
+from dataclasses import dataclass
 
-import robot, robot.result, robot.running
+import robot, robot.result, robot.running, robot.api
 from robot.libraries.BuiltIn import BuiltIn
 from robot.libraries.DateTime import Time
 
@@ -29,6 +31,127 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 
 keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
 keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
+
+
+@dataclass(frozen=True)
+class CpuTime:
+    user_time: float
+    system_time: float
+
+    def to_metadata(self) -> dict[str, float]:
+        return {
+            "cpu_time_user": self.user_time,
+            "cpu_time_system": self.system_time
+        }
+
+
+@dataclass(frozen=True)
+class ThreadTime(CpuTime):
+    id: int
+
+    def to_metadata(self) -> dict[str, float]:
+        return {
+            f"thread_{self.id}_user_time": self.user_time,
+            f"thread_{self.id}_system_time": self.system_time,
+        }
+
+
+@dataclass(frozen=True)
+class ProcessStatistics:
+    cpu_time: CpuTime
+    threads: list[ThreadTime]
+
+    def to_metadata(self) -> dict[str, Union[int, float]]:
+        threads_metadata = {}
+        for thread in self.threads:
+            if thread.user_time > 0 or thread.system_time > 0:
+                threads_metadata.update(thread.to_metadata())
+
+        return self.cpu_time.to_metadata() | threads_metadata
+
+
+class ProcessMemoryMonitor(threading.Thread):
+    def __init__(self, pid: int, initial_sample_delay_seconds: float, interval_seconds: float) -> None:
+        super().__init__(daemon=True, name=f"MemoryMonitor-{pid}")
+        self.pid: int = pid
+        self.initial_sample_delay: float = initial_sample_delay_seconds
+        self.interval_seconds: float = interval_seconds
+        self.stop_event: threading.Event = threading.Event()
+        self.peak_unique_set_size: int = 0
+        self.lock: threading.Lock = threading.Lock()
+
+        try:
+            self.process: Optional[psutil.Process] = psutil.Process(self.pid)
+        except psutil.NoSuchProcess:
+            self.process = None
+
+    def sample_memory_usage(self) -> bool:
+        if not self.process:
+            print(f"cannot monitor memory usage of pid {self.pid}: no such process", flush=True)
+            return False
+
+        try:
+            current_unique_set_size: int = self.process.memory_full_info().uss
+            # Lock ensures we don't reset while comparing
+            with self.lock:
+                if current_unique_set_size > self.peak_unique_set_size:
+                    self.peak_unique_set_size = current_unique_set_size
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return False
+
+        return True 
+
+    def run(self) -> None:
+        print(f"Starting memory monitor for pid {self.pid}...", flush=True)
+
+        # Take one initial sample
+        if self.stop_event.wait(self.initial_sample_delay):
+            return
+        self.sample_memory_usage()
+
+        while not self.stop_event.is_set():
+            # Wait for interval, but wake up immediately if stop_event is set.
+            if self.stop_event.wait(self.interval_seconds):
+                break
+
+            # Try to collect memory usage.
+            if not self.sample_memory_usage():
+                break 
+
+    def get_peak_and_reset(self) -> int:
+        # Sample one last time before resetting, in case we don't have any samples yet.
+        self.sample_memory_usage()
+
+        with self.lock:
+            current_peak = self.peak_unique_set_size
+            self.peak_unique_set_size = 0
+            return current_peak
+
+    def stop(self) -> None:
+        print(f"Stopping memory monitor for process {self.pid}...", flush=True)
+        self.stop_event.set()
+        if self.is_alive():
+            self.join()
+
+
+def collect_process_stats(process: psutil.Process) -> Optional[ProcessStatistics]:
+    try:
+        with process.oneshot():
+            cpu_times = process.cpu_times()
+            threads = process.threads()
+            process_stats = ProcessStatistics(
+                cpu_time=CpuTime(user_time=cpu_times.user, system_time=cpu_times.system), 
+                threads=[
+                    ThreadTime(id=thread.id, user_time=thread.user_time, system_time=thread.system_time) 
+                    for thread in threads
+                ], 
+            )
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        print(f"Failed to collect process stats for {process.pid}")
+        return None
+
+    print(f"Collected process statistics for pid {process.pid}")
+    return process_stats
 
 
 class Timeout:
@@ -165,6 +288,28 @@ def install_cli_arguments(parser):
                             "Default test case timeout after which Renode keywords will be interrupted.",
                             "It's parsed by Robot Framework's DateTime library so all its time formats are supported.",
                         ]))
+
+    parser.add_argument("--with-resource-monitoring",
+                        dest="enable_resource_monitoring",
+                        action="store_true",
+                        default=False,
+                        help="Enables monitoring of system resource usage (RAM, CPU time).")
+
+    parser.add_argument("--memory-monitor-initial-delay",
+                        dest="memory_monitor_initial_delay_seconds",
+                        action="store",
+                        default=2,
+                        type=int,
+                        help="How many seconds to wait before the initial memory usage sample is collected.")
+
+    parser.add_argument("--memory-monitor-sample-interval",
+                        dest="memory_monitor_sample_interval_seconds",
+                        action="store",
+                        default=10,
+                        type=int,
+                        help="How often (in seconds) to sample memory usage.")
+
+
 
 
 def verify_cli_arguments(options):
@@ -478,6 +623,24 @@ class RobotTestSuite(object):
 
         assert self.renode_pid != -1, "Renode PID has to be set before trying to acces the port file"
 
+        if options.enable_resource_monitoring:
+            initial_delay = options.memory_monitor_initial_delay_seconds
+            interval = options.memory_monitor_sample_interval_seconds
+            monitor = ProcessMemoryMonitor(
+                int(self.renode_pid), 
+                initial_delay,
+                interval 
+            )
+            monitor.start()
+
+            # Assign to either a local or global instance, depending on if we're running with
+            # multiple Renode instances or just a single one.
+            has_multiple_renode_instances = options.jobs != 1 or options.keep_renode_output
+            if has_multiple_renode_instances:
+                self.renode_memory_monitor = monitor
+            else:
+                RobotTestSuite.renode_memory_monitor = monitor
+
         timeout_s = 180
         countdown = float(timeout_s)
         temp_dir = tempfile.gettempdir()
@@ -541,6 +704,12 @@ class RobotTestSuite(object):
     def _close_remote_server(self, proc, options):
         if not proc:
             return
+
+        if options.enable_resource_monitoring:
+            if self.renode_memory_monitor is not None:
+                self.renode_memory_monitor.stop()
+            elif RobotTestSuite.renode_memory_monitor is not None:
+                RobotTestSuite.renode_memory_monitor.stop()
 
         renode = f"Renode pid {proc.pid}"
         renode_killed = False
@@ -664,6 +833,34 @@ class RobotTestSuite(object):
             status = 'finished successfully' if result.ok else 'failed'
             exec_time = round(end_timestamp - start_timestamp, 2)
             print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
+
+        renode_memory_stats = {}
+        renode_process_stats = {}
+        if options.enable_resource_monitoring:
+            has_multiple_renode_instances = options.jobs != 1 or options.keep_renode_output
+            if has_multiple_renode_instances:
+                renode_pid = int(self.renode_pid)
+                monitor = self.renode_memory_monitor
+            else:
+                renode_pid = int(RobotTestSuite.robot_frontend_process.pid)
+                monitor = RobotTestSuite.renode_memory_monitor
+
+            if renode_pid != -1:
+                renode_memory_stats = {"peak_unique_set_size_bytes": monitor.get_peak_and_reset()}
+                renode_process = psutil.Process(renode_pid)
+                stats = collect_process_stats(renode_process)
+                renode_process_stats = stats.to_metadata() if stats else {}
+
+        logs = get_result()[1]
+        for log in logs: 
+            robot_results = robot.api.ExecutionResult(log)
+            suite = robot_results.suite
+
+            process_metadata = renode_process_stats | renode_memory_stats 
+            stringified_process_metadata = {key: str(value) for key, value in process_metadata.items()}
+
+            suite.metadata.update(stringified_process_metadata)
+            robot_results.save()
 
         if options.jobs != 1 or options.keep_renode_output:
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
