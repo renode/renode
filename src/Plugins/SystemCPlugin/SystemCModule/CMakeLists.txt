@@ -22,4 +22,5 @@ set_target_properties(renode_bridge_native PROPERTIES POSITION_INDEPENDENT_CODE 
 if (MSVC)
     target_compile_options(renode_bridge PRIVATE /vmg)
     target_compile_options(renode_bridge_native PRIVATE /vmg)
+    target_link_options(renode_bridge_native PRIVATE "/OPT:NOREF /OPT:NOICF")
 endif()
