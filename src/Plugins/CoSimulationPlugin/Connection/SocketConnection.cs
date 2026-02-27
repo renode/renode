@@ -144,11 +144,16 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             }
 
             asyncSocketCommunicator.CancelCommunication();
-            lock(receiveThreadLock)
+
+            // `Abort()` can be called from the receive thread, join would result in a deadlock
+            if(Thread.CurrentThread != receiveThread)
             {
-                if(receiveThread.IsAlive)
+                lock(receiveThreadLock)
                 {
-                    receiveThread.Join(connectionTimeout);
+                    if(receiveThread.IsAlive)
+                    {
+                        receiveThread.Join(connectionTimeout);
+                    }
                 }
             }
 
