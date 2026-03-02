@@ -31,7 +31,7 @@ except ImportError:
     import coverview_integration
 
 FILE_SIGNATURE = b"ReTrace"
-FILE_VERSION = b"\x04"
+FILE_VERSION = b"\x05"
 HEADER_LENGTH = 10
 MEMORY_ACCESS_LENGTH = 25
 RISCV_VECTOR_CONFIGURATION_LENGTH = 16
@@ -77,12 +77,11 @@ class Header:
     pc_length: int
     has_opcodes: bool
     extra_length: int = 0
-    uses_multiple_instruction_sets: bool = False
-    triple_and_model: Optional[str] = None
+    triple_and_models: tuple[str] = ()
 
     def __str__(self) -> str:
-        return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, uses_multiple_instruction_sets: {}, triple_and_model: {}".format(
-            self.pc_length, self.has_opcodes, self.extra_length, self.uses_multiple_instruction_sets, self.triple_and_model)
+        return "Header: pc_length: {}, has_opcodes: {}, extra_length: {}, triple_and_models: {}".format(
+            self.pc_length, self.has_opcodes, self.extra_length, self.triple_and_models)
 
 
 def read_header(file: BinaryIO) -> Header:
@@ -99,23 +98,32 @@ def read_header(file: BinaryIO) -> Header:
         raise InvalidFileFormatException("Invalid file header")
 
     if opcodes_raw[0] == 0:
-        return Header(pc_length_raw[0], False, 0, False, None)
+        return Header(pc_length_raw[0], False, 0, ())
     elif opcodes_raw[0] == 1:
-        uses_multiple_instruction_sets_raw = file.read(1)
-        identifier_length_raw = file.read(1)
-        if len(uses_multiple_instruction_sets_raw) != 1 or len(identifier_length_raw) != 1:
+        triple_and_model_count_raw = file.read(1)
+        if len(triple_and_model_count_raw) != 1:
             raise InvalidFileFormatException("Invalid file header")
-        
-        uses_multiple_instruction_sets = uses_multiple_instruction_sets_raw[0] == 1
-        identifier_length = identifier_length_raw[0]
-        triple_and_model_raw = file.read(identifier_length)
-        if len(triple_and_model_raw) != identifier_length:
-            raise InvalidFileFormatException("Invalid file header")
-            
-        triple_and_model = triple_and_model_raw.decode("utf-8")
-        extra_length = 2 + identifier_length
+        triple_and_model_count = triple_and_model_count_raw[0]
 
-        return Header(pc_length_raw[0], True, extra_length, uses_multiple_instruction_sets, triple_and_model)
+        extra_length = 1
+        triple_and_models = []
+
+        for _ in range(triple_and_model_count):
+            identifier_length_raw = file.read(1)
+            if len(identifier_length_raw) != 1:
+                raise InvalidFileFormatException("Invalid file header")
+            identifier_length = identifier_length_raw[0]
+
+            triple_and_model_raw = file.read(identifier_length)
+            if len(triple_and_model_raw) != identifier_length:
+                raise InvalidFileFormatException("Invalid file header")
+
+            triple_and_model = triple_and_model_raw.decode("utf-8")
+
+            triple_and_models.append(triple_and_model)
+            extra_length += 1 + identifier_length
+
+        return Header(pc_length_raw[0], True, extra_length, tuple(triple_and_models))
     else:
         raise InvalidFileFormatException("Invalid opcodes field at file header")
 
@@ -146,8 +154,8 @@ class TraceEntry(NamedTuple):
 
 class TraceData:
     disassemblers: dict[str, LLVMDisassembler] = {}
-    isa_mode: int = 0
     instructions_left_in_block = 0
+    active_triple_and_model: str = None
 
     def __init__(self, file: IO, header: Header, disassemble: bool, llvm_disas_path: Optional[str]):
         self.file = file
@@ -155,39 +163,32 @@ class TraceData:
         self.has_pc = (self.pc_length != 0)
         self.has_opcodes = bool(header.has_opcodes)
         self.extra_length = header.extra_length
-        self.uses_multiple_instruction_sets = header.uses_multiple_instruction_sets
+        self.triple_and_models = header.triple_and_models
+        self.multiple_triple_and_models = len(header.triple_and_models) > 1
+        if len(header.triple_and_models) == 1:
+            self.active_triple_and_model = header.triple_and_models[0]
         self.disassemble = disassemble
         self.filename = os.path.basename(file.name).split('.')[0]
         self.llvm_disas_path = llvm_disas_path
-        if header.triple_and_model:
-            self.triple, self.model = header.triple_and_model.split(" ")
         if self.disassemble:
-            if not header.triple_and_model:
+            if len(header.triple_and_models) == 0:
                 raise RuntimeError("No architecture triple available in disassembly mode. Trace file might be corrupted")
             if not llvm_disas_path:
                 raise RuntimeError("No path to decompiler library provided")
 
-    def get_active_triple(self) -> str:
-        # ARMv7 Thumb mode
-        if self.triple == "armv7a" and self.isa_mode == 0b1:
-            return "thumb"
-        # ARMv8 AArch32 mode
-        if self.triple == "arm64" and self.isa_mode == 0b10:
-            return "armv7a"
-        # ARMv8 Thumb mode
-        if self.triple == "arm64" and self.isa_mode == 0b11:
-            return "thumb"
-        # Default mode
-        if self.isa_mode == 0:
-            return self.triple
-        raise RuntimeError(f"Unknown ISA mode {self.isa_mode} for {self.triple}")
+    def update_triple_and_model(self, idx: int):
+        if idx >= len(self.triple_and_models):
+            raise RuntimeError(f"Invalid triple_and_model index {idx} (out of {len(self.triple_and_models)})")
+        self.active_triple_and_model = self.triple_and_models[idx]
 
-    def get_disas(self) -> LLVMDisassembler:
-        triple = self.get_active_triple()
-        if triple in self.disassemblers:
-            return self.disassemblers[triple]
-        disas = LLVMDisassembler(triple, self.model, self.llvm_disas_path)
-        self.disassemblers[triple] = disas
+    def get_disas(self, triple_and_model: str) -> LLVMDisassembler:
+        if triple_and_model in self.disassemblers:
+            return self.disassemblers[triple_and_model]
+
+        triple, model = triple_and_model.split(" ")
+
+        disas = LLVMDisassembler(triple, model, self.llvm_disas_path)
+        self.disassemblers[triple_and_model] = disas
         return disas
 
     def __iter__(self):
@@ -197,13 +198,13 @@ class TraceData:
     def __next__(self) -> TraceEntry:
         additional_data = []
 
-        if self.uses_multiple_instruction_sets and self.instructions_left_in_block == 0:
-            isa_mode_raw = self.file.read(1)
-            if len(isa_mode_raw) != 1:
+        if self.multiple_triple_and_models and self.instructions_left_in_block == 0:
+            isa_idx_raw = self.file.read(1)
+            if len(isa_idx_raw) != 1:
                 # No more data frames to read
                 raise StopIteration
 
-            self.isa_mode = isa_mode_raw[0]
+            self.update_triple_and_model(isa_idx_raw[0])
             
             block_length_raw = self.file.read(8)
             if len(block_length_raw) != 8:
@@ -212,7 +213,7 @@ class TraceData:
             # The `instructions_left_in_block` counter is kept only for traces produced by cores that can switch between multiple modes.
             self.instructions_left_in_block = int.from_bytes(block_length_raw, byteorder=BYTE_ORDER, signed=False)
 
-        if self.uses_multiple_instruction_sets:
+        if self.multiple_triple_and_models:
             self.instructions_left_in_block -= 1
 
         pc = self.file.read(self.pc_length)
@@ -251,7 +252,7 @@ class TraceData:
                 additional_data_type = AdditionalDataType(self.file.read(1)[0])
             except IndexError:
                 break
-        return TraceEntry(pc, opcode, additional_data, self.isa_mode)
+        return TraceEntry(pc, opcode, additional_data, self.active_triple_and_model)
 
     def parse_memory_access_data(self) -> str:
         data = self.file.read(MEMORY_ACCESS_LENGTH)
@@ -351,13 +352,13 @@ class TraceData:
         return text + " | ".join(registers_data)
 
     def format_entry(self, entry: TraceEntry) -> str:
-        (pc, opcode, additional_data, isa_mode) = entry
+        (pc, opcode, additional_data, triple_and_model) = entry
         pc_str: str = ""
         opcode_str: str = ""
         if self.pc_length:
             pc_str = bytes_to_hex(pc)
         if self.has_opcodes:
-            is_thumb = self.get_active_triple() == "thumb"
+            is_thumb = triple_and_model.startswith("thumb")
             opcode_str = bytes_to_thumb_hex(opcode) if is_thumb else bytes_to_hex(opcode)
         output = ""
         if self.pc_length and self.has_opcodes:
@@ -370,7 +371,7 @@ class TraceData:
             output = ""
 
         if self.has_opcodes and self.disassemble:
-            disas = self.get_disas()
+            disas = self.get_disas(triple_and_model)
             _, instruction = disas.get_instruction(opcode)
             output += " " + instruction.decode("utf-8")
 

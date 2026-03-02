@@ -2,9 +2,10 @@
 Library                             ../../tools/execution_tracer/execution_tracer_keywords.py
 
 *** Variables ***
-${bin_out_signature}                ReTrace\x04
+${bin_out_signature}                ReTrace\x05
 ${arm_m_triple_and_model}           thumb cortex-m3
 ${arm_a_triple_and_model}           armv7a cortex-a7
+${arm_a_thumb_triple_and_model}     thumb cortex-a7
 ${riscv_triple_and_model}           riscv32 rv32imacv
 ${riscv_64_triple_and_model}        riscv64 rv64imacv
 
@@ -279,8 +280,9 @@ Should Be Able To Add Memory Accesses To The Trace In Binary Format On RISC-V
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
                                                 # [0]: pc_width; [1]: include_opcode
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[10:11]  \x01  # triple_and_model_count
+
+    Should Be Equal As Bytes                    ${output_file}[11:12]  \x11  # triple_and_model_length
     Should Be Equal As Bytes                    ${output_file}[12:29]  ${riscv_triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
@@ -329,8 +331,9 @@ Should Dump Opcodes As Binary On RISC-V
     Length Should Be                            ${trace}  45
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x00\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${trace}[10:11]  \x01  # triple_and_model_count
+
+    Should Be Equal As Bytes                    ${trace}[11:12]  \x11  # triple_and_model_length
     Should Be Equal As Bytes                    ${trace}[12:29]  ${riscv_triple_and_model}
 
     Should Be Equal As Bytes                    ${trace}[29:35]  \x04\x13\x00\x00\x00\x00
@@ -345,10 +348,10 @@ Should Dump PCs And Opcodes As Binary On RISC-V
     Length Should Be                            ${trace}  57
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x11 
     Should Be Equal As Bytes                    ${trace}[12:29]  ${riscv_triple_and_model}
+    Should Be Equal As Bytes                    ${trace}[10:11]  \x01  # triple_and_model_count
 
+    Should Be Equal As Bytes                    ${trace}[11:12]  \x11  # triple_and_model_length
     Should Be Equal As Bytes                    ${trace}[29:33]  \x00\x20\x00\x00
     Should Be Equal As Bytes                    ${trace}[33:39]  \x04\x13\x00\x00\x00\x00
     Should Be Equal As Bytes                    ${trace}[39:43]  \x04\x20\x00\x00
@@ -609,8 +612,9 @@ Should Dump PCs And Opcodes As Binary With Thumb
     Length Should Be                            ${trace}  63
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${trace}[10:12]  \x00\x0f
+    Should Be Equal As Bytes                    ${trace}[10:11]  \x01  # triple_and_model_count
+
+    Should Be Equal As Bytes                    ${trace}[11:12]  \x0f  # triple_and_model_length
     Should Be Equal As Bytes                    ${trace}[12:27]  ${arm_m_triple_and_model}
 
     Should Be Equal As Bytes                    ${trace}[27:35]  \x00\x00\x00\x00\x02\x10\x20\x00
@@ -636,34 +640,36 @@ Should Dump PCs and Opcodes As Binary With ARM and Thumb
 
     Should Be Equal As Bytes                    ${trace}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${trace}[08:10]  \x04\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${trace}[10:12]  \x01\x10
+    Should Be Equal As Bytes                    ${trace}[10:11]  \x02  # triple_and_model_count
 
+    Should Be Equal As Bytes                    ${trace}[11:12]  \x10  # triple_and_model_length
     Should Be Equal As Bytes                    ${trace}[12:28]  ${arm_a_triple_and_model}
 
+    Should Be Equal As Bytes                    ${trace}[28:29]  \x0f  # triple_and_model_length
+    Should Be Equal As Bytes                    ${trace}[29:44]  ${arm_a_thumb_triple_and_model}
+
     # ARM - instruction type 0, 4 instructions
-    Should Be Equal As Bytes                    ${trace}[28:37]  \x00\x04\x00\x00\x00\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[44:53]  \x00\x04\x00\x00\x00\x00\x00\x00\x00
     # mov r0, r0
-    Should Be Equal As Bytes                    ${trace}[37:47]  \x00\x00\x01\x00\x04\x00\x00\xa0\xe1\x00
+    Should Be Equal As Bytes                    ${trace}[53:63]  \x00\x00\x01\x00\x04\x00\x00\xa0\xe1\x00
     # nop
-    Should Be Equal As Bytes                    ${trace}[47:57]  \x04\x00\x01\x00\x04\x00\xf0\x20\xe3\x00
+    Should Be Equal As Bytes                    ${trace}[63:73]  \x04\x00\x01\x00\x04\x00\xf0\x20\xe3\x00
     # add r1, r6, r2
-    Should Be Equal As Bytes                    ${trace}[57:67]  \x08\x00\x01\x00\x04\x02\x10\x86\xe0\x00
+    Should Be Equal As Bytes                    ${trace}[73:83]  \x08\x00\x01\x00\x04\x02\x10\x86\xe0\x00
     # blx
-    Should Be Equal As Bytes                    ${trace}[67:77]  \x0c\x00\x01\x00\x04\xfb\x3f\x00\xfa\x00
+    Should Be Equal As Bytes                    ${trace}[83:93]  \x0c\x00\x01\x00\x04\xfb\x3f\x00\xfa\x00
     # Thumb - instruction type 1, 5 instructions
-    Should Be Equal As Bytes                    ${trace}[77:86]  \x01\x05\x00\x00\x00\x00\x00\x00\x00
+    Should Be Equal As Bytes                    ${trace}[93:102]  \x01\x05\x00\x00\x00\x00\x00\x00\x00
     # movs r0, #0
-    Should Be Equal As Bytes                    ${trace}[86:94]  \x00\x00\x02\x00\x02\x00\x20\x00
+    Should Be Equal As Bytes                    ${trace}[102:110]  \x00\x00\x02\x00\x02\x00\x20\x00
     # mov r1, r0
-    Should Be Equal As Bytes                    ${trace}[94:102]  \x02\x00\x02\x00\x02\x01\x46\x00
+    Should Be Equal As Bytes                    ${trace}[110:118]  \x02\x00\x02\x00\x02\x01\x46\x00
     # cmp r4, r2
-    Should Be Equal As Bytes                    ${trace}[102:110]  \x04\x00\x02\x00\x02\x94\x42\x00
+    Should Be Equal As Bytes                    ${trace}[118:126]  \x04\x00\x02\x00\x02\x94\x42\x00
     # NOTE: 32-bit Thumb instructions are stored in Mixed-Endian: each 16-bit half-word is stored in LE, but the more significant half-word is stored before the less significant one
     # sbcs.w r9, r5, r3
-    Should Be Equal As Bytes                    ${trace}[110:120]  \x06\x00\x02\x00\x04\x75\xeb\x03\x09\x00
-    Should Be Equal As Bytes                    ${trace}[120:128]  \x0a\x00\x02\x00\x02\x70\x47\x00
-
+    Should Be Equal As Bytes                    ${trace}[126:136]  \x06\x00\x02\x00\x04\x75\xeb\x03\x09\x00
+    Should Be Equal As Bytes                    ${trace}[136:144]  \x0a\x00\x02\x00\x02\x70\x47\x00
 Should Dump PCs And Opcodes For Isolated Memory
     Create Machine RISC-V 32-bit                0x2000  memory_per_cpu=True
 
@@ -767,8 +773,9 @@ Should Be Able To Add Vector Configuration To The Trace In Binary Format
 
     Should Be Equal As Bytes                    ${output_file}[00:08]  ${bin_out_signature}
     Should Be Equal As Bytes                    ${output_file}[08:10]  \x04\x01
-                                                # [0]: multiple_instruction_sets_flag; [1]: triple_and_model_length;
-    Should Be Equal As Bytes                    ${output_file}[10:12]  \x00\x11 
+    Should Be Equal As Bytes                    ${output_file}[10:11]  \x01  # triple_and_model_count
+
+    Should Be Equal As Bytes                    ${output_file}[11:12]  \x11  # triple_and_model_length
     Should Be Equal As Bytes                    ${output_file}[12:29]  ${riscv_triple_and_model}
 
                                                 # [0:4]: pc; [4]: opcode_length; [5:9]: opcode; [10]: additional_data_type = None  
