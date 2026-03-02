@@ -35,16 +35,18 @@ def split_n_bit_value_into_m_bit_values(n: int, m: int, value_n_bit: str) -> lis
     ]
 
 
-def combine_n_into_128_bit_value(n: int, values_n_bit: list[str]) -> str:
+def combine_n_bit_values_into_m_bit_value(
+    n: int, m: int, values_n_bit: list[str]
+) -> str:
     """
     Converts a list of strings containing base-16 n-bit values (with 0x prefix)
-    into a string containing a base-16 number (with 0x prefix).
+    into a string containing an m-bit base-16 number (with 0x prefix).
     The input list is expected to be ordered such that indices correspond to lane numbers.
     """
     list(map(assert_starts_with_0x_prefix, values_n_bit))
-    assert 128 % n == 0, f"128 must be divisible by `n`, but {n} is not"
+    assert m % n == 0, f"`m`={m} must be divisible by `n`, but {n} is not"
     length = len(values_n_bit)
-    expected_values = 128 // n
+    expected_values = m // n
     assert (
         length == expected_values
     ), f"Input list must contain {expected_values} values, but it contains {length}"
@@ -106,7 +108,7 @@ def compute_vector_vector_op(
         )
     ]
     result_elements = [int_to_hex(op(e1, e2)) for (e1, e2) in zip(elements1, elements2)]
-    return combine_n_into_128_bit_value(element_size, result_elements)
+    return combine_n_bit_values_into_m_bit_value(element_size, 128, result_elements)
 
 
 def op_with_complex_rotation(
@@ -176,7 +178,7 @@ def compute_vector_complex_rotation_op_result(
         for (e1, e2) in zip(complex1, complex2)
         for component in split_into_ints(op_with_rotation(e1, e2, rotation))
     ]
-    return combine_n_into_128_bit_value(element_size, result_elements)
+    return combine_n_bit_values_into_m_bit_value(element_size, 128, result_elements)
 
 
 def compute_vector_scalar_op(
@@ -198,7 +200,7 @@ def compute_vector_scalar_op(
     ]
     op2 = hex_to_int(operand2_32_bit)
     result_elements = [int_to_hex(op(e1, op2)) for e1 in elements1]
-    return combine_n_into_128_bit_value(element_size, result_elements)
+    return combine_n_bit_values_into_m_bit_value(element_size, 128, result_elements)
 
 
 def compute_bitwise_vector_vector_op(
@@ -346,7 +348,7 @@ def apply_vpr_mask(original: str, update: str, mask: list[bool], action: str):
     for from_original, from_update, active in zip(original, update, mask):
         result.append(from_update if active else from_original)
 
-    return combine_n_into_128_bit_value(element_size, result)
+    return combine_n_bit_values_into_m_bit_value(element_size, 128, result)
 
 
 # Partial applications of `compute_vector_op`.

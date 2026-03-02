@@ -55,7 +55,7 @@ Read Register Q${index}
         ${register_value}=              Execute Command  cpu GetRegister "s${register}"
         Append To List                  ${s_register_contents}  ${{ $register_value.strip() }}
     END
-    ${q_register_value}=            Combine N Into 128 Bit Value  32  ${s_register_contents}
+    ${q_register_value}=            Combine N Bit Values Into M Bit Value  32  128  ${s_register_contents}
     RETURN                          ${q_register_value}
 
 Register Q${index} Should Contain ${value_128_bit}
