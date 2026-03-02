@@ -245,6 +245,11 @@ def to_twos_complement_signed(bits: int, unsigned_value: int) -> int:
     return unsigned_value
 
 
+def to_twos_complement_unsigned(bits: int, signed_value: int) -> int:
+    """Converts a signed python integer into an unsigned integer of size `bits`."""
+    return signed_value & mask(bits)
+
+
 def floor_div_complex(number: complex, divisor: int) -> complex:
     """Performs integer division on a complex number."""
     return complex(number.real // divisor, number.imag // divisor)
@@ -356,6 +361,53 @@ def apply_vpr_mask(original: str, update: str, mask: list[bool], action: str):
         result.append(from_update if active else from_original)
 
     return combine_n_bit_values_into_m_bit_value(element_size, 128, result)
+
+
+def do_shift_op(
+    width_bits: int,
+    value: int,
+    shift_by: int,
+    direction: str,
+    saturating: bool,
+    rounding: bool,
+    signed: bool,
+    logical: bool,
+) -> str:
+    assert shift_by != 0, "shifting by 0 is not supported"
+    assert (
+        shift_by < width_bits
+    ), f"shift must be less than {width_bits}, but got {shift_by}"
+    assert (
+        direction == "left" or direction == "right"
+    ), f"direction must be left or right, but it's {direction}"
+    min_input = 0
+    max_input = (1 << width_bits) - 1
+    assert (
+        min_input <= value <= max_input
+    ), f"{value} must be in range: {min_input} <= value <= {max_input}"
+
+    if signed:
+        value = to_twos_complement_signed(width_bits, value)
+
+    if rounding:
+        # The technical reference manual for Armv8.1-M MVE specifies the
+        # rounding operations as performing this addition in order to
+        # round the value before shifting.
+        value = value + (1 << (shift_by - 1))
+
+    if direction == "left":
+        result = value << shift_by
+    else:
+        if logical:
+            result = (value & mask(width_bits)) >> shift_by
+        else:  # python's default shift is arithmetic
+            result = value >> shift_by
+
+    if saturating:
+        result, _ = saturate(width_bits, signed, result)
+
+    clamped_result = result & mask(width_bits)
+    return hex(clamped_result)
 
 
 # Partial applications of `compute_vector_op`.
