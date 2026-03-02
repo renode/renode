@@ -5,7 +5,7 @@ ${initial_pc}                       0x0
 # WriteDoubleWord:  reversed bytes
 # Disassembly output:  spaces between bytes
 DisasTest BE
-    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${flags}=0
+    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${triple}=null  ${alternateDialect}=False
 
     ${hex_addr}=                    Convert To Hex  ${hex_addr}  length=8  base=16
 
@@ -24,18 +24,18 @@ DisasTest BE
     END
     ${b_disas}=                     Set Variable If  ${code_size} > 4  ${b_disas}${b_disas_4B+}  ${b_disas}
 
-    DisasTest Core                  ${hex_addr}  ${b_write}  ${b_disas}  ${mnemonic}  ${operands}  ${code_size}  ${flags}
+    DisasTest Core                  ${hex_addr}  ${b_write}  ${b_disas}  ${mnemonic}  ${operands}  ${code_size}  ${triple}  ${alternateDialect}
 
 RoundTrip BE
-    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${flags}=0  ${reverse}=True
+    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${triple}=null  ${reverse}=True  ${alternateDialect}=False
 
     IF  ${reverse}
         ${expected}=                    Reverse Bytes  ${{$hex_code[:int($code_size) * 2]}}
     ELSE
         ${expected}=                    Set Variable  ${hex_code}
     END
-    AsTest                          ${expected}  ${mnemonic}  ${operands}  ${flags}  0x${hex_addr}
-    DisasTest BE                    ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}  ${flags}
+    AsTest                          ${expected}  ${mnemonic}  ${operands}  ${triple}  0x${hex_addr}  ${alternateDialect}
+    DisasTest BE                    ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}  ${triple}  ${alternateDialect}
 
 Write Extra Bytes BE And Return Their Expected Output
     [Arguments]                     ${hex_addr}  ${hex_code}
@@ -86,7 +86,7 @@ DisasTest Thumb
     #  - bit 1 specifies whether we're in AArch32/32-bit mode (when set) or AArch64/64-bit mode (when unset) for ARMv8
     # Since the ARMv7 branch only checks `flags > 0` to switch to Thumb, and the ARMv8 branch _requires_ both bits
     # to be set for Thumb mode (no 64-bit Thumb), we set flags to 3 = 0b11, ie. "32-bit Thumb", to guarantee Thumb mode
-    DisasTest Core                  ${hex_addr}  ${b_write}  ${b_disas}  ${mnemonic}  ${operands}  ${code_size}  flags=3
+    DisasTest Core                  ${hex_addr}  ${b_write}  ${b_disas}  ${mnemonic}  ${operands}  ${code_size}  triple="thumb"
 
 RoundTrip Thumb
     [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0
@@ -95,7 +95,7 @@ RoundTrip Thumb
     ${expected}=                    Reverse Bytes  ${hex_code}
     ${expected}=                    Reverse Bytes  ${expected}  group_size=${4}
     # See comment in `DisasTest Thumb` for meaning of flags
-    AsTest                          ${expected}  ${mnemonic}  ${operands}  address=0x${hex_addr}  flags=3
+    AsTest                          ${expected}  ${mnemonic}  ${operands}  address=0x${hex_addr}  triple="thumb"
     DisasTest Thumb                 ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}
 
 DisasTest LE
@@ -113,10 +113,10 @@ RoundTrip LE
     DisasTest LE                    ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}
 
 DisasTest Core
-    [Arguments]                     ${hex_addr}  ${code_write}  ${code_disas}  ${mnemonic}  ${operands}  ${code_size}  ${flags}=0
+    [Arguments]                     ${hex_addr}  ${code_write}  ${code_disas}  ${mnemonic}  ${operands}  ${code_size}  ${triple}=null  ${alternateDialect}=False
 
     Execute Command                 sysbus WriteDoubleWord 0x${hex_addr} 0x${code_write}
-    ${res}=                         Execute Command  sysbus.cpu DisassembleBlock 0x${hex_addr} ${code_size} ${flags}
+    ${res}=                         Execute Command  sysbus.cpu DisassembleBlock 0x${hex_addr} ${code_size} ${triple} ${alternateDialect}
 
     # expect error if "$mnemonic" and "$operands" (without curly brackets!) are empty
     Run Keyword And Return If       $mnemonic == '' and $operands == ''  Should Match Regexp  ${res}  Disassembly error detected
@@ -127,9 +127,9 @@ DisasTest Core
     Should Match Regexp             ${res}  (?i)^0x${hex_addr}:\\s+${code_disas}\\s+${escaped_mnem}\\s+${escaped_oper}\\n+$
 
 AsTest
-    [Arguments]                     ${expected}  ${mnemonic}  ${operands}=  ${flags}=0  ${address}=0
+    [Arguments]                     ${expected}  ${mnemonic}  ${operands}=  ${triple}=null  ${address}=0  ${alternateDialect}=False
 
-    ${len}=                         Execute Command  sysbus.cpu AssembleBlock ${address} "${mnemonic} ${operands}" ${flags}
+    ${len}=                         Execute Command  sysbus.cpu AssembleBlock ${address} "${mnemonic} ${operands}" ${triple} ${alternateDialect}
     ${bytes}=                       Execute Command  sysbus ReadBytes ${address} ${len}
 
     # This string is safe to eval because it's formatted as a Python list by PrintActionResult in MonitorCommands.cs
@@ -362,11 +362,11 @@ Should Assemble And Disassemble X86 Using Intel Syntax
     [Tags]                          basic-tests
     Create Machine                  X86  x86
 
-    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  flags=1  reverse=False
-    RoundTrip BE                    45  inc  ebp  1  flags=1  reverse=False
-    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  flags=1  reverse=False
-    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  flags=1  reverse=False
-    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  flags=1  reverse=False
+    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  alternateDialect=True  reverse=False
+    RoundTrip BE                    45  inc  ebp  1  alternateDialect=True  reverse=False
+    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  alternateDialect=True  reverse=False
+    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False
+    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  alternateDialect=True  reverse=False
 
 Should Assemble And Disassemble X86 Using GAS Syntax
     [Tags]                          basic-tests
@@ -382,12 +382,12 @@ Should Assemble And Disassemble X86_64 Using Intel Syntax
     [Tags]                          basic-tests
     Create Machine                  X86_64  x86_64
 
-    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  flags=1  reverse=False
+    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  alternateDialect=True  reverse=False
     # Only testing assembly here as the disassembly-testing keywords can handle at most 8 bytes of code.
-    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  flags=1
-    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  flags=1  reverse=False
-    RoundTrip BE                    48ffc0  inc  rax  3  flags=1  reverse=False
-    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  flags=1  reverse=False
+    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  alternateDialect=True
+    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  alternateDialect=True  reverse=False
+    RoundTrip BE                    48ffc0  inc  rax  3  alternateDialect=True  reverse=False
+    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  alternateDialect=True  reverse=False
 
 Should Assemble And Disassemble X86_64 Using GAS Syntax
     [Tags]                          basic-tests
@@ -462,8 +462,8 @@ Should Handle Disassembly From Invalid Address
 Should Take Base Address Into Account When Assembling
     Create Machine                  X86  x86
 
-    AsTest                          8d0534120000  a: lea  eax, [a]  address=0x1234  flags=1
-    AsTest                          8d053a120000  lea  eax, [a]; a:  address=0x1234  flags=1
+    AsTest                          8d0534120000  a: lea  eax, [a]  address=0x1234  alternateDialect=True
+    AsTest                          8d053a120000  lea  eax, [a]; a:  address=0x1234  alternateDialect=True
 
 Should Assemble Multiline Program
     ${prog}=                        Catenate  SEPARATOR=\n
