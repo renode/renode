@@ -14,22 +14,24 @@ def assert_is_n_chars(string: str, n: int):
     ), f"String '{string}' must be {n} characters long but it's {length}"
 
 
-def split_into_n_bit_values(n: int, value_128_bit: str) -> list[str]:
+def split_n_bit_value_into_m_bit_values(n: int, m: int, value_n_bit: str) -> list[str]:
     """
-    Converts a string containing a base-16 number (with 0x prefix) into
-    a list of strings containing base-16 n-bit values (with 0x prefix).
+    Converts a string containing an n-bit base-16 number (with 0x prefix) into
+    a list of strings containing base-16 m-bit values (with 0x prefix).
     The list is ordered such that the indices correspond to lane numbers.
     """
-    assert_starts_with_0x_prefix(value_128_bit)
-    value_128_bit = value_128_bit[2:]
-    assert_is_n_chars(value_128_bit, 32)
+    assert_starts_with_0x_prefix(value_n_bit)
+    value_n_bit = value_n_bit[2:]
+    expected_hex_chars = n // 4
+    assert_is_n_chars(value_n_bit, expected_hex_chars)
     assert n % 4 == 0, f"`n` must be divisible by 4. {n} is not"
+    assert m % 4 == 0, f"`m` must be divisible by 4. {m} is not"
 
-    chars_in_n_bit_hex = n // 4
+    chars_in_m_bit_hex = m // 4
     return [
-        "0x" + value_128_bit[i : i + chars_in_n_bit_hex]
+        "0x" + value_n_bit[i : i + chars_in_m_bit_hex]
         # The indexing is reversed because we place the most significant bits first in the list.
-        for i in reversed(range(0, len(value_128_bit), chars_in_n_bit_hex))
+        for i in reversed(range(0, len(value_n_bit), chars_in_m_bit_hex))
     ]
 
 
@@ -93,11 +95,15 @@ def compute_vector_vector_op(
 
     elements1 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand1_128_bit)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand1_128_bit
+        )
     ]
     elements2 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand2_128_bit)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand2_128_bit
+        )
     ]
     result_elements = [int_to_hex(op(e1, e2)) for (e1, e2) in zip(elements1, elements2)]
     return combine_n_into_128_bit_value(element_size, result_elements)
@@ -141,11 +147,15 @@ def compute_vector_complex_rotation_op_result(
 
     elements1 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand1_128_bit)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand1_128_bit
+        )
     ]
     elements2 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand2_128_bit)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand2_128_bit
+        )
     ]
 
     # The complex numbers are encoded as pairs of elements,
@@ -182,7 +192,9 @@ def compute_vector_scalar_op(
 
     elements1 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand1_128_bit)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand1_128_bit
+        )
     ]
     op2 = hex_to_int(operand2_32_bit)
     result_elements = [int_to_hex(op(e1, op2)) for e1 in elements1]
@@ -294,7 +306,7 @@ def compute_vpr_mask(
 
     operand1 = [
         hex_to_int(value)
-        for value in split_into_n_bit_values(element_size, operand1_str)
+        for value in split_n_bit_value_into_m_bit_values(128, element_size, operand1_str)
     ]
 
     if with_scalar:
@@ -302,7 +314,7 @@ def compute_vpr_mask(
     else:
         operand2 = [
             hex_to_int(value)
-            for value in split_into_n_bit_values(element_size, operand2_str)
+            for value in split_n_bit_value_into_m_bit_values(128, element_size, operand2_str)
         ]
 
     mask = []
@@ -327,8 +339,8 @@ def apply_vpr_mask(original: str, update: str, mask: list[bool], action: str):
     assert element_count in [16, 8, 4, 1], f"Invalid mask size: {element_count}"
     element_size = 128 // element_count
 
-    original = split_into_n_bit_values(element_size, original)
-    update = split_into_n_bit_values(element_size, update)
+    original = split_n_bit_value_into_m_bit_values(128, element_size, original)
+    update = split_n_bit_value_into_m_bit_values(128, element_size, update)
     result = []
 
     for from_original, from_update, active in zip(original, update, mask):

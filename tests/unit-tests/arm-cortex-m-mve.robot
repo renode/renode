@@ -40,7 +40,7 @@ Create Machine
     Register Failing Log String     Unsupported opcode
 
 Set Register Q${index} To ${value_128_bit}
-    ${values_32_bit}=               Split Into N Bit Values  32  ${value_128_bit}
+    ${values_32_bit}=               Split N Bit Value Into M Bit Values  128  32  ${value_128_bit}
     FOR  ${offset}  ${value}  IN ENUMERATE  @{values_32_bit}
         # Q registers are made up of 4 adjacent S registers.
         ${register}=                    Evaluate  int($index)*4 + int($offset)
@@ -62,8 +62,8 @@ Register Q${index} Should Contain ${value_128_bit}
     [Arguments]                     ${message}=${EMPTY}  ${element_size}=32
     ${q_register_value}=            Read Register Q${index}
 
-    ${actual_elements}=             Split Into N Bit Values  ${element_size}  ${q_register_value}
-    ${expected_elements}=           Split Into N Bit Values  ${element_size}  ${value_128_bit}
+    ${actual_elements}=             Split N Bit Value Into M Bit Values  128  ${element_size}  ${q_register_value}
+    ${expected_elements}=           Split N Bit Value Into M Bit Values  128  ${element_size}  ${value_128_bit}
 
     ${zipped}=                      Evaluate  list(zip($actual_elements, $expected_elements))
     FOR  ${element_index}  ${pair}  IN ENUMERATE  @{zipped}
