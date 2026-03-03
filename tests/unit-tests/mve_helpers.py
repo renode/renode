@@ -233,9 +233,16 @@ def signed_to_hex(bits: int, signed_value: int) -> str:
 def twos_complement(bits: int, hexstr: str) -> int:
     """Converts a string containing a signed base-16 integer of size `bits` into a signed python integer."""
     value = int(hexstr, 16)  # This int will be unsigned.
-    if value & (1 << (bits - 1)):  # Check if sign bit is set (i.e. number is negative).
-        value -= 1 << bits  # Convert to negative version of the same number.
-    return value
+    return to_twos_complement_signed(bits, value)
+
+
+def to_twos_complement_signed(bits: int, unsigned_value: int) -> int:
+    """Converts an unsigned integer of size `bits` into a signed python integer."""
+    sign_bit_mask = 1 << (bits - 1)
+    # Check if sign bit is set (i.e. number is negative).
+    if unsigned_value & sign_bit_mask:
+        unsigned_value -= 1 << bits  # Convert to negative version of the same number.
+    return unsigned_value
 
 
 def floor_div_complex(number: complex, divisor: int) -> complex:
