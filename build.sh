@@ -572,8 +572,12 @@ BIN_EXT=""
 if [[ "$DETECTED_OS" == "windows" ]]; then
   BIN_EXT=".exe"
 fi
-UI_BIN=$(readlink -f "$OUT_BIN_DIR/renode-ui$BIN_EXT")
 
+UI_BIN="$OUT_BIN_DIR/renode-ui$BIN_EXT"
+
+if [[ "$UI_BIN" != "/"* ]]; then
+  UI_BIN="$PWD/$UI_BIN"
+fi
 
 if $UI; then
   "$UI_PATH/scripts/build_neutralino.sh"
