@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import partial
-from typing import Tuple
+from typing import Tuple, Union
 
 
 def assert_starts_with_0x_prefix(string: str):
@@ -60,9 +60,9 @@ def combine_n_into_128_bit_value(n: int, values_n_bit: list[str]) -> str:
 
 
 def prepare_vector_op(
-    element_size_str: str, treat_elements_as_signed: bool
+    element_size: Union[str, int], treat_elements_as_signed: bool
 ) -> Tuple[Callable[[str], int], Callable[[int], str], int]:
-    element_size = int(element_size_str)  # Robot insists on passing it as a string :(
+    element_size = int(element_size)  # Robot insists on passing it as a string :(
 
     if treat_elements_as_signed:
         hex_to_int = lambda hexstr: twos_complement(element_size, hexstr)
@@ -211,6 +211,32 @@ def twos_complement(bits: int, hexstr: str) -> int:
 def floor_div_complex(number: complex, divisor: int) -> complex:
     """Performs integer division on a complex number."""
     return complex(number.real // divisor, number.imag // divisor)
+
+
+def get_max_value(size: int, is_signed: bool) -> int:
+    if is_signed:
+        return (1 << (size - 1)) - 1
+    else:
+        return mask(size)
+
+
+def get_min_value(size: int, is_signed: bool) -> int:
+    if is_signed:
+        return -(1 << (size - 1))
+    else:
+        return 0
+
+
+def saturate(size: int, is_signed: bool, number: int) -> Tuple[int, bool]:
+    """Saturates number"""
+    max_element = get_max_value(size, is_signed)
+    min_element = get_min_value(size, is_signed)
+
+    if number > max_element:
+        return max_element, True
+    if number < min_element:
+        return min_element, True
+    return (number, False)
 
 
 # Partial applications of `compute_vector_op`.
