@@ -575,7 +575,9 @@ fi
 
 UI_BIN="$OUT_BIN_DIR/renode-ui$BIN_EXT"
 
-if [[ "$UI_BIN" != "/"* ]]; then
+# `UI_BIN`'s base goes through `cygwin -aw` on Windows, so it's already absolute
+# The path starts with a drive letter on Windows, so we have to special-case it
+if [[ "$UI_BIN" != "/"* ]] && ! $ON_WINDOWS; then
   UI_BIN="$PWD/$UI_BIN"
 fi
 
