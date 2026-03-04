@@ -15,6 +15,14 @@ ${PLAT}                             SEPARATOR=\n  """
 ...                                 ${SPACE*4}${SPACE*4}RegisterTCMRegion sysbus.btcm0 1
 ...                                 ${SPACE*4}${SPACE*4}RegisterTCMRegion sysbus.ctcm0 2
 ...
+...                                 # A dummy CPU to make sure remapping memory works in multi-CPU scenarios
+...                                 cpu_dummy: CPU.ARMv8R @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-r52"
+...                                 ${SPACE*4}genericInterruptController: gic
+...                                 ${SPACE*4}cpuId: 1
+...                                 ${SPACE*4}init:
+...                                 ${SPACE*4}${SPACE*4}IsHalted true
+...
 ...                                 timer: Timers.ARM_GenericTimer @ cpu
 ...                                 ${SPACE*4}frequency: 1000000000
 ...                                 ${SPACE*4}EL1PhysicalTimerIRQ -> gic#0@30
@@ -160,9 +168,9 @@ Should Remap TCM Regions
     Execute Command                 cpu PC ${CODE_BASE_ADDRESS}
     Execute Command                 emulation RunFor "0.01"
 
-    Register Should Be Equal        ${R0_REGISTER_INDEX}  ${TCM_A_VALUE}
-    Register Should Be Equal        ${R1_REGISTER_INDEX}  ${TCM_B_VALUE}
-    Register Should Be Equal        ${R2_REGISTER_INDEX}  ${TCM_C_VALUE}
+    Register Should Be Equal        ${R0_REGISTER_INDEX}  ${TCM_A_VALUE}  cpuName=cpu
+    Register Should Be Equal        ${R1_REGISTER_INDEX}  ${TCM_B_VALUE}  cpuName=cpu
+    Register Should Be Equal        ${R2_REGISTER_INDEX}  ${TCM_C_VALUE}  cpuName=cpu
 
 Should Disable TCM Region At EL0 and EL1
     Create Log Tester               0
@@ -178,17 +186,17 @@ Should Disable TCM Region At EL0 and EL1
     Execute Command                 cpu ExceptionLevel EL2_HypervisorMode
     Execute Command                 cpu Step 3
     Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  ${TCM_A_VALUE}
+    Register Should Be Equal        R0  ${TCM_A_VALUE}  cpuName=cpu
 
     Execute Command                 cpu ExceptionLevel EL1_SystemMode
     Execute Command                 cpu Step 3
     Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  0
+    Register Should Be Equal        R0  0  cpuName=cpu
 
     Execute Command                 cpu ExceptionLevel EL0_UserMode
     Execute Command                 cpu Step 3
     Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  0
+    Register Should Be Equal        R0  0  cpuName=cpu
 
 Should Disable TCM Region At EL2
     Create Log Tester               0
@@ -204,14 +212,14 @@ Should Disable TCM Region At EL2
     Execute Command                 cpu ExceptionLevel EL2_HypervisorMode
     Execute Command                 cpu Step 3
     Wait For Log Entry              sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  0
+    Register Should Be Equal        R0  0  cpuName=cpu
 
     Execute Command                 cpu ExceptionLevel EL1_SystemMode
     Execute Command                 cpu Step 3
     Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  ${TCM_A_VALUE}
+    Register Should Be Equal        R0  ${TCM_A_VALUE}  cpuName=cpu
 
     Execute Command                 cpu ExceptionLevel EL0_UserMode
     Execute Command                 cpu Step 3
     Should Not Be In Log            sysbus: Tried to read 4 bytes at 0x0, with incorrect permissions, returning 0.
-    Register Should Be Equal        R0  ${TCM_A_VALUE}
+    Register Should Be Equal        R0  ${TCM_A_VALUE}  cpuName=cpu

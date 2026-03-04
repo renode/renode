@@ -4,6 +4,9 @@ ${COMMON_MEMORY}                         0x1400000
 ${PER_CORE_MEMORY}                       0x3000000
 ${CORE1_MEM_ALIAS}                       0x2010000
 ${CORE2_MEM_ALIAS}                       0x2020000
+${CLUSTER_A_MEM_ALIAS}                   0x2030000
+${CLUSTER_B_MEM_ALIAS}                   0x2040000
+${MOVE_TARGET}                           0xAAA0000
 ${UART_ADDR}                             0x50230000
 ${UART_ADDR_MOVED}                       0x60230000
 ${URI}                                   @https://dl.antmicro.com/projects/renode
@@ -27,18 +30,21 @@ ${CPU1_SHADOW_MEMORY}=     SEPARATOR=
 ...  ${SPACE*4}size: 0x1000                                                          ${\n}
 ...  """
 
+${unregistered_error}=     REGEXP: KeywordException:(?s:.)*Attempted to move a peripheral that isn't registered within current context(?s:.)*
 
 *** Keywords ***
 Create Machine
-    [Arguments]  ${elf}
+    [Arguments]  ${elf}=none
 
     Execute Command                      mach create
     Execute Command                      machine LoadPlatformDescription "${CURDIR}${/}per-core-registration.repl"
 
-    Execute Command                      macro reset "sysbus LoadELF ${elf}"
-    Execute Command                      runMacro $reset
+    IF  "${elf}" != "none"
+        Execute Command                      macro reset "sysbus LoadELF ${elf}"
+        Execute Command                      runMacro $reset
 
-    Create Terminal Tester               ${UART}  timeout=1
+        Create Terminal Tester               ${UART}  timeout=1
+    END
 
 
 Create Machine With Hex File
@@ -54,10 +60,20 @@ Create Machine With Hex File
     ${hook_script}=                      Catenate  SEPARATOR=\n
                                          ...  from Antmicro.Renode.Peripherals.Bus import BusRangeRegistration
                                          ...  uart_peripheral = machine.SystemBus.WhatIsAt(${peripheral_addr}, cpu).Peripheral
-                                         ...  new_registration = BusRangeRegistration(${new_address}, uart_peripheral.Size)
+                                         ...  new_registration = BusRangeRegistration(${new_address}, uart_peripheral.Size, cpu=cpu)
                                          ...  machine.SystemBus.MoveRegistrationWithinContext(uart_peripheral, new_registration, cpu)
     Execute Command                      ${cpu} AddHook ${hook_addr} """${hook_script}"""
 
+
+Move Peripheral
+    [Arguments]                          ${peripheral}  ${new_addr}  ${cpu}
+    ${move_script}=                      Catenate  SEPARATOR=\n
+                                         ...  from Antmicro.Renode.Peripherals.Bus import BusRangeRegistration
+                                         ...  cpu = self.Machine['sysbus.${cpu}']
+                                         ...  peripheral = self.Machine['sysbus.${peripheral}']
+                                         ...  new_registration = BusRangeRegistration(${new_addr}, peripheral.Size, cpu=cpu)
+                                         ...  self.Machine.SystemBus.MoveRegistrationWithinContext(peripheral, new_registration, cpu)
+   Execute Command                       python """${move_script}"""
 
 *** Test Cases ***
 Fail On Shadowing Other Registration
@@ -208,3 +224,55 @@ Should Load Hex To Core Specific Memory
            Create Machine With Hex File  sysbus.cpu2
            Should Not Be In Log          Tried to access bytes at non-existing peripheral
 
+Cluster Memory Should Only Be Visible To Cluster
+           Create Machine
+
+           Execute Command               sysbus WriteWord ${PER_CORE_MEMORY} 0x1234 sysbus.cpu1
+           Execute Command               sysbus WriteWord ${PER_CORE_MEMORY} 0x5678 clusterA.cpuA1
+           Execute Command               sysbus WriteWord ${PER_CORE_MEMORY} 0x9abc clusterB.cpuB1
+           # Check nothing was overwritten
+  ${out}=  Execute Command               sysbus ReadWord ${PER_CORE_MEMORY} sysbus.cpu1
+           Should Be Equal As Numbers    ${out}  0x1234
+  ${out}=  Execute Command               sysbus ReadWord ${PER_CORE_MEMORY} clusterA.cpuA2
+           Should Be Equal As Numbers    ${out}  0x5678
+  ${out}=  Execute Command               sysbus ReadWord ${PER_CORE_MEMORY} clusterB.cpuB2
+           Should Be Equal As Numbers    ${out}  0x9abc
+           # Check aliases
+  ${out}=  Execute Command               sysbus ReadWord ${CORE1_MEM_ALIAS}
+           Should Be Equal As Numbers    ${out}  0x1234
+  ${out}=  Execute Command               sysbus ReadWord ${CLUSTER_A_MEM_ALIAS}
+           Should Be Equal As Numbers    ${out}  0x5678
+  ${out}=  Execute Command               sysbus ReadWord ${CLUSTER_B_MEM_ALIAS}
+           Should Be Equal As Numbers    ${out}  0x9abc
+
+Memory Should Only Be Movable Within Single CPU
+           Create Machine
+
+           Run Keyword And Expect Error  ${unregistered_error}
+           ...  Move Peripheral          ram           ${MOVE_TARGET}  cpu1
+           Run Keyword And Expect Error  ${unregistered_error}
+           ...  Move Peripheral          clusterA_mem  ${MOVE_TARGET}  clusterA.cpuA1
+           Move Peripheral               core1_mem     ${MOVE_TARGET}  cpu1
+
+Memory Move Should Only Affect Relevant CPU
+           Create Machine
+
+           # core1_mem has two registrations - the globally-accessible CORE1_MEM_ALIAS, and the cpu1-only PER_CORE_MEMORY
+           # Moving one should not affect the other
+           Execute Command               sysbus WriteWord ${CORE1_MEM_ALIAS} 0x1234
+
+  ${out}=  Execute Command               sysbus ReadWord ${PER_CORE_MEMORY} sysbus.cpu1
+           Should Be Equal As Numbers    ${out}  0x1234
+
+           Move Peripheral               core1_mem     ${MOVE_TARGET}  cpu1
+
+  ${out}=  Execute Command               sysbus ReadWord ${MOVE_TARGET} sysbus.cpu1
+           Should Be Equal As Numbers    ${out}  0x1234
+
+           # Old memory should be now unmapped
+  ${out}=  Execute Command               sysbus ReadWord ${PER_CORE_MEMORY} sysbus.cpu1
+           Should Be Equal As Numbers    ${out}  0x0000
+
+           Execute Command               sysbus WriteWord ${MOVE_TARGET} 0x5678 sysbus.cpu1
+  ${out}=  Execute Command               sysbus ReadWord ${CORE1_MEM_ALIAS}
+           Should Be Equal As Numbers    ${out}  0x5678

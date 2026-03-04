@@ -16,6 +16,34 @@ cpu2: CPU.RiscV64 @ sysbus
     timeProvider: empty
     hartId: 1
 
+clusterA: CPU.Cluster @ sysbus
+
+cpuA1: CPU.RiscV64 @ clusterA
+    cpuType: "rv64imacfd_zicsr"
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 2
+
+cpuA2: CPU.RiscV64 @ clusterA
+    cpuType: "rv64imafdc_zicsr"
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 3
+
+clusterB: CPU.Cluster @ sysbus
+
+cpuB1: CPU.RiscV64 @ clusterB
+    cpuType: "rv64imacfd_zicsr"
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 4
+
+cpuB2: CPU.RiscV64 @ clusterB
+    cpuType: "rv64imafdc_zicsr"
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_10
+    timeProvider: empty
+    hartId: 5
+
 uart: UART.SiFive_UART @ {
         sysbus new Bus.BusPointRegistration { address: 0x50230000; cpu: cpu1 };
         sysbus new Bus.BusPointRegistration { address: 0x50230000; cpu: cpu2 }
@@ -35,6 +63,24 @@ core2_mem: Memory.MappedMemory @ {
     sysbus new Bus.BusPointRegistration {
         address: 0x3000000;
         cpu: cpu2
+    }
+}
+    size: 0x1000
+
+clusterA_mem: Memory.MappedMemory @ {
+    sysbus 0x2030000;
+    sysbus new Bus.BusPointRegistration {
+        address: 0x3000000;
+        cluster: clusterA
+    }
+}
+    size: 0x1000
+
+clusterB_mem: Memory.MappedMemory @ {
+    sysbus 0x2040000;
+    sysbus new Bus.BusPointRegistration {
+        address: 0x3000000;
+        cluster: clusterB
     }
 }
     size: 0x1000
