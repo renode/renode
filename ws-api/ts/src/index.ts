@@ -71,9 +71,17 @@ export class RenodeProxySession extends EventTarget {
     super();
     this.errorCallback = _ =>
       console.error('RenodeProxySession: WebSocket error');
-    this.sessionSocket.addEventListener('message', ev =>
-      this.onData(ev.data.toString()),
-    );
+    this.sessionSocket.addEventListener('message', async ev => {
+      if (typeof ev.data === 'string') {
+        this.onData(ev.data);
+      } else if (ev.data instanceof Blob) {
+        this.onData(await ev.data.text());
+      } else if (ev.data instanceof ArrayBuffer) {
+        this.onData(new TextDecoder().decode(ev.data));
+      } else {
+        throw new Error(`Unsupported data type: ${ev.data?.constructor?.name}`);
+      }
+    });
     this.sessionSocket.addEventListener('error', ev => this.errorCallback(ev));
     this.sessionSocket.addEventListener('close', () => this.onClose());
   }
