@@ -49,6 +49,7 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
 
   logic start_transaction;
   logic write_mode;
+  logic access_hold; // Guards the first ENABLE cycle in S_ACCESS 
 
   // Only value of 1 is currently supported
   localparam int unsigned Back2BackNum = 1;
@@ -79,7 +80,7 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
     S_SETUP,
     S_ACCESS
   } state_t;
-  state_t state;
+  state_t state = S_IDLE;
 
   //
   // Waveform generation
@@ -142,7 +143,7 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
         next_state = S_ACCESS;
       end
       S_ACCESS: begin
-        if (pready) begin
+        if (pready && !access_hold) begin
           if (b2b_counter == 0) begin
             next_state = S_IDLE;
           end else begin
@@ -161,18 +162,23 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
   always_ff @(posedge clk or negedge rst_n) begin
     if (rst_n == '0) begin
       state <= S_IDLE;
+      access_hold <= 1'b0; 
     end else begin
       state <= next_state;
 
       case (state)
         S_IDLE: begin
           b2b_counter <= Back2BackNum;
+          access_hold <= 1'b0; 
         end
         S_SETUP: begin
           b2b_counter <= b2b_counter - 1;
+          access_hold <= 1'b1; 
         end
         S_ACCESS: begin
-          if (pready) begin
+          if (access_hold) begin 
+            access_hold <= 1'b0; 
+          end else if (pready) begin
             if (write_mode) begin
               runtime.controllers[RenodeToCosimIndex].write_respond(1'b0);  // Notify Renode that write is done
             end else begin
@@ -182,6 +188,7 @@ module renode_apb3_requester #(int RenodeToCosimIndex = 0) (
         end
         default: begin
           b2b_counter <= Back2BackNum;
+          access_hold <= 1'b0; 
         end
       endcase
     end
