@@ -19,7 +19,7 @@ systemTimer: Timers.Atmel91SystemTimer @ sysbus 0xFFFFFD00
     -> aic@1
 
 cpu: CPU.ARMv7A @ sysbus
-    cpuType: "arm926"
+    cpuType: "arm926ej-s"
     init:
         ModelID 0x41009200
 

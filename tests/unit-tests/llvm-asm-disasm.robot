@@ -244,7 +244,7 @@ Assemble And Disassemble RVV
 
 Should Assemble And Disassemble ARM Cortex-A
     [Tags]                          basic-tests
-    Create Machine                  ARMv7A  arm926
+    Create Machine                  ARMv7A  arm926ej-s
 
     RoundTrip LE                    32855001  addlo  r5, r5, \#1  hex_addr=8000
     RoundTrip LE                    e1b00a00  lsls  r0, r0, \#20  hex_addr=813c
