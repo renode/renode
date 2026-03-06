@@ -181,7 +181,7 @@ Saturated Vector-${with:(Vector|Scalar)} ${instruction:(vqadd)}.${sign:(s|u)}${e
 Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
 
-    FOR  ${instruction}  IN  vhadd  vhsub
+    FOR  ${instruction}  IN  vhadd  vhsub  vmax  vmin
         FOR  ${sign}  IN  s  u
             FOR  ${element_size}  IN  8  16  32
                 ${instruction}                  ${sign}  ${element_size}

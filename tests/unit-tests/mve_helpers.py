@@ -267,3 +267,8 @@ compute_scalar_vhadd_result = partial(
 compute_scalar_vhsub_result = partial(
     compute_vector_scalar_op, lambda a, b: (a - b) // 2
 )
+
+
+# vmin and vmax
+compute_vector_vmax_result = partial(compute_vector_vector_op, max)
+compute_vector_vmin_result = partial(compute_vector_vector_op, min)
