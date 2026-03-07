@@ -1,0 +1,12 @@
+ram: Memory.MappedMemory @ sysbus 0x0
+    size: 0x10000
+
+exec_mem: Memory.ExecutableByteMemory @ sysbus 0x20000000
+    size: 0x1000
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0"
+    nvic: nvic
