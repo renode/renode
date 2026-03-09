@@ -235,7 +235,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             (from atSign in AtSign
              from brace in OpeningBrace.Named("registration infos list")
              from first in RegistrationInfoInner
-             from rest in Separator.Then(x => RegistrationInfoInner).XMany()
+             from rest in Separator.Then(x => RegistrationInfoInner).Many()
+             from tail in Separator.Optional()
              from closingBrace in ClosingBrace.Named("registration infos list end")
              select new[] { first }.Concat(rest));
 
@@ -402,7 +403,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<IEnumerable<Attribute>> AttributesInner =
             (from firstAttribute in Attribute
-             from rest in Separator.Then(x => Attribute).XMany()
+             from rest in Separator.Then(x => Attribute).Many()
+             from tail in Separator.Optional()
              select new[] { firstAttribute }.Concat(rest));
 
         public static readonly Parser<IEnumerable<Attribute>> Attributes =
