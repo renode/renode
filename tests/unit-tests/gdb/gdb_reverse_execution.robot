@@ -277,7 +277,7 @@ Should Stop At Breakpoint On Previous Instruction
     Check And Run Gdb               riscv64-zephyr-elf-gdb
     Execute Command                 reverseExecMode true
     Command Gdb                     break *${ENTRYPOINT}+0x08
-    
+
     Command Gdb                     continue
     ${expected_pc}=                 Execute Command  sysbus.cpu PC
     Command Gdb                     stepi
@@ -291,7 +291,7 @@ Should Revert To The Beginning
     Check And Run Gdb               riscv64-zephyr-elf-gdb
     Execute Command                 reverseExecMode true
     Command Gdb                     break *${ENTRYPOINT}+0x08
-    
+
     Command Gdb                     continue
     Command Gdb                     reverse-continue
     ${result_icount}=               Execute Command  sysbus.cpu GetCurrentInstructionsCount
@@ -304,7 +304,7 @@ Should Not Stop On Deleted Breakpoint
     Execute Command                 reverseExecMode true
     Command Gdb                     break *${ENTRYPOINT}+0x08
     Command Gdb                     break *${ENTRYPOINT}+0x1a
-    
+
     Command Gdb                     continue
     ${expected_pc}=                 Execute Command  sysbus.cpu PC
     Command Gdb                     continue
