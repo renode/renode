@@ -46,6 +46,66 @@ using ""other_file.pl8""";
         }
 
         [Test]
+        public void ShouldParseUsingEntry2()
+        {
+            var source = @"
+using ""file.pl8"";
+using ""other_file.pl8""";
+
+            var input = GetInputFromString(source);
+            var result = Grammar.Description(input);
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var usingEntries = result.Value.Usings.Select(x => x.Path.Value);
+            CollectionAssert.AreEquivalent(new[] { "file.pl8", "other_file.pl8" }, usingEntries);
+        }
+
+        [Test]
+        public void ShouldParseUsingEntry3()
+        {
+            var source = @"
+using ""file.pl8""";
+
+            var input = GetInputFromString(source);
+            var result = Grammar.Description(input);
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var usingEntries = result.Value.Usings.Select(x => x.Path.Value);
+            CollectionAssert.AreEquivalent(new[] { "file.pl8" }, usingEntries);
+        }
+
+        [Test]
+        public void ShouldParseUsingEntry4()
+        {
+            var source = @"
+using ""file.pl8"";";
+
+            var input = GetInputFromString(source);
+            var result = Grammar.Description(input);
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var usingEntries = result.Value.Usings.Select(x => x.Path.Value);
+            CollectionAssert.AreEquivalent(new[] { "file.pl8" }, usingEntries);
+        }
+
+        [Test]
+        public void ShouldParseUsingEntry5()
+        {
+            var source = @"
+using ""first.pl8"";
+using ""second.pl8"";
+using ""third.pl8"";";
+
+            var input = GetInputFromString(source);
+            var result = Grammar.Description(input);
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var usingEntries = result.Value.Usings.Select(x => x.Path.Value);
+            CollectionAssert.AreEquivalent(new[] { "first.pl8", "second.pl8", "third.pl8" }, usingEntries);
+        }
+
+
+        [Test]
         public void ShouldParseSimpleEntry()
         {
             var source = @"
@@ -297,7 +357,27 @@ uart: {baudRate: BaudRate.B9600;}
         }
 
         [Test]
-        public void ShouldParseEntryWithOneAttributeInBracesWithSemicolon2()
+        public void ShouldFailOnEntryWithOneAttributeInBracesWithMultipleSemicolons()
+        {
+            var source = @"
+uart: {baudRate: BaudRate.B9600;;}
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnNonIdentifierWithWithMultipleSemicolons()
+        {
+            var source = @"
+uart: {_nonIdentifier;;}
+";
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
+        }
+
+        [Test]
+        public void ShouldFailOnEntryWithEmptyStatementAndOneAttributeInBracesWithSemicolon()
         {
             var source = @"
 uart: {; baudRate: BaudRate.B9600;}
@@ -385,6 +465,19 @@ uart: {
             var entry = result.Value.Entries.Single();
             var attributes = entry.Attributes;
             Assert.AreEqual(2, attributes.Count());
+        }
+
+        [Test]
+        public void ShouldFailOnEntryWithTwoAttributesInBracesWithTrailingSemicolon()
+        {
+            var source = @"
+uart: {
+    friendlyName: ""some name"";
+    size: 0x1000;
+};";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsFalse(result.WasSuccessful, result.ToString());
         }
 
         [Test]
