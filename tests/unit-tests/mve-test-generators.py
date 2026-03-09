@@ -158,7 +158,71 @@ def generate_single_saturation_case(
     return case
 
 
+class VQADD(SaturationInstruction):
+    def generate_element_first_operand(
+        self, result_state: SaturationResultState
+    ) -> Tuple[int]:
+        max_element = mve.get_max_value(self.element_size, self.is_signed)
+        min_element = mve.get_min_value(self.element_size, self.is_signed)
+
+        if result_state == SaturationResultState.InRange:
+            return random.randint(min_element, max_element)
+        elif result_state == SaturationResultState.AboveMaximum:
+            return random.randint(1, max_element)
+        elif result_state == SaturationResultState.BelowMinimum:
+            if self.is_signed:
+                return random.randint(min_element, -1)
+            else:
+                raise GenerationError(
+                    "Can't generate BelowMinimum state for unsigned values"
+                )
+        else:
+            raise ValueError(f"{result_state} is not a valid SaturationResultState")
+
+    def generate_element(
+        self, op1: int | None, result_state: SaturationResultState
+    ) -> Tuple[int, int, int, bool]:
+        max_element = mve.get_max_value(self.element_size, self.is_signed)
+        min_element = mve.get_min_value(self.element_size, self.is_signed)
+        if op1 == None:
+            op1 = self.generate_element_first_operand(result_state)
+
+        # Generate op2 such that it's still in chosen width range, but after addition to op1 will produce result with specified result state
+        if result_state == SaturationResultState.InRange:
+            min_term_that_stays_in_range = max(min_element, min_element - op1)
+            max_term_that_stays_in_range = min(max_element, max_element - op1)
+            op2 = random.randint(
+                min_term_that_stays_in_range, max_term_that_stays_in_range
+            )
+        elif result_state == SaturationResultState.AboveMaximum:
+            min_term_that_overflows = max_element - op1 + 1
+            max_term_that_overflows = max_element
+            op2 = random.randint(min_term_that_overflows, max_term_that_overflows)
+        elif result_state == SaturationResultState.BelowMinimum:
+            if self.is_signed:
+                min_term_that_underflows = min_element
+                max_term_that_overflows = min_element - op1 - 1
+                op2 = random.randint(min_term_that_underflows, max_term_that_overflows)
+            else:
+                raise GenerationError(
+                    "Can't generate below minimum state for unsigned values"
+                )
+        else:
+            raise ValueError(f"{result_state} is not a saturation result_state")
+        res, sat = self.compute(op1, op2)
+
+        # Check if generation surely works as it should
+        if result_state != SaturationResultState.BelowMinimum and not self.is_signed:
+            assert (result_state != SaturationResultState.InRange) == sat
+
+        return op1, op2, res, sat
+
+    def compute(self, op1: int, op2: int) -> tuple[int, bool]:
+        return mve.saturate(self.element_size, self.is_signed, op1 + op2)
+
+
 SATURATION_CLASSES = {
+    "vqadd": VQADD,
 }
 
 
