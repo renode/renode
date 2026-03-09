@@ -156,11 +156,12 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             (from usingKeyword in UsingKeyword
              from filePath in SingleLineQuotedString.Select(x => new StringWithPosition(x)).Positioned()
              from prefixedKeyword in PrefixedKeyword.Then(x => SingleLineQuotedString).Named("using prefix").Optional()
+             from separator in Separator.AtLeastOnce().XOptional()
              select new UsingEntry(filePath, prefixedKeyword.GetOrDefault())).Token().Positioned().Named("using entry");
 
         public static readonly Parser<IEnumerable<UsingEntry>> Usings =
             (from firstUsing in Using
-             from rest in Separator.Then(x => Using).Many()
+             from rest in Using.Many()
              select new[] { firstUsing }.Concat(rest));
 
         public static readonly Parser<RangeValue> Range =
