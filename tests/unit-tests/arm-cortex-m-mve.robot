@@ -1,5 +1,5 @@
 *** Settings ***
-Library                             ${CURDIR}/mve-helpers.py
+Library                             ${CURDIR}/mve_helpers.py
 Library                             Collections
 Library                             String
 
