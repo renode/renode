@@ -189,6 +189,18 @@ def compute_vector_scalar_op(
     return combine_n_into_128_bit_value(element_size, result_elements)
 
 
+def compute_bitwise_vector_vector_op(
+    op: Callable[[int, int], int],
+    operand1_128_bit: str,
+    operand2_128_bit: str,
+) -> str:
+    # We can do operation on the whole register at once
+    element1 = int(operand1_128_bit, 16)
+    element2 = int(operand2_128_bit, 16)
+    result_elements = op(element1, element2)
+    return f"0x{result_elements:0>32x}"
+
+
 def mask(bits: int) -> int:
     """An integer of `bits` 1s. Useful for forcing python integers into specific ranges."""
     return (1 << bits) - 1
@@ -238,6 +250,10 @@ def saturate(size: int, is_signed: bool, number: int) -> Tuple[int, bool]:
         return min_element, True
     return (number, False)
 
+def not_128(number: int):
+    """Does bitwise not on the number like it was 128 bit unsigned integer"""
+    return number ^ ((1 << 128) - 1)
+
 
 # Partial applications of `compute_vector_op`.
 # The functions below only provide the first argument (`op`),
@@ -272,3 +288,20 @@ compute_scalar_vhsub_result = partial(
 # vmin and vmax
 compute_vector_vmax_result = partial(compute_vector_vector_op, max)
 compute_vector_vmin_result = partial(compute_vector_vector_op, min)
+
+# Bitwise vector-vector variants
+compute_vector_vand_result = partial(
+    compute_bitwise_vector_vector_op, lambda a, b: a & b
+)
+compute_vector_vbic_result = partial(
+    compute_bitwise_vector_vector_op, lambda a, b: a & not_128(b)
+)
+compute_vector_vorr_result = partial(
+    compute_bitwise_vector_vector_op, lambda a, b: a | b
+)
+compute_vector_vorn_result = partial(
+    compute_bitwise_vector_vector_op, lambda a, b: a | not_128(b)
+)
+compute_vector_veor_result = partial(
+    compute_bitwise_vector_vector_op, lambda a, b: a ^ b
+)

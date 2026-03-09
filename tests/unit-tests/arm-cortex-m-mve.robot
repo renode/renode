@@ -177,6 +177,23 @@ Saturated Vector-${with:(Vector|Scalar)} ${instruction:(vqadd)}.${sign:(s|u)}${e
         Register Should Be Equal        FPSCR  0x40000  message=${instruction_full} set saturation bit, even if it should not with ${instruction_data}
     END
 
+Bitwise Vector-Vector ${instruction:(vand|vbic|vorr|vorn|veor)} Should Produce Correct Result
+    Reset Emulation
+    Create Machine
+
+    ${op1}=                         Set Variable  0x80003000b00070007000b00030007fff
+    ${op2}=                         Set Variable  0x10017fff300140015001600170018000
+    Set Register Q0 To ${op1}
+    Set Register Q1 To ${op2}
+
+    Load Program And Execute        ${instruction} q2, q0, q1
+    # Calls a helper function defined in mve-helpers.py: `compute_vector_$insn_result`.
+    # They're the partial functions at the very bottom (there's no def, just an assignment).
+    ${expected_value}=              Run Keyword  Compute Vector ${instruction} Result
+    ...                             ${op1}
+    ...                             ${op2}
+    Register Q2 Should Contain ${expected_value}  message=${instruction}  element_size=128
+
 *** Test Cases ***
 Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
@@ -302,3 +319,10 @@ VQADD Saturation Instruction Should Produce Correct Results
 
     Saturated Vector-Vector vqadd.u32 Should Produce Correct Result
     ...    operand1=0x6c7862fdc613c30ebdbc8e7557fabbb8  operand2=0xae1cff328c27e4f68a73ba65ba17931d  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+
+Bitwise Vector-Vector Instructions Should Produce Correct Results
+    [Template]                      Bitwise Vector-Vector ${instruction:(vand|vbic|vorr|vorn|veor)} Should Produce Correct Result
+
+    FOR  ${instruction}  IN  vand  vbic  vorr  vorn  veor
+        ${instruction}
+    END
