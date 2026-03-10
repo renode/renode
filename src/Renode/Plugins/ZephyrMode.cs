@@ -51,7 +51,6 @@ namespace Antmicro.Renode.Peripherals.Plugins
             if(machine.TryGetByName<VirtualConsole>($"sysbus.{ramConsoleVirtualConsoleName}", out var _))
             {
                 throw new RecoverableException($"Failed to register: '{ramConsoleVirtualConsoleName}' - device with provided name already exists!");
-                return;
             }
 
             var console = new VirtualConsole(machine);
@@ -77,7 +76,6 @@ namespace Antmicro.Renode.Peripherals.Plugins
             if(!machine.TryGetByName<VirtualConsole>($"sysbus.{ramConsoleVirtualConsoleName}", out var console))
             {
                 throw new RecoverableException($"Failed to unregister: '{ramConsoleVirtualConsoleName}' - device with provided name not found!");
-                return;
             }
 
             machine.UnregisterFromParent(console);
