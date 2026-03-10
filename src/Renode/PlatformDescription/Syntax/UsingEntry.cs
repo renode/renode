@@ -12,10 +12,9 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 {
     public class UsingEntry : IPositionAware<UsingEntry>, IWithPosition, IVisitable
     {
-        public UsingEntry(StringWithPosition path, string prefix)
+        public UsingEntry(StringWithPosition path)
         {
             Path = path;
-            Prefix = prefix;
         }
 
         public UsingEntry SetPos(Position startPos, int length)
@@ -31,8 +30,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         }
 
         public StringWithPosition Path { get; private set; }
-
-        public string Prefix { get; private set; }
 
         public Position StartPosition { get; private set; }
 

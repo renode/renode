@@ -33,7 +33,7 @@ namespace Antmicro.Renode.PlatformDescription
                 var graphNodeFinished = new Dictionary<GraphNode, bool>();
                 var fileCurrentlyProcessed = new Dictionary<string, bool>();
 
-                GraphNode rootNode = GetOrCreateGraphNode(creationDriver, rootFilePath, rootFileSource, "", null);
+                GraphNode rootNode = GetOrCreateGraphNode(creationDriver, rootFilePath, rootFileSource, null);
                 fileCurrentlyProcessed[rootNode.FileId] = true;
                 graphNodeFinished[rootNode] = false;
 
@@ -64,8 +64,7 @@ namespace Antmicro.Renode.PlatformDescription
                                     string.Format("Using '{0}' resolved as '{1}' does not exist.", usingEntry.Path, filePath), true);
                         }
 
-                        var prefix = currentFile.Prefix + usingEntry.Prefix;
-                        GraphNode node = GetOrCreateGraphNode(creationDriver, filePath, "", prefix, currentFile);
+                        GraphNode node = GetOrCreateGraphNode(creationDriver, filePath, "", currentFile);
 
                         if(!graphNodeFinished.ContainsKey(node))
                         {
@@ -97,7 +96,7 @@ namespace Antmicro.Renode.PlatformDescription
 
                     if(finished)
                     {
-                        visitor(currentFile.ParsedDescription, currentFile.Prefix, currentFile.Path);
+                        visitor(currentFile.ParsedDescription, currentFile.Path);
                         graphNodeFinished[currentFile] = true;
                         currentFile = nodesToProcess.Pop();
                         fileCurrentlyProcessed[currentFile.FileId] = false;
@@ -105,16 +104,16 @@ namespace Antmicro.Renode.PlatformDescription
                 }
             }
 
-            private GraphNode GetOrCreateGraphNode(CreationDriver creationDriver, string filePath, string source, string prefix, GraphNode parent)
+            private GraphNode GetOrCreateGraphNode(CreationDriver creationDriver, string filePath, string source, GraphNode parent)
             {
-                if(!usingsMap.TryGetValue(GraphNode.MakeGraphId(parent?.GraphId ?? "", prefix, filePath), out var node))
+                if(!usingsMap.TryGetValue(GraphNode.MakeGraphId(parent?.GraphId ?? "", filePath), out var node))
                 {
-                    node = CreateGraphNode(creationDriver, filePath, source, prefix, parent);
+                    node = CreateGraphNode(creationDriver, filePath, source, parent);
                 }
                 return node;
             }
 
-            private GraphNode CreateGraphNode(CreationDriver creationDriver, string filePath, string source, string prefix, GraphNode parent)
+            private GraphNode CreateGraphNode(CreationDriver creationDriver, string filePath, string source, GraphNode parent)
             {
                 if(source == "")
                 {
@@ -130,7 +129,7 @@ namespace Antmicro.Renode.PlatformDescription
                 }
 
                 ValidateDescriptionUsings(description);
-                var node = new GraphNode(filePath, source, prefix, description, parent);
+                var node = new GraphNode(filePath, source, description, parent);
                 usingsMap[node.GraphId] = node;
                 return node;
             }
@@ -140,7 +139,7 @@ namespace Antmicro.Renode.PlatformDescription
                 var used = new HashSet<string>();
                 foreach(var usingEntry in description.Usings)
                 {
-                    if(!used.Add(usingEntry.Prefix + usingEntry.Path))
+                    if(!used.Add(usingEntry.Path))
                     {
                         creationDriver.HandleError(ParsingError.DuplicateUsing, usingEntry, "Duplicate using entry.", false);
                     }
@@ -152,28 +151,27 @@ namespace Antmicro.Renode.PlatformDescription
             private readonly string rootFileSource;
             private readonly Dictionary<string, GraphNode> usingsMap;
 
-            public delegate void UsingsFileVisitor(Description description, string prefix, string filePath);
+            public delegate void UsingsFileVisitor(Description description, string filePath);
 
             private class GraphNode
             {
-                public static string MakeGraphId(string parentGraphId, string prefix, string path)
+                public static string MakeGraphId(string parentGraphId, string path)
                 {
                     // Path can be empty, as is the case when loading a platform description from string.
                     // This is not a problem and doesn't require special handling, since there is at most one using like
                     // that in the usings hierarchy (the root).
-                    return parentGraphId + prefix + path;
+                    return parentGraphId + path;
                 }
 
-                public GraphNode(string path, string source, string prefix, Description parsedDescription, GraphNode parent)
+                public GraphNode(string path, string source, Description parsedDescription, GraphNode parent)
                 {
                     Path = path;
                     Source = source;
-                    Prefix = prefix;
                     Parent = parent;
-                    GraphId = MakeGraphId(parent?.GraphId ?? "", prefix, path);
-                    FileId = prefix + path;
+                    GraphId = MakeGraphId(parent?.GraphId ?? "", path);
+                    FileId = path;
                     ParsedDescription = parsedDescription;
-                    SetupScopeInDescription(ParsedDescription, Prefix);
+                    SetupScopeInDescription(ParsedDescription);
                 }
 
                 public string GraphId { get; }
@@ -184,16 +182,13 @@ namespace Antmicro.Renode.PlatformDescription
 
                 public string Source { get; }
 
-                public string Prefix { get; }
-
                 public Description ParsedDescription { get; }
 
                 public GraphNode Parent { get; set; }
 
-                private void SetupScopeInDescription(Description description, string prefix)
+                private void SetupScopeInDescription(Description description)
                 {
                     // This prefixes all variables with an appropriate prefix and sets the correct scope for the Description.
-                    SyntaxTreeHelpers.VisitSyntaxTree<IPrefixable>(description, x => x.Prefix(prefix));
                     SyntaxTreeHelpers.VisitSyntaxTree<ReferenceValue>(description, x => x.Scope = description.FileName);
                 }
             };

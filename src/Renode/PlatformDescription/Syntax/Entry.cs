@@ -13,7 +13,7 @@ using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-    public class Entry : IPositionAware<Entry>, IWithPosition, IPrefixable, IScriptable
+    public class Entry : IPositionAware<Entry>, IWithPosition, IScriptable
     {
         public Entry(string variableName, StringWithPosition type, IEnumerable<RegistrationInfo> registrationInfo, IEnumerable<Attribute> attributes, bool isLocal, StringWithPosition alias)
         {
@@ -36,11 +36,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
             StartPosition = startPos;
             Length = length;
             return this;
-        }
-
-        public void Prefix(string with)
-        {
-            VariableName = with + baseVariableName;
         }
 
         public Entry MergeWith(Entry entry)

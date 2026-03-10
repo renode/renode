@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2018 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -9,7 +9,7 @@ using Sprache;
 
 namespace Antmicro.Renode.PlatformDescription.Syntax
 {
-    public sealed class ReferenceValue : Value, IPrefixable, IPositionAware<ReferenceValue>
+    public sealed class ReferenceValue : Value, IPositionAware<ReferenceValue>
     {
         public ReferenceValue(string value)
         {
@@ -25,11 +25,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public string ToShortString()
         {
             return $"{Value}";
-        }
-
-        public void Prefix(string with)
-        {
-            Value = with + baseValue;
         }
 
         ReferenceValue IPositionAware<ReferenceValue>.SetPos(Position startPos, int length)

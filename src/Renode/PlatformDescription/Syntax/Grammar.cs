@@ -119,8 +119,6 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<string> LocalKeyword = MakeKeyword("local");
 
-        public static readonly Parser<string> PrefixedKeyword = MakeKeyword("prefixed");
-
         public static readonly Parser<bool> TrueKeyword = MakeKeyword("true", true);
 
         public static readonly Parser<bool> FalseKeyword = MakeKeyword("false", false);
@@ -155,9 +153,8 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<UsingEntry> Using =
             (from usingKeyword in UsingKeyword
              from filePath in SingleLineQuotedString.Select(x => new StringWithPosition(x)).Positioned()
-             from prefixedKeyword in PrefixedKeyword.Then(x => SingleLineQuotedString).Named("using prefix").Optional()
              from separator in Separator.AtLeastOnce().XOptional()
-             select new UsingEntry(filePath, prefixedKeyword.GetOrDefault())).Token().Positioned().Named("using entry");
+             select new UsingEntry(filePath)).Token().Positioned().Named("using entry");
 
         public static readonly Parser<IEnumerable<UsingEntry>> Usings =
             (from firstUsing in Using

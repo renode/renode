@@ -753,23 +753,6 @@ local other: Other";
         }
 
         [Test]
-        public void ShouldHandlePrefixedUsing()
-        {
-            var source = @"
-using ""file1""
-using ""file2"" prefixed ""prefix_""";
-
-            var result = Grammar.Description(GetInputFromString(source));
-            Assert.IsTrue(result.WasSuccessful, result.ToString());
-
-            var usings = result.Value.Usings.ToArray();
-            Assert.AreEqual("file1", usings[0].Path.Value);
-            Assert.AreEqual("file2", usings[1].Path.Value);
-            Assert.IsNull(usings[0].Prefix);
-            Assert.AreEqual("prefix_", usings[1].Prefix);
-        }
-
-        [Test]
         public void ShouldParseExample()
         {
             var source = @"

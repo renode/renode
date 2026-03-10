@@ -82,7 +82,6 @@
     <Compile Include="PlatformDescription\Syntax\Grammar.cs" />
     <Compile Include="PlatformDescription\Syntax\IScriptable.cs" />
     <Compile Include="PlatformDescription\Syntax\InitAttribute.cs" />
-    <Compile Include="PlatformDescription\Syntax\IPrefixable.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqReceiver.cs" />
     <Compile Include="PlatformDescription\Syntax\IrqEnd.cs" />
     <Compile Include="PlatformDescription\Syntax\ISimplestValue.cs" />

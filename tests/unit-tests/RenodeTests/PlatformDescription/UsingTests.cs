@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -79,41 +79,6 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
     OtherCpu: otherCpu";
 
             ProcessSource(null, source, a);
-        }
-
-        [Test]
-        public void ShouldFindPrefixedVariable()
-        {
-            var source = @"
-using ""A"" prefixed ""a_""
-cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
-    OtherCpu: a_cpu";
-
-            var a = @"
-cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
-
-            ProcessSource(null, source, a);
-        }
-
-        [Test]
-        public void ShouldFindNestedPrefixedVariable()
-        {
-            var source = @"
-using ""A"" prefixed ""a_""
-using ""B""
-someCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU
-    OtherCpu: a_b_cpu
-
-oneMoreCpu: Antmicro.Renode.UnitTests.Mocks.MockCPU { OtherCpu: cpu }
-";
-
-            var a = @"
-using ""B"" prefixed ""b_""";
-
-            var b = @"
-cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU";
-
-            ProcessSource(null, source, a, b);
         }
 
         [Test]
@@ -307,20 +272,6 @@ cpu:
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(null, source, a, b));
             Assert.AreEqual(ParsingError.DuplicateUsing, exception.Error);
-        }
-
-        [Test]
-        public void ShouldHandleIrqDestinationOnPrefixing()
-        {
-            var a = @"
-cpu: Antmicro.Renode.UnitTests.Mocks.MockReceiver
-sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender
-    Irq -> cpu@0";
-
-            var source = @"
-using ""A"" prefixed ""sth_""";
-
-            ProcessSource(null, source, a);
         }
 
         [Test]
