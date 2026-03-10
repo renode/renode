@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2010-2025 Antmicro
+# Copyright (c) 2010-2026 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -39,6 +39,8 @@ class Mapping:
             elif all(c.isdigit() or c == '.' for c in value.lstrip('-')):
                 return float(value)
             elif value[0] == '"' and value[-1] == '"':
+                return value[1:-1]
+            elif value[0] == "'" and value[-1] == "'":
                 return value[1:-1]
             elif value[0] == '#' and all(c in string.hexdigits for c in value[1:]):
                 return bytes.fromhex(value[1:])
