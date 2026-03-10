@@ -249,6 +249,7 @@
 - tests/platforms/ARMv8M-MVE.robot
 - tests/platforms/focaltech-ft9001-zephyr.robot
 - tests/unit-tests/arm-cortex-m-mve.robot
+- tests/unit-tests/arm-cortex-m-signals.robot
 
 # Do not use port 3333 in unit tests
 
