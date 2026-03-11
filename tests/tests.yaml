@@ -153,6 +153,7 @@
 - tests/unit-tests/arm-performance-monitoring-unit.robot
 - tests/peripherals/ARM_GenericInterruptController.robot
 - tests/peripherals/ARM_SBSA_UART.robot
+- tests/peripherals/ArrayMemory.robot
 - tests/platforms/Versatile.robot
 - tests/unit-tests/arm-wfi-hook.robot
 - tests/platforms/Renesas_RA6M5.robot
