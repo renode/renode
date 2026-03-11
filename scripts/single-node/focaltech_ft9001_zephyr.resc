@@ -1,5 +1,5 @@
 $name?="FocalTech FT9001"
-$bin?=@https://zephyr-dashboard.renode.io/zephyr/f931c5a44f65946e6ff56fa65334908f2b402122/ft9001_eval/shell_module/shell_module.elf
+$bin?=@https://dl.antmicro.com/projects/renode/ft9001_eval-zephyr-shell_module.elf-s_1473516-6149cebdd2bdda13a707c730eb0092bd29e6b969
 $repl?=@platforms/cpus/focaltech_ft9001.repl
 
 using sysbus
