@@ -22,6 +22,10 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
+  <ItemGroup Condition=" $(PORTABLE) == 'true' And $([MSBuild]::IsOSPlatform('OSX')) == 'false'">
+    <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" />
+  </ItemGroup>
   <Import Project="$(PropertiesLocation)" />
   <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
