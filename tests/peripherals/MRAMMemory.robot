@@ -211,3 +211,43 @@ MRAM Reset Preserves Data But Clears Fault State
     Should Be Equal As Strings    ${fired_after}    False
     ${writes}=         Execute Command    sysbus.mram TotalWordWrites
     Should Be Equal As Numbers    ${writes}    0
+
+MRAM ReadFault On Byte Access
+    Create MRAM Machine
+    Execute Command    sysbus WriteByte 0x10000000 0xAA
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 123
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    ${corrupted}=      Execute Command    sysbus ReadByte 0x10000000
+    Should Not Be Equal As Numbers    ${corrupted}    0xAA
+    ${fired}=          Execute Command    sysbus.mram ReadFaultFired
+    Should Be Equal As Strings    ${fired}    True
+
+MRAM RetainOldDataOnFault False Uses EraseFill
+    Create MRAM Machine
+    Execute Command    sysbus WriteQuadWord 0x10000000 0xDDCCBBAA44332211
+    Execute Command    sysbus.mram FaultAtWordWrite 1
+    Execute Command    sysbus.mram RetainOldDataOnFault false
+    Execute Command    sysbus WriteQuadWord 0x10000000 0xFFFFFFFFFFFFFFFF
+    ${word}=           Execute Command    sysbus ReadQuadWord 0x10000000
+    # Upper 4 bytes should be EraseFill (0x00), not old data.
+    Should Be Equal As Numbers    ${word}    0x00000000FFFFFFFF
+
+MRAM Write Spanning Two Words Counts Both
+    Create MRAM Machine
+    # Writing 8 bytes starting at offset 4 spans two 8-byte words:
+    # word 0 (0x00-0x07) and word 1 (0x08-0x0F).
+    Execute Command    sysbus WriteQuadWord 0x10000004 0xAAAAAAAABBBBBBBB
+    ${count}=          Execute Command    sysbus.mram TotalWordWrites
+    Should Be Equal As Numbers    ${count}    2
+
+MRAM GetWordWriteCount Matches TotalWordWrites
+    Create MRAM Machine
+    Execute Command    sysbus WriteQuadWord 0x10000000 0x1111111111111111
+    Execute Command    sysbus WriteQuadWord 0x10000008 0x2222222222222222
+    Execute Command    sysbus WriteQuadWord 0x10000010 0x3333333333333333
+    ${prop}=           Execute Command    sysbus.mram TotalWordWrites
+    ${method}=         Execute Command    sysbus.mram GetWordWriteCount
+    Should Be Equal As Numbers    ${prop}    3
+    Should Be Equal As Numbers    ${method}    3
