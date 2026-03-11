@@ -125,3 +125,89 @@ MRAM WriteTrace Records Word Offsets
     Execute Command    sysbus.mram WriteTraceClear
     ${empty}=          Execute Command    sysbus.mram WriteTraceToString
     Should Be Empty    ${empty}
+
+MRAM ReadFault Corrupts Returned Value Without Modifying NVM
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0xAABBCCDD
+    # Arm a read fault at offset 0 with a known seed.
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 42
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    # First read triggers the fault.
+    ${corrupted}=      Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Not Be Equal As Numbers    ${corrupted}    0xAABBCCDD
+    ${fired}=          Execute Command    sysbus.mram ReadFaultFired
+    Should Be Equal As Strings    ${fired}    True
+    # NVM contents are unchanged.
+    Execute Command    sysbus.mram ReadFaultEnabled false
+    Execute Command    sysbus.mram ReadFaultFired false
+    Execute Command    sysbus.mram ReadFaultAddress -1
+    ${raw}=            Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${raw}    0xAABBCCDD
+
+MRAM ReadFault Is One Shot
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0x12345678
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 99
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    # First read: corrupted.
+    ${first}=          Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Not Be Equal As Numbers    ${first}    0x12345678
+    # Second read: clean (fault already fired and auto-disarmed).
+    ${second}=         Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${second}    0x12345678
+
+MRAM ReadFault SkipCount Delays Firing
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0xDEADBEEF
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 77
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultSkipCount 2
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    # Reads 1 and 2: skipped, return clean value.
+    ${r1}=             Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${r1}    0xDEADBEEF
+    ${r2}=             Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${r2}    0xDEADBEEF
+    # Read 3: fires.
+    ${r3}=             Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Not Be Equal As Numbers    ${r3}    0xDEADBEEF
+    ${fired}=          Execute Command    sysbus.mram ReadFaultFired
+    Should Be Equal As Strings    ${fired}    True
+
+MRAM ReadFault Ignores Non Overlapping Address
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0x11111111
+    Execute Command    sysbus WriteDoubleWord 0x10000010 0x22222222
+    Execute Command    sysbus.mram ReadFaultAddress 0x10
+    Execute Command    sysbus.mram ReadFaultSeed 55
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    # Read at non-armed address: clean.
+    ${clean}=          Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${clean}    0x11111111
+    ${not_fired}=      Execute Command    sysbus.mram ReadFaultFired
+    Should Be Equal As Strings    ${not_fired}    False
+    # Read at armed address: corrupted.
+    ${corrupted}=      Execute Command    sysbus ReadDoubleWord 0x10000010
+    Should Not Be Equal As Numbers    ${corrupted}    0x22222222
+
+MRAM Reset Preserves Data But Clears Fault State
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0xCAFEBABE
+    Execute Command    sysbus.mram FaultAtWordWrite 1
+    Execute Command    sysbus WriteQuadWord 0x10000008 0x1111111111111111
+    ${fired_before}=   Execute Command    sysbus.mram FaultEverFired
+    Should Be Equal As Strings    ${fired_before}    True
+    # Reset clears fault state but preserves NVM data.
+    Execute Command    machine Reset
+    ${data}=           Execute Command    sysbus ReadDoubleWord 0x10000000
+    Should Be Equal As Numbers    ${data}    0xCAFEBABE
+    ${fired_after}=    Execute Command    sysbus.mram FaultEverFired
+    Should Be Equal As Strings    ${fired_after}    False
+    ${writes}=         Execute Command    sysbus.mram TotalWordWrites
+    Should Be Equal As Numbers    ${writes}    0
