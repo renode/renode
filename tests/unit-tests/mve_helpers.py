@@ -250,9 +250,87 @@ def saturate(size: int, is_signed: bool, number: int) -> Tuple[int, bool]:
         return min_element, True
     return (number, False)
 
+
 def not_128(number: int):
     """Does bitwise not on the number like it was 128 bit unsigned integer"""
     return number ^ ((1 << 128) - 1)
+
+
+def compare(a: int, b: int, op: str) -> bool:
+    """Does comparison between a and b based on op string"""
+    if op == "EQ":
+        return a == b
+    if op == "NE":
+        return a != b
+    if op == "GT" or op == "HI":
+        return a > b
+    if op == "GE" or op == "CS":
+        return a >= b
+    if op == "LT":
+        return a < b
+    if op == "LE":
+        return a <= b
+    raise ValueError(f"Invalid comparison type: {op}")
+
+
+def compute_vpr_mask(
+    element_size_str: str,
+    operand1_str: str,
+    operand2_str: str,
+    comparison_operator: str,
+    is_signed: bool,
+    with_scalar: bool,
+):
+    """
+    Creates mask according to VPT instruction, the resulting mask is a boolean list, where True elements represent activated lanes and False elements represent deactivated lanes.
+    It doesn't represent exactly the mask in VPR.P0, but it'll work the same for masking python versions of operations.
+    """
+    hex_to_int, _, element_size = prepare_vector_op(element_size_str, is_signed)
+    assert element_size in [8, 16, 32], f"Invalid VPT operation size: {element_size}"
+
+    operand1 = [
+        hex_to_int(value)
+        for value in split_into_n_bit_values(element_size, operand1_str)
+    ]
+
+    if with_scalar:
+        operand2 = hex_to_int(operand2_str[-(element_size // 4) :])
+    else:
+        operand2 = [
+            hex_to_int(value)
+            for value in split_into_n_bit_values(element_size, operand2_str)
+        ]
+
+    mask = []
+    for i, op1 in enumerate(operand1):
+        op2 = operand2 if with_scalar else operand2[i]
+        mask.append(compare(op1, op2, comparison_operator))
+    return mask
+
+
+def apply_vpr_mask(original: str, update: str, mask: list[bool], action: str):
+    """Applies VPR mask to results"""
+    if action == "":
+        return update  # Just update whole register
+    elif action == "T":
+        pass  # Leave mask as is
+    elif action == "E":
+        mask = [not m for m in mask]  # Invert mask
+    else:
+        raise ValueError(f"Invalid mask update action: {action}")
+
+    element_count = len(mask)
+    assert element_count in [16, 8, 4, 1], f"Invalid mask size: {element_count}"
+    element_size = 128 // element_count
+
+    original = split_into_n_bit_values(element_size, original)
+    update = split_into_n_bit_values(element_size, update)
+    result = []
+
+    for from_original, from_update, active in zip(original, update, mask):
+        result.append(from_update if active else from_original)
+
+    return combine_n_into_128_bit_value(element_size, result)
 
 
 # Partial applications of `compute_vector_op`.
@@ -305,3 +383,13 @@ compute_vector_vorn_result = partial(
 compute_vector_veor_result = partial(
     compute_bitwise_vector_vector_op, lambda a, b: a ^ b
 )
+
+
+def compute_vdup_result(element_size_str: str, operand_32_bit: str):
+    return compute_vector_scalar_op(
+        lambda _, b: b,
+        element_size_str,
+        "0x00000000000000000000000000000000",
+        operand_32_bit,
+        False,
+    )

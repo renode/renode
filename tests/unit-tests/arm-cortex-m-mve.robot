@@ -194,6 +194,94 @@ Bitwise Vector-Vector ${instruction:(vand|vbic|vorr|vorn|veor)} Should Produce C
     ...                             ${op2}
     Register Q2 Should Contain ${expected_value}  message=${instruction}  element_size=128
 
+Test VPT
+    ##################################################################################
+    # General idea of this test is to run VPT block with VDUP instruction.
+    # VDUP instruction should fill activated lanes with a single hexadecimal symbol.
+    #
+    # Example:
+    #  For VPTET.I16 EQ operand1=0x1111 .... 2211 and operand2=0x1111 (as scalar)
+    #  We'll execute:
+    #  VPTET.I16 EQ, Q0, R10
+    #  VDUPT.8  Q0, R0  then Q0=0xaaaa .... 2211
+    #  VDUPE.8  Q0, R0  then Q0=0xaaaa .... bbbb
+    #  VDUPT.8  Q0, R0  then Q0=0xcccc .... bbbb
+    #  VDUP .8  Q0, R0  then Q0=0xdddd .... dddd
+    #
+
+    [Arguments]                     ${data_type}
+    ...                             ${element_size}
+    ...                             ${comparison}
+    ...                             ${predicates}
+    ...                             ${with_scalar}
+    ...                             ${operand1}
+    ...                             ${operand2}
+    ${is_signed}=                   Evaluate  $data_type.lower() == "s"
+
+    ${instruction}=                 Evaluate  "VPT" + ''.join($predicates) + ".${data_type}${element_size} ${comparison}, Q0"
+    Set Register Q0 To ${operand1}
+
+    # We're adding T as first predicate as VPT will always start with one
+    # And we're adding empty predicate as last to test instruction without predication
+    ${predicates}=                  Create List  T  @{predicates}  ${EMPTY}
+
+    # If we're using scalar we'll be using R10 register for check operation
+    # Otherwise we're using Q1
+    IF  ${with_scalar}
+        ${instruction}=                 Set Variable  ${instruction}, R10
+        Execute Command                 cpu SetRegister "R10" ${operand2}
+    ELSE
+        ${instruction}=                 Set Variable  ${instruction}, Q1
+        Set Register Q1 To ${operand2}
+    END
+
+    ${assembly}=                    Set Variable  ${instruction}
+    ${values}=                      Create List  0xaa  0xbb  0xcc  0xdd  0xee
+    FOR  ${index}  ${predicate}  IN ENUMERATE  @{predicates}
+        Execute Command                 cpu SetRegister "R${index}" ${values}[${index}]
+        ${assembly}=                    Catenate  SEPARATOR=\n  ${assembly}  VDUP${predicate}.8 Q0, R${index}
+    END
+    Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
+    Execute Command                 cpu PC ${START_ADDRESS}
+
+    # Mask is a python boolean array signifying which lanes are activate and which are not
+    ${mask}=                        Compute VPR Mask
+    ...                             ${element_size}
+    ...                             ${operand1}
+    ...                             ${operand2}
+    ...                             ${comparison}
+    ...                             ${is_signed}
+    ...                             ${with_scalar}
+    Execute Command                 cpu Step  # Execute VPT instruction
+
+    # It's here for error message
+    ${step_messages}=               Create List
+    Append To List                  ${step_messages}  ${SPACE}compare=${operand2}
+    Append To List                  ${step_messages}  ${SPACE}initial=${operand1}
+
+    # Steps through each VDUP instruction checking if register got updated correctly
+    FOR  ${index}  ${predicate}  IN ENUMERATE  @{predicates}
+        ${expected_value}=              Compute VDUP Result
+        ...                             element_size_str=8
+        ...                             operand_32_bit=${values}[${index}]
+        ${expected_value}=              Apply VPR Mask
+        ...                             original=${operand1}
+        ...                             update=${expected_value}
+        ...                             mask=${mask}
+        ...                             action=${predicate}
+        Execute Command                 cpu Step
+
+        ${operand1}=                    Read Register Q0
+        Append To List                  ${step_messages}  ${SPACE}${SPACE}${SPACE}step${index}=${operand1}
+        TRY
+            Register Q0 Should Contain ${expected_value}  element_size=${128}
+        EXCEPT
+            Append To List                  ${step_messages}  expected=${expected_value}
+            ${message}=                     Catenate  SEPARATOR=\n  @{step_messages}
+            Fail                            ${instruction} failed on step ${index}\n${message}
+        END
+    END
+
 *** Test Cases ***
 Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
@@ -326,3 +414,105 @@ Bitwise Vector-Vector Instructions Should Produce Correct Results
     FOR  ${instruction}  IN  vand  vbic  vorr  vorn  veor
         ${instruction}
     END
+
+VPT Should Mask Correct Lanes
+    # Checks all the possible predications for VPT block
+    Create Machine
+
+    # In this tests operands will be using equality for comparison
+    # Operands are picked so that depending on instruction size different set of lanes should activate
+    ${operand1}=                    Set Variable  0x1111111122223333445566770f0f0f0f
+    ${operand2}=                    Set Variable  0x11111111ffff3333ffffff77f0f0f0f0
+
+    # We're testing all possible predicate sequences to make sure all length of predicates are used properly
+    ${predicates_list}=             Evaluate  itertools.chain.from_iterable([itertools.product(['T', 'E'], repeat=r) for r in range(4)])  itertools  #Produces all possible combinations for predicates ie. T, E, TT, TE, TTT...
+    FOR  ${predicates}  IN  @{predicates_list}
+        FOR  ${element_size}  IN  8  16  32
+            Test VPT
+            ...                             data_type=I
+            ...                             element_size=${element_size}
+            ...                             comparison=EQ
+            ...                             predicates=${predicates}
+            ...                             with_scalar=False
+            ...                             operand1=${operand1}
+            ...                             operand2=${operand2}
+        END
+    END
+
+VPT Should Compare Properly
+    # Checks all the possible comparisons for VPT instruction
+    Create Machine
+
+    ${predicates}=                  Create List  E  # We want to check for comparison and reverse of it just in case
+    FOR  ${operand1}  ${operand2}  ${with_scalar}  IN
+    # Same test as VPT Should Mask Correct Lanes
+    ...  0x1111111122223333445566770f0f0f0f  0x11111111ffff3333ffffff77f0f0f0f0  False
+    # Version with scalar
+    ...  0x1111111122223333445566770f0f0f0f  0x33  True
+    # This one should produce many different results depending on comparison type, the 8s are bit flips to force some values to be interpreted as negative
+    ...  0x80008001800000828000800380000084  0x80000002  True
+    # Just randomly generated values
+    ...  0x760c353ffda6451d58aeb12f78e26f9f  0x70521c7165536bcb311bdec9a8c1bb88  False
+        FOR  ${element_size}  IN  8  16  32
+            FOR  ${data_type}  IN  I  U  S
+                IF  "${data_type}" == "I"
+                    ${comparison_list}=             Create List  EQ  NE
+                ELSE IF  "${data_type}" == "U"
+                    ${comparison_list}=             Create List  HI  CS
+                ELSE
+                    ${comparison_list}=             Create List  GT  GE  LT  LE
+                END
+                FOR  ${comparison}  IN  @{comparison_list}
+                    Test VPT
+                    ...                             data_type=${data_type}
+                    ...                             element_size=${element_size}
+                    ...                             comparison=${comparison}
+                    ...                             predicates=${predicates}
+                    ...                             with_scalar=${with_scalar}
+                    ...                             operand1=${operand1}
+                    ...                             operand2=${operand2}
+                END
+            END
+        END
+    END
+
+VPT Should Use Predicated Instruction Version
+    # Some instruction in Tlib can use different implementation depending if they are predicated or not
+    # This test checks one of these instructions to make sure it uses the predicated version in VPT block
+    # That's why we're not stepping this but try to run the assembly as one block
+    # We're using VAND as we know it has optimized version
+    Create Machine
+
+    ${operand1}=                    Set Variable  0x1111111122223333445566770f0f0f0f
+    ${operand2}=                    Set Variable  0x11111111ffff3333ffffff77f0f0f0f0
+
+    # starting_value is basically here to make sure Q2 is 0x0 at the start
+    ${starting_value}=              Set Variable  0x00000000000000000000000000000000
+
+    Set Register Q0 To ${operand1}
+    Set Register Q1 To ${operand2}
+    Set Register Q2 To ${starting_value}
+
+    ${assembly}=                    Catenate  SEPARATOR=;
+    ...                             VPT.I16 EQ, Q0, Q1
+    ...                             VANDT Q2, Q0, Q1
+    Load Program And Execute        ${assembly}
+
+    ${mask}=                        Compute VPR Mask
+    ...                             element_size_str=16
+    ...                             operand1_str=${operand1}
+    ...                             operand2_str=${operand2}
+    ...                             comparison_operator=EQ
+    ...                             is_signed=False
+    ...                             with_scalar=False
+
+    ${expected_value}=              Compute Vector VAND Result
+    ...                             ${operand1}
+    ...                             ${operand2}
+    ${expected_value}=              Apply VPR Mask
+    ...                             original=${starting_value}
+    ...                             update=${expected_value}
+    ...                             mask=${mask}
+    ...                             action=T
+
+    Register Q2 Should Contain ${expected_value}  element_size=128
