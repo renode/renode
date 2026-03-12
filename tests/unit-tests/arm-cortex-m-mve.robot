@@ -141,10 +141,10 @@ Vector-Scalar ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should P
     Register Q2 Should Contain ${expected_value}  message=${instruction}.${sign}${element_size}  element_size=${element_size}
 
 Saturated Vector-${with:(Vector|Scalar)} ${instruction:(vqadd)}.${sign:(s|u)}${element_size} Should Produce Correct Result
-    [Arguments]    ${operand1}
-    ...            ${operand2}
-    ...            ${result}
-    ...            ${got_saturated}
+    [Arguments]                     ${operand1}
+    ...                             ${operand2}
+    ...                             ${result}
+    ...                             ${got_saturated}
 
     Reset Emulation
     Create Machine
@@ -231,94 +231,94 @@ Vector-Scalar Instructions Should Produce Correct Results
 VQADD Saturation Instruction Should Produce Correct Results
     # Generated with mve-test-generators.py
     Saturated Vector-Scalar vqadd.s8 Should Produce Correct Result
-    ...    operand1=0xd2f6a3e0eddd8da6c5c4aa99b6e5bfb9  operand2=0x79  result=0x4b6f1c596656061f3e3d23122f5e3832  got_saturated=False
+    ...                             operand1=0xd2f6a3e0eddd8da6c5c4aa99b6e5bfb9  operand2=0x79  result=0x4b6f1c596656061f3e3d23122f5e3832  got_saturated=False
 
     Saturated Vector-Scalar vqadd.s8 Should Produce Correct Result
-    ...    operand1=0x9da58297a799cdb79fb687858988b8ce  operand2=0xa6  result=0x80808080808080808080808080808080  got_saturated=True
+    ...                             operand1=0x9da58297a799cdb79fb687858988b8ce  operand2=0xa6  result=0x80808080808080808080808080808080  got_saturated=True
 
     Saturated Vector-Scalar vqadd.s8 Should Produce Correct Result
-    ...    operand1=0x72777a716c6f777d7d74796c7475727a  operand2=0x14  result=0x7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f  got_saturated=True
+    ...                             operand1=0x72777a716c6f777d7d74796c7475727a  operand2=0x14  result=0x7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f  got_saturated=True
 
     Saturated Vector-Vector vqadd.s8 Should Produce Correct Result
-    ...    operand1=0x4fefc81218408bfb38399f11eea4f86e  operand2=0xf4a4dab834e329a23090524af3de7e83  result=0x4393a2ca4c23b49d68c9f15be18276f1  got_saturated=False
+    ...                             operand1=0x4fefc81218408bfb38399f11eea4f86e  operand2=0xf4a4dab834e329a23090524af3de7e83  result=0x4393a2ca4c23b49d68c9f15be18276f1  got_saturated=False
 
     Saturated Vector-Vector vqadd.s8 Should Produce Correct Result
-    ...    operand1=0x979989899185bfc8c48387869281ba8f  operand2=0x8ed6cef5e7eca0a8afc0f6f8d9fab0e8  result=0x80808080808080808080808080808080  got_saturated=True
+    ...                             operand1=0x979989899185bfc8c48387869281ba8f  operand2=0x8ed6cef5e7eca0a8afc0f6f8d9fab0e8  result=0x80808080808080808080808080808080  got_saturated=True
 
     Saturated Vector-Vector vqadd.s8 Should Produce Correct Result
-    ...    operand1=0x5573445e6d747e5975765b2f5664736b  operand2=0x5f0e4643182b02366f0a30572e431e56  result=0x7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f  got_saturated=True
+    ...                             operand1=0x5573445e6d747e5975765b2f5664736b  operand2=0x5f0e4643182b02366f0a30572e431e56  result=0x7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f  got_saturated=True
 
     Saturated Vector-Scalar vqadd.s16 Should Produce Correct Result
-    ...    operand1=0x3e7a5898c055576ee9cd31c69c57fc6d  operand2=0xf874  result=0x36ee510cb8c94fe2e2412a3a94cbf4e1  got_saturated=False
+    ...                             operand1=0x3e7a5898c055576ee9cd31c69c57fc6d  operand2=0xf874  result=0x36ee510cb8c94fe2e2412a3a94cbf4e1  got_saturated=False
 
     Saturated Vector-Scalar vqadd.s16 Should Produce Correct Result
-    ...    operand1=0x97a281678c54881180c28fffa4b68c1f  operand2=0xd895  result=0x80008000800080008000800080008000  got_saturated=True
+    ...                             operand1=0x97a281678c54881180c28fffa4b68c1f  operand2=0xd895  result=0x80008000800080008000800080008000  got_saturated=True
 
     Saturated Vector-Scalar vqadd.s16 Should Produce Correct Result
-    ...    operand1=0x6d1d64845f437d756aa05ae37c615aba  operand2=0x29b4  result=0x7fff7fff7fff7fff7fff7fff7fff7fff  got_saturated=True
+    ...                             operand1=0x6d1d64845f437d756aa05ae37c615aba  operand2=0x29b4  result=0x7fff7fff7fff7fff7fff7fff7fff7fff  got_saturated=True
 
     Saturated Vector-Vector vqadd.s16 Should Produce Correct Result
-    ...    operand1=0xe942a99818b08cef332fe21f12371878  operand2=0x240866494bcb7693e3fee8d6d5b49bdf  result=0x0d4a0fe1647b0382172dcaf5e7ebb457  got_saturated=False
+    ...                             operand1=0xe942a99818b08cef332fe21f12371878  operand2=0x240866494bcb7693e3fee8d6d5b49bdf  result=0x0d4a0fe1647b0382172dcaf5e7ebb457  got_saturated=False
 
     Saturated Vector-Vector vqadd.s16 Should Produce Correct Result
-    ...    operand1=0x98079ec6971b869bca8486f2828eb999  operand2=0xe24fbcf4dce7b9c0906cb5f6e6a5960b  result=0x80008000800080008000800080008000  got_saturated=True
+    ...                             operand1=0x98079ec6971b869bca8486f2828eb999  operand2=0xe24fbcf4dce7b9c0906cb5f6e6a5960b  result=0x80008000800080008000800080008000  got_saturated=True
 
     Saturated Vector-Vector vqadd.s16 Should Produce Correct Result
-    ...    operand1=0x6afc48cb5e3d6560528a7931787e5c36  operand2=0x1e605f673f541dd632990e2f4edc3041  result=0x7fff7fff7fff7fff7fff7fff7fff7fff  got_saturated=True
+    ...                             operand1=0x6afc48cb5e3d6560528a7931787e5c36  operand2=0x1e605f673f541dd632990e2f4edc3041  result=0x7fff7fff7fff7fff7fff7fff7fff7fff  got_saturated=True
 
     Saturated Vector-Scalar vqadd.s32 Should Produce Correct Result
-    ...    operand1=0xd021ce3e36bf8e201408f46a9a849b9f  operand2=0x421fda66  result=0x1241a8a478df68865628ced0dca47605  got_saturated=False
+    ...                             operand1=0xd021ce3e36bf8e201408f46a9a849b9f  operand2=0x421fda66  result=0x1241a8a478df68865628ced0dca47605  got_saturated=False
 
     Saturated Vector-Scalar vqadd.s32 Should Produce Correct Result
-    ...    operand1=0xb0239840a99669e0a46123fdd1274b87  operand2=0x93a23ea8  result=0x80000000800000008000000080000000  got_saturated=True
+    ...                             operand1=0xb0239840a99669e0a46123fdd1274b87  operand2=0x93a23ea8  result=0x80000000800000008000000080000000  got_saturated=True
 
     Saturated Vector-Scalar vqadd.s32 Should Produce Correct Result
-    ...    operand1=0x520981576655911167c76ad973bf68a0  operand2=0x2fefda07  result=0x7fffffff7fffffff7fffffff7fffffff  got_saturated=True
+    ...                             operand1=0x520981576655911167c76ad973bf68a0  operand2=0x2fefda07  result=0x7fffffff7fffffff7fffffff7fffffff  got_saturated=True
 
     Saturated Vector-Vector vqadd.s32 Should Produce Correct Result
-    ...    operand1=0x0137ac8c083f2f9fe9e03ace51edd759  operand2=0x3290f0d770d93add6f4c5d0797744ed0  result=0x33c89d6379186a7c592c97d5e9622629  got_saturated=False
+    ...                             operand1=0x0137ac8c083f2f9fe9e03ace51edd759  operand2=0x3290f0d770d93add6f4c5d0797744ed0  result=0x33c89d6379186a7c592c97d5e9622629  got_saturated=False
 
     Saturated Vector-Vector vqadd.s32 Should Produce Correct Result
-    ...    operand1=0xa25b45829780cc75958ea05fa93be69e  operand2=0xb0748766a9b866e39c2abc5fb4a9638c  result=0x80000000800000008000000080000000  got_saturated=True
+    ...                             operand1=0xa25b45829780cc75958ea05fa93be69e  operand2=0xb0748766a9b866e39c2abc5fb4a9638c  result=0x80000000800000008000000080000000  got_saturated=True
 
     Saturated Vector-Vector vqadd.s32 Should Produce Correct Result
-    ...    operand1=0x6e14763e7391fa037497a5d060dfdcc1  operand2=0x3b1cb38b37b1e2586f9cdf96267d54cb  result=0x7fffffff7fffffff7fffffff7fffffff  got_saturated=True
+    ...                             operand1=0x6e14763e7391fa037497a5d060dfdcc1  operand2=0x3b1cb38b37b1e2586f9cdf96267d54cb  result=0x7fffffff7fffffff7fffffff7fffffff  got_saturated=True
 
     Saturated Vector-Scalar vqadd.u8 Should Produce Correct Result
-    ...    operand1=0x35984d2d5186096c549d700151771407  operand2=0x54  result=0x89eca181a5da5dc0a8f1c455a5cb685b  got_saturated=False
+    ...                             operand1=0x35984d2d5186096c549d700151771407  operand2=0x54  result=0x89eca181a5da5dc0a8f1c455a5cb685b  got_saturated=False
 
     Saturated Vector-Scalar vqadd.u8 Should Produce Correct Result
-    ...    operand1=0xaa80787165aeb3ffb19b77f5c676dfe8  operand2=0xb1  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0xaa80787165aeb3ffb19b77f5c676dfe8  operand2=0xb1  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
     Saturated Vector-Vector vqadd.u8 Should Produce Correct Result
-    ...    operand1=0xa2c22872029b8f69041a0466385ca816  operand2=0x24186f26c81f38687ad7f73b860f5776  result=0xc6da9798cabac7d17ef1fba1be6bff8c  got_saturated=False
+    ...                             operand1=0xa2c22872029b8f69041a0466385ca816  operand2=0x24186f26c81f38687ad7f73b860f5776  result=0xc6da9798cabac7d17ef1fba1be6bff8c  got_saturated=False
 
     Saturated Vector-Vector vqadd.u8 Should Produce Correct Result
-    ...    operand1=0x65fafde5faf2a795a7c6e5aae5eeadc6  operand2=0xee538bf40720bcd3c6455185d6135bec  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0x65fafde5faf2a795a7c6e5aae5eeadc6  operand2=0xee538bf40720bcd3c6455185d6135bec  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
     Saturated Vector-Scalar vqadd.u16 Should Produce Correct Result
-    ...    operand1=0x14ff179b1681183b187c0ae4121613fc  operand2=0xe722  result=0xfc21febdfda3ff5dff9ef206f938fb1e  got_saturated=False
+    ...                             operand1=0x14ff179b1681183b187c0ae4121613fc  operand2=0xe722  result=0xfc21febdfda3ff5dff9ef206f938fb1e  got_saturated=False
 
     Saturated Vector-Scalar vqadd.u16 Should Produce Correct Result
-    ...    operand1=0x9a6e5a6a504ff13ca940cbf5ca7e5149  operand2=0xdcdc  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0x9a6e5a6a504ff13ca940cbf5ca7e5149  operand2=0xdcdc  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
     Saturated Vector-Vector vqadd.u16 Should Produce Correct Result
-    ...    operand1=0x27d265e6150007f20c78047703ea2bed  operand2=0xbd5c27fcb64e96b5be44eb91f3bd5e80  result=0xe52e8de2cb4e9ea7cabcf008f7a78a6d  got_saturated=False
+    ...                             operand1=0x27d265e6150007f20c78047703ea2bed  operand2=0xbd5c27fcb64e96b5be44eb91f3bd5e80  result=0xe52e8de2cb4e9ea7cabcf008f7a78a6d  got_saturated=False
 
     Saturated Vector-Vector vqadd.u16 Should Produce Correct Result
-    ...    operand1=0xde615e7eff3df0e8e075773dcbb7dc27  operand2=0x3407caec085d12c9f888f7c5af462c4c  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0xde615e7eff3df0e8e075773dcbb7dc27  operand2=0x3407caec085d12c9f888f7c5af462c4c  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
     Saturated Vector-Scalar vqadd.u32 Should Produce Correct Result
-    ...    operand1=0x3b52d1d0742394b4432e939c1b074a76  operand2=0x4fcfaaaa  result=0x8b227c7ac3f33f5e92fe3e466ad6f520  got_saturated=False
+    ...                             operand1=0x3b52d1d0742394b4432e939c1b074a76  operand2=0x4fcfaaaa  result=0x8b227c7ac3f33f5e92fe3e466ad6f520  got_saturated=False
 
     Saturated Vector-Scalar vqadd.u32 Should Produce Correct Result
-    ...    operand1=0xebe6577dd83fb4a1f805d6cee4ffec41  operand2=0x2c69e6fb  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0xebe6577dd83fb4a1f805d6cee4ffec41  operand2=0x2c69e6fb  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
     Saturated Vector-Vector vqadd.u32 Should Produce Correct Result
-    ...    operand1=0x2dfd98ad15498d83714f679d3829bc69  operand2=0x76eb1ffe375eaff102e12f91bff04351  result=0xa4e8b8ab4ca83d747430972ef819ffba  got_saturated=False
+    ...                             operand1=0x2dfd98ad15498d83714f679d3829bc69  operand2=0x76eb1ffe375eaff102e12f91bff04351  result=0xa4e8b8ab4ca83d747430972ef819ffba  got_saturated=False
 
     Saturated Vector-Vector vqadd.u32 Should Produce Correct Result
-    ...    operand1=0x6c7862fdc613c30ebdbc8e7557fabbb8  operand2=0xae1cff328c27e4f68a73ba65ba17931d  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
+    ...                             operand1=0x6c7862fdc613c30ebdbc8e7557fabbb8  operand2=0xae1cff328c27e4f68a73ba65ba17931d  result=0xffffffffffffffffffffffffffffffff  got_saturated=True
 
 Bitwise Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Bitwise Vector-Vector ${instruction:(vand|vbic|vorr|vorn|veor)} Should Produce Correct Result
