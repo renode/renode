@@ -582,7 +582,7 @@ if [[ "$UI_BIN" != "/"* ]] && ! $ON_WINDOWS; then
 fi
 
 if $UI; then
-  "$UI_PATH/scripts/build_neutralino.sh"
+  NO_COLOR=true "$UI_PATH/scripts/build_neutralino.sh"
   cp "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$UI_RID$BIN_EXT" "$UI_BIN"
 fi
 
