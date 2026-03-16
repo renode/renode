@@ -24,7 +24,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 int timeSyncPeriodUS = 1000,
                 bool disableTimeoutCheck = false,
                 DWT dwt = null,
-                SignalActiveWhen powerOnResetActive = SignalActiveWhen.High)
+                SignalActiveWhen powerOnResetActive = SignalActiveWhen.High,
+                SignalActiveWhen coreResetInActive = SignalActiveWhen.High)
              : base(machine,
                     address,
                     port,
@@ -35,11 +36,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
             this.nvic = nvic;
             this.dwt = dwt;
             this.powerOnResetActive = powerOnResetActive;
+            this.coreResetInActive = coreResetInActive;
 
             Connections[(int)Signal.CpuWait].Connect(cpu, (int)CortexM.CpuSignal.CpuWait);
 
-            // This signal is by default treated as active-HIGH, even though the source signal 'nPORESET' is active-LOW
+            /*
+             * These signals are by default treated as active-HIGH,
+             * even though the source signals 'nPORESET' and 'nSYSRESET' are active-LOW.
+             */
             Connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, powerOnResetActive)), 0);
+            Connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, coreResetInActive)), 0);
         }
 
         private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
@@ -54,12 +60,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
             nvic.Reset();
             dwt?.Reset();
             Connections[(int)Signal.PowerOnReset].Unset();
+            Connections[(int)Signal.CoreResetIn].Unset();
         }
 
         private readonly CortexM cpu;
         private readonly NVIC nvic;
         private readonly DWT dwt;
         private readonly SignalActiveWhen powerOnResetActive;
+        private readonly SignalActiveWhen coreResetInActive;
 
         public enum SignalActiveWhen
         {
