@@ -192,12 +192,16 @@ def compute_vector_scalar_op(
 def compute_bitwise_vector_vector_op(
     op: Callable[[int, int], int],
     operand1_128_bit: str,
-    operand2_128_bit: str,
+    operand2_128_bit: str = None,
 ) -> str:
     # We can do operation on the whole register at once
     element1 = int(operand1_128_bit, 16)
-    element2 = int(operand2_128_bit, 16)
-    result_elements = op(element1, element2)
+    if operand2_128_bit:
+        element2 = int(operand2_128_bit, 16)
+        result_elements = op(element1, element2)
+    else:
+        result_elements = op(element1)
+
     return f"0x{result_elements:0>32x}"
 
 
