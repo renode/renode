@@ -415,6 +415,19 @@ Bitwise Vector-Vector Instructions Should Produce Correct Results
         ${instruction}
     END
 
+VMVN Bitwise Vector Instruction Should Produce Correct Results
+    Create Machine
+
+    ${op1}=                         Set Variable  0x80003000b00070007000b00030007fff
+    Set Register Q0 To ${op1}
+
+    Load Program And Execute        vmvn q1, q0
+    # Calls a helper function defined in mve_helpers.py: `compute_vector_vmvn_result`.
+    # They're the partial functions at the very bottom (there's no def, just an assignment).
+    ${expected_value}=              Run Keyword  Compute Vector VMVN Result
+    ...                             ${op1}
+    Register Q1 Should Contain ${expected_value}  element_size=128
+
 VPT Should Mask Correct Lanes
     # Checks all the possible predications for VPT block
     Create Machine

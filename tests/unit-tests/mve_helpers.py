@@ -388,6 +388,10 @@ compute_vector_veor_result = partial(
     compute_bitwise_vector_vector_op, lambda a, b: a ^ b
 )
 
+compute_vector_vmvn_result = partial(
+    compute_bitwise_vector_vector_op, lambda a: not_128(a)
+)
+
 
 def compute_vdup_result(element_size_str: str, operand_32_bit: str):
     return compute_vector_scalar_op(
