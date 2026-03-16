@@ -49,6 +49,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             // NVIC's OnGPIO adds an offset to skip over system exceptions, so we need to subtract it.
             Connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
+
+            nvic.SystemResetRequest.Connect(this, (int)Signal.SystemResetRequest);
         }
 
         private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
