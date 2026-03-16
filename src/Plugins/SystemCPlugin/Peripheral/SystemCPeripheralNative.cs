@@ -88,9 +88,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
             get => simulationFilePath;
             set
             {
-#if PLATFORM_LINUX
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsLinux())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 

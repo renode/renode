@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
@@ -61,16 +62,21 @@ namespace Antmicro.Renode.UI
 
             // We set the default font as a fall-back option.
             terminal.CurrentFont = Xwt.Drawing.Font.SystemMonospaceFont;
-#if !PLATFORM_OSX
-            // Here we try to load the robot font; unfortunately it doesn't work on OSX. Moreover, on some versions of
-            // OSX it passes with no error (and no effect), on the others - it hangs. That's why we try to set the font and then
-            // we check if we succeeded.
-            var fontFile = typeof(TerminalWidget).Assembly.FromResourceToTemporaryFile("RobotoMono-Regular.ttf");
-            Xwt.Drawing.Font.RegisterFontFromFile(fontFile);
 
-#endif
+            if(!RuntimeInfo.IsMacOS())
+            {
+                // Here we try to load the robot font; unfortunately it doesn't work on OSX. Moreover, on some versions of
+                // OSX it passes with no error (and no effect), on the others - it hangs. That's why we try to set the font and then
+                // we check if we succeeded.
+                var fontFile = typeof(TerminalWidget).Assembly.FromResourceToTemporaryFile("RobotoMono-Regular.ttf");
+                Xwt.Drawing.Font.RegisterFontFromFile(fontFile);
+            }
+
             var fontFace = ConfigurationManager.Instance.Get("termsharp", "font-face", "Roboto Mono");
-            defaultFontSize = ConfigurationManager.Instance.Get("termsharp", "font-size", (int)PredefinedFontSize, x => x >= MinFontSize);
+
+            var predefinedFontSize = RuntimeInfo.IsLinux() ? PredefinedFontSizeLinux : PredefinedFontSize;
+
+            defaultFontSize = ConfigurationManager.Instance.Get("termsharp", "font-size", (int)predefinedFontSize, x => x >= MinFontSize);
             var font = Xwt.Drawing.Font.FromName(fontFace);
             if(!font.Family.Contains(fontFace))
             {
@@ -244,12 +250,9 @@ namespace Antmicro.Renode.UI
         private readonly Dictionary<MenuItem, EventHandler> menuItemsDelegates = new Dictionary<MenuItem, EventHandler>();
         private const int MinimalBottomMargin = 2;
 
-#if PLATFORM_LINUX
-        private const double PredefinedFontSize = 10.0;
-#else
+        private const double PredefinedFontSizeLinux = 10.0;
         // Default font size on OSX and Windows is slightly larger than on generic Linux system.
         private const double PredefinedFontSize = 12.0;
-#endif
         private const double MinFontSize = 1.0;
     }
 }

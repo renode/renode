@@ -2,8 +2,8 @@
 *                           MIT License
 *
 * Copyright (C) 2015 Frederic Chaxel <fchaxel@free.fr>
-* 
-* Copyright (c) Antmicro
+*
+* Copyright (c) 2010-2026 Antmicro
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
@@ -31,6 +31,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Plugins.WiresharkPlugin
@@ -49,10 +50,11 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             if(wiresharkPipe != null)
             {
                 wiresharkPipe.Close();
-#if !PLATFORM_WINDOWS
-                //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
-                File.Delete(pipeName);
-#endif
+                if(!RuntimeInfo.IsWindows())
+                {
+                    //As named pipes on Linux have their entries in the filesystem, we remove it as a cleanup.
+                    File.Delete(pipeName);
+                }
             }
         }
 
@@ -64,15 +66,18 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             }
             lastReportedFrame = null;
 
-#if !PLATFORM_WINDOWS
-            // Mono is using the "/var/tmp" prefix for pipes by default.
-            // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
-            wiresharkPipe = new NamedPipeServerStream(GetPrefixedPipeName(), PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
-#else
-            // Windows does not let you override the prefix with the trick above, and as such it requires a prefixless
-            // name for the named pipe to work, while Wireshark needs the prefixed name as the argument.
-            wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
-#endif
+            if(!RuntimeInfo.IsWindows())
+            {
+                // Mono is using the "/var/tmp" prefix for pipes by default.
+                // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
+                wiresharkPipe = new NamedPipeServerStream(GetPrefixedPipeName(), PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
+            }
+            else
+            {
+                // Windows does not let you override the prefix with the trick above, and as such it requires a prefixless
+                // name for the named pipe to work, while Wireshark needs the prefixed name as the argument.
+                wiresharkPipe = new NamedPipeServerStream(pipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, NamedPipeOptions);
+            }
             wiresharkProces = new Process();
             wiresharkProces.EnableRaisingEvents = true;
 
@@ -149,7 +154,7 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
         {
             // Mono is using the "/var/tmp" prefix for pipes by default.
             // Because of problems with setting GID bit on OSX in that directory, we combine this default path with an absolute EmulatorTemporaryPath value, which effectively overwrites the default - Path.Combine of two absolute paths drops the first one.
-            return $"{namedPipePrefix}{pipeName}";
+            return $"{NamedPipePrefix}{pipeName}";
         }
 
         private void SendWiresharkGlobalHeader()
@@ -203,25 +208,27 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             return true;
         }
 
+        private string NamedPipePrefix => RuntimeInfo.IsWindows() ? namedPipePrefixWindows : namedPipePrefixUnix;
+
+        private PipeOptions NamedPipeOptions => RuntimeInfo.IsWindows() ? NamedPipeOptionsWindows : NamedPipeOptionsUnix;
+
         private bool isConnected;
         private byte[] lastReportedFrame;
         private byte[] lastProcessedFrame;
 
         private NamedPipeServerStream wiresharkPipe;
         private Process wiresharkProces;
+
+        private readonly string namedPipePrefixWindows = @"\\.\pipe\";
         private readonly string pipeName;
         private readonly uint pcapNetId;
         private readonly string wiresharkPath;
 
         private static readonly DateTime localEpoch = Misc.UnixEpoch.ToLocalTime();
 
-#if !PLATFORM_WINDOWS
-        private readonly string namedPipePrefix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
-        private const PipeOptions NamedPipeOptions = PipeOptions.None;
-#else
-        private string namedPipePrefix = @"\\.\pipe\";
-        private const PipeOptions NamedPipeOptions = PipeOptions.Asynchronous;
-#endif
+        private readonly string namedPipePrefixUnix = Utilities.TemporaryFilesManager.Instance.EmulatorTemporaryPath;
+        private const PipeOptions NamedPipeOptionsUnix = PipeOptions.None;
+        private const PipeOptions NamedPipeOptionsWindows = PipeOptions.Asynchronous;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct PcapPacketHeader

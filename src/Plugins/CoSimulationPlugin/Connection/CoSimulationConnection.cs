@@ -222,9 +222,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => SimulationContext;
             set
             {
-#if PLATFORM_LINUX
-                SimulationContext = value;
-#endif
+                if(RuntimeInfo.IsLinux())
+                {
+                    SimulationContext = value;
+                }
             }
         }
 
@@ -233,9 +234,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => SimulationContext;
             set
             {
-#if PLATFORM_WINDOWS
-                SimulationContext = value;
-#endif
+                if(RuntimeInfo.IsWindows())
+                {
+                    SimulationContext = value;
+                }
             }
         }
 
@@ -244,9 +246,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => SimulationContext;
             set
             {
-#if PLATFORM_OSX
-                SimulationContext = value;
-#endif
+                if(RuntimeInfo.IsMacOS())
+                {
+                    SimulationContext = value;
+                }
             }
         }
 
@@ -264,9 +267,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => simulationFilePath;
             set
             {
-#if PLATFORM_LINUX
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsLinux())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 
@@ -275,9 +279,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => simulationFilePath;
             set
             {
-#if PLATFORM_WINDOWS
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsWindows())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 
@@ -286,9 +291,10 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
             get => simulationFilePath;
             set
             {
-#if PLATFORM_OSX
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsMacOS())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 

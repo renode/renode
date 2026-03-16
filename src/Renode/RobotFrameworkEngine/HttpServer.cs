@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2023 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
@@ -95,11 +96,14 @@ namespace Antmicro.Renode.RobotFramework
             for(port = minPort; port <= maxPort; port++)
             {
                 listener = new HttpListener();
-#if PLATFORM_WINDOWS
-                listener.Prefixes.Add($"http://localhost:{port}/");
-#else
-                listener.Prefixes.Add($"http://*:{port}/");
-#endif
+                if(RuntimeInfo.IsWindows())
+                {
+                    listener.Prefixes.Add($"http://localhost:{port}/");
+                }
+                else
+                {
+                    listener.Prefixes.Add($"http://*:{port}/");
+                }
                 try
                 {
                     listener.Start();

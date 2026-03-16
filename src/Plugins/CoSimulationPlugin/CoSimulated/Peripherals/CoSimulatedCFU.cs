@@ -138,9 +138,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathLinux;
             set
             {
-#if PLATFORM_LINUX
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsLinux())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 
@@ -149,9 +150,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathWindows;
             set
             {
-#if PLATFORM_WINDOWS
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsWindows())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 
@@ -160,9 +162,10 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             get => connection.SimulationFilePathMacOS;
             set
             {
-#if PLATFORM_OSX
-                SimulationFilePath = value;
-#endif
+                if(RuntimeInfo.IsMacOS())
+                {
+                    SimulationFilePath = value;
+                }
             }
         }
 

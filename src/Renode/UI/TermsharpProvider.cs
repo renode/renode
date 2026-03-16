@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 // Copyright (c) 2020-2021 Microsoft
 //
 // This file is licensed under the MIT License.
@@ -8,6 +8,7 @@
 using System;
 using System.Threading;
 
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
 using AntShell.Terminal;
@@ -31,9 +32,11 @@ namespace Antmicro.Renode.UI
             ApplicationExtensions.InvokeInUIThread(() =>
             {
                 window = new Window();
-#if PLATFORM_WINDOWS
-                window.Icon = Xwt.Drawing.Image.FromResource("renode_nobg.ico");
-#endif
+                if(RuntimeInfo.IsWindows())
+                {
+                    window.Icon = Xwt.Drawing.Image.FromResource("renode_nobg.ico");
+                }
+
                 window.Title = consoleName == null ? "Renode" : consoleName;
                 // while these minimal values are not sane, we assume it's up to the user to decide
                 window.Width = ConfigurationManager.Instance.Get("termsharp", "window-width", 700, x => x >= 0);

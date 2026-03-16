@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -243,17 +243,29 @@ namespace Antmicro.Renode.Plugins.WiresharkPlugin
             return "{0}-{1}".FormatWith(WiresharkExternalPrefix, elementName);
         }
 
+        private static string WiresharkPath
+        {
+            get
+            {
+                if(RuntimeInfo.IsWindows())
+                {
+                    return WiresharkPathWindows;
+                }
+                if(RuntimeInfo.IsMacOS())
+                {
+                    return WiresharkPathMacOS;
+                }
+                return WiresharkPathLinux;
+            }
+        }
+
         private const string WiresharkExternalPrefix = "wireshark";
         private const string BLELogName = WiresharkExternalPrefix + "-" + "allBLETraffic";
         private const string IEEE802_15_4LogName = WiresharkExternalPrefix + "-" + "allIEEE802_15_4Traffic";
         private const string EthernetLogName = WiresharkExternalPrefix + "-" + "allEthernetTraffic";
         private const string CANLogName = WiresharkExternalPrefix + "-" + "allCANTraffic";
-#if PLATFORM_WINDOWS
-        private const string WiresharkPath = @"c:\Program Files\Wireshark\Wireshark.exe";
-#elif PLATFORM_OSX
-        private const string WiresharkPath = "/Applications/Wireshark.app/Contents/MacOS/Wireshark";
-#else
-        private const string WiresharkPath = "/usr/bin/wireshark";
-#endif
+        private const string WiresharkPathWindows = @"c:\Program Files\Wireshark\Wireshark.exe";
+        private const string WiresharkPathMacOS = "/Applications/Wireshark.app/Contents/MacOS/Wireshark";
+        private const string WiresharkPathLinux = "/usr/bin/wireshark";
     }
 }
