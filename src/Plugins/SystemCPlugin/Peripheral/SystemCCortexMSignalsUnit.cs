@@ -46,6 +46,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
              */
             Connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, powerOnResetActive)), 0);
             Connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, coreResetInActive)), 0);
+
+            // NVIC's OnGPIO adds an offset to skip over system exceptions, so we need to subtract it.
+            Connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
         }
 
         private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
@@ -68,6 +71,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly DWT dwt;
         private readonly SignalActiveWhen powerOnResetActive;
         private readonly SignalActiveWhen coreResetInActive;
+        private const int NmiException = 2;
+        private const int SystemExceptionOffset = 16;
 
         public enum SignalActiveWhen
         {
