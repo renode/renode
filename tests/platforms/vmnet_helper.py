@@ -35,15 +35,20 @@ def preconfigure_vmnet_helper(start_ipv4, end_ipv4, mask, socket_path):
         [
             "sudo",
             VMNET_HELPER_BINARY,
-            "-v",
             f"--socket={socket_path}",
             "--operation-mode=host",
             f"--start-address={start_ipv4}",
             f"--end-address={end_ipv4}",
             f"--subnet-mask={mask}",
-        ]
+        ],
+        text=True,
+        stderr=subprocess.PIPE
     )
     time.sleep(1)
+    while proc.poll() is None:
+        if "waiting for client on" in proc.stderr.readline():
+            break;
+
     exit_code = proc.poll()
     if exit_code is not None:
         raise Exception(f"Process has Exited with code: {exit_code}")
