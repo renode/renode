@@ -511,9 +511,10 @@ if [[ $RID == "osx-arm64" ]]; then
   if [ -e $GDIPLUS_PATH ]; then
     # For some reason System.Drawing.Common does not search the binary root when running from a source build
     # but does for a package, so just link it to both locations so the packaging scripts do not have to be updated
-    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/runtimes/osx-arm64/native/libgdiplus.dylib
-    mkdir -p $OUT_BIN_DIR/osx-arm64
-    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/osx-arm64/libgdiplus.dylib
+    mkdir -p $OUT_BIN_DIR/runtimes/unix/lib/netcoreapp3.0
+    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/runtimes/unix/lib/netcoreapp3.0/libgdiplus.dylib
+    mkdir -p $OUT_BIN_DIR/unix/lib/netcoreapp3.0/
+    ln -s -f $GDIPLUS_PATH $OUT_BIN_DIR/unix/lib/netcoreapp3.0/libgdiplus.dylib
   else
     echo "libgdiplus.dylib not found by build.sh, FrameBufferTester might not work"
   fi
@@ -543,7 +544,6 @@ then
     then
         echo "Building librenode..."
         eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
-        cp "$ROOT_PATH/$OUT_BIN_DIR/runtimes/$RID/native/libMono.Unix.$LIB_EXT" "$ROOT_PATH/$OUT_BIN_DIR/"
     else
         echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"
         exit 1

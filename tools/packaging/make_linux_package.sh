@@ -77,7 +77,6 @@ if [ -f $BASE/output/bin/$TARGET/librenode.so ]; then
     cp $BASE/output/bin/$TARGET/librenode.so $BASE/output/bin/$TARGET/publish
     cp $BASE/output/bin/$TARGET/librenode.h $BASE/output/bin/$TARGET/publish
     cp $BASE/output/bin/$TARGET/dnne.h $BASE/output/bin/$TARGET/publish
-    cp $BASE/output/bin/$TARGET/libMono.Unix.so $BASE/output/bin/$TARGET/publish
     cp $BASE/output/bin/$TARGET/RenodeNativeInterface.runtimeconfig.json $BASE/output/bin/$TARGET/publish
 fi
 

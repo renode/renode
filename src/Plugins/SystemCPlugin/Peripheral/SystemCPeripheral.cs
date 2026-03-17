@@ -4,6 +4,18 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
@@ -12,21 +24,6 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Memory;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
-
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-
-#if !PLATFORM_WINDOWS
-using Mono.Unix.Native;
-#endif
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
@@ -530,9 +527,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             try
             {
-#if !PLATFORM_WINDOWS
-                Mono.Unix.Native.Syscall.chmod(systemcExecutablePath, FilePermissions.S_IRWXU);
-#endif
+                if(!RuntimeInfo.IsWindows())
+                {
+                    File.SetUnixFileMode(systemcExecutablePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                }
                 systemcProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo(systemcExecutablePath)

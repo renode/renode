@@ -31,7 +31,6 @@
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" Condition=" $(OS) != 'Windows_NT'"/>
     <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
 

@@ -4,23 +4,16 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
+using System;
+using System.IO;
+
+using Antmicro.Migrant;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
-
-#if !PLATFORM_WINDOWS
-using System;
-
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Utilities;
 
 using AntShell.Terminal;
-
-using Antmicro.Migrant;
-
-using Mono.Unix;
-
-using System.IO;
-#endif
 
 namespace Antmicro.Renode.Backends.Terminals
 {
@@ -28,15 +21,14 @@ namespace Antmicro.Renode.Backends.Terminals
     {
         public static void CreateUartPtyTerminal(this Emulation emulation, string name, string fileName, bool forceCreate = false)
         {
-#if !PLATFORM_WINDOWS
+            if(RuntimeInfo.IsWindows())
+            {
+                throw new RecoverableException("Creating UartPtyTerminal is not supported on Windows.");
+            }
             emulation.ExternalsManager.AddExternal(new UartPtyTerminal(fileName, forceCreate), name);
-#else
-            throw new RecoverableException("Creating UartPtyTerminal is not supported on Windows.");
-#endif
         }
     }
 
-#if !PLATFORM_WINDOWS
     public class UartPtyTerminal : BackendTerminal, IDisposable
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
@@ -52,11 +44,11 @@ namespace Antmicro.Renode.Backends.Terminals
             io.Dispose();
             try
             {
-                symlink.Delete();
+                File.Delete(symlink);
             }
             catch(FileNotFoundException e)
             {
-                throw new RecoverableException(string.Format("There was an error when removing symlink `{0}': {1}", symlink.FullName, e.Message));
+                throw new RecoverableException(string.Format("There was an error when removing symlink `{0}': {1}", symlink, e.Message));
             }
         }
 
@@ -108,8 +100,7 @@ namespace Antmicro.Renode.Backends.Terminals
             }
             try
             {
-                var slavePtyFile = new UnixFileInfo(ptyStream.SlaveName);
-                symlink = slavePtyFile.CreateSymbolicLink(linkName);
+                symlink = File.CreateSymbolicLink(linkName, ptyStream.SlaveName).FullName;
             }
             catch(Exception e)
             {
@@ -122,10 +113,9 @@ namespace Antmicro.Renode.Backends.Terminals
         [Transient]
         private IOProvider io;
 
-        private UnixSymbolicLinkInfo symlink;
+        private string symlink;
 
         private readonly bool forceCreate;
         private readonly string linkName;
     }
-#endif
 }
