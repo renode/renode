@@ -76,7 +76,7 @@ export class RenodeProxySession extends EventTarget {
         this.onData(ev.data);
       } else if (ev.data instanceof Blob) {
         this.onData(await ev.data.text());
-      } else if (ev.data instanceof ArrayBuffer) {
+      } else if (ev.data instanceof ArrayBuffer || Buffer.isBuffer(ev.data)) {
         this.onData(new TextDecoder().decode(ev.data));
       } else {
         throw new Error(`Unsupported data type: ${ev.data?.constructor?.name}`);
