@@ -51,6 +51,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             Connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
 
             nvic.SystemResetRequest.Connect(this, (int)Signal.SystemResetRequest);
+            nvic.InSleep.Connect(this, (int)Signal.Sleeping);
+            nvic.InDeepSleep.Connect(this, (int)Signal.SleepDeep);
         }
 
         private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
