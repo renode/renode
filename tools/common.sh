@@ -31,9 +31,9 @@ ARCH_UNAME=`uname -m`
 # macOS and Linux uses different names for 64-bit Arm
 if [ "$ARCH_UNAME" == "aarch64" ] || [ "$ARCH_UNAME" == "arm64" ]
 then
-    DETECTED_ARCH="arm"
+    DETECTED_ARCH="aarch64"
 else
-    DETECTED_ARCH="x64"
+    DETECTED_ARCH="i386"
 fi
 function get_path {
     if $ON_WINDOWS

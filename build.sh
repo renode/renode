@@ -46,7 +46,7 @@ PARAMS=()
 CUSTOM_PROP=
 NET_FRAMEWORK_VER=
 RID="linux-x64"
-HOST_ARCH="i386"
+HOST_ARCH=
 # Common cmake flags
 CMAKE_COMMON="${RENODE_EXTRA_CMAKE_ARGS:-}"
 
@@ -279,6 +279,10 @@ then
     TFM="$TFM-windows10.0.17763.0"
 else
     BUILD_TARGET=Mono
+fi
+
+if [[ -z "$HOST_ARCH" ]]; then
+    HOST_ARCH="$DETECTED_ARCH"
 fi
 
 # Set correct RID
