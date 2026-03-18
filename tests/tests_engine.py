@@ -255,6 +255,11 @@ def handle_options(options):
 
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
+    if options.stats_file:
+        options.stats = segmenting.parse_stats_file(options.stats_file)
+    else:
+        options.stats = {}
+
     if options.remote_server_full_directory is not None:
         if not os.path.isabs(options.remote_server_full_directory):
             options.remote_server_full_directory = os.path.join(this_path, options.remote_server_full_directory)
