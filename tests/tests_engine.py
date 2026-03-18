@@ -98,6 +98,12 @@ def prepare_parser():
                         default=False,
                         help="Buildbot mode. Before running tests prepare environment, i.e., create tap0 interface.")
 
+    parser.add_argument("--dry-run",
+                        dest="dry_run",
+                        action="store_true",
+                        default=False,
+                        help="Loads the given tests and splits them into subsets (if --subsets is specified). Does not run any tests.")
+
     parser.add_argument("-t", "--tests",
                         dest="tests_file",
                         action="store",
@@ -604,11 +610,8 @@ def run():
 
     print("Preparing suites")
 
-    args = []
     segment_num, max_segments, segment_test_file_paths, groups_segment = segment_groups(options)
     total_number_of_suites = len(segment_test_file_paths)
-    for (_, group_suites) in groups_segment:
-        args.append((group_suites, total_number_of_suites, options))
 
     test_file_path_count = len(segment_test_file_paths)
     if max_segments > 1: 
@@ -617,6 +620,14 @@ def run():
           f"consisting of the following {test_file_path_count} test files:"
         )
         [print(f"  - {path}") for path in segment_test_file_paths]
+
+    if options.dry_run:
+        print("Exiting early due to --dry-run")
+        exit(0)
+
+    args = []
+    for (_, group_suites) in groups_segment:
+        args.append((group_suites, total_number_of_suites, options))
 
     for (group, _) in groups_segment:
         for suite in options.tests[group]:
