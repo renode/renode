@@ -518,7 +518,15 @@ def failed_due_to_crash(options, groups_segment) -> bool:
     return False
 
 
-def segment_groups(options):
+@dataclass
+class GroupsSegment:
+    """A collection of groups that are part of a subset."""
+    subset: Subset
+    test_file_paths: list[str]
+    groups: list[tuple[str, list[Any]]]
+
+
+def segment_groups(options) -> GroupsSegment:
     """
     Splits the test groups into equally sized (best-effort) segments and returns the current one.
 
@@ -556,7 +564,7 @@ def segment_groups(options):
         groups_segment.append(groups[remainder_index])
 
     segment_test_file_paths = [suite.path for (_,suites) in groups_segment for suite in suites]
-    return segment_num, max_segments, segment_test_file_paths, groups_segment
+    return GroupsSegment(options.subset, segment_test_file_paths, groups_segment)
 
 
 def verify_suite_files_unique(groups: dict[str, Any]):
@@ -610,7 +618,11 @@ def run():
 
     print("Preparing suites")
 
-    segment_num, max_segments, segment_test_file_paths, groups_segment = segment_groups(options)
+    segment = segment_groups(options)
+    segment_num = segment.subset.segment
+    max_segments = segment.subset.max_segments 
+    segment_test_file_paths = segment.test_file_paths
+    groups_segment  = segment.groups
     total_number_of_suites = len(segment_test_file_paths)
 
     test_file_path_count = len(segment_test_file_paths)
