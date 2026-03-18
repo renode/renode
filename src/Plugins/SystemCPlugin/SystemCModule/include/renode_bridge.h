@@ -19,7 +19,7 @@ struct renode_message;
 #define RENODE_BUSWIDTH 32
 #endif
 
-#define NUM_GPIO 64
+#define NUM_GPIO 1024
 #define NUM_DIRECT_CONNECTIONS 4
 
 // ================================================================================

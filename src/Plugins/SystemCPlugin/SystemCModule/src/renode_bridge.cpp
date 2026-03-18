@@ -12,6 +12,7 @@
 #include <chrono>
 #include <thread>
 #include <inttypes.h>
+#include <array>
 #ifdef __linux__
 #include <fcntl.h>
 #include <unistd.h>
@@ -81,9 +82,9 @@ enum renode_action : uint8_t {
   // Socket: forward, backward
   // Request:
   //     data_length: ignored
-  //     address: ignored
+  //     address: signal number
   //     connection_index: ignored
-  //     payload: state of GPIO bitfield
+  //     payload: state of GPIO
   // Response:
   //     Identical to the request message.
   RESET = 5,
@@ -425,12 +426,13 @@ void renode_bridge::forward_loop() {
       forward_connection->Send((char *)&message, sizeof(renode_message));
     } break;
     case renode_action::GPIOWRITE: {
-      for (int i = 0; i < NUM_GPIO; ++i) {
-        sc_core::sc_interface *iface = gpio_ports_out[i].get_interface();
-        if (iface != nullptr) {
-          gpio_ports_out[i]->write((message.payload & (1 << i)) != 0);
-        }
+      auto number = message.address;
+      auto value = message.payload;
+      sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
+      if (iface == nullptr) {
+        break;
       }
+      gpio_ports_out[number]->write(value == 1);
       forward_connection->Send((char *)&message, sizeof(renode_message));
     } break;
     case renode_action::INIT: {
@@ -489,30 +491,38 @@ void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_mes
   wait(sc_core::SC_ZERO_TIME);
 }
 
+enum gpio_state {
+  GPIO_NOT_SENT = -1,
+  GPIO_LOW = 0,
+  GPIO_HIGH = 1
+};
+
 void renode_bridge::on_port_gpio() {
+  std::array<gpio_state, NUM_GPIO> last_sent_state;
+  last_sent_state.fill(GPIO_NOT_SENT);
   while (true) {
     // Wait for a change in any of the GPIO ports.
     wait();
 
-    uint64_t gpio_state = 0;
     for (int i = 0; i < NUM_GPIO; ++i) {
-      sc_core::sc_interface *iface = gpio_ports_in[i].get_interface();
-      if (iface != nullptr) {
-        if (gpio_ports_in[i]->read()) {
-          gpio_state |= (1ull << i);
-        } else {
-          gpio_state &= ~(1ull << i);
-        }
+      if (gpio_ports_in[i].get_interface() == nullptr) {
+        continue;
       }
+      gpio_state current = (gpio_state)gpio_ports_in[i]->read();
+      if (current == last_sent_state[i]) {
+        continue; // no change, skip
+      }
+      last_sent_state[i] = current;
+
+      renode_message message = {};
+      message.action = renode_action::GPIOWRITE;
+      message.address = i;
+      message.payload = current;
+
+      backward_connection->Send((char *)&message, sizeof(renode_message));
+      // Response is ignored.
+      backward_connection->Receive((char *)&message, sizeof(renode_message));
     }
-
-    renode_message message = {};
-    message.action = renode_action::GPIOWRITE;
-    message.payload = gpio_state;
-
-    backward_connection->Send((char *)&message, sizeof(renode_message));
-    // Response is ignored.
-    backward_connection->Receive((char *)&message, sizeof(renode_message));
   }
 }
 

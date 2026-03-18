@@ -1,5 +1,5 @@
 *** Variables ***
-${SYSTEMC_BINARY}                   @https://dl.antmicro.com/projects/renode/x64-systemc--multiple-peripherals.elf-s_1045808-e4358ec1f6d94e52e0d946c5c6acb80e157523b5
+${SYSTEMC_BINARY}                   @https://dl.antmicro.com/projects/renode/x64-systemc--multiple-peripherals.elf-s_1206888-783e0a91caa0bbc6f1c834da8d4fe6f1a5e91a08
 ${ZEPHYR_BINARY}                    @https://dl.antmicro.com/projects/renode/systemc-examples-zephyr-multiple-peripherals-stm32f401_mini.elf-s_574416-8bc080d4e6c922e7c89a233d1f74f6d9bcb45274
 ${PLATFORM}                         @tests/platforms/systemc/multiple-peripherals/multiple-peripherals.repl
 ${UART}                             sysbus.usart1

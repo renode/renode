@@ -1,5 +1,5 @@
 *** Variables ***
-${SYSTEMC_BINARY}                   @https://dl.antmicro.com/projects/renode/x64-systemc--transaction-delay.elf-s_730520-71a2e317e0f42799b7679af5dba036e918a7146e
+${SYSTEMC_BINARY}                   @https://dl.antmicro.com/projects/renode/x64-systemc--transaction-delay.elf-s_824016-6edbb698d44ff5d027a95b92b7bb72cd01aa03d0
 ${ZEPHYR_BINARY}                    @https://dl.antmicro.com/projects/renode/systemc-examples-zephyr-transaction-delay-stm32f401_mini.elf-s_572316-f591f8f491f1f3480aa6f7284d2bdbef3bebb8d5
 ${UART}                             sysbus.usart1
 

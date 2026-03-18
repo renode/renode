@@ -1,5 +1,5 @@
 *** Variables ***
-${SYSTEMC_BINARY}                    @https://dl.antmicro.com/projects/renode/x64-systemc--dma.elf-s_943520-d936f6165ff706163a1d722c301a11a55672c365
+${SYSTEMC_BINARY}                    @https://dl.antmicro.com/projects/renode/x64-systemc--dma.elf-s_1090184-ffd2618de7678ed38ecd50469e8e621676acc8ca
 ${PLATFORM}=    SEPARATOR=
 ...  """                                                                        ${\n}
 ...  memory: Memory.MappedMemory @ sysbus 0x20000000                            ${\n}
@@ -25,7 +25,6 @@ Memory Should Be Equal To
 Should Perform Memory-To-Memory Transfer
     [Tags]                          skip_windows    skip_osx   skip_host_aarch64
     Create Machine
-    Start Emulation
 
     # Initialize memory
     Execute Command                 sysbus.memory WriteString 0 "Hello"
@@ -51,6 +50,9 @@ Should Perform Memory-To-Memory Transfer
 
     # Signal "bus free" to notify DMAC it can use the bus now.
     Execute Command                 sysbus.dma_systemc OnGPIO 2 True
+
+    # Give some time for the transfer to finish
+    Execute Command                 emulation RunFor "0.1"
 
     # Verify the memory was copied correctly.
     # "H"

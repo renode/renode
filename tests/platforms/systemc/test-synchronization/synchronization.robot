@@ -1,5 +1,5 @@
 *** Variables ***
-${SYSTEMC_BINARY}                    @https://dl.antmicro.com/projects/renode/x64-systemc--test-synchronization.elf-s_606984-4b970b9b9da67d412220cc827634accb89619139
+${SYSTEMC_BINARY}                    @https://dl.antmicro.com/projects/renode/x64-systemc--test-synchronization.elf-s_676264-78bae3e754fa779f0154708eb61c715cfb38b082
 ${EXECUTE_IN_LOCK_PERIPHERAL}        @tests/platforms/systemc/test-synchronization/ExecuteInLockPeripheral.cs
 ${PLATFORM}=     SEPARATOR=
 ...  """                                                                            ${\n}

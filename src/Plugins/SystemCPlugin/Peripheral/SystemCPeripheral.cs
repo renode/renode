@@ -11,7 +11,6 @@ using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
-using Antmicro.Renode.Utilities;
 
 using System;
 using System.Collections.Generic;
@@ -298,7 +297,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public void Reset()
         {
-            outGPIOState = 0;
             var request = new RenodeMessage(RenodeAction.Reset, 0, 0, 0, 0);
             SendRequest(request, out var response);
         }
@@ -314,8 +312,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
             this.NoisyLog("Renode-triggered GPIO {0}, value {1}", number, value);
 
-            BitHelper.SetBit(ref outGPIOState, (byte)number, value);
-            var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, 0, outGPIOState);
+            var payload = value ? 1UL : 0UL;
+            var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, (ulong)number, payload);
             SendRequest(request, out var response);
         }
 
@@ -583,12 +581,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     // it receives the response. Setting the GPIO may require it to respond, e. g. when it
                     // is interracted with from an interrupt handler.
                     backwardSocket.Send(message.Serialize(), SocketFlags.None);
-                    for(int pin = 0; pin < NumberOfGPIOPins; pin++)
-                    {
-                        bool irqval = (message.Payload & (1UL << pin)) != 0;
-                        Connections[pin].Set(irqval);
-                        this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", pin, irqval);
-                    }
+                    var gpioNumber = (int)message.Address;
+                    var isSet = message.Payload == 1;
+                    Connections[gpioNumber].Set(isSet);
+                    this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", gpioNumber, isSet);
                     break;
                 case RenodeAction.Write:
                     bool writeToSharedMem = false;
@@ -752,7 +748,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private Socket forwardSocket;
 
-        private ulong outGPIOState;
         private Process systemcProcess;
         private string systemcExecutablePath;
         private bool backwardThreadStarted = false;
@@ -771,6 +766,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly IMachine machine;
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
-        private const int NumberOfGPIOPins = 64;
+        private const int NumberOfGPIOPins = 1024;
     }
 }
