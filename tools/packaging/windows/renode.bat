@@ -1,2 +1,2 @@
 @echo off
-dotnet "%~dp0\bin\Renode.dll" %*
+dotnet "%~dp0\bin\RenodeWPF.dll" %*

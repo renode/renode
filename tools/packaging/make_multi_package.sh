@@ -22,7 +22,7 @@ copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT
 
 # Windows command scripts
 cp $THIS_DIR/windows/renode.bat $DIR
-copy_windows_tests_scripts "..\\\\bin" Renode.dll
+copy_windows_tests_scripts "..\\\\bin" RenodeWPF.dll
 
 # Create tar
 ARCHIVE_NAME="renode-$VERSION.multiplatform.zip"

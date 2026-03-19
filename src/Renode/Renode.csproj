@@ -13,6 +13,7 @@
     <ApplicationIcon>..\..\lib\resources\images\windows_setup\renode.ico</ApplicationIcon>
     <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>12.0</LangVersion>
+    <UseWPF Condition=" $(RequireWPF) == 'true' ">true</UseWPF>
   </PropertyGroup>
   <PropertyGroup Condition=" $(PORTABLE) == 'true' ">
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
@@ -49,8 +50,7 @@
     <ProjectReference Include="..\..\lib\Migrant\Migrant\Migrant.csproj"/>
     <ProjectReference Include="..\..\lib\options-parser\OptionsParser.csproj"/>
     <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt\Xwt.csproj"/>
-    <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.Gtk\Xwt.Gtk3.csproj" Condition=" $(OS) != 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
-    <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.WPF\Xwt.WPF.csproj" Condition=" $(OS) == 'Windows_NT' And $(GUI_DISABLED) != 'true' "/>
+    <ProjectReference Include="..\..\lib\termsharp\xwt\Xwt.WPF\Xwt.WPF.csproj" Condition=" $(RequireWPF) == 'true' "/>
     <ProjectReference Include="..\..\lib\termsharp\TermSharp.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Plugins\SampleCommandPlugin\SampleCommandPlugin.csproj"/>
     <ProjectReference Include="..\Infrastructure\src\Plugins\TracePlugin\TracePlugin.csproj"/>

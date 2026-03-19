@@ -149,9 +149,9 @@ echo
 # TEST
 
 # There should be a license for every directory from 'lib' except 'resources' and for every file
-#   from 'lib/resources/libraries' except the '*-license' files.
+#   from 'lib/resources/libraries' except 'WPF' and the '*-license' files.
 for name in $(ls $BASE/lib) $(ls $BASE/lib/resources/libraries/); do
-    if [ "$name" != "resources" ] && ! [[ "$name" =~ "-license" ]]; then
+    if [ "$name" != "resources" ] && [ "$name" != "WPF" ] && ! [[ "$name" =~ "-license" ]]; then
         REQUIRED_LICENSES+=( $name )
     fi
 done

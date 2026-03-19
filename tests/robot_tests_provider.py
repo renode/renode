@@ -497,7 +497,7 @@ class RobotTestSuite(object):
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
         self.renode_pid = -1
 
-        prepend_dotnet = options.remote_server_name == DEFAULT_RENODE_BINARY_NAME
+        prepend_dotnet = options.remote_server_name.endswith('.dll')
 
         self.remote_server_directory = options.remote_server_full_directory
         remote_server_binary = os.path.join(self.remote_server_directory, options.remote_server_name)

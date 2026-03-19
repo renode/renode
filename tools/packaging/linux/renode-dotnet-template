@@ -8,4 +8,18 @@ then
     exit 1
 fi
 
-$LAUNCHER $(dirname "${BASH_SOURCE[0]}")/bin/Renode.dll "$@"
+if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
+    ON_WINDOWS=true
+else
+    ON_WINDOWS=false
+fi
+
+BIN_DIR=$(dirname "${BASH_SOURCE[0]}")/bin
+
+if $ON_WINDOWS && [[ -f "$BIN_DIR/RenodeWPF.dll" ]]; then
+    DLL="RenodeWPF.dll"
+else
+    DLL="Renode.dll"
+fi
+
+$LAUNCHER "$BIN_DIR/$DLL" "$@"

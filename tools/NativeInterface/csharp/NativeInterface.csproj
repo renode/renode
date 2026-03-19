@@ -41,5 +41,7 @@
   <ItemGroup>
     <!-- Renode must already be built, see the comment above. ./build.sh with the shared option builds in the correct order. -->
     <Reference Include="$(PlatformOutputDir)/../../*.dll" Private="false" />
+    <Reference Remove="$(PlatformOutputDir)/../../Xwt.WPF.dll" />
+    <Reference Remove="$(PlatformOutputDir)/../../RenodeWPF.dll" />
   </ItemGroup>
 </Project>

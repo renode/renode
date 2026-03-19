@@ -21,7 +21,7 @@ TestResult = namedtuple('TestResult', ('ok', 'log_file'))
 shared_suite_counter = None
 shared_active_suites = None
 
-DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
+DEFAULT_RENODE_BINARY_NAME = 'Renode.dll' if platform != 'win32' else 'RenodeWPF.dll'
 # Not a TestTag because it's not a real tag, it's the default.
 CRITICAL_TEST = 'mandatory'
 

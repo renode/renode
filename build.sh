@@ -301,7 +301,28 @@ SUPPORTED_UI_RIDS=(
   "win_x64"
 )
 
-if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
+# macos `cp` does not have the -u flag
+if $ON_OSX; then
+  cp_u() {
+    cp $@
+  }
+  sed_inplace() {
+    sed -i '' "$@"
+  }
+else
+  cp_u() {
+    cp -u $@
+  }
+  sed_inplace() {
+    sed -i "$@"
+  }
+fi
+export -f cp_u sed_inplace
+
+function generate_build_target() {
+  if ! $GENERATE_DOTNET_BUILD_TARGET; then
+    return
+  fi
   if $ON_WINDOWS; then
     # CsWinRTAotOptimizerEnabled is disabled due to a bug in dotnet-sdk.
     # See: https://github.com/dotnet/sdk/issues/44026
@@ -310,25 +331,32 @@ if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
 
   BUILD_TARGETS_FILE=$(mktemp)
   BUILD_TARGETS_PATH="$(get_path "$PWD/Directory.Build.targets")"
+  # For Xwt.WPF specifically this has to be `.props` rather than `.targets` because we need to override these values in the csproj
+  BUILD_PROPS_PATH_WPF="$(get_path "$PWD/lib/termsharp/xwt/Xwt.WPF/Directory.Build.props")"
   cat <<EOF > "$BUILD_TARGETS_FILE"
 <Project>
   <PropertyGroup>
     <TargetFrameworks>$TFM</TargetFrameworks>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     ${OS_SPECIFIC_TARGET_OPTS:+${OS_SPECIFIC_TARGET_OPTS}}
   </PropertyGroup>
 </Project>
 EOF
 
-  if [ ! -f "$BUILD_TARGETS_PATH" ] || ! cmp -s "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"; then
-      mv "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"
-  else
-      rm "$BUILD_TARGETS_FILE"
-  fi
-fi
+  cp_u "$BUILD_TARGETS_FILE" "$BUILD_PROPS_PATH_WPF"
+  cp_u "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"
+  rm "$BUILD_TARGETS_FILE"
+}
+
+generate_build_target
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 TARGET="`get_path \"$PWD/Renode.sln\"`"
 PARAMS+=(p:NET=true)
+
+if $ON_LINUX; then
+  PARAMS+=(p:WPFPath=$ROOT_PATH/lib/resources/libraries/WPF/$RID)
+fi
 
 OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
 
@@ -431,24 +459,6 @@ if [[ ! -z $EXTERNAL_LIB_ARCH ]]; then
   fi
 fi
 
-# macos `cp` does not have the -u flag
-if $ON_OSX; then
-  cp_u() {
-    cp $@
-  }
-  sed_inplace() {
-    sed -i '' "$@"
-  }
-else
-  cp_u() {
-    cp -u $@
-  }
-  sed_inplace() {
-    sed -i "$@"
-  }
-fi
-export -f cp_u sed_inplace
-
 # build KVM - currently it's supported only on Linux
 if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
     KVM_CORE_DIR="$NATIVE_CORES_BUILD_PATH/virt"
@@ -517,6 +527,15 @@ fi
 
 # build
 dotnet build "${PARAMS[@]/#/-}" $TARGET
+
+if $ON_WINDOWS; then
+  python3() {
+    PY_PYTHON=3 py "$@"
+  }
+fi
+
+python3 ./tools/add-wpf-dep.py "$OUT_BIN_DIR/Renode.runtimeconfig.json" "$OUT_BIN_DIR/RenodeWPF.runtimeconfig.json"
+ln -fs Renode.dll $OUT_BIN_DIR/RenodeWPF.dll
 
 # on arm64 macOS System.Drawing.Common can't find libgdiplus so we symlink it to the output directory
 # this is only used for `FrameBufferTester`
@@ -625,6 +644,20 @@ then
     fi
 fi
 
+OG_TFM="$TFM"
+# `dotnet publish` is all-or-nothing in terms of TFM - we can't have mixed net8.0 for normal code and net8.0-windows10 for WPF
+if $PACKAGES || $PORTABLE; then
+  if $ON_WINDOWS; then
+    # For Windows (since we have to actually build Xwt.WPF), we switch the whole build to a Windows-only TFM and make Renode actually require WPF
+    TFM="$TFM-windows10.0.17763.0"
+    generate_build_target
+    PARAMS+=(p:RequireWPF=true)
+  else
+    # For non-Windows, we have modified `Xwt.WPF.csproj` to remove their dependency on WPF if `RemoveWPF` is set
+    PARAMS+=(p:RemoveWPF=true)
+  fi
+fi
+
 if $PACKAGES
 then
     if $ON_LINUX
@@ -658,3 +691,6 @@ then
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
+
+TFM="$OG_TFM"
+generate_build_target

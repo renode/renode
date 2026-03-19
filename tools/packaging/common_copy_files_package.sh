@@ -15,6 +15,7 @@ cp -Pr $BASE/output/bin/$TARGET/runtimes $DIR/bin
 cp -Pr $BASE/output/bin/$TARGET/Lib $DIR/bin
 
 cp $BASE/output/bin/$TARGET/Renode.runtimeconfig.json $DIR/bin
+cp $BASE/output/bin/$TARGET/RenodeWPF.runtimeconfig.json $DIR/bin 2>/dev/null || true
 cp $BASE/output/bin/$TARGET/Renode.deps.json $DIR/bin
 
 # Remove RenodeTests because they are unused in the package

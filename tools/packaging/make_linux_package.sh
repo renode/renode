@@ -32,6 +32,8 @@ PYTHONVERSION=3.8
 
 OS_NAME=linux
 . common_copy_files_package.sh
+rm -f $DIR/bin/RenodeWPF.dll # Remove RenodeWPF which is not relevant on Linux
+rm -f $DIR/bin/RenodeWPF.runtimeconfig.json
 
 COMMON_SCRIPT=$DIR/tests/common.sh
 COMMAND_SCRIPT=linux/renode

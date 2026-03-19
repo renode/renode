@@ -67,4 +67,12 @@ else
     TRACE_COMMAND="dotnet-trace collect --format ${TRACE_FORMAT} --"
 fi
 
-${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/Renode.dll" "${PARAMS[@]:-}"
+RENODE_DIR="${OUTPUT_PATH}/${TARGET}"
+
+if $ON_WINDOWS && [[ -e "$RENODE_DIR/RenodeWPF.dll" ]]; then
+    RENODE_DLL="$RENODE_DIR/RenodeWPF.dll"
+else
+    RENODE_DLL="$RENODE_DIR/Renode.dll"
+fi
+
+${TRACE_COMMAND} dotnet "$RENODE_DLL" "${PARAMS[@]:-}"
