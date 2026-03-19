@@ -45,28 +45,7 @@ Create Echo Peripheral
     Execute Command                 include "${echo_i2c_peripheral}"
     Execute Command                 setup_echo_i2c_peripheral "sysbus.i2c.dummy"
 
-*** Test Cases ***
-UART Should Work
-    Create Machine                  ${HELLO_WORLD_BIN}    ${HELLO_WORLD_ELF}
-    Create Terminal Tester          sysbus.uart1
-
-    Wait For Line On Uart           Hello, world!    pauseEmulation=true
-    Provides                        machine-after-hello-world
-
-Freezing Watchdog Should Work
-    Requires                        machine-after-hello-world
-    Create Log Tester               5
-    Execute Command                 logLevel -1 sysbus.sys_wdog
-    Execute Command                 sysbus LogPeripheralAccess sysbus.gp_regs
-
-    # Sample freezes Watchdog after reaching limit which prevents resetting machine.
-    Wait For Log Entry              sys_wdog: Limit reached
-    Wait For Log Entry              WriteUInt32 to 0x0 (SetFreeze), value 0x8
-    Wait For Log Entry              sys_wdog: Freeze set
-
-    Should Not Be In Log            sys_wdog: Resetting machine
-
-Test Watchdog
+Create Machine After Reset
     Create Machine          ${WATCHDOG_BIN}  ${WATCHDOG_ELF}
 
     Create Log Tester       5    defaultPauseEmulation=true
@@ -96,11 +75,33 @@ Test Watchdog
     # It should take about 160ms of virtual time after NMI to reset the machine.
     Wait For Log Entry      sys_wdog: Limit reached    timeout=0.17
     Wait For Log Entry      sys_wdog: Reseting machine
-    Provides                machine-after-reset
+
+*** Test Cases ***
+UART Should Work
+    Create Machine                  ${HELLO_WORLD_BIN}    ${HELLO_WORLD_ELF}
+    Create Terminal Tester          sysbus.uart1
+
+    Wait For Line On Uart           Hello, world!    pauseEmulation=true
+    Provides                        machine-after-hello-world
+
+Freezing Watchdog Should Work
+    Requires                        machine-after-hello-world
+    Create Log Tester               5
+    Execute Command                 logLevel -1 sysbus.sys_wdog
+    Execute Command                 sysbus LogPeripheralAccess sysbus.gp_regs
+
+    # Sample freezes Watchdog after reaching limit which prevents resetting machine.
+    Wait For Log Entry              sys_wdog: Limit reached
+    Wait For Log Entry              WriteUInt32 to 0x0 (SetFreeze), value 0x8
+    Wait For Log Entry              sys_wdog: Freeze set
+
+    Should Not Be In Log            sys_wdog: Resetting machine
+
+Test Watchdog
+    Create Machine After Reset
 
 Watchdog Should Reset Machine Continuously If Not Frozen
-    Requires                machine-after-reset
-    Create Log Tester       5
+    Create Machine After Reset
 
     # Remove the possibility of freezing Watchdog by unregistering
     # GeneralPurposeRegisters containing Watchdog freeze register.
