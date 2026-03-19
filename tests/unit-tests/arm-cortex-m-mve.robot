@@ -559,6 +559,31 @@ VPT Should Compare Properly
         END
     END
 
+VPT Floating Point Should Use Proper Comparison Type
+    # This is not a complete ARM floating-point comparison test
+    # It only check if comparison operators got decoded properly
+    # Floating Point values are formed in such a way that if we only compare positive numbers, they should produce the same comparison result as if they were decoded as unsigned integers
+    # We're using this property for this simple test
+    Create Machine
+
+    ${predicates}=                  Create List  E  # We want to check for comparison and reverse of it just in case
+    FOR  ${operand1}  ${operand2}  ${with_scalar}  IN
+    # Same test as VPT Should Mask Correct Lanes
+    # operand1=[1000 555.5 100 0]  vector-operand2=[500 1000 100 0]  scalar-operand2=555.5
+    ...  0x447a0000440ae00042c8000000000000  0x43fa0000447a000042c8000000000000  False
+    ...  0x447a0000440ae00042c8000000000000  0x440ae000  True
+        FOR  ${comparison}  IN  EQ  NE  GE  LT  GT  LE
+            Test VPT
+            ...                             data_type=F
+            ...                             element_size=32
+            ...                             comparison=${comparison}
+            ...                             predicates=${predicates}
+            ...                             with_scalar=${with_scalar}
+            ...                             operand1=${operand1}
+            ...                             operand2=${operand2}
+        END
+    END
+
 VPT Should Use Predicated Instruction Version
     # Some instruction in Tlib can use different implementation depending if they are predicated or not
     # This test checks one of these instructions to make sure it uses the predicated version in VPT block
