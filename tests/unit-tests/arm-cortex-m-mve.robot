@@ -36,7 +36,7 @@ Create Machine
     ...                             cpu.Log(LogLevel.Error, "Unsupported opcode: {0} @ 0x{1:X}", instr, fault_pc)
     Execute Command                 cpu AddHook 0 """${hook}"""
 
-    Create Log Tester               0.000001  # Low timeout, since we're testing single instructions at a time.
+    Create Log Tester               1  # Low timeout, since we're testing single instructions at a time.
     Register Failing Log String     Unsupported opcode
 
 Set Register Q${index} To ${value_128_bit}
