@@ -15,7 +15,7 @@ Create Machine
 
 *** Test Cases ***
 Should Run The Multiple Peripherals Example
-    [Tags]                          skip_windows    skip_osx    skip_host_arm
+    [Tags]                          skip_windows    skip_osx    skip_host_aarch64
     Create Machine
     Create Terminal Tester          ${UART}
     Start Emulation

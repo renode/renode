@@ -39,7 +39,7 @@ Load Script
 
 *** Test Cases ***
 Should Load Demos
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     FOR  ${script}  IN  @{scripts}
         Load Script  ${script}
         Reset Emulation

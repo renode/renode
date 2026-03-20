@@ -61,7 +61,7 @@ Create Machine With Socket Based Communication
 
 *** Test Cases ***
 Should Run UARTLite Binary From Script
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
 
     Execute Command                 \$uartLinux?=${UARTLITE_NATIVE_LINUX}
     Execute Command                 \$uartWindows?=${UARTLITE_NATIVE_WINDOWS}
@@ -72,7 +72,7 @@ Should Run UARTLite Binary From Script
 
 # Starting emulation without SimulationFilePath(Linux|MacOS|Windows) set
 Should Handle Empty UARTLite Binary
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Log Tester               ${LOG_TIMEOUT}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/verilated/riscv_verilated_uartlite.repl
@@ -83,7 +83,7 @@ Should Handle Empty UARTLite Binary
 
 # File Doesn't Exist
 Should Handle Nonexistent UARTLite Binary
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
 
     Execute Command                 $uartLinux = @nonexistent-uart-binary
     Execute Command                 $uartWindows = @nonexistent-uart-binary
@@ -95,7 +95,7 @@ Should Handle Nonexistent UARTLite Binary
 # Following tests use socket based communication
 
 Should Run UARTLite Binary Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine With Socket Based Communication  ${UARTLITE_SOCKET_LINUX}  ${UARTLITE_SOCKET_WINDOWS}  ${UARTLITE_SOCKET_MACOS}
     Create Terminal Tester          ${UART}
     Start Emulation
@@ -103,7 +103,7 @@ Should Run UARTLite Binary Using Socket
 
 # Sleep after 1000 iterations in "simulate" loop (renode.cpp)
 Should Handle Connection Timeout
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Set Test Variable               ${uartLinux}    ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_LINUX}
     Set Test Variable               ${uartWindows}  ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_SLEEP_AFTER_1000_ITERS_SOCKET_MACOS}
@@ -116,7 +116,7 @@ Should Handle Connection Timeout
 
 # Both ports wrong when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Not Connecting
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Set Test Variable               ${uartLinux}    ${UARTLITE_WRONG_PORTS_LINUX}
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_PORTS_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_PORTS_MACOS}
@@ -125,7 +125,7 @@ Should Handle UARTLite Binary Not Connecting
 
 # Wrong "second" port when calling "simulate" (sim_main.cpp)
 Should Handle UARTLite Binary Partly Connecting
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Set Test Variable               ${uartLinux}    ${UARTLITE_WRONG_SECOND_PORT_LINUX}
     Set Test Variable               ${uartWindows}  ${UARTLITE_WRONG_SECOND_PORT_WINDOWS}
     Set Test Variable               ${uartMacOS}    ${UARTLITE_WRONG_SECOND_PORT_MACOS}
@@ -134,7 +134,7 @@ Should Handle UARTLite Binary Partly Connecting
 
 # Starting emulation without SimulationFilePath(Linux|MacOS|Windows) set
 Should Handle Empty UARTLite Binary With Socket Based Communication
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Log Tester               ${LOG_TIMEOUT}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLATFORM}

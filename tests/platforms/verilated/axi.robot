@@ -186,56 +186,56 @@ Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 
 *** Test Cases ***
 Should Read Write Co-simulated Memory Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True
     Test Read Write Co-simulated Memory
 
 Should Read Write Co-simulated Memory Using Socket With Custom Ports
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True    True
     Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Co-simulated Memory Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True
     Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Mapped Memory Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True
     Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory Using Socket
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Create Machine      True
     Test DMA Transaction From Co-simulated Memory to Co-simulated Memory
 
 Should Read Write Co-simulated Memory
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
     Create Machine      False
     Test Read Write Co-simulated Memory
 
 Should Run DMA Transaction From Mapped Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Mapped Memory
 
 Should Run DMA Transaction From Mapped Memory to Co-simulated Memory
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
     Create Machine      False
     Test DMA Transaction From Mapped Memory to Co-simulated Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Mapped Memory
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
     Create Machine      False
     Test DMA Transaction From Co-simulated Memory to Mapped Memory
 
 Should Run DMA Transaction From Co-simulated Memory to Co-simulated Memory
-    [Tags]                          skip_osx  skip_host_arm
+    [Tags]                          skip_osx  skip_host_aarch64
     Create Machine      False
     Test DMA Transaction From Co-simulated Memory to Co-simulated Memory

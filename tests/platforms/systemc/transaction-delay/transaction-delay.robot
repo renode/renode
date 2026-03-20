@@ -17,7 +17,7 @@ Virtual Time Should Be Equal To
 
 *** Test Cases ***
 Should Respect SystemC Transaction Durations
-    [Tags]                          skip_windows    skip_osx    skip_host_arm
+    [Tags]                          skip_windows    skip_osx    skip_host_aarch64
     Create Machine
     Create Terminal Tester          ${UART}
     Start Emulation

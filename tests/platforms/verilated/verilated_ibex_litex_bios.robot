@@ -8,7 +8,7 @@ ${CPU_IBEX_NATIVE_MACOS}       ${URI}/libVcpu_ibex-macOS-x86_64-13112907851.dyli
 
 *** Test Cases ***
 Should Boot
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Execute Command            \$cpuLinux?=${CPU_IBEX_NATIVE_LINUX}
     Execute Command            \$cpuWindows?=${CPU_IBEX_NATIVE_WINDOWS}
     Execute Command            \$cpuMacOS?=${CPU_IBEX_NATIVE_MACOS}

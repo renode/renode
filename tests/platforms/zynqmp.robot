@@ -125,7 +125,7 @@ Should Boot And Login
     Provides                        linux-shell
 
 Test Dirty Addresses Reduction
-    [Tags]                          skip_host_arm
+    [Tags]                          skip_host_aarch64
     Requires                        linux-shell
     Execute Command                 showAnalyzer uart1
 

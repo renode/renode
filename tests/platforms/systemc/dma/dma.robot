@@ -23,7 +23,7 @@ Memory Should Be Equal To
 
 *** Test Cases ***
 Should Perform Memory-To-Memory Transfer
-    [Tags]                          skip_windows    skip_osx   skip_host_arm
+    [Tags]                          skip_windows    skip_osx   skip_host_aarch64
     Create Machine
     Start Emulation
 

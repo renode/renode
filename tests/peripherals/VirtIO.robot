@@ -83,7 +83,7 @@ Setup Shared Directory
 
 *** Test Cases ***
 Read Shared Directory
-    [Tags]                      skip_windows    skip_osx  skip_host_arm
+    [Tags]                      skip_windows    skip_osx  skip_host_aarch64
     # Unix domain sockets
 
     Setup Shared Directory
