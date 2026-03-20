@@ -250,6 +250,7 @@
 - tests/platforms/focaltech-ft9001-zephyr.robot
 - tests/unit-tests/arm-cortex-m-mve.robot
 - tests/unit-tests/arm-cortex-m-signals.robot
+- tests/unit-tests/resd-arbitrary-timestamp.robot
 
 # Do not use port 3333 in unit tests
 
