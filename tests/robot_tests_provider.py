@@ -19,7 +19,7 @@ from typing import List, Dict, Tuple, Set, Optional, Union
 from argparse import Namespace
 from dataclasses import dataclass
 
-import robot, robot.result, robot.running, robot.api
+import robot, robot.result, robot.running, robot.api, robot.errors
 from robot.libraries.BuiltIn import BuiltIn
 from robot.libraries.DateTime import Time
 
@@ -853,7 +853,12 @@ class RobotTestSuite(object):
 
         logs = get_result()[1]
         for log in logs: 
-            robot_results = robot.api.ExecutionResult(log)
+            try: 
+                robot_results = robot.api.ExecutionResult(log)
+            except robot.errors.DataError as err:
+                print(f"error: Failed to read robot output xml `{log}`: {err}")
+                continue
+
             suite = robot_results.suite
 
             process_metadata = renode_process_stats | renode_memory_stats 
