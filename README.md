@@ -56,6 +56,11 @@ The following packages formats are available:
 
 Stable, numbered releases and their release notes are available in the [Releases section](https://github.com/renode/renode/releases) on GitHub.
 
+#### Installation from homebrew tap
+On macOS both stable and nightly versions of Renode can be installed with [Homebrew](https://brew.sh/) from our custom tap.
+To install the stable version use `brew install renode/tap/renode`, or `brew install renode/tap/renode-nightly` for the latest nightly build.
+This will install all dependencies, including preconfiguring the python environment for `renode-test`
+
 ### Using the Linux portable release
 
 If you are a Linux user, the easiest way to use Renode is to download the latest `linux-portable` from [the releases section](https://github.com/renode/renode/releases/latest) and unpack it using:
