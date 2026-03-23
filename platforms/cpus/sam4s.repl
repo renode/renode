@@ -67,6 +67,8 @@ eefc: Miscellaneous.SAM4S_EEFC @ sysbus 0x400E0A00
     ->nvic@6
 
 rstc: Miscellaneous.SAM4S_RSTC @ sysbus 0x400E1400
+    ->nvic@1
+    Watchdog: wdt
 
 wdt: Timers.SAM4S_WDT @ sysbus 0x400E1450
     resetController: rstc
