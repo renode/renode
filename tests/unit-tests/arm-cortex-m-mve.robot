@@ -5,6 +5,7 @@ Library                             String
 
 *** Variables ***
 ${START_ADDRESS}                    0x100
+${DATA_ADDRESS}                     0x22000000
 ${PLATFORM}                         @platforms/cpus/renesas-r7fa8m1a.repl
 
 *** Keywords ***
@@ -285,6 +286,70 @@ Test VPT
             ${message}=                     Catenate  SEPARATOR=\n  @{step_messages}
             Fail                            ${instruction} failed on step ${index}\n${message}
         END
+    END
+
+Test VLD
+    # Writes values to memory in order: 0x00 0x01 0x02 0x03...
+    # And then using VLD instructions reads them resulting with interleaved values in the registers
+    # Example: Q1=[0x00 0x02 0x04 ...] and Q2=[0x01 0x03 0x05 ...]
+    [Arguments]                     ${stride}
+    ...                             ${element_size}
+    ${element_count}=               Evaluate  128 // ${element_size}
+
+    Reset Emulation
+    Create Machine
+
+    ${values}=                      Evaluate  list(range(${stride} * ${element_count}))  # [0, 1, 2, 3, ...
+    ${interleaved_values}=          Evaluate  [v for s in range(${stride}) for v in ${values}\[s::${stride}]]  # For VLD2.8 [0, 2, 4, ... 1, 3, 5,...
+
+    Execute Command                 cpu SetRegister "R0" ${DATA_ADDRESS}
+
+    # Writes values to memory
+    FOR  ${index}  ${value}  IN ENUMERATE  @{values}
+        ${position}=                    Evaluate  ${DATA_ADDRESS}+${index}*(${element_size} // 8)
+        IF  ${element_size} == 8
+            Execute Command                 sysbus WriteByte ${position} ${value}
+        ELSE IF  ${element_size} == 16
+            Execute Command                 sysbus WriteWord ${position} ${value}
+        ELSE IF  ${element_size} == 32
+            Execute Command                 sysbus WriteDoubleWord ${position} ${value}
+        ELSE
+            Fail                            Invalid element_size=${element_size}
+        END
+    END
+
+    # Creates assembly and calculates expected register values
+    ${assembly}=                    Create List
+    ${expected_values}=             Create List
+    FOR  ${s}  IN RANGE  ${stride}
+        ${register_list}=               Evaluate  ", ".join([f"Q{i}" for i in range(${stride})])
+        Append To List                  ${assembly}  VLD${stride}${s}.${element_size} {${register_list}}, [R0]
+        ${range}=                       Evaluate  $interleaved_values[${element_count}*${s}:${element_count}*(${s}+1)]
+        ${value}=                       Combine Into 128 Bit Value  ${range}
+        Append To List                  ${expected_values}  ${value}
+    END
+    ${assembly}=                    Catenate  SEPARATOR=;  @{assembly}
+    Load Program And Execute        ${assembly}
+
+    TRY
+        FOR  ${index}  ${value}  IN ENUMERATE  @{expected_values}
+            Register Q${index} Should Contain ${value}
+        END
+    EXCEPT
+        # Prints out register status in case of failure
+        ${info}=                        Create List  VLD${stride}.${element_size} Failed
+        FOR  ${index}  ${value}  IN ENUMERATE  @{expected_values}
+            ${result}=                      Read Register Q${index}
+
+            ${result_info}=                 Catenate  SEPARATOR=${\n}
+            ...                             Q${index}:
+            ...                             expected=${value}
+            ...                             ${SPACE*2}actual=${result}
+
+            Append To List                  ${info}  ${result_info}
+        END
+        ${info}=                        Catenate  SEPARATOR=\n  @{info}
+        Fail                            ${info}
     END
 
 ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift ${direction:(Left|Right)} Long Instruction Should Produce Correct Result With Input ${input}
@@ -624,6 +689,13 @@ VPT Should Use Predicated Instruction Version
     ...                             action=T
 
     Register Q2 Should Contain ${expected_value}  element_size=128
+
+VLD Should Load and Interleave Data
+    FOR  ${stride}  IN  2  4
+        FOR  ${element_size}  IN  8  16  32
+            Test VLD                        ${stride}  ${element_size}
+        END
+    END
 
 Shift Long Instructions Should Produce Correct Results
     [Template]                      ${signed} ${kind} Shift ${direction} Long Instruction Should Produce Correct Result With Input ${}

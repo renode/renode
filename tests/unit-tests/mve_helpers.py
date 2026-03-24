@@ -63,6 +63,17 @@ def combine_n_bit_values_into_m_bit_value(
     )
 
 
+def combine_into_128_bit_value(values: list[int], signed=False) -> str:
+    """
+    Converts a list of integers into hexadecimal string representing Q register
+    """
+    element_size = 128 // len(values)
+    _, int_to_hex, _ = prepare_vector_op(element_size, signed)
+    return combine_n_bit_values_into_m_bit_value(
+        element_size, 128, list(map(int_to_hex, values))
+    )
+
+
 def prepare_vector_op(
     element_size: Union[str, int], treat_elements_as_signed: bool
 ) -> Tuple[Callable[[str], int], Callable[[int], str], int]:
