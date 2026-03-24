@@ -13,6 +13,7 @@
 struct IRenodeBridge {
   virtual void reset() = 0;
   virtual tlm::tlm_fw_transport_if<> *tlm_route(std::uint64_t offset) = 0;
+  virtual void gpio_port_write(int number, bool value) = 0;
   virtual ~IRenodeBridge() = default;
 };
 
@@ -26,4 +27,7 @@ extern "C" {
 
   std::uint64_t tlm_read(std::size_t size, std::uint64_t offset);
   void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset);
+
+  void gpio_write(int number, bool value);
+  void renode_gpio_update(int number, int value);
 }
