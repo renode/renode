@@ -66,8 +66,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             cpu.Reset();
             nvic.Reset();
             dwt?.Reset();
-            Connections[(int)Signal.PowerOnReset].Unset();
-            Connections[(int)Signal.CoreResetIn].Unset();
         }
 
         private readonly CortexM cpu;
