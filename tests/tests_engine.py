@@ -628,12 +628,18 @@ def run():
     total_number_of_suites = len(segment_test_file_paths)
 
     test_file_path_count = len(segment_test_file_paths)
-    if max_segments > 1: 
-        print(
-          f"Will run segment {segment_num}/{max_segments}, "
-          f"consisting of the following {test_file_path_count} test files:"
+    suites_list_header = (
+        (
+            f"Will run segment {segment_num}/{max_segments}, "
+            f"consisting of the following {test_file_path_count} test files:"
         )
-        [print(f"  - {path}") for path in segment_test_file_paths]
+        if max_segments > 1
+        else f"Will run the following {test_file_path_count} test files:"
+    )
+    print(suites_list_header)
+    for path in segment_test_file_paths:
+        print(f"  - {path}")
+    print("")
 
     if options.dry_run:
         print("Exiting early due to --dry-run")
