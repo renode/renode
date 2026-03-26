@@ -68,7 +68,7 @@ std::uint64_t tlm_read(std::size_t size, std::uint64_t offset) {
   }
 
   prepare_payload(payload, tlm::TLM_READ_COMMAND, offset, data.data(), size);
-  model->tlm()->b_transport(payload, delay);
+  model->tlm_route(offset)->b_transport(payload, delay);
 
   std::uint64_t result = 0;
   std::memcpy(&result, data.data(), size);
@@ -88,5 +88,5 @@ void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset) {
 
   std::memcpy(data.data(), &value, size);
   prepare_payload(payload, tlm::TLM_WRITE_COMMAND, offset, data.data(), size);
-  model->tlm()->b_transport(payload, delay);
+  model->tlm_route(offset)->b_transport(payload, delay);
 }

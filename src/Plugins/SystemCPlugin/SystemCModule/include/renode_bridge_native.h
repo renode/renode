@@ -12,7 +12,7 @@
 
 struct IRenodeBridge {
   virtual void reset() = 0;
-  virtual tlm::tlm_fw_transport_if<> *tlm() = 0;
+  virtual tlm::tlm_fw_transport_if<> *tlm_route(std::uint64_t offset) = 0;
   virtual ~IRenodeBridge() = default;
 };
 
