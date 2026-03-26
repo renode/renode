@@ -317,6 +317,8 @@ def split_tests_into_groups(tests, test_type):
             return False
         for handler in registered_handlers:
             if (test_type == 'all' or handler['type'] == test_type) and path.endswith(handler['extension']):
+                # Ensure consistent path separators, even on Windows
+                path = Path(path).as_posix()
                 result.append(handler['creator'](path))
         return True
 
