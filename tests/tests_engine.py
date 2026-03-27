@@ -9,6 +9,8 @@ import subprocess
 import yaml
 import multiprocessing
 from dataclasses import dataclass
+from typing import Any
+from pathlib import Path
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
@@ -551,6 +553,30 @@ def segment_groups(options):
     return segment_num, max_segments, segment_test_file_paths, groups_segment
 
 
+def verify_suite_files_unique(groups: dict[str, Any]):
+    suite_file_paths = [
+        Path(suite.path) for suites in groups.values() for suite in suites
+    ]
+
+    paths_by_filename = defaultdict(list)
+    for path in suite_file_paths:
+        paths_by_filename[path.name].append(path)
+
+    duplicates = {
+        filename: paths
+        for filename, paths in paths_by_filename.items()
+        if len(paths) > 1
+    }
+
+    if duplicates:
+        print("ERROR: Duplicate suite file names are not allowed. Found duplicates:")
+        for filename, paths in duplicates.items():
+            print(f"  {filename}:")
+            for path in paths:
+                print(f"    - {path}")
+        sys.exit(1)
+
+
 def init_worker_process(counter):
     global shared_suite_counter
     shared_suite_counter = counter 
@@ -573,6 +599,8 @@ def run():
             handler['after_parsing'](options)
 
     configure_output(options)
+
+    verify_suite_files_unique(options.tests)
 
     print("Preparing suites")
 
