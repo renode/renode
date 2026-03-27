@@ -213,19 +213,18 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void InitBinder()
         {
-            string resourceFileName = Path.GetFileName(simulationFilePath);
-
-            foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            if(!Misc.TryCopyToTemporaryFile(simulationFilePath, out var copiedSimulationFilePath))
             {
-                if(assembly.TryFromResourceToTemporaryFile(simulationFilePath, out var resourceFilePath, resourceFileName))
-                {
-                    binder = new NativeBinder(this, resourceFilePath);
-                    break;
-                }
-                else
-                {
-                    throw new RecoverableException($"Cannot find library {resourceFilePath}");
-                }
+                throw new RecoverableException($"Cannot find library {simulationFilePath}");
+            }
+
+            try
+            {
+                binder = new NativeBinder(this, simulationFilePath);
+            }
+            catch(InvalidOperationException)
+            {
+                throw new RecoverableException($"Cannot find library {simulationFilePath}");
             }
         }
 
