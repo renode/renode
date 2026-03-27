@@ -1,0 +1,49 @@
+name: Main
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build_x86_64:
+    runs-on: [iomt-arc]
+    container:
+      image: ghcr.io/iomt-lab/renode-build-docker:main
+      options: --user root
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Git Permissions
+        run: git config --global --add safe.directory /__w/renode/renode
+      - name: Build
+        run: export CC=gcc; ./build.sh -n -t -B linux-x64
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: output/packages/*
+          if-no-files-found: error
+          archive: false
+
+  build_aarch64:
+    runs-on: [iomt-arc]
+    container:
+      image: ghcr.io/iomt-lab/renode-build-docker:main
+      options: --user root
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Cache
+        uses: actions/cache@v5.0.4
+        with:
+          key: aarch64
+          path: |
+            src/Infrastructure/src/Emulator/Cores/bin/*
+            src/Infrastructure/src/Emulator/Cores/obj/*
+      - name: Git Permissions
+        run: git config --global --add safe.directory /__w/renode/renode
+      - name: Build
+        run: export CC=aarch64-linux-gnu-gcc-11; ./build.sh -n --host-arch aarch64 -t -B linux-arm64
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: output/packages/*
+          if-no-files-found: error
+          archive: false
