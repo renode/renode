@@ -10,13 +10,14 @@
 
 extern "C"
 {
-  void renodeDPIConnect(int receiverPort, int senderPort, const char *address);
-  void renodeDPIDisconnect();
-  bool renodeDPIIsConnected();
-  bool renodeDPIReceive(uint32_t *actionId, uint64_t *address, uint64_t *value, int32_t *peripheralIndex);
-  bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
-  bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
-  bool renodeDPILog(int logLevel, const char *data);
+  void renodeDPIConnectInst(int id, int receiverPort, int senderPort, const char *address);
+  void renodeDPIDisconnectInst(int id);
+  bool renodeDPIIsConnectedInst(int id);
+  bool renodeDPIReceiveInst(int id, uint32_t *actionId, uint64_t *address, uint64_t *value, int32_t *peripheralIndex);
+  bool renodeDPITryReceiveInst(int id, uint32_t *actionId, uint64_t *address, uint64_t *value, int32_t *peripheralIndex);
+  bool renodeDPISendInst(int id, uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
+  bool renodeDPISendToAsyncInst(int id, uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
+  bool renodeDPILogInst(int id, int logLevel, const char *data);
 }
 
 #endif
