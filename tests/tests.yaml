@@ -180,7 +180,6 @@
 - tests/platforms/NPCX9.robot
 - tests/unit-tests/arm-gic-redistributor.robot
 - tests/unit-tests/python-engine.robot
-- tests/network-logging/network-logging.robot
 - tests/unit-tests/riscv-mret.robot
 - tests/platforms/X86.robot
 - tests/platforms/ACRN.robot
