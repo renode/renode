@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 #include "renode_bridge_native.h"
-#include "renode_imports.h"
 #include <stdexcept>
 
 renode_bridge_factory_t& get_factory() {
@@ -101,4 +100,13 @@ void gpio_write(int number, bool value) {
   model->gpio_port_write(number, value);
 }
 
-EXTERNAL_AS(void, UpdateGPIOConnections, renode_gpio_update, int32_t, int32_t);
+// MSVC workaround for EXTERNAL_AS
+static void (*renode_gpio_update_callback$)(int32_t num, int32_t val);
+
+void renode_gpio_update(int32_t num, int32_t val) {
+  renode_gpio_update_callback$(num, val); ;
+}
+
+extern "C" void renode_external_attach__ActionInt32Int32__UpdateGPIOConnections(void (*param)(int32_t num, int32_t val)) {
+  renode_gpio_update_callback$ = param;
+}

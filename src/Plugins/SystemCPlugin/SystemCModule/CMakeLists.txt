@@ -17,11 +17,6 @@ target_link_libraries(renode_bridge socket_cpp systemc)
 add_library(renode_bridge_native src/renode_bridge_native.cpp)
 target_include_directories(renode_bridge_native PUBLIC include)
 
-# The path of the `renode_imports.h` header differs depending on whether Renode
-# is provided in source or package distribution. Cover both of these cases here
-target_include_directories(renode_bridge_native PUBLIC ../../../Infrastructure/src/Emulator/Cores/renode/include)
-target_include_directories(renode_bridge_native PUBLIC ../IntegrationLibrary/src)
-
 target_link_libraries(renode_bridge_native systemc)
 set_target_properties(renode_bridge_native PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
