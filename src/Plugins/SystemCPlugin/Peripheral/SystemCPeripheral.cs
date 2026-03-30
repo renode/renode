@@ -291,6 +291,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 return;
             }
+            this.NoisyLog("Renode-triggered GPIO {0}, value {1}", number, value);
 
             BitHelper.SetBit(ref outGPIOState, (byte)number, value);
             var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, 0, outGPIOState);
@@ -564,6 +565,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     {
                         bool irqval = (message.Payload & (1UL << pin)) != 0;
                         Connections[pin].Set(irqval);
+                        this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", pin, irqval);
                     }
                     break;
                 case RenodeAction.Write:
