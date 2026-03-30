@@ -522,6 +522,35 @@ def verify_suite_files_unique(groups: dict[str, Any]):
         sys.exit(1)
 
 
+def print_suite_files(segment: segmenting.GroupsSegment):
+    segment_num = segment.subset.segment
+    max_segments = segment.subset.max_segments 
+    segment_test_file_paths = segment.test_file_paths
+    groups_segment  = segment.groups
+
+    test_file_path_count = len(segment_test_file_paths)
+    suites_list_header = (
+        (
+            f"Will run segment {segment_num}/{max_segments}, "
+            f"consisting of the following {test_file_path_count} test files:"
+        )
+        if max_segments > 1
+        else f"Will run the following {test_file_path_count} test files:"
+    )
+    print(suites_list_header)
+
+    for group, suites in groups_segment:
+        is_group = not group.startswith("__NONE_")
+        padding = ""
+        if is_group:
+            print(f"  - {group}:")
+            padding = "  "
+        for suite in suites:
+            print(f"  {padding}- {suite.path}")
+
+    print("")
+
+
 def init_worker_process(counter):
     global shared_suite_counter
     shared_suite_counter = counter 
@@ -556,19 +585,7 @@ def run():
     groups_segment  = segment.groups
     total_number_of_suites = len(segment_test_file_paths)
 
-    test_file_path_count = len(segment_test_file_paths)
-    suites_list_header = (
-        (
-            f"Will run segment {segment_num}/{max_segments}, "
-            f"consisting of the following {test_file_path_count} test files:"
-        )
-        if max_segments > 1
-        else f"Will run the following {test_file_path_count} test files:"
-    )
-    print(suites_list_header)
-    for path in segment_test_file_paths:
-        print(f"  - {path}")
-    print("")
+    print_suite_files(segment)
 
     if options.dry_run:
         print("Exiting early due to --dry-run")
@@ -639,7 +656,7 @@ def run():
         options.output.close()
 
     if max_segments > 1: 
-        print( f"Ran segment {segment_num}/{max_segments}, consisting of {test_file_path_count} test files.")
+        print( f"Ran segment {segment_num}/{max_segments}, consisting of {total_number_of_suites} test files.")
     if tests_failed:
         print("Some tests failed :( See the list of failed tests below and logs for details!")
         print_failed_tests(options)
