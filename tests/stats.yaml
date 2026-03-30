@@ -1,0 +1,17 @@
+# This is an example of the format used by renode-test's --stats argument.
+
+- tests/unit-tests/riscv-isa-tests.robot:
+    runs: 190
+    max_duration_seconds: 0.80
+    p99_duration_seconds: 0.78
+    p95_duration_seconds: 0.30
+    p50_duration_seconds: 0.03
+    min_duration_seconds: 0.01
+
+- tests/example.robot:
+    runs: 220
+    max_duration_seconds: 3.41
+    p99_duration_seconds: 0.31
+    p95_duration_seconds: 0.23
+    p50_duration_seconds: 0.07
+    min_duration_seconds: 0.02
