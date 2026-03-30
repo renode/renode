@@ -7,6 +7,7 @@
 using System;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.IRQControllers;
 using Antmicro.Renode.Peripherals.Miscellaneous;
@@ -59,6 +60,76 @@ namespace Antmicro.Renode.Peripherals.SystemC
             nvic.InDeepSleep.Connect(this, (int)Signal.SleepDeep);
         }
 
+        protected override void OnUnhandledRenodeMessage(RenodeMessage message)
+        {
+            switch(message.ActionId)
+            {
+            case RenodeAction.InitSecureVTOR:
+                var vectorTableOffset = (uint)message.Address;
+
+                if(!cpu.TrustZoneEnabled)
+                {
+                    this.WarningLog("The Security Extension is not enabled. Ignoring Secure Vector table offset signal");
+                    break;
+                }
+
+                // The INITSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
+                // Therefore, we need to manually set the VTOR immediately
+                // in order to allow SystemC to set the VTOR before the CPU starts.
+                if(!vtorInitialized && !cpu.IsStarted)
+                {
+                    if(!cpu.SecureState)
+                    {
+                        throw new InvalidOperationException("CPU must be in the secure state on initialization");
+                    }
+                    cpu.VectorTableOffset = vectorTableOffset;
+                }
+
+                vtorInitialized = true;
+                cpu.InitVectorTableOffset = vectorTableOffset;
+                this.NoisyLog("SystemC Vector Table Offset: 0x{0:X}", vectorTableOffset);
+                break;
+            case RenodeAction.InitNonSecureVTOR:
+                var vectorTableOffsetNonSecure = (uint)message.Address;
+
+                /*
+                 * When security extensions are not enabled, we treat the `VectorTableOffset`
+                 * property as the nonsecure vector table offset register.
+                 */
+
+                // The INITNSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
+                // Therefore, we need to manually set the VTOR immediately
+                // in order to allow SystemC to set the VTOR before the CPU starts.
+                if(!vtorNonSecureInitialized && !cpu.IsStarted)
+                {
+                    if(cpu.TrustZoneEnabled)
+                    {
+                        cpu.VectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
+                    }
+                    else
+                    {
+                        cpu.VectorTableOffset = vectorTableOffsetNonSecure;
+                    }
+                }
+
+                if(cpu.TrustZoneEnabled)
+                {
+                    cpu.InitVectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
+                }
+                else
+                {
+                    cpu.InitVectorTableOffset = vectorTableOffsetNonSecure;
+                }
+
+                vtorNonSecureInitialized = true;
+                this.NoisyLog("SystemC Non Secure Vector Table Offset: 0x{0:X}", vectorTableOffsetNonSecure);
+                break;
+            default:
+                this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
+                break;
+            }
+        }
+
         private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
         {
             var resetState = resetOn == SignalActiveWhen.High ? true : false;
@@ -72,6 +143,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             dwt?.Reset();
         }
 
+        private bool vtorInitialized = false;
+        private bool vtorNonSecureInitialized = false;
         private readonly CortexM cpu;
         private readonly NVIC nvic;
         private readonly DWT dwt;
@@ -93,8 +166,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             NonMaskableInterrupt = 1000,           // nmi_exp
             CoreResetIn = 1001,                    // core_reset_in
             CpuWait = 1002,                        // cpu_wait
-            InitNonSecureVectorTableOffset = 1003, // init_ns_vtor
-            InitSecureVectorTableOffset = 1004,    // m55_initsvtor
             PowerOnReset = 1005,                   // m55_poreset_n
             SystemResetRequest = 1006,             // O_sysreset_req
             Sleeping = 1007,                       // O_sleeping

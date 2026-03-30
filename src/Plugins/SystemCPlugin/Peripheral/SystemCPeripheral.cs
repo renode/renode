@@ -42,6 +42,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
         InvalidateTBs = 7,
         ReadRegister = 8,
         WriteRegister = 9,
+        InitSecureVTOR = 10,
+        InitNonSecureVTOR = 11,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -442,6 +444,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
+        protected virtual void OnUnhandledRenodeMessage(RenodeMessage message)
+        {
+            this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
+        }
+
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
         {
             return ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex);
@@ -728,7 +735,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     backwardSocket.Send(message.Serialize(), SocketFlags.None);
                     break;
                 default:
-                    this.Log(LogLevel.Error, "SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
+                    OnUnhandledRenodeMessage(message);
                     break;
                 }
             }

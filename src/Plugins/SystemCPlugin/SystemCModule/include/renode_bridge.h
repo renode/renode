@@ -50,6 +50,9 @@ public:
                                          sc_core::SC_ZERO_OR_MORE_BOUND>;
   using reset_port = sc_core::sc_port<sc_core::sc_signal_inout_if<bool>, 1,
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
+  using vtor_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<uint32_t>, 1,
+                                      sc_core::SC_ZERO_OR_MORE_BOUND>;
+
 
   // Socket forwarding memory transactions performed in Renode to SystemC.
   renode_bus_initiator_socket initiator_socket;
@@ -78,6 +81,14 @@ public:
   // Raised when the peripheral is reset. Expected to be lowered by SystemC
   // once the reset process is complete.
   reset_port reset;
+
+  // INITNSVTOR signal.
+  // Non-secure vector table offset address out of reset
+  vtor_in_port init_vtor_ns_in;
+
+  // INITSVTOR signal.
+  // Vector table offset address (secure or non-secure depending on state)
+  vtor_in_port init_vtor_s_in;
 
   // Informs Renode CPU that memory has been modified in the given range. This
   // is necessary when using DMI (get_direct_mem_ptr) to modify memory
@@ -129,6 +140,9 @@ private:
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void on_port_gpio();
+  void on_init_ns_vtor();
+  void on_init_s_vtor();
+  void init_vtor(bool secure);
 
   void update_backward_gpio_state(uint64_t new_gpio_state);
   void service_backward_request(tlm::tlm_generic_payload &payload,

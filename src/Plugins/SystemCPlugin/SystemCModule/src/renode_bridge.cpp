@@ -136,6 +136,24 @@ enum renode_action : uint8_t {
   // Response:
   //     address: duration of transaction in us
   //     Otherwise identical to the request message.
+  INIT_SECURE_VTOR = 10,
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: secure vector table offset
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  INIT_NON_SECURE_VTOR = 11,
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: non-secure vector table offset
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
 };
 
 #pragma pack(push, 1)
@@ -317,6 +335,11 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   for (int i = 0; i < NUM_GPIO; ++i) {
     sensitive << gpio_ports_in[i];
   }
+
+  SC_METHOD(on_init_ns_vtor)
+  sensitive << init_vtor_ns_in;
+  SC_METHOD(on_init_s_vtor)
+  sensitive << init_vtor_s_in;
 
   bus_target_fw_handler.initialize(this, 0);
   cpu_target_fw_handler.initialize(this, 0);
@@ -565,6 +588,28 @@ void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
   }
 
   payload.set_response_status(tlm::TLM_OK_RESPONSE);
+}
+
+void renode_bridge::init_vtor(bool secure) {
+  auto &vtor_port = secure ? init_vtor_s_in : init_vtor_ns_in;
+  auto action = secure ? INIT_SECURE_VTOR : INIT_NON_SECURE_VTOR;
+  if (vtor_port.get_interface() == nullptr) {
+    return;
+  }
+  auto value = vtor_port->read();
+
+  renode_message message = {};
+  message.action = action;
+  message.address = value;
+  backward_connection->Send((char *)&message, sizeof(renode_message));
+}
+
+void renode_bridge::on_init_ns_vtor() {
+  init_vtor(false);
+}
+
+void renode_bridge::on_init_s_vtor() {
+  init_vtor(true);
 }
 
 // ================================================================================
