@@ -128,7 +128,7 @@ Install Renode with your preferred package manager using the provided `*.deb`, `
 #### macOS
 
 Use the provided `*.dmg` as normal. 
-Additionally, to use Renode from the command line on macOS, create appropriate aliases by adding `alias renode='mono /Applications/Renode.app/Contents/MacOS/bin/Renode.exe'` and `alias renode-test='/Applications/Renode.app/Contents/MacOS/tests/renode-test'` to your `.bashrc` or `.zshrc` file, depending on the shell you're using.
+Additionally, to use Renode from the command line on macOS, create appropriate aliases by adding `alias renode='/Applications/Renode.app/Contents/MacOS/renode'` and `alias renode-test='/Applications/Renode.app/Contents/MacOS/renode-test'` to your `.bashrc` or `.zshrc` file, depending on the shell you're using.
 
 #### Windows
 
