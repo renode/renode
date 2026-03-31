@@ -30,4 +30,6 @@ extern "C" {
 
   void gpio_write(int number, bool value);
   void renode_gpio_update(int number, int value);
+
+  void renode_invalidate_translation_blocks(std::uint64_t start_address, std::uint64_t end_address);
 }

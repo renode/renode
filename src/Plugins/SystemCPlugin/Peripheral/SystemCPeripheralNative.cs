@@ -8,11 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
+using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Binding;
@@ -25,6 +27,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
     {
         public SystemCPeripheralNative(IMachine machine, ulong simulationStepInNs, int numberOfConnections = DefaultNumberOfConnections)
         {
+            sysbus = machine.GetSystemBus(this);
             systemcTimer = new LimitTimer(machine.ClockSource, FREQUENCY, this, nameof(systemcTimer), eventEnabled: true, enabled: false, limit: simulationStepInNs);
             systemcTimer.LimitReached += delegate
             {
@@ -112,6 +115,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         [Export]
+        public void InvalidateTranslationBlocks(ulong startAddress, ulong endAddress)
+        {
+            foreach(var cpu in sysbus.GetCPUs().OfType<TranslationCPU>())
+            {
+                cpu.OrderTranslationBlocksInvalidation(new IntPtr((long)startAddress), new IntPtr((long)endAddress));
+            }
+        }
+
+        [Export]
         public void UpdateGPIOConnections(int number, int value)
         {
             if(number > numberOfConnections)
@@ -184,6 +196,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private NativeBinder binder;
         private string simulationFilePath;
+        private readonly IBusController sysbus;
 
 #pragma warning disable 649
 
