@@ -1,0 +1,13 @@
+{
+	"name": "Renode Build",
+	"image": "ghcr.io/iomt-lab/renode-build-docker:main",
+	"postStartCommand": "git config --global --add safe.directory '*'",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit"
+			]
+		}
+	},
+	"containerUser": "user"
+}
