@@ -5,6 +5,7 @@
 - lib/options-parser/OptionsParserTests.csproj
 
 - heavy_tests:
+  - tests/platforms/zynqmp.robot
   - tests/peripherals/MCAN.robot
   - tests/platforms/Zedboard.robot
   - tests/peripherals/VirtIO.robot
@@ -18,7 +19,6 @@
 
 - tests/unit-tests/riscv-isa-tests.robot
 - tests/unit-tests/riscv-arch-tests.robot
-- tests/platforms/zynqmp.robot
 - tests/example.robot
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 - tests/platforms/QuarkC1000.robot
