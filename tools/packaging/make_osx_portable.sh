@@ -20,7 +20,10 @@ INSTALL_DIR=/Applications/Renode.app/Contents/MacOS
 DIR=$MACOS_APP_DIR/Contents/MacOS
 
 OS_NAME=macos
-SED_COMMAND="sed -i ''"
+
+function sed_inplace() {
+    sed -i '' "$@"
+}
 
 . common_copy_files_portable.sh
 

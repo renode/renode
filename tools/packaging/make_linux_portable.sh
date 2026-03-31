@@ -13,12 +13,15 @@ RENODE_OUTPUT_DIR=$RENODE_ROOT_DIR/output/bin/$TARGET/$RID
 RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DESTINATION=renode_${VERSION}-portable
 OS_NAME=linux
-SED_COMMAND="sed -i"
 DIR=$DESTINATION
 ARCHIVE_NAME="renode-$VERSION.linux-portable.tar.gz"
 if [[ $RID == "linux-arm64" ]]; then
     ARCHIVE_NAME="renode-$VERSION.$RID-portable.tar.gz"
 fi
+
+function sed_inplace() {
+    sed -i "$@"
+}
 
 . common_copy_files_portable.sh
 

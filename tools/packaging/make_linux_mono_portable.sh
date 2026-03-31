@@ -15,8 +15,11 @@ DESTINATION=renode_${VERSION}-mono_portable
 WORKDIR=$THIS_DIR/renode_${VERSION}-mono_portable-workdir
 MONO_VERSION=4.5
 OS_NAME=linux
-SED_COMMAND="sed -i"
 DIR=$DESTINATION
+
+function sed_inplace() {
+    sed -i "$@"
+}
 
 . common_copy_files_portable.sh
 

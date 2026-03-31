@@ -31,7 +31,11 @@ INSTALL_DIR=/opt/renode
 PYTHONVERSION=3.8
 
 OS_NAME=linux
-SED_COMMAND="sed -i"
+
+function sed_inplace() {
+    sed -i "$@"
+}
+
 . common_copy_files_package.sh
 
 COMMON_SCRIPT=$DIR/tests/common.sh
