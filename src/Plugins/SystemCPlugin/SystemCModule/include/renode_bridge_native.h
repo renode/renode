@@ -32,4 +32,6 @@ extern "C" {
   void renode_gpio_update(int number, int value);
 
   void renode_invalidate_translation_blocks(std::uint64_t start_address, std::uint64_t end_address);
+  void renode_read_bytes_from_bus(std::uint64_t address, void *out_buf, std::int32_t count);
+  void renode_write_bytes_to_bus(std::uint64_t address, void *in_buf, std::int32_t count);
 }

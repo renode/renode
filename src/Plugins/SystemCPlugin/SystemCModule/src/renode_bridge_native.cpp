@@ -103,3 +103,5 @@ void gpio_write(int number, bool value) {
 
 EXTERNAL_AS(void, UpdateGPIOConnections, renode_gpio_update, int32_t, int32_t);
 EXTERNAL_AS(void, InvalidateTranslationBlocks, renode_invalidate_translation_blocks, uint64_t, uint64_t);
+EXTERNAL_AS(void, ReadBytesFromBus, renode_read_bytes_from_bus, uint64_t, voidptr, int32_t);
+EXTERNAL_AS(void, WriteBytesToBus, renode_write_bytes_to_bus, uint64_t, voidptr, int32_t);

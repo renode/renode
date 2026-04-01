@@ -124,6 +124,21 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         [Export]
+        public void ReadBytesFromBus(ulong address, IntPtr data, int count)
+        {
+            var bytes = sysbus.ReadBytes(address, count, context: this);
+            Marshal.Copy(bytes, 0, data, count);
+        }
+
+        [Export]
+        public void WriteBytesToBus(ulong address, IntPtr data, int count)
+        {
+            var bytes = new byte[count];
+            Marshal.Copy(data, bytes, 0, count);
+            sysbus.WriteBytes(bytes, address, context: this);
+        }
+
+        [Export]
         public void UpdateGPIOConnections(int number, int value)
         {
             if(number > numberOfConnections)
