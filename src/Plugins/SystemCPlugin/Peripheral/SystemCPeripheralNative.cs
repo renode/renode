@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
@@ -136,6 +137,25 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var bytes = new byte[count];
             Marshal.Copy(data, bytes, 0, count);
             sysbus.WriteBytes(bytes, address, context: this);
+        }
+
+        [Export]
+        public int GetDirectMemPtr(ulong address, out ulong startAddress, out ulong endAddress, out IntPtr mappedAddress)
+        {
+            startAddress = 0;
+            endAddress = 0;
+            mappedAddress = IntPtr.Zero;
+
+            var targetMemory = sysbus.FindMemory(address);
+            if(!(targetMemory?.GetFileMappingParameters(address) is FileMappingParameters mapping))
+            {
+                return 0;
+            }
+
+            startAddress = mapping.StartAddress;
+            endAddress = mapping.EndAddress;
+            mappedAddress = mapping.MappedAddress;
+            return 1;
         }
 
         [Export]
