@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <thread>
-#include <inttypes.h>
+#include <cinttypes>
 #include <array>
 #ifdef __linux__
 #include <fcntl.h>
@@ -633,7 +633,10 @@ bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &paylo
   bool dmi_allowed = response.allowed;
 
   if (dmi_allowed && response.mmf_offset % sysconf(_SC_PAGESIZE)) {
-      fprintf(stderr, "[ERROR] invalid offset for MMF %s\n", response.mmf_path);
+      fprintf(stderr, "[ERROR] invalid page-unaligned offset 0x%" PRIx64 " for MMF %s\n",
+        response.mmf_offset,
+        response.mmf_path
+      );
       dmi_allowed = false;
   }
 
