@@ -91,7 +91,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             this.Log(LogLevel.Warning, "AddHook not implemented");
         }
 
-        public void RemoveHook(ulong addr, CpuAddressHook hook)
+        public void RemoveHook(ulong addr, CpuAddressHook hook, bool ignoreNotPresent = false)
         {
             this.Log(LogLevel.Warning, "RemoveHook not implemented");
         }
