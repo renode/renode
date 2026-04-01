@@ -6,7 +6,7 @@ Library                             String
 *** Variables ***
 ${START_ADDRESS}                    0x100
 ${DATA_ADDRESS}                     0x22000000
-${PLATFORM}                         @platforms/cpus/renesas-r7fa8m1a.repl
+${PLATFORM}                         platforms/cpus/renesas-r7fa8m1a.repl
 
 *** Keywords ***
 Load Program And Execute
@@ -26,9 +26,19 @@ Load Program And Execute
     Wait For Log Entry              '${ASSEMBLY}' finished
 
 Create Machine
+    [Arguments]                     ${trustZoneEnabled}=${False}
+
     Execute Command                 mach create
-    Execute Command                 machine LoadPlatformDescription ${PLATFORM}
-    Execute Command                 machine LoadPlatformDescriptionFromString """fault: Memory.MappedMemory @ sysbus 0xFFFFFC00 { size: 0x400 }"""
+
+    ${platform_string}=             Catenate  SEPARATOR=\n
+    ...                             using "${PLATFORM}"
+    ...
+    ...                             cpu: {enableTrustZone: ${trustZoneEnabled}}
+                                    # Because our SP at start is set to 0, fault memory is used as a place to keep stack for when exception happens.
+                                    # This is mainly used for getting PC for the improperly handled instruction during run of Load Program And Execute keyword.
+    ...                             fault: Memory.MappedMemory @ sysbus 0xFFFFFC00 { size: 0x400 }
+
+    Execute Command                 machine LoadPlatformDescriptionFromString """${platform_string}"""
 
     # Register hook to make invalid instructions fail the test.
     ${hook}=                        Catenate  SEPARATOR=\n
