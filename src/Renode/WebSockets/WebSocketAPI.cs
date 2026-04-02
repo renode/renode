@@ -209,7 +209,7 @@ namespace Antmicro.Renode.WebSockets
             }
             catch(Exception)
             {
-                SendErrorMessage(DefaultVersion, -1);
+                SendErrorMessage(DefaultVersion, -1, "Malformed request");
                 return;
             }
 
@@ -220,6 +220,7 @@ namespace Antmicro.Renode.WebSockets
                 if(actionHandler == null)
                 {
                     Logger.Log(LogLevel.Warning, "WebSocketAPI ERROR: Requested too old version of action");
+                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id, "Requested too old version of action");
                     return;
                 }
 
@@ -236,30 +237,45 @@ namespace Antmicro.Renode.WebSockets
                         arg++;
                     }
                 }
-                catch(Exception)
+                catch(Exception ex)
                 {
-                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
+                    Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Failed to parse action parameters - {ex.Message}");
+                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id, "Failed to parse action parameters");
                     return;
                 }
 
-                var result = actionHandler.Action.Invoke(handlers.handlerInstance, callArgs);
-                var handlerResponse = (result as WebSocketAPIResponse);
-                var apiResponse = new APIResponse
+                try
                 {
-                    Version = apiRequest.Version.ToString(),
-                    Status = handlerResponse.Error == null ? "success" : "fail",
-                    Id = apiRequest.Id,
-                    Data = handlerResponse.Data,
-                    Error = handlerResponse.Error
-                };
+                    var result = actionHandler.Action.Invoke(handlers.handlerInstance, callArgs);
+                    var handlerResponse = (result as WebSocketAPIResponse);
+                    var apiResponse = new APIResponse
+                    {
+                        Version = apiRequest.Version.ToString(),
+                        Status = handlerResponse.Error == null ? "success" : "fail",
+                        Id = apiRequest.Id,
+                        Data = handlerResponse.Data,
+                        Error = handlerResponse.Error
+                    };
 
-                var serializedResponse = JsonConvert.SerializeObject(apiResponse);
-                Logger.Log(LogLevel.Debug, $"Sending response: {serializedResponse.ToString()}");
-                SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
+                    var serializedResponse = JsonConvert.SerializeObject(apiResponse);
+                    Logger.Log(LogLevel.Debug, $"Sending response: {serializedResponse.ToString()}");
+                    SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
+                }
+                catch(TargetInvocationException ex)
+                {
+                    Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Exception during action invocation - {ex.InnerException.Message}");
+                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id, "Exception during action invocation: " + ex.InnerException.Message);
+                }
+                catch(Exception ex)
+                {
+                    Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Exception during action invocation - {ex.Message}");
+                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id, "Exception during action invocation: " + ex.Message);
+                }
             }
             else
             {
                 Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Requested unknown action - {apiRequest.Action}");
+                SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id, "Unknown action");
             }
         }
 
@@ -278,13 +294,14 @@ namespace Antmicro.Renode.WebSockets
             SharedData.MainConnection?.Send(Encoding.UTF8.GetBytes(serializedEvent));
         }
 
-        private void SendErrorMessage(string version, int id)
+        private void SendErrorMessage(string version, int id, string errorMessage = null)
         {
             var apiResponse = new APIResponse
             {
                 Version = version,
                 Id = id,
-                Status = "fail"
+                Status = "fail",
+                Error = errorMessage
             };
 
             var serializedResponse = JsonConvert.SerializeObject(apiResponse);
