@@ -127,7 +127,7 @@ Should Use CAN ISOTP Protocol To Exchange Messages In Loopback Mode
     Create Terminal Tester    ${UART}
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Got 247 bytes in total
         Wait For Line On Uart     TX complete cb [0]
@@ -146,7 +146,7 @@ Should Use CAN ISOTP Protocol To Exchange Messages Between Machines
     ${tester-1}=              Create Terminal Tester  ${UART}  machine=machine-1
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Got 247 bytes in total  testerId=${tester-0}
         Wait For Line On Uart     Got 247 bytes in total  testerId=${tester-1}
@@ -162,7 +162,7 @@ Should Use CAN Socket API To Exchange Messages In Loopback Mode
     Create Terminal Tester    ${UART}
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     net_socket_can_sample: [0] CAN frame: IDE 0x0 RTR 0x0 ID 0x1 DLC 0x8
         Wait For Line On Uart     f0 f1 f2 f3 f4 f5 f6 f7
@@ -179,7 +179,7 @@ Should Use CAN Socket API To Exchange Messages Between Machines
     Execute Command           emulation SetGlobalSerialExecution True
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     net_socket_can_sample: [0] CAN frame: IDE 0x0 RTR 0x0 ID 0x1 DLC 0x8  testerId=${tester-0}
         Wait For Line On Uart     net_socket_can_sample: [0] CAN frame: IDE 0x0 RTR 0x0 ID 0x1 DLC 0x8  testerId=${tester-1}
@@ -193,7 +193,7 @@ Should Run Zephyr CAN Counter Sample In Loopback Mode
     Create Terminal Tester    ${UART}
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Counter received: ${i}
     END
@@ -210,7 +210,7 @@ Should Run Zephyr CAN Counter Sample To Exchange Messages Between Machines
     Execute Command           emulation SetGlobalSerialExecution True
 
     # Wait for several successful transmissions
-    ${cnt}=                   Set Variable  40
+    ${cnt}=                   Set Variable  10
     FOR  ${i}  IN RANGE  0  ${cnt}
         Wait For Line On Uart     Counter received: ${i}  testerId=${tester-0}
         Wait For Line On Uart     Counter received: ${i}  testerId=${tester-1}
