@@ -312,7 +312,9 @@ if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
     OS_SPECIFIC_TARGET_OPTS='<CsWinRTAotOptimizerEnabled>false</CsWinRTAotOptimizerEnabled>'
   fi
 
-cat <<EOF > "$(get_path "$PWD/Directory.Build.targets")"
+  BUILD_TARGETS_FILE=$(mktemp)
+  BUILD_TARGETS_PATH="$(get_path "$PWD/Directory.Build.targets")"
+  cat <<EOF > "$BUILD_TARGETS_FILE"
 <Project>
   <PropertyGroup>
     <TargetFrameworks>$TFM</TargetFrameworks>
@@ -321,6 +323,11 @@ cat <<EOF > "$(get_path "$PWD/Directory.Build.targets")"
 </Project>
 EOF
 
+  if [ ! -f "$BUILD_TARGETS_PATH" ] || ! cmp -s "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"; then
+      mv "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"
+  else
+      rm "$BUILD_TARGETS_FILE"
+  fi
 fi
 
 if $NET
@@ -366,7 +373,11 @@ else
       PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
     fi
 fi
-cp "$PROP_FILE" "$OUTPUT_DIRECTORY/properties.csproj"
+
+PROP_PATH="$OUTPUT_DIRECTORY/properties.csproj"
+if [ ! -f "$PROP_PATH" ] || ! cmp -s "$PROP_FILE" "$PROP_PATH"; then
+    cp "$PROP_FILE" "$PROP_PATH"
+fi
 
 if ! $NET
 then
