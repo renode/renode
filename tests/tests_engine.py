@@ -11,6 +11,7 @@ import multiprocessing
 from typing import Any
 from pathlib import Path
 import segmenting
+import monitoring
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
@@ -183,6 +184,8 @@ def prepare_parser():
                             action="store_true",
                             default=False,
                             help="Suspend test waiting for a debugger.")
+
+    monitoring.add_args(parser)
 
     return parser
 
@@ -537,6 +540,22 @@ def print_suite_files(segment: segmenting.GroupsSegment):
     print("")
 
 
+def on_overload_detected():
+    if not shared_active_suites:
+        return
+
+    active_suite_count = len(shared_active_suites)
+    verb = "are" if active_suite_count > 1 else "is"
+    plural_s = "s" if active_suite_count > 1 else ""
+    print(
+        f"There {verb} {active_suite_count} currently running test suite{plural_s}:",
+        flush=True,
+    )
+    for suite in shared_active_suites:
+        print(f"  - {suite}", flush=True)
+    print("", flush=True)
+
+
 def init_worker_process(counter, active_suites):
     global shared_suite_counter
     shared_suite_counter = counter 
@@ -619,6 +638,20 @@ def run():
             processes=options.jobs,
         )
 
+    # Start monitoring
+    if options.enable_system_load_monitoring:
+        system_monitor = monitoring.SystemLoadMonitor(
+            options.system_load_sample_interval_seconds,
+            options.system_load_spike_factor,
+            options.system_load_window_size,
+            options.ram_warn_threshold_percentage,
+            options.cpu_warn_threshold_percentage,
+            on_overload_detected,
+        )
+        system_monitor.start()
+    else:
+        system_monitor = None
+
     # Run test job(s)
     if options.jobs == 1:
         tests_failed, logs = zip(*map(run_test_group, args))
@@ -631,6 +664,9 @@ def run():
         pool.close()
         print("Waiting for all processes to exit")
         pool.join()
+
+    if system_monitor:
+        system_monitor.stop()
 
     tests_failed = any(tests_failed)
     logs = set().union(*logs)
