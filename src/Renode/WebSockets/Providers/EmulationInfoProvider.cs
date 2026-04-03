@@ -40,13 +40,6 @@ namespace Antmicro.Renode.WebSockets.Providers
             return true;
         }
 
-        [WebSocketAPIAction("spawn", "1.5.0")]
-        private WebSocketAPIResponse SpawnAction(string _, bool __)
-        {
-            SharedData.MainConnection = SharedData.CurrentConnection;
-            return WebSocketAPIUtils.CreateEmptyActionResponse();
-        }
-
         [WebSocketAPIAction("kill", "1.5.0")]
         private WebSocketAPIResponse KillAction(string _)
         {

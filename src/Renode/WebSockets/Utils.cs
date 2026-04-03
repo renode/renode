@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
 
 using Antmicro.Renode.Utilities;
 
@@ -91,6 +92,7 @@ namespace Antmicro.Renode.WebSockets
         public WebSocketAPISharedData(string cwd)
         {
             this.Cwd = new DefaultVariable<string>(cwd);
+            this.EventSubscriptions = new Dictionary<string, List<WebSocketConnection>>();
         }
 
         public void SetDefaults()
@@ -99,10 +101,10 @@ namespace Antmicro.Renode.WebSockets
         }
 
         public WebSocketConnection CurrentConnection;
-        public WebSocketConnection MainConnection;
         public Action ClearEmulationEvent;
         public Action NewClientConnection;
         public readonly DefaultVariable<string> Cwd;
+        public readonly Dictionary<string, List<WebSocketConnection>> EventSubscriptions;
 
         public class DefaultVariable<T>
         {

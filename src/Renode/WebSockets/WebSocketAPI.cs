@@ -31,6 +31,10 @@ namespace Antmicro.Renode.WebSockets
             workingDirName = workingDir;
             streamProxy = new WebSocketStreamProxy();
 
+            TemporaryFilesManager.Instance.TryCreateDirectory(workingDirName, out var workDirTempPath);
+            SharedData = new WebSocketAPISharedData(workDirTempPath);
+            SharedData.ClearEmulationEvent += ClearEmulation;
+
             actionHandlers = new Dictionary<string, (IWebSocketAPIProvider, List<ActionHandler>)>();
             apiProviders = new List<IWebSocketAPIProvider>();
             TypeManager.Instance.AutoLoadedType += RegisterType;
@@ -47,14 +51,6 @@ namespace Antmicro.Renode.WebSockets
             {
                 return false;
             }
-
-            if(!TemporaryFilesManager.Instance.TryCreateDirectory(workingDirName, out var workDirTempPath))
-            {
-                return false;
-            }
-
-            SharedData = new WebSocketAPISharedData(workDirTempPath);
-            SharedData.ClearEmulationEvent += ClearEmulation;
 
             if(!webSocketServerProvider.Start())
             {
@@ -105,19 +101,11 @@ namespace Antmicro.Renode.WebSockets
 
         private void OnClientDisconnect(WebSocketConnection sender)
         {
-            if(sender != SharedData.MainConnection)
+            // Remove any instances of the connection from the subscription list
+            // This isn't particularly efficient, but it works
+            foreach(var subscription in SharedData.EventSubscriptions.Values)
             {
-                return;
-            }
-
-            SharedData.ClearEmulationEvent?.Invoke();
-
-            foreach(var endp in new List<string> { "/telnet/29169", "/telnet/29170" })
-            {
-                foreach(var conn in WebSocketsManager.Instance.GetConnections(endp))
-                {
-                    conn.Dispose();
-                }
+                subscription.Remove(sender);
             }
         }
 
@@ -180,6 +168,7 @@ namespace Antmicro.Renode.WebSockets
                     continue;
                 }
 
+                SharedData.EventSubscriptions.Add(eventAttr.Name, new List<WebSocketConnection>());
                 WebSocketAPIEventHandler eventHandler = (object data) => this.HandleEvents(eventAttr.Version.ToString(), eventAttr.Name, data);
 
                 delegateField.SetValue(apiProviderInstance, eventHandler);
@@ -281,17 +270,23 @@ namespace Antmicro.Renode.WebSockets
 
         private void HandleEvents(string version, string eventName, object data)
         {
-            var eventResponse = new APIEvent
+            if(SharedData.EventSubscriptions.TryGetValue(eventName, out var subscriptions) && subscriptions.Any())
             {
-                Version = version,
-                EventName = eventName,
-                Data = data
-            };
+                var eventResponse = new APIEvent
+                {
+                    Version = version,
+                    EventName = eventName,
+                    Data = data
+                };
 
-            var serializedEvent = JsonConvert.SerializeObject(eventResponse);
+                var serializedEvent = JsonConvert.SerializeObject(eventResponse);
 
-            Logger.Log(LogLevel.Debug, $"Event raised: {serializedEvent.ToString()}");
-            SharedData.MainConnection?.Send(Encoding.UTF8.GetBytes(serializedEvent));
+                Logger.Log(LogLevel.Debug, $"Event raised: {serializedEvent.ToString()}");
+                foreach(var connection in subscriptions)
+                {
+                    connection.Send(Encoding.UTF8.GetBytes(serializedEvent));
+                }
+            }
         }
 
         private void SendErrorMessage(string version, int id, string errorMessage = null)
