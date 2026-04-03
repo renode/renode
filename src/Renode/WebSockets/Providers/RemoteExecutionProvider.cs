@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -143,6 +144,121 @@ namespace Antmicro.Renode.WebSockets.Providers
                 }
             }
             return WebSocketAPIUtils.CreateEmptyActionResponse();
+        }
+
+        [WebSocketAPIAction("write-memory", "1.5.0")]
+        private WebSocketAPIResponse WriteMemory(ulong address, string base64EncodedData)
+        {
+            byte[] data = Convert.FromBase64String(base64EncodedData);
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                machine.SystemBus.WriteBytes(data, address);
+            }
+
+            return WebSocketAPIUtils.CreateActionResponse(data.Length);
+        }
+
+        [WebSocketAPIAction("read-memory", "1.5.0")]
+        private WebSocketAPIResponse ReadMemory(ulong address, int width)
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                var data = machine.SystemBus.ReadBytes(address, width);
+                string base64EncodedData = Convert.ToBase64String(data);
+                return WebSocketAPIUtils.CreateActionResponse(base64EncodedData);
+            }
+        }
+
+        [WebSocketAPIAction("write-registers", "1.5.0")]
+        private WebSocketAPIResponse WriteRegisters(Dictionary<int, ulong> registers)
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                var cpu = machine.SystemBus.GetCPUs().FirstOrDefault();
+                var armCPU = cpu as Antmicro.Renode.Peripherals.CPU.Arm;
+                if(cpu == null)
+                {
+                    return WebSocketAPIUtils.CreateEmptyActionResponse("No Arm CPU found in the current machine");
+                }
+                else
+                {
+                    foreach(var register in registers)
+                    {
+                        armCPU.SetRegister(register.Key, (RegisterValue)register.Value);
+                    }
+                    return WebSocketAPIUtils.CreateEmptyActionResponse();
+                }
+            }
+        }
+
+        [WebSocketAPIAction("read-registers", "1.5.0")]
+        private WebSocketAPIResponse ReadRegisters()
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                var cpu = machine.SystemBus.GetCPUs().FirstOrDefault();
+                var armCPU = cpu as Antmicro.Renode.Peripherals.CPU.Arm;
+                if(cpu == null)
+                {
+                    return WebSocketAPIUtils.CreateEmptyActionResponse("No Arm CPU found in the current machine");
+                }
+                else
+                {
+                    var registers = armCPU.GetRegisters();
+                    var result = new Dictionary<int, ulong>();
+                    foreach(var register in registers)
+                    {
+                        result.Add(register.Index, armCPU.GetRegister(register.Index));
+                    }
+                    return WebSocketAPIUtils.CreateActionResponse(result);
+                }
+            }
+        }
+
+        [WebSocketAPIAction("set-constant", "1.5.0")]
+        private WebSocketAPIResponse SetConstant(ulong address, string name, ulong width, ulong value)
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                var range = new Antmicro.Renode.Core.Range(address, width);
+                machine.SystemBus.Tag(range, name, value, overridePeripheralAccesses: true);
+                return WebSocketAPIUtils.CreateEmptyActionResponse();
+            }
         }
 
         private WebSocketAPISharedData SharedData;
