@@ -10,6 +10,11 @@ Test Autocompletion
     Execute Command           include @${AUTOCOMPLETION_RESC}
     Execute Command           py "monitor.SuggestionNeeded('${suggestion}')"
 
+Property Equals
+    [Arguments]               ${property}  ${value}
+    ${property_value}         Execute Command  ${property}
+    Should Be Equal As Numbers  ${property_value}  ${value}
+
 *** Test Cases ***
 Should Pause Renode
     # we test if pausing can interrupt the execution before the end of the quantum (hence testing against a value lower than 10)
@@ -125,3 +130,87 @@ Should Not Crash On Invalid Scalar Type
 
     Run Keyword And Expect Error  *Cannot convert type 'string' to 'Antmicro.Renode.Peripherals.CPU.RegisterValue'*
     ...                       Execute Command  e51 STVEC a
+
+Should Run SetAndRevertAfter Nested Within Active One
+    Execute Command     i @scripts/single-node/sam4s.resc
+    Execute Command     adc ReferenceVoltage 5
+
+    Execute Command     setAndRevertAfter 0.1 adc ReferenceVoltage 3.1
+    Property Equals     adc ReferenceVoltage  3.1
+
+    Execute Command     sara 0.01 adc ReferenceVoltage 3
+    Property Equals     adc ReferenceVoltage  3
+
+    # Run to 0.01
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3.1
+
+    # Run to 0.1
+    Execute Command     emulation RunFor "0.045"
+    Property Equals     adc ReferenceVoltage  3.1
+    Execute Command     emulation RunFor "0.045"
+    Property Equals     adc ReferenceVoltage  5
+
+Should Run SetAndRevertAfter Overshadowing Active One
+    Execute Command     i @scripts/single-node/sam4s.resc
+    Execute Command     adc ReferenceVoltage 5
+
+    Execute Command     setAndRevertAfter 0.01 adc ReferenceVoltage 3
+    Property Equals     adc ReferenceVoltage  3
+
+    Execute Command     sara 0.1 adc ReferenceVoltage 3.1
+    Property Equals     adc ReferenceVoltage  3.1
+
+    # Run to 0.01
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3.1
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3.1
+
+    # Run to 0.10
+    Execute Command     emulation RunFor "0.045"
+    Property Equals     adc ReferenceVoltage  3.1
+    Execute Command     emulation RunFor "0.045"
+    Property Equals     adc ReferenceVoltage  5
+
+Should Run SetAndRevertAfter With Multiple Targets
+    Execute Command     i @scripts/single-node/sam4s.resc
+    Execute Command     adc ReferenceVoltage 5
+    Execute Command     adc Temperature 13
+
+    Execute Command     setAndRevertAfter 0.1 adc ReferenceVoltage 3.1
+    Property Equals     adc ReferenceVoltage  3.1
+    Execute Command     sara 0.1 adc Temperature 10.5
+    Property Equals     adc Temperature  10.5
+
+    Execute Command     sara 0.01 adc ReferenceVoltage 3
+    Property Equals     adc ReferenceVoltage  3
+
+    # Run to 0.01
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3
+    Property Equals     adc Temperature  10.5
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3.1
+    Property Equals     adc Temperature  10.5
+
+    Execute Command     sara 0.08 adc Temperature 11.5
+    Property Equals     adc Temperature  11.5
+
+    # Run to 0.09
+    Execute Command     emulation RunFor "0.04"
+    Property Equals     adc ReferenceVoltage  3.1
+    Property Equals     adc Temperature  11.5
+    Execute Command     emulation RunFor "0.04"
+    Property Equals     adc ReferenceVoltage  3.1
+    Property Equals     adc Temperature  10.5
+
+    # Run to 0.10
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  3.1
+    Property Equals     adc Temperature  10.5
+    Execute Command     emulation RunFor "0.005"
+    Property Equals     adc ReferenceVoltage  5
+    Property Equals     adc Temperature  13
