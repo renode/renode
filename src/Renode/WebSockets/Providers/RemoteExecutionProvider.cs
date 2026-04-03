@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
+
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Hooks;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
 
@@ -92,6 +96,53 @@ namespace Antmicro.Renode.WebSockets.Providers
                 Name = symbol.Name,
                 Entry = entry
             });
+        }
+
+        [WebSocketAPIAction("set-program-counter", "1.5.0")]
+        private WebSocketAPIResponse SetProgramCounter(string symbol)
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                foreach(var cpu in machine.SystemBus.GetCPUs())
+                {
+                    if(machine.SystemBus.TryGetAllSymbolAddresses(symbol, out var addressesEnumerable, cpu))
+                    {
+                        var pc = addressesEnumerable.First();
+                        cpu.PC = pc;
+                        return WebSocketAPIUtils.CreateEmptyActionResponse();
+                    }
+                }
+            }
+
+            return WebSocketAPIUtils.CreateEmptyActionResponse("Symbol not found");
+        }
+
+        [WebSocketAPIAction("add-pause", "1.5.0")]
+        private WebSocketAPIResponse AddPause(List<string> symbols)
+        {
+            var emulationManager = EmulationManager.Instance;
+            var emulation = emulationManager.CurrentEmulation;
+            var machine = emulation.Machines.FirstOrDefault();
+            if(machine == null)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse("No machine found in the current emulation");
+            }
+            else
+            {
+                foreach(var symbol in symbols)
+                {
+                    machine.SystemBus.AddPauseHookAtSymbol(symbol);
+                }
+            }
+            return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
         private WebSocketAPISharedData SharedData;
