@@ -24,6 +24,9 @@ exti: IRQControllers.STM32F4_EXTI @ sysbus 0x4002F400
 sram1: Memory.MappedMemory @ sysbus 0x20000000
     size: 0x30000
 
+sram2: Memory.MappedMemory @ sysbus 0x20030000
+    size: 0x10000
+
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x80000
 
