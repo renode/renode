@@ -1,1 +1,12 @@
 using "platforms/cpus/stm32l552.repl"
+
+pwr: Python.PythonPeripheral @ sysbus 0x40007000
+    size: 0x400
+    initable: false
+    script: '''
+if request.IsRead:
+    if request.Offset == 0x10:  # PWR_SR1
+        request.Value = 1 << 15 # SMPSHPRDY
+    else:
+        request.Value = 0
+'''
