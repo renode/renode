@@ -212,3 +212,6 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
     size: 0x400
     initable: true
     filename: "scripts/pydev/flipflop.py"
+
+flashController: MTD.STM32WBA_FlashController @ sysbus 0x40022000
+    flash: flash
