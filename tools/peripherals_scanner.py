@@ -81,7 +81,6 @@ def try_get_category(platform):
         "cortex-r52_smp": "GENERIC ARM",
         "cortex-r52_smp_4": "GENERIC ARM",
         "cortex-r8": "GENERIC ARM",
-        "cortex-r8": "GENERIC ARM",
         "cortex-r8_smp": "GENERIC ARM",
         "cortex_a53_console": "GENERIC ARM",
         "cortex_a53_virtio": "GENERIC ARM",
