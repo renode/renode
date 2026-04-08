@@ -110,3 +110,24 @@ CPU Should Not Read Vector Table Until After CPU Wait Signal Is Deasserted
     # CPU should now have read the vector table and updated SP/PC accordingly.
     Register Should Be Equal        SP  0x22001038
     Register Should Be Equal        PC  0x2000520
+
+Emulation Reset Should Halt CPU When CPU Wait Signal Set
+    Create Log Tester               1
+    Register Failing Log String     CPU abort
+
+    Execute Command                 mach create
+    # Define a platform that has CpuWaitSignal set already in the cpu's init block.
+    ${base_platform}=               Get File  ${CURDIR}/../../platforms/cpus/renesas-r7fa8m1a.repl
+    ${platform}=                    Catenate  SEPARATOR=${\n}
+    ...                             ${base_platform}
+    ...                             cpu: { isCpuWaitSignalSet: true }
+    Execute Command                 machine LoadPlatformDescriptionFromString """${platform}"""
+
+    # Set PC to a nonzero value outside of memory, so that the failing string below only triggers if IsHalted=false
+    Execute Command                 cpu PC 0xdeadbeef
+
+    # If this is printed then the CPU gets halted due to a reason other than CPUWAIT, which we don't want.
+    Should Not Be In Log            PC does not lay in memory  timeout=0.01
+
+    ${is_halted_after}=             Run Command  cpu IsHalted
+    Should Be Equal                 ${is_halted_after}  True  CPU should have been halted by the CpuWaitSignal but IsHalted=${is_halted_after}
