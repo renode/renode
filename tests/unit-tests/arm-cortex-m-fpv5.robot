@@ -170,14 +170,15 @@ Should Round Properly With VRINTR and VRINTX
         ${register}=                    Get Register Prefix On ${precision}
         ${value}=                       Set Variable  0.25
 
-        Execute Command                 cpu SetRegister "fpscr" 0x400000
+        Execute Command                 cpu SetRegister "R0" 0x400000  #Bits [23:22] are set to 0b01 - round toward plus infinity mode
 
         ${program}=                     Catenate  SEPARATOR=\n
+        ...                             vmsr fpscr, R0  # Load rounding mode to fpscr and create new fp context if needed
         ...                             vmov.${precision} ${register}0, \#${value}
         ...                             vrintm.${precision} ${register}3, ${register}0  # Round toward minus infinity
         ...                             vrintr.${precision} ${register}1, ${register}0
         ...                             vrintx.${precision} ${register}2, ${register}0
-        Load Program And Execute        ASSEMBLY=${program}  STEPS=4
+        Load Program And Execute        ASSEMBLY=${program}  STEPS=5
 
         Register Should Be Equal        ${register}1  ${result}
         Register Should Be Equal        ${register}2  ${result}
