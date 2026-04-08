@@ -9,6 +9,7 @@ using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
+using Antmicro.Renode.Peripherals.Memory;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
 
@@ -126,25 +127,43 @@ namespace Antmicro.Renode.Peripherals.SystemC
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct DMIMessage
+    public struct FileMappingParameters
     {
-        public DMIMessage(RenodeAction actionId, byte allowed, ulong startAddress, ulong endAddress, ulong mmfOffset, string mmfPath)
+        public FileMappingParameters(ulong startAddress, ulong endAddress, ulong mmfOffset, string mmfPath, IntPtr mappedAddress)
         {
-            ActionId = actionId;
-            Allowed = allowed;
             StartAddress = startAddress;
             EndAddress = endAddress;
             MMFOffset = mmfOffset;
-            MMFPath = new byte[256];
-            byte[] mmfPathBytes = Encoding.ASCII.GetBytes(mmfPath);
-            if(mmfPathBytes.Length > 256)
+            MMFPath = new byte[PathMax];
+            var mmfPathBytes = Encoding.UTF8.GetBytes(mmfPath);
+            if(mmfPathBytes.Length > PathMax)
             {
                 Logger.Log(LogLevel.Error, "MMF path name is too long");
             }
-            else
-            {
-                Array.Copy(mmfPathBytes, MMFPath, Math.Min(mmfPathBytes.Length, MMFPath.Length));
-            }
+            Array.Copy(mmfPathBytes, MMFPath, mmfPathBytes.Length);
+            MMFPathByteCount = (uint)mmfPathBytes.Length;
+            MappedAddress = mappedAddress;
+        }
+
+        public readonly ulong StartAddress;
+        public readonly ulong EndAddress;
+        public readonly ulong MMFOffset;
+        public readonly uint MMFPathByteCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = PathMax)]
+        public readonly byte[] MMFPath;
+        public readonly IntPtr MappedAddress;
+
+        public const int PathMax = 4096;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct DMIMessage
+    {
+        public DMIMessage(RenodeAction actionId, byte allowed, FileMappingParameters mapping)
+        {
+            ActionId = actionId;
+            Allowed = allowed;
+            Mapping = mapping;
         }
 
         public byte[] Serialize()
@@ -188,18 +207,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public override string ToString()
         {
-            return $"DMIMessage [{ActionId}@{StartAddress}:{EndAddress}]";
+            return $"DMIMessage [{ActionId}@{Mapping.StartAddress}:{Mapping.EndAddress}]";
         }
 
         public readonly RenodeAction ActionId;
         public readonly byte Allowed;
-        public readonly ulong StartAddress;
-        public readonly ulong EndAddress;
-        public readonly ulong MMFOffset;
-
-        // TODO: 256 should be a named constant
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        public byte[] MMFPath;
+        public readonly FileMappingParameters Mapping;
     }
 
     public interface IDirectAccessPeripheral : IPeripheral
@@ -207,7 +220,33 @@ namespace Antmicro.Renode.Peripherals.SystemC
         ulong ReadDirect(byte dataLength, long offset, byte connectionIndex);
 
         void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex);
-    };
+    }
+
+    public static class RegisteredMappedMemoryExtensions
+    {
+        public static FileMappingParameters? GetFileMappingParameters(this IBusRegistered<MappedMemory> memory, ulong address)
+        {
+            if(!memory.Peripheral.UsingSharedMemory)
+            {
+                return null;
+            }
+            var memBase = (long)(memory.RegistrationPoint.Range.StartAddress + memory.RegistrationPoint.Offset);
+            var memOffset = (long)address - memBase;
+            var segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % memory.Peripheral.SegmentSize));
+            var segmentNo = (int)(memOffset / memory.Peripheral.SegmentSize);
+            if(segmentNo < 0 || segmentNo >= memory.Peripheral.SegmentCount)
+            {
+                return null;
+            }
+            return new FileMappingParameters(
+                segmentStart,
+                segmentStart + (ulong)memory.Peripheral.SegmentSize - 1UL, // segment end
+                memory.Peripheral.GetSegmentAlignmentOffset(segmentNo), // offset into the MMF corresponding to the segment start address
+                memory.Peripheral.GetSegmentPath(segmentNo), // MMF path
+                memory.Peripheral.GetSegmentMappedAddress(segmentNo) // mmap base address
+            );
+        }
+    }
 
     public class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral, IDisposable
     {
@@ -663,47 +702,26 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
                     break;
                 case RenodeAction.DMIReq:
-                    bool allowDMI = false;
                     var targetMemory = sysbus.FindMemory(message.Address);
-                    if(targetMemory != null)
+                    var mapping = targetMemory?.GetFileMappingParameters(message.Address);
+                    DMIMessage responseDMIMessage;
+                    if(mapping == null)
                     {
-                        allowDMI = targetMemory.Peripheral.UsingSharedMemory;
-                    }
-                    long memBase = (long)(targetMemory.RegistrationPoint.Range.StartAddress + targetMemory.RegistrationPoint.Offset);
-                    long memOffset = (long)message.Address - memBase;
-                    ulong segmentStart = (ulong)memBase + (ulong)(memOffset - (memOffset % targetMemory.Peripheral.SegmentSize));
-                    int segmentNo = 0;
-                    if(allowDMI)
-                    {
-                        segmentNo = (int)(memOffset / targetMemory.Peripheral.SegmentSize);
-                        allowDMI = segmentNo >= 0 && segmentNo < targetMemory.Peripheral.SegmentCount;
-                    }
-                    if(allowDMI)
-                    {
-                        // DMI allowed
-                        var responseDMIMessage = new DMIMessage(
-                                message.ActionId,
-                                RenodeMessage.DMIAllowed,
-                                segmentStart,
-                                segmentStart + (ulong)targetMemory.Peripheral.SegmentSize - 1UL, // segment end
-                                targetMemory.Peripheral.GetSegmentAlignmentOffset(segmentNo), // offset into the MMF corresponding to the segment start address
-                                targetMemory.Peripheral.GetSegmentPath(segmentNo) // MMF path
-                            );
-                        backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                        responseDMIMessage = new DMIMessage(
+                            message.ActionId,
+                            RenodeMessage.DMINotAllowed,
+                            new FileMappingParameters(0, 0, 0, "", IntPtr.Zero)
+                        );
                     }
                     else
                     {
-                        // DMI rejected
-                        var responseDMIMessage = new DMIMessage(
-                                message.ActionId,
-                                RenodeMessage.DMINotAllowed,
-                                0UL,
-                                0UL,
-                                0UL,
-                                ""
-                            );
-                        backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                        responseDMIMessage = new DMIMessage(
+                            message.ActionId,
+                            RenodeMessage.DMIAllowed,
+                            mapping.Value
+                        );
                     }
+                    backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
                     break;
                 case RenodeAction.InvalidateTBs:
                     TryToInvalidateTBs(message.Address, message.Payload);
