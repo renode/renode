@@ -89,6 +89,25 @@ def mc_if(condition, cmd):
 def mc_str_contains(a, b):
         print a.lower() in b.lower()
 
+def mc_print(*fmt, **kwargs):
+    logLevels = {
+        -1: LogLevel.Noisy,
+        0: LogLevel.Debug,
+        1: LogLevel.Info,
+        2: LogLevel.Warning,
+        3: LogLevel.Error,
+    }
+    sep = ' '
+    if 'sep' in kwargs:
+        sep = kwargs['sep']
+    if 'log' in kwargs and kwargs['log'] in logLevels:
+        Renode.Logging.Logger.Log(logLevels[kwargs['log']], sep.join(map(str, fmt)))
+    else:
+        print sep.join(map(str, fmt))
+
+def mc_pyprint(script):
+    print eval(script)
+
 externals = type('ExternalsManagerAccessor', (object,), dict(
     __getitem__ = lambda _, name: Renode.Core.Structure.IHasChildren[Renode.Core.IExternal].TryGetByName(emulationManager.CurrentEmulation.ExternalsManager, name)[0],
     __getattr__ = lambda self, name: self.__getitem__(name),
