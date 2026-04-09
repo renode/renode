@@ -434,6 +434,71 @@ Test VLD
         Fail                            ${info}
     END
 
+Test VST
+    # Writes values to registers in order and then using VST instructions stores them interleaved to memory.
+    # Example for VST2.8
+    #  Registers: Q1=[0x00 0x01 0x02 ...] and Q2=[0x0F 0x10 0x11 ...]
+    #  Memory: [ 0x00 0x0F 0x01 0x10 0x02 ... ]
+    [Arguments]                     ${stride}
+    ...                             ${element_size}
+    ${element_count}=               Evaluate  128 // ${element_size}
+
+    Reset Emulation
+    Create Machine
+
+    ${values}=                      Evaluate  list(range(${stride} * ${element_count}))  # [0, 1, 2, 3, ...  28, 29, 30, 31]
+    ${interleaved_values}=          Evaluate  [v for s in range(${element_count}) for v in ${values}\[s::${element_count}]]  # For VST2.8 [0, 16, 1, 17, 2, 18 ... 14, 30, 15, 31]
+
+    Execute Command                 cpu SetRegister "R0" ${DATA_ADDRESS}
+
+    # Creates assembly and calculates expected register values
+    # Example: Assembly generated fo VST2 and size 8:
+    #  VST20.8 {Q0, Q1}, [R0]
+    #  VST21.8 {Q0, Q1}, [R0]
+    ${assembly}=                    Create List
+    ${expected_values}=             Set Variable  ${interleaved_values}
+    ${register_list}=               Evaluate  ", ".join([f"Q{i}" for i in range(${stride})])
+    FOR  ${s}  IN RANGE  ${stride}
+        Append To List                  ${assembly}  VST${stride}${s}.${element_size} {${register_list}}, [R0]
+        ${range}=                       Evaluate  $values[${element_count}*${s}:${element_count}*(${s}+1)]
+        ${value}=                       Combine Into 128 Bit Value  ${range}
+        Set Register Q${s} To ${value}
+    END
+
+    ${assembly}=                    Catenate  SEPARATOR=;  @{assembly}
+    Load Program And Execute        ${assembly}
+
+    TRY
+        FOR  ${index}  ${expected_value}  IN ENUMERATE  @{expected_values}
+            # Reads values from memory
+            ${position}=                    Evaluate  ${DATA_ADDRESS}+${index}*(${element_size} // 8)
+            ${value}=                       Read Memory  ${position}  ${element_size}
+            Should Be Equal As Integers     ${value}  ${expected_value}
+        END
+    EXCEPT
+        # Prints out memory values in case of failure
+        ${info_header}=                 Set Variable  VST${stride}.${element_size} Failed
+        ${result_memory}=               Create List
+        ${expected_memory}=             Create List
+        FOR  ${index}  ${expected_value}  IN ENUMERATE  @{expected_values}
+            ${position}=                    Evaluate  ${DATA_ADDRESS}+${index}*(${element_size} // 8)
+            ${result}=                      Read Memory  ${position}  ${element_size}
+
+            ${expected_value}=              Evaluate  f"% 3d"%int(${expected_value})
+            ${result}=                      Evaluate  f"% 3d"%int(${result})
+
+            Append To List                  ${expected_memory}  ${expected_value}
+            Append To List                  ${result_memory}  ${result}
+        END
+        ${expected_memory}=             Catenate  SEPARATOR=${SPACE}  @{expected_memory}
+        ${result_memory}=               Catenate  SEPARATOR=${SPACE}  @{result_memory}
+        ${info}=                        Catenate  SEPARATOR=${\n}
+        ...                             ${info_header}
+        ...                             expected=${expected_memory}
+        ...                             ${SPACE*2}actual=${result_memory}
+        Fail                            ${info}
+    END
+
 ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift ${direction:(Left|Right)} Long Instruction Should Produce Correct Result With Input ${input}
     Reset Emulation
     Create Machine
@@ -776,6 +841,13 @@ VLD Should Load and Interleave Data
     FOR  ${stride}  IN  2  4
         FOR  ${element_size}  IN  8  16  32
             Test VLD                        ${stride}  ${element_size}
+        END
+    END
+
+VST Should Store and Interleave Data
+    FOR  ${stride}  IN  2  4
+        FOR  ${element_size}  IN  8  16  32
+            Test VST                        ${stride}  ${element_size}
         END
     END
 
