@@ -101,11 +101,9 @@ Register Q${index} Should Contain ${value_128_bit}
         ...                             ${message} lane number ${lane_number}
     END
 
-Memory Should Be Equal
+Read Memory
     [Arguments]                     ${address}
-    ...                             ${expected_value}
     ...                             ${element_size}
-    ...                             ${message}=${None}
 
     IF  ${element_size} == 8
         ${value}=                       Execute Command  sysbus ReadByte ${address}
@@ -116,7 +114,31 @@ Memory Should Be Equal
     ELSE
         Fail                            Invalid element_size=${element_size}
     END
-    ${value}=                       Evaluate  int(${value})
+    [Return]                        ${value[:-2]}
+
+Write Memory
+    [Arguments]                     ${address}
+    ...                             ${value}
+    ...                             ${element_size}
+
+    IF  ${element_size} == 8
+        Execute Command                 sysbus WriteByte ${address} ${value}
+    ELSE IF  ${element_size} == 16
+        Execute Command                 sysbus WriteWord ${address} ${value}
+    ELSE IF  ${element_size} == 32
+        Execute Command                 sysbus WriteDoubleWord ${address} ${value}
+    ELSE
+        Fail                            Invalid element_size=${element_size}
+    END
+
+Memory Should Be Equal
+    [Arguments]                     ${address}
+    ...                             ${expected_value}
+    ...                             ${element_size}
+    ...                             ${message}=${None}
+
+    ${value}=                       Read Memory  ${address}  ${element_size}
+
     TRY
         Should Be Equal As Integers     ${value}  ${expected_value}
     EXCEPT
@@ -375,15 +397,7 @@ Test VLD
     # Writes values to memory
     FOR  ${index}  ${value}  IN ENUMERATE  @{values}
         ${position}=                    Evaluate  ${DATA_ADDRESS}+${index}*(${element_size} // 8)
-        IF  ${element_size} == 8
-            Execute Command                 sysbus WriteByte ${position} ${value}
-        ELSE IF  ${element_size} == 16
-            Execute Command                 sysbus WriteWord ${position} ${value}
-        ELSE IF  ${element_size} == 32
-            Execute Command                 sysbus WriteDoubleWord ${position} ${value}
-        ELSE
-            Fail                            Invalid element_size=${element_size}
-        END
+        Write Memory                    ${position}  ${value}  ${element_size}
     END
 
     # Creates assembly and calculates expected register values
