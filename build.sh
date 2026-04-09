@@ -413,6 +413,24 @@ if [[ ! -z $EXTERNAL_LIB_ARCH ]]; then
   fi
 fi
 
+# macos `cp` does not have the -u flag
+if $ON_OSX; then
+  cp_u() {
+    cp $@
+  }
+  sed_inplace() {
+    sed -i '' "$@"
+  }
+else
+  cp_u() {
+    cp -u $@
+  }
+  sed_inplace() {
+    sed -i "$@"
+  }
+fi
+export -f cp_u sed_inplace
+
 # build KVM - currently it's supported only on Linux
 if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
     KVM_CORE_DIR="$CORES_BUILD_PATH/virt"
@@ -422,7 +440,7 @@ if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${C
     cmake --build . -j$(nproc)
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
     mkdir -p $CORE_BIN_DIR
-    cp -u -v *.so $CORE_BIN_DIR/
+    cp_u -v *.so $CORE_BIN_DIR/
     popd > /dev/null
 fi
 
@@ -455,12 +473,7 @@ build_core () {
     cmake --build . -j"$(nproc)"
     CORE_BIN_DIR=$CORES_BIN_PATH/lib
     mkdir -p $CORE_BIN_DIR
-    if $ON_OSX; then
-        # macos `cp` does not have the -u flag
-        cp -v tlib/*.so $CORE_BIN_DIR/
-    else
-        cp -u -v tlib/*.so $CORE_BIN_DIR/
-    fi
+    cp_u -v tlib/*.so $CORE_BIN_DIR/
     # copy compile_commands.json to tlib directory
     if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
        command cp -v -f $CORE_DIR/compile_commands.json $CORES_PATH/tlib/

@@ -21,10 +21,6 @@ DIR=$MACOS_APP_DIR/Contents/MacOS
 
 OS_NAME=macos
 
-function sed_inplace() {
-    sed -i '' "$@"
-}
-
 . common_copy_files_portable.sh
 
 cp $RENODE_OUTPUT_BINARY $DIR/renode

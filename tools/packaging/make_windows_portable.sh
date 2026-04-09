@@ -12,10 +12,6 @@ RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
 DIR=renode_${VERSION}-portable
 OS_NAME=windows
 
-function sed_inplace() {
-    sed -i "$@"
-}
-
 . common_copy_files_portable.sh
 
 # Remove bash scripts

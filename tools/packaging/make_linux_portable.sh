@@ -19,10 +19,6 @@ if [[ $RID == "linux-arm64" ]]; then
     ARCHIVE_NAME="renode-$VERSION.$RID-portable.tar.gz"
 fi
 
-function sed_inplace() {
-    sed -i "$@"
-}
-
 . common_copy_files_portable.sh
 
 cp $RENODE_OUTPUT_BINARY $DESTINATION/renode
