@@ -25,7 +25,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         IWordPeripheral, IDoubleWordPeripheral, IQuadWordPeripheral,
         INumberedGPIOOutput, IGPIOReceiver
     {
-        public SystemCPeripheralNative(IMachine machine, ulong simulationStepInNs, int numberOfConnections = DefaultNumberOfConnections)
+        public SystemCPeripheralNative(IMachine machine, ulong simulationStepInNs, int numberOfConnections = DefaultNumberOfConnections, bool nonBlockingReads = false, bool nonBlockingWrites = false)
         {
             sysbus = machine.GetSystemBus(this);
             systemcTimer = new LimitTimer(machine.ClockSource, FREQUENCY, this, nameof(systemcTimer), eventEnabled: true, enabled: false, limit: simulationStepInNs);
@@ -41,6 +41,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 innerConnections[i] = new GPIO();
             }
             Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
+
+            NonBlockingReads = nonBlockingReads;
+            NonBlockingWrites = nonBlockingWrites;
         }
 
         public void Dispose()
@@ -59,42 +62,42 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public byte ReadByte(long offset)
         {
-            return (byte)TlmRead(1, (ulong)offset);
+            return (byte)TlmRead(1, (ulong)offset, NonBlockingReads);
         }
 
         public void WriteByte(long offset, byte value)
         {
-            TlmWrite(1, (long)value, (ulong)offset);
+            TlmWrite(1, (long)value, (ulong)offset, NonBlockingWrites);
         }
 
         public ushort ReadWord(long offset)
         {
-            return (ushort)TlmRead(2, (ulong)offset);
+            return (ushort)TlmRead(2, (ulong)offset, NonBlockingReads);
         }
 
         public void WriteWord(long offset, ushort value)
         {
-            TlmWrite(2, (long)value, (ulong)offset);
+            TlmWrite(2, (long)value, (ulong)offset, NonBlockingWrites);
         }
 
         public uint ReadDoubleWord(long offset)
         {
-            return (uint)TlmRead(4, (ulong)offset);
+            return (uint)TlmRead(4, (ulong)offset, NonBlockingReads);
         }
 
         public void WriteDoubleWord(long offset, uint value)
         {
-            TlmWrite(4, (long)value, (ulong)offset);
+            TlmWrite(4, (long)value, (ulong)offset, NonBlockingWrites);
         }
 
         public ulong ReadQuadWord(long offset)
         {
-            return (ulong)TlmRead(8, (ulong)offset);
+            return (ulong)TlmRead(8, (ulong)offset, NonBlockingReads);
         }
 
         public void WriteQuadWord(long offset, ulong value)
         {
-            TlmWrite(8, (long)value, (ulong)offset);
+            TlmWrite(8, (long)value, (ulong)offset, NonBlockingWrites);
         }
 
         public void OnGPIO(int number, bool value)
@@ -222,6 +225,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
+        public bool NonBlockingReads { get; set; }
+
+        public bool NonBlockingWrites { get; set; }
+
         private void InitBinder()
         {
             if(!Misc.TryCopyToTemporaryFile(simulationFilePath, out var copiedSimulationFilePath))
@@ -255,10 +262,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly Action<int> SystemcStartSim;
 
         [Import(UseExceptionWrapper = false)]
-        private readonly Func<ulong, ulong, ulong> TlmRead;
+        private readonly Func<ulong, ulong, bool, ulong> TlmRead;
 
         [Import(UseExceptionWrapper = false)]
-        private readonly Action<ulong, long, ulong> TlmWrite;
+        private readonly Action<ulong, long, ulong, bool> TlmWrite;
 
         [Import(UseExceptionWrapper = false)]
         private readonly Action<int, bool> GpioWrite;
