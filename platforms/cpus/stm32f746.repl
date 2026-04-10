@@ -110,12 +110,15 @@ rom: Memory.MappedMemory @ sysbus 0x1FFF0000
     size: 0x10000
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.F7
     IRQ -> nvic@35
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    series: STM32Series.F7
     IRQ -> nvic@36
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    series: STM32Series.F7
     IRQ -> nvic@51
 
 dma1: DMA.STM32DMA @ sysbus 0x40026000

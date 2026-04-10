@@ -9,10 +9,13 @@ cpu: CPU.CortexM @ sysbus
 
 // Missing interrupt lines for SPIs
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.L5
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    series: STM32Series.L5
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    series: STM32Series.L5
 
 // This model's registers are not compatible with the EXTI in this MCU,
 // it is currently here to support direct interrupts

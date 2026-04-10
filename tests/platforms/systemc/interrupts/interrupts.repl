@@ -56,6 +56,7 @@ rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.F4
     IRQ->nvic0@35
 
 adc1: Analog.STM32_ADC @ sysbus 0x40012000

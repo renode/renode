@@ -24,6 +24,7 @@ adc1: Analog.STM32_ADC @ sysbus 0x42028000
     IRQ->nvic@37
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.L5
     IRQ->nvic@59
 
 rcc: Python.PythonPeripheral @ sysbus 0x40021000

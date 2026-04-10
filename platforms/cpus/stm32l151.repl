@@ -11,10 +11,13 @@ systemMemory: Memory.MappedMemory @ sysbus 0x1FF00000
     size: 0x10000
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.L1
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    series: STM32Series.L1
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    series: STM32Series.L1
 
 exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 24
