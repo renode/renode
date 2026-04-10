@@ -217,10 +217,41 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 InitBinder();
                 SystemcInit();
                 systemcTimer.Enabled = true;
+
+                SystemcSetNonblockingRead(NonBlockingRead);
+                SystemcSetNonblockingWrite(NonBlockingWrite);
             }
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
+
+        public bool NonBlockingRead
+        {
+            get => nonBlockingRead;
+            set
+            {
+                nonBlockingRead = value;
+                if(binder == null)
+                {
+                    return;
+                }
+                SystemcSetNonblockingRead(value);
+            }
+        }
+
+        public bool NonBlockingWrite
+        {
+            get => nonBlockingWrite;
+            set
+            {
+                nonBlockingWrite = value;
+                if(binder == null)
+                {
+                    return;
+                }
+                SystemcSetNonblockingWrite(value);
+            }
+        }
 
         private void InitBinder()
         {
@@ -241,6 +272,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private NativeBinder binder;
         private string simulationFilePath;
+        private bool nonBlockingRead;
+        private bool nonBlockingWrite;
         private readonly IBusController sysbus;
 
 #pragma warning disable 649
@@ -253,6 +286,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         [Import(UseExceptionWrapper = false)]
         private readonly Action<int> SystemcStartSim;
+
+        [Import(UseExceptionWrapper = false)]
+        private readonly Action<bool> SystemcSetNonblockingRead;
+
+        [Import(UseExceptionWrapper = false)]
+        private readonly Action<bool> SystemcSetNonblockingWrite;
 
         [Import(UseExceptionWrapper = false)]
         private readonly Func<ulong, ulong, ulong> TlmRead;

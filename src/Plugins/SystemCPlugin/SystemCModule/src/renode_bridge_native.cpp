@@ -59,6 +59,24 @@ static void prepare_payload(tlm::tlm_generic_payload& payload,
   payload.set_response_status(tlm::TLM_INCOMPLETE_RESPONSE);
 }
 
+void systemc_set_nonblocking_read(bool nb) {
+  auto *model = get_model();
+  if (!model) {
+    throw std::runtime_error("Model must not be null!");
+  }
+
+  model->nb_read = nb;
+}
+
+void systemc_set_nonblocking_write(bool nb) {
+  auto *model = get_model();
+  if (!model) {
+    throw std::runtime_error("Model must not be null!");
+  }
+
+  model->nb_write = nb;
+}
+
 std::uint64_t tlm_read(std::size_t size, std::uint64_t offset) {
   tlm::tlm_generic_payload payload;
   sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
@@ -70,7 +88,16 @@ std::uint64_t tlm_read(std::size_t size, std::uint64_t offset) {
   }
 
   prepare_payload(payload, tlm::TLM_READ_COMMAND, offset, data.data(), size);
-  model->tlm_route(offset)->b_transport(payload, delay);
+  if (model->nb_read) {
+    tlm::tlm_phase phase = tlm::BEGIN_REQ;
+
+    auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
+    if (status != tlm::TLM_COMPLETED) {
+      model->nb_wait();
+    }
+  } else {
+    model->tlm_route(offset)->b_transport(payload, delay);
+  }
 
   std::uint64_t result = 0;
   std::memcpy(&result, data.data(), size);
@@ -90,7 +117,17 @@ void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset) {
 
   std::memcpy(data.data(), &value, size);
   prepare_payload(payload, tlm::TLM_WRITE_COMMAND, offset, data.data(), size);
-  model->tlm_route(offset)->b_transport(payload, delay);
+
+  if (model->nb_write) {
+    tlm::tlm_phase phase = tlm::BEGIN_REQ;
+
+    auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
+    if (status != tlm::TLM_COMPLETED) {
+      model->nb_wait();
+    }
+  } else {
+    model->tlm_route(offset)->b_transport(payload, delay);
+  }
 }
 
 void gpio_write(int number, bool value) {
@@ -118,4 +155,16 @@ std::optional<DmiRegion> renode_get_direct_mem_ptr(uint64_t address) {
   }
 
   return DmiRegion { static_cast<std::uint8_t *>(mapped_address), start_address, end_address };
+}
+
+IRenodeBridge::IRenodeBridge() : nb_done(false), nb_read(false), nb_write(false) {
+  // intentionally left empty
+}
+
+void IRenodeBridge::nb_wait() {
+    while (!nb_done) {
+      sc_core::sc_start(sc_core::SC_ZERO_TIME);
+    }
+
+    nb_done = false;
 }
