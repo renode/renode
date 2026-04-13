@@ -189,7 +189,7 @@ def segment_groups_simple(options) -> GroupsSegment:
     segment_num = options.subset.segment
     segment_index = segment_num - 1  # input is 1-indexed, we want 0-indexed
 
-    # Split into "perfect" segments, ignoring the remainder.
+    # Split into "perfect" segments, ignoring the remaining items.
     segment_start_index = segment_index * chunk_size
     groups_segment = groups[segment_start_index : segment_start_index + chunk_size]
 
