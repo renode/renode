@@ -32,18 +32,15 @@ class Subset:
     segment: int
     max_segments: int
 
-    def __init__(self, segment: int, max_segments: int) -> None:
-        if segment <= 0 or segment > max_segments:
+    def __post_init__(self) -> None:
+        if self.segment <= 0 or self.segment > self.max_segments:
             raise ValueError(
-                f"`segment` must be > 0 and <= {max_segments} but it is {segment}"
+                f"`segment` must be > 0 and <= {self.max_segments} but it is {self.segment}"
             )
-        if max_segments <= 0:
+        if self.max_segments <= 0:
             raise ValueError(
-                f"`max_segments` must be at least 1 but it is {max_segments}"
+                f"`max_segments` must be at least 1 but it is {self.max_segments}"
             )
-
-        self.segment = segment
-        self.max_segments = max_segments
 
 
 def subset(text: str) -> Subset:
