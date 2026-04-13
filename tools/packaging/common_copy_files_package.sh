@@ -8,8 +8,7 @@ cp -r $BASE/output/bin/$TARGET/*.dll $DIR/bin
 # exclude any potential test DLLs
 rm -r $DIR/bin/*Tests.dll 2>/dev/null || true
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
-# UI is built optionally and thus may not be present
-cp $UI_BIN $DIR/bin 2>/dev/null || true
+cp -r $BASE/output/bin/$TARGET/platform-lib $DIR/bin
 
 if ls $BASE/output/bin/$TARGET/*.exe
 then

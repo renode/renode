@@ -25,7 +25,6 @@ OS_NAME=macos
 
 cp $RENODE_OUTPUT_BINARY $DIR/renode
 cp $RENODE_OUTPUT_DIR/*.dylib $DIR
-cp $RENODE_OUTPUT_DIR/../libllvm-disas.dylib $DIR
 
 chmod +x $DIR/renode
 

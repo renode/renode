@@ -23,7 +23,6 @@ fi
 
 cp $RENODE_OUTPUT_BINARY $DESTINATION/renode
 cp \
-   $RENODE_OUTPUT_DIR/../libllvm-disas.so \
    $RENODE_OUTPUT_DIR/libhostfxr.so \
    $RENODE_OUTPUT_DIR/libcoreclr.so \
    $RENODE_OUTPUT_DIR/libhostpolicy.so \

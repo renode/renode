@@ -268,22 +268,33 @@ fi
 # Set correct RID
 if $ON_LINUX; then
     RID="linux-x64"
-    UI_RID="linux_x64"
     if [[ $HOST_ARCH == "aarch64" ]]; then
         RID="linux-arm64"
-        UI_RID="linux_arm64"
     fi
 elif $ON_OSX; then
     RID="osx-x64"
-    UI_RID="mac_x64"
     if [[ $HOST_ARCH == "aarch64" ]]; then
         RID="osx-arm64"
-        UI_RID="mac_arm64"
     fi
 elif $ON_WINDOWS; then
     RID="win-x64"
-    UI_RID="win_x64"
 fi
+
+SUPPORTED_RIDS=(
+  "linux-x64"
+  "linux-arm64"
+  "osx-x64"
+  "osx-arm64"
+  "win-x64"
+)
+
+SUPPORTED_UI_RIDS=(
+  "linux_x64"
+  "linux_arm64"
+  "mac_x64"
+  "mac_arm64"
+  "win_x64"
+)
 
 if [[ $GENERATE_DOTNET_BUILD_TARGET = true ]]; then
   if $ON_WINDOWS; then
@@ -503,21 +514,6 @@ fi
 # build
 dotnet build "${PARAMS[@]/#/-}" $TARGET
 
-# copy llvm library
-LLVM_LIB="libllvm-disas"
-if [[ $HOST_ARCH == "aarch64" ]]; then
-  # aarch64 host binaries have a different name
-  LLVM_LIB="libllvm-disas-aarch64"
-fi
-if [[ "${DETECTED_OS}" == "windows" ]]; then
-  LIB_EXT="dll"
-elif [[ "${DETECTED_OS}" == "osx" ]]; then
-  LIB_EXT="dylib"
-else
-  LIB_EXT="so"
-fi
-cp lib/resources/llvm/$LLVM_LIB.$LIB_EXT $OUT_BIN_DIR/libllvm-disas.$LIB_EXT
-
 # on arm64 macOS System.Drawing.Common can't find libgdiplus so we symlink it to the output directory
 # this is only used for `FrameBufferTester`
 if [[ $RID == "osx-arm64" ]]; then
@@ -534,22 +530,50 @@ if [[ $RID == "osx-arm64" ]]; then
   fi
 fi
 
-BIN_EXT=""
-if [[ "$DETECTED_OS" == "windows" ]]; then
-  BIN_EXT=".exe"
-fi
-
-UI_BIN="$OUT_BIN_DIR/renode-ui$BIN_EXT"
-
-# `UI_BIN`'s base goes through `cygwin -aw` on Windows, so it's already absolute
+# `OUT_BIN_DIR`'s goes through `cygwin -aw` on Windows, so it's already absolute
 # The path starts with a drive letter on Windows, so we have to special-case it
-if [[ "$UI_BIN" != "/"* ]] && ! $ON_WINDOWS; then
-  UI_BIN="$PWD/$UI_BIN"
+if [[ "$OUT_BIN_DIR" != "/"* ]] && ! $ON_WINDOWS; then
+  OUT_BIN_DIR="$PWD/$OUT_BIN_DIR"
 fi
 
+
+# NOTE: This has to be consistent with `SUPPORTED_RIDS`
+LLVM_DISAS_EXTS=(
+  .so
+  -aarch64.so
+  .dylib
+  -aarch64.dylib
+  .dll
+)
+
+# Copy libllvm-disas
+for idx in "${!SUPPORTED_RIDS[@]}"; do
+  PLAT_RID=${SUPPORTED_RIDS[idx]}
+  DISAS_FILE=$ROOT_PATH/lib/resources/llvm/libllvm-disas${LLVM_DISAS_EXTS[$idx]}
+  if [[ ! -f "$DISAS_FILE" ]]; then
+    continue
+  fi
+  if [[ "$PLAT_RID" != "$RID" ]]; then
+    continue
+  fi
+  mkdir -p "$OUT_BIN_DIR/platform-lib/$PLAT_RID"
+  cp_u "$DISAS_FILE" "$OUT_BIN_DIR/platform-lib/$PLAT_RID/libllvm-disas.so"
+done
+
+# Build and copy UI
 if $UI; then
   NO_COLOR=true "$UI_PATH/scripts/build_neutralino.sh"
-  cp "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$UI_RID$BIN_EXT" "$UI_BIN"
+  for idx in "${!SUPPORTED_RIDS[@]}"; do
+    PLAT_RID=${SUPPORTED_RIDS[idx]}
+    PLAT_UI_RID=${SUPPORTED_UI_RIDS[idx]}
+    BIN_EXT=""
+    if [[ "$PLAT_RID" == win* ]]; then
+      BIN_EXT=".exe"
+    fi
+
+    mkdir -p "$OUT_BIN_DIR/platform-lib/$PLAT_RID"
+    cp_u "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$PLAT_UI_RID$BIN_EXT" "$OUT_BIN_DIR/platform-lib/$PLAT_RID/renode-ui$BIN_EXT"
+  done
 fi
 
 if $SHARED
@@ -557,7 +581,7 @@ then
     if ! $ON_WINDOWS
     then
         echo "Building librenode..."
-        eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
+        eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$OUT_BIN_DIR'"
     else
         echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"
         exit 1
@@ -592,7 +616,6 @@ fi
 
 if $PACKAGES
 then
-    export UI_BIN
     if $ON_LINUX
     then
         export RID TFM
@@ -612,7 +635,6 @@ fi
 
 if $PORTABLE
 then
-    export UI_BIN
     PARAMS+=(p:PORTABLE=true)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"

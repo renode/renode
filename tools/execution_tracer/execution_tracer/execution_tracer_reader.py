@@ -479,39 +479,48 @@ def handle_coverage(args, trace_data_per_file) -> None:
 
 
 def find_llvm_disas() -> str:
-    p = platform.system()
-    if p == 'Darwin':
-        ext = '.dylib'
-    elif p == 'Windows':
-        ext = '.dll'
+    uname = platform.uname()
+
+    if uname.system == 'Darwin':
+        rid = "osx"
+        ext = "dylib"
+    elif uname.system == 'Windows':
+        rid = "win"
+        ext = "dll"
     else:
-        ext = '.so'
+        rid = "linux"
+        ext = "so"
 
-    # In portable packages, the name does not contain 'aarch64', so handle both cases, trying the
-    # aarch64 version first.
-    lib_names = ['libllvm-disas' + ext]
+    if uname.machine.lower() in ('arm64', 'aarch64'):
+        rid += "-arm64"
+        lib_suffix = "-aarch64"
+    else:
+        rid += "-x64"
+        lib_suffix = ""
 
-    if platform.uname().machine.lower() in ('arm64', 'aarch64'):
-        lib_names.insert(0, 'libllvm-disas-aarch64' + ext)
+    lib_subpaths = [
+        os.path.join(rid, "libllvm-disas.so"), # platform-lib format
+        f"libllvm-disas{lib_suffix}.{ext}" # renode-resources format
+    ]
 
     lib_search_paths = [
         os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin"),
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir),
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin", "platform-lib"),
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "platform-lib"),
         os.path.dirname(os.path.realpath(__file__)), 
         os.getcwd()
     ]
 
     llvm_disas_path = None
 
-    for search_path, lib_name in itertools.product(lib_search_paths, lib_names):
-        lib_path = os.path.join(search_path, lib_name)
+    for search_path, subpath in itertools.product(lib_search_paths, lib_subpaths):
+        lib_path = os.path.join(search_path, subpath)
         if os.path.isfile(lib_path):
             llvm_disas_path = lib_path
             break
 
     if llvm_disas_path is None:
-        raise FileNotFoundError('Could not find ' + " or ".join(lib_names) + ' in any of the following locations: ' + ', '.join([os.path.abspath(path) for path in lib_search_paths]))
+        raise FileNotFoundError('Could not find libllvm-disas in any of the following locations: ' + ', '.join([os.path.join(path.abspath(ppath), rid) for ppath in lib_search_paths]))
     
     return llvm_disas_path
 

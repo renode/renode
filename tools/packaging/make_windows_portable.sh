@@ -33,7 +33,6 @@ EOL
 
 cp $RENODE_OUTPUT_BINARY $DIR/renode
 cp \
-    $RENODE_OUTPUT_DIR/../libllvm-disas.dll \
     $RENODE_OUTPUT_DIR/hostfxr.dll \
     $RENODE_OUTPUT_DIR/coreclr.dll \
     $RENODE_OUTPUT_DIR/hostpolicy.dll \
