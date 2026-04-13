@@ -72,16 +72,6 @@ if [ -f $BASE/output/bin/$TARGET/librenode.so ]; then
     cp $BASE/output/bin/$TARGET/dnne.h $DIR/bin
     cp $BASE/output/bin/$TARGET/RenodeNativeInterface.runtimeconfig.json $DIR/bin
 fi
-# Remove RenodeTests because they are unused in the package
-rm -rf $DIR/tests/unit-tests/RenodeTests
-
-cp -r $BASE/output/bin/$TARGET/runtimes $DIR/bin
-cp $BASE/output/bin/$TARGET/Renode.runtimeconfig.json $DIR/bin
-cp $BASE/output/bin/$TARGET/Renode.deps.json $DIR/bin
-cp $BASE/output/bin/$TARGET/*.so $DIR/bin
-
-# Copy Lib directory which contains dependecies for IronPython
-cp -r $BASE/output/bin/$TARGET/Lib $DIR/bin
 
 COMMAND_SCRIPT=linux/renode
 cat linux/renode-dotnet-template | head -n 10 > $COMMAND_SCRIPT

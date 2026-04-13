@@ -44,18 +44,20 @@ GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
 RID="linux-x64"
+MULTIPLATFORM=false
 HOST_ARCH=
 # Common cmake flags
 CMAKE_COMMON="${RENODE_EXTRA_CMAKE_ARGS:-}"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspnt] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [--ui] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspntm] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [--ui] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
   echo "-v                                verbose output"
   echo "-p                                create packages after building"
   echo "-t                                create a portable package"
+  echo "-m                                create a multi-platform package"
   echo "--source-package                  build a source package (dotnet on Linux only)"
   echo "-n                                tag built packages as nightly"
   echo "-s                                update submodules"
@@ -77,7 +79,7 @@ function print_help() {
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
 
-while getopts "cdvpnstb:B:F:-:" opt
+while getopts "cdvpnstmb:B:F:-:" opt
 do
   case $opt in
     c)
@@ -97,6 +99,9 @@ do
       ;;
     t)
       PORTABLE=true
+      ;;
+    m)
+      MULTIPLATFORM=true
       ;;
     s)
       UPDATE_SUBMODULES=true
@@ -535,6 +540,8 @@ if [[ "$OUT_BIN_DIR" != "/"* ]] && ! $ON_WINDOWS; then
   OUT_BIN_DIR="$PWD/$OUT_BIN_DIR"
 fi
 
+# Remove pre-multiplatform tlib `lib` directory
+rm -rf "$CORES_BIN_PATH/lib"
 # Copy tlib
 cp_u -r $CORES_BIN_PATH/. $OUT_BIN_DIR/platform-lib
 
@@ -554,7 +561,7 @@ for idx in "${!SUPPORTED_RIDS[@]}"; do
   if [[ ! -f "$DISAS_FILE" ]]; then
     continue
   fi
-  if [[ "$PLAT_RID" != "$RID" ]]; then
+  if ! $MULTIPLATFORM && [[ "$PLAT_RID" != "$RID" ]]; then
     continue
   fi
   mkdir -p "$OUT_BIN_DIR/platform-lib/$PLAT_RID"
@@ -566,6 +573,9 @@ if $UI; then
   NO_COLOR=true "$UI_PATH/scripts/build_neutralino.sh"
   for idx in "${!SUPPORTED_RIDS[@]}"; do
     PLAT_RID=${SUPPORTED_RIDS[idx]}
+    if ! $MULTIPLATFORM && [[ "$PLAT_RID" != "$RID" ]]; then
+      continue
+    fi
     PLAT_UI_RID=${SUPPORTED_UI_RIDS[idx]}
     BIN_EXT=""
     if [[ "$PLAT_RID" == win* ]]; then
@@ -634,6 +644,11 @@ then
     fi
 fi
 
+if $MULTIPLATFORM
+then
+  $ROOT_PATH/tools/packaging/make_multi_package.sh
+fi
+
 if $PORTABLE
 then
     PARAMS+=(p:PORTABLE=true)
@@ -643,4 +658,3 @@ then
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
-

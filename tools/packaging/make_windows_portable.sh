@@ -4,7 +4,8 @@ set -e
 set -u
 
 #change dir to script location
-cd "${0%/*}"
+THIS_DIR="$(cd $(dirname $0); echo $PWD)"
+cd $THIS_DIR
 . common_make_packages.sh
 
 RENODE_OUTPUT_DIR=$BASE/output/publish/$TARGET/$RID
@@ -19,17 +20,7 @@ rm $DIR/tests/common.sh
 rm $DIR/renode-test
 
 ### prepare renode-test
-cat >> $DIR/tests/test.bat << EOL
-@echo off
-set SCRIPTDIR=%~dp0
-py -3 "%SCRIPTDIR%\run_tests.py" --css-file "%SCRIPTDIR%\robot.css" --exclude "skip_windows" --exclude "skip_portable" --robot-framework-remote-server-full-directory "%SCRIPTDIR%\.." --robot-framework-remote-server-name "renode.exe" -r %cd% %*
-EOL
-
-cat >> $DIR/renode-test.bat << EOL
-@echo off
-set test_script=%~dp0%\tests\test.bat
-call "%test_script%" %*
-EOL
+copy_windows_tests_scripts ".." Renode.exe
 
 cp $RENODE_OUTPUT_BINARY $DIR/renode
 cp \

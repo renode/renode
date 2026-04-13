@@ -42,13 +42,21 @@ CUSTOM_TARGET_NAME_VALUES=(
     renode
 )
 
-# Use target names without the '-license' suffix, e.g., 'renode' instead of 'LICENSE'. The OSs order
-#   has to be synced with the 'get_os_specific_licenses' function.
-OS_SPECIFIC_LICENSES=(
-    "libopenlibm"  # Linux
-    "macos_run.command"  # macOS
-    "mingw winpthreads"  # Windows
-)
+function add_if_plat {
+    local PLATS=$1
+    local FILES=$2
+
+    if [[ " ${PLATS[@]} " =~ " $OS " ]]; then
+        REQUIRED_LICENSES+=($FILES)
+    else
+        REQUIRED_LICENSES_EXCLUDE+=($FILES)
+    fi
+}
+
+# Use target names without the '-license' suffix, e.g., 'renode' instead of 'LICENSE'.
+add_if_plat "linux any" "libopenlibm"
+add_if_plat "macos" "macos_run.command"
+add_if_plat "windows any" "mingw winpthreads"
 
 
 # HELPERS
@@ -82,18 +90,6 @@ function get_custom_target_name {
     done
 }
 
-function get_os_specific_licenses {
-    if [ "$OS" = linux ]; then
-        index=0
-    elif [ "$OS" = macos ]; then
-        index=1
-    elif [ "$OS" = windows ]; then
-        index=2
-    fi
-    echo "${OS_SPECIFIC_LICENSES[$index]}"
-}
-
-
 # CHECK ARGUMENTS
 
 if [ $# -ne 2 ]; then
@@ -104,7 +100,7 @@ BASE="$(dirname $0)/../.."
 TARGET="$1"
 OS="$2"
 
-if [ "$OS" != linux ] && [ "$OS" != macos ] && [ "$OS" != windows ]; then
+if [ "$OS" != linux ] && [ "$OS" != macos ] && [ "$OS" != windows ] && [ "$OS" != any ]; then
     exit_invalid_args $@
 fi
 
@@ -116,28 +112,9 @@ fi
 
 # COPY LICENSES
 
-function is_license_skipped {
-    # Extract the license name core if the argument is a full path.
-    filename=${1##*/}
-    name_core=${filename%-licen*}
-
-    # The extra spaces are necessary to only have exact matches.
-    if [[ " ${OS_SPECIFIC_LICENSES[@]} " =~ " $name_core " ]]; then
-        if [[ " $(get_os_specific_licenses) " =~ " $name_core " ]]; then
-            return 1  # Don't skip.
-        else
-            return 0  # Skip.
-        fi
-    else
-        return 1  # Don't skip.
-    fi
-}
-
 # Copy licenses which include the library name. LicenCe is a correct spelling as well (BrE).
 for license in $(find $BASE -type f -iname "*-licen[cs]e"); do
-    if ! is_license_skipped $license; then
-        cp $license $TARGET/
-    fi
+    cp $license $TARGET/
 done
 
 # Copy other licenses as '<parent-directory-name>-license' (see CUSTOM_TARGET_NAME* for exceptions).
@@ -154,9 +131,7 @@ for license in $(find $BASE -type f \( -iname "licen[cs]e" -or -iname "licen[cs]
         name=$parent_dirname
     fi
 
-    if ! is_license_skipped $name; then
-        cp $license $TARGET/$name-license
-    fi
+    cp $license $TARGET/$name-license
 done
 
 set +x
@@ -181,9 +156,7 @@ for name in $(ls $BASE/lib) $(ls $BASE/lib/resources/libraries/); do
     fi
 done
 
-# Don't use double quotes for the '$(get_os_specific_licenses)'. The value can contain multiple
-#   names separated with spaces which should be checked separately.
-for name in ${REQUIRED_LICENSES[@]} $(get_os_specific_licenses); do
+for name in ${REQUIRED_LICENSES[@]}; do
     # Check if the license isn't excluded.
     if [[ " ${REQUIRED_LICENSES_EXCLUDE[@]} " =~ " $name " ]]; then
         continue

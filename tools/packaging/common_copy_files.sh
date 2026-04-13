@@ -51,3 +51,15 @@ $BASE/tools/packaging/common_copy_dts2repl_version_script.sh $BASE $DIR
 # `tests.yaml` without nunit tests
 sed_inplace '/csproj$/d' $DIR/tests/tests.yaml
 sed_inplace '/nunit/d' $DIR/tests/run_tests.py
+
+function copy_windows_tests_scripts() {
+    BINDIR=$1
+    BINNAME=$2
+
+    cp $THIS_DIR/windows/renode-test.bat $DIR
+    TEST_SCRIPT=$DIR/tests/test.bat
+    cp $THIS_DIR/windows/test.bat $TEST_SCRIPT
+
+    sed_inplace "s#REPLACE_BIN_NAME#$BINNAME#" $TEST_SCRIPT
+    sed_inplace "s#REPLACE_BIN_DIR#$BINDIR#" $TEST_SCRIPT
+}

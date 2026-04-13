@@ -4,15 +4,25 @@ rm -rf $DIR
 mkdir -p $DIR/bin
 
 #copy the main content
-cp -r $BASE/output/bin/$TARGET/*.dll $DIR/bin
+cp -Pr $BASE/output/bin/$TARGET/*.dll $DIR/bin
 # exclude any potential test DLLs
 rm -r $DIR/bin/*Tests.dll 2>/dev/null || true
-cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
-cp -r $BASE/output/bin/$TARGET/platform-lib $DIR/bin
+cp -Pr $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
+cp -Pr $BASE/output/bin/$TARGET/platform-lib $DIR/bin
+cp -Pr $BASE/output/bin/$TARGET/runtimes $DIR/bin
+
+# Copy Lib directory which contains dependecies for IronPython
+cp -Pr $BASE/output/bin/$TARGET/Lib $DIR/bin
+
+cp $BASE/output/bin/$TARGET/Renode.runtimeconfig.json $DIR/bin
+cp $BASE/output/bin/$TARGET/Renode.deps.json $DIR/bin
+
+# Remove RenodeTests because they are unused in the package
+rm -rf $DIR/tests/unit-tests/RenodeTests
 
 if ls $BASE/output/bin/$TARGET/*.exe
 then
-    cp -r $BASE/output/bin/$TARGET/*.exe $DIR/bin
+    cp -Pr $BASE/output/bin/$TARGET/*.exe $DIR/bin
 fi
 
 . common_copy_files.sh
