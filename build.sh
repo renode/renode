@@ -384,8 +384,9 @@ popd > /dev/null
 PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"" p:Architecture="$HOST_ARCH")
 
 # Paths for tlib
-CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION"
 CORES_BIN_PATH="$CORES_PATH/bin/$CONFIGURATION"
+NATIVE_CORES_BUILD_PATH="$CORES_PATH/obj/$CONFIGURATION/$RID"
+NATIVE_CORES_BIN_PATH="$CORES_BIN_PATH/$RID"
 
 # Cmake generator, handled in their own variable since the names contain spaces
 if $ON_WINDOWS
@@ -445,14 +446,13 @@ export -f cp_u sed_inplace
 
 # build KVM - currently it's supported only on Linux
 if $ON_LINUX && [[ "$HOST_ARCH" == "i386" ]] && [[ -z $EXTERNAL_LIB_ARCH || "${CORES[@]}" == "i386kvm.le" ]]; then
-    KVM_CORE_DIR="$CORES_BUILD_PATH/virt"
+    KVM_CORE_DIR="$NATIVE_CORES_BUILD_PATH/virt"
     mkdir -p $KVM_CORE_DIR
     pushd "$KVM_CORE_DIR" > /dev/null
     cmake "$CORES_PATH/virt"
     cmake --build . -j$(nproc)
-    CORE_BIN_DIR=$CORES_BIN_PATH/lib
-    mkdir -p $CORE_BIN_DIR
-    cp_u -v *.so $CORE_BIN_DIR/
+    mkdir -p $NATIVE_CORES_BIN_PATH
+    cp_u -v *.so $NATIVE_CORES_BIN_PATH/
     popd > /dev/null
 fi
 
@@ -472,7 +472,7 @@ build_core () {
     fi
     # Core specific flags to cmake
     CMAKE_CONF_FLAGS="-DTARGET_ARCH=$CORE -DTARGET_WORD_SIZE=$BITS -DCMAKE_BUILD_TYPE=$CONFIGURATION"
-    CORE_DIR=$CORES_BUILD_PATH/$CORE/$ENDIAN
+    CORE_DIR=$NATIVE_CORES_BUILD_PATH/$CORE/$ENDIAN
     mkdir -p $CORE_DIR
     pushd "$CORE_DIR" > /dev/null
     if [[ $ENDIAN == "be" ]]; then
@@ -483,9 +483,8 @@ build_core () {
     fi
     cmake "$CMAKE_GEN" $CMAKE_COMMON $CMAKE_CONF_FLAGS -DHOST_ARCH=$HOST_ARCH $CORES_PATH
     cmake --build . -j"$(nproc)"
-    CORE_BIN_DIR=$CORES_BIN_PATH/lib
-    mkdir -p $CORE_BIN_DIR
-    cp_u -v tlib/*.so $CORE_BIN_DIR/
+    mkdir -p $NATIVE_CORES_BIN_PATH
+    cp_u -v tlib/*.so $NATIVE_CORES_BIN_PATH/
     # copy compile_commands.json to tlib directory
     if [[ "$TLIB_EXPORT_COMPILE_COMMANDS" = true ]]; then
        command cp -v -f $CORE_DIR/compile_commands.json $CORES_PATH/tlib/
@@ -536,6 +535,8 @@ if [[ "$OUT_BIN_DIR" != "/"* ]] && ! $ON_WINDOWS; then
   OUT_BIN_DIR="$PWD/$OUT_BIN_DIR"
 fi
 
+# Copy tlib
+cp_u -r $CORES_BIN_PATH/. $OUT_BIN_DIR/platform-lib
 
 # NOTE: This has to be consistent with `SUPPORTED_RIDS`
 LLVM_DISAS_EXTS=(
