@@ -35,7 +35,8 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
 rcc:
     filename: "scripts/pydev/flipflop.py"
 
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x420c0800
+rng: Miscellaneous.STM32_RNG @ sysbus 0x420c0800
+    series: STM32Series.L5
     ->nvic@94
 
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800

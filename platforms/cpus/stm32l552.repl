@@ -219,4 +219,5 @@ rcc: Python.PythonPeripheral @ sysbus 0x40021000
 flashController: MTD.STM32WBA_FlashController @ sysbus 0x40022000
     flash: flash
 
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x420c0800
+rng: Miscellaneous.STM32_RNG @ sysbus 0x420c0800
+    series: STM32Series.L5

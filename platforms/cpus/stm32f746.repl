@@ -163,7 +163,8 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
 rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
 
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
+rng: Miscellaneous.STM32_RNG @ sysbus 0x50060800
+    series: STM32Series.F7
     -> nvic@80
 
 pwrCr1: Python.PythonPeripheral @ sysbus 0x40007000

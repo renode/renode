@@ -169,7 +169,8 @@ adcM1S2: Analog.STM32F0_ADC @ sysbus 0x40022000
     externalEventFrequency: 1000
     -> nvic@18
 
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x48021800
+rng: Miscellaneous.STM32_RNG @ sysbus 0x48021800
+    series: STM32Series.H7
     -> nvic@80
 
 dma2: DMA.STM32DMA @ sysbus 0x40020400
