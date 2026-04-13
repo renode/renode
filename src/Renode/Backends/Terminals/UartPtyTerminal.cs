@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2022 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -19,6 +19,7 @@ namespace Antmicro.Renode.Backends.Terminals
 {
     public static class UartPtyTerminalExtensions
     {
+        [SupportedRID("unix")]
         public static void CreateUartPtyTerminal(this Emulation emulation, string name, string fileName, bool forceCreate = false)
         {
             if(RuntimeInfo.IsWindows())

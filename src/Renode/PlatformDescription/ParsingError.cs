@@ -60,5 +60,6 @@ namespace Antmicro.Renode.PlatformDescription
         AbstractType = 49,
         MoreThanOnePreinitAttribute = 50,
         PreinitSectionValidationError = 51,
+        UnsupportedPlatform = 52
     }
 }

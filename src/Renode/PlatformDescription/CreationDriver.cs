@@ -1624,6 +1624,11 @@ namespace Antmicro.Renode.PlatformDescription
                 HandleError(ParsingError.AbstractType, responsibleObject, message, false);
                 return null;
             }
+            if(!type.IsRIDSupported())
+            {
+                HandleError(ParsingError.UnsupportedPlatform, responsibleObject, $"{type} is not supported on this platform", false);
+                return null;
+            }
 
             var constructorSelectionReport = new LazyList<string>();
             var result = new List<ConstructorInfo>();
