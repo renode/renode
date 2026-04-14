@@ -1,0 +1,40 @@
+name: Renode CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  formatting-check:
+    name: Formatting Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt -qqy update &> /dev/null
+          sudo apt -qqy install cmake build-essential &> /dev/null
+
+      - name: Clone repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: .github/workflows/global.json
+
+      - name: Setup Dotnet artifacts
+        run: |
+          ln -s .github/workflows/global.json global.json
+
+      - name: Build Renode
+        run: ./build.sh
+
+      - name: Register dotnet-format problem matcher
+        run: |
+          echo "::add-matcher::.github/workflows/problem-matcher.json"
+
+      - name: Run format check
+        run: dotnet format ./Renode_NET.sln --exclude lib --verify-no-changes --severity warn
