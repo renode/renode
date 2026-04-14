@@ -455,9 +455,8 @@ then
   fi
 fi
 
-# This list contains all cores that will be built.
-# If you are adding a new core or endianness add it here to have the correct tlib built
-CORES=(arm.le arm.be arm64.le arm-m.le arm-m.be ppc.le ppc.be ppc64.le ppc64.be i386.le x86_64.le riscv.le riscv64.le sparc.le sparc.be xtensa.le)
+# Include a list of all cores to build
+. ${ROOT_PATH}/src/Infrastructure/src/Emulator/Cores/tlib/cores.sh
 
 # if '--external-lib-arch' was used - pick the first matching one
 if [[ ! -z $EXTERNAL_LIB_ARCH ]]; then
