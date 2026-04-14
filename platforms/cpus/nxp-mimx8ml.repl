@@ -1,0 +1,250 @@
+CA53Cluster: CPU.Cluster @ sysbus
+
+cpu0: CPU.ARMv8A @ CA53Cluster
+    cpuType: "cortex-a53"
+    cpuId: 0x0
+    genericInterruptController: gic
+
+cpu1: CPU.ARMv8A @ CA53Cluster
+    cpuType: "cortex-a53"
+    cpuId: 0x1
+    genericInterruptController: gic
+
+cpu2: CPU.ARMv8A @ CA53Cluster
+    cpuType: "cortex-a53"
+    cpuId: 0x2
+    genericInterruptController: gic
+
+cpu3: CPU.ARMv8A @ CA53Cluster
+    cpuType: "cortex-a53"
+    cpuId: 0x3
+    genericInterruptController: gic
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x38800000; size: 0x10000; region: "distributor" };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu0; address: 0x38880000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu1; address: 0x388a0000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu2; address: 0x388c0000 };
+        sysbus new IRQControllers.ArmGicRedistributorRegistration { attachedCPU: cpu3; address: 0x388e0000 }
+    }
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv3
+
+cpu0_timer: Timers.ARM_GenericTimer @ cpu0
+    frequency: 8000000
+    EL3PhysicalTimerIRQ->gic#0x0@29
+    EL1PhysicalTimerIRQ->gic#0x0@30
+    EL1VirtualTimerIRQ->gic#0x0@27
+    NonSecureEL2PhysicalTimerIRQ->gic#0x0@26
+
+cpu1_timer: Timers.ARM_GenericTimer @ cpu1
+    frequency: 8000000
+    EL3PhysicalTimerIRQ->gic#0x1@29
+    EL1PhysicalTimerIRQ->gic#0x1@30
+    EL1VirtualTimerIRQ->gic#0x1@27
+    NonSecureEL2PhysicalTimerIRQ->gic#0x1@26
+
+cpu2_timer: Timers.ARM_GenericTimer @ cpu2
+    frequency: 8000000
+    EL3PhysicalTimerIRQ->gic#0x2@29
+    EL1PhysicalTimerIRQ->gic#0x2@30
+    EL1VirtualTimerIRQ->gic#0x2@27
+    NonSecureEL2PhysicalTimerIRQ->gic#0x2@26
+
+cpu3_timer: Timers.ARM_GenericTimer @ cpu3
+    frequency: 8000000
+    EL3PhysicalTimerIRQ->gic#0x3@29
+    EL1PhysicalTimerIRQ->gic#0x3@30
+    EL1VirtualTimerIRQ->gic#0x3@27
+    NonSecureEL2PhysicalTimerIRQ->gic#0x3@26
+
+memory_ddr_cortexA_cluster: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x100000000; cluster: CA53Cluster };
+    }
+    size: 0x14000000
+
+ca53_dtcm: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x800000; cluster: CA53Cluster };
+    }
+    size: 0x20000
+
+ca53_itcm: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x7E0000; cluster: CA53Cluster };
+    }
+    size: 0x20000
+
+ca53_bootrom: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: CA53Cluster };
+    }
+    size: 0x40000
+
+// General
+memory_ddr: Memory.MappedMemory @ sysbus 0x40000000
+    size: 0xc0000000
+
+gpt1: Timers.IMX_GPTimer @ sysbus 0x302d0000
+    frequency: 32000
+    IRQ->gic@55
+
+gpt2: Timers.IMX_GPTimer @ sysbus 0x302e0000
+    frequency: 32000
+    IRQ->gic@54
+
+gpt3: Timers.IMX_GPTimer @ sysbus 0x302f0000
+    frequency: 32000
+    IRQ->gic@53
+
+gpt4: Timers.IMX_GPTimer @ sysbus 0x30700000
+    frequency: 32000
+    IRQ->gic@52
+
+gpt5: Timers.IMX_GPTimer @ sysbus 0x306f0000
+    frequency: 32000
+    IRQ->gic@51
+
+gpt6: Timers.IMX_GPTimer @ sysbus 0x306e0000
+    frequency: 32000
+    IRQ->gic@51
+
+uart1: UART.MxcUart @ sysbus 0x30860000
+    ->gic@26
+
+uart2: UART.MxcUart @ sysbus 0x30890000
+    ->gic@27
+
+uart3: UART.MxcUart @ sysbus 0x30880000
+    ->gic@28
+
+uart4: UART.MxcUart @ sysbus 0x30A60000
+    ->gic@29
+
+sysbus:
+    init add:
+        Tag <0x00100000 0x00008000> "CAAM"
+        Tag <0x00180000 0x00009000> "OCRAM_S"
+        Tag <0x007E0000 0x00020000> "TCML" 0x1000
+        Tag <0x00900000 0x00090000> "OCRAM"
+        Tag <0x08000000 0x00800000> "QSPI"
+        Tag <0x18000000 0x08000000> "PCIe-1"
+        Tag <0x20100000 0x00008000> "CAAM_cm7"
+        Tag <0x20180000 0x00009000> "OCRAM_S_cm7"
+        Tag <0x20200000 0x00090000> "OCRAM_cm7"
+        Tag <0x28000000 0x01000000> "A53/DAP"
+        Tag <0x30000000 0x00400000> "AIPS-1"
+        Tag <0x30400000 0x00400000> "AIPS-2"
+        Tag <0x30800000 0x00400000> "AIPS-3"
+        Tag <0x30c00000 0x00400000> "AIPS-5"
+        Tag <0x32700000 0x00100000> "NOC"
+        Tag <0x32c00000 0x00400000> "AIPS-4"
+        Tag <0x33008000 0x00008000> "QSPI TX Buffers"
+        Tag <0x33800000 0x00400000> "PCIE1"
+        Tag <0x34000000 0x04000000> "QSPI RX Buffers"
+        Tag <0x38000000 0x00008000> "GPU3D"
+        Tag <0x38008000 0x00008000> "GPU2D"
+        Tag <0x38100000 0x00010000> "USB1" 0xFFFFFFFF
+        Tag <0x38200000 0x00010000> "USB2" 0xFFFFFFFF
+        Tag <0x38300000 0x00010000> "VPU_G1"
+        Tag <0x38310000 0x00010000> "VPU_G2"
+        Tag <0x38500000 0x00200000> "NPU"
+        Tag <0x3B000000 0x01000000> "Audio DSP"
+        Tag <0x3C000000 0x01000000> "DDR PHY"
+        Tag <0x3D000000 0x00400000> "DDR BLK_CTRL"
+        Tag <0x3D400000 0x00400000> "DDR-CTL"
+        Tag <0x3D800000 0x00400000> "DDR PERF_MON"
+        Tag <0x3DC00000 0x00400000> "DDR PHY Broadcast"
+        Tag <0xC0000000 0x10000000> "QSPI_cm7"
+        Tag <0xD0000000 0x08000000> "PCIe-1_cm7"
+        Tag <0xE0000000 0x20000000> "CM7 PPB"
+
+        // AIPS
+        Tag <0x301F0000 0x10000> "AIPS1_Configuration"
+        Tag <0x30200000 0x10000> "GPIO1" 0xFFFFFFFF
+        Tag <0x30210000 0x10000> "GPIO2" 0xFFFFFFFF
+        Tag <0x30220000 0x10000> "GPIO3" 0xFFFFFFFF
+        Tag <0x30230000 0x10000> "GPIO4" 0xFFFFFFFF
+        Tag <0x30240000 0x10000> "GPIO5" 0xFFFFFFFF
+        Tag <0x30260000 0x10000> "TMU (ANA_TSENSOR)"
+        Tag <0x30270000 0x10000> "ANA_OSC"
+        Tag <0x30280000 0x10000> "WDOG1"
+        Tag <0x30290000 0x10000> "WDOG2"
+        Tag <0x302A0000 0x10000> "WDOG3"
+        Tag <0x30330000 0x10000> "IOMUXC"
+        Tag <0x30340000 0x10000> "IOMUXC_GPR"
+        Tag <0x30350000 0x10000> "OCOTP_CTRL"
+        Tag <0x30360000 0x10000> "ANA_PLL"
+        Tag <0x30370000 0x10000> "SNVS_HP"
+        Tag <0x30380000 0x10000> "CCM"
+        Tag <0x30390000 0x10000> "SRC"
+        Tag <0x303A0000 0x10000> "GPC"
+        Tag <0x303B0000 0x10000> "SEMAPHORE1"
+        Tag <0x303C0000 0x10000> "SEMAPHORE2"
+        Tag <0x303D0000 0x10000> "RDC"
+        Tag <0x303E0000 0x10000> "CSU"
+        Tag <0x305F0000 0x10000> "AIPS2_configuration"
+        Tag <0x30660000 0x10000> "PWM1"
+        Tag <0x30670000 0x10000> "PWM2"
+        Tag <0x30680000 0x10000> "PWM3"
+        Tag <0x30690000 0x10000> "PWM4"
+        Tag <0x306A0000 0x10000> "System_Counter_RD"
+        Tag <0x306B0000 0x10000> "System_Counter_CMP"
+        Tag <0x306C0000 0x10000> "System_Counter_CTRL"
+        Tag <0x307C0000 0x10000> "PERFMON1"
+        Tag <0x307D0000 0x10000> "PERFMON2"
+        Tag <0x30820000 0x10000> "eCSPI1"
+        Tag <0x30830000 0x10000> "eCSPI2"
+        Tag <0x30840000 0x10000> "eCSPI3"
+        Tag <0x308C0000 0x10000> "FlexCAN1"
+        Tag <0x308D0000 0x10000> "FlexCAN2"
+        Tag <0x30900000 0x10000> "CAAM 256KB"
+        Tag <0x309F0000 0x10000> "AIPS3_Configuration"
+        Tag <0x30A20000 0x10000> "I2C1"
+        Tag <0x30A30000 0x10000> "I2C2"
+        Tag <0x30A40000 0x10000> "I2C3"
+        Tag <0x30A50000 0x10000> "I2C4"
+        Tag <0x30A80000 0x10000> "IRQ_STEER"
+        Tag <0x30AA0000 0x10000> "MU_1_A"
+        Tag <0x30AB0000 0x10000> "MU_1_B"
+        Tag <0x30AC0000 0x10000> "SEMAPHORE_HS"
+        Tag <0x30AD0000 0x10000> "I2C5"
+        Tag <0x30AE0000 0x10000> "I2C6"
+        Tag <0x30B40000 0x10000> "uSDHC1"
+        Tag <0x30B50000 0x10000> "uSDHC2"
+        Tag <0x30B60000 0x10000> "uSDHC3"
+        Tag <0x30BB0000 0x10000> "QSPI"
+        Tag <0x30BD0000 0x10000> "SDMA1"
+        Tag <0x30BE0000 0x10000> "ENET1"
+        Tag <0x30C10000 0x10000> "SAI1"
+        Tag <0x30C20000 0x10000> "SAI2"
+        Tag <0x30C30000 0x10000> "SAI3"
+        Tag <0x30C50000 0x10000> "SAI5"
+        Tag <0x30C60000 0x10000> "SAI6"
+        Tag <0x30C80000 0x10000> "SAI7"
+        Tag <0x30C90000 0x10000> "ASRC"
+        Tag <0x30CA0000 0x10000> "PDM"
+        Tag <0x30CB0000 0x10000> "HDMI TX AUDLNK MSTR"
+        Tag <0x30CC0000 0x10000> "AUDIO XCVR RX(eARC)"
+        Tag <0x30DF0000 0x10000> "AIPS5_Configuration"
+        Tag <0x30E00000 0x10000> "SDMA3"
+        Tag <0x30E10000 0x10000> "SDMA2"
+        Tag <0x30E20000 0x10000> "AUDIO BLK_CTRL"
+        Tag <0x30E30000 0x10000> "eDMA Management Page"
+        Tag <0x30E40000 0x10000> "eDMA Channels[15:0]at 4KB/ch"
+        Tag <0x30E50000 0x10000> "eDMA Channels[31:16]at 4KB/ch"
+        Tag <0x30E60000 0x10000> "MU_2_A-A53"
+        Tag <0x30E70000 0x10000> "MU_2_B-A53"
+        Tag <0x30E80000 0x10000> "MU_3_A-M7"
+        Tag <0x30E90000 0x10000> "MU_3_B-M7"
+        Tag <0x32DF0000 0x10000> "AIPS4_configuration"
+        Tag <0x32E00000 0x10000> "ISI"
+        Tag <0x32E10000 0x10000> "ISP1"
+        Tag <0x32E20000 0x10000> "ISP2"
+        Tag <0x32E30000 0x10000> "IPS Dewarp"
+        Tag <0x32E40000 0x10000> "MIPI_CSI1"
+        Tag <0x32E50000 0x10000> "MIPI_CSI2"
+        Tag <0x32E60000 0x10000> "MIPI_DSI1"
+        Tag <0x32E80000 0x10000> "LCDIF1"
+        Tag <0x32E90000 0x10000> "LCDIF2"
+        Tag <0x32EC0000 0x10000> "MEDIA BLK_CTL"
+        Tag <0x32F00000 0x10000> "PCIE_PHY1"
+        Tag <0x32F10000 0x10000> "HSIO BLK_CTL"
+        Tag <0x32F80000 0x10000> "TZASC"
+        Tag <0x32FD0000 0x10000> "HDMI_TX"
