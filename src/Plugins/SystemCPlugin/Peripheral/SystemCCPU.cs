@@ -40,7 +40,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public override ExecutionResult ExecuteInstructions(ulong numberOfInstructionsToExecute, out ulong numberOfExecutedInstructions)
         {
             numberOfExecutedInstructions = numberOfInstructionsToExecute;
-            totalExecutedInstructions += numberOfInstructionsToExecute;
+            totalExecutedInstructions+=numberOfInstructionsToExecute;
             return ExecutionResult.Ok;
         }
 
