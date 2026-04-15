@@ -434,6 +434,7 @@ def handle_coverage(args, trace_data_per_file) -> None:
         pc2line_file_stream=args.pc2line_file,
         code_filenames=args.coverage_code,
         substitute_paths=args.sub_source_path,
+        ignore_paths=args.ignore_paths,
         test_name=args.test_name,
         debug=args.debug,
         print_unmatched_address=args.print_unmatched_address,
@@ -543,6 +544,7 @@ def main():
     cov_parser.add_argument("--coverview-config", default=None, type=str, help="Provide parameters for Coverview integration configuration JSON")
     cov_parser.add_argument("--print-unmatched-address", default=False, action="store_true", help="Print addresses not matched to any source lines")
     cov_parser.add_argument("--sub-source-path", default=[], nargs='*', action='extend', type=coverage.PathSubstitution.from_arg, help="Substitute a part of sources' path. Format is: old_path:new_path")
+    cov_parser.add_argument("--ignore-paths", default=[], nargs='*', action='extend', help='Ignore source files matching pattern(s)')
     cov_parser.add_argument("--lazy-line-cache", default=False, action="store_true", help="Disable line to address eager cache generation. For big programs, reduce memory usage, but process traces much slower")
     cov_parser.add_argument("--no-shorten-paths", default=False, action="store_true", help="Disable removing common path prefix from coverage output. Only relevant with '--export-for-coverview'")
     cov_parser.add_argument("--tests-as-total", default=False, action="store_true", help="Show executed tests out of total tests in line coverage in coverview. Only relevant with '--export-for-coverview'")

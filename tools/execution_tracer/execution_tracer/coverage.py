@@ -108,6 +108,7 @@ class Coverage:
     pc2line_file_stream: TextIO
     code_filenames: list[str]
     substitute_paths: list[PathSubstitution]
+    ignore_paths: list[str]
     test_name: str
     print_unmatched_address: bool = False
     debug: bool = False
@@ -122,7 +123,7 @@ class Coverage:
         if not self.code_filenames:
             print("No sources provided, will attempt to discover automatically")
             if self.elf_file_handler:
-                self._code_files = dwarf.find_code_files(dwarf.get_dwarf_info(self.elf_file_handler), self.substitute_paths)
+                self._code_files = dwarf.find_code_files(dwarf.get_dwarf_info(self.elf_file_handler), self.substitute_paths, self.ignore_paths)
             if self.pc2line_file_stream:
                 self._code_files = pc2line.find_code_files(self.pc2line_file_stream, self.substitute_paths)
             self.code_filenames = [apply_path_substitutions(code_filename.name, self.substitute_paths) for code_filename in self._code_files]
