@@ -74,6 +74,14 @@ GENERAL_FLAGS=(\
 
 cp $BASE/output/bin/$TARGET/libllvm-disas.so $BASE/output/bin/$TARGET/publish
 
+if [ -f $BASE/output/bin/$TARGET/librenode.so ]; then
+    cp $BASE/output/bin/$TARGET/librenode.so $BASE/output/bin/$TARGET/publish
+    cp $BASE/output/bin/$TARGET/librenode.h $BASE/output/bin/$TARGET/publish
+    cp $BASE/output/bin/$TARGET/dnne.h $BASE/output/bin/$TARGET/publish
+    cp $BASE/output/bin/$TARGET/libMono.Unix.so $BASE/output/bin/$TARGET/publish
+    cp $BASE/output/bin/$TARGET/RenodeNativeInterface.runtimeconfig.json $BASE/output/bin/$TARGET/publish
+fi
+
 # Override the TARGET variable.
 # It is used to copy files into final package directory and all required files were moved there.
 TARGET="$TARGET/publish"
@@ -84,7 +92,9 @@ rm -rf $DIR/tests/unit-tests/RenodeTests
 cp -r $BASE/output/bin/$TARGET/runtimes $DIR/bin
 cp $BASE/output/bin/$TARGET/Renode.runtimeconfig.json $DIR/bin
 cp $BASE/output/bin/$TARGET/Renode.deps.json $DIR/bin
+cp $BASE/output/bin/$TARGET/RenodeNativeInterface.runtimeconfig.json $DIR/bin 2>/dev/null || true
 cp $BASE/output/bin/$TARGET/*.so $DIR/bin
+cp $BASE/output/bin/$TARGET/*.h $DIR/bin 2>/dev/null || true
 
 # Copy Lib directory which contains dependecies for IronPython
 cp -r $BASE/output/bin/$TARGET/Lib $DIR/bin

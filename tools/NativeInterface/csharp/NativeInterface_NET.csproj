@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+
+    <OutputType>Library</OutputType>
+    <AssemblyName>RenodeNativeInterface</AssemblyName>
+    <RootNamespace>Antmicro.Renode.NativeInterface</RootNamespace>
+    <LangVersion>7.2</LangVersion>
+    <RollForward>Major</RollForward>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Path to Renode's bin output directory containing Renode.dll and other assemblies. Defaults to the Renode build output. -->
+    <RenodeOutputDir Condition="'$(RenodeOutputDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', 'output', 'bin', '$(Configuration)'))</RenodeOutputDir>
+    <OutputPath>$(RenodeOutputDir)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true' And $(OS) != 'Windows_NT'">
+    <DnneGenRollForward>Major</DnneGenRollForward>
+    <DnneBuildExports>true</DnneBuildExports>
+    <DnneGenerateExports>true</DnneGenerateExports>
+    <DnneNativeBinaryName>librenode</DnneNativeBinaryName> <!-- librenode.{so,dylib,dll} -->
+    <DnneCompilerCommand>cc</DnneCompilerCommand>
+    <DnneLinkerUserFlags Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DnneLinkerUserFlags) -Wl,-install_name,@rpath/$(DnneNativeBinaryName).dylib</DnneLinkerUserFlags>
+
+    <_DnneOSPrefix Condition="$([MSBuild]::IsOSPlatform('Windows'))">win</_DnneOSPrefix>
+    <_DnneOSPrefix Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</_DnneOSPrefix>
+    <_DnneOSPrefix Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</_DnneOSPrefix>
+    <!-- ProcessArchitecture not OSArchitecture so Rosetta x64 processes get osx-x64, not osx-arm64 -->
+    <_DnneArch>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLower())</_DnneArch>
+    <DnneRuntimeIdentifier Condition="'$(_DnneOSPrefix)' != ''">$(_DnneOSPrefix)-$(_DnneArch)</DnneRuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DNNE" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Renode must already be built, see the comment above. ./build.sh with the shared option builds in the correct order. -->
+    <Reference Include="$(RenodeOutputDir)/*.dll" />
+  </ItemGroup>
+</Project>

@@ -5,6 +5,7 @@
 mkdir -p $DIR/{licenses,tests,tools,plugins}
 
 cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer
+cp -r $BASE/tests/native-interface $DIR/tests/native-interface
 cp -r $BASE/tests/network-server $DIR/tests/network-server
 cp -r $BASE/tests/network-logging $DIR/tests/network-logging
 cp -r $BASE/tests/peripherals $DIR/tests/peripherals
@@ -21,6 +22,7 @@ cp -r $BASE/tools/metrics_analyzer $DIR/tools
 cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
+cp -r $BASE/tools/NativeInterface $DIR/tools
 cp -r $BASE/src/Plugins/CoSimulationPlugin/IntegrationLibrary $DIR/plugins
 # Copy required headers into the package and adjust the include
 cp -r $BASE/src/Infrastructure/src/Emulator/Cores/renode/include/{renode_imports,map}.h $DIR/plugins/IntegrationLibrary/src

@@ -37,6 +37,7 @@ HEADLESS=false
 SKIP_FETCH=false
 EXTERNAL_LIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
+SHARED=false
 EXTERNAL_LIB_ARCH=""
 NET=true
 TFM="net8.0"
@@ -76,6 +77,7 @@ function print_help() {
   echo "--host-arch                       build with a specific tcg host architecture (default: i386)"
   echo "--skip-dotnet-target-generation   don't generate 'Directory.Build.targets' file, useful when experimenting with different build settings"
   echo "--tcg-opcode-backtrace            collect a backtrace for each emitted TCG opcode, to track internal TCG errors (implies Debug configuration)"
+  echo "--shared                          build the librenode native library"
   echo "--ui                              rebuild the web-based UI"
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
@@ -184,6 +186,9 @@ do
           CONFIGURATION="Debug"
 
           CMAKE_COMMON+=" -DTCG_OPCODE_BACKTRACE=ON"
+          ;;
+        "shared")
+          SHARED=true
           ;;
         "ui")
           UI=true
@@ -593,6 +598,19 @@ fi
 if $UI; then
   NO_COLOR=true "$UI_PATH/scripts/build_neutralino.sh"
   cp "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$UI_RID$BIN_EXT" "$UI_BIN"
+fi
+
+if $SHARED
+then
+    if $NET && ! $ON_WINDOWS
+    then
+        echo "Building librenode..."
+        eval "$CS_COMPILER '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface_NET.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
+        cp "$ROOT_PATH/$OUT_BIN_DIR/runtimes/$RID/native/libMono.Unix.$LIB_EXT" "$ROOT_PATH/$OUT_BIN_DIR/"
+    else
+        echo "librenode (--shared) can only be built using .NET on Linux or macOS. Exiting!"
+        exit 1
+    fi
 fi
 
 # build packages after successful compilation
