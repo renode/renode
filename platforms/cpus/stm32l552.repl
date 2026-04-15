@@ -226,3 +226,10 @@ flashController: MTD.STM32WBA_FlashController @ sysbus 0x40022000
 
 rng: Miscellaneous.STM32_RNG @ sysbus 0x420c0800
     series: STM32Series.L5
+
+adc1: Analog.STM32L5_ADC @ sysbus 0x42028000
+    referenceVoltage: 3.3
+    externalEventFrequency: 1000
+    dmaChannel: 1
+    dmaPeripheral: dma2
+    IRQ->nvic@37
