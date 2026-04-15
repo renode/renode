@@ -26,25 +26,25 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
-    "@types/node": "^22.5.5",
-    "@types/ws": "^8.5.12",
-    "@typescript-eslint/eslint-plugin": "^8.6.0",
-    "@typescript-eslint/parser": "^8.6.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
     "@types/semver": "^7.7.1",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
     "dts-bundle-generator": "^9.5.1",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "esbuild-plugin-polyfill-node": "^0.3.0",
-    "eslint": "^9.11.0",
+    "eslint": "^10.2.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.3.3",
-    "typescript": "~5.6.0",
-    "typescript-eslint": "^8.11.0"
+    "prettier": "^3.8.3",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.2"
   },
   "dependencies": {
     "isomorphic-ws": "^5.0.0",
-    "semver": "^7.7.3",
-    "zod": "^3.23.8"
+    "semver": "^7.7.4",
+    "zod": "^4.3.6"
   },
   "prettier": {
     "tabWidth": 2,

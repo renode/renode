@@ -558,7 +558,7 @@ export class RenodeProxySession extends EventTarget {
 
   private async sendSessionRequestTyped<Res extends s.Response>(
     req: PartialRequest,
-    resParser: z.ZodType<Res, z.ZodTypeDef, object>,
+    resParser: z.ZodType<Res, object>,
     timeout?: number,
   ): Promise<ResData<Res>> {
     if (!this.socketReady) {
