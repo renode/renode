@@ -8,9 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-#if !NET
-using Antmicro.Renode.Exceptions;
-#endif
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Utilities;

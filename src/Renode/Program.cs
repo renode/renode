@@ -13,9 +13,6 @@ using Antmicro.Renode.Logging;
 using Antmicro.Renode.RobotFramework;
 using Antmicro.Renode.UI;
 using Antmicro.Renode.Utilities;
-#if !NET
-using Antmicro.Renode.Core;
-#endif
 
 namespace Antmicro.Renode
 {
@@ -54,7 +51,6 @@ namespace Antmicro.Renode
             */
             Core.EmulationManager.RebuildInstance();
 
-#if NET
             if(options.ServerMode)
             {
                 if(!WebSockets.WebSocketsManager.Instance.Start(options.ServerModePort))
@@ -66,7 +62,6 @@ namespace Antmicro.Renode
 
                 Emulator.BeforeExit += WebSockets.WebSocketsManager.Instance.Dispose;
             }
-#endif
 
             var thread = new Thread(() =>
             {
@@ -80,14 +75,12 @@ namespace Antmicro.Renode
                             context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
                             rf.Start(options.RobotFrameworkRemoteServerPort);
                         }
-#if NET
                         if(options.ServerMode)
                         {
                             var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
                             Emulator.BeforeExit += wsAPI.Dispose;
                             wsAPI.Start();
                         }
-#endif
                     });
                 }
                 finally
@@ -103,18 +96,7 @@ namespace Antmicro.Renode
         {
             //Plain mode must be set before the window title
             ConsoleBackend.Instance.PlainMode = options.Plain;
-
-#if PLATFORM_WINDOWS || NET
             ConsoleBackend.Instance.WindowTitle = "Renode";
-#else
-            // On Mono (verified on v. 6.12.0.200) writing to `Console.Title`
-            // by multiple processes concurrently causes a deadlock. Do not set
-            // the window title if we're running tests on Mono to avoid that.
-            if(options.RobotFrameworkRemoteServerPort == -1)
-            {
-                ConsoleBackend.Instance.WindowTitle = "Renode";
-            }
-#endif
 
             string configFile = null;
 
@@ -146,17 +128,11 @@ namespace Antmicro.Renode
                 {
                     var name = entryAssembly == null ? "Unknown assembly name" : entryAssembly.GetName().Name;
                     var version = entryAssembly == null ? ": Unknown version" : entryAssembly.GetName().Version.ToString();
-#if NET
-                    var runtime = ".NET";
-#else
-                    var runtime = RuntimeInfo.IsWindows() ? ".NET Framework" : "Mono";
-#endif
-                    return string.Format("{0} v{1}\n  build: {2}\n  build type: {3}\n  runtime: {4} {5}",
+                    return string.Format("{0} v{1}\n  build: {2}\n  build type: {3}\n  runtime: .NET {4}",
                         name,
                         version,
                         ((AssemblyInformationalVersionAttribute)entryAssembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)[0]).InformationalVersion,
                         ((AssemblyConfigurationAttribute)entryAssembly.GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)[0]).Configuration,
-                        runtime,
                         Environment.Version
                     );
                 }
