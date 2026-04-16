@@ -361,6 +361,7 @@ then
 
   # Manually clean the main output directories as it's location is non-standard
   remove_dir "${OUTPUT_DIRECTORY}/bin"
+  remove_dir "${OUTPUT_DIRECTORY}/publish"
   exit 0
 fi
 
@@ -594,8 +595,6 @@ then
     export UI_BIN
     if $ON_LINUX
     then
-        # maxcpucount:1 to avoid an error with multithreaded publish
-        dotnet publish -maxcpucount:1 -f $TFM --self-contained false "${PARAMS[@]/#/-}" $TARGET
         export RID TFM
         $ROOT_PATH/tools/packaging/make_linux_package.sh $params
     elif $ON_WINDOWS
@@ -617,7 +616,7 @@ then
     PARAMS+=(p:PORTABLE=true)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
-    dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true "${PARAMS[@]/#/-}" $TARGET
+    dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true "${PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" $TARGET
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi

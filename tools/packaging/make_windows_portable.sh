@@ -7,8 +7,8 @@ set -u
 cd "${0%/*}"
 . common_make_packages.sh
 
-RENODE_OUTPUT_DIR=$BASE/output/bin/$TARGET/$RID
-RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/publish/Renode
+RENODE_OUTPUT_DIR=$BASE/output/publish/$TARGET/$RID
+RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/Renode
 DIR=renode_${VERSION}-portable
 OS_NAME=windows
 
@@ -42,7 +42,6 @@ cp \
     $RENODE_OUTPUT_DIR/mscordaccore.dll \
     $RENODE_OUTPUT_DIR/mscordbi.dll \
     $RENODE_OUTPUT_DIR/Renode.runtimeconfig.json \
-    $RENODE_OUTPUT_DIR/Renode.deps.json \
     $DIR
 
 ### create zip
