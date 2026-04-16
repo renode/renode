@@ -5,7 +5,8 @@ mkdir -p $DIR/bin
 
 #copy the main content
 cp -r $BASE/output/bin/$TARGET/*.dll $DIR/bin
-cp -r $BASE/output/bin/$TARGET/libllvm-disas.* $DIR/bin
+# exclude any potential test DLLs
+rm -r $DIR/bin/*Tests.dll 2>/dev/null || true
 cp -r $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 # UI is built optionally and thus may not be present
 cp $UI_BIN $DIR/bin 2>/dev/null || true
