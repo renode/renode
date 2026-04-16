@@ -23,6 +23,170 @@ struct renode_message;
 #define NUM_DIRECT_CONNECTIONS 4
 
 // ================================================================================
+//  > Communication protocol
+// ================================================================================
+
+// Forward socket: Request from Renode, Response from SystemC
+// Backward socket: Request from SystemC, Response From Renode
+
+enum renode_action : uint8_t {
+  // Socket: forward only
+  // Init message received for the second time signifies Renode terminated and
+  // the process should exit. Request:
+  //     data_length: ignored
+  //     address: ignored
+  //     connection_index: ignored
+  //     payload: time synchronization granularity in us
+  //       TIMESYNC messages will be sent with this period. This does NOT
+  //       guarantee that the processes will never desynchronize by more than
+  //       this amount.
+  // Response:
+  //      Identical to the request message.
+  INIT = 0,
+
+  // Socket: forward, backward
+  // Request:
+  //     data_length: number of bytes to read [1, 8]
+  //     address: address to read from, in target's address space
+  //     payload: ignored
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
+  //     for direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     payload: read value
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
+  //     Otherwise identical to the request message.
+  READ = 1,
+
+  // Socket: forward, backward
+  // Request:
+  //     data_length: number of bytes to write [1, 8].
+  //     address: address to write to, in target's address space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
+  //       direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     connection_index: 0=DMI unsupported, 1=DMI supported
+  //     Otherwise identical to the request message.
+  WRITE = 2,
+
+  // Socket: forward only
+  // Request:
+  //     data_length: ignored
+  //     address: ignored
+  //     connection_index: ignored
+  // Response:
+  //     payload: current target virtual time in microseconds
+  //     Otherwise identical to the request message.
+  TIMESYNC = 3,
+
+  // Socket: forward, backward
+  // Request:
+  //     data_length: ignored
+  //     address: signal number
+  //     connection_index: ignored
+  //     payload: state of GPIO
+  // Response:
+  //     Identical to the request message.
+  GPIOWRITE = 4,
+
+  // Socket: forward
+  // Request:
+  //     data_length: ignored
+  //     address: ignored
+  //     connection_index: ignored
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  RESET = 5,
+
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     address: address in target's address space
+  //     payload: ignored
+  //     to write connection_index: 0 for SystemBus
+  // Response is a dmi_message.
+  DMIREQ = 6,
+
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: start_address
+  //     payload: end_address
+  // Response:
+  //     Identical to the request message.
+  TBSINVALID = 7,
+
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to read [1, 8]
+  //     address: register to read from, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
+  //       for direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     payload: read value
+  //     Otherwise identical to the request message.
+  READ_REGISTER = 8,
+
+  // Socket: forward only
+  // Request:
+  //     data_length: number of bytes to write [1, 8].
+  //     address: register to write to, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
+  //       direct connection
+  // Response:
+  //     address: duration of transaction in us
+  //     Otherwise identical to the request message.
+  WRITE_REGISTER = 9,
+
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: secure vector table offset
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  INIT_SECURE_VTOR = 10,
+
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: non-secure vector table offset
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  INIT_NON_SECURE_VTOR = 11,
+};
+
+#pragma pack(push, 1)
+struct renode_message {
+  renode_action action;
+  uint8_t data_length;
+  uint8_t connection_index;
+  uint64_t address;
+  uint64_t payload;
+};
+
+struct dmi_message {
+  renode_action action;
+  uint8_t allowed;
+  uint64_t start_address;
+  uint64_t end_address;
+  uint64_t mmf_offset;
+  uint32_t mmf_path_length;
+  char mmf_path[4096]; // A common value for PATH_MAX, hardcoded here for consistency if it is different on the host
+};
+#pragma pack(pop)
+
+// ================================================================================
 // renode_bridge
 //
 //   SystemC module that serves as an interface with Renode.
