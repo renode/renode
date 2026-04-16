@@ -821,6 +821,10 @@ device: SomeDevice";
 device: Something @ somewhere
     BoolProp: true
     BoolProp2: false
+    BoolProp3: True
+    BoolProp4: False
+    BoolProp5: tRue
+    BoolProp6: FALSE
 ";
 
             var result = Grammar.Description(GetInputFromString(source));
@@ -828,9 +832,19 @@ device: Something @ somewhere
 
             var values = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>()
                                    .Select(x => x.Value).OfType<BoolValue>().ToArray();
-            Assert.AreEqual(2, values.Length);
+            Assert.AreEqual(4, values.Length);
             Assert.AreEqual(true, values[0].Value);
             Assert.AreEqual(false, values[1].Value);
+            Assert.AreEqual(true, values[2].Value);
+            Assert.AreEqual(false, values[3].Value);
+
+            // The boolean values with invalid casing should be parsed as ReferenceValues
+            var wrongValues = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>()
+                .Select(x => x.Value).OfType<ReferenceValue>().ToArray();
+            Assert.AreEqual(2, wrongValues.Length);
+            Assert.AreEqual("tRue", wrongValues[0].Value);
+            Assert.AreEqual("FALSE", wrongValues[1].Value);
+
         }
 
         [Test]

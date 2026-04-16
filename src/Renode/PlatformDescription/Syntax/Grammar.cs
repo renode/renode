@@ -120,8 +120,10 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<string> LocalKeyword = MakeKeyword("local");
 
         public static readonly Parser<bool> TrueKeyword = MakeKeyword("true", true);
+        public static readonly Parser<bool> TrueKeywordTitleCase = MakeKeyword("True", true);
 
         public static readonly Parser<bool> FalseKeyword = MakeKeyword("false", false);
+        public static readonly Parser<bool> FalseKeywordTitleCase = MakeKeyword("False", false);
 
         public static readonly Parser<Value> NoneKeyword = MakeKeyword("none", (Value)null);
 
@@ -191,7 +193,11 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
         public static readonly Parser<ReferenceValue> ReferenceValue = Identifier.Select(x => new ReferenceValue(x)).Named("reference");
 
         public static readonly Parser<BoolValue> BoolValue =
-            TrueKeyword.Or(FalseKeyword).Select(x => new BoolValue(x)).Named("bool");
+            TrueKeyword
+            .Or(TrueKeywordTitleCase)
+            .Or(FalseKeyword)
+            .Or(FalseKeywordTitleCase)
+            .Select(x => new BoolValue(x)).Named("bool");
 
         public static readonly Parser<ListValue> EmptyList =
             (from opening in OpeningSquareBracket
