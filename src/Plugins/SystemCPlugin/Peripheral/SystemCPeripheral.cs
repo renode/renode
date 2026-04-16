@@ -449,6 +449,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
         }
 
+        protected Socket backwardSocket;
+
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
         {
             return ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex);
@@ -539,10 +541,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             listenerSocket.Close();
 
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
-
             backwardThread.Start();
             backwardThreadStarted = true;
+
+            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
         }
 
         private void SetupTimesync()
@@ -768,8 +770,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
         }
-
-        private Socket backwardSocket;
 
         private Socket forwardSocket;
 

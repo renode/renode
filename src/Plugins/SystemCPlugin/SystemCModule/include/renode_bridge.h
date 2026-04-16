@@ -306,7 +306,7 @@ private:
   void on_port_gpio();
   void on_init_ns_vtor();
   void on_init_s_vtor();
-  void init_vtor(bool secure);
+  void init_vtor(renode_action action, vtor_in_port &port);
 
   void update_backward_gpio_state(uint64_t new_gpio_state);
   void service_backward_request(tlm::tlm_generic_payload &payload,

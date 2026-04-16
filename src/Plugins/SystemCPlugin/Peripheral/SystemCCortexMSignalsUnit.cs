@@ -5,6 +5,7 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Net.Sockets;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
@@ -70,6 +71,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 if(!cpu.TrustZoneEnabled)
                 {
                     this.WarningLog("The Security Extension is not enabled. Ignoring Secure Vector table offset signal");
+                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
                     break;
                 }
 
@@ -87,6 +89,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
                 vtorInitialized = true;
                 cpu.InitVectorTableOffset = vectorTableOffset;
+                backwardSocket.Send(message.Serialize(), SocketFlags.None);
                 this.NoisyLog("SystemC Vector Table Offset: 0x{0:X}", vectorTableOffset);
                 break;
             case RenodeAction.InitNonSecureVTOR:
@@ -122,6 +125,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
 
                 vtorNonSecureInitialized = true;
+                backwardSocket.Send(message.Serialize(), SocketFlags.None);
                 this.NoisyLog("SystemC Non Secure Vector Table Offset: 0x{0:X}", vectorTableOffsetNonSecure);
                 break;
             default:

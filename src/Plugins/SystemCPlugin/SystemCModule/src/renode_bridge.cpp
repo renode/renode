@@ -437,26 +437,25 @@ void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
   payload.set_response_status(tlm::TLM_OK_RESPONSE);
 }
 
-void renode_bridge::init_vtor(bool secure) {
-  auto &vtor_port = secure ? init_vtor_s_in : init_vtor_ns_in;
-  auto action = secure ? INIT_SECURE_VTOR : INIT_NON_SECURE_VTOR;
-  if (vtor_port.get_interface() == nullptr) {
+void renode_bridge::init_vtor(renode_action action, vtor_in_port &port) {
+  if (port.get_interface() == nullptr) {
     return;
   }
-  auto value = vtor_port->read();
 
-  renode_message message = {};
-  message.action = action;
-  message.address = value;
-  backward_connection->Send((char *)&message, sizeof(renode_message));
-}
-
-void renode_bridge::on_init_ns_vtor() {
-  init_vtor(false);
+  renode_message msg = {};
+  msg.action = action;
+  msg.address = port->read();
+  backward_connection->Send((char *)&msg, sizeof(renode_message));
+  // Response is ignored.
+  backward_connection->Receive((char *)&msg, sizeof(renode_message));
 }
 
 void renode_bridge::on_init_s_vtor() {
-  init_vtor(true);
+  init_vtor(INIT_SECURE_VTOR, init_vtor_s_in);
+}
+
+void renode_bridge::on_init_ns_vtor() {
+  init_vtor(INIT_NON_SECURE_VTOR, init_vtor_ns_in);
 }
 
 // ================================================================================
