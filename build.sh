@@ -39,12 +39,10 @@ EXTERNAL_LIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
 SHARED=false
 EXTERNAL_LIB_ARCH=""
-NET=true
 TFM="net8.0"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 CUSTOM_PROP=
-NET_FRAMEWORK_VER=
 RID="linux-x64"
 HOST_ARCH=
 # Common cmake flags
@@ -64,9 +62,6 @@ function print_help() {
   echo "-b                                custom build properties file"
   echo "--skip-fetch                      skip fetching submodules and additional resources"
   echo "--no-gui                          build with GUI disabled"
-  echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
-  echo "--net                             build with dotnet"
-  echo "--mono                            build with mono"
   echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
   echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
@@ -113,10 +108,6 @@ do
       RID=$OPTARG
       ;;
     F)
-      if ! $NET; then
-        echo "-F requires --net being set"
-        exit 1
-      fi
       TFM=$OPTARG
       ;;
     -)
@@ -127,18 +118,8 @@ do
         "skip-fetch")
           SKIP_FETCH=true
           ;;
-        "force-net-framework-version")
-          shift $((OPTIND-1))
-          NET_FRAMEWORK_VER="p:TargetFrameworkVersion=v$1"
-          PARAMS+=("$NET_FRAMEWORK_VER")
-          OPTIND=2
-          ;;
         "net")
-          echo "'--net' flag is a default, use --mono to target an old runtime"
-          ;;
-        "mono")
-          NET=false
-          TFM="net462"
+          echo "'--net' flag is a no-op and will be removed in the future" >&1
           ;;
         "source-package")
           SOURCE_PACKAGE=true
@@ -277,7 +258,7 @@ then
     BUILD_TARGET=Windows
     TFM="$TFM-windows10.0.17763.0"
 else
-    BUILD_TARGET=Mono
+    BUILD_TARGET=""
 fi
 
 if [[ -z "$HOST_ARCH" ]]; then
@@ -329,33 +310,11 @@ EOF
   fi
 fi
 
-if $NET
-then
-  export DOTNET_CLI_TELEMETRY_OPTOUT=1
-  CS_COMPILER="dotnet build"
-  TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
-  BUILD_TYPE="dotnet"
-  PARAMS+=(p:NET=true)
-else
-  TARGET="`get_path \"$PWD/Renode.sln\"`"
-  BUILD_TYPE="mono"
-fi
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
+PARAMS+=(p:NET=true)
 
 OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
-BUILD_TYPE_FILE=$(get_path "${OUT_BIN_DIR}/build_type")
-
-# Verify Mono and mcs version on Linux and macOS
-if ! $ON_WINDOWS && ! $NET
-then
-    if ! [ -x "$(command -v mcs)" ]
-    then
-        MINIMUM_MONO=`get_min_mono_version`
-        echo "mcs not found. Renode requires Mono $MINIMUM_MONO or newer. Please refer to documentation for installation instructions. Exiting!"
-        exit 1
-    fi
-
-    verify_mono_version
-fi
 
 # Copy properties file according to the running OS
 mkdir -p "$OUTPUT_DIRECTORY"
@@ -376,16 +335,6 @@ fi
 PROP_PATH="$OUTPUT_DIRECTORY/properties.csproj"
 if [ ! -f "$PROP_PATH" ] || ! cmp -s "$PROP_FILE" "$PROP_PATH"; then
     cp "$PROP_FILE" "$PROP_PATH"
-fi
-
-if ! $NET
-then
-  # Assets files are not deleted during `dotnet clean`, as it would confuse intellisense per comment in https://github.com/NuGet/Home/issues/7368#issuecomment-457411014,
-  # but we need to delete them to build Renode again for .NETFramework since `project.assets.json` doesn't play well if project files share the same directory.
-  # If `Renode_NET.sln` is picked for OmniSharp, it will trigger reanalysis of the project after removing assets files.
-  # We don't remove these files as part of `clean` target, because other intermediate files are well separated between .NET and .NETFramework
-  # and enforcing `clean` every time before rebuilding would slow down the build process on both frameworks.
-  find $ROOT_PATH -type f -name 'project.assets.json' -delete
 fi
 
 CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
@@ -413,17 +362,6 @@ then
   # Manually clean the main output directories as it's location is non-standard
   remove_dir "${OUTPUT_DIRECTORY}/bin"
   exit 0
-fi
-
-# Check if a full rebuild is needed
-if [[ -f "$BUILD_TYPE_FILE" ]]
-then
-  if [[ "$(cat "$BUILD_TYPE_FILE")" != "$BUILD_TYPE" ]]
-  then
-    echo "Attempted to build Renode in a different configuration than the previous build"
-    echo "Please run '$0 -c' to clean the previous build before continuing"
-    exit 1
-  fi
 fi
 
 # check weak implementations of core libraries
@@ -549,8 +487,7 @@ then
 fi
 
 # build
-eval "$CS_COMPILER $(build_args_helper "${PARAMS[@]}") $TARGET"
-echo -n "$BUILD_TYPE" > "$BUILD_TYPE_FILE"
+eval "dotnet build $(build_args_helper "${PARAMS[@]}") $TARGET"
 
 # copy llvm library
 LLVM_LIB="libllvm-disas"
@@ -602,13 +539,13 @@ fi
 
 if $SHARED
 then
-    if $NET && ! $ON_WINDOWS
+    if ! $ON_WINDOWS
     then
         echo "Building librenode..."
-        eval "$CS_COMPILER '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface_NET.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
+        eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface_NET.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
         cp "$ROOT_PATH/$OUT_BIN_DIR/runtimes/$RID/native/libMono.Unix.$LIB_EXT" "$ROOT_PATH/$OUT_BIN_DIR/"
     else
-        echo "librenode (--shared) can only be built using .NET on Linux or macOS. Exiting!"
+        echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"
         exit 1
     fi
 fi
@@ -628,14 +565,13 @@ fi
 
 if $SOURCE_PACKAGE
 then
-    if $NET && $ON_LINUX
+    if $ON_LINUX
     then
-        # Source package bundles nuget dependencies required for building the dotnet version of Renode
-        # so it can only be built when using dotnet. The generated package can also be used with Mono/.NETFramework
+        # Source package bundles nuget dependencies required for building Renode
         # Source packages are best built first, so it does not have to copy and then delete the packages from the `output` directory
         $ROOT_PATH/tools/packaging/make_source_package.sh $params
     else
-        echo "Source package can only be built using .NET on Linux. Exiting!"
+        echo "Source package can only be built on Linux. Exiting!"
         exit 1
     fi
 fi
@@ -643,34 +579,22 @@ fi
 if $PACKAGES
 then
     export UI_BIN
-    if $NET
+    if $ON_LINUX
     then
-        # dotnet package on linux uses a separate script
-        if $ON_LINUX
-        then
-            # maxcpucount:1 to avoid an error with multithreaded publish
-            eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
-            export RID TFM
-            $ROOT_PATH/tools/packaging/make_linux_package.sh $params
-        elif $ON_WINDOWS
-        then
-            # No Non portable dotnet package on windows yet
-            echo "Only portable dotnet packages are supported on windows. Rerun build.sh with -t flag to build portable"
-            exit 1
-        elif $ON_OSX
-        then
-            # No Non portable dotnet package on macOS
-            echo "Only portable dotnet packages are supported on macOS. Rerun build.sh with -t flag to build portable"
-            exit 1
-        fi
-    else
-        if $ON_WINDOWS
-        then
-            # Only dotnet packages are supported on Windows
-            echo "Only dotnet packages are supported on Windows. Rerun build.sh with --net -t to build a Windows package"
-        else
-            $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_mono_packages.sh $params
-        fi
+        # maxcpucount:1 to avoid an error with multithreaded publish
+        eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
+        export RID TFM
+        $ROOT_PATH/tools/packaging/make_linux_package.sh $params
+    elif $ON_WINDOWS
+    then
+        # No Non portable dotnet package on windows yet
+        echo "Only portable dotnet packages are supported on windows. Rerun build.sh with -t flag to build portable"
+        exit 1
+    elif $ON_OSX
+    then
+        # No Non portable dotnet package on macOS
+        echo "Only portable dotnet packages are supported on macOS. Rerun build.sh with -t flag to build portable"
+        exit 1
     fi
 fi
 
@@ -678,21 +602,10 @@ if $PORTABLE
 then
     export UI_BIN
     PARAMS+=(p:PORTABLE=true)
-    if $NET
-    then
-        # maxcpucount:1 to avoid an error with multithreaded publish
-        echo "RID = $RID"
-        eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
-        export RID TFM
-        $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
-    else
-        if $ON_LINUX
-        then
-            $ROOT_PATH/tools/packaging/make_linux_mono_portable.sh $params
-        else
-            echo "Portable packages for Mono are only available on Linux. Exiting!"
-            exit 1
-        fi
-    fi
+    # maxcpucount:1 to avoid an error with multithreaded publish
+    echo "RID = $RID"
+    eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
+    export RID TFM
+    $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
 

@@ -12,7 +12,6 @@ OUTPUT_PATH="$ROOT_PATH/output/bin"
 TARGET="Release"
 QUIET=false
 TRACE=false
-NET=true
 
 PARAMS=()
 while [[ "$#" -gt 0 ]]
@@ -20,16 +19,12 @@ do
     case $1 in
     -d|--debug)
         TARGET="Debug"
-        if $ON_LINUX
-        then
-            LAUNCHER="$LAUNCHER --debug"
-        fi
         ;;
     -q|--quiet)
         QUIET=true
         ;;
     --net)
-        echo "'--net' flag is required only for building and is not used by launcher"
+        echo "'--net' flag is a no-op and will be removed in the future" >&1
         ;;
     --trace)
         TRACE=true
@@ -60,54 +55,16 @@ do
     shift
 done
 
-BUILD_TYPE_FILE="$OUTPUT_PATH/$TARGET/build_type"
-
-if [[ -f "$BUILD_TYPE_FILE" ]]
-then
-    if [[ "$(cat "$BUILD_TYPE_FILE")" == "mono" ]]
-    then
-        NET=false
-    fi
-fi
-
-if ! $NET && $TRACE
-then
-    echo "Tracing is available only on the dotnet target"
-    exit 1
-fi
-
-if ! $ON_WINDOWS && ! $NET
-then
-    verify_mono_version
-fi
-
-if ${REMOTE:-false} && ! $NET
-then
-    LAUNCHER="$LAUNCHER --debugger-agent=transport=dt_socket,address=0.0.0.0:${REMOTE_PORT:=9876},server=y"
-    echo "Waiting for a debugger at port $REMOTE_PORT..."
-fi
-
 if ${QUIET:-false}
 then
     exec 2>/dev/null
 fi
 
-if $NET
+if ! $TRACE
 then
-    export DOTNET_CLI_TELEMETRY_OPTOUT=1
-    if ! $TRACE
-    then
-        TRACE_COMMAND=""
-    else
-        TRACE_COMMAND="dotnet-trace collect --format ${TRACE_FORMAT} --"
-    fi
-
-    ${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/Renode.dll" "${PARAMS[@]:-}"
+    TRACE_COMMAND=""
 else
-    if $ON_WINDOWS
-    then
-        "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
-    else
-        $LAUNCHER "${OUTPUT_PATH}/${TARGET}/Renode.exe" "${PARAMS[@]:-}"
-    fi
+    TRACE_COMMAND="dotnet-trace collect --format ${TRACE_FORMAT} --"
 fi
+
+${TRACE_COMMAND} dotnet "${OUTPUT_PATH}/${TARGET}/Renode.dll" "${PARAMS[@]:-}"
