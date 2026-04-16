@@ -19,7 +19,7 @@ mv $TMP $DIR
 rm -rf $TMP
 
 # Force dotnet to save all NuGet dependencies, so we can bundle them with the package
-dotnet restore "${DIR}/Renode_NET.sln" --force --packages "${DIR}/nuget"
+dotnet restore "${DIR}/Renode.sln" --force --packages "${DIR}/nuget"
 
 # Add a local nuget package source
 cat > "${DIR}/NuGet.Config" <<EOF

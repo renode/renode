@@ -311,7 +311,7 @@ EOF
 fi
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-TARGET="`get_path \"$PWD/Renode_NET.sln\"`"
+TARGET="`get_path \"$PWD/Renode.sln\"`"
 PARAMS+=(p:NET=true)
 
 OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
@@ -542,7 +542,7 @@ then
     if ! $ON_WINDOWS
     then
         echo "Building librenode..."
-        eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface_NET.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
+        eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")' -c '$CONFIGURATION' -p:RenodeOutputDir='$(get_path "$ROOT_PATH/$OUT_BIN_DIR")'"
         cp "$ROOT_PATH/$OUT_BIN_DIR/runtimes/$RID/native/libMono.Unix.$LIB_EXT" "$ROOT_PATH/$OUT_BIN_DIR/"
     else
         echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"

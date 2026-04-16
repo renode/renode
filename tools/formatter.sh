@@ -62,7 +62,7 @@ function renode_format() {
   # We don't want to format external libs, dotnet fromat expects relative paths
   LIB_RELATIVE_PATH="$(realpath -s --relative-to=$(pwd -P) "$RENODE_ROOT_PATH/lib")"
 
-  COMMAND="dotnet format $RENODE_ROOT_PATH/Renode_NET.sln --exclude $LIB_RELATIVE_PATH"
+  COMMAND="dotnet format $RENODE_ROOT_PATH/Renode.sln --exclude $LIB_RELATIVE_PATH"
 
   if [[ "$ACTION" == "lint" ]]
   then
