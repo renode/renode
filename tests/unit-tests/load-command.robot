@@ -4,6 +4,7 @@ ${REMOTE}                               https://dl.antmicro.com/projects/renode
 ${RENODE_ROOT}                          ${CURDIR}${/}..${/}..${/}
 ${SNAPSHOT_PATH}                        ${RENODE_ROOT}current_build_snapshot
 ${SNAPSHOT_GZIP_PATH}                   ${SNAPSHOT_PATH}.gz
+${PROMPT}                               uart:~$
 ${ERROR_MESSAGE_BASE}                   KeywordException: Could not execute command '\.*': There was an error executing command '\.*'
 ${CORRUPTED_STATE_ERROR_MESSAGE_REGEX}  ${ERROR_MESSAGE_BASE}This snapshot is incompatible or the emulation's state is corrupted. Snapshot version: \.*. Your version: \.*
 ${CORRUPTED_METADATA_ERROR_REGEX}       ${ERROR_MESSAGE_BASE}The snapshot cannot be loaded as its metadata is corrupted.
@@ -19,14 +20,17 @@ Verify Snapshot Load
     Execute Command                 Load @${file}
     Execute Command                 mach set 0
     Create Terminal Tester          sysbus.uart0  timeout=5  defaultPauseEmulation=true
-    Wait For Line On Uart           uart:~$  includeUnfinishedLine=true
+    Write Line To Uart              # Write newline after snapshot load to ensure shell prompt gets re-printed 
+    Wait For Line On Uart           ${PROMPT}  includeUnfinishedLine=true
     Write Line To Uart              demo ping
     Wait For Line On Uart           pong  includeUnfinishedLine=true
 
 *** Test Cases ***
 Create Save For Current Build
     Execute Command                 include @scripts/single-node/zynqmp_zephyr.resc
-    Execute Command                 start
+    # Wait for prompt print to create snapshot in deterministic execution state
+    Create Terminal Tester          sysbus.uart0  timeout=5  defaultPauseEmulation=true
+    Wait For Line On Uart           ${PROMPT}  includeUnfinishedLine=true
     Execute Command                 Save @${SNAPSHOT_PATH}
 
 Load Snapshot From Same Build
