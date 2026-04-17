@@ -137,6 +137,35 @@ Vector-Vector ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should P
     ...                             treat_elements_as_signed=${is_signed}
     Register Q2 Should Contain ${expected_value}  message=${instruction}.${sign}${element_size}  element_size=${element_size}
 
+Test Vector-Vector to Scalar Instruction
+    [Arguments]                     ${instruction}
+    ...                             ${element_size}
+    ...                             ${sign}
+    ...                             ${operand1}
+    ...                             ${operand2}
+    ...                             ${starting_result_operand}=0x00000000
+
+    Reset Emulation
+    Create Machine
+
+    Set Register Q0 To ${operand1}
+    Set Register Q1 To ${operand2}
+    Execute Command                 cpu SetRegister "r0" ${starting_result_operand}
+
+    Load Program And Execute        ${instruction}.${sign}${element_size} r0, q0, q1
+
+    ${is_signed}=                   Evaluate  $sign.lower() == "s"
+    # Calls a helper function defined in mve-helpers.py: `compute_vector_to_scalar_$insn_result`.
+    # They're the partial functions at the very bottom (there's no def, just an assignment).
+    ${expected_value}=              Run Keyword  Compute Vector to Scalar ${instruction} Result
+    ...                             ${element_size}
+    ...                             ${operand1}
+    ...                             ${operand2}
+    ...                             ${starting_result_operand}
+    ...                             treat_elements_as_signed=${is_signed}
+
+    Register Should Be Equal        r0  ${expected_value}  message=${instruction}.${sign}${element_size}
+
 Complex Vector-Vector ${instruction:(vcadd.i|vhcadd.s)}${element_size} ${rotation} Should Produce Correct Result
     Reset Emulation
     Create Machine
@@ -923,3 +952,14 @@ VLDR Should Load System Registers From Memory
     Execute Command                 cpu Step
     Register Should Be Equal        R0  ${{$starting_address+8}}  message=P0  # R0 was incremented
     Register Should Be Equal        VPR  0xA1375678  message=P0  # P0 was read from  updated R0 address
+
+VABAV Should Produce Correct Results
+    FOR  ${operand1}  ${operand2}  ${starting_result_operand}  IN
+    ...  0x80005432803200830000003200210015  0x00500234002300438000003380230083  0x00000000  # Tests every element_size for both signed and unsigned versions
+    ...  0x80005432803200830000003200210015  0x00500234002300438000003380230083  0x81000000  # Test if original register data is added properly. Rda is unsigned
+        FOR  ${sign}  IN  S  U
+            FOR  ${element_size}  IN  8  16  32
+                Test Vector-Vector to Scalar Instruction  VABAV  ${element_size}  ${sign}  ${operand1}  ${operand2}  ${starting_result_operand}
+            END
+        END
+    END
