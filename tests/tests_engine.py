@@ -597,12 +597,13 @@ def run():
     # the value is restored later
     options.output = None
 
+    # Prepare job inputs
     if options.jobs == 1:
         global shared_suite_counter
         shared_suite_counter = 0
         global shared_active_suites
         shared_active_suites = []
-        tests_failed, logs = zip(*map(run_test_group, args))
+        pool = None
     else:
         multiprocessing.set_start_method("spawn")
         # To share a counter between all the worker processes, we must create a 
@@ -617,6 +618,12 @@ def run():
             initargs=(shared_suite_counter_object, shared_active_suites), 
             processes=options.jobs,
         )
+
+    # Run test job(s)
+    if options.jobs == 1:
+        tests_failed, logs = zip(*map(run_test_group, args))
+    else:
+        assert pool, "Pool must have been instantiated at this point"
         # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
         # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
         # otherwise it would not be possible to abort tests in progress
