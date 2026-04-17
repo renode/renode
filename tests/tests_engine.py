@@ -16,6 +16,7 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
 TestResult = namedtuple('TestResult', ('ok', 'log_file'))
 shared_suite_counter = None
+shared_active_suites = None
 
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
 
@@ -314,6 +315,7 @@ def configure_output(options):
 def run_test_group(args):
 
     global shared_suite_counter
+    global shared_active_suites
     group, total_number_of_suites, options = args
 
     iteration_counter = 0
@@ -337,6 +339,11 @@ def run_test_group(args):
             retry_suites_counter = 0
             should_retry_suite = True
             suite_failed = False
+
+            if shared_active_suites is None:
+                print("warning: `shared_active_suites` must be set for suite tracking to work")
+                shared_active_suites = []
+            shared_active_suites.append(suite.path)
 
             try:
                 while should_retry_suite and retry_suites_counter < options.retry_count:
@@ -365,6 +372,8 @@ def run_test_group(args):
                 import traceback
                 traceback.print_exception(e)
                 raise
+            finally:
+                shared_active_suites.remove(suite.path)
 
             if shared_suite_counter is None:
                 print("warning: `shared_suite_counter` must be set for suite counting to work")
@@ -528,9 +537,11 @@ def print_suite_files(segment: segmenting.GroupsSegment):
     print("")
 
 
-def init_worker_process(counter):
+def init_worker_process(counter, active_suites):
     global shared_suite_counter
     shared_suite_counter = counter 
+    global shared_active_suites
+    shared_active_suites = active_suites
 
 
 def run():
@@ -589,6 +600,8 @@ def run():
     if options.jobs == 1:
         global shared_suite_counter
         shared_suite_counter = 0
+        global shared_active_suites
+        shared_active_suites = []
         tests_failed, logs = zip(*map(run_test_group, args))
     else:
         multiprocessing.set_start_method("spawn")
@@ -596,9 +609,12 @@ def run():
         # multiprocessing.Value that gets passed to each worker process through
         # its initializer function (by assigning a global variable).
         shared_suite_counter_object = multiprocessing.Value('i', 0)
+        # Like the counter, we need to use a multiprocessing.Manager to create
+        # a shared list that keeps track of the currently running suites.
+        shared_active_suites = multiprocessing.Manager().list()
         pool = multiprocessing.Pool(
             initializer=init_worker_process, 
-            initargs=(shared_suite_counter_object,), # args must be a tuple
+            initargs=(shared_suite_counter_object, shared_active_suites), 
             processes=options.jobs,
         )
         # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
