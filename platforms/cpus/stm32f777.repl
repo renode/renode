@@ -90,7 +90,8 @@ adc2: Analog.STM32_ADC @ sysbus 0x40012100
 adc3: Analog.STM32_ADC @ sysbus 0x40012200
     IRQ-> nvic@18
 
-crc: CRC.STM32F0_CRC @ sysbus 0x40023000
+crc: CRC.STM32_CRC @ sysbus 0x40023000
+    series: STM32Series.F0
     configurablePoly: true
 
 exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
@@ -190,21 +191,27 @@ phy1: Network.EthernetPhysicalLayer @ ethernet 1
     AutoNegotiationLinkPartnerBasePageAbility: 0x001
 
 spi1: SPI.STM32SPI @ sysbus 0x40013000
+    series: STM32Series.F7
     IRQ -> nvic@35
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
+    series: STM32Series.F7
     IRQ -> nvic@36
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
+    series: STM32Series.F7
     IRQ -> nvic@51
 
 spi4: SPI.STM32SPI @ sysbus 0x40013400
+    series: STM32Series.F7
     IRQ -> nvic@84
 
 spi5: SPI.STM32SPI @ sysbus 0x40015000
+    series: STM32Series.F7
     IRQ -> nvic@85
 
 spi6: SPI.STM32SPI @ sysbus 0x40015400
+    series: STM32Series.F7
     IRQ -> nvic@86
 
 dma1: DMA.STM32DMA @ sysbus 0x40026000
@@ -249,7 +256,8 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
 rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
 
-rng: Miscellaneous.STM32F4_RNG @ sysbus 0x50060800
+rng: Miscellaneous.STM32_RNG @ sysbus 0x50060800
+    series: STM32Series.F7
     -> nvic@80
 
 pwrCr1: Python.PythonPeripheral @ sysbus 0x40007000
