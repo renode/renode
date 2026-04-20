@@ -41,7 +41,6 @@ Nightly builds of Renode for all systems are available at [builds.renode.io](htt
 The latest builds are always available as `renode-latest.*` packages.
 The following packages formats are available:
 * [`renode-latest.linux-portable.tar.gz`](https://builds.renode.io/renode-latest.linux-portable.tar.gz) - portable Linux package, embeds dotnet runtime
-* [`renode-latest.linux-mono-portable.tar.gz`](https://builds.renode.io/renode-latest.linux-mono-portable.tar.gz) - portable Linux package, embeds Mono runtime
 * [`renode-latest.linux.tar.gz`](https://builds.renode.io/renode-latest.linux.tar.gz) - Linux prebuilt archive, requires dotnet installed on host
 * [`renode-latest.pkg.tar.xz`](https://builds.renode.io/renode-latest.pkg.tar.xz) - Arch Linux package
 * [`renode-latest.x86_64.rpm`](https://builds.renode.io/renode-latest.x86_64.rpm) - Red Hat / Fedora package
@@ -85,27 +84,11 @@ Otherwise, proceed to the 'Running Renode' section.
 
 ### Installing dependencies
 
-#### Mono/dotnet
+#### dotnet
 
-Renode requires Mono >= 5.20 (Linux, macOS) or .NET Framework >= 4.7 (Windows).
-On all systems, you can also use dotnet >= 6.0.
+Renode requires dotnet >= 6.0.
 
-##### Linux
-
-To install dotnet on Linux, follow [the official installation guide](https://learn.microsoft.com/en-us/dotnet/core/install/linux).
-
-Alternatively, install the `mono-complete` package as per the installation instructions for various Linux distributions you can find on [the Mono project website](https://www.mono-project.com/download/stable/#download-lin).
-
-##### macOS
-
-To install dotnet on macOS, follow [the official installation guide](https://learn.microsoft.com/en-us/dotnet/core/install/macos).
-
-Alternatively, for Mono-based setups, you can download the Mono package directly from [the Mono project website](https://download.mono-project.com/archive/mdk-latest-stable.pkg).
-
-##### Windows
-
-To install modern dotnet (as opposed to .NET Framework) on Windows, follow [the official installation guide](https://learn.microsoft.com/en-us/dotnet/core/install/windows).
-The **.NET SDK** includes runtime, so you will be able to build and run Renode.
+To install dotnet, follow [the official installation guide](https://learn.microsoft.com/en-us/dotnet/core/install).
 
 #### Other dependencies (Linux only)
 
@@ -221,10 +204,6 @@ To start Renode in interactive mode on Linux, assuming you have Docker installed
 * For the latest numbered version build:
     ```
     docker run -ti -e DISPLAY -v $XAUTHORITY:/home/developer/.Xauthority --net=host antmicro/renode:latest
-    ```
-* For a nightly mono build:
-    ```
-    docker run -ti -e DISPLAY -v $XAUTHORITY:/home/developer/.Xauthority --net=host antmicro/renode:nightly
     ```
 * For a nightly dotnet build:
     ```
