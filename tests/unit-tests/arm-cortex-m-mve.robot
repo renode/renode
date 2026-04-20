@@ -55,7 +55,13 @@ Read Register R${index}
     ${value}=                       Evaluate  $value_str.strip()
     RETURN                          ${value}
 
+Remove Whitespaces
+    [Arguments]                     ${str}
+    ${str}=                         Evaluate  "".join($str.split())
+    [Return]                        ${str}
+
 Set Register Q${index} To ${value_128_bit}
+    ${value_128_bit}=               Remove Whitespaces  ${value_128_bit}
     ${values_32_bit}=               Split N Bit Value Into M Bit Values  128  32  ${value_128_bit}
     FOR  ${offset}  ${value}  IN ENUMERATE  @{values_32_bit}
         # Q registers are made up of 4 adjacent S registers.
@@ -76,6 +82,7 @@ Read Register Q${index}
 
 Register Q${index} Should Contain ${value_128_bit}
     [Arguments]                     ${message}=${EMPTY}  ${element_size}=32
+    ${value_128_bit}=               Remove Whitespaces  ${value_128_bit}
     ${q_register_value}=            Read Register Q${index}
 
     ${actual_elements}=             Split N Bit Value Into M Bit Values  128  ${element_size}  ${q_register_value}
@@ -963,3 +970,33 @@ VABAV Should Produce Correct Results
             END
         END
     END
+
+VQABS Should Produce Correct Results
+    Create Machine
+    Set Register Q0 To 0x80000000 01234428 8023 0234 81 02 00 ff  # Vector that contains negative and positive numbers for every element size
+
+    ${assembly}=                    Catenate  SEPARATOR=;
+    ...                             vqabs.s8 q1, q0
+    ...                             vqabs.s16 q2, q0
+    ...                             vqabs.s32 q3, q0
+
+    Load Program And Execute        ${assembly}
+
+    Register Q1 Should Contain 0x7f 00 00 00 01 23 44 28 7f 23 02 34 7f 02 00 01  element_size=8
+    Register Q2 Should Contain 0x7fff 0000 0123 4428 7fdd 0234 7efe 00ff  element_size=16
+    Register Q3 Should Contain 0x7fffffff 01234428 7fdcfdcc 7efdff01  element_size=32
+
+VQNEG Should Produce Correct Results
+    Create Machine
+    Set Register Q0 To 0x80000000 01234428 8023 0234 81 02 00 ff  # Vector that contains negative and positive numbers for every element size
+
+    ${assembly}=                    Catenate  SEPARATOR=;
+    ...                             vqneg.s8 q1, q0
+    ...                             vqneg.s16 q2, q0
+    ...                             vqneg.s32 q3, q0
+
+    Load Program And Execute        ${assembly}
+
+    Register Q1 Should Contain 0x7f 00 00 00 ff dd bc d8 7f dd fe cc 7f fe 00 01  element_size=8
+    Register Q2 Should Contain 0x7fff 0000 fedd bbd8 7fdd fdcc 7efe ff01  element_size=16
+    Register Q3 Should Contain 0x7fffffff fedcbbd8 7fdcfdcc 7efdff01  element_size=32
