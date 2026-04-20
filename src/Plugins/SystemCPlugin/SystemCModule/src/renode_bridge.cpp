@@ -336,9 +336,9 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
     sensitive << gpio_ports_in[i];
   }
 
-  SC_METHOD(on_init_ns_vtor)
+  SC_METHOD(on_init_ns_vtor);
   sensitive << init_vtor_ns_in;
-  SC_METHOD(on_init_s_vtor)
+  SC_METHOD(on_init_s_vtor);
   sensitive << init_vtor_s_in;
 
   bus_target_fw_handler.initialize(this, 0);
