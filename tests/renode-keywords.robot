@@ -23,7 +23,6 @@ ${SAVE_LOGS}                 True
 ${SAVE_LOGS_WHEN}            Fail
 ${HOLD_ON_ERROR}             False
 ${CREATE_EXECUTION_METRICS}  False
-${NET_PLATFORM}              True
 ${PROFILER_PROCESS}          None
 
 *** Keywords ***
@@ -44,13 +43,6 @@ Setup
 
     IF  not ${SKIP_RUNNING_SERVER}
         File Should Exist    ${DIRECTORY}/${BINARY_NAME}  msg=Robot Framework remote server binary not found (${DIRECTORY}/${BINARY_NAME}). Did you forget to build it in ${CONFIGURATION} configuration?
-    END
-
-    IF  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
-        Start Process  mono
-          ...            --debug
-          ...            --debugger-agent\=transport\=dt_socket,address\=0.0.0.0:${SERVER_REMOTE_PORT},server\=y,suspend\=${SERVER_REMOTE_SUSPEND}
-          ...            ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
     END
 
     IF  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
@@ -184,17 +176,9 @@ Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
 
 Start Profiler Or Skip
-    IF  not ${NET_PLATFORM}
-        Fail                   Failed to run profiler. Available only for .NET platform.  skipped
-    END
-
     Start Profiler
 
 Start Profiler
-    IF  not ${NET_PLATFORM}
-        Fail                   Failed to run profiler. Available only for .NET platform.
-    END
-
     ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
     ${test_name}=               Sanitize Test Name  ${test_name}
 
