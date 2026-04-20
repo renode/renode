@@ -1,6 +1,3 @@
-MONOVERSION=`cat ../mono_version`
-MONO_MAJOR=`echo $MONOVERSION | cut -d'.' -f1`
-MONO_MINOR=`echo $MONOVERSION | cut -d'.' -f2`
 DOTNET_VERSION="8.0"
 TARGET="Release"
 BASE=../..
