@@ -86,6 +86,9 @@ def mc_if(condition, cmd):
         for line in cmd.splitlines():
             monitor.Parse(line)
 
+def mc_str_contains(a, b):
+        print a.lower() in b.lower()
+
 externals = type('ExternalsManagerAccessor', (object,), dict(
     __getitem__ = lambda _, name: Renode.Core.Structure.IHasChildren[Renode.Core.IExternal].TryGetByName(emulationManager.CurrentEmulation.ExternalsManager, name)[0],
     __getattr__ = lambda self, name: self.__getitem__(name),
