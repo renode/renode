@@ -155,6 +155,8 @@ def try_get_category(platform):
         "mimxrt1064_evk":   "NXP I.MX",
         "mimxrt700_evk":  "NXP I.MX",
         "mimxrt798s":  "NXP I.MX",
+        "nxp-frdm-imx8mplus": "NXP I.MX",
+        "nxp-mimx8ml": "NXP I.MX",
         "miv": "MIV",
         "miv-board":   "MIV",
         "miv-board-additional-uarts":  "MIV",
