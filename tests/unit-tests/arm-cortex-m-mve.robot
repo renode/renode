@@ -727,3 +727,117 @@ Shift Long Instructions Should Produce Correct Results
             ${signed}                       ${kind}  ${direction}  ${input}
         END
     END
+
+VMRS Should Read From System Registers
+    Create Machine                  trustZoneEnabled=${True}
+
+    ${fpscr}=                       Set Variable  0xAA0F0F0F  # Arbitrary values for testing. FPSCR will be reset on context creation so we'll set it later
+    Execute Command                 cpu FPDSCR_NS 0xA137FEEF  # Arbitrary values for testing
+    ${vpr}=                         Set Variable  0xA137FEEF  # Arbitrary values for testing. VPR will be reset on context creation so we'll set it later
+    Execute Command                 cpu SetRegister "Control" 0x00000000  # Bit 0 has to be unset to stay in Privilaged mode, bit 2 need to be unset to test FPCXTNS without context
+    Execute Command                 cpu SetRegister "R1" 0x0000000D  # New value for Control register to switch to User mode, need to remember to keep the FPCA set
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             VMRS R0, FPCXTNS
+    ...                             VMRS R0, FPSCR  # Create FP context
+    ...                             VMRS R0, FPSCR
+    ...                             VMRS R0, FPSCR_nzcvqc
+    ...                             VMRS APSR_nzcv, FPSCR
+    ...                             VMRS R0, VPR
+    ...                             VMRS R0, P0
+    ...                             VMRS R0, FPCXTNS
+    ...                             MOV R0, #0  # Clean R0
+    ...                             VMRS R0, FPCXTS
+    ...                             MSR Control, R1  # Switch to User mode
+    ...                             VMRS R0, VPR
+
+    Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
+    Execute Command                 cpu PC ${START_ADDRESS}
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  0xA137FEEF  message=FPCXTNS (no FP context)  # There's no FP context so it'll load whole FPDSCR_NS register
+    Register Should Be Equal        FPSCR  0x40000  message=FPCXTNS (no FP context)  # FPSCR won't change from default
+
+    Execute Command                 cpu Step  # FP context got created
+    Register Should Be Equal        Control  0x0000000C  message=Context creation
+    Execute Command                 cpu SetRegister "FPSCR" ${fpscr}  # Set FPSCR and VPR to test values
+    Execute Command                 cpu SetRegister "VPR" ${vpr}
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${fpscr}  message=FPSCR
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  0xA8000000  message=FPSCR_nzcvqc  # Should only read 5 upper bits
+
+    Execute Command                 cpu Step
+    ${xpsr}=                        Execute Command  cpu GetRegister "CPSR"  # Cortex-M has XPSR instead of CPSR register, but we support access to it under CPSR name
+    ${xpsr_result}=                 Evaluate  str(int($xpsr.strip(),16) | (${fpscr} & 0xF0000000))
+    Register Should Be Equal        CPSR  ${xpsr_result}  message=XPSR  # Should only set 4 upper bits
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${vpr}  message=VPR (Privilaged)
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  0x0000FEEF  message=P0  # Should only read 16 lower bits
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  0x8A0F0F0F  message=FPCXTNS (with FP context)  # FP context exists so it'll load FPSCR[27:0] and Control[2] at 31th bit
+    Register Should Be Equal        FPSCR  ${fpscr}  message=FPCXTNS (with FP context)  # FPSCR won't change
+
+    Execute Command                 cpu Step 2
+    Register Should Be Equal        R0  0x8A0F0F0F  message=FPCXTS  # No matter if Floating Point context is enabled it'll load FPSCR
+    Register Should Be Equal        FPSCR  0xA137FEEF  message=FPCXTS  # FPSCR will update to FPDSCR_NS
+
+    Execute Command                 cpu Step 2
+    Register Should Be Equal        R0  0x8A0F0F0F  message=VPR (non Privilaged)  # In User mode read from VPR should be treated as a nop, so register value should be the same as before
+
+VMSR Should Write to System Registers
+    Create Machine                  trustZoneEnabled=${True}
+
+    ${fpscr}=                       Set Variable  0xAA0F0F0F
+
+    Execute Command                 cpu SetRegister "R0" 0xAA0F0F0F  # Arbitrary values for testing
+    Execute Command                 cpu SetRegister "R1" 0xA137FEEF  # Arbitrary values for testing
+    Execute Command                 cpu SetRegister "Control" 0x00000000  # Bit 0 has to be unset to stay in Privilaged mode, bit 2 need to be unset to test FPCXTNS without context
+    Execute Command                 cpu SetRegister "R10" 0x0000000D  # New value for Control register to switch to User mode, need to remember to keep the FPCA set
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             VMSR FPCXTNS, R0
+    ...                             VMSR FPSCR_nzcvqc, R0
+    ...                             VMSR FPSCR, R0
+    ...                             VMSR P0, R1
+    ...                             VMSR VPR, R1
+    ...                             VMSR FPCXTNS, R1
+    ...                             VMSR FPCXTS, R0
+    ...                             MSR Control, R10  # Switch to User mode
+    ...                             VMSR VPR, R0
+
+    Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
+    Execute Command                 cpu PC ${START_ADDRESS}
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        FPSCR  0x40000  message=FPCXTNS (no FP context)  # There's no FP context so nothing will change
+    Register Should Be Equal        Control  0x00000000  message=FPCXTNS (no FP context)
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        Control  0x0000000C  message=Context creation
+    Register Should Be Equal        FPSCR  0xA8040000  message=FPSCR_nzcvqc  # Should only write 5 upper bits
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        FPSCR  ${fpscr}  message=FPSCR
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        VPR  0x0000FEEF  message=P0  # Should only write 16 lower bits
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        VPR  0xA137FEEF  message=VPR (Privilaged)
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        FPSCR  0x0137FEEF  message=FPCXTNS (with FP context)  # FP context exists so it'll load R1 to FPSCR[27:0] and R1[31] to Control[2]
+    Register Should Be Equal        Control  0x0000000C  message=FPCXTNS (with FP context)
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        FPSCR  0x0A0F0F0F  message=FPCXTS  # FPCXTS will get updated no matter the state of Floating Point context
+    Register Should Be Equal        Control  0x0000000C  message=FPCXTS
+
+    Execute Command                 cpu Step 2
+    Register Should Be Equal        VPR  0xA137FEEF  message=VPR (non Privilaged)  # In User mode write to VPR should be treated as a nop, so register value should be the same as before
