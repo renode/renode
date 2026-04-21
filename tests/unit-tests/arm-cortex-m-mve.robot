@@ -94,6 +94,28 @@ Register Q${index} Should Contain ${value_128_bit}
         ...                             ${message} lane number ${lane_number}
     END
 
+Memory Should Be Equal
+    [Arguments]                     ${address}
+    ...                             ${expected_value}
+    ...                             ${element_size}
+    ...                             ${message}=${None}
+
+    IF  ${element_size} == 8
+        ${value}=                       Execute Command  sysbus ReadByte ${address}
+    ELSE IF  ${element_size} == 16
+        ${value}=                       Execute Command  sysbus ReadWord ${address}
+    ELSE IF  ${element_size} == 32
+        ${value}=                       Execute Command  sysbus ReadDoubleWord ${address}
+    ELSE
+        Fail                            Invalid element_size=${element_size}
+    END
+    ${value}=                       Evaluate  int(${value})
+    TRY
+        Should Be Equal As Integers     ${value}  ${expected_value}
+    EXCEPT
+        Fail                            ${message}: Value on address ${{hex(${address})}} assertion failed, actual: ${{hex(${value})}}, expected: ${{hex(${expected_value})}}
+    END
+
 Vector-Vector ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct Result
     Reset Emulation
     Create Machine
@@ -841,3 +863,63 @@ VMSR Should Write to System Registers
 
     Execute Command                 cpu Step 2
     Register Should Be Equal        VPR  0xA137FEEF  message=VPR (non Privilaged)  # In User mode write to VPR should be treated as a nop, so register value should be the same as before
+
+VSTR Should Store System Registers to Memory
+    Create Machine                  trustZoneEnabled=${True}  # Enable TrustZone to be able to modify CONTROL
+    Execute Command                 cpu SetRegister "Control" 0x0000000C  # Set CONTROL to show that FP context exists
+
+    ${starting_address}=            Evaluate  int(${DATA_ADDRESS})
+    Execute Command                 cpu SetRegister "R0" ${DATA_ADDRESS}
+    Execute Command                 cpu SetRegister "FPSCR" 0xAA0F0F0F  # Arbitrary values for testing
+    Execute Command                 cpu SetRegister "VPR" 0xA137FEEF  # Arbitrary values for testing
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             VSTR FPSCR, [R0], #4
+    ...                             VSTR VPR, [R0]
+    ...                             VSTR P0, [R0, #4]!
+
+    Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
+    Execute Command                 cpu PC ${START_ADDRESS}
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+4}}  message=FPSCR  # R0 was incremented
+    Memory Should Be Equal          ${{$starting_address}}  0xAA0F0F0F  32  message=FPSCR  # FPSCR was written to old R0 address
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+4}}  message=VPR  # R0 stayed the same
+    Memory Should Be Equal          ${{$starting_address+4}}  0xA137FEEF  32  message=VPR  # VPR was written to current R0 address
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+8}}  message=P0  # R0 was incremented
+    Memory Should Be Equal          ${{$starting_address+8}}  0x0000FEEF  32  message=P0  # P0 was written to updated R0 address
+
+VLDR Should Load System Registers From Memory
+    Create Machine                  trustZoneEnabled=${True}  # Enable TrustZone to be able to modify CONTROL
+    Execute Command                 cpu SetRegister "Control" 0x0000000C  # Set CONTROL to show that FP context exists
+
+    ${starting_address}=            Evaluate  int(${DATA_ADDRESS})
+    Execute Command                 cpu SetRegister "R0" ${DATA_ADDRESS}
+
+    Execute Command                 sysbus WriteDoubleWord ${starting_address} 0xAA0F0F0F  # Arbitrary values for testing
+    Execute Command                 sysbus WriteDoubleWord ${{$starting_address+4}} 0xA137FEEF  # Arbitrary values for testing
+    Execute Command                 sysbus WriteDoubleWord ${{$starting_address+8}} 0x12345678  # Arbitrary values for testing
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             VLDR FPSCR, [R0], #4
+    ...                             VLDR VPR, [R0]
+    ...                             VLDR P0, [R0, #4]!
+
+    Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
+    Execute Command                 cpu PC ${START_ADDRESS}
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+4}}  message=FPSCR  # R0 was incremented
+    Register Should Be Equal        FPSCR  0xAA0F0F0F  message=FPSCR  # FPSCR was read from old R0 address
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+4}}  message=VPR  # R0 stayed the same
+    Register Should Be Equal        VPR  0xA137FEEF  message=VPR  # VPR was read from  current R0 address
+
+    Execute Command                 cpu Step
+    Register Should Be Equal        R0  ${{$starting_address+8}}  message=P0  # R0 was incremented
+    Register Should Be Equal        VPR  0xA1375678  message=P0  # P0 was read from  updated R0 address
