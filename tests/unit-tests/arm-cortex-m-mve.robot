@@ -33,6 +33,7 @@ Load Program And Execute
 
 Create Machine
     [Arguments]                     ${trustZoneEnabled}=${False}
+    ...                             ${mveEnabled}=${True}
 
     Execute Command                 mach create
 
@@ -40,11 +41,15 @@ Create Machine
     ...                             using "${PLATFORM}"
     ...
     ...                             cpu: {enableTrustZone: ${trustZoneEnabled}}
-                                    # Because our SP at start is set to 0, fault memory is used as a place to keep stack for when exception happens.
-                                    # This is mainly used for getting PC for the improperly handled instruction during run of Load Program And Execute keyword.
+    ...                               # Because our SP at start is set to 0, fault memory is used as a place to keep stack for when exception happens.
+    ...                               # This is mainly used for getting PC for the improperly handled instruction during run of Load Program And Execute keyword.
     ...                             fault: Memory.MappedMemory @ sysbus 0xFFFFFC00 { size: 0x400 }
 
     Execute Command                 machine LoadPlatformDescriptionFromString """${platform_string}"""
+
+    IF  ${mveEnabled}
+        Execute Command                 sysbus WriteDoubleWord 0xE000ED88 0x00F00000  # Set CPACR.CP10 (and CPACR.CP11) to permit usage of VFP/MVE coprocessor
+    END
 
     # Register hook to make invalid instructions fail the test.
     ${hook}=                        Catenate  SEPARATOR=\n
@@ -593,6 +598,30 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding|Satura
     Should Be Equal As Integers     ${actual_result}  ${expected_result}
     ...                             msg=expected `${instruction} ${input} shifted by ${shift_by}` to result in ${expected_result} but actual is ${actual_result}
 
+Execute LOB and Test Results
+    [Arguments]                     ${assembly}
+    ...                             ${input_q0}
+    ...                             ${result_r2}
+    ...                             ${input_loop_count}
+    ...                             ${result_loop_count}
+    TRY
+        Reset Emulation
+        Create Machine
+
+        Set Register Q0 To ${input_q0}
+        Execute Command                 cpu SetRegister "R0" ${input_loop_count}
+
+        Load Program And Execute        ${assembly}
+        Register Should Be Equal        R2  ${result_r2}
+        Register Should Be Equal        R1  ${result_loop_count}
+    EXCEPT  AS  ${message}
+        ${fail_message}=                Catenate  SEPARATOR=\n
+        ...                             input q0=${input_q0}
+        ...                             input loop count=${input_loop_count}
+        ...                             ${message}
+        Fail                            ${fail_message}
+    END
+
 *** Test Cases ***
 Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
@@ -1137,3 +1166,69 @@ VQNEG Should Produce Correct Results
     Register Q1 Should Contain 0x7f 00 00 00 ff dd bc d8 7f dd fe cc 7f fe 00 01  element_size=8
     Register Q2 Should Contain 0x7fff 0000 fedd bbd8 7fdd fdcc 7efe ff01  element_size=16
     Register Q3 Should Contain 0x7fffffff fedcbbd8 7fdcfdcc 7efdff01  element_size=32
+
+LOB DLSTP Should Produce Correct Result
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             DLSTP.{element_size} LR, R0  # Start of the loop, sets LR to R0
+    ...                             loop_start:
+    ...                             VADDVA.S{element_size} R2, Q0  # Sums elements of Q0 and adds to R2
+    ...                             ADD R1, 1  # Add to show the count of executed loop iterations
+    ...                             LETP LR, loop_start  # End of loop, will jump to loop_start if LR is
+
+    # General tests for when loop count is larger than 0
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=32)}  input_q0=0x01000000 00010000 00000100 00000001  result_r2=0x02020303  input_loop_count=10  result_loop_count=3
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=16)}  input_q0=0x0001 0010 0100 1000 0004 0040 0400 4000  result_r2=0x00009999  input_loop_count=12  result_loop_count=2
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=8)}  input_q0=0x10 0F 0E 0D 0C 0B 0A 09 08 07 06 05 04 03 02 01  result_r2=0x00000024  input_loop_count=8  result_loop_count=1
+
+    # Test for when loop count is equal 0
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=32)}  input_q0=0x01000000000100000000010000000001  result_r2=0x00000000  input_loop_count=0  result_loop_count=1
+
+LOB WLSTP Should Produce Correct Result
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             WLSTP.{element_size} LR, R0, loop_end  # Start of the loop, sets LR to R0
+    ...                             loop_start:
+    ...                             VADDVA.S{element_size} R2, Q0  # Sums elements of Q0 and adds to R2
+    ...                             ADD R1, 1  # Add to show the count of executed loop iterations
+    ...                             LETP LR, loop_start  # End of loop, will jump to loop_start if LR is
+    ...                             loop_end:
+
+    # General tests for when loop count is larger than 0
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=32)}  input_q0=0x01000000 00010000 00000100 00000001  result_r2=0x02020303  input_loop_count=10  result_loop_count=3
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=16)}  input_q0=0x0001 0010 0100 1000 0004 0040 0400 4000  result_r2=0x00009999  input_loop_count=12  result_loop_count=2
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=8)}  input_q0=0x10 0F 0E 0D 0C 0B 0A 09 08 07 06 05 04 03 02 01  result_r2=0x00000024  input_loop_count=8  result_loop_count=1
+
+    # Test for when loop count is equal 0
+    Execute LOB and Test Results    assembly=${assembly.format(element_size=32)}  input_q0=0x01000000000100000000010000000001  result_r2=0x00000000  input_loop_count=0  result_loop_count=0
+
+LOB LCTP Should Clean LTPSIZE
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             DLSTP.32 LR, R0  # Start of the loop with tail predication
+    ...                             NOP
+    ...                             LCTP
+
+    Create Machine
+    Execute Command                 cpu SetRegister "R0" 3
+    Load Program And Execute        ${assembly}
+    Register Should Be Equal        FPSCR  0x00040000
+
+LOB LE Should Raise Exception
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             DLSTP.32 LR, R0  # Start of the loop with tail predication
+    ...                             loop_start:
+    ...                             NOP
+    ...                             LE LR, loop_start  # End of not tail predicated loop
+
+    ${interrupt_address}=           Set Variable  ${0x1000}
+    Create Machine
+    # We add 1 to the interrupt address in the vector table to signify we're still in Thumb state. It is required on Armv8-M.
+    Execute Command                 sysbus WriteDoubleWord 0x18 ${interrupt_address+1}
+    Execute Command                 cpu SetRegister "R0" 3
+
+    Load Program And Execute        ${assembly}  ${interrupt_address}
+
+    # LE instruction should raise UsageFault exception
+    Register Should Be Equal        PC  ${interrupt_address}
+
+    # UFSR.INVSTATE (17th bit of CFSR) should be set
+    ${cfsr}=                        Execute Command  cpu FaultStatus
+    Should Be Equal As Integers     ${cfsr}  0x00020000
