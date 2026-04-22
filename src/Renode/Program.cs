@@ -33,6 +33,12 @@ namespace Antmicro.Renode
             {
                 return;
             }
+
+            MainWithOptions(options);
+        }
+
+        public static void MainWithOptions(Options options)
+        {
             if(options.Version)
             {
                 Console.Out.WriteLine(LongVersionString);
