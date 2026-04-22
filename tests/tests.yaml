@@ -281,3 +281,6 @@
 
 - port_3342:
   - tests/unit-tests/gdb/gdb_should_crash.robot
+
+- port_3343:
+  - tests/native-interface/native-interface.robot
