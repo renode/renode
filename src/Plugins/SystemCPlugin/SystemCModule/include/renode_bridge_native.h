@@ -10,7 +10,6 @@
 #include <optional>
 #include <systemc>
 #include <tlm>
-#include "renode_bridge_native_export.h"
 
 struct IRenodeBridge {
   virtual void reset() = 0;
