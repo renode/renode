@@ -236,6 +236,6 @@ rng: Miscellaneous.STM32_RNG @ sysbus 0x420c0800
 adc1: Analog.STM32L5_ADC @ sysbus 0x42028000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    dmaChannel: 1
-    dmaPeripheral: dma2
+    dmaChannel: 5
+    dmaPeripheral: dmamux
     IRQ->nvic@37
