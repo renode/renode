@@ -117,6 +117,15 @@ i2c1: I2C.STM32F1_I2C @ sysbus 0x40005400
     EventInterrupt -> nvic@55
     ErrorInterrupt -> nvic@56
 
+fdcanRAM: Memory.ArrayMemory @ sysbus 0x4000AC00
+    size: 0x400
+
+fdcan1: CAN.STM32_FDCAN @ sysbus 0x4000A400
+    series: .L5
+    messageRam: fdcanRAM
+    Int0 -> nvic@47
+    Int1 -> nvic@48
+
 rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
     -> exti@17
 
@@ -228,7 +237,15 @@ sysbus:
 rcc: Python.PythonPeripheral @ sysbus 0x40021000
     size: 0x400
     initable: true
-    filename: "scripts/pydev/flipflop.py"
+    script: '''
+if request.IsInit:
+    lastVal = 0
+else:
+    lastVal = 1 - lastVal
+    request.Value = lastVal * 0xFFFFFFFF
+    if request.Offset == 0x0:
+        request.Value = request.Value | (1 << 17)
+'''
 
 flashController: MTD.STM32WBA_FlashController @ sysbus 0x40022000
     flash: flash
