@@ -66,26 +66,23 @@ namespace Antmicro.Renode
             {
                 try
                 {
-                    if(optionsParsed)
+                    Antmicro.Renode.UI.CommandLineInterface.Run(options, (context) =>
                     {
-                        Antmicro.Renode.UI.CommandLineInterface.Run(options, (context) =>
+                        if(options.RobotFrameworkRemoteServerPort >= 0)
                         {
-                            if(options.RobotFrameworkRemoteServerPort >= 0)
-                            {
-                                var rf = new RobotFrameworkEngine();
-                                context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
-                                rf.Start(options.RobotFrameworkRemoteServerPort);
-                            }
+                            var rf = new RobotFrameworkEngine();
+                            context.RegisterSurrogate(typeof(RobotFrameworkEngine), rf);
+                            rf.Start(options.RobotFrameworkRemoteServerPort);
+                        }
 #if NET
-                            if(options.ServerMode)
-                            {
-                                var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
-                                Emulator.BeforeExit += wsAPI.Dispose;
-                                wsAPI.Start();
-                            }
+                        if(options.ServerMode)
+                        {
+                            var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
+                            Emulator.BeforeExit += wsAPI.Dispose;
+                            wsAPI.Start();
+                        }
 #endif
-                        });
-                    }
+                    });
                 }
                 finally
                 {
