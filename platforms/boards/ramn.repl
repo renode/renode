@@ -10,3 +10,5 @@ if request.IsRead:
     else:
         request.Value = 0
 '''
+
+dummySpi: Mocks.DummySPISlave @ spi2

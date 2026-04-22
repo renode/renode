@@ -1,0 +1,20 @@
+:name: RAMN
+:description: Runs the RAMN firmware (https://github.com/ToyotaInfoTech/RAMN) on 4 ECUs connected over CAN
+
+emulation CreateCANHub "canHub"
+
+set global.name "ECUA"
+include @scripts/single-node/ramn.resc 
+connector Connect sysbus.fdcan1 canHub
+
+set global.name "ECUB"
+include @scripts/single-node/ramn.resc 
+connector Connect sysbus.fdcan1 canHub
+
+set global.name "ECUC"
+include @scripts/single-node/ramn.resc 
+connector Connect sysbus.fdcan1 canHub
+
+set global.name "ECUD"
+include @scripts/single-node/ramn.resc 
+connector Connect sysbus.fdcan1 canHub

@@ -1,0 +1,28 @@
+:name: RAMN
+:description: Runs the RAMN firmware (https://github.com/ToyotaInfoTech/RAMN). By default emulates ECUC but can be overriden by setting $name
+
+$global.name?="ECUC"
+mach create $name
+include @platforms/boards/ramn.repl
+
+if `str_contains $global.name "ECUA"`
+"""
+$bin= @https://dl.antmicro.com/projects/renode/ECUA.elf-s_2734852-5896caa99eb55997686c9235ab5fa1e6587c2180
+"""
+
+if `str_contains $global.name "ECUB"`
+"""
+$bin= @https://dl.antmicro.com/projects/renode/ECUB.elf-s_2423936-4be3c992fca8a9795ba5630628ceef50a568f23f
+"""
+
+if `str_contains $global.name "ECUC"`
+"""
+$bin= @https://dl.antmicro.com/projects/renode/ECUC.elf-s_2416512-f9fab061973e8720fcf4882bd192fe5f2a34f4a0
+"""
+
+if `str_contains $global.name "ECUD"`
+"""
+$bin= @https://dl.antmicro.com/projects/renode/ECUD.elf-s_2438796-cb40e76e43568eaa82bb74f9c3b7caf804f34449
+"""
+
+sysbus LoadELF $bin
