@@ -6,8 +6,6 @@ project(
     DESCRIPTION "SystemC module for interfacing with Renode"
     LANGUAGES CXX)
 
-include(GenerateExportHeader)
-
 file(GLOB_RECURSE SOURCES_SOCKET_CPP lib/socket-cpp/*.cpp)
 add_library(socket_cpp ${SOURCES_SOCKET_CPP})
 
@@ -18,19 +16,22 @@ target_link_libraries(renode_bridge socket_cpp systemc)
 
 add_library(renode_bridge_native OBJECT src/renode_bridge_native.cpp)
 
-set_target_properties(renode_bridge_native PROPERTIES DEFINE_SYMBOL RBN_ALWAYS_EXPORT)
-target_compile_definitions(renode_bridge_native PUBLIC RBN_ALWAYS_EXPORT)
-    generate_export_header(renode_bridge_native
-    EXPORT_FILE_NAME export/renode_bridge_native_export.h
-    EXPORT_MACRO_NAME RENODE_BRIDGE_API
+set(EXPORT_DEF "")
+if(WIN32 OR CYGWIN)
+    set(EXPORT_DEF "__declspec(dllexport)")
+endif()
+
+target_compile_definitions(renode_bridge_native PUBLIC
+    RENODE_BRIDGE_API=${EXPORT_DEF}
 )
 
-target_include_directories(renode_bridge_native PUBLIC include "${CMAKE_CURRENT_BINARY_DIR}/export")
-
+target_include_directories(renode_bridge_native PUBLIC include)
 # The path of the `renode_imports.h` header differs depending on whether Renode
 # is provided in source or package distribution. Cover both of these cases here
-target_include_directories(renode_bridge_native PUBLIC ../../../Infrastructure/src/Emulator/Cores/renode/include)
-target_include_directories(renode_bridge_native PUBLIC ../IntegrationLibrary/src)
+target_include_directories(renode_bridge_native PUBLIC
+    ../../../Infrastructure/src/Emulator/Cores/renode/include
+    ../IntegrationLibrary/src
+)
 
 target_link_libraries(renode_bridge_native systemc)
 set_target_properties(renode_bridge_native PROPERTIES POSITION_INDEPENDENT_CODE ON)
