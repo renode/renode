@@ -23,7 +23,6 @@ fi
 ROOT_PATH="$(cd "$(dirname $0)"; echo $PWD)"
 export ROOT_PATH
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
-EXPORT_DIRECTORY=""
 
 UPDATE_SUBMODULES=false
 CONFIGURATION="Release"
@@ -62,7 +61,6 @@ function print_help() {
   echo "-n                                tag built packages as nightly"
   echo "-s                                update submodules"
   echo "-b                                custom build properties file"
-  echo "-o                                custom output directory"
   echo "--skip-fetch                      skip fetching submodules and additional resources"
   echo "--no-gui                          build with GUI disabled"
   echo "--force-net-framework-version     build against different version of .NET Framework than specified in the solution"
@@ -82,7 +80,7 @@ function print_help() {
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
 
-while getopts "cdvpnstb:o:B:F:-:" opt
+while getopts "cdvpnstb:B:F:-:" opt
 do
   case $opt in
     c)
@@ -108,10 +106,6 @@ do
       ;;
     b)
       CUSTOM_PROP=$OPTARG
-      ;;
-    o)
-      EXPORT_DIRECTORY=$OPTARG
-      echo "Setting the output directory to $EXPORT_DIRECTORY"
       ;;
     B)
       RID=$OPTARG
@@ -607,18 +601,6 @@ params=""
 if [ $CONFIGURATION == "Debug" ]
 then
     params="$params -d"
-fi
-
-if [ -n "$EXPORT_DIRECTORY" ]
-then
-    if [ "${DETECTED_OS}" != "linux" ]
-    then
-        echo "Custom output directory is currently available on Linux only"
-        exit 1
-    fi
-
-    $ROOT_PATH/tools/packaging/export_${DETECTED_OS}_workdir.sh $EXPORT_DIRECTORY $params
-    echo "Renode built to $EXPORT_DIRECTORY"
 fi
 
 if $NIGHTLY
