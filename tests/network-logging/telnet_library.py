@@ -9,7 +9,12 @@ writer: TelnetWriter
 def telnet_connect(port: int) -> None:
     global reader, writer
 
-    loop = asyncio.get_event_loop()
+    # Python 3.14+ doesn't implicitly create an event loop
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     # Coroutines with event loop required for robot tests
     coro = open_connection('localhost', port)
