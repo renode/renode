@@ -21,6 +21,7 @@ if(WIN32 OR CYGWIN)
     set(EXPORT_DEF "__declspec(dllexport)")
 endif()
 
+# RENODE_BRIDGE_API definition will be used in `renode_imports.h`
 target_compile_definitions(renode_bridge_native PUBLIC
     RENODE_BRIDGE_API=${EXPORT_DEF}
 )
