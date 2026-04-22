@@ -37,11 +37,11 @@ extern "C" {
   RENODE_BRIDGE_API void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset);
 
   RENODE_BRIDGE_API void gpio_write(int number, bool value);
-  RENODE_BRIDGE_API void renode_gpio_update(int number, int value);
+  void renode_gpio_update(int number, int value);
 
-  RENODE_BRIDGE_API void renode_invalidate_translation_blocks(std::uint64_t start_address, std::uint64_t end_address);
-  RENODE_BRIDGE_API void renode_read_bytes_from_bus(std::uint64_t address, void *out_buf, std::int32_t count);
-  RENODE_BRIDGE_API void renode_write_bytes_to_bus(std::uint64_t address, void *in_buf, std::int32_t count);
+  void renode_invalidate_translation_blocks(std::uint64_t start_address, std::uint64_t end_address);
+  void renode_read_bytes_from_bus(std::uint64_t address, void *out_buf, std::int32_t count);
+  void renode_write_bytes_to_bus(std::uint64_t address, void *in_buf, std::int32_t count);
 }
 
 std::optional<DmiRegion> renode_get_direct_mem_ptr(uint64_t address);
