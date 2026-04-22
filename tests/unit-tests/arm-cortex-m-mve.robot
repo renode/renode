@@ -10,20 +10,26 @@ ${PLATFORM}                         platforms/cpus/renesas-r7fa8m1a.repl
 
 *** Keywords ***
 Load Program And Execute
-    [Arguments]                     ${ASSEMBLY}
-    ${assembly_size}=               Execute Command  cpu AssembleBlock ${START_ADDRESS} """${ASSEMBLY}"""
+    [Arguments]                     ${assembly}
+    ...                             ${end_address}=${None}
+
+    ${assembly_size}=               Execute Command  cpu AssembleBlock ${START_ADDRESS} """${assembly}"""
     Execute Command                 cpu PC ${START_ADDRESS}
 
     # Use a hook to detect when the program has finished.
-    ${hook}=                        Set Variable  cpu.Log(LogLevel.Info, "'${ASSEMBLY}' finished")
-    ${end_of_assembly}=             Evaluate  int($START_ADDRESS, base=16) + int($assembly_size, base=16)
-    Execute Command                 cpu RemoveHooksAt ${end_of_assembly}
-    Execute Command                 cpu AddHook ${end_of_assembly} """${hook}"""
+    IF  ${end_address} == None
+        ${end_address}=                 Evaluate  int($START_ADDRESS, base=16) + int($assembly_size, base=16)
+    END
+
+    ${finish_string}=               Set Variable  Program finished
+    ${hook}=                        Set Variable  cpu.Log(LogLevel.Info, "${finish_string}"); cpu.RemoveHooksAt(${end_address})
+
+    Execute Command                 cpu AddHook ${end_address} """${hook}"""
 
     # So the CPU doesn't abort.
-    ${assembly_size}=               Execute Command  cpu AssembleBlock ${end_of_assembly} "b ."
+    ${assembly_size}=               Execute Command  cpu AssembleBlock ${end_address} "b ."
 
-    Wait For Log Entry              '${ASSEMBLY}' finished
+    Wait For Log Entry              ${finish_string}
 
 Create Machine
     [Arguments]                     ${trustZoneEnabled}=${False}
