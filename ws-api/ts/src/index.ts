@@ -415,6 +415,20 @@ export class RenodeProxySession extends EventTarget {
     );
   }
 
+  public async resizeTerminal(
+    endpoint: string,
+    width: number,
+    height: number,
+  ): Promise<void> {
+    await this.sendSessionRequestTyped(
+      {
+        action: 'term-resize',
+        payload: { endpoint, width, height },
+      },
+      s.EmptyExecResponse,
+    );
+  }
+
   public registerEventCallback(event: string, callback: EventCallback) {
     if (!this.eventHandlers[event]) {
       this.eventHandlers[event] = [];

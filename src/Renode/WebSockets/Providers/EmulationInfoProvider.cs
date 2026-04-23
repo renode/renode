@@ -122,6 +122,17 @@ namespace Antmicro.Renode.WebSockets.Providers
             return WebSocketAPIUtils.CreateActionResponse(result);
         }
 
+        [WebSocketAPIAction("term-resize", "1.5.0")]
+        private WebSocketAPIResponse TerminalResize(string endpoint, int width, int height)
+        {
+            var conns = WebSocketsManager.Instance.GetConnections(endpoint);
+            foreach(var connection in conns)
+            {
+                connection.TriggerResize(width, height);
+            }
+            return WebSocketAPIUtils.CreateActionResponse("ok");
+        }
+
         private WebSocketAPIResponse GetMachines()
         {
             var machines = EmulationManager.Instance.CurrentEmulation.Names;
