@@ -207,9 +207,10 @@ namespace Antmicro.Renode.WebSockets
             {
                 apiRequest = JsonConvert.DeserializeObject<APIRequest>(request);
             }
-            catch(Exception)
+            catch(Exception ex)
             {
                 SendErrorMessage(DefaultVersion, -1);
+                Logger.Log(LogLevel.Error, "Failed to parse request: {0}", ex);
                 return;
             }
 
@@ -236,8 +237,9 @@ namespace Antmicro.Renode.WebSockets
                         arg++;
                     }
                 }
-                catch(Exception)
+                catch(Exception ex)
                 {
+                    Logger.Log(LogLevel.Error, "Failed to prepare request arguments: {0}", ex);
                     SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
                     return;
                 }
