@@ -1,5 +1,5 @@
 *** Variables ***
-${ELF}                              @https://zephyr-dashboard.renode.io/zephyr/5caa2a4a228fde82b6f09e675bd82d3153fc20aa/96b_neonkey/hello_world/hello_world.elf
+${ELF}                              @https://dl.antmicro.com/projects/renode/96b_neonkey--zephyr-hello_world.elf-s_501484-9ae96ed2a646347a7642504654956afa75923832
 ${UART}                             sysbus.usart1
 ${PLATFORM}=     SEPARATOR=
 ...  """                                                        ${\n}
