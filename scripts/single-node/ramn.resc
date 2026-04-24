@@ -26,3 +26,18 @@ $bin= @https://dl.antmicro.com/projects/renode/ECUD.elf-s_2438796-cb40e76e43568e
 """
 
 sysbus LoadELF $bin
+
+python
+"""
+adc = monitor.Machine['sysbus.adc1']
+
+def mc_SetEngineKey(position):
+    if position in ["left", "OFF", "off"]:
+        adc.SetDefaultValue(0)
+    elif position in ["middle", "ACC", "Accessory", "accessory"]:
+        adc.SetDefaultValue(1650)
+    elif position in ["right", "IGN", "Ignition", "ignition"]:
+        adc.SetDefaultValue(3300)
+    else:
+        print('Unknown position' % position)
+"""
