@@ -1299,3 +1299,88 @@ LOB LE Should Raise Exception
     # UFSR.INVSTATE (17th bit of CFSR) should be set
     ${cfsr}=                        Execute Command  cpu FaultStatus
     Should Be Equal As Integers     ${cfsr}  0x00020000
+
+VRINT Should Produce Correct Results
+    Create Machine
+
+    ${input}=                       Set Variable  0x3f000000 bf000000 3fc00000 bfe00000  # 0.5 -0.5 1.5 -1.75
+    ${ties_away}=                   Set Variable  0x3f800000 bf800000 40000000 c0000000
+    ${ties_even}=                   Set Variable  0x00000000 80000000 40000000 c0000000
+    ${plus_infinity}=               Set Variable  0x3f800000 80000000 40000000 bf800000
+    ${minus_infinity}=              Set Variable  0x00000000 bf800000 3f800000 c0000000
+    ${towards_zero}=                Set Variable  0x00000000 80000000 3f800000 bf800000
+
+    Set Register Q0 To ${input}
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             vrinta.f32 Q1, Q0  # Round to nearest, ties away
+    ...                             vrintn.f32 Q2, Q0  # Round to nearest, ties to even
+    ...                             vrintp.f32 Q3, Q0  # Round toward plus infinity
+    ...                             vrintm.f32 Q4, Q0  # Round toward minus infinity
+    ...                             vrintz.f32 Q5, Q0  # Round toward zero
+    ...                             vmrs R0, fpscr  # Save state of fpscr to R0
+    ...                             vrintx.f32 Q6, Q0  # Round to nearest, ties to even
+    ...                             vmrs R1, fpscr  # Save state of fpscr to R1
+
+    Load Program And Execute        ${assembly}
+
+    Register Q1 Should Contain ${ties_away}  message=VRINTA
+    Register Q2 Should Contain ${ties_even}  message=VRINTN
+    Register Q3 Should Contain ${plus_infinity}  message=VRINTP
+    Register Q4 Should Contain ${minus_infinity}  message=VRINTM
+    Register Q5 Should Contain ${towards_zero}  message=VRINTZ
+    Register Q6 Should Contain ${ties_even}  message=VRINTX
+
+    # Inexact exeception should not be raised
+    ${fpscr_before_vrintx}=         Execute Command  cpu GetRegister "R0"
+    Should Be True                  ((${fpscr_before_vrintx} >> 4) & 1) == 0
+
+    # Inexact exeception should be raised
+    ${fpscr_after_vrintx}=          Execute Command  cpu GetRegister "R1"
+    Should Be True                  ((${fpscr_after_vrintx} >> 4) & 1) == 1
+
+VCVT Should Produce Signed Results
+    Create Machine
+
+    ${input}=                       Set Variable  0x3f000000 bf000000 3fc00000 bfe00000  # 0.5 -0.5 1.5 -1.75
+    ${ties_away}=                   Set Variable  0x00000001 ffffffff 00000002 fffffffe
+    ${ties_even}=                   Set Variable  0x00000000 00000000 00000002 fffffffe
+    ${plus_infinity}=               Set Variable  0x00000001 00000000 00000002 ffffffff
+    ${minus_infinity}=              Set Variable  0x00000000 ffffffff 00000001 fffffffe
+
+    Set Register Q0 To ${input}
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             vcvta.s32.f32 Q1, Q0  # Round to nearest ties away
+    ...                             vcvtn.s32.f32 Q2, Q0  # Round to nearest with ties to even
+    ...                             vcvtp.s32.f32 Q3, Q0  # Round towards plus infinity
+    ...                             vcvtm.s32.f32 Q4, Q0  # Round towards minus infinity.
+    Load Program And Execute        ${assembly}
+
+    Register Q1 Should Contain ${ties_away}  message=VCVTA
+    Register Q2 Should Contain ${ties_even}  message=VCVTN
+    Register Q3 Should Contain ${plus_infinity}  message=VCVTP
+    Register Q4 Should Contain ${minus_infinity}  message=VCVTM
+
+VCVT Should Produce Unsigned Results
+    Create Machine
+
+    ${input}=                       Set Variable  0x3f000000 bf000000 3fc00000 bfe00000  # 0.5 -0.5 1.5 -1.75
+    ${ties_away}=                   Set Variable  0x00000001 00000000 00000002 00000000
+    ${ties_even}=                   Set Variable  0x00000000 00000000 00000002 00000000
+    ${plus_infinity}=               Set Variable  0x00000001 00000000 00000002 00000000
+    ${minus_infinity}=              Set Variable  0x00000000 00000000 00000001 00000000
+
+    Set Register Q0 To ${input}
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             vcvta.u32.f32 Q1, Q0  # Round to nearest ties away
+    ...                             vcvtn.u32.f32 Q2, Q0  # Round to nearest with ties to even
+    ...                             vcvtp.u32.f32 Q3, Q0  # Round towards plus infinity
+    ...                             vcvtm.u32.f32 Q4, Q0  # Round towards minus infinity.
+    Load Program And Execute        ${assembly}
+
+    Register Q1 Should Contain ${ties_away}  message=VCVTA
+    Register Q2 Should Contain ${ties_even}  message=VCVTN
+    Register Q3 Should Contain ${plus_infinity}  message=VCVTP
+    Register Q4 Should Contain ${minus_infinity}  message=VCVTM
