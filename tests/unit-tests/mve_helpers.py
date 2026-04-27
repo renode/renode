@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import partial
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 
 def assert_starts_with_0x_prefix(string: str):
@@ -403,19 +403,40 @@ def apply_vpr_mask(original: str, update: str, mask: list[bool], action: str):
     return combine_n_bit_values_into_m_bit_value(element_size, 128, result)
 
 
+def shift(value: int, shift_by: int, to_left: bool):
+    """Left and right shifts with ability to use negative shift to reverse the direction"""
+    if shift_by < 0:
+        shift_by = shift_by * -1
+        to_left = not to_left
+    if to_left:
+        return value << shift_by
+    else:
+        return value >> shift_by
+
+
+def rshift(value: int, shift_by: int):
+    """Right shift with ability to use negative shift value to reverse the direction"""
+    return shift(value, shift_by, to_left=False)
+
+
+def lshift(value: int, shift_by: int):
+    """Left shift with ability to use negative shift value to reverse the direction"""
+    return shift(value, shift_by, to_left=True)
+
+
 def do_shift_op(
     width_bits: int,
     value: int,
     shift_by: int,
     direction: str,
-    saturating: bool,
+    saturate_to: Optional[int],
     rounding: bool,
     signed: bool,
     logical: bool,
 ) -> str:
     assert shift_by != 0, "shifting by 0 is not supported"
     assert (
-        shift_by < width_bits
+        abs(shift_by) < width_bits
     ), f"shift must be less than {width_bits}, but got {shift_by}"
     assert (
         direction == "left" or direction == "right"
@@ -433,18 +454,21 @@ def do_shift_op(
         # The technical reference manual for Armv8.1-M MVE specifies the
         # rounding operations as performing this addition in order to
         # round the value before shifting.
-        value = value + (1 << (shift_by - 1))
+        if direction == "right":
+            value = value + lshift(1, (shift_by - 1))
+        else:
+            value = value + lshift(1, -shift_by - 1)
+
+    if logical:
+        value = value & mask(width_bits)
 
     if direction == "left":
-        result = value << shift_by
+        result = lshift(value, shift_by)
     else:
-        if logical:
-            result = (value & mask(width_bits)) >> shift_by
-        else:  # python's default shift is arithmetic
-            result = value >> shift_by
+        result = rshift(value, shift_by)
 
-    if saturating:
-        result, _ = saturate(width_bits, signed, result)
+    if saturate_to != None:
+        result, _ = saturate(saturate_to, signed, result)
 
     clamped_result = result & mask(width_bits)
     return hex(clamped_result)

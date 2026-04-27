@@ -499,18 +499,23 @@ Test VST
         Fail                            ${info}
     END
 
-${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift ${direction:(Left|Right)} Long Instruction Should Produce Correct Result With Input ${input}
+${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding|Saturating And Rounding} Shift ${direction:(Left|Right)} Long by ${source:Immediate|Register} Instruction Should Produce Correct Result With Input ${input} ${shift_by} ${saturation_size}
     Reset Emulation
     Create Machine
 
-    ${shift_by}=                    Set Variable  6
     @{op_segments}=                 Split N Bit Value Into M Bit Values  64  32  ${input}
     ${op_lower}                     ${op_upper}=  Set Variable  @{op_segments}
     Execute Command                 cpu SetRegister "R1" ${op_upper}
     Execute Command                 cpu SetRegister "R0" ${op_lower}
 
+    IF  '${source}'.lower() == 'register'
+        # The shift value is read from lowest 8 bits of the register
+        ${truncated_shift_by}=          To Twos Complement Unsigned  bits=8  signed_value=${shift_by}
+        Execute Command                 cpu SetRegister "R10" ${truncated_shift_by}
+    END
+
     # Only saturating|rounding shifts specify whether they're signed/unsigned
-    IF  ${{ $kind.lower() in ['saturating', 'rounding'] }}
+    IF  ${{ 'saturating' in $kind.lower() or 'rounding' in $kind.lower() }}
         ${sign_char}=                   Set Variable If  '${signed}'.lower() == 'signed'
         ...                             s  # signed
         ...                             u  # unsigned
@@ -526,11 +531,13 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift
         ${kind_char}=                   Set Variable  q
     ELSE IF  '${kind}'.lower() == 'rounding'
         ${kind_char}=                   Set Variable  r
+    ELSE IF  '${kind}'.lower() == 'saturating and rounding'
+        ${kind_char}=                   Set Variable  qr
     ELSE
         Fail                            Unknown kind: ${kind}
     END
 
-    ${shift_char}=                  Set Variable If  ${{ $kind.lower() in ['saturating', 'rounding'] }}
+    ${shift_char}=                  Set Variable If  ${{ 'saturating' in $kind.lower() or 'rounding' in $kind.lower() }}
     ...                             sh  # for some reason, only saturating|rounding instructions use "sh" to abbreviate "shift"
     ...                             s
     ${direction_char}=              Set Variable If  '${direction}'.lower() == 'left'
@@ -543,7 +550,23 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift
     # 4. the direction (left, right) becomes either l or r
     # 5. the length (long, i.e. 64 bits) becomes l
     ${instruction}=                 Set Variable  ${sign_char}${kind_char}${shift_char}${direction_char}l
-    Load Program And Execute        ${instruction} R0, R1, #${shift_by}
+
+    IF  '${source}'.lower() == 'immediate'
+        Load Program And Execute        ${instruction} R0, R1, #${shift_by}
+    ELSE IF  '${source}'.lower() == 'register'
+        IF  '${kind}'.lower() == 'saturating and rounding'
+            Load Program And Execute        ${instruction} R0, R1, #${saturation_size}, R10
+        ELSE
+            Load Program And Execute        ${instruction} R0, R1, R10
+        END
+    ELSE
+        Fail                            Unknown source: ${source}
+    END
+
+    IF  'saturating' not in $kind.lower()
+        # Disable saturation for non saturating shifts
+        ${saturation_size}=             Set Variable  ${None}
+    END
 
     # Calls a helper function defined in mve-helpers.py: `do_shift_op`.
     ${expected_result}=             Do Shift Op
@@ -551,8 +574,8 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift
     ...                             value=${input}
     ...                             shift_by=${shift_by}
     ...                             direction=${{ $direction.lower() }}
-    ...                             saturating=${{ $kind.lower() == 'saturating' }}
-    ...                             rounding=${{ $kind.lower() == 'rounding' }}
+    ...                             saturate_to=${saturation_size}
+    ...                             rounding=${{ 'rounding' in $kind.lower() }}
     ...                             signed=${{ $signed.lower() == 'signed' }}
     ...                             logical=${{ $kind.lower() == 'logical' }}
 
@@ -562,7 +585,7 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding} Shift
     ${actual_result}=               Combine N Bit Values Into M Bit Value  32  64  ${actual_result_segments}
 
     Should Be Equal As Integers     ${actual_result}  ${expected_result}
-    ...                             msg=expected `${instruction} ${input} #${shift_by}` to result in ${expected_result} but actual is ${actual_result}
+    ...                             msg=expected `${instruction} ${input} shifted by ${shift_by}` to result in ${expected_result} but actual is ${actual_result}
 
 *** Test Cases ***
 Vector-Vector Instructions Should Produce Correct Results
@@ -851,24 +874,46 @@ VST Should Store and Interleave Data
         END
     END
 
-Shift Long Instructions Should Produce Correct Results
-    [Template]                      ${signed} ${kind} Shift ${direction} Long Instruction Should Produce Correct Result With Input ${}
+Shift Long Immediate Instructions Should Produce Correct Results
+    [Template]                      ${signed} ${kind} Shift ${direction} Long by ${source} Instruction Should Produce Correct Result With Input ${input} ${shift_by} ${saturation_size}
 
-    FOR  ${signed}  ${kind}  ${direction}  IN
-    ...  signed  arithmetic  right  # ASRL
-    ...  signed  logical  left  # LSLL
-    ...  signed  logical  right  # LSRL
-    ...  signed  saturating  left  # SQSHLL
-    ...  unsigned  saturating  left  # UQSHLL
-    ...  signed  rounding  right  # SRSHRL
-    ...  unsigned  rounding  right  # SRSHRL
+    FOR  ${signed}  ${kind}  ${direction}  ${saturation_size}  IN
+    ...  signed  arithmetic  right  None  # ASRL
+    ...  signed  logical  left  None  # LSLL
+    ...  signed  logical  right  None  # LSRL
+    ...  signed  saturating  left  64  # SQSHLL
+    ...  unsigned  saturating  left  64  # UQSHLL
+    ...  signed  rounding  right  None  # SRSHRL
+    ...  unsigned  rounding  right  None  # SRSHRL
         FOR  ${input}  IN
         ...  0x001333334199999D
         ...  0x1234567887654321
         ...  0x8765567812345678
         ...  0x0000000000000000
         ...  0xffffffffffffffff
-            ${signed}                       ${kind}  ${direction}  ${input}
+            ${signed}                       ${kind}  ${direction}  Immediate  ${input}  6  ${saturation_size}
+        END
+    END
+
+Shift Long Register Instructions Should Produce Correct Results
+    [Template]                      ${signed} ${kind} Shift ${direction} Long by ${source} Instruction Should Produce Correct Result With Input ${input} ${shift_by} ${saturation_size}
+
+    FOR  ${signed}  ${kind}  ${direction}  ${saturation_size}  IN
+    ...  signed  arithmetic  right  None  # ASRL
+    ...  signed  logical  left  None  # LSLL
+    ...  signed  saturating and rounding  right  64  # SQRSHRL
+    ...  signed  saturating and rounding  right  48  # SQRSHRL
+    ...  unsigned  saturating and rounding  left  64  # UQRSHLL
+    ...  unsigned  saturating and rounding  left  48  # UQRSHLL
+        FOR  ${shift_by}  IN  6  -6
+            FOR  ${input}  IN
+            ...  0x001333334199999D
+            ...  0x1234567887654321
+            ...  0x8765567812345678
+            ...  0x0000000000000000
+            ...  0xffffffffffffffff
+                ${signed}                       ${kind}  ${direction}  Register  ${input}  ${shift_by}  ${saturation_size}
+            END
         END
     END
 
