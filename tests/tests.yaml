@@ -254,6 +254,7 @@
 - tests/unit-tests/resd-arbitrary-timestamp.robot
 - tests/unit-tests/sysbus-data-race.robot
 - tests/platforms/ramn.robot
+- tests/peripherals/S32K3XX_STM.robot
 
 # Do not use port 3333 in unit tests
 
