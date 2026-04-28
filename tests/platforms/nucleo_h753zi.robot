@@ -7,7 +7,7 @@ ${UART}                             sysbus.usart3
 ${PROJECT_URL}                      https://dl.antmicro.com/projects/renode
 ${ECHO_SERVER}                      ${PROJECT_URL}/zephyr-nucleo_h753zi_echo_server.elf-s_3820436-2a55e73d28b438666b588d87cc9822365ee46cf6
 ${ECHO_CLIENT}                      ${PROJECT_URL}/zephyr-nucleo_h753zi_echo_client.elf-s_3773508-692f892b406f5a4a0aedb4afe120acd26f420d21
-${BLINKY}                           ${PROJECT_URL}/zephyr--nucleo-h753zi-blinky.elf-s_586204-d9aa33947652eb18930088c06704ad6a8cdc7fa4
+${BLINKY}                           ${PROJECT_URL}/nucleo_h753zi--zephyr-blinky.elf-s_500660-f5a73e7bbe7222f296429488cf720df331624cda
 ${BUTTON}                           ${PROJECT_URL}/zephyr--nucleo_h753zi_button_sample.elf-s_582696-3d5e6775a24c75e8fff6b812d5bc850b361e3d93
 ${CRYPTO_GCM}                       ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM.elf-s_2136368-45a90683e4f954667a464fc8fa9ce57d0b74ac09
 ${CRYPTO_GCM_IT}                    ${PROJECT_URL}/stm32cubeh7--stm32h753zi-CRYP_AESGCM_IT.elf-s_2137876-ee038aa93bf68cb91af9894e0be9584eec3057e5
