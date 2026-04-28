@@ -175,9 +175,6 @@ Test Teardown
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
 
-Start Profiler Or Skip
-    Start Profiler
-
 Start Profiler
     ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
     ${test_name}=               Sanitize Test Name  ${test_name}
