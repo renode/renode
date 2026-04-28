@@ -12,3 +12,25 @@ if request.IsRead:
 '''
 
 dummySpi: Mocks.DummySPISlave @ spi2
+
+otp: Python.PythonPeripheral @ sysbus 0x0BFA0000
+    size: 0x10000
+    initable: False
+    script: '''
+import hashlib
+
+if request.IsRead:
+    if request.Offset in [0x590, 0x594, 0x598]: # Unique device ID registers
+        register = (request.Offset - 0x590) / 4
+        machineName = str(self.GetMachine()).encode('ascii')
+        md5 = hashlib.md5(machineName).hexdigest()
+        start = register * 8
+        end = start + request.Length * 2 # 2 characters per byte
+        request.Value = int(md5[start:end], 16)
+    elif request.Offset == 0x5e0: # Flash size data register
+        request.Value = 0x200 # Assume STM32L552CET6: 512kB of flash as defined in stm32l552.repl:flash
+    else:
+        self.WarningLog('Unhandled read from offset 0x{0:X}, returning {1}.'.format(request.Offset, request.Value))
+elif request.IsWrite:
+    self.WarningLog('Unhandled write to offset 0x{0:X}.'.format(request.Offset))
+'''
