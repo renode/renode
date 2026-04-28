@@ -6,8 +6,7 @@ set -u
 cd "${0%/*}"
 . common_make_packages.sh
 
-RENODE_OUTPUT_DIR=$BASE/output/publish/$TARGET/$RID
-RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/Renode
+RENODE_PUBLISH=$BASE/output/publish/$TARGET/$RID
 DESTINATION=renode_${VERSION}-dotnet_portable
 
 # create MacOS app structure
@@ -23,8 +22,8 @@ OS_NAME=macos
 
 . common_copy_files_portable.sh
 
-cp $RENODE_OUTPUT_BINARY $DIR/renode
-cp $RENODE_OUTPUT_DIR/*.dylib $DIR
+cp -r $RENODE_PUBLISH/. $DIR
+mv $DIR/Renode $DIR/renode
 
 chmod +x $DIR/renode
 

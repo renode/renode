@@ -683,7 +683,7 @@ then
     PARAMS+=(p:PORTABLE=true)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
-    dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true "${PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" $TARGET
+    dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" $TARGET
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi

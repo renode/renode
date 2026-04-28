@@ -16,11 +16,8 @@
   </PropertyGroup>
   <PropertyGroup Condition=" $(PORTABLE) == 'true' ">
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
     <UseAppHost>true</UseAppHost>
-    <IncludeNativeLibrariesInSingleFile>true</IncludeNativeLibrariesInSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
   <ItemGroup Condition=" $(PORTABLE) == 'true' And $([MSBuild]::IsOSPlatform('OSX')) == 'false'">
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />

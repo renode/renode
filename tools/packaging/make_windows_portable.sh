@@ -8,8 +8,7 @@ THIS_DIR="$(cd $(dirname $0); echo $PWD)"
 cd $THIS_DIR
 . common_make_packages.sh
 
-RENODE_OUTPUT_DIR=$BASE/output/publish/$TARGET/$RID
-RENODE_OUTPUT_BINARY=$RENODE_OUTPUT_DIR/Renode
+RENODE_PUBLISH=$BASE/output/publish/$TARGET/$RID
 DIR=renode_${VERSION}-portable
 OS_NAME=windows
 
@@ -20,19 +19,10 @@ rm $DIR/tests/common.sh
 rm $DIR/renode-test
 
 ### prepare renode-test
-copy_windows_tests_scripts ".." Renode.exe
+copy_windows_tests_scripts ".." renode.exe
 
-cp $RENODE_OUTPUT_BINARY $DIR/renode
-cp \
-    $RENODE_OUTPUT_DIR/hostfxr.dll \
-    $RENODE_OUTPUT_DIR/coreclr.dll \
-    $RENODE_OUTPUT_DIR/hostpolicy.dll \
-    $RENODE_OUTPUT_DIR/clrjit.dll \
-    $RENODE_OUTPUT_DIR/System.IO.Compression.Native.dll \
-    $RENODE_OUTPUT_DIR/mscordaccore.dll \
-    $RENODE_OUTPUT_DIR/mscordbi.dll \
-    $RENODE_OUTPUT_DIR/Renode.runtimeconfig.json \
-    $DIR
+cp -r $RENODE_PUBLISH/. $DIR
+mv $DIR/Renode.exe $DIR/renode.exe
 
 ### create zip
 mkdir -p ../../output/packages
