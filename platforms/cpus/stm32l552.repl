@@ -123,8 +123,8 @@ fdcanRAM: Memory.ArrayMemory @ sysbus 0x4000AC00
 fdcan1: CAN.STM32_FDCAN @ sysbus 0x4000A400
     series: .L5
     messageRam: fdcanRAM
-    Int0 -> nvic@47
-    Int1 -> nvic@48
+    Int0 -> nvic@39
+    Int1 -> nvic@40
 
 rtc: STM32L_RTC @ sysbus <0x40002800, +0x400>
     -> exti@17
