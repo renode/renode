@@ -33,6 +33,8 @@ cp $RENODE_OUTPUT_DIR/../libllvm-disas.dylib $DIR
 
 chmod +x $DIR/renode
 
+sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DIR/renode-test"
+
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
 cp macos/Info.plist $MACOS_APP_DIR/Contents/Info.plist
 cp macos/renode.icns $MACOS_APP_DIR/Contents/Resources #Made with png2icns
