@@ -8,6 +8,7 @@
 #
 # Supported file layouts:
 #  Package:          <renode_root>/bin/platform-lib/<RID>/librenode.so                (extracted package)
+#  Portable package: <renode_root>/platform-lib/<RID>/librenode.so
 #  Source tree:      <renode_root>/output/bin/<CFG>/platform-lib/<RID>/librenode.so   (after ./build.sh --shared)
 
 if(DEFINED USER_RENODE_DIR)
@@ -73,12 +74,15 @@ if(NOT DEFINED RENODE_RID)
     set(RENODE_RID "${RENODE_RID}-${ARCH}")
 endif()
 
-set(renode_platformlib_suffix "platform-lib/${rid}")
+set(renode_platformlib_suffix "platform-lib/${RENODE_RID}")
 
-# Search package layout (bin/...) then source tree layout (output/bin/<CFG>/...)
+# Search package layouts (installed package bin/, portable root) then source tree layout (output/bin/<CFG>/)
 find_library(LIBRENODE_LIBRARY
     NAMES renode
-    PATHS "${renode_root}/bin/platform-lib/${RENODE_RID}" "${renode_root}/output/bin/${RENODE_CFG}/platform-lib/${RENODE_RID}"
+    PATHS
+        "${renode_root}/bin/${renode_platformlib_suffix}"
+        "${renode_root}/${renode_platformlib_suffix}"
+        "${renode_root}/output/bin/${RENODE_CFG}/${renode_platformlib_suffix}"
     NO_DEFAULT_PATH
 )
 
@@ -104,7 +108,9 @@ if(NOT TARGET renode::renode)
     add_library(renode::renode SHARED IMPORTED)
     set_target_properties(renode::renode PROPERTIES
         IMPORTED_LOCATION "${LIBRENODE_LIBRARY}"
+        IMPORTED_NO_SONAME TRUE  # don't link with the absolute library path, just -lrenode
         INTERFACE_INCLUDE_DIRECTORIES "${LIBRENODE_INCLUDE_DIR}"
+        INTERFACE_LINK_DIRECTORIES "${librenode_dir}"
         INTERFACE_LINK_LIBRARIES "${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}"  # link stdc++ / c++
     )
 endif()

@@ -6,6 +6,12 @@ rm -rf $DIR
 
 cp -r $BASE/renode-test $DIR
 cp -r $BASE/output/bin/$TARGET/platform-lib $DIR
+. $BASE/tools/building/native_interface_runtime_config.sh
+copy_native_interface_runtime_configs "$BASE/output/bin/$TARGET" "$DIR/platform-lib"
+# Copy hostfxr for librenode use
+if [[ -d "$BASE/output/bin/$TARGET/host" ]]; then
+    cp -r $BASE/output/bin/$TARGET/host $DIR
+fi
 cp -r $BASE/tools/common.sh $DIR/tests
 
 sed_inplace 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DIR/renode-test

@@ -246,6 +246,8 @@ else
 fi
 
 . "${ROOT_PATH}/tools/common.sh"
+. "${ROOT_PATH}/tools/building/native_interface_runtime_config.sh"
+. "${ROOT_PATH}/tools/building/prepare_portable_native_interface_runtime.sh"
 
 if $SKIP_FETCH
 then
@@ -608,6 +610,7 @@ then
     then
         echo "Building librenode..."
         eval "dotnet build '$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")' -c '$CONFIGURATION' -p:PlatformOutputDir='$OUT_BIN_DIR/platform-lib/$RID'"
+        copy_native_interface_runtime_config "$OUT_BIN_DIR" "$OUT_BIN_DIR/platform-lib/$RID"
     else
         echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"
         exit 1
@@ -684,6 +687,8 @@ then
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
     dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" $TARGET
+    # Prepare for use with NativeInterface even if SHARED is not enabled as this is just one file and it means that librenode can be added later
+    prepare_portable_native_interface_runtime "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$OUT_BIN_DIR"
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi

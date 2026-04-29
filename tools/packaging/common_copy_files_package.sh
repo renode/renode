@@ -21,6 +21,9 @@ cp $BASE/output/bin/$TARGET/Renode.deps.json $DIR/bin
 # Remove RenodeTests because they are unused in the package
 rm -rf $DIR/tests/unit-tests/RenodeTests
 
+. $BASE/tools/building/native_interface_runtime_config.sh
+copy_native_interface_runtime_configs "$BASE/output/bin/$TARGET" "$DIR/bin/platform-lib"
+
 if ls $BASE/output/bin/$TARGET/*.exe
 then
     cp -Pr $BASE/output/bin/$TARGET/*.exe $DIR/bin

@@ -5,7 +5,8 @@
 # instance, not the one started here.
 #
 # Some influential variables:
-#   USER_RENODE_DIR - path to an extracted Renode package (must contain bin/librenode.so).
+#   USER_RENODE_DIR - path to an extracted Renode package (must contain librenode.so in the bin/
+#                     subdirectory for packages or in the package root for portable packages)
 #                     Optional when running from a Renode source tree built with ./build.sh --shared
 #                     For packages: tar -C <dir> --strip-components=1 -xf renode-*.linux.tar.gz
 #                     Then pass: renode-test --variable USER_RENODE_DIR:<dir> native-interface.robot
@@ -76,7 +77,7 @@ Stop NativeInterface And Teardown
 
 *** Test Cases ***
 NativeInterface Can Run VexRiscv
-    [Tags]                          skip_windows  skip_portable  basic-tests
+    [Tags]                          skip_windows  basic-tests
     [Timeout]                       1 minute
     NI.Execute Command              include @scripts/single-node/murax.resc
     NI.Create Terminal Tester       sysbus.uart
