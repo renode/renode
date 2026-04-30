@@ -3,18 +3,27 @@ Test Setup                          Create Machine and Start FPU
 
 *** Variables ***
 ${START_ADDRESS}                    0x0
-${PLATFORM}                         @platforms/cpus/renesas-r7fa8m1a.repl
+${PLATFORM}                         platforms/cpus/renesas-r7fa8m1a.repl
 
 *** Keywords ***
 Load Program And Execute
-    [Arguments]                     ${ASSEMBLY}  ${STEPS}
+    [Arguments]                     ${ASSEMBLY}  ${STEPS}=${0}
     Execute Command                 cpu AssembleBlock ${START_ADDRESS} """${ASSEMBLY}"""
     Execute Command                 cpu PC ${START_ADDRESS}
-    Execute Command                 cpu Step ${STEPS}
+    IF  ${STEPS} > 0
+        Execute Command                 cpu Step ${STEPS}
+    END
 
 Create Machine and Start FPU
+    [Arguments]                     ${trustZoneEnabled}=${False}
+
     Execute Command                 mach create
-    Execute Command                 machine LoadPlatformDescription ${PLATFORM}
+
+    ${platform_string}=             Catenate  SEPARATOR=\n
+    ...                             using "${PLATFORM}"
+    ...
+    ...                             cpu: {enableTrustZone: ${trustZoneEnabled}}
+    Execute Command                 machine LoadPlatformDescriptionFromString """${platform_string}"""
 
     ${program}=                     Catenate  SEPARATOR=\n
     ...                             ldr r0, =0xE000ED88
@@ -44,6 +53,79 @@ Register Bit Should Be ${is_set:(Unset|Set)}
     ${register_value}=              Execute Command  cpu GetRegister "${register}"
     ${bit_value}=                   Evaluate  int("${is_set}" == "Set")
     Should Be True                  ((${register_value} >> ${bit}) & 1) == ${bit_value}
+
+Populate FP Registers On ${precision:(f16|f32|f64)}
+    [Arguments]                     ${values}
+
+    ${registers}=                   Get Registers On ${precision}
+
+    FOR  ${register}  ${value}  IN ZIP  ${registers}  ${values}
+        Execute Command                 cpu SetRegister "${register}" ${value}
+    END
+
+FP Registers Should Be Equal On ${precision:(f16|f32|f64)}
+    [Arguments]                     ${expected_values}
+    ...                             ${message}=${None}
+
+    ${registers}=                   Get Registers On ${precision}
+
+    FOR  ${register}  ${value}  IN ZIP  ${registers}  ${expected_values}
+        Register Should Be Equal        ${register}  ${value}  message=${message}
+    END
+
+Read Memory
+    [Arguments]                     ${address}
+    ...                             ${element_size}
+
+    IF  ${element_size} == 8
+        ${value}=                       Execute Command  sysbus ReadByte ${address}
+    ELSE IF  ${element_size} == 16
+        ${value}=                       Execute Command  sysbus ReadWord ${address}
+    ELSE IF  ${element_size} == 32
+        ${value}=                       Execute Command  sysbus ReadDoubleWord ${address}
+    ELSE
+        Fail                            Invalid element_size=${element_size}
+    END
+    [Return]                        ${value[:-2]}
+
+Write Memory
+    [Arguments]                     ${address}
+    ...                             ${value}
+    ...                             ${element_size}
+
+    IF  ${element_size} == 8
+        Execute Command                 sysbus WriteByte ${address} ${value}
+    ELSE IF  ${element_size} == 16
+        Execute Command                 sysbus WriteWord ${address} ${value}
+    ELSE IF  ${element_size} == 32
+        Execute Command                 sysbus WriteDoubleWord ${address} ${value}
+    ELSE
+        Fail                            Invalid element_size=${element_size}
+    END
+
+Memory Should Be Equal
+    [Arguments]                     ${address}
+    ...                             ${expected_value}
+    ...                             ${element_size}
+    ...                             ${message}=${None}
+
+    ${value}=                       Read Memory  ${address}  ${element_size}
+
+    TRY
+        Should Be Equal As Integers     ${value}  ${expected_value}
+    EXCEPT
+        Fail                            ${message}: Value on address ${{hex(${address})}} assertion failed, actual: ${{hex(${value})}}, expected: ${{hex(${expected_value})}}
+    END
+
+Memory Range Should Be Equal
+    [Arguments]                     ${address}
+    ...                             ${expected_values}
+    ...                             ${element_size}
+    ...                             ${message}=${None}
+
+    FOR  ${index}  ${expected_value}  IN ENUMERATE  @{expected_values}
+        Memory Should Be Equal          ${{${address}+${index}*${element_size}//8}}  ${expected_value}  ${element_size}  ${message} (offset ${index})
+    END
 
 Test VRINT* ${precision} Rounding With ${initial}
     [Arguments]
@@ -104,6 +186,26 @@ Test VSEL ${precision}
     Register Should Be Equal        ${register}3  ${VALUE_Sn}
     Register Should Be Equal        ${register}4  ${VALUE_Sm}
     Register Should Be Equal        ${register}5  ${VALUE_Sn}
+
+Test VSCCLRM ${precision}
+    [Arguments]                     ${clear_start}
+    ...                             ${clear_end}
+
+    ${prefix}=                      Get Register Prefix On ${precision}
+    ${registers_number}=            Set Variable  ${32}
+    ${register_values}=             Evaluate  [ i+1 for i in range($registers_number) ]  # 1, 2, 3 ... 31, 32
+
+    Populate FP Registers On f32    ${register_values}
+    Load Program And Execute        ASSEMBLY=VSCCLRM {${prefix}${clear_start}-${prefix}${clear_end}, VPR}  STEPS=1
+
+    # Update the range to the way it's stored in Robot
+    ${clear_end}=                   Evaluate  ${clear_end}+1
+    IF  "${prefix}" == "d"
+        ${clear_start}=                 Evaluate  ${clear_start}*2
+        ${clear_end}=                   Evaluate  ${clear_end}*2
+    END
+
+    FP Registers Should Be Equal On f32  ${{ $register_values[0:${clear_start}] + [0]*(${clear_end}-${clear_start}) + $register_values[${clear_end}:${registers_number}] }}
 
 *** Test Cases ***
 Should Round With VRINT*
@@ -295,3 +397,129 @@ Should Run VINS, VMOVX
     Register Should Be Equal        s0  0x000F000F
     Execute Command                 cpu Step 1
     Register Should Be Equal        s0  0x0000DF00
+
+Should Clean Different Ranges with VSCCLRM
+    [Setup]                         Create Machine and Start FPU  trustZoneEnabled=${True}
+
+    Load Program And Execute        ASSEMBLY=VMOV s0, s0  STEPS=1  # Create fp context
+
+    Execute Command                 cpu SetRegister "VPR" 0x10011001  # Set VPR to check if it's also cleared
+
+    Test VSCCLRM f32                clear_start=0  clear_end=31  # Clear all single precision registers
+    Test VSCCLRM f64                clear_start=0  clear_end=15  # Clear all double precision registers
+    Test VSCCLRM f32                clear_start=9  clear_end=18  # Clear specified range of single precision registers
+    Test VSCCLRM f64                clear_start=6  clear_end=9  # Clear specified range of double precision registers
+
+    Register Should Be Equal        VPR  0x0  # VPR should be cleared after all these instructions
+
+Should Run VLSTM
+    [Setup]                         Create Machine and Start FPU  trustZoneEnabled=${True}
+
+    ${memory_address}=              Set Variable  ${0x22000000}
+    ${result_stride}=               Set Variable  ${256}
+    ${registers_number}=            Set Variable  ${32}
+    ${register_values}=             Evaluate  [ i+1 for i in range($registers_number)]  # 1, 2, 3 ... 31, 32
+    ${fpscr_value}=                 Set Variable  ${0x40000}
+    ${vpr_value}=                   Set Variable  ${0x0}
+
+    ${set_ts}=                      Catenate  SEPARATOR=\n
+    ...                             ldr r10, =0xE000EF34
+    ...                             ldr r11, [r10]
+    ...                             orr r11, r11, #0x04000000
+    ...                             str r11, [r10]
+
+    ${unset_lspen}=                 Catenate  SEPARATOR=\n
+    ...                             ldr r10, =0xE000EF34
+    ...                             ldr r11, [r10]
+    ...                             bic r11, r11, #0x40000000
+    ...                             str r11, [r10]
+
+    Execute Command                 cpu SetRegister "r0" ${memory_address}
+    Populate FP Registers On f32    ${register_values}
+
+    ${program}=                     Catenate  SEPARATOR=\n
+    ...                             vlstm R0  # Run VLSTM without context, it should act as NOP
+    ...                               # Create floating point context
+    ...                             vmov.f32 s0, s0
+    ...                             add r0, #${result_stride}
+    ...                             vlstm R0  # Set FPCCR.LSPEN to 1 and destination address to one from R0
+    ...                             vmov.f32 s0, s0  # Do lazy fp preservation writing registers s0-s15
+    ...                               # Set TS flag
+    ...                             ${set_ts}
+    ...                             add r0, #${result_stride}
+    ...                             vlstm R0  # Set FPCCR.LSPEN to 1 and destination address to one from R0
+    ...                             vmov.f32 s0, s0  # Do lazy fp preservation writing registers s0-s32
+    ...                               # Disable LSPEN flag
+    ...                             ${unset_lspen}
+    ...                             add r0, #${result_stride}
+    ...                             vlstm R0  # Set FPCCR.LSPEN to 1 and destination address to one from R0
+    Load Program And Execute        ASSEMBLY=${program}  STEPS=0
+
+    Execute Command                 cpu Step 2
+    Memory Range Should Be Equal    address=${{ $memory_address + $result_stride * 0 }}  expected_values=${{ [0]*(16+2+16) }}  element_size=32  message=VLSTM without FP context  # Nothing should be written
+
+    Populate FP Registers On f32    ${register_values}  # Populate registers again as they are in unknown state
+    Execute Command                 cpu Step 3
+    Memory Range Should Be Equal    address=${{ $memory_address + $result_stride * 1 }}  expected_values=${{ $register_values[0:16] + [$fpscr_value, $vpr_value] + [0]*16 }}  element_size=32  message=VLSTM without TS set  # Only first 16 registers should be saved
+
+    Populate FP Registers On f32    ${register_values}  # Populate registers again as they are in unknown state
+    Execute Command                 cpu Step 7
+    FP Registers Should Be Equal On f32  ${{ [0]*32 }}  message=VLSTM with TS set  # Registers should be set to 0
+    Memory Range Should Be Equal    address=${{ $memory_address + $result_stride * 2 }}  expected_values=${{ $register_values[0:16] + [$fpscr_value, $vpr_value] + $register_values[16:32] }}  element_size=32  message=VLSTM with TS set  # All 32 registers should be saved
+
+    Populate FP Registers On f32    ${register_values}  # Populate registers again as they are equal 0
+    Execute Command                 cpu Step 6
+    FP Registers Should Be Equal On f32  ${{ [0]*32 }}  message=VLSTM without LSPEN  # TS is still set so registers should be set to 0
+    Memory Range Should Be Equal    address=${{ $memory_address + $result_stride * 3 }}  expected_values=${{ $register_values[0:16] + [$fpscr_value, $vpr_value] + $register_values[16:32] }}  element_size=32  message=VLSTM without LSPEN  # Saving should have happened during execution of VLSTM
+
+Should Run VLLDM
+    [Setup]                         Create Machine and Start FPU  trustZoneEnabled=${True}
+
+    ${memory_address}=              Set Variable  ${0x22000000}
+    ${result_stride}=               Set Variable  ${256}
+    ${registers_number}=            Set Variable  ${32}
+    ${register_values}=             Evaluate  [ i+1 for i in range($registers_number)]  # 1, 2, 3 ... 31, 32
+    ${vpr_value}=                   Set Variable  ${0x10011001}
+
+    ${set_ts}=                      Catenate  SEPARATOR=\n
+    ...                             ldr r10, =0xE000EF34
+    ...                             ldr r11, [r10]
+    ...                             orr r11, r11, #0x04000000
+    ...                             str r11, [r10]
+
+    Execute Command                 cpu SetRegister "r0" ${memory_address}
+    Populate FP Registers On f32    ${register_values}
+
+    ${program}=                     Catenate  SEPARATOR=\n
+    ...                             vmov.f32 s0, s0  # Create floating point context
+    ...                             vlstm R0
+    ...                             vscclrm {s0-s31, VPR}  # Do lazy fp preservation and clear registers
+    ...                             vlldm R0
+    ...                               # Set TS flag
+    ...                             ${set_ts}
+    ...                             add r0, #${result_stride}
+    ...                             vlstm R0
+    ...                             vscclrm {s0-s31, VPR}  # Do lazy fp preservation and make sure registers are cleared
+    ...                             vlldm R0
+    ...                               # Test VLSTM, VLLDM pair without lazy fp preservation
+    ...                             add r0, #${result_stride}
+    ...                             vlstm R0
+    ...                             vlldm R0
+
+    Load Program And Execute        ASSEMBLY=${program}  STEPS=1
+
+    Execute Command                 cpu SetRegister "VPR" ${vpr_value}
+    Execute Command                 cpu Step 3
+    FP Registers Should Be Equal On f32  ${{ $register_values[0:16] + [0]*16 }}  message=VLLDM without TS set  # Only first 16 registers should be loaded
+    Register Should Be Equal        VPR  ${vpr_value}  message=VLLDM without TS set  # VPR should be loaded
+
+    Populate FP Registers On f32    ${register_values}  # To restore registers s16-s31
+    Execute Command                 cpu Step 8
+    FP Registers Should Be Equal On f32  ${{ $register_values }}  message=VLLDM with TS set  # All registers should be loaded
+    Register Should Be Equal        VPR  ${vpr_value}  message=VLLDM with TS set  # VPR should be loaded
+
+    Execute Command                 cpu Step 2
+    Execute Command                 sysbus WriteBytes [0xFF, 0xFF, 0xFF, 0xFF, 0xFF] ${{ $memory_address + $result_stride * 2 }}  # Write trash values to target address
+    Execute Command                 cpu Step 1
+    FP Registers Should Be Equal On f32  ${{ $register_values }}  message=VLLDM without LSP  # All registers should stay unchanged
+    Register Should Be Equal        VPR  ${vpr_value}  message=VLLDM without LSP  # VPR should stay unchanged
