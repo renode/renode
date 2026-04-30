@@ -1,0 +1,34 @@
+# AST2600 OpenBMC boot test
+# Full MTD flash image: SPL + u-boot + kernel + rootfs
+# Image: ASPEED SDK v11.01 ast2600-default-image
+
+mach create "ast2600"
+machine LoadPlatformDescription @platforms/boards/ast2600/ast2600-evb.repl
+
+# Load OpenBMC MTD image at 0x0 (boot ROM / flash alias) and flash window
+sysbus LoadBinary @tests/peripherals/Aspeed/firmware/openbmc-image.bin 0x0
+sysbus LoadBinary @tests/peripherals/Aspeed/firmware/openbmc-image.bin 0x60000000
+
+# Silence unmapped peripheral regions that Linux probes but are not modeled.
+# Without these, drivers may spin polling registers that return 0.
+# SPI1 controller + flash window
+sysbus SilenceRange <0x1E630000 0xC4>
+sysbus SilenceRange <0x30000000 0x10000000>
+# SPI2 controller + flash window
+sysbus SilenceRange <0x1E631000 0xC4>
+sysbus SilenceRange <0x50000000 0x10000000>
+# MDIO controllers (4x, 8 bytes each)
+sysbus SilenceRange <0x1E650000 0x20>
+# SDC / SDHCI controllers
+sysbus SilenceRange <0x1E740000 0x10000>
+# eMMC controller
+sysbus SilenceRange <0x1E750000 0x10000>
+# USB virtual hub
+sysbus SilenceRange <0x1E6A0000 0x1000>
+# USB EHCI
+sysbus SilenceRange <0x1E6A3000 0x1000>
+# Video engine
+sysbus SilenceRange <0x1E700000 0x1000>
+
+logLevel 3
+uart5 CreateFileBackend @/tmp/openbmc-boot.txt true
