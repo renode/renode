@@ -11,11 +11,13 @@ Should Produce CAN Traffic
 Engine Key Should Affect Battery LED
     Execute Command         include @scripts/multi-node/ramn.resc
     Create Log Tester       timeout=1
+    # Wait 5 seconds for the LEDs to turn off after the startup sequence
+    Execute Command         emulation RunFor "5s"
     Execute Command         logLevel 0 spi2.dummySpi
-    Wait For Log Entry      spi2.dummySpi: Data received: 0x0
+    Wait For Log Entry      spi2.dummySpi: Data received: 0x38  pauseEmulation=True
 
     Execute Command         SetEngineKey 'middle'
-    Wait For Log Entry      spi2.dummySpi: Data received: 0x1
+    Wait For Log Entry      spi2.dummySpi: Data received: 0x39  pauseEmulation=True
 
     Execute Command         SetEngineKey 'left'
-    Wait For Log Entry      spi2.dummySpi: Data received: 0x0
+    Wait For Log Entry      spi2.dummySpi: Data received: 0x38
