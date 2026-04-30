@@ -40,6 +40,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
             this.powerOnResetActive = powerOnResetActive;
             this.coreResetInActive = coreResetInActive;
 
+            // Initialize state to the same initial value as on the CPU side.
+            // It is guaranteed that CPU constructor was already executed,
+            // because it's a dependency of this constructor.
+            Connections[(int)Signal.CpuWait].Set(cpu.CpuWaitSignal.IsSet);
             Connections[(int)Signal.CpuWait].Connect(cpu, (int)CortexM.CpuSignal.CpuWait);
             for(var irq = (int)Signal.NvicIrqsStart; irq <= (int)Signal.NvicIrqsEnd; irq++)
             {
