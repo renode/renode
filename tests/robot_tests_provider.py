@@ -534,10 +534,8 @@ class RobotTestSuite(object):
                 command.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
             elif options.debug_mode:
                 command.insert(1, '--debug')
-            options.exclude.append('skip_mono')
         elif options.runner == 'dotnet':
             command.insert(0, 'dotnet')
-            options.exclude.append('skip_dotnet')
 
         renode_command = command
         stdout_path, stderr_path = None, None
@@ -1003,6 +1001,19 @@ class RobotTestSuite(object):
     def _create_suite_name(test_name, hotspot):
         return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
 
+    @staticmethod
+    def _get_excluded_tags(options):
+        excluded_tags = set(options.exclude)
+
+        if options.runner == 'mono':
+            excluded_tags.add('skip_mono')
+        elif options.runner == 'dotnet':
+            excluded_tags.add('skip_dotnet')
+
+        if options.runner != 'dotnet':
+            excluded_tags.add('profiling')
+
+        return list(excluded_tags)
 
     def _run_dependencies(self, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         test_cases_names.difference_update(self._dependencies_met)
@@ -1024,7 +1035,7 @@ class RobotTestSuite(object):
         suite.resource.imports.create(type="Resource", name=keywords_path)
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
-        suite.configure(include_tags=options.include, exclude_tags=options.exclude,
+        suite.configure(include_tags=options.include, exclude_tags=self._get_excluded_tags(options),
                             include_tests=[t[1] for t in test_cases], metadata=metadata,
                             name=suite_name, empty_suite_ok=True)
         # Provide default values for {Suite,Test}{Setup,Teardown}
@@ -1059,8 +1070,6 @@ class RobotTestSuite(object):
             variables.append('BINARY_NAME:Renode.dll')
             variables.append('RENODE_PID:{}'.format(self.renode_pid))
             variables.append('NET_PLATFORM:True')
-        else:
-            options.exclude.append('profiling')
 
         if options.variables:
             variables += options.variables
