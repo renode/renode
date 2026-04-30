@@ -419,6 +419,22 @@ namespace Antmicro.Renode.Peripherals.SystemC
             directAccessPeripherals.Add(connectionIndex, target);
         }
 
+        public void WaitForConnection()
+        {
+            try
+            {
+                var listenerSocket = CreateListenerSocket(requestedPort);
+                var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
+                this.InfoLog("SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
+                SetupConnection(listenerSocket);
+                SetupTimesync();
+            }
+            catch(Exception e)
+            {
+                throw new RecoverableException($"Failed to connect to SystemC process: {e.Message}");
+            }
+        }
+
         public string SystemCExecutablePath
         {
             get => systemcExecutablePath;
