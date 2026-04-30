@@ -70,16 +70,16 @@ std::uint64_t tlm_read(std::size_t size, std::uint64_t offset, bool nb) {
   }
 
   prepare_payload(payload, tlm::TLM_READ_COMMAND, offset, data.data(), size);
-  if (nb) {
-    tlm::tlm_phase phase = tlm::BEGIN_REQ;
+  // if (nb) {
+  //   tlm::tlm_phase phase = tlm::BEGIN_REQ;
 
-    auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
-    if (status != tlm::TLM_COMPLETED) {
-      model->nb_wait();
-    }
-  } else {
+  //   auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
+  //   if (status != tlm::TLM_COMPLETED) {
+  //     model->nb_wait();
+  //   }
+  // } else {
     model->tlm_route(offset)->b_transport(payload, delay);
-  }
+  // }
 
   std::uint64_t result = 0;
   std::memcpy(&result, data.data(), size);
@@ -100,16 +100,16 @@ void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset, bool 
   std::memcpy(data.data(), &value, size);
   prepare_payload(payload, tlm::TLM_WRITE_COMMAND, offset, data.data(), size);
 
-  if (nb) {
-    tlm::tlm_phase phase = tlm::BEGIN_REQ;
+  // if (nb) {
+  //   tlm::tlm_phase phase = tlm::BEGIN_REQ;
 
-    auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
-    if (status != tlm::TLM_COMPLETED) {
-      model->nb_wait();
-    }
-  } else {
+  //   auto status = model->tlm_route(offset)->nb_transport_fw(payload, phase, delay);
+  //   if (status != tlm::TLM_COMPLETED) {
+  //     model->nb_wait();
+  //   }
+  // } else {
     model->tlm_route(offset)->b_transport(payload, delay);
-  }
+  // }
 }
 
 void gpio_write(int number, bool value) {
