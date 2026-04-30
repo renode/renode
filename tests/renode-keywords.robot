@@ -46,23 +46,6 @@ Setup
         File Should Exist    ${DIRECTORY}/${BINARY_NAME}  msg=Robot Framework remote server binary not found (${DIRECTORY}/${BINARY_NAME}). Did you forget to build it in ${CONFIGURATION} configuration?
     END
 
-    # this handles starting on Linux/macOS using mono launcher
-    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
-        Start Process  mono  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}
-    END
-
-    # this handles starting on Windows without an explicit launcher
-    # we use 'shell=true' to execute process from current working directory
-    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and '${SYSTEM}' == 'Windows'
-        Start Process  ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
-    END
-    
-    # this handles starting on all platforms with dotnet launcher
-    # we use 'shell=true' to execute process from current working directory
-    IF  not ${SKIP_RUNNING_SERVER} and not ${SERVER_REMOTE_DEBUG} and ${NET_PLATFORM}
-        Start Process  dotnet ${BINARY_NAME}  @{PARAMS}  cwd=${DIRECTORY}  shell=true
-    END
-
     IF  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG} and not '${SYSTEM}' == 'Windows' and not ${NET_PLATFORM}
         Start Process  mono
           ...            --debug
