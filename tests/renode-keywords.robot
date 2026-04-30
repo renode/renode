@@ -77,12 +77,12 @@ Setup
     #The distinction between operating systems is because localhost is not universally understood on Linux and 127.0.0.1 is not always available on Windows.
     IF  not '${SYSTEM}' == 'Windows'
         Wait Until Keyword Succeeds  60s  1s
-          ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/
+          ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/    AS  Renode
     END
 
     IF  '${SYSTEM}' == 'Windows'
         Wait Until Keyword Succeeds  60s  1s
-          ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/
+          ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/    AS  Renode
     END
 
     Setup Renode
