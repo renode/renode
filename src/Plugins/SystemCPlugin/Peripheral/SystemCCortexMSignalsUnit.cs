@@ -5,17 +5,20 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Linq;
 using System.Net.Sockets;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.IRQControllers;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
-    public class SystemCCortexMSignalsUnit : SystemCPeripheral
+    public class SystemCCortexMSignalsUnit : SystemCPeripheral, IExecutableIO
     {
         public SystemCCortexMSignalsUnit(
                 IMachine machine,
@@ -63,6 +66,65 @@ namespace Antmicro.Renode.Peripherals.SystemC
             nvic.SystemResetRequest.Connect(this, (int)Signal.SystemResetRequest);
             nvic.InSleep.Connect(this, (int)Signal.Sleeping);
             nvic.InDeepSleep.Connect(this, (int)Signal.SleepDeep);
+        }
+
+        public byte[] ReadBytes(long offset, int count, IPeripheral context = null)
+        {
+            var result = new byte[count];
+            for(var i = 0; i < count; i++)
+            {
+                result[i] = ReadByte(offset + i);
+            }
+            return result;
+        }
+
+        public void WriteBytes(long offset, byte[] bytes, int startingIndex, int count, IPeripheral context = null)
+        {
+            if(bytes.Length < startingIndex + count)
+            {
+                throw new RecoverableException($"Bytes array needs to have at least {startingIndex + count} elements");
+            }
+
+            for(var i = 0; i < count; i++)
+            {
+                WriteByte(offset + i, bytes[startingIndex + i]);
+            }
+        }
+
+        /// <remarks>
+        /// CPU is allowed to execute code from this peripheral,
+        /// so it implements <see cref="IMemory"/> via <see cref="IExecutableIO"/>.
+        /// Nevertheless this peripheral isn't required to represent a uniform memory space at SystemC side
+        /// and it usually covers multiple peripherals on the remote side,
+        /// but the particular memory layout is transparent to this peripheral. 
+        /// So in general this peripheral shouldn't be treated as a pure memory
+        /// and extension methods like DumpBinary should be used with caution,
+        /// as all accesses are redirected to the SystemC implementation.
+        /// Anyway we try to provide a reasonable default for <see cref="IKnownSize.Size"/>
+        /// spanning the whole registered area on the system bus.
+        /// As we use the information from the registration point,
+        /// <see cref="IKnownSize.Size"/> can't be used for the registration itself,
+        /// so <see cref="BusRangeRegistration"/> must be always used instead of <see cref="BusPointRegistration"/>.
+        /// Failing to do so will report exception during construction.
+        /// </remarks>
+        public long Size
+        {
+            get
+            {
+                try
+                {
+                    return (long)
+                    this.GetMachine()
+                        .GetSystemBus(this)
+                        .GetRegistrationPoints(this)
+                        .Single()
+                        .Range.Size;
+                }
+                catch(Exception)
+                {
+                    throw new RecoverableException("Unable to detect size from the registration point");
+                }
+            }
         }
 
         protected override void OnUnhandledRenodeMessage(RenodeMessage message)
