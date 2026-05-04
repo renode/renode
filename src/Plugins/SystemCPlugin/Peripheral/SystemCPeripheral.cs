@@ -475,6 +475,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         protected Socket backwardSocket;
+        protected readonly IMachine machine;
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
         {
@@ -629,6 +630,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
+        //       This may lead to deadlocks, as SystemC blocks waiting for a response from this thread.
         private void BackwardConnectionLoop()
         {
             while(true)
@@ -813,7 +816,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly int timeSyncPeriodUS;
 
         private readonly IBusController sysbus;
-        private readonly IMachine machine;
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
         private const int NumberOfGPIOPins = 1024;

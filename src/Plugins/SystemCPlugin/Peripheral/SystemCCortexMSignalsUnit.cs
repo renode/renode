@@ -127,6 +127,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
+        //       This may lead to deadlocks, as SystemC blocks waiting for a response from this thread.
         protected override void OnUnhandledRenodeMessage(RenodeMessage message)
         {
             switch(message.ActionId)
@@ -208,9 +210,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return;
             }
 
-            cpu.Reset();
-            nvic.Reset();
-            dwt?.Reset();
+            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+            {
+                cpu.Reset();
+                nvic.Reset();
+                dwt?.Reset();
+            });
         }
 
         private bool vtorInitialized = false;
