@@ -14,7 +14,7 @@ ${CONFIGURATION}             Release
 ${PORT_NUMBER}               9999
 ${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
 ${RENODETOOLS}               ${CURDIR}/../tools
-${BINARY_NAME}               Renode.exe
+${BINARY_NAME}               Renode.dll
 ${HOTSPOT_ACTION}            None
 ${DISABLE_GUI}               False
 ${DEFAULT_UART_TIMEOUT}      8
@@ -23,7 +23,7 @@ ${SAVE_LOGS}                 True
 ${SAVE_LOGS_WHEN}            Fail
 ${HOLD_ON_ERROR}             False
 ${CREATE_EXECUTION_METRICS}  False
-${NET_PLATFORM}              False
+${NET_PLATFORM}              True
 ${PROFILER_PROCESS}          None
 
 *** Keywords ***

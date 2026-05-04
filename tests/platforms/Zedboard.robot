@@ -563,7 +563,7 @@ Should Ping Over TAP
     Wait For Line On Uart           5 packets transmitted, 5 packets received, 0% packet loss
 
 Should Ping Over Vmnet Helper
-    [Tags]                          ethernet  vmnet  skip_windows  skip_linux  skip_mono
+    [Tags]                          ethernet  vmnet  skip_windows  skip_linux
     Requires                        logged-in
 
     Set Test Variable               ${TAP_INTERFACE_IP}  192.168.18.2

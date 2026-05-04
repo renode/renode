@@ -20,5 +20,5 @@ if "%DEBUG%" == "1" (
 if "%CONTEXT%" == "source" (
     py -3 "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r %cd% %*
 ) else (
-    py -3 "%SCRIPTDIR%\..\tests\run_tests.py" --css-file "%SCRIPTDIR%\..\tests\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%SCRIPTDIR%\" -r "%cd%" %*
+    py -3 "%SCRIPTDIR%\..\tests\run_tests.py" --css-file "%SCRIPTDIR%\..\tests\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%SCRIPTDIR%\" --robot-framework-remote-server-name "renode.exe" -r "%cd%" %*
 )

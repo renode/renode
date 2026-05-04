@@ -32,6 +32,7 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 keywords_path = os.path.abspath(os.path.join(this_path, "renode-keywords.robot"))
 keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward slashes even on Windows
 
+DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
 
 @dataclass(frozen=True)
 class CpuTime:
@@ -180,7 +181,7 @@ def install_cli_arguments(parser):
     parser.add_argument("--robot-framework-remote-server-name",
                         dest="remote_server_name",
                         action="store",
-                        default="Renode.exe",
+                        default=DEFAULT_RENODE_BINARY_NAME,
                         help="Name of robot framework remote server binary.")
 
     parser.add_argument("--robot-framework-remote-server-port", "-P",
@@ -495,13 +496,10 @@ class RobotTestSuite(object):
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
         self.renode_pid = -1
 
-        if options.runner == 'dotnet':
-            remote_server_name = "Renode.dll"
-        else:
-            remote_server_name = options.remote_server_name
+        prepend_dotnet = options.remote_server_name == DEFAULT_RENODE_BINARY_NAME
 
         self.remote_server_directory = options.remote_server_full_directory
-        remote_server_binary = os.path.join(self.remote_server_directory, remote_server_name)
+        remote_server_binary = os.path.join(self.remote_server_directory, options.remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
             raise Exception("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
@@ -525,16 +523,7 @@ class RobotTestSuite(object):
             command.append('--config')
             command.append(options.renode_config)
 
-        if options.runner == 'mono':
-            command.insert(0, 'mono')
-            if options.port is not None:
-                if options.suspend:
-                    print('Waiting for a debugger at port: {}'.format(options.port))
-                command.insert(1, '--debug')
-                command.insert(2, '--debugger-agent=transport=dt_socket,server=y,suspend={0},address=127.0.0.1:{1}'.format('y' if options.suspend else 'n', options.port))
-            elif options.debug_mode:
-                command.insert(1, '--debug')
-        elif options.runner == 'dotnet':
+        if prepend_dotnet:
             command.insert(0, 'dotnet')
 
         renode_command = command
@@ -542,11 +531,7 @@ class RobotTestSuite(object):
 
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
-            if options.runner == 'dotnet':
-                signals_to_handle = 'SIG34'
-            else:
-                signals_to_handle = 'SIGXCPU SIG33 SIG35 SIG36 SIGPWR'
-            command = ['gdb', '-nx', '-ex', 'handle ' + signals_to_handle + ' nostop noprint', '--args'] + command
+            command = ['gdb', '-nx', '-ex', 'handle SIG34 nostop noprint', '--args'] + command
             process = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
 
             if options.keep_renode_output:
@@ -1001,20 +986,6 @@ class RobotTestSuite(object):
     def _create_suite_name(test_name, hotspot):
         return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
 
-    @staticmethod
-    def _get_excluded_tags(options):
-        excluded_tags = set(options.exclude)
-
-        if options.runner == 'mono':
-            excluded_tags.add('skip_mono')
-        elif options.runner == 'dotnet':
-            excluded_tags.add('skip_dotnet')
-
-        if options.runner != 'dotnet':
-            excluded_tags.add('profiling')
-
-        return list(excluded_tags)
-
     def _run_dependencies(self, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         test_cases_names.difference_update(self._dependencies_met)
         if not any(test_cases_names):
@@ -1035,7 +1006,7 @@ class RobotTestSuite(object):
         suite.resource.imports.create(type="Resource", name=keywords_path)
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
-        suite.configure(include_tags=options.include, exclude_tags=self._get_excluded_tags(options),
+        suite.configure(include_tags=options.include, exclude_tags=options.exclude,
                             include_tests=[t[1] for t in test_cases], metadata=metadata,
                             name=suite_name, empty_suite_ok=True)
         # Provide default values for {Suite,Test}{Setup,Teardown}
@@ -1055,6 +1026,8 @@ class RobotTestSuite(object):
             'DIRECTORY:{}'.format(self.remote_server_directory),
             'PORT_NUMBER:{}'.format(self.remote_server_port),
             'RESULTS_DIRECTORY:{}'.format(output_dir),
+            'BINARY_NAME:{}'.format(options.remote_server_name),
+            'RENODE_PID:{}'.format(self.renode_pid),
         ]
         if hotspot:
             variables.append('HOTSPOT_ACTION:' + hotspot)
@@ -1066,10 +1039,6 @@ class RobotTestSuite(object):
             variables.append('CREATE_EXECUTION_METRICS:True')
         if options.save_logs == "always":
             variables.append('SAVE_LOGS_WHEN:Always')
-        if options.runner == 'dotnet':
-            variables.append('BINARY_NAME:Renode.dll')
-            variables.append('RENODE_PID:{}'.format(self.renode_pid))
-            variables.append('NET_PLATFORM:True')
 
         if options.variables:
             variables += options.variables
@@ -1150,9 +1119,6 @@ class RobotTestSuite(object):
                 if os.path.isfile(log_file):
                     self.suite_log_files.append(log_file)
 
-        if options.runner == "mono":
-            self.copy_mono_logs(options, iteration_index, suite_retry_index)
-
         return TestResult(result.return_code == 0, self.suite_log_files)
 
     def _create_timeout_handler(self, options, iteration_index, suite_retry_index):
@@ -1176,30 +1142,6 @@ class RobotTestSuite(object):
             BuiltIn().run_keyword("Setup Renode")
             print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using the same port {self.remote_server_port}")
         return _timeout_handler
-
-
-    def copy_mono_logs(self, options: Namespace, iteration_index: int, suite_retry_index: int) -> None:
-        """Copies 'mono_crash.*.json' files into the suite's logs directory.
-
-        These files are occasionally created when mono crashes. There are also 'mono_crash.*.blob'
-        files, but they contain heavier memory dumps and have questionable usefulness."""
-        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
-        logs_dir = os.path.join(output_dir, "logs")
-        for dirpath, dirnames, fnames in os.walk(os.getcwd()):
-            # Do not descend into "logs" directories, to prevent later invocations from
-            # stealing files already moved by earlier invocations
-            logs_indices = [x for x in range(len(dirnames)) if dirnames[x] == "logs"]
-            logs_indices.sort(reverse=True)
-            for logs_idx in logs_indices:
-                del dirnames[logs_idx]
-
-            for fname in filter(lambda x: x.startswith("mono_crash.") and x.endswith(".json"), fnames):
-                os.makedirs(logs_dir, exist_ok=True)
-                src_fpath = os.path.join(dirpath, fname)
-                dest_fpath = os.path.join(logs_dir, fname)
-                print(f"Moving mono_crash file: '{src_fpath}' -> '{dest_fpath}'")
-                os.rename(src_fpath, dest_fpath)
-
 
     def tests_failed_due_to_renode_crash(self) -> bool:
         # Return false if the test has not yet run

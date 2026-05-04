@@ -17,6 +17,7 @@ registered_handlers = []
 TestResult = namedtuple('TestResult', ('ok', 'log_file'))
 shared_suite_counter = None
 
+DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
 
 class IncludeLoader(yaml.SafeLoader):
 
@@ -168,10 +169,10 @@ def prepare_parser():
                         help="Generate perf.data from test in specified directory")
 
     parser.add_argument("--runner",
-                        dest="runner",
+                        dest="discarded",
                         action="store",
                         default=None,
-                        help=".NET runner.")
+                        help="Flag is deprecated and has no effect.")
 
     parser.add_argument("--net",
                         dest="discarded",
@@ -266,21 +267,9 @@ def handle_options(options):
     else:
         options.remote_server_full_directory = os.path.join(options.remote_server_directory_prefix, options.configuration)
 
-    try:
-        # Try to infer the runner based on the build type
-        with open(os.path.join(options.remote_server_full_directory, "build_type"), "r") as f:
-            options.runner = f.read().strip()
-        if platform == "win32" and options.runner != "dotnet":
-            options.runner = "none" # .NET Framework applications run natively on Windows
-    except:
-        # Fallback to the explicitly provided runner or platform's default if nothing was passed
-        if options.runner is None:
-            options.runner = "mono" if platform.startswith("linux") or platform == "darwin" else "none"
-
     # Apply the dotnet telemetry optout in this script instead of the shell wrappers as it's
     # portable between OSes
-    if options.runner == 'dotnet':
-        os.putenv("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
+    os.putenv("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
 
 
 def register_handler(handler_type, extension, creator, before_parsing=None, after_parsing=None):
