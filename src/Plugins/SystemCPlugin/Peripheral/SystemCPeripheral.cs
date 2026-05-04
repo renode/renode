@@ -46,6 +46,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         InitNonSecureVTOR = 11,
     }
 
+    // WARNING: This structure is part of a binary socket protocol between C and C#.
+    // Any change MUST be mirrored in struct renode_message in renode_bridge.h
+    // or communication will not work correctly.
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct RenodeMessage
     {
@@ -128,6 +131,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public readonly ulong Payload;
     }
 
+    // WARNING: This structure is part of a binary socket protocol between C and C#.
+    // Any change MUST be mirrored in struct dmi_message in renode_bridge.h
+    // or communication will not work correctly.
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct FileMappingParameters
     {
@@ -158,6 +164,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public const int PathMax = 4096;
     }
 
+    // WARNING: This structure is part of a binary socket protocol between C and C#.
+    // Any change MUST be mirrored in struct dmi_message in renode_bridge.h
+    // or communication will not work correctly.
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct DMIMessage
     {

@@ -167,6 +167,9 @@ enum renode_action : uint8_t {
 };
 
 #pragma pack(push, 1)
+// WARNING: This structure is part of a binary socket protocol between C and C#.
+// Any change MUST be mirrored in struct RenodeMessage in SystemCPeripheral.cs
+// or communication will not work correctly.
 struct renode_message {
   renode_action action;
   uint8_t data_length;
@@ -175,6 +178,9 @@ struct renode_message {
   uint64_t payload;
 };
 
+// WARNING: This structure is part of a binary socket protocol between C and C#.
+// Any change MUST be mirrored in structs FileMappingParameters and DMIMessage in SystemCPeripheral.cs
+// or communication will not work correctly.
 struct dmi_message {
   renode_action action;
   uint8_t allowed;
