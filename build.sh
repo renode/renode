@@ -487,7 +487,7 @@ then
 fi
 
 # build
-eval "dotnet build $(build_args_helper "${PARAMS[@]}") $TARGET"
+dotnet build "${PARAMS[@]/#/-}" $TARGET
 
 # copy llvm library
 LLVM_LIB="libllvm-disas"
@@ -582,7 +582,7 @@ then
     if $ON_LINUX
     then
         # maxcpucount:1 to avoid an error with multithreaded publish
-        eval "dotnet publish -maxcpucount:1 -f $TFM --self-contained false $(build_args_helper "${PARAMS[@]}") $TARGET"
+        dotnet publish -maxcpucount:1 -f $TFM --self-contained false "${PARAMS[@]/#/-}" $TARGET
         export RID TFM
         $ROOT_PATH/tools/packaging/make_linux_package.sh $params
     elif $ON_WINDOWS
@@ -604,7 +604,7 @@ then
     PARAMS+=(p:PORTABLE=true)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
-    eval "dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true $(build_args_helper "${PARAMS[@]}") $TARGET"
+    dotnet publish -maxcpucount:1 -r $RID -f $TFM --self-contained true "${PARAMS[@]/#/-}" $TARGET
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
