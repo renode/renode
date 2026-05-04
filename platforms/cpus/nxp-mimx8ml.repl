@@ -1,21 +1,21 @@
-CA53Cluster: CPU.Cluster @ sysbus
+ca53Cluster: CPU.Cluster @ sysbus
 
-cpu0: CPU.ARMv8A @ CA53Cluster
+cpu0: CPU.ARMv8A @ ca53Cluster
     cpuType: "cortex-a53"
     cpuId: 0x0
     genericInterruptController: gic
 
-cpu1: CPU.ARMv8A @ CA53Cluster
+cpu1: CPU.ARMv8A @ ca53Cluster
     cpuType: "cortex-a53"
     cpuId: 0x1
     genericInterruptController: gic
 
-cpu2: CPU.ARMv8A @ CA53Cluster
+cpu2: CPU.ARMv8A @ ca53Cluster
     cpuType: "cortex-a53"
     cpuId: 0x2
     genericInterruptController: gic
 
-cpu3: CPU.ARMv8A @ CA53Cluster
+cpu3: CPU.ARMv8A @ ca53Cluster
     cpuType: "cortex-a53"
     cpuId: 0x3
     genericInterruptController: gic
@@ -58,22 +58,22 @@ cpu3_timer: Timers.ARM_GenericTimer @ cpu3
     NonSecureEL2PhysicalTimerIRQ->gic#0x3@26
 
 memory_ddr_cortexA_cluster: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x100000000; cluster: CA53Cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x100000000; cluster: ca53Cluster };
     }
     size: 0x14000000
 
 ca53_dtcm: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x800000; cluster: CA53Cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x800000; cluster: ca53Cluster };
     }
     size: 0x20000
 
 ca53_itcm: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x7E0000; cluster: CA53Cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x7E0000; cluster: ca53Cluster };
     }
     size: 0x20000
 
 ca53_bootrom: Memory.MappedMemory @ {
-        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: CA53Cluster };
+        sysbus new Bus.BusPointRegistration { address: 0x0; cluster: ca53Cluster };
     }
     size: 0x40000
 

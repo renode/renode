@@ -2,13 +2,13 @@
 :description: This script runs Zephyr Shell Module sample on MIMX8ML8 CortexA53 core
 
 include @platforms/boards/nxp-frdm-imx8mplus.repl
-using sysbus.CA53Cluster
+using sysbus.ca53Cluster
 
 $bin?=@https://dl.antmicro.com/projects/renode/imx8mp_evk_mimx8ml8_a53-zephyr-shell_module.elf-s_2097840-5f3475d0fa102070d24789bb6945ed6da79dade5
 
 showAnalyzer uart4
 
-CA53Cluster ForEach IsHalted True
+ca53Cluster ForEach IsHalted True
 
 # CPU requires these to be set when running Zephyr RTOS without a bootloader
 gic DisabledSecurity true
