@@ -11,16 +11,19 @@ spi1: SPI.STM32SPI @ sysbus 0x40013000
     series: STM32Series.L5
     IRQ->nvic@59
     DMAReceive -> dmamux@11
+    DMASend -> dmamux@12
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
     series: STM32Series.L5
     IRQ->nvic@60
     DMAReceive -> dmamux@13
+    DMASend -> dmamux@14
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
     series: STM32Series.L5
     IRQ->nvic@99
     DMAReceive -> dmamux@15
+    DMASend -> dmamux@16
 
 // This model's registers are not compatible with the EXTI in this MCU,
 // it is currently here to support direct interrupts
