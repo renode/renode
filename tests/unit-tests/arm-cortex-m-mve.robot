@@ -1384,3 +1384,46 @@ VCVT Should Produce Unsigned Results
     Register Q2 Should Contain ${ties_even}  message=VCVTN
     Register Q3 Should Contain ${plus_infinity}  message=VCVTP
     Register Q4 Should Contain ${minus_infinity}  message=VCVTM
+
+VSHLC Should Produce Correct Results
+    Create Machine
+
+    ${input_q0}=                    Set Variable  0x00000001 00000001 00000001 00000001
+    ${input_q1}=                    Set Variable  0xdeadbeef cafebabe 12345678 abcdef01
+    ${input_q2}=                    Set Variable  0xffffffff 00000000 ffffffff 00000000
+    ${input_q3}=                    Set Variable  0x80000000 00000001 80000000 00000001
+    ${input_q4}=                    Set Variable  0xa5a5a5a5 5a5a5a5a a5a5a5a5 5a5a5a5a
+
+    Execute Command                 cpu SetRegister "r0" 0xffffffff
+    Execute Command                 cpu SetRegister "r1" 0xffffffff
+    Execute Command                 cpu SetRegister "r2" 0x0
+    Execute Command                 cpu SetRegister "r3" 0x0
+    Execute Command                 cpu SetRegister "r4" 0x1f
+    Set Register Q0 To ${input_q0}
+    Set Register Q1 To ${input_q1}
+    Set Register Q2 To ${input_q2}
+    Set Register Q3 To ${input_q3}
+    Set Register Q4 To ${input_q4}
+
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             vshlc q0, r0, #32
+    ...                             vshlc q1, r1, #16
+    ...                             vshlc q2, r2, #1
+    ...                             vshlc q3, r3, #8
+    ...                             vshlc q4, r4, #13
+    Load Program And Execute        ${assembly}
+
+    Register Q0 Should Contain 0x00000001 00000001 00000001 ffffffff  message=VSHLC with input ${input_q0}, shift: 32 bits, carry: 0xffffffff\n
+    Register Should Be Equal        r0  0x1
+
+    Register Q1 Should Contain 0xbeefcafe babe1234 5678abcd ef01ffff  message=VSHLC with input ${input_q1}, shift: 16 bits, carry: 0xffffffff\n
+    Register Should Be Equal        r1  0x0000dead
+
+    Register Q2 Should Contain 0xfffffffe 00000001 fffffffe 00000000  message=VSHLC with input ${input_q2}, shift: 1 bit, carry: 0x0\n
+    Register Should Be Equal        r2  0x00000001
+
+    Register Q3 Should Contain 0x00000000 00000180 00000000 00000100  message=VSHLC with input ${input_q3}, shift: 8 bits, carry: 0x0\n
+    Register Should Be Equal        r3  0x00000080
+
+    Register Q4 Should Contain 0xb4b4ab4b 4b4b54b4 b4b4ab4b 4b4b401f  message=VSHLC with input ${input_q4}, shift: 13 bits, carry: 0x1f\n
+    Register Should Be Equal        r4  0x000014b4
