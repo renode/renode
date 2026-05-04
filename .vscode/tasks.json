@@ -7,28 +7,6 @@
             "label": "Build - Debug",
             "problemMatcher": "$msCompile",
             "type": "shell",
-            "command": "./build.sh --net -d",
-            "group": "build",
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Build - Release",
-            "problemMatcher": "$msCompile",
-            "type": "shell",
-            "command": "./build.sh --net",
-            "group": "build",
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Mono Build - Debug",
-            "problemMatcher": "$msCompile",
-            "type": "shell",
             "command": "./build.sh -d",
             "group": "build",
             "presentation": {
@@ -37,7 +15,7 @@
             }
         },
         {
-            "label": "Mono Build - Release",
+            "label": "Build - Release",
             "problemMatcher": "$msCompile",
             "type": "shell",
             "command": "./build.sh",
