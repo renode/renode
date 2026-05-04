@@ -367,7 +367,7 @@ then
       rm -rf "${output_dir}"
     fi
   }
-  for project_dir in $(find "$(get_path "${ROOT_PATH}/src")" -iname '*.csproj' -exec dirname '{}' \;)
+  for project_dir in $(find "$(get_path "${ROOT_PATH}")" -iname '*.csproj' -exec dirname '{}' \;)
   do
     for dir in {bin,obj}/{Debug,Release}
     do
