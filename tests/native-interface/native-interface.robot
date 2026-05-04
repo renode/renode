@@ -9,6 +9,8 @@
 #                     Optional when running from a Renode source tree built with ./build.sh --shared
 #                     For packages: tar -C <dir> --strip-components=1 -xf renode-*.linux.tar.gz
 #                     Then pass: renode-test --variable USER_RENODE_DIR:<dir> native-interface.robot
+#   CONFIGURATION   - Renode build configuration. Normally overridden by renode-test so you don't have
+#                     to worry about it, but specified here to please the LSP.
 
 *** Settings ***
 Suite Setup                         Setup And Start NativeInterface
@@ -17,6 +19,7 @@ Library                             ${CURDIR}/ni_library.py  AS  NI
 
 *** Variables ***
 ${RENODE_DIR}                       ${CURDIR}/../..
+${CONFIGURATION}                    Release
 ${USER_RENODE_DIR}                  ${EMPTY}
 ${RENODE_CFG}                       ${CONFIGURATION}
 ${NI_ROBOT_PORT}                    3343
