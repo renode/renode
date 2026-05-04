@@ -183,6 +183,7 @@ struct dmi_message {
   uint64_t mmf_offset;
   uint32_t mmf_path_length;
   char mmf_path[4096]; // A common value for PATH_MAX, hardcoded here for consistency if it is different on the host
+  uint64_t mapped_address;
 };
 #pragma pack(pop)
 
