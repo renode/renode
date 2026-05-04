@@ -11,7 +11,7 @@ cp -r $BASE/tools/common.sh $DIR/tests
 
 sed_inplace 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DIR/renode-test
 sed_inplace 's#ROOT_PATH}/tools/common.sh#TEST_PATH}/common.sh#' $DIR/renode-test
-sed_inplace 's#--properties-file.*#--robot-framework-remote-server-full-directory=$ROOT_PATH --robot-framework-remote-server-name=renode --css-file=$TEST_PATH/robot.css --runner=none -r $(pwd) "$@"#' $DIR/renode-test
+sed_inplace 's#--properties-file.*#--robot-framework-remote-server-full-directory=$ROOT_PATH --robot-framework-remote-server-name=renode --css-file=$TEST_PATH/robot.css -r $(pwd) "$@"#' $DIR/renode-test
 sed_inplace $'/^ROOT_PATH=.*/a\\\n TEST_PATH=$ROOT_PATH/tests' $DIR/renode-test
 sed_inplace '/TESTS_FILE/d' $DIR/renode-test
 sed_inplace '/TESTS_RESULTS/d' $DIR/renode-test

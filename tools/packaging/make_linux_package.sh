@@ -41,8 +41,7 @@ function sed_inplace() {
 COMMON_SCRIPT=$DIR/tests/common.sh
 COMMAND_SCRIPT=linux/renode
 TEST_SCRIPT=linux/renode-test
-RUNNER=dotnet
-copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT $RUNNER
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT
 
 
 PACKAGES=output/packages
@@ -155,7 +154,7 @@ PKG=renode-$VERSION.linux.tar.gz
 INSTALL_DIR='$(cd $(dirname $(readlink -f $0 2>/dev/null || echo $0)); echo $PWD)'
 rm ${COMMAND_SCRIPT}
 cp linux/renode-dotnet-template $COMMAND_SCRIPT
-copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT $RUNNER
+copy_bash_tests_scripts $TEST_SCRIPT $COMMON_SCRIPT
 mkdir -p $BASE/output/packages
 cp $COMMAND_SCRIPT $DIR
 cp $TEST_SCRIPT $DIR
