@@ -133,7 +133,7 @@ spi1: SPI.STM32SPI @ sysbus 0x40013000
 spi2: SPI.STM32SPI @ sysbus 0x40003800
     series: STM32Series.F4
     IRQ->nvic@35
-    DMARecieve->dma1@3
+    DMAReceive->dma1@3
 
 spi3: SPI.STM32SPI @ sysbus 0x40003C00
     series: STM32Series.F4
