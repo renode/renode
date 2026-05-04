@@ -156,7 +156,7 @@ Memory Should Be Equal
         Fail                            ${message}: Value on address ${{hex(${address})}} assertion failed, actual: ${{hex(${value})}}, expected: ${{hex(${expected_value})}}
     END
 
-Vector-Vector ${instruction:(vhadd|vhsub)}.${sign:(s|u)}${element_size} Should Produce Correct Result
+Vector-Vector ${instruction:(vhadd|vrhadd|vhsub|vmax|vmin)}.${sign:(s|u)}${element_size} Should Produce Correct Result
     Reset Emulation
     Create Machine
 
@@ -626,7 +626,7 @@ Execute LOB and Test Results
 Vector-Vector Instructions Should Produce Correct Results
     [Template]                      Vector-Vector ${instruction}.${sign}${element_size} Should Produce Correct Result
 
-    FOR  ${instruction}  IN  vhadd  vhsub  vmax  vmin
+    FOR  ${instruction}  IN  vhadd  vrhadd  vhsub  vmax  vmin
         FOR  ${sign}  IN  s  u
             FOR  ${element_size}  IN  8  16  32
                 ${instruction}                  ${sign}  ${element_size}

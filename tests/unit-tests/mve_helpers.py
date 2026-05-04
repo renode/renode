@@ -482,6 +482,11 @@ def do_shift_op(
 compute_vector_vhadd_result = partial(
     compute_vector_vector_op, lambda a, b: (a + b) // 2
 )
+
+compute_vector_vrhadd_result = partial(
+    compute_vector_vector_op, lambda a, b: (a + b + 1) // 2
+)
+
 compute_vector_vhsub_result = partial(
     compute_vector_vector_op, lambda a, b: (a - b) // 2
 )
