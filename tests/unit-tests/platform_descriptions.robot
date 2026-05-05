@@ -18,6 +18,10 @@ ${eq}=                        ==
 ...                           ${platforms_path}${/}boards${/}stm32f4_discovery-bb.repl
 ...                           ${platforms_path}${/}boards${/}zedboard-externals.repl
 ...                           ${platforms_path}${/}boards${/}vexpress-externals.repl
+...                           ${platforms_path}${/}boards${/}ramn${/}BODY.repl
+...                           ${platforms_path}${/}boards${/}ramn${/}GATEWAY.repl
+...                           ${platforms_path}${/}boards${/}ramn${/}CHASSIS.repl
+...                           ${platforms_path}${/}boards${/}ramn${/}POWERTRAIN.repl
 
 *** Keywords ***
 Get Test Cases

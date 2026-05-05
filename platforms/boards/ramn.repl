@@ -11,8 +11,6 @@ if request.IsRead:
         request.Value = 0
 '''
 
-dummySpi: Mocks.DummySPISlave @ spi2
-
 otp: Python.PythonPeripheral @ sysbus 0x0BFA0000
     size: 0x10000
     initable: False
