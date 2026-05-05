@@ -207,7 +207,6 @@ pit0: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B0000
     oscillatorFrequency: 12_000_000
     hasRealTimeInterrupt: true
     hasLifetimeTimer: true
-    supportsTimersChaining: true
     -> mscm@96
 
 pit1: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B4000
