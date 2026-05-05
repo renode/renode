@@ -1,1 +1,10 @@
-dummySpi: Mocks.DummySPISlave @ spi2
+ledController: SPI.STP08ShiftRegister@ spi2
+
+leftTurnIndicator: Miscellaneous.LED @ ledController 6
+rightTurnIndicator: Miscellaneous.LED @ ledController 7
+tailLamp: Miscellaneous.LED @ ledController 3
+lowBeam: Miscellaneous.LED @ ledController 4
+highBeam: Miscellaneous.LED @ ledController 5
+batteryWarning: Miscellaneous.LED @ ledController 0
+checkEngine: Miscellaneous.LED @ ledController 1
+parkingBreak: Miscellaneous.LED @ ledController 1
