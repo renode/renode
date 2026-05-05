@@ -611,22 +611,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
                 var recvBytes = new byte[messageSize];
-                if(forwardSocket != null)
+                responseMessage = new RenodeMessage();
+                if(forwardSocket == null)
+                {
+                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
+                    return false;
+                }
+
+                try
                 {
                     forwardSocket.Send(request.Serialize(), SocketFlags.None);
                     forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
-
-                    responseMessage = new RenodeMessage();
-                    responseMessage.Deserialize(recvBytes);
-
-                    return true;
                 }
-                else
+                catch(SocketException)
                 {
-                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first.");
-                    responseMessage = new RenodeMessage();
+                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
                     return false;
                 }
+
+                responseMessage.Deserialize(recvBytes);
+
+                return true;
             }
         }
 
