@@ -318,6 +318,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
                     systemcProcess.Kill();
                 }
+                systemcProcess = null;
             }
 
             try
@@ -343,6 +344,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
             forwardSocket?.Close();
             backwardSocket?.Close();
+
+            forwardSocket = null;
+            backwardSocket = null;
         }
 
         public void Reset()
