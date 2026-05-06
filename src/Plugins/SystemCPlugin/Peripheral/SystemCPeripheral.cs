@@ -292,6 +292,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 innerConnections[i] = new GPIO();
             }
             Connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
+
+            // Timer unit is microseconds
+            var timerName = "RenodeSystemCTimesyncTimer";
+            var timesyncFrequency = 1000000UL;
+            var timesyncLimit = (ulong)timeSyncPeriodUS;
+
+            timesyncTimer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: false, eventEnabled: true, autoUpdate: true);
         }
 
         public ulong ReadQuadWord(long offset)
@@ -596,34 +603,37 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void SetupTimesync()
         {
-            // Timer unit is microseconds
-            var timerName = "RenodeSystemCTimesyncTimer";
-            var timesyncFrequency = 1000000UL;
-            var timesyncLimit = (ulong)timeSyncPeriodUS;
-
-            var timesyncTimer = new LimitTimer(machine.ClockSource, timesyncFrequency, this, timerName, limit: timesyncLimit, enabled: true, eventEnabled: true, autoUpdate: true);
-
-            Action<TimeInterval, TimeInterval> adjustTimesyncToQuantum = ((_, newQuantum) =>
-            {
-                if(TimeInterval.FromMicroseconds(timesyncTimer.Limit) < newQuantum)
-                {
-                    var newLimit = (ulong)newQuantum.TotalMicroseconds;
-                    this.Log(LogLevel.Warning, $"Requested time synchronization period of {timesyncTimer.Limit}us is smaller than local time source quantum - synchronization time will be changed to {newLimit}us to match it.");
-                    timesyncTimer.Limit = newLimit;
-                }
-            });
+            timesyncTimer.Enabled = true;
             var currentQuantum = machine.LocalTimeSource.Quantum;
-            adjustTimesyncToQuantum(currentQuantum, currentQuantum);
-            machine.LocalTimeSource.QuantumChanged += adjustTimesyncToQuantum;
+            AdjustTimesyncToQuantum(currentQuantum, currentQuantum);
+            machine.LocalTimeSource.QuantumChanged += AdjustTimesyncToQuantum;
+            timesyncTimer.LimitReached += OnTimesyncTimerLimitReached;
+        }
 
-            timesyncTimer.LimitReached += () =>
+        private void TeardownTimesync()
+        {
+            machine.LocalTimeSource.QuantumChanged -= AdjustTimesyncToQuantum;
+            timesyncTimer.LimitReached -= OnTimesyncTimerLimitReached;
+            timesyncTimer.Reset();
+        }
+
+        private void AdjustTimesyncToQuantum(TimeInterval oldQuantum, TimeInterval newQuantum)
+        {
+            if(TimeInterval.FromMicroseconds(timesyncTimer.Limit) < newQuantum)
             {
-                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-                {
-                    var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, GetCurrentVirtualTimeUS());
-                    SendRequest(request, out var response);
-                });
-            };
+                var newLimit = (ulong)newQuantum.TotalMicroseconds;
+                this.Log(LogLevel.Warning, $"Requested time synchronization period of {timesyncTimer.Limit}us is smaller than local time source quantum - synchronization time will be changed to {newLimit}us to match it.");
+                timesyncTimer.Limit = newLimit;
+            }
+        }
+
+        private void OnTimesyncTimerLimitReached()
+        {
+            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+            {
+                var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, GetCurrentVirtualTimeUS());
+                SendRequest(request, out var response);
+            });
         }
 
         private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
@@ -830,7 +840,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private Process systemcProcess;
         private string systemcExecutablePath;
         private bool backwardThreadStarted = false;
-
+        private readonly LimitTimer timesyncTimer;
         private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
 
         private readonly Thread backwardThread;
