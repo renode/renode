@@ -31,6 +31,7 @@ gic: IRQControllers.ARM_GenericInterruptController @ {
 
 cpu0_timer: Timers.ARM_GenericTimer @ cpu0
     frequency: 8000000
+    defaultCounterFrequencyRegister: 8000000
     EL3PhysicalTimerIRQ->gic#0x0@29
     EL1PhysicalTimerIRQ->gic#0x0@30
     EL1VirtualTimerIRQ->gic#0x0@27
@@ -38,6 +39,7 @@ cpu0_timer: Timers.ARM_GenericTimer @ cpu0
 
 cpu1_timer: Timers.ARM_GenericTimer @ cpu1
     frequency: 8000000
+    defaultCounterFrequencyRegister: 8000000
     EL3PhysicalTimerIRQ->gic#0x1@29
     EL1PhysicalTimerIRQ->gic#0x1@30
     EL1VirtualTimerIRQ->gic#0x1@27
@@ -45,6 +47,7 @@ cpu1_timer: Timers.ARM_GenericTimer @ cpu1
 
 cpu2_timer: Timers.ARM_GenericTimer @ cpu2
     frequency: 8000000
+    defaultCounterFrequencyRegister: 8000000
     EL3PhysicalTimerIRQ->gic#0x2@29
     EL1PhysicalTimerIRQ->gic#0x2@30
     EL1VirtualTimerIRQ->gic#0x2@27
@@ -52,6 +55,7 @@ cpu2_timer: Timers.ARM_GenericTimer @ cpu2
 
 cpu3_timer: Timers.ARM_GenericTimer @ cpu3
     frequency: 8000000
+    defaultCounterFrequencyRegister: 8000000
     EL3PhysicalTimerIRQ->gic#0x3@29
     EL1PhysicalTimerIRQ->gic#0x3@30
     EL1VirtualTimerIRQ->gic#0x3@27
@@ -125,6 +129,31 @@ usdhc2: SD.NXP_uSDHC @ sysbus 0x30B50000
 
 usdhc3: SD.NXP_uSDHC @ sysbus 0x30B60000
     IRQ -> gic@24
+
+anatop: Python.PythonPeripheral @ sysbus 0x30360000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+eth1: Python.PythonPeripheral @ sysbus 0x30BE0000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+i2c1: Python.PythonPeripheral @ sysbus 0x30a20000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+i2c2: Python.PythonPeripheral @ sysbus 0x30a30000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
+i2c3: Python.PythonPeripheral @ sysbus 0x30a40000
+    size: 0x1000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
 
 sysbus:
     init add:
