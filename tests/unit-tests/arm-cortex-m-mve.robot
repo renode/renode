@@ -598,6 +598,43 @@ ${signed:(Signed|Unsigned)} ${kind:Logical|Arithmetic|Saturating|Rounding|Satura
     Should Be Equal As Integers     ${actual_result}  ${expected_result}
     ...                             msg=expected `${instruction} ${input} shifted by ${shift_by}` to result in ${expected_result} but actual is ${actual_result}
 
+Vector Shift Right And Narrow Instruction Should Produce Correct Result
+    [Arguments]
+    ...                             ${source_input}
+    ...                             ${destination_input}
+    ...                             ${width}
+    ...                             ${shift_by}
+    ...                             ${rounding}
+    ...                             ${target_half}
+
+    Reset Emulation
+    Create Machine
+
+    Set Register Q1 To ${source_input}
+    Set Register Q2 To ${destination_input}
+
+    ${should_round}=                Set Variable If  ${rounding}
+    ...                             R
+    ...                             ${EMPTY}
+    ${insert_in}=                   Set Variable If  '${{ $target_half.lower() }}'=='top'
+    ...                             T
+    ...                             B
+    ${opcode}=                      Set Variable  V${should_round}SHRN${insert_in}.I${width}
+
+    Load Program And Execute        ${opcode} Q2, Q1, #${shift_by}
+    ${renode_result}=               Read Register Q2
+
+    ${expected_result}=             Compute Vector Shift Right Narrow Result
+    ...                             shift_by=${shift_by}
+    ...                             rounding=${rounding}
+    ...                             target_half=${{ $target_half.lower() }}
+    ...                             element_size_str=${width}
+    ...                             operand1_128_bit=${source_input}
+    ...                             operand2_128_bit=${destination_input}
+
+    Should Be Equal As Integers     ${renode_result}  ${expected_result}
+    ...                             msg=expected `${opcode} dest: ${destination_input}, src: ${source_input} shifted by ${shift_by}` to result in ${expected_result} but actual is ${renode_result}
+
 Execute LOB and Test Results
     [Arguments]                     ${assembly}
     ...                             ${input_q0}
@@ -948,6 +985,36 @@ Shift Long Register Instructions Should Produce Correct Results
             ...  0x0000000000000000
             ...  0xffffffffffffffff
                 ${signed}                       ${kind}  ${direction}  Register  ${input}  ${shift_by}  ${saturation_size}
+            END
+        END
+    END
+
+Shift Right Narrow Should Produce Correct Results
+    # Tests for VSHRN and V(R)SHRN (rounding)
+    FOR  ${rounding}  IN  True  False
+        FOR  ${target_half}  IN  top  bottom
+            FOR  ${width}  ${shift_by}  IN
+            ...  32  1
+            ...  32  16
+            ...  32  7
+            ...  16  1
+            ...  16  8
+            ...  16  4
+                FOR  ${source_input}  ${destination_input}  IN
+                ...  0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF  0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                ...  0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF  0x00000000000000000000000000000000
+                ...  0x80000000800000008000000080000000  0x00000000000000000000000000000000
+                ...  0x00010001000100010001000100010001  0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                ...  0x55555555555555555555555555555555  0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                ...  0x12345678ABCDEF0112345678ABCDEF01  0xFEDCBA9876543210FEDCBA9876543210
+                    Vector Shift Right And Narrow Instruction Should Produce Correct Result
+                    ...                             ${source_input}
+                    ...                             ${destination_input}
+                    ...                             ${width}
+                    ...                             ${shift_by}
+                    ...                             ${rounding}
+                    ...                             ${{ $target_half.lower() }}
+                END
             END
         END
     END

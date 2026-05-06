@@ -360,7 +360,9 @@ def compute_vpr_mask(
 
     operand1 = [
         hex_to_int(value)
-        for value in split_n_bit_value_into_m_bit_values(128, element_size, operand1_str)
+        for value in split_n_bit_value_into_m_bit_values(
+            128, element_size, operand1_str
+        )
     ]
 
     if with_scalar:
@@ -368,7 +370,9 @@ def compute_vpr_mask(
     else:
         operand2 = [
             hex_to_int(value)
-            for value in split_n_bit_value_into_m_bit_values(128, element_size, operand2_str)
+            for value in split_n_bit_value_into_m_bit_values(
+                128, element_size, operand2_str
+            )
         ]
 
     mask = []
@@ -474,6 +478,38 @@ def do_shift_op(
     return hex(clamped_result)
 
 
+def do_shift_right_2op_with_narrow(
+    source_value: int,
+    destination_value: int,
+    width_bits: int,
+    shift_by: int,
+    rounding: bool,
+    target_half: str,
+) -> int:
+    assert shift_by != 0, "shifting by 0 is not supported"
+    half_width = width_bits // 2
+    assert (
+        0 < shift_by <= half_width
+    ), f"shift must be less than {half_width}, but got {shift_by}"
+    assert (
+        target_half.lower() == "top" or target_half.lower() == "bottom"
+    ), f"'target_half' should be either 'top' or 'bottom', but got '{target_half}'"
+    if rounding:
+        source_value = source_value + (1 << (shift_by - 1))
+    shift_result = source_value >> shift_by
+    shift_result &= mask(half_width)  # narrow to half width
+
+    if target_half.lower() == "top":
+        clear_top_half_mask = ~(mask(half_width) << half_width)
+        destination_value &= clear_top_half_mask
+        destination_value |= shift_result << half_width
+    else:
+        clear_bottom_half_mask = ~mask(half_width)
+        destination_value &= clear_bottom_half_mask
+        destination_value |= shift_result
+    return destination_value
+
+
 # Partial applications of `compute_vector_op`.
 # The functions below only provide the first argument (`op`),
 # leaving the others to be specified by the caller.
@@ -490,6 +526,30 @@ compute_vector_vrhadd_result = partial(
 compute_vector_vhsub_result = partial(
     compute_vector_vector_op, lambda a, b: (a - b) // 2
 )
+
+
+def compute_vector_shift_right_narrow_result(
+    shift_by: str,
+    rounding: bool,
+    target_half: str,
+    element_size_str: str,
+    operand1_128_bit: str,
+    operand2_128_bit: str,
+) -> str:
+    return compute_vector_vector_op(
+        op=lambda source_value, destination_value: do_shift_right_2op_with_narrow(
+            source_value,
+            destination_value,
+            int(element_size_str),
+            int(shift_by),
+            rounding,
+            target_half,
+        ),
+        element_size_str=element_size_str,
+        operand1_128_bit=operand1_128_bit,
+        operand2_128_bit=operand2_128_bit,
+        treat_elements_as_signed=True,
+    )
 
 
 # Vector-vector complex number variants
