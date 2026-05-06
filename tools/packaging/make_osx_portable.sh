@@ -7,7 +7,6 @@ cd "${0%/*}"
 . common_make_packages.sh
 
 RENODE_PUBLISH=$BASE/output/publish/$TARGET/$RID
-DESTINATION=renode_${VERSION}-dotnet_portable
 
 # create MacOS app structure
 MACOS_APP_DIR=Renode.app

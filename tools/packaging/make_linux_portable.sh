@@ -10,9 +10,8 @@ cd $THIS_DIR
 
 RENODE_ROOT_DIR=$THIS_DIR/../..
 RENODE_PUBLISH=$RENODE_ROOT_DIR/output/publish/$TARGET/$RID
-DESTINATION=renode_${VERSION}-portable
+DIR=renode_${VERSION}-portable
 OS_NAME=linux
-DIR=$DESTINATION
 ARCHIVE_NAME="renode-$VERSION.linux-portable.tar.gz"
 if [[ $RID == "linux-arm64" ]]; then
     ARCHIVE_NAME="renode-$VERSION.$RID-portable.tar.gz"
@@ -20,17 +19,17 @@ fi
 
 . common_copy_files_portable.sh
 
-cp -r $RENODE_PUBLISH/. $DESTINATION
-mv $DESTINATION/Renode $DESTINATION/renode
+cp -r $RENODE_PUBLISH/. $DIR
+mv $DIR/Renode $DIR/renode
 
 # Handle a very rare case where the binary doesn't have the execute permission after building.
-chmod +x $DESTINATION/renode
+chmod +x $DIR/renode
 
-sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DESTINATION/renode-test"
+sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DIR/renode-test"
 
 # Create tar
 mkdir -p ../../output/packages
-tar -czf ../../output/packages/$ARCHIVE_NAME $DESTINATION
+tar -czf ../../output/packages/$ARCHIVE_NAME $DIR
 
 echo "Created a dotnet portable package in output/packages/$ARCHIVE_NAME"
 
@@ -38,5 +37,5 @@ echo "Created a dotnet portable package in output/packages/$ARCHIVE_NAME"
 
 if $REMOVE_WORKDIR
 then
-    rm -rf $DESTINATION
+    rm -rf $DIR
 fi
