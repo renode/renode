@@ -306,21 +306,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public void Dispose()
         {
-            if(systemcProcess != null && !systemcProcess.HasExited)
-            {
-                // Init message sent after connection has been established signifies Renode terminated and SystemC process
-                // should exit.
-                var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
-                SendRequest(request, out var response);
-
-                if(!systemcProcess.WaitForExit(500))
-                {
-                    this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
-                    systemcProcess.Kill();
-                }
-                systemcProcess = null;
-            }
-
+            StopSystemCProcess();
             TeardownConnection();
         }
 
@@ -519,6 +505,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
             catch(Exception e)
             {
                 throw new RecoverableException(e.Message);
+            }
+        }
+
+        private void StopSystemCProcess()
+        {
+            if(systemcProcess != null && !systemcProcess.HasExited)
+            {
+                // Init message sent after connection has been established signifies Renode terminated and SystemC process
+                // should exit.
+                var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
+                SendRequest(request, out var response);
+
+                if(!systemcProcess.WaitForExit(500))
+                {
+                    this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
+                    systemcProcess.Kill();
+                }
+                systemcProcess = null;
             }
         }
 
