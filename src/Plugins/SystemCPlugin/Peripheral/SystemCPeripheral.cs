@@ -510,20 +510,28 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void StopSystemCProcess()
         {
-            if(systemcProcess != null && !systemcProcess.HasExited)
+            if(systemcProcess == null)
             {
-                // Init message sent after connection has been established signifies Renode terminated and SystemC process
-                // should exit.
-                var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
-                SendRequest(request, out var response);
-
-                if(!systemcProcess.WaitForExit(500))
-                {
-                    this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
-                    systemcProcess.Kill();
-                }
-                systemcProcess = null;
+                return;
             }
+
+            if(systemcProcess.HasExited)
+            {
+                systemcProcess = null;
+                return;
+            }
+
+            // Init message sent after connection has been established signifies Renode terminated and SystemC process
+            // should exit.
+            var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
+            SendRequest(request, out var response);
+
+            if(!systemcProcess.WaitForExit(500))
+            {
+                this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
+                systemcProcess.Kill();
+            }
+            systemcProcess = null;
         }
 
         private Socket CreateListenerSocket(int requestedPort)
