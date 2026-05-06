@@ -18,7 +18,6 @@ THIS_PATH = os.path.abspath(os.path.dirname(__file__))
 
 
 def install_cli_arguments(parser):
-    parser.add_argument("--properties-file", action="store", help="This flag is a no-op and will be removed in the future.")
     parser.add_argument("--skip-building", action="store_true", help="Do not build tests before run.")
 
 

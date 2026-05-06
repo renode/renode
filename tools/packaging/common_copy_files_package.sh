@@ -25,7 +25,10 @@ function copy_bash_tests_scripts() {
 
     sed_inplace 's#tools/##' $TEST_SCRIPT
     sed_inplace 's#tests/run_tests.py#run_tests.py#' $TEST_SCRIPT
-    sed_inplace 's#--properties-file.*#--robot-framework-remote-server-full-directory='"$INSTALL_DIR"'/bin --css-file='"$INSTALL_DIR"'/tests/robot.css -r $(pwd) "$@"#' $TEST_SCRIPT
+
+    sed_inplace 's# -r "`get_path "$TESTS_RESULTS"`" -t "`get_path "$TESTS_FILE"`"##' $TEST_SCRIPT
+    sed_inplace '/run_tests.py/s#$# --robot-framework-remote-server-full-directory='"$INSTALL_DIR"'/bin --css-file='"$INSTALL_DIR"'/tests/robot.css -r $(pwd)#' $TEST_SCRIPT
+
     sed_inplace 's#^ROOT_PATH=".*#ROOT_PATH="'"$INSTALL_DIR"'/tests"#g' $TEST_SCRIPT
     sed_inplace '/TESTS_FILE/d' $TEST_SCRIPT
     sed_inplace '/TESTS_RESULTS/d' $TEST_SCRIPT
