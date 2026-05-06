@@ -647,6 +647,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 if(forwardSocket == null)
                 {
                     this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
+                    Dispose();
                     return false;
                 }
 
@@ -658,6 +659,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 catch(SocketException)
                 {
                     this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
+                    Dispose();
                     return false;
                 }
 
