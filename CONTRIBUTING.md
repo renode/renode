@@ -96,9 +96,7 @@ Discussions and long analyses should be placed in the GitHub issue system.
 
 ## Code formatting and quality
 
-As we use Monodevelop for development, we rely on its formatting engine.
-Each project and solution contains settings for the Monodevelop formatter.
-If you use another editor, you may read the `.csproj` file and apply these rules by hand, as they are written in a readable format.
+We rely on the `dotnet format` formatting engine and `.editorconfig` as the formatting specification file.
 
 Please do not introduce formatting that is strictly inconsistent with other files.
 
