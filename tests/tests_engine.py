@@ -168,18 +168,6 @@ def prepare_parser():
                         default=None,
                         help="Generate perf.data from test in specified directory")
 
-    parser.add_argument("--runner",
-                        dest="discarded",
-                        action="store",
-                        default=None,
-                        help="Flag is deprecated and has no effect.")
-
-    parser.add_argument("--net",
-                        dest="discarded",
-                        action="store_const",
-                        const="dotnet",
-                        help="Flag is deprecated and has no effect.")
-
     segmenting.add_args(parser)
 
     if platform != "win32":
