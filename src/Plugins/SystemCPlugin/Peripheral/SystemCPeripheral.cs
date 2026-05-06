@@ -315,6 +315,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             StopSystemCProcess();
             TeardownConnection();
+            TeardownTimesync();
         }
 
         public void Reset()
