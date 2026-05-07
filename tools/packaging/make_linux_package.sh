@@ -66,13 +66,6 @@ GENERAL_FLAGS=(\
     linux/icons/scalable/apps/renode.svg=/usr/share/icons/hicolor/scalable/apps/renode.svg
     )
 
-if [ -f $BASE/output/bin/$TARGET/librenode.so ]; then
-    cp $BASE/output/bin/$TARGET/librenode.so $DIR/bin
-    cp $BASE/output/bin/$TARGET/librenode.h $DIR/bin
-    cp $BASE/output/bin/$TARGET/dnne.h $DIR/bin
-    cp $BASE/output/bin/$TARGET/RenodeNativeInterface.runtimeconfig.json $DIR/bin
-fi
-
 COMMAND_SCRIPT=linux/renode
 cat linux/renode-dotnet-template | head -n 10 > $COMMAND_SCRIPT
 echo '$LAUNCHER /opt/renode/bin/Renode.dll "$@"' >> $COMMAND_SCRIPT

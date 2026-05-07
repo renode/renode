@@ -1,13 +1,14 @@
 # Input variables:
 #  USER_RENODE_DIR - absolute path to the Renode package or Renode source root
 #  RENODE_CFG      - build configuration of librenode (defaults to Release)
+#  RENODE_RID      - RID of platform of librenode (defaults to target machine's RID)
 #
 # Environment variables:
 #  RENODE_ROOT     - fallback for renode_root if USER_RENODE_DIR is not set
 #
 # Supported file layouts:
-#  Package:          <renode_root>/bin/librenode.so               (extracted package)
-#  Source tree:      <renode_root>/output/bin/<CFG>/librenode.so  (after ./build.sh --shared)
+#  Package:          <renode_root>/bin/platform-lib/<RID>/librenode.so                (extracted package)
+#  Source tree:      <renode_root>/output/bin/<CFG>/platform-lib/<RID>/librenode.so   (after ./build.sh --shared)
 
 if(DEFINED USER_RENODE_DIR)
     set(renode_root "${USER_RENODE_DIR}")
@@ -45,10 +46,39 @@ if(NOT DEFINED RENODE_CFG)
     set(RENODE_CFG Release)
 endif()
 
-# Search package layout (bin/) then source tree layout (output/bin/<CFG>/)
+if(NOT DEFINED RENODE_RID)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(RENODE_RID "linux")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(RENODE_RID "osx")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(RENODE_RID "win")
+    else()
+        message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+    endif()
+
+    if(NOT DEFINED ARCH)
+        if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(AMD64|amd64|86)")
+            set (ARCH "x64" CACHE STRING "Host architecture")
+        elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64|arm64)")
+            set (ARCH "arm64" CACHE STRING "Host architecture")
+        # Has to come last to not match arm macs arm64, while still matching a cpu like armv7l
+        elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(arm)")
+            set (ARCH "arm" CACHE STRING "Host architecture")
+        else()
+            message(FATAL_ERROR "CMAKE_SYSTEM_PROCESSOR '${CMAKE_SYSTEM_PROCESSOR}' doesn't seem to be supported. Supported host architectures are: 'arm', 'i386', 'aarch64/arm64'. Please set 'HOST_ARCH' manually.")
+        endif()
+    endif()
+
+    set(RENODE_RID "${RENODE_RID}-${ARCH}")
+endif()
+
+set(renode_platformlib_suffix "platform-lib/${rid}")
+
+# Search package layout (bin/...) then source tree layout (output/bin/<CFG>/...)
 find_library(LIBRENODE_LIBRARY
     NAMES renode
-    PATHS "${renode_root}/bin" "${renode_root}/output/bin/${RENODE_CFG}"
+    PATHS "${renode_root}/bin/platform-lib/${RENODE_RID}" "${renode_root}/output/bin/${RENODE_CFG}/platform-lib/${RENODE_RID}"
     NO_DEFAULT_PATH
 )
 

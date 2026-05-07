@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -26,34 +28,8 @@ namespace Antmicro.Renode.NativeInterface
         {
             try
             {
-                var script = scriptPath != (byte*)0 ? Marshal.PtrToStringUTF8((IntPtr)scriptPath) : null;
-
-                var options = new Options
-                {
-                    DisableXwt = true,
-                    HideAnalyzers = true,
-                    FilePath = script,
-                    Port = telnetPort,
-                    HideMonitor = telnetPort < 0, // Don't try to show the GUI monitor if the telnet server is disabled
-                    RobotFrameworkRemoteServerPort = robotPort,
-                };
-
-                EmulationManager.RebuildInstance();
-
-                var renodeThread = new Thread(() =>
-                {
-                    Program.MainWithOptions(options);
-                });
-                renodeThread.Name = "Renode";
-                renodeThread.Start();
-
-                // Wait until the Monitor is registered
-                do
-                {
-                    Thread.Sleep(50);
-                    monitor = (Monitor)ObjectCreator.Instance.GetSurrogate(typeof(Monitor));
-                } while(monitor == null);
-
+                SetupAssemblyResolution();
+                InitRenode(scriptPath, telnetPort, robotPort);
                 return NativeStatus.Success;
             }
             catch(Exception ex)
@@ -127,6 +103,56 @@ namespace Antmicro.Renode.NativeInterface
                 Marshal.Copy(bytes, 0, (IntPtr)buf, count);
             }
             buf[count] = 0;
+        }
+
+        private static void SetupAssemblyResolution()
+        {
+            var thisDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            // This DLL will always be in platform-lib/[RID] relative to the other DLLs, so we need to also look there
+            var binDir = Path.Join(thisDir, "..", "..");
+            AppDomain.CurrentDomain.AssemblyResolve += (_, ev) =>
+            {
+                var assemblyIdentifier = ev.Name.Split(',')[0];
+                var assemblyPath = Path.Combine(binDir, assemblyIdentifier + ".dll");
+                if(!Path.Exists(assemblyPath))
+                {
+                    return null;
+                }
+                var assembly = Assembly.LoadFrom(assemblyPath);
+                return assembly;
+            };
+        }
+
+        private static unsafe void InitRenode(byte* scriptPath, int telnetPort, int robotPort)
+        {
+            var script = scriptPath != (byte*)0 ? Marshal.PtrToStringUTF8((IntPtr)scriptPath) : null;
+
+            var options = new Options
+            {
+                DisableXwt = true,
+                HideAnalyzers = true,
+                FilePath = script,
+                Port = telnetPort,
+                HideMonitor = telnetPort < 0, // Don't try to show the GUI monitor if the telnet server is disabled
+                RobotFrameworkRemoteServerPort = robotPort,
+            };
+
+            EmulationManager.RebuildInstance();
+
+            var renodeThread = new Thread(() =>
+            {
+                Program.MainWithOptions(options);
+            });
+            renodeThread.Name = "Renode";
+            renodeThread.Start();
+
+            // Wait until the Monitor is registered
+            do
+            {
+                Thread.Sleep(50);
+                monitor = (Monitor)ObjectCreator.Instance.GetSurrogate(typeof(Monitor));
+            } while(monitor == null);
         }
 
         private static Monitor monitor;

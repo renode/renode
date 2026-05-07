@@ -9,9 +9,9 @@
     <RollForward>Major</RollForward>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <!-- Path to Renode's bin output directory containing Renode.dll and other assemblies. Defaults to the Renode build output. -->
-    <RenodeOutputDir Condition="'$(RenodeOutputDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', 'output', 'bin', '$(Configuration)'))</RenodeOutputDir>
-    <OutputPath>$(RenodeOutputDir)</OutputPath>
+    <!-- Path to Renode's platform-lib subdirectory that our outputs will reside in. Default to Renode build output with the current RID -->
+    <PlatformOutputDir Condition="'$(PlatformOutputDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', 'output', 'bin', '$(Configuration)', 'platform-lib', '$(DnneRuntimeIdentifier)'))</PlatformOutputDir>
+    <OutputPath>$(PlatformOutputDir)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -40,6 +40,6 @@
 
   <ItemGroup>
     <!-- Renode must already be built, see the comment above. ./build.sh with the shared option builds in the correct order. -->
-    <Reference Include="$(RenodeOutputDir)/*.dll" />
+    <Reference Include="$(PlatformOutputDir)/../../*.dll" Private="false" />
   </ItemGroup>
 </Project>
