@@ -73,7 +73,8 @@ Stop NativeInterface And Teardown
 
 *** Test Cases ***
 NativeInterface Can Run VexRiscv
-    [Tags]                          skip_windows  skip_mono  skip_portable  basic-tests
+    [Tags]                          skip_windows  skip_portable  basic-tests
+    [Timeout]                       1 minute
     NI.Execute Command              include @scripts/single-node/murax.resc
     NI.Create Terminal Tester       sysbus.uart
 
