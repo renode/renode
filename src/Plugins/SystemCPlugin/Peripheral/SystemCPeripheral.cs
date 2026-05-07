@@ -443,13 +443,35 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public int Port
         {
             get => requestedPort;
-            set => requestedPort = value;
+            set
+            {
+                if(value == requestedPort)
+                {
+                    return;
+                }
+                if(connectionActive)
+                {
+                    throw new RecoverableException($"Connection is already active on port {requestedPort}");
+                }
+                requestedPort = value;
+            }
         }
 
         public string Address
         {
             get => address;
-            set => address = value;
+            set
+            {
+                if(value == address)
+                {
+                    return;
+                }
+                if(connectionActive)
+                {
+                    throw new RecoverableException($"Connection is already active on address {address}");
+                }
+                address = value;
+            }
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -581,6 +603,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             backwardThread.Start();
             backwardThreadStarted = true;
 
+            connectionActive = true;
+
             SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
         }
 
@@ -612,6 +636,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             forwardSocket = null;
             backwardSocket = null;
+
+            connectionActive = false;
         }
 
         private void SetupTimesync()
@@ -857,6 +883,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private int requestedPort;
         private string address;
         private bool backwardThreadStarted = false;
+        private bool connectionActive;
         private readonly LimitTimer timesyncTimer;
         private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
 
