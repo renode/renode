@@ -293,6 +293,18 @@ namespace Antmicro.Renode.RobotFramework
             return TemporaryFilesManager.Instance.GetTemporaryFile();
         }
 
+        [RobotFrameworkKeyword(replayMode: Replay.Always)]
+        public string AllocateTemporaryDirectory(string dirName)
+        {
+            string path;
+            if(!TemporaryFilesManager.Instance.TryCreateDirectory(dirName, out path))
+            {
+                throw new KeywordException($"Can't create temporary directory: {path}");
+            }
+
+            return path;
+        }
+
         [RobotFrameworkKeyword]
         public string DownloadFile(string uri)
         {
