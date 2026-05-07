@@ -63,27 +63,20 @@ nvicInput40: Miscellaneous.CombinedInput @ none
 
 gpioPortA: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010800, +0x400>
     invertedAFPins: [[7, 1]]
-    [0-15] -> exti@[0-15]
 
 gpioPortB: GPIOPort.STM32F1GPIOPort @ sysbus <0x40010C00, +0x400>
     invertedAFPins: [[13, 1], [14, 1], [15, 1], [0, 1], [1, 1]]
-    [0-15] -> exti@[0-15]
 
 gpioPortC: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011000, +0x400>
-    [0-15] -> exti@[0-15]
 
 gpioPortD: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011400, +0x400>
-    [0-15] -> exti@[0-15]
 
 gpioPortE: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011800, +0x400>
     invertedAFPins: [[8, 1], [10, 1], [12, 1]]
-    [0-15] -> exti@[0-15]
 
 gpioPortF: GPIOPort.STM32F1GPIOPort @ sysbus <0x40011C00, +0x400>
-    [0-15] -> exti@[0-15]
 
 gpioPortG: GPIOPort.STM32F1GPIOPort @ sysbus <0x40012000, +0x400>
-    [0-15] -> exti@[0-15]
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012c00
     BreakInterrupt -> nvic@24
@@ -184,6 +177,7 @@ dma2: DMA.STM32G0DMA @ sysbus 0x40020400
 
 afio: GPIOPort.STM32F1AFIO @ sysbus 0x40010000
     gpioPorts: [gpioPortA, gpioPortB, gpioPortC, gpioPortD, gpioPortE, gpioPortF, gpioPortG]
+    [0-15] -> exti@[0-15]
 
 // Alternate function connections
 // The syntax is:
