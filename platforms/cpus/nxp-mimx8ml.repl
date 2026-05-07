@@ -85,6 +85,9 @@ ca53_bootrom: Memory.MappedMemory @ {
 memory_ddr: Memory.MappedMemory @ sysbus 0x40000000
     size: 0xc0000000
 
+ocram: Memory.MappedMemory @ sysbus 0x900000
+    size: 0x90000
+
 gpt1: Timers.IMX_GPTimer @ sysbus 0x302d0000
     frequency: 32000
     IRQ->gic@55
@@ -155,12 +158,16 @@ i2c3: Python.PythonPeripheral @ sysbus 0x30a40000
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
+apis1_gpc: Python.PythonPeripheral @ sysbus 0x303a0000
+    size: 0x10000
+    initable: true
+    filename: "scripts/pydev/flipflop.py"
+
 sysbus:
     init add:
         Tag <0x00100000 0x00008000> "CAAM"
         Tag <0x00180000 0x00009000> "OCRAM_S"
         Tag <0x007E0000 0x00020000> "TCML" 0x1000
-        Tag <0x00900000 0x00090000> "OCRAM"
         Tag <0x08000000 0x00800000> "QSPI"
         Tag <0x18000000 0x08000000> "PCIe-1"
         Tag <0x20100000 0x00008000> "CAAM_cm7"
@@ -212,7 +219,6 @@ sysbus:
         Tag <0x30370000 0x10000> "SNVS_HP"
         Tag <0x30380000 0x10000> "CCM"
         Tag <0x30390000 0x10000> "SRC"
-        Tag <0x303A0000 0x10000> "GPC"
         Tag <0x303B0000 0x10000> "SEMAPHORE1"
         Tag <0x303C0000 0x10000> "SEMAPHORE2"
         Tag <0x303D0000 0x10000> "RDC"
