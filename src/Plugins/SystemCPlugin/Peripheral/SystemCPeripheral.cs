@@ -263,7 +263,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
     {
         public SystemCPeripheral(
                 IMachine machine,
-                string address,
+                string address = "127.0.0.1",
                 int port = 0,
                 int timeSyncPeriodUS = 1000,
                 bool disableTimeoutCheck = false
@@ -438,6 +438,18 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     throw new RecoverableException($"Failed to start SystemC process: {e.Message}");
                 }
             }
+        }
+
+        public int Port
+        {
+            get => requestedPort;
+            set => requestedPort = value;
+        }
+
+        public string Address
+        {
+            get => address;
+            set => address = value;
         }
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
@@ -842,15 +854,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private Process systemcProcess;
         private string systemcExecutablePath;
+        private int requestedPort;
+        private string address;
         private bool backwardThreadStarted = false;
         private readonly LimitTimer timesyncTimer;
         private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
 
         private readonly Thread backwardThread;
         private readonly bool disableTimeoutCheck;
-        private readonly int requestedPort;
 
-        private readonly string address;
         private readonly object messageLock;
         private readonly int timeSyncPeriodUS;
 

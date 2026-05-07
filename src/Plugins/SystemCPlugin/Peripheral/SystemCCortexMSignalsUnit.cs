@@ -24,7 +24,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 IMachine machine,
                 CortexM cpu,
                 NVIC nvic,
-                string address,
+                string address = "127.0.0.1",
                 int port = 0,
                 int timeSyncPeriodUS = 1000,
                 bool disableTimeoutCheck = false,
