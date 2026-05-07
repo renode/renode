@@ -117,6 +117,15 @@ uart3: UART.MxcUart @ sysbus 0x30880000
 uart4: UART.MxcUart @ sysbus 0x30A60000
     ->gic@29
 
+usdhc1: SD.NXP_uSDHC @ sysbus 0x30B40000
+    IRQ -> gic@22
+
+usdhc2: SD.NXP_uSDHC @ sysbus 0x30B50000
+    IRQ -> gic@23
+
+usdhc3: SD.NXP_uSDHC @ sysbus 0x30B60000
+    IRQ -> gic@24
+
 sysbus:
     init add:
         Tag <0x00100000 0x00008000> "CAAM"
@@ -206,9 +215,6 @@ sysbus:
         Tag <0x30AC0000 0x10000> "SEMAPHORE_HS"
         Tag <0x30AD0000 0x10000> "I2C5"
         Tag <0x30AE0000 0x10000> "I2C6"
-        Tag <0x30B40000 0x10000> "uSDHC1"
-        Tag <0x30B50000 0x10000> "uSDHC2"
-        Tag <0x30B60000 0x10000> "uSDHC3"
         Tag <0x30BB0000 0x10000> "QSPI"
         Tag <0x30BD0000 0x10000> "SDMA1"
         Tag <0x30BE0000 0x10000> "ENET1"
