@@ -363,8 +363,6 @@ namespace Antmicro.Renode.RobotFramework
         {
             CheckLogTester();
 
-            // Passing `level` as a named argument causes a compiler crash in Mono 6.8.0.105+dfsg-3.4
-            // from Debian
             var result = logTester.WaitForEntry(pattern, out var _, out var __, timeout, true, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
             if(result != null)
             {
