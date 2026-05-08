@@ -112,6 +112,26 @@ gpt6: Timers.IMX_GPTimer @ sysbus 0x306e0000
     frequency: 32000
     IRQ->gic@51
 
+gpio1: GPIOPort.NXP_IMX_GPIO @ sysbus 0x30200000
+    IRQ0->gic@64
+    IRQ1->gic@65
+
+gpio2: GPIOPort.NXP_IMX_GPIO @ sysbus 0x30210000
+    IRQ0->gic@66
+    IRQ1->gic@67
+
+gpio3: GPIOPort.NXP_IMX_GPIO @ sysbus 0x30220000
+    IRQ0->gic@68
+    IRQ1->gic@69
+
+gpio4: GPIOPort.NXP_IMX_GPIO @ sysbus 0x30230000
+    IRQ0->gic@70
+    IRQ1->gic@71
+
+gpio5: GPIOPort.NXP_IMX_GPIO @ sysbus 0x30240000
+    IRQ0->gic@72
+    IRQ1->gic@73
+
 uart1: UART.MxcUart @ sysbus 0x30860000
     ->gic@26
 
@@ -211,11 +231,6 @@ sysbus:
 
         // AIPS
         Tag <0x301F0000 0x10000> "AIPS1_Configuration"
-        Tag <0x30200000 0x10000> "GPIO1" 0xFFFFFFFF
-        Tag <0x30210000 0x10000> "GPIO2" 0xFFFFFFFF
-        Tag <0x30220000 0x10000> "GPIO3" 0xFFFFFFFF
-        Tag <0x30230000 0x10000> "GPIO4" 0xFFFFFFFF
-        Tag <0x30240000 0x10000> "GPIO5" 0xFFFFFFFF
         Tag <0x30260000 0x10000> "TMU (ANA_TSENSOR)"
         Tag <0x30270000 0x10000> "ANA_OSC"
         Tag <0x30330000 0x10000> "IOMUXC"
