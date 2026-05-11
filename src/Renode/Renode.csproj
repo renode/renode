@@ -1,7 +1,6 @@
 <Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
-    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\output\bin\$(Configuration)</OutputPath>
@@ -82,9 +81,9 @@
       </CheckIfAssemblyInfoExists>
     </ItemGroup>
 
-    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(CurrentPlatform) != 'Windows'" />
+    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(OS) != 'Windows_NT'" />
     <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
-    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(CurrentPlatform) == 'Windows'" />
+    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(OS) == 'Windows_NT'" />
 
     <ItemGroup>
       <Compile Include="Properties/AssemblyInfo.cs" Condition="!%(CheckIfAssemblyInfoExists.AssemblyInfoExists)" />

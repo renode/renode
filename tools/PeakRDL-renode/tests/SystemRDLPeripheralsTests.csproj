@@ -1,7 +1,6 @@
 <Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="$(OS) != 'Windows_NT'">net6.0</TargetFrameworks>
-    <TargetFrameworks Condition="$(OS) == 'Windows_NT'">net6.0-windows10.0.17763.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>PeripheralsTests</AssemblyName>
     <LangVersion>12.0</LangVersion>
   </PropertyGroup>
