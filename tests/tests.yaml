@@ -256,6 +256,7 @@
 - tests/platforms/ramn.robot
 - tests/peripherals/S32K3XX_STM.robot
 - tests/peripherals/LPDDR4_DRAMController.robot
+- tests/peripherals/NXP_IMX_Watchdog.robot
 
 # Do not use port 3333 in unit tests
 

@@ -133,6 +133,15 @@ usdhc2: SD.NXP_uSDHC @ sysbus 0x30B50000
 usdhc3: SD.NXP_uSDHC @ sysbus 0x30B60000
     IRQ -> gic@24
 
+wdog1: Timers.NXP_IMX_Watchdog @ sysbus 0x30280000
+    IRQ -> gic@78
+
+wdog2: Timers.NXP_IMX_Watchdog @ sysbus 0x30290000
+    IRQ -> gic@79
+
+wdog3: Timers.NXP_IMX_Watchdog @ sysbus 0x302A0000
+    IRQ -> gic@10
+
 anatop: Python.PythonPeripheral @ sysbus 0x30360000
     size: 0x1000
     initable: true
@@ -209,9 +218,6 @@ sysbus:
         Tag <0x30240000 0x10000> "GPIO5" 0xFFFFFFFF
         Tag <0x30260000 0x10000> "TMU (ANA_TSENSOR)"
         Tag <0x30270000 0x10000> "ANA_OSC"
-        Tag <0x30280000 0x10000> "WDOG1"
-        Tag <0x30290000 0x10000> "WDOG2"
-        Tag <0x302A0000 0x10000> "WDOG3"
         Tag <0x30330000 0x10000> "IOMUXC"
         Tag <0x30340000 0x10000> "IOMUXC_GPR"
         Tag <0x30350000 0x10000> "OCOTP_CTRL"
