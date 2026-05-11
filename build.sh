@@ -258,10 +258,6 @@ if $HEADLESS
 then
     BUILD_TARGET=Headless
     PARAMS+=(p:GUI_DISABLED=true)
-elif $ON_WINDOWS
-then
-    BUILD_TARGET=Windows
-    TFM="$TFM-windows10.0.17763.0"
 else
     BUILD_TARGET=""
 fi
