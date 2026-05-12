@@ -7,4 +7,4 @@ lowBeam: Miscellaneous.LED @ ledController 4
 highBeam: Miscellaneous.LED @ ledController 5
 batteryWarning: Miscellaneous.LED @ ledController 0
 checkEngine: Miscellaneous.LED @ ledController 1
-parkingBreak: Miscellaneous.LED @ ledController 2
+parkingBrake: Miscellaneous.LED @ ledController 2
