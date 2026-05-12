@@ -130,6 +130,31 @@ void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset) {
   }
 }
 
+int tlm_get_direct_mem_ptr(std::uint64_t offset, std::uint64_t *start_address, std::uint64_t *end_address, void **mapped_address) {
+  auto *model = get_model();
+  if (!model) {
+    throw std::runtime_error("Model must not be null!");
+  }
+
+  auto *target = model->tlm_route(offset);
+  if (!target) {
+    return 0;
+  }
+
+  tlm::tlm_generic_payload payload;
+  tlm::tlm_dmi dmi_data;
+  std::uint8_t data = 0;
+  prepare_payload(payload, tlm::TLM_READ_COMMAND, offset, &data, 1);
+  if (!target->get_direct_mem_ptr(payload, dmi_data)) {
+    return 0;
+  }
+
+  *start_address = dmi_data.get_start_address();
+  *end_address = dmi_data.get_end_address();
+  *mapped_address = dmi_data.get_dmi_ptr();
+  return 1;
+}
+
 void gpio_write(int number, bool value) {
   auto *model = get_model();
   if (!model) {
