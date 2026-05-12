@@ -75,6 +75,7 @@ function print_help() {
   echo "--tcg-opcode-backtrace            collect a backtrace for each emitted TCG opcode, to track internal TCG errors (implies Debug configuration)"
   echo "--shared                          build the librenode native library"
   echo "--ui                              rebuild the web-based UI"
+  echo "--werror                          treat warnings as errors in both CMake and Dotnet builds"
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
 
@@ -174,6 +175,10 @@ do
           ;;
         "ui")
           UI=true
+          ;;
+        "werror" | "Werror")
+          CMAKE_COMMON+=" -DFAIL_ON_WARNINGS=ON"
+          PARAMS+=(p:TreatWarningsAsErrors=true)
           ;;
         *)
           print_help
