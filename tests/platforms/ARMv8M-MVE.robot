@@ -10,6 +10,9 @@ ${SIN_COS_ELF}                      ${URI}/arm_sin_cos_example-s_515204-2cbb4a49
 ${SIGNAL_CONVERGENCE_ELF}           ${URI}/arm_signal_convergence_example-s_546696-07a78b7febd04627a2ca8fce8c4f47d50d5518d6
 ${LINEAR_INTERP_ELF}                ${URI}/arm_linear_interp_example-s_515324-430c71458e54742b6bbb2b9c28a8ae3663dbc92c
 ${DOTPRODUCT_ELF}                   ${URI}/arm_dotproduct_example-s_503872-e7f6bd2c62df3d3e76281ca41ef1122ef7b4621a
+${CONVOLUTION_ELF}                  ${URI}/arm_convolution_example-s_534496-2cf2f4427c7e3b9b05e5bf2046ef453946722e71
+${FFT_BIN_ELF}                      ${URI}/arm_fft_bin_example-s_664164-c93c480209b4dd212db6760d93c357f0b14e47e9
+${GRAPHIC_EQUALIZER_ELF}            ${URI}/arm_graphic_equalizer_example-s_539792-75bce13a23aef301a426d7536b07de84757c532f
 ${REPL}                             SEPARATOR=\n
 ...                                 """
 ...                                 cpu: CPU.CortexM @ sysbus { cpuType: "cortex-m85"; nvic: nvic }
@@ -89,6 +92,24 @@ Should Pass Linear Interpolation Test
 
 Should Pass Dot Product Test
     Create Machine                  ${DOTPRODUCT_ELF}
+    Start Emulation
+
+    Wait For Line On Uart           SUCCESS
+
+Should Pass Arm Convolution Test
+    Create Machine                  ${CONVOLUTION_ELF}
+    Start Emulation
+
+    Wait For Line On Uart           SUCCESS
+
+Should Pass Fft Bin Test
+    Create Machine                  ${FFT_BIN_ELF}
+    Start Emulation
+
+    Wait For Line On Uart           SUCCESS
+
+Should Pass Graphic Equalizer Test
+    Create Machine                  ${GRAPHIC_EQUALIZER_ELF}
     Start Emulation
 
     Wait For Line On Uart           SUCCESS
