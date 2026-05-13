@@ -28,6 +28,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public SystemCPeripheralNative(IMachine machine, ulong simulationStepInNs, int numberOfConnections = DefaultNumberOfConnections)
         {
             sysbus = machine.GetSystemBus(this);
+            mappedDmiRanges = new MinimalRangesCollection();
             systemcTimer = new LimitTimer(machine.ClockSource, FREQUENCY, this, nameof(systemcTimer), eventEnabled: true, enabled: false, limit: simulationStepInNs);
             systemcTimer.LimitReached += delegate
             {
@@ -59,42 +60,78 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public byte ReadByte(long offset)
         {
-            return (byte)TlmRead(1, (ulong)offset, out var dmiAllowed);
+            var value = TlmRead(1, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
+            return (byte)value;
         }
 
         public void WriteByte(long offset, byte value)
         {
             TlmWrite(1, (long)value, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
         }
 
         public ushort ReadWord(long offset)
         {
-            return (ushort)TlmRead(2, (ulong)offset, out var dmiAllowed);
+            var value = TlmRead(2, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
+            return (ushort)value;
         }
 
         public void WriteWord(long offset, ushort value)
         {
             TlmWrite(2, (long)value, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
         }
 
         public uint ReadDoubleWord(long offset)
         {
-            return (uint)TlmRead(4, (ulong)offset, out var dmiAllowed);
+            var value = TlmRead(4, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
+            return (uint)value;
         }
 
         public void WriteDoubleWord(long offset, uint value)
         {
             TlmWrite(4, (long)value, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
         }
 
         public ulong ReadQuadWord(long offset)
         {
-            return (ulong)TlmRead(8, (ulong)offset, out var dmiAllowed);
+            var value = (ulong)TlmRead(8, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
+            return value;
         }
 
         public void WriteQuadWord(long offset, ulong value)
         {
             TlmWrite(8, (long)value, (ulong)offset, out var dmiAllowed);
+            if(dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
         }
 
         public void OnGPIO(int number, bool value)
@@ -270,11 +307,49 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        private void TryMapDmiRegion(ulong offset)
+        {
+            if(!sysbus.TryGetCurrentCPU(out _))
+            {
+                return;
+            }
+
+            if(mappedDmiRanges.ContainsPoint(offset))
+            {
+                return;
+            }
+
+            if(TlmGetDirectMemPtr(offset, out var startAddress, out var endAddress, out var mappedAddress) == 0 || mappedAddress == IntPtr.Zero || endAddress < startAddress)
+            {
+                return;
+            }
+
+            var range = startAddress.To(endAddress);
+            if(!range.Contains(offset))
+            {
+                this.Log(LogLevel.Warning, "SystemC returned a DMI region {0} that does not contain requested offset 0x{1:X}.", range, offset);
+                return;
+            }
+
+            lock(mappedDmiRanges)
+            {
+                if(mappedDmiRanges.ContainsWholeRange(range))
+                {
+                    return;
+                }
+                mappedDmiRanges.Add(range);
+                sysbus.MapMemory(new DmiMappedSegment(startAddress, endAddress - startAddress + 1, mappedAddress), this);
+            }
+
+            this.NoisyLog("Mapped SystemC DMI region {0}", range);
+        }
+
         private NativeBinder binder;
         private string simulationFilePath;
         private bool nonBlockingRead;
         private bool nonBlockingWrite;
         private readonly IBusController sysbus;
+        private readonly MinimalRangesCollection mappedDmiRanges;
 
 #pragma warning disable 649
 
@@ -300,6 +375,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly TlmWriteDelegate TlmWrite;
 
         [Import(UseExceptionWrapper = false)]
+        private readonly GetDirectMemPtrDelegate TlmGetDirectMemPtr;
+
+        [Import(UseExceptionWrapper = false)]
         private readonly Action<int, bool> GpioWrite;
 
 #pragma warning restore 649
@@ -312,7 +390,30 @@ namespace Antmicro.Renode.Peripherals.SystemC
         // See: NumberOfGPIOPins in SystemCPeripheral
         private const int DefaultNumberOfConnections = 64;
 
+        private sealed class DmiMappedSegment : IMappedSegment
+        {
+            public DmiMappedSegment(ulong startingOffset, ulong size, IntPtr pointer)
+            {
+                StartingOffset = startingOffset;
+                Size = size;
+                Pointer = pointer;
+            }
+
+            public void Touch()
+            {
+                // intentionally left blank
+            }
+
+            public IntPtr Pointer { get; }
+
+            public ulong StartingOffset { get; }
+
+            public ulong Size { get; }
+        }
+
         // Explicit types for out parameters.
+        private delegate int GetDirectMemPtrDelegate(ulong address, out ulong startAddress, out ulong endAddress, out IntPtr mappedAddress);
+
         private delegate ulong TlmReadDelegate(ulong size, ulong offset, [MarshalAs(UnmanagedType.I1)] out bool dmiAllowed);
 
         private delegate ulong TlmWriteDelegate(ulong size, long value, ulong offset, [MarshalAs(UnmanagedType.I1)] out bool dmiAllowed);
