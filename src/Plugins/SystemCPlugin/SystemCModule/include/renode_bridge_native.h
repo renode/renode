@@ -40,8 +40,8 @@ extern "C" {
   RENODE_BRIDGE_API void systemc_set_nonblocking_read(bool value);
   RENODE_BRIDGE_API void systemc_set_nonblocking_write(bool value);
 
-  RENODE_BRIDGE_API std::uint64_t tlm_read(std::size_t size, std::uint64_t offset);
-  RENODE_BRIDGE_API void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset);
+  RENODE_BRIDGE_API std::uint64_t tlm_read(std::size_t size, std::uint64_t offset, bool *dmi_allowed);
+  RENODE_BRIDGE_API void tlm_write(std::size_t size, std::int64_t value, std::uint64_t offset, bool *dmi_allowed);
   RENODE_BRIDGE_API int tlm_get_direct_mem_ptr(std::uint64_t offset, std::uint64_t *start_address, std::uint64_t *end_address, void **mapped_address);
 
   RENODE_BRIDGE_API void gpio_write(int number, bool value);

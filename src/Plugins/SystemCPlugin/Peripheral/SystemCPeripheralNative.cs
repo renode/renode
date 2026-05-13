@@ -59,42 +59,42 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public byte ReadByte(long offset)
         {
-            return (byte)TlmRead(1, (ulong)offset);
+            return (byte)TlmRead(1, (ulong)offset, out var dmiAllowed);
         }
 
         public void WriteByte(long offset, byte value)
         {
-            TlmWrite(1, (long)value, (ulong)offset);
+            TlmWrite(1, (long)value, (ulong)offset, out var dmiAllowed);
         }
 
         public ushort ReadWord(long offset)
         {
-            return (ushort)TlmRead(2, (ulong)offset);
+            return (ushort)TlmRead(2, (ulong)offset, out var dmiAllowed);
         }
 
         public void WriteWord(long offset, ushort value)
         {
-            TlmWrite(2, (long)value, (ulong)offset);
+            TlmWrite(2, (long)value, (ulong)offset, out var dmiAllowed);
         }
 
         public uint ReadDoubleWord(long offset)
         {
-            return (uint)TlmRead(4, (ulong)offset);
+            return (uint)TlmRead(4, (ulong)offset, out var dmiAllowed);
         }
 
         public void WriteDoubleWord(long offset, uint value)
         {
-            TlmWrite(4, (long)value, (ulong)offset);
+            TlmWrite(4, (long)value, (ulong)offset, out var dmiAllowed);
         }
 
         public ulong ReadQuadWord(long offset)
         {
-            return (ulong)TlmRead(8, (ulong)offset);
+            return (ulong)TlmRead(8, (ulong)offset, out var dmiAllowed);
         }
 
         public void WriteQuadWord(long offset, ulong value)
         {
-            TlmWrite(8, (long)value, (ulong)offset);
+            TlmWrite(8, (long)value, (ulong)offset, out var dmiAllowed);
         }
 
         public void OnGPIO(int number, bool value)
@@ -294,10 +294,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly Action<bool> SystemcSetNonblockingWrite;
 
         [Import(UseExceptionWrapper = false)]
-        private readonly Func<ulong, ulong, ulong> TlmRead;
+        private readonly TlmReadDelegate TlmRead;
 
         [Import(UseExceptionWrapper = false)]
-        private readonly Action<ulong, long, ulong> TlmWrite;
+        private readonly TlmWriteDelegate TlmWrite;
 
         [Import(UseExceptionWrapper = false)]
         private readonly Action<int, bool> GpioWrite;
@@ -311,5 +311,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         // Set to this value to maintain compatibility with the non-native peripheral model
         // See: NumberOfGPIOPins in SystemCPeripheral
         private const int DefaultNumberOfConnections = 64;
+
+        // Explicit types for out parameters.
+        private delegate ulong TlmReadDelegate(ulong size, ulong offset, [MarshalAs(UnmanagedType.I1)] out bool dmiAllowed);
+
+        private delegate ulong TlmWriteDelegate(ulong size, long value, ulong offset, [MarshalAs(UnmanagedType.I1)] out bool dmiAllowed);
     }
 }
