@@ -19,6 +19,8 @@ using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Utilities;
 using Antmicro.Renode.Utilities.Binding;
 
+using Range = Antmicro.Renode.Core.Range;
+
 namespace Antmicro.Renode.Peripherals.SystemC
 {
     public class SystemCPeripheralNative : IDisposable, IBytePeripheral,
@@ -337,8 +339,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 {
                     return;
                 }
+
+                var rangesToMap = new List<Range> { range };
+                foreach(var existingRange in mappedDmiRanges)
+                {
+                    rangesToMap = rangesToMap.SelectMany(x => x.Subtract(existingRange)).ToList();
+                    if(!rangesToMap.Any())
+                    {
+                        return;
+                    }
+                }
+
                 mappedDmiRanges.Add(range);
-                sysbus.MapMemory(new DmiMappedSegment(startAddress, endAddress - startAddress + 1, mappedAddress), this);
+                foreach(var rangeToMap in rangesToMap)
+                {
+                    var pointerOffset = (long)(rangeToMap.StartAddress - startAddress);
+                    var rangeMappedAddress = new IntPtr(mappedAddress + pointerOffset);
+                    sysbus.MapMemory(new DmiMappedSegment(rangeToMap.StartAddress, rangeToMap.Size, rangeMappedAddress), this);
+                }
             }
 
             this.NoisyLog("Mapped SystemC DMI region {0}", range);
