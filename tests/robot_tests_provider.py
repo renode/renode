@@ -24,6 +24,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.libraries.DateTime import Time
 
 import xml.etree.ElementTree as ET
+import urllib.parse
 
 from tests_engine import TestResult
 
@@ -492,7 +493,7 @@ class RobotTestSuite(object):
         return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
 
 
-    def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0, remote_server_port=None):
+    def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0):
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
         self.renode_pid = -1
 
@@ -504,8 +505,7 @@ class RobotTestSuite(object):
         if not os.path.isfile(remote_server_binary):
             raise Exception("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
 
-        if remote_server_port is None:
-            remote_server_port = options.remote_server_port
+        remote_server_port = options.remote_server_port
 
         if remote_server_port != 0 and not is_port_available(remote_server_port, options.autokill_renode):
             raise Exception("The selected port {} is not available".format(remote_server_port))
@@ -700,6 +700,7 @@ class RobotTestSuite(object):
         # Let's prevent using these after the server is closed.
         self.robot_frontend_process = None
         self.renode_pid = -1
+        self.remote_server_port = -1
 
         # None of the previously provided states will be available.
         self._dependencies_met = set()
@@ -1135,12 +1136,26 @@ class RobotTestSuite(object):
             print(f"----- Skipped flushing emulation log and saving state due to the timeout, restarting Renode...")
 
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
-            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index, self.remote_server_port)
+            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
+            RobotTestSuite.remote_server_port = self.remote_server_port
+
+            # Point the already-imported Renode (Remote) library at the new port.
+            # The library was imported once in `Setup` (renode-keywords.robot) with
+            # the URI baked into the XmlRpcRemoteClient. Each XML-RPC call builds a
+            # fresh ServerProxy from `client.uri`, so we just rewrite that attribute.
+            # Preserve the original host (127.0.0.1 on Linux, localhost on Windows -
+            # see renode-keywords.robot) by reading it off the existing URI.
+            BuiltIn().set_suite_variable('$PORT_NUMBER', str(self.remote_server_port))
+            renode_lib = BuiltIn().get_library_instance('Renode')
+            parsed = urllib.parse.urlparse(renode_lib._client.uri)
+            new_uri = parsed._replace(netloc=f'{parsed.hostname}:{self.remote_server_port}').geturl()
+            renode_lib._uri = new_uri
+            renode_lib._client.uri = new_uri
 
             # It's typically used in suite setup (renode-keywords.robot:Setup) but we don't need to
             # call full setup which imports library etc. We only need to resend settings to Renode.
             BuiltIn().run_keyword("Setup Renode")
-            print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using the same port {self.remote_server_port}")
+            print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using port {self.remote_server_port}")
         return _timeout_handler
 
     def tests_failed_due_to_renode_crash(self) -> bool:
