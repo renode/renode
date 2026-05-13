@@ -255,6 +255,7 @@
 - tests/unit-tests/sysbus-data-race.robot
 - tests/platforms/ramn.robot
 - tests/peripherals/S32K3XX_STM.robot
+- tests/peripherals/LPDDR4_DRAMController.robot
 
 # Do not use port 3333 in unit tests
 
