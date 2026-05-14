@@ -139,7 +139,7 @@ namespace Antmicro.Renode
                 try
                 {
                     var name = entryAssembly == null ? "Unknown assembly name" : entryAssembly.GetName().Name;
-                    var version = entryAssembly == null ? ": Unknown version" : entryAssembly.GetName().Version.ToString();
+                    var version = entryAssembly == null ? ": Unknown version" : entryAssembly.GetName().Version.ToString(3);
                     return string.Format("{0} v{1}\n  build: {2}\n  build type: {3}\n  runtime: .NET {4}",
                         name,
                         version,
