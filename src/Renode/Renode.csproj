@@ -1,8 +1,12 @@
 <Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+      <AssemblyTitle>Renode</AssemblyTitle>
+      <Company>Antmicro</Company>
+      <Product>Renode</Product>
+      <Copyright>(c) Antmicro</Copyright>
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
     <OutputPath>..\..\output\bin\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputType>Exe</OutputType>
@@ -10,6 +14,8 @@
     <AssemblyName>Renode</AssemblyName>
     <RollForward>Major</RollForward>
     <ApplicationIcon>..\..\lib\resources\images\windows_setup\renode.ico</ApplicationIcon>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\..\..\tools\version').Trim())</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <LangVersion>12.0</LangVersion>
     <UseWPF Condition=" $(RequireWPF) == 'true' ">true</UseWPF>
   </PropertyGroup>
@@ -18,6 +24,17 @@
     <SelfContained>true</SelfContained>
     <UseAppHost>true</UseAppHost>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BinaryName</_Parameter1>
+      <_Parameter2>renode</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyCultureAttribute">
+      <_Parameter1></_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   <ItemGroup Condition=" $(PORTABLE) == 'true' And $([MSBuild]::IsOSPlatform('OSX')) == 'false'">
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
     <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" />
@@ -68,20 +85,16 @@
       <LogicalName>RobotoMono-Regular.ttf</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="CreateAssemblyInfo" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <CheckIfAssemblyInfoExists Include="Properties/AssemblyInfo.cs">
-        <AssemblyInfoExists Condition="Exists('Properties/AssemblyInfo.cs')">true</AssemblyInfoExists>
-        <AssemblyInfoExists Condition="!Exists('Properties/AssemblyInfo.cs')">false</AssemblyInfoExists>
-      </CheckIfAssemblyInfoExists>
-    </ItemGroup>
+  <Target Name="SetCustomInformationalVersion" BeforeTargets="GetAssemblyAttributes">
+    <Exec Command="git rev-parse --short=9 HEAD"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="false">
+      <Output TaskParameter="ConsoleOutput" PropertyName="ShortCommitSha" />
+    </Exec>
 
-    <Exec Command="cd Properties; ../../../tools/building/createAssemblyInfo.sh" Condition="$(OS) != 'Windows_NT'" />
-    <!--The Powershell pipe is used for running the script without altering execution policy on host machine.-->
-    <Exec Command="cd Properties &amp; powershell &quot;Get-Content ../../../tools/building/createAssemblyInfo.ps1 | powershell -command -&quot;" Condition="$(OS) == 'Windows_NT'" />
-
-    <ItemGroup>
-      <Compile Include="Properties/AssemblyInfo.cs" Condition="!%(CheckIfAssemblyInfoExists.AssemblyInfoExists)" />
-    </ItemGroup>
+    <PropertyGroup>
+      <BuildDate>$([System.DateTime]::UtcNow.ToString('yyyyMMdd'))</BuildDate>
+      <InformationalVersion>$(Version)+$(BuildDate)git$(ShortCommitSha)</InformationalVersion>
+    </PropertyGroup>
   </Target>
 </Project>

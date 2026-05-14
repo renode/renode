@@ -16,7 +16,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
     <RestoreAdditionalProjectSources>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', 'third-party', 'DNNE', 'src', 'dnne-pkg', 'bin', '$(Configuration)'))</RestoreAdditionalProjectSources>
     <DnnePackageVersion>2.1.2-renode.1</DnnePackageVersion>
   </PropertyGroup>
