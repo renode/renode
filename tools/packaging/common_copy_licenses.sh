@@ -21,9 +21,6 @@ REQUIRED_LICENSES=(
 
 # Licenses for these directories and files won't be required.
 REQUIRED_LICENSES_EXCLUDE=(
-    # CCTask is only used during building.
-    cctask
-
     # There is 'IronPython-license' for 'IronPython.dll'. That's enough.
     IronPython.Modules.dll
     IronPython.StdLib.dll
