@@ -1,2 +1,10 @@
-// Empty POWERTRAIN expansion stub
-// Should eventually contain the pedals and the joystick
+brake: Analog.Potentiometer @ adc1 6
+    minVolt: 0
+    maxVolt: 3.3
+
+accel: Analog.Potentiometer @ adc1 9
+    minVolt: 0
+    maxVolt: 3.3
+
+joystick: Analog.NamedDiscreteValues @ adc1 10
+    namedVoltValues: {"released": 2.75; "down": 2.64; "right": 2.475; "left": 2.2; "push": 1.65; "up": 0}

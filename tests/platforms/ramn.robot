@@ -66,6 +66,23 @@ Engine Key Should Affect Battery LED After Reset
     Trigger Watchdog Reset
     Battery LED Toggling From Engine Key   2    batteryWarning
 
+Brake Should Affect Brake LED
+    [Documentation]             Test the data path Potentiometer --> ECUC's ADC --> ECUC's CAN
+...                             controller --> CAN Network --> ECUD's CAN controller --> ECUC's SPI
+...                             controller --> LED controller
+
+    ${LEDHoldingTimeout}        Set Variable    2
+
+    Execute Command             include @scripts/multi-node/ramn.resc
+    Create LED Tester           sysbus.spi2.ledController.parkingBrake  machine=ECUD
+    Execute Command             adc1.brake SetPercentage 0              machine=ECUC
+    # Wait 5 seconds for the LEDs to turn off after the startup sequence
+    Execute Command             emulation RunFor "5s"
+    Assert And Hold Led State   false   timeoutAssert=0     timeoutHold=${LEDHoldingTimeout}
+
+    Execute Command             adc1.brake SetPercentage 50      machine=ECUC
+    Assert And Hold Led State   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
+
 Should Init Screen on ECUA
     [Documentation]         Test on ECUA that the data path Memory -> DMA -> SPI TX is working
 
