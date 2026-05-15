@@ -74,10 +74,10 @@ Should Read ADC
     
     Wait For Line On Uart    Booting Zephyr
 
-    Execute Command          sysbus.adc SetDefaultValue 600
+    Execute Command          sysbus.adc.adc-channel1 Volts 0.6
     Wait For Line On Uart    ADC reading: 745
 
-    Execute Command          sysbus.adc SetDefaultValue 1200
+    Execute Command          sysbus.adc.adc-channel1 Volts 1.2
     Wait For Line On Uart    ADC reading: 1489
 
 Should Run stm32f0-crc-test Application
