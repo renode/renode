@@ -12,10 +12,10 @@ Battery LED Toggling From Engine Key
     Execute Command         emulation RunFor "5s"
     AssertAndHoldLedState   false   timeoutAssert=0     timeoutHold=${LEDHoldingTimeout}
 
-    Execute Command         SetEngineKey 'middle'
+    Execute Command         adc1.engineKey CurrentState "middle"
     AssertAndHoldLedState   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
-    Execute Command         SetEngineKey 'left'
+    Execute Command         adc1.engineKey CurrentState "left"
     AssertAndHoldLedState   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
 Trigger Watchdog Reset

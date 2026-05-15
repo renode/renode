@@ -8,3 +8,6 @@ highBeam: Miscellaneous.LED @ ledController 5
 batteryWarning: Miscellaneous.LED @ ledController 0
 checkEngine: Miscellaneous.LED @ ledController 1
 parkingBrake: Miscellaneous.LED @ ledController 2
+
+engineKey: Analog.NamedDiscreteValues @ adc1 9
+    namedVoltValues: { "left": 0; "off": 0; "middle": 1.65; "accessory": 1.65; "right": 3.3; "ignition": 3.3 }
