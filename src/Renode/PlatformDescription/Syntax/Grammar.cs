@@ -213,19 +213,37 @@ namespace Antmicro.Renode.PlatformDescription.Syntax
 
         public static readonly Parser<ListValue> ListValue = NonEmptyList.Or(EmptyList);
 
-        public static readonly Parser<Value> Value = (SingleLineQuotedString.Or(MultilineQuotedString)).Select(x => new StringValue(x))
-                                                                 .XOr<Value>(Range)
-                                                                 .XOr(Number.Select(x => new NumericalValue(x)))
-                                                                 .XOr(ObjectValue)
-                                                                 .XOr(ListValue)
-                                                                 .Or(Enum)
-                                                                 .Or(BoolValue)
-                                                                 .Or(ReferenceValue)
-                                                                 .Positioned();
+        public static readonly Parser<Value> ScalarValue = (SingleLineQuotedString.Or(MultilineQuotedString)).Select(x => new StringValue(x))
+                                                            .XOr<Value>(Range)
+                                                            .XOr(Number.Select(x => new NumericalValue(x)))
+                                                            .Or(Enum)
+                                                            .Or(BoolValue)
+                                                            .Or(ReferenceValue)
+                                                            .Positioned();
+
+        public static readonly Parser<KeyValuePair> KeyValuePair =
+            (from key in ScalarValue.Named("dictionary key")
+             from colon in Colon
+             from value in Value.Named("dictionary value")
+             select new KeyValuePair(key, value)).Named("dictionary entry");
+
+        public static readonly Parser<DictValue> DictValue =
+            (from opening in OpeningBrace.Named("start of dictionary")
+             from pairs in KeyValuePair.DelimitedBy(Separator).XOptional()
+             from trailing in Separator.Optional()
+             from closing in ClosingBrace.Named("end of dictionary")
+             select new DictValue(pairs.GetOrDefault())).Named("dictionary");
+
+        public static readonly Parser<Value> NonDictValue = ScalarValue
+                                                            .XOr(ObjectValue)
+                                                            .XOr(ListValue)
+                                                            .Positioned();
+
+        public static readonly Parser<Value> Value = NonDictValue.XOr(DictValue).Positioned();
 
         public static readonly Parser<RegistrationInfo> RegistrationInfoInner =
             (from register in ReferenceValue.Named("register reference").Positioned()
-             from registrationPoint in Value.XOptional().Named("registration point")
+             from registrationPoint in NonDictValue.XOptional().Named("registration point")
              select new RegistrationInfo(register, registrationPoint.GetOrDefault())).Named("registration info");
 
         public static readonly Parser<RegistrationInfo> RegistrationInfo = AtSign.Then(x => RegistrationInfoInner);

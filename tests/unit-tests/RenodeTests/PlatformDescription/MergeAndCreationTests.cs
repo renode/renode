@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.PlatformDescription;
@@ -1489,6 +1490,114 @@ mock: Antmicro.Renode.UnitTests.Mocks.MockCPU";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.NoCtorForRegistrationPoint, exception.Error);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyDictValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntStringDict: {}";
+
+            ProcessSource(source);
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(0, mockPeripheral.MockIntStringDict.Count);
+        }
+
+        [Test]
+        public void ShouldHandleEmptyKeywordDictValue()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntStringDict: empty";
+
+            ProcessSource(source);
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(default(Dictionary<int, string>), mockPeripheral.MockIntStringDict);
+        }
+
+        [Test]
+        public void ShouldHandleDictIntString()
+        {
+            var source = @"
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntStringDict: {0: ""zero"" ; 1: ""one"" }";
+
+            ProcessSource(source);
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+            Assert.AreEqual(2, mockPeripheral.MockIntStringDict.Count);
+            Assert.AreEqual("zero", mockPeripheral.MockIntStringDict[0]);
+            Assert.AreEqual("one", mockPeripheral.MockIntStringDict[1]);
+        }
+
+        [Test]
+        public void ShouldHandleDictOfUnorderedReferences()
+        {
+            var source = @"
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockIntCpuDict: {1: cpu1; 2: cpu2}
+
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    ";
+
+            ProcessSource(source);
+            MockCPU cpu1, cpu2;
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu1", out cpu1));
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu2", out cpu2));
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+
+            Assert.AreEqual(2, mockPeripheral.MockIntCpuDict.Count);
+            Assert.AreSame(cpu1, mockPeripheral.MockIntCpuDict[1]);
+            Assert.AreSame(cpu2, mockPeripheral.MockIntCpuDict[2]);
+        }
+
+        [Test]
+        public void ShouldHandleDictOfUnorderedReferencesAsKeys()
+        {
+            var source = @"
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockCpuIntDict: {cpu1: 1; cpu2: 2}
+
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    ";
+
+            ProcessSource(source);
+            MockCPU cpu1, cpu2;
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu1", out cpu1));
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu2", out cpu2));
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+
+            Assert.AreEqual(2, mockPeripheral.MockCpuIntDict.Count);
+            Assert.AreEqual(1, mockPeripheral.MockCpuIntDict[cpu1]);
+            Assert.AreEqual(2, mockPeripheral.MockCpuIntDict[cpu2]);
+        }
+
+        [Test]
+        public void ShouldFailOnDuplicateDictKeys()
+        {
+            var source = @"
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockCpuIntDict: {cpu1: 1; cpu2: 2; cpu1: 3}
+
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    ";
+
+            var exception = Assert.Throws<RecoverableException>(() => ProcessSource(source));
+            Console.WriteLine($"type: {exception.GetType()}");
+            Assert.IsInstanceOf<System.ArgumentException>(exception.InnerException);
+            StringAssert.StartsWith("An item with the same key has already been added.", exception.InnerException.Message);
         }
 
         [OneTimeSetUp]

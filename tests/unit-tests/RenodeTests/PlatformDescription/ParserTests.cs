@@ -978,6 +978,112 @@ uart:
             Assert.AreEqual(@"\escaped backslash: \, two in a row: \\, before quote: \"", and one at the end: \", ((StringValue)attribute.Value).Value);
         }
 
+        [Test]
+        public void ShouldParseEmptyDict()
+        {
+            var source = @"
+device: Something
+    dict: {}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var dict = (DictValue)attribute.Value;
+
+            Assert.IsEmpty(dict.Items);
+        }
+
+        [Test]
+        public void ShouldParseSimpleDict()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"": 0; ""key1"": 1}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var dict = (DictValue)attribute.Value;
+
+            Assert.AreEqual(2, dict.Items.Count());
+            for(var i = 0; i < dict.Items.Count(); i++)
+            {
+                Assert.AreEqual($"key{i}", ((StringValue)(dict.Items.Keys.ToArray()[i])).Value);
+                Assert.AreEqual($"{i}", ((NumericalValue)(dict.Items.Values.ToArray()[i])).Value);
+            }
+        }
+
+        [Test]
+        public void ShouldParseDictWithTrailingSeparator()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"": 0; ""key1"": 1;}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(result.WasSuccessful, result.ToString());
+
+            var attribute = result.Value.Entries.Single().Attributes.OfType<ConstructorOrPropertyAttribute>().Single();
+            var dict = (DictValue)attribute.Value;
+
+            Assert.AreEqual(2, dict.Items.Count());
+            for(var i = 0; i < dict.Items.Count(); i++)
+            {
+                Assert.AreEqual($"key{i}", ((StringValue)(dict.Items.Keys.ToArray()[i])).Value);
+                Assert.AreEqual($"{i}", ((NumericalValue)(dict.Items.Values.ToArray()[i])).Value);
+            }
+        }
+
+        [Test]
+        public void ShouldNotParseDictWithMissingClosingBrace()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"": 0; ""key1"": 1";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(!result.WasSuccessful, result.ToString());
+            StringAssert.Contains("Unexpected end of input", result.Message);
+        }
+
+        [Test]
+        public void ShouldNotParseDictWithComma()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"": 0, ""key1"": 1}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(!result.WasSuccessful, result.ToString());
+            StringAssert.Contains("unexpected ','", result.Message);
+        }
+
+        [Test]
+        public void ShouldNotParseDictWithMissingSeparator()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"": 0 ""key1"": 1}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(!result.WasSuccessful, result.ToString());
+            StringAssert.Contains(@"unexpected '""'", result.Message);
+        }
+
+        [Test]
+        public void ShouldNotParseDictWithMissingColon()
+        {
+            var source = @"
+device: Something
+    dict: {""key0"" 0, ""key1"": 1}";
+
+            var result = Grammar.Description(GetInputFromString(source));
+            Assert.IsTrue(!result.WasSuccessful, result.ToString());
+            StringAssert.Contains("unexpected '0'", result.Message);
+        }
+
         private static IInput GetInputFromString(string source)
         {
             var result = PreLexer.Process(source);

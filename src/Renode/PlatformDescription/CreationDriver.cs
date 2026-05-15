@@ -1506,6 +1506,47 @@ namespace Antmicro.Renode.PlatformDescription
             return ConversionResult.Success;
         }
 
+        private ConversionResult TryConvertDictValue(Value value, Type expectedType, ref object result)
+        {
+            if(!(value is DictValue dictValue))
+            {
+                return ConversionResult.ConversionNotApplied;
+            }
+            var elementType = expectedType.GetEnumerableElementType();
+            if(elementType == null || elementType.GetGenericArguments().Length < 2)
+            {
+                return ConversionResult.ConversionNotApplied;
+            }
+            var keyType = elementType.GetGenericArguments()[0];
+            var valType = elementType.GetGenericArguments()[1];
+
+            var items = (IDictionary)Activator.CreateInstance(typeof(Dictionary<,>).MakeGenericType(keyType, valType));
+            foreach(var item in dictValue.Items)
+            {
+                try
+                {
+                    var key = ConvertFromValue(keyType, item.Key);
+                    if(key != null)
+                    {
+                        /* If this function is called from FindConstructor, the references are not
+                         * resolved yet, leading to a null key.
+                         * TODO: This is a candidate for refactoring as when FindConstructor is
+                         * called, it is not necessary to convert the dictionary, only to check that
+                         * it is a dictionary with expected types.
+                         */
+                        items.Add(key, ConvertFromValue(valType, item.Value));
+                    }
+                }
+                catch(ArgumentException exception)
+                {
+                    throw new RecoverableException(exception);
+                }
+            }
+
+            result = items;
+            return ConversionResult.Success;
+        }
+
         private ConversionResult TryConvertSimpleValue(Type expectedType, Value value, out object result, bool silent = false)
         {
             result = null;
@@ -1526,6 +1567,7 @@ namespace Antmicro.Renode.PlatformDescription
                 TryConvertSimplestValue<BoolValue>(value, expectedType, typeof(bool), ref result),
                 TryConvertRangeValue(value, expectedType, ref result),
                 TryConvertListValue(value, expectedType, ref result),
+                TryConvertDictValue(value, expectedType, ref result),
             };
 
             var meaningfulResult = results.FirstOrDefault(x => x.ResultType != ConversionResultType.ConversionNotApplied);
