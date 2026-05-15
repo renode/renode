@@ -318,10 +318,13 @@ using ""A""";
             Assert.AreEqual(ParsingError.UsingFileNotFound, exception.Error);
         }
 
-#if PLATFORM_WINDOWS
         [Test]
-        public void ShouldHandleAbsolutePath()
+        public void ShouldHandleAbsolutePathWindows()
         {
+            if(!RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             // On Windows, both \ and / should work as path component separators in the path to be resolved
             // and the returned path should always use the preferred \ separator
             Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@"C:\tmp\platform.repl", @"C:\tmp\includer.repl"));
@@ -329,44 +332,66 @@ using ""A""";
         }
 
         [Test]
-        public void ShouldHandleRelativePathInSameDirectory()
+        public void ShouldHandleRelativePathInSameDirectoryWindows()
         {
+            if(!RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@".\platform.repl", @"C:\tmp\includer.repl"));
             Assert.AreEqual(@"C:\tmp\platform.repl", ResolvePath(@"./platform.repl", @"C:\tmp\includer.repl"));
         }
 
         [Test]
-        public void ShouldHandleRelativePathInParentDirectory()
+        public void ShouldHandleRelativePathInParentDirectoryWindows()
         {
+            if(!RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"..\abc\platform.repl", @"C:\tmp\includer.repl"));
             Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"../abc/platform.repl", @"C:\tmp\includer.repl"));
         }
-#else
         [Test]
-        public void ShouldHandleAbsolutePath()
+        public void ShouldHandleAbsolutePathUnix()
         {
+            if(RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             Assert.AreEqual("/tmp/platform.repl", ResolvePath("/tmp/platform.repl", "/tmp/includer.repl"));
         }
 
         [Test]
-        public void ShouldHandleRelativePathInSameDirectory()
+        public void ShouldHandleRelativePathInSameDirectoryUnix()
         {
+            if(RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             Assert.AreEqual("/tmp/platform.repl", ResolvePath("./platform.repl", "/tmp/includer.repl"));
         }
 
         [Test]
-        public void ShouldHandleRelativePathInParentDirectory()
+        public void ShouldHandleRelativePathInParentDirectoryUnix()
         {
+            if(RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             Assert.AreEqual("/abc/platform.repl", ResolvePath("../abc/platform.repl", "/tmp/includer.repl"));
         }
 
         [Test]
         public void BackslashShouldNotBePathSeparatorOnUnix()
         {
+            if(RuntimeInfo.IsWindows())
+            {
+                Assert.Ignore();
+            }
             // Backslashes are a valid filename character on Unix
             Assert.AreEqual(@"/tmp/plat\form.repl", ResolvePath(@"./plat\form.repl", "/tmp/includer.repl"));
         }
-#endif
 
         [SetUp]
         public void SetUp()
