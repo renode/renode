@@ -21,15 +21,18 @@ cpu: CPU.CortexM @ sysbus
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    IRQ -> nvic@27
+    IRQ -> nvic@27 | dma@2 | dma@4  // depends on SYSCFG_CFGR1
+    ReceiveDmaRequest -> dma@3 | dma@5  // depends on SYSCFG_CFGR1
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    IRQ -> nvic@28
+    IRQ -> nvic@28 | dma@4
+    ReceiveDmaRequest -> dma@5
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
-    IRQ -> nvic@29
+    IRQ -> nvic@29 | dma@2  // depends on SYSCFG_CFGR1
+    ReceiveDmaRequest -> dma@3  // depends on SYSCFG_CFGR1
 
 usart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
@@ -92,16 +95,24 @@ i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
 spi1: SPI.STM32SPI @ sysbus 0x40013000
     series: STM32Series.F0
     IRQ -> nvic@25
+    DMAReceive -> dma@2
+    DMASend -> dma@3
 
 spi2: SPI.STM32SPI @ sysbus 0x40003800
     series: STM32Series.F0
     IRQ -> nvic@26
+    DMAReceive -> dma@4
+    DMASend -> dma@5
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012C00
     frequency: 10000000
     initialLimit: 0xFFFF
-    [BreakInterrupt, UpdateInterrupt, TriggerInterrupt, CommutationInterrupt] -> nvic@[13, 13, 13, 13]
+    TriggerInterrupt -> nvic@13 | dma@4
+    CommutationInterrupt -> nvic@13 | dma@4
+    UpdateInterrupt -> nvic@13 | dma@5
+    BreakInterrupt -> nvic@13
     CaptureCompareInterrupt -> nvic@14
+    [0, 1, 3, 2] -> dma@[2-5]
 
 timer2: Timers.STM32_Timer @ sysbus 0x40000000
     frequency: 10000000
@@ -112,15 +123,22 @@ timer3: Timers.STM32_Timer @ sysbus 0x40000400
     frequency: 10000000
     initialLimit: 0xFFFF
     -> nvic@16
+    2 -> dma@2
+    3 -> dma@3
+    0 -> dma@4
+    UpdateInterrupt -> dma@3
+    TriggerInterrupt -> dma@4
 
 timer6: Timers.STM32_Timer @ sysbus 0x40001000
     frequency: 10000000
     initialLimit: 0xFFFF
+    UpdateInterrupt -> dma@3
 
 timer7: Timers.STM32_Timer @ sysbus 0x40001400
     frequency: 10000000
     initialLimit: 0xFFFF
     -> nvic@18
+    UpdateInterrupt -> dma@4
 
 timer14: Timers.STM32_Timer @ sysbus 0x40002000
     frequency: 10000000
@@ -131,16 +149,21 @@ timer15: Timers.STM32_Timer @ sysbus 0x40014000
     frequency: 10000000
     initialLimit: 0xFFFF
     -> nvic@20
+    [0, UpdateInterrupt, TriggerInterrupt, CommutationInterrupt] -> dma@[5, 5, 5, 5]
 
 timer16: Timers.STM32_Timer @ sysbus 0x40014400
     frequency: 10000000
     initialLimit: 0xFFFF
     -> nvic@21
+    0 -> dma@3 | dma@4 // depends on SYSCFG_CFGR1
+    UpdateInterrupt -> dma@3 | dma@4 // depends on SYSCFG_CFGR1
 
 timer17: Timers.STM32_Timer @ sysbus 0x40014800
     frequency: 10000000
     initialLimit: 0xFFFF
     -> nvic@22
+    0 -> dma@1 | dma@2 // depends on SYSCFG_CFGR1
+    UpdateInterrupt -> dma@1 | dma@2 // depends on SYSCFG_CFGR1
 
 can: CAN.STMCAN @ sysbus <0x40006400, +0x400>
 
@@ -168,19 +191,14 @@ elif request.IsRead:
 self.NoisyLog("%s on FLIPFLOP at 0x%x, value 0x%x" % (str(request.Type), request.Offset, request.Value))
 '''
 
-DMA: Python.PythonPeripheral @ sysbus 0x40020000
-    size: 0x400
-    script: '''
-if request.IsWrite and request.Offset in (0x10, 0x24, 0x38):
-    # writing base address - we write some positive value there in case initialization awaits output
-    sysbus.WriteDoubleWord(request.Value, 0x40E33333)
-    self.NoisyLog("0x%x written with value 0x40E33333" % request.Value)
-'''
+dma: DMA.STM32G0DMA @ sysbus 0x40020000
+    numberOfChannels: 5
+    [0-4] -> nvic@[9, 10, 10, 11, 11]
 
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    -> nvic@12
+    -> nvic@12 | dma@1 | dma@2
 
 crc: CRC.STM32_CRC @ sysbus 0x40023000
     series: STM32Series.F0
