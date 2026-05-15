@@ -5,42 +5,15 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
 
 exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40010400
     numberOfOutputLines: 32
-    [0, 1] -> nvicInput5@[0, 1]
-    [2, 3] -> nvicInput6@[0, 1]
+    [0-3] -> nvic@[5, 5, 6, 6]
     [4-15] -> nvicInput7@[0-11]
-    [21, 22] -> nvicInput12@[0, 1]
-    [25] -> nvicInput27@[0]
-    [26] -> nvicInput28@[0]
-    [28] -> nvicInput29@[0]
-    [18, 23, 27] -> nvic@[31, 23, 30]
-
-nvicInput5: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 2
-    -> nvic@5
-
-nvicInput6: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 2
-    -> nvic@6
+    18 -> nvic@31
+    [21-23] -> nvic@[12, 12, 23]
+    [25-28] -> nvic@[27, 28, 30, 29]
 
 nvicInput7: Miscellaneous.CombinedInput @ none
     numberOfInputs: 12
     -> nvic@7
-
-nvicInput12: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 3
-    -> nvic@12
-
-nvicInput27: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 2
-    -> nvic@27
-
-nvicInput28: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 2
-    -> nvic@28
-
-nvicInput29: Miscellaneous.CombinedInput @ none
-    numberOfInputs: 7
-    -> nvic@29
 
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m0"
@@ -48,31 +21,31 @@ cpu: CPU.CortexM @ sysbus
 
 usart1: UART.STM32F7_USART @ sysbus 0x40013800
     frequency: 200000000
-    IRQ -> nvicInput27@1
+    IRQ -> nvic@27
 
 usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
-    IRQ -> nvicInput28@1
+    IRQ -> nvic@28
 
 usart3: UART.STM32F7_USART @ sysbus 0x40004800
     frequency: 200000000
-    IRQ -> nvicInput29@1
+    IRQ -> nvic@29
 
 usart4: UART.STM32F7_USART @ sysbus 0x40004C00
     frequency: 200000000
-    IRQ -> nvicInput29@2
+    IRQ -> nvic@29
 
 usart5: UART.STM32F7_USART @ sysbus 0x40005000
     frequency: 200000000
-    IRQ -> nvicInput29@3
+    IRQ -> nvic@29
 
 usart6: UART.STM32F7_USART @ sysbus 0x40011400
     frequency: 200000000
-    IRQ -> nvicInput29@4
+    IRQ -> nvic@29
 
 usart7: UART.STM32F7_USART @ sysbus 0x40011800
     frequency: 200000000
-    IRQ -> nvicInput29@5
+    IRQ -> nvic@29
 
 gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x48000000, +0x400>
     modeResetValue: 0x28000000
@@ -207,7 +180,7 @@ if request.IsWrite and request.Offset in (0x10, 0x24, 0x38):
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    -> nvicInput12@2
+    -> nvic@12
 
 crc: CRC.STM32_CRC @ sysbus 0x40023000
     series: STM32Series.F0
