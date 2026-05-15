@@ -29,7 +29,7 @@ do
             TARGET="Debug"
             ;;
         n)
-            DATE="+`date +%Y%m%d`"
+            DATE="+`date -u +%Y%m%d`"
             COMMIT="git`git rev-parse --short=9 HEAD`"
             ;;
         l)
