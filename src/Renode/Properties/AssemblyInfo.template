@@ -19,11 +19,6 @@ using System.Runtime.Versioning;
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyMetadata("BinaryName", "renode")]
 
-#if (PLATFORM_WINDOWS && NET5_0_OR_GREATER)
-[assembly: TargetPlatform("windows10.0.17763.0")]
-[assembly: SupportedOSPlatform("windows10.0.17763.0")]
-#endif
-
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
