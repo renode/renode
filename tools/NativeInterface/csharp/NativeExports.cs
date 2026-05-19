@@ -16,7 +16,7 @@ using Monitor = Antmicro.Renode.UserInterface.Monitor;
 
 namespace Antmicro.Renode.NativeInterface
 {
-    public static unsafe class NativeExports
+    public static unsafe partial class NativeExports
     {
         [UnmanagedCallersOnly(EntryPoint = "renode_init")]
         /// Keep in sync with <see cref="NativeStatus" /> below.

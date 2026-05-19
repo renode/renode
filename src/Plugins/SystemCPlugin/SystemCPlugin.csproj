@@ -5,6 +5,7 @@
     <AssemblyName>SystemCPlugin</AssemblyName>
     <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>12.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <Import Project="$(PropertiesLocation)" />
   <ItemGroup>

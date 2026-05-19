@@ -6,7 +6,6 @@
 //
 using System;
 using System.Linq;
-using System.Net.Sockets;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
@@ -139,7 +138,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 if(!cpu.TrustZoneEnabled)
                 {
                     this.WarningLog("The Security Extension is not enabled. Ignoring Secure Vector table offset signal");
-                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                    SendBackwardResponse(message);
                     break;
                 }
 
@@ -157,7 +156,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
                 vtorInitialized = true;
                 cpu.InitVectorTableOffset = vectorTableOffset;
-                backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                SendBackwardResponse(message);
                 this.NoisyLog("SystemC Vector Table Offset: 0x{0:X}", vectorTableOffset);
                 break;
             case RenodeAction.InitNonSecureVTOR:
@@ -193,7 +192,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
 
                 vtorNonSecureInitialized = true;
-                backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                SendBackwardResponse(message);
                 this.NoisyLog("SystemC Non Secure Vector Table Offset: 0x{0:X}", vectorTableOffsetNonSecure);
                 break;
             default:

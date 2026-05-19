@@ -7,16 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
@@ -25,7 +19,7 @@ using Antmicro.Renode.Time;
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
-    public class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral, IDisposable
+    public unsafe partial class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral
     {
         public SystemCPeripheral(
                 IMachine machine,
@@ -75,13 +69,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public void WriteRegister(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
         {
             WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex);
-        }
-
-        public void Dispose()
-        {
-            StopSystemCProcess();
-            TeardownConnection();
-            TeardownTimesync();
         }
 
         public void Reset()
@@ -167,87 +154,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             directAccessPeripherals.Add(connectionIndex, target);
         }
 
-        public void WaitForConnection()
-        {
-            try
-            {
-                var listenerSocket = CreateListenerSocket(requestedPort);
-                var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
-                this.InfoLog("SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
-                SetupConnection(listenerSocket);
-                SetupTimesync();
-            }
-            catch(Exception e)
-            {
-                throw new RecoverableException($"Failed to connect to SystemC process: {e.Message}");
-            }
-        }
-
-        public string SystemCExecutablePath
-        {
-            get => systemcExecutablePath;
-            set
-            {
-                try
-                {
-                    systemcExecutablePath = value;
-                    var listenerSocket = CreateListenerSocket(requestedPort);
-                    var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
-                    this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
-                    var connectionParams = $"{address} {assignedPort}";
-                    StartSystemCProcess(systemcExecutablePath, connectionParams);
-                    SetupConnection(listenerSocket);
-                    SetupTimesync();
-                }
-                catch(Exception e)
-                {
-                    throw new RecoverableException($"Failed to start SystemC process: {e.Message}");
-                }
-            }
-        }
-
-        public int Port
-        {
-            get => requestedPort;
-            set
-            {
-                if(value == requestedPort)
-                {
-                    return;
-                }
-                if(connectionActive)
-                {
-                    throw new RecoverableException($"Connection is already active on port {requestedPort}");
-                }
-                requestedPort = value;
-            }
-        }
-
-        public string Address
-        {
-            get => address;
-            set
-            {
-                if(value == address)
-                {
-                    return;
-                }
-                if(connectionActive)
-                {
-                    throw new RecoverableException($"Connection is already active on address {address}");
-                }
-                address = value;
-            }
-        }
-
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
-        protected virtual void OnUnhandledRenodeMessage(RenodeMessage message)
-        {
-            this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
-        }
-
-        protected Socket backwardSocket;
         protected readonly IMachine machine;
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
@@ -292,121 +200,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             return (ulong)machine.LocalTimeSource.ElapsedVirtualTime.TotalMicroseconds;
         }
 
-        private void StartSystemCProcess(string systemcExecutablePath, string connectionParams)
-        {
-            try
-            {
-                if(!RuntimeInfo.IsWindows())
-                {
-                    File.SetUnixFileMode(systemcExecutablePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-                }
-                systemcProcess = new Process
-                {
-                    StartInfo = new ProcessStartInfo(systemcExecutablePath)
-                    {
-                        UseShellExecute = false,
-                        Arguments = connectionParams
-                    }
-                };
-
-                systemcProcess.Start();
-            }
-            catch(Exception e)
-            {
-                throw new RecoverableException(e.Message);
-            }
-        }
-
-        private void StopSystemCProcess()
-        {
-            if(systemcProcess == null)
-            {
-                return;
-            }
-
-            if(systemcProcess.HasExited)
-            {
-                systemcProcess = null;
-                return;
-            }
-
-            // Init message sent after connection has been established signifies Renode terminated and SystemC process
-            // should exit.
-            var request = new RenodeMessage(RenodeAction.Init, 0, 0, 0, 0);
-            SendRequest(request, out var response);
-
-            if(!systemcProcess.WaitForExit(500))
-            {
-                this.Log(LogLevel.Info, "SystemC process failed to exit gracefully - killing it.");
-                systemcProcess.Kill();
-            }
-            systemcProcess = null;
-        }
-
-        private Socket CreateListenerSocket(int requestedPort)
-        {
-            var listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listenerSocket.Bind(new IPEndPoint(IPAddress.Parse(address), requestedPort));
-            listenerSocket.Listen(2);
-            return listenerSocket;
-        }
-
-        private void SetupConnection(Socket listenerSocket)
-        {
-            forwardSocket = listenerSocket.Accept();
-            forwardSocket.SendTimeout = 1000;
-            // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
-            if(!disableTimeoutCheck)
-            {
-                forwardSocket.ReceiveTimeout = 1000;
-            }
-
-            backwardSocket = listenerSocket.Accept();
-            backwardSocket.SendTimeout = 1000;
-            // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
-
-            listenerSocket.Close();
-
-            backwardThread.Start();
-            backwardThreadStarted = true;
-
-            connectionActive = true;
-
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
-        }
-
-        private void TeardownConnection()
-        {
-            try
-            {
-                forwardSocket?.Shutdown(SocketShutdown.Both);
-            }
-            catch(SocketException ex)
-            {
-                this.DebugLog("Exception when shutting down forward socket: {0}", ex.Message);
-            }
-            try
-            {
-                backwardSocket?.Shutdown(SocketShutdown.Both);
-            }
-            catch(SocketException ex)
-            {
-                this.DebugLog("Exception when shutting down backward socket: {0}", ex.Message);
-            }
-            if(backwardThreadStarted)
-            {
-                // Give the backward connection thread some time to gracefully shut down the TCP connection.
-                backwardThread.Join(TimeSpan.FromMilliseconds(500));
-            }
-            forwardSocket?.Close();
-            backwardSocket?.Close();
-
-            forwardSocket = null;
-            backwardSocket = null;
-
-            connectionActive = false;
-        }
-
         private void SetupTimesync()
         {
             timesyncTimer.Enabled = true;
@@ -442,65 +235,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
             });
         }
 
-        private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
-        {
-            lock(messageLock)
-            {
-                var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
-                var recvBytes = new byte[messageSize];
-                responseMessage = new RenodeMessage();
-                if(forwardSocket == null)
-                {
-                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
-                    Dispose();
-                    return false;
-                }
-
-                try
-                {
-                    forwardSocket.Send(request.Serialize(), SocketFlags.None);
-                    forwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
-                }
-                catch(SocketException)
-                {
-                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
-                    Dispose();
-                    return false;
-                }
-
-                responseMessage.Deserialize(recvBytes);
-
-                return true;
-            }
-        }
-
         // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
         //       This may lead to deadlocks, as SystemC blocks waiting for a response from this thread.
         private void BackwardConnectionLoop()
         {
             while(true)
             {
-                var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
-                var recvBytes = new byte[messageSize];
-
-                var nbytes = backwardSocket.Receive(recvBytes, 0, messageSize, SocketFlags.None);
-                if(nbytes == 0)
+                if(!ReceiveBackwardRequest(out var message))
                 {
-                    this.Log(LogLevel.Info, "Backward connection to SystemC process closed.");
                     return;
                 }
 
-                var message = new RenodeMessage();
-                message.Deserialize(recvBytes);
-
-                ulong payload = 0;
                 switch(message.ActionId)
                 {
                 case RenodeAction.GPIOWrite:
                     // We have to respond before GPIO state is changed, because SystemC is blocked until
                     // it receives the response. Setting the GPIO may require it to respond, e. g. when it
                     // is interracted with from an interrupt handler.
-                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                    SendBackwardResponse(message);
                     var gpioNumber = (int)message.Address;
                     var isSet = message.Payload == 1;
                     Connections[gpioNumber].Set(isSet);
@@ -542,9 +294,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     }
                     var writeResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
                             writeToSharedMem ? (byte)RenodeMessage.DMIAllowed : (byte)RenodeMessage.DMINotAllowed, message.Address, message.Payload);
-                    backwardSocket.Send(writeResponseMessage.Serialize(), SocketFlags.None);
+                    SendBackwardResponse(writeResponseMessage);
                     break;
                 case RenodeAction.Read:
+                    ulong payload = 0;
                     bool readFromSharedMem = false;
                     if(message.IsSystemBusConnection())
                     {
@@ -580,7 +333,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     var readResponseMessage = new RenodeMessage(message.ActionId, message.DataLength,
                             readFromSharedMem ? (byte)RenodeMessage.DMIAllowed : (byte)RenodeMessage.DMINotAllowed, message.Address, payload);
 
-                    backwardSocket.Send(readResponseMessage.Serialize(), SocketFlags.None);
+                    SendBackwardResponse(readResponseMessage);
                     break;
                 case RenodeAction.DMIReq:
                     var targetMemory = sysbus.FindMemory(message.Address);
@@ -602,11 +355,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                             mapping.Value
                         );
                     }
-                    backwardSocket.Send(responseDMIMessage.Serialize(), SocketFlags.None);
+                    SendBackwardResponseDmi(responseDMIMessage);
                     break;
                 case RenodeAction.InvalidateTBs:
                     TryToInvalidateTBs(message.Address, message.Payload);
-                    backwardSocket.Send(message.Serialize(), SocketFlags.None);
+                    SendBackwardResponse(message);
                     break;
                 default:
                     OnUnhandledRenodeMessage(message);
@@ -643,23 +396,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private Socket forwardSocket;
-
-        private Process systemcProcess;
-        private string systemcExecutablePath;
-        private int requestedPort;
-        private string address;
-        private bool backwardThreadStarted = false;
-        private bool connectionActive;
         private readonly LimitTimer timesyncTimer;
         private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
-
-        private readonly Thread backwardThread;
-        private readonly bool disableTimeoutCheck;
-
-        private readonly object messageLock;
         private readonly int timeSyncPeriodUS;
-
         private readonly IBusController sysbus;
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO

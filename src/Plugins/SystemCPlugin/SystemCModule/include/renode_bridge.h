@@ -6,8 +6,11 @@
 //
 #pragma once
 
+#include <condition_variable>
 #include <memory>
 
+#include <mutex>
+#include <queue>
 #include <tlm>
 #include <tlm_utils/simple_initiator_socket.h>
 #include <tlm_utils/simple_target_socket.h>
@@ -193,6 +196,36 @@ struct dmi_message {
 };
 #pragma pack(pop)
 
+template <typename T>
+class BlockingCollection
+{
+    std::queue<T> queue_;
+    std::mutex mutex_;
+    std::condition_variable condvar_;
+
+    typedef std::lock_guard<std::mutex> lock;
+    typedef std::unique_lock<std::mutex> ulock;
+
+public:
+    void add(T const &val) {
+      lock l(mutex_);
+      bool wake = queue_.empty();
+      queue_.push(val);
+      // wake consumer if new element has been added
+      if (wake) condvar_.notify_one();
+    }
+
+    T take() {
+      ulock u(mutex_);
+      while (queue_.empty())
+        condvar_.wait(u);
+      // queue_ is non-empty and we have the lock
+      T retval = queue_.front();
+      queue_.pop();
+      return retval;
+    }
+};
+
 // ================================================================================
 // renode_bridge
 //
@@ -202,12 +235,15 @@ struct dmi_message {
 class renode_bridge : sc_core::sc_module {
 public:
   renode_bridge(sc_core::sc_module_name name, const char *address,
-                const char *port);
+                const char *port, bool native = false, std::string mach = "", std::string peri = "");
   ~renode_bridge();
 
   // Returns true if connection with Renode has been established, false otherwise.
   bool is_initialized() { return fw_connection_initialized; }
 
+  void handle_backward_response_from_native(renode_message message);
+  void handle_backward_response_dmi_from_native(dmi_message message);
+  void handle_forward_request_from_native(renode_message message);
 public:
   using renode_bus_target_socket =
       tlm::tlm_target_socket<RENODE_BUSWIDTH, tlm::tlm_base_protocol_types, 1,
@@ -307,7 +343,13 @@ private:
     uint8_t connection_idx;
   };
 
+  bool initialize_connection(renode_message *message, int64_t *out_max_desync_us);
   void forward_loop();
+  renode_message receive_backward_response();
+  dmi_message receive_backward_response_dmi();
+  renode_message receive_forward_request(bool *closed);
+  void send_backward_request(renode_message *message);
+  void send_forward_response(renode_message *message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void on_port_gpio();
@@ -344,6 +386,13 @@ private:
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
 
   bool fw_connection_initialized;
+  bool native;
+  std::string mach;
+  std::string peri;
+
+  BlockingCollection<renode_message> bw_response;
+  BlockingCollection<dmi_message> dmi_response;
+  BlockingCollection<renode_message> fw_request;
 };
 
 // ================================================================================
