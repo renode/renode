@@ -27,6 +27,7 @@ copy_windows_tests_scripts "..\\\\bin" RenodeWPF.dll
 # Create tar
 ARCHIVE_NAME="renode-$VERSION.multiplatform.zip"
 mkdir -p ../../output/packages
+rm -f ../../output/packages/$ARCHIVE_NAME
 zip -rq ../../output/packages/$ARCHIVE_NAME $DIR
 
 echo "Created a multiplatform package in output/packages/$ARCHIVE_NAME"

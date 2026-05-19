@@ -23,6 +23,7 @@ cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/tools/NativeInterface $DIR/tools
+rm -rf $DIR/tools/NativeInterface/example/build
 cp -r $BASE/src/Plugins/CoSimulationPlugin/IntegrationLibrary $DIR/plugins
 # Copy required headers into the package and adjust the include
 cp -r $BASE/src/Infrastructure/src/Emulator/Cores/renode/include/{renode_imports,map}.h $DIR/plugins/IntegrationLibrary/src
