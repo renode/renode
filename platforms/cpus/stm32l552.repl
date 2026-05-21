@@ -262,3 +262,6 @@ adc1: Analog.STM32L5_ADC @ sysbus 0x42028000
     dmaChannel: 5
     dmaPeripheral: dmamux
     IRQ->nvic@37
+
+iwdg: Timers.STM32_IndependentWatchdog  @ sysbus 0x40003000
+    frequency: 32000
