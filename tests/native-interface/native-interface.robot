@@ -48,11 +48,13 @@ Setup And Start NativeInterface
         ...                             -DUSER_RENODE_DIR\=${USER_RENODE_DIR}
         ...                             -DRENODE_CFG\=${RENODE_CFG}
         ...                             -B  ${BUILD_DIR}
+        ...                             -G  Unix Makefiles
         ...                             -S  ${EXAMPLE_SRC}
     ELSE
         ${r}=                           Run Process  cmake
         ...                             -DRENODE_CFG\=${RENODE_CFG}
         ...                             -B  ${BUILD_DIR}
+        ...                             -G  Unix Makefiles
         ...                             -S  ${EXAMPLE_SRC}
     END
     Should Be Equal As Integers     ${r.rc}  0  msg=cmake configure failed: ${r.stderr}
@@ -77,7 +79,7 @@ Stop NativeInterface And Teardown
 
 *** Test Cases ***
 NativeInterface Can Run VexRiscv
-    [Tags]                          skip_windows  basic-tests
+    [Tags]                          basic-tests
     [Timeout]                       1 minute
     NI.Execute Command              include @scripts/single-node/murax.resc
     NI.Create Terminal Tester       sysbus.uart
