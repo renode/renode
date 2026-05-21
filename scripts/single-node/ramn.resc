@@ -29,7 +29,11 @@ $bin= @https://dl.antmicro.com/projects/renode/ECUD.elf-s_2438796-cb40e76e43568e
 include @platforms/boards/ramn/BODY.repl
 """
 
+macro reset
+"""
 sysbus LoadELF $bin
+"""
+runMacro $reset
 
 python
 """
