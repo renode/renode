@@ -79,3 +79,25 @@ Should Init Screen on ECUA
     FOR     ${byte}     IN  @{RAMN_SPI_InitScreen_bytes}
         Wait For Log Entry  spi2.dummySpi: Data received: ${byte}
     END
+
+Registers Should Reset On Watchdog Reset
+    [Documentation]         Test that models Reset() properly reset registers
+
+    # The list of used devices is from capturing all peripheral accesses when running RAMN firmware.
+    ${Registers} =          Create Dictionary   adc1=${{ [(0x0, 0xC4), (0x308, 0x308)] }}
+    ...                                         dma2=${{ [(0x0,0xA4)] }}
+    ...                                         dmamux=${{ [(0x0,0x0), (0x80, 0x84), (0x100, 0x144)] }}
+    ...                                         fdcan1=${{ [(0x0,0x100)] }}
+    ...                                         gpioPortB=${{ [(0x0,0x28)] }}
+    ...                                         rng=${{ [(0x0,0x10)] }}
+    ...                                         spi2=${{ [(0x0,0x20)] }}
+    ...                                         iwdg=${{ [(0x0,0x10)] }}
+    ...                                         nvic=${{ [(0x0, 0x1C), (0x100, 0x400), (0xD00, 0xFA8)] }}
+    ...                                         timer1=${{ [(0x0, 0x50)] }}
+
+    Execute Command         include @scripts/multi-node/ramn.resc
+    &{Boot} =               Dump Devices Registers    ${Registers}
+    Execute Command         emulation RunFor "3s"
+    Trigger Watchdog Reset
+    &{Reset} =              Dump Devices Registers    ${Registers}
+    Devices Registers Dump Should Be Equal  ${Boot}     ${Reset}    "Boot"  "Reset"

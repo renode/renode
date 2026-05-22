@@ -195,3 +195,66 @@ Stop Profiler
         Terminate Process           ${PROFILER_PROCESS}
         Set Test Variable           ${PROFILER_PROCESS}  None
     END
+
+Dump Registers Range
+    [Tags]  robot:private
+    [Arguments]     ${Device}   ${End}  ${Start}=0
+    ${Dump}=        Create Dictionary
+
+    FOR     ${index}    IN RANGE    ${Start}    ${End}+1    4
+        ${RegValue}=    Execute Command     ${Device} ReadDoubleWord ${index}
+        ${RegValue}=    Remove String   ${RegValue}     \n   # Remove newlines to make diff output more readable
+        Set To Dictionary   ${Dump}     ${index}    ${RegValue}
+    END
+    RETURN  ${Dump}
+
+Dump Devices Registers
+    [Documentation]     Dump devices' registers values into a dictionary of dictionary
+    ...                 ``{'device':{reg_offset:reg_value}}`` from a dictionary of ``devices:list of
+    ...                 offset ranges``.
+    ...
+    ...                 Dumping registers when there is a gap in the model may work and simplify the
+    ...                 test case.
+    ...
+    ...                 Example:
+    ...                 | ${RegistersToDump} = | Create Dictionary      | adc1=${{ [(0x0, 0xC4), (0x308, 0x308)] }} |
+    ...                 | &{Dump} =            | Dump Devices Registers | ${RegistersToDump} |
+    ...
+    ...                 Please not the usage of inline python evaluation ``${{}}`` to keep tuples
+    ...                 instead of having strings.
+    [Arguments]     ${DevicesAndRanges}
+    ${Dump}=        Create Dictionary
+
+    FOR     ${Device}   ${Ranges}    IN  &{DevicesAndRanges}
+        FOR     ${Range}    IN  @{Ranges}
+            ${RegsDump}=    Dump Registers Range  ${Device}    ${Range}[1]    ${Range}[0]
+            Set To Dictionary   ${Dump}     ${Device}=${RegsDump}
+            Log Dictionary  ${Dump}
+        END
+    END
+    RETURN  ${Dump}
+
+Devices Registers Dump Should Be Equal
+    [Documentation]     Compare dumps returned by Dump Devices Registers.
+    [Arguments]         ${DumpA}    ${DumpB}    ${NameDumpA}=DumpA  ${NameDumpB}=DumpB
+
+    ${DevicesA}=    Get Dictionary Keys     ${DumpA}
+    ${DevicesB}=    Get Dictionary Keys     ${DumpB}
+
+    TRY
+        Dictionaries Should Be Equal    ${DumpA}    ${DumpB}
+    EXCEPT
+        # On error, printing the whole device:'registers_dump' dictionary entry is hard to read. So
+        # instead, let's compare device by device to print the first
+        FOR     ${device}   IN  @{DevicesA}
+            ${DeviceDumpA}=     Get From Dictionary     dictionary=${DumpA}     key=${device}
+            ${DeviceDumpB}=     Get From Dictionary     dictionary=${DumpB}     key=${device}
+            TRY
+                Dictionaries Should Be Equal    ${DeviceDumpA}     ${DeviceDumpB}
+            EXCEPT
+                CONTINUE
+            END
+        END
+        FAIL    ${NameDumpA} and ${NameDumpB} dumps differ, see logs of previous for loop for
+        ...     more details on which entries are different.
+    END
