@@ -375,7 +375,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var translationCPU = cpu as TranslationCPU;
                 if(translationCPU != null)
                 {
-                    translationCPU.OrderTranslationBlocksInvalidation(new IntPtr((int)startAddress), new IntPtr((int)endAddress));
+                    translationCPU.OrderTranslationBlocksInvalidation(checked((nint)startAddress), checked((nint)endAddress));
                 }
             }
         }
