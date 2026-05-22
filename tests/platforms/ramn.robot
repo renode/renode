@@ -1,5 +1,7 @@
 *** Test Cases ***
 Should Produce CAN Traffic
+    [Documentation]          Test data path ECU{B,C,D}'s CAN controller -> CAN hub
+
     Execute Command          include @scripts/multi-node/ramn.resc
     Create Log Tester        timeout=1
     Execute Command          logLevel 0 canHub
@@ -9,6 +11,9 @@ Should Produce CAN Traffic
     Wait For Log Entry       canHub: Received from ECUD
 
 Engine Key Should Affect Battery LED
+    [Documentation]         Test on ECUD that the data paths ADC -> DMA -> Memory and STM32 SPI ->
+    ...                     Led controller are working
+
     ${LEDHoldingTimeout}    Set Variable    2
 
     Execute Command         include @scripts/multi-node/ramn.resc
@@ -25,6 +30,8 @@ Engine Key Should Affect Battery LED
     AssertAndHoldLedState   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
 Should Init Screen on ECUA
+    [Documentation]         Test on ECUA that the data path Memory -> DMA -> SPI TX is working
+
     # Commands and data bytes sent by RAMN_SPI_InitScreen
     ${RAMN_SPI_InitScreen_bytes}    Set Variable  0x1  0x11  0x21  0x36  0x0  0x3A  0x55  0x2A  0x0
 ...                                               0xF0  0x0  0x0  0x2B  0x0  0xF0  0x0  0x0  0x13
