@@ -155,12 +155,18 @@ usdhc3: SD.NXP_uSDHC @ sysbus 0x30B60000
 
 wdog1: Timers.NXP_IMX_Watchdog @ sysbus 0x30280000
     IRQ -> gic@78
+    WDOG_RESET_B -> src@0
 
 wdog2: Timers.NXP_IMX_Watchdog @ sysbus 0x30290000
     IRQ -> gic@79
+    WDOG_RESET_B -> src@1
 
 wdog3: Timers.NXP_IMX_Watchdog @ sysbus 0x302A0000
     IRQ -> gic@10
+    WDOG_RESET_B -> src@2
+
+src: Miscellaneous.NXP_IMX8MP_SystemResetController @ sysbus 0x30390000
+    cpus: [cpu0, cpu1, cpu2, cpu3]
 
 anatop: Python.PythonPeripheral @ sysbus 0x30360000
     size: 0x1000
@@ -239,7 +245,6 @@ sysbus:
         Tag <0x30360000 0x10000> "ANA_PLL"
         Tag <0x30370000 0x10000> "SNVS_HP"
         Tag <0x30380000 0x10000> "CCM"
-        Tag <0x30390000 0x10000> "SRC"
         Tag <0x303B0000 0x10000> "SEMAPHORE1"
         Tag <0x303C0000 0x10000> "SEMAPHORE2"
         Tag <0x303D0000 0x10000> "RDC"
