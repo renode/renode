@@ -2,11 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>SystemCPlugin</AssemblyName>
-    <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>12.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <Import Project="$(PropertiesLocation)" />
   <ItemGroup>
     <PackageReference Include="System.ServiceModel.Duplex" Version="4.8.1" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.8.1" />

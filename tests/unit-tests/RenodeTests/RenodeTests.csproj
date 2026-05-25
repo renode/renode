@@ -5,10 +5,8 @@
     <AssemblyName>RenodeTests</AssemblyName>
     <OutputPath>..\..\..\output\bin\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <PropertiesLocation>..\..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>12.0</LangVersion>
   </PropertyGroup>
-  <Import Project="$(PropertiesLocation)" />
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />

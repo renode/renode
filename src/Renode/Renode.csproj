@@ -10,7 +10,6 @@
     <AssemblyName>Renode</AssemblyName>
     <RollForward>Major</RollForward>
     <ApplicationIcon>..\..\lib\resources\images\windows_setup\renode.ico</ApplicationIcon>
-    <PropertiesLocation>..\..\output\properties.csproj</PropertiesLocation>
     <LangVersion>12.0</LangVersion>
     <UseWPF Condition=" $(RequireWPF) == 'true' ">true</UseWPF>
   </PropertyGroup>
@@ -23,7 +22,6 @@
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
     <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" />
   </ItemGroup>
-  <Import Project="$(PropertiesLocation)" />
   <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
   </PropertyGroup>

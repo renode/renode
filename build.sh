@@ -42,7 +42,6 @@ EXTERNAL_LIB_ARCH=""
 TFM="net8.0"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
-CUSTOM_PROP=
 RID="linux-x64"
 MULTIPLATFORM=false
 HOST_ARCH=
@@ -50,7 +49,7 @@ HOST_ARCH=
 CMAKE_COMMON="${RENODE_EXTRA_CMAKE_ARGS:-}"
 
 function print_help() {
-  echo "Usage: $0 [-cdvspntm] [-b properties-file.csproj] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [--ui] [-- <ARGS>]"
+  echo "Usage: $0 [-cdvspntm] [--no-gui] [--skip-fetch] [--profile-build] [--external-lib-only] [--tlib-export-compile-commands] [--external-lib-arch <arch>] [--host-arch i386|aarch64] [--source-package] [--ui] [-- <ARGS>]"
   echo
   echo "-c                                clean instead of building"
   echo "-d                                build Debug configuration"
@@ -79,7 +78,7 @@ function print_help() {
   echo "<ARGS>                            arguments to pass to the dotnet build system"
 }
 
-while getopts "cdvpnstmb:B:F:-:" opt
+while getopts "cdvpnstmB:F:-:" opt
 do
   case $opt in
     c)
@@ -105,9 +104,6 @@ do
       ;;
     s)
       UPDATE_SUBMODULES=true
-      ;;
-    b)
-      CUSTOM_PROP=$OPTARG
       ;;
     B)
       RID=$OPTARG
@@ -360,24 +356,6 @@ OUT_BIN_DIR="$(get_path "output/bin/${CONFIGURATION}")"
 
 # Copy properties file according to the running OS
 mkdir -p "$OUTPUT_DIRECTORY"
-if [ -n "${CUSTOM_PROP}" ]; then
-    PROP_FILE=$CUSTOM_PROP
-else
-    if $ON_OSX
-    then
-      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/osx-properties.csproj"
-    elif $ON_LINUX
-    then
-      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/linux-properties.csproj"
-    else
-      PROP_FILE="${CURRENT_PATH:=.}/src/Infrastructure/src/Emulator/Cores/windows-properties.csproj"
-    fi
-fi
-
-PROP_PATH="$OUTPUT_DIRECTORY/properties.csproj"
-if [ ! -f "$PROP_PATH" ] || ! cmp -s "$PROP_FILE" "$PROP_PATH"; then
-    cp "$PROP_FILE" "$PROP_PATH"
-fi
 
 CORES_PATH="$ROOT_PATH/src/Infrastructure/src/Emulator/Cores"
 UI_PATH="$ROOT_PATH/src/UI"
