@@ -1,5 +1,7 @@
 *** Variables ***
 ${URI}                              @https://dl.antmicro.com/projects/renode
+
+# CMSIS-DSP tests
 ${BAYES_ELF}                        ${URI}/arm_bayes_example-s_533068-1b83380598c43c98e36196b0d3b6e5557c2a0b35
 ${CLASS_MARKS_ELF}                  ${URI}/arm_class_marks_example-s_534536-d70b3e3e734a39133c11413daae2b0993d357032
 ${FIR_ELF}                          ${URI}/arm_fir_example-s_530876-a16180ffd6bddff383adbd5fdb38b32e7ebb89be
@@ -13,24 +15,32 @@ ${DOTPRODUCT_ELF}                   ${URI}/arm_dotproduct_example-s_503872-e7f6b
 ${CONVOLUTION_ELF}                  ${URI}/arm_convolution_example-s_534496-2cf2f4427c7e3b9b05e5bf2046ef453946722e71
 ${FFT_BIN_ELF}                      ${URI}/arm_fft_bin_example-s_664164-c93c480209b4dd212db6760d93c357f0b14e47e9
 ${GRAPHIC_EQUALIZER_ELF}            ${URI}/arm_graphic_equalizer_example-s_539792-75bce13a23aef301a426d7536b07de84757c532f
+
+# CMSIS-NN tests
+${KERNEL_CONV_ELF}                  ${URI}/kernel_conv_test-s_371464-22edfff823c862cf5a34ad89975454dc11fe1fb9
+${MICRO_SPEECH_ELF}                 ${URI}/micro_speech_test-s_685184-543e347f1d32ab906621d65318ba5cd9529e4a89
+
 ${REPL}                             SEPARATOR=\n
 ...                                 """
 ...                                 cpu: CPU.CortexM @ sysbus { cpuType: "cortex-m85"; nvic: nvic }
 ...                                 nvic: IRQControllers.NVIC @ sysbus 0xE000E000 { -> cpu@0 }
-...                                 rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x40000 }
-...                                 ram: Memory.MappedMemory @ sysbus 0x20000000 { size: 0x100000 }
+...                                 rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x20000000 }
+...                                 sram: Memory.MappedMemory @ sysbus 0x20000000 { size: 0x20000000 }
+...                                 ram: Memory.MappedMemory @ sysbus 0x60000000 { size: 0x20000000 }
 ...                                 serial: UART.TrivialUart @ sysbus 0xA8000000
+...                                 serial2: UART.CMSDK_APB_UART @ sysbus 0x49303000
 ...                                 """
 
 *** Keywords ***
 Create Machine
     [Arguments]                     ${ELF}
+    ...                             ${tester}=sysbus.serial
 
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${REPL}
     Execute Command                 sysbus LoadELF ${ELF}
 
-    Create Terminal Tester          sysbus.serial
+    Create Terminal Tester          ${tester}
 
 *** Test Cases ***
 Should Pass Matrix Test
@@ -113,3 +123,15 @@ Should Pass Graphic Equalizer Test
     Start Emulation
 
     Wait For Line On Uart           SUCCESS
+
+Should Pass Kernel Convolution Test
+    Create Machine                  ${KERNEL_CONV_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass Micro Speech Test
+    Create Machine                  ${MICRO_SPEECH_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
