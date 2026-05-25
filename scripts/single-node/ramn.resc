@@ -7,25 +7,25 @@ include @platforms/boards/ramn.repl
 
 if `str_contains $global.name "ECUA"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUA.elf-s_2734852-5896caa99eb55997686c9235ab5fa1e6587c2180
+$bin= @https://dl.antmicro.com/projects/renode/ECUA-watchdog.elf-s_2739268-b034321e255eae4970567b0d80cbc762cd3c47d0
 include @platforms/boards/ramn/GATEWAY.repl
 """
 
 if `str_contains $global.name "ECUB"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUB.elf-s_2423936-4be3c992fca8a9795ba5630628ceef50a568f23f
+$bin= @https://dl.antmicro.com/projects/renode/ECUB-watchdog.elf-s_2428360-dd5a9fbe172715cc6147563812cb4a66512863cf
 include @platforms/boards/ramn/CHASSIS.repl
 """
 
 if `str_contains $global.name "ECUC"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUC.elf-s_2416512-f9fab061973e8720fcf4882bd192fe5f2a34f4a0
+$bin= @https://dl.antmicro.com/projects/renode/ECUC-watchdog.elf-s_2420944-e5a465d4581050ce2670fb7c4f2bcbde1710441f
 include @platforms/boards/ramn/POWERTRAIN.repl
 """
 
 if `str_contains $global.name "ECUD"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUD.elf-s_2438796-cb40e76e43568eaa82bb74f9c3b7caf804f34449
+$bin= @https://dl.antmicro.com/projects/renode/ECUD-watchdog.elf-s_2443216-be22c20b5133398f62842ff9edcd94f58be5de46
 include @platforms/boards/ramn/BODY.repl
 """
 
