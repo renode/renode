@@ -211,17 +211,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
             {
-                var wasPaused = cpu.IsPaused;
                 cpu.Reset();
                 nvic.Reset();
                 dwt?.Reset();
-                if(!wasPaused)
-                {
-                    // Ensure cpu is resumed after implicit pause on cpu reset.
-                    // Halt condition is preserved.
-                    cpu.Resume();
-                }
-            });
+                // Ensure cpu is resumed after implicit pause on cpu reset.
+                // Halt condition is preserved.
+                cpu.Resume();
+            }, true);
         }
 
         private bool vtorInitialized = false;
