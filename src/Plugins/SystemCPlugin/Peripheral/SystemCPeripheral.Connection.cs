@@ -88,6 +88,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
             fwResponse.Add(message);
         }
 
+        public void HandleForwardResponseDmiFromNative(DMINativeMessage message)
+        {
+            dmiResponse.Add(message);
+        }
+
         public void Dispose()
         {
             if(useNative)
@@ -510,12 +515,79 @@ namespace Antmicro.Renode.Peripherals.SystemC
             return true;
         }
 
+        private bool ReceiveForwardResponseDmiNative(out DMINativeMessage message)
+        {
+            message = new DMINativeMessage();
+            try
+            {
+                message = dmiResponse.Take();
+            }
+            catch(InvalidOperationException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool ReceiveForwardResponseDmiSocket(out DMINativeMessage message)
+        {
+            message = new DMINativeMessage();
+
+            var messageSize = Marshal.SizeOf(typeof(DMINativeMessage));
+            var recvBytes = new byte[messageSize];
+
+            var nbytes = forwardSocket?.Receive(recvBytes, 0, messageSize, SocketFlags.None);
+            if(nbytes == 0)
+            {
+                this.Log(LogLevel.Info, "Forward connection to SystemC process closed.");
+                return false;
+            }
+
+            message.Deserialize(recvBytes);
+            return true;
+        }
+
+        private bool ReceiveForwardResponseDmi(out DMINativeMessage message)
+        {
+            message = new DMINativeMessage();
+            if(useNative)
+            {
+                if(!NativeConfigured)
+                {
+                    this.ErrorLog("Trying to receive fw response dmi using unconfigured native interface");
+                    return false;
+                }
+                if(!ReceiveForwardResponseDmiNative(out message))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if(!ReceiveForwardResponseDmiSocket(out message))
+                {
+                    return false;
+                }
+            }
+            this.Log(LogLevel.Noisy, "Received fw response dmi. Action: {0} | StartAddress: {1:X} | EndAddress: {2:X} | Pointer: {3:X}", message.ActionId, message.StartAddress, message.EndAddress, message.Pointer);
+            return true;
+        }
+
         private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
         {
             lock(messageLock)
             {
                 SendForwardRequest(request);
                 return ReceiveForwardResponse(out responseMessage);
+            }
+        }
+
+        private bool SendDmiRequest(RenodeMessage request, out DMINativeMessage dmiNativeMessage)
+        {
+            lock(messageLock)
+            {
+                SendForwardRequest(request);
+                return ReceiveForwardResponseDmi(out dmiNativeMessage);
             }
         }
 
@@ -532,6 +604,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private readonly Thread backwardThread;
         private readonly BlockingCollection<RenodeMessage> bwRequest = new BlockingCollection<RenodeMessage>(boundedCapacity: 1);
         private readonly BlockingCollection<RenodeMessage> fwResponse = new BlockingCollection<RenodeMessage>(boundedCapacity: 1);
+        private readonly BlockingCollection<DMINativeMessage> dmiResponse = new BlockingCollection<DMINativeMessage>(boundedCapacity: 1);
         private readonly bool disableTimeoutCheck;
         private readonly object messageLock;
     }

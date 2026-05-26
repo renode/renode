@@ -17,6 +17,8 @@ using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
 
+using Range = Antmicro.Renode.Core.Range;
+
 namespace Antmicro.Renode.Peripherals.SystemC
 {
     public unsafe partial class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral
@@ -68,7 +70,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public void WriteRegister(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
         {
-            WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex);
+            WriteInternal(RenodeAction.WriteRegister, dataLength, offset, value, connectionIndex, out _);
         }
 
         public void Reset()
@@ -95,17 +97,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex)
         {
-            Write(dataLength, offset, value, connectionIndex);
+            Write(dataLength, offset, value, connectionIndex, skipDmi: true);
         }
 
         public ulong ReadDirect(byte dataLength, long offset, byte connectionIndex)
         {
-            return Read(dataLength, offset, connectionIndex);
+            return Read(dataLength, offset, connectionIndex, skipDmi: true);
         }
 
         public ulong ReadRegister(byte dataLength, long offset, byte connectionIndex = 0)
         {
-            return ReadInternal(RenodeAction.ReadRegister, dataLength, offset, connectionIndex);
+            return ReadInternal(RenodeAction.ReadRegister, dataLength, offset, connectionIndex, out _);
         }
 
         public byte ReadByte(long offset)
@@ -156,15 +158,40 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public IReadOnlyDictionary<int, IGPIO> Connections { get; }
 
-        protected readonly IMachine machine;
-
-        private ulong Read(byte dataLength, long offset, byte connectionIndex = 0)
+        public bool DisableNativeDmi
         {
-            return ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex);
+            get => disableNativeDmi;
+            set
+            {
+                if(disableNativeDmi == value)
+                {
+                    return;
+                }
+                disableNativeDmi = value;
+                if(!value)
+                {
+                    // Nothing to do on DMI disabled -> enabled transition.
+                    return;
+                }
+                InvalidateDmiRegion(0, ulong.MaxValue);
+            }
         }
 
-        private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex)
+        protected readonly IMachine machine;
+
+        private ulong Read(byte dataLength, long offset, byte connectionIndex = 0, bool skipDmi = false)
         {
+            var value = ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex, out var dmiAllowed);
+            if(!skipDmi && dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
+            return value;
+        }
+
+        private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex, out bool dmiAllowed)
+        {
+            dmiAllowed = false;
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
             if(!SendRequest(request, out var response))
             {
@@ -173,17 +200,23 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
 
             TryToSkipTransactionTime(response.Address);
+            dmiAllowed = response.ConnectionIndex == DmiSupported;
 
             return response.Payload;
         }
 
-        private void Write(byte dataLength, long offset, ulong value, byte connectionIndex = 0)
+        private void Write(byte dataLength, long offset, ulong value, byte connectionIndex = 0, bool skipDmi = false)
         {
-            WriteInternal(RenodeAction.Write, dataLength, offset, value, connectionIndex);
+            WriteInternal(RenodeAction.Write, dataLength, offset, value, connectionIndex, out var dmiAllowed);
+            if(!skipDmi && dmiAllowed)
+            {
+                TryMapDmiRegion((ulong)offset);
+            }
         }
 
-        private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex)
+        private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex, out bool dmiAllowed)
         {
+            dmiAllowed = false;
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
             if(!SendRequest(request, out var response))
             {
@@ -192,6 +225,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
 
             TryToSkipTransactionTime(response.Address);
+            dmiAllowed = response.ConnectionIndex == DmiSupported;
         }
 
         private ulong GetCurrentVirtualTimeUS()
@@ -358,7 +392,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     SendBackwardResponseDmi(responseDMIMessage);
                     break;
                 case RenodeAction.InvalidateTBs:
-                    TryToInvalidateTBs(message.Address, message.Payload);
+                    var startAddress = message.Address;
+                    var endAddress = message.Payload;
+                    if(useNative)
+                    {
+                        InvalidateDmiRegion(startAddress, endAddress);
+                    }
+                    else
+                    {
+                        TryToInvalidateTBs(startAddress, endAddress);
+                    }
                     SendBackwardResponse(message);
                     break;
                 default:
@@ -396,12 +439,233 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        /// <summary>
+        /// Corresponds to get_direct_mem_ptr on SystemC side.
+        /// After receiving a native pointer, it attempts to register it for use by TranslationCPU.
+        /// </summary>
+        /// <param name="offset">address in target's address space</param>
+        private void TryMapDmiRegion(ulong offset)
+        {
+            if(disableNativeDmi)
+            {
+                return;
+            }
+
+            if(!useNative || !NativeConfigured)
+            {
+                return;
+            }
+
+            if(!sysbus.TryGetCurrentCPU(out var cpu))
+            {
+                return;
+            }
+
+            foreach(var registrationPoint in sysbus.GetRegistrationPoints(this))
+            {
+                if(registrationPoint.Initiator != cpu)
+                {
+                    // Memory is mapped only when SystemC peripheral has a single initiator which is the current cpu.
+                    // Otherwise unmapping memory in multicore machine would be ambigous and we could accidentaly unmap
+                    // memory not owned by SystemC from the other core.
+                    this.WarningLog("Peripheral must have unambiguous cpu initiator to support mapping of DMI region, try registering it for cpu context");
+                    return;
+                }
+            }
+
+            // RenodeMessage.dataLength field for DMIReq indicates the kind of DMI access being requested.
+            var request = new RenodeMessage(RenodeAction.DMIReq, (byte)TlmCommand.Read, 0, offset, 0);
+            if(!SendDmiRequest(request, out var dmiNativeMessage))
+            {
+                this.ErrorLog("Unable to receive response to DMI request");
+                return;
+            }
+
+            var dmiAccess = dmiNativeMessage.DmiAccess;
+            var startAddress = dmiNativeMessage.StartAddress;
+            var endAddress = dmiNativeMessage.EndAddress;
+            var mappedAddress = checked((nint)dmiNativeMessage.Pointer);
+
+            if(dmiAccess == DmiAccess.None || mappedAddress == IntPtr.Zero || endAddress < startAddress)
+            {
+                return;
+            }
+
+            if(!dmiAccess.HasFlag(DmiAccess.Read))
+            {
+                // The requested access was not granted to the initiator.
+                this.WarningLog("DMI read access wasn't granted to the initiator, memory won't be mapped");
+                return;
+            }
+
+            if(dmiAccess != DmiAccess.ReadWrite)
+            {
+                // The target is allowed to promote Read/Write request to Read+Write.
+                // If it hasn't done so, we can't tell whether it's on purpose
+                // to ensure the other direction goes via blocking transport.
+                // Currently we don't support memory mapping for read or write only,
+                // so to ensure both access types are supported, we issue another DMI request
+                // with the other access type.
+                request = new RenodeMessage(RenodeAction.DMIReq, (byte)TlmCommand.Write, 0, offset, 0);
+                if(!SendDmiRequest(request, out dmiNativeMessage))
+                {
+                    this.ErrorLog("Unable to receive response to DMI request");
+                    return;
+                }
+
+                // At SystemC level, a target wishing to deny read and write access to the DMI region
+                // should set the granted access type to DMI_ACCESS_READ_WRITE, not to DMI_ACCESS_NONE.
+                // The rejection status is returned by get_direct_mem_ptr.
+                // When access is denied, Renode SystemC bridge always sends back DMI_ACCESS_NONE.
+                var dmiAccessWrite = dmiNativeMessage.DmiAccess;
+                var startAddressWrite = dmiNativeMessage.StartAddress;
+                var endAddressWrite = dmiNativeMessage.EndAddress;
+                var mappedAddressWrite = checked((nint)dmiNativeMessage.Pointer);
+
+                if(!dmiAccessWrite.HasFlag(DmiAccess.Write))
+                {
+                    this.WarningLog("DMI write access wasn't granted to the initiator, memory won't be mapped");
+                    return;
+                }
+
+                if(startAddress != startAddressWrite || endAddress != endAddressWrite || mappedAddress != mappedAddressWrite)
+                {
+                    this.WarningLog("Inconsistency between DMI response for read and write access request to address 0x{0:X}, memory won't be mapped", offset);
+                    return;
+                }
+            }
+
+            // Read+Write DMI access was confirmed, proceed to memory mapping.
+            var range = startAddress.To(endAddress);
+            if(!range.Contains(offset))
+            {
+                this.WarningLog("SystemC returned a DMI region {0} that does not contain requested offset 0x{1:X}.", range, offset);
+                return;
+            }
+
+            lock(mappedDmiRanges)
+            {
+                if(mappedDmiRanges.ContainsWholeRange(range))
+                {
+                    return;
+                }
+
+                var rangesToMap = new List<Range> { range };
+                foreach(var existingRange in mappedDmiRanges)
+                {
+                    rangesToMap = rangesToMap.SelectMany(x => x.Subtract(existingRange)).ToList();
+                    if(!rangesToMap.Any())
+                    {
+                        return;
+                    }
+                }
+
+                mappedDmiRanges.Add(range);
+                foreach(var rangeToMap in rangesToMap)
+                {
+                    var pointerOffset = (long)(rangeToMap.StartAddress - startAddress);
+                    var rangeMappedAddress = new IntPtr(mappedAddress + pointerOffset);
+                    sysbus.MapMemory(new DmiMappedSegment(rangeToMap.StartAddress, rangeToMap.Size, rangeMappedAddress), this, context: cpu as ICPUWithMappedMemory);
+                }
+            }
+
+            this.DebugLog("Mapped SystemC DMI region {0}", range);
+        }
+
+        private void InvalidateDmiRegion(ulong startAddress, ulong endAddress)
+        {
+            this.DebugLog("Requested invalidation of SystemC DMI region <0x{0:X}, 0x{1:X}>", startAddress, endAddress);
+            if(startAddress == 0 && endAddress == ulong.MaxValue)
+            {
+                // <0, ulong.MaxValue> ranges aren't currently supported
+                endAddress -= 1;
+            }
+
+            ICPUWithMappedMemory cpu = null;
+            var busRanges = new List<BusRangeRegistration>();
+            foreach(var context in sysbus.GetAllContextKeys())
+            {
+                foreach(var registration in sysbus.GetRegisteredPeripherals(context))
+                {
+                    if(registration.Peripheral != this)
+                    {
+                        continue;
+                    }
+                    var initiator = registration.RegistrationPoint.Initiator;
+                    if(initiator == null)
+                    {
+                        this.WarningLog("Peripheral must have unambiguous cpu initiator to support mapping of DMI region, try registering it for cpu context");
+                        return;
+                    }
+                    else
+                    {
+                        if(cpu != null && initiator != cpu)
+                        {
+                            this.WarningLog("Peripheral must have unambiguous cpu initiator to support mapping of DMI region, try registering it for cpu context");
+                            return;
+                        }
+                        if(initiator is ICPUWithMappedMemory cpuWithMappedMemory)
+                        {
+                            cpu = cpuWithMappedMemory;
+                            busRanges.Add(registration.RegistrationPoint);
+                        }
+                    }
+                }
+            }
+
+            if(!(cpu is TranslationCPU translationCpu))
+            {
+                return;
+            }
+
+            lock(mappedDmiRanges)
+            {
+                var range = startAddress.To(endAddress);
+                var intersectingRanges = mappedDmiRanges.Select(collectionRange => collectionRange.Intersect(range)).Where(r => r.HasValue);
+                foreach(var intersectingRange in intersectingRanges)
+                {
+                    foreach(var busRange in busRanges)
+                    {
+                        var invalidatedRange = new Range(checked(busRange.Range.StartAddress + intersectingRange.Value.StartAddress), intersectingRange.Value.Size);
+                        sysbus.UnmapMemory(invalidatedRange, context: cpu);
+                        translationCpu.OrderTranslationBlocksInvalidation(checked((nint)invalidatedRange.StartAddress), checked((nint)invalidatedRange.EndAddress));
+                        this.DebugLog("Unmapped SystemC DMI region {0}", invalidatedRange);
+                    }
+                }
+                mappedDmiRanges.Remove(range);
+            }
+        }
+
+        private bool disableNativeDmi;
         private readonly LimitTimer timesyncTimer;
         private readonly Dictionary<int, IDirectAccessPeripheral> directAccessPeripherals;
+        private readonly MinimalRangesCollection mappedDmiRanges = new MinimalRangesCollection();
         private readonly int timeSyncPeriodUS;
         private readonly IBusController sysbus;
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
         private const int NumberOfGPIOPins = 1024;
+        private const int DmiSupported = 1;
+
+        private sealed class DmiMappedSegment : IMappedSegment
+        {
+            public DmiMappedSegment(ulong startingOffset, ulong size, IntPtr pointer)
+            {
+                StartingOffset = startingOffset;
+                Size = size;
+                Pointer = pointer;
+            }
+
+            public void Touch()
+            {
+                // intentionally left blank
+            }
+
+            public IntPtr Pointer { get; }
+
+            public ulong StartingOffset { get; }
+
+            public ulong Size { get; }
+        }
     }
 }

@@ -104,13 +104,16 @@ enum renode_action : uint8_t {
   //     Identical to the request message.
   RESET = 5,
 
-  // Socket: backward
+  // Socket: backward (memory mapped file), forward (native integration)
   // Request:
-  //     data_length: ignored
+  //     data_length:
+  //       backward: ignored 
+  //       forward: access type (read access = 0, write access = 1)
   //     address: address in target's address space
   //     payload: ignored
   //     to write connection_index: 0 for SystemBus
-  // Response is a dmi_message.
+  // Response is a dmi_message for backward socket (memory mapped file).
+  // Response is a dmi_native_message for forward socket (native integration).
   DMIREQ = 6,
 
   // Socket: backward
@@ -193,6 +196,17 @@ struct dmi_message {
   uint32_t mmf_path_length;
   char mmf_path[4096]; // A common value for PATH_MAX, hardcoded here for consistency if it is different on the host
   uint64_t mapped_address;
+};
+
+// WARNING: This structure is part of a binary socket protocol between C and C#.
+// Any change MUST be mirrored in struct DMINativeMessage in SystemCPeripheral.cs
+// or communication will not work correctly.
+struct dmi_native_message {
+  renode_action action;
+  uint8_t dmi_access;
+  uint64_t start_address;
+  uint64_t end_address;
+  uint64_t pointer;
 };
 #pragma pack(pop)
 
@@ -350,6 +364,8 @@ private:
   renode_message receive_forward_request(bool *closed);
   void send_backward_request(renode_message *message);
   void send_forward_response(renode_message *message);
+  void send_forward_response_dmi(dmi_native_message *message);
+  void handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void on_port_gpio();

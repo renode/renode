@@ -21,6 +21,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         void HandleForwardResponseFromNative(RenodeMessage message);
 
+        void HandleForwardResponseDmiFromNative(DMINativeMessage message);
+
         bool TryInitNativeConnection();
 
         void TeardownNativeConnection();

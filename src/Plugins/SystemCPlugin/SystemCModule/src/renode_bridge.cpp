@@ -232,6 +232,16 @@ void renode_bridge::send_forward_response(renode_message *message) {
   }
 }
 
+void renode_bridge::send_forward_response_dmi(dmi_native_message *message) {
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_send_forward_response_dmi(*message, mach.c_str(), peri.c_str());
+#endif
+  } else {
+    forward_connection->Send((char *)message, sizeof(dmi_native_message));
+  }
+}
+
 SC_HAS_PROCESS(renode_bridge);
 renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
                              const char *port, bool native, std::string mach, std::string peri)
@@ -413,6 +423,9 @@ void renode_bridge::forward_loop() {
     case renode_action::READ_REGISTER: {
       handle_read(register_initiator_socket, message, data);
     } break;
+    case renode_action::DMIREQ: {
+      handle_get_direct_mem_ptr(*initiator_socket, message);
+    } break;
     case renode_action::TIMESYNC: {
       // Renode drives the simulation time. This module never leaves the delta
       // cycle loop until a TIMESYNC with future time is received. It then waits
@@ -484,6 +497,7 @@ void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_mess
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
   message.payload = *((uint64_t *)data);
+  message.connection_index = (uint8_t)payload->is_dmi_allowed();
   send_forward_response(&message);
   wait(sc_core::SC_ZERO_TIME);
 }
@@ -497,8 +511,32 @@ void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_mes
 
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
+  message.connection_index = (uint8_t)payload->is_dmi_allowed();
   send_forward_response(&message);
 
+  wait(sc_core::SC_ZERO_TIME);
+}
+
+void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message) {
+  if (message.data_length == tlm::tlm_command::TLM_READ_COMMAND) {
+    message.action = renode_action::READ;
+  } else if (message.data_length == tlm::tlm_command::TLM_WRITE_COMMAND) {
+    message.action = renode_action::WRITE;
+  }
+  initialize_payload(payload.get(), &message, NULL);
+  tlm::tlm_dmi dmi_data = {};
+  dmi_native_message dmi_message = {};
+  
+  // get_direct_mem_ptr returns true if it was able to provide a DMI pointer, or false otherwise
+  bool success = socket->get_direct_mem_ptr(*payload, dmi_data);
+
+  dmi_message.action = renode_action::DMIREQ;
+  dmi_message.dmi_access = success ? (uint8_t)dmi_data.get_granted_access() : 0;
+  dmi_message.start_address = dmi_data.get_start_address();
+  dmi_message.end_address = dmi_data.get_end_address();
+  dmi_message.pointer = reinterpret_cast<uintptr_t>(dmi_data.get_dmi_ptr());
+
+  send_forward_response_dmi(&dmi_message);
   wait(sc_core::SC_ZERO_TIME);
 }
 
@@ -736,9 +774,7 @@ tlm::tlm_sync_enum renode_bridge::initiator_bw_handler::nb_transport_bw(
 
 void renode_bridge::initiator_bw_handler::invalidate_direct_mem_ptr(
     sc_dt::uint64 start_range, sc_dt::uint64 end_range) {
-  fprintf(stderr, "[ERROR] invalidate_direct_mem_ptr not implemented for "
-                  "initiator_bw_handler - this should never be called, "
-                  "as Renode integration only uses b_transfer.\n");
+  bridge->invalidate_translation_blocks(start_range, end_range);
 }
 
 // ================================================================================
