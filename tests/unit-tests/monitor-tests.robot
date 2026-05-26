@@ -1,5 +1,6 @@
 *** Settings ***
 Library                         DateTime
+Library                         String
 
 *** Variables ***
 ${AUTOCOMPLETION_RESC}          scripts/single-node/sam4s.resc
@@ -225,3 +226,9 @@ Should Fail to Find Unix-only Method on Windows
     ${file}=                      Allocate Temporary File
     Run Keyword And Expect Error  *does not provide a field, method or property CreateUartPtyTerminal*
     ...   Execute Command  emulation CreateUartPtyTerminal "abc" "${file}" forceCreate=true
+
+Should Stat File via Python
+    ${file}=            Allocate Temporary File
+    ${file_escaped}=    Replace String  ${file}  \\  \\\\
+    Execute Command     python "import os"
+    Execute Command     python "os.stat('${file_escaped}')"
