@@ -515,8 +515,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             lock(messageLock)
             {
                 SendForwardRequest(request);
-                var ok = ReceiveForwardResponse(out responseMessage);
-                return ok;
+                return ReceiveForwardResponse(out responseMessage);
             }
         }
 
