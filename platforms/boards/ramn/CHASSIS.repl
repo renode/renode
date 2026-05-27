@@ -1,2 +1,12 @@
-// Empty CHASSIS expansion stub
-// Should eventually contain the steering wheel and lighting switch
+wheel: Analog.Potentiometer @ adc1 6
+    minVolt: 0
+    maxVolt: 3.3
+
+parkingBrake: Analog.NamedDiscreteValues @ adc1 9
+    namedVoltValues: {"off": 0; "on": 3.3}
+
+lightingSwitch: Analog.NamedDiscreteValues @ adc1 10
+    namedVoltValues: {"pos1": 2.475; "1": 2.475;
+                      "pos2": 1.65; "2": 1.65;
+                      "pos3": 0.825; "3": 0.825;
+                      "pos4": 0; "4": 0}

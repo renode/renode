@@ -76,6 +76,7 @@ Brake Should Affect Brake LED
     Execute Command             include @scripts/multi-node/ramn.resc
     Create LED Tester           sysbus.spi2.ledController.parkingBrake  machine=ECUD
     Execute Command             adc1.brake SetPercentage 0              machine=ECUC
+    Execute Command             adc1.parkingBrake CurrentState "off"    machine=ECUB
     # Wait 5 seconds for the LEDs to turn off after the startup sequence
     Execute Command             emulation RunFor "5s"
     Assert And Hold Led State   false   timeoutAssert=0     timeoutHold=${LEDHoldingTimeout}
