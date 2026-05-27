@@ -78,7 +78,7 @@ sramBank2: Memory.MappedMemory @ sysbus 0x70000000
 sramBank1: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x10000000
 
-adc3: Analog.STM32F0_ADC @ sysbus 0x58026000
+adc3: Analog.STM32H7_ADC @ sysbus 0x58026000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     -> exti@75
@@ -163,7 +163,7 @@ dma2d: DMA.STM32DMA2D @ sysbus 0x52001000
 ltdc: Video.STM32LTDC @ sysbus 0x50001000
     -> nvic@88
 
-adcM1S2: Analog.STM32F0_ADC @ sysbus 0x40022000
+adcM1S2: Analog.STM32H7_ADC @ sysbus 0x40022000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     -> nvic@18
