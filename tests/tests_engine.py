@@ -626,7 +626,7 @@ def run():
     max_segments = segment.subset.max_segments 
     segment_test_file_paths = segment.test_file_paths
     groups_segment  = segment.groups
-    total_number_of_suites = len(segment_test_file_paths)
+    total_number_of_suites = len(segment_test_file_paths) * options.iteration_count
 
     print_suite_files(segment)
 
