@@ -18,3 +18,6 @@ connector Connect sysbus.fdcan1 canHub
 set global.name "ECUD"
 include @scripts/single-node/ramn.resc 
 connector Connect sysbus.fdcan1 canHub
+
+# Syncing more freqently improves performance in this senario
+emulation SetGlobalQuantum "0.00001"
