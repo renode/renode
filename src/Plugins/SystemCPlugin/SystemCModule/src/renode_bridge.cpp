@@ -407,10 +407,10 @@ void renode_bridge::forward_loop() {
     case renode_action::READ: {
       handle_read(*initiator_socket, message, data);
     } break;
-     case renode_action::WRITE_REGISTER: {
+    case renode_action::WRITE_REGISTER: {
       handle_write(register_initiator_socket, message, data);
     } break;
-     case renode_action::READ_REGISTER: {
+    case renode_action::READ_REGISTER: {
       handle_read(register_initiator_socket, message, data);
     } break;
     case renode_action::TIMESYNC: {
