@@ -356,3 +356,24 @@ Should Passthrough Characters Via Uart Hub
         Send Key To Uart                    ${ch}  testerId=${tester-1}
         Wait For Bytes On Uart              ${hexch}  testerId=${tester-0}
     END
+
+UART Hub Should Flip Bits
+    Execute Command                     i @scripts/multi-node/uart_hub_nucleo_h753.resc
+
+    ${tester-0}=                        Create Terminal Tester  sysbus.usart3  machine=m0
+    ${tester-1}=                        Create Terminal Tester  sysbus.usart3  machine=m1
+
+    Execute Command                     emulation SetSeed 3333
+    Execute Command                     uartHub BitFlipRate 1
+    Execute Command                     uartHub MaximumFlippedBits 2
+
+    # Wait for the sample to boot
+    Execute Command                     emulation RunFor "0.01"
+
+    # dotnet does not guarantee that the algorithm used to generate random numbers won't change between
+    # major versions: https://learn.microsoft.com/en-us/dotnet/api/system.random?view=net-8.0#notes-to-callers
+    # so even with a set seed we can't expect the bits to be flipped in the exact same way, so instead
+    # the test just check if a different message appeared on the second UART to what was transmitted from
+    # the first UART.
+    Write To Uart                       Hello, world!  testerId=${tester-0}
+    Should Not Be On Uart               Hello, world!  testerId=${tester-1}  includeUnfinishedLine=true  timeout=1
