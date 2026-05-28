@@ -712,6 +712,30 @@ mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollecti
         }
 
         [Test]
+        public void ShouldHandleListOfUnorderedReferences()
+        {
+            var source = @"
+cpu1: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+
+mockPeripheral: Antmicro.Renode.Tests.UnitTests.Mocks.MockPeripheralWithCollectionAttributes @ sysbus  <0, 1>
+    mockCpuList: [cpu1, cpu2]
+
+cpu2: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
+    ";
+
+            ProcessSource(source);
+            MockCPU cpu1, cpu2;
+            MockPeripheralWithCollectionAttributes mockPeripheral;
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu1", out cpu1));
+            Assert.IsTrue(machine.TryGetByName("sysbus.cpu2", out cpu2));
+            Assert.IsTrue(machine.TryGetByName("sysbus.mockPeripheral", out mockPeripheral));
+
+            Assert.AreEqual(2, mockPeripheral.MockCpuList.Count);
+            Assert.AreSame(cpu1, mockPeripheral.MockCpuList[0]);
+            Assert.AreSame(cpu2, mockPeripheral.MockCpuList[1]);
+        }
+
+        [Test]
         public void ShouldHandleManyMultiplexedMultiDestinationInterrupts()
         {
             var source = @"

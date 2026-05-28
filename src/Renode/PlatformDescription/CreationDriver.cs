@@ -456,6 +456,12 @@ namespace Antmicro.Renode.PlatformDescription
                     {
                         maybeReferenceValue = ctorRegistrationInfo.Register;
                     }
+                    else if(creationNotRegistration)
+                    {
+                        // NOTE: At this point it can only be ReferenceValue as part of
+                        //       internal structure, such as ListValue.
+                        maybeReferenceValue = ctorElement as ReferenceValue;
+                    }
                     else
                     {
                         return;
@@ -485,8 +491,8 @@ namespace Antmicro.Renode.PlatformDescription
                     var isNotProperty = (objAsPropertyOrAttribute == null) || !objAsPropertyOrAttribute.IsPropertyAttribute;
 
                     var skipType = creationNotRegistration
-                        ? obj is RegistrationInfo
-                        : obj is IrqAttribute || obj is ConstructorOrPropertyAttribute;
+                        ? obj is RegistrationInfo || obj is IrqAttribute
+                        : obj is ConstructorOrPropertyAttribute;
                     var isNotOfSkippedType = !(isChildOfEntry && skipType);
 
                     return isNotProperty && isNotOfSkippedType;
