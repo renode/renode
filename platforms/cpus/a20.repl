@@ -68,7 +68,9 @@ timer: Timers.ARM_GenericTimer @ cpu
     frequency: 24000000
     VirtualTimerIRQ -> gic#0@1
 
-uartSemihosting: UART.SemihostingUart @ cpu
+semihosting: CPU.SemihostingHandler @ cpu
+
+uart: UART.SemihostingUart @ semihosting
 
 sunxiMmc0: SD.SunxiMMC @ sysbus 0x1C0F000
     -> gic@32
