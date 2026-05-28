@@ -168,6 +168,12 @@ wdog3: Timers.NXP_IMX_Watchdog @ sysbus 0x302A0000
 src: Miscellaneous.NXP_IMX8MP_SystemResetController @ sysbus 0x30390000
     cpus: [cpu0, cpu1, cpu2, cpu3]
 
+flexcan1: CAN.S32K3XX_FlexCAN @ sysbus 0x308C0000
+    IRQ -> gic@142
+
+flexcan2: CAN.S32K3XX_FlexCAN @ sysbus 0x308D0000
+    IRQ -> gic@144
+
 anatop: Python.PythonPeripheral @ sysbus 0x30360000
     size: 0x1000
     initable: true

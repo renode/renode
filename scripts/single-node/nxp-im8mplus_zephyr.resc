@@ -10,14 +10,19 @@ showAnalyzer uart4
 
 ca53Cluster ForEach IsHalted True
 
-# CPU requires these to be set when running Zephyr RTOS without a bootloader
-gic DisabledSecurity true
-gic AffinityRoutingEnabledSecure true
-
 macro reset
 """
+    # CPU requires these to be set when running Zephyr RTOS without a bootloader
+    gic DisabledSecurity true
+    gic AffinityRoutingEnabledSecure true
+
     sysbus LoadELF $bin
     cpu0 IsHalted False
+
+    # Disable the power-on Watchdog Timer. On hardware this is handled by the bootrom
+    wdog1 WriteWord 0x8 0x0
+    wdog2 WriteWord 0x8 0x0
+    wdog3 WriteWord 0x8 0x0
 """
 
 runMacro $reset
