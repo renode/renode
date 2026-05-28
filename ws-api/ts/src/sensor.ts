@@ -14,6 +14,7 @@ export enum SensorType {
   Humidity = 'humidity',
   Pressure = 'pressure',
   MagneticFluxDensity = 'magnetic-flux-density',
+  Illuminance = 'illuminance',
 }
 
 export function SensorTypeFromString(value: string): SensorType | undefined {
@@ -34,6 +35,7 @@ function sensorConstructorForType(
     [SensorType.Humidity]: HumidityValue,
     [SensorType.Pressure]: PressureValue,
     [SensorType.MagneticFluxDensity]: MagneticFluxDensityValue,
+    [SensorType.Illuminance]: IlluminanceValue,
   };
 
   const ctor = mapping[type];
@@ -228,5 +230,16 @@ export class MagneticFluxDensityValue extends Vec3SensorValue {
   ): AccelerationValue {
     if (pretty) sample = vec3Map(sample, val => Math.round(val));
     return new this(sample, 'nT');
+  }
+}
+
+export class IlluminanceValue extends ScalarSensorValue {
+  get value() {
+    return this.sample / 1e3;
+  }
+
+  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+    if (pretty) sample = Math.round(sample * 1e3);
+    return new this(sample, 'lx');
   }
 }

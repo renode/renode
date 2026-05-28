@@ -48,7 +48,8 @@ namespace Antmicro.Renode.WebSockets.Misc
             { "temperature", typeof(ITemperatureSensor) },
             { "voltage", typeof(IADC) },
             { "humidity", typeof(IHumiditySensor) },
-            { "magnetic-flux-density", typeof(IMagneticSensor) }
+            { "magnetic-flux-density", typeof(IMagneticSensor) },
+            { "illuminance", typeof(IIlluminanceSensor) }
         };
 
         private static readonly Dictionary<string, Func<ISensor, object>> SensorDataGetter = new Dictionary<string, Func<ISensor, object>>
@@ -56,7 +57,8 @@ namespace Antmicro.Renode.WebSockets.Misc
             { "temperature", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as ITemperatureSensor).Temperature) * 1e3) },
             { "voltage", (sensor) => (sensor as IADC).GetADCValue(0) },
             { "humidity", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as IHumiditySensor).Humidity) * 1e3) },
-            { "magnetic-flux-density", (sensor) => GetMagneticSensorData(sensor as IMagneticSensor) }
+            { "magnetic-flux-density", (sensor) => GetMagneticSensorData(sensor as IMagneticSensor) },
+            { "illuminance", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as IIlluminanceSensor).Illuminance) * 1e3) }
         };
 
         private static readonly Dictionary<string, Action<ISensor, JToken>> SensorDataSetter = new Dictionary<string, Action<ISensor, JToken>>
@@ -64,7 +66,8 @@ namespace Antmicro.Renode.WebSockets.Misc
             { "temperature", (sensor, data) =>  SetTemperature(sensor as ITemperatureSensor, data.ToObject<int>()) },
             { "voltage", (sensor, data) => SetVoltage(sensor as IADC, data.ToObject<uint>()) },
             { "humidity", (sensor, data) => SetHumidity(sensor as IHumiditySensor, data.ToObject<int>()) },
-            { "magnetic-flux-density", (sensor, data) => SetMagneticSensorData(sensor as IMagneticSensor, data.ToObject<MagneticSensorData>()) }
+            { "magnetic-flux-density", (sensor, data) => SetMagneticSensorData(sensor as IMagneticSensor, data.ToObject<MagneticSensorData>()) },
+            { "illuminance", (sensor, data) => SetIlluminance(sensor as IIlluminanceSensor, data.ToObject<int>()) }
         };
 
         private static MagneticSensorData GetMagneticSensorData(IMagneticSensor magneticSensor)
@@ -97,6 +100,11 @@ namespace Antmicro.Renode.WebSockets.Misc
             sensor.MagneticFluxDensityX = data.X;
             sensor.MagneticFluxDensityY = data.Y;
             sensor.MagneticFluxDensityZ = data.Z;
+        }
+
+        private static void SetIlluminance(IIlluminanceSensor sensor, int value)
+        {
+            sensor.Illuminance = Convert.ToDecimal(value) / 1e3M;
         }
 
         private static string[] GetSensorTypes(ISensor sensor)

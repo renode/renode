@@ -19,6 +19,7 @@ SAMPLE_TYPE = Enum(Int16ul,
     PRESSURE              = 0x0007,
     MAGNETIC_FLUX_DENSITY = 0x0008,
     BINARY_DATA           = 0x0009,
+    ILLUMINANCE           = 0x000a,
 
     CUSTOM                = 0xF000,
 )
@@ -81,6 +82,7 @@ data_block_sample = lambda sample_type: Switch(sample_type, {
         "z" / Int32sl,
     ),
     "BINARY_DATA": blob,
+    "ILLUMINANCE": Int32ul,
 })
 
 data_block_sample_arbitrary = lambda sample_type: Struct(
