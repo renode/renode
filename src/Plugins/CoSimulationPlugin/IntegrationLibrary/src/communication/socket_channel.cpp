@@ -53,6 +53,27 @@ Protocol* SocketCommunicationChannel::receive()
     return message;
 }
 
+bool SocketCommunicationChannel::tryReceive(Protocol* message)
+{
+    ASocket::Socket fd = mainSocket->GetSocketDescriptor();
+    if (fd < 0) return false;
+
+    // Use select() directly with an explicit zero timeval.
+    // SelectSocket(fd, 0) means "no timeout" (blocks forever) per the library API,
+    // so we cannot use it here.
+    fd_set rset;
+    struct timeval tval = {0, 0};
+    FD_ZERO(&rset);
+    FD_SET(fd, &rset);
+
+    int res = select(fd + 1, &rset, nullptr, nullptr, &tval);
+    if (res <= 0 || !FD_ISSET(fd, &rset))
+        return false;
+
+    mainSocket->CTCPClient::Receive((char *)message, sizeof(Protocol));
+    return true;
+}
+
 void SocketCommunicationChannel::sendMain(const Protocol message)
 {
     try {
