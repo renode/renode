@@ -184,20 +184,23 @@ eth1: Python.PythonPeripheral @ sysbus 0x30BE0000
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
-i2c1: Python.PythonPeripheral @ sysbus 0x30a20000
-    size: 0x1000
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
+i2c1: I2C.NXP_IMX_I2C @ sysbus 0x30A20000
+    IRQ -> gic@35
 
-i2c2: Python.PythonPeripheral @ sysbus 0x30a30000
-    size: 0x1000
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
+i2c2: I2C.NXP_IMX_I2C @ sysbus 0x30A30000
+    IRQ -> gic@36
 
-i2c3: Python.PythonPeripheral @ sysbus 0x30a40000
-    size: 0x1000
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
+i2c3: I2C.NXP_IMX_I2C @ sysbus 0x30A40000
+    IRQ -> gic@37
+
+i2c4: I2C.NXP_IMX_I2C @ sysbus 0x30A50000
+    IRQ -> gic@38
+
+i2c5: I2C.NXP_IMX_I2C @ sysbus 0x30AD0000
+    IRQ -> gic@76
+
+i2c6: I2C.NXP_IMX_I2C @ sysbus 0x30AE0000
+    IRQ -> gic@77
 
 apis1_gpc: Python.PythonPeripheral @ sysbus 0x303a0000
     size: 0x10000
@@ -277,16 +280,10 @@ sysbus:
         Tag <0x308D0000 0x10000> "FlexCAN2"
         Tag <0x30900000 0x10000> "CAAM 256KB"
         Tag <0x309F0000 0x10000> "AIPS3_Configuration"
-        Tag <0x30A20000 0x10000> "I2C1"
-        Tag <0x30A30000 0x10000> "I2C2"
-        Tag <0x30A40000 0x10000> "I2C3"
-        Tag <0x30A50000 0x10000> "I2C4"
         Tag <0x30A80000 0x10000> "IRQ_STEER"
         Tag <0x30AA0000 0x10000> "MU_1_A"
         Tag <0x30AB0000 0x10000> "MU_1_B"
         Tag <0x30AC0000 0x10000> "SEMAPHORE_HS"
-        Tag <0x30AD0000 0x10000> "I2C5"
-        Tag <0x30AE0000 0x10000> "I2C6"
         Tag <0x30BB0000 0x10000> "QSPI"
         Tag <0x30BD0000 0x10000> "SDMA1"
         Tag <0x30BE0000 0x10000> "ENET1"

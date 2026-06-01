@@ -1,1 +1,7 @@
 using "platforms/cpus/nxp-mimx8ml.repl"
+
+pmic: Mocks.DummyI2CSlave @ i2c1 0x25 // pca9450
+gpio_exp1: Mocks.DummyI2CSlave @ i2c1 0x20 // pca6416
+gpio_exp2: Mocks.DummyI2CSlave @ i2c1 0x21 // pca6416
+codec: Mocks.DummyI2CSlave @ i2c3 0x1a // wm8962
+
