@@ -170,6 +170,16 @@ enum renode_action : uint8_t {
   // Response:
   //     Identical to the request message.
   INIT_NON_SECURE_VTOR = 11,
+  
+  // Socket: backward
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: start_address
+  //     payload: end_address
+  // Response:
+  //     Identical to the request message.
+  INVALIDATE_DMI_RANGE = 12,
 };
 
 #pragma pack(push, 1)
@@ -315,6 +325,11 @@ public:
   // is necessary when using DMI (get_direct_mem_ptr) to modify memory
   // containing CPU instructions.
   void invalidate_translation_blocks(uint64_t start_address, uint64_t end_address);
+
+  // Informs Renode that direct memory pointer is no longer valid.
+  // It means there is no longer a direct path to perform memory access
+  // and initiator should issue regular transactions.
+  void invalidate_dmi_range(uint64_t start_address, uint64_t end_address);
 
 private:
   struct initiator_bw_handler: tlm::tlm_bw_transport_if<> {

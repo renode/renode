@@ -489,6 +489,17 @@ void renode_bridge::invalidate_translation_blocks(uint64_t start_address, uint64
     receive_backward_response();
 }
 
+void renode_bridge::invalidate_dmi_range(uint64_t start_address, uint64_t end_address) {
+  renode_message message = {};
+  message.action = renode_action::INVALIDATE_DMI_RANGE;
+  message.address = start_address;
+  message.payload = end_address;
+
+  send_backward_request(&message);
+  // Response is ignored.
+  receive_backward_response();
+}
+
 void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
   initialize_payload(payload.get(), &message, data);
 
@@ -774,7 +785,7 @@ tlm::tlm_sync_enum renode_bridge::initiator_bw_handler::nb_transport_bw(
 
 void renode_bridge::initiator_bw_handler::invalidate_direct_mem_ptr(
     sc_dt::uint64 start_range, sc_dt::uint64 end_range) {
-  bridge->invalidate_translation_blocks(start_range, end_range);
+  bridge->invalidate_dmi_range(start_range, end_range);
 }
 
 // ================================================================================

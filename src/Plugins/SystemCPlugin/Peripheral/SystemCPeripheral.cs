@@ -392,16 +392,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     SendBackwardResponseDmi(responseDMIMessage);
                     break;
                 case RenodeAction.InvalidateTBs:
-                    var startAddress = message.Address;
-                    var endAddress = message.Payload;
-                    if(useNative)
-                    {
-                        InvalidateDmiRegion(startAddress, endAddress);
-                    }
-                    else
-                    {
-                        TryToInvalidateTBs(startAddress, endAddress);
-                    }
+                    TryToInvalidateTBs(message.Address, message.Payload);
+                    SendBackwardResponse(message);
+                    break;
+                case RenodeAction.InvalidateDmiRange:
+                    InvalidateDmiRegion(message.Address, message.Payload);
                     SendBackwardResponse(message);
                     break;
                 default:
