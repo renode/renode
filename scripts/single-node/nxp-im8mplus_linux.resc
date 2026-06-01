@@ -1,0 +1,82 @@
+:name: i.MX 8M Plus Linux
+:description: This script runs Linux on NXP i.MX 8M Plus
+
+$name?="frdm_imx8mp"
+using sysbus
+mach create $name
+
+set plat """
+using "platforms/cpus/nxp-mimx8ml.repl"
+
+memory_ddr_cortexA_cluster:
+    size: 0x100000000
+
+gpt1:
+    frequency: 24000000
+
+gpt2:
+    frequency: 24000000
+
+gpt3:
+    frequency: 24000000
+
+gpt4:
+    frequency: 24000000
+
+gpt5:
+    frequency: 24000000
+
+gpt6:
+    frequency: 24000000
+"""
+
+machine LoadPlatformDescriptionFromString $plat
+
+using sysbus.ca53Cluster
+
+$uboot_elf=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
+$uboot_dtb=@https://dl.antmicro.com/projects/renode/imx8mp-frdm.dtb-s_83584-a112d75a6de330d9bdd682c90e656491c2bd3c4e
+$bl31_elf=@https://dl.antmicro.com/projects/renode/bl31.elf-s_67984-0399ce1fd2cc1be77a20338f8a47e02467287ef0
+$sd_img=@https://dl.antmicro.com/projects/renode/sd.img-s_268435456-225df93a765e1938b8b54336b0ed9792e27dbb76
+
+# Spoof i.MX8MP Boot ROM at 0x980
+# https://github.com/nxp-imx/uboot-imx/blob/99518e6/arch/arm/mach-imx/romapi.c#L44
+# Point g_rom_api->query_boot_infor (at offset +0x10) with our stub at 0x1000.
+sysbus WriteQuadWord 0x990 0x1000 cpu0
+
+# Fake query_boot_infor(info_type=w0, info=x1, xor=w2):
+# *info = 0x20000 (boot_type = BT_DEV_TYPE_MMC (0x2), boot_instance = 0x0)
+# w2 holds the unused `xor` arg on entry; we clobber it as a scratch reg.
+cpu0 AssembleBlock 0x1000 """
+  movz w2, #2, lsl #16;   // w2 = 0x20000
+  str  w2, [x1];          // *info = 0x20000
+  movz w0, #0xf0;         // return ROM_API_OKAY (0xF0)
+  ret
+"""
+
+# GPIO2[12] must read 0: usdhc2 cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>, LOW = card present
+sysbus Tag <0x30210000 0x10000> "GPIO2-SD_CARD_PRESENT" 0x00000000
+
+showAnalyzer uart2
+
+machine SdCardFromFile $sd_img usdhc2 0x10000000 False "sd-external-sd3.0-4bit"
+
+macro reset
+"""
+    sysbus LoadELF $uboot_elf
+    sysbus LoadBinary $uboot_dtb `sysbus GetSymbolAddress "_end"`
+    sysbus LoadELF $bl31_elf
+
+    ca53Cluster ForEach EnableUbootMode
+    ca53Cluster ForEach IsHalted true
+    # cpu0 is unhalted to start U-Boot; remaining cores are released by PSCI
+    cpu0 IsHalted false
+
+    # Disable the power-on Watchdog Timer. On hardware this is handled by the bootrom
+    wdog1 WriteWord 0x8 0x0
+    wdog2 WriteWord 0x8 0x0
+    wdog3 WriteWord 0x8 0x0
+"""
+
+runMacro $reset
+
