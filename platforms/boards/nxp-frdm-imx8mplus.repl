@@ -5,3 +5,6 @@ gpio_exp1: Mocks.DummyI2CSlave @ i2c1 0x20 // pca6416
 gpio_exp2: Mocks.DummyI2CSlave @ i2c1 0x21 // pca6416
 codec: Mocks.DummyI2CSlave @ i2c3 0x1a // wm8962
 
+sysbus:
+    init add:
+        Tag <0x30350440 0x4> "OCOTP_TESTER3" 0x00000500 // 1800 MHz Speed grade

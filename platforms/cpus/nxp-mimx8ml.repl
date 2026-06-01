@@ -174,11 +174,6 @@ flexcan1: CAN.S32K3XX_FlexCAN @ sysbus 0x308C0000
 flexcan2: CAN.S32K3XX_FlexCAN @ sysbus 0x308D0000
     IRQ -> gic@144
 
-anatop: Python.PythonPeripheral @ sysbus 0x30360000
-    size: 0x1000
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
 eth1: Python.PythonPeripheral @ sysbus 0x30BE0000
     size: 0x1000
     initable: true
@@ -251,14 +246,18 @@ sysbus:
         // AIPS
         Tag <0x301F0000 0x10000> "AIPS1_Configuration"
         Tag <0x30260000 0x10000> "TMU (ANA_TSENSOR)"
-        Tag <0x30260020 0x4> "TMU_TRITSR" 0xC0200020 silent=true // Silence temperature polling
+        Tag <0x30260020 0x4> "TMU_TRITSR" 0xC0200020 silent=true       // Silence temperature polling
         Tag <0x30270000 0x10000> "ANA_OSC"
         Tag <0x30330000 0x10000> "IOMUXC"
         Tag <0x30340000 0x10000> "IOMUXC_GPR"
         Tag <0x30350000 0x10000> "OCOTP_CTRL"
-        Tag <0x30360000 0x10000> "ANA_PLL"
+        Tag <0x30360000 0x10000> "ANA_PLL" 0xFFFFFFFF
+        Tag <0x30360084 0x4> "ARM_PLL_GNRL_CTL" 0x80000A00 silent=true // PLL locked, enabled, 24M ref
+        Tag <0x30360088 0x4> "ARM_PLL_DIV_CTL" 0x000C8021 silent=true  // PLL = 1200 MHz
+        Tag <0x30360800 0x4> "DIGPROG" 0x00824311 silent=true          // SoC ID = i.MX8MP rev 1.1
         Tag <0x30370000 0x10000> "SNVS_HP"
         Tag <0x30380000 0x10000> "CCM"
+        Tag <0x30389880 0x4> "CCM_CORE_SEL" 0x01000000 silent=true     // A53 core clk = ARM_PLL
         Tag <0x303B0000 0x10000> "SEMAPHORE1"
         Tag <0x303C0000 0x10000> "SEMAPHORE2"
         Tag <0x303D0000 0x10000> "RDC"
