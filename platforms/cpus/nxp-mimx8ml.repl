@@ -221,15 +221,19 @@ sysbus:
         Tag <0x30c00000 0x00400000> "AIPS-5"
         Tag <0x32700000 0x00100000> "NOC"
         Tag <0x32c00000 0x00400000> "AIPS-4"
+        Tag <0x33000000 0x00008000> "APBH DMA"
         Tag <0x33008000 0x00008000> "QSPI TX Buffers"
         Tag <0x33800000 0x00400000> "PCIE1"
         Tag <0x34000000 0x04000000> "QSPI RX Buffers"
         Tag <0x38000000 0x00008000> "GPU3D"
         Tag <0x38008000 0x00008000> "GPU2D"
-        Tag <0x38100000 0x00010000> "USB1" 0xFFFFFFFF
-        Tag <0x38200000 0x00010000> "USB2" 0xFFFFFFFF
+        Tag <0x38100000 0x00100000> "USB1" 0xFFFFFFFF
+        Tag <0x38200000 0x00100000> "USB2" 0xFFFFFFFF
         Tag <0x38300000 0x00010000> "VPU_G1"
         Tag <0x38310000 0x00010000> "VPU_G2"
+        Tag <0x38320000 0x00010000> "VPU_VC8000E"
+        Tag <0x38330000 0x00010000> "VPU BLK_CTRL"
+        Tag <0x38340000 0x00010000> "VPU"
         Tag <0x38500000 0x00200000> "NPU"
         Tag <0x3B000000 0x01000000> "Audio DSP"
         Tag <0x3C000000 0x01000000> "DDR PHY"
@@ -244,6 +248,7 @@ sysbus:
         // AIPS
         Tag <0x301F0000 0x10000> "AIPS1_Configuration"
         Tag <0x30260000 0x10000> "TMU (ANA_TSENSOR)"
+        Tag <0x30260020 0x4> "TMU_TRITSR" 0xC0200020 silent=true // Silence temperature polling
         Tag <0x30270000 0x10000> "ANA_OSC"
         Tag <0x30330000 0x10000> "IOMUXC"
         Tag <0x30340000 0x10000> "IOMUXC_GPR"
