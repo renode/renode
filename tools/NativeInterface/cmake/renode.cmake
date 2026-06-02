@@ -7,9 +7,9 @@
 #  RENODE_ROOT     - fallback for renode_root if USER_RENODE_DIR is not set
 #
 # Supported file layouts:
-#  Package:          <renode_root>/bin/platform-lib/<RID>/librenode.so                (extracted package)
-#  Portable package: <renode_root>/platform-lib/<RID>/librenode.so
-#  Source tree:      <renode_root>/output/bin/<CFG>/platform-lib/<RID>/librenode.so   (after ./build.sh --shared)
+#  Package:          <renode_root>/bin/platform-lib/<RID>/librenode.<so|dylib|dll>                (extracted package)
+#  Portable package: <renode_root>/platform-lib/<RID>/librenode.<so|dylib|dll>
+#  Source tree:      <renode_root>/output/bin/<CFG>/platform-lib/<RID>/librenode.<so|dylib|dll>   (after ./build.sh --shared)
 
 if(DEFINED USER_RENODE_DIR)
     set(renode_root "${USER_RENODE_DIR}")
@@ -77,14 +77,25 @@ endif()
 set(renode_platformlib_suffix "platform-lib/${RENODE_RID}")
 
 # Search package layouts (installed package bin/, portable root) then source tree layout (output/bin/<CFG>/)
-find_library(LIBRENODE_LIBRARY
-    NAMES renode
-    PATHS
-        "${renode_root}/bin/${renode_platformlib_suffix}"
-        "${renode_root}/${renode_platformlib_suffix}"
-        "${renode_root}/output/bin/${RENODE_CFG}/${renode_platformlib_suffix}"
-    NO_DEFAULT_PATH
+set(renode_platformlib_paths
+    "${renode_root}/bin/${renode_platformlib_suffix}"
+    "${renode_root}/${renode_platformlib_suffix}"
+    "${renode_root}/output/bin/${RENODE_CFG}/${renode_platformlib_suffix}"
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    find_file(LIBRENODE_LIBRARY
+        NAMES librenode.dll
+        PATHS ${renode_platformlib_paths}
+        NO_DEFAULT_PATH
+    )
+else()
+    find_library(LIBRENODE_LIBRARY
+        NAMES renode
+        PATHS ${renode_platformlib_paths}
+        NO_DEFAULT_PATH
+    )
+endif()
 
 if(LIBRENODE_LIBRARY)
     get_filename_component(librenode_dir "${LIBRENODE_LIBRARY}" DIRECTORY)
@@ -102,6 +113,42 @@ if(NOT LIBRENODE_LIBRARY OR NOT LIBRENODE_INCLUDE_DIR)
 endif()
 
 message(STATUS "Found librenode: ${LIBRENODE_LIBRARY}")
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(NOT CMAKE_DLLTOOL)
+        message(FATAL_ERROR "CMAKE_DLLTOOL is not set, cannot generate librenode import library")
+    endif()
+
+    set(librenode_def "${CMAKE_CURRENT_LIST_DIR}/librenode.def")
+    set(LIBRENODE_IMPLIB "${CMAKE_CURRENT_BINARY_DIR}/librenode.dll.a")
+    set(librenode_patch_implib "${CMAKE_CURRENT_LIST_DIR}/patch-import-library.sh")
+
+    # dlltool --dllname strips the path from any provided name, even though linking against a library with an
+    # absolute path works perfectly fine (and is exactly what we want, to mirror the runpath behavior on Unix).
+    # To work around this, we generate an import library with a dummy name of the same length as the real one,
+    # then patch the generated import library to replace the dummy name with the real absolute path.
+    string(LENGTH "${LIBRENODE_LIBRARY}" librenode_library_length)
+    string(RANDOM LENGTH ${librenode_library_length} ALPHABET "X" librenode_import_placeholder)
+
+    execute_process(
+        COMMAND "${CMAKE_DLLTOOL}" "--dllname" "${librenode_import_placeholder}" "--input-def" "${librenode_def}" "--output-lib" "${LIBRENODE_IMPLIB}"
+        RESULT_VARIABLE librenode_call_result
+    )
+    if(NOT librenode_call_result EQUAL 0)
+        message(FATAL_ERROR "Failed to generate librenode import library")
+    endif()
+    execute_process(
+        COMMAND bash "${librenode_patch_implib}" "${LIBRENODE_IMPLIB}" "${librenode_import_placeholder}" "${LIBRENODE_LIBRARY}"
+        RESULT_VARIABLE librenode_call_result
+    )
+    if(NOT librenode_call_result EQUAL 0)
+        message(FATAL_ERROR "Failed to patch librenode import library")
+    endif()
+    message(STATUS "Generated librenode import library: ${LIBRENODE_IMPLIB}")
+    unset(librenode_def)
+    unset(librenode_call_result)
+    unset(librenode_import_placeholder)
+    unset(librenode_patch_implib)
+endif()
 
 if(NOT TARGET renode::renode)
     enable_language(CXX)
@@ -113,6 +160,11 @@ if(NOT TARGET renode::renode)
         INTERFACE_LINK_DIRECTORIES "${librenode_dir}"
         INTERFACE_LINK_LIBRARIES "${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}"  # link stdc++ / c++
     )
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set_target_properties(renode::renode PROPERTIES
+            IMPORTED_IMPLIB "${LIBRENODE_IMPLIB}"
+        )
+    endif()
 endif()
 
 if(NOT TARGET renode)
@@ -121,3 +173,5 @@ endif()
 
 unset(renode_root)
 unset(librenode_dir)
+unset(renode_platformlib_suffix)
+unset(renode_platformlib_paths)
