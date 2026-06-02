@@ -18,7 +18,7 @@ class ni_library:
         return result.get("return", "")
 
     def connect(self, port):
-        self._proxy = xmlrpc.client.ServerProxy(f"http://127.0.0.1:{port}/")
+        self._proxy = xmlrpc.client.ServerProxy(f"http://localhost:{port}/")
         # Test the connection by fetching keyword names
         self._proxy.get_keyword_names()
 
