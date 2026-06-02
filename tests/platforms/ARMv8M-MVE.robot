@@ -19,6 +19,11 @@ ${GRAPHIC_EQUALIZER_ELF}            ${URI}/arm_graphic_equalizer_example-s_53979
 # CMSIS-NN tests
 ${KERNEL_CONV_ELF}                  ${URI}/kernel_conv_test-s_371464-22edfff823c862cf5a34ad89975454dc11fe1fb9
 ${MICRO_SPEECH_ELF}                 ${URI}/micro_speech_test-s_685184-543e347f1d32ab906621d65318ba5cd9529e4a89
+${HELLO_WORLD_ELF}                  ${URI}/hello_world-s_380692-00eea85b7ef02900c53a169af88dd9b33f9718f4
+${DTLN_ELF}                         ${URI}/dtln_test-s_772716-399c808ff12935e0aadbc0d4c5d15e69765974d4
+${KERNEL_FULLY_CONNECTED_ELF}       ${URI}/kernel_fully_connected_test-s_344984-95287571bfd79c90b26309fe65a8f676d1d2bbbe
+${NETWORK_TESTER_ELF}               ${URI}/network_tester_test-s_396896-330b81c4b622456198fe798c97128053e290ba65
+${PERSON_DETECTION_ELF}             ${URI}/person_detection_test-s_848156-5be61361b18e65dba0f9136485c4db5d54a0666b
 
 ${REPL}                             SEPARATOR=\n
 ...                                 """
@@ -132,6 +137,36 @@ Should Pass Kernel Convolution Test
 
 Should Pass Micro Speech Test
     Create Machine                  ${MICRO_SPEECH_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass Hello World Test
+    Create Machine                  ${HELLO_WORLD_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass DTLN Test
+    Create Machine                  ${DTLN_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass Kernel Fully Connected Test
+    Create Machine                  ${KERNEL_FULLY_CONNECTED_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass Network Tester Test
+    Create Machine                  ${NETWORK_TESTER_ELF}  sysbus.serial2
+    Start Emulation
+
+    Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
+
+Should Pass Person Detection Test
+    Create Machine                  ${PERSON_DETECTION_ELF}  sysbus.serial2
     Start Emulation
 
     Wait For Line On Uart           ~~~ALL TESTS PASSED~~~
