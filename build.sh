@@ -608,6 +608,8 @@ if $SHARED
 then
     if ! $ON_WINDOWS
     then
+        echo "Building DNNE package..."
+        dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/third-party/DNNE/src/create_package.proj")" -c "$CONFIGURATION"
         echo "Building librenode..."
         dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID"
         copy_native_interface_runtime_config "$OUT_BIN_DIR" "$OUT_BIN_DIR/platform-lib/$RID"

@@ -44,3 +44,6 @@
 [submodule "src/UI"]
 	path = src/UI
 	url = https://github.com/antmicro/renode-ui.git
+[submodule "tools/NativeInterface/third-party/DNNE"]
+	path = tools/NativeInterface/third-party/DNNE
+	url = https://github.com/antmicro/DNNE

@@ -17,7 +17,8 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
-    <DnnePackageVersion>2.1.0</DnnePackageVersion>
+    <RestoreAdditionalProjectSources>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', 'third-party', 'DNNE', 'src', 'dnne-pkg', 'bin', '$(Configuration)'))</RestoreAdditionalProjectSources>
+    <DnnePackageVersion>2.1.2-renode.1</DnnePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true' And $(OS) != 'Windows_NT'">
@@ -37,18 +38,8 @@
     <DnneRuntimeIdentifier Condition="'$(_DnneOSPrefix)' != ''">$(_DnneOSPrefix)-$(_DnneArch)</DnneRuntimeIdentifier>
   </PropertyGroup>
 
-  <Target Name="PatchDnnePlatform" BeforeTargets="DnneBuildNativeExports" Condition="'$(DesignTimeBuild)' != 'true' And $(OS) != 'Windows_NT'">
-    <PropertyGroup>
-      <PatchedDnnePlatformSourcePath>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'dnne-platform'))</PatchedDnnePlatformSourcePath>
-      <OriginalDnnePlatformSourcePath>$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'dnne', '$(DnnePackageVersion)', 'tools', 'platform'))</OriginalDnnePlatformSourcePath>
-      <DnnePlatformSourcePath>$(PatchedDnnePlatformSourcePath)</DnnePlatformSourcePath>
-    </PropertyGroup>
-    <MakeDir Directories="$(PatchedDnnePlatformSourcePath)" />
-    <Copy SourceFiles="$(OriginalDnnePlatformSourcePath)/platform.c;$(OriginalDnnePlatformSourcePath)/dnne.h" DestinationFolder="$(PatchedDnnePlatformSourcePath)" />
-    <Exec Command="patch -s -d '$(PatchedDnnePlatformSourcePath)' -p0 -i '$(MSBuildThisFileDirectory)platform.c.patch'" />
-  </Target>
-
   <ItemGroup>
+    <Compile Remove="DNNE/**/*.cs" />
     <PackageReference Include="DNNE" Version="$(DnnePackageVersion)" />
   </ItemGroup>
 
