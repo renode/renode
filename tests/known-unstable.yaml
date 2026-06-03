@@ -1,0 +1,8 @@
+# This is an example of the format used by renode-test's --unstable argument.
+
+# Test cases can be omitted to treat all cases as unstable.
+- tests/peripherals/AK09918.robot
+
+# You can also specify which test cases are unstable.
+- tests/example.robot:
+    - Should Print Help

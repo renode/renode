@@ -27,6 +27,7 @@ import xml.etree.ElementTree as ET
 import urllib.parse
 
 from tests_engine import TestResult, TestTag, CRITICAL_TEST
+from unstable_tests import KnownUnstableSuite, filter_unstable
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -447,6 +448,7 @@ class RobotTestSuite(object):
 
     def __init__(self, path):
         self.path = path
+        self.known_unstable: Optional[KnownUnstableSuite] = None
         self._dependencies_met = set()
         self.remote_server_directory = None
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
@@ -1040,6 +1042,11 @@ class RobotTestSuite(object):
         if options.variables:
             variables += options.variables
 
+        if self.known_unstable:
+            # We still run known-unstable tests, but they're allowed to fail.
+            for unstable_test in filter_unstable(self.known_unstable, suite.tests):
+                unstable_test.tags.add(TestTag.UNSTABLE)
+
         test_cases = [(test.name, '{0}.{1}'.format(suite_name, test.name)) for test in suite.tests]
         if fixture:
             deps = set()
@@ -1099,7 +1106,7 @@ class RobotTestSuite(object):
         suite.parent = (self, suite.parent)
         self.timeout_handler = self._create_timeout_handler(options, iteration_index, suite_retry_index)
 
-        result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=[TestTag.NON_CRITICAL, TestTag.SKIPPED])
+        result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=[TestTag.NON_CRITICAL, TestTag.SKIPPED, TestTag.UNSTABLE])
 
         self.suite_log_files = []
         file_name = os.path.splitext(os.path.basename(self.path))[0]
@@ -1190,7 +1197,7 @@ class RobotTestSuite(object):
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
-        ret = {CRITICAL_TEST: set(), TestTag.NON_CRITICAL: set()}
+        ret = {CRITICAL_TEST: set(), TestTag.NON_CRITICAL: set(), TestTag.UNSTABLE: set()}
 
         # Aggregate failed tests from all report files (can be multiple if iterations or retries were used)
         for dirpath, _, fnames in os.walk(path):
@@ -1203,23 +1210,26 @@ class RobotTestSuite(object):
                     for test in suite.iter('test'):
                         status_element = test.find('status') # only finds immediate children - important requirement
                         status = status_element.attrib['status']
+                        test_name = test.attrib['name']
+                        suite_name = suite.attrib['name']
+                        if suite_name == "Test Suite":
+                            # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
+                            # instead of wrapping in a new top-level Test Suite. A workaround is to extract
+                            # the suite name from the *.robot file name.
+                            suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
+                        qualified_suite_name = f"{suite_name}.{test_name}"
                         tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
                         if status == 'FAIL':
-                            test_name = test.attrib['name']
-                            suite_name = suite.attrib['name']
-                            if suite_name == "Test Suite":
-                                # If rebot is invoked with only 1 suite, it renames that suite to Test Suite
-                                # instead of wrapping in a new top-level Test Suite. A workaround is to extract
-                                # the suite name from the *.robot file name.
-                                suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                             if TestTag.SKIPPED in tags:
                                 continue # skipped test should not be classified as fail
                             if TestTag.NON_CRITICAL in tags:
-                                ret[TestTag.NON_CRITICAL].add(f"{suite_name}.{test_name}")
+                                ret[TestTag.NON_CRITICAL].add(qualified_suite_name)
                             else:
-                                ret[CRITICAL_TEST].add(f"{suite_name}.{test_name}")
+                                ret[CRITICAL_TEST].add(qualified_suite_name)
+                        elif status == "SKIP" and TestTag.UNSTABLE in tags:
+                            ret[TestTag.UNSTABLE].add(qualified_suite_name)
 
-        if not ret[CRITICAL_TEST] and not ret[TestTag.NON_CRITICAL]:
+        if not ret[CRITICAL_TEST] and not ret[TestTag.NON_CRITICAL] and not ret[TestTag.UNSTABLE]:
             return None
         return ret
 

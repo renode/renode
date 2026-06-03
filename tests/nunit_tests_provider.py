@@ -6,12 +6,13 @@ import signal
 import psutil
 import subprocess
 from time import monotonic
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import xml.etree.ElementTree as ET
 import glob
 
 from tests_engine import TestResult, CRITICAL_TEST
+from unstable_tests import KnownUnstableSuite
 
 
 THIS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -25,6 +26,7 @@ class NUnitTestSuite(object):
 
     def __init__(self, path):
         self.path = path
+        self.known_unstable: Optional[KnownUnstableSuite] = None
 
     def check(self, options, number_of_runs): # API requires this method
         pass
@@ -58,6 +60,9 @@ class NUnitTestSuite(object):
                     os.kill(proc.info['pid'], signal.SIGTERM)
 
     def run(self, options, iteration_index=1, suite_retry_index=0):
+        if self.known_unstable:
+            raise Exception("NUnit tests are not yet supported in the --unstable feature.")
+
         # The iteration_index and suite_retry_index arguments are not implemented.
         # They exist for the sake of a uniform interface with robot_tests_provider.
         print('Running ' + self.path)

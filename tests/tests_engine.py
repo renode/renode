@@ -13,6 +13,7 @@ from pathlib import Path
 from enum import Enum
 import segmenting
 import monitoring
+import unstable_tests
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
@@ -185,6 +186,7 @@ def prepare_parser():
                         default=None,
                         help="Generate perf.data from test in specified directory")
 
+    unstable_tests.add_args(parser)
     segmenting.add_args(parser)
 
     if platform != "win32":
@@ -267,6 +269,13 @@ def handle_options(options):
         options.stats = segmenting.parse_stats_file(options.stats_file)
     else:
         options.stats = {}
+
+    if options.known_unstable_file:
+        options.known_unstable = unstable_tests.parse_file(options.known_unstable_file)
+        if options.tests:
+            unstable_tests.annotate_tests(options.tests, options.known_unstable)
+    else:
+        options.known_unstable = []
 
     if options.remote_server_full_directory is not None:
         if not os.path.isabs(options.remote_server_full_directory):
@@ -427,6 +436,10 @@ def print_failed_tests(options):
             if CRITICAL_TEST in failed and failed[CRITICAL_TEST]:
                 print("Failed {} critical tests:".format(handler['type']))
                 _print_helper(CRITICAL_TEST)
+
+            if TestTag.UNSTABLE in failed and failed[TestTag.UNSTABLE]:
+                print("Failed {} unstable tests:".format(handler['type']))
+                _print_helper(TestTag.UNSTABLE)
 
             if TestTag.NON_CRITICAL in failed and failed[TestTag.NON_CRITICAL]:
                 print("Failed {} non-critical tests:".format(handler['type']))
