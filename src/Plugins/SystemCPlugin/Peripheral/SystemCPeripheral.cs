@@ -82,9 +82,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public void OnGPIO(int number, bool value)
         {
             // When GPIO connections are initialized, OnGPIO is called with
-            // false value. The socket is not yet initialized in that case. We
+            // false value. The transport is not yet initialized in that case. We
             // can safely return, no special initialization is required.
-            if(forwardSocket == null)
+            if(!connectionActive)
             {
                 return;
             }
