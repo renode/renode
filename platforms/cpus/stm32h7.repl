@@ -78,108 +78,180 @@ sramBank2: Memory.MappedMemory @ sysbus 0x70000000
 sramBank1: Memory.MappedMemory @ sysbus 0x60000000
     size: 0x10000000
 
-adc3: Analog.STM32H7_ADC @ sysbus 0x58026000
+adc3: Analog.STM32H7_ADC @ {
+        sysbus 0x58026000;
+        rcc RegistrationPeripheralAlias.ADC3
+    }
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     dmaPeripheral: dmamux1
     dmaChannel: 115
     -> exti@75
 
-bdma: DMA.STM32LDMA @ sysbus 0x58025400
+bdma: DMA.STM32LDMA @ {
+        sysbus 0x58025400;
+        rcc RegistrationPeripheralAlias.BDMA
+    }
     [0-7] -> exti@[66-73]
 
-gpioPortK: GPIOPort.STM32_GPIOPort @ sysbus <0x58022800, +0x400>
+gpioPortK: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58022800, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOK
+    }
     numberOfAFs: 16
     invertedAFPins: [[0, 1], [1, 3]]
     [0-7] -> syscfg#10@[0-7]
 
-gpioPortJ: GPIOPort.STM32_GPIOPort @ sysbus <0x58022400, +0x400>
+gpioPortJ: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58022400, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOJ
+    }
     numberOfAFs: 16
     invertedAFPins: [[7, 3], [8, 1], [9, 3], [10, 1], [11, 3]]
     [0-15] -> syscfg#9@[0-15]
 
-gpioPortI: GPIOPort.STM32_GPIOPort @ sysbus <0x58022000, +0x400>
+gpioPortI: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58022000, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOI
+    }
     numberOfAFs: 16
     [0-15] -> syscfg#8@[0-15]
 
-gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x58021C00, +0x400>
+gpioPortH: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58021C00, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOH
+    }
     numberOfAFs: 16
     invertedAFPins: [[13, 3], [14, 3], [15, 3]]
     [0-15] -> syscfg#7@[0-15]
 
-gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x58021800, +0x400>
+gpioPortG: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58021800, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOG
+    }
     numberOfAFs: 16
     [0-15] -> syscfg#6@[0-15]
 
-gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x58021400, +0x400>
+gpioPortF: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58021400, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOF
+    }
     numberOfAFs: 16
     invertedAFPins: [[8, 1], [9, 1]]
 
     [0-15] -> syscfg#5@[0-15]
 
-gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x58021000, +0x400>
+gpioPortE: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58021000, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOE
+    }
     numberOfAFs: 16
     invertedAFPins: [[4, 4], [8, 1], [10, 1], [12, 1]]
     [0-15] -> syscfg#4@[0-15]
 
-gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x58020C00, +0x400>
+gpioPortD: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58020C00, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOD
+    }
     numberOfAFs: 16
     [0-15] -> syscfg#3@[0-15]
 
-gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x58020800, +0x400>
+gpioPortC: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58020800, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOC
+    }
     numberOfAFs: 16
     [0-15] -> syscfg#2@[0-15]
 
-gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x58020400, +0x400>
+gpioPortB: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58020400, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOB
+    }
     numberOfAFs: 16
     invertedAFPins: [[0, 1, 3], [1, 1, 3], [6, 1], [7, 1], [13, 1], [14, 1, 3], [15, 1, 3]]
 
     [0-15] -> syscfg#1@[0-15]
 
-gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x58020000, +0x400>
+gpioPortA: GPIOPort.STM32_GPIOPort @ {
+        sysbus <0x58020000, +0x400>;
+        rcc RegistrationPeripheralAlias.GPIOA
+    }
     numberOfAFs: 16
     invertedAFPins: [[5, 3], [7, 1, 3]]
     [0-15] -> syscfg#0@[0-15]
 
-rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
+rtc: Timers.STM32F4_RTC @ {
+        sysbus 0x58004000;
+        rcc RegistrationPeripheralAlias.RTC
+    }
     AlarmIRQ -> exti@17
     WakeupIRQ -> exti@19
 
-spi4: SPI.STM32H7_SPI @ sysbus 0x40013400
+spi4: SPI.STM32H7_SPI @ {
+        sysbus 0x40013400;
+        rcc RegistrationPeripheralAlias.SPI4
+    }
     DMARecieve -> dmamux1@83
 
-i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
+i2c4: I2C.STM32F7_I2C @ {
+        sysbus 0x58001C00;
+        rcc RegistrationPeripheralAlias.I2C4
+    }
     EventInterrupt -> exti@62
     ErrorInterrupt -> exti@63
 
-lpuart1: UART.STM32F7_USART @ sysbus 0x58000C00
+lpuart1: UART.STM32F7_USART @ {
+        sysbus 0x58000C00;
+        rcc RegistrationPeripheralAlias.LPUART1
+    }
     frequency: 125000000
     IRQ -> exti@64
 
-syscfg: Miscellaneous.STM32_SYSCFG @ sysbus 0x58000400
+syscfg: Miscellaneous.STM32_SYSCFG @ {
+        sysbus 0x58000400;
+        rcc RegistrationPeripheralAlias.SYSCFG
+    }
     [0-15] -> exti@[0-15]
 
-dma2d: DMA.STM32DMA2D @ sysbus 0x52001000
+dma2d: DMA.STM32DMA2D @ {
+        sysbus 0x52001000;
+        rcc RegistrationPeripheralAlias.DMA2D
+    }
     -> nvic@90
 
-ltdc: Video.STM32LTDC @ sysbus 0x50001000
+ltdc: Video.STM32LTDC @ {
+        sysbus 0x50001000;
+        rcc RegistrationPeripheralAlias.LTDC
+    }
     -> nvic@88
 
-adcM1S2: Analog.STM32H7_ADC @ sysbus 0x40022000
+adcM1S2: Analog.STM32H7_ADC @ {
+        sysbus 0x40022000;
+        rcc RegistrationPeripheralAlias.ADC12
+    }
     referenceVoltage: 3.3
     externalEventFrequency: 1000
     dmaPeripheral: dmamux1
     dmaChannel: 9
     -> nvic@18
 
-rng: Miscellaneous.STM32_RNG @ sysbus 0x48021800
+rng: Miscellaneous.STM32_RNG @ {
+        sysbus 0x48021800;
+        rcc RegistrationPeripheralAlias.RNG
+    }
     series: STM32Series.H7
     -> nvic@80
 
-dma2: DMA.STM32DMA @ sysbus 0x40020400
+dma2: DMA.STM32DMA @ {
+        sysbus 0x40020400;
+        rcc RegistrationPeripheralAlias.DMA2
+    }
     [0-7] -> nvic@[56-60, 68-70]
 
-dma1: DMA.STM32DMA @ sysbus 0x40020000
+dma1: DMA.STM32DMA @ {
+        sysbus 0x40020000;
+        rcc RegistrationPeripheralAlias.DMA1
+    }
     [0-7] -> nvic@[11-17, 47]
 
 dmamux1: Miscellaneous.STM32_DMAMUX @ sysbus 0x40020800
@@ -189,30 +261,48 @@ dmamux1: Miscellaneous.STM32_DMAMUX @ sysbus 0x40020800
     [0-7] -> dma1@[0-7]
     [8-15] -> dma2@[0-7]
 
-timer17: Timers.STM32_Timer @ sysbus 0x40014800
+timer17: Timers.STM32_Timer @ {
+        sysbus 0x40014800;
+        rcc RegistrationPeripheralAlias.TIM17
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@118
 
-timer16: Timers.STM32_Timer @ sysbus 0x40014400
+timer16: Timers.STM32_Timer @ {
+        sysbus 0x40014400;
+        rcc RegistrationPeripheralAlias.TIM16
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@117
 
-timer15: Timers.STM32_Timer @ sysbus 0x40014000
+timer15: Timers.STM32_Timer @ {
+        sysbus 0x40014000;
+        rcc RegistrationPeripheralAlias.TIM15
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@116
 
-usart6: UART.STM32F7_USART @ sysbus 0x40011400
+usart6: UART.STM32F7_USART @ {
+        sysbus 0x40011400;
+        rcc RegistrationPeripheralAlias.USART6
+    }
     frequency: 200000000
     IRQ -> exti@29
 
-usart1: UART.STM32F7_USART @ sysbus 0x40011000
+usart1: UART.STM32F7_USART @ {
+        sysbus 0x40011000;
+        rcc RegistrationPeripheralAlias.USART1
+    }
     frequency: 200000000
     IRQ -> exti@26
 
-timer8: Timers.STM32_Timer @ sysbus 0x40010400
+timer8: Timers.STM32_Timer @ {
+        sysbus 0x40010400;
+        rcc RegistrationPeripheralAlias.TIM8
+    }
     initialLimit: 0xffff
     frequency: 250000000
     BreakInterrupt -> nvic@43
@@ -220,7 +310,10 @@ timer8: Timers.STM32_Timer @ sysbus 0x40010400
     [TriggerInterrupt, CommutationInterrupt] -> nvic@[45, 45]
     CaptureCompareInterrupt -> nvic@46
 
-timer1: Timers.STM32_Timer @ sysbus 0x40010000
+timer1: Timers.STM32_Timer @ {
+        sysbus 0x40010000;
+        rcc RegistrationPeripheralAlias.TIM1
+    }
     initialLimit: 0xffff
     frequency: 250000000
     BreakInterrupt -> nvic@24
@@ -228,83 +321,137 @@ timer1: Timers.STM32_Timer @ sysbus 0x40010000
     [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
     CaptureCompareInterrupt -> nvic@27
 
-uart8: UART.STM32F7_USART @ sysbus 0x40007C00
+uart8: UART.STM32F7_USART @ {
+        sysbus 0x40007C00;
+        rcc RegistrationPeripheralAlias.UART8
+    }
     frequency: 125000000
     IRQ -> exti@33
 
-uart7: UART.STM32F7_USART @ sysbus 0x40007800
+uart7: UART.STM32F7_USART @ {
+        sysbus 0x40007800;
+        rcc RegistrationPeripheralAlias.UART7
+    }
     frequency: 125000000
     IRQ -> exti@32
 
-i2c3: I2C.STM32F7_I2C @ sysbus 0x40005C00
+i2c3: I2C.STM32F7_I2C @ {
+        sysbus 0x40005C00;
+        rcc RegistrationPeripheralAlias.I2C3
+    }
     EventInterrupt -> exti@24
     ErrorInterrupt -> nvic@73
 
-i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+i2c2: I2C.STM32F7_I2C @ {
+        sysbus 0x40005800;
+        rcc RegistrationPeripheralAlias.I2C2
+    }
     EventInterrupt -> exti@23
     ErrorInterrupt -> nvic@34
 
-i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+i2c1: I2C.STM32F7_I2C @ {
+        sysbus 0x40005400;
+        rcc RegistrationPeripheralAlias.I2C1
+    }
     EventInterrupt -> exti@22
     ErrorInterrupt -> nvic@32
 
-uart5: UART.STM32F7_USART @ sysbus 0x40005000
+uart5: UART.STM32F7_USART @ {
+        sysbus 0x40005000;
+        rcc RegistrationPeripheralAlias.UART5
+    }
     frequency: 125000000
     IRQ -> exti@31
 
-uart4: UART.STM32F7_USART @ sysbus 0x40004C00
+uart4: UART.STM32F7_USART @ {
+        sysbus 0x40004C00;
+        rcc RegistrationPeripheralAlias.UART4
+    }
     frequency: 125000000
     IRQ -> exti@30
 
-usart3: UART.STM32F7_USART @ sysbus 0x40004800
+usart3: UART.STM32F7_USART @ {
+        sysbus 0x40004800;
+        rcc RegistrationPeripheralAlias.USART3
+    }
     frequency: 125000000
     IRQ -> exti@28
 
-usart2: UART.STM32F7_USART @ sysbus 0x40004400
+usart2: UART.STM32F7_USART @ {
+        sysbus 0x40004400;
+        rcc RegistrationPeripheralAlias.USART2
+    }
     frequency: 125000000
     IRQ -> exti@27
 
-timer14: Timers.STM32_Timer @ sysbus 0x40002000
+timer14: Timers.STM32_Timer @ {
+        sysbus 0x40002000;
+        rcc RegistrationPeripheralAlias.TIM14
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@45
 
-timer13: Timers.STM32_Timer @ sysbus 0x40001C00
+timer13: Timers.STM32_Timer @ {
+        sysbus 0x40001C00;
+        rcc RegistrationPeripheralAlias.TIM13
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@44
 
-timer12: Timers.STM32_Timer @ sysbus 0x40001800
+timer12: Timers.STM32_Timer @ {
+        sysbus 0x40001800;
+        rcc RegistrationPeripheralAlias.TIM12
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@43
 
-timer7: Timers.STM32_Timer @ sysbus 0x40001400
+timer7: Timers.STM32_Timer @ {
+        sysbus 0x40001400;
+        rcc RegistrationPeripheralAlias.TIM7
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@55
 
-timer6: Timers.STM32_Timer @ sysbus 0x40001000
+timer6: Timers.STM32_Timer @ {
+        sysbus 0x40001000;
+        rcc RegistrationPeripheralAlias.TIM6
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@54
 
-timer5: Timers.STM32_Timer @ sysbus 0x40000C00
+timer5: Timers.STM32_Timer @ {
+        sysbus 0x40000C00;
+        rcc RegistrationPeripheralAlias.TIM5
+    }
     initialLimit: 0xffffffff
     frequency: 250000000
     -> nvic@50
 
-timer4: Timers.STM32_Timer @ sysbus 0x40000800
+timer4: Timers.STM32_Timer @ {
+        sysbus 0x40000800;
+        rcc RegistrationPeripheralAlias.TIM4
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@30
 
-timer3: Timers.STM32_Timer @ sysbus 0x40000400
+timer3: Timers.STM32_Timer @ {
+        sysbus 0x40000400;
+        rcc RegistrationPeripheralAlias.TIM3
+    }
     initialLimit: 0xffff
     frequency: 250000000
     -> nvic@29
 
-timer2: Timers.STM32_Timer @ sysbus 0x40000000
+timer2: Timers.STM32_Timer @ {
+        sysbus 0x40000000;
+        rcc RegistrationPeripheralAlias.TIM2
+    }
     initialLimit: 0xffffffff
     frequency: 250000000
     -> nvic@28
@@ -361,46 +508,72 @@ itcm: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x10000
 
 rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
+    systick: nvic
 
-crc: CRC.STM32_CRC @ sysbus 0x58024C00
+crc: CRC.STM32_CRC @ {
+        sysbus 0x58024C00;
+        rcc RegistrationPeripheralAlias.CRC
+    }
     series: STM32Series.F0
     configurablePoly: true
 
-lptimer1: Timers.STM32L0_LpTimer @ sysbus 0x40002400
+lptimer1: Timers.STM32L0_LpTimer @ {
+        sysbus 0x40002400;
+        rcc RegistrationPeripheralAlias.LPTIM1
+    }
     frequency: 32000000
     -> exti@47
 
-lptimer2: Timers.STM32L0_LpTimer @ sysbus 0x58002400
+lptimer2: Timers.STM32L0_LpTimer @ {
+        sysbus 0x58002400;
+        rcc RegistrationPeripheralAlias.LPTIM2
+    }
     frequency: 32000000
     -> exti@48
 
-lptimer3: Timers.STM32L0_LpTimer @ sysbus 0x58002800
+lptimer3: Timers.STM32L0_LpTimer @ {
+        sysbus 0x58002800;
+        rcc RegistrationPeripheralAlias.LPTIM3
+    }
     frequency: 32000000
     -> exti@50
 
-lptimer4: Timers.STM32L0_LpTimer @ sysbus 0x58002C00
+lptimer4: Timers.STM32L0_LpTimer @ {
+        sysbus 0x58002C00;
+        rcc RegistrationPeripheralAlias.LPTIM4
+    }
     frequency: 32000000
     -> exti@52
 
-lptimer5: Timers.STM32L0_LpTimer @ sysbus 0x58003000
+lptimer5: Timers.STM32L0_LpTimer @ {
+        sysbus 0x58003000;
+        rcc RegistrationPeripheralAlias.LPTIM5
+    }
     frequency: 32000000
     -> exti@53
 
 watchdog: Timers.STM32_IndependentWatchdog @ sysbus 0x58004800
     frequency: 56000
 
-hsem: Miscellaneous.STM32H7_HardwareSemaphore @ sysbus 0x58026400
+hsem: Miscellaneous.STM32H7_HardwareSemaphore @ {
+        sysbus 0x58026400;
+        rcc RegistrationPeripheralAlias.HSEM
+    }
 
 ethernet: Network.SynopsysDWCEthernetQualityOfService @ {
-    sysbus 0x40028000;
-    sysbus new Bus.BusMultiRegistration { address: 0x40028C00; size: 0x200; region: "mtl" };
-    sysbus new Bus.BusMultiRegistration { address: 0x40029000; size: 0x200; region: "dma" }
+        sysbus 0x40028000;
+        sysbus new Bus.BusMultiRegistration { address: 0x40028C00; size: 0x200; region: "mtl" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40029000; size: 0x200; region: "dma" };
+        rcc RegistrationPeripheralAlias.ETH1MAC
     }
     systemClockFrequency: 50000000
     dmaBusWidth: BusWidth.Bits32
     -> nvic@61
 
-qspi: SPI.STM32H7_QuadSPI @ sysbus 0x52005000
+qspi: SPI.STM32H7_QuadSPI @ {
+        sysbus 0x52005000;
+        rcc RegistrationPeripheralAlias.QSPI
+    }
     -> nvic@92
 
 // Alternate function mapping connections. For more details see `stm32l071.repl`.
