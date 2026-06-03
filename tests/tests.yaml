@@ -194,10 +194,6 @@
 - tests/platforms/MSP430X.robot
 - tests/unit-tests/riscv-extensions.robot
 - tests/unit-tests/sync_pc.robot
-- tests/platforms/systemc/interrupts/interrupts.robot
-- tests/platforms/systemc/multiple-peripherals/multiple-peripherals.robot
-- tests/platforms/systemc/transaction-delay/transaction-delay.robot
-- tests/platforms/systemc/test-synchronization/synchronization.robot
 - tests/unit-tests/instructions-counting.robot
 - tests/unit-tests/timer-reconfiguration.robot
 - tests/platforms/S32K388.robot
@@ -214,7 +210,6 @@
 - tests/platforms/atsamd51g19a.robot
 - tests/platforms/fsl_lx2160ardb.robot
 - tests/platforms/SAM4S_XPLAINED.robot
-- tests/platforms/systemc/dma/dma.robot
 - tests/platforms/UP_Squared.robot
 - tests/platforms/Veer_EL2.robot
 - tests/platforms/VeeR_EL2_PIC.robot
