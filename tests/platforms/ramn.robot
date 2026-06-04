@@ -1,3 +1,7 @@
+*** Variables ***
+${MIN_ACCEPTABLE_RUNTIME_SECONDS}       10
+
+
 *** Keywords ***
 Battery LED Toggling From Engine Key
     [Arguments]     ${LEDHoldingTimeout}    ${LEDName}
@@ -101,3 +105,9 @@ Registers Should Reset On Watchdog Reset
     Trigger Watchdog Reset
     &{Reset} =              Dump Devices Registers    ${Registers}
     Devices Registers Dump Should Be Equal  ${Boot}     ${Reset}    "Boot"  "Reset"
+
+Should Run Without Watchdog Being Triggered
+    Execute Command         include @scripts/multi-node/ramn.resc
+
+    Create Log Tester       timeout=${MIN_ACCEPTABLE_RUNTIME_SECONDS}
+    Should Not Be In Log    Watchdog reset triggered!
