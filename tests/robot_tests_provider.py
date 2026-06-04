@@ -1169,8 +1169,9 @@ class RobotTestSuite(object):
                 if not suite.get('source', False):
                     continue # it is a tag used to group other suites without meaning on its own
                 for test in suite.iter('test'):
+                    tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
                     # do not check skipped tests
-                    if test.find("./tags/[tag='skipped']"):
+                    if "skipped" in tags:
                         continue
 
                     # only finds immediate children - required because `status`
@@ -1200,8 +1201,10 @@ class RobotTestSuite(object):
                     if not suite.get('source', False):
                         continue # it is a tag used to group other suites without meaning on its own
                     for test in suite.iter('test'):
-                        status = test.find('status') # only finds immediate children - important requirement
-                        if status.attrib['status'] == 'FAIL':
+                        status_element = test.find('status') # only finds immediate children - important requirement
+                        status = status_element.attrib['status']
+                        tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
+                        if status == 'FAIL':
                             test_name = test.attrib['name']
                             suite_name = suite.attrib['name']
                             if suite_name == "Test Suite":
@@ -1209,9 +1212,9 @@ class RobotTestSuite(object):
                                 # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                                 # the suite name from the *.robot file name.
                                 suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
-                            if test.find("./tags/[tag='skipped']"):
+                            if "skipped" in tags:
                                 continue # skipped test should not be classified as fail
-                            if test.find("./tags/[tag='non_critical']"):
+                            if "non_critical" in tags:
                                 ret['non_critical'].add(f"{suite_name}.{test_name}")
                             else:
                                 ret['mandatory'].add(f"{suite_name}.{test_name}")
@@ -1245,7 +1248,8 @@ class RobotTestSuite(object):
                         suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
 
                     for test in suite.iter('test'):
-                        if test.find("./tags/[tag='skipped']"):
+                        tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
+                        if "skipped" in tags:
                             continue  # skipped test should not be classified as fail
                         status = test.find('status')  # only finds immediate children - important requirement
                         if status.attrib["status"] == "FAIL":
@@ -1307,11 +1311,9 @@ class RobotTestSuite(object):
                     suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                 for test in suite.iter('test'):
                     test_name = test.attrib['name']
-                    tags = []
-                    if test.find("./tags/[tag='skipped']"):
+                    tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
+                    if "skipped" in tags:
                         continue # skipped test should not be classified as fail
-                    if test.find("./tags/[tag='non_critical']"):
-                        tags.append("non_critical")
                     status = test.find('status') # only finds immediate children - important requirement
                     m = cls.retry_test_regex.search(status.text) if status.text is not None else None
 
