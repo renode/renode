@@ -409,8 +409,10 @@ def print_failed_tests(options):
                 for i, fail in enumerate(failed[what]):
                     print("\t{0}. {1}".format(i + 1, fail))
 
-            print("Failed {} critical tests:".format(handler['type']))
-            _print_helper('mandatory')
+            if 'mandatory' in failed and failed['mandatory']:
+                print("Failed {} critical tests:".format(handler['type']))
+                _print_helper('mandatory')
+
             if 'non_critical' in failed and failed['non_critical']:
                 print("Failed {} non-critical tests:".format(handler['type']))
                 _print_helper('non_critical')
@@ -691,11 +693,14 @@ def run():
     if options.output is not sys.stdout:
         options.output.close()
 
-    if max_segments > 1: 
+    if max_segments > 1:
         print( f"Ran segment {segment_num}/{max_segments}, consisting of {total_number_of_suites} test files.")
     if tests_failed:
         print("Some tests failed :( See the list of failed tests below and logs for details!")
-        print_failed_tests(options)
+
+    print_failed_tests(options)
+
+    if tests_failed:
         print_rerun_trace(options)
         if test_failed_due_to_crash:
             print('Renode crashed during testing and caused a failure', file=sys.stderr)
