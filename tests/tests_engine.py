@@ -10,6 +10,7 @@ import yaml
 import multiprocessing
 from typing import Any
 from pathlib import Path
+from enum import Enum
 import segmenting
 import monitoring
 
@@ -20,6 +21,18 @@ shared_suite_counter = None
 shared_active_suites = None
 
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
+
+class TestTag(str, Enum):
+    SKIPPED = "skipped"
+    NON_CRITICAL = "non_critical"
+    UNSTABLE = "unstable"
+
+    def __str__(self):
+        return self.value
+
+    def __format__(self, format_spec):
+        return format(self.value, format_spec)
+
 
 class IncludeLoader(yaml.SafeLoader):
 
@@ -413,9 +426,9 @@ def print_failed_tests(options):
                 print("Failed {} critical tests:".format(handler['type']))
                 _print_helper('mandatory')
 
-            if 'non_critical' in failed and failed['non_critical']:
+            if TestTag.NON_CRITICAL in failed and failed[TestTag.NON_CRITICAL]:
                 print("Failed {} non-critical tests:".format(handler['type']))
-                _print_helper('non_critical')
+                _print_helper(TestTag.NON_CRITICAL)
             print("------")
 
 def print_rerun_trace(options):

@@ -26,7 +26,7 @@ from robot.libraries.DateTime import Time
 import xml.etree.ElementTree as ET
 import urllib.parse
 
-from tests_engine import TestResult
+from tests_engine import TestResult, TestTag
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -1099,7 +1099,7 @@ class RobotTestSuite(object):
         suite.parent = (self, suite.parent)
         self.timeout_handler = self._create_timeout_handler(options, iteration_index, suite_retry_index)
 
-        result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=['non_critical', 'skipped'])
+        result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=[TestTag.NON_CRITICAL, TestTag.SKIPPED])
 
         self.suite_log_files = []
         file_name = os.path.splitext(os.path.basename(self.path))[0]
@@ -1171,7 +1171,7 @@ class RobotTestSuite(object):
                 for test in suite.iter('test'):
                     tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
                     # do not check skipped tests
-                    if "skipped" in tags:
+                    if TestTag.SKIPPED in tags:
                         continue
 
                     # only finds immediate children - required because `status`
@@ -1190,7 +1190,7 @@ class RobotTestSuite(object):
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
-        ret = {'mandatory': set(), 'non_critical': set()}
+        ret = {'mandatory': set(), TestTag.NON_CRITICAL: set()}
 
         # Aggregate failed tests from all report files (can be multiple if iterations or retries were used)
         for dirpath, _, fnames in os.walk(path):
@@ -1212,14 +1212,14 @@ class RobotTestSuite(object):
                                 # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                                 # the suite name from the *.robot file name.
                                 suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
-                            if "skipped" in tags:
+                            if TestTag.SKIPPED in tags:
                                 continue # skipped test should not be classified as fail
-                            if "non_critical" in tags:
-                                ret['non_critical'].add(f"{suite_name}.{test_name}")
+                            if TestTag.NON_CRITICAL in tags:
+                                ret[TestTag.NON_CRITICAL].add(f"{suite_name}.{test_name}")
                             else:
                                 ret['mandatory'].add(f"{suite_name}.{test_name}")
 
-        if not ret['mandatory'] and not ret['non_critical']:
+        if not ret['mandatory'] and not ret[TestTag.NON_CRITICAL]:
             return None
         return ret
 
@@ -1249,7 +1249,7 @@ class RobotTestSuite(object):
 
                     for test in suite.iter('test'):
                         tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
-                        if "skipped" in tags:
+                        if TestTag.SKIPPED in tags:
                             continue  # skipped test should not be classified as fail
                         status = test.find('status')  # only finds immediate children - important requirement
                         if status.attrib["status"] == "FAIL":
@@ -1312,7 +1312,7 @@ class RobotTestSuite(object):
                 for test in suite.iter('test'):
                     test_name = test.attrib['name']
                     tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
-                    if "skipped" in tags:
+                    if TestTag.SKIPPED in tags:
                         continue # skipped test should not be classified as fail
                     status = test.find('status') # only finds immediate children - important requirement
                     m = cls.retry_test_regex.search(status.text) if status.text is not None else None
