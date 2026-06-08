@@ -15,4 +15,4 @@ if "%DEBUG%" == "1" (
     set "BINDIR=%SCRIPTDIR%\output\bin\Debug"
 )
 
-py -3 "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r %cd% %*
+py -3 "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%cd%" %*
