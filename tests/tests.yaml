@@ -254,6 +254,7 @@
 - tests/peripherals/NXP_IMX_Watchdog.robot
 - tests/peripherals/IMX8MP_Flexcan.robot
 - tests/platforms/frdm-imx8mp_linux.robot
+- tests/peripherals/LPS25HB.robot
 
 # Do not use port 3333 in unit tests
 
