@@ -420,6 +420,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void TryToSkipTransactionTime(ulong timeUS)
         {
+            if(timeUS == 0)
+            {
+                return;
+            }
             if(machine.SystemBus.TryGetCurrentCPU(out var icpu))
             {
                 var baseCPU = icpu as BaseCPU;
