@@ -15,6 +15,8 @@ namespace Antmicro.Renode.RobotFramework
 {
     internal class Keyword
     {
+        private static readonly Regex NamedArgumentPattern = new Regex(@"^([a-zA-Z0-9_]+)=(.+)", RegexOptions.Compiled);
+
         public Keyword(KeywordManager manager, MethodInfo info)
         {
             this.manager = manager;
@@ -80,7 +82,6 @@ namespace Antmicro.Renode.RobotFramework
 
             var positionalArgumentIndex = 0;
             var namedArgumentDetected = false;
-            var pattern = new Regex(@"^([a-zA-Z0-9_]+)=(.+)");
             foreach(var argumentObj in arguments)
             {
                 int position;
@@ -100,7 +101,7 @@ namespace Antmicro.Renode.RobotFramework
                 object result;
                 string valueToParse;
                 // check if it's a named argument
-                var m = pattern.Match(argument);
+                var m = NamedArgumentPattern.Match(argument);
                 if(m.Success)
                 {
                     namedArgumentDetected = true;
