@@ -38,6 +38,7 @@ OutputDir="output\packages"
 [Files]
 ; Since not all of our files gets tagged with incrementing versions we have to use the ignoreversion flag to ensure update installs work as they should
 Source: "tools\packaging\{#DIR}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "tools\packaging\{#DIR}\.renode-root"; DestDir: "{app}"; Flags: ignoreversion
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a Desktop Icon"; Flags: unchecked
