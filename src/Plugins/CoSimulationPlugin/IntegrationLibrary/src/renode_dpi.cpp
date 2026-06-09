@@ -152,7 +152,7 @@ bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value, in
         return false;
     }
 
-    Protocol *message = ch->receive();
+    Protocol *message = ch->tryReceive();
     if (message == nullptr) {
         return false;
     }

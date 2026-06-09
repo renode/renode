@@ -7,6 +7,12 @@
 
 #include "socket_channel.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <sys/ioctl.h>
+#endif
+
 SocketCommunicationChannel::SocketCommunicationChannel()
     : connected(false)
 {
@@ -71,6 +77,33 @@ Protocol* SocketCommunicationChannel::receive()
         return nullptr;
     }
 
+    return message;
+}
+
+Protocol* SocketCommunicationChannel::tryReceive()
+{
+#ifdef _WIN32
+    u_long available = 0;
+    if (ioctlsocket(mainSocket->GetSocketDescriptor(), FIONREAD, &available) != 0) {
+        return nullptr;
+    }
+#else
+    int available = 0;
+    if (ioctl(mainSocket->GetSocketDescriptor(), FIONREAD, &available) != 0) {
+        return nullptr;
+    }
+#endif
+
+    if (available < (int)sizeof(Protocol)) {
+        return nullptr;
+    }
+
+    Protocol* message = new Protocol;
+    int ret = mainSocket->CTCPClient::Receive((char *)message, sizeof(Protocol), true);
+    if (ret <= 0) {
+        delete message;
+        return nullptr;
+    }
     return message;
 }
 
