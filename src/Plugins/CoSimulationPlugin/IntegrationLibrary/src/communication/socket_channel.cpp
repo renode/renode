@@ -23,14 +23,40 @@ SocketCommunicationChannel::SocketCommunicationChannel()
 
 void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const char* address)
 {
-    bool mainOk = mainSocket->Connect(address, std::to_string(receiverPort));
-    bool senderOk = senderSocket->Connect(address, std::to_string(senderPort));
-    if (!mainOk || !senderOk) {
+    if (!mainSocket->Connect(address, std::to_string(receiverPort))) {
         return;
     }
-    mainSocket->SetRcvTimeout(2000);
-    senderSocket->SetRcvTimeout(2000);
+
+    // To handle the partial-connect race we hold mainSocket
+    // open and retry senderSocket briefly before giving up.
+    bool senderOk = false;
+    for (int i = 0; i < 20; ++i) {
+        if (senderSocket->Connect(address, std::to_string(senderPort))) {
+            senderOk = true;
+            break;
+        }
+#ifdef _WIN32
+        Sleep(50);
+#else
+        usleep(50000);
+#endif
+    }
+
+    if (!senderOk) {
+        mainSocket->Disconnect();
+        return;
+    }
+    mainSocket->SetRcvTimeout(60000);
+    senderSocket->SetRcvTimeout(60000);
     handshakeValid();
+
+    if (connected) {
+        // Once the handshake is done, drop back to a normal timeout so
+        // request/response paths (read_transaction, write_transaction) fail
+        // promptly if Renode goes away mid-operation.
+        mainSocket->SetRcvTimeout(5000);
+        senderSocket->SetRcvTimeout(5000);
+    }
 }
 
 void SocketCommunicationChannel::disconnect()
