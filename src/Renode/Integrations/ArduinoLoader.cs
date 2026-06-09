@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -42,7 +42,7 @@ namespace Antmicro.Renode.Integrations
             this.machine = cpu.GetMachine();
             this.binaryLoadAddress = binaryLoadAddress;
 
-            USBCore = new USBDeviceCore(this,
+            usbCore = new USBDeviceCore(this,
                                         classCode: USBClassCode.CommunicationsCDCControl,
                                         maximalPacketSize: PacketSize.Size16,
                                         vendorId: 0x2341,
@@ -83,9 +83,9 @@ namespace Antmicro.Renode.Integrations
                                                  createdEndpoint: out deviceToHostEndpoint)));
 
             // when asked, say that nothing interesting happened
-            interruptEndpoint.NonBlocking = true;
-            deviceToHostEndpoint.NonBlocking = true;
-            hostToDeviceEndpoint.DataWritten += HandleData;
+            interruptEndpoint.DeviceNonBlocking = true;
+            deviceToHostEndpoint.DeviceNonBlocking = true;
+            hostToDeviceEndpoint.DeviceGotWriteFromHost += HandleData;
 
             sramBuffer = new byte[BufferSize];
             flashBuffer = new byte[BufferSize];
@@ -113,7 +113,7 @@ namespace Antmicro.Renode.Integrations
 
         public void Reset()
         {
-            USBCore.Reset();
+            usbCore.Reset();
 
             Array.Clear(sramBuffer, 0, sramBuffer.Length);
             Array.Clear(flashBuffer, 0, flashBuffer.Length);
@@ -128,7 +128,9 @@ namespace Antmicro.Renode.Integrations
             binarySync.Reset();
         }
 
-        public USBDeviceCore USBCore { get; }
+        public IUSBConnection ConnectUSB() => usbCore;
+
+        public byte Address => usbCore.Address;
 
         private void HandleData(byte[] input)
         {
@@ -275,7 +277,7 @@ namespace Antmicro.Renode.Integrations
 
         private void SendResponse(string s)
         {
-            deviceToHostEndpoint.HandlePacket(System.Text.ASCIIEncoding.ASCII.GetBytes(s + "\n\r"));
+            deviceToHostEndpoint.DeviceWrite(System.Text.ASCIIEncoding.ASCII.GetBytes(s + "\n\r"));
         }
 
         private void AppendNibble(ref uint val, byte b)
@@ -335,6 +337,8 @@ namespace Antmicro.Renode.Integrations
         private readonly CortexM cpu;
         private readonly IMachine machine;
         private readonly ulong binaryLoadAddress;
+
+        private readonly USBDeviceCore usbCore;
 
         private const int BufferSize = 0xf0000;
 
