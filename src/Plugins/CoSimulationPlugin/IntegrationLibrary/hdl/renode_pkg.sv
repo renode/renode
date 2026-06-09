@@ -107,13 +107,11 @@ package renode_pkg;
       $timeformat(0, 9, "s", 0);
     endfunction
 
-    function void connect(int receiver_port, int sender_port, string address);
-      renodeDPIConnect(receiver_port, sender_port, address);
-      if(is_connected())
-        $display("Renode at %t: Connected using the socket based interface", $realtime);
-      else
-        $error("Renode at %t: Connection error", $realtime);
-    endfunction
+  task connect(int receiver_port, int sender_port, string address);
+    // Backgorund connect, check is_connected from a clock-driven block
+    renodeDPIConnect(receiver_port, sender_port, address);
+    $display("Renode at %t: Renode connection requested (background)...", $realtime);
+  endtask
 
     function bit is_connected();
       return renodeDPIIsConnected();
@@ -285,19 +283,21 @@ package renode_pkg;
       end
     endfunction
 
-    function void connect_plus_args();
-      int receiver_port, sender_port;
-      string address;
-      if(!$value$plusargs({ReceiverPortArgName, "=%d"}, receiver_port)
-        || !$value$plusargs({SenderPortArgName, "=%d"}, sender_port)
-        || !$value$plusargs({AddressArgName, "=%s"}, address))
-      begin
-          $error("Please specify the +%s, +%s and +%s arguments in the command that invokes the simulation", ReceiverPortArgName, SenderPortArgName, AddressArgName);
-      end
-      else begin
-        connection.connect(receiver_port, sender_port, address);
-      end
-    endfunction
+  task connect_plus_args();
+    int receiver_port, sender_port;
+    string address;
+    if(
+      !$value$plusargs({ReceiverPortArgName, "=%d"}, receiver_port) ||
+      !$value$plusargs({SenderPortArgName, "=%d"}, sender_port) ||
+      !$value$plusargs({AddressArgName, "=%s"}, address)
+    ) begin
+      $error("Please specify the +%s, +%s and +%s arguments in the command that invokes the simulation",
+            ReceiverPortArgName, SenderPortArgName, AddressArgName);
+    end
+    else begin
+      connection.connect(receiver_port, sender_port, address);
+    end
+  endtask
 
     function bit is_connected();
       return connection.is_connected();

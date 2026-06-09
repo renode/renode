@@ -8,6 +8,7 @@
 #include "socket_channel.h"
 
 SocketCommunicationChannel::SocketCommunicationChannel()
+    : connected(false)
 {
     ASocket::SettingsFlag dontLog = ASocket::NO_FLAGS;
     mainSocket.reset(new CTCPClient(NULL, dontLog));
@@ -16,8 +17,13 @@ SocketCommunicationChannel::SocketCommunicationChannel()
 
 void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const char* address)
 {
-    mainSocket->Connect(address, std::to_string(receiverPort));
-    senderSocket->Connect(address, std::to_string(senderPort));
+    bool mainOk = mainSocket->Connect(address, std::to_string(receiverPort));
+    bool senderOk = senderSocket->Connect(address, std::to_string(senderPort));
+    if (!mainOk || !senderOk) {
+        return;
+    }
+    mainSocket->SetRcvTimeout(2000);
+    senderSocket->SetRcvTimeout(2000);
     handshakeValid();
 }
 
@@ -34,10 +40,19 @@ bool SocketCommunicationChannel::isConnected()
 void SocketCommunicationChannel::handshakeValid()
 {
     Protocol* received = receive();
-    if(received->actionId == handshake) {
+    if (received == nullptr) {
+        mainSocket->Disconnect();
+        senderSocket->Disconnect();
+        return;
+    }
+    if (received->actionId == handshake) {
         sendMain(Protocol(handshake, 0, 0, noPeripheralIndex));
         connected = true;
+    } else {
+        mainSocket->Disconnect();
+        senderSocket->Disconnect();
     }
+    delete received;
 }
 
 void SocketCommunicationChannel::log(int logLevel, const char* data)
@@ -49,7 +64,13 @@ void SocketCommunicationChannel::log(int logLevel, const char* data)
 Protocol* SocketCommunicationChannel::receive()
 {
     Protocol* message = new Protocol;
-    mainSocket->CTCPClient::Receive((char *)message,  sizeof(Protocol));
+    int ret = mainSocket->CTCPClient::Receive((char *)message, sizeof(Protocol), true);
+
+    if(ret <= 0) {
+        delete message;
+        return nullptr;
+    }
+
     return message;
 }
 
