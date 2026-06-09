@@ -1289,6 +1289,8 @@ LOB LE Should Raise Exception
     Create Machine
     # We add 1 to the interrupt address in the vector table to signify we're still in Thumb state. It is required on Armv8-M.
     Execute Command                 sysbus WriteDoubleWord 0x18 ${interrupt_address+1}
+    # We write to System Handler Control and State Register to enable UsageFault interrupts, so on exception we end up in UsageFault handler and not HardFault handler
+    Execute Command                 sysbus WriteDoubleWord 0xE000ED24 0xF0000
     Execute Command                 cpu SetRegister "R0" 3
 
     Load Program And Execute        ${assembly}  ${interrupt_address}
