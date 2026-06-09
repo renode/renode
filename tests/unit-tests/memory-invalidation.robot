@@ -2,6 +2,16 @@
 ${X1}                                           1
 ${X2}                                           2
 ${X3}                                           3
+# simple loop that repeatedly writes to a few addresses
+${PROG_DIRTY_ADDRESS}               SEPARATOR=\n
+...                                 loop:
+...                                 la t1, store_target
+...                                 sw t0, 0(t1)
+...                                 sw t0, 4(t1)
+...                                 sw t0, 8(t1)
+...                                 sw t0, 12(t1)
+...                                 jal loop
+...                                 store_target:
 
 *** Keywords ***
 Create Machine                                  
@@ -134,3 +144,20 @@ Should Invalidate on Cross Page DoubleWord Write
     Register Should Be Equal                    ${X2}  0x0
     Register Should Be Equal                    ${X3}  0x1
 
+Should Reduce Dirty Address List With Halted Cores
+    Create Machine
+    Create Log Tester                           0
+
+    # add a second core that should not break the
+    # dirty address list reduction mechanism
+    Execute Command                             machine LoadPlatformDescriptionFromString "halted_cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty; allowUnalignedAccesses: true }"
+    Execute Command                             halted_cpu IsHalted true
+
+    Execute Command                             sysbus.cpu AssembleBlock 0x1000 "${PROG_DIRTY_ADDRESS}"
+
+    Execute Command                             logLevel 0 cpu
+    Execute Command                             logLevel 0 halted_cpu
+
+    Execute Command                             emulation RunFor "0.01"
+
+    Should Not Be In Log                        Attempted reduction of riscv dirty addresses list failed, .* CPUs that didn't fetch any:.*halted_cpu  treatAsRegex=true
