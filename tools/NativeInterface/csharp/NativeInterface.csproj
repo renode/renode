@@ -21,12 +21,13 @@
     <DnnePackageVersion>2.1.2-renode.1</DnnePackageVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true' And $(OS) != 'Windows_NT'">
+  <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true'">
     <DnneGenRollForward>Major</DnneGenRollForward>
     <DnneBuildExports>true</DnneBuildExports>
     <DnneGenerateExports>true</DnneGenerateExports>
     <DnneNativeBinaryName>librenode</DnneNativeBinaryName> <!-- librenode.{so,dylib,dll} -->
     <DnneSelfContained_Experimental>true</DnneSelfContained_Experimental>
+    <DnneForceGnuToolchain>true</DnneForceGnuToolchain>
     <DnneCompilerCommand>cc</DnneCompilerCommand>
     <DnneLinkerUserFlags Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DnneLinkerUserFlags) -Wl,-install_name,@rpath/$(DnneNativeBinaryName).dylib</DnneLinkerUserFlags>
 
@@ -37,6 +38,17 @@
     <_DnneArch>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLower())</_DnneArch>
     <DnneRuntimeIdentifier Condition="'$(_DnneOSPrefix)' != ''">$(_DnneOSPrefix)-$(_DnneArch)</DnneRuntimeIdentifier>
   </PropertyGroup>
+
+  <Target Name="SetLinkerFlags" BeforeTargets="DnneBuildNativeExports" Condition="'$(DesignTimeBuild)' != 'true' And $([MSBuild]::IsOSPlatform('Windows'))">
+    <PropertyGroup>
+      <!-- This implib is not actually used (as we generate one with absolute paths in the CMake library), but DNNE.targets expects it, so just generate it anyway. -->
+      <DnneLinkerUserFlags>$(DnneLinkerUserFlags) -Xlinker --out-implib="$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(DnneGeneratedBinPath)', '$(DnneNativeBinaryName).lib'))"</DnneLinkerUserFlags>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="CopyWindowsNetHost" AfterTargets="DnneBuildC99Exports" Condition="'$(DesignTimeBuild)' != 'true' And $([MSBuild]::IsOSPlatform('Windows'))">
+    <Copy SourceFiles="$(DnneNetHostDir)/nethost.dll" DestinationFolder="$(PlatformOutputDir)" />
+  </Target>
 
   <ItemGroup>
     <Compile Remove="DNNE/**/*.cs" />
