@@ -609,7 +609,7 @@ then
     if ! $ON_WINDOWS
     then
         echo "Building librenode..."
-        dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID"
+        dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID"
         copy_native_interface_runtime_config "$OUT_BIN_DIR" "$OUT_BIN_DIR/platform-lib/$RID"
     else
         echo "librenode (--shared) can only be built on Linux or macOS. Exiting!"
