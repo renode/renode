@@ -11,7 +11,7 @@ from typing import Dict, List
 import xml.etree.ElementTree as ET
 import glob
 
-from tests_engine import TestResult
+from tests_engine import TestResult, CRITICAL_TEST
 
 
 THIS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -115,7 +115,7 @@ class NUnitTestSuite(object):
     @staticmethod
     def find_failed_tests(path, files_pattern='*.csproj.xml'):
         test_files = glob.glob(os.path.join(path, files_pattern))
-        ret = {'mandatory': []}
+        ret = {CRITICAL_TEST: []}
         for test_file in test_files:
             tree = ET.parse(test_file)
             root = tree.getroot()
@@ -123,9 +123,9 @@ class NUnitTestSuite(object):
             xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
             for test in root.iter(f"{{{xmlns}}}UnitTestResult"):
                 if test.attrib['outcome'] == 'Failed':
-                    ret['mandatory'].append(test.attrib['testName'])
+                    ret[CRITICAL_TEST].append(test.attrib['testName'])
 
-        if not ret['mandatory']:
+        if not ret[CRITICAL_TEST]:
             return None
         return ret
 

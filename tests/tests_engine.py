@@ -21,6 +21,8 @@ shared_suite_counter = None
 shared_active_suites = None
 
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
+# Not a TestTag because it's not a real tag, it's the default.
+CRITICAL_TEST = 'mandatory'
 
 class TestTag(str, Enum):
     SKIPPED = "skipped"
@@ -422,9 +424,9 @@ def print_failed_tests(options):
                 for i, fail in enumerate(failed[what]):
                     print("\t{0}. {1}".format(i + 1, fail))
 
-            if 'mandatory' in failed and failed['mandatory']:
+            if CRITICAL_TEST in failed and failed[CRITICAL_TEST]:
                 print("Failed {} critical tests:".format(handler['type']))
-                _print_helper('mandatory')
+                _print_helper(CRITICAL_TEST)
 
             if TestTag.NON_CRITICAL in failed and failed[TestTag.NON_CRITICAL]:
                 print("Failed {} non-critical tests:".format(handler['type']))

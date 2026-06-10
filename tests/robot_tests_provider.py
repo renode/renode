@@ -26,7 +26,7 @@ from robot.libraries.DateTime import Time
 import xml.etree.ElementTree as ET
 import urllib.parse
 
-from tests_engine import TestResult, TestTag
+from tests_engine import TestResult, TestTag, CRITICAL_TEST
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -1190,7 +1190,7 @@ class RobotTestSuite(object):
 
     @staticmethod
     def find_failed_tests(path, file="robot_output.xml"):
-        ret = {'mandatory': set(), TestTag.NON_CRITICAL: set()}
+        ret = {CRITICAL_TEST: set(), TestTag.NON_CRITICAL: set()}
 
         # Aggregate failed tests from all report files (can be multiple if iterations or retries were used)
         for dirpath, _, fnames in os.walk(path):
@@ -1217,9 +1217,9 @@ class RobotTestSuite(object):
                             if TestTag.NON_CRITICAL in tags:
                                 ret[TestTag.NON_CRITICAL].add(f"{suite_name}.{test_name}")
                             else:
-                                ret['mandatory'].add(f"{suite_name}.{test_name}")
+                                ret[CRITICAL_TEST].add(f"{suite_name}.{test_name}")
 
-        if not ret['mandatory'] and not ret[TestTag.NON_CRITICAL]:
+        if not ret[CRITICAL_TEST] and not ret[TestTag.NON_CRITICAL]:
             return None
         return ret
 
