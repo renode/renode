@@ -378,106 +378,6 @@ can6: CAN.S32K3XX_FlexCAN @ { sysbus 0x4031C000; xrdc [1, 199] }
 
 can7: CAN.S32K3XX_FlexCAN @ { sysbus 0x40320000; xrdc [1, 200] }
 
-mc_cgm_mux_0_css: Python.PythonPeripheral @ sysbus 0x402D8304
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_1_css: Python.PythonPeripheral @ sysbus 0x402D8344
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_2_css: Python.PythonPeripheral @ sysbus 0x402D8384
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_3_css: Python.PythonPeripheral @ sysbus 0x402D83C4
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_4_css: Python.PythonPeripheral @ sysbus 0x402D8404
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_5_css: Python.PythonPeripheral @ sysbus 0x402D8444
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_6_css: Python.PythonPeripheral @ sysbus 0x402D8484
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_7_css: Python.PythonPeripheral @ sysbus 0x402D84C4
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_8_css: Python.PythonPeripheral @ sysbus 0x402D8504
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_9_css: Python.PythonPeripheral @ sysbus 0x402D8544
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_10_css: Python.PythonPeripheral @ sysbus 0x402D8584
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_11_css: Python.PythonPeripheral @ sysbus 0x402D85C4
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_12_css: Python.PythonPeripheral @ sysbus 0x402D8604
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_13_css: Python.PythonPeripheral @ sysbus 0x402D8644
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_14_css: Python.PythonPeripheral @ sysbus 0x402D8684
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_15_css: Python.PythonPeripheral @ sysbus 0x402D86C4
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_16_css: Python.PythonPeripheral @ sysbus 0x402D8704
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_17_css: Python.PythonPeripheral @ sysbus 0x402D8744
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_18_css: Python.PythonPeripheral @ sysbus 0x402D8784
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
-mc_cgm_mux_19_css: Python.PythonPeripheral @ sysbus 0x402D87C4
-    size: 0x4
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
-
 gmac0: Network.S32K3XX_GMAC @ sysbus 0x40484000
     systemClockFrequency: 50000000
     -> mscm@224
@@ -532,7 +432,6 @@ xrdc: Miscellaneous.NXP_XRDC @ sysbus 0x40278000
     masterIdDomains: [empty, empty, 1, 3, 5, 8, 7, 0, 4, empty, 6, empty, empty, empty, empty, empty]
 
 emios0: GPIOPort.S32K3XX_eMIOS @ sysbus 0x40088000
-    clockFrequency: 156000000
     // The numbers are offset +24 to workaround the lack of named numbered gpio
     [24-27] -> mscm@[66,66,66,66]
     [28-31] -> mscm@[65,65,65,65]
@@ -542,7 +441,6 @@ emios0: GPIOPort.S32K3XX_eMIOS @ sysbus 0x40088000
     [44-47] -> mscm@[61,61,61,61]
 
 emios1: GPIOPort.S32K3XX_eMIOS @ sysbus 0x4008C000
-    clockFrequency: 156000000
     [24-27] -> mscm@[74,74,74,74]
     [28-31] -> mscm@[73,73,73,73]
     [32-35] -> mscm@[72,72,72,72]
@@ -551,13 +449,18 @@ emios1: GPIOPort.S32K3XX_eMIOS @ sysbus 0x4008C000
     [44-47] -> mscm@[69,69,69,69]
 
 emios2: GPIOPort.S32K3XX_eMIOS @ sysbus 0x40090000
-    clockFrequency: 156000000
     [24-27] -> mscm@[82,82,82,82]
     [28-31] -> mscm@[81,81,81,81]
     [32-35] -> mscm@[80,80,80,80]
     [36-39] -> mscm@[79,79,79,79]
     [40-43] -> mscm@[78,78,78,78]
     [44-47] -> mscm@[77,77,77,77]
+
+mc_cgm: Miscellaneous.S32K3XX_MC_CGM @ sysbus 0x402D8000
+    coreClk: [emios0, emios1, emios2]
+
+plldig: Miscellaneous.S32K3XX_PLLDIG @ sysbus 0x402E0000
+    clockGenerationModule: mc_cgm
 
 sysbus:
     init:
@@ -589,12 +492,10 @@ sysbus:
         Tag <0x40468000 0x4> "PRAMC_2"
 
         // Clocking
-        Tag <0x402D8000 0x800> "MC_CGM"
         Tag <0x402D0000 0xC> "FIRC"
         Tag <0x402C8000 0x10> "SIRC"
         Tag <0x402D4000 0x8> "FXOSC"
         Tag <0x402CC000 0x8> "SXOSC"
-        Tag <0x402E0000 0x88> "PLL"
         Tag <0x402E4000 0x88> "PLL_AUX"
 
         // Reset and Boot
