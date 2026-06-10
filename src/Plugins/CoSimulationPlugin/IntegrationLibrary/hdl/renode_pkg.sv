@@ -108,7 +108,6 @@ package renode_pkg;
     endfunction
 
   task connect(int receiver_port, int sender_port, string address);
-    // Backgorund connect, check is_connected from a clock-driven block
     renodeDPIConnect(receiver_port, sender_port, address);
     $display("Renode at %t: Renode connection requested (background)...", $realtime);
   endtask

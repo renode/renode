@@ -23,6 +23,9 @@ static std::atomic<SocketCommunicationChannel*> socketChannel{nullptr};
 static std::atomic<bool> connectThreadRunning{false};
 static std::atomic<bool> shouldStopConnect{false};
 
+// Initialised true at C++ static-init time, which runs once per DLL load
+static std::atomic<bool> dllFreshSinceLoad{true};
+
 #ifdef _WIN32
 static HANDLE connectThreadHandle = NULL;
 #else
@@ -95,11 +98,12 @@ static void joinConnectThread()
 
 void renodeDPIConnect(int receiverPort, int senderPort, const char* address)
 {
-    if (renodeDPIIsConnected()) return;
+    if (renodeDPIIsConnected()) {
+        return;
+    }
 
     bool expected = false;
     if (!connectThreadRunning.compare_exchange_strong(expected, true)) {
-        // A previous connect thread is still in flight; don't spawn another.
         return;
     }
 
@@ -133,9 +137,10 @@ void renodeDPIDisconnect()
 {
     shouldStopConnect.store(true);
     joinConnectThread();
-    SocketCommunicationChannel* ch = socketChannel.load(std::memory_order_acquire);
+    SocketCommunicationChannel* ch = socketChannel.exchange(nullptr, std::memory_order_acq_rel);
     if (ch != nullptr) {
         ch->disconnect();
+        delete ch;
     }
 }
 
@@ -194,4 +199,9 @@ bool renodeDPILog(int logLevel, const char* data)
     }
     ch->log(logLevel, data);
     return true;
+}
+
+bool renodeDPIIsDllFresh()
+{
+    return dllFreshSinceLoad.exchange(false, std::memory_order_acq_rel);
 }
