@@ -23,6 +23,7 @@ ${FLASH_IS25WP}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-samples
 ${CAN_COUNTER}                      ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_can_counter.elf-s_1324504-cc26c0ba1b4285b189ee6d73641ab3c81a5e6bdf
 ${CUBEMX_ETH_TEST}                  ${PROJECT_URL}/cubemx--stm32h7-eth-test.elf-s_1231644-3e808bfc20a3a96ad304acbc94c7dbd6b06245e5
 ${INTERRUPT_TEST}                   ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_arm_interrupt.elf-s_1910156-ef375658d70a341eea0d85fab970d4ddac9f22d4
+${USB}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-shell-cdc.elf-s_3030364-5067ae0e61cb460735c8e5c43f6a0000ccd17bdc
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -475,3 +476,14 @@ Should Pass Interrupt Test
 
     # test_arm_user_interrupt verifies that `MRS` hides registers in unpriviledged mode
     Wait For Test Pass                  test_arm_user_interrupt
+
+Should Communicate Over USB
+    Create Machine                      ${USB}  usb
+    Execute Command                     machine LoadPlatformDescriptionFromString "usb_uart: USB.USB_UART @ sysbus"
+    Execute Command                     usb_uart Register usb2 0
+    Create Terminal Tester              sysbus.usb_uart
+    Wait For Prompt On Uart             uart:~$
+    Write Line To Uart
+    Wait For Prompt On Uart             uart:~$
+    Write Line To Uart                  demo board
+    Wait For Line On Uart               nucleo_h753zi

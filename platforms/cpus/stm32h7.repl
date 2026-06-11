@@ -736,7 +736,8 @@ elif request.Offset == 0x04: # CSR1
    # Reset value + ACTVOSRDY (b13) indicates the voltage level is valid
    request.Value = 0x6000
 elif request.Offset == 0x0C: # CR3
-    request.Value = 0
+    # USB33RDY flag (b26) indicates the USB supply is ready
+    request.Value = 0x4000000
 elif request.Offset == 0x18: # D3CR
     # VOSRDY flag (b13) indicates the voltage was properly set.
     request.Value = 0x2000
@@ -761,6 +762,12 @@ if request.Offset in (
 else:
     self.WarningLog("Unhandled access to offset 0x{0:X}", request.Offset)
 '''
+
+usb1: USB.STM_USB @ sysbus 0x40040000
+    IRQ -> nvic@77
+
+usb2: USB.STM_USB @ sysbus 0x40080000
+    IRQ -> nvic@101
 
 sysbus:
     init:
