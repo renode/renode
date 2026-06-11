@@ -1,6 +1,8 @@
 from robot import result, running
 from robot.libraries.DateTime import Time
 
+from tests_engine import TestTag
+
 # This listener wraps the RetryFailed listener to gracefully skip retrying for timed-out tests.
 # Failure is silenced because the lack of `RetryFailed` isn't a problem if `retry_count` is one.
 try:
@@ -16,7 +18,7 @@ class retry_and_timeout_listener:
     def __init__(self, retry_count):
         if int(retry_count) > 1:
             global_retries = int(retry_count) - 1  # Our `retry_count` includes the original test too.
-            self.retry_failed = RetryFailed(global_retries)
+            self.retry_failed = RetryFailed(global_retries, keep_retried_tests=True)
 
     # Redirects access to all callbacks not implemented in this listener to `RetryFailed` if it's used.
     def __getattr__(self, name):
@@ -65,11 +67,21 @@ class retry_and_timeout_listener:
                 self.retry_failed.max_retries = self.retry_failed.retries
 
         if self.retry_failed:
-            # `RetryFailed` changes the status of retried tests to skipped. Let's restore
-            # the original status so that our output formatters print them as failed.
             original_message = result.message
             original_status = result.status
             self.retry_failed.end_test(test, result)
+
+            # A retried attempt keeps the SKIP status set by `RetryFailed` (a failed
+            # attempt mustn't fail the suite) and is tagged so that everything parsing
+            # the output can tell it apart from the final attempt. Its message stays
+            # the unmodified failure message.
+            if self.retry_failed.retries != 0:
+                result.tags.add(TestTag.RETRIED_ATTEMPT)
+                result.message = original_message
+                return
+
+            # On the final attempt restore the original status changed by `RetryFailed`
+            # so that our output formatters print it as failed.
             result.status = original_status
 
             # Let's also restore the original message without suffixes added by `RetryFailed`

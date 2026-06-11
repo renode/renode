@@ -736,6 +736,14 @@ class RobotTestSuite(object):
         else:
             print(f"{renode} closed")
 
+    @staticmethod
+    def _is_retried_attempt(test: ET.Element) -> bool:
+        """Whether this `test` element is a non-final attempt of a test retried with `-N/--retry`.
+
+        Only the last attempt carries the test's final verdict; the earlier ones are kept
+        in the output for their failure messages and logs."""
+        return any(tag.text == TestTag.RETRIED_ATTEMPT for tag in test.findall('tag'))
+
     @classmethod
     def _has_renode_crashed(cls, test: ET.Element) -> bool:
         # only finds immediate children - required because `status`
@@ -974,8 +982,9 @@ class RobotTestSuite(object):
 
                 # Look for regular expressions signifying a crash.
                 # Suite Setup and Suite Teardown aren't checked here cause they're in the `kw` tags.
+                # Attempts recovered by a test-level retry don't warrant rerunning the suite.
                 for test in suite.iter('test'):
-                    if self._has_renode_crashed(test):
+                    if not self._is_retried_attempt(test) and self._has_renode_crashed(test):
                         return True
 
         return False
@@ -1208,6 +1217,8 @@ class RobotTestSuite(object):
                     if not suite.get('source', False):
                         continue # it is a tag used to group other suites without meaning on its own
                     for test in suite.iter('test'):
+                        if RobotTestSuite._is_retried_attempt(test):
+                            continue # only the final attempt carries the test's verdict
                         status_element = test.find('status') # only finds immediate children - important requirement
                         status = status_element.attrib['status']
                         test_name = test.attrib['name']
@@ -1320,6 +1331,8 @@ class RobotTestSuite(object):
                     # the suite name from the *.robot file name.
                     suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                 for test in suite.iter('test'):
+                    if cls._is_retried_attempt(test):
+                        continue # attempt counts are read off the final attempt's [RETRY] suffix
                     test_name = test.attrib['name']
                     tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
                     if TestTag.SKIPPED in tags:

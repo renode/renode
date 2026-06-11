@@ -29,6 +29,7 @@ class TestTag(str, Enum):
     SKIPPED = "skipped"
     NON_CRITICAL = "non_critical"
     UNSTABLE = "unstable"
+    RETRIED_ATTEMPT = "retried_attempt"
 
     def __str__(self):
         return self.value
