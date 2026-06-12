@@ -7,7 +7,7 @@ include @platforms/boards/ramn.repl
 
 if `str_contains $global.name "ECUA"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUA.elf-s_2734852-5896caa99eb55997686c9235ab5fa1e6587c2180
+$bin= @https://dl.antmicro.com/projects/renode/ECUA-watchdog.elf-s_2739268-b034321e255eae4970567b0d80cbc762cd3c47d0
 include @platforms/boards/ramn/GATEWAY.repl
 """
 
