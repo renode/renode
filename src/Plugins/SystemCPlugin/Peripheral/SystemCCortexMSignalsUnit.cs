@@ -209,7 +209,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return;
             }
 
-            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+            void reset()
             {
                 cpu.Reset();
                 nvic.Reset();
@@ -217,7 +217,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 // Ensure cpu is resumed after implicit pause on cpu reset.
                 // Halt condition is preserved.
                 cpu.Resume();
-            }, true);
+            }
+
+            if(UseNative)
+            {
+                // We can reset synchronously over native interface,
+                // as we implement a sideband channel that prevents deadlocks.
+                reset();
+            }
+            else
+            {
+                // Sideband channel is not implemented yet for socket transport.
+                // As a result GPIO signal (PowerOnReset/CoreResetIn) from SystemC
+                // can trigger either bus access to SystemC 
+                // or assert GPIO signal from Renode -> SystemC.
+                // If we are already blocking on TimeSync,
+                // it would cause a deadlock, so defer it.
+                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+                {
+                    reset();
+                }, true);
+            }
         }
 
         private bool vtorInitialized = false;
