@@ -268,6 +268,8 @@ public:
   void handle_backward_response_from_native(renode_message message);
   void handle_backward_response_dmi_from_native(dmi_message message);
   void handle_forward_request_from_native(renode_message message);
+  void handle_sideband_access(renode_message &message);
+  void handle_sideband_gpio_write(renode_message &message);
 public:
   using renode_bus_target_socket =
       tlm::tlm_target_socket<RENODE_BUSWIDTH, tlm::tlm_base_protocol_types, 1,

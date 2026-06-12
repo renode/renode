@@ -17,6 +17,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         delegate* unmanaged<void*, RenodeMessage, void> SendForwardRequestNative { get; set; }
 
+        delegate* unmanaged<void*, RenodeMessage, RenodeMessage> HandleSidebandForwardRequestNative { get; set; }
+
         void HandleBackwardRequestFromNative(RenodeMessage message);
 
         void HandleForwardResponseFromNative(RenodeMessage message);

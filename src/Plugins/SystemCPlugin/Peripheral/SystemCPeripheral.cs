@@ -92,7 +92,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             var payload = value ? 1UL : 0UL;
             var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, (ulong)number, payload);
-            SendRequest(request, out var response);
+            RenodeMessage response;
+
+            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            {
+                if(SendSidebandRequest(request, out response))
+                {
+                    return;
+                }
+            }
+            SendRequest(request, out response);
         }
 
         public void WriteDirect(byte dataLength, long offset, ulong value, byte connectionIndex)
@@ -193,7 +202,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             dmiAllowed = false;
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
-            if(!SendRequest(request, out var response))
+            RenodeMessage response;
+
+            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            {
+                if(SendSidebandRequest(request, out response))
+                {
+                    return response.Payload;
+                }
+            }
+
+            if(!SendRequest(request, out response))
             {
                 this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Read will return 0.");
                 return 0;
@@ -201,7 +220,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             TryToSkipTransactionTime(response.Address);
             dmiAllowed = response.ConnectionIndex == DmiSupported;
-
             return response.Payload;
         }
 
@@ -218,7 +236,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             dmiAllowed = false;
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
-            if(!SendRequest(request, out var response))
+            RenodeMessage response;
+
+            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            {
+                if(SendSidebandRequest(request, out response))
+                {
+                    return;
+                }
+            }
+
+            if(!SendRequest(request, out response))
             {
                 this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Write will have no effect.");
                 return;

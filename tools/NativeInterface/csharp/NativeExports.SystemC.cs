@@ -136,6 +136,7 @@ struct dmi_native_message {
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, RenodeMessage, void> bwResponseHandler,
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, DMIMessage, void> bwResponseDmiHandler,
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, RenodeMessage, void> fwRequestHandler,
+            [DNNE.C99Type("void*")] delegate* unmanaged<void*, RenodeMessage, RenodeMessage> fwRequestSidebandHandler,
             [DNNE.C99Type("const char *")] byte* machName,
             [DNNE.C99Type("const char *")] byte* periName
         )
@@ -149,6 +150,7 @@ struct dmi_native_message {
             systemC.SendBackwardResponseNative = bwResponseHandler;
             systemC.SendBackwardResponseDmiNative = bwResponseDmiHandler;
             systemC.SendForwardRequestNative = fwRequestHandler;
+            systemC.HandleSidebandForwardRequestNative = fwRequestSidebandHandler;
 
             return NativeStatus.Success;
         }

@@ -74,6 +74,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             SendBackwardResponseNative = null;
             SendForwardRequestNative = null;
             SendBackwardResponseDmiNative = null;
+            HandleSidebandForwardRequestNative = null;
 
             TeardownTimesync();
         }
@@ -115,6 +116,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public delegate* unmanaged<void*, RenodeMessage, void> SendForwardRequestNative { get; set; }
 
+        public delegate* unmanaged<void*, RenodeMessage, RenodeMessage> HandleSidebandForwardRequestNative { get; set; }
+
         public bool NativeConfigured
         {
             get
@@ -122,7 +125,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return RenodeBridgeRef != null
                     && SendBackwardResponseNative != null
                     && SendBackwardResponseDmiNative != null
-                    && SendForwardRequestNative != null;
+                    && SendForwardRequestNative != null
+                    && HandleSidebandForwardRequestNative != null
+                ;
             }
         }
 
@@ -275,6 +280,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
                     Dispose();
                 }
+            }
+        }
+
+        protected bool SendSidebandRequest(RenodeMessage request, out RenodeMessage response)
+        {
+            response = default;
+            this.Log(LogLevel.Noisy, "Sending sideband request. Action: {0} | Address: {1:X} | Payload: {2:X}", request.ActionId, request.Address, request.Payload);
+            if(useNative)
+            {
+                if(!NativeConfigured)
+                {
+                    this.ErrorLog("Trying to send sideband request using unconfigured native interface");
+                    return false;
+                }
+                response = HandleSidebandForwardRequestNative(RenodeBridgeRef, request);
+                return true;
+            }
+            else
+            {
+                this.ErrorLog("Sideband request can be sent only over native interface");
+                return false;
             }
         }
 

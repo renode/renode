@@ -125,6 +125,16 @@ perform_transaction(renode_bridge::renode_bus_initiator_socket &socket,
   return sc_time_to_us(delay);
 }
 
+static uint64_t
+perform_debug_transaction(renode_bridge::renode_bus_initiator_socket &socket,
+                    tlm::tlm_generic_payload *payload) {
+  unsigned int n_bytes = socket->transport_dbg(*payload);
+#ifdef VERBOSE
+  print_transaction_status(payload);
+#endif
+  return n_bytes;
+}
+
 static void terminate_simulation(int exitstatus) {
   sc_core::sc_stop();
   exit(exitstatus);
@@ -161,6 +171,24 @@ static void handle_forward_request_native(void* opaque_ptr, renode_message messa
   bridge->handle_forward_request_from_native(message);
 }
 
+static renode_message handle_sideband_forward_request_native(void* opaque_ptr, renode_message message) {
+  renode_bridge* bridge = (renode_bridge*)opaque_ptr;
+  switch (message.action) {
+    case WRITE:
+    case WRITE_REGISTER:
+    case READ:
+    case READ_REGISTER:
+      bridge->handle_sideband_access(message);
+      break;
+    case GPIOWRITE:
+      bridge->handle_sideband_gpio_write(message);
+      break;
+    default:
+      assert(!"Only WRITE, READ, GPIOWRITE messages should be issued over sideband request");
+    }
+  return message;
+}
+
 void renode_bridge::handle_backward_response_from_native(renode_message message)
 {
   bw_response.add(message);
@@ -174,6 +202,29 @@ void renode_bridge::handle_backward_response_dmi_from_native(dmi_message message
 void renode_bridge::handle_forward_request_from_native(renode_message message)
 {
   fw_request.add(message);
+}
+
+void renode_bridge::handle_sideband_access(renode_message &message)
+{
+  uint8_t data[8] = {};
+  memset(data, 0, sizeof(data));
+  initialize_payload(payload.get(), &message, data);
+
+  *((uint64_t *)data) = message.payload; // used for write only
+  uint64_t n_bytes = perform_debug_transaction(this->initiator_socket, payload.get());
+  message.payload = *((uint64_t *)data); // used for read only
+  message.address = n_bytes; // address field is reused to store the number of written/read bytes
+}
+
+void renode_bridge::handle_sideband_gpio_write(renode_message &message)
+{
+  auto number = message.address;
+  auto value = message.payload;
+  sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
+  if (iface == nullptr) {
+    return;
+  }
+  gpio_ports_out[number]->write(value == 1);
 }
 
 renode_message renode_bridge::receive_backward_response()
@@ -254,7 +305,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
       peri(peri) {
   if (native) {
 #ifdef RENODE_NATIVE_INTERFACE
-    auto rc = renode_systemc_setup_renode_bridge((void*)this, (void*)handle_backward_response_native, (void*)handle_backward_response_dmi_native, (void*)handle_forward_request_native, mach.c_str(), peri.c_str());
+    auto rc = renode_systemc_setup_renode_bridge((void*)this, (void*)handle_backward_response_native, (void*)handle_backward_response_dmi_native, (void*)handle_forward_request_native, (void*)handle_sideband_forward_request_native, mach.c_str(), peri.c_str());
     if (rc != RENODE_SUCCESS) {
       fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
       terminate_simulation(1);
