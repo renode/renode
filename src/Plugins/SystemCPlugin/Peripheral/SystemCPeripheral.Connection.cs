@@ -299,7 +299,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
             else
             {
-                this.ErrorLog("Sideband request can be sent only over native interface");
+                // Debug log level is used instead of an error, as there is a fallback to the regular forward request.
+                this.DebugLog("Sideband request can be sent only over native interface");
                 return false;
             }
         }
