@@ -127,7 +127,7 @@ Should Pass Semihosting Tests With Arguments
         TRY
             ${elf}=                         Set Variable  ${${testName}}
             Create Machine                  ${elf}
-            Execute Command                 cpu.semihosting ProgramArguments "program-name hello world"
+            Execute Command                 cpu.semihosting ProgramArguments "hello world"
             Check Exit Status Log
         EXCEPT  AS  ${error}
             Fail                            ${testName} test failed:\n${error}
