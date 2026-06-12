@@ -7,8 +7,10 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 
+using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.RobotFramework;
 using Antmicro.Renode.UI;
@@ -22,6 +24,14 @@ namespace Antmicro.Renode
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += (_, __) => Emulator.Exit();
+
+            void SignalHandler(PosixSignalContext ctx)
+            {
+                ctx.Cancel = true;
+                Emulator.Exit();
+            }
+            var signal = RuntimeInfo.IsWindows() ? PosixSignal.SIGQUIT : PosixSignal.SIGINT;
+            using var signalHandler = PosixSignalRegistration.Create(signal, SignalHandler);
 
             var options = new Options();
             var optionsParser = new OptionsParser.OptionsParser();

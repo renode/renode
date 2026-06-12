@@ -256,6 +256,9 @@
 - tests/platforms/frdm-imx8mp_linux.robot
 - tests/peripherals/LPS25HB.robot
 
+- signal_handling:
+  - tests/unit-tests/signal_handling.robot
+
 # Do not use port 3333 in unit tests
 
 - port_3334:
