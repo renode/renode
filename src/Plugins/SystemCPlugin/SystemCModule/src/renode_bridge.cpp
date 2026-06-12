@@ -95,6 +95,10 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
     assert(!"Only WRITE and READ messages should initialize TLM payload");
   }
 
+  if(message->data_length > 8) {
+    assert(!"data_length > 8 is currently not supported");
+  }
+
   payload->set_command(command);
   // Right now the address visible to SystemC is directly the offset
   // from Renode; i. e. if we write to address 0x9000100 and the peripheral
