@@ -86,7 +86,7 @@ Define Window In Peripheral
 *** Test Cases ***
 Setting MMU Window Parameters Before Enabling Throws
     Create Platform
-    Run Keyword And Expect Error    KeywordException: *There was an error executing command 'cpu SetMmuWindowAddend 0 256'External MMU not enabled*
+    Run Keyword And Expect Error    KeywordException: *There was an error executing command 'cpu SetMmuWindowAddend 0 256': External MMU not enabled*
     ...  Execute Command                 cpu SetMmuWindowAddend 0 0x100
 
 Using Too High MMU Window Index Throws
