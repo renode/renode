@@ -29,6 +29,10 @@ flash_controller: MTD.STM32F4_FlashController @ {
 
 rom: Memory.MappedMemory @ sysbus 0x1FF00000
     size: 0x10000
+    init:
+        WriteDoubleWord 0xF420 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.Next()"`
+        WriteDoubleWord 0xF424 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.Next()"`
+        WriteDoubleWord 0xF428 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.Next()"`
 
 usart1: UART.STM32F7_USART @ sysbus 0x40011000
     frequency: 200000000
