@@ -6,17 +6,17 @@ ${MIN_ACCEPTABLE_RUNTIME_SECONDS}       10
 Battery LED Toggling From Engine Key
     [Arguments]     ${LEDHoldingTimeout}    ${LEDName}
 
-    CreateLEDTester         sysbus.spi2.ledController.${LEDName}  machine=ECUD
+    Create LED Tester           sysbus.spi2.ledController.${LEDName}  machine=ECUD
 
     # Wait 5 seconds for the LEDs to turn off after the startup sequence
-    Execute Command         emulation RunFor "5s"
-    AssertAndHoldLedState   false   timeoutAssert=0     timeoutHold=${LEDHoldingTimeout}
+    Execute Command             emulation RunFor "5s"
+    Assert And Hold Led State   false   timeoutAssert=0     timeoutHold=${LEDHoldingTimeout}
 
-    Execute Command         adc1.engineKey CurrentState "middle"
-    AssertAndHoldLedState   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
+    Execute Command             adc1.engineKey CurrentState "middle"
+    Assert And Hold Led State   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
-    Execute Command         adc1.engineKey CurrentState "left"
-    AssertAndHoldLedState   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
+    Execute Command             adc1.engineKey CurrentState "left"
+    Assert And Hold Led State   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
 Trigger Watchdog Reset
     Create Log Tester       timeout=10  defaultPauseEmulation=true
