@@ -189,11 +189,6 @@ do
 done
 shift "$((OPTIND-1))"
 PARAMS+=(
-  # By default use CC as Compiler- and LinkerPath, and AR as ArPath
-  ${CC:+"p:CompilerPath=$CC"}
-  ${CC:+"p:LinkerPath=$CC"}
-  ${AR:+"p:ArPath=$AR"}
-  # But allow users to override it
   "$@"
 )
 
