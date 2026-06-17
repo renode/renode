@@ -32,3 +32,56 @@ if request.IsRead:
 elif request.IsWrite:
     self.WarningLog('Unhandled write to offset 0x{0:X}.'.format(request.Offset))
 '''
+
+/*
+ * Clock tree described in figure 30 of the STM32L5 reference manual. The RAMN firmware configures
+ * values as follow:
+ * - SYST_CSR.CLKSOURCE == 1, so systick clock is AHB clock
+ * - HSE as PLL source
+ * - PLLN = 16
+ * - PLLR = 2
+ * - AHB prescaler = 1
+ * - APB1 and APB2 prescalres = 1
+ *
+ * Note: as this is not the default configuration, other clock values exist before the clock
+ * initialization by the firmware.
+ *
+ * As RAMN documentation suggests that the preferred external crystal frequency is 10MHz, then:
+ * - systick a frequency is (HSE * PLLN) / PLLR / AHB Prescaler = 10 * 16 / 2 / 1 = 80MHz
+ * - timers frequencies are: (HSE * PLLN) / PLLR / AHB Prescaler / APB{1,2} Prescaler = 10 * 16 / 2 / 1 = 80MHz
+ */
+nvic:
+    systickFrequency: 80000000
+
+timer1:
+    frequency: 80000000
+
+timer2:
+    frequency: 80000000
+
+timer3:
+    frequency: 80000000
+
+timer4:
+    frequency: 80000000
+
+timer5:
+    frequency: 80000000
+
+timer6:
+    frequency: 80000000
+
+timer7:
+    frequency: 80000000
+
+timer8:
+    frequency: 80000000
+
+timer15:
+    frequency: 80000000
+
+timer16:
+    frequency: 80000000
+
+timer17:
+    frequency: 80000000
