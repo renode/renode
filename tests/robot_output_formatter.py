@@ -47,6 +47,8 @@ def end_test(data, result):
     else:
         if TestTag.RETRIED_ATTEMPT in result.tags:
             status = term_color.YELLOW + 'failed (will be retried)' + term_color.RESET
+        elif TestTag.UNSTABLE in result.tags:
+            status = term_color.BLUE + 'failed (known-unstable)' + term_color.RESET
         elif result.skipped:
             status = term_color.BLUE + 'skipped' + term_color.RESET
         elif TestTag.NON_CRITICAL in result.tags:
