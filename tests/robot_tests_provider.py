@@ -844,9 +844,12 @@ class RobotTestSuite(object):
 
             if renode_pid != -1:
                 renode_memory_stats = {"peak_unique_set_size_bytes": monitor.get_peak_and_reset()}
-                renode_process = psutil.Process(renode_pid)
-                stats = collect_process_stats(renode_process)
-                renode_process_stats = stats.to_metadata() if stats else {}
+                try:
+                    renode_process = psutil.Process(renode_pid)
+                    stats = collect_process_stats(renode_process)
+                    renode_process_stats = stats.to_metadata() if stats else {}
+                except psutil.NoSuchProcess as err:
+                    print(f"error: Failed to collect process statistics for PID `{renode_pid}`: {err}")
 
         logs = get_result()[1]
         for log in logs: 
