@@ -216,8 +216,7 @@ namespace Antmicro.Renode.RobotFramework
             {
                 if(failingString.TreatAsRegex)
                 {
-                    var regex = new Regex(failingString.Pattern);
-                    return regex.IsMatch(entry.FullMessage);
+                    return failingString.CompiledRegex.IsMatch(entry.FullMessage);
                 }
                 return entry.FullMessage.Contains(failingString.Pattern);
             });
@@ -235,11 +234,13 @@ namespace Antmicro.Renode.RobotFramework
         {
             public string Pattern;
             public bool TreatAsRegex;
+            public Regex CompiledRegex;
 
             public FailingString(string pattern, bool treatAsRegex)
             {
                 this.Pattern = pattern;
                 this.TreatAsRegex = treatAsRegex;
+                this.CompiledRegex = treatAsRegex ? new Regex(pattern, RegexOptions.Compiled) : null;
             }
         }
     }
