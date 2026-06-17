@@ -1,0 +1,26 @@
+using "platforms/cpus/imxrt1064.repl"
+
+// Teensy 4 uses 100 kHz as SYSTICK
+// see https://github.com/PaulStoffregen/cores/blob/58224e5554d0cda93f92c52078a500a0d898a996/teensy4/startup.c#L223
+nvic:
+    systickFrequency: 100000
+
+// Remapping 0x60000000 to MappedMemory for XIP
+flex_spi: @ sysbus 0x402A8000
+
+flash: SPI.Micron_MT25Q @ flex_spi
+    underlyingMemory: flash_mem
+
+flash_mem: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x800000
+
+psram: SPI.Micron_MT25Q @ flex_spi2
+    underlyingMemory: psram_mem
+
+psram_mem: Memory.MappedMemory @ sysbus 0x70000000
+    size: 0x800000
+
+gpio7:
+    3 -> led@0
+led: Miscellaneous.LED @ gpio7 3
+
