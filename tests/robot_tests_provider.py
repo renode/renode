@@ -36,6 +36,11 @@ keywords_path = keywords_path.replace(os.path.sep, "/")  # Robot wants forward s
 
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll'
 
+if platform == "win32":
+    CREATE_NEW_PROCESS_GROUP = 0x00000200  # subprocess.CREATE_NEW_PROCESS_GROUP
+else:
+    CREATE_NEW_PROCESS_GROUP = 0
+
 @dataclass(frozen=True)
 class CpuTime:
     user_time: float
@@ -563,7 +568,7 @@ class RobotTestSuite(object):
             print(f"WARNING: perf stdout and stderr is being redirected to {stdout_path}")
 
             perf_stdout_stderr_file = open(stdout_path, "w")
-            process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file)
+            process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file, creationflags=CREATE_NEW_PROCESS_GROUP)
 
             pid_file_path = os.path.join(self.remote_server_directory, pid_filename)
             perf_renode_timeout = 10
@@ -593,13 +598,13 @@ class RobotTestSuite(object):
                 stderr_path = os.path.join(logs_dir, f"{suite_name}.renode_stderr.log")
                 fout = open(stdout_path, "wb", buffering=0)
                 ferr = open(stderr_path, "wb", buffering=0)
-                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr)
+                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr, creationflags=CREATE_NEW_PROCESS_GROUP)
                 if process.pid == -1:
                     report_dead_subprocess(process)
 
                 self.renode_pid = process.pid
             else:
-                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1)
+                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, creationflags=CREATE_NEW_PROCESS_GROUP)
                 if process.pid == -1:
                     report_dead_subprocess(process)
                 self.renode_pid = process.pid
