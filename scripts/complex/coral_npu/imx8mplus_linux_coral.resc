@@ -1,0 +1,69 @@
+:name: i.MX 8M Plus Linux w/ Coral NPU
+:description: This script runs Linux on NXP i.MX 8M Plus, with Coral NPU inserted
+
+$name?="frdm_imx8mp_npu"
+$sd_img?=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu.img-s_268435456-cdb480062eef74beaf1fe80c020637f84a5d4bc1
+
+i @scripts/single-node/nxp-imx8mplus_linux.resc
+
+# Add the NPU
+machine LoadPlatformDescriptionFromString "npu: CPU.CoralNPU @ sysbus 0xE00000000"
+
+python """
+import Antmicro.Renode.Hooks.UartHooksExtensions as UartHooks
+clr.ImportExtensions(Antmicro.Renode.Hooks.UartHooksExtensions)
+
+_CORAL_CORES = [
+    ("cpu0",               "sysbus.ca53Cluster.cpu0"),
+    ("cpu1",               "sysbus.ca53Cluster.cpu1"),
+    ("cpu2",               "sysbus.ca53Cluster.cpu2"),
+    ("cpu3",               "sysbus.ca53Cluster.cpu3"),
+    ("NPU (CoralNPU_RVV)", "sysbus.CoralNPU_RVV"),
+]
+
+_NPU_PATH = "sysbus.CoralNPU_RVV"
+
+def mc_coralStats_reset(line=None):
+    last = mc_coralStats_reset.last
+    last.clear()
+    for label, path in _CORAL_CORES:
+        last[path] = machine[path].ExecutedInstructions
+    print "\ninitializing instruction counting stats"
+
+def mc_coralStats_print(line=None):
+    last = mc_coralStats_reset.last
+    if len(last) == 0:
+        print "instruction counting stats not initialized"
+        return
+    print "\nARM instructions; NPU:"
+    arm_total = 0
+    for label, path in _CORAL_CORES:
+        current = machine[path].ExecutedInstructions
+        if path == _NPU_PATH:
+            print "  %-20s %d (last run)" % (label + ":", current)
+        else:
+            delta = current - last[path]
+            last[path] = current
+            arm_total += delta
+            print "  %-20s %d" % (label + ":", delta)
+    print "  %-20s %d" % ("ARM total:", arm_total)
+
+mc_coralStats_reset.last = {}
+
+machine = monitor.Machine
+uart = machine['sysbus.uart2']
+
+uart.AddLineHook(lambda line: '# run_coral' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'coral: finished, output[0] = 0x0007' in line, mc_coralStats_print)
+uart.AddLineHook(lambda line: '# arm_vector_add' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'arm_vector_add: output[0] = 0x0007' in line, mc_coralStats_print)
+"""
+
+echo ""
+echo "i.MX 8M Plus Linux with Coral NPU"
+echo ""
+echo "Available commands in the Linux shell:"
+echo "  prepare_coral   - stages rvv_add_intrinsic.bin into the NPU's ITCM"
+echo "  run_coral       - runs the payload on the NPU and reports its instruction usage statistics"
+echo "  arm_vector_add  - runs the same payload natively on the Cortex-A53 cores and reports its instruction usage statistics"
+echo ""

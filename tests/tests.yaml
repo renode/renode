@@ -254,6 +254,7 @@
 - tests/peripherals/NXP_IMX_Watchdog.robot
 - tests/peripherals/IMX8MP_Flexcan.robot
 - tests/platforms/frdm-imx8mp_linux.robot
+- tests/peripherals/imx8mplus_linux_coral_demo.robot
 - tests/peripherals/LPS25HB.robot
 
 - signal_handling:
