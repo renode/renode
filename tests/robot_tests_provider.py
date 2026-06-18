@@ -1208,10 +1208,18 @@ class RobotTestSuite(object):
     def find_failed_tests(path, file="robot_output.xml"):
         ret = {CRITICAL_TEST: set(), TestTag.NON_CRITICAL: set(), TestTag.UNSTABLE: set()}
 
-        # Aggregate failed tests from all report files (can be multiple if iterations or retries were used)
-        for dirpath, _, fnames in os.walk(path):
-            for fname in filter(lambda x: x == file, fnames):
-                tree = ET.parse(os.path.join(dirpath, fname))
+        report_paths = [
+            os.path.join(dirpath, fname)
+            for dirpath, _, fnames in os.walk(path)
+            for fname in fnames if fname == file
+        ]
+        # Walk retries in order so a test's last-retry verdict overwrites earlier ones,
+        # otherwise a test that failed early but passed on retry would stay failed.
+        grouped = RobotTestSuite.group_log_paths(report_paths)
+        final = {}
+        for iteration, suite_retry in sorted(grouped):
+            for report_path in grouped[(iteration, suite_retry)]:
+                tree = ET.parse(report_path)
                 root = tree.getroot()
                 for suite in root.iter('suite'):
                     if not suite.get('source', False):
@@ -1230,15 +1238,18 @@ class RobotTestSuite(object):
                             suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
                         qualified_suite_name = f"{suite_name}.{test_name}"
                         tags = [tag.text for tag in test.findall('tag') if tag.text is not None]
-                        if status == 'FAIL':
-                            if TestTag.SKIPPED in tags:
-                                continue # skipped test should not be classified as fail
-                            if TestTag.NON_CRITICAL in tags:
-                                ret[TestTag.NON_CRITICAL].add(qualified_suite_name)
-                            else:
-                                ret[CRITICAL_TEST].add(qualified_suite_name)
-                        elif status == "SKIP" and TestTag.UNSTABLE in tags:
-                            ret[TestTag.UNSTABLE].add(qualified_suite_name)
+                        final[(iteration, qualified_suite_name)] = (status, tags)
+
+        for (_, qualified_suite_name), (status, tags) in final.items():
+            if status == 'FAIL':
+                if TestTag.SKIPPED in tags:
+                    continue # skipped test should not be classified as fail
+                if TestTag.NON_CRITICAL in tags:
+                    ret[TestTag.NON_CRITICAL].add(qualified_suite_name)
+                else:
+                    ret[CRITICAL_TEST].add(qualified_suite_name)
+            elif status == "SKIP" and TestTag.UNSTABLE in tags:
+                ret[TestTag.UNSTABLE].add(qualified_suite_name)
 
         if not ret[CRITICAL_TEST] and not ret[TestTag.NON_CRITICAL] and not ret[TestTag.UNSTABLE]:
             return None
