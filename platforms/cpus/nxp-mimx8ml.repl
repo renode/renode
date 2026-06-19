@@ -202,6 +202,15 @@ apis1_gpc: Python.PythonPeripheral @ sysbus 0x303a0000
     initable: true
     filename: "scripts/pydev/flipflop.py"
 
+ecspi1: SPI.NXP_ECSPI @ sysbus 0x30820000
+    ->gic@31
+
+ecspi2: SPI.NXP_ECSPI @ sysbus 0x30830000
+    ->gic@32
+
+ecspi3: SPI.NXP_ECSPI @ sysbus 0x30840000
+    ->gic@33
+
 sysbus:
     init add:
         Tag <0x00100000 0x00008000> "CAAM"
@@ -272,9 +281,6 @@ sysbus:
         Tag <0x306C0000 0x10000> "System_Counter_CTRL"
         Tag <0x307C0000 0x10000> "PERFMON1"
         Tag <0x307D0000 0x10000> "PERFMON2"
-        Tag <0x30820000 0x10000> "eCSPI1"
-        Tag <0x30830000 0x10000> "eCSPI2"
-        Tag <0x30840000 0x10000> "eCSPI3"
         Tag <0x308C0000 0x10000> "FlexCAN1"
         Tag <0x308D0000 0x10000> "FlexCAN2"
         Tag <0x30900000 0x10000> "CAAM 256KB"
