@@ -32,6 +32,8 @@ namespace Antmicro.Renode
             }
             var signal = RuntimeInfo.IsWindows() ? PosixSignal.SIGQUIT : PosixSignal.SIGINT;
             using var signalHandler = PosixSignalRegistration.Create(signal, SignalHandler);
+            using var sigtermHandler = PosixSignalRegistration.Create(PosixSignal.SIGTERM, SignalHandler);
+            using var sighupHandler = PosixSignalRegistration.Create(PosixSignal.SIGHUP, SignalHandler);
 
             var options = new Options();
             var optionsParser = new OptionsParser.OptionsParser();
