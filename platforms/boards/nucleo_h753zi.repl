@@ -25,3 +25,6 @@ phy: Network.EthernetPhysicalLayer @ ethernet 0
     AutoNegotiationLinkPartnerBasePageAbility: 0x0001
     AutoNegotiationExpansion: 0x0064
     AutoNegotiationNextPageTransmit: 0x2001
+    // PHYSCSR (LAN8742 vendor reg 0x1F). ST's LAN8742 BSP reads this for link/speed/duplex:
+    // AUTONEGDONE(b12) | HCDSPEED=100BASE-TX full-duplex(b4:2=0b110) => link up @ 100M/FD.
+    VendorSpecific15: 0x1018
