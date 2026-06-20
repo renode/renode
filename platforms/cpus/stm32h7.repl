@@ -546,6 +546,7 @@ sysbus:
         Tag <0x58027000, 0x580273FF> "RAMECC3"
         Tag <0x58025800, 0x58025BFF> "DMAMUX2"
         Tag <0x58024800, 0x58024BFF> "PWR"
+        Tag <0x58024804, 0x58024804> "CSR1" 0x2000  // PWR_CSR1.ACTVOSRDY (b13) — HAL_PWREx_ConfigSupply spins on it at boot.
         Tag <0x58024818, 0x58024818> "D3CR" 0x2000  // VOSRDY flag (b13) indicates the voltage was properly set.
         Tag <0x58005400, 0x580057FF> "SAI4"
         Tag <0x58003C00, 0x58003FFF> "VREF"
