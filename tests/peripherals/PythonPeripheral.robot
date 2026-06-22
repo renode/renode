@@ -21,4 +21,9 @@ Invalid Python Script In Filename Should Return Error
 
     Execute Command     mach create
     Should Throw Python Syntax Exception
-    ...                 machine LoadPlatformDescriptionFromString "p: Python.PythonPeripheral { size: 0; filename: \\"${TEMPDIR}/invalid.py\\" }"
+    ...                 machine LoadPlatformDescriptionFromString "p: Python.PythonPeripheral {size: 0; filename: \\"${pythonScript}\\" }"
+
+Invalid Python Script Should Return Error
+    Execute Command     mach create
+    Should Throw Python Syntax Exception
+    ...                 machine LoadPlatformDescriptionFromString "p: Python.PythonPeripheral { size: 0; script: '''invalid Python''' }"
