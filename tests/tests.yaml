@@ -256,6 +256,7 @@
 - tests/platforms/frdm-imx8mp_linux.robot
 - tests/peripherals/imx8mplus_linux_coral_demo.robot
 - tests/peripherals/LPS25HB.robot
+- tests/peripherals/PythonPeripheral.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
