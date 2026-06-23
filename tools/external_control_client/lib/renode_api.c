@@ -840,14 +840,14 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
     return NO_ERROR;
 }
 
-renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **peripheral)
+renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **ctx)
 {
     int32_t id;
     return_error_if_fails(renode_get_instance_descriptor(machine, SYSTEM_BUS, name, &id));
 
-    *peripheral = xmalloc(sizeof(renode_bus_context_t));
-    (*peripheral)->machine = machine;
-    (*peripheral)->id = id;
+    *ctx = xmalloc(sizeof(renode_bus_context_t));
+    (*ctx)->machine = machine;
+    (*ctx)->id = id;
 
     return NO_ERROR;
 }

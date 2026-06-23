@@ -43,7 +43,7 @@ typedef struct renode_bus_context renode_bus_context_t;
 renode_error_t *renode_connect(const char *port, renode_t **renode);
 renode_error_t *renode_disconnect(renode_t **renode);
 
-renode_error_t *renode_get_machine(renode_t *renode_instance, const char *name, renode_machine_t **machine);
+renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_machine_t **machine);
 
 void renode_free_error(renode_error_t *error);
 
@@ -56,7 +56,7 @@ typedef enum {
 } renode_time_unit_t;
 
 renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64_t value);
-renode_error_t *renode_get_current_time(renode_t *renode_instance, renode_time_unit_t unit, uint64_t *current_time);
+renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time);
 
 /* ADC */
 
