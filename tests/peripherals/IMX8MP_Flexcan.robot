@@ -2,7 +2,7 @@
 ${UART}                             sysbus.uart4
 ${CAN}                              sysbus.flexcan1
 ${CAN_HUB}                          canHub
-${SCRIPT}                           @scripts/single-node/nxp-im8mplus_zephyr.resc
+${SCRIPT}                           @scripts/single-node/nxp-imx8mplus_zephyr.resc
 ${URI}                              https://dl.antmicro.com/projects/renode
 ${CAN_COUNTER_ELF}                  @${URI}/imx8mp_evk_mimx8ml8_a53-zephyr-can_counter.elf-s_1883848-e50bf05ce6ad42d9cffb58787378c4b3aa92f24e
 ${CAN_COUNTER_NO_LOOPBACK_ELF}      @${URI}/imx8mp_evk_mimx8ml8_a53-zephyr-can_counter_no_loopback.elf-s_1883384-e446ef35ae5042ffe73ae57131245ef519eb33ad
