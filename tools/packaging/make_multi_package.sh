@@ -9,7 +9,7 @@ cd $THIS_DIR
 . common_make_packages.sh
 
 OS_NAME=any
-DIR=renode_${VERSION}-multi
+DIR=renode_${VERSION}-multiplatform
 
 . common_copy_files_package.sh
 
