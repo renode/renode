@@ -646,7 +646,7 @@ fi
 
 if $MULTIPLATFORM
 then
-  $ROOT_PATH/tools/packaging/make_multi_package.sh
+  $ROOT_PATH/tools/packaging/make_multi_package.sh $params
 fi
 
 if $PORTABLE
