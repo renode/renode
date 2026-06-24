@@ -500,6 +500,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
+            lock(mappedDmiRanges)
+            {
+                if(mappedDmiRanges.ContainsPoint(offset))
+                {
+                    return;
+                }
+            }
+
             // RenodeMessage.dataLength field for DMIReq indicates the kind of DMI access being requested.
             var request = new RenodeMessage(RenodeAction.DMIReq, (byte)TlmCommand.Read, 0, offset, 0);
             if(!SendDmiRequest(request, out var dmiNativeMessage))
