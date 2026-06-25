@@ -64,6 +64,11 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             return mapping.Values.OrderBy(x => x.Index);
         }
 
+        public IEnumerable<CPURegister> GetAllRegisters()
+        {
+            return GetRegisters();
+        }
+
         public void EnterSingleStepModeSafely(HaltArguments args)
         {
             // this method should only be called from CPU thread,
