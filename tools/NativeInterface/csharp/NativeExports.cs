@@ -45,14 +45,15 @@ namespace Antmicro.Renode.NativeInterface
         {
             try
             {
+                var eater = new CommandInteractionEater();
                 var command = Marshal.PtrToStringUTF8((IntPtr)cmd);
-                var ok = monitor.Parse(command);
+                var ok = monitor.Parse(command, eater);
 
-                if(monitor.Interaction.QuitEnvironment)
+                if(eater.QuitEnvironment)
                 {
                     return NativeStatus.QuitRequested;
                 }
-                return ok ? NativeStatus.Success : NativeStatus.CommandError;
+                return (ok && !eater.HasError) ? NativeStatus.Success : NativeStatus.CommandError;
             }
             catch(Exception ex)
             {
