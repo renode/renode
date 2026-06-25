@@ -311,13 +311,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 switch(message.ActionId)
                 {
                 case RenodeAction.GPIOWrite:
-                    // We have to respond before GPIO state is changed, because SystemC is blocked until
-                    // it receives the response. Setting the GPIO may require it to respond, e. g. when it
-                    // is interracted with from an interrupt handler.
-                    SendBackwardResponse(message);
                     var gpioNumber = (int)message.Address;
                     var isSet = message.Payload == 1;
-                    Connections[gpioNumber].Set(isSet);
+                    if(useNative)
+                    {
+                        // Native transport can handle nested GPIO/read/write requests through the
+                        // sideband path while this backward GPIO request is still waiting for its
+                        // response. This lets GPIO propagation re-enter SystemC before this outer
+                        // GPIO transaction is completed.
+                        Connections[gpioNumber].Set(isSet);
+                        SendBackwardResponse(message);
+                    }
+                    else
+                    {
+                        // Socket transport has no sideband channel, so changing GPIO state before
+                        // responding can deadlock if the GPIO handler re-enters SystemC.
+                        SendBackwardResponse(message);
+                        Connections[gpioNumber].Set(isSet);
+                    }
                     this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", gpioNumber, isSet);
                     break;
                 case RenodeAction.Write:
