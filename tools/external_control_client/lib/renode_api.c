@@ -91,7 +91,7 @@ static void xcleanup(void *ptr)
     free(*(void**)ptr);
 }
 
-static renode_error_t *create_error_static(renode_error_code code, char *message)
+static renode_error_t *create_error_static(renode_error_code_t code, char *message)
 {
     renode_error_t *error = xmalloc(sizeof(renode_error_t));
     error->code = code;
@@ -101,7 +101,7 @@ static renode_error_t *create_error_static(renode_error_code code, char *message
     return error;
 }
 
-static renode_error_t *create_error_dynamic(renode_error_code code, char *message)
+static renode_error_t *create_error_dynamic(renode_error_code_t code, char *message)
 {
     renode_error_t *error = create_error_static(code, message);
     error->flags |= ERROR_FREE_MESSAGE;
@@ -111,7 +111,7 @@ static renode_error_t *create_error_dynamic(renode_error_code code, char *messag
 #define create_connection_failed_error(message) create_error_static(ERR_COMMAND_FAILED, (message))
 #define create_fatal_error_static(message) create_error_static(ERR_FATAL, (message))
 
-static renode_error_t *create_error(renode_error_code code, char *fmt, ...)
+static renode_error_t *create_error(renode_error_code_t code, char *fmt, ...)
 {
     char *message = xmalloc(ERROR_DYNAMIC_MESSAGE_SIZE);
     va_list ap;
@@ -468,32 +468,30 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t *
             return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
     }
 
-    renode_error_code error_code = ERR_NO_ERROR;
-    switch (return_code) {
+    if (*command == ANY_COMMAND) {
+        *command = received_command;
+    } else if (received_command != *command) {
+        return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
+    }
+
+    renode_error_code_t error_code = ERR_INVALID_CODE;
+    char *message = NULL;
+    switch (return_code)
+    {
         case COMMAND_FAILED:
             error_code = ERR_COMMAND_FAILED;
             break;
         case FATAL_ERROR:
-            error_code = ERR_COMMAND_FAILED;
+            error_code = ERR_FATAL;
+            break;
+        case INVALID_COMMAND:
+            error_code = ERR_INVALID_COMMAND;
+            message = "received invalid command error";
             break;
         default:
-            break;
+            return NO_ERROR;
     }
-
-    if (error_code != ERR_NO_ERROR) {
-        return create_error_dynamic(error_code, (char *)buffer);
-    }
-
-    if (return_code == INVALID_COMMAND) {
-        return create_fatal_error_static("received invalid command error");
-    }
-
-    if (*command != ANY_COMMAND && received_command != *command) {
-        return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
-    }
-    *command = received_command;
-
-    return NO_ERROR;
+    return message == NULL ? create_error_dynamic(error_code, (char *)buffer) : create_error_static(error_code, message);
 }
 
 static renode_error_t *renode_execute_command(renode_t *renode, api_command_t api_command, void *data_buffer, uint32_t buffer_size, uint32_t sent_data_size, uint32_t *received_data_size)

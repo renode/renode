@@ -12,18 +12,16 @@
 
 #define NO_ERROR NULL
 
-typedef enum {
-    ERR_CONNECTION_FAILED,
+typedef enum
+{
+    ERR_INVALID_CODE = -1,
     ERR_FATAL,
-    ERR_NOT_CONNECTED,
-    ERR_PERIPHERAL_INIT_FAILED,
-    ERR_TIMEOUT,
     ERR_COMMAND_FAILED,
-    ERR_NO_ERROR = -1,
-} renode_error_code;
+    ERR_INVALID_COMMAND,
+} renode_error_code_t;
 
 typedef struct {
-    renode_error_code code;
+    renode_error_code_t code;
     int flags;
     char *message;
     void *data;
