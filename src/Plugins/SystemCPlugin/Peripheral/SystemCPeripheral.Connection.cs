@@ -299,10 +299,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
             else
             {
-                // Debug log level is used instead of an error, as there is a fallback to the regular forward request.
-                this.DebugLog("Sideband request can be sent only over native interface");
-                return false;
+                try
+                {
+                    sidebandSocket?.Send(request.Serialize(), SocketFlags.None);
+                }
+                catch(SocketException)
+                {
+                    this.Log(LogLevel.Error, "Unable to communicate with SystemC peripheral. Try setting SystemCExecutablePath first or WaitForConnection.");
+                    Dispose();
+                    return false;
+                }
+                if(!ReceiveSidebandResponseSocket(out response))
+                {
+                    return false;
+                }
             }
+
+            this.Log(LogLevel.Noisy, "Received sideband response. Action: {0} | Address: {1:X} | Payload: {2:X}", response.ActionId, response.Address, response.Payload);
+            return true;
         }
 
         protected virtual void OnUnhandledRenodeMessage(RenodeMessage message)
@@ -379,6 +393,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 forwardSocket.ReceiveTimeout = 1000;
             }
 
+            sidebandSocket = listenerSocket.Accept();
+            sidebandSocket.SendTimeout = 1000;
+            // No ReceiveTimeout for sidebandSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
+            if(!disableTimeoutCheck)
+            {
+                sidebandSocket.ReceiveTimeout = 1000;
+            }
+
             backwardSocket = listenerSocket.Accept();
             backwardSocket.SendTimeout = 1000;
             // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
@@ -405,6 +427,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
             try
             {
+                sidebandSocket?.Shutdown(SocketShutdown.Both);
+            }
+            catch(SocketException ex)
+            {
+                this.DebugLog("Exception when shutting down sideband socket: {0}", ex.Message);
+            }
+            try
+            {
                 backwardSocket?.Shutdown(SocketShutdown.Both);
             }
             catch(SocketException ex)
@@ -420,9 +450,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
             connectionActive = false;
 
             forwardSocket?.Close();
+            sidebandSocket?.Close();
             backwardSocket?.Close();
 
             forwardSocket = null;
+            sidebandSocket = null;
             backwardSocket = null;
         }
 
@@ -600,6 +632,24 @@ namespace Antmicro.Renode.Peripherals.SystemC
             return true;
         }
 
+        private bool ReceiveSidebandResponseSocket(out RenodeMessage message)
+        {
+            message = new RenodeMessage();
+
+            var messageSize = Marshal.SizeOf(typeof(RenodeMessage));
+            var recvBytes = new byte[messageSize];
+
+            var nbytes = sidebandSocket?.Receive(recvBytes, 0, messageSize, SocketFlags.None);
+            if(nbytes == 0)
+            {
+                this.Log(LogLevel.Info, "Sideband connection to SystemC process closed.");
+                return false;
+            }
+
+            message.Deserialize(recvBytes);
+            return true;
+        }
+
         private bool SendRequest(RenodeMessage request, out RenodeMessage responseMessage)
         {
             lock(messageLock)
@@ -619,6 +669,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         private Socket forwardSocket;
+        private Socket sidebandSocket;
         private Socket backwardSocket;
         private Process systemcProcess;
         private string systemcExecutablePath;

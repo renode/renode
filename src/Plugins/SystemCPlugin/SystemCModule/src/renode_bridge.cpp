@@ -177,19 +177,7 @@ static void handle_forward_request_native(void* opaque_ptr, renode_message messa
 
 static renode_message handle_sideband_forward_request_native(void* opaque_ptr, renode_message message) {
   renode_bridge* bridge = (renode_bridge*)opaque_ptr;
-  switch (message.action) {
-    case WRITE:
-    case WRITE_REGISTER:
-    case READ:
-    case READ_REGISTER:
-      bridge->handle_sideband_access(message);
-      break;
-    case GPIOWRITE:
-      bridge->handle_sideband_gpio_write(message);
-      break;
-    default:
-      assert(!"Only WRITE, READ, GPIOWRITE messages should be issued over sideband request");
-    }
+  bridge->handle_sideband_request(message);
   return message;
 }
 
@@ -206,29 +194,6 @@ void renode_bridge::handle_backward_response_dmi_from_native(dmi_message message
 void renode_bridge::handle_forward_request_from_native(renode_message message)
 {
   fw_request.add(message);
-}
-
-void renode_bridge::handle_sideband_access(renode_message &message)
-{
-  uint8_t data[8] = {};
-  memset(data, 0, sizeof(data));
-  initialize_payload(payload.get(), &message, data);
-
-  *((uint64_t *)data) = message.payload; // used for write only
-  uint64_t n_bytes = perform_debug_transaction(this->initiator_socket, payload.get());
-  message.payload = *((uint64_t *)data); // used for read only
-  message.address = n_bytes; // address field is reused to store the number of written/read bytes
-}
-
-void renode_bridge::handle_sideband_gpio_write(renode_message &message)
-{
-  auto number = message.address;
-  auto value = message.payload;
-  sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
-  if (iface == nullptr) {
-    return;
-  }
-  gpio_ports_out[number]->write(value == 1);
 }
 
 renode_message renode_bridge::receive_backward_response()
@@ -267,6 +232,15 @@ renode_message renode_bridge::receive_forward_request(bool* closed)
   }
 }
 
+renode_message renode_bridge::receive_sideband_request_socket(bool* closed)
+{
+  renode_message message;
+  int nread =
+      sideband_connection->Receive((char *)&message, sizeof(renode_message));
+  *closed = nread <= 0;
+  return message;
+}
+
 void renode_bridge::send_backward_request(renode_message *message) {
   if (native) {
 #ifdef RENODE_NATIVE_INTERFACE
@@ -295,6 +269,10 @@ void renode_bridge::send_forward_response_dmi(dmi_native_message *message) {
   } else {
     forward_connection->Send((char *)message, sizeof(dmi_native_message));
   }
+}
+
+void renode_bridge::send_sideband_response_socket(renode_message *message) {
+  sideband_connection->Send((char *)message, sizeof(renode_message));
 }
 
 SC_HAS_PROCESS(renode_bridge);
@@ -370,9 +348,35 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   } else {
     forward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
     connect_with_retry(forward_connection.get(), address, port);
-  
+
+    sideband_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
+    connect_with_retry(sideband_connection.get(), address, port);
+
     backward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
     connect_with_retry(backward_connection.get(), address, port);
+
+    // It's not SC_THREAD on purpose.
+    // Sideband channel doesn't participate in SystemC cooperative multitasking.
+    // It's used for synchronous operations which don't call wait().
+    // For example transport_dbg() is used to perform memory accesses on this path,
+    // as this API doesn't use delays for transactions.
+    // It's a detached thread to resolve deadlock in the following sequence of events:
+    // 1. Renode sends TIMESYNC request and waits for TIMESYNC response.
+    //   * Forward connection is blocked until TIMESYNC finishes (SystemC virtual time reaches a sync point).
+    // 2. SystemC asserts GPIO signal and sends it on the backward connection.
+    //   * Signal triggers actions on the Renode side, e.g. reset which attempts to read PC and SP from VTOR offset.
+    //   * Renode needs to issue read transaction to SystemC.
+    //     * It can't do it over the forward connection, as it blocks waiting for TIMESYNC response.
+    //     * It can do it over the sideband connection (it's not on CPU thread).
+    std::thread sideband
+    {
+      [this]
+      ()-> void
+      {
+        this->sideband_loop();
+      }
+    };
+    sideband.detach();
   }
 }
 
@@ -383,6 +387,7 @@ renode_bridge::~renode_bridge() {
 #endif
   } else {
     forward_connection->Disconnect();
+    sideband_connection->Disconnect();
     backward_connection->Disconnect();
   }
 }
@@ -515,6 +520,7 @@ void renode_bridge::forward_loop() {
 #endif
       } else {
         forward_connection->Disconnect();
+        sideband_connection->Disconnect();
         backward_connection->Disconnect();
       }
       terminate_simulation(0);
@@ -604,6 +610,65 @@ void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socke
 
   send_forward_response_dmi(&dmi_message);
   wait(sc_core::SC_ZERO_TIME);
+}
+
+void renode_bridge::sideband_loop() {
+  renode_message message;
+  bool closed;
+
+  while (true) {
+    message = receive_sideband_request_socket(&closed);
+    if (closed) {
+#ifdef VERBOSE
+      printf("Connection to Renode closed.\n");
+#endif
+      break;
+    }
+
+    handle_sideband_request(message);
+
+    send_sideband_response_socket(&message);
+  }
+}
+
+void renode_bridge::handle_sideband_request(renode_message &message)
+{
+  switch (message.action) {
+    case WRITE:
+    case WRITE_REGISTER:
+    case READ:
+    case READ_REGISTER:
+      handle_sideband_access(message);
+      break;
+    case GPIOWRITE:
+      handle_sideband_gpio_write(message);
+      break;
+    default:
+      assert(!"Only WRITE, READ, GPIOWRITE messages should be issued over sideband request");
+    }
+}
+
+void renode_bridge::handle_sideband_access(renode_message &message)
+{
+  uint8_t data[8] = {};
+  memset(data, 0, sizeof(data));
+  initialize_payload(payload.get(), &message, data);
+
+  *((uint64_t *)data) = message.payload; // used for write only
+  uint64_t n_bytes = perform_debug_transaction(this->initiator_socket, payload.get());
+  message.payload = *((uint64_t *)data); // used for read only
+  message.address = n_bytes; // address field is reused to store the number of written/read bytes
+}
+
+void renode_bridge::handle_sideband_gpio_write(renode_message &message)
+{
+  auto number = message.address;
+  auto value = message.payload;
+  sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
+  if (iface == nullptr) {
+    return;
+  }
+  gpio_ports_out[number]->write(value == 1);
 }
 
 enum gpio_state {

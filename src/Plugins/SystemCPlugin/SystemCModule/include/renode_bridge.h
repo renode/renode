@@ -268,8 +268,7 @@ public:
   void handle_backward_response_from_native(renode_message message);
   void handle_backward_response_dmi_from_native(dmi_message message);
   void handle_forward_request_from_native(renode_message message);
-  void handle_sideband_access(renode_message &message);
-  void handle_sideband_gpio_write(renode_message &message);
+  void handle_sideband_request(renode_message &message);
 public:
   using renode_bus_target_socket =
       tlm::tlm_target_socket<RENODE_BUSWIDTH, tlm::tlm_base_protocol_types, 1,
@@ -376,13 +375,18 @@ private:
 
   bool initialize_connection(renode_message *message, int64_t *out_max_desync_us);
   void forward_loop();
+  void sideband_loop();
   renode_message receive_backward_response();
   dmi_message receive_backward_response_dmi();
   renode_message receive_forward_request(bool *closed);
+  renode_message receive_sideband_request_socket(bool *closed);
   void send_backward_request(renode_message *message);
   void send_forward_response(renode_message *message);
   void send_forward_response_dmi(dmi_native_message *message);
+  void send_sideband_response_socket(renode_message *message);
   void handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message);
+  void handle_sideband_access(renode_message &message);
+  void handle_sideband_gpio_write(renode_message &message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void on_port_gpio();
@@ -400,6 +404,9 @@ private:
 
   // Connection from Renode -> SystemC.
   std::unique_ptr<CTCPClient> forward_connection;
+
+  // Sideband connection from Renode -> SystemC.
+  std::unique_ptr<CTCPClient> sideband_connection;
 
   // Connection from SystemC -> Renode
   std::unique_ptr<CTCPClient> backward_connection;
