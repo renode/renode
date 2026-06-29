@@ -27,7 +27,7 @@ namespace Antmicro.Renode.Integrations
             var emulation = EmulationManager.Instance.CurrentEmulation;
             IMachine machine = null;
             // This is a temporary solution and should be addressed later
-            var cdcAcmUart = uart as CDCToUARTConverter;
+            var cdcAcmUart = uart as USB_UART;
             if(cdcAcmUart != null)
             {
                 // In USB, the CDC ACM UART isn't enabled before enumeration.
