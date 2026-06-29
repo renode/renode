@@ -7,6 +7,9 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     -> cpu@0
 
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 250000000
+
 exti: IRQControllers.STM32H7_EXTI @ sysbus 0x58000000
     [0-4] -> nvic@[6-10]
     [5-9] -> nvicInput23@[0-4]
