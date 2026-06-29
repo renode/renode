@@ -139,6 +139,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 try
                 {
                     systemcExecutablePath = value;
+                    // For now keep sideband channel disabled by default when SystemC is started as a separate process.
+                    // It can be manually overriden from script or Monitor after setting this property.
+                    DisableSidebandChannel = true;
                     var listenerSocket = CreateListenerSocket(requestedPort);
                     var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
                     this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);

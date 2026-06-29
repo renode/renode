@@ -219,24 +219,23 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 cpu.Resume();
             }
 
-            if(UseNative)
+            if(DisableSidebandChannel)
             {
-                // We can reset synchronously over native interface,
-                // as we implement a sideband channel that prevents deadlocks.
-                reset();
-            }
-            else
-            {
-                // Sideband channel is not implemented yet for socket transport.
-                // As a result GPIO signal (PowerOnReset/CoreResetIn) from SystemC
-                // can trigger either bus access to SystemC 
+                // Reset asynchronously, because there is no sideband channel.
+                // GPIO signal (PowerOnReset/CoreResetIn) from SystemC
+                // can trigger either bus access to SystemC (read PC and SP from VTOR offset)
                 // or assert GPIO signal from Renode -> SystemC.
-                // If we are already blocking on TimeSync,
-                // it would cause a deadlock, so defer it.
+                // If forward socket is blocking on TimeSync,
+                // it causes a deadlock, so defer it.
                 machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
                 {
                     reset();
                 }, true);
+            }
+            else
+            {
+                // Reset synchronously. Sideband channel can handle nested requests.
+                reset();
             }
         }
 

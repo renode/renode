@@ -94,12 +94,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, (ulong)number, payload);
             RenodeMessage response;
 
-            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            if(TrySendSidebandRequest(request, out response))
             {
-                if(SendSidebandRequest(request, out response))
-                {
-                    return;
-                }
+                return;
             }
             SendRequest(request, out response);
         }
@@ -186,6 +183,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        public bool DisableSidebandChannel { get; set; }
+
         protected readonly IMachine machine;
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0, bool skipDmi = false)
@@ -204,12 +203,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
             RenodeMessage response;
 
-            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            if(TrySendSidebandRequest(request, out response))
             {
-                if(SendSidebandRequest(request, out response))
-                {
-                    return response.Payload;
-                }
+                return response.Payload;
             }
 
             if(!SendRequest(request, out response))
@@ -238,12 +234,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
             RenodeMessage response;
 
-            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            if(TrySendSidebandRequest(request, out response))
             {
-                if(SendSidebandRequest(request, out response))
-                {
-                    return;
-                }
+                return;
             }
 
             if(!SendRequest(request, out response))
@@ -254,6 +247,26 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             TryToSkipTransactionTime(response.Address);
             dmiAllowed = response.ConnectionIndex == DmiSupported;
+        }
+
+        private bool TrySendSidebandRequest(RenodeMessage request, out RenodeMessage response)
+        {
+            response = new RenodeMessage();
+
+            if(DisableSidebandChannel)
+            {
+                return false;
+            }
+
+            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
+            {
+                if(SendSidebandRequest(request, out response))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private ulong GetCurrentVirtualTimeUS()
@@ -313,21 +326,21 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 case RenodeAction.GPIOWrite:
                     var gpioNumber = (int)message.Address;
                     var isSet = message.Payload == 1;
-                    if(useNative)
+                    if(DisableSidebandChannel)
                     {
-                        // Native transport can handle nested GPIO/read/write requests through the
-                        // sideband path while this backward GPIO request is still waiting for its
-                        // response. This lets GPIO propagation re-enter SystemC before this outer
-                        // GPIO transaction is completed.
-                        Connections[gpioNumber].Set(isSet);
-                        SendBackwardResponse(message);
-                    }
-                    else
-                    {
-                        // Socket transport has no sideband channel, so changing GPIO state before
+                        // No sideband channel, so changing GPIO state before
                         // responding can deadlock if the GPIO handler re-enters SystemC.
                         SendBackwardResponse(message);
                         Connections[gpioNumber].Set(isSet);
+                    }
+                    else
+                    {
+                        // Sideband channel can handle nested GPIO/read/write requests
+                        // while this backward GPIO request is still waiting for its response.
+                        // This lets GPIO propagation re-enter SystemC before this outer
+                        // GPIO transaction is completed.
+                        Connections[gpioNumber].Set(isSet);
+                        SendBackwardResponse(message);
                     }
                     this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", gpioNumber, isSet);
                     break;
