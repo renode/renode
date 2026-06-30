@@ -17,6 +17,7 @@ extern "C"
   bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
   bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
   bool renodeDPILog(int logLevel, const char *data);
+  bool renodeDPIIsDllFresh();
 }
 
 #endif

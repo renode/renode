@@ -19,6 +19,7 @@ public:
   void handshakeValid();
   void log(int logLevel, const char* data) override;
   Protocol* receive() override;
+  Protocol* tryReceive();
   void sendMain(const Protocol message) override;
   void sendSender(const Protocol message) override;
 
