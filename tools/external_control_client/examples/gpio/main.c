@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
@@ -16,7 +16,7 @@ void exit_with_usage_info(const char *argv0)
 {
     fprintf(stderr,
         "Usage:\n"
-        "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]",
+        "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]\n",
         argv0);
     exit(EXIT_FAILURE);
 }
