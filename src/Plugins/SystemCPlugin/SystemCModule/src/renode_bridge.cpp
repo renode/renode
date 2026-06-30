@@ -500,6 +500,13 @@ void renode_bridge::forward_loop() {
       if (dt > max_desync_us) {
         wait(dt, sc_core::SC_US);
       }
+      // Reaching a timestamp only means this bridge thread was resumed by the
+      // SystemC simulation kernel. Let other processes and signal updates
+      // scheduled for the same timestamp run before reporting the timesync as
+      // complete to Renode.
+      while (sc_core::sc_pending_activity_at_current_time()) {
+        sc_core::wait(sc_core::SC_ZERO_TIME);
+      }
       message.payload = sc_time_to_us(sc_core::sc_time_stamp());
       send_forward_response(&message);
     } break;
