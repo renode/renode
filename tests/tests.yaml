@@ -257,6 +257,7 @@
 - tests/peripherals/imx8mplus_linux_coral_demo.robot
 - tests/peripherals/LPS25HB.robot
 - tests/peripherals/PythonPeripheral.robot
+- tests/platforms/ARMv8M-TrustZone.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
