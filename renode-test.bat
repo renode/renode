@@ -10,6 +10,9 @@ shift
 goto args
 :args_end
 
+set "CWD=%cd%"
+if "%CWD:~-1%"=="\" set "CWD=%CWD%."
+
 set "BINDIR=%SCRIPTDIR%\output\bin\Release"
 if "%DEBUG%" == "1" (
     set "BINDIR=%SCRIPTDIR%\output\bin\Debug"
@@ -22,7 +25,7 @@ if "%ERRORLEVEL%" == "0" (
     set "PYTHON_MANAGER_DEFAULT=3"
     set "PY_PYTHON=3"
     
-    py "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%cd%" %*
+    py "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%CWD%" %*
 ) else (
-    python3 "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%cd%" %*
+    python3 "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%CWD%" %*
 )
