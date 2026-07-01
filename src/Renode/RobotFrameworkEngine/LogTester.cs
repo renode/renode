@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -19,7 +19,7 @@ namespace Antmicro.Renode.RobotFramework
 {
     public class LogTester : TextBackend
     {
-        public LogTester(float virtualSecondsTimeout)
+        public LogTester(float virtualSecondsTimeout, uint maxLogEntries)
         {
             // we need to use synchronous logging in order to pause the emulation precisely
             EmulationManager.Instance.CurrentEmulation.CurrentLogger.SynchronousLogging = true;
@@ -28,6 +28,7 @@ namespace Antmicro.Renode.RobotFramework
 #endif
 
             this.defaultTimeout = virtualSecondsTimeout;
+            this.MaxLogEntries = maxLogEntries;
             messages = new List<LogEntry>();
             predicateEvent = new AutoResetEvent(false);
             failingStrings = new List<FailingString>();
@@ -50,6 +51,15 @@ namespace Antmicro.Renode.RobotFramework
 
             lock(messages)
             {
+                if(messages.Count >= MaxLogEntries)
+                {
+                    // If we have saved more log entries than the alloted maximum we drop the earliest 10% of messages to make room
+                    // 10% choosen as an arbitrary large-ish number to avoid moving the backing array contents too often (RemoveRange is O(n))
+                    // We also set a flag that will cause any `Should Not Be In Log` keywords to fail,
+                    // since once we drop a log entry that keyword might pass spuriously
+                    HasDroppedMessages = true;
+                    messages.RemoveRange(0, (int)MaxLogEntries / 10);
+                }
                 messages.Add(entry);
 
                 if(predicate == null)
@@ -149,6 +159,7 @@ namespace Antmicro.Renode.RobotFramework
             lock(messages)
             {
                 messages.Clear();
+                HasDroppedMessages = false;
             }
         }
 
@@ -164,6 +175,10 @@ namespace Antmicro.Renode.RobotFramework
                 throw new RecoverableException("Unable to unregister failing string, entry not found");
             }
         }
+
+        public bool HasDroppedMessages { get; private set; }
+
+        public uint MaxLogEntries { get; }
 
         private string FlushAndCheckLocked(Emulation emulation, Predicate<LogEntry> predicate, bool keep, out IEnumerable<string> bufferedMessages, out bool isFailingString)
         {

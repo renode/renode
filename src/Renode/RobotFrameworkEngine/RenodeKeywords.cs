@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -339,10 +339,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public void CreateLogTester(float timeout, bool? defaultPauseEmulation = null)
+        public void CreateLogTester(float timeout, bool? defaultPauseEmulation = null, uint maxLogEntries = 1_000_000)
         {
+            // Default maxLogEntries picked based on assuming a 1Gb max acceptable memory usage and a pessimistic 1kb per log message
             this.defaultPauseEmulation = defaultPauseEmulation.GetValueOrDefault();
-            logTester = new LogTester(timeout);
+            logTester = new LogTester(timeout, maxLogEntries);
             Logging.Logger.AddBackend(logTester, "Log Tester", true);
         }
 
@@ -361,7 +362,8 @@ namespace Antmicro.Renode.RobotFramework
                 // but it's unlikely to happen given the value of Int32.MaxValue = 2,147,483,647.
                 var logContextMessages = bufferedMessages.TakeLast(MaxLogContextPrintedOnException);
                 var logMessages = string.Join("\n ", logContextMessages);
-                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\nLast {logContextMessages.Count()} buffered log messages are: \n {logMessages}");
+                var droppedMessageWarning = logTester.HasDroppedMessages ? $"Warning: Buffered log messages exceeded configured max {logTester.MaxLogEntries}, some messages were dropped \n" : "";
+                throw new KeywordException($"Expected pattern \"{pattern}\" did not appear in the log\n {droppedMessageWarning}Last {logContextMessages.Count()} buffered log messages are: \n {logMessages}");
             }
             if(isFailingString)
             {
@@ -376,6 +378,10 @@ namespace Antmicro.Renode.RobotFramework
             CheckLogTester();
 
             var result = logTester.WaitForEntry(pattern, out var _, out var __, timeout, true, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level);
+            if(logTester.HasDroppedMessages)
+            {
+                throw new KeywordException($"Number of buffered log messages exceeded configured max {logTester.MaxLogEntries} and some messages were dropped\nEither increase maxLogEntries in CreateLogTester, or raise the logLevel");
+            }
             if(result != null)
             {
                 throw new KeywordException($"Unexpected line detected in the log: {result}");
