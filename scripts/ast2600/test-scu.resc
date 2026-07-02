@@ -1,0 +1,11 @@
+# AST2600 SCU register test
+mach create "ast2600"
+machine LoadPlatformDescription @platforms/boards/ast2600/ast2600-evb.repl
+
+echo "Platform loaded successfully"
+echo "Checking SCU Silicon Revision..."
+
+# Read SCU004 - should be 0x05030303 (AST2600-A3)
+sysbus ReadDoubleWord 0x1E6E2004
+
+echo "SCU test complete"
