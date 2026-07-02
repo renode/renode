@@ -16,6 +16,7 @@ ${QSPI_RW}                          ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI
 ${QSPI_MemMapped}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_MemoryMapped.elf-s_2152312-faec8bb984c61aabb52ae9eec1598999ea906a1c
 ${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ExecuteInPlace.elf-s_2233412-67befe44572c483b242a95ce8e714f75f4e7dc69
 ${PTP}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_net_ptp.elf-s_4678660-79097838e7a15377e3d9ce083917220bd0705312
+${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_client_server.elf-s_5285644-738a986f7b4250cd1a615e5c9767be20d89d82e0  # Zephyr netshell with DHCP client and server enabled
 ${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
@@ -55,12 +56,13 @@ ${FLASH_WRITE_ERROR_HANDLER}        HAL_FLASH_OperationErrorCallback
 ${FLASH_WRITE_ERROR_MSG}            Flash Write Error Detected
 
 *** Keywords ***
-Create Setup
+Create Connected Machines
+    [Arguments]                     ${elf_server}  ${elf_client}
     Execute Command                 emulation CreateSwitch "switch"
 
-    Create Machine                  ${ECHO_SERVER}  server
+    Create Machine                  ${elf_server}  server
     Execute Command                 connector Connect sysbus.ethernet switch
-    Create Machine                  ${ECHO_CLIENT}  client
+    Create Machine                  ${elf_client}  client
     Execute Command                 connector Connect sysbus.ethernet switch
 
 Create Machine
@@ -87,7 +89,7 @@ Assert PC Equals
 
 *** Test Cases ***
 Should Talk Over Ethernet
-    Create Setup
+    Create Connected Machines       ${ECHO_SERVER}  ${ECHO_CLIENT}
     ${server}=  Create Terminal Tester          ${UART}  machine=server  defaultPauseEmulation=True
     ${client}=  Create Terminal Tester          ${UART}  machine=client  defaultPauseEmulation=True
 
@@ -377,3 +379,27 @@ UART Hub Should Flip Bits
     # the first UART.
     Write To Uart                       Hello, world!  testerId=${tester-0}
     Should Not Be On Uart               Hello, world!  testerId=${tester-1}  includeUnfinishedLine=true  timeout=1
+
+Should Resolve DHCP and Be Pingable
+    Create Connected Machines           ${DHCP}  ${DHCP}
+    ${server}=  Create Terminal Tester  ${UART}  defaultPauseEmulation=True  machine=server
+    ${client}=  Create Terminal Tester  ${UART}  defaultPauseEmulation=True  machine=client
+
+    Set Test Variable                   ${server_ip}  122.101.101.1
+
+    Wait For Prompt on Uart             uart:~$  testerId=${server}
+    Write Line To Uart                  net dhcpv4 client stop 1  testerId=${server}
+    Write Line To Uart                  net ipv4 del 1 192.0.2.1  testerId=${server}
+    Write Line To Uart                  net ipv4 add 1 ${server_ip} 255.255.255.0  testerId=${server}
+    Write Line To Uart                  net dhcpv4 server start 1 122.101.101.2  testerId=${server}
+    Wait For Line on Uart               DHCPv4 server started on interface 1  testerId=${server}
+
+    ${client_ip}=  Wait For Line On Uart  net_dhcpv4: Received: ([\\d.]+)  treatAsRegex=true  testerId=${client}  timeout=15
+    ${client_ip}=  Set Variable         ${client_ip.Groups[0]}
+
+    Wait For Prompt on Uart             uart:~$  testerId=${client}
+    Write Line To Uart                  net ping ${server_ip}  testerId=${client}
+    Wait For Line On Uart               28 bytes from ${server_ip}.*  treatAsRegex=true  testerId=${client}
+
+    Write Line To Uart                  net ping ${client_ip}  testerId=${server}
+    Wait For Line On Uart               28 bytes from ${client_ip}.*  treatAsRegex=true  testerId=${server}
