@@ -171,27 +171,27 @@ sysbus:
 dwt: Miscellaneous.DWT @ sysbus 0xE0001000
     frequency: 72000000
 
-can0: CAN.S32K3XX_FlexCAN @ sysbus 0x40304000
+can0: CAN.NXP_FlexCAN @ sysbus 0x40304000
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
     -> nvic0@109
 
-can1: CAN.S32K3XX_FlexCAN @ sysbus 0x40308000
+can1: CAN.NXP_FlexCAN @ sysbus 0x40308000
     numberOfMessageBuffers: 64
     -> nvic0@113
 
-can2: CAN.S32K3XX_FlexCAN @ sysbus 0x4030C000
+can2: CAN.NXP_FlexCAN @ sysbus 0x4030C000
     numberOfMessageBuffers: 64
     -> nvic0@116
 
-can3: CAN.S32K3XX_FlexCAN @ sysbus 0x40310000
+can3: CAN.NXP_FlexCAN @ sysbus 0x40310000
     numberOfMessageBuffers: 64
     -> nvic0@119
 
-can4: CAN.S32K3XX_FlexCAN @ sysbus 0x40314000
+can4: CAN.NXP_FlexCAN @ sysbus 0x40314000
     numberOfMessageBuffers: 64
     -> nvic0@121
 
-can5: CAN.S32K3XX_FlexCAN @ sysbus 0x40318000
+can5: CAN.NXP_FlexCAN @ sysbus 0x40318000
     numberOfMessageBuffers: 64
     -> nvic0@123

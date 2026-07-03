@@ -356,27 +356,27 @@ lpuart15: UART.NXP_LPUART @ sysbus 0x404A8000
     IRQ -> mscm@156
     [TransmitDMA, ReceiveDMA] -> dma_mux1@[48-49]
 
-can0: CAN.S32K3XX_FlexCAN @ { sysbus 0x40304000; xrdc [1, 193] }
+can0: CAN.NXP_FlexCAN @ { sysbus 0x40304000; xrdc [1, 193] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can1: CAN.S32K3XX_FlexCAN @ { sysbus 0x40308000; xrdc [1, 194] }
+can1: CAN.NXP_FlexCAN @ { sysbus 0x40308000; xrdc [1, 194] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can2: CAN.S32K3XX_FlexCAN @ { sysbus 0x4030C000; xrdc [1, 195] }
+can2: CAN.NXP_FlexCAN @ { sysbus 0x4030C000; xrdc [1, 195] }
     numberOfMessageBuffers: 96
     enhancedRxFifoSize: 20
 
-can3: CAN.S32K3XX_FlexCAN @ { sysbus 0x40310000; xrdc [1, 196] }
+can3: CAN.NXP_FlexCAN @ { sysbus 0x40310000; xrdc [1, 196] }
 
-can4: CAN.S32K3XX_FlexCAN @ { sysbus 0x40314000; xrdc [1, 197] }
+can4: CAN.NXP_FlexCAN @ { sysbus 0x40314000; xrdc [1, 197] }
 
-can5: CAN.S32K3XX_FlexCAN @ { sysbus 0x40318000; xrdc [1, 198] }
+can5: CAN.NXP_FlexCAN @ { sysbus 0x40318000; xrdc [1, 198] }
 
-can6: CAN.S32K3XX_FlexCAN @ { sysbus 0x4031C000; xrdc [1, 199] }
+can6: CAN.NXP_FlexCAN @ { sysbus 0x4031C000; xrdc [1, 199] }
 
-can7: CAN.S32K3XX_FlexCAN @ { sysbus 0x40320000; xrdc [1, 200] }
+can7: CAN.NXP_FlexCAN @ { sysbus 0x40320000; xrdc [1, 200] }
 
 gmac0: Network.S32K3XX_GMAC @ sysbus 0x40484000
     systemClockFrequency: 50000000
