@@ -379,6 +379,16 @@ Should Set MEPC on Non-Existing CSR access
     ${mepc}=                        Execute Command     cpu MEPC
     Should Be Equal As Numbers      ${mepc}    0x4004
 
+Should Keep MEPC First Bit As Zero
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             li a0, 0xff
+    ...                             csrw mepc, a0
+    Create Machine 64
+    Execute Command                 cpu AssembleBlock ${starting_pc} """${assembly}"""
+    Execute Command                 cpu Step 2
+    ${mepc}=                        Execute Command  cpu MEPC
+    Should Be Equal As Numbers      ${mepc}    0xfe
+
 Should Allow SRET In Machine Mode
     Create Machine 32
 
@@ -475,3 +485,13 @@ Should Set Flag On Half Precision Floating Point Division By Zero
     Register Should Be Equal        F2  ${float16_infinity}
     ${fflags}=  Execute Command     cpu GetRegister "FFLAGS"
     Should Be True                  (${fflags} & ${divide_by_zero_flag}) != 0
+
+Should Keep SEPC First Bit As Zero
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             li a0, 0xff
+    ...                             csrw sepc, a0
+    Create Machine 64
+    Execute Command                 cpu AssembleBlock ${starting_pc} """${assembly}"""
+    Execute Command                 cpu Step 2
+    ${sepc}=                        Execute Command  cpu SEPC
+    Should Be Equal As Numbers      ${sepc}    0xfe
