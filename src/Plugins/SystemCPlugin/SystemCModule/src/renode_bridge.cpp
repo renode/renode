@@ -298,7 +298,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
 #endif
   }
   SC_THREAD(forward_loop);
-  SC_THREAD(on_port_gpio);
+  SC_METHOD(on_port_gpio);
   for (int i = 0; i < NUM_GPIO; ++i) {
     sensitive << gpio_ports_in[i];
   }
@@ -685,31 +685,23 @@ enum gpio_state {
 };
 
 void renode_bridge::on_port_gpio() {
-  std::array<gpio_state, NUM_GPIO> last_sent_state;
-  last_sent_state.fill(GPIO_NOT_SENT);
-  while (true) {
-    // Wait for a change in any of the GPIO ports.
-    wait();
-
-    for (int i = 0; i < NUM_GPIO; ++i) {
-      if (gpio_ports_in[i].get_interface() == nullptr) {
-        continue;
-      }
-      gpio_state current = (gpio_state)gpio_ports_in[i]->read();
-      if (current == last_sent_state[i]) {
-        continue; // no change, skip
-      }
-      last_sent_state[i] = current;
-
-      renode_message message = {};
-      message.action = renode_action::GPIOWRITE;
-      message.address = i;
-      message.payload = current;
-
-      send_backward_request(&message);
-      // Response is ignored.
-      receive_backward_response();
+  for (int i = 0; i < NUM_GPIO; ++i) {
+    if (gpio_ports_in[i].get_interface() == nullptr) {
+      continue;
     }
+    if (!gpio_ports_in[i]->event()) {
+      continue;
+    }
+    gpio_state current = (gpio_state)gpio_ports_in[i]->read();
+
+    renode_message message = {};
+    message.action = renode_action::GPIOWRITE;
+    message.address = i;
+    message.payload = current;
+
+    send_backward_request(&message);
+    // Response is ignored.
+    receive_backward_response();
   }
 }
 
