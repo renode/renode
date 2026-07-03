@@ -343,6 +343,9 @@ dtcm: Memory.MappedMemory @ sysbus 0x20000000
 system_flash_ro: Memory.MappedMemory @ sysbus 0x1FF00000
     size: 0x20000
     init:
+        WriteDoubleWord 0x1E800 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.NextUlong() & 0xffffffff"`
+        WriteDoubleWord 0x1E804 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.NextUlong() & 0xffffffff"`
+        WriteDoubleWord 0x1E808 `py "print emulationManager.Instance.CurrentEmulation.RandomGenerator.NextUlong() & 0xffffffff"`
         // This is readonly FLASH_SIZE field which is located inside system flash
         WriteWord 0x1E880 0x800
 
