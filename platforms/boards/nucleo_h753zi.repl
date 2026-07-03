@@ -27,3 +27,6 @@ phy: Network.EthernetPhysicalLayer @ ethernet 0
     AutoNegotiationNextPageTransmit: 0x2001
     // Reserved bits + b12 for autonegotiation done and 0b110 at b2-4 for full-duplex 100BASE-TX
     VendorSpecific15: 0x1058
+
+rcc:
+    hseFrequency: 8_000_000
