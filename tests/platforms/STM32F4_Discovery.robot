@@ -216,3 +216,15 @@ Should Clear FAULTMASK On Exception Exit
     Wait For Line On Uart   Timer interrupt
     Wait For Line On Uart   Timer interrupt
     Wait For Line On Uart   Timer interrupt
+
+Should Not Crash On RTC Writes
+    Execute Command         mach create
+    Execute Command         machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+    Execute Command         sysbus LoadELF @https://dl.antmicro.com/projects/renode/stm32f4disco-rtc-modified-test.elf-s_537004-32b7284e794fd3ff5398ae120d77fabe7b0f832f
+    Create Terminal Tester  sysbus.usart2
+
+    Wait For Line On Uart   RTC date and time: 2006-01-09 00:00:\\d{2}  treatAsRegex=true
+    # Set month from 1 to 10 - this would previously set month to 0
+    Wait For Line On Uart   RTC date and time: 2006-10-09 20:00:\\d{2}  treatAsRegex=true
+    # Set hour from 20 to 18 - this would previously set hour to 28
+    Wait For Line On Uart   RTC date and time: 2006-10-09 18:00:\\d{2}  treatAsRegex=true
