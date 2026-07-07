@@ -682,7 +682,6 @@ void renode_bridge::handle_sideband_gpio_write(renode_message &message)
 }
 
 enum gpio_state {
-  GPIO_NOT_SENT = -1,
   GPIO_LOW = 0,
   GPIO_HIGH = 1
 };
