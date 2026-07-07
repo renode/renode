@@ -389,6 +389,7 @@ private:
   void handle_sideband_gpio_write(renode_message &message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
+  void sync_gpio_state(bool init);
   void on_port_gpio();
   void on_init_ns_vtor();
   void on_init_s_vtor();

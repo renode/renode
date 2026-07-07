@@ -423,6 +423,9 @@ bool renode_bridge::initialize_connection(renode_message *message, int64_t *out_
 }
 
 void renode_bridge::forward_loop() {
+  // Ensure GPIO signals at SystemC side are synced with Renode.
+  sync_gpio_state(true);
+
   // Processing of requests initiated by Renode.
   uint8_t data[8] = {};
 
@@ -684,12 +687,14 @@ enum gpio_state {
   GPIO_HIGH = 1
 };
 
-void renode_bridge::on_port_gpio() {
+void renode_bridge::sync_gpio_state(bool init) {
   for (int i = 0; i < NUM_GPIO; ++i) {
     if (gpio_ports_in[i].get_interface() == nullptr) {
       continue;
     }
-    if (!gpio_ports_in[i]->event()) {
+    // On init send state for all gpios.
+    // Later only changes are propagated.
+    if (!init && !gpio_ports_in[i]->event()) {
       continue;
     }
     gpio_state current = (gpio_state)gpio_ports_in[i]->read();
@@ -703,6 +708,10 @@ void renode_bridge::on_port_gpio() {
     // Response is ignored.
     receive_backward_response();
   }
+}
+
+void renode_bridge::on_port_gpio() {
+  sync_gpio_state(false);
 }
 
 void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
