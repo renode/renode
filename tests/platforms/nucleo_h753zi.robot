@@ -55,6 +55,12 @@ ${SMMU_PLATFORM}=    SEPARATOR=${\n}
 ...    ${SPACE*4}smmu 16
 ...    }
 
+${MOCKS}=    SEPARATOR=${\n}
+...    """
+...    slave1: Mocks.DummyI2CSlave @ i2c1 0x42
+...    slave2: Mocks.DummyI2CSlave @ i2c1 0x43
+...    """
+
 
 ${EXTERNAL_IS25WP_FLASH}=  SEPARATOR=${\n}
 ...    externalQspiFlash: SPI.ISSI_IS25WP @ qspi { underlyingMemory: qspiMappedFlashMemory; }
@@ -189,6 +195,7 @@ Should Program Flash With QSPI
     # This sample is built for STM32 Evaluation Kit, which uses the same SoC but has a bit different HW - we only care about LEDs to signal test status
     Execute Command                 machine LoadPlatformDescriptionFromString ${EVAL_STUB}
     Execute Command                 machine LoadPlatformDescriptionFromString ${EXTERNAL_FLASH}
+    Execute Command                 machine LoadPlatformDescriptionFromString ${MOCKS}
 
     ${led3_tester}=                 Create LED Tester   sysbus.gpioPortA.led3     defaultTimeout=1
     ${led1_tester}=                 Create LED Tester   sysbus.gpioPortF.led1     defaultTimeout=1
