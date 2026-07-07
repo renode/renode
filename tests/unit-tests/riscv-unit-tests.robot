@@ -527,3 +527,14 @@ Should Not Read From Csr When CSRRWI RD Is Zero
     Execute Command                 cpu AssembleBlock ${starting_pc} "csrrw x0, 0x7c0, a0"
     Execute Command                 cpu Step 1
     Wait For Log Entry              CSR written!
+
+Should Ignore Writes To MENVCFG Bits Of Disabled Or Unsupported Extensions
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             li a0, 0xffffffffffffffff
+    ...                             csrw menvcfg, a0
+    ...                             csrr a1, menvcfg
+    Create Machine 64
+    Execute Command                 cpu AssembleBlock ${starting_pc} """${assembly}"""
+    Execute Command                 cpu Step 3
+    ${menvcfg}=                     Execute Command  cpu GetRegister "a1"
+    Should Be Equal As Numbers      ${menvcfg}  0x07fffffcffffff02
