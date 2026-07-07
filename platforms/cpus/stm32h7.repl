@@ -81,6 +81,8 @@ sramBank1: Memory.MappedMemory @ sysbus 0x60000000
 adc3: Analog.STM32H7_ADC @ sysbus 0x58026000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
+    dmaPeripheral: dmamux1
+    dmaChannel: 115
     -> exti@75
 
 bdma: DMA.STM32LDMA @ sysbus 0x58025400
@@ -166,6 +168,8 @@ ltdc: Video.STM32LTDC @ sysbus 0x50001000
 adcM1S2: Analog.STM32H7_ADC @ sysbus 0x40022000
     referenceVoltage: 3.3
     externalEventFrequency: 1000
+    dmaPeripheral: dmamux1
+    dmaChannel: 9
     -> nvic@18
 
 rng: Miscellaneous.STM32_RNG @ sysbus 0x48021800
