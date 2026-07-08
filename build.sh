@@ -500,6 +500,9 @@ then
     exit 0
 fi
 
+# Remove pre-deterministic versioning `Properties` directory
+rm -rf "$ROOT_PATH/src/Renode/Properties"
+
 # build
 dotnet build "${PARAMS[@]/#/-}" $TARGET
 
