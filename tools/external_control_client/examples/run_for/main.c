@@ -294,8 +294,10 @@ int main(int argc, char **argv)
         if (i == 0)
         {
             perf_stop(times, value, time_unit);
+#ifndef NON_INTERACTIVE
             run_options_prompt(&value, &time_unit, &times);
             i = times;
+#endif
             perf_start();
         }
     }

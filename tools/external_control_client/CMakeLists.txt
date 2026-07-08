@@ -10,6 +10,7 @@ set(APP_COMPILE_FLAGS
 
 set(APP_NAME renode_api_client CACHE STRING "Name of the Renode API client application")
 set(APP_SOURCES_DIR "" CACHE PATH "Path to the directory with Renode API client application sources")
+set(APP_NON_INTERACTIVE OFF CACHE BOOL "Build the sample in non-interactive mode")
 
 if(NOT APP_NAME)
     message(FATAL_ERROR "Missing APP_NAME; use ccmake, cmake-gui or -D switch to set it")
@@ -25,6 +26,10 @@ include(${APP_SOURCES_DIR}/CMakeLists.txt OPTIONAL)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${APP_SOURCES_DIR}/*.c)
 add_executable(${APP_NAME} ${SOURCES})
+
+if(APP_NON_INTERACTIVE)
+    target_compile_definitions(${APP_NAME} PRIVATE NON_INTERACTIVE)
+endif()
 
 target_compile_options(${APP_NAME} PRIVATE ${APP_COMPILE_FLAGS})
 
