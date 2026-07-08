@@ -6,6 +6,7 @@ mkdir -p $DIR/{licenses,tests,tools,plugins}
 
 cp -r $BASE/tests/metrics-analyzer $DIR/tests/metrics-analyzer
 cp -r $BASE/tests/native-interface $DIR/tests/native-interface
+cp -r $BASE/tests/external-control $DIR/tests/external-control
 cp -r $BASE/tests/network-server $DIR/tests/network-server
 cp -r $BASE/tests/network-logging $DIR/tests/network-logging
 cp -r $BASE/tests/peripherals $DIR/tests/peripherals

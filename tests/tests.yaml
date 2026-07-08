@@ -291,3 +291,6 @@
 
 - port_3343:
   - tests/native-interface/native-interface.robot
+
+- port_3344:
+  - tests/external-control/external-control.robot
