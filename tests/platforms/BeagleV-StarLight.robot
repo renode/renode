@@ -55,7 +55,7 @@ Login And Configure Ethernet
 
 Test Ping
     [Arguments]              ${packet_size}=56
-    ${tester} =              Create Terminal Tester   ${UART}   machine=${MACHINE0}   defaultPauseEmulation=True
+    ${tester} =              Create Terminal Tester   ${UART}   machine=${MACHINE1}   defaultPauseEmulation=True
     Write Line To Uart       ping -As ${packet_size} -c 10 ${IP_ADDR0}   testerId=${tester}   waitForEcho=false
     Wait For Line On Uart    10 packets transmitted, 10 packets received, 0% packet loss  testerId=${tester}
 
