@@ -145,6 +145,6 @@ Should Print Error When Addessing Invalid Registers
     Wait For Log Entry           Attempted to read from invalid PMP address register ${invalid_entry}
     ${invalid_cfg}=  Evaluate    int(${PMP_ENTRIES}/4 + 1)
     Assemble And Step Program    "csrw pmpcfg${invalid_cfg}, a0"
-    Wait For Log Entry           Attempted to read from invalid PMP config register ${invalid_cfg}
+    Wait For Log Entry           Attempted to write to invalid PMP config register ${invalid_cfg}
     Assemble And Step Program    "csrr t0, pmpcfg${invalid_cfg}"
     Wait For Log Entry           Attempted to read from invalid PMP config register ${invalid_cfg}

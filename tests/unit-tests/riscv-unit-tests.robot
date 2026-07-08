@@ -495,3 +495,35 @@ Should Keep SEPC First Bit As Zero
     Execute Command                 cpu Step 2
     ${sepc}=                        Execute Command  cpu SEPC
     Should Be Equal As Numbers      ${sepc}    0xfe
+
+Should Not Read From Csr When CSRRW RD Is Zero
+    ${csr_handler}=                 Catenate  SEPARATOR=
+    ...  if request.IsRead:                                                  ${\n}${SPACE}
+    ...      cpu.DebugLog('CSR read!')                                       ${\n}
+    ...  elif request.IsWrite:                                               ${\n}${SPACE}
+    ...      cpu.DebugLog('CSR written!')
+
+    Create Machine 64
+    Create Log Tester               0
+    Register Failing Log String     CSR read!
+    Execute Command                 logLevel 0
+    Execute Command                 cpu RegisterCSRHandlerFromString 0x7c0 "${csr_handler}"
+    Execute Command                 cpu AssembleBlock ${starting_pc} "csrrwi x0, 0x7c0, 13"
+    Execute Command                 cpu Step 1
+    Wait For Log Entry              CSR written!
+
+Should Not Read From Csr When CSRRWI RD Is Zero
+    ${csr_handler}=                 Catenate  SEPARATOR=
+    ...  if request.IsRead:                                                  ${\n}${SPACE}
+    ...      cpu.DebugLog('CSR read!')                                       ${\n}
+    ...  elif request.IsWrite:                                               ${\n}${SPACE}
+    ...      cpu.DebugLog('CSR written!')
+
+    Create Machine 64
+    Create Log Tester               0
+    Register Failing Log String     CSR read!
+    Execute Command                 logLevel 0
+    Execute Command                 cpu RegisterCSRHandlerFromString 0x7c0 "${csr_handler}"
+    Execute Command                 cpu AssembleBlock ${starting_pc} "csrrw x0, 0x7c0, a0"
+    Execute Command                 cpu Step 1
+    Wait For Log Entry              CSR written!
