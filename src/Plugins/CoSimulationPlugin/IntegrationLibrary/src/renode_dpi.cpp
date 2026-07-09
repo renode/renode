@@ -8,69 +8,99 @@
 #include "renode_dpi.h"
 #include "communication/socket_channel.h"
 
-static SocketCommunicationChannel *socketChannel;
+#define MAX_DPI_INSTANCES 8
+static SocketCommunicationChannel *socketChannels[MAX_DPI_INSTANCES] = { nullptr };
 
-bool renodeDPIReceive(uint32_t* actionId, uint64_t* address, uint64_t* value, int32_t* peripheralIndex)
+extern "C" void renodeDPIConnectInst(int id, int receiverPort,
+                                     int senderPort, const char *address)
 {
-    if(!renodeDPIIsConnected())
+    if(id < 0 || id >= MAX_DPI_INSTANCES) return;
+    /* clean up any existing connection */
+    if(socketChannels[id] != nullptr)
     {
-        return false;
+        delete socketChannels[id];
     }
-    Protocol *message = socketChannel->receive();
-    *actionId = message->actionId;
-    *address = message->addr;
-    *value = message->value;
-    *peripheralIndex = message->peripheralIndex;
+    socketChannels[id] = new SocketCommunicationChannel();
+    socketChannels[id]->connect(receiverPort, senderPort, address);
+}
 
-    delete message;
+extern "C" void renodeDPIDisconnectInst(int id)
+{
+    if(id < 0 || id >= MAX_DPI_INSTANCES) return;
+    if(socketChannels[id] != nullptr)
+    {
+        socketChannels[id]->disconnect();
+        delete socketChannels[id];
+        socketChannels[id] = nullptr;
+    }
+}
+
+extern "C" bool renodeDPIIsConnectedInst(int id)
+{
+    if(id < 0 || id >= MAX_DPI_INSTANCES) return false;
+    return socketChannels[id] != nullptr &&
+           socketChannels[id]->isConnected();
+}
+
+extern "C" bool renodeDPIReceiveInst(int id,
+                                     uint32_t *actionId,
+                                     uint64_t *address,
+                                     uint64_t *value,
+                                     int32_t *peripheralIndex)
+{
+    if(!renodeDPIIsConnectedInst(id)) return false;
+    Protocol *msg = socketChannels[id]->receive();
+    *actionId = msg->actionId;
+    *address = msg->addr;
+    *value = msg->value;
+    *peripheralIndex = msg->peripheralIndex;
+    delete msg;
     return true;
 }
 
-void renodeDPIConnect(int receiverPort, int senderPort, const char* address)
+extern "C" bool renodeDPITryReceiveInst(int id,
+                                        uint32_t *actionId,
+                                        uint64_t *address,
+                                        uint64_t *value,
+                                        int32_t *peripheralIndex)
 {
-    socketChannel = new SocketCommunicationChannel();
-    socketChannel->connect(receiverPort, senderPort, address);
-}
-
-void renodeDPIDisconnect()
-{
-    if(socketChannel != NULL)
-    {
-        socketChannel->disconnect();
-    }
-}
-
-bool renodeDPIIsConnected()
-{
-    return socketChannel != NULL && socketChannel->isConnected();
-}
-
-bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
-{
-    if(!renodeDPIIsConnected())
-    {
-        return false;
-    }
-    socketChannel->sendMain(Protocol(actionId, address, value, peripheralIndex));
+    if(!renodeDPIIsConnectedInst(id)) return false;
+    Protocol msg;
+    if(!socketChannels[id]->tryReceive(&msg)) return false;
+    *actionId = msg.actionId;
+    *address = msg.addr;
+    *value = msg.value;
+    *peripheralIndex = msg.peripheralIndex;
     return true;
 }
 
-bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex)
+extern "C" bool renodeDPISendInst(int id,
+                                  uint32_t actionId,
+                                  uint64_t address,
+                                  uint64_t value,
+                                  int32_t peripheralIndex)
 {
-    if(!renodeDPIIsConnected())
-    {
-        return false;
-    }
-    socketChannel->sendSender(Protocol(actionId, address, value, peripheralIndex));
+    if(!renodeDPIIsConnectedInst(id)) return false;
+    socketChannels[id]->sendMain(Protocol(actionId, address, value, peripheralIndex));
     return true;
 }
 
-bool renodeDPILog(int logLevel, const char* data)
+extern "C" bool renodeDPISendToAsyncInst(int id,
+                                         uint32_t actionId,
+                                         uint64_t address,
+                                         uint64_t value,
+                                         int32_t peripheralIndex)
 {
-    if(!renodeDPIIsConnected())
-    {
-        return false;
-    }
-    socketChannel->log(logLevel, data);
+    if(!renodeDPIIsConnectedInst(id)) return false;
+    socketChannels[id]->sendSender(Protocol(actionId, address, value, peripheralIndex));
+    return true;
+}
+
+extern "C" bool renodeDPILogInst(int id,
+                                 int logLevel,
+                                 const char *data)
+{
+    if(!renodeDPIIsConnectedInst(id)) return false;
+    socketChannels[id]->log(logLevel, data);
     return true;
 }

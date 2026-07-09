@@ -14,7 +14,7 @@ package renode_pkg;
   typedef enum int {
     // The included file contains enumerators of the action type used by the Renode protocol.
     // The values must be in sync with ActionType from Renode (defined in C#).
-    `include "renode_action_enumerators.svh"
+    `include "./includes/renode_action_enumerators.svh"
   } action_e;
 
   const int no_peripheral_index = -1;
@@ -41,37 +41,46 @@ package renode_pkg;
     LogError = 3
   } log_level_e;
 
-  import "DPI-C" function void renodeDPIConnect(
+  import "DPI-C" function void renodeDPIConnectInst(
+    int id,
     int receiverPort,
     int senderPort,
     string address
   );
 
-  import "DPI-C" function void renodeDPIDisconnect();
+  import "DPI-C" function void renodeDPIDisconnectInst(int id);
 
-  import "DPI-C" function bit renodeDPIIsConnected();
+  import "DPI-C" function bit renodeDPIIsConnectedInst(int id);
 
-  import "DPI-C" function bit renodeDPILog(
-    int logLevel,
+  import "DPI-C" function bit renodeDPILogInst(
+    int id, 
+    int logLevel, 
     string data
   );
 
-  import "DPI-C" function bit renodeDPIReceive(
-    output action_e action,
+  import "DPI-C" function bit renodeDPIReceiveInst(
+    int id, output action_e action,
     output address_t address,
     output data_t data,
-    output int peripheralIndex 
+    output int peripheralIndex
+    );
+
+  import "DPI-C" function bit renodeDPITryReceiveInst(
+    int id, output action_e action,
+    output address_t address,
+    output data_t data,
+    output int peripheralIndex
   );
 
-  import "DPI-C" function bit renodeDPISend(
-    action_e action,
+  import "DPI-C" function bit renodeDPISendInst(
+    int id, action_e action,
     address_t address,
     data_t data,
     int peripheralIndex
   );
 
-  import "DPI-C" function bit renodeDPISendToAsync(
-    action_e action,
+  import "DPI-C" function bit renodeDPISendToAsyncInst(
+    int id, action_e action,
     address_t address,
     data_t data,
     int peripheralIndex
@@ -102,13 +111,14 @@ package renode_pkg;
 
   class renode_connection;
     semaphore exclusive_receive = new(1);
-
-    function new();
+    int instance_id; 
+    function new(int id = 0);
+      instance_id = id;
       $timeformat(0, 9, "s", 0);
     endfunction
 
     function void connect(int receiver_port, int sender_port, string address);
-      renodeDPIConnect(receiver_port, sender_port, address);
+      renodeDPIConnectInst(instance_id, receiver_port, sender_port, address);
       if(is_connected())
         $display("Renode at %t: Connected using the socket based interface", $realtime);
       else
@@ -116,7 +126,7 @@ package renode_pkg;
     endfunction
 
     function bit is_connected();
-      return renodeDPIIsConnected();
+      return renodeDPIIsConnectedInst(instance_id);
     endfunction
 
     function void fatal_error(string message);
@@ -141,18 +151,19 @@ package renode_pkg;
 `ifdef RENODE_DEBUG
       $display("Renode at %t logs: %s", $realtime, message);
 `endif
-      if(!renodeDPILog(log_level, message)) begin
+      if(!renodeDPILogInst(instance_id, log_level, message)) begin
         $display("Renode at %t: Unable to send the log: %s", $realtime, message);
       end
     endfunction
 
     function void receive(output message_t message);
-      bit is_received = try_receive(message);
+      bit is_received = renodeDPIReceiveInst(instance_id, message.action, message.address, message.data, message.peripheral_index);
       if (!is_received) fatal_error("Unable to receive a message.");
     endfunction
 
+    // Non-blocking: returns 0 immediately if no message is ready on the socket.
     function bit try_receive(output message_t message);
-      bit is_received = renodeDPIReceive(message.action, message.address, message.data, message.peripheral_index);
+      bit is_received = renodeDPITryReceiveInst(instance_id, message.action, message.address, message.data, message.peripheral_index);
       if(is_received) begin
 `ifdef RENODE_DEBUG
       log(LogDebug, $sformatf("Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
@@ -165,18 +176,18 @@ package renode_pkg;
 `ifdef RENODE_DEBUG
       log(LogDebug, $sformatf("Sent action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
-      if (!renodeDPISend(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
+      if (!renodeDPISendInst(instance_id, message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     function void send_to_async_receiver(message_t message);
 `ifdef RENODE_DEBUG
       log(LogDebug, $sformatf("Sent async action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
-      if (!renodeDPISendToAsync(message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
+      if (!renodeDPISendToAsyncInst(instance_id, message.action, message.address, message.data, message.peripheral_index)) fatal_error("Unexpected channel disconnection");
     endfunction
 
     local function void disconnect();
-      renodeDPIDisconnect();
+      renodeDPIDisconnectInst(instance_id);
     endfunction
 
     local function void handle_disconnect();
@@ -266,14 +277,22 @@ package renode_pkg;
     const string ReceiverPortArgName = "RENODE_RECEIVER_PORT";
     const string SenderPortArgName = "RENODE_SENDER_PORT";
     const string AddressArgName = "RENODE_ADDRESS";
+    
+    int instance_id;
+    renode_connection connection;
 
-    renode_connection connection = new();
+    // Set by renode_inputs when an interrupt fires during sync_time.
+    // sync_time checks this flag to send an early partial TickClock ack so
+    // Renode can process the interrupt immediately rather than waiting for the
+    // full tick window to complete.
+    bit interrupt_preempt_requested = 0;
 
-    // Initialized in the constructor
+    // Initialized by the Renode module
     bus_connection controllers[];
     bus_connection peripherals[];
 
-    function new(int RenodeToCosimCount, int CosimToRenodeCount);
+    function new(int id, int RenodeToCosimCount, int CosimToRenodeCount); 
+      connection = new(id);
       controllers = new[RenodeToCosimCount];
       foreach(controllers[i]) begin
         controllers[i] = new();
@@ -297,6 +316,10 @@ package renode_pkg;
       else begin
         connection.connect(receiver_port, sender_port, address);
       end
+    endfunction
+
+    function void connect_automatic(int receiver_port, int sender_port, string address); 
+      connection.connect(receiver_port, sender_port, address);
     endfunction
 
     function bit is_connected();
