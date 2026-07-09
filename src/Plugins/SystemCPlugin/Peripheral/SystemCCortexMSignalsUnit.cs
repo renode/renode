@@ -217,6 +217,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 // Ensure cpu is resumed after implicit pause on cpu reset.
                 // Halt condition is preserved.
                 cpu.Resume();
+                this.DebugLog("Cpu and peripherals were reset after signal");
             }
 
             if(DisableSidebandChannel)
