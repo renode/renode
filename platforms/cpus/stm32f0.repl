@@ -180,7 +180,9 @@ dma: DMA.STM32G0DMA @ sysbus 0x40020000
 adc: Analog.STM32F0_ADC @ sysbus 0x40012400
     referenceVoltage: 3.3
     externalEventFrequency: 1000
-    -> nvic@12 | dma@1 | dma@2
+    dmaPeripheral: dma
+    dmaChannel: 1
+    -> nvic@12
 
 crc: CRC.STM32_CRC @ sysbus 0x40023000
     series: STM32Series.F0
