@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
@@ -285,7 +285,7 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
     (*renode)->socket_fd = socket_fd;
 
     return NO_ERROR;
-};
+}
 
 renode_error_t *renode_disconnect(renode_t **renode)
 {
