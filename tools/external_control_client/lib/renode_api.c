@@ -865,21 +865,7 @@ renode_error_t *renode_get_sysbus(renode_machine_t *machine, renode_bus_context_
     return renode_get_bus_context(machine, "sysbus", sysbus);
 }
 
-typedef enum {
-    SYSBUS_READ = 0,
-    SYSBUS_WRITE = 1,
-} sysbus_operation_t;
-
-typedef struct __attribute__((packed)) {
-    int32_t id;
-    uint8_t operation;
-    uint8_t access_width;
-    uint64_t address;
-    uint32_t data_count;
-    uint8_t data[];
-} sysbus_command_t;
-
-static renode_error_t *sysbus_data_count_to_byte_count(renode_access_width_t width, size_t count, uint64_t *byte_count)
+renode_error_t *renode_get_byte_count(renode_access_width_t width, uint32_t count, uint32_t *byte_count)
 {
     if (width == AW_MULTI_BYTE) {
         *byte_count = count;
@@ -895,19 +881,33 @@ static renode_error_t *sysbus_data_count_to_byte_count(renode_access_width_t wid
         result = (uint32_t)width * count;
         // Handle overflow
         if (result / (uint32_t)width != count) {
-            return create_fatal_error("Payload size exceeds %u bytes", UINT32_MAX);
+            return create_error(ERR_INVALID_ARGUMENT, "Payload size exceeds %u bytes", UINT32_MAX);
         }
         *byte_count = result;
         return NO_ERROR;
     default:
-        return create_fatal_error("Invalid bus access width: %d", width);
+        return create_error(ERR_INVALID_ARGUMENT, "Invalid bus access width: %d", width);
     }
 }
 
+typedef enum {
+    SYSBUS_READ = 0,
+    SYSBUS_WRITE = 1,
+} sysbus_operation_t;
+
+typedef struct __attribute__((packed)) {
+    int32_t id;
+    uint8_t operation;
+    uint8_t access_width;
+    uint64_t address;
+    uint32_t data_count;
+    uint8_t data[];
+} sysbus_command_t;
+
 renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, void *buffer, uint32_t count)
 {
-    uint64_t data_bytes;
-    return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
+    uint32_t data_bytes;
+    return_error_if_fails(renode_get_byte_count(width, count, &data_bytes));
     size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
     sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
     *command = (sysbus_command_t){
@@ -931,8 +931,8 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
 
 renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count)
 {
-    uint64_t data_bytes;
-    return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
+    uint32_t data_bytes;
+    return_error_if_fails(renode_get_byte_count(width, count, &data_bytes));
     size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
     sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
     *command = (sysbus_command_t){

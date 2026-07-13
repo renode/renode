@@ -25,6 +25,7 @@ typedef enum {
     ERR_FATAL, /**< fatal error */
     ERR_COMMAND_FAILED, /**< command failed */
     ERR_INVALID_COMMAND, /**< invalid command */
+    ERR_INVALID_ARGUMENT, /**< function called with invalid argument */
 } renode_error_code_t;
 
 /**
@@ -307,6 +308,16 @@ renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *na
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
 renode_error_t *renode_get_sysbus(renode_machine_t *machine, renode_bus_context_t **sysbus);
+
+/**
+ * @brief Function calculating the byte count from the given access width and transfer count
+ *
+ * @param[in] width width of transfer
+ * @param[in] count count of transfers
+ * @param[out] byte_count count of accessed bytes
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_get_byte_count(renode_access_width_t width, uint32_t count, uint32_t *byte_count);
 
 /**
  * @brief Function reading data from bus
