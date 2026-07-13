@@ -97,26 +97,28 @@ Sanitize Test Name
     ${test_name}=      Replace String Using Regexp  ${test_name}  [/""]  -
     RETURN             ${test_name}
 
+Get Sanitized Test Name
+    ${retry_index}=    Get Variable Value   \${RETRYFAILED_RETRY_INDEX}  0
+    ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail${retry_index}
+    ${test_name}=      Sanitize Test Name  ${test_name}
+    RETURN             ${test_name}
+
 Create Snapshot Of Failed Test
     Return From Keyword If   'skipped' in @{TEST TAGS}
 
-    ${retry_index}=    Get Variable Value   \${RETRYFAILED_RETRY_INDEX}  0
-    ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail${retry_index}.save
-    ${test_name}=      Sanitize Test Name  ${test_name}
+    ${test_name}=      Get Sanitized Test Name
 
     ${snapshots_dir}=  Set Variable  ${RESULTS_DIRECTORY}/snapshots
     Create Directory   ${snapshots_dir}
 
-    ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}"
+    ${snapshot_path}=  Set Variable  "${snapshots_dir}/${test_name}.save"
     Execute Command  Save ${snapshot_path}
     Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
 
 Save Test Log
     Return From Keyword If   'skipped' in @{TEST TAGS}
 
-    ${retry_index}=    Get Variable Value   \${RETRYFAILED_RETRY_INDEX}  0
-    ${test_name}=      Set Variable  ${SUITE NAME}.${TEST NAME}.fail${retry_index}
-    ${test_name}=      Sanitize Test Name  ${test_name}
+    ${test_name}=      Get Sanitized Test Name
 
     ${logs_dir}=       Set Variable  ${RESULTS_DIRECTORY}/logs
     Create Directory   ${logs_dir}
@@ -176,8 +178,7 @@ Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}
 
 Start Profiler
-    ${test_name}=               Set Variable  ${SUITE NAME}.${TEST NAME}
-    ${test_name}=               Sanitize Test Name  ${test_name}
+    ${test_name}=               Get Sanitized Test Name
 
     ${traces_dir}=              Set Variable  ${RESULTS_DIRECTORY}/traces
     Create Directory            ${traces_dir}
