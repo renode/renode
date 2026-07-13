@@ -19,6 +19,7 @@ ${PTP}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-samples
 ${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_client_server.elf-s_5285644-738a986f7b4250cd1a615e5c9767be20d89d82e0  # Zephyr netshell with DHCP client and server enabled
 ${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
 ${ADC_DMA_TEST}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_adc_api_dma.elf-s_1463928-1eb236532e593e96e263d98cf6200a0722dfd97f
+${FLASH_IS25WP}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_spi_flash.elf-s_642604-754f4c58cbd5ac817f6c77f5533ea3d9b83bb276
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -51,6 +52,10 @@ ${SMMU_PLATFORM}=    SEPARATOR=${\n}
 ...    ${SPACE*4}smmu 16
 ...    }
 
+
+${EXTERNAL_IS25WP_FLASH}=  SEPARATOR=${\n}
+...    externalQspiFlash: SPI.ISSI_IS25WP @ qspi { underlyingMemory: qspiMappedFlashMemory; }
+...    qspiMappedFlashMemory: Memory.MappedMemory @ sysbus 0x90000000 { size: 0x8000000; }
 
 ${FLASH_WRITE_ADDRESS}              0x08040000
 ${FLASH_WRITE_ERROR_HANDLER}        HAL_FLASH_OperationErrorCallback
@@ -420,3 +425,16 @@ Should Pass ADC DMA Test
     Wait For Test Pass                  test_adc_sample_two_channels
     Wait For Test Pass                  test_adc_sample_with_interval
     Wait For Test Pass                  test_task_different_priorities_sequences
+
+Should Read and Write IS25WP Flash
+    Create Machine                      ${FLASH_IS25WP}  flash
+    Execute Command                     machine LoadPlatformDescriptionFromString """${EXTERNAL_IS25WP_FLASH}"""
+
+    Create Terminal Tester              ${UART}  defaultPauseEmulation=true
+    Wait For Line on Uart               qspi-nor-flash@0 SPI flash testing
+    Wait For Line on Uart               Perform test on single sector
+    Wait For Line on Uart               Flash erase succeeded!
+    Wait For Line on Uart               Data read matches data written. Good!!
+    Wait For Line on Uart               Perform test on multiple consecutive sectors
+    Wait For Line on Uart               Flash erase succeeded!
+    Wait For Line on Uart               Data read matches data written. Good!!
