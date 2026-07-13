@@ -896,7 +896,7 @@ static renode_error_t *sysbus_data_count_to_byte_count(renode_access_width_t wid
 
 renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, void *buffer, uint32_t count)
 {
-    size_t data_bytes;
+    uint64_t data_bytes;
     return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
     size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
     sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
@@ -921,7 +921,7 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
 
 renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count)
 {
-    size_t data_bytes;
+    uint64_t data_bytes;
     return_error_if_fails(sysbus_data_count_to_byte_count(width, count, &data_bytes));
     size_t payload_size = sizeof(sysbus_command_t) + data_bytes;
     sysbus_command_t *command __attribute__ ((__cleanup__(xcleanup)))  = xmalloc(payload_size);
