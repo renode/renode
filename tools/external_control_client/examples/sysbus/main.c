@@ -1,11 +1,12 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "renode_api.h"
 
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf("(BUS @ 0x%lx) %s: written = 0x%x, read = 0x%x to 0x%lx\n", address, bus_data_read == bus_data_write ? "SUCCESS" : "FAILURE", bus_data_write, bus_data_read, address);
+    printf("(BUS @ 0x%"PRIx64") %s: written = 0x%"PRIx32", read = 0x%"PRIx32" to 0x%"PRIx64"\n", address, bus_data_read == bus_data_write ? "SUCCESS" : "FAILURE", bus_data_write, bus_data_read, address);
 
     // Perform a bus transaction with a peripheral context (seeing the bus from the perspective of the provided peripheral)
 
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
         renode_disconnect(&renode);
         return EXIT_FAILURE;
     }
-    printf("(CONTEXT '%s' @ 0x%lx) %s: written = 0x%lx, read = 0x%lx\n", peripheral_name, address, context_data_read == context_data_write ? "SUCCESS" : "FAILURE", context_data_write, context_data_read);
+    printf("(CONTEXT '%s' @ 0x%"PRIx64") %s: written = 0x%"PRIx64", read = 0x%"PRIx64"\n", peripheral_name, address, context_data_read == context_data_write ? "SUCCESS" : "FAILURE", context_data_write, context_data_read);
 
     renode_disconnect(&renode);
     return EXIT_SUCCESS;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "renode_api.h"
 
@@ -50,14 +51,14 @@ char *voltage_string(uint32_t value)
 
     if ((integer = (value / 1000000))) {
         fraction = value % 1000000;
-        snprintf(buffer, 32, "%u.%06uV", integer, fraction);
+        snprintf(buffer, 32, "%"PRIu32".%06"PRIu32"V", integer, fraction);
     }
     else if ((integer = (value / 1000))) {
         fraction = value % 1000;
-        snprintf(buffer, 32, "%u.%03umV", integer, fraction);
+        snprintf(buffer, 32, "%"PRIu32".%03"PRIu32"mV", integer, fraction);
     }
     else {
-        snprintf(buffer, 32, "%uuV", value);
+        snprintf(buffer, 32, "%"PRIu32"uV", value);
     }
 
     return buffer;
@@ -135,7 +136,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Expected at least one ADC channel\n");
         goto fail_adc;
     }
-    printf("[INFO] # of channels: %d\n", ch_count);
+    printf("[INFO] # of channels: %"PRId32"\n", ch_count);
 
     // get current value, set the new value and assert that new current value is set
 

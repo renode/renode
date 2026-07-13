@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "renode_api.h"
 
@@ -50,8 +51,9 @@ static void perf_stop(uint64_t times, uint64_t value, renode_time_unit_t time_un
 
     int64_t virt_seconds = value * times / (time_unit == TU_SECONDS ? 1 : (time_unit == TU_MICROSECONDS ? 1000000 : 1000));
     int64_t virt_microseconds = (value * times) % (time_unit == TU_SECONDS ? 1 : (time_unit == TU_MICROSECONDS ? 1000000 : 1000));
+    double ratio = (seconds * 1e6 + microseconds) / (double)(virt_seconds * 1e6 + virt_microseconds);
 
-    fprintf(stderr, "delta: %lu.%06lus real\t %lu.%06lus virt\t real / virt %lf\n", seconds, microseconds, virt_seconds, virt_microseconds, (seconds * 1e6 + microseconds) / (virt_seconds * 1e6 + virt_microseconds));
+    fprintf(stderr, "delta: %"PRId64".%06"PRId64"s real\t %"PRId64".%06"PRId64"s virt\t real / virt %lf\n", seconds, microseconds, virt_seconds, virt_microseconds, ratio);
 }
 
 static void start_virtual_time_check(renode_t *renode)
@@ -180,7 +182,7 @@ void run_options_prompt(uint64_t *value, renode_time_unit_t *time_unit, uint64_t
 
     do {
         retry = false;
-        printf("Continue running for %lu%ss %lu times? [y/N/c] ", *value, *time_unit == TU_MICROSECONDS ? "u" : (*time_unit == TU_MILLISECONDS ? "m" : ""), *times);
+        printf("Continue running for %"PRIu64"%ss %"PRIu64" times? [y/N/c] ", *value, *time_unit == TU_MICROSECONDS ? "u" : (*time_unit == TU_MILLISECONDS ? "m" : ""), *times);
 
         if ((option = getchar()) != '\n') while(getchar() != '\n');
 

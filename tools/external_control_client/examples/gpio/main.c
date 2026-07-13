@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "renode_api.h"
 
@@ -51,7 +52,7 @@ void gpio_callback(void *user_data, renode_gpio_event_data_t *event_data)
 {
     gpio_event_user_data *udata = (gpio_event_user_data *)user_data;
     printf("%s: GPIO #%d in %s %sset", udata->machine_name, udata->pin_no, udata->gpio_name, event_data->state ? "" : "un");
-    printf(" at %lu us\n", event_data->timestamp_us);
+    printf(" at %"PRIu64" us\n", event_data->timestamp_us);
     udata->run = false;
 }
 
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
         };
 
         if ((error = renode_register_gpio_state_change_callback(gpio, number, &user_data, gpio_callback)) != NO_ERROR) {
-            fprintf(stderr, "Registering event on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+            fprintf(stderr, "Registering event on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
             goto fail_gpio;
         }
 
@@ -131,14 +132,14 @@ int main(int argc, char **argv)
         }
     } else if (set) {
         if ((error = renode_set_gpio_state(gpio, number, state)) != NO_ERROR) {
-            fprintf(stderr, "Setting state on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+            fprintf(stderr, "Setting state on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
             goto fail_gpio;
         }
 
         printf("GPIO set to: %s\n", state ? "true" : "false");
     } else {
         if ((error = renode_get_gpio_state(gpio, number, &state)) != NO_ERROR) {
-            fprintf(stderr, "Getting state on pin #%d for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+            fprintf(stderr, "Getting state on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
             goto fail_gpio;
         }
 
