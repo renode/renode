@@ -107,7 +107,7 @@ Should Access All 32-Bit Config Registers From Monitor
     Should Access All 32 Bit Config Registers From Monitor
 
 Should Access All 64-Bit Config Registers From Monitor
-    Should Access All 32 Bit Config Registers From Monitor
+    Should Access All 64 Bit Config Registers From Monitor
 
 Should Access All 32-Bit Address Registers From Monitor
     Should Access All 32 Bit Address Registers From Monitor
