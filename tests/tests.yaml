@@ -259,6 +259,7 @@
 - tests/peripherals/LPS25HB.robot
 - tests/peripherals/PythonPeripheral.robot
 - tests/platforms/ARMv8M-TrustZone.robot
+- tests/peripherals/LSM6DSO_IMU.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
