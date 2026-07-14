@@ -14,18 +14,11 @@ ${RV32_PRIV10}=     SEPARATOR=${\n}
 
 
 *** Keywords ***
-Write Opcode To
-    [Arguments]                         ${adress}   ${opcode}
-    Execute Command                     sysbus WriteDoubleWord ${adress} ${opcode}
-
 Create RV32PRIV10 Machine
     Execute Command                     using sysbus
     Execute Command                     mach create
     Execute Command                     machine LoadPlatformDescriptionFromString ${RV32_PRIV10}
 
-Prepare RV32 State
-    Execute Command                     cpu MTVEC ${MTVEC}
-    Execute Command                     cpu PC 0x80000000
 
 Step Once And Ensure Not Trapped
     [Arguments]                         ${trap_adress}
@@ -37,7 +30,6 @@ Step Once And Ensure Not Trapped
 *** Test Cases ***
 Should Not Throw Exception After MRET in the NAPOT GRAIN32 Configuration
     Create RV32PRIV10 Machine
-    Prepare RV32 State
 
     ####################################
     # PMP Configuration:               #
@@ -52,38 +44,48 @@ Should Not Throw Exception After MRET in the NAPOT GRAIN32 Configuration
     # - lock  = false                  #
     ####################################
 
-    # Aligment
-    Write Opcode To  0x80000000         0x13        # nop
+    Execute Command                     cpu MTVEC ${MTVEC}
+    Execute Command                     cpu PC 0x80000000
+    ${machine_assembly}=                Catenate  SEPARATOR=\n
+    ...                                 # Set up pmpaddr0 (0x7fffffff)
+    ...                                 lui t0, 0x80000
+    ...                                 addi t0, t0, -1
+    ...                                 csrw pmpaddr0, t0
+    ...                                 # Set up pmpcfg0 (0b11111)
+    ...                                 li t0, 31
+    ...                                 csrw pmpcfg0, t0
+    ...                                 mret
 
-    # Set up pmpaddr0
-    Write Opcode To  0x80000004         0x800002b7  # lui      t0,0x80000
-    Write Opcode To  0x80000008         0x12fd      # addi     t0,t0,-1    # t0 = 0x7fffffff
-    Write Opcode To  0x8000000A         0x3b029073  # csrw     pmpaddr0,t0
+    Execute Command                     cpu AssembleBlock 0x80000000 "${machine_assembly}"
+    Execute Command                     cpu MEPC 0x80001000
 
-    # Set up pmpcfg0
-    Write Opcode To  0x8000000E         0x42fd      # li       t0,31
-    Write Opcode To  0x80000010         0x3a029073  # csrw     pmpcfg0,t0
+    ${user_assembly}=                   Catenate  SEPARATOR=\n
+    ...                                 # Execution from protected region
+    ...                                 nop
+    ...                                 # Load from protected region
+    ...                                 lui s0, 0x80002
+    ...                                 lw s1, 0(s0)
+    ...                                 # Store to protected region
+    ...                                 sw s1, 4(s0)
+    
+    Execute Command                     cpu AssembleBlock 0x80001000 "${user_assembly}"
 
-    Execute Command                     cpu MEPC 0x80000018
-    Write Opcode To  0x80000014         0x30200073  # mret
-
-    Execute Command                     cpu Step 7
-
-
+    # Step to user mode
+    Execute Command                     cpu Step 6
 
     ################################
     #        PMP TEST START        #
     ################################
 
     # Test code execution from the PMP covered region
-    Write Opcode To  0x80000018         0x13        # nop
     Step Once And Ensure Not Trapped    ${MTVEC}
 
     # Test loads from the PMP covered region
-    Execute Command                     cpu SetRegister 8 0x80001000
-    Write Opcode To  0x8000001c         0x00042483  # lw       s1, 0(s0)
+    Execute Command                     sysbus WriteDoubleWord 0x80002000 0x65657a
+    Execute Command                     cpu Step
     Step Once And Ensure Not Trapped    ${MTVEC}
 
     # Test writes to PMP covered region
-    Write Opcode To  0x80000020         0x00942023  # sw       s1,0(s0)
     Step Once And Ensure Not Trapped    ${MTVEC}
+    ${num}=  Execute Command            sysbus ReadDoubleWord 0x80002004
+    Should Be Equal As Integers         ${num}  0x65657a
