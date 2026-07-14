@@ -64,6 +64,11 @@ Run Assembly
         END
     END
 
+Run Instruction
+    [Arguments]                     ${instruction}
+    Assemble At Current Pc          ${instruction}
+    Execute Command                 cpu Step
+
 Should Trap
     [Arguments]                     ${cause}
     ${pc}=                          Execute Command  cpu GetRegister "pc"
@@ -74,6 +79,10 @@ Should Trap
 Untrap
     ${mepc}=                        Execute Command  cpu GetRegister "mepc"
     Execute Command                 cpu SetRegister "pc" ${mepc}
+
+Should Not Trap
+    ${pc}=                          Execute Command  cpu GetRegister "pc"
+    Should Not Be Equal As Numbers  ${mtvec}  ${pc}
 
 *** Test Cases ***
 Should Fail On Counter Access
@@ -262,3 +271,115 @@ Should Inhibit MINSTRET After Write Finishes RV32
     Run Assembly                    """${assembly}"""
 
     Register Should Be Equal        "a3"  2
+
+Should Trap On SFENCE.VMA In User Mode RV64
+    Create Machine 64
+
+    Change Privilege                ${user_mode}
+
+    Run Assembly                    "sfence.vma x0, x0"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On SFENCE.VMA In User Mode RV32
+    Create Machine 32
+
+    Change Privilege                ${user_mode}
+
+    Run Assembly                    "sfence.vma x0, x0"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On Sret When MSTATUS.TSR Is One RV64
+    Create Machine 64
+
+    Change Privilege                ${supervisor_mode}
+
+    Set Register                    "mstatus"  0x00400000
+    Set Register                    "sepc"  0x0000bad0
+    Run Instruction                 "sret"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On Sret When MSTATUS.TSR Is One RV32
+    Create Machine 32
+
+    Change Privilege                ${supervisor_mode}
+
+    Set Register                    "mstatus"  0x00400000
+    Set Register                    "sepc"  0x0000bad0
+    Run Instruction                 "sret"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On SATP Write When TVM Is One
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x00100000
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "li a0, 0x0FFFF00000000000"
+    Run Instruction                 "csrw satp, a0"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On SATP Read When TVM Is One
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x00100000
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "csrr a0, satp"
+    Should Trap                     ${illegal_instruction}
+
+Should Trap On SFENCE.VMA When TVM Is One
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x00100000
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "sfence.vma x0, x0"
+    Should Trap                     ${illegal_instruction}
+
+Should Not Trap On Sret When MSTATUS.TSR Is Zero RV64
+    Create Machine 64
+
+    Change Privilege                ${supervisor_mode}
+
+    Set Register                    "mstatus"  0x0
+    Set Register                    "sepc"  0x0000bad0
+    Run Instruction                 "sret"
+    Should Not Trap
+
+Should Not Trap On Sret When MSTATUS.TSR Is Zero RV32
+    Create Machine 32
+
+    Change Privilege                ${supervisor_mode}
+
+    Set Register                    "mstatus"  0x0
+    Set Register                    "sepc"  0x0000bad0
+    Run Instruction                 "sret"
+    Should Not Trap
+
+Should Not Trap On SATP Write When TVM Is Zero
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x0
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "li a0, 0x0FFFF00000000000"
+    Run Instruction                 "csrw satp, a0"
+    Should Not Trap
+
+Should Not Trap On SATP Read When TVM Is Zero
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x0
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "csrr a0, satp"
+    Should Not Trap
+
+Should Not Trap On SFENCE.VMA When TVM Is Zero
+    Create Machine 64
+
+    Set Register                    "mstatus"  0x0
+    Change Privilege                ${supervisor_mode}
+
+    Run Instruction                 "sfence.vma x0, x0"
+    Should Not Trap
