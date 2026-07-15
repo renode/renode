@@ -70,9 +70,13 @@ Should Run RunFor Sample
 
     Build Sample                   run_for
 
-    Execute Sample                 run_for  ${PORT}  500ms  3
+    ${r}=                          Execute Sample  run_for  ${PORT}  500ms  3
     ${time}=                       Execute Command  emulation GetTimeSourceInfo
     Should Contain                 ${time}  Elapsed Virtual Time: 00:00:01.500000000
+
+    Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:00.500000
+    Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:01.000000
+    Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:01.500000
 
 Should Run Sysbus Sample
     [Tags]                         skip_windows
