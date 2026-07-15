@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -53,8 +53,8 @@ namespace Antmicro.Renode.Network.ExternalControl
             exception = null;
             success = false;
 
-            var microseconds = BitConverter.ToUInt64(data.ToArray(), 0);
-            var interval = TimeInterval.FromMicroseconds(microseconds);
+            var nanoseconds = BitConverter.ToUInt64(data.ToArray(), 0);
+            var interval = TimeInterval.FromNanoseconds(nanoseconds);
 
             var thread = new Thread(() =>
             {
@@ -99,7 +99,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public override Command Identifier => Command.RunFor;
 
-        public override byte Version => 0x0;
+        public override byte Version => 0x1;
 
         private bool success;
         private Exception exception;

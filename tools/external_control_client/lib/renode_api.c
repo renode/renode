@@ -155,11 +155,11 @@ typedef enum {
 
 static uint8_t command_versions[][2] = {
     { 0x0, 0x0 }, // reserved for size
-    { RUN_FOR, 0x0 },
-    { GET_TIME, 0x0 },
+    { RUN_FOR, 0x1 },
+    { GET_TIME, 0x1 },
     { GET_MACHINE, 0x0 },
     { ADC, 0x0 },
-    { GPIO, 0x1 },
+    { GPIO, 0x2 },
     { SYSTEM_BUS, 0x1 },
 };
 
@@ -540,6 +540,56 @@ renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_ma
     return NO_ERROR;
 }
 
+static const char *time_unit_to_string(renode_time_unit_t unit)
+{
+    switch (unit) {
+    case TU_NANOSECONDS:
+        return "ns";
+    case TU_MICROSECONDS:
+        return "us";
+    case TU_MILLISECONDS:
+        return "ms";
+    case TU_SECONDS:
+        return "s";
+    }
+    return "<unknown unit>";
+}
+
+renode_error_t *renode_create_time(uint64_t value, renode_time_unit_t unit, renode_time_t *time)
+{
+    uint64_t result;
+    switch (unit) {
+    case TU_NANOSECONDS:
+    case TU_MICROSECONDS:
+    case TU_MILLISECONDS:
+    case TU_SECONDS:
+        result = value * unit;
+        if (result / unit != value) {
+            return create_error(ERR_INVALID_ARGUMENT, "%"PRIu64"%s exceedes the maximum time value of %"PRIu64"ns", time, time_unit_to_string(unit), UINT64_MAX);
+        }
+        *time = result;
+        return NO_ERROR;
+    }
+    return create_error(ERR_INVALID_ARGUMENT, "Invalid time unit: %d", unit);
+}
+
+uint64_t renode_time_to_time_unit(renode_time_t time, renode_time_unit_t unit)
+{
+    switch(unit) {
+    case TU_NANOSECONDS:
+    case TU_MICROSECONDS:
+    case TU_MILLISECONDS:
+    case TU_SECONDS:
+        return time / unit;
+    }
+    assert_exit(!"Invalid time unit value");
+}
+
+double renode_time_to_seconds(renode_time_t time)
+{
+    return (double)time / TU_SECONDS;
+}
+
 static renode_error_t *renode_get_instance_descriptor(renode_machine_t *machine, api_command_t api_command, const char *name, int32_t *instance_descriptor)
 {
     uint32_t name_length = strlen(name);
@@ -566,28 +616,19 @@ struct __attribute__((packed)) run_for_out {
     uint8_t header[2];
     uint8_t api_command;
     uint32_t data_size;
-    uint64_t microseconds;
+    uint64_t nanoseconds;
 };
 
-renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64_t value)
+renode_error_t *renode_run_for(renode_t *renode, renode_time_t time)
 {
-    assert(renode != NULL && value < UINT64_MAX / unit);
+    assert(renode != NULL);
 
     struct run_for_out data = {
         .header = {'R', 'E'},
         .api_command = RUN_FOR,
-        .data_size = sizeof(data.microseconds)
+        .data_size = sizeof(data.nanoseconds),
+        .nanoseconds = time,
     };
-    switch (unit) {
-        case TU_MICROSECONDS:
-        case TU_MILLISECONDS:
-        case TU_SECONDS:
-            // The enum values are equal to 1 `unit` expressed in microseconds.
-            data.microseconds = value * unit;
-            break;
-        default:
-            assert_fmsg(false, "Invalid unit: %d\n", unit);
-    }
 
     return_error_if_fails(write_or_fail(renode->socket_fd, (uint8_t*)&data, sizeof(data)));
 
@@ -620,28 +661,14 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64
     return NO_ERROR;
 }
 
-renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time)
+renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current_time)
 {
     assert(renode != NULL);
-
-    uint64_t divider;
-    switch (unit) {
-        case TU_MICROSECONDS:
-        case TU_MILLISECONDS:
-        case TU_SECONDS:
-            // The enum values are equal to 1 `unit` expressed in microseconds.
-            divider = unit;
-            break;
-        default:
-            assert_fmsg(false, "Invalid unit: %d\n", unit);
-    }
 
     uint32_t response_size;
     return_error_if_fails(renode_execute_command(renode, GET_TIME, current_time, sizeof(*current_time), sizeof(*current_time), &response_size));
 
     assert_msg(response_size == sizeof(*current_time), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
-
-    *current_time /= divider;
 
     return NO_ERROR;
 }

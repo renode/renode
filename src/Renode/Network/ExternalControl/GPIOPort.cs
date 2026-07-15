@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -85,7 +85,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public override Command Identifier => Command.GPIOPort;
 
-        public override byte Version => 0x1;
+        public override byte Version => 0x2;
 
         public InstanceCollection<IPeripheral> Instances { get; }
 
@@ -99,7 +99,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         private void SendEvent(bool gpioState, int eventDescriptor)
         {
             var data = new EventData();
-            data.TimestampMicroseconds = (ulong)EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalMicroseconds;
+            data.TimestampNanoseconds = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds;
             data.GpioState = gpioState;
 
             EventReported?.Invoke(Response.Event(Identifier, eventDescriptor, data.AsRawBytes()));
@@ -141,7 +141,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private struct EventData
         {
-            public ulong TimestampMicroseconds;
+            public ulong TimestampNanoseconds;
             public bool GpioState;
         }
 

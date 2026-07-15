@@ -52,7 +52,9 @@ void gpio_callback(void *user_data, renode_gpio_event_data_t *event_data)
 {
     gpio_event_user_data *udata = (gpio_event_user_data *)user_data;
     printf("%s: GPIO #%d in %s %sset", udata->machine_name, udata->pin_no, udata->gpio_name, event_data->state ? "" : "un");
-    printf(" at %"PRIu64" us\n", event_data->timestamp_us);
+
+    uint64_t microseconds = renode_time_to_time_unit(event_data->time, TU_MICROSECONDS);
+    printf(" at %"PRIu64" us\n", microseconds);
     udata->run = false;
 }
 
@@ -125,7 +127,13 @@ int main(int argc, char **argv)
         }
 
         while (user_data.run) {
-            if ((error = renode_run_for(renode, TU_SECONDS, 60)) != NO_ERROR) {
+            renode_time_t run_for_time;
+            if ((error = renode_create_time(60, TU_SECONDS, &run_for_time)) != NO_ERROR) {
+                fprintf(stderr, "Failed to create a run for timestamp: %s\n", error->message);
+                goto fail_gpio;
+            }
+
+            if ((error = renode_run_for(renode, run_for_time)) != NO_ERROR) {
                 fprintf(stderr, "Run for failed with: %s\n", get_error_message(error));
                 goto fail_gpio;
             }

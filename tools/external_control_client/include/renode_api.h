@@ -138,30 +138,74 @@ void renode_free_error(renode_error_t *error);
  * Supported time units
  */
 typedef enum {
-    TU_MICROSECONDS =       1, /**< microseconds */
-    TU_MILLISECONDS =    1000, /**< milliseconds */
-    TU_SECONDS      = 1000000, /**< seconds */
+    TU_NANOSECONDS  =          1, /**< nanoseconds */
+    TU_MICROSECONDS =       1000, /**< microseconds */
+    TU_MILLISECONDS =    1000000, /**< milliseconds */
+    TU_SECONDS      = 1000000000, /**< seconds */
 } renode_time_unit_t;
+
+/**
+ * @brief Renode virtual time
+ *
+ * Represented by an unsigned integer in an unspecified time unit.
+ * It is safe to perform comparision (<, >, <=, >=, !=, ==), addition (+, +=) and subtraction (-, -=) operations
+ * between two instances of renode_time_t.
+ *
+ * Use renode_create_time(), renode_time_to_time_unit() or renode_time_to_seconds()
+ * to convert in a preferred way
+ */
+typedef uint64_t renode_time_t;
+
+/**
+ * @brief Function creating Renode time value
+ *
+ * @param[in] value time expressed in the given unit
+ * @param[in] unit unit in which the given time is expressed
+ * @param[out] time Renode time instance
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_create_time(uint64_t value, renode_time_unit_t unit, renode_time_t *time);
+
+/**
+ * @brief Function converting Renode's time to an integer time value expressed in a specified unit
+ *
+ * The function floors the result of calculation.
+ *
+ * @param[in] time Renode's time
+ * @param[in] unit a unit the given time value is expressed in (see renode_time_unit_t), caller is responsible for ensuring that the passed unit is valid
+ * @return time value in a give unit
+ */
+uint64_t renode_time_to_time_unit(renode_time_t time, renode_time_unit_t unit);
+
+/**
+ * @brief Function converting Renode timestamp to seconds
+ *
+ * @param[in] time Renode's time
+ * @return floating point timestamp equivalent in seconds
+ * @note Result is precise up to one nanosecond.
+ * Decimal places smaller than 10E-9 are conversion arifacts.
+ * Result keeps nanosecond-precison up to around 93 days of virtual time,
+ * for higher values precision gradually degradates.
+ */
+double renode_time_to_seconds(renode_time_t time);
 
 /**
  * @brief Function ordering emulation to run for a specified time
  *
  * @param[in] renode Renode connection handle
- * @param[in] unit value argument's time unit
- * @param[in] value virtual time the emulation should run for (in the specified unit)
+ * @param[in] time amout of virtual time that the emulation should execute for
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
-renode_error_t *renode_run_for(renode_t *renode, renode_time_unit_t unit, uint64_t value);
+renode_error_t *renode_run_for(renode_t *renode, renode_time_t time);
 
 /**
  * @brief Function getting current emulation virtual time
  *
  * @param[in] renode Renode connection handle
- * @param[in] unit requested time unit of the output value
- * @param[out] current_time current emulation virtual time (in the requested unit)
+ * @param[out] current_time current emulation virtual time
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
-renode_error_t *renode_get_current_time(renode_t *renode, renode_time_unit_t unit, uint64_t *current_time);
+renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current_time);
 
 /* ADC */
 
@@ -245,8 +289,8 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
  * GPIO state changed event data
  */
 typedef struct {
-    /** Virtual time in microseconds */
-    uint64_t timestamp_us;
+    /** Virtual time at which the event occured */
+    renode_time_t time;
     /** New GPIO state */
     bool state;
 } renode_gpio_event_data_t;

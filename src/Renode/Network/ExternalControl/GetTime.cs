@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -24,11 +24,11 @@ namespace Antmicro.Renode.Network.ExternalControl
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime;
             parent.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
 
-            return Response.Success(Identifier, ((ulong)timestamp.TotalMicroseconds).AsRawBytes());
+            return Response.Success(Identifier, ((ulong)timestamp.TotalNanoseconds).AsRawBytes());
         }
 
         public override Command Identifier => Command.GetTime;
 
-        public override byte Version => 0x0;
+        public override byte Version => 0x1;
     }
 }

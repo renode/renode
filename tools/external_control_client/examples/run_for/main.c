@@ -35,7 +35,7 @@ static void perf_start()
     clock_gettime(CLOCK_REALTIME, &t[tsi]);
 }
 
-static void perf_stop(uint64_t times, uint64_t value, renode_time_unit_t time_unit)
+static void perf_stop(uint64_t times, renode_time_t run_for)
 {
     tsi ^= 1;
     clock_gettime(CLOCK_REALTIME, &t[tsi]);
@@ -49,11 +49,10 @@ static void perf_stop(uint64_t times, uint64_t value, renode_time_unit_t time_un
     }
     int64_t microseconds = (nanoseconds + 500) / 1000;
 
-    int64_t virt_seconds = value * times / (time_unit == TU_SECONDS ? 1 : (time_unit == TU_MICROSECONDS ? 1000000 : 1000));
-    int64_t virt_microseconds = (value * times) % (time_unit == TU_SECONDS ? 1 : (time_unit == TU_MICROSECONDS ? 1000000 : 1000));
-    double ratio = (seconds * 1e6 + microseconds) / (double)(virt_seconds * 1e6 + virt_microseconds);
+    double virt_seconds = renode_time_to_seconds(run_for) * times;
+    double ratio = (seconds * 1e6 + microseconds) / virt_seconds;
 
-    fprintf(stderr, "delta: %"PRId64".%06"PRId64"s real\t %"PRId64".%06"PRId64"s virt\t real / virt %lf\n", seconds, microseconds, virt_seconds, virt_microseconds, ratio);
+    fprintf(stderr, "delta: %"PRId64".%06"PRId64"s real\t %lfs virt\t real / virt %lf\n", seconds, microseconds, virt_seconds, ratio);
 }
 
 static void start_virtual_time_check(renode_t *renode)
@@ -72,20 +71,19 @@ static void stop_virtual_time_check(renode_t *renode, uint64_t value, renode_tim
 
 static void perf_start() {}
 
-static void perf_stop(uint64_t times, uint64_t value, renode_time_unit_t time_unit)
+static void perf_stop(uint64_t times, renode_time_t run_for)
 {
     (void)times;
-    (void)value;
-    (void)time_unit;
+    (void)run_for;
 }
 
-static uint64_t vt0;
+static renode_time_t vt0;
 
-static uint64_t get_current_virtual_time(renode_t *renode)
+static renode_time_t get_current_virtual_time(renode_t *renode)
 {
     renode_error_t *error;
-    uint64_t current_time;
-    if ((error = renode_get_current_time(renode, TU_MICROSECONDS, &current_time)) != NO_ERROR) {
+    renode_time_t current_time;
+    if ((error = renode_get_current_time(renode, &current_time)) != NO_ERROR) {
         fprintf(stderr, "Get current time failed with: %s\n", get_error_message(error));
         renode_free_error(error);
         exit(EXIT_FAILURE);
@@ -99,13 +97,15 @@ static void start_virtual_time_check(renode_t *renode)
     vt0 = get_current_virtual_time(renode);
 }
 
-static void stop_virtual_time_check(renode_t *renode, uint64_t value, renode_time_unit_t time_unit)
+static void stop_virtual_time_check(renode_t *renode, renode_time_t expected_delta)
 {
-    uint64_t vt1 = get_current_virtual_time(renode);
-    uint64_t vt_delta = vt1 - vt0;
+    renode_time_t vt1 = get_current_virtual_time(renode);
+    renode_time_t vt_delta = vt1 - vt0;
 
-    int microseconds = vt1 % TU_SECONDS;
-    int seconds_total = vt1 / TU_SECONDS;
+    uint64_t microseconds_total = renode_time_to_time_unit(vt1, TU_MICROSECONDS);
+
+    int microseconds = microseconds_total % 1000000;
+    int seconds_total = microseconds_total / 1000000;
     int seconds = seconds_total % 60;
     int minutes_total = seconds_total / 60;
     int minutes = minutes_total % 60;
@@ -113,7 +113,7 @@ static void stop_virtual_time_check(renode_t *renode, uint64_t value, renode_tim
 
     printf("Elapsed virtual time %02d:%02d:%02d.%06d\n", hours_total, minutes, seconds, microseconds);
 
-    if (vt_delta != value * time_unit) {
+    if (vt_delta != expected_delta) {
         fprintf(stderr, "Reported current virtual time doesn't match the expected virtual time after running for the requested interval\n");
         exit(EXIT_FAILURE);
     }
@@ -135,7 +135,7 @@ void exit_with_usage_info(const char *argv0)
     exit(EXIT_FAILURE);
 }
 
-bool read_time_value(char *buffer, char **endptr, uint64_t *value, renode_time_unit_t *time_unit)
+bool read_time_value(char *buffer, char **endptr, renode_time_t *time)
 {
     char *noendptr;
     if (endptr == NULL) {
@@ -170,19 +170,24 @@ bool read_time_value(char *buffer, char **endptr, uint64_t *value, renode_time_u
             return false;
     }
 
-    *value = new_value;
-    *time_unit = unit;
+    renode_error_t *err = renode_create_time(new_value, unit, time);
+    if (err != NO_ERROR) {
+        fprintf(stderr, "Failed to create Renode time: %s\n", err->message);
+        renode_free_error(err);
+        return false;
+    }
+
     return true;
 }
 
-void run_options_prompt(uint64_t *value, renode_time_unit_t *time_unit, uint64_t *times)
+void run_options_prompt(renode_time_t *time, uint64_t *times)
 {
     char option;
     bool retry;
 
     do {
         retry = false;
-        printf("Continue running for %"PRIu64"%ss %"PRIu64" times? [y/N/c] ", *value, *time_unit == TU_MICROSECONDS ? "u" : (*time_unit == TU_MILLISECONDS ? "m" : ""), *times);
+        printf("Continue running for %"PRIu64"ms %"PRIu64" times? [y/N/c] ", renode_time_to_time_unit(*time, TU_MICROSECONDS), *times);
 
         if ((option = getchar()) != '\n') while(getchar() != '\n');
 
@@ -212,7 +217,7 @@ void run_options_prompt(uint64_t *value, renode_time_unit_t *time_unit, uint64_t
                 }
 
                 errno = 0;
-                if (!read_time_value(buffer, &endptr, value, time_unit)) {
+                if (!read_time_value(buffer, &endptr, time)) {
                     fprintf(stderr, "Failed to parse time value\n");
                     retry = true;
                     break;
@@ -251,9 +256,8 @@ int main(int argc, char **argv)
         exit_with_usage_info(argv[0]);
     }
 
-    uint64_t value;
-    renode_time_unit_t time_unit;
-    if (!read_time_value(argv[2], NULL, &value, &time_unit)) {
+    renode_time_t run_for_time;
+    if (!read_time_value(argv[2], NULL, &run_for_time)) {
         exit_with_usage_info(argv[0]);
     }
 
@@ -282,20 +286,20 @@ int main(int argc, char **argv)
     {
         start_virtual_time_check(renode);
 
-        if ((error = renode_run_for(renode, time_unit, value)) != NO_ERROR) {
+        if ((error = renode_run_for(renode, run_for_time)) != NO_ERROR) {
             fprintf(stderr, "Run for failed with: %s\n", get_error_message(error));
             renode_free_error(error);
             exit(EXIT_FAILURE);
         }
 
-        stop_virtual_time_check(renode, value, time_unit);
+        stop_virtual_time_check(renode, run_for_time);
 
         i -= 1;
         if (i == 0)
         {
-            perf_stop(times, value, time_unit);
+            perf_stop(times, run_for_time);
 #ifndef NON_INTERACTIVE
-            run_options_prompt(&value, &time_unit, &times);
+            run_options_prompt(&run_for_time, &times);
             i = times;
 #endif
             perf_start();
