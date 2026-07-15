@@ -39,8 +39,9 @@ cpu: CPU.X86 @ sysbus
     cpuType: "x86"
     lapic: lapic
 
-gpio: X86.Quark_GPIOController @ sysbus 0xB0000C00
+gpio: GPIOPort.DesignWare_APB_GPIO @ sysbus 0xB0000C00
     IRQ -> ioapic@8
+    numberOfGPIOS: 32
 
 pwm: X86.Quark_PWM @ sysbus 0xB0000800
     IRQ -> ioapic@9
