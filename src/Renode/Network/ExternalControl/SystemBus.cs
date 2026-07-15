@@ -23,6 +23,11 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public Response Invoke(IPeripheral instance, List<byte> commandData)
         {
+            if(commandData.Count > 0 && (Operation)commandData[0] == Operation.GetName)
+            {
+                return PerformGetName(instance);
+            }
+
             if(commandData.Count < (int)MinimumPayloadSize)
             {
                 return Response.CommandFailed(Identifier, $"Expected at least {MinimumPayloadSize + InstanceBasedCommandHeaderSize} bytes of payload");
@@ -79,7 +84,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public override Command Identifier => Command.SystemBus;
 
-        public override byte Version => 0x0;
+        public override byte Version => 0x1;
 
         public InstanceCollection<IPeripheral> Instances { get; }
 
@@ -182,6 +187,18 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
+        private Response PerformGetName(IPeripheral instance)
+        {
+            try
+            {
+                return Response.Success(Identifier, instance.GetName());
+            }
+            catch(Exception e)
+            {
+                return Response.CommandFailed(Identifier, $"Failed to obtain the name of the peripheral: {e.Message}");
+            }
+        }
+
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;
 
         private const int MinimumPayloadSize =
@@ -194,6 +211,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         {
             Read = 0,
             Write = 1,
+            GetName = 2,
         }
 
         private enum AccessWidth : byte

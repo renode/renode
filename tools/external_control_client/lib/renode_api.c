@@ -160,7 +160,7 @@ static uint8_t command_versions[][2] = {
     { GET_MACHINE, 0x0 },
     { ADC, 0x0 },
     { GPIO, 0x1 },
-    { SYSTEM_BUS, 0x0 },
+    { SYSTEM_BUS, 0x1 },
 };
 
 static renode_error_t *write_or_fail(int socket_fd, const uint8_t *data, ssize_t count)
@@ -893,7 +893,43 @@ renode_error_t *renode_get_byte_count(renode_access_width_t width, uint32_t coun
 typedef enum {
     SYSBUS_READ = 0,
     SYSBUS_WRITE = 1,
+    SYSBUS_GET_NAME = 2,
 } sysbus_operation_t;
+
+renode_error_t *renode_get_bus_context_name(renode_bus_context_t *ctx, char **name)
+{
+    struct __attribute__((packed)) {
+        int32_t id;
+        uint8_t operation;
+    } command_data;
+
+    command_data.id = ctx->id;
+    command_data.operation = SYSBUS_GET_NAME;
+
+    return_error_if_fails(renode_send_command(ctx->machine->renode, SYSTEM_BUS, (const uint8_t *)&command_data, sizeof(command_data)));
+
+    return_code_t code;
+    api_command_t command;
+    return_error_if_fails(renode_receive_status(ctx->machine->renode, &code, &command));
+
+    if (command != SYSTEM_BUS) {
+        return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
+    }
+
+    if (code != SUCCESS_WITH_DATA) {
+        return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
+    }
+
+    uint32_t name_len;
+    return_error_if_fails(renode_receive_bytes(ctx->machine->renode, (uint8_t *)&name_len, sizeof(name_len)));
+
+    char *name_bytes = xmalloc(name_len + 1);
+    return_error_if_fails(renode_receive_bytes(ctx->machine->renode, (uint8_t *)name_bytes, name_len));
+    name_bytes[name_len] = '\0';
+
+    *name = name_bytes;
+    return NO_ERROR;
+}
 
 typedef struct __attribute__((packed)) {
     int32_t id;

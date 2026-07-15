@@ -297,6 +297,15 @@ typedef enum {
 renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **ctx);
 
 /**
+ * @brief Function giving a name of bus context
+ *
+ * @param[in] ctx bus context
+ * @param[out] name fully qualified name of the bus context in format "<machine name>.<context name>", must be freed
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_get_bus_context_name(renode_bus_context_t *ctx, char **name);
+
+/**
  * @brief Function preparing bus handle with global context
  *
  * This is just a convenience wrapper equivalent to renode_get_bus_context() with `name="sysbus"`.
