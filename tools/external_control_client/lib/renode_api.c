@@ -373,13 +373,11 @@ static renode_error_t *invoke_callback(struct renode_event *response)
     }
 }
 
-static renode_error_t *renode_receive_event(renode_t *renode, void **buffer)
+static renode_error_t *renode_receive_event(renode_t *renode, void **buffer, api_command_t command)
 {
-    uint8_t command = 0;
     uint32_t ed = 0;
     uint32_t size = 0;
 
-    return_error_if_fails(renode_receive_bytes(renode, &command, 1));
     return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)&ed, 4));
     return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)&size, 4));
 
@@ -399,73 +397,102 @@ static renode_error_t *renode_receive_event(renode_t *renode, void **buffer)
     return NO_ERROR;
 }
 
+static renode_error_t *renode_receive_status(renode_t *renode, return_code_t *code, api_command_t *command)
+{
+    uint8_t return_code;
+    uint8_t received_command;
+
+    return_error_if_fails(renode_receive_byte(renode, &return_code));
+    *code = return_code;
+
+    // Receive the command id (if present)
+    switch (return_code) {
+    case SUCCESS_WITH_DATA:
+    case SUCCESS_WITHOUT_DATA:
+    case COMMAND_FAILED:
+    case INVALID_COMMAND:
+    case ASYNC_EVENT:
+        return_error_if_fails(renode_receive_byte(renode, &received_command));
+        break;
+    case FATAL_ERROR:
+        break;
+    default:
+        return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
+    }
+
+    // Return if the result is a success and let the caller handle it
+    switch (return_code) {
+    case SUCCESS_WITH_DATA:
+    case SUCCESS_WITHOUT_DATA:
+    case ASYNC_EVENT:
+        *command = received_command;
+        return NO_ERROR;
+    }
+
+    renode_error_t *error;
+    renode_error_code_t error_code;
+    char *buffer;
+    uint32_t buffer_size;
+
+    // Create the error object
+    switch (return_code) {
+    case INVALID_COMMAND:
+        error = create_error_static(ERR_INVALID_COMMAND, "received an invalid command error");
+        break;
+    case FATAL_ERROR:
+        error_code = ERR_FATAL;
+        // fallthrough
+    case COMMAND_FAILED:
+        error_code = ERR_COMMAND_FAILED;
+
+        return_error_if_fails(renode_receive_bytes(renode, (uint8_t *)&buffer_size, sizeof(buffer_size)));
+        buffer = xmalloc(buffer_size + 1);
+        return_error_if_fails(renode_receive_bytes(renode, (uint8_t *)buffer, buffer_size));
+        buffer[buffer_size] = '\0';
+        error = create_error_dynamic(error_code, buffer);
+        break;
+    default:
+        assert_exit(!"Unreachable code");
+    }
+    return error;
+}
+
 static renode_error_t *renode_receive_response(renode_t *renode, api_command_t *command, void **data_buffer, uint32_t buffer_size, uint32_t *data_size)
 {
     uint8_t *buffer = *data_buffer;
-    uint8_t return_code;
-    uint8_t received_command;
+    return_code_t return_code;
+    api_command_t received_command;
     *data_size = -1;
 
-    return_error_if_fails(renode_receive_byte(renode, &return_code));
+    return_error_if_fails(renode_receive_status(renode, &return_code, &received_command));
 
     switch (return_code) {
-        case COMMAND_FAILED:
-        case INVALID_COMMAND:
-        case SUCCESS_WITH_DATA:
-        case SUCCESS_WITHOUT_DATA:
-        case FATAL_ERROR:
-            break;
-        case ASYNC_EVENT:
-            return_error_if_fails(renode_receive_event(renode, data_buffer));
-            if (*command == EVENT || *command == ANY_COMMAND) {
-                *command = EVENT;
-                return NO_ERROR;
-            }
-            free(*data_buffer);
-            return create_fatal_error_static("received unexpected event");
-        default:
-            return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
-    }
+    case ASYNC_EVENT:
+        return_error_if_fails(renode_receive_event(renode, data_buffer, received_command));
+        if (*command == EVENT || *command == ANY_COMMAND) {
+            *command = EVENT;
+            return NO_ERROR;
+        }
+        free(*data_buffer);
+        return create_fatal_error_static("received unexpected event");
+    case SUCCESS_WITH_DATA:
+        return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
 
-    switch (return_code) {
-        case COMMAND_FAILED:
-        case INVALID_COMMAND:
-        case SUCCESS_WITH_DATA:
-        case SUCCESS_WITHOUT_DATA:
-            return_error_if_fails(renode_receive_byte(renode, &received_command));
-        case FATAL_ERROR:
-            break;
-        default:
-            return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
-    }
+        if (buffer_size < *data_size) {
+            return create_fatal_error_static("Buffer too small");
+        }
 
-    switch (return_code) {
-        case COMMAND_FAILED:
-        case FATAL_ERROR:
-            return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
-
-            if (buffer_size < *data_size + 1) {
-                buffer = xmalloc(*data_size + 1);
-            }
-            buffer[*data_size] = '\0';
-
-            return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
-            break;
-        case SUCCESS_WITH_DATA:
-            return_error_if_fails(renode_receive_bytes(renode, (uint8_t*)data_size, 4));
-
-            if (buffer_size < *data_size) {
-                return create_fatal_error_static("Buffer too small");
-            }
-
-            return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
-            break;
-        case INVALID_COMMAND:
-        case SUCCESS_WITHOUT_DATA:
-            *data_size = 0;
-            break;
-        default:
-            return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
+        return_error_if_fails(renode_receive_bytes(renode, buffer, *data_size));
+        break;
+    case SUCCESS_WITHOUT_DATA:
+        *data_size = 0;
+        break;
+    case COMMAND_FAILED:
+    case FATAL_ERROR:
+    case INVALID_COMMAND:
+        assert_exit(!"Unreachable code"); // Those should be handled in `renode_receive_status`
+    default:
+        return create_fatal_error_static(ERRMSG_UNEXPECTED_RETURN_CODE);
     }
 
     if (*command == ANY_COMMAND) {
@@ -474,24 +501,7 @@ static renode_error_t *renode_receive_response(renode_t *renode, api_command_t *
         return create_fatal_error_static(ERRMSG_COMMAND_MISMATCH);
     }
 
-    renode_error_code_t error_code = ERR_INVALID_CODE;
-    char *message = NULL;
-    switch (return_code)
-    {
-        case COMMAND_FAILED:
-            error_code = ERR_COMMAND_FAILED;
-            break;
-        case FATAL_ERROR:
-            error_code = ERR_FATAL;
-            break;
-        case INVALID_COMMAND:
-            error_code = ERR_INVALID_COMMAND;
-            message = "received invalid command error";
-            break;
-        default:
-            return NO_ERROR;
-    }
-    return message == NULL ? create_error_dynamic(error_code, (char *)buffer) : create_error_static(error_code, message);
+    return NO_ERROR;
 }
 
 static renode_error_t *renode_execute_command(renode_t *renode, api_command_t api_command, void *data_buffer, uint32_t buffer_size, uint32_t sent_data_size, uint32_t *received_data_size)
