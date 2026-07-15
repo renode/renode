@@ -61,6 +61,7 @@ Execute Sample
 
     ${r}=                          Wait For Process  ${proc}
     Should Be Equal As Integers    ${r.rc}  0  msg=app '${app}' failed exitted with code ${r.rc}, stderr: ${r.stderr}
+    [Return]                       ${r}
 
 
 *** Test Cases ***
@@ -81,9 +82,13 @@ Should Run Sysbus Sample
 
     Build Sample                   sysbus
     FOR    ${offset}    IN RANGE    0  0x10  0x8
-        Execute Sample                 sysbus  ${PORT}  machine  mem  ${offset}
+        ${r}=                          Execute Sample  sysbus  ${PORT}  machine  mem  ${offset}
         ${val}=                        Execute Command  sysbus ReadQuadWord ${offset}
+
         Should Be Equal As Integers    ${val}  0xAABBCCDDEEFF8899
+
+        ${offset_hex}=                 Convert To Hex  ${offset}
+        Should Contain                 ${r.stderr}  (CONTEXT 'machine.mem' @ 0x${offset})
     END
 
 Should Run ADC Sample
