@@ -553,7 +553,10 @@ pwr: Python.PythonPeripheral @ sysbus 0x58024800
     size: 0x400
     initable: false
     script: '''
-if request.Offset == 0x18: # CR3
+if request.Offset == 0x00: # CR1
+    # Reset value + DBP (b8) to indicate that other registers are writable
+    request.Value = 0xF000C100
+elif request.Offset == 0x18: # CR3
     # VOSRDY flag (b13) indicates the voltage was properly set.
     request.Value = 0x2000
 elif request.Offset == 0x0C: # D3CR
