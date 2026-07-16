@@ -18,6 +18,7 @@ ${a1}                               11
 ${a2}                               12
 ${a3}                               13
 ${a4}                               14
+${mtvec}                            0x80001010
 
 # Repeatedly increments the value in (a0) until enough loop iterations have run.
 ${ASSEMBLY_LRSC_LOOP}               SEPARATOR=
@@ -28,6 +29,10 @@ ${ASSEMBLY_LRSC_LOOP}               SEPARATOR=
 ...                                 addi a1, a1, -1;
 ...                                 bnez a1, repeat;
 ...                                 j 0;
+
+# mcause values
+${load_misaligned}                  0x4
+${store_misaligned}                 0x6
 
 *** Keywords ***
 Create Machine
@@ -46,6 +51,23 @@ Create Machine
 Assemble Instruction
     [Arguments]                     ${cpu}  ${mnemonic}  ${operands}=  ${address}=0
     ${len}=                         Execute Command  sysbus.${cpu} AssembleBlock ${address} "${mnemonic} ${operands}"
+
+Assemble Block At PC
+    [Arguments]                     ${cpu}  ${assembly}
+    ${pc}=                          Execute Command  sysbus.${cpu} GetRegister "PC"
+    ${len}=                         Execute Command  sysbus.${cpu} AssembleBlock ${pc} ${assembly}
+
+Should Trap
+    [Arguments]                     ${cpu}  ${cause}
+    ${pc}=                          Execute Command  sysbus.${cpu} GetRegister "pc"
+    Should Be Equal As Numbers      ${mtvec}  ${pc}
+    ${mcause}=                      Execute Command  sysbus.${cpu} GetRegister "mcause"
+    Should Be Equal As Numbers      ${mcause}  ${cause}
+
+Untrap
+    [Arguments]                     ${cpu}
+    ${mepc}=                        Execute Command  sysbus.${cpu} GetRegister "mepc"
+    Execute Command                 sysbus.${cpu} SetRegister "pc" ${mepc}
 
 Create Reservations
     # Just write 5 to memory, we'll use this to check for successful and failed writes
@@ -285,3 +307,31 @@ LR/SC And Amoadd Loops Should Increment To Correct Sum
     Contended Memory Value Should Increment To Correct Sum
     ...                             assembly_loop_core_1=${ASSEMBLY_AMOADD_LOOP}
     ...                             assembly_loop_core_2=${ASSEMBLY_LRSC_LOOP}
+
+Should Trap On Unaligned LR/SC
+    ${assembly}=                    Catenate  SEPARATOR=\n
+    ...                             li t0, 0x1001
+    ...                             li t1, 0x1
+    ...                             sc.w t0, t1, (t0)
+
+    Create Machine
+
+    Execute Command                 u54_1 SetRegister "mtvec" ${mtvec}
+    Assemble Block At PC            u54_1  """${assembly}"""
+    Execute Command                 u54_1 Step 4
+    Should Trap                     u54_1  ${store_misaligned}
+
+    Untrap                          u54_1
+    Assemble Block At PC            u54_1  "sc.d t0, t1, (t0)"
+    Execute Command                 u54_1 Step 1
+    Should Trap                     u54_1  ${store_misaligned}
+
+    Untrap                          u54_1
+    Assemble Block At PC            u54_1  "lr.w t1, (t0)"
+    Execute Command                 u54_1 Step 1
+    Should Trap                     u54_1  ${load_misaligned}
+
+    Untrap                          u54_1
+    Assemble Block At PC            u54_1  "lr.d t1, (t0)"
+    Execute Command                 u54_1 Step 1
+    Should Trap                     u54_1  ${load_misaligned}
