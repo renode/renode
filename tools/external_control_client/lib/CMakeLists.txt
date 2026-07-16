@@ -17,6 +17,10 @@ target_compile_options(renode_api
     )
 set_property(TARGET renode_api PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}/../include
+find_package(Threads REQUIRED)
+target_link_libraries(renode_api PRIVATE Threads::Threads)
+
+target_include_directories(
+    renode_api
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../include
     )
