@@ -20,6 +20,7 @@ ${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_cl
 ${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
 ${ADC_DMA_TEST}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_adc_api_dma.elf-s_1463928-1eb236532e593e96e263d98cf6200a0722dfd97f
 ${FLASH_IS25WP}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_spi_flash.elf-s_642604-754f4c58cbd5ac817f6c77f5533ea3d9b83bb276
+${CAN_COUNTER}                      ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_can_counter.elf-s_1324504-cc26c0ba1b4285b189ee6d73641ab3c81a5e6bdf
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -438,3 +439,10 @@ Should Read and Write IS25WP Flash
     Wait For Line on Uart               Perform test on multiple consecutive sectors
     Wait For Line on Uart               Flash erase succeeded!
     Wait For Line on Uart               Data read matches data written. Good!!
+
+Should Hear Loopback CAN Messages
+    Create Machine                      ${CAN_COUNTER}  can
+    Create Terminal Tester              ${UART}  defaultPauseEmulation=True
+    Wait For Line On Uart               Counter received: 0
+    Wait For Line On Uart               Counter received: 1
+    Wait For Line On Uart               Counter received: 2

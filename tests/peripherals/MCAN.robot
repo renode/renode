@@ -37,8 +37,7 @@ ${ZYNQ_MCAN_DTB}                                   @https://dl.antmicro.com/proj
 
 *** Keywords ***
 Create CAN Hub
-    [Arguments]               ${loopback}=${True}
-    Execute Command           emulation CreateCANHub "${CAN_HUB}" ${loopback}
+    Execute Command           emulation CreateCANHub "${CAN_HUB}"
 
 Create STM32H7 Machine
     [Arguments]               ${bin}  ${name}=machine-0
@@ -46,7 +45,8 @@ Create STM32H7 Machine
     Execute Command           mach create "${name}"
     Execute Command           machine LoadPlatformDescription @platforms/cpus/stm32h753.repl
     Execute Command           sysbus LoadELF ${bin}
-    Execute Command           connector Connect ${CAN} ${CAN_HUB}
+    # Connect to CAN hub only if we made one
+    Run Keyword And Ignore Error  Execute Command  connector Connect ${CAN} ${CAN_HUB}
     Execute Command           showAnalyzer ${UART}
 
 Create Zynq Machine
@@ -80,49 +80,42 @@ Boot And Login
 
 *** Test Cases ***
 Should Pass Zephyr CAN Net Socket Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_NET_SOCKET_CAN_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
 
 Should Pass Zephyr CAN ISOTP Implementation Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_SUBSYS_CANBUS_ISOTP_IMPLEMENTATION_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL  timeout=20
 
 Should Pass Zephyr CAN ISOTP Conformance Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_SUBSYS_CANBUS_ISOTP_CONFORMANCE_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL  timeout=12
 
 Should Pass Zephyr CAN API Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_DRIVERS_CAN_API_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
 
 Should Pass Zephyr CAN Timing Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_DRIVERS_CAN_TIMING_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
 
 Should Pass Zephyr CAN Shell Test
-    Create CAN Hub
     Create STM32H7 Machine    ${TESTS_DRIVERS_CAN_SHELL_BIN}
     Create Terminal Tester    ${UART}
 
     Wait For Line On Uart     PROJECT EXECUTION SUCCESSFUL
 
 Should Use CAN ISOTP Protocol To Exchange Messages In Loopback Mode
-    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_SUBSYS_CANBUS_ISOTP_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
@@ -135,7 +128,7 @@ Should Use CAN ISOTP Protocol To Exchange Messages In Loopback Mode
     END
 
 Should Use CAN ISOTP Protocol To Exchange Messages Between Machines
-    Create CAN Hub            loopback=${False}
+    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_SUBSYS_CANBUS_ISOTP_NO_LOOPBACK_BIN}  machine-0
     ${tester-0}=              Create Terminal Tester  ${UART}  machine=machine-0
     # Lower quantum to keep synchronization between machines
@@ -157,7 +150,6 @@ Should Use CAN ISOTP Protocol To Exchange Messages Between Machines
     END
 
 Should Use CAN Socket API To Exchange Messages In Loopback Mode
-    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_NET_SOCKETS_CAN_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
@@ -169,7 +161,7 @@ Should Use CAN Socket API To Exchange Messages In Loopback Mode
     END
 
 Should Use CAN Socket API To Exchange Messages Between Machines
-    Create CAN Hub            loopback=${False}
+    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_NET_SOCKETS_CAN_NO_LOOPBACK_BIN}  machine-0
     ${tester-0}=              Create Terminal Tester  ${UART}  machine=machine-0
 
@@ -188,7 +180,6 @@ Should Use CAN Socket API To Exchange Messages Between Machines
     END
 
 Should Run Zephyr CAN Counter Sample In Loopback Mode
-    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_DRIVERS_CAN_COUNTER_LOOPBACK_BIN}
     Create Terminal Tester    ${UART}
 
@@ -199,7 +190,7 @@ Should Run Zephyr CAN Counter Sample In Loopback Mode
     END
 
 Should Run Zephyr CAN Counter Sample To Exchange Messages Between Machines
-    Create CAN Hub            loopback=${False}
+    Create CAN Hub
     Create STM32H7 Machine    ${SAMPLES_DRIVERS_CAN_COUNTER_NO_LOOPBACK_BIN}  machine-0
     ${tester-0}=              Create Terminal Tester  ${UART}  machine=machine-0
 
@@ -217,7 +208,7 @@ Should Run Zephyr CAN Counter Sample To Exchange Messages Between Machines
     END
 
 Should Boot Linux And Login With MCAN
-    Create CAN Hub            loopback=${False}
+    Create CAN Hub
     Create Zynq Machine       machine-0
     ${tester-0}=              Create Terminal Tester    ${ZYNQ_UART}  machine=machine-0
     Create Zynq Machine       machine-1
