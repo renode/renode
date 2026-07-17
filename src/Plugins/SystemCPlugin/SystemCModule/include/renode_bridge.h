@@ -49,7 +49,7 @@ enum renode_action : uint8_t {
 
   // Socket: forward, backward
   // Request:
-  //     data_length: number of bytes to read [1, 8]
+  //     data_length: 0-3 LSB: number of bytes to read [1, 8]. 4-7 LSB: extension bits
   //     address: address to read from, in target's address space
   //     payload: ignored
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
@@ -63,7 +63,7 @@ enum renode_action : uint8_t {
 
   // Socket: forward, backward
   // Request:
-  //     data_length: number of bytes to write [1, 8].
+  //     data_length: 0-3 LSB: number of bytes to write [1, 8]. 4-7 LSB: extension bits
   //     address: address to write to, in target's address space
   //     payload: value to write
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
@@ -108,7 +108,7 @@ enum renode_action : uint8_t {
   // Request:
   //     data_length:
   //       backward: ignored 
-  //       forward: access type (read access = 0, write access = 1)
+  //       forward: 0-3 LSB: access type (read access = 0, write access = 1). 4-7 LSB: extension bits
   //     address: address in target's address space
   //     payload: ignored
   //     to write connection_index: 0 for SystemBus
@@ -128,7 +128,7 @@ enum renode_action : uint8_t {
 
   // Socket: forward only
   // Request:
-  //     data_length: number of bytes to read [1, 8]
+  //     data_length: 0-3 LSB: number of bytes to read [1, 8]. 4-7 LSB: extension bits
   //     address: register to read from, in target's register space
   //     payload: value to write
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS]
@@ -141,7 +141,7 @@ enum renode_action : uint8_t {
 
   // Socket: forward only
   // Request:
-  //     data_length: number of bytes to write [1, 8].
+  //     data_length: 0-3 LSB: number of bytes to write [1, 8]. 4-7 LSB: extension bits
   //     address: register to write to, in target's register space
   //     payload: value to write
   //     connection_index: 0 for SystemBus, [1, NUM_DIRECT_CONNECTIONS] for
@@ -219,6 +219,24 @@ struct dmi_native_message {
   uint64_t pointer;
 };
 #pragma pack(pop)
+
+class RenodeExt : public tlm::tlm_extension<RenodeExt> {
+public:
+    bool secure;
+    bool privileged;
+
+    RenodeExt() : secure(0), privileged(0) {}
+
+    virtual tlm::tlm_extension_base* clone() const override {
+        return new RenodeExt(*this);
+    }
+
+    virtual void copy_from(tlm::tlm_extension_base const &ext) override {
+        const RenodeExt& that = static_cast<const RenodeExt&>(ext);
+        this->secure = that.secure;
+        this->privileged = that.privileged;
+    }
+};
 
 template <typename T>
 class BlockingCollection
@@ -417,6 +435,8 @@ private:
   // TLM-2.0 Language Reference Manual. It also requires that the object is
   // allocated on the heap.
   std::unique_ptr<tlm::tlm_generic_payload> payload;
+
+  std::unique_ptr<RenodeExt> ext;
 
   initiator_bw_handler bus_initiator_bw_handler;
   initiator_bw_handler cpu_initiator_bw_handler;

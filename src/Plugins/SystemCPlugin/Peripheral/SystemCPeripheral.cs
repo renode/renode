@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Debugging;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
@@ -200,7 +201,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private ulong ReadInternal(RenodeAction action, byte dataLength, long offset, byte connectionIndex, out bool dmiAllowed)
         {
             dmiAllowed = false;
-            var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, 0);
+            DebugHelper.Assert(dataLength <= 8);
+            var extensionFields = GetExtensionFields(out _, out _);
+            var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
+            var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, (ulong)offset, 0);
             RenodeMessage response;
 
             if(TrySendSidebandRequest(request, out response))
@@ -231,7 +235,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private void WriteInternal(RenodeAction action, byte dataLength, long offset, ulong value, byte connectionIndex, out bool dmiAllowed)
         {
             dmiAllowed = false;
-            var request = new RenodeMessage(action, dataLength, connectionIndex, (ulong)offset, value);
+            DebugHelper.Assert(dataLength <= 8);
+            var extensionFields = GetExtensionFields(out _, out _);
+            var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
+            var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, (ulong)offset, value);
             RenodeMessage response;
 
             if(TrySendSidebandRequest(request, out response))
@@ -533,7 +540,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
 
             // RenodeMessage.dataLength field for DMIReq indicates the kind of DMI access being requested.
-            var request = new RenodeMessage(RenodeAction.DMIReq, (byte)TlmCommand.Read, 0, offset, 0);
+            var dataLength = (byte)TlmCommand.Read;
+            DebugHelper.Assert(dataLength <= 8);
+            var extensionFields = GetExtensionFields(out _, out _);
+            var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
+            var request = new RenodeMessage(RenodeAction.DMIReq, dataLengthWithExtensionFields, 0, offset, 0);
             if(!SendDmiRequest(request, out var dmiNativeMessage))
             {
                 this.ErrorLog("Unable to receive response to DMI request");
@@ -693,6 +704,37 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
                 mappedDmiRanges.Remove(range);
             }
+        }
+
+        private byte GetExtensionFields(out bool secure, out bool privileged)
+        {
+            if(!sysbus.TryGetCurrentContextState<CortexM.ContextState>(out var initiator, out var cpuState))
+            {
+                // Default values when context isn't available.
+                secure = true;
+                privileged = true;
+            }
+            else
+            {
+                secure = cpuState.CpuSecure;
+                privileged = cpuState.Privileged;
+            }
+
+            return GetExtensionFieldsMask(secure, privileged);
+        }
+
+        private byte GetExtensionFieldsMask(bool secure, bool privileged)
+        {
+            byte mask = 0;
+            if(secure)
+            {
+                mask |= 1 << 4;
+            }
+            if(privileged)
+            {
+                mask |= 1 << 5;
+            }
+            return mask;
         }
 
         private bool disableNativeDmi;

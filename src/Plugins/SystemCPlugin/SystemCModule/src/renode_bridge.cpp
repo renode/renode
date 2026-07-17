@@ -95,7 +95,9 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
     assert(!"Only WRITE and READ messages should initialize TLM payload");
   }
 
-  if(message->data_length > 8) {
+  unsigned int data_length = message->data_length & ((1 << 4) - 1);
+
+  if(data_length > 8) {
     assert(!"data_length > 8 is currently not supported");
   }
 
@@ -105,12 +107,19 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
   // address is 0x9000000, then address in SystemC will be 0x100.
   payload->set_address(message->address);
   payload->set_data_ptr(data);
-  payload->set_data_length(message->data_length);
+  payload->set_data_length(data_length);
   payload->set_byte_enable_ptr(nullptr);
   payload->set_byte_enable_length(0);
-  payload->set_streaming_width(message->data_length);
+  payload->set_streaming_width(data_length);
   payload->set_dmi_allowed(false);
   payload->set_response_status(tlm::TLM_INCOMPLETE_RESPONSE);
+}
+
+static void initialize_extension(RenodeExt *ext, const renode_message *message) {
+  bool secure = message->data_length & (1 << 4);
+  bool privileged = message->data_length & (1 << 5);
+  ext->secure = secure;
+  ext->privileged = privileged;
 }
 
 static uint64_t sc_time_to_us(sc_core::sc_time time) {
@@ -325,6 +334,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   register_initiator_socket.bind(cpu_initiator_bw_handler);
 
   payload.reset(new tlm::tlm_generic_payload());
+  ext.reset(new RenodeExt());
 
   if(native) {
 #ifdef RENODE_NATIVE_INTERFACE
@@ -573,8 +583,11 @@ void renode_bridge::invalidate_dmi_range(uint64_t start_address, uint64_t end_ad
 
 void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
   initialize_payload(payload.get(), &message, data);
+  initialize_extension(ext.get(), &message);
 
+  payload->set_extension(ext.get());
   uint64_t delay = perform_transaction(socket, payload.get());
+  payload->clear_extension(ext.get());
 
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
@@ -586,10 +599,13 @@ void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_mess
 
 void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]) {
   initialize_payload(payload.get(), &message, data);
+  initialize_extension(ext.get(), &message);
 
   *((uint64_t *)data) = message.payload;
-
+  
+  payload->set_extension(ext.get());
   uint64_t delay = perform_transaction(socket, payload.get());
+  payload->clear_extension(ext.get());
 
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
@@ -600,17 +616,22 @@ void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_mes
 }
 
 void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message) {
-  if (message.data_length == tlm::tlm_command::TLM_READ_COMMAND) {
+  unsigned int cmd_type = message.data_length & ((1 << 4) - 1);
+  if (cmd_type == tlm::tlm_command::TLM_READ_COMMAND) {
     message.action = renode_action::READ;
-  } else if (message.data_length == tlm::tlm_command::TLM_WRITE_COMMAND) {
+  } else if (cmd_type == tlm::tlm_command::TLM_WRITE_COMMAND) {
     message.action = renode_action::WRITE;
   }
   initialize_payload(payload.get(), &message, NULL);
+  initialize_extension(ext.get(), &message);
+
   tlm::tlm_dmi dmi_data = {};
   dmi_native_message dmi_message = {};
   
+  payload->set_extension(ext.get());
   // get_direct_mem_ptr returns true if it was able to provide a DMI pointer, or false otherwise
   bool success = socket->get_direct_mem_ptr(*payload, dmi_data);
+  payload->clear_extension(ext.get());
 
   dmi_message.action = renode_action::DMIREQ;
   dmi_message.dmi_access = success ? (uint8_t)dmi_data.get_granted_access() : 0;
