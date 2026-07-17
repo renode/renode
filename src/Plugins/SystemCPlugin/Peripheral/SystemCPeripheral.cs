@@ -218,6 +218,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return 0;
             }
 
+            var status = (TlmStatus)response.DataLength;
+            if(status != TlmStatus.Ok)
+            {
+                // TODO: Add BusFault logic.
+                this.WarningLog("Read transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
+            }
+
             TryToSkipTransactionTime(response.Address);
             dmiAllowed = response.ConnectionIndex == DmiSupported;
             return response.Payload;
@@ -250,6 +257,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Write will have no effect.");
                 return;
+            }
+
+            var status = (TlmStatus)response.DataLength;
+            if(status != TlmStatus.Ok)
+            {
+                // TODO: Add BusFault logic.
+                this.WarningLog("Write transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
             }
 
             TryToSkipTransactionTime(response.Address);

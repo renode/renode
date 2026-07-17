@@ -58,6 +58,7 @@ enum renode_action : uint8_t {
   //     address: duration of transaction in us
   //     payload: read value
   //     connection_index: 0=DMI unsupported, 1=DMI supported
+  //     data_length: transaction response status
   //     Otherwise identical to the request message.
   READ = 1,
 
@@ -71,6 +72,7 @@ enum renode_action : uint8_t {
   // Response:
   //     address: duration of transaction in us
   //     connection_index: 0=DMI unsupported, 1=DMI supported
+  //     data_length: transaction response status
   //     Otherwise identical to the request message.
   WRITE = 2,
 
@@ -136,6 +138,7 @@ enum renode_action : uint8_t {
   // Response:
   //     address: duration of transaction in us
   //     payload: read value
+  //     data_length: transaction response status
   //     Otherwise identical to the request message.
   READ_REGISTER = 8,
 
@@ -148,6 +151,7 @@ enum renode_action : uint8_t {
   //       direct connection
   // Response:
   //     address: duration of transaction in us
+  //     data_length: transaction response status
   //     Otherwise identical to the request message.
   WRITE_REGISTER = 9,
 

@@ -75,6 +75,22 @@ static void print_transaction_status(tlm::tlm_generic_payload *payload) {
   printf("Renode transport status: %s\n", response_string.c_str());
 }
 
+/*
+enum tlm_response_status {
+  TLM_OK_RESPONSE = 1,
+  TLM_INCOMPLETE_RESPONSE = 0,
+  TLM_GENERIC_ERROR_RESPONSE = -1,
+  TLM_ADDRESS_ERROR_RESPONSE = -2,
+  TLM_COMMAND_ERROR_RESPONSE = -3,
+  TLM_BURST_ERROR_RESPONSE = -4,
+  TLM_BYTE_ENABLE_ERROR_RESPONSE = -5
+};
+*/
+static uint8_t tlm_resp_to_renode(tlm::tlm_response_status status) {
+  // Equalize numbers to positive scale, where 0 means OK.
+  return (uint8_t)(tlm::tlm_response_status::TLM_OK_RESPONSE - status);
+}
+
 // ================================================================================
 //  > Renode Bridge SystemC module
 // ================================================================================
@@ -589,6 +605,9 @@ void renode_bridge::handle_read(renode_bus_initiator_socket &socket, renode_mess
   uint64_t delay = perform_transaction(socket, payload.get());
   payload->clear_extension(ext.get());
 
+  tlm::tlm_response_status status = payload->get_response_status();
+  message.data_length = tlm_resp_to_renode(status);
+
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
   message.payload = *((uint64_t *)data);
@@ -606,6 +625,9 @@ void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_mes
   payload->set_extension(ext.get());
   uint64_t delay = perform_transaction(socket, payload.get());
   payload->clear_extension(ext.get());
+
+  tlm::tlm_response_status status = payload->get_response_status();
+  message.data_length = tlm_resp_to_renode(status);
 
   // NOTE: address field is re-used here to pass timing information.
   message.address = delay;
