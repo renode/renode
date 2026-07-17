@@ -18,7 +18,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "renode_api.h"
+#include "common.h"
 
 struct renode {
     int socket_fd;
@@ -47,16 +47,6 @@ struct renode_bus_context {
 #define SERVER_START_COMMAND "emulation CreateExternalControlServer \"<NAME>\""
 #define SOCKET_INVALID -1
 
-#define unlikely(x) __builtin_expect(!!(x), 0)
-#define assert(x) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return create_fatal_error_static(NULL); } } while (0)
-#define assert_fmsg(x, ...) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return create_fatal_error(__VA_ARGS__); } } while (0)
-#define assert_msg(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return create_fatal_error_static(msg); } } while (0)
-
-// This is supposed to exit cause it's a fatal issue within the library code.
-#define assert_exit(x) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); exit(EXIT_FAILURE); } } while (0)
-
-#define return_error_if_fails(function) do { renode_error_t *_RE_ERROR; if ((_RE_ERROR = (function)) != NO_ERROR) return _RE_ERROR; } while (0)
-
 /* Each response frame starts with 1 byte of return code and the following command and data depend on the code value.
  * Command is a 1 byte value of api_command_t.
  * Data is a 4 byte little endian unsigned value for the `count`, followed by the `count` bytes of raw data.
@@ -73,59 +63,6 @@ typedef enum {
     SUCCESS_HANDSHAKE, // code
     ASYNC_EVENT, // code, command, callback id, data
 } return_code_t;
-
-// internal renode_error_t flags
-#define ERROR_FREE_MESSAGE 0x01 // the message field needs to be freed
-
-#define ERROR_DYNAMIC_MESSAGE_SIZE 0x400
-
-static void *xmalloc(size_t size)
-{
-    void *result = malloc(size);
-    assert_exit(result != NULL);
-    return result;
-}
-
-static void xcleanup(void *ptr)
-{
-    free(*(void**)ptr);
-}
-
-static renode_error_t *create_error_static(renode_error_code_t code, char *message)
-{
-    renode_error_t *error = xmalloc(sizeof(renode_error_t));
-    error->code = code;
-    error->flags = 0;
-    error->message = message;
-    error->data = NULL;
-    return error;
-}
-
-static renode_error_t *create_error_dynamic(renode_error_code_t code, char *message)
-{
-    renode_error_t *error = create_error_static(code, message);
-    error->flags |= ERROR_FREE_MESSAGE;
-    return error;
-}
-
-#define create_connection_failed_error(message) create_error_static(ERR_COMMAND_FAILED, (message))
-#define create_fatal_error_static(message) create_error_static(ERR_FATAL, (message))
-
-static renode_error_t *create_error(renode_error_code_t code, char *fmt, ...)
-{
-    char *message = xmalloc(ERROR_DYNAMIC_MESSAGE_SIZE);
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(message, ERROR_DYNAMIC_MESSAGE_SIZE, fmt, ap);
-    va_end(ap);
-
-    renode_error_t *error = create_error_static(code, message);
-    error->flags |= ERROR_FREE_MESSAGE;
-    return error;
-}
-
-#define create_fatal_error(...) create_error(ERR_FATAL, __VA_ARGS__)
-#define create_command_failed_error(...) create_error(ERR_COMMAND_FAILED, __VA_ARGS__)
 
 void renode_free_error(renode_error_t *error)
 {
