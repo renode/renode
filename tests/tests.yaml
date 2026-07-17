@@ -18,6 +18,7 @@
   - tests/platforms/SiFive-FU540.robot
 
 - tests/unit-tests/riscv-isa-tests.robot
+- tests/unit-tests/riscv-vector-csr.robot
 - tests/unit-tests/riscv-arch-tests.robot
 - tests/example.robot
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
