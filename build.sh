@@ -381,6 +381,10 @@ then
   # Manually clean the main output directories as it's location is non-standard
   remove_dir "${OUTPUT_DIRECTORY}/bin"
   remove_dir "${OUTPUT_DIRECTORY}/publish"
+
+  # Tlib shared libraries
+  remove_dir "${CORES_PATH}/bin"
+  remove_dir "${CORES_PATH}/obj"
   exit 0
 fi
 
