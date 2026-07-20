@@ -38,10 +38,10 @@ machine LoadPlatformDescriptionFromString $plat
 
 using sysbus.ca53Cluster
 
-$uboot_elf?=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
+$uboot_elf?=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-46fad25d02e0cb851495d007cc4802cac4e08834
 $uboot_dtb?=@https://dl.antmicro.com/projects/renode/imx8mp-frdm.dtb-s_83584-a112d75a6de330d9bdd682c90e656491c2bd3c4e
 $bl31_elf?=@https://dl.antmicro.com/projects/renode/bl31.elf-s_67984-0399ce1fd2cc1be77a20338f8a47e02467287ef0
-$sd_img?=@https://dl.antmicro.com/projects/renode/sd.img-s_268435456-64cbbb69230b503ab219c022a76b57b548f3d403
+$sd_img?=@https://dl.antmicro.com/projects/renode/sd.img-s_268435456-b5a85f15cceb52baf5dc215966e809181fe14f31
 
 # Spoof i.MX8MP Boot ROM at 0x980
 # https://github.com/nxp-imx/uboot-imx/blob/99518e6/arch/arm/mach-imx/romapi.c#L44
@@ -58,12 +58,9 @@ cpu0 AssembleBlock 0x1000 """
   ret
 """
 
-# GPIO2[12] must read 0: usdhc2 cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>, LOW = card present
-sysbus Tag <0x30210000 0x10000> "GPIO2-SD_CARD_PRESENT" 0x00000000
-
 showAnalyzer uart2
 
-machine SdCardFromFile $sd_img usdhc2 0x10000000 False "sd-external-sd3.0-4bit"
+machine SdCardFromFile $sd_img usdhc3 size=0x20000000 persistent=False name="emmc-internal-eMMC5_1" emmc=true
 
 macro reset
 """

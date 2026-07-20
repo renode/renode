@@ -12,6 +12,9 @@ Should Boot Linux
     Wait For Line On Uart         Linux
     Wait For Prompt On Uart       \#${SPACE}
 
+    Provides                      Booted QNX
+
+
 Should Detect And Round-Trip SPI NOR On eCSPI2
     [Documentation]
 ...         eCSPI2 = Linux "spi1", chip-selects on GPIO5:
@@ -46,3 +49,16 @@ Should Detect And Round-Trip SPI NOR On eCSPI2
     Wait For Prompt On Uart       \#${SPACE}
     Write Line To Uart            cmp -s /sum_test /sum_read && echo NOR_ROUNDTRIP_OK || echo NOR_ROUNDTRIP_FAIL
     Wait For Line On Uart         NOR_ROUNDTRIP_OK
+
+
+Should Read Data From eMMC boot0 Hardware Partition
+    [Documentation]
+...         /dev/mmcblk2boot0 = eMMC's raw boot0 hardware partition, no filesystem:
+...         U-Boot stores its environment there at 0x3F0000 as NUL-separated key=value
+...         pairs, so reading it back proves the eMMC survived boot and `saveenv` worked
+    Requires                      Booted QNX
+
+    Write Line To Uart            dd if=/dev/mmcblk2boot0 bs=1 skip=$((0x3F0000)) count=$((0x1000)) 2>/dev/null | tr '\\0' '\\n'  waitForEcho=false
+    # content= names the keyword arg; `board=imx8mp_frdm` is the keyword that we match on
+    Wait For Line On Uart         content=board=imx8mp_frdm
+
