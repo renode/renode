@@ -96,7 +96,7 @@ Should Deliver RESD Samples Precisely Starting From Specified Offset
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
 
     # Start to deliver samples according to timestamps with a delay of 2 seconds
-    Execute Command                 ${UART_FEEDER} FeedDataFromRESD @${resd_path} Normal 0 Specified -2000000000
+    Execute Command                 ${UART_FEEDER} FeedDataFromRESD @${resd_path} Normal 0 Specified 2000000000
 
     Wait For Uart Prompt At Viartual Time    v    00:00:02.10
     Wait For Uart Prompt At Viartual Time    e    00:00:02.20
