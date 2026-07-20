@@ -2,9 +2,11 @@
 :description: This script runs Linux on NXP i.MX 8M Plus, with Coral NPU inserted
 
 $name?="frdm_imx8mp_npu"
-$sd_img?=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu.img-s_268435456-cdb480062eef74beaf1fe80c020637f84a5d4bc1
+$uboot_elf=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
+$sd_img=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu.img-s_268435456-cdb480062eef74beaf1fe80c020637f84a5d4bc1
 
 i @scripts/single-node/nxp-imx8mplus_linux.resc
+machine SdCardFromFile $sd_img usdhc2 0x10000000 False "sd-external-sd3.0-4bit"
 
 # Add the NPU
 machine LoadPlatformDescriptionFromString "npu: CPU.CoralNPU @ sysbus 0xE00000000"
