@@ -75,11 +75,74 @@ ${WRITE_ASSEMBLY}                   SEPARATOR=\n
 ...                                 b .
 ...                                 """
 
+${E2E_READ_ASSEMBLY}                SEPARATOR=\n
+...                                 """
+...                                 Vector_Table:
+...                                 .word ${STACK_TOP} /* initial SP */
+...                                 .word Reset_Handler+1 /* Reset vector */
+...                                 .word 0 /* NMI */
+...                                 .word 0 /* HardFault */
+...                                 .word 0 /* MemManage */
+...                                 .word BusFault_Handler+1 /* BusFault vector */
+...                                 .align 8
+...
+...                                 Reset_Handler:
+...                                 ldr r1, =${SCB_SHCSR}
+...                                 ldr r2, [r1]
+...                                 orr r2, r2, #(1 << 17) /* BUSFAULTENA */
+...                                 str r2, [r1]
+...                                 ldr r0, =${FAULTING_PERIPHERAL_ADDRESS}
+...                                 adr r10, fault_instr
+...                                 fault_instr:
+...                                 ldr r3, [r0]
+...                                 mov r10, #0
+...                                 1: wfi
+...                                 b 1b
+...
+...                                 BusFault_Handler:
+...                                 ldr r11, [sp, #24] /* stacked PC */
+...                                 1: wfi
+...                                 b 1b
+...                                 """
+
+${E2E_WRITE_ASSEMBLY}               SEPARATOR=\n
+...                                 """
+...                                 Vector_Table:
+...                                 .word ${STACK_TOP} /* initial SP */
+...                                 .word Reset_Handler+1 /* Reset vector */
+...                                 .word 0 /* NMI */
+...                                 .word 0 /* HardFault */
+...                                 .word 0 /* MemManage */
+...                                 .word BusFault_Handler+1 /* BusFault vector */
+...                                 .align 8
+...
+...                                 Reset_Handler:
+...                                 ldr r1, =${SCB_SHCSR}
+...                                 ldr r2, [r1]
+...                                 orr r2, r2, #(1 << 17) /* BUSFAULTENA */
+...                                 str r2, [r1]
+...                                 ldr r0, =${FAULTING_PERIPHERAL_ADDRESS}
+...                                 adr r10, fault_instr
+...                                 fault_instr:
+...                                 str r3, [r0]
+...                                 mov r10, #0
+...                                 1: wfi
+...                                 b 1b
+...
+...                                 BusFault_Handler:
+...                                 ldr r11, [sp, #24] /* stacked PC */
+...                                 1: wfi
+...                                 b 1b
+...                                 """
+
 *** Keywords ***
-Create Machine
+Create Bare Machine
     Execute Command                 include "${CURDIR}/BusFaultingPeripheral.cs"
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLATFORM}
+
+Create Machine
+    Create Bare Machine
 
     # Cortex-M vector 3 is HardFault and vector 5 is BusFault.
     Execute Command                 sysbus WriteDoubleWord 0xC ${{$HARDFAULT_HANDLER_ADDRESS | 1}}  # Thumb bit
@@ -133,6 +196,25 @@ Fault Should Be Precise
     Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
     Should Be Equal As Integers     ${bfar}  ${fault_address}
     Should Be Equal As Integers     ${hfsr}  ${expected_hfsr}
+
+Run Precise BusFault Test Without Single Step
+    [Arguments]                     ${assembly}
+    Create Bare Machine
+    Execute Command                 cpu AssembleBlock 0x0 ${assembly}
+    Execute Command                 cpu VectorTableOffset 0x0
+    Execute Command                 cpu Step 100
+
+    ${expected_pc}=                 Execute Command  cpu GetRegister "R10"
+    ${stacked_pc}=                  Execute Command  cpu GetRegister "R11"
+    Should Not Be Equal As Numbers  ${expected_pc}  0
+    ...                             msg=Fault was not taken synchronously: R10 was overwritten to 0
+    Should Be Equal As Numbers      ${stacked_pc}  ${expected_pc}
+    ...                             msg=Stacked PC (R11=${stacked_pc}) does not match faulting instruction address (R10=${expected_pc})
+
+    ${cfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_CFSR} context=cpu
+    ${bfar}=                        Execute Command  sysbus ReadDoubleWord ${SCB_BFAR} context=cpu
+    Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
+    Should Be Equal As Integers     ${bfar}  ${FAULTING_PERIPHERAL_ADDRESS}
 
 *** Test Cases ***
 Should Raise Precise BusFault On Peripheral Read
@@ -228,3 +310,9 @@ Should Share BusFault State Across Security States
     ${bfar_ns}=                     Execute Command  sysbus ReadDoubleWord ${SCB_BFAR_NS} context=cpu
     Should Be Equal As Integers     ${cfsr_ns}  ${CFSR_PRECISERR_BFARVALID}
     Should Be Equal As Integers     ${bfar_ns}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+Read Access Should Produce Precise Bus Fault Without Single Step
+    Run Precise BusFault Test Without Single Step  ${E2E_READ_ASSEMBLY}
+
+Write Access Should Produce Precise Bus Fault Without Single Step
+    Run Precise BusFault Test Without Single Step  ${E2E_WRITE_ASSEMBLY}
