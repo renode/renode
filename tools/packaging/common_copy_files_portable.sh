@@ -46,4 +46,6 @@ function copy_publish_output {
     find $1 -name "*.pdb" -delete
     # Trim unused parts of the bundled Python standard library
     trim_python_stdlib $1/Lib
+    # Drop diagnostics-only runtime components.
+    rm -f $1/*mscordaccore.* $1/*mscordbi.* $1/*coreclrtraceptprovider.* $1/createdump*
 }
