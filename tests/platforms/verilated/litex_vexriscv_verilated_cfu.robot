@@ -10,7 +10,7 @@ Create Machine
     Execute Command                 i ${RESC}
     Create Terminal Tester          ${UART}
 
-*** Test Case ***
+*** Test Cases ***
 Should Pass Functional HW/SW Compare Tests
     [Tags]                          skip_windows  skip_osx  skip_host_aarch64
     Create Machine

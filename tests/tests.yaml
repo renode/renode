@@ -17,6 +17,12 @@
   - tests/platforms/Renesas_RZ_G2L.robot
   - tests/platforms/SiFive-FU540.robot
 
+- tests/peripherals/SDCard.robot
+- tests/peripherals/VEML7700.robot
+- tests/peripherals/STM32LTDC.robot
+- tests/unit-tests/arm-semihosting.robot
+- tests/unit-tests/riscv-zcb-zcmp-zcmt-extensions.robot
+- tests/unit-tests/hst-delayed-cpu-registration.robot
 - tests/unit-tests/riscv-isa-tests.robot
 - tests/unit-tests/riscv-vector-csr.robot
 - tests/unit-tests/riscv-arch-tests.robot

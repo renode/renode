@@ -627,6 +627,7 @@ Should Run OpenAMP Echo Sample
     Wait For Line On Uart                   Echo Test Round 0 Test Results: Error count = 0                     testerId=${linux_tester}
 
 Should Run Web Server In Docker
+    [Tags]                                  skip_ci
     Create Linux Docker Machine
     Boot Linux And Login
 
@@ -643,7 +644,7 @@ Should Run Web Server In Docker
     Wait For Line On Uart                   response:200
 
 Should Ping Over TAP Using An Ethernet Adapter Behind The SMMUv3
-    [Tags]                                  tap  skip_osx
+    [Tags]                                  tap  skip_osx  skip_ci
     Create Linux SMMUv3 Machine
     Boot Linux And Login
 

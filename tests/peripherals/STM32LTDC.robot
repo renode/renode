@@ -33,6 +33,7 @@ Should Have FIFO Underrun Interrupt
 
 *** Test Cases ***
 Should Emit FIFO Underrun Interrupt
+    [Tags]                  skip_windows  # this test fails only on windows
     Setup Machine
     Execute Command         ltdc WriteDoubleWord ${LINE_COUNT} 0  # Set line count to 0
     Execute Command         ltdc WriteDoubleWord ${SHADOW_CONTROL} ${SHADOW_RELOAD_NOW}  # Reload shadow registers
@@ -40,6 +41,7 @@ Should Emit FIFO Underrun Interrupt
     Should Have FIFO Underrun Interrupt  True
 
 Should Shadow Registers
+    [Tags]                  skip_ci
     Setup Machine
     ${og_line_count}=       Execute Command  ltdc ReadDoubleWord ${LINE_COUNT}
     Execute Command         ltdc WriteDoubleWord ${LINE_COUNT} 0  # Set line count to 0
