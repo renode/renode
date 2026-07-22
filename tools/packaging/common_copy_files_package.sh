@@ -9,6 +9,9 @@ cp -Pr $BASE/output/bin/$TARGET/*.dll $DIR/bin
 rm -r $DIR/bin/*Tests.dll 2>/dev/null || true
 cp -Pr $BASE/output/bin/$TARGET/*.dll.config $DIR/bin 2>/dev/null || true
 cp -Pr $BASE/output/bin/$TARGET/platform-lib $DIR/bin
+if [ "$TARGET" != "Debug" ] && [ "$(uname -s)" = "Linux" ] && command -v strip >/dev/null 2>&1; then
+    find "$DIR/bin/platform-lib" -name "*.so" -type f -exec strip --strip-unneeded {} + 2>/dev/null || true
+fi
 cp -Pr $BASE/output/bin/$TARGET/runtimes $DIR/bin
 
 # Copy Lib directory which contains dependecies for IronPython

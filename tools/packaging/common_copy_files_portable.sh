@@ -14,6 +14,19 @@ if [[ -d "$BASE/output/bin/$TARGET/host" ]]; then
 fi
 cp -r $BASE/tools/common.sh $DIR/tests
 
+# Strip native shared libraries to reduce package size.
+if [ "$TARGET" != "Debug" ] && command -v strip >/dev/null 2>&1; then
+    case "$(uname -s)" in
+        Linux)
+            find "$DIR/platform-lib" -name "*.so" -type f -exec strip --strip-unneeded {} + 2>/dev/null || true
+            ;;
+        Darwin)
+            # On macOS some shared libraries are named .so (like llvm-disas or tlib), some are .dylib (librenode)
+            find "$DIR/platform-lib" \( -name "*.so" -o -name "*.dylib" \) -type f -exec strip -x {} + 2>/dev/null || true
+            ;;
+    esac
+fi
+
 sed_inplace 's#ROOT_PATH/tests/run_tests.py#TEST_PATH/run_tests.py#' $DIR/renode-test
 sed_inplace 's#ROOT_PATH}/tools/common.sh#TEST_PATH}/common.sh#' $DIR/renode-test
 
