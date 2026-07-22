@@ -39,8 +39,11 @@ sed_inplace '/TESTS_RESULTS/d' $DIR/renode-test
 
 function copy_publish_output {
     cp -r $RENODE_PUBLISH/. $1
-    if [ "$TARGET" != "Debug" ]; then
-        # Managed debug symbol files are only useful for development, drop them from Release packages.
-        find $1 -name "*.pdb" -delete
+    if [ "$TARGET" == "Debug" ]; then
+        return
     fi
+    # Managed debug symbol files are only useful for development, drop them from Release packages.
+    find $1 -name "*.pdb" -delete
+    # Trim unused parts of the bundled Python standard library
+    trim_python_stdlib $1/Lib
 }

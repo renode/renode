@@ -22,6 +22,13 @@ function is_dep_available {
     return 0
 }
 
+function trim_python_stdlib {
+    # Remove CPython stdlib modules bundled with IronPython.StdLib that are
+    # not useful in Renode packages: pip is unsupported by IronPython, distutils
+    # and lib2to3 are build tools, and pydoc_data is offline documentation data.
+    rm -rf "$1/ensurepip" "$1/distutils" "$1/lib2to3" "$1/pydoc_data"
+}
+
 while getopts ":dnl" opt
 do
     case $opt in

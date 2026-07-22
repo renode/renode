@@ -16,6 +16,7 @@ cp -Pr $BASE/output/bin/$TARGET/runtimes $DIR/bin
 
 # Copy Lib directory which contains dependecies for IronPython
 cp -Pr $BASE/output/bin/$TARGET/Lib $DIR/bin
+trim_python_stdlib $DIR/bin/Lib
 
 cp $BASE/output/bin/$TARGET/Renode.runtimeconfig.json $DIR/bin
 cp $BASE/output/bin/$TARGET/RenodeWPF.runtimeconfig.json $DIR/bin 2>/dev/null || true
