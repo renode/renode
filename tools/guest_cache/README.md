@@ -66,4 +66,4 @@ Invalidations: 17319700
 Hit ratio: 74.88%
 ```
 
-Full documentation on guest CPU cache modeling is available in the [Renode documentation](https://renode.readthedocs.io/en/latest/advanced/execution-tracing.html#guest-cpu-cache-modelling).
+Full documentation on guest CPU cache modeling is available in the [Renode documentation](https://renode.readthedocs.io/en/latest/execution-tracing/guest-cache-modelling.html).
