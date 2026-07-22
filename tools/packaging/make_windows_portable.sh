@@ -27,7 +27,7 @@ rm $DIR/renode-test
 ### prepare renode-test
 copy_windows_tests_scripts ".." renode.exe
 
-cp -r $RENODE_PUBLISH/. $DIR
+copy_publish_output $DIR
 mv $DIR/Renode.exe $DIR/renode.exe
 
 ### create zip

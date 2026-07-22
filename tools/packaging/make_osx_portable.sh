@@ -25,7 +25,7 @@ OS_NAME=macos
 
 . common_copy_files_portable.sh
 
-cp -r $RENODE_PUBLISH/. $DIR
+copy_publish_output $DIR
 mv $DIR/Renode $DIR/renode
 
 chmod +x $DIR/renode

@@ -23,7 +23,7 @@ fi
 
 . common_copy_files_portable.sh
 
-cp -r $RENODE_PUBLISH/. $DIR
+copy_publish_output $DIR
 mv $DIR/Renode $DIR/renode
 
 # Handle a very rare case where the binary doesn't have the execute permission after building.

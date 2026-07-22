@@ -36,3 +36,11 @@ sed_inplace '/run_tests.py/s#$# --robot-framework-remote-server-full-directory=$
 sed_inplace $'/^ROOT_PATH=.*/a\\\n TEST_PATH=$ROOT_PATH/tests' $DIR/renode-test
 sed_inplace '/TESTS_FILE/d' $DIR/renode-test
 sed_inplace '/TESTS_RESULTS/d' $DIR/renode-test
+
+function copy_publish_output {
+    cp -r $RENODE_PUBLISH/. $1
+    if [ "$TARGET" != "Debug" ]; then
+        # Managed debug symbol files are only useful for development, drop them from Release packages.
+        find $1 -name "*.pdb" -delete
+    fi
+}
