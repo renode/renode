@@ -45,7 +45,6 @@
   <ItemGroup>
     <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
 
     <Reference Include="Sprache">
       <HintPath>..\..\lib\resources\libraries\Sprache.dll</HintPath>
