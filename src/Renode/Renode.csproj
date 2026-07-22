@@ -36,8 +36,12 @@
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup Condition=" $(PORTABLE) == 'true' And $([MSBuild]::IsOSPlatform('OSX')) == 'false'">
-    <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-    <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" />
+    <!-- Use invariant globalization instead of bundling app-local ICU, which is quite large (~36 MiB). -->
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+    <!-- Allow user scripts and dependencies to construct "fake" named cultures. Their
+         data remains invariant, but this avoids compatibility-breaking exceptions.
+         See https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/6.0/culture-creation-invariant-mode -->
+    <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly" Value="false" />
   </ItemGroup>
   <PropertyGroup Condition=" $(GUI_DISABLED) == 'true' ">
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
