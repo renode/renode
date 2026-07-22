@@ -25,6 +25,11 @@ cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/tools/NativeInterface $DIR/tools
 rm -rf $DIR/tools/NativeInterface/example/build
+# Only the C example and CMake helpers are useful in the package (they are
+# used by the native-interface robot tests and serve as user documentation
+# for consuming librenode). third-party/DNNE and the C# project are only
+# needed to build librenode itself, which happens in the source tree.
+rm -rf $DIR/tools/NativeInterface/third-party $DIR/tools/NativeInterface/csharp
 cp -r $BASE/src/Plugins/CoSimulationPlugin/IntegrationLibrary $DIR/plugins
 # Copy required headers into the package and adjust the include
 cp -r $BASE/src/Infrastructure/src/Emulator/Cores/renode/include/{renode_imports,map}.h $DIR/plugins/IntegrationLibrary/src
