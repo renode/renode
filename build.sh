@@ -676,6 +676,7 @@ then
         fi
     done
     PUBLISH_PARAMS+=(p:PORTABLE=true)
+    PUBLISH_PARAMS+=(p:SatelliteResourceLanguages=en)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
     dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PUBLISH_PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$(get_path "$PWD/src/Renode/Renode.csproj")"
