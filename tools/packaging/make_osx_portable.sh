@@ -7,6 +7,10 @@ cd "${0%/*}"
 . common_make_packages.sh
 
 RENODE_PUBLISH=$BASE/output/publish/$TARGET/$RID
+HEADLESS_SUFFIX=""
+if $HEADLESS; then
+    HEADLESS_SUFFIX="-headless"
+fi
 
 # create MacOS app structure
 MACOS_APP_DIR=Renode.app
@@ -38,7 +42,7 @@ OUTPUT=$BASE/$PACKAGES
 
 # Create dmg file
 mkdir -p $OUTPUT
-hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode-$VERSION.$RID-portable.dmg
+hdiutil create -volname Renode_$VERSION -srcfolder $MACOS_APP_DIR -ov -format UDZO $OUTPUT/renode-$VERSION.$RID-portable${HEADLESS_SUFFIX}.dmg
 
 # Cleanup
 rm -rf $MACOS_APP_DIR

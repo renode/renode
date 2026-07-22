@@ -197,6 +197,9 @@ PARAMS+=(
   "$@"
 )
 
+# Export so that packaging scripts can name headless artifacts accordingly
+export HEADLESS
+
 if [ -n "${PLATFORM:-}" ]
 then
     echo "PLATFORM environment variable is currently set to: >>$PLATFORM<<"

@@ -10,11 +10,15 @@ cd $THIS_DIR
 
 RENODE_ROOT_DIR=$THIS_DIR/../..
 RENODE_PUBLISH=$RENODE_ROOT_DIR/output/publish/$TARGET/$RID
-DIR=renode_${VERSION}-portable
+HEADLESS_SUFFIX=""
+if $HEADLESS; then
+    HEADLESS_SUFFIX="-headless"
+fi
+DIR=renode_${VERSION}-portable${HEADLESS_SUFFIX}
 OS_NAME=linux
-ARCHIVE_NAME="renode-$VERSION.linux-portable.tar.gz"
+ARCHIVE_NAME="renode-$VERSION.linux-portable${HEADLESS_SUFFIX}.tar.gz"
 if [[ $RID == "linux-arm64" ]]; then
-    ARCHIVE_NAME="renode-$VERSION.$RID-portable.tar.gz"
+    ARCHIVE_NAME="renode-$VERSION.$RID-portable${HEADLESS_SUFFIX}.tar.gz"
 fi
 
 . common_copy_files_portable.sh
