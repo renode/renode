@@ -663,10 +663,22 @@ fi
 
 if $PORTABLE
 then
-    PARAMS+=(p:PORTABLE=true)
+    PUBLISH_PARAMS=()
+    # The solution "Any CPU" platform is mapped to "AnyCPU" for projects.
+    # Publishing Renode.csproj directly bypasses that mapping, so without
+    # normalizing it here, conditional settings in projects such as Xwt.Gtk
+    # would be skipped.
+    for p in "${PARAMS[@]}"; do
+        if [[ "$p" == p:Platform=* ]]; then
+            PUBLISH_PARAMS+=(p:Platform=AnyCPU)
+        else
+            PUBLISH_PARAMS+=("$p")
+        fi
+    done
+    PUBLISH_PARAMS+=(p:PORTABLE=true)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
-    dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" $TARGET
+    dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PUBLISH_PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$(get_path "$PWD/src/Renode/Renode.csproj")"
     # Prepare for use with NativeInterface even if SHARED is not enabled as this is just one file and it means that librenode can be added later
     prepare_portable_native_interface_runtime "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$OUT_BIN_DIR"
     export RID TFM
