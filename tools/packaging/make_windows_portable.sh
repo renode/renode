@@ -36,9 +36,12 @@ mkdir -p ../../output/packages
 /c/Windows/SysWOW64/tar.exe -a -c -f "../../output/packages/$ZIP_NAME" $DIR
 
 # Build installer
-export BASE
-export VERSION
-windows_package_src=$DIR iscc "windows/renode.iss"
+if ! $HEADLESS
+then
+    export BASE
+    export VERSION
+    windows_package_src=$DIR iscc "windows/renode.iss"
+fi
 
 echo "Created a dotnet portable package in output/packages/$ZIP_NAME"
 

@@ -530,8 +530,13 @@ if $ON_WINDOWS; then
   }
 fi
 
-python3 ./tools/add-wpf-dep.py "$OUT_BIN_DIR/Renode.runtimeconfig.json" "$OUT_BIN_DIR/RenodeWPF.runtimeconfig.json"
-ln -fs Renode.dll $OUT_BIN_DIR/RenodeWPF.dll
+if ! $HEADLESS
+then
+    python3 ./tools/add-wpf-dep.py "$OUT_BIN_DIR/Renode.runtimeconfig.json" "$OUT_BIN_DIR/RenodeWPF.runtimeconfig.json"
+    ln -fs Renode.dll "$OUT_BIN_DIR/RenodeWPF.dll"
+else
+    rm -f "$OUT_BIN_DIR/RenodeWPF.runtimeconfig.json" "$OUT_BIN_DIR/RenodeWPF.dll"
+fi
 
 # on arm64 macOS System.Drawing.Common can't find libgdiplus so we symlink it to the output directory
 # this is only used for `FrameBufferTester`
@@ -640,12 +645,12 @@ fi
 OG_TFM="$TFM"
 # `dotnet publish` is all-or-nothing in terms of TFM - we can't have mixed net8.0 for normal code and net8.0-windows10 for WPF
 if $PACKAGES || $PORTABLE; then
-  if $ON_WINDOWS; then
+  if $ON_WINDOWS && ! $HEADLESS; then
     # For Windows (since we have to actually build Xwt.WPF), we switch the whole build to a Windows-only TFM and make Renode actually require WPF
     TFM="$TFM-windows10.0.17763.0"
     generate_build_target
     PARAMS+=(p:RequireWPF=true)
-  else
+  elif ! $ON_WINDOWS; then
     # For non-Windows, we have modified `Xwt.WPF.csproj` to remove their dependency on WPF if `RemoveWPF` is set
     PARAMS+=(p:RemoveWPF=true)
   fi
