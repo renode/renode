@@ -386,7 +386,7 @@ then
   }
   for project_dir in $(find "$(get_path "${ROOT_PATH}")" -iname '*.csproj' -exec dirname '{}' \;)
   do
-    for dir in {bin,obj}/{Debug,Release}
+    for dir in {bin,obj}/{Debug,Release}{,Headless}
     do
       remove_dir "${project_dir}/${dir}"
     done
@@ -693,9 +693,14 @@ then
     PUBLISH_PARAMS+=(p:SatelliteResourceLanguages=en)
     # maxcpucount:1 to avoid an error with multithreaded publish
     echo "RID = $RID"
-    dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PUBLISH_PARAMS[@]/#/-}" --output "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$(get_path "$PWD/src/Renode/Renode.csproj")"
+    PUBLISH_OUTPUT="$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID"
+    # dotnet publish does not remove files left by a previous variant. In
+    # particular, a normal build followed by a headless one can otherwise
+    # retain GUI assemblies in the headless package.
+    rm -rf "$PUBLISH_OUTPUT"
+    dotnet publish -maxcpucount:1 -r $RID -f $TFM "${PUBLISH_PARAMS[@]/#/-}" --output "$PUBLISH_OUTPUT" "$(get_path "$PWD/src/Renode/Renode.csproj")"
     # Prepare for use with NativeInterface even if SHARED is not enabled as this is just one file and it means that librenode can be added later
-    prepare_portable_native_interface_runtime "$OUTPUT_DIRECTORY/publish/$CONFIGURATION/$RID" "$OUT_BIN_DIR"
+    prepare_portable_native_interface_runtime "$PUBLISH_OUTPUT" "$OUT_BIN_DIR"
     export RID TFM
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
