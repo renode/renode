@@ -259,6 +259,11 @@ if $HEADLESS
 then
     BUILD_TARGET=Headless
     PARAMS+=(p:GUI_DISABLED=true)
+    # Custom configurations (like ReleaseHeadless) do not inherit the SDK's optimization defaults
+    # for Release, so enable optimization explicitly here.
+    if [ "$CONFIGURATION" = "Release" ]; then
+        PARAMS+=(p:Optimize=true)
+    fi
 else
     BUILD_TARGET=""
 fi
