@@ -2,6 +2,7 @@
 
 set -e
 set -u
+set -o pipefail
 
 THIS_DIR="$(cd $(dirname $0); echo $PWD)"
 cd $THIS_DIR
@@ -33,7 +34,7 @@ sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DIR/renode-test"
 
 # Create tar
 mkdir -p ../../output/packages
-tar -czf ../../output/packages/$ARCHIVE_NAME $DIR
+tar -cf - "$DIR" | gzip -9 > "../../output/packages/$ARCHIVE_NAME"
 
 echo "Created a dotnet portable package in output/packages/$ARCHIVE_NAME"
 
