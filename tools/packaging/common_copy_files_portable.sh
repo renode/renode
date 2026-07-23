@@ -48,4 +48,7 @@ function copy_publish_output {
     trim_python_stdlib $1/Lib
     # Drop diagnostics-only runtime components.
     rm -f $1/*mscordaccore.* $1/*mscordbi.* $1/*coreclrtraceptprovider.* $1/createdump*
+    # Renode uses Mono.Cecil itself, but not these optional symbol and
+    # extension assemblies. Release packages do not contain managed symbols (see above).
+    rm -f "$1/Mono.Cecil.Mdb.dll" "$1/Mono.Cecil.Pdb.dll"  "$1/Mono.Cecil.Rocks.dll"
 }
