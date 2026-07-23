@@ -200,6 +200,12 @@ PARAMS+=(
 # Export so that packaging scripts can name headless artifacts accordingly
 export HEADLESS
 
+if $HEADLESS && { $PACKAGES || $MULTIPLATFORM; }
+then
+    echo "--no-gui currently supports portable packages only, use -t without -p or -m."
+    exit 1
+fi
+
 if [ -n "${PLATFORM:-}" ]
 then
     echo "PLATFORM environment variable is currently set to: >>$PLATFORM<<"
