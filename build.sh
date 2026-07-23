@@ -63,7 +63,7 @@ function print_help() {
   echo "-b                                custom build properties file"
   echo "--skip-fetch                      skip fetching submodules and additional resources"
   echo "--no-gui                          build with GUI disabled"
-  echo "-B                                bundle target runtime (default value: $RID, requires --net, -t)"
+  echo "-B                                bundle target runtime (default value: $RID, requires -t)"
   echo "-F                                select the target framework for which Renode should be built (default value: $TFM)"
   echo "--profile-build                   build optimized for profiling"
   echo "--tlib-coverage                   build tlib with coverage reporting"
