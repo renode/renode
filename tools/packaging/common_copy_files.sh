@@ -46,11 +46,8 @@ cp $BASE/lib/resources/styles/robot.css $DIR/tests
 
 # Don't copy RenodeTests directory which contains nunit tests
 mkdir $DIR/tests/unit-tests
-find $BASE/tests/unit-tests \
-    -not -path "$BASE/tests/unit-tests" \
-    -not -path "$BASE/tests/unit-tests/RenodeTests" \
-    -not -path "$BASE/tests/unit-tests/RenodeTests/*" \
-    -exec cp -r "{}" "$DIR/tests/unit-tests/" \;
+cp -r "$BASE/tests/unit-tests/." "$DIR/tests/unit-tests"
+rm -rf "$DIR/tests/unit-tests/RenodeTests"
 
 $BASE/tools/packaging/common_copy_licenses.sh $DIR/licenses $OS_NAME
 $BASE/tools/packaging/common_copy_dts2repl_version_script.sh $BASE $DIR
