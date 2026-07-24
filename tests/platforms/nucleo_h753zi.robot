@@ -18,6 +18,7 @@ ${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI
 ${PTP}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_net_ptp.elf-s_4678660-79097838e7a15377e3d9ce083917220bd0705312
 ${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_client_server.elf-s_5285644-738a986f7b4250cd1a615e5c9767be20d89d82e0  # Zephyr netshell with DHCP client and server enabled
 ${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
+${ADC_DMA_TEST}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_adc_api_dma.elf-s_1463928-1eb236532e593e96e263d98cf6200a0722dfd97f
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -86,6 +87,10 @@ Assert PC Equals
     [Arguments]            ${expected}
     ${pc}=                 Execute Command  sysbus.cpu PC
     Should Be Equal As Integers  ${pc}  ${expected}
+
+Wait For Test Pass
+    [Arguments]                     ${test_name}
+    Wait For Line On Uart            PASS - ${testname}.*    treatAsRegex=true
 
 *** Test Cases ***
 Should Talk Over Ethernet
@@ -403,3 +408,15 @@ Should Resolve DHCP and Be Pingable
 
     Write Line To Uart                  net ping ${client_ip}  testerId=${server}
     Wait For Line On Uart               28 bytes from ${client_ip}.*  treatAsRegex=true  testerId=${server}
+
+Should Pass ADC DMA Test
+    Create Machine                      ${ADC_DMA_TEST}  adc_dma_test
+    Create Terminal Tester              ${UART}                                       defaultPauseEmulation=True
+
+    Wait For Test Pass                  test_adc_asynchronous_call
+    Wait For Test Pass                  test_adc_invalid_request
+    Wait For Test Pass                  test_adc_repeated_samplings
+    Wait For Test Pass                  test_adc_sample_one_channel
+    Wait For Test Pass                  test_adc_sample_two_channels
+    Wait For Test Pass                  test_adc_sample_with_interval
+    Wait For Test Pass                  test_task_different_priorities_sequences
