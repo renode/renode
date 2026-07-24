@@ -111,6 +111,7 @@ dma2: DMA.STM32LDMA @ sysbus 0x40020400
     [0-7] -> nvic@[80-87]
 
 dmamux: Miscellaneous.STM32_DMAMUX @ sysbus 0x40020800
+    numberOfInputRequestChannels: 94
     numberOfOutputRequestChannels: 16
     numberOfRequestGeneratorChannels: 4
     [0-7] -> dma1@[0-7]
