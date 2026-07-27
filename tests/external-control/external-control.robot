@@ -103,11 +103,15 @@ Should Run ADC Sample
 
     Build Sample                   adc
 
+    ${channel_count}=              Execute Command  adc ADCChannelCount
+    ${channel_count}=              Evaluate  int(${channel_count.strip()})
+
     @{voltages}=                   Create List  13  100  254  1000
     FOR    ${voltage}    IN    @{voltages}
-        Execute Sample                 adc  ${PORT}  machine  adc  ${voltage}uv
+        ${r}=                          Execute Sample  adc  ${PORT}  machine  adc  ${voltage}uv
         ${val}=                        Execute Command  adc GetADCValue 0
         Should Be Equal As Integers    ${val}    ${voltage}
+        Should Contain                 ${r.stdout}  [INFO] # of channels: ${channel_count}
     END
 
 Should Run GPIO Sample
