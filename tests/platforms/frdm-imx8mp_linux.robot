@@ -36,19 +36,18 @@ Should Detect And Round-Trip SPI NOR On eCSPI2
     Wait For Line On Uart         mtd0: 04000000 00001000 "spi1.1"
     Wait For Prompt On Uart       \#${SPACE}
 
-    # Round-trip a file through /dev/mtd0 - write it, read it back, md5sums must match.
-    Write Line To Uart            dmesg > /test_file
-    Wait For Prompt On Uart       \#${SPACE}
-    Write Line To Uart            dd if=/test_file of=/dev/mtd0
-    Wait For Prompt On Uart       \#${SPACE}
-    Write Line To Uart            dd if=/dev/mtd0 of=/readback bs=$(stat -c%s /test_file) count=1
-    Wait For Prompt On Uart       \#${SPACE}
-    Write Line To Uart            md5sum < /test_file > /sum_test
-    Wait For Prompt On Uart       \#${SPACE}
-    Write Line To Uart            md5sum < /readback > /sum_read
-    Wait For Prompt On Uart       \#${SPACE}
-    Write Line To Uart            cmp -s /sum_test /sum_read && echo NOR_ROUNDTRIP_OK || echo NOR_ROUNDTRIP_FAIL
-    Wait For Line On Uart         NOR_ROUNDTRIP_OK
+    # Round-trip random data through /dev/mtd0 - get random file, write it to mtd0, read it back, contents must match.
+    FOR    ${size}    IN    810  811  812  813  814  815  816  817
+        Write Line To Uart         head -c ${size} /dev/urandom > /test_file
+        Wait For Prompt On Uart    \#${SPACE}
+        Write Line To Uart         dd if=/test_file of=/dev/mtd0
+        Wait For Prompt On Uart    \#${SPACE}
+        Write Line To Uart         dd if=/dev/mtd0 of=/rb bs=${size} count=1
+        Wait For Prompt On Uart    \#${SPACE}
+        Write Line To Uart         cmp -s /test_file /rb && echo NOR_ROUNDTRIP_OK || echo "size=${size} NOR_ROUNDTRIP_FAIL"  waitForEcho=false
+        Wait For Line On Uart      NOR_ROUNDTRIP_OK
+        Wait For Prompt On Uart    \#${SPACE}
+    END
 
 
 Should Read Data From eMMC boot0 Hardware Partition
