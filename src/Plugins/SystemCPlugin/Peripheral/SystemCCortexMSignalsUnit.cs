@@ -56,8 +56,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
              * These signals are by default treated as active-HIGH,
              * even though the source signals 'nPORESET' and 'nSYSRESET' are active-LOW.
              */
-            Connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, powerOnResetActive)), 0);
-            Connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(state, coreResetInActive)), 0);
+            Connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(Signal.PowerOnReset, state, powerOnResetActive)), 0);
+            Connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(Signal.CoreResetIn, state, coreResetInActive)), 0);
 
             // NVIC's OnGPIO adds an offset to skip over system exceptions, so we need to subtract it.
             Connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
@@ -202,23 +202,73 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private void ResetCpuAndPeripherals(bool state, SignalActiveWhen resetOn)
+        private void ResetCpuAndPeripherals(Signal signal, bool state, SignalActiveWhen resetOn)
         {
-            var resetState = resetOn == SignalActiveWhen.High ? true : false;
-            if(state != resetState)
+            void holdInReset()
             {
-                return;
+                cpu.IsHalted = true;
+                this.DebugLog("Cpu halted after reset signal assertion");
             }
 
-            void reset()
+            void resetAndLeaveReset()
             {
                 cpu.Reset();
                 nvic.Reset();
                 dwt?.Reset();
                 // Ensure cpu is resumed after implicit pause on cpu reset.
-                // Halt condition is preserved.
+                // CPUWAIT is preserved by CortexM.Reset() and keeps the CPU halted
+                // until CPUWAIT is deasserted.
                 cpu.Resume();
-                this.DebugLog("Cpu and peripherals were reset after signal");
+                this.DebugLog("Cpu and peripherals were reset after signal deassertion");
+            }
+
+            var resetState = resetOn == SignalActiveWhen.High ? true : false;
+            var wasAsserted = coreResetInAsserted || powerOnResetAsserted;
+            if(state == resetState)
+            {
+                switch(signal)
+                {
+                case Signal.CoreResetIn:
+                    coreResetInAsserted = true;
+                    break;
+                case Signal.PowerOnReset:
+                    powerOnResetAsserted = true;
+                    break;
+                default:
+                    return;
+                }
+            }
+            else
+            {
+                switch(signal)
+                {
+                case Signal.CoreResetIn:
+                    coreResetInAsserted = false;
+                    break;
+                case Signal.PowerOnReset:
+                    powerOnResetAsserted = false;
+                    break;
+                default:
+                    return;
+                }
+            }
+            var isAsserted = coreResetInAsserted || powerOnResetAsserted;
+
+            if(wasAsserted == isAsserted)
+            {
+                return;
+            }
+
+            void updateResetState()
+            {
+                if(isAsserted)
+                {
+                    holdInReset();
+                }
+                else
+                {
+                    resetAndLeaveReset();
+                }
             }
 
             if(DisableSidebandChannel)
@@ -231,16 +281,18 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 // it causes a deadlock, so defer it.
                 machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
                 {
-                    reset();
+                    updateResetState();
                 }, true);
             }
             else
             {
                 // Reset synchronously. Sideband channel can handle nested requests.
-                reset();
+                updateResetState();
             }
         }
 
+        private bool powerOnResetAsserted;
+        private bool coreResetInAsserted;
         private bool vtorInitialized = false;
         private bool vtorNonSecureInitialized = false;
         private readonly CortexM cpu;
