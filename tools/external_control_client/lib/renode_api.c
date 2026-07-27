@@ -66,6 +66,10 @@ typedef enum {
 
 void renode_free_error(renode_error_t *error)
 {
+    if (error == NO_ERROR) {
+        return;
+    }
+
     if (error->flags & ERROR_FREE_MESSAGE) {
         free(error->message);
     }
