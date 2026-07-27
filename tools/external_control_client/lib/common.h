@@ -23,6 +23,12 @@
 
 #define ERROR_DYNAMIC_MESSAGE_SIZE 0x400
 
+#ifdef RENODE_API_VERBOSE
+#define verbose_print(fmt, ...) fprintf(stderr, "Renode API: " fmt "\n", __VA_ARGS__)
+#else
+#define verbose_print(fmt, ...)
+#endif
+
 static inline void *xmalloc(size_t size)
 {
     void *result = malloc(size);

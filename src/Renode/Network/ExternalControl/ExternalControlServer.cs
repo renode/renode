@@ -311,11 +311,12 @@ namespace Antmicro.Renode.Network
 
         private void SendResponse(Response response)
         {
-            var bytes = response.GetBytes();
+            // This is a temporary measure until we settle on a new command ABI
+            var bytes = response.GetBytes().ToArray();
             lock(locker)
             {
                 AssertNotDisposed();
-                socketServerProvider.Send(bytes);
+                socketServerProvider.Send(BitConverter.GetBytes(bytes.Length).Concat(bytes));
             }
             this.Log(LogLevel.Debug, "Response sent: {0}", response);
             this.Log(LogLevel.Noisy, "Bytes sent: {0}", Misc.PrettyPrintCollectionHex(bytes));

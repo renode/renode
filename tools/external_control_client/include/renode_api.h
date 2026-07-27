@@ -89,6 +89,11 @@ typedef struct renode_gpio renode_gpio_t;
 typedef struct renode_bus_context renode_bus_context_t;
 
 /**
+ * @brief Type of the Renode fatal error callback
+ */
+typedef void (*renode_fatal_error_callback_t)(void *ud, renode_error_t *error);
+
+/**
  * @brief Function initializing Renode connection
  *
  * @note The connection should be closed using renode_disconnect() before a client app exits.
@@ -130,6 +135,17 @@ renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_ma
  * @param[in] error error structure
  */
 void renode_free_error(renode_error_t *error);
+
+/**
+ * @brief Function setting a callback, which will be called when the library encounters a unrecoverable error
+ *
+ * The callback can be used to perform any application specific cleanup routines, before the application terminates.
+ *
+ * @param[in] renode Renode connection handle
+ * @param[in] user_data pointer to data passed to the callback when it's invoked
+ * @param[in] callback callback to be invoked when a unrecoverable error occures
+ */
+void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_fatal_error_callback_t callback);
 
 
 /* Time control */
