@@ -33,18 +33,17 @@ struct renode_message;
 // Backward socket: Request from SystemC, Response From Renode
 
 enum renode_action : uint8_t {
-  // Socket: forward only
-  // Init message received for the second time signifies Renode terminated and
-  // the process should exit. Request:
+  // Socket: backward
+  // Request:
   //     data_length: ignored
   //     address: ignored
   //     connection_index: ignored
+  // Response:
   //     payload: time synchronization granularity in us
   //       TIMESYNC messages will be sent with this period. This does NOT
   //       guarantee that the processes will never desynchronize by more than
   //       this amount.
-  // Response:
-  //      Identical to the request message.
+  //      Otherwise identical to the request message.
   INIT = 0,
 
   // Socket: forward, backward
@@ -417,7 +416,7 @@ private:
     uint8_t connection_idx;
   };
 
-  bool initialize_connection(renode_message *message, int64_t *out_max_desync_us);
+  bool initialize_connection(int64_t *out_max_desync_us);
   void forward_loop();
   void sideband_loop();
   renode_message receive_backward_response();
@@ -473,6 +472,7 @@ private:
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
 
   bool fw_connection_initialized;
+  int64_t max_desync_us;
   bool native;
   std::string mach;
   std::string peri;

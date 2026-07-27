@@ -29,7 +29,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
                 this.InfoLog("SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
                 SetupConnection(listenerSocket);
-                SetupTimesync();
             }
             catch(Exception e)
             {
@@ -53,10 +52,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             backwardThreadStarted = true;
 
             connectionActive = true;
-
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
-            SetupTimesync();
-
             return true;
         }
 
@@ -151,7 +146,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     var connectionParams = $"{address} {assignedPort}";
                     StartSystemCProcess(systemcExecutablePath, connectionParams);
                     SetupConnection(listenerSocket);
-                    SetupTimesync();
                 }
                 catch(Exception e)
                 {
@@ -417,8 +411,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             backwardThreadStarted = true;
 
             connectionActive = true;
-
-            SendRequest(new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS), out var response);
         }
 
         private void TeardownSocketConnection()

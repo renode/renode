@@ -403,6 +403,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
                 switch(message.ActionId)
                 {
+                case RenodeAction.Init:
+                    SetupTimesync();
+                    var timesyncResponse = new RenodeMessage(RenodeAction.Init, 0, 0, 0, (ulong)timeSyncPeriodUS);
+                    SendBackwardResponse(timesyncResponse);
+                    break;
                 case RenodeAction.GPIOWrite:
                     var gpioNumber = (int)message.Address;
                     var isSet = message.Payload == 1;

@@ -356,22 +356,7 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
 
   if(native) {
 #ifdef RENODE_NATIVE_INTERFACE
-    // Execute on a background thread.
-    // Renode is going to send a forward request with INIT message
-    // and wait for response from us in a blocking way.
-    // We need to receive that message in forward_loop SC_THREAD
-    // and send response to unblock Renode.
-    std::thread run_resc
-    {
-      [mach, peri]
-      ()-> void
-      {
-        // Execute on a background thread as Renode waits for the renode_bridge connection.
-        renode_systemc_init_native_connection(mach.c_str(), peri.c_str());
-        renode_exec_command("start");
-      }
-    };
-    run_resc.detach();
+  renode_systemc_init_native_connection(mach.c_str(), peri.c_str());
 #endif
   } else {
     forward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
@@ -406,6 +391,13 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
     };
     sideband.detach();
   }
+
+  if (!initialize_connection(&max_desync_us)) {
+    fprintf(stderr, "Failed to initialize Renode connection. Aborting.\n");
+    terminate_simulation(1);
+    return;
+  }
+  fw_connection_initialized = true;
 }
 
 renode_bridge::~renode_bridge() {
@@ -420,28 +412,25 @@ renode_bridge::~renode_bridge() {
   }
 }
 
-bool renode_bridge::initialize_connection(renode_message *message, int64_t *out_max_desync_us) {
-  // Receive INIT message from Renode and use it to setup connection, e. g.
-  // time synchronization period.
-  // This is done during SystemC elaboration, once per lifetime of the module.
-  bool closed;
-  *message = receive_forward_request(&closed);
-  if (closed) {
-    return false;
-  }
+bool renode_bridge::initialize_connection(int64_t *out_max_desync_us) {
+  // Send INIT message to Renode and use response
+  // to setup connection, e. g. set time synchronization period.
+  // This is done once per lifetime of the module during elaboration.
+  renode_message message = {};
+  message.action = renode_action::INIT;
+
+  send_backward_request(&message);
+  message = receive_backward_response();
 
 #ifdef VERBOSE
   print_renode_message(message);
 #endif
 
-  if (message->action != renode_action::INIT) {
+  if (message.action != renode_action::INIT) {
     fprintf(stderr, "Renode bridge connection error: missing INIT action.\n");
     return false;
   }
-  *out_max_desync_us = static_cast<int64_t>(message->payload);
-
-  // Acknowledge initialization is done.
-  send_forward_response(message);
+  *out_max_desync_us = static_cast<int64_t>(message.payload);
 
 #ifdef VERBOSE
   printf("Connection to Renode initialized with timesync period %" PRId64 " us.\n",
@@ -459,15 +448,6 @@ void renode_bridge::forward_loop() {
 
   renode_message message;
   bool closed;
-
-  int64_t max_desync_us;
-  if (!initialize_connection(&message,
-                             &max_desync_us)) {
-    fprintf(stderr, "Failed to initialize Renode connection. Aborting.\n");
-    terminate_simulation(1);
-    return;
-  }
-  fw_connection_initialized = true;
 
   while (true) {
     memset(data, 0, sizeof(data));
