@@ -174,10 +174,20 @@ flexcan1: CAN.NXP_FlexCAN @ sysbus 0x308C0000
 flexcan2: CAN.NXP_FlexCAN @ sysbus 0x308D0000
     IRQ -> gic@144
 
-eth1: Python.PythonPeripheral @ sysbus 0x30BE0000
-    size: 0x1000
-    initable: true
-    filename: "scripts/pydev/flipflop.py"
+eth_mac: Network.K6xF_Ethernet @ sysbus 0x30BE0000
+    TxIRQ -> gic@118 | gic@119 | gic@120
+    RxIRQ -> gic@118 | gic@119 | gic@120
+    MiscIRQ -> gic@120
+
+eth_qos: Network.SynopsysDWCEthernetQualityOfService @ {
+        sysbus 0x30BF0000;
+        sysbus new Bus.BusMultiRegistration { address: 0x30BF0C00; size: 0x200; region: "mtl" };
+        sysbus new Bus.BusMultiRegistration { address: 0x30BF1000; size: 0x200; region: "dma" }
+    }
+    systemClockFrequency: 50000000
+    dmaBusWidth: BusWidth.Bits128
+    externalMacAddress: "10:07:23:01:02:03"
+    -> gic@135
 
 i2c1: I2C.NXP_IMX_I2C @ sysbus 0x30A20000
     IRQ -> gic@35
@@ -289,7 +299,6 @@ sysbus:
         Tag <0x30AC0000 0x10000> "SEMAPHORE_HS"
         Tag <0x30BB0000 0x10000> "QSPI"
         Tag <0x30BD0000 0x10000> "SDMA1"
-        Tag <0x30BE0000 0x10000> "ENET1"
         Tag <0x30C10000 0x10000> "SAI1"
         Tag <0x30C20000 0x10000> "SAI2"
         Tag <0x30C30000 0x10000> "SAI3"
