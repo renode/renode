@@ -1,17 +1,17 @@
 // STM32H563 SoC platform description
 //
 // Cortex-M33 @ 250 MHz, 2 MB flash, 640 KB SRAM (256 + 64 + 320 KB)
-// Non-secure aliases only (CubeMX project compiles without -mcmse).
+// Non-secure aliases only.
 //
 // Peripheral inventory:
 //
-//   MODELLED (added by later increments — not present in this skeleton):
+//   MODELLED:
 //     pwr, rcc, flashController, icache, iwdg, rng,
 //     gpioPortA..gpioPortG, usart3, exti
 //     These are the peripherals the reference firmware actively polls or
 //     configures; they require behavioural models to avoid hangs.
 //
-//   TAGGED (address-space placeholders in the sysbus init block below):
+//   TAGGED:
 //     SBS, GTZC, GPDMA1/2, I2C1–4, SPI1–3, ADC, DAC, ETH, SDMMC1/2,
 //     USB, HASH, CRC, RTC, TAMP, FDCAN1/2, CAN message RAM, timers
 //     (TIM1–TIM17), USART1/2, UART4/5, LPUART1, DBGMCU
@@ -84,6 +84,11 @@ usart3: UART.STM32F7_USART @ sysbus 0x40004800
     hasPrescaler: true
     IRQ -> nvic@60
 
+lpuart1: UART.STM32F7_USART @ sysbus 0x44002400
+    frequency: 250000000
+    hasPrescaler: true
+    IRQ -> nvic@63
+
 exti: IRQControllers.STM32H5_EXTI @ sysbus 0x44022000
     numberOfOutputLines: 59
     [0-15] -> nvic@[11-26]
@@ -151,7 +156,7 @@ sysbus:
         Tag <0x40004400, 0x400047FF> "USART2"
         Tag <0x40004C00, 0x40004FFF> "UART4"
         Tag <0x40005000, 0x400053FF> "UART5"
-        Tag <0x44002400, 0x440027FF> "LPUART1"
+        // LPUART1 is modelled as a full peripheral (see lpuart1 below)
 
         // --- Analog ---
         Tag <0x42028000, 0x420283FF> "ADC1_ADC2"
