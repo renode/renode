@@ -155,9 +155,14 @@ def prepare_parser():
                         help="Run only tests marked with a tag.")
 
     parser.add_argument("--exclude",
-                        default=['skipped'],
+                        default=['excluded'],
                         action="append",
                         help="Do not run tests marked with a tag.")
+
+    parser.add_argument("--skip",
+                        default=['skipped'],
+                        action="append",
+                        help="Skip tests marked with a tag.")
 
     parser.add_argument("--stop-on-error",
                         dest="stop_on_error",

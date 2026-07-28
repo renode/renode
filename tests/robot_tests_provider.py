@@ -1107,6 +1107,9 @@ class RobotTestSuite(object):
                     test.tags.remove('test:retry')
                 test.tags.add('test:retry(0)')
 
+            if any(tag in options.skip for tag in test.tags):
+                test.tags.add('robot:skip')
+
             # Timeout tests with `self.timeout_expected_tag` will be set as passed in the listener
             # during timeout handling. Their timeout won't be influenced by the global timeout option.
             if self.timeout_expected_tag in test.tags:
