@@ -196,8 +196,8 @@ LED Tester Assert Duty Cycle Should Precisely Pause Emulation
     [Tags]                   instructions_counting
     Requires                 synced-blinky
 
-    Assert LED Duty Cycle    testDuration=5  expectedDutyCycle=0.5  pauseEmulation=true
-    Emulation Should Be Paused At Time  00:00:06.000200
+    Assert LED Duty Cycle    testDuration=6  expectedDutyCycle=0.5  pauseEmulation=true
+    Emulation Should Be Paused At Time  00:00:07.000200
 
 LED And Terminal Testers Should Cooperate
     Create Machine With Button And LED  led_shell
