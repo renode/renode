@@ -65,6 +65,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             nvic.SystemResetRequest.Connect(this, (int)Signal.SystemResetRequest);
             nvic.InSleep.Connect(this, (int)Signal.Sleeping);
             nvic.InDeepSleep.Connect(this, (int)Signal.SleepDeep);
+            nvic.Lockup.Connect(this, (int)Signal.Lockup);
         }
 
         public byte[] ReadBytes(long offset, int count, IPeripheral context = null)
@@ -267,6 +268,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             SystemResetRequest = 1006,             // O_sysreset_req
             Sleeping = 1007,                       // O_sleeping
             SleepDeep = 1008,                      // O_sleep_deep
+            Lockup = 1009,                         // O_lockup
         }
 
         private class GPIOHandler : IGPIOReceiver
