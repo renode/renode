@@ -78,6 +78,9 @@ ${TRUSTZONE_PLATFORM}               SEPARATOR=\n
 ...                                 mem: Memory.MappedMemory @ sysbus 0x0
 ...                                 ${SPACE*4}size: 0x1000
 ...
+...                                 mem_ns: Memory.MappedMemory @ sysbus 0x10000
+...                                 ${SPACE*4}size: 0x1000
+...
 ...                                 nvic: IRQControllers.NVIC @ {
 ...                                 ${SPACE*8}sysbus 0xE000E000;
 ...                                 ${SPACE*8}sysbus new Bus.BusMultiRegistration { address: 0xE002E000; size: 0x1000; region: "NonSecure" }
@@ -431,8 +434,88 @@ Should Enter Lockup On Exception Unstacking BusFault
     DoubleWord ${SCB_HFSR} Should Be Equal  0
     DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
 
+Should Tail Chain On Exception Unstacking BusFault
+    Create Machine
+    Enable BusFault
+    Execute Command                 faultingPeripheral FaultOnWrites false
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "nop; bx lr"
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # Writes to the peripheral-backed stack succeed for NMI entry, while
+    # reads fail when BX LR starts PopStack().
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${{${NMI_HANDLER_ADDRESS} + 2}}
+    Execute Command                 cpu Step 1
+
+    # NMI is already inactive when UNSTKERR is generated. The enabled
+    # BusFault can therefore be taken, and RVJKL requires it to tail-chain
+    # through the unconsumed frame rather than allocate a second one.
+    PC Should Be Equal              ${BUSFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    Register Should Be Equal        LR  ${EXC_RETURN_THREAD_MSP}
+    IPSR Should Be Equal            5
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+
+Should Retain Secure FAULTMASK For HardFault Return Lockup
+    Create TrustZone Machine
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "movs r1, #1; msr faultmask, r1; ldr r0, =${FAULTING_PERIPHERAL_ADDRESS}; msr msp, r0; bx lr"
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # Establish Secure HardFault, then isolate the exception-return syndrome.
+    Execute Faulting Instruction
+    PC Should Be Equal              ${{${HARDFAULT_HANDLER_ADDRESS} + 2}}
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+    Execute Command                 cpu Step 4
+
+    # RCDCR retains FAULTMASK_S because RawExecutionPriority() is negative
+    # while returning from HardFault. The handler is deactivated before the
+    # unstack BusFault, but FAULTMASK_S still prevents the escalated Secure
+    # HardFault from becoming active, so RVJKL and RNZCD require Lockup.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0x100020
+    IPSR Should Be Equal            0
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  0
+
+Should Enter Lockup On RETPSR Integrity Failure
+    Create Machine
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # Establish an active HardFault, then remove its instruction-time
+    # syndromes so the exception-return failure is observed in isolation.
+    Execute Faulting Instruction
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+
+    # NMI preempts HardFault. Its EXC_RETURN requests Handler mode, but zeroing
+    # the stacked IPSR makes RETPSR inconsistent with that destination mode.
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "movs r0, #0; str r0, [sp, #28]; bx lr"
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 3
+
+    # PopStack() raises UsageFault.INVPC after NMI is deactivated. The disabled
+    # UsageFault escalates to HardFault, which cannot preempt the still-active
+    # background HardFault, so rules RVJKL, RNZCD, and RTCJR require Lockup.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0xFE0
+    IPSR Should Be Equal            3
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_INVPC}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
 Should Enter Lockup On Reset Vector BusFault
     Create Machine
+    Execute Command                 faultingPeripheral FaultOffset 4
     Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
     Execute Command                 emulation RunFor "0.01"
 
@@ -441,10 +524,127 @@ Should Enter Lockup On Reset Vector BusFault
     # HFSR.VECTTBL set.
     Lockup Should Be Asserted
     Register Should Be Equal        SP  0
+    Register Should Be Equal        LR  0xFFFFFFFF
     IPSR Should Be Equal            0
     DoubleWord ${SCB_CFSR} Should Be Equal  0
     DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
     DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
+Should Enter Lockup On Initial MSP BusFault
+    Create Machine
+    # TakeReset() permits either vector-load order. Renode reads the reset
+    # vector first, so leave offset 4 readable and fault only the initial MSP.
+    Execute Command                 faultingPeripheral FaultOffset 0
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 emulation RunFor "0.01"
+
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0
+    Register Should Be Equal        LR  0xFFFFFFFF
+    IPSR Should Be Equal            0
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
+Should Tail Chain On Invalid Non-secure DCRS
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NS_NMI_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
+    Execute Command                 cpu AssembleBlock ${NS_NMI_HANDLER_ADDRESS} "nop; bx lr"
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # NMI targets Non-secure state while its interrupted frame and Additional
+    # state context reside on the Secure MSP.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              0x10002
+
+    # Rule RNCQN and ValidateExceptionReturn(): ES=0 requires DCRS=1.
+    # Clear DCRS in the NMI's otherwise valid EXC_RETURN, then execute BX LR.
+    Execute Command                 cpu SetRegister "LR" 0xFFFFFFD8
+    Execute Command                 cpu Step 1
+
+    # The INVER SecureFault is generated after NMI is deactivated. It
+    # escalates to Secure HardFault and, per RVJKL, tail-chains through the
+    # existing cross-security frame.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0xFB8
+    Register Should Be Equal        LR  0xFFFFFFD9
+    IPSR Should Be Equal            3
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVER}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Take HardFault On Integrity Signature Mismatch
+    Create TrustZone Machine
+    # Set BFHFNMINS so HardFault is banked and NMI targets Non-secure.
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+
+    # Leave the SAU background region Secure and mark only the NMI handler
+    # memory Non-secure. This keeps the derived Secure HardFault handler
+    # executable in Secure state.
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+
+    # Point the NMI vector to the Non-secure handler.
+    Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NS_NMI_HANDLER_ADDRESS | 1}}
+
+    # Set up the HardFault handler (taken after the derived SecureFault
+    # escalates to HardFault_S, which is not previously active).
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
+
+    # Set up the NMI handler in Non-secure memory as "nop; bx lr". The nop
+    # gives us a step between NMI entry and return to corrupt the signature.
+    Execute Command                 cpu AssembleBlock ${NS_NMI_HANDLER_ADDRESS} "nop; bx lr"
+
+    # Set up Thread mode code that loops.
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # Pend NMI. It targets Non-secure (BFHFNMINS=1) and preempts from Secure
+    # Thread mode, pushing the additional state context (integrity signature)
+    # on the Secure stack. After stacking: SP_S = 0x1000 - 0x20 (basic frame)
+    # - 0x28 (additional state context) = 0xFB8. The integrity signature is
+    # the last word pushed, at 0xFB8.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    # After NMI entry + nop, PC is at the "bx lr" instruction (0x10002).
+    PC Should Be Equal              0x10002
+
+    # Corrupt the integrity signature at 0xFB8 from the test script.
+    Execute Command                 sysbus WriteDoubleWord 0xFB8 0
+
+    # Step again to execute "bx lr" and trigger the exception return.
+    Execute Command                 cpu Step 1
+
+    # PopStack() and HandleExceptionTransitions(): SFSR.INVIS creates a
+    # SecureFault after NMI has been deactivated. Because no HardFault is
+    # active, the disabled SecureFault escalates and HardFault_S is taken;
+    # this is not a Lockup case.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    # Rule RVJKL and HandleExceptionTransitions() require this to be a
+    # tail-chain using the unconsumed Secure frame, not a normal entry which
+    # would allocate another frame. ExceptionTaken() also updates ES and DCRS
+    # in the reused EXC_RETURN for the Non-secure-to-Secure transition.
+    Register Should Be Equal        SP  0xFB8
+    Register Should Be Equal        LR  0xFFFFFFD9
+    IPSR Should Be Equal            3
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVIS}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
 
 Should Ignore Precise BusFault In HardFault When Configured
     Create Machine
