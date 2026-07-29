@@ -2,6 +2,8 @@
 ${CODE_ADDRESS}                     ${0x200}
 ${BUSFAULT_HANDLER_ADDRESS}         ${0x300}
 ${HARDFAULT_HANDLER_ADDRESS}        ${0x340}
+${NMI_HANDLER_ADDRESS}              ${0x380}
+${LOCKUP_PC}                        0xEFFFFFFE
 ${STACK_TOP}                        0x1000
 ${STACKED_R1_ADDRESS}               0xFE4
 ${STACKED_R2_ADDRESS}               0xFE8
@@ -26,6 +28,7 @@ ${AIRCR_VECTKEY_BFHFNMINS}          0x05FA2000
 ${CFSR_PRECISERR_BFARVALID}         ${{(1<<9) | (1<<15)}}
 ${HFSR_FORCED}                      ${{1<<30}}
 ${CCR_BFHFNMIGN}                    ${{1<<8}}
+${SHCSR_HARDFAULTACT}               ${{1<<2}}
 
 ${PLATFORM}                         SEPARATOR=\n
 ...                                 """
@@ -72,6 +75,18 @@ ${WRITE_ASSEMBLY}                   SEPARATOR=\n
 ...                                 """
 ...                                 str r2, [r0]
 ...                                 movs r1, #${R1_AFTER_FAULT}
+...                                 b .
+...                                 """
+
+${LOCKUP_ASSEMBLY}                  SEPARATOR=\n
+...                                 """
+...                                 ldr r3, =${SCB_HFSR}
+...                                 ldr r4, =${HFSR_FORCED}
+...                                 str r4, [r3] /* clear HFSR.FORCED before the second fault */
+...                                 cmp r5, #0
+...                                 itt eq
+...                                 ldreq r2, [r0]
+...                                 moveq r1, #${R1_AFTER_FAULT}
 ...                                 b .
 ...                                 """
 
@@ -145,8 +160,10 @@ Create Machine
     Create Bare Machine
 
     # Cortex-M vector 3 is HardFault and vector 5 is BusFault.
+    Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NMI_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0xC ${{$HARDFAULT_HANDLER_ADDRESS | 1}}  # Thumb bit
     Execute Command                 sysbus WriteDoubleWord 0x14 ${{$BUSFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${BUSFAULT_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
 
@@ -154,8 +171,10 @@ Create TrustZone Machine
     Execute Command                 include "${CURDIR}/BusFaultingPeripheral.cs"
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${TRUSTZONE_PLATFORM}
+    Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NMI_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0xC ${{$HARDFAULT_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0x14 ${{$BUSFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${BUSFAULT_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
 
@@ -173,6 +192,15 @@ Enable BusFault
 
 Execute Faulting Instruction
     Execute Command                 cpu Step 1
+
+Enter Instruction-Time Lockup
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} ${LOCKUP_ASSEMBLY}
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # The first, disabled BusFault escalates to HardFault. The handler clears
+    # HFSR.FORCED and faults again while HardFault is active.
+    Execute Command                 cpu Step 20
 
 ${width} ${io} Should Be Equal
     [Arguments]  ${expected}
@@ -260,6 +288,61 @@ Should Escalate BusFault That Cannot Preempt Active Handler
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
     DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
     DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Enter Lockup When BusFault Cannot Escalate From HardFault
+    Enter Instruction-Time Lockup
+
+    # Armv8-M ARM rules RVGMR and RXHMT: the second synchronous BusFault
+    # cannot escalate past the active HardFault. It updates its syndrome, but
+    # does not change pending/active state or HFSR.FORCED.
+    PC Should Be Equal              ${LOCKUP_PC}
+    Register Should Be Equal        1  ${R1_BEFORE_FAULT}
+    Register Should Be Equal        2  ${R2_BEFORE_FAULT}
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${lockup_signal}=               Execute Command  nvic Lockup IsSet
+    ${in_sleep}=                    Execute Command  nvic InSleep IsSet
+    ${in_deep_sleep}=               Execute Command  nvic InDeepSleep IsSet
+    Should Be Equal                 ${locked_up}  True  strip_spaces=True
+    Should Be Equal                 ${lockup_signal}  True  strip_spaces=True
+    Should Be Equal                 ${in_sleep}  False  strip_spaces=True
+    Should Be Equal                 ${in_deep_sleep}  False  strip_spaces=True
+
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
+    # Rules RMBTM and RHTVD: execution and ITSTATE advancement stop.
+    ${itstate_before}=              Execute Command  cpu GetItState
+    ${instructions_before}=         Execute Command  cpu ExecutedInstructions
+    Should Not Be Equal As Integers  ${itstate_before}  0
+    Execute Command                 cpu Step 10
+    PC Should Be Equal              ${LOCKUP_PC}
+    ${itstate_after}=               Execute Command  cpu GetItState
+    ${instructions_after}=          Execute Command  cpu ExecutedInstructions
+    Should Be Equal As Integers     ${itstate_after}  ${itstate_before}
+    Should Be Equal As Integers     ${instructions_after}  ${instructions_before}
+
+    # Rule RXQSR: reset exits Lockup and rule RHJNP deasserts LOCKUP.
+    Execute Command                 cpu Reset
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${lockup_signal}=               Execute Command  nvic Lockup IsSet
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    Should Be Equal                 ${lockup_signal}  False  strip_spaces=True
+
+NMI Should Preempt Instruction-Time Lockup
+    Enter Instruction-Time Lockup
+
+    # Rules RXQSR and RSPPN: NMI exits Lockup and stacks 0xEFFFFFFE as
+    # its return address.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${NMI_HANDLER_ADDRESS}
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${lockup_signal}=               Execute Command  nvic Lockup IsSet
+    DoubleWord ${NESTED_STACKED_PC_ADDRESS} Should Be Equal  ${LOCKUP_PC}
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    Should Be Equal                 ${lockup_signal}  False  strip_spaces=True
 
 Should Ignore Precise BusFault In HardFault When Configured
     Create Machine
