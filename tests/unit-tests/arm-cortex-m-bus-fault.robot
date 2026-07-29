@@ -5,6 +5,8 @@ ${HARDFAULT_HANDLER_ADDRESS}        ${0x340}
 ${NMI_HANDLER_ADDRESS}              ${0x380}
 ${EXTERNAL_HANDLER_ADDRESS}         ${0x3C0}
 ${NS_NMI_HANDLER_ADDRESS}           ${0x10000}
+${NS_HARDFAULT_HANDLER_ADDRESS}     ${0x10040}
+${NS_VECTOR_TABLE_ADDRESS}          ${0x10800}
 ${LOCKUP_PC}                        0xEFFFFFFE
 ${STACK_TOP}                        0x1000
 ${STACKED_R1_ADDRESS}               0xFE4
@@ -60,6 +62,7 @@ ${FPCCR_LSPACT}                     ${{1<<0}}
 ${FPCCR_HFRDY}                      ${{1<<4}}
 ${FPCCR_TS}                         ${{1<<26}}
 ${CPACR_CP10_CP11_FULL_ACCESS}      0x00F00000
+${CONTROL_FPCA}                     ${{1<<2}}
 
 ${PLATFORM}                         SEPARATOR=\n
 ...                                 """
@@ -473,6 +476,117 @@ Should Tail Chain On Exception Unstacking BusFault
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
     DoubleWord ${SCB_HFSR} Should Be Equal  0
 
+Should Clear FPCA When Tail Chaining On Unstacking BusFault
+    Create Machine
+    Enable BusFault
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=cpu
+    Execute Command                 faultingPeripheral FaultOnWrites false
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "vmov.f32 s0, s0; bx lr"
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # NMI stacking succeeds in the peripheral, and its first FP instruction
+    # establishes FPCA in the handler context.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    ${control}=                     Execute Command  cpu GetRegister "CONTROL"
+    Should Be True                  ${{(int($control.strip(), 16) & $CONTROL_FPCA) != 0}}
+
+    # The return read faults and tail-chains to BusFault through the existing
+    # frame. ActivateException() clears FPCA on this entry just as it does for
+    # a non-tail-chained exception.
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${BUSFAULT_HANDLER_ADDRESS}
+    IPSR Should Be Equal            5
+    ${control}=                     Execute Command  cpu GetRegister "CONTROL"
+    Should Be Equal As Integers     ${{int($control.strip(), 16) & $CONTROL_FPCA}}  0
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
+
+Should Mask Banked Non-secure HardFault With FAULTMASK_NS
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 cpu AssembleBlock 0x10000 "udf #0; b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu SecureState false
+    Execute Command                 cpu SP 0x11000
+    Execute Command                 cpu SetRegister "FAULTMASK" 1
+    Execute Command                 cpu PC 0x10001
+    Execute Command                 cpu Step 1
+
+    # ExecutionPriority() boosts the Non-secure execution priority to -1
+    # when BFHFNMINS is set. The disabled UsageFault escalates to the banked
+    # Non-secure HardFault at the same priority, so it cannot be taken.
+    Lockup Should Be Asserted
+    IPSR Should Be Equal            0
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  False  strip_spaces=True
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+
+Should Allow Secure HardFault Past FAULTMASK_NS
+    Create TrustZone Machine
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 cpu AssembleBlock 0x10000 "udf #0; b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu SecureState false
+    Execute Command                 cpu SP 0x11000
+    Execute Command                 cpu SetRegister "FAULTMASK" 1
+    Execute Command                 cpu PC 0x10001
+    Execute Command                 cpu Step 1
+
+    # With BFHFNMINS clear, FAULTMASK_NS boosts execution priority to zero.
+    # The disabled Non-secure UsageFault therefore escalates to the single
+    # Secure HardFault at priority -1, which is still able to preempt.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    IPSR Should Be Equal            3
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    Should Be Equal                 ${secure_state}  True  strip_spaces=True
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Allow Banked Secure HardFault Past PRIMASK_NS
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NS_NMI_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${NS_NMI_HANDLER_ADDRESS} "nop; bx lr"
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # Enter Non-secure NMI, then set PRIMASK_NS and make its EXC_RETURN fail
+    # the ES/DCRS integrity check.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${{${NS_NMI_HANDLER_ADDRESS} + 2}}
+    Execute Command                 cpu SetRegister "PRIMASK" 1
+    Execute Command                 cpu SetRegister "LR" 0xFFFFFFD8
+    Execute Command                 cpu Step 1
+
+    # ValidateExceptionReturn() generates SecureFault, which escalates to
+    # banked HardFault_S. PRIMASK_NS boosts execution priority only to zero,
+    # so the priority -3 Secure HardFault remains unmasked.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    IPSR Should Be Equal            3
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    Should Be Equal                 ${secure_state}  True  strip_spaces=True
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
 Should Retain Secure FAULTMASK For HardFault Return Lockup
     Create TrustZone Machine
     Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "movs r1, #1; msr faultmask, r1; ldr r0, =${FAULTING_PERIPHERAL_ADDRESS}; msr msp, r0; bx lr"
@@ -591,6 +705,43 @@ Should Tail Chain On Invalid Non-secure DCRS
     ${locked_up}=                   Execute Command  cpu IsLockedUp
     Should Be Equal                 ${locked_up}  False  strip_spaces=True
     DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVER}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Keep BusFault From Failed Integrity Signature Read
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress 0x10000
+    Execute Command                 cpu SAURegionLimitAddress 0x10FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 cpu VectorTableOffsetNonSecure ${NS_VECTOR_TABLE_ADDRESS}
+    Execute Command                 sysbus WriteDoubleWord ${{${NS_VECTOR_TABLE_ADDRESS} + 8}} ${{$NS_NMI_HANDLER_ADDRESS | 1}}
+    Execute Command                 sysbus WriteDoubleWord ${{${NS_VECTOR_TABLE_ADDRESS} + 12}} ${{$NS_HARDFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${NS_NMI_HANDLER_ADDRESS} "nop; bx lr"
+    Execute Command                 cpu AssembleBlock ${NS_HARDFAULT_HANDLER_ADDRESS} "b ."
+    Execute Command                 faultingPeripheral FaultOnWrites false
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100048
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+
+    # Non-secure NMI entry writes the basic and Additional state contexts to
+    # the peripheral-backed Secure stack. Writes succeed, but the first return
+    # read of the integrity signature generates BusFault.UNSTKERR.
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${{${NS_NMI_HANDLER_ADDRESS} + 2}}
+    Execute Command                 cpu Step 1
+
+    # PopStack() compares the signature only if its read succeeded. The
+    # BusFault therefore escalates to Non-secure HardFault without being
+    # overwritten by SecureFault.INVIS.
+    PC Should Be Equal              ${NS_HARDFAULT_HANDLER_ADDRESS}
+    IPSR Should Be Equal            3
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  False  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
+    DoubleWord ${SCB_SFSR} SHould Be Equal  0
     DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
 
 Should Take HardFault On Integrity Signature Mismatch
