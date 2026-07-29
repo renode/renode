@@ -28,6 +28,8 @@ ${SCB_BFAR}                         0xE000ED38
 ${SCB_BFAR_NS}                      0xE002ED38
 ${SCB_CCR}                          0xE000ED14
 ${SCB_SFSR}                         0xE000EDE4
+${SCB_DHCSR}                        0xE000EDF0
+${SCB_DHCSR_NS}                     0xE002EDF0
 ${SCB_CPACR}                        0xE000ED88
 ${SCB_FPCCR}                        0xE000EF34
 ${SCB_FPCAR}                        0xE000EF38
@@ -53,6 +55,7 @@ ${SHCSR_HARDFAULTPENDED}            ${{1<<21}}
 ${EXC_RETURN_THREAD_MSP}            0xFFFFFFB8
 ${SFSR_INVIS}                       ${{1<<1}}
 ${SFSR_INVER}                       ${{1<<2}}
+${DHCSR_S_LOCKUP}                   ${{1<<19}}
 ${FPCCR_LSPACT}                     ${{1<<0}}
 ${FPCCR_HFRDY}                      ${{1<<4}}
 ${FPCCR_TS}                         ${{1<<26}}
@@ -259,6 +262,13 @@ Lockup Should Be Asserted
     ${lockup_signal}=               Execute Command  nvic Lockup IsSet
     Should Be Equal                 ${locked_up}  True  strip_spaces=True
     Should Be Equal                 ${lockup_signal}  True  strip_spaces=True
+    # Armv8-M ARM rule RMBTM: DHCSR.S_LOCKUP reads as 1 to the debugger in Lockup.
+    DoubleWord ${SCB_DHCSR} Should Be Equal  0
+    ${dhcsr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_DHCSR}
+    Should Be True                  ${{(int($dhcsr.strip(), 16) & $DHCSR_S_LOCKUP) != 0}}
+    # D1.2.39: unimplemented Halting-debug controls remain RES0/WI.
+    Execute Command                 sysbus WriteDoubleWord ${SCB_DHCSR} 0xFFFFFFFF context=cpu
+    DoubleWord ${SCB_DHCSR} Should Be Equal  0
 
 IPSR Should Be Equal
     [Arguments]                     ${expected}
@@ -662,6 +672,26 @@ Should Ignore Precise BusFault In HardFault When Configured
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
     DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
     DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+DHCSR Lockup Status Should Follow DAP Visibility
+    Create TrustZone Machine
+    Execute Command                 nvic Lockup Set true
+
+    # S_LOCKUP is visible only to a remote debugger at the base address.
+    # Software reads zero through either address, including Secure software
+    # using the Non-secure alias.
+    DoubleWord ${SCB_DHCSR} Should Be Equal  0
+    DoubleWord ${SCB_DHCSR_NS} Should Be Equal  0
+
+    # ReadDoubleWord with no cpu context ≈ debugger
+    ${dhcsr_debugger}=              Execute Command  sysbus ReadDoubleWord ${SCB_DHCSR}
+    Should Be Equal As Integers     ${dhcsr_debugger}  ${DHCSR_S_LOCKUP}
+    ${dhcsr_ns_debugger}=           Execute Command  sysbus ReadDoubleWord ${SCB_DHCSR_NS}
+    Should Be Equal As Integers     ${dhcsr_ns_debugger}  0
+
+    Execute Command                 cpu SecureState false
+    DoubleWord ${SCB_DHCSR} Should Be Equal  0
+    DoubleWord ${SCB_DHCSR_NS} Should Be Equal  0
 
 Should Share BusFault State Across Security States
     Create TrustZone Machine
