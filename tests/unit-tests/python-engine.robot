@@ -1,5 +1,5 @@
 *** Settings ***
-Test Tags                           skip_windows  basic-tests
+Test Tags                           exclude_windows  basic-tests
 
 *** Keywords ***
 Create Platform

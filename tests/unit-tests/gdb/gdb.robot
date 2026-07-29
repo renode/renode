@@ -223,7 +223,7 @@ Compare General Registers
 
 *** Test Cases ***
 Should Change Thread
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Create Log Tester               0
@@ -239,7 +239,7 @@ Should Change Thread
     Should Not Be In Log            GDB 'Hg.' command failed  treatAsRegex=true
 
 Should Step Instruction On Just One Thread
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -257,7 +257,7 @@ Should Step Instruction On Just One Thread
     Test Number Of Differences      ${addresses_before}  ${addresses_after}  1
 
 Should Step Instruction On All Threads At The Same Time
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -274,7 +274,7 @@ Should Step Instruction On All Threads At The Same Time
     Test Number Of Differences      ${addresses_before}  ${addresses_after}  5
 
 Should Change Thread On Breakpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -286,7 +286,7 @@ Should Change Thread On Breakpoint
     Should Not Contain              ${x}  "Thread 1 "
 
 Should Handle One Thread Connected
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Execute Command                 machine StopGdbServer
@@ -305,7 +305,7 @@ Should Handle One Thread Connected
     Should Be True                  0x000000008000029c < ${addr}
 
 Should Handle Subset Of Threads Connected
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Execute Command                 machine StopGdbServer
@@ -325,7 +325,7 @@ Should Handle Subset Of Threads Connected
     Should Not Contain              ${x}  "hit Breakpoint"
 
 Should Exit Infinite Loop On Ctrl-C
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -348,7 +348,7 @@ Should Exit Infinite Loop On Ctrl-C
     Should Contain                  ${x}  0x00000008 in ?? ()
 
 Should Write And Read Memory
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -370,7 +370,7 @@ Should Write And Read Memory
     Should Contain                  ${x}  0x500:\t55
 
 Should Write And Read Peripheral Memory
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -393,7 +393,7 @@ Should Write And Read Peripheral Memory
     Should Contain                  ${x}  ${timer_address}:\t0x12345678
 
 Should Stop On Breakpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -404,7 +404,7 @@ Should Stop On Breakpoint
     Should Contain                  ${x}  Breakpoint 1, 0x00000010 in ?? ()
 
 Should Step After Breakpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -417,7 +417,7 @@ Should Step After Breakpoint
     Should Contain                  ${x}  0x00000014 in ?? ()
 
 Should Handle Multiple Breakpoints
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -441,7 +441,7 @@ Should Handle Multiple Breakpoints
     Should Contain                  ${x}  Breakpoint 4, 0x00000040 in ?? ()
 
 Should Disallow Setting Zero-Sized Watchpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
     Check And Run Gdb               riscv64-zephyr-elf-gdb
 
@@ -461,7 +461,7 @@ Should Disallow Setting Zero-Sized Watchpoint
     Should Contain                  ${x}  Could not insert hardware watchpoint 1
 
 Should Stop On Write Watchpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -482,7 +482,7 @@ Should Stop On Write Watchpoint
     Should Contain                  ${x}  0x0000001c in ?? ()
 
 Should Stop On Write Watchpoint On Sparc
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Leon3
     Check And Run Gdb               sparc-zephyr-elf-gdb
 
@@ -511,7 +511,7 @@ Should Stop On Write Watchpoint On Sparc
     Should Contain                  ${x}  0x00000010 in ?? ()
 
 Should Stop On Write Watchpoint On Big-Endian PowerPC
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create MPC5567
     Check And Run Gdb               powerpc-unknown-elf-gdb
 
@@ -540,7 +540,7 @@ Should Stop On Write Watchpoint On Big-Endian PowerPC
     Should Contain                  ${x}  0x00000014 in ?? ()
 
 Should Stop On Write Watchpoint On Little-Endian PowerPC
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Microwatt
     Check And Run Gdb               powerpc-unknown-elf-gdb
 
@@ -570,7 +570,7 @@ Should Stop On Write Watchpoint On Little-Endian PowerPC
     Should Contain                  ${x}  0x0000000000000014 in ?? ()
 
 Should Stop On Peripheral Read Watchpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -600,7 +600,7 @@ Should Stop On Peripheral Read Watchpoint
     Test Memory                     0xf0000000  0x147
 
 Should Stop On Peripheral Write Watchpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -628,7 +628,7 @@ Should Stop On Peripheral Write Watchpoint
     Test Memory                     0xf0000000  0x1
 
 Should Handle Multiple Write Watchpoints
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -678,7 +678,7 @@ Should Handle Multiple Write Watchpoints
     Should Contain                  ${x}  0x00000030 in ?? ()
 
 Should Stop On Read Watchpoint
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -696,7 +696,7 @@ Should Stop On Read Watchpoint
     Should Contain                  ${x}  0x00000018 in ?? ()
 
 Should Handle Multiple Read Watchpoints
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -736,7 +736,7 @@ Should Handle Multiple Read Watchpoints
     Should Contain                  ${x}  0x0000002c in ?? ()
 
 Should Correctly Map ARM Registers
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -754,7 +754,7 @@ Should Correctly Map ARM Registers
     Test Register By Name           CPSR  cpsr  0x1f
 
 Should Handle 64-bit Registers
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -766,7 +766,7 @@ Should Handle 64-bit Registers
     Should Contain                  ${r}  $2 = 0xda7ada7aa7ada7ad
 
 Should Step When Paused In Block End Hook
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -785,7 +785,7 @@ Should Step When Paused In Block End Hook
     ${x}=                           Command GDB  si
 
 Should Continue When Paused In Block End Hook
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -805,7 +805,7 @@ Should Continue When Paused In Block End Hook
     ${x}=                           Command GDB  c
 
 Handle Long Command
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -824,7 +824,7 @@ Handle Long Command
     ...                             this is some very long command that is definitely longer then usually expected when sending commands via gdb remote protocol
 
 Should Dump Memory Across Pages
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -838,7 +838,7 @@ Should Dump Memory Across Pages
     Should Be Equal As Numbers      ${diff.rc}  0
 
 Should Break In Virtual Addressing
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -853,7 +853,7 @@ Should Break In Virtual Addressing
     Should Contain                  ${result}  ${expected_pc}
 
 Should Display Proper Instructions In Virtual Addressing
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -869,7 +869,7 @@ Should Display Proper Instructions In Virtual Addressing
     Should Contain                  ${result}  ${instruction}
 
 Should Write To Memory In Virtual Addressing
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -897,7 +897,7 @@ Should Write To Memory In Virtual Addressing
     Should Be Equal As Numbers      ${data_new}  ${pdata_new}
 
 Should Step Over Wfi In Debug Mode
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -917,7 +917,7 @@ Should Step Over Wfi In Debug Mode
     # note that after wfi it always should point to the next instruction address, so we do stepi twice, to see if it proceeds through
 
 Should Wait On Wfi
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile Express
     Check And Run Gdb               arm-zephyr-eabi-gdb
 
@@ -934,7 +934,7 @@ Should Wait On Wfi
     Stepi And Check PC              0x00000014
 
 Should Ignore External Interrupts In Debug Mode
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create Versatile
     Create Terminal Tester          sysbus.uart0
     Check And Run Gdb               arm-zephyr-eabi-gdb
@@ -973,7 +973,7 @@ Should Ignore External Interrupts In Debug Mode
     Stepi And Check PC              0x00000124
 
 Should Remember Breakpoint After Reset
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -989,7 +989,7 @@ Should Remember Breakpoint After Reset
     Should Contain                  ${result}  ${expected_pc}
 
 Should Remember New Breakpoint After Reset
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create VM Demo
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -1014,7 +1014,7 @@ Should Remember New Breakpoint After Reset
     Should Contain                  ${result}  ${expected_pc}
 
 Registers Should Be Consistent
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create HiFive Unleashed
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
@@ -1039,7 +1039,7 @@ Registers Should Be Consistent
     END
 
 Should Handle Vector Registers
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create RISC-V Vectored Machine
     Check And Run Gdb               riscv64-zephyr-elf-gdb
 
@@ -1048,7 +1048,7 @@ Should Handle Vector Registers
     Should Contain                  ${res}  v31
 
 Should Access Vector Elements
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create RISC-V Vectored Machine
     Check And Run Gdb               riscv64-zephyr-elf-gdb
 
@@ -1083,7 +1083,7 @@ Should Access Vector Elements
     Should Contain                  ${res}  $10 = 0xffffffffffffffffdeadc0dedeadc0de
 
 Should Access Whole Vector Registers
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Create RISC-V Vectored Machine
     Check And Run Gdb               riscv64-zephyr-elf-gdb
 

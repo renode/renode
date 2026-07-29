@@ -541,7 +541,7 @@ Should Ping
     Wait For Prompt On Uart         ${PROMPT}  testerId=${tester1}
 
 Should Ping Over TAP
-    [Tags]                          ethernet  tap  basic-tests  skip_osx
+    [Tags]                          ethernet  tap  basic-tests  exclude_osx
     Requires                        logged-in
 
     Set Test Variable               ${TAP_INTERFACE}  tap0
@@ -563,7 +563,7 @@ Should Ping Over TAP
     Wait For Line On Uart           5 packets transmitted, 5 packets received, 0% packet loss
 
 Should Ping Over Vmnet Helper
-    [Tags]                          ethernet  vmnet  skip_windows  skip_linux
+    [Tags]                          ethernet  vmnet  exclude_windows  exclude_linux
     Requires                        logged-in
 
     Set Test Variable               ${TAP_INTERFACE_IP}  192.168.18.2

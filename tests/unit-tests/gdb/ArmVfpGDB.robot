@@ -56,7 +56,7 @@ Check And Run Gdb
 # 3. Compares register values with ground truth
 
 Test VFP registers
-    [Tags]                          skip_windows
+    [Tags]                          exclude_windows
     [Setup]                         Prepare Platform
     Check And Run Gdb               arm-zephyr-eabi-gdb
 

@@ -30,7 +30,7 @@ mv $DIR/Renode $DIR/renode
 # Handle a very rare case where the binary doesn't have the execute permission after building.
 chmod +x $DIR/renode
 
-sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DIR/renode-test"
+sed_inplace '/run_tests.py/s/$/ --exclude "exclude_portable"/' "$DIR/renode-test"
 
 # Create tar
 mkdir -p ../../output/packages

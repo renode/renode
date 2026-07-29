@@ -170,6 +170,7 @@ Should Pass Semihosting Test With Separate Error Output
     Check Exit Status Log
 
 Should Pass Semihosting Test With Custom Temporary Files Directory
+    [Tags]                          skip_windows
     Create Machine                  ${TMPNAM}
     Execute Command                 cpu.semihosting TemporaryFilesDirectory "my-temp"
     Wait For Log Entry              cpu.semihosting: SYS_TMPNAM: Created temporary files directory at: .*/semi/my-temp  pauseEmulation=True  treatAsRegex=True

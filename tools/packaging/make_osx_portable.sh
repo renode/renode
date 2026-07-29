@@ -30,7 +30,7 @@ mv $DIR/Renode $DIR/renode
 
 chmod +x $DIR/renode
 
-sed_inplace '/run_tests.py/s/$/ --exclude "skip_portable"/' "$DIR/renode-test"
+sed_inplace '/run_tests.py/s/$/ --exclude "exclude_portable"/' "$DIR/renode-test"
 
 cp macos/macos_run.sh $MACOS_APP_DIR/Contents/MacOS
 cp macos/Info.plist $MACOS_APP_DIR/Contents/Info.plist

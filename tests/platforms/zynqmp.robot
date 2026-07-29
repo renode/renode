@@ -125,7 +125,7 @@ Should Boot And Login
     Provides                        linux-shell
 
 Test Dirty Addresses Reduction
-    [Tags]                          skip_host_aarch64
+    [Tags]                          exclude_host_aarch64
     Requires                        linux-shell
     Execute Command                 showAnalyzer uart1
 
@@ -644,7 +644,7 @@ Should Run Web Server In Docker
     Wait For Line On Uart                   response:200
 
 Should Ping Over TAP Using An Ethernet Adapter Behind The SMMUv3
-    [Tags]                                  tap  skip_osx  skip_ci
+    [Tags]                                  tap  exclude_osx  skip_ci
     Create Linux SMMUv3 Machine
     Boot Linux And Login
 

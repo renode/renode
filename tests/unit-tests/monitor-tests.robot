@@ -217,12 +217,12 @@ Should Run SetAndRevertAfter With Multiple Targets
     Property Equals     adc Temperature  13
 
 Should Find Unix-only Method on Unix
-    [Tags]              skip_windows
+    [Tags]              exclude_windows
     ${file}=            Allocate Temporary File
     Execute Command     emulation CreateUartPtyTerminal "abc" "${file}" forceCreate=true
 
 Should Fail to Find Unix-only Method on Windows
-    [Tags]                        skip_osx  skip_linux
+    [Tags]                        exclude_osx  exclude_linux
     ${file}=                      Allocate Temporary File
     Run Keyword And Expect Error  *does not provide a field, method or property CreateUartPtyTerminal*
     ...   Execute Command  emulation CreateUartPtyTerminal "abc" "${file}" forceCreate=true

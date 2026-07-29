@@ -66,7 +66,7 @@ Execute Sample
 
 *** Test Cases ***
 Should Run RunFor Sample
-    [Tags]                         basic-tests  skip_windows
+    [Tags]                         basic-tests  exclude_windows
 
     Build Sample                   run_for
 
@@ -79,7 +79,7 @@ Should Run RunFor Sample
     Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:01.500000
 
 Should Run Sysbus Sample
-    [Tags]                         skip_windows
+    [Tags]                         exclude_windows
 
     Execute Command                mach create "machine"
     Execute Command                machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100 }"
@@ -96,7 +96,7 @@ Should Run Sysbus Sample
     END
 
 Should Run ADC Sample
-    [Tags]                         skip_windows
+    [Tags]                         exclude_windows
 
     Execute Command                mach create "machine"
     Execute Command                machine LoadPlatformDescriptionFromString "adc: Analog.CAES_ADC @ sysbus 0x0"
@@ -115,7 +115,7 @@ Should Run ADC Sample
     END
 
 Should Run GPIO Sample
-    [Tags]                         skip_windows
+    [Tags]                         exclude_windows
 
     Execute Command                mach create "machine"
     Execute Command                machine LoadPlatformDescriptionFromString "gpio: GPIOPort.NPCX_GPIO @ sysbus 0x0"

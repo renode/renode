@@ -19,4 +19,4 @@ if "%DEBUG%" == "1" (
 )
 
 REM The user is responsible for preaparing an appropriate runtime environment.
-python "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%CWD%" %*
+python "%SCRIPTDIR%\tests\run_tests.py" --css-file "%SCRIPTDIR%\lib\resources\styles\robot.css" --exclude "exclude_windows" --skip "skip_windows" --robot-framework-remote-server-full-directory "%BINDIR%" -r "%CWD%" %*
