@@ -13,6 +13,7 @@ class CommunicationChannel
 public:
   virtual void log(int logLevel, const char* data) = 0;
   virtual Protocol* receive() = 0;
+  virtual bool tryReceive(Protocol* message) { return false; }
   virtual void sendMain(const Protocol message) = 0;
   virtual void sendSender(const Protocol message) = 0;
   virtual bool isConnected() = 0;
