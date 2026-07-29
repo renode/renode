@@ -3,6 +3,8 @@ ${CODE_ADDRESS}                     ${0x200}
 ${BUSFAULT_HANDLER_ADDRESS}         ${0x300}
 ${HARDFAULT_HANDLER_ADDRESS}        ${0x340}
 ${NMI_HANDLER_ADDRESS}              ${0x380}
+${EXTERNAL_HANDLER_ADDRESS}         ${0x3C0}
+${NS_NMI_HANDLER_ADDRESS}           ${0x10000}
 ${LOCKUP_PC}                        0xEFFFFFFE
 ${STACK_TOP}                        0x1000
 ${STACKED_R1_ADDRESS}               0xFE4
@@ -10,12 +12,14 @@ ${STACKED_R2_ADDRESS}               0xFE8
 ${STACKED_PC_ADDRESS}               0xFF8
 ${NESTED_STACKED_PC_ADDRESS}        0xFD8
 ${FAULTING_PERIPHERAL_ADDRESS}      0x100000
+${FAULTING_HARDFAULT_VECTOR}        0x10000C
 ${UNMAPPED_ADDRESS}                 0x200000
 ${R1_BEFORE_FAULT}                  0x11
 ${R1_AFTER_FAULT}                   0x22
 ${R2_BEFORE_FAULT}                  0xA5A5A5A5
 
 ${SCB_SHCSR}                        0xE000ED24
+${SCB_ICSR}                         0xE000ED04
 ${SCB_AIRCR}                        0xE000ED0C
 ${SCB_CFSR}                         0xE000ED28
 ${SCB_CFSR_NS}                      0xE002ED28
@@ -23,12 +27,36 @@ ${SCB_HFSR}                         0xE000ED2C
 ${SCB_BFAR}                         0xE000ED38
 ${SCB_BFAR_NS}                      0xE002ED38
 ${SCB_CCR}                          0xE000ED14
+${SCB_SFSR}                         0xE000EDE4
+${SCB_CPACR}                        0xE000ED88
+${SCB_FPCCR}                        0xE000EF34
+${SCB_FPCAR}                        0xE000EF38
+${NVIC_ISPR0}                       0xE000E200
+${NVIC_IABR0}                       0xE000E300
+${NVIC_ITNS0}                       0xE000E380
 ${SHCSR_BUSFAULTENA}                ${{1<<17}}
+${SHCSR_BUSFAULTACT}                ${{1<<1}}
+${SHCSR_BUSFAULTPENDED}             ${{1<<14}}
 ${AIRCR_VECTKEY_BFHFNMINS}          0x05FA2000
 ${CFSR_PRECISERR_BFARVALID}         ${{(1<<9) | (1<<15)}}
+${CFSR_UNSTKERR}                    ${{1<<11}}
+${CFSR_STKERR}                      ${{1<<12}}
+${CFSR_LSPERR}                      ${{1<<13}}
+${CFSR_INVPC}                       ${{1<<18}}
+${HFSR_VECTTBL}                     ${{1<<1}}
 ${HFSR_FORCED}                      ${{1<<30}}
 ${CCR_BFHFNMIGN}                    ${{1<<8}}
 ${SHCSR_HARDFAULTACT}               ${{1<<2}}
+${SHCSR_NMIACT}                     ${{1<<5}}
+${SHCSR_HARDFAULTACT_NMIACT}        ${{(1<<2) | (1<<5)}}
+${SHCSR_HARDFAULTPENDED}            ${{1<<21}}
+${EXC_RETURN_THREAD_MSP}            0xFFFFFFB8
+${SFSR_INVIS}                       ${{1<<1}}
+${SFSR_INVER}                       ${{1<<2}}
+${FPCCR_LSPACT}                     ${{1<<0}}
+${FPCCR_HFRDY}                      ${{1<<4}}
+${FPCCR_TS}                         ${{1<<26}}
+${CPACR_CP10_CP11_FULL_ACCESS}      0x00F00000
 
 ${PLATFORM}                         SEPARATOR=\n
 ...                                 """
@@ -88,6 +116,22 @@ ${LOCKUP_ASSEMBLY}                  SEPARATOR=\n
 ...                                 ldreq r2, [r0]
 ...                                 moveq r1, #${R1_AFTER_FAULT}
 ...                                 b .
+...                                 """
+
+${IT_ASSEMBLY}                      SEPARATOR=\n
+...                                 """
+...                                 cmp r5, #0
+...                                 itt eq
+...                                 moveq r1, #1
+...                                 moveq r2, #2
+...                                 b .
+...                                 """
+
+${UNSTACK_FAULT_ASSEMBLY}           SEPARATOR=\n
+...                                 """
+...                                 ldr r0, =${FAULTING_PERIPHERAL_ADDRESS}
+...                                 msr msp, r0
+...                                 bx lr
 ...                                 """
 
 ${E2E_READ_ASSEMBLY}                SEPARATOR=\n
@@ -163,9 +207,11 @@ Create Machine
     Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NMI_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0xC ${{$HARDFAULT_HANDLER_ADDRESS | 1}}  # Thumb bit
     Execute Command                 sysbus WriteDoubleWord 0x14 ${{$BUSFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 sysbus WriteDoubleWord 0x40 ${{$EXTERNAL_HANDLER_ADDRESS | 1}}
     Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${BUSFAULT_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
+    Execute Command                 cpu AssembleBlock ${EXTERNAL_HANDLER_ADDRESS} "b ."
 
 Create TrustZone Machine
     Execute Command                 include "${CURDIR}/BusFaultingPeripheral.cs"
@@ -174,9 +220,11 @@ Create TrustZone Machine
     Execute Command                 sysbus WriteDoubleWord 0x8 ${{$NMI_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0xC ${{$HARDFAULT_HANDLER_ADDRESS | 1}}
     Execute Command                 sysbus WriteDoubleWord 0x14 ${{$BUSFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 sysbus WriteDoubleWord 0x40 ${{$EXTERNAL_HANDLER_ADDRESS | 1}}
     Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${BUSFAULT_HANDLER_ADDRESS} "b ."
     Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "b ."
+    Execute Command                 cpu AssembleBlock ${EXTERNAL_HANDLER_ADDRESS} "b ."
 
 Prepare Faulting Instruction
     [Arguments]                     ${assembly}  ${fault_address}
@@ -201,6 +249,19 @@ Enter Instruction-Time Lockup
     # The first, disabled BusFault escalates to HardFault. The handler clears
     # HFSR.FORCED and faults again while HardFault is active.
     Execute Command                 cpu Step 20
+
+Lockup Should Be Asserted
+    PC Should Be Equal              ${LOCKUP_PC}
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    ${lockup_signal}=               Execute Command  nvic Lockup IsSet
+    Should Be Equal                 ${locked_up}  True  strip_spaces=True
+    Should Be Equal                 ${lockup_signal}  True  strip_spaces=True
+
+IPSR Should Be Equal
+    [Arguments]                     ${expected}
+    ${xpsr}=                        Execute Command  cpu GetRegister "CPSR"
+    ${ipsr}=                        Evaluate  int($xpsr.strip(), 16) & 0x1ff
+    Should Be Equal As Integers     ${ipsr}  ${expected}
 
 ${width} ${io} Should Be Equal
     [Arguments]  ${expected}
@@ -343,6 +404,47 @@ NMI Should Preempt Instruction-Time Lockup
     DoubleWord ${NESTED_STACKED_PC_ADDRESS} Should Be Equal  ${LOCKUP_PC}
     Should Be Equal                 ${locked_up}  False  strip_spaces=True
     Should Be Equal                 ${lockup_signal}  False  strip_spaces=True
+
+Should Enter Lockup On Exception Unstacking BusFault
+    Create Machine
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # First establish an active HardFault, then clear its instruction-time
+    # syndrome before NMI preempts it.
+    Execute Faulting Instruction
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+
+    # NMI redirects MSP to the faulting peripheral immediately before its
+    # exception return. The returning NMI is cleared before unstacking starts.
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} ${UNSTACK_FAULT_ASSEMBLY}
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 3
+
+    # Rules RNZCD and RTCJR: the full frame is consumed, IPSR describes a
+    # return to Handler mode, and the derived fault cannot preempt HardFault.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0x100020
+    IPSR Should Be Equal            3
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_UNSTKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
+Should Enter Lockup On Reset Vector BusFault
+    Create Machine
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 emulation RunFor "0.01"
+
+    # Rule RBHVG and TakeReset: the initial MSP/vector BusFault enters Lockup
+    # with HardFault active, IPSR zero, unknown MSP represented as zero, and
+    # HFSR.VECTTBL set.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0
+    IPSR Should Be Equal            0
+    DoubleWord ${SCB_CFSR} Should Be Equal  0
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
 
 Should Ignore Precise BusFault In HardFault When Configured
     Create Machine
