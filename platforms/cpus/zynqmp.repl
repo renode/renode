@@ -200,7 +200,8 @@ phy: Network.EthernetPhysicalLayer @ gem0 0
     MasterSlaveStatus: 0x3000
 
 gpio: GPIOPort.XilinxGPIOPS @ sysbus <0xff0a0000, +0x1000>
-    numberOfGpioBanks: 6
+    platform: "ZynqMP" 
+    -> apuGic@16 | rpuGic@16
 
 ipi: Miscellaneous.ZynqMP_IPI @ sysbus 0xff300000
     mailbox: ipiMailbox

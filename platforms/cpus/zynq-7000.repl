@@ -85,6 +85,7 @@ qspi: SPI.XilinxQSPI @ sysbus <0xE000D000, +0x1000>
     -> gic@19
 
 gpio: GPIOPort.XilinxGPIOPS @ sysbus 0xE000A000
+    -> gic@20
 
 xadc: Analog.Xilinx_XADC @ sysbus 0xF8007100
     -> gic@7
