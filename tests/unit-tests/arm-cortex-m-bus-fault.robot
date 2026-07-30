@@ -174,6 +174,11 @@ Enable BusFault
 Execute Faulting Instruction
     Execute Command                 cpu Step 1
 
+${width} ${io} Should Be Equal
+    [Arguments]  ${expected}
+    ${val}=                         Execute Command  sysbus Read${width} ${io} context=cpu
+    Should Be Equal As Integers     ${val}  ${expected}
+
 Fault Should Be Precise
     [Arguments]                     ${handler_address}  ${fault_address}  ${expected_hfsr}=0
     PC Should Be Equal              ${handler_address}
@@ -183,19 +188,13 @@ Fault Should Be Precise
     Register Should Be Equal        1  ${R1_BEFORE_FAULT}
     Register Should Be Equal        2  ${R2_BEFORE_FAULT}
 
-    ${stacked_r1}=                  Execute Command  sysbus ReadDoubleWord ${STACKED_R1_ADDRESS}
-    ${stacked_r2}=                  Execute Command  sysbus ReadDoubleWord ${STACKED_R2_ADDRESS}
-    ${stacked_pc}=                  Execute Command  sysbus ReadDoubleWord ${STACKED_PC_ADDRESS}
-    Should Be Equal As Integers     ${stacked_r1}  ${R1_BEFORE_FAULT}
-    Should Be Equal As Integers     ${stacked_r2}  ${R2_BEFORE_FAULT}
-    Should Be Equal As Integers     ${stacked_pc}  ${CODE_ADDRESS}
+    DoubleWord ${STACKED_R1_ADDRESS} Should Be Equal  ${R1_BEFORE_FAULT}
+    DoubleWord ${STACKED_R2_ADDRESS} Should Be Equal  ${R2_BEFORE_FAULT}
+    DoubleWord ${STACKED_PC_ADDRESS} Should Be Equal  ${CODE_ADDRESS}
 
-    ${cfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_CFSR} context=cpu
-    ${bfar}=                        Execute Command  sysbus ReadDoubleWord ${SCB_BFAR} context=cpu
-    ${hfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_HFSR} context=cpu
-    Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
-    Should Be Equal As Integers     ${bfar}  ${fault_address}
-    Should Be Equal As Integers     ${hfsr}  ${expected_hfsr}
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR} Should Be Equal  ${fault_address}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${expected_hfsr}
 
 Run Precise BusFault Test Without Single Step
     [Arguments]                     ${assembly}
@@ -211,10 +210,8 @@ Run Precise BusFault Test Without Single Step
     Should Be Equal As Numbers      ${stacked_pc}  ${expected_pc}
     ...                             msg=Stacked PC (R11=${stacked_pc}) does not match faulting instruction address (R10=${expected_pc})
 
-    ${cfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_CFSR} context=cpu
-    ${bfar}=                        Execute Command  sysbus ReadDoubleWord ${SCB_BFAR} context=cpu
-    Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
-    Should Be Equal As Integers     ${bfar}  ${FAULTING_PERIPHERAL_ADDRESS}
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
 
 *** Test Cases ***
 Should Raise Precise BusFault On Peripheral Read
@@ -245,8 +242,7 @@ Should Escalate Disabled BusFault To HardFault
     Execute Faulting Instruction
     Fault Should Be Precise         ${HARDFAULT_HANDLER_ADDRESS}  ${FAULTING_PERIPHERAL_ADDRESS}  ${HFSR_FORCED}
     Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
-    ${hfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_HFSR} context=cpu
-    Should Be Equal As Integers     ${hfsr}  0
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
 
 Should Escalate BusFault That Cannot Preempt Active Handler
     Create Machine
@@ -260,14 +256,10 @@ Should Escalate BusFault That Cannot Preempt Active Handler
     PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
     Register Should Be Equal        1  ${R1_BEFORE_FAULT}
     Register Should Be Equal        2  ${R2_BEFORE_FAULT}
-    ${stacked_pc}=                  Execute Command  sysbus ReadDoubleWord ${NESTED_STACKED_PC_ADDRESS}
-    ${cfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_CFSR} context=cpu
-    ${bfar}=                        Execute Command  sysbus ReadDoubleWord ${SCB_BFAR} context=cpu
-    ${hfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_HFSR} context=cpu
-    Should Be Equal As Integers     ${stacked_pc}  ${BUSFAULT_HANDLER_ADDRESS}
-    Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
-    Should Be Equal As Integers     ${bfar}  ${FAULTING_PERIPHERAL_ADDRESS}
-    Should Be Equal As Integers     ${hfsr}  ${HFSR_FORCED}
+    DoubleWord ${NESTED_STACKED_PC_ADDRESS} Should Be Equal  ${BUSFAULT_HANDLER_ADDRESS}
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
 
 Should Ignore Precise BusFault In HardFault When Configured
     Create Machine
@@ -282,12 +274,9 @@ Should Ignore Precise BusFault In HardFault When Configured
     Register Should Be Equal        1  ${R1_BEFORE_FAULT}
     Execute Command                 cpu Step 1
     Register Should Be Equal        1  ${R1_AFTER_FAULT}
-    ${cfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_CFSR} context=cpu
-    ${bfar}=                        Execute Command  sysbus ReadDoubleWord ${SCB_BFAR} context=cpu
-    ${hfsr}=                        Execute Command  sysbus ReadDoubleWord ${SCB_HFSR} context=cpu
-    Should Be Equal As Integers     ${cfsr}  ${CFSR_PRECISERR_BFARVALID}
-    Should Be Equal As Integers     ${bfar}  ${FAULTING_PERIPHERAL_ADDRESS}
-    Should Be Equal As Integers     ${hfsr}  ${HFSR_FORCED}
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
 
 Should Share BusFault State Across Security States
     Create TrustZone Machine
@@ -298,18 +287,14 @@ Should Share BusFault State Across Security States
 
     ${secure_state}=                Execute Command  cpu SecureState
     Should Be Equal                 ${secure_state}  True  strip_spaces=True
-    ${cfsr_ns}=                     Execute Command  sysbus ReadDoubleWord ${SCB_CFSR_NS} context=cpu
-    ${bfar_ns}=                     Execute Command  sysbus ReadDoubleWord ${SCB_BFAR_NS} context=cpu
-    Should Be Equal As Integers     ${cfsr_ns}  0
-    Should Be Equal As Integers     ${bfar_ns}  0
+    DoubleWord ${SCB_CFSR_NS} Should Be Equal  0
+    DoubleWord ${SCB_BFAR_NS} Should Be Equal  0
 
     # BFSR and BFAR are not banked. Once BFHFNMINS retargets BusFault to
     # Non-secure, its aliases expose the syndrome captured by the Secure fault.
     Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
-    ${cfsr_ns}=                     Execute Command  sysbus ReadDoubleWord ${SCB_CFSR_NS} context=cpu
-    ${bfar_ns}=                     Execute Command  sysbus ReadDoubleWord ${SCB_BFAR_NS} context=cpu
-    Should Be Equal As Integers     ${cfsr_ns}  ${CFSR_PRECISERR_BFARVALID}
-    Should Be Equal As Integers     ${bfar_ns}  ${FAULTING_PERIPHERAL_ADDRESS}
+    DoubleWord ${SCB_CFSR_NS} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
+    DoubleWord ${SCB_BFAR_NS} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
 
 Read Access Should Produce Precise Bus Fault Without Single Step
     Run Precise BusFault Test Without Single Step  ${E2E_READ_ASSEMBLY}
