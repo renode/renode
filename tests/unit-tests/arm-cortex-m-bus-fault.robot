@@ -421,6 +421,335 @@ NMI Should Preempt Instruction-Time Lockup
     Should Be Equal                 ${locked_up}  False  strip_spaces=True
     Should Be Equal                 ${lockup_signal}  False  strip_spaces=True
 
+Should Pend HardFault On NMI Stacking BusFault From Thread Mode
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+
+    # ExceptionEntry() performs PushStack() before NMI becomes active. The
+    # derived HardFault can be created at Thread priority, but cannot replace
+    # NMI, so DerivedLateArrival pends it and starts the NMI handler.
+    PC Should Be Equal              ${NMI_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            2
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Repend BusFault On Its Own Stacking Fault
+    Create Machine
+    Enable BusFault
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 cpu SP 0x100020
+    Execute Faulting Instruction
+
+    # The enabled instruction-time BusFault starts exception entry, whose
+    # first stack write also faults. DerivedLateArrival() cannot replace the
+    # original exception with an equal-priority instance, so it starts the
+    # original handler and leaves the derived BusFault pending.
+    PC Should Be Equal              ${BUSFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            5
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${{${CFSR_PRECISERR_BFARVALID} | ${CFSR_STKERR}}}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    ${shcsr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_SHCSR} context=cpu
+    Should Be True                  ${{(int($shcsr.strip(), 16) & $SHCSR_BUSFAULTACT) != 0}}
+    Should Be True                  ${{(int($shcsr.strip(), 16) & $SHCSR_BUSFAULTPENDED) != 0}}
+
+Should Replace External IRQ With HardFault On Stacking BusFault
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # PushStack() faults while entering a configurable external interrupt.
+    # The derived HardFault outranks the original exception, so
+    # DerivedLateArrival() takes it using the already allocated frame and
+    # restores the external interrupt's pending state.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            3
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+    ${ispr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_ISPR0} context=cpu
+    ${iabr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_IABR0} context=cpu
+    Should Be Equal As Integers     ${{int($ispr.strip(), 16) & 1}}  1
+    Should Be Equal As Integers     ${{int($iabr.strip(), 16) & 1}}  0
+
+Should Prefer BusFault On Equal-priority Stacking Fault
+    Create Machine
+    Enable BusFault
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # DerivedLateArrival() uses ComparePriorities() with the full priority.
+    # BusFault and IRQ16 both have priority zero, so the lower architectural
+    # exception number selects BusFault and leaves IRQ16 pending.
+    PC Should Be Equal              ${BUSFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            5
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    ${ispr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_ISPR0} context=cpu
+    ${iabr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_IABR0} context=cpu
+    Should Be Equal As Integers     ${{int($ispr.strip(), 16) & 1}}  1
+    Should Be Equal As Integers     ${{int($iabr.strip(), 16) & 1}}  0
+
+Should Not Push Additional State For Secure Stacking HardFault
+    Create TrustZone Machine
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 sysbus WriteDoubleWord ${NVIC_ITNS0} 1 context=cpu
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # The original external interrupt targets Non-secure state, but its
+    # PushStack() BusFault is derived before ExceptionTaken() and escalates to
+    # Secure HardFault. DerivedLateArrival() therefore calls ExceptionTaken()
+    # with doTailChain=FALSE for the HardFault. No Additional state context is
+    # required, and DCRS remains at its default value.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    Register Should Be Equal        LR  0xFFFFFFF9
+    IPSR Should Be Equal            3
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  True  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Retain Additional State For Secure Late Arrival
+    Create TrustZone Machine
+    Execute Command                 faultingPeripheral FaultOffset 0x24
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP 0x100048
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 sysbus WriteDoubleWord ${NVIC_ITNS0} 1 context=cpu
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # The basic Secure frame occupies offsets 0x28..0x44 and succeeds. The
+    # first PushCalleeStack() write at offset 0x24 then faults while entering
+    # the Non-secure interrupt. The derived Secure HardFault is therefore a
+    # late arrival from within ExceptionTaken(). Renode chooses the IMPNB
+    # option which retains the allocated Additional state context and clears
+    # DCRS in the reused EXC_RETURN.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0x100000
+    Register Should Be Equal        LR  0xFFFFFFD9
+    IPSR Should Be Equal            3
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  True  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
+Should Enter Lockup On NMI Stacking BusFault
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} ${IT_ASSEMBLY}
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # Establish the HardFault that remains active beneath NMI, then clear the
+    # instruction-time syndrome and enter an IT block in the HardFault handler.
+    Execute Faulting Instruction
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+    Execute Command                 cpu Step 2
+    ${itstate_before}=              Execute Command  cpu GetItState
+    Should Not Be Equal As Integers  ${itstate_before}  0
+
+    # PushStack() allocates the full basic frame. Every access is in the
+    # faulting peripheral, and the derived BusFault cannot escalate past the
+    # HardFault that was active in the preempted context.
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+
+    # Rules RVKTX and RGJJG: the stacking syndrome is recorded, HFSR.FORCED
+    # is unchanged, and Lockup state otherwise reflects successful NMI entry.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            2
+    ${itstate_after}=               Execute Command  cpu GetItState
+    Should Be Equal As Integers     ${itstate_after}  0
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT_NMIACT}
+
+Should Record Ignored Vector BusFault Before Stacking Lockup
+    Create Machine
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # Establish the HardFault that remains active beneath NMI and remove its
+    # instruction-time syndrome before testing the two exception-entry faults.
+    Execute Faulting Instruction
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+
+    # The NMI stack writes and vector read both use the faulting peripheral.
+    # DerivedLateArrival() enters NMI with IgnoreFaults_ALL before Lockup, so
+    # the ignored Vector[] error must still set HFSR.VECTTBL.
+    Execute Command                 cpu SP 0x100020
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            2
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT_NMIACT}
+
+Should Replace External IRQ With HardFault On Vector BusFault
+    Create Machine
+    Execute Command                 faultingPeripheral FaultOffset 0x40
+    Execute Command                 sysbus WriteDoubleWord ${FAULTING_HARDFAULT_VECTOR} ${{$HARDFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # A vector-fetch bus error is a terminal VECTTBL HardFault. Because
+    # HardFault outranks the external interrupt, DerivedLateArrival() replaces
+    # the original exception without allocating a second frame. Rule RLLRP
+    # requires FORCED to remain clear in Armv8.1-M and permits this in
+    # Armv8.0-M, so we choose the clear behaviour.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0xFE0
+    IPSR Should Be Equal            3
+    DoubleWord ${SCB_CFSR} Should Be Equal  0
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    ${ispr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_ISPR0} context=cpu
+    ${iabr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_IABR0} context=cpu
+    Should Be Equal As Integers     ${{int($ispr.strip(), 16) & 1}}  1
+    Should Be Equal As Integers     ${{int($iabr.strip(), 16) & 1}}  0
+
+Should Force Secure HardFault On Non-secure Vector BusFault
+    Create TrustZone Machine
+    Execute Command                 faultingPeripheral FaultOffset 0x40
+    Execute Command                 sysbus WriteDoubleWord ${FAULTING_HARDFAULT_VECTOR} ${{$HARDFAULT_HANDLER_ADDRESS | 1}}
+    Execute Command                 cpu VectorTableOffsetNonSecure ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 sysbus WriteDoubleWord ${NVIC_ITNS0} 1 context=cpu
+    Execute Command                 sysbus WriteDoubleWord 0xE000E100 1 context=cpu
+    Execute Command                 nvic SetPendingIRQ 16
+    Execute Command                 cpu Step 1
+
+    # ExceptionTaken() first pushes the Additional state context for the
+    # Non-secure external interrupt. Its vector read then faults. Rule RZVWS
+    # makes an attribution fault Secure; until vector reads gain SAU/IDAU
+    # validation, the physical bus error also targets Secure because
+    # BFHFNMINS is zero. DerivedLateArrival() calls ExceptionTaken() with
+    # doTailChain=TRUE. DCRS must therefore be cleared so the already-present
+    # Additional state context is consumed on return.
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0xFB8
+    Register Should Be Equal        LR  0xFFFFFFD9
+    IPSR Should Be Equal            3
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  True  strip_spaces=True
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    ${ispr}=                        Execute Command  sysbus ReadDoubleWord ${NVIC_ISPR0} context=cpu
+    Should Be Equal As Integers     ${{int($ispr.strip(), 16) & 1}}  1
+
+Should Target Non-secure HardFault On Non-secure Vector BusFault
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_AIRCR} ${AIRCR_VECTKEY_BFHFNMINS} context=cpu
+    Execute Command                 cpu SAURegionNumber 0
+    Execute Command                 cpu SAURegionBaseAddress ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 cpu SAURegionLimitAddress 0x100FE1
+    Execute Command                 cpu SAUControl 1
+    Execute Command                 cpu VectorTableOffsetNonSecure ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+
+    # BFHFNMINS makes NMI and the physical vector BusFault Non-secure.
+    # MemA_with_priv_security(AccType_VECTABLE) creates Non-secure HardFault,
+    # which cannot preempt the NMI being entered, so DerivedLateArrival()
+    # enters Lockup with VECTTBL set.
+    Lockup Should Be Asserted
+    IPSR Should Be Equal            2
+    ${secure_state}=                Execute Command  cpu SecureState
+    Should Be Equal                 ${secure_state}  False  strip_spaces=True
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+
+Should Enter Lockup On NMI Vector BusFault
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+
+    # Rule RCTKP and DerivedLateArrival: the NMI vector BusFault is a terminal
+    # HardFault that cannot preempt NMI, so VECTTBL (but not FORCED) is set.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0xFE0
+    Register Should Be Equal        LR  ${EXC_RETURN_THREAD_MSP}
+    IPSR Should Be Equal            2
+    ${itstate}=                     Execute Command  cpu GetItState
+    Should Be Equal As Integers     ${itstate}  0
+    DoubleWord ${SCB_CFSR} Should Be Equal  0
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_NMIACT}
+
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_VECTTBL} context=cpu
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+
+Should Enter Lockup On HardFault Vector BusFault
+    Create Machine
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+    Execute Command                 cpu Step 1
+    Execute Command                 cpu VectorTableOffset ${FAULTING_PERIPHERAL_ADDRESS}
+    Execute Command                 nvic SetPendingIRQ 3
+    Execute Command                 cpu Step 1
+
+    # Rule RCTKP covers HardFault as well as NMI vector reads. The terminal
+    # vector BusFault cannot preempt the HardFault being entered, so the
+    # acknowledged HardFault remains active and Lockup is entered directly.
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0xFE0
+    Register Should Be Equal        LR  ${EXC_RETURN_THREAD_MSP}
+    IPSR Should Be Equal            3
+    ${itstate}=                     Execute Command  cpu GetItState
+    Should Be Equal As Integers     ${itstate}  0
+    DoubleWord ${SCB_CFSR} Should Be Equal  0
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_VECTTBL}
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT}
+
 Should Pend Lazy FP HardFault When Original Context Was Ready
     Create Machine
     Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=cpu
