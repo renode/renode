@@ -42,7 +42,7 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
-        public override void Log(LogEntry entry)
+        public override void Log(LogEntry entry, Logger.TimestampType timestamp)
         {
             if(!ShouldBeLogged(entry))
             {
