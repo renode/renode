@@ -176,7 +176,7 @@ Execute Faulting Instruction
 
 Fault Should Be Precise
     [Arguments]                     ${handler_address}  ${fault_address}  ${expected_hfsr}=0
-    Register Should Be Equal        PC  ${handler_address}
+    PC Should Be Equal              ${handler_address}
 
     # Neither the faulting load nor the instruction following the failed
     # access may modify architectural state before the exception is taken.
@@ -257,7 +257,7 @@ Should Escalate BusFault That Cannot Preempt Active Handler
     # A synchronous fault cannot remain pending, so the single step
     # reaches HardFault through both precise faults.
     Execute Faulting Instruction
-    Register Should Be Equal        PC  ${HARDFAULT_HANDLER_ADDRESS}
+    PC Should Be Equal              ${HARDFAULT_HANDLER_ADDRESS}
     Register Should Be Equal        1  ${R1_BEFORE_FAULT}
     Register Should Be Equal        2  ${R2_BEFORE_FAULT}
     ${stacked_pc}=                  Execute Command  sysbus ReadDoubleWord ${NESTED_STACKED_PC_ADDRESS}
