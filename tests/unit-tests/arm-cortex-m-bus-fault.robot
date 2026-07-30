@@ -421,6 +421,99 @@ NMI Should Preempt Instruction-Time Lockup
     Should Be Equal                 ${locked_up}  False  strip_spaces=True
     Should Be Equal                 ${lockup_signal}  False  strip_spaces=True
 
+Should Pend Lazy FP HardFault When Original Context Was Ready
+    Create Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=cpu
+    Execute Command                 faultingPeripheral FaultOffset 0x20
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "vmov.f32 s0, s0; b ."
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "nop; vmov.f32 s0, s0; b ."
+    Execute Command                 cpu SP 0x100068
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+
+    # Create an FP context in Thread mode, then let NMI reserve a lazy frame.
+    # UpdateFPCCR() records HFRDY=1 because HardFault could preempt the
+    # original Thread context.
+    Execute Command                 cpu Step 1
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${{${NMI_HANDLER_ADDRESS} + 2}}
+    ${fpcar}=                       Execute Command  cpu FPCAR
+    ${fpccr}=                       Execute Command  cpu FPCCR
+    Should Be Equal As Integers     ${fpcar}  0x100020
+    Should Be True                  ${{(int($fpccr.strip(), 16) & $FPCCR_HFRDY) != 0}}
+
+    # The first lazy-FP store generates BusFault.LSPERR. HardFault cannot
+    # preempt the current NMI, but TakePreserveFPException() uses saved
+    # HFRDY=1, so it pends HardFault, clears LSPACT, and continues.
+    Execute Command                 cpu Step 1
+    ${locked_up}=                   Execute Command  cpu IsLockedUp
+    Should Be Equal                 ${locked_up}  False  strip_spaces=True
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_LSPERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+    ${shcsr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_SHCSR} context=cpu
+    ${fpccr}=                       Execute Command  cpu FPCCR
+    Should Be True                  ${{(int($shcsr.strip(), 16) & $SHCSR_HARDFAULTPENDED) != 0}}
+    Should Be Equal As Integers     ${{int($fpccr.strip(), 16) & $FPCCR_LSPACT}}  0
+
+Should Enter Lockup On Lazy FP Preservation BusFault
+    Create Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=cpu
+    Execute Command                 cpu AssembleBlock ${HARDFAULT_HANDLER_ADDRESS} "vmov.f32 s0, s0; b ."
+    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
+
+    # Establish HardFault, clear the ordinary BusFault syndrome, and create
+    # an FP context at HardFault priority.
+    Execute Faulting Instruction
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CFSR} 0xFFFFFFFF context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_HFSR} ${HFSR_FORCED} context=cpu
+    Execute Command                 cpu Step 1
+
+    # NMI entry reserves the lazy frame at 0x100020 while its basic frame is
+    # successfully stacked immediately below it. UpdateFPCCR() records
+    # HFRDY=0 because the FP state belongs to the active HardFault context.
+    Execute Command                 faultingPeripheral FaultOffset 0x20
+    Execute Command                 cpu AssembleBlock ${NMI_HANDLER_ADDRESS} "nop; vmov.f32 s0, s0; b ."
+    Execute Command                 cpu SP 0x100068
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${{${NMI_HANDLER_ADDRESS} + 2}}
+    ${fpcar}=                       Execute Command  cpu FPCAR
+    ${fpccr}=                       Execute Command  cpu FPCCR
+    Should Be Equal As Integers     ${fpcar}  0x100020
+    Should Be Equal As Integers     ${{int($fpccr.strip(), 16) & $FPCCR_HFRDY}}  0
+
+    # Rule RRNKB and TakePreserveFPException(): the BusFault escalates, cannot
+    # preempt NMI, and saved HFRDY=0 makes this Lockup. FORCED and pending
+    # state remain unchanged, and LSPACT/FP contents are preserved.
+    Execute Command                 cpu Step 1
+    Lockup Should Be Asserted
+    Register Should Be Equal        SP  0x100000
+    IPSR Should Be Equal            2
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_LSPERR}
+    DoubleWord ${SCB_HFSR} Should Be Equal  0
+    DoubleWord ${SCB_SHCSR} Should Be Equal  ${SHCSR_HARDFAULTACT_NMIACT}
+    ${fpccr}=                       Execute Command  cpu FPCCR
+    Should Be True                  ${{(int($fpccr.strip(), 16) & $FPCCR_LSPACT) != 0}}
+
+Should Reserve Complete Secure Lazy FP Frame With TS
+    Create TrustZone Machine
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=cpu
+    ${fpccr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_FPCCR} context=cpu
+    Execute Command                 sysbus WriteDoubleWord ${SCB_FPCCR} ${{int($fpccr.strip(), 16) | $FPCCR_TS}} context=cpu
+    Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "vmov.f32 s0, s0; b ."
+    Execute Command                 cpu SP ${STACK_TOP}
+    Execute Command                 cpu PC ${{$CODE_ADDRESS | 1}}
+
+    # A Secure FP context with FPCCR.TS reserves the 0x20 core frame,
+    # 0x48 caller FP frame, and 0x40 Additional FP frame from PushStack().
+    Execute Command                 cpu Step 1
+    Execute Command                 nvic SetPendingIRQ 2
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              ${NMI_HANDLER_ADDRESS}
+    Register Should Be Equal        SP  0xF58
+    ${fpcar}=                       Execute Command  cpu FPCAR
+    Should Be Equal As Integers     ${fpcar}  0xF78
+
 Should Enter Lockup On Exception Unstacking BusFault
     Create Machine
     Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
