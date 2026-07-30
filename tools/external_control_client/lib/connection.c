@@ -314,8 +314,3 @@ release_locks:
     pthread_mutex_unlock(&conn->client_request_lock);
     return err;
 }
-
-renode_error_t *renode_connection_receive(renode_connection_t *conn, void *buffer, size_t byte_count)
-{
-    return read_or_fail(conn->socket_fd, buffer, byte_count);
-}
