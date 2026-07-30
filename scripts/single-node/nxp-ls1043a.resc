@@ -1,0 +1,93 @@
+using sysbus
+
+
+# HOOKS DEFINITION
+set py_virt_trusted_mailbox_hook
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+
+PLAT_VIRT_TRUSTED_MAILBOX_BASE = 0x0e000000
+PLAT_VIRT_HOLD_BASE = PLAT_VIRT_TRUSTED_MAILBOX_BASE + 0x8
+PLAT_VIRT_HOLD_ENTRY_SIZE = 0x8
+
+PLAT_VIRT_HOLD_STATE_WAIT = 0
+PLAT_VIRT_HOLD_STATE_GO = 1
+
+_cpus = filter(lambda cpu: str(type(cpu)) == "<type 'ARMv8A'>", emulationManager.Instance.CurrentEmulation.Machines[0].SystemBus.GetCPUs())
+cpus = {cpu.MultiprocessingId: cpu for cpu in _cpus}
+
+idx = (address - PLAT_VIRT_HOLD_BASE) // PLAT_VIRT_HOLD_ENTRY_SIZE
+
+secure_entrypoint = self.ReadQuadWord(PLAT_VIRT_TRUSTED_MAILBOX_BASE);
+
+if value == PLAT_VIRT_HOLD_STATE_GO:
+    cpus[idx].PC = RegisterValue.Create(secure_entrypoint, 64)
+    cpus[idx].IsHalted = False
+    cpu.InfoLog("CPU %d started at PC: 0x%x" % (idx, secure_entrypoint))
+elif value == PLAT_VIRT_HOLD_STATE_WAIT:
+    cpus[idx].IsHalted = True
+    cpu.InfoLog("CPU %d halted")
+"""
+
+set osPanicHook
+"""
+self.ErrorLog("OS Panicked")
+"""
+
+set osHangHook
+"""
+self.ErrorLog("OS Hang")
+"""
+
+set psci12
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+x1 = self.GetRegisterUlong(1)
+if x1 == 0xFFFFFFFFFFFFFFFF:
+    self.SetRegisterUlong(1, 0x80002000)
+    self.SetRegisterUlong(0, 0x0)
+elif x1 == 0:
+    self.SetRegisterUlong(1, 0x80000000)
+    self.SetRegisterUlong(2, 0x80000000)
+    self.SetRegisterUlong(0, 0)
+elif x1 == 1:
+    self.SetRegisterUlong(1, 0x90000000)
+    self.SetRegisterUlong(2, 0x1000)
+    self.SetRegisterUlong(0, 0)
+elif x1 == 2:
+    self.SetRegisterUlong(1, 0x1090000)
+    self.SetRegisterUlong(2, 0x1000)
+    self.SetRegisterUlong(0, 0)
+else:
+    self.SetRegisterUlong(0, 0xFFFFFFFFFFFFFFFF)
+"""
+
+set psci11
+"""
+from Antmicro.Renode.Peripherals.CPU import RegisterValue
+self.SetRegisterUlong(0,0) # Sets value 0 into register 0 = return value is 0
+"""
+## HOOKS DEFINITION END
+
+
+macro reset
+"""
+	showAnalyzer duart0
+	cpu0 PSCIEmulationMethod SMC
+	sysbus AddWatchpointHook 0x0e000008 QuadWord Write $py_virt_trusted_mailbox_hook # CPU 0 Mailbox 
+	cpu0 AddCustomPSCIHandler 0xc200ff12 $psci12
+	cpu0 AddCustomPSCIHandler 0xc200ff11 $psci11
+	cpu0 AddSymbolHook "hang" $osHangHook
+	cpu0 AddSymbolHook "panic" $osPanicHook
+"""
+
+## MACHINE 1
+mach create "NXP_LS1043A"
+machine LoadPlatformDescription @platforms/cpus/nxp-ls1043a.repl
+
+runMacro $reset
+
+
+
+
+
