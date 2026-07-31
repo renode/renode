@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -218,6 +219,11 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
             verbose_print("`connect` failed: %s", strerror(errno));
             close(socket_fd);
             continue;
+        }
+
+        int nodelay_value = 1;
+        if (setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &nodelay_value, sizeof(nodelay_value)) != 0) {
+            verbose_print("Failed to set TCP_NODELAY on the socket: %s", strerror(errno));
         }
 
         renode_connection_t *result = xmalloc(sizeof(renode_connection_t));
