@@ -21,11 +21,11 @@ ${SCB_HFSR}                         0xE000ED2C
 ${SCB_BFAR}                         0xE000ED38
 ${SCB_BFAR_NS}                      0xE002ED38
 ${SCB_CCR}                          0xE000ED14
-${SHCSR_BUSFAULTENA}                0x00020000
+${SHCSR_BUSFAULTENA}                ${{1<<17}}
 ${AIRCR_VECTKEY_BFHFNMINS}          0x05FA2000
-${CFSR_PRECISERR_BFARVALID}         0x00008200
-${HFSR_FORCED}                      0x40000000
-${CCR_BFHFNMIGN}                    0x00000100
+${CFSR_PRECISERR_BFARVALID}         ${{(1<<9) | (1<<15)}}
+${HFSR_FORCED}                      ${{1<<30}}
+${CCR_BFHFNMIGN}                    ${{1<<8}}
 
 ${PLATFORM}                         SEPARATOR=\n
 ...                                 """
