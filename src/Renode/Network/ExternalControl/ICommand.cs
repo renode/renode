@@ -9,9 +9,11 @@ using System.Collections.Generic;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
+    // Needs to be in sync with `api_command_t` in C
     public enum Command : ushort
     {
-        RunFor = 1,
+        CheckVersion = 0,
+        RunFor,
         GetTime,
         GetMachine,
         ADC,

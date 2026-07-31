@@ -64,9 +64,10 @@ void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_f
 #define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
 #define ERRMSG_COMMAND_MISMATCH "Received mismatched command"
 
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.Command` in C#
 typedef enum {
-    ANY_COMMAND = 0,
-    RUN_FOR = 1,
+    CHECK_VERSION = 0,
+    RUN_FOR,
     GET_TIME,
     GET_MACHINE,
     ADC,
@@ -91,8 +92,27 @@ typedef struct __attribute__((packed)) {
 
 #define REQUEST_HEADER(cmd) {&(const message_payload_t){ cmd, TYPE_REQUEST }, sizeof(message_payload_t)}
 
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.GetVersion.ProtocolVersion` in C#
+static const uint32_t PROTOCOL_VERSION = 0;
+
 static renode_error_t *generic_handler(renode_connection_t *conn, const void *response, size_t size, void *ud);
 static renode_error_t *parse_response(const void *response, size_t size, message_payload_t *header, const void **data, uint32_t *data_size);
+
+static renode_error_t *check_version_handler(renode_connection_t *conn, const void *response, size_t size, void *ud)
+{
+    (void)conn;
+    (void)ud;
+
+    message_payload_t header;
+    const void *data;
+    uint32_t data_size;
+
+    return_error_if_fails(parse_response(response, size, &header, &data, &data_size));
+    if(header.type != TYPE_SUCCESS) {
+        return create_error(ERR_COMMAND_FAILED, "Unexpected status on a CHECK_VERSION response: 0x%"PRIx8, header.type);
+    }
+    return NO_ERROR;
+}
 
 renode_error_t *renode_connect(const char *port, renode_t **renode)
 {
@@ -103,6 +123,16 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
         .address = "localhost",
         .port = port,
     }));
+
+    renode_error_t *err = renode_connection_send(conn, check_version_handler, NULL,
+        REQUEST_HEADER(CHECK_VERSION),
+        {&PROTOCOL_VERSION, sizeof(PROTOCOL_VERSION)},
+    );
+
+    if (err != NO_ERROR) {
+        renode_connection_close(conn);
+        return err;
+    }
 
     *renode = xmalloc(sizeof(renode_t));
     (*renode)->conn = conn;
