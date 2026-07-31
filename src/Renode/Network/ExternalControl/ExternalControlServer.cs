@@ -8,14 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Network.ExternalControl;
 using Antmicro.Renode.Utilities;
-using Antmicro.Renode.Utilities.Packets;
 
 namespace Antmicro.Renode.Network
 {
@@ -53,8 +51,8 @@ namespace Antmicro.Renode.Network
                     {
                         return;
                     }
-                    this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Handshake);
-                    state = State.Handshake;
+                    this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.WaitingForHeader);
+                    state = State.WaitingForHeader;
                 }
                 this.Log(LogLevel.Debug, "Connection established");
             };
@@ -66,7 +64,6 @@ namespace Antmicro.Renode.Network
                     {
                         return;
                     }
-                    commandHandlers.ClearActivation();
                     this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.NotConnected);
                     state = State.NotConnected;
                 }
@@ -94,115 +91,31 @@ namespace Antmicro.Renode.Network
 
         public bool EventsEnabled = false;
 
-        private bool IsHeaderValid()
-        {
-            if(!header.HasValue)
-            {
-                return false;
-            }
-
-            if(header.Value.Magic != Magic)
-            {
-                return false;
-            }
-
-            if(header.Value.DataSize > (uint)Int32.MaxValue)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool TryActivateCommands(List<byte> data)
-        {
-            foreach(var pair in data.Split(2))
-            {
-                var command = (Command)pair[0];
-                var version = pair[1];
-
-                if(commandHandlers.TryActivate(command, version))
-                {
-                    this.Log(LogLevel.Noisy, "{0} (version 0x{1:X}) activated", command, version);
-                    continue;
-                }
-
-                var message = commandHandlers.TryGetVersion(command, out var expectedVersion)
-                    ? $"Encountered invalid version (0x{version:X}) for {command}, expected 0x{expectedVersion:X}"
-                    : $"Encountered unknown command 0x{command:X}";
-
-                this.Log(LogLevel.Error, message);
-                SendResponse(Response.FatalError(message));
-                return false;
-            }
-
-            return true;
-        }
-
         private State? StepReceiveFiniteStateMachine(State currentState)
         {
             switch(currentState)
             {
-            case State.Handshake:
-                if(buffer.Count < HandshakeHeaderSize)
-                {
-                    return null;
-                }
-                commandsToActivate = BitConverter.ToUInt16(buffer.GetRange(0, HandshakeHeaderSize).ToArray(), 0);
-                buffer.RemoveRange(0, HandshakeHeaderSize);
-                this.Log(LogLevel.Noisy, "{0} commands to activate", commandsToActivate);
-
-                return State.WaitingForHandshakeData;
-
-            case State.WaitingForHandshakeData:
-                if(commandsToActivate > 0 && buffer.Count >= 2)
-                {
-                    var toActivate = (int)Math.Min(commandsToActivate, buffer.Count / 2);
-
-                    lock(locker)
-                    {
-                        AssertNotDisposed();
-                        if(!TryActivateCommands(buffer.GetRange(0, toActivate * 2)))
-                        {
-                            socketServerProvider.Stop();
-                            return null;
-                        }
-                    }
-
-                    buffer.RemoveRange(0, toActivate * 2);
-                    commandsToActivate -= toActivate;
-                }
-
-                if(commandsToActivate > 0)
-                {
-                    return null;
-                }
-
-                SendResponse(Response.SuccessfulHandshake());
-
-                return State.WaitingForHeader;
-
             case State.WaitingForHeader:
-                if(buffer.Count < HeaderSize)
+                if(buffer.Count < Message.HeaderSize)
                 {
                     return null;
                 }
 
-                header = Packet.Decode<ExternalControlProtocolHeader>(buffer);
-                if(!IsHeaderValid())
+                if(!Message.TryDecodeHeader(buffer, out var tempHeader))
                 {
-                    var message = $"Encountered invalid header: {header}";
-                    this.Log(LogLevel.Error, message);
+                    var message = $"Encountered invalid communication header: {buffer.Take(Message.HeaderSize).ToLazyHexString()}";
+                    this.ErrorLog(message);
                     lock(locker)
                     {
-                        SendResponse(Response.FatalError(message));
+                        SendResponse(MessagePayload.Error(message));
                         socketServerProvider.Stop();
                     }
                     return null;
                 }
+                header = tempHeader;
 
                 this.Log(LogLevel.Noisy, "Received header: {0}", header);
-                buffer.RemoveRange(0, HeaderSize);
+                buffer.RemoveRange(0, Message.HeaderSize);
 
                 return State.WaitingForData;
 
@@ -212,12 +125,25 @@ namespace Antmicro.Renode.Network
                     return null;
                 }
 
-                TryHandleCommand(out var response, header.Value.Command, buffer.GetRange(0, (int)header.Value.DataSize));
-
+                header = header.Value.WithData(buffer);
                 buffer.RemoveRange(0, (int)header.Value.DataSize);
-                header = null;
+
+                if(!MessagePayload.TryDecode(header.Value, out var commandHeader))
+                {
+                    var message = $"Encountered invalid command data header: {header.Value.Data.Take(MessagePayload.HeaderSize).ToLazyHexString()}";
+                    this.ErrorLog(message);
+                    lock(locker)
+                    {
+                        SendResponse(MessagePayload.Error(message));
+                        socketServerProvider.Stop();
+                    }
+                    return null;
+                }
+
+                TryHandleCommand(out var response, (Command)commandHeader.Command, new List<byte>(commandHeader.Data));
 
                 SendResponse(response);
+                header = null;
 
                 return State.WaitingForHeader;
 
@@ -259,7 +185,7 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        private bool TryHandleCommand(out Response response, Command command, List<byte> data)
+        private bool TryHandleCommand(out MessagePayload response, Command command, List<byte> data)
         {
             ICommand commandHandler;
             lock(locker)
@@ -270,7 +196,7 @@ namespace Antmicro.Renode.Network
 
             if(commandHandler == null)
             {
-                response = Response.InvalidCommand(command);
+                response = MessagePayload.InvalidCommand(command);
                 return true;
             }
 
@@ -289,7 +215,7 @@ namespace Antmicro.Renode.Network
             catch(RecoverableException e)
             {
                 this.Log(LogLevel.Error, "{0} command error: {1}", command, e.Message);
-                response = Response.CommandFailed(command, e.Message);
+                response = MessagePayload.Error(command, e.Message);
                 return false;
             }
             finally
@@ -301,7 +227,7 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        private void SendEventResponse(Response response)
+        private void SendEventResponse(MessagePayload response)
         {
             if(EventsEnabled)
             {
@@ -309,17 +235,18 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        private void SendResponse(Response response)
+        private void SendResponse(MessagePayload response)
         {
-            // This is a temporary measure until we settle on a new command ABI
-            var bytes = response.GetBytes().ToArray();
+            var clientId = header?.ID ?? 0; // Fallback to 0 if a valid header has not been established yet
+            var message = Message.ClientInitiated(clientId, response.ToBytes());
+            var bytes = message.ToBytes();
             lock(locker)
             {
                 AssertNotDisposed();
-                socketServerProvider.Send(BitConverter.GetBytes(bytes.Length).Concat(bytes));
+                socketServerProvider.Send(bytes);
             }
-            this.Log(LogLevel.Debug, "Response sent: {0}", response);
-            this.Log(LogLevel.Noisy, "Bytes sent: {0}", Misc.PrettyPrintCollectionHex(bytes));
+            this.Log(LogLevel.Debug, "Response sent: {0}", message);
+            this.Log(LogLevel.Noisy, "Bytes sent: {0}", bytes.ToLazyHexString());
         }
 
         private void AssertNotDisposed()
@@ -331,8 +258,7 @@ namespace Antmicro.Renode.Network
         }
 
         private State state = State.NotConnected;
-        private int commandsToActivate = 0;
-        private ExternalControlProtocolHeader? header;
+        private Message? header;
 
         private readonly List<byte> buffer = new List<byte>();
         private readonly CommandHandlerCollection commandHandlers;
@@ -340,21 +266,15 @@ namespace Antmicro.Renode.Network
 
         private readonly object locker = new object();
 
-        private const int HeaderSize = 7;
-        private const int HandshakeHeaderSize = 2;
-        private const string Magic = "RE";
-
         private class CommandHandlerCollection : IDisposable
         {
             public CommandHandlerCollection()
             {
                 commandHandlers = new Dictionary<Command, ICommand>();
-                activeCommandHandlers = new Dictionary<Command, ICommand>();
             }
 
             public void Dispose()
             {
-                activeCommandHandlers.Clear();
                 foreach(var command in commandHandlers.Values.OfType<IDisposable>())
                 {
                     command.Dispose();
@@ -371,57 +291,18 @@ namespace Antmicro.Renode.Network
                 }
             }
 
-            public void ClearActivation()
-            {
-                activeCommandHandlers.Clear();
-            }
-
-            public bool TryActivate(Command id, byte version)
-            {
-                if(activeCommandHandlers.ContainsKey(id))
-                {
-                    return false;
-                }
-
-                if(!commandHandlers.TryGetValue(id, out var command))
-                {
-                    return false;
-                }
-
-                if(command.Version != version)
-                {
-                    return false;
-                }
-
-                activeCommandHandlers.Add(command.Identifier, command);
-                return true;
-            }
-
             public ICommand GetHandler(Command id)
             {
-                if(!activeCommandHandlers.TryGetValue(id, out var command))
+                if(!commandHandlers.TryGetValue(id, out var command))
                 {
                     return null; ;
                 }
                 return command;
             }
 
-            public bool TryGetVersion(Command id, out byte version)
-            {
-                if(!commandHandlers.TryGetValue(id, out var command))
-                {
-                    version = default(byte);
-                    return false;
-                }
-
-                version = command.Version;
-                return true;
-            }
-
-            public event Action<Response> EventReported;
+            public event Action<MessagePayload> EventReported;
 
             private readonly Dictionary<Command, ICommand> commandHandlers;
-            private readonly Dictionary<Command, ICommand> activeCommandHandlers;
         }
 
         private class ServerDisposedException : RecoverableException
@@ -432,44 +313,9 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        [LeastSignificantByteFirst]
-        private struct ExternalControlProtocolHeader
-        {
-            public override string ToString()
-            {
-                return $"{{ magic: {Misc.PrettyPrintCollectionHex(MagicField)} ({Magic}), command: 0x{(byte)Command} ({Command}), dataSize: {DataSize} }}";
-            }
-
-            public string Magic
-            {
-                get
-                {
-                    try
-                    {
-                        return Encoding.ASCII.GetString(MagicField);
-                    }
-                    catch
-                    {
-                        return "<invalid>";
-                    }
-                }
-            }
-
-#pragma warning disable 649
-            [PacketField, Width(bytes: 2)]
-            public byte[] MagicField;
-            [PacketField, Width(bits: 8)]
-            public Command Command;
-            [PacketField, Width(bits: 32)]
-            public uint DataSize;
-#pragma warning restore 649
-        }
-
         private enum State
         {
             NotConnected,
-            Handshake,
-            WaitingForHandshakeData,
             WaitingForHeader,
             WaitingForData,
             Disposed,

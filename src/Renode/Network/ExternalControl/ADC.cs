@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2024 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -21,20 +21,20 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IADC>();
         }
 
-        public override Response Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
+        public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
 
-        public Response Invoke(IADC instance, List<byte> data)
+        public MessagePayload Invoke(IADC instance, List<byte> data)
         {
             if(data.Count < 1)
             {
-                return Response.CommandFailed(Identifier, $"Expected at least {1 + InstanceBasedCommandHeaderSize} bytes of payload");
+                return MessagePayload.Error(Identifier, $"Expected at least {1 + InstanceBasedCommandHeaderSize} bytes of payload");
             }
             var command = (ADCCommand)data[0];
 
             var expectedCount = GetExpectedPayloadCount(command);
             if(expectedCount != data.Count)
             {
-                return Response.CommandFailed(Identifier, $"Expected {expectedCount + InstanceBasedCommandHeaderSize} bytes of payload");
+                return MessagePayload.Error(Identifier, $"Expected {expectedCount + InstanceBasedCommandHeaderSize} bytes of payload");
             }
 
             switch(command)
@@ -42,30 +42,28 @@ namespace Antmicro.Renode.Network.ExternalControl
             case ADCCommand.GetCount:
                 var channelCount = instance.ADCChannelCount;
                 parent.Log(LogLevel.Debug, "Executing ADC GetCount command, returned {0}", channelCount);
-                return Response.Success(Identifier, channelCount.AsRawBytes());
+                return MessagePayload.Success(Identifier, channelCount.AsRawBytes());
 
             case ADCCommand.GetValue:
                 DecodeChannelArgument(data, out var channel);
                 var value = instance.GetADCValue(channel);
                 parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, value);
-                return Response.Success(Identifier, value.AsRawBytes());
+                return MessagePayload.Success(Identifier, value.AsRawBytes());
 
             case ADCCommand.SetValue:
                 DecodeSetValueArguments(data, out channel, out value);
                 parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, value);
                 instance.SetADCValue(channel, value);
-                return Response.Success(Identifier);
+                return MessagePayload.Success(Identifier);
 
             default:
-                return Response.CommandFailed(Identifier, "Unexpected command format");
+                return MessagePayload.Error(Identifier, "Unexpected command format");
             }
         }
 
         public InstanceCollection<IADC> Instances { get; }
 
         public override Command Identifier => Command.ADC;
-
-        public override byte Version => 0x0;
 
         private int GetExpectedPayloadCount(ADCCommand command)
         {

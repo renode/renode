@@ -141,6 +141,7 @@ struct renode_connection {
 
     pthread_mutex_t client_request_lock;
     channel_t client_responses;
+    uint16_t client_next_request_id;
 
     // TODO: Implement
     // channel_t server_requests;
@@ -162,6 +163,14 @@ static void check_and_handle_async_error(renode_connection_t *conn, renode_error
     exit(EXIT_FAILURE);
 }
 
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.Message` in C#
+typedef struct __attribute__((packed)) {
+    uint16_t id;
+    uint32_t data_size;
+} message_t;
+
+#define CLIENT_INITIATED ((uint16_t)0x8000)
+
 static void *receiver_thread(void *ud)
 {
     renode_connection_t *conn = ud;
@@ -177,15 +186,22 @@ static void *receiver_thread(void *ud)
             return NULL; // Socket has been closed, exit the thread
         }
 
-        uint32_t message_size;
-        check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, &message_size, sizeof(message_size)));
+        message_t envelope;
+        check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, &envelope, sizeof(envelope)));
 
-        void *buffer = malloc(message_size);
+        verbose_print("Message received: 0x%"PRIx16", %"PRIu32" bytes", envelope.id, envelope.data_size);
+
+        void *buffer = malloc(envelope.data_size);
         if (buffer == NULL) {
             check_and_handle_async_error(conn, create_fatal_error_static("Failed to allocate a buffer to hold the incomming message"));
         }
-        check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, buffer, message_size));
-        check_and_handle_async_error(conn, channel_put(&conn->client_responses, buffer, message_size));
+        check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, buffer, envelope.data_size));
+
+        if ((envelope.id & CLIENT_INITIATED) == CLIENT_INITIATED) {
+            check_and_handle_async_error(conn, channel_put(&conn->client_responses, buffer, envelope.data_size));
+        } else {
+            assert_exit(!"Handling server initiated requests it not yet supported");
+        }
     }
 }
 
@@ -230,6 +246,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         result->socket_fd = socket_fd;
         result->fatal_error_callback = NULL;
         result->fatal_error_ud = NULL;
+        result->client_next_request_id = 0;
 
         pthread_mutexattr_t mutex_attr;
         pthread_mutexattr_init(&mutex_attr);
@@ -297,6 +314,23 @@ renode_error_t *renode_connection_send_impl(renode_connection_t *conn, renode_co
     renode_error_t *err = NO_ERROR;
 
     pthread_mutex_lock(&conn->client_request_lock); // Only 1 thread can start a request chain
+
+    message_t envelope = {
+        .id = CLIENT_INITIATED | (conn->client_next_request_id++),
+        .data_size = 0,
+    };
+
+    for(size_t i = 0; i < count; i++) {
+        if (envelope.data_size + transfers[i].byte_count < envelope.data_size) {
+            err = create_fatal_error_static("Transfer buffer size overflow");
+            goto release_locks;
+        }
+        envelope.data_size += transfers[i].byte_count;
+    }
+
+    if ((err = write_or_fail(conn->socket_fd, &envelope, sizeof(envelope))) != NO_ERROR) {
+        goto release_locks;
+    }
 
     for(size_t i = 0; i < count; i++) {
         // Write the request chunks

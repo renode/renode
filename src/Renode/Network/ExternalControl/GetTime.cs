@@ -19,16 +19,14 @@ namespace Antmicro.Renode.Network.ExternalControl
         {
         }
 
-        public override Response Invoke(List<byte> data)
+        public override MessagePayload Invoke(List<byte> data)
         {
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime;
             parent.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
 
-            return Response.Success(Identifier, ((ulong)timestamp.TotalNanoseconds).AsRawBytes());
+            return MessagePayload.Success(Identifier, ((ulong)timestamp.TotalNanoseconds).AsRawBytes());
         }
 
         public override Command Identifier => Command.GetTime;
-
-        public override byte Version => 0x1;
     }
 }

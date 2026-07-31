@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
-    public enum Command : byte
+    public enum Command : ushort
     {
         RunFor = 1,
         GetTime,
@@ -23,11 +23,9 @@ namespace Antmicro.Renode.Network.ExternalControl
     {
         Command Identifier { get; }
 
-        byte Version { get; }
-
         IMachineContainer Machines { get; }
 
-        Response Invoke(List<byte> data);
+        MessagePayload Invoke(List<byte> data);
     }
 
     public abstract class BaseCommand : ICommand
@@ -37,19 +35,17 @@ namespace Antmicro.Renode.Network.ExternalControl
             this.parent = parent;
         }
 
-        public abstract Response Invoke(List<byte> data);
+        public abstract MessagePayload Invoke(List<byte> data);
 
         public IMachineContainer Machines => parent.Machines;
 
         public abstract Command Identifier { get; }
-
-        public abstract byte Version { get; }
 
         protected readonly ExternalControlServer parent;
     }
 
     public interface IHasEvents : ICommand
     {
-        event Action<Response> EventReported;
+        event Action<MessagePayload> EventReported;
     }
 }

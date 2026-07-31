@@ -15,10 +15,10 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public static class IInstanceBasedCommandExtensions
     {
-        public static bool TryGetName(Command command, List<byte> data, int offset, out string name, out Response response)
+        public static bool TryGetName(Command command, List<byte> data, int offset, out string name, out MessagePayload response)
         {
-            name = default(string);
-            response = default(Response);
+            name = default;
+            response = default;
 
             if(!TryDecodeNameLength(command, data, offset, out var length, out response))
             {
@@ -28,12 +28,12 @@ namespace Antmicro.Renode.Network.ExternalControl
             return TryDecodeName(command, data, offset + NameLengthSize, length, out name, out response);
         }
 
-        public static Response InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, List<byte> data, Predicate<T> instanceFilter = null)
+        public static MessagePayload InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, List<byte> data, Predicate<T> instanceFilter = null)
             where T : IEmulationElement
         {
             if(data.Count < PayloadOffset)
             {
-                return Response.CommandFailed(@this.Identifier, $"Expected at least {PayloadOffset} bytes of payload");
+                return MessagePayload.Error(@this.Identifier, $"Expected at least {PayloadOffset} bytes of payload");
             }
             var id = BitConverter.ToInt32(data.GetRange(InstanceIdOffset, InstanceIdSize).ToArray(), 0);
 
@@ -46,7 +46,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             // id set to a magic of -1 is used to register a new instance
             if(id != -1)
             {
-                return Response.CommandFailed(@this.Identifier, "Invalid instance id");
+                return MessagePayload.Error(@this.Identifier, "Invalid instance id");
             }
 
             // requested instance registration
@@ -63,10 +63,10 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             if(!@this.TryRegisterInstance(machine, name, instanceFilter, out id))
             {
-                return Response.CommandFailed(@this.Identifier, "Instance not found");
+                return MessagePayload.Error(@this.Identifier, "Instance not found");
             }
 
-            return Response.Success(@this.Identifier, id.AsRawBytes());
+            return MessagePayload.Success(@this.Identifier, id.AsRawBytes());
         }
 
         public const int HeaderSize = InstanceIdSize;
@@ -89,14 +89,14 @@ namespace Antmicro.Renode.Network.ExternalControl
             return true;
         }
 
-        private static bool TryGetMachine(this ICommand @this, List<byte> data, out IMachine machine, out Response response)
+        private static bool TryGetMachine(this ICommand @this, List<byte> data, out IMachine machine, out MessagePayload response)
         {
-            machine = default(IMachine);
-            response = default(Response);
+            machine = default;
+            response = default;
 
             if(data.Count < MachineIdOffset + MachineIdSize)
             {
-                response = Response.CommandFailed(@this.Identifier, $"Expected at least {MachineIdOffset + MachineIdSize} bytes of payload");
+                response = MessagePayload.Error(@this.Identifier, $"Expected at least {MachineIdOffset + MachineIdSize} bytes of payload");
                 return false;
             }
 
@@ -106,18 +106,18 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return true;
             }
 
-            response = Response.CommandFailed(@this.Identifier, "Invalid machine id");
+            response = MessagePayload.Error(@this.Identifier, "Invalid machine id");
             return false;
         }
 
-        private static bool TryDecodeNameLength(Command command, List<byte> data, int offset, out int length, out Response response)
+        private static bool TryDecodeNameLength(Command command, List<byte> data, int offset, out int length, out MessagePayload response)
         {
-            response = default(Response);
+            response = default;
 
             if(data.Count < offset + NameLengthSize)
             {
                 length = default(int);
-                response = Response.CommandFailed(command, $"Expected at least {offset + NameLengthSize} bytes of payload");
+                response = MessagePayload.Error(command, $"Expected at least {offset + NameLengthSize} bytes of payload");
                 return false;
             }
 
@@ -125,21 +125,21 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             if(length <= 0)
             {
-                response = Response.CommandFailed(command, "Provided length value is illegal");
+                response = MessagePayload.Error(command, "Provided length value is illegal");
                 return false;
             }
 
             return true;
         }
 
-        private static bool TryDecodeName(Command command, List<byte> data, int offset, int length, out string name, out Response response)
+        private static bool TryDecodeName(Command command, List<byte> data, int offset, int length, out string name, out MessagePayload response)
         {
-            name = default(string);
-            response = default(Response);
+            name = default;
+            response = default;
 
             if(data.Count != offset + length)
             {
-                response = Response.CommandFailed(command, $"Expected {offset + length} bytes of payload");
+                response = MessagePayload.Error(command, $"Expected {offset + length} bytes of payload");
                 return false;
             }
 
@@ -149,7 +149,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
             catch(Exception)
             {
-                response = Response.CommandFailed(command, "Invalid name encoding");
+                response = MessagePayload.Error(command, "Invalid name encoding");
                 return false;
             }
 
@@ -170,7 +170,7 @@ namespace Antmicro.Renode.Network.ExternalControl
     {
         InstanceCollection<T> Instances { get; }
 
-        Response Invoke(T instance, List<byte> data);
+        MessagePayload Invoke(T instance, List<byte> data);
     }
 
     public class InstanceCollection<T>
