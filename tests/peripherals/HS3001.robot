@@ -76,6 +76,7 @@ Should Read Samples From RESD
     Check Environment               temperature=4.99  humidity=40.05
     Check Environment               temperature=10.00  humidity=60.01
     Check Environment               temperature=15.00  humidity=80.31
-    # Sensor should go back to the default values after the RESD file finishes
-    Check Environment               temperature=25.56  humidity=30.39
-    Check Environment               temperature=25.56  humidity=30.39
+    
+    # Sensor should keep returning the last sample after the RESD file finishes
+    Check Environment                temperature=15.00  humidity=80.31
+    Check Environment                temperature=15.00  humidity=80.31

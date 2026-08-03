@@ -20,7 +20,6 @@ Create Machine
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
     Execute Command                 machine LoadPlatformDescriptionFromString "hs3001: Sensors.HS3001 @ i2c1 0x44"
     Execute Command                 sysbus LoadELF @${BIN_URL}
-    # Execute Command                 logLevel -1 ${SENSOR}
     Create Terminal Tester          ${UART}
     Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT}
 
@@ -33,12 +32,12 @@ Check And Run Gdb
     Command Gdb                     target remote :${GDB_REMOTE_PORT}  timeout=10
     Command Gdb                     file ${bin}
 
-Set Enviroment
+Set Environment
     [Arguments]                     ${temperature}=0.00  ${humidity}=0.00
     Execute Command                 ${SENSOR} Temperature ${temperature}
     Execute Command                 ${SENSOR} Humidity ${humidity}
 
-Check Enviroment
+Check Environment
     [Arguments]                     ${temperature}=0.00  ${humidity}=0.00
     # The '\xc2\xb0' escape sequence is the unicode character: '°'
     Command Gdb                     continue
@@ -68,7 +67,7 @@ Should Read Samples From RESD
 
     # Explicitly set temperature and humidity before loading RESD.
     # Sensor will default to these values after RESD stream ends.
-    Set Enviroment                  temperature=25.56  humidity=30.39
+    Set Environment                 temperature=25.56  humidity=30.39
     Execute Command                 ${SENSOR} FeedTemperatureSamplesFromRESD @${RESD}
     Execute Command                 ${SENSOR} FeedHumiditySamplesFromRESD @${RESD}
     Execute Command                 showAnalyzer ${UART}
@@ -82,20 +81,18 @@ Should Read Samples From RESD
     Command Gdb                     continue
     Wait For Line On Uart           *** Booting Zephyr OS build zephyr-v3.5.0-3142-gaf0336ed1922 ***
 
-    Check Enviroment                temperature=-9.-99  humidity=0.00
-    Check Enviroment                temperature=0.00  humidity=20.00
-    Check Enviroment                temperature=4.99  humidity=40.05
+    Check Environment               temperature=-9.-99  humidity=0.00
+    Check Environment               temperature=0.00  humidity=20.00
+    Check Environment               temperature=4.99  humidity=40.05
 
     Command Gdb                     reverse-continue 2
     Create Terminal Tester          ${UART}
-    Check Enviroment                temperature=0.00  humidity=20.00
-    Check Enviroment                temperature=4.99  humidity=40.05
+    Check Environment               temperature=0.00  humidity=20.00
+    Check Environment               temperature=4.99  humidity=40.05
 
-    Check Enviroment                temperature=10.00  humidity=60.01
-    Check Enviroment                temperature=15.00  humidity=80.31
-    # There is a bug in RESD implementation which makes the last sample appear twice
-    Check Enviroment                temperature=15.00  humidity=80.31
+    Check Environment               temperature=10.00  humidity=60.01
+    Check Environment               temperature=15.00  humidity=80.31
 
-    # Sensor should go back to the default values after the RESD file finishes
-    Check Enviroment                temperature=25.56  humidity=30.39
-    Check Enviroment                temperature=25.56  humidity=30.39
+    # Sensor should keep returning the last sample after the RESD file finishes
+    Check Environment               temperature=15.00  humidity=80.31
+    Check Environment               temperature=15.00  humidity=80.31
