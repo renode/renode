@@ -10,7 +10,7 @@ ${PLATFORM}=     SEPARATOR=
 ...  ${SPACE*4}PerformanceInMips: 12                            ${\n}
 ...                                                             ${\n}
 ...  nvic: IRQControllers.NVIC @ sysbus 0xE000E000              ${\n}
-...  ${SPACE*4}priorityMask: 0xE0                               ${\n}
+...  ${SPACE*4}priorityMask: 0xF0                               ${\n}
 ...  ${SPACE*4}IRQ -> cpu@0                                     ${\n}
 ...                                                             ${\n}
 ...  flash0: Memory.ArrayMemory @ sysbus 0x8000000              ${\n}
