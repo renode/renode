@@ -190,6 +190,29 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         protected readonly IMachine machine;
 
+        private static BusAccessError TlmStatusErrorToBusAccessArror(TlmStatus tlmStatus)
+        {
+            switch(tlmStatus)
+            {
+            case TlmStatus.Ok:
+                throw new ArgumentException("TLM ok is not an error");
+            case TlmStatus.Incomplete:
+                throw new ArgumentException("Incomplete TLM transaction");
+            case TlmStatus.GenericError:
+                return BusAccessError.GenericError;
+            case TlmStatus.AddressError:
+                return BusAccessError.AddressError;
+            case TlmStatus.CommandError:
+                return BusAccessError.CommandError;
+            case TlmStatus.BurstError:
+                return BusAccessError.BurstError;
+            case TlmStatus.ByteEnableError:
+                return BusAccessError.ByteEnableError;
+            default:
+                throw new ArgumentException("Unexpected TLM status");
+            }
+        }
+
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0, bool skipDmi = false)
         {
             var value = ReadInternal(RenodeAction.Read, dataLength, offset, connectionIndex, out var dmiAllowed);
@@ -240,7 +263,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 if(status != TlmStatus.Ok)
                 {
-                    // TODO: Add BusFault logic.
+                    throw new BusAccessException(TlmStatusErrorToBusAccessArror(status));
                 }
 
                 TryToSkipTransactionTime(response.Address);
@@ -298,7 +321,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 if(status != TlmStatus.Ok)
                 {
-                    // TODO: Add BusFault logic.
+                    throw new BusAccessException(TlmStatusErrorToBusAccessArror(status));
                 }
 
                 TryToSkipTransactionTime(response.Address);
