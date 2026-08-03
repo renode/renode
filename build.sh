@@ -516,6 +516,12 @@ else
     done
 fi
 
+# Remove pre-multiplatform tlib `lib` directory
+rm -rf "$CORES_BIN_PATH/lib"
+# Copy tlib
+mkdir -p "$OUT_BIN_DIR/platform-lib"
+cp_u -r $CORES_BIN_PATH/. $OUT_BIN_DIR/platform-lib
+
 if $EXTERNAL_LIB_ONLY
 then
     exit 0
@@ -562,11 +568,6 @@ fi
 if [[ "$OUT_BIN_DIR" != "/"* ]] && ! $ON_WINDOWS; then
   OUT_BIN_DIR="$PWD/$OUT_BIN_DIR"
 fi
-
-# Remove pre-multiplatform tlib `lib` directory
-rm -rf "$CORES_BIN_PATH/lib"
-# Copy tlib
-cp_u -r $CORES_BIN_PATH/. $OUT_BIN_DIR/platform-lib
 
 # NOTE: This has to be consistent with `SUPPORTED_RIDS`
 LLVM_DISAS_EXTS=(
