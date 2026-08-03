@@ -1,0 +1,126 @@
+sysbus:
+    init:
+        Tag <0x42000000 0x100000> "eth0_ns"
+        Tag <0x52000000 0x100000> "eth0_s"
+        Tag <0x40002000 0x1000> "dtimer0_ns"
+        Tag <0x50002000 0x1000> "dtimer0_s"
+        Tag <0x40003000 0x1000> "mhu0_ns"
+        Tag <0x50003000 0x1000> "mhu0_s"
+        Tag <0x40004000 0x1000> "mhu1_ns"
+        Tag <0x50004000 0x1000> "mhu1_s"
+        Tag <0x40081000 0x1000> "wdog0_ns"
+        Tag <0x50081000 0x1000> "wdog0_s"
+        Tag <0x40100000 0x1000> "gpio0_ns"
+        Tag <0x50100000 0x1000> "gpio0_s"
+        Tag <0x40101000 0x1000> "gpio1_ns"
+        Tag <0x50101000 0x1000> "gpio1_s"
+        Tag <0x40102000 0x1000> "gpio2_ns"
+        Tag <0x50102000 0x1000> "gpio2_s"
+        Tag <0x40103000 0x1000> "gpio3_ns"
+        Tag <0x50103000 0x1000> "gpio3_s"
+        Tag <0x40207000 0x1000> "i2c_touch_ns"
+        Tag <0x50207000 0x1000> "i2c_touch_s"
+        Tag <0x40208000 0x1000> "i2c_audio_conf_ns"
+        Tag <0x50208000 0x1000> "i2c_audio_conf_s"
+        Tag <0x4020c000 0x1000> "i2c_shield0_ns"
+        Tag <0x5020c000 0x1000> "i2c_shield0_s"
+        Tag <0x0 0x80000> "boot_partition_ns"
+        Tag <0x5020d000 0x1000> "i2c_shield1_s"
+        Tag <0xe000ed90 0x40> "mpu_ns"
+        Tag <0xe000ed90 0x40> "mpu_s"
+        Tag <0xe000e010 0x10> "systick_ns"
+        Tag <0xe000e010 0x10> "systick_s"
+        Tag <0x40302000 0x4> "gpio_led0_ns"
+        Tag <0x50302000 0x4> "gpio_led0_s"
+        Tag <0x40302008 0x4> "gpio_button_ns"
+        Tag <0x50302008 0x4> "gpio_button_s"
+        Tag <0x4030204c 0x4> "gpio_misc_ns"
+        Tag <0x5030204c 0x4> "gpio_misc_s"
+
+        Tag <0x58007000,0x58007017> "MPC1" 0xFFFFFFFF
+        Tag <0x58008000,0x58008017> "MPC2" 0xFFFFFFFF
+
+
+ssram1_ns: Memory.MappedMemory @ sysbus 0x0
+    size: 0x400000
+
+ssram1_s: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x400000
+
+ssram23_ns: Memory.MappedMemory @ sysbus 0x28000000
+    size: 0x400000
+
+ssram23_s: Memory.MappedMemory @ sysbus 0x38000000
+    size: 0x400000
+
+psram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x1000000
+
+nvic0: IRQControllers.NVIC @ {
+    sysbus new Bus.BusPointRegistration { address: 0xe000e000; cpu: cpu0 };
+    sysbus new Bus.BusMultiRegistration { address: 0xE002E000; size: 0x1000; region: "NonSecure"; cpu: cpu0 }
+}
+    -> cpu0@0
+    systickFrequency: 25000000
+
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    enableTrustZone: true
+    nvic: nvic0
+
+uart0: UART.CMSDK_APB_UART @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40200000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50200000 }
+}
+    TxInterrupt->nvic0@33
+    RxInterrupt->nvic0@32
+
+uart1: UART.CMSDK_APB_UART @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40201000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50201000 }
+}
+    TxInterrupt->nvic0@35
+    RxInterrupt->nvic0@34
+
+uart2: UART.CMSDK_APB_UART @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40202000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50202000 }
+}
+    TxInterrupt->nvic0@37
+    RxInterrupt->nvic0@36
+
+uart3: UART.CMSDK_APB_UART @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40203000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50203000 }
+}
+    TxInterrupt->nvic0@39
+    RxInterrupt->nvic0@38
+
+uart4: UART.CMSDK_APB_UART @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40204000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50204000 }
+}
+    TxInterrupt->nvic0@41
+    RxInterrupt->nvic0@40
+
+timer0: Timers.Arm_CMSDK_Timer @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40000000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50000000 }
+}
+    frequency: 72000000
+    loadOnReloadWrite: true
+    ->nvic0@3
+
+
+timer1: Timers.Arm_CMSDK_Timer @ {
+    sysbus new Bus.BusPointRegistration { address: 0x40001000 };
+    sysbus new Bus.BusPointRegistration { address: 0x50001000 }
+}
+    frequency: 72000000
+    loadOnReloadWrite: true
+    ->nvic0@4
+
+// cortex-m overlay
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
