@@ -100,10 +100,12 @@ static void initialize_payload(tlm::tlm_generic_payload *payload,
   tlm::tlm_command command = tlm::TLM_IGNORE_COMMAND;
   switch (message->action) {
   case WRITE:
+  case WRITE_DEBUG:
   case WRITE_REGISTER:
     command = tlm::TLM_WRITE_COMMAND;
     break;
   case READ:
+  case READ_DEBUG:
   case READ_REGISTER:
     command = tlm::TLM_READ_COMMAND;
     break;
@@ -500,6 +502,11 @@ void renode_bridge::forward_loop() {
     }
 
     switch (message.action) {
+    case renode_action::WRITE_DEBUG:
+    case renode_action::READ_DEBUG: {
+      handle_sideband_access(message);
+      send_forward_response(&message);
+    } break;
     case renode_action::WRITE: {
       handle_write(*initiator_socket, message, data);
     } break;
@@ -689,8 +696,10 @@ void renode_bridge::handle_sideband_request(renode_message &message)
   switch (message.action) {
     case WRITE:
     case WRITE_REGISTER:
+    case WRITE_DEBUG:
     case READ:
     case READ_REGISTER:
+    case READ_DEBUG:
       handle_sideband_access(message);
       break;
     case GPIOWRITE:

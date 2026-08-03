@@ -186,6 +186,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public bool DisableSidebandChannel { get; set; }
 
+        public bool DisableDebugAccess { get; set; }
+
         protected readonly IMachine machine;
 
         private ulong Read(byte dataLength, long offset, byte connectionIndex = 0, bool skipDmi = false)
@@ -204,10 +206,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
             DebugHelper.Assert(dataLength <= 8);
             var extensionFields = GetExtensionFields(out _, out _);
             var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
+            var onCpuThread = sysbus.TryGetCurrentCPU(out var cpu) && cpu.OnPossessedThread;
+            if(!DisableDebugAccess && !onCpuThread)
+            {
+                action = RenodeAction.ReadDebug;
+            }
             var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, (ulong)offset, 0);
             RenodeMessage response;
 
-            if(TrySendSidebandRequest(request, out response))
+            if(!DisableDebugAccess && TrySendSidebandRequest(request, out response))
             {
                 return response.Payload;
             }
@@ -218,15 +225,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return 0;
             }
 
-            var status = (TlmStatus)response.DataLength;
-            if(status != TlmStatus.Ok)
+            // Debug transaction doesn't return status in response, so assume ok.
+            var status = TlmStatus.Ok;
+            if(action != RenodeAction.ReadDebug)
             {
-                // TODO: Add BusFault logic.
-                this.WarningLog("Read transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
+                status = (TlmStatus)response.DataLength;
+                if(status != TlmStatus.Ok)
+                {
+                    this.WarningLog("Read transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
+                }
             }
 
-            TryToSkipTransactionTime(response.Address);
-            dmiAllowed = response.ConnectionIndex == DmiSupported;
+            if(onCpuThread)
+            {
+                if(status != TlmStatus.Ok)
+                {
+                    // TODO: Add BusFault logic.
+                }
+
+                TryToSkipTransactionTime(response.Address);
+                dmiAllowed = response.ConnectionIndex == DmiSupported;
+            }
             return response.Payload;
         }
 
@@ -245,10 +264,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
             DebugHelper.Assert(dataLength <= 8);
             var extensionFields = GetExtensionFields(out _, out _);
             var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
+            var onCpuThread = sysbus.TryGetCurrentCPU(out var cpu) && cpu.OnPossessedThread;
+            if(!DisableDebugAccess && !onCpuThread)
+            {
+                action = RenodeAction.WriteDebug;
+            }
             var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, (ulong)offset, value);
             RenodeMessage response;
 
-            if(TrySendSidebandRequest(request, out response))
+            if(!DisableDebugAccess && TrySendSidebandRequest(request, out response))
             {
                 return;
             }
@@ -259,15 +283,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return;
             }
 
-            var status = (TlmStatus)response.DataLength;
-            if(status != TlmStatus.Ok)
+            // Debug transaction doesn't return status in response, so assume ok.
+            var status = TlmStatus.Ok;
+            if(action != RenodeAction.WriteDebug)
             {
-                // TODO: Add BusFault logic.
-                this.WarningLog("Write transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
+                status = (TlmStatus)response.DataLength;
+                if(status != TlmStatus.Ok)
+                {
+                    this.WarningLog("Write transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
+                }
             }
 
-            TryToSkipTransactionTime(response.Address);
-            dmiAllowed = response.ConnectionIndex == DmiSupported;
+            if(onCpuThread)
+            {
+                if(status != TlmStatus.Ok)
+                {
+                    // TODO: Add BusFault logic.
+                }
+
+                TryToSkipTransactionTime(response.Address);
+                dmiAllowed = response.ConnectionIndex == DmiSupported;
+            }
         }
 
         private bool TrySendSidebandRequest(RenodeMessage request, out RenodeMessage response)

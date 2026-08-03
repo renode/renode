@@ -184,6 +184,28 @@ enum renode_action : uint8_t {
   // Response:
   //     Identical to the request message.
   INVALIDATE_DMI_RANGE = 12,
+
+  // Socket: forward only
+  // Request:
+  //     data_length: 0-3 LSB: number of bytes to read [1, 8]. 4-7 LSB: extension bits
+  //     address: register to read from, in target's register space
+  //     connection_index: 0 for SystemBus
+  // Response:
+  //     address: the number of read bytes
+  //     payload: read value
+  //     Otherwise identical to the request message.
+  READ_DEBUG = 13,
+
+  // Socket: forward only
+  // Request:
+  //     data_length: 0-3 LSB: number of bytes to write [1, 8]. 4-7 LSB: extension bits
+  //     address: register to write to, in target's register space
+  //     payload: value to write
+  //     connection_index: 0 for SystemBus
+  // Response:
+  //     address: the number of written bytes
+  //     Otherwise identical to the request message.
+  WRITE_DEBUG = 14,
 };
 
 #pragma pack(push, 1)

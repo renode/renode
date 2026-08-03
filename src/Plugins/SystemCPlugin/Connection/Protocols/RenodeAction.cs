@@ -21,5 +21,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         InitSecureVTOR = 10,
         InitNonSecureVTOR = 11,
         InvalidateDmiRange = 12,
+        ReadDebug = 13,
+        WriteDebug = 14,
     }
 }
