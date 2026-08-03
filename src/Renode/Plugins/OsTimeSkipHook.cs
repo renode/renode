@@ -41,7 +41,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
 
             translationCpu.SkipTime(timeInterval);
 
-            translationCpu.Profiler?.StackFramePop(address, returnAddress, translationCpu.ExecutedInstructions);
+            translationCpu.ProfilerAdapter?.StackFramePop(address, returnAddress, translationCpu.ExecutedInstructions);
             cpu.PC = returnAddress;
         }
     }

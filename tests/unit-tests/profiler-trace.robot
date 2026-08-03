@@ -75,7 +75,7 @@ Should Stop Writing To File Perfetto
     Execute Command           emulation RunFor ${SIMULATION_TIME}
 
     ${TRACE_FILE_SIZE}=       Get File Size  ${TEST_TRACE_FILE}
-    Should Be True            ${TRACE_FILE_SIZE} < ${TRACE_SIZE_LIMIT}
+    Should Be True            ${TRACE_FILE_SIZE} <= ${TRACE_SIZE_LIMIT}
 
 Should Stop Writing To File Collapsed Stack
     Create Machine
@@ -86,7 +86,30 @@ Should Stop Writing To File Collapsed Stack
     Execute Command           emulation RunFor ${SIMULATION_TIME}
 
     ${TRACE_FILE_SIZE}=       Get File Size  ${TEST_TRACE_FILE}
-    Should Be True            ${TRACE_FILE_SIZE} < ${TRACE_SIZE_LIMIT}
+    Should Be True            ${TRACE_FILE_SIZE} <= ${TRACE_SIZE_LIMIT}
+
+Should Stop Writing To File Trace Event
+    Create Machine
+
+    ${TEST_TRACE_FILE}=       Allocate Temporary File
+
+    Execute Command           cpu EnableProfilerTraceEvent "${TEST_TRACE_FILE}" true true ${TRACE_SIZE_LIMIT}
+    Execute Command           emulation RunFor ${SIMULATION_TIME}
+
+    ${TRACE_FILE_SIZE}=       Get File Size  ${TEST_TRACE_FILE}
+    Should Be True            ${TRACE_FILE_SIZE} <= ${TRACE_SIZE_LIMIT}+1  # Trace Event can have output higher than the limit by one byte
+
+Should Add Trace End Over The File Limit Trace Event
+    Create Machine
+
+    ${trace_size_limit_exact}=  Set Variable  133  # Set variable to the size of the first write to the trace file
+
+    ${TEST_TRACE_FILE}=       Allocate Temporary File
+    Execute Command           cpu EnableProfilerTraceEvent "${TEST_TRACE_FILE}" true true ${trace_size_limit_exact}
+    Execute Command           emulation RunFor ${SIMULATION_TIME}
+
+    ${TRACE_FILE_SIZE}=       Get File Size  ${TEST_TRACE_FILE}
+    Should Be True            ${TRACE_FILE_SIZE} == ${trace_size_limit_exact} + 1  # Trace Event can have output higher than the limit by one byte
 
 Should Not Limit File Size
     Create Machine
