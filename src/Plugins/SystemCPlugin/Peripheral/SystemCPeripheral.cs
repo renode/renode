@@ -190,7 +190,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         protected readonly IMachine machine;
 
-        private static BusAccessError TlmStatusErrorToBusAccessArror(TlmStatus tlmStatus)
+        private static BusAccessError TlmStatusErrorToBusAccessError(TlmStatus tlmStatus)
         {
             switch(tlmStatus)
             {
@@ -263,7 +263,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 if(status != TlmStatus.Ok)
                 {
-                    throw new BusAccessException(TlmStatusErrorToBusAccessArror(status));
+                    throw new BusAccessException(TlmStatusErrorToBusAccessError(status));
                 }
 
                 TryToSkipTransactionTime(response.Address);
@@ -321,7 +321,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 if(status != TlmStatus.Ok)
                 {
-                    throw new BusAccessException(TlmStatusErrorToBusAccessArror(status));
+                    throw new BusAccessException(TlmStatusErrorToBusAccessError(status));
                 }
 
                 TryToSkipTransactionTime(response.Address);
