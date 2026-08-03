@@ -1,5 +1,4 @@
 *** Variables ***
-# WIP: Set proper file urls
 ${URI}                              @https://dl.antmicro.com/projects/renode
 ${ARGV}                             ${URI}/semihost-argv-s_115876-ff8e8b4252f73a98e883f63c14ac61b4915eefb4
 ${CLOSE}                            ${URI}/semihost-close-s_115748-e7786c3fbc64b3ddf82fe172b7ebb1bd296e6006
@@ -24,10 +23,19 @@ ${WRITE-TTY}                        ${URI}/semihost-write-tty-s_118576-054920038
 ${WRITEC}                           ${URI}/semihost-writec-s_58436-f37d8cd101afce7620b15db41fe77ca60fc3e051
 ${WRITE0}                           ${URI}/semihost-write0-s_58800-c2283a55f28120b6dce3ad06e965a6676955b701
 
-${REPL}                             SEPARATOR=\n
+${CORTEX_M}                         SEPARATOR=\n
 ...                                 """
 ...                                 cpu: CPU.CortexM @ sysbus { cpuType: "cortex-m85"; nvic: nvic }
 ...                                 nvic: IRQControllers.NVIC @ sysbus 0xE000E000 { -> cpu@0 }
+...                                 """
+
+${CORTEX_A}                         SEPARATOR=\n
+...                                 """
+...                                 cpu: CPU.ARMv7A @ sysbus { cpuType: "cortex-a15" }
+...                                 """
+
+${REPL}                             SEPARATOR=\n
+...                                 """
 ...                                 rom: Memory.MappedMemory @ sysbus 0x0 { size: 0x20000000 }
 ...                                 sram: Memory.MappedMemory @ sysbus 0x20000000 { size: 0x20000000 }
 ...                                 ram: Memory.MappedMemory @ sysbus 0x60000000 { size: 0x20000000 }
@@ -47,17 +55,27 @@ ${SPLIT_OUTPUT}                     SEPARATOR=\n
 
 *** Keywords ***
 Create Machine
-    [Arguments]                     ${ELF}
+    [Arguments]                     ${ELF}=${None}
     ...                             ${separate_stderr}=${False}
+    ...                             ${use_cortex_a}=${False}
 
     Reset Emulation
     Execute Command                 mach create
+
+    IF  ${use_cortex_a}
+        Execute Command                 machine LoadPlatformDescriptionFromString ${CORTEX_A}
+    ELSE
+        Execute Command                 machine LoadPlatformDescriptionFromString ${CORTEX_M}
+    END
+
     Execute Command                 machine LoadPlatformDescriptionFromString ${REPL}
 
     ${semihostingDirectory}=        AllocateTemporaryDirectory  semi
     Execute Command                 cpu.semihosting WorkingDirectory @${semihostingDirectory}
 
-    Execute Command                 sysbus LoadELF ${ELF}
+    IF  $ELF is not ${None}
+        Execute Command                 sysbus LoadELF ${ELF}
+    END
 
     Create Log Tester               1
 
@@ -82,7 +100,106 @@ Check Exit Status Log
         Wait For Log Entry              cpu.semihosting: Program exited with reason ${expectedExitReason} and return code ${expectedExitCode}  pauseEmulation=True
     END
 
+Assemble Block
+    [Arguments]                     ${address}
+    ...                             ${assembly}
+    ...                             ${use_cortex_a}
+    IF  ${use_cortex_a}
+        Execute Command                 cpu AssembleBlock ${address} ${assembly} triple="armv7a"
+    ELSE
+        Execute Command                 cpu AssembleBlock ${address} ${assembly}
+    END
+
+Check Simple Semihosting Call
+    # The code here does two simple semihosting calls:
+    # SYS_OPEN to open the semihosting stdout
+    # SYS_WRITE to write SUCCESS string to stdout
+    # It should both check if the arguments and return value are set properly for the specified platform
+    [Arguments]                     ${use_thumb}
+    ...                             ${use_cortex_a}
+
+    IF  not ${use_thumb} and not ${use_cortex_a}
+        Fail                            Can't use Arm execution mode on Cortex-M
+    END
+
+    IF  ${use_cortex_a}
+        ${call_instruction}=            Set Variable  svc
+    ELSE
+        # Semihosting call on Cortex-M can be executed only through BKPT instruction
+        ${call_instruction}=            Set Variable  bkpt
+    END
+
+    Create Machine                  use_cortex_a=${use_cortex_a}
+    ${call1_address}=               Set Variable  0x20000000
+    ${call2_address}=               Set Variable  0x20000100
+    ${start_address}=               Set Variable  0x100
+
+    Execute Command                 cpu PC ${start_address}
+
+    ${assembly}=                    catenate  SEPARATOR=${\n}
+    ...                             """
+    ...                             .word string
+    ...                             .word 4 // write mode
+    ...                             .word 3
+    ...                             string: .asciz ":tt"
+    ...                             """
+    Assemble Block                  ${call1_address}  ${assembly}  ${use_cortex_a}
+
+    ${assembly}=                    catenate  SEPARATOR=${\n}
+    ...                             """
+    ...                             .word 1
+    ...                             .word string
+    ...                             .word 8
+    ...                             string: .asciz "SUCCESS\n"
+    ...                             """
+    Assemble Block                  ${call2_address}  ${assembly}  ${use_cortex_a}
+
+    IF  ${use_thumb}
+        ${assembly}=                    catenate  SEPARATOR=${\n}
+        ...                             """
+        ...                             .thumb
+
+        IF  ${use_cortex_a}
+            ${cpsr}=                        Execute Command  cpu GetRegister "CPSR"
+            ${cpsr}=                        Evaluate  int(${cpsr}) | (1 << 5)  # Set Thumb bit
+            Execute Command                 cpu SetRegister "CPSR" ${cpsr}
+        END
+
+        ${semihosting_value}=           Set Variable  0xab
+    ELSE
+        ${assembly}=                    catenate  SEPARATOR=${\n}
+        ...                             """
+        ...                             .arm
+
+        ${semihosting_value}=           Set Variable  0x123456
+    END
+
+    ${assembly}=                    catenate  SEPARATOR=${\n}
+    ...                             ${assembly}
+    ...                             ldr r0, =0x01
+    ...                             ldr r1, =${call1_address}
+    ...                             ${call_instruction} ${semihosting_value}
+    ...                             ldr r0, =0x05
+    ...                             ldr r1, =${call2_address}
+    ...                             ${call_instruction} ${semihosting_value}
+    ...                             nop
+    ...                             b .
+    ...                             """
+    Assemble Block                  ${start_address}  ${assembly}  ${use_cortex_a}
+
+    Wait For Line On Uart           SUCCESS
+    Register Should be Equal        R0  0
+
 *** Test Cases ***
+Should do Simple Semihosting Call on Cortex-M
+    Check Simple Semihosting Call   use_thumb=${True}  use_cortex_a=${False}
+
+Should do Simple Semihosting Call on Cortex-A in Arm mode
+    Check Simple Semihosting Call   use_thumb=${False}  use_cortex_a=${True}
+
+Should do Simple Semihosting Call on Cortex-A in Thumb mode
+    Check Simple Semihosting Call   use_thumb=${True}  use_cortex_a=${True}
+
 Should Pass Semihosting Tests
     FOR  ${testName}  IN
     ...  EXIT-EXTENDED
