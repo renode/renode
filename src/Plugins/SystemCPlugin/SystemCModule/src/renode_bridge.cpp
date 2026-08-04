@@ -46,6 +46,9 @@ static void print_renode_message(renode_message *message) {
   case INIT:
     printf("INIT");
     break;
+  case TEARDOWN:
+    printf("TEARDOWN");
+    break;
   case READ:
     printf("READ");
     break;
@@ -534,7 +537,7 @@ void renode_bridge::forward_loop() {
       gpio_ports_out[number]->write(value == 1);
       send_forward_response(&message);
     } break;
-    case renode_action::INIT: {
+    case renode_action::TEARDOWN: {
       if (native) {
 #ifdef RENODE_NATIVE_INTERFACE
         renode_systemc_teardown_native_connection(mach.c_str(), peri.c_str());

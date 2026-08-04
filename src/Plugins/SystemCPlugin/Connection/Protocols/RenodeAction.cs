@@ -23,5 +23,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         InvalidateDmiRange = 12,
         ReadDebug = 13,
         WriteDebug = 14,
+        Teardown = 15,
     }
 }

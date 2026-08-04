@@ -205,6 +205,16 @@ enum renode_action : uint8_t {
   //     address: the number of written bytes
   //     Otherwise identical to the request message.
   WRITE_DEBUG = 14,
+
+  // Socket: forward
+  // Teardown message signifies the process should exit. 
+  // Request:
+  //     data_length: ignored
+  //     address: ignored
+  //     connection_index: ignored
+  // Response:
+  //      Identical to the request message.
+  TEARDOWN,
 };
 
 #pragma pack(push, 1)
