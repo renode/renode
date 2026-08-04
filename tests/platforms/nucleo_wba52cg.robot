@@ -9,6 +9,7 @@ ${UART_PRINTF}                      ${PROJECT_URL}/stm32wba--cube_mx_UART_Printf
 ${EXTI_ToggleLED}                   ${PROJECT_URL}/stm32wba--cubemx-EXTI_ToggleLedOnIT_Init.elf-s_196736-e4aae2df7e5f275593f31d5d94db7c852c1575f6
 ${SPI_POLLING}                      ${PROJECT_URL}/stm32wba52--cube_mx--SPI_FullDuplex_ComPolling_Master.elf-s_351444-751cf3ade71c0e0ff33c010a97ab61f9a97e7487
 ${SPI_INTERRUPT}                    ${PROJECT_URL}/stm32wba52--cube_mx--SPI_FullDuplex_ComIT_Master.elf-s_370676-fdb46bf729f660edb79ff64bf10f6da8e0dc517b
+${TIM_PWMInput}                     ${PROJECT_URL}/stm32wba52-TIM_PWMInput.elf-s_710444-22290a962f6bf68bf60ec5b8cd09bb2429340d9a
 
 ${PLATFORM}                         @platforms/boards/nucleo_wba52cg.repl
 ${SPI_LOOPBACK}                     loopback: SPI.SPILoopback @ spi3
@@ -39,7 +40,32 @@ Run SPI Test Case
     # the received data was correct (identical to the sent data)
     Assert LED State                true
 
+Check Input Capture Line
+    [Arguments]                     ${frequency}  ${duty}  ${IC2}
+
+    ${line}=                        Wait For Line On Uart  f = (\\w+) Hz\\s+ duty = (\\w+) %\\s+ IC2 = (\\w+)  treatAsRegex=true
+    ${actual_frequency}=            Set Variable           ${line.Groups[0]}
+    ${actual_duty}=                 Set Variable           ${line.Groups[1]}
+    ${actual_IC2}=                  Set Variable           ${line.Groups[2]}
+
+    Should Be Equal As Integers     ${actual_frequency}    ${frequency}
+    Should Be Equal As Integers     ${actual_duty}         ${duty}
+    Should Be Equal As Integers     ${actual_IC2}          ${IC2}
+
 *** Test Cases ***
+Timer Should Support Input Capture
+    Create Machine                  ${TIM_PWMInput}
+    Create Terminal Tester          ${UART}
+    Execute Command                 machine LoadPlatformDescriptionFromString "gpioPortB: { 6 -> gpioPortA@1 }"
+
+    Start Emulation
+
+    Check Input Capture Line        frequency=0     duty=0   IC2=0
+    Execute Command                 sysbus.gpioPortC.UserButton1 PressAndRelease
+    Check Input Capture Line        frequency=2000  duty=24  IC2=49999
+    Execute Command                 sysbus.gpioPortC.UserButton1 PressAndRelease
+    Check Input Capture Line        frequency=3000  duty=50  IC2=33332
+
 Should Have Working UART
     Create Machine                  ${UART_PRINTF}
     Create Terminal Tester          ${UART}
