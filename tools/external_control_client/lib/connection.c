@@ -138,13 +138,16 @@ struct renode_connection {
     int socket_fd;
 
     pthread_t receiver_thread;
+    pthread_t default_handler_thread;
+
+    renode_server_request_t default_handler_request_callback;
+    void* default_handler_ud;
 
     pthread_mutex_t client_request_lock;
     channel_t client_responses;
     uint16_t client_next_request_id;
 
-    // TODO: Implement
-    // channel_t server_requests;
+    channel_t server_requests;
 };
 
 static void check_and_handle_async_error(renode_connection_t *conn, renode_error_t *err)
@@ -200,9 +203,33 @@ static void *receiver_thread(void *ud)
         if ((envelope.id & CLIENT_INITIATED) == CLIENT_INITIATED) {
             check_and_handle_async_error(conn, channel_put(&conn->client_responses, buffer, envelope.data_size));
         } else {
-            assert_exit(!"Handling server initiated requests it not yet supported");
+            check_and_handle_async_error(conn, channel_put(&conn->server_requests, buffer, envelope.data_size));
         }
     }
+}
+
+static void *default_handler_thread(void *ud)
+{
+    renode_connection_t* conn = ud;
+    renode_server_request_t handler = conn->default_handler_request_callback;
+    void *ud_ptr = conn->default_handler_ud;
+
+    void *data;
+    size_t size;
+
+    while (true) {
+        // Wait for a request from the server
+        channel_get(&conn->server_requests, &data, &size);
+
+        renode_error_t* error = handler(conn, data, size, ud_ptr);
+        if (error != NO_ERROR) {
+            fprintf(stderr, "Default handler callback failed with: %s\n", error->message);
+            fflush(stderr);
+            renode_free_error(error);
+        }
+    }
+
+    return NULL;
 }
 
 renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_connection_config_t *cfg)
@@ -261,7 +288,9 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     renode_error_t *ret_err = NO_ERROR;
     bool have_mutex = false;
     bool have_client_responses = false;
+    bool have_server_requests = false;
     bool have_receiver_thread = false;
+    bool have_default_handler_thread = false;
 
     pthread_mutexattr_t mutex_attr;
     pthread_mutexattr_init(&mutex_attr);
@@ -287,6 +316,22 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     }
     have_receiver_thread = true;
 
+    ret_err = channel_init(&result->server_requests);
+    if (ret_err != NO_ERROR) {
+        goto cleanup;
+    }
+    have_server_requests = true;
+
+    result->default_handler_request_callback = cfg->server_request_callback;
+    result->default_handler_ud = cfg->server_request_ud;
+
+    thread_error = pthread_create(&result->default_handler_thread, NULL, default_handler_thread, result);
+    if (thread_error != 0) {
+        ret_err = create_fatal_error("Failed to create the default handler thread: %s", strerror(thread_error));
+        goto cleanup;
+    }
+    have_default_handler_thread = true;
+
     *conn = result;
     return NO_ERROR;
 
@@ -295,8 +340,15 @@ cleanup:
         shutdown(result->socket_fd, SHUT_RDWR);
         pthread_join(result->receiver_thread, NULL);
     }
+    if (have_default_handler_thread) {
+        pthread_cancel(result->default_handler_thread);
+        pthread_join(result->default_handler_thread, NULL);
+    }
     if (have_client_responses) {
         channel_destroy(&result->client_responses);
+    }
+    if (have_server_requests) {
+        channel_destroy(&result->server_requests);
     }
     if (have_mutex) {
         pthread_mutex_destroy(&result->client_request_lock);
@@ -314,6 +366,11 @@ renode_error_t *renode_connection_close(renode_connection_t *con)
     shutdown(con->socket_fd, SHUT_RDWR);
     pthread_join(con->receiver_thread, NULL);
     close(con->socket_fd);
+
+    // TODO: somehow stop the default handler thread
+    // pthread_join(con->default_handler_thread, NULL);
+    // channel_destroy(&con->server_requests);
+
     pthread_mutex_destroy(&con->client_request_lock);
     channel_destroy(&con->client_responses);
     free(con);

@@ -122,6 +122,8 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
     return_error_if_fails(renode_connection_open(&conn, &(renode_connection_config_t) {
         .address = "localhost",
         .port = port,
+        .server_request_callback = generic_handler,
+        .server_request_ud = NULL,
     }));
 
     renode_error_t *err = renode_connection_send(conn, check_version_handler, NULL,
@@ -708,7 +710,6 @@ static renode_error_t *parse_response(const void *response, size_t size, message
 
     switch(header->type) {
     case TYPE_REQUEST:
-        return create_fatal_error_static("Current client implementation cannot service direct requests");
     case TYPE_SUCCESS:
     case TYPE_EVENT_REQUEST:
         *data = response;
@@ -745,6 +746,9 @@ static renode_error_t *generic_handler(renode_connection_t *conn, const void *re
         assert_fmsg(sizeof(ed) <= data_size, "Expected at least %zu bytes of an event descriptor, but got only %zu", sizeof(ed), size);
         memcpy(&ed, data, sizeof(ed));
         return invoke_callback(header.command, ed, data + sizeof(ed), data_size - sizeof(ed));
+    }
+    else if (header.type == TYPE_REQUEST) {
+        return create_fatal_error_static("Current client implementation cannot service direct requests");
     }
 
     switch (header.command) {
