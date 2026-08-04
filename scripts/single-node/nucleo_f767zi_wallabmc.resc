@@ -1,0 +1,26 @@
+$name?="nucleo_f767zi_wallabmc"
+$bin?=@https://dl.antmicro.com/projects/renode/zephyr--nucleo_f767zi_wallabmc.elf-s_9924968-2a8abf47fcd5b028fa5dd14d6eb905316820f98c
+$repl?=@platforms/boards/nucleo_f767zi.repl
+
+mach create $name
+machine LoadPlatformDescription $repl
+
+emulation CreateTap "tap0" "tap"
+emulation CreateSwitch "switch"
+connector Connect host.tap switch
+connector Connect ethernet switch
+# The sample has an IPv4 address of 192.0.2.55
+# After assigning an IP to the host end of the tap, ex.:
+#     ip addr add 192.0.2.1/24 dev tap0
+# you can connect to the running demo through telnet (to get access to a console) or browse the web interface at http://192.0.2.55
+
+showAnalyzer usart3
+
+macro reset
+"""
+    sysbus LoadELF $bin
+    cpu VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+    cpu EnableZephyrMode
+"""
+
+runMacro $reset
