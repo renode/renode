@@ -80,7 +80,7 @@ Should Run RunFor Sample
     Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:01.500000
 
 Should Run Sysbus Sample
-    [Tags]                         exclude_windows  robot:skip-on-failure  # leaksanitizer finds issues
+    [Tags]                         exclude_windows
 
     Execute Command                mach create "machine"
     Execute Command                machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100 }"
