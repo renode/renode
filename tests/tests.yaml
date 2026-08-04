@@ -276,6 +276,7 @@
 - tests/peripherals/STM32H7_RCC.robot
 - tests/unit-tests/hst-mmio.robot
 - tests/peripherals/STM32_UART.robot
+- tests/peripherals/IIS2MDC.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
