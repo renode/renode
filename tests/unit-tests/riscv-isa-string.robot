@@ -51,6 +51,8 @@ Should Parse All Valid ISA Strings
     rv32imc_zicsr
     rv32imc_zicsr_zifencei
     RV32IMC_Zicsr_Zifencei_Zbs
+    RV32IMAC_Zicsr_Zicond
+    rv32imac_zicsr_zicond
     RV32IM_Zicsr
     rv32im_zicsr_zifencei
     RV32IZifencei_Xandes

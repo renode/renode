@@ -46,6 +46,7 @@
 - tests/unit-tests/riscv-unit-tests.robot
 - tests/unit-tests/riscv-priv.robot
 - tests/unit-tests/riscv-amocas.robot
+- tests/unit-tests/riscv-zicond-extension.robot
 - tests/unit-tests/mpu.robot
 - tests/unit-tests/arm-atomic.robot
 - tests/unit-tests/armv8-load-store-exclusive.robot
