@@ -42,6 +42,7 @@ Build Sample
     ...                            -DAPP_NAME\=${app}
     ...                            -DAPP_SOURCES_DIR\=${EXTERNAL_CONTROL_DIR}/examples/${app}
     ...                            -DAPP_NON_INTERACTIVE\=ON
+    ...                            -DRENODE_API_SANITIZERS\=ON
     ...                            -S ${EXTERNAL_CONTROL_DIR}
     ...                            -B ${BUILD_DIR}
 
@@ -79,7 +80,7 @@ Should Run RunFor Sample
     Should Contain                 ${r.stdout}  Elapsed virtual time 00:00:01.500000
 
 Should Run Sysbus Sample
-    [Tags]                         exclude_windows
+    [Tags]                         exclude_windows  robot:skip-on-failure  # leaksanitizer finds issues
 
     Execute Command                mach create "machine"
     Execute Command                machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100 }"
