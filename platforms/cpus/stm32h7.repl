@@ -556,11 +556,14 @@ pwr: Python.PythonPeripheral @ sysbus 0x58024800
 if request.Offset == 0x00: # CR1
     # Reset value + DBP (b8) to indicate that other registers are writable
     request.Value = 0xF000C100
-elif request.Offset == 0x18: # CR3
+elif request.Offset == 0x04: # CSR1
+   # Reset value + ACTVOSRDY (b13) indicates the voltage level is valid
+   request.Value = 0x6000
+elif request.Offset == 0x0C: # CR3
+    request.Value = 0
+elif request.Offset == 0x18: # D3CR
     # VOSRDY flag (b13) indicates the voltage was properly set.
     request.Value = 0x2000
-elif request.Offset == 0x0C: # D3CR
-    request.Value = 0
 else:
     self.WarningLog("Unhandled access to offset 0x{0:X}", request.Offset)
 '''
