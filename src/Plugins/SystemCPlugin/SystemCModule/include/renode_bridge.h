@@ -305,9 +305,6 @@ public:
                 const char *port, bool native = false, std::string mach = "", std::string peri = "");
   ~renode_bridge();
 
-  // Returns true if connection with Renode has been established, false otherwise.
-  bool is_initialized() { return fw_connection_initialized; }
-
   void handle_backward_response_from_native(renode_message message);
   void handle_backward_response_dmi_from_native(dmi_message message);
   void handle_forward_request_from_native(renode_message message);
@@ -471,7 +468,6 @@ private:
   initiator_bw_handler dc_initiators[NUM_DIRECT_CONNECTIONS];
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
 
-  bool fw_connection_initialized;
   int64_t max_desync_us;
   bool native;
   std::string mach;

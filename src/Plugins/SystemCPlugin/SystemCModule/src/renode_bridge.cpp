@@ -308,7 +308,6 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
     : sc_module(name),
       initiator_socket("initiator_socket"),
       register_initiator_socket("register_initiator_socket"),
-      fw_connection_initialized(false),
       native(native),
       mach(mach),
       peri(peri) {
@@ -397,7 +396,6 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
     terminate_simulation(1);
     return;
   }
-  fw_connection_initialized = true;
 }
 
 renode_bridge::~renode_bridge() {
@@ -914,11 +912,6 @@ bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &paylo
 
 unsigned int renode_bridge::target_fw_handler::transport_dbg(
     tlm::tlm_generic_payload &trans) {
-
-  // The SystemC simulation can begin before the connection with Renode is
-  // initialized. Reject any transactions during this interval.
-  if (!bridge->is_initialized()) return 0;
-
   sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
   bridge->service_backward_request(trans, connection_idx, delay);
   return trans.is_response_ok() ? trans.get_data_length() : 0;
