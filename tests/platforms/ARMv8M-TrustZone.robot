@@ -33,15 +33,15 @@ ${REPL}                             SEPARATOR=\n
 
 *** Keywords ***
 Create Machine
-    [Arguments]                     ${ELF_S}
-    ...                             ${ELF_NS}
+    [Arguments]                     ${elf_s}
+    ...                             ${elf_ns}
     ...                             ${tester}=sysbus.cpu.semihosting.console
 
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${REPL}
     Execute Command                 nvic FilterCcrDiv0Write False
-    Execute Command                 sysbus LoadELF ${ELF_NS}
-    Execute Command                 sysbus LoadELF ${ELF_S}
+    Execute Command                 sysbus LoadELF ${elf_ns}
+    Execute Command                 sysbus LoadELF ${elf_s}
 
     Create Terminal Tester          ${tester}
     Create Log Tester               1
