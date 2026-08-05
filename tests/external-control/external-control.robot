@@ -42,7 +42,7 @@ Build Sample
     ...                            -DAPP_NAME\=${app}
     ...                            -DAPP_SOURCES_DIR\=${EXTERNAL_CONTROL_DIR}/examples/${app}
     ...                            -DAPP_NON_INTERACTIVE\=ON
-    ...                            -DRENODE_API_SANITIZERS\=ON
+    ...                            -DRENODE_API_SANITIZERS\=%{RENODE_TESTS_SANITIZERS=ON}
     ...                            -S ${EXTERNAL_CONTROL_DIR}
     ...                            -B ${BUILD_DIR}
 
