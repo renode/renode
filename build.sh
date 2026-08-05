@@ -224,6 +224,9 @@ if [ ! -e .git ]
 then
   SKIP_FETCH=true
   UPDATE_SUBMODULES=false
+  COMMIT_STRING="notgit"
+else
+  COMMIT_STRING="git$(git rev-parse --short=9 HEAD)"
 fi
 
 if $SKIP_FETCH
@@ -407,7 +410,7 @@ pushd "$ROOT_PATH/tools/building" > /dev/null
 ./check_weak_implementations.sh
 popd > /dev/null
 
-PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"" p:Architecture="$HOST_ARCH")
+PARAMS+=(p:Configuration="${CONFIGURATION}${BUILD_TARGET}" p:GenerateFullPaths=true p:Platform="\"$BUILD_PLATFORM\"" p:Architecture="$HOST_ARCH" p:CommitString="$COMMIT_STRING")
 
 # Paths for tlib
 CORES_BIN_PATH="$CORES_PATH/bin/$CONFIGURATION"

@@ -89,16 +89,8 @@
       <LogicalName>RobotoMono-Regular.ttf</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="SetCustomInformationalVersion" BeforeTargets="GetAssemblyAttributes">
-    <Exec Command="git rev-parse --short=9 HEAD"
-          ConsoleToMSBuild="true"
-          IgnoreExitCode="false">
-      <Output TaskParameter="ConsoleOutput" PropertyName="ShortCommitSha" />
-    </Exec>
-
-    <PropertyGroup>
-      <BuildDate>$([System.DateTime]::UtcNow.ToString('yyyyMMdd'))</BuildDate>
-      <InformationalVersion>$(Version)+$(BuildDate)git$(ShortCommitSha)</InformationalVersion>
-    </PropertyGroup>
-  </Target>
+  <PropertyGroup>
+    <BuildDate>$([System.DateTime]::UtcNow.ToString('yyyyMMdd'))</BuildDate>
+    <InformationalVersion>$(Version)+$(BuildDate)$(CommitString)</InformationalVersion>
+  </PropertyGroup>
 </Project>
