@@ -531,10 +531,9 @@ void renode_bridge::forward_loop() {
       auto number = message.address;
       auto value = message.payload;
       sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
-      if (iface == nullptr) {
-        break;
+      if (iface != nullptr) {
+        gpio_ports_out[number]->write(value == 1);
       }
-      gpio_ports_out[number]->write(value == 1);
       send_forward_response(&message);
     } break;
     case renode_action::TEARDOWN: {
