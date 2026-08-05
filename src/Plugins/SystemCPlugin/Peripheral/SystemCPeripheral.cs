@@ -411,22 +411,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 case RenodeAction.GPIOWrite:
                     var gpioNumber = (int)message.Address;
                     var isSet = message.Payload == 1;
-                    if(DisableSidebandChannel)
-                    {
-                        // No sideband channel, so changing GPIO state before
-                        // responding can deadlock if the GPIO handler re-enters SystemC.
-                        SendBackwardResponse(message);
-                        Connections[gpioNumber].Set(isSet);
-                    }
-                    else
-                    {
-                        // Sideband channel can handle nested GPIO/read/write requests
-                        // while this backward GPIO request is still waiting for its response.
-                        // This lets GPIO propagation re-enter SystemC before this outer
-                        // GPIO transaction is completed.
-                        Connections[gpioNumber].Set(isSet);
-                        SendBackwardResponse(message);
-                    }
+                    Connections[gpioNumber].Set(isSet);
+                    SendBackwardResponse(message);
                     this.NoisyLog("SystemC-triggered GPIO {0}, value {1}", gpioNumber, isSet);
                     break;
                 case RenodeAction.Write:
