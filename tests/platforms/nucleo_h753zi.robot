@@ -22,6 +22,7 @@ ${ADC_DMA_TEST}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_a
 ${FLASH_IS25WP}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_spi_flash.elf-s_642604-754f4c58cbd5ac817f6c77f5533ea3d9b83bb276
 ${CAN_COUNTER}                      ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_can_counter.elf-s_1324504-cc26c0ba1b4285b189ee6d73641ab3c81a5e6bdf
 ${CUBEMX_ETH_TEST}                  ${PROJECT_URL}/cubemx--stm32h7-eth-test.elf-s_1231644-3e808bfc20a3a96ad304acbc94c7dbd6b06245e5
+${INTERRUPT_TEST}                   ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_arm_interrupt.elf-s_1910156-ef375658d70a341eea0d85fab970d4ddac9f22d4
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -452,3 +453,18 @@ Should Have Ethernet as Link Up in CubeMX
     Create Machine                      ${CUBEMX_ETH_TEST}  eth
     Create Terminal Tester              ${UART}  defaultPauseEmulation=True
     Wait For Line On Uart               netif link up
+
+Should Pass Interrupt Test
+    Create Machine                      ${INTERRUPT_TEST}   interrupt_test
+    Create Terminal Tester              ${UART}                                       defaultPauseEmulation=True
+
+    Wait For Test Pass                  test_arm_esf_collection
+
+    # test_arm_interrupt verifies Zephyr correctly handles kernel oops, panic, asserts
+    # and MSTKERR late-arriving exception
+    Wait For Test Pass                  test_arm_interrupt
+
+    # test_arm_null_pointer_exception test is skipped
+
+    # test_arm_user_interrupt verifies that `MRS` hides registers in unpriviledged mode
+    Wait For Test Pass                  test_arm_user_interrupt
