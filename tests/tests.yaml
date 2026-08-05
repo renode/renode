@@ -270,6 +270,7 @@
 - tests/platforms/ARMv8M-TrustZone.robot
 - tests/peripherals/LSM6DSO_IMU.robot
 - tests/unit-tests/cpu-pause-halt.robot
+- tests/peripherals/AD4011.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
