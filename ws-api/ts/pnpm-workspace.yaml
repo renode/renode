@@ -1,5 +1,5 @@
 allowBuilds:
   esbuild: true
 overrides:
-   "ws": "8.21.0"
-   "brace-expansion": "5.0.8"
+  'ws': '8.21.0'
+  'brace-expansion': '5.0.8'
