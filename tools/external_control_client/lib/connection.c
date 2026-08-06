@@ -50,9 +50,16 @@ static void channel_destroy(channel_t *c)
     *c = (channel_t){};
 }
 
+static void channel_mutex_unlock_cleanup(void *lock)
+{
+    pthread_mutex_unlock((pthread_mutex_t *)lock);
+}
+
 static void channel_get(channel_t *c, void **data, size_t *size)
 {
     pthread_mutex_lock(&c->lock);
+    pthread_cleanup_push(channel_mutex_unlock_cleanup, &c->lock);
+
     while (c->data == NULL) {
         pthread_cond_wait(&c->cond, &c->lock);
     }
@@ -61,7 +68,9 @@ static void channel_get(channel_t *c, void **data, size_t *size)
     *size = c->data_size;
     c->data = NULL;
     c->data_size = 0;
-    pthread_mutex_unlock(&c->lock);
+
+    // Unlock the mutex if cancellation was not triggered
+    pthread_cleanup_pop(1);
 }
 
 static renode_error_t *channel_put(channel_t *c, void *data, size_t data_size)
@@ -218,8 +227,16 @@ static void *default_handler_thread(void *ud)
     size_t size;
 
     while (true) {
+        // Enable cancellation while waiting for a server request
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+        pthread_testcancel();
+
         // Wait for a request from the server
         channel_get(&conn->server_requests, &data, &size);
+
+        // Disable cancellation
+        // POSIX does not allow NULL but most implementations do
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
         renode_error_t* error = handler(conn, data, size, ud_ptr);
         if (error != NO_ERROR) {
@@ -227,6 +244,8 @@ static void *default_handler_thread(void *ud)
             fflush(stderr);
             renode_free_error(error);
         }
+
+        free(data);
     }
 
     return NULL;
@@ -367,12 +386,13 @@ renode_error_t *renode_connection_close(renode_connection_t *con)
     pthread_join(con->receiver_thread, NULL);
     close(con->socket_fd);
 
-    // TODO: somehow stop the default handler thread
-    // pthread_join(con->default_handler_thread, NULL);
-    // channel_destroy(&con->server_requests);
+    // Stop the default handler thread
+    pthread_cancel(con->default_handler_thread);
+    pthread_join(con->default_handler_thread, NULL);
 
     pthread_mutex_destroy(&con->client_request_lock);
     channel_destroy(&con->client_responses);
+    channel_destroy(&con->server_requests);
     free(con);
 
     return NO_ERROR;
