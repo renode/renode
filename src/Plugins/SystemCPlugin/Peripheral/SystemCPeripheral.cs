@@ -248,10 +248,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             dmiAllowed = false;
             DebugHelper.Assert(dataLength <= 8);
-            var extensionFields = GetExtensionFields(out _, out _);
+            var extensionFields = GetExtensionFields(out _, out _, out var semihosting);
             var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
             var onCpuThread = sysbus.TryGetCurrentCPU(out var cpu) && cpu.OnPossessedThread;
-            if(!DisableDebugAccess && !onCpuThread)
+            if(!DisableDebugAccess && (!onCpuThread || semihosting))
             {
                 action = RenodeAction.ReadDebug;
             }
@@ -280,7 +280,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
-            if(onCpuThread)
+            if(onCpuThread && !semihosting)
             {
                 if(status != TlmStatus.Ok)
                 {
@@ -306,10 +306,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             dmiAllowed = false;
             DebugHelper.Assert(dataLength <= 8);
-            var extensionFields = GetExtensionFields(out _, out _);
+            var extensionFields = GetExtensionFields(out _, out _, out var semihosting);
             var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
             var onCpuThread = sysbus.TryGetCurrentCPU(out var cpu) && cpu.OnPossessedThread;
-            if(!DisableDebugAccess && !onCpuThread)
+            if(!DisableDebugAccess && (!onCpuThread || semihosting))
             {
                 action = RenodeAction.WriteDebug;
             }
@@ -338,7 +338,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
-            if(onCpuThread)
+            if(onCpuThread && !semihosting)
             {
                 if(status != TlmStatus.Ok)
                 {
@@ -627,7 +627,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
             // RenodeMessage.dataLength field for DMIReq indicates the kind of DMI access being requested.
             var dataLength = (byte)TlmCommand.Read;
             DebugHelper.Assert(dataLength <= 8);
-            var extensionFields = GetExtensionFields(out _, out _);
+            var extensionFields = GetExtensionFields(out _, out _, out var semihosting);
+
+            DebugHelper.Assert(!semihosting, "Mapping memory during semihosting call is forbidden");
+
             var dataLengthWithExtensionFields = (byte)(extensionFields | dataLength);
             var request = new RenodeMessage(RenodeAction.DMIReq, dataLengthWithExtensionFields, 0, offset, 0);
             if(!SendDmiRequest(request, out var dmiNativeMessage))
@@ -815,18 +818,20 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private byte GetExtensionFields(out bool secure, out bool privileged)
+        private byte GetExtensionFields(out bool secure, out bool privileged, out bool semihosting)
         {
             if(!sysbus.TryGetCurrentContextState<CortexM.ContextState>(out var initiator, out var cpuState))
             {
                 // Default values when context isn't available.
                 secure = true;
                 privileged = true;
+                semihosting = false;
             }
             else
             {
                 secure = cpuState.CpuSecure;
                 privileged = cpuState.Privileged;
+                semihosting = cpuState.Semihosting;
             }
 
             return GetExtensionFieldsMask(secure, privileged);
