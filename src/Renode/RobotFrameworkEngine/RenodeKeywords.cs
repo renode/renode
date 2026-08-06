@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
@@ -22,7 +23,7 @@ namespace Antmicro.Renode.RobotFramework
     {
         public RenodeKeywords()
         {
-            monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+            monitor = ObjectCreator.Instance.GetSurrogate<UserInterface.Monitor>();
             savepoints = new Dictionary<string, Savepoint>();
             if(!(monitor.Interaction is CommandInteractionWrapper))
             {
@@ -35,6 +36,19 @@ namespace Antmicro.Renode.RobotFramework
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             monitor.Interaction = interaction.UnderlyingCommandInteraction;
             TemporaryFilesManager.Instance.Cleanup();
+        }
+
+        [RobotFrameworkKeyword]
+        public void CrashRenode()
+        {
+            // Any exception thrown from this thread will be caught and reported as a keyword failure,
+            // so if we want the exception to crash the program, it needs to be thrown from another thread
+            var exceptThread = new Thread(() =>
+            {
+                throw new Exception("Induced crash");
+            });
+            exceptThread.Start();
+            Thread.Sleep(Timeout.Infinite);
         }
 
         [RobotFrameworkKeyword]
@@ -146,7 +160,7 @@ namespace Antmicro.Renode.RobotFramework
                 break;
             case HotSpotAction.Serialize:
                 var fileName = TemporaryFilesManager.Instance.GetTemporaryFile();
-                var monitor = ObjectCreator.Instance.GetSurrogate<Monitor>();
+                var monitor = ObjectCreator.Instance.GetSurrogate<UserInterface.Monitor>();
                 if(monitor.Machine != null)
                 {
                     EmulationManager.Instance.CurrentEmulation.AddOrUpdateInBag("monitor_machine", monitor.Machine);
@@ -475,7 +489,7 @@ namespace Antmicro.Renode.RobotFramework
 
         private readonly Dictionary<string, Savepoint> savepoints;
 
-        private readonly Monitor monitor;
+        private readonly UserInterface.Monitor monitor;
 
         private const string CachedLogBackendName = "cache";
         private const int MaxLogContextPrintedOnException = 1000;
