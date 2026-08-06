@@ -21,11 +21,32 @@ SocketCommunicationChannel::SocketCommunicationChannel()
     senderSocket.reset(new CTCPClient(NULL, dontLog));
 }
 
-void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const char* address)
+void SocketCommunicationChannel::connect(SocketConnectionArgs *args)
 {
-    mainSocket->Connect(address, std::to_string(receiverPort));
-    senderSocket->Connect(address, std::to_string(senderPort));
+    if (!mainSocket->Connect(args->address, std::to_string(args->receiverPort))) {
+        return;
+    }
+
+    // To handle the partial-connect race we hold mainSocket
+    // open and retry senderSocket briefly before giving up.
+    const int senderRetryDelayMs = 10;
+    while(true) {
+        if (senderSocket->Connect(args->address, std::to_string(args->senderPort))) {
+            break;
+        }
+#ifdef _WIN32
+        Sleep(senderRetryDelayMs);
+#else
+        usleep(senderRetryDelayMs * 1000);
+#endif
+    }
+
+    mainSocket->SetRcvTimeout(args->handshakeTimeout);
+    senderSocket->SetRcvTimeout(args->handshakeTimeout);
     handshakeValid();
+
+    mainSocket->SetRcvTimeout(0);
+    senderSocket->SetRcvTimeout(0);
 }
 
 void SocketCommunicationChannel::disconnect()

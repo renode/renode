@@ -87,6 +87,17 @@ module renode #(
 
     // This task doesn't block elapse of a simulation time, when messages are being received and handled in an other place.
     if (runtime.connection.exclusive_receive.try_get() != 0) begin
+      did_receive = runtime.connection.receive(message);
+      runtime.connection.exclusive_receive.put();
+      if (did_receive) handle_message(message);
+    end
+  endtask
+
+  task static try_receive_and_handle_message(output bit did_receive);
+    message_t message;
+
+    // This task doesn't block elapse of a simulation time, when messages are being received and handled in an other place.
+    if (runtime.connection.exclusive_receive.try_get() != 0) begin
       did_receive = runtime.connection.try_receive(message);
       runtime.connection.exclusive_receive.put();
       if (did_receive) handle_message(message);
@@ -190,18 +201,18 @@ module renode #(
     message.data = 0;
 
     runtime.connection.exclusive_receive.get();
-    if(!runtime.connection.is_connected()) begin
+    if(!runtime.is_connected()) begin
         runtime.connection.exclusive_receive.put();
         return;
     end
 
     runtime.connection.send_to_async_receiver(message);
 
-    runtime.connection.receive(message);
+    runtime.connection.receive_or_fail(message);
     while (message.action != renode_pkg::writeRequest) begin
       handle_message(message);
       if(message.action == renode_pkg::disconnect) break;
-      runtime.connection.receive(message);
+      runtime.connection.receive_or_fail(message);
     end
 
     runtime.connection.exclusive_receive.put();
@@ -226,17 +237,17 @@ module renode #(
     message.data = runtime.peripherals[peripheral_index].write_transaction_data;
 
     runtime.connection.exclusive_receive.get();
-    if(!runtime.connection.is_connected()) begin
+    if (!runtime.is_connected()) begin
         runtime.connection.exclusive_receive.put();
         return;
     end
 
     runtime.connection.send_to_async_receiver(message);
-    runtime.connection.receive(message);
+    runtime.connection.receive_or_fail(message);
     while (message.action != renode_pkg::pushConfirmation) begin
       handle_message(message);
       if(message.action == renode_pkg::disconnect) break;
-      runtime.connection.receive(message);
+      runtime.connection.receive_or_fail(message);
     end
 
     runtime.connection.exclusive_receive.put();
