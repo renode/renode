@@ -33,4 +33,7 @@ endif()
 
 target_compile_options(${APP_NAME} PRIVATE ${APP_COMPILE_FLAGS})
 
+include(${CMAKE_CURRENT_LIST_DIR}/lib/RenodeAPISanitizers.cmake)
+renode_api_add_sanitizers_flags(${APP_NAME})
+
 target_link_libraries(${APP_NAME} PRIVATE renode_api)
