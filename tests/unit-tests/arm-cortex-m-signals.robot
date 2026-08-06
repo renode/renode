@@ -78,6 +78,8 @@ CPU Wait Signal Should Unhalt CPU When Deasserted After Reset
 
     ${is_halted_before}=            Run Command  cpu IsHalted
     Execute Command                 cpu CpuWaitSignal Unset
+    # After CPUWAIT is de-asserted, CPU is released from reset in the nearest synced state.
+    Execute Command                 emulation RunToNearestSyncPoint
     ${is_halted_after}=             Run Command  cpu IsHalted
 
     Should Be Equal                 ${is_halted_before}  True  CPU should have halted but IsHalted=${is_halted_before}
@@ -105,11 +107,13 @@ CPU Should Not Read Vector Table Until After CPU Wait Signal Is Deasserted
 
     Execute Command                 cpu CpuWaitSignal Unset
 
-    Execute Command                 emulation RunFor "0.1s"
+    # After CPUWAIT is de-asserted, CPU is released from reset in the nearest synced state.
+    Execute Command                 emulation RunToNearestSyncPoint
 
     # CPU should now have read the vector table and updated SP/PC accordingly.
-    Register Should Be Equal        SP  0x22001038
-    Register Should Be Equal        PC  0x2000520
+    # Read initial values after release from reset.
+    Register Should Be Equal        SP  0x220010D0
+    Register Should Be Equal        PC  0x2001C20
 
 Emulation Reset Should Halt CPU When CPU Wait Signal Set
     Create Log Tester               1
