@@ -27,8 +27,7 @@ bool CTCPClient::SetRcvTimeout(unsigned int msec_timeout) {
 #else
     int iErr;
 
-    // it's expecting an int but it doesn't matter...
-    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&msec_timeout, sizeof(struct timeval));
+    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&msec_timeout, sizeof(msec_timeout));
     if (iErr < 0) {
         if (m_eSettingsFlags & ENABLE_LOG)
             m_oLog("[TCPServer][Error] CTCPClient::SetRcvTimeout : Socket error in SO_RCVTIMEO call to setsockopt.");
@@ -65,8 +64,7 @@ bool CTCPClient::SetSndTimeout(unsigned int msec_timeout) {
 #else
     int iErr;
 
-    // it's expecting an int but it doesn't matter...
-    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&msec_timeout, sizeof(struct timeval));
+    iErr = setsockopt(m_ConnectSocket, SOL_SOCKET, SO_SNDTIMEO, (char*)&msec_timeout, sizeof(msec_timeout));
     if (iErr < 0) {
         if (m_eSettingsFlags & ENABLE_LOG)
             m_oLog("[TCPServer][Error] CTCPClient::SetSndTimeout : Socket error in SO_SNDTIMEO call to setsockopt.");
