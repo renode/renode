@@ -9,11 +9,18 @@
 #include "communication_channel.h"
 #include "../../libs/socket-cpp/Socket/TCPClient.h"
 
+struct SocketConnectionArgs {
+    int receiverPort;
+    int senderPort;
+    std::string address;
+    unsigned int handshakeTimeout;
+};
+
 class SocketCommunicationChannel : public CommunicationChannel
 {
 public:
   SocketCommunicationChannel();
-  void connect(int receiverPort, int senderPort, const char* address);
+  void connect(SocketConnectionArgs *args);
   void disconnect();
   bool isConnected() override;
   void handshakeValid();

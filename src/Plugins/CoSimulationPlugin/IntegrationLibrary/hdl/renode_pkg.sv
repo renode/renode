@@ -41,15 +41,33 @@ package renode_pkg;
     LogError = 3
   } log_level_e;
 
+  // Keep in sync with definition in renode_dpi.cpp
+  typedef enum int {
+    Unconnected = 0,
+    NeedsReconnection = 1,
+    Connecting = 2,
+    Connected = 3,
+    Disconnected = 4,  // Indicate graceful disconnection
+    Error = 5  // Error while connecting
+  } connnection_status_e;
+
   import "DPI-C" function void renodeDPIConnect(
-    int receiverPort,
-    int senderPort,
-    string address
+    int unsigned receiverPort,
+    int unsigned senderPort,
+    string address,
+    int unsigned timeoutMs
+  );
+
+  import "DPI-C" function void renodeDPIConnectInBackground(
+    int unsigned receiverPort,
+    int unsigned senderPort,
+    string address,
+    int unsigned timeoutMs
   );
 
   import "DPI-C" function void renodeDPIDisconnect();
 
-  import "DPI-C" function bit renodeDPIIsConnected();
+  import "DPI-C" function int renodeDPIGetConnectionStatus();
 
   import "DPI-C" function bit renodeDPILog(
     int logLevel,
@@ -60,7 +78,14 @@ package renode_pkg;
     output action_e action,
     output address_t address,
     output data_t data,
-    output int peripheralIndex 
+    output int peripheralIndex
+  );
+
+  import "DPI-C" function bit renodeDPITryReceive(
+    output action_e action,
+    output address_t address,
+    output data_t data,
+    output int peripheralIndex
   );
 
   import "DPI-C" function bit renodeDPISend(
@@ -107,16 +132,16 @@ package renode_pkg;
       $timeformat(0, 9, "s", 0);
     endfunction
 
-    function void connect(int receiver_port, int sender_port, string address);
-      renodeDPIConnect(receiver_port, sender_port, address);
-      if(is_connected())
-        $display("Renode at %t: Connected using the socket based interface", $realtime);
-      else
-        $error("Renode at %t: Connection error", $realtime);
-    endfunction
+    task connect(int unsigned receiver_port, int unsigned sender_port, string address, int unsigned timeout_ms = 10000);
+      renodeDPIConnect(receiver_port, sender_port, address, timeout_ms);
+    endtask
 
-    function bit is_connected();
-      return renodeDPIIsConnected();
+    task connect_in_background(int unsigned receiver_port, int unsigned sender_port, string address, int unsigned timeout_ms = 10000);
+      renodeDPIConnectInBackground(receiver_port, sender_port, address, timeout_ms);
+    endtask
+
+    function connnection_status_e get_connection_status();
+      return connnection_status_e'(renodeDPIGetConnectionStatus());
     endfunction
 
     function void fatal_error(string message);
@@ -146,14 +171,34 @@ package renode_pkg;
       end
     endfunction
 
-    function void receive(output message_t message);
-      bit is_received = try_receive(message);
+    function bit receive(output message_t message);
+      bit is_received = renodeDPIReceive(
+          message.action, message.address, message.data, message.peripheral_index
+      );
+      if (is_received) begin
+`ifdef RENODE_DEBUG
+        log(LogDebug, $sformatf(
+            "Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d",
+            message.action.name(),
+            message.address,
+            message.data,
+            message.peripheral_index
+            ));
+`endif
+      end
+      return is_received;
+    endfunction
+
+    function void receive_or_fail(output message_t message);
+      bit is_received = receive(message);
       if (!is_received) fatal_error("Unable to receive a message.");
     endfunction
 
     function bit try_receive(output message_t message);
-      bit is_received = renodeDPIReceive(message.action, message.address, message.data, message.peripheral_index);
-      if(is_received) begin
+      bit is_received = renodeDPITryReceive(
+          message.action, message.address, message.data, message.peripheral_index
+      );
+      if (is_received) begin
 `ifdef RENODE_DEBUG
       log(LogDebug, $sformatf("Received action %0s, address = 'h%h, data = 'h%h, peripheral index: %d", message.action.name(), message.address, message.data, message.peripheral_index));
 `endif
@@ -285,22 +330,53 @@ package renode_pkg;
       end
     endfunction
 
-    function void connect_plus_args();
-      int receiver_port, sender_port;
-      string address;
-      if(!$value$plusargs({ReceiverPortArgName, "=%d"}, receiver_port)
-        || !$value$plusargs({SenderPortArgName, "=%d"}, sender_port)
-        || !$value$plusargs({AddressArgName, "=%s"}, address))
-      begin
-          $error("Please specify the +%s, +%s and +%s arguments in the command that invokes the simulation", ReceiverPortArgName, SenderPortArgName, AddressArgName);
+    function get_connection_plus_args(output int receiver_port, output int sender_port, output string address);
+      if (!$value$plusargs(
+              {ReceiverPortArgName, "=%d"}, receiver_port
+          ) || !$value$plusargs(
+              {SenderPortArgName, "=%d"}, sender_port
+          ) || !$value$plusargs(
+              {AddressArgName, "=%s"}, address
+          )) begin
+        $error(
+            "Please specify the +%s, +%s and +%s arguments in the command that invokes the simulation",
+            ReceiverPortArgName, SenderPortArgName, AddressArgName);
+        return 0;
       end
-      else begin
-        connection.connect(receiver_port, sender_port, address);
-      end
+
+      return 1;
     endfunction
 
+    task connect_plus_args();
+      int receiver_port, sender_port;
+      string address;
+      if (get_connection_plus_args(receiver_port, sender_port, address)) begin
+        connection.connect(receiver_port, sender_port, address);
+        $display("Renode at %t: Connection status after connect: %s", $realtime, connection.get_connection_status().name());
+      end
+    endtask
+
+    task connect_plus_args_in_background();
+      int receiver_port, sender_port;
+      string address;
+      connnection_status_e status = connection.get_connection_status();
+
+      if (get_connection_plus_args(receiver_port, sender_port, address)) begin
+        connection.connect_in_background(receiver_port, sender_port, address);
+        if (status == Unconnected) begin
+          $display("Renode at %t: Renode connection requested (background)...", $realtime);
+        end
+      end
+    endtask
+
     function bit is_connected();
-      return connection.is_connected();
+      return connection.get_connection_status() == Connected;
+    endfunction
+
+    function bit has_lost_connection();
+      connnection_status_e status = connection.get_connection_status();
+
+      return status == Disconnected || status == Error;
     endfunction
   endclass
 endpackage
