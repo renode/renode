@@ -241,51 +241,69 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         if (setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &nodelay_value, sizeof(nodelay_value)) != 0) {
             verbose_print("Failed to set TCP_NODELAY on the socket: %s", strerror(errno));
         }
-
-        renode_connection_t *result = xmalloc(sizeof(renode_connection_t));
-        result->socket_fd = socket_fd;
-        result->fatal_error_callback = NULL;
-        result->fatal_error_ud = NULL;
-        result->client_next_request_id = 0;
-
-        pthread_mutexattr_t mutex_attr;
-        pthread_mutexattr_init(&mutex_attr);
-        pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-        int thread_error = pthread_mutex_init(&result->client_request_lock, &mutex_attr);
-        pthread_mutexattr_destroy(&mutex_attr);
-
-        if (thread_error != 0) {
-            close(result->socket_fd);
-            free(result);
-            return create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
-        }
-
-        renode_error_t *channel_err = channel_init(&result->client_responses);
-        if (channel_err != NO_ERROR) {
-            close(result->socket_fd);
-            pthread_mutex_destroy(&result->client_request_lock);
-            free(result);
-            return channel_err;
-        }
-
-        thread_error = pthread_create(&result->receiver_thread, NULL, receiver_thread, result);
-        if (thread_error != 0) {
-            close(result->socket_fd);
-            pthread_mutex_destroy(&result->client_request_lock);
-            channel_destroy(&result->client_responses);
-            free(result);
-            return create_fatal_error("Failed to create the RX thread: %s", strerror(thread_error));
-        }
-
-        *conn = result;
-        freeaddrinfo(results);
-        return NO_ERROR;
+        break;
     }
 
     freeaddrinfo(results);
-    return create_error(ERR_FATAL, "Failed to connect to a Renode external API control server at %s:%s."
-        "Make sure the server in Renode has been started with: `" SERVER_START_COMMAND " %s` and the port is accessible to this application",
-        cfg->address, cfg->port, cfg->port);
+
+    if (socket_fd == -1) {
+        return create_error(ERR_FATAL, "Failed to connect to a Renode external API control server at %s:%s."
+            "Make sure the server in Renode has been started with: `" SERVER_START_COMMAND " %s` and the port is accessible to this application",
+            cfg->address, cfg->port, cfg->port);
+    }
+
+    renode_connection_t *result = xmalloc(sizeof(renode_connection_t));
+    result->socket_fd = socket_fd;
+    result->fatal_error_callback = NULL;
+    result->fatal_error_ud = NULL;
+    result->client_next_request_id = 0;
+
+    renode_error_t *ret_err = NO_ERROR;
+    bool have_mutex = false;
+    bool have_client_responses = false;
+    bool have_receiver_thread = false;
+
+    pthread_mutexattr_t mutex_attr;
+    pthread_mutexattr_init(&mutex_attr);
+    pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+    int thread_error = pthread_mutex_init(&result->client_request_lock, &mutex_attr);
+    pthread_mutexattr_destroy(&mutex_attr);
+    if (thread_error != 0) {
+        ret_err = create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
+        goto cleanup;
+    }
+    have_mutex = true;
+
+    ret_err = channel_init(&result->client_responses);
+    if (ret_err != NO_ERROR) {
+        goto cleanup;
+    }
+    have_client_responses = true;
+
+    thread_error = pthread_create(&result->receiver_thread, NULL, receiver_thread, result);
+    if (thread_error != 0) {
+        ret_err = create_fatal_error("Failed to create the RX thread: %s", strerror(thread_error));
+        goto cleanup;
+    }
+    have_receiver_thread = true;
+
+    *conn = result;
+    return NO_ERROR;
+
+cleanup:
+    if (have_receiver_thread) {
+        shutdown(result->socket_fd, SHUT_RDWR);
+        pthread_join(result->receiver_thread, NULL);
+    }
+    if (have_client_responses) {
+        channel_destroy(&result->client_responses);
+    }
+    if (have_mutex) {
+        pthread_mutex_destroy(&result->client_request_lock);
+    }
+    close(result->socket_fd);
+    free(result);
+    return ret_err;
 }
 
 renode_error_t *renode_connection_close(renode_connection_t *con)
