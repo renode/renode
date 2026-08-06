@@ -12,17 +12,19 @@ using System.Threading;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Debugging;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.Timers;
 using Antmicro.Renode.Time;
+using Antmicro.Renode.Utilities;
 
 using Range = Antmicro.Renode.Core.Range;
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
-    public unsafe partial class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral
+    public unsafe partial class SystemCPeripheral : IQuadWordPeripheral, IDoubleWordPeripheral, IWordPeripheral, IBytePeripheral, INumberedGPIOOutput, IGPIOReceiver, IDirectAccessPeripheral, IHasBusRegistrationConstraints
     {
         public SystemCPeripheral(
                 IMachine machine,
@@ -150,6 +152,25 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public void WriteByte(long offset, byte value)
         {
             Write(1, offset, value);
+        }
+
+        public void ValidateRegistrationPoint(BusRangeRegistration registrationPoint, IPeripheral context)
+        {
+            if(context is not ICPUWithMMU cpuWithMmu)
+            {
+                return;
+            }
+
+            var pageSize = cpuWithMmu.PageSize;
+            if(registrationPoint.Range.StartAddress % pageSize == registrationPoint.Offset % pageSize)
+            {
+                return;
+            }
+
+            throw new RegistrationException(
+                $"SystemC peripheral registration at 0x{registrationPoint.Range.StartAddress:X} with offset 0x{registrationPoint.Offset:X} " +
+                $"is not aligned to the guest page size 0x{pageSize:X}."
+            );
         }
 
         public void AddDirectConnection(byte connectionIndex, IDirectAccessPeripheral target)
@@ -671,6 +692,22 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             // Read+Write DMI access was confirmed, proceed to memory mapping.
             var range = startAddress.To(endAddress);
+            if(cpu is ICPUWithMMU cpuWithMmu)
+            {
+                // The DMI region has to be aligned to the guest page size
+                // to be registered in tlib. Shrink the range to the aligned
+                // part of the region so that no memory outside of it is mapped.
+                var pageSize = cpuWithMmu.PageSize;
+                var alignedStartAddress = range.StartAddress.AlignUpToMultipleOf(pageSize);
+                var alignedEndAddressExclusive = (range.EndAddress + 1).AlignDownToMultipleOf(pageSize);
+                if(alignedEndAddressExclusive <= alignedStartAddress)
+                {
+                    this.WarningLog("SystemC returned a DMI region {0} that doesn't cover a full guest page, memory won't be mapped", range);
+                    return;
+                }
+                range = new Range(alignedStartAddress, alignedEndAddressExclusive - alignedStartAddress);
+            }
+
             if(!range.Contains(offset))
             {
                 this.WarningLog("SystemC returned a DMI region {0} that does not contain requested offset 0x{1:X}.", range, offset);
@@ -755,6 +792,14 @@ namespace Antmicro.Renode.Peripherals.SystemC
             lock(mappedDmiRanges)
             {
                 var range = startAddress.To(endAddress);
+                // The range has to be aligned to the guest page size
+                // to be unregistered from tlib. Expand it to the
+                // aligned boundaries to make sure the whole region
+                // is invalidated.
+                var pageSize = translationCpu.PageSize;
+                var alignedStartAddress = range.StartAddress.AlignDownToMultipleOf(pageSize);
+                var alignedEndAddressExclusive = (range.EndAddress + 1).AlignUpToMultipleOf(pageSize);
+                range = new Range(alignedStartAddress, alignedEndAddressExclusive - alignedStartAddress);
                 var intersectingRanges = mappedDmiRanges.Select(collectionRange => collectionRange.Intersect(range)).Where(r => r.HasValue);
                 foreach(var intersectingRange in intersectingRanges)
                 {
