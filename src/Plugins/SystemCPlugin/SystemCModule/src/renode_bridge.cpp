@@ -424,7 +424,7 @@ bool renode_bridge::initialize_connection(int64_t *out_max_desync_us) {
   message = receive_backward_response();
 
 #ifdef VERBOSE
-  print_renode_message(message);
+  print_renode_message(&message);
 #endif
 
   if (message.action != renode_action::INIT) {
