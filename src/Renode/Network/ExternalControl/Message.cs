@@ -9,23 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-using Antmicro.Renode.Utilities;
+using Antmicro.Renode.Exceptions;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
     // Needs to be in sync with `message_t` in C
-    public readonly struct Message
+    public class Message
     {
-        public static Message ClientInitiated(ushort id, IEnumerable<byte> data)
-        {
-            return new Message((ushort)(id | ClientInitiatedMask), data.ToArray());
-        }
-
-        public static Message ServerInitiated(IEnumerable<byte> data)
-        {
-            return new Message((ushort)(GetNextId() & unchecked((ushort)~ClientInitiatedMask)), data.ToArray());
-        }
-
         public static bool TryDecodeHeader(List<byte> data, out Message message)
         {
             if(data.Count < HeaderSize)
@@ -36,65 +26,68 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             var dataSpan = CollectionsMarshal.AsSpan(data);
             var id = BitConverter.ToUInt16(dataSpan[..sizeof(ushort)]);
-            var dataSize = BitConverter.ToUInt32(dataSpan[sizeof(ushort)..][..sizeof(uint)]);
-            message = new Message(id, dataSize);
+            var payloadSize = BitConverter.ToInt32(dataSpan[sizeof(ushort)..][..sizeof(uint)]);
+
+            if(payloadSize < MessagePayload.HeaderSize)
+            {
+                // TODO: Modify the protocol definition to make it impossible
+                throw new RecoverableException($"Invalid payload size received: {payloadSize}");
+            }
+
+            message = new Message(id, payloadSize);
+            data.RemoveRange(0, HeaderSize);
+
             return true;
         }
 
-        public IEnumerable<byte> ToBytes() => BitConverter.GetBytes(ID).Concat(BitConverter.GetBytes((uint)Data.Length)).Concat(Data);
+        public Message(ushort id, MessagePayload payload)
+        {
+            Id = id;
+            PayloadSize = payload.GetSize();
+            Payload = payload;
+        }
+
+        public bool TryDecodePayload(List<byte> data)
+        {
+            if(data.Count < PayloadSize)
+            {
+                return false;
+            }
+
+            var dataSpan = CollectionsMarshal.AsSpan(data);
+            var cmd = (Command)BitConverter.ToUInt16(dataSpan[..sizeof(ushort)]);
+            Payload = new MessagePayload(cmd, (CommandType)dataSpan[2], dataSpan[..PayloadSize][MessagePayload.HeaderSize..].ToArray());
+
+            data.RemoveRange(0, PayloadSize);
+
+            return true;
+        }
+
+        public IEnumerable<byte> ToBytes() => BitConverter.GetBytes(Id).Concat(BitConverter.GetBytes(PayloadSize)).Concat(Payload.ToBytes());
 
         public override string ToString()
         {
-            if(Data.Length == 0)
-            {
-                return $"{nameof(Message)}(ID=0x{ID:X}, ClientInitiated={IsClientInitiated}, Size={DataSize})";
-            }
-            else
-            {
-                return $"{nameof(Message)}(ID=0x{ID:X}, ClientInitiated={IsClientInitiated}, Size={DataSize}, Data={Misc.PrettyPrintCollectionHex(Data)})";
-            }
+            var initiatorAdverb = IsExternallyInitiated ? "externally" : "internally";
+
+            return $"{nameof(Message)}(ID=0x{ID:X}, {initiatorAdverb} initiated, PayloadSize={PayloadSize}, Payload={Payload})";
         }
 
-        public Message WithData(IList<byte> data)
-        {
-            return new Message(ID, data.Take((int)DataSize).ToArray());
-        }
+        public ushort Id { get; }
 
-        public ushort ID { get; }
+        public int PayloadSize { get; }
 
-        public uint DataSize { get; }
+        public MessagePayload Payload { get; private set; }
 
-        public byte[] Data { get; }
-
-        public bool IsClientInitiated => (ID & ClientInitiatedMask) == ClientInitiatedMask;
+        public bool IsExternallyInitiated => (Id & ExternallyInitiatedMask) == ExternallyInitiatedMask;
 
         public const int HeaderSize = sizeof(ushort) + sizeof(uint);
 
-        private static ushort GetNextId()
+        public const ushort ExternallyInitiatedMask = 0x8000;
+
+        private Message(ushort id, int payloadSize)
         {
-            lock(nextIdLock)
-            {
-                return nextId++;
-            }
+            Id = id;
+            PayloadSize = payloadSize;
         }
-
-        private static ushort nextId;
-        private static readonly object nextIdLock = new object();
-
-        private Message(ushort id, byte[] data)
-        {
-            ID = id;
-            DataSize = (uint)data.Length;
-            Data = data;
-        }
-
-        private Message(ushort id, uint dataSize)
-        {
-            ID = id;
-            DataSize = dataSize;
-            Data = [];
-        }
-
-        private const ushort ClientInitiatedMask = 0x8000;
     }
 }

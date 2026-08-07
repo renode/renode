@@ -97,55 +97,24 @@ namespace Antmicro.Renode.Network
             switch(currentState)
             {
             case State.WaitingForHeader:
-                if(buffer.Count < Message.HeaderSize)
+                if(!Message.TryDecodeHeader(buffer, out currentMessage))
                 {
                     return null;
                 }
 
-                if(!Message.TryDecodeHeader(buffer, out var tempHeader))
-                {
-                    var message = $"Encountered invalid communication header: {buffer.Take(Message.HeaderSize).ToLazyHexString()}";
-                    this.ErrorLog(message);
-                    lock(locker)
-                    {
-                        SendResponse(MessagePayload.Error(message));
-                        socketServerProvider.Stop();
-                    }
-                    return null;
-                }
-                header = tempHeader;
-
-                this.Log(LogLevel.Noisy, "Received header: {0}", header);
-                buffer.RemoveRange(0, Message.HeaderSize);
+                this.Log(LogLevel.Noisy, "Received header: {0}", currentMessage);
 
                 return State.WaitingForData;
 
             case State.WaitingForData:
-                if(buffer.Count < header.Value.DataSize)
+                if(!currentMessage.TryDecodePayload(buffer))
                 {
                     return null;
                 }
 
-                header = header.Value.WithData(buffer);
-                buffer.RemoveRange(0, (int)header.Value.DataSize);
-
-                if(!MessagePayload.TryDecode(header.Value, out var commandHeader))
-                {
-                    var message = $"Encountered invalid command data header: {header.Value.Data.Take(MessagePayload.HeaderSize).ToLazyHexString()}";
-                    this.ErrorLog(message);
-                    lock(locker)
-                    {
-                        SendResponse(MessagePayload.Error(message));
-                        socketServerProvider.Stop();
-                    }
-                    return null;
-                }
-
-                TryHandleCommand(out var response, (Command)commandHeader.Command, new List<byte>(commandHeader.Data));
+                TryHandleCommand(out var response, currentMessage.Payload.Command, new List<byte>(currentMessage.Payload.Data));
 
                 SendResponse(response);
-                header = null;
-
                 return State.WaitingForHeader;
 
             case State.NotConnected:
@@ -238,8 +207,8 @@ namespace Antmicro.Renode.Network
 
         private void SendResponse(MessagePayload response)
         {
-            var clientId = header?.ID ?? 0; // Fallback to 0 if a valid header has not been established yet
-            var message = Message.ClientInitiated(clientId, response.ToBytes());
+            var clientId = currentMessage.ID; // Fallback to 0 if a valid header has not been established yet
+            var message = new Message(clientId, response);
             var bytes = message.ToBytes();
             lock(locker)
             {
@@ -259,7 +228,7 @@ namespace Antmicro.Renode.Network
         }
 
         private State state = State.NotConnected;
-        private Message? header;
+        private Message currentMessage;
 
         private readonly List<byte> buffer = new List<byte>();
         private readonly CommandHandlerCollection commandHandlers;
