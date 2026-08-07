@@ -1,6 +1,6 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
-${BIN}                              https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_828372-b3da65fa9bf47012ff9f7b9206b2e73b392ca795
+${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_828372-b3da65fa9bf47012ff9f7b9206b2e73b392ca795
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.lsm6dso
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -8,10 +8,11 @@ ${SAMPLES_CSV}                      ${CURDIR}/LSM6DSO-samples.csv
 
 *** Keywords ***
 Create Machine
+    [Arguments]                     ${bin}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
     Execute Command                 machine LoadPlatformDescriptionFromString "lsm6dso: Sensors.LSM6DSO_IMU @ i2c1 0x6A"
-    Execute Command                 sysbus LoadELF @${BIN}
+    Execute Command                 sysbus LoadELF @${bin}
     Execute Command                 cpu EnableZephyrMode
     Create Terminal Tester          ${UART}
 
@@ -54,7 +55,7 @@ Create RESD File
 
 *** Test Cases ***
 Should Read Acceleration and Gyroscope Via I2C
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
 
@@ -69,7 +70,7 @@ Should Read Acceleration and Gyroscope Via I2C
     Wait For Angular Rate Line      1.745852  3.490483  5.236335
 
 Should Read Samples From RESD
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
 
     Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
