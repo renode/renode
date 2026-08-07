@@ -120,6 +120,14 @@ Should Handle LED and Button
     # TODO: those sleeps shouldn't be necessary!
     Assert LED State          true
 
+Should Detect Passed Interrupt In WFE
+    Create Machine            ${DMA}  zephyr-custom_wfe_test.elf-s_601916-bffaab1a16e3cb3c357701584be101e447e4e2ab
+    Create Terminal Tester    ${UART}
+
+    Start Emulation
+    Wait For Line On Uart     Booting Zephyr OS
+    Wait For Line On Uart     First WFE should finish
+
 Should Handle SPI
     Create Machine            ${ADXL_SPI}  nrf52840--zephyr_adxl372_spi.elf-s_993780-1dedb945dae92c07f1b4d955719bfb1f1e604173
     Create Terminal Tester    ${UART}
