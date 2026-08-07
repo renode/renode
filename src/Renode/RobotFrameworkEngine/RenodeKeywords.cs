@@ -428,39 +428,23 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword]
-        public void EnableLoggingToCache()
+        public void OpenLogFile(string path)
         {
-            if(cachedLogFilePath == null)
-            {
-                cachedLogFilePath = Path.Combine(
-                        TemporaryFilesManager.Instance.EmulatorTemporaryPath,
-                        "renode-robot.log");
-                Logger.AddBackend(new FileBackend(cachedLogFilePath, false), CachedLogBackendName, true);
-            }
+            CloseLogFile();
+            fileLogger = new FileBackend(path, false);
+            Logger.AddBackend(fileLogger, RobotLogName, true);
         }
 
         [RobotFrameworkKeyword]
-        public void SaveCachedLog(string filePath)
+        public void CloseLogFile()
         {
-            if(cachedLogFilePath == null)
+            if(fileLogger == null)
             {
-                throw new KeywordException($"Cannot save cached log, cached logging has not been enabled.");
+                return;
             }
-
-            (Logger.GetBackends()[CachedLogBackendName] as FileBackend).Flush();
-            System.IO.File.Copy(cachedLogFilePath, filePath, true);
-        }
-
-        [RobotFrameworkKeyword]
-        public void ClearCachedLog()
-        {
-            if(cachedLogFilePath != null)
-            {
-                Logger.RemoveBackend(Logger.GetBackends()[CachedLogBackendName]);
-                System.IO.File.Delete(cachedLogFilePath);
-                cachedLogFilePath = null;
-                EnableLoggingToCache();
-            }
+            fileLogger.Flush();
+            Logger.RemoveBackend(fileLogger);
+            fileLogger = null;
         }
 
         private void CheckLogTester()
@@ -484,14 +468,14 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         private LogTester logTester;
-        private string cachedLogFilePath;
+        private FileBackend fileLogger;
         private bool defaultPauseEmulation;
 
         private readonly Dictionary<string, Savepoint> savepoints;
 
         private readonly UserInterface.Monitor monitor;
 
-        private const string CachedLogBackendName = "cache";
+        private const string RobotLogName = "robot";
         private const int MaxLogContextPrintedOnException = 1000;
 
         public enum ProviderType

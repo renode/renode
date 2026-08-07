@@ -65,10 +65,6 @@ Setup
 Setup Renode
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
-    IF  ${SAVE_LOGS}
-        Enable Logging To Cache
-    END
-
     ${allowed_chars}=   Set Variable                 abcdefghijklmnopqrstuvwxyz01234567890_-
     ${metrics_fname}=   Convert To Lower Case        ${SUITE_NAME}
     ${metrics_fname}=   Replace String               ${metrics_fname}      ${SPACE}              _
@@ -115,24 +111,39 @@ Create Snapshot Of Failed Test
     Execute Command  Save ${snapshot_path}
     Log To Console   !!!!! Emulation's state saved to ${snapshot_path}
 
-Save Test Log
-    Return From Keyword If   'skipped' in @{TEST TAGS}
-
+Get Test Log Path
     ${test_name}=      Get Sanitized Test Name
 
     ${logs_dir}=       Set Variable  ${RESULTS_DIRECTORY}/logs
     Create Directory   ${logs_dir}
 
-    ${log_path}=       Set Variable  ${logs_dir}/${test_name}.log
-    Log To Console     !!!!! Log saved to "${log_path}"
-    Save Cached Log    ${log_path}
+    RETURN             ${logs_dir}/${test_name}.log
 
 Test Setup
     IF  'profiling' in @{TEST TAGS}
         Start Profiler
     END
 
+    IF  ${SAVE_LOGS}
+        ${log_path}=  Get Test Log Path
+        Open Log File  ${log_path}
+    END
+
     Reset Emulation
+
+Print Log Saved Message
+    Return From Keyword If   'skipped' in @{TEST TAGS}
+    Return From Keyword If    not ${SAVE_LOGS}
+
+    ${log_path}=  Get Test Log Path
+    Log To Console     !!!!! Log saved to "${log_path}"
+
+Remove Log
+    Return From Keyword If   'skipped' in @{TEST TAGS}
+    Return From Keyword If    not ${SAVE_LOGS}
+
+    ${log_path}=  Get Test Log Path
+    Remove File  ${log_path}
 
 Test Teardown
     Stop Profiler
@@ -152,13 +163,11 @@ Test Teardown
           ...   Create Snapshot Of Failed Test
     END
 
-    IF  ${SAVE_LOGS}
-        IF  "${SAVE_LOGS_WHEN}" == "Always"
-            Save Test Log
-        ELSE IF  "${SAVE_LOGS_WHEN}" == "Fail"
-            Run Keyword If Test Failed
-              ...   Save Test Log
-        END
+    Close Log File
+    IF  "${SAVE_LOGS_WHEN}" == "Always" or ${failed}
+        Print Log Saved Message
+    ELSE
+        Remove Log
     END
 
     IF  ${HOLD_ON_ERROR}
@@ -174,7 +183,6 @@ Test Teardown
     END
 
     Reset Emulation
-    Clear Cached Log
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}

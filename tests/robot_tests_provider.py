@@ -1156,7 +1156,8 @@ class RobotTestSuite(object):
                 # Tests with unexpected timeouts won't be retried.
                 self.tests_with_unexpected_timeouts = test.name
             print(f"{message_start} after {Time(test.timeout).seconds}s: {test.parent.name}.{test.name}")
-            print(f"----- Skipped flushing emulation log and saving state due to the timeout, restarting Renode...")
+            BuiltIn().run_keyword("Print Log Saved Message")
+            print(f"----- Skipped saving state due to the timeout, restarting Renode...")
 
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
