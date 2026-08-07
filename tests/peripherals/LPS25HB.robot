@@ -1,6 +1,6 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
-${BIN}                              @https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_pressure_polling.elf-s_794076-b36b2685743abaf24da564d8fc5152ae2dcbb344
+${ZEPHYR420_BIN}                    @https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_pressure_polling.elf-s_794076-b36b2685743abaf24da564d8fc5152ae2dcbb344
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.lps25hb
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -8,10 +8,11 @@ ${SAMPLES_CSV}                      ${CURDIR}/LPS25HB-samples.csv
 
 *** Keywords ***
 Create Machine
+    [Arguments]                     ${bin}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
     Execute Command                 machine LoadPlatformDescriptionFromString "lps25hb: Sensors.LPS25HB @ i2c1 0x5D"
-    Execute Command                 sysbus LoadELF @${BIN}
+    Execute Command                 sysbus LoadELF @${bin}
     Execute Command                 cpu EnableZephyrMode
     Create Terminal Tester          ${UART}
 
@@ -56,7 +57,7 @@ Read Registers
 
 *** Test Cases ***
 Should Read Temperature And Pressure
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     # Due the finite precision of the sensor, and a overflow in Zephyr implementation,
     # we don't always expect the exact same values as the ones that where set
@@ -92,7 +93,7 @@ Should Read Temperature And Pressure
     Check Environment               temperature=100.31
 
 Should Correctly Calculate Pressure
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     ${expected_pressure}=           Set Variable  1023.346923828125
     Execute Command                 ${SENSOR} Pressure ${expected_pressure}
@@ -104,7 +105,7 @@ Should Correctly Calculate Pressure
     Should Be Equal As Strings      ${pressure_bytes}  [0x8D, 0xF5, 0x3F]
 
 Should Read Samples From RESD
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
 
