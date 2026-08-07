@@ -1092,7 +1092,7 @@ class RobotTestSuite(object):
 
         for test in suite.tests:
             if not test.setup:
-                test.setup.config(name="Reset Emulation")
+                test.setup.config(name="Test Setup")
             if not test.teardown:
                 test.teardown.config(name="Test Teardown")
 

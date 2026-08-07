@@ -132,6 +132,8 @@ Test Setup
         Start Profiler
     END
 
+    Reset Emulation
+
 Test Teardown
     Stop Profiler
 

@@ -25,7 +25,7 @@ ${ZEPHYR_SLAVE_ELF}                                https://dl.antmicro.com/proje
 *** Keywords ***
 
 GPTP Test Setup
-    Reset Emulation
+    Test Setup
     Execute Command                                emulation CreateSwitch "switch"
 
 ########################

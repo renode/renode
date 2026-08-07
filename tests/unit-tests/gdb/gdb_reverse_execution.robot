@@ -95,6 +95,7 @@ ${WORKSHOP_ASSEMBLY}                SEPARATOR=\n
 
 *** Keywords ***
 Create HiFive1 Demo
+    Test Setup
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
     Execute Command                 cpu AssembleBlock ${ENTRYPOINT} "${ASSEMBLY}"
@@ -102,6 +103,7 @@ Create HiFive1 Demo
     Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT}
 
 Create HiFive1 Workshop Demo
+    Test Setup
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
     Execute Command                 cpu AssembleBlock ${ENTRYPOINT} "${WORKSHOP_ASSEMBLY}"

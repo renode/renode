@@ -139,6 +139,7 @@ Field Should Have Correct Value
     Should Be Equal As Integers     ${field_value}  ${expected_value}  ${error_message}
 
 Create Machine
+    Test Setup
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${PLAT}
     Execute Command                 using sysbus
