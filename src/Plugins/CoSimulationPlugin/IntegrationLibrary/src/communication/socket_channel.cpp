@@ -7,23 +7,52 @@
 
 #include "socket_channel.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <sys/ioctl.h>
+#endif
+
 SocketCommunicationChannel::SocketCommunicationChannel()
+    : connected(false)
 {
     ASocket::SettingsFlag dontLog = ASocket::NO_FLAGS;
     mainSocket.reset(new CTCPClient(NULL, dontLog));
     senderSocket.reset(new CTCPClient(NULL, dontLog));
 }
 
-void SocketCommunicationChannel::connect(int receiverPort, int senderPort, const char* address)
+void SocketCommunicationChannel::connect(SocketConnectionArgs *args)
 {
-    mainSocket->Connect(address, std::to_string(receiverPort));
-    senderSocket->Connect(address, std::to_string(senderPort));
+    if (!mainSocket->Connect(args->address, std::to_string(args->receiverPort))) {
+        return;
+    }
+
+    // To handle the partial-connect race we hold mainSocket
+    // open and retry senderSocket briefly before giving up.
+    const int senderRetryDelayMs = 10;
+    while(true) {
+        if (senderSocket->Connect(args->address, std::to_string(args->senderPort))) {
+            break;
+        }
+#ifdef _WIN32
+        Sleep(senderRetryDelayMs);
+#else
+        usleep(senderRetryDelayMs * 1000);
+#endif
+    }
+
+    mainSocket->SetRcvTimeout(args->handshakeTimeout);
+    senderSocket->SetRcvTimeout(args->handshakeTimeout);
     handshakeValid();
+
+    mainSocket->SetRcvTimeout(0);
+    senderSocket->SetRcvTimeout(0);
 }
 
 void SocketCommunicationChannel::disconnect()
 {
-    connected = false;
+    mainSocket->Disconnect();
+    senderSocket->Disconnect();
 }
 
 bool SocketCommunicationChannel::isConnected()
@@ -34,10 +63,17 @@ bool SocketCommunicationChannel::isConnected()
 void SocketCommunicationChannel::handshakeValid()
 {
     Protocol* received = receive();
-    if(received->actionId == handshake) {
+    if (received == nullptr) {
+        disconnect();
+        return;
+    }
+    if (received->actionId == handshake) {
         sendMain(Protocol(handshake, 0, 0, noPeripheralIndex));
         connected = true;
+    } else {
+        disconnect();
     }
+    delete received;
 }
 
 void SocketCommunicationChannel::log(int logLevel, const char* data)
@@ -49,7 +85,40 @@ void SocketCommunicationChannel::log(int logLevel, const char* data)
 Protocol* SocketCommunicationChannel::receive()
 {
     Protocol* message = new Protocol;
-    mainSocket->CTCPClient::Receive((char *)message,  sizeof(Protocol));
+    int ret = mainSocket->CTCPClient::Receive((char *)message, sizeof(Protocol), true);
+
+    if(ret <= 0) {
+        delete message;
+        return nullptr;
+    }
+
+    return message;
+}
+
+Protocol* SocketCommunicationChannel::tryReceive()
+{
+#ifdef _WIN32
+    u_long available = 0;
+    if (ioctlsocket(mainSocket->GetSocketDescriptor(), FIONREAD, &available) != 0) {
+        return nullptr;
+    }
+#else
+    int available = 0;
+    if (ioctl(mainSocket->GetSocketDescriptor(), FIONREAD, &available) != 0) {
+        return nullptr;
+    }
+#endif
+
+    if (available < (int)sizeof(Protocol)) {
+        return nullptr;
+    }
+
+    Protocol* message = new Protocol;
+    int ret = mainSocket->CTCPClient::Receive((char *)message, sizeof(Protocol), true);
+    if (ret <= 0) {
+        delete message;
+        return nullptr;
+    }
     return message;
 }
 

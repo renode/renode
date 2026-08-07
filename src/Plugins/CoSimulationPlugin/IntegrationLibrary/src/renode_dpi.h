@@ -10,13 +10,24 @@
 
 extern "C"
 {
-  void renodeDPIConnect(int receiverPort, int senderPort, const char *address);
+  void renodeDPIConnect(uint32_t receiverPort, uint32_t senderPort, const char *address, uint32_t timeoutMs);
+  void renodeDPIConnectInBackground(uint32_t receiverPort, uint32_t senderPort, const char *address, uint32_t timeoutMs);
   void renodeDPIDisconnect();
-  bool renodeDPIIsConnected();
+  int32_t renodeDPIGetConnectionStatus();
+  bool renodeDPITryReceive(uint32_t *actionId, uint64_t *address, uint64_t *value, int32_t *peripheralIndex);
   bool renodeDPIReceive(uint32_t *actionId, uint64_t *address, uint64_t *value, int32_t *peripheralIndex);
   bool renodeDPISend(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
   bool renodeDPISendToAsync(uint32_t actionId, uint64_t address, uint64_t value, int32_t peripheralIndex);
-  bool renodeDPILog(int logLevel, const char *data);
+  bool renodeDPILog(int32_t logLevel, const char *data);
+
+  typedef enum : int32_t {
+    Unconnected = 0,
+    NeedsReconnection = 1,
+    Connecting = 2,
+    Connected = 3,
+    Disconnected = 4,  // Indicate graceful disconnection
+    Error = 5  // Error while connecting
+  } ConnectionStatus;
 }
 
 #endif
