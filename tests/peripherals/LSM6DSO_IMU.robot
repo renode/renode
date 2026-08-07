@@ -1,6 +1,7 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 ${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_828372-b3da65fa9bf47012ff9f7b9206b2e73b392ca795
+${ZEPHYR440_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_887312-c6fc10ddb76499abe31724ac569660f9c4d5c7d6
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.lsm6dso
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -93,3 +94,10 @@ Should Read Samples From RESD
     # After stream finishes, peripheral should fall back to default values
     Wait For Acceleration Line      0  0  0
     Wait For Angular Rate Line      0  0  0
+
+Should Work After Errata Driver Update
+    Create Machine                  ${ZEPHYR440_BIN}
+
+    Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
+    Feed Acceleration               1  -1  0
+    Wait For Acceleration Line      9.801001  -9.801001  0

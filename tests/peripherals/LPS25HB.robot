@@ -1,6 +1,7 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 ${ZEPHYR420_BIN}                    @https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_pressure_polling.elf-s_794076-b36b2685743abaf24da564d8fc5152ae2dcbb344
+${ZEPHYR440_BIN}                    @https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_pressure_polling.elf-s_833608-f8b3cc7af3205f8ab2d322ed79eef4f3324b81b0
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.lps25hb
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -24,7 +25,7 @@ Set Environment
 Check Environment
     [Arguments]                     ${temperature}=0.74  ${pressure}=1013.25
     ${pressure}=                    Evaluate  "{:.6f}".format(float(${pressure})/10.0)  # hPa to kPa conversion
-    Wait For Line On Uart           .* temp ${temperature} Cel, pressure ${pressure} kPa, .*  treatAsRegex=true  timeout=0.1
+    Wait For Line On Uart           temp ${temperature} Cel, pressure ${pressure} kPa.*  treatAsRegex=true  timeout=1
 
 Create RESD File
     [Arguments]                     ${path}
@@ -125,3 +126,9 @@ Should Read Samples From RESD
     # Sensor should go back to set values after the RESD file finishes
     Check Environment               temperature=42.50  pressure=1013.25
     Check Environment               temperature=42.50  pressure=1013.25
+
+Should Work After Errata Driver Update
+    Create Machine                  ${ZEPHYR440_BIN}
+
+    Set Environment                 temperature=100.0
+    Check Environment               temperature=100.31

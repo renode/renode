@@ -1,6 +1,7 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 ${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_599280-f102efd2fb21d8f68de76386291728850712f935
+${ZEPHYR440_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_651864-d677ebdfc1b651141b4cb13f4328dd64bb397bce
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.als
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -85,3 +86,11 @@ Should Read Samples From Timestamped RESD
     Check Enviroment                499
     Check Enviroment                12000
     Check Enviroment                12000
+
+Should Work After Errata Driver Update
+    Create Machine                  ${ZEPHYR440_BIN}
+
+    Check Enviroment                illuminance=0
+
+    Set Enviroment                  illuminance=500
+    Check Enviroment                illuminance=499
