@@ -1,6 +1,6 @@
 *** Variables ***
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
-${BIN}                              https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_599280-f102efd2fb21d8f68de76386291728850712f935
+${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_599280-f102efd2fb21d8f68de76386291728850712f935
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.als
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -8,10 +8,11 @@ ${SAMPLES_CSV}                      ${CURDIR}/veml7700-samples.csv
 
 *** Keywords ***
 Create Machine
+    [Arguments]                     ${bin}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
     Execute Command                 machine LoadPlatformDescriptionFromString "als: Sensors.VEML7700 @ i2c1 0x10"
-    Execute Command                 sysbus LoadELF @${BIN}
+    Execute Command                 sysbus LoadELF @${bin}
     Create Terminal Tester          ${UART}
 
 Set Enviroment
@@ -48,7 +49,7 @@ Create Timestamped RESD File
 
 *** Test Cases ***
 Should Read Illuminance
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     Check Enviroment                illuminance=0
 
@@ -64,7 +65,7 @@ Should Read Illuminance
     Check Enviroment                illuminance=10000
 
 Should Read Samples From RESD
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
     Execute Command                 ${SENSOR} FeedIlluminanceSamplesFromRESD @${resd_path}
@@ -75,7 +76,7 @@ Should Read Samples From RESD
     Check Enviroment                12000
 
 Should Read Samples From Timestamped RESD
-    Create Machine
+    Create Machine                  ${ZEPHYR420_BIN}
 
     ${resd_path}=                   Create Timestamped RESD File  ${SAMPLES_CSV}
     Execute Command                 ${SENSOR} FeedIlluminanceSamplesFromRESD @${resd_path}
