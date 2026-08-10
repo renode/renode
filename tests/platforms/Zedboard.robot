@@ -604,3 +604,18 @@ Should Pass Default Interrupt Test
     Assert LED State               true   testerId=${generic_irq_tester}
     Assert LED State               true   testerId=${rx_empty_tester}
     Assert LED State               false  testerId=${rx_full_tester}
+
+Should Read ADC Value
+    Requires                        logged-in
+
+    Execute Command                 machine LoadPlatformDescriptionFromString "adc_source: Analog.ADCChannelSource @ xadc 1"
+    Write Line To Uart              cd /sys/devices/soc0/axi/f8007100.adc/iio:device0
+
+    Write Line To Uart              cat in_voltage0_vccint_raw
+    Wait For Line On Uart           0
+
+    Execute Command                 xadc.adc_source Volts 1.5
+    ## Use printf + bc's scale to round the voltage to read 1.5 instead of 1.49
+    Write Line To Uart              printf "%.1f\\n" $(echo "scale=2; $(cat in_voltage0_vccint_raw) * $(cat in_voltage0_vccint_scale) / 1000" | bc)
+    ...                             waitForEcho=False   # Command is too long to have echo on 1 line
+    Wait For Line On Uart           1.5
