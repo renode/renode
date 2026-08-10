@@ -22,6 +22,12 @@ Custom Test Teardown
 
     Return From Keyword If          'skipped' in @{TEST TAGS}
 
+    ${proc}=                        Terminate Process
+    IF  ${{ $proc is not None }}
+        Log                             Sample stdout:${\n}${proc.stdout}
+        Log                             Sample stderr:${\n}${proc.stderr}
+    END
+
     IF  $TEST_STATUS == 'FAIL'
         ${test_name}=                   Get Sanitized Test Name
         ${out_dir}=                     Set Variable  ${RESULTS_DIRECTORY}/external-control/${test_name}
@@ -58,6 +64,7 @@ Execute Sample
     ${proc}=                        Start Sample  ${app}  @{args}
 
     ${r}=                           Wait For Process  ${proc}
+    Log                             Sample stdout:${\n}${r.stdout}
     Should Be Equal As Integers     ${r.rc}  0  msg=app '${app}' failed exitted with code ${r.rc}, stderr: ${r.stderr}
     [Return]                        ${r}
 
