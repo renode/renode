@@ -180,6 +180,16 @@ Test Calling Unimplemented Bootrom Function
 
 Should Successfully Run adc_measure Example
     Create Machine
+
+    # The last 6 bits contain the fraction part in measurement averages computed from multiple samples.
+    Execute Command           adc Channel0Data 0x40  # Min value for the integer part.
+    Execute Command           adc Channel1Data 0xAAAA
+    Execute Command           adc Channel2Data 0x15555
+    Execute Command           adc Channel3Data 0x1FFFF
+    Execute Command           adc Channel4Data 0x2AAAA
+    Execute Command           adc Channel5Data 0x35555
+    Execute Command           adc Channel6Data 0x3FFC0  # Max value for the integer part.
+
     Start Example             adc_measure.axf-s_258564-3c473c4e7c59b73cdbf00b22b633e3301923ed61
 
     Wait For Line On Uart     ADC correction offset = 0.0
@@ -192,7 +202,6 @@ Should Successfully Run adc_measure Example
     Wait For Line On Uart     ADC SLOT3 = 0x.....6..    treatAsRegex=true
 
     # A single software trigger is sent by the example so a single read from each slot should be printed.
-    # These values are the example defaults set in the REPL file.
     Wait For Line On Uart     ADC#0 sample read=681, measured voltage=197.0 mV
     Wait For Line On Uart     ADC#1 sample read=1363, measured voltage=395.0 mV
     Wait For Line On Uart     ADC#2 sample read=2729, measured voltage=792.0 mV

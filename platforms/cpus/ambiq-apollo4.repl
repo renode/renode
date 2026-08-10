@@ -96,14 +96,6 @@ shared_sram: Memory.MappedMemory @ sysbus 0x10060000
 // Other peripherals
 
 adc: Analog.AmbiqApollo4_ADC @ sysbus 0x40038000
-    // The last 6 bits contain the fraction part in measurement averages computed from multiple samples.
-    Channel0Data: 0x40  // Min value for the integer part.
-    Channel1Data: 0xAAAA
-    Channel2Data: 0x15555
-    Channel3Data: 0x1FFFF
-    Channel4Data: 0x2AAAA
-    Channel5Data: 0x35555
-    Channel6Data: 0x3FFC0  // Max value for the integer part.
     -> nvic@19
 
 gpio: GPIOPort.AmbiqApollo4_GPIO @ sysbus 0x40010000
