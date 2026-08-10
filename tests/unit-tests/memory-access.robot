@@ -53,6 +53,7 @@ Monitor Exception Template
 *** Test Cases ***
 Should Report Illegal Address For Instruction Fetch
     Create Machine                  ${PLAT_RISCV64}
+    Set Crash On Abort              False
     Configure Machine               ${PROG_RISCV_INSN_FETCH}
     Execute Command                 emulation RunFor ${emulation_time}
 
@@ -61,6 +62,7 @@ Should Report Illegal Address For Instruction Fetch
 
 Should Report Illegal Address For Store
     Create Machine                  ${PLAT_RISCV64}
+    Set Crash On Abort              False
     Configure Machine               ${PROG_RISCV_LOAD}
     Execute Command                 emulation RunFor ${emulation_time}
 

@@ -130,6 +130,7 @@ Test Setup
     END
 
     Reset Emulation
+    Set Crash On Abort  True
 
 Print Log Saved Message
     Return From Keyword If   'skipped' in @{TEST TAGS}

@@ -29,6 +29,8 @@ namespace Antmicro.Renode.RobotFramework
             {
                 monitor.Interaction = new CommandInteractionWrapper(monitor.Interaction);
             }
+            EmulationManager.Instance.EmulationChanged += EmulationChangedCallback;
+            EmulationChangedCallback();
         }
 
         public void Dispose()
@@ -36,6 +38,8 @@ namespace Antmicro.Renode.RobotFramework
             var interaction = monitor.Interaction as CommandInteractionWrapper;
             monitor.Interaction = interaction.UnderlyingCommandInteraction;
             TemporaryFilesManager.Instance.Cleanup();
+            EmulationManager.Instance.EmulationChanged -= EmulationChangedCallback;
+            EmulationManager.Instance.CurrentEmulation.MachineStateChanged -= MachineStateChangedCallback;
         }
 
         [RobotFrameworkKeyword]
@@ -447,6 +451,12 @@ namespace Antmicro.Renode.RobotFramework
             fileLogger = null;
         }
 
+        [RobotFrameworkKeyword]
+        public void SetCrashOnAbort(bool enable)
+        {
+            crashOnAbort = enable;
+        }
+
         private void CheckLogTester()
         {
             if(logTester == null)
@@ -467,9 +477,28 @@ namespace Antmicro.Renode.RobotFramework
             }
         }
 
+        private void MachineStateChangedCallback(IMachine _, MachineStateChangedEventArgs ev)
+        {
+            if(ev.CurrentState != MachineStateChangedEventArgs.State.Aborted)
+            {
+                return;
+            }
+            if(!crashOnAbort)
+            {
+                return;
+            }
+            throw new KeywordException("Machine aborted");
+        }
+
+        private void EmulationChangedCallback()
+        {
+            EmulationManager.Instance.CurrentEmulation.MachineStateChanged += MachineStateChangedCallback;
+        }
+
         private LogTester logTester;
         private FileBackend fileLogger;
         private bool defaultPauseEmulation;
+        private bool crashOnAbort;
 
         private readonly Dictionary<string, Savepoint> savepoints;
 

@@ -112,6 +112,7 @@ Should Handle Connection Timeout
     Create Terminal Tester          ${UART}
     Start Emulation
     Wait For Line On Uart           I'm alive! counter = 9
+    Set Crash On Abort              False
     Wait For Log Entry              Receive error!
 
 # Both ports wrong when calling "simulate" (sim_main.cpp)

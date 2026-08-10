@@ -210,6 +210,7 @@ CPU Can Have Two MMUs
 
 Peripheral Throws Fault On Illegal Data Access
     Requires                        SingleMMU
+    Set Crash On Abort              False
     Create Log Tester               0
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_ALL}
     Define Window In Peripheral     mmu1  2  0x1000  0x2000  0x0000  ${PRIV_NONE}
@@ -233,6 +234,7 @@ Peripheral Does Not Throw When no_page_fault Is Set
 
 Peripheal Throws On Illegal Instruction Fetch
     Create Platform
+    Set Crash On Abort              False
     Create Log Tester               0
     Execute Command                 machine LoadPlatformDescriptionFromString "mmu1: Miscellaneous.ExternalWindowMMU @ sysbus 0x47000000 {cpu: cpu; numberOfWindows: 4}"
     Define Window In Peripheral     mmu1  1  0x0000  0x1000  0x0000  ${PRIV_WRITE_ONLY}
@@ -243,6 +245,7 @@ Peripheal Throws On Illegal Instruction Fetch
 
 First MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+    Set Crash On Abort              False
     Create Log Tester               0
 
     Execute Command                 logLevel 0 mmu1
@@ -257,6 +260,7 @@ First MMU Throws On Fault In Its Window
 
 Second MMU Throws On Fault In Its Window
     Requires                        TwoMmus
+    Set Crash On Abort              False
     Create Log Tester               0
 
     Execute Command                 logLevel 0 mmu1
@@ -271,12 +275,13 @@ Second MMU Throws On Fault In Its Window
 
 Execution Stops On Fault
     Requires                        SingleMMU
-    Write Range With Doublewords    0x0  0x1000  0x13 # Nop sled on whole page
+    Set Crash On Abort              False
+    Write Range With Doublewords    0x0  0x1000  0x13  # Nop sled on whole page
     Execute Command                 cpu SetRegister ${a0} 0x1C
-    Execute Command                 sysbus WriteDoubleWord 0x1C 0x52583  # lw a1, 0(a0)
-    Execute Command                 sysbus WriteDoubleWord 0x20 0xd02503 # lw a2, 0(zero)
+    Execute Command                 sysbus WriteDoubleWord 0x1C 0x52583   # lw a1, 0(a0)
+    Execute Command                 sysbus WriteDoubleWord 0x20 0xd02503  # lw a2, 0(zero)
     Start Emulation
-    Sleep 							0.1
+    Sleep                           0.1
 
     # Assert we are halted on the faulting insn
     ${pc}=                          Execute Command   cpu PC

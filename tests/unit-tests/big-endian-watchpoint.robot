@@ -172,6 +172,7 @@ Abort Should Work After Watchpoint Hit
     [Arguments]  ${memoryType}
 
     Prepare Machine           Sparc  ${memoryType}
+    Set Crash On Abort        False
     Create Log Tester         0
     Load Program              Sparc  Writer
 

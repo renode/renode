@@ -37,12 +37,14 @@ Create Simple M33 Machine
     Execute Command                 machine LoadPlatformDescriptionFromString ${SIMPLE_M33_REPL}\ncpu: { enableTrustZone: ${enableTrustZone} }"""
 
 Test VTOR Initialisation
-    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
-    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
+    Execute Command                 machine LoadPlatformDescriptionFromString "otherMem: Memory.MappedMemory @ sysbus 0x20000 { size: 0x1000; }"
+    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x20100
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x20201
+    Execute Command                 cpu AssembleBlock 0x20200 "b ."
     Execute Command                 sysbus.cpu VectorTableOffset 0x10000
     Start Emulation
-    PC Should Be Equal              0x10234
-    Register Should Be Equal        SP  0x10100
+    PC Should Be Equal              0x20200
+    Register Should Be Equal        SP  0x20100
 
 *** Test Cases ***
 Should Handle Separation By State In Secure World
