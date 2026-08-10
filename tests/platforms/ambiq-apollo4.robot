@@ -182,13 +182,18 @@ Should Successfully Run adc_measure Example
     Create Machine
 
     # The last 6 bits contain the fraction part in measurement averages computed from multiple samples.
-    Execute Command           adc Channel0Data 0x40  # Min value for the integer part.
-    Execute Command           adc Channel1Data 0xAAAA
-    Execute Command           adc Channel2Data 0x15555
-    Execute Command           adc Channel3Data 0x1FFFF
-    Execute Command           adc Channel4Data 0x2AAAA
-    Execute Command           adc Channel5Data 0x35555
-    Execute Command           adc Channel6Data 0x3FFC0  # Max value for the integer part.
+    #
+    # The test software applies a gain/offset correction. Even if those values are 0, there is a raw
+    # to voltage conversion using float and then back to raw which makes that the raw value printed
+    # on UART is not exactly the raw value returned by the model. It also leads to less accurate
+    # voltage values, explaining the difference between the values set and read.
+    Execute Command           adc.adc-channel0 Volts 0.0002905  # Min value for the integer part.
+    Execute Command           adc.adc-channel1 Volts 0.199
+    Execute Command           adc.adc-channel2 Volts 0.397
+    Execute Command           adc.adc-channel3 Volts 0.595
+    Execute Command           adc.adc-channel4 Volts 0.794
+    Execute Command           adc.adc-channel5 Volts 0.992
+    Execute Command           adc.adc-channel6 Volts 1.19  # Max value for the integer part.
 
     Start Example             adc_measure.axf-s_258564-3c473c4e7c59b73cdbf00b22b633e3301923ed61
 
@@ -207,9 +212,9 @@ Should Successfully Run adc_measure Example
     Wait For Line On Uart     ADC#2 sample read=2729, measured voltage=792.0 mV
     Wait For Line On Uart     ADC#3 sample read=4092, measured voltage=1188.0 mV
 
-    # Change some values and manually trigger a scan.
-    Execute Command           adc Channel2Data 0x00040
-    Execute Command           adc Channel4Data 0x35E00
+    # Change some values and manually trigger a scan. See comment above about values accuracy.
+    Execute Command           adc.adc-channel2 Volts 0.0002905
+    Execute Command           adc.adc-channel4 Volts 1.002
     Execute Command           adc ScanAllSlots
     Wait For Line On Uart     ADC#0 sample read=681, measured voltage=197.0 mV
     Wait For Line On Uart     ADC#1 sample read=0, measured voltage=0.0 mV

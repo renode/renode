@@ -14,3 +14,9 @@ flex_spi: @ sysbus 0x402A8000
 
 flash_mem: Memory.MappedMemory @ sysbus 0x70000000
     size: 0x400000
+
+adc1:
+    referenceVoltage: 3.3
+
+adc2:
+    referenceVoltage: 3.3

@@ -132,9 +132,11 @@ lpspi3 : SPI.IMXRT_LPSPI @ sysbus 0x4039C000
 lpspi4 : SPI.IMXRT_LPSPI @ sysbus 0x403A0000
 
 adc1: Analog.IMXRT_ADC @ sysbus 0x400C4000
+    referenceVoltage: 3.3 // default value that can be overwritten in board platform description
     -> nvic@67
 
 adc2: Analog.IMXRT_ADC @ sysbus 0x400C8000
+    referenceVoltage: 3.3 // default value that can be overwritten in board platform description
     -> nvic@68
 
 pwm1: Timers.IMXRT_PWM @ sysbus 0x403DC000

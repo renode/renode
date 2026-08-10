@@ -122,7 +122,7 @@ Watchdog Should Reset Machine Continuously If Not Frozen
 Test GPADC
     Create Machine                  ${ADC_BIN}   ${ADC_ELF}
     Create Terminal Tester          sysbus.uart1
-    Execute Command                 sysbus.gpadc FeedSamplesFromRESD @${ADC_RESD} 6 6
+    Execute Command                 sysbus.gpadc.gpadc-channel6 FeedSamplesFromRESD @${ADC_RESD} 6
 
     Wait For Line On Uart           ADC read completed
     Wait For Line On Uart           Number of samples: 21, ADC result value: 19026
