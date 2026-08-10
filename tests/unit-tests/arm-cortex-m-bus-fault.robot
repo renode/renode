@@ -46,6 +46,7 @@ ${CFSR_PRECISERR_BFARVALID}         ${{(1<<9) | (1<<15)}}
 ${CFSR_UNSTKERR}                    ${{1<<11}}
 ${CFSR_STKERR}                      ${{1<<12}}
 ${CFSR_LSPERR}                      ${{1<<13}}
+${CFSR_INVSTATE}                    ${{1<<17}}
 ${CFSR_INVPC}                       ${{1<<18}}
 ${HFSR_VECTTBL}                     ${{1<<1}}
 ${HFSR_FORCED}                      ${{1<<30}}
@@ -319,6 +320,14 @@ Run Precise BusFault Test Without Single Step
     DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
 
 *** Test Cases ***
+Should Enter Lockup On Invalid Reset State
+    Create Bare Machine
+    Execute Command                 cpu Step 1
+
+    Lockup Should Be Asserted
+    DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_INVSTATE}
+    DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
+
 Should Raise Precise BusFault On Peripheral Read
     Create Machine
     Enable BusFault
