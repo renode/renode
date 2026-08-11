@@ -27,8 +27,8 @@ Create Machine
         Execute Command                 machine LoadPlatformDescription @platforms/cpus/a20.repl
     END
 
-    # Set reset handler address
-    Execute Command                 sysbus WriteDoubleWord 0x4 0x100
+    # Set reset handler address. Cortex-M reset vectors include the Thumb bit.
+    Execute Command                 sysbus WriteDoubleWord 0x4 ${{0x100 | int($is_cortex_m)}}
     # Create simple loop in the reset handler
     ${check_address}=               Execute Command  cpu AssembleBlock 0x100 "nop; nop;"
     ${check_address}=               Evaluate  ${START_ADDRESS}+${check_address}
@@ -258,7 +258,7 @@ CPU Should Halt and Reset on Cortex-M
 CPU Should Halt and Reset on Cortex-A
     TRY
         FOR  ${machine_reset}  IN  True  False
-            Start Test                      is_cortex_m=False
+            Start Test                      is_cortex_m=${False}
 
             Halt CPU
             Reset                           ${machine_reset}
@@ -328,7 +328,7 @@ CPU Should Halt Pause and Reset on Cortex-M
 CPU Should Halt Pause and Reset on Cortex-A
     TRY
         FOR  ${machine_reset}  IN  True  False
-            Start Test                      is_cortex_m=False
+            Start Test                      is_cortex_m=${False}
 
             Pause CPU
             Halt CPU

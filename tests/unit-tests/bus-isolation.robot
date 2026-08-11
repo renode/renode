@@ -190,7 +190,7 @@ Test Conflicting Conditions
 Should Access VTOR in Secure State
     Create Simple M33 Machine
     Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
-    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10234
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
     Execute Command                 sysbus.cpu VectorTableOffset 0x10000
     Start Emulation
     PC Should Be Equal              0x10234
@@ -199,7 +199,7 @@ Should Access VTOR in Secure State
 Should Access VTOR Without TrustZone Enabled
     Create Simple M33 Machine       enableTrustZone=false
     Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
-    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10234
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
     Execute Command                 sysbus.cpu VectorTableOffset 0x10000
     Start Emulation
     PC Should Be Equal              0x10234
