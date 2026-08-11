@@ -22,6 +22,7 @@ typedef struct {
     pthread_cond_t cond;
     void *data;
     size_t data_size;
+    uint16_t message_id;
 } channel_t;
 
 static renode_error_t *channel_init(channel_t *c)
@@ -39,6 +40,7 @@ static renode_error_t *channel_init(channel_t *c)
 
     c->data = NULL;
     c->data_size = 0;
+    c->message_id = 0;
     return NO_ERROR;
 }
 
@@ -55,7 +57,7 @@ static void channel_mutex_unlock_cleanup(void *lock)
     pthread_mutex_unlock((pthread_mutex_t *)lock);
 }
 
-static void channel_get(channel_t *c, void **data, size_t *size)
+static void channel_get(channel_t *c, void **data, size_t *size, uint16_t *id)
 {
     pthread_mutex_lock(&c->lock);
     pthread_cleanup_push(channel_mutex_unlock_cleanup, &c->lock);
@@ -66,14 +68,16 @@ static void channel_get(channel_t *c, void **data, size_t *size)
 
     *data = c->data;
     *size = c->data_size;
+    *id = c->message_id;
     c->data = NULL;
     c->data_size = 0;
+    c->message_id = 0;
 
     // Unlock the mutex if cancellation was not triggered
     pthread_cleanup_pop(1);
 }
 
-static renode_error_t *channel_put(channel_t *c, void *data, size_t data_size)
+static renode_error_t *channel_put(channel_t *c, void *data, size_t data_size, uint16_t id)
 {
     renode_error_t *err = NO_ERROR;
     pthread_mutex_lock(&c->lock);
@@ -83,6 +87,7 @@ static renode_error_t *channel_put(channel_t *c, void *data, size_t data_size)
 
     c->data = data;
     c->data_size = data_size;
+    c->message_id = id;
     pthread_cond_signal(&c->cond);
     pthread_mutex_unlock(&c->lock);
     return err;
@@ -223,9 +228,9 @@ static void *receiver_thread(void *ud)
         check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, buffer, envelope.data_size));
 
         if ((envelope.id & CLIENT_INITIATED) == CLIENT_INITIATED) {
-            check_and_handle_async_error(conn, channel_put(&conn->client_responses, buffer, envelope.data_size));
+            check_and_handle_async_error(conn, channel_put(&conn->client_responses, buffer, envelope.data_size, envelope.id));
         } else {
-            check_and_handle_async_error(conn, channel_put(&conn->server_requests, buffer, envelope.data_size));
+            check_and_handle_async_error(conn, channel_put(&conn->server_requests, buffer, envelope.data_size, envelope.id));
         }
     }
 }
@@ -238,6 +243,7 @@ static void *default_handler_thread(void *ud)
 
     void *data;
     size_t size;
+    uint16_t id;
 
     while (true) {
         // Enable cancellation while waiting for a server request
@@ -245,7 +251,7 @@ static void *default_handler_thread(void *ud)
         pthread_testcancel();
 
         // Wait for a request from the server
-        channel_get(&conn->server_requests, &data, &size);
+        channel_get(&conn->server_requests, &data, &size, &id);
 
         // Disable cancellation
         // POSIX does not allow NULL but most implementations do
@@ -490,7 +496,8 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
     // Wait for a response from the server
     void *data;
     size_t size;
-    channel_get(&conn->client_responses, &data, &size);
+    uint16_t id;
+    channel_get(&conn->client_responses, &data, &size, &id);
 
     pthread_mutex_lock(&conn->lifecycle_lock);
     conn->active_handler_count += 1;
