@@ -488,7 +488,8 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
 
     pthread_mutex_lock(&conn->client_request_lock); // Only 1 thread can start a request chain
 
-    err = renode_connection_send_message_impl(conn, CLIENT_INITIATED | (conn->client_next_request_id++), transfers, count);
+    uint16_t request_message_id = CLIENT_INITIATED | (conn->client_next_request_id++);
+    err = renode_connection_send_message_impl(conn, request_message_id, transfers, count);
     if (err != NO_ERROR) {
         goto release_locks;
     }
@@ -497,11 +498,26 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
     void *data;
     size_t size;
     uint16_t id;
+    message_payload_t **header = (message_payload_t **)&data;
     channel_get(&conn->client_responses, &data, &size, &id);
 
     pthread_mutex_lock(&conn->lifecycle_lock);
     conn->active_handler_count += 1;
     pthread_mutex_unlock(&conn->lifecycle_lock);
+
+    while((*header)->type == TYPE_EVENT_REQUEST || (*header)->type == TYPE_REQUEST) {
+        // Handle the request
+        err = cb(conn, data, size, ud);
+        free(data);
+
+        // Wait for a response from the server to the original request, or another request
+        channel_get(&conn->client_responses, &data, &size, &id);
+    }
+
+    if (id != request_message_id) {
+        err = create_fatal_error_static("Response ID does not match request ID");
+        goto release_locks;
+    }
 
     // Handle the response - while holding the request_lock to enable nested requests
     err = cb(conn, data, size, ud);
