@@ -29,6 +29,36 @@
 #define verbose_print(fmt, ...)
 #endif
 
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.Command` in C#
+typedef enum {
+    CHECK_VERSION = 0,
+    RUN_FOR,
+    GET_TIME,
+    GET_MACHINE,
+    ADC,
+    GPIO,
+    SYSTEM_BUS,
+    TIME_ELAPSED_CALLBACK,
+} api_command_t;
+
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.CommandType` in C#
+typedef enum {
+    TYPE_REQUEST = 0x0,
+    TYPE_EVENT_REQUEST = 0x1,
+    TYPE_SUCCESS = 0x2,
+    TYPE_INVALID_COMMAND = 0x3,
+    TYPE_ERROR = 0x4,
+} command_type_t;
+
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.MessagePayload` in C#
+typedef struct __attribute__((packed)) {
+    uint16_t command;
+    uint8_t type;
+} message_payload_t;
+
+// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.GetVersion.ProtocolVersion` in C#
+static const uint32_t PROTOCOL_VERSION = 0;
+
 static inline void *xmalloc(size_t size)
 {
     void *result = malloc(size);

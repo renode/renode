@@ -64,40 +64,10 @@ void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_f
 #define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
 #define ERRMSG_COMMAND_MISMATCH "Received mismatched command"
 
-// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.Command` in C#
-typedef enum {
-    CHECK_VERSION = 0,
-    RUN_FOR,
-    GET_TIME,
-    GET_MACHINE,
-    ADC,
-    GPIO,
-    SYSTEM_BUS,
-    TIME_ELAPSED_CALLBACK,
-} api_command_t;
-
-// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.CommandType` in C#
-typedef enum {
-    TYPE_REQUEST = 0x0,
-    TYPE_EVENT_REQUEST = 0x1,
-    TYPE_SUCCESS = 0x2,
-    TYPE_INVALID_COMMAND = 0x3,
-    TYPE_ERROR = 0x4,
-} command_type_t;
-
-// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.MessagePayload` in C#
-typedef struct __attribute__((packed)) {
-    uint16_t command;
-    uint8_t type;
-} message_payload_t;
-
 #define REQUEST_HEADER(cmd) {&(const message_payload_t){ cmd, TYPE_REQUEST }, sizeof(message_payload_t)}
 #define RESPONSE_HEADER(cmd, type) {&(const message_payload_t){ cmd, type }, sizeof(message_payload_t)}
 
 #define assert_response(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {msg, sizeof(msg)}); } } while (0)
-
-// Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.GetVersion.ProtocolVersion` in C#
-static const uint32_t PROTOCOL_VERSION = 0;
 
 static renode_error_t *generic_handler(renode_connection_t *conn, const void *response, size_t size, void *ud);
 static renode_error_t *parse_response(const void *response, size_t size, message_payload_t *header, const void **data, uint32_t *data_size);
