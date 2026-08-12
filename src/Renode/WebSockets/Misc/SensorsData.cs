@@ -55,7 +55,7 @@ namespace Antmicro.Renode.WebSockets.Misc
         private static readonly Dictionary<string, Func<ISensor, object>> SensorDataGetter = new Dictionary<string, Func<ISensor, object>>
         {
             { "temperature", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as ITemperatureSensor).Temperature) * 1e3) },
-            { "voltage", (sensor) => (sensor as IADC).GetADCValue(0) },
+            { "voltage", (sensor) => (sensor as IADC).GetVoltage(0) },
             { "humidity", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as IHumiditySensor).Humidity) * 1e3) },
             { "magnetic-flux-density", (sensor) => GetMagneticSensorData(sensor as IMagneticSensor) },
             { "illuminance", (sensor) => Convert.ToInt32(Decimal.ToDouble((sensor as IIlluminanceSensor).Illuminance) * 1e3) }
@@ -64,7 +64,7 @@ namespace Antmicro.Renode.WebSockets.Misc
         private static readonly Dictionary<string, Action<ISensor, JToken>> SensorDataSetter = new Dictionary<string, Action<ISensor, JToken>>
         {
             { "temperature", (sensor, data) =>  SetTemperature(sensor as ITemperatureSensor, data.ToObject<int>()) },
-            { "voltage", (sensor, data) => SetVoltage(sensor as IADC, data.ToObject<uint>()) },
+            { "voltage", (sensor, data) => (sensor as IADC).SetVoltage(data.ToObject<uint>(), 0) },
             { "humidity", (sensor, data) => SetHumidity(sensor as IHumiditySensor, data.ToObject<int>()) },
             { "magnetic-flux-density", (sensor, data) => SetMagneticSensorData(sensor as IMagneticSensor, data.ToObject<MagneticSensorData>()) },
             { "illuminance", (sensor, data) => SetIlluminance(sensor as IIlluminanceSensor, data.ToObject<int>()) }
@@ -83,11 +83,6 @@ namespace Antmicro.Renode.WebSockets.Misc
         private static void SetTemperature(ITemperatureSensor sensor, int value)
         {
             sensor.Temperature = Convert.ToDecimal(value) / 1e3M;
-        }
-
-        private static void SetVoltage(IADC sensor, uint value)
-        {
-            sensor.SetADCValue(0, value);
         }
 
         private static void SetHumidity(IHumiditySensor sensor, int value)

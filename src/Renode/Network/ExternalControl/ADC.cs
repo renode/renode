@@ -46,14 +46,14 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             case ADCCommand.GetValue:
                 DecodeChannelArgument(data, out var channel);
-                var value = instance.GetADCValue(channel);
-                parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, value);
-                return MessagePayload.Success(Identifier, value.AsRawBytes());
+                var voltage = instance.GetVoltage(channel);
+                parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, voltage);
+                return MessagePayload.Success(Identifier, voltage.AsRawBytes());
 
             case ADCCommand.SetValue:
-                DecodeSetValueArguments(data, out channel, out value);
-                parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, value);
-                instance.SetADCValue(channel, value);
+                DecodeSetValueArguments(data, out channel, out voltage);
+                parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, voltage);
+                instance.SetVoltage(voltage, channel);
                 return MessagePayload.Success(Identifier);
 
             default:
