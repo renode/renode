@@ -109,7 +109,7 @@ Should Run ADC Sample
 
     @{voltages}=                   Create List  13  100  254  1000
     FOR    ${voltage}    IN    @{voltages}
-        ${r}=                          Execute Sample  adc  ${PORT}  machine  adc  ${voltage}uv
+        ${r}=                          Execute Sample  adc  ${PORT}  machine  adc  0  ${voltage}uv
         ${volts}=                      Execute Command  adc.adc-channel0 Volts
         Should Be Equal As Integers    ${{1e6 * ${volts}}}    ${voltage}
         Should Contain                 ${r.stdout}  [INFO] # of channels: ${channel_count}
