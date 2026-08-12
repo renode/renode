@@ -92,11 +92,19 @@ Should Run Sysbus Sample
     [Tags]                          exclude_windows
 
     Execute Command                 mach create "machine"
-    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x0 { size: 0x100 }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.ArrayMemory @ sysbus 0x0 { size: 0x100 }"
+
+    Execute Command                 machine LoadPlatformDescriptionFromString "gpio: GPIOPort.NPCX_GPIO @ sysbus 0x3000"
+    Execute Command                 gpio WriteByte 0x2 0xF  # Set all pins as output
 
     Build Sample                    sysbus
     FOR  ${offset}  IN RANGE  0  0x10  0x8
-        ${r}=                           Execute Sample  sysbus  ${PORT}  machine  mem  ${offset}
+        # Add a hook that will trigger a callback in the external client to verify proper handling of nested requests
+        Execute Command                 sysbus SetHookAfterPeripheralRead mem "self.GetMachine()['sysbus.gpio'].WriteByte(0, (~self.GetMachine()['sysbus.gpio'].ReadByte(0)) & 0b1)"
+        ${r}=                           Execute Sample  sysbus  ${PORT}  machine  mem  ${offset}  gpio
+
+        # Clear hook so the event request is not get sent to the external client that is not running anymore
+        Execute Command                 sysbus ClearHookAfterPeripheralRead mem
         ${val}=                         Execute Command  sysbus ReadQuadWord ${offset}
 
         Should Be Equal As Integers     ${val}  0xAABBCCDDEEFF8899
