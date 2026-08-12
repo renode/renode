@@ -158,7 +158,7 @@ struct renode_connection {
     pthread_t receiver_thread;
     pthread_t default_handler_thread;
 
-    renode_server_request_t default_handler_request_callback;
+    renode_server_request_t request_callback;
     void* default_handler_ud;
 
     pthread_mutex_t client_request_lock;
@@ -239,7 +239,7 @@ static void *receiver_thread(void *ud)
 static void *default_handler_thread(void *ud)
 {
     renode_connection_t* conn = ud;
-    renode_server_request_t handler = conn->default_handler_request_callback;
+    renode_server_request_t handler = conn->request_callback;
     void *ud_ptr = conn->default_handler_ud;
 
     void *data;
@@ -262,7 +262,7 @@ static void *default_handler_thread(void *ud)
         conn->active_handler_count += 1;
         pthread_mutex_unlock(&conn->lifecycle_lock);
 
-        renode_error_t* error = handler(conn, data, size, ud_ptr);
+        renode_error_t* error = handler(conn, id, data, size, ud_ptr);
 
         pthread_mutex_lock(&conn->lifecycle_lock);
         conn->active_handler_count -= 1;
@@ -389,7 +389,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     }
     have_server_requests = true;
 
-    result->default_handler_request_callback = cfg->server_request_callback;
+    result->request_callback = cfg->request_callback;
     result->default_handler_ud = cfg->server_request_ud;
 
     thread_error = pthread_create(&result->default_handler_thread, NULL, default_handler_thread, result);
@@ -520,7 +520,7 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
 
     while((*header)->type == TYPE_EVENT_REQUEST || (*header)->type == TYPE_REQUEST) {
         // Handle the request
-        err = cb(conn, data, size, ud);
+        err = conn->request_callback(conn, id, data, size, ud);
         free(data);
 
         // Wait for a response from the server to the original request, or another request

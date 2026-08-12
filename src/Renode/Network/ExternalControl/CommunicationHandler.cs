@@ -146,7 +146,10 @@ namespace Antmicro.Renode.Network.ExternalControl
                     errorMessages.Add("Unexpected request when a response is expected");
                 }
 
-                // TODO: Check if request.Id != response.Id)
+                if(request.Id != response.Id)
+                {
+                    errorMessages.Add("Different request and response IDs");
+                }
 
                 if(request.Payload.Command != response.Payload.Command)
                 {

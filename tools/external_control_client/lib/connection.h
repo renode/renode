@@ -12,12 +12,12 @@ typedef struct {
 } renode_connection_transfer_t;
 
 typedef renode_error_t *(*renode_connection_response_t)(renode_connection_t *conn, const void *response, size_t respones_size, void *ud);
-typedef renode_error_t *(*renode_server_request_t)(renode_connection_t *conn, const void *request, size_t request_size, void *ud);
+typedef renode_error_t *(*renode_server_request_t)(renode_connection_t *conn, uint16_t id, const void *request, size_t request_size, void *ud);
 
 typedef struct {
     const char *address;
     const char *port;
-    renode_server_request_t server_request_callback;
+    renode_server_request_t request_callback;
     void *server_request_ud;
 } renode_connection_config_t;
 
