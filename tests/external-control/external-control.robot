@@ -96,7 +96,7 @@ Should Run Sysbus Sample
         Should Contain                 ${r.stderr}  (CONTEXT 'machine.mem' @ 0x${offset})
     END
 
-Should Run ADC Sample
+Should Run ADC Sample On ADC Channel
     [Tags]                         exclude_windows
 
     Execute Command                mach create "machine"
@@ -114,6 +114,49 @@ Should Run ADC Sample
         Should Be Equal As Integers    ${{1e6 * ${volts}}}    ${voltage}
         Should Contain                 ${r.stdout}  [INFO] # of channels: ${channel_count}
     END
+
+Should Run ADC Sample On Potentiometer
+    [Tags]                         skip_windows
+    Set Test Variable              ${MAX_POTENTIOMETER}     3300
+
+    Build Sample                   adc
+    Execute Command                include @scripts/multi-node/ramn.resc
+    Execute Command                mach set "ECUC"
+
+    FOR     ${voltage}  IN         0  825  1650  1980  3300
+        Execute Sample                  adc  ${PORT}  ECUC  adc1  6  ${voltage}mV
+        ${val}=                         Execute Command  adc1.brake Percentage
+        Should Be Equal As Integers     ${val}  ${{100 * ${voltage} / ${MAX_POTENTIOMETER}}}
+    END
+
+    ${expected_error}=             Catenate  app 'adc' failed exitted with code 1, stderr:
+    ...                            Setting channel #0 value for 'adc1' failed with:
+    ...                            Invalid voltage value 3301000 not in [0; 3300000]: 1 != 0
+
+    Run Keyword And Expect Error   EQUALS:${expected_error}
+    ...                            Execute Sample   adc  ${PORT}  ECUC  adc1  6  ${{${MAX_POTENTIOMETER} + 1}}mV
+
+Should Run ADC Sample On Named Discrete Values
+    [Tags]                         skip_windows
+
+    Build Sample                   adc
+    Execute Command                include @scripts/multi-node/ramn.resc
+    Execute Command                mach set "ECUD"
+
+    ${states}=                     Create Dictionary
+    ...                            left=0
+    ...                            middle=1650
+    ...                            right=3300
+
+    FOR     ${state}    IN  @{states}
+        Execute Sample                  adc  ${PORT}  ECUD  adc1  9  ${states}[${state}]mV
+        ${currentState}=                Execute Command  adc1.engineKey CurrentState
+        Should Be Equal                 ${currentState}  ${state}   strip_spaces=True
+    END
+
+    Run Keyword And Expect Error   app 'adc' failed exitted with code 1, stderr: Setting channel #0 value for 'adc1' failed with: Invalid voltage value 1000000: 1 != 0
+    ...                            Execute Sample                  adc  ${PORT}  ECUD  adc1  9  1V
+
 
 Should Run GPIO Sample
     [Tags]                         exclude_windows
