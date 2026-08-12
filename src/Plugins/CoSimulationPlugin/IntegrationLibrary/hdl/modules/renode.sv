@@ -148,11 +148,53 @@ module renode #(
   endtask
 
   task static sync_time(time time_to_elapse);
-    renode_time = renode_time + time_to_elapse;
-    while ($time < renode_time) @(clk);
+    // NOTE: no initializers on local vars — static task vars are only
+    // initialized once at time 0, not on every call. Use assignments below.
+    time tick_start;
+    time ticks_done;
+    time current_target;
+    bit preempted;
 
-    runtime.connection.send_to_async_receiver(message_t'{renode_pkg::tickClock, 0, 0, renode_pkg::no_peripheral_index});
-    runtime.connection.log(renode_pkg::LogNoisy, $sformatf("Simulation time synced to %t", $realtime));
+    tick_start     = renode_time;
+    current_target = time_to_elapse;
+    preempted      = 0;
+
+    renode_time = renode_time + time_to_elapse;
+    while ($time < renode_time) begin
+      @(clk);
+
+      if (runtime.interrupt_preempt_requested) begin
+        runtime.interrupt_preempt_requested = 0;
+        ticks_done  = $time - tick_start;
+        renode_time = $time;  // causes while loop to exit
+
+        // Send early ack so Renode unblocks the CPU immediately.
+        // This is the only ack for this batch — do NOT send a second one
+        // at the bottom. The simulation runs freely after returning; the
+        // next TickClock arrives via the normal receive_and_handle_message
+        // path at the next posedge clk.
+        runtime.connection.send_to_async_receiver(message_t'{
+            renode_pkg::tickClock,
+            renode_pkg::address_t'(0),
+            renode_pkg::data_t'(ticks_done),
+            renode_pkg::no_peripheral_index});
+        runtime.connection.log(renode_pkg::LogNoisy,
+            $sformatf("IRQ preempted sync_time after %0d of %0d ticks",
+                      ticks_done, current_target));
+        preempted = 1;
+        // renode_time == $time → while condition false → loop exits
+      end
+    end
+
+    if (!preempted) begin
+      runtime.connection.send_to_async_receiver(message_t'{
+          renode_pkg::tickClock,
+          renode_pkg::address_t'(0),
+          renode_pkg::data_t'(current_target),
+          renode_pkg::no_peripheral_index});
+      runtime.connection.log(renode_pkg::LogNoisy,
+          $sformatf("Simulation time synced to %t", $realtime));
+    end
   endtask
 
   task automatic read_from_bus(address_t address, valid_bits_e data_bits, int peripheral_index);

@@ -42,6 +42,9 @@ module renode_inputs #(
               renode_pkg::data_t'(inputs[addr]),
               renode_pkg::no_peripheral_index
             });
+          // Ask sync_time to send an early TickClock ack so Renode can
+          // process this interrupt without waiting for the full tick window.
+          runtime.interrupt_preempt_requested = 1;
         end
       end
       inputs_prev <= inputs;
