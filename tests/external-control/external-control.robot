@@ -10,13 +10,14 @@ ${EXTERNAL_CONTROL_DIR}             ${CURDIR}/../../tools/external_control_clien
 ${BUILD_DIR}                        ${EXTERNAL_CONTROL_DIR}/build
 ${PORT}                             3344
 ${MEMORY_ADDRESS}                   0x1000
+${SERVER_NAME}                      server
 
 *** Keywords ***
 Custom Test Setup
     Test Setup
     ${temp}=                        Allocate Temporary Directory  external_control
     Set Global Variable             ${BUILD_DIR}  ${temp}
-    Execute Command                 emulation CreateExternalControlServer "server" ${PORT}
+    Execute Command                 emulation CreateExternalControlServer "${SERVER_NAME}" ${PORT}
 
 Custom Test Teardown
     Test Teardown
@@ -200,3 +201,22 @@ Should Run GPIO Sample
     Should Be Equal As Integers     ${r.rc}  0  msg=app failed: ${r.stderr}
 
     Should Contain                  ${r.stdout}  machine: GPIO #0 in gpio set
+
+Should Run Time Elapsed Sample
+    [Tags]                          basic-tests  exclude_windows
+    Create Log Tester               5
+
+    Build Sample                    time_elapsed_callback
+    Execute Command                 logLevel 0 ${SERVER_NAME}
+
+    ${proc}=                        Start Sample  time_elapsed_callback  ${PORT}  3
+
+    Wait For Log Entry              ${SERVER_NAME}: Registered time elapsed callback  startEmulation=false
+    Execute Command                 emulation RunFor "0.0002"
+
+    ${r}=                           Wait For Process  ${proc}
+    Should Be Equal As Integers     ${r.rc}  0  msg=app failed: ${r.stderr}
+
+    Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000000
+    Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000100
+    Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000200
