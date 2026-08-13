@@ -37,8 +37,18 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
             var id = BitConverter.ToInt32(data.GetRange(InstanceIdOffset, InstanceIdSize).ToArray(), 0);
 
-            // only non-negative instance ids are valid
-            if(id >= 0 && @this.Instances.TryGet(id, out var instance))
+            var instance = default(T);
+            var instanceFound = false;
+            lock(@this.Instances)
+            {
+                // only non-negative instance ids are valid
+                if(id >= 0 && @this.Instances.TryGet(id, out instance))
+                {
+                    instanceFound = true;
+                }
+            }
+
+            if(instanceFound)
             {
                 return @this.Invoke(instance, data.GetRange(PayloadOffset, data.Count - PayloadOffset));
             }
@@ -85,7 +95,10 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return false;
             }
 
-            @this.Instances.TryAdd((T)instance, out id);
+            lock(@this.Instances)
+            {
+                @this.Instances.TryAdd((T)instance, out id);
+            }
             return true;
         }
 

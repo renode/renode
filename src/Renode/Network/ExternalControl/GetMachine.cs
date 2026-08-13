@@ -19,7 +19,13 @@ namespace Antmicro.Renode.Network.ExternalControl
             machines = new InstanceCollection<IMachine>();
         }
 
-        public bool TryGetMachine(int id, out IMachine machine) => machines.TryGet(id, out machine);
+        public bool TryGetMachine(int id, out IMachine machine)
+        {
+            lock(machines)
+            {
+                return machines.TryGet(id, out machine);
+            }
+        }
 
         public override MessagePayload Invoke(List<byte> data)
         {
@@ -33,8 +39,11 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return MessagePayload.Error(Identifier, "Machine not found");
             }
 
-            machines.TryAdd(machine, out var id);
-            return MessagePayload.Success(Identifier, id.AsRawBytes());
+            lock(machines)
+            {
+                machines.TryAdd(machine, out var id);
+                return MessagePayload.Success(Identifier, id.AsRawBytes());
+            }
         }
 
         public override Command Identifier => Command.GetMachine;
