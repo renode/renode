@@ -29,32 +29,10 @@ namespace Antmicro.Renode.Network
     {
         public ExternalControlServer(int port)
         {
-            socketServerProvider.BufferSize = 0x10;
-            disposeCancelationTokenSource = new();
-
-            externalHandler = new CommunicationHandler(true, this);
-            internalHandler = new CommunicationHandler(false, this);
-            defaultHandlerThread = new Thread(DefaultThreadHandlerBody)
+            socketProvider.BufferSize = 0x10;
+            socketProvider.ConnectionAccepted += delegate
             {
-                Name = GetType().Name + "_DefaultHandlerThread",
-                IsBackground = true
-            };
-
-            commandHandlers = new CommandHandlerCollection();
-            commandHandlers.Register(new RunFor(this));
-            commandHandlers.Register(new GetTime(this));
-            commandHandlers.Register(new ADC(this));
-            commandHandlers.Register(new GPIOPort(this));
-            commandHandlers.Register(new SystemBus(this));
-            commandHandlers.Register(new CheckVersion(this));
-
-            var getMachineHandler = new GetMachine(this);
-            Machines = getMachineHandler;
-            commandHandlers.Register(getMachineHandler);
-
-            socketServerProvider.ConnectionAccepted += delegate
-            {
-                lock(locker)
+                lock(socketProvider)
                 {
                     if(state == State.Disposed)
                     {
@@ -63,11 +41,13 @@ namespace Antmicro.Renode.Network
                     this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.WaitingForHeader);
                     state = State.WaitingForHeader;
                 }
+
+                InitializeHandlers();
                 this.Log(LogLevel.Debug, "Connection established");
             };
-            socketServerProvider.ConnectionClosed += delegate
+            socketProvider.ConnectionClosed += delegate
             {
-                lock(locker)
+                lock(socketProvider)
                 {
                     if(state == State.Disposed)
                     {
@@ -76,29 +56,33 @@ namespace Antmicro.Renode.Network
                     this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.NotConnected);
                     state = State.NotConnected;
                 }
+
+                ClearHandlers();
                 this.Log(LogLevel.Debug, "Connection closed");
             };
 
-            socketServerProvider.DataBlockReceived += OnBytesWritten;
-            socketServerProvider.Start(port);
+            socketProvider.DataBlockReceived += OnBytesWritten;
+            socketProvider.Start(port);
 
             this.Log(LogLevel.Info, "{0}: Listening on port {1}", nameof(ExternalControlServer), port);
-
-            defaultHandlerThread.Start(disposeCancelationTokenSource.Token);
         }
 
         public void Dispose()
         {
-            lock(locker)
+            State lastState;
+            lock(socketProvider)
             {
+                lastState = state;
                 this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Disposed);
                 state = State.Disposed;
             }
-            disposeCancelationTokenSource.Cancel();
-            commandHandlers.Dispose();
-            socketServerProvider.Stop();
-            defaultHandlerThread.Join();
-            disposeCancelationTokenSource.Dispose();
+
+            socketProvider.Stop();
+
+            if(lastState != State.NotConnected && lastState != State.Disposed)
+            {
+                ClearHandlers();
+            }
         }
 
         public ICommand GetCommandHandler(Command command)
@@ -136,15 +120,54 @@ namespace Antmicro.Renode.Network
         public void SendMessage(Message message)
         {
             var bytes = message.ToBytes();
-            lock(locker)
+            lock(socketProvider)
             {
                 AssertNotDisposed();
-                socketServerProvider.Send(bytes);
+                socketProvider.Send(bytes);
             }
             this.Log(LogLevel.Debug, "Message sent: {0}", message);
         }
 
-        public IMachineContainer Machines { get; }
+        public IMachineContainer Machines { get; private set; }
+
+        private void InitializeHandlers()
+        {
+            commandHandlers = new CommandHandlerCollection();
+            commandHandlers.Register(new RunFor(this));
+            commandHandlers.Register(new GetTime(this));
+            commandHandlers.Register(new ADC(this));
+            commandHandlers.Register(new GPIOPort(this));
+            commandHandlers.Register(new SystemBus(this));
+            commandHandlers.Register(new CheckVersion(this));
+
+            var getMachineHandler = new GetMachine(this);
+            Machines = getMachineHandler;
+
+            commandHandlers.Register(getMachineHandler);
+            disposeCancelationTokenSource = new();
+
+            externalHandler = new CommunicationHandler(true, this);
+            internalHandler = new CommunicationHandler(false, this);
+            defaultHandlerThread = new Thread(DefaultThreadHandlerBody)
+            {
+                Name = GetType().Name + "_DefaultHandlerThread",
+                IsBackground = true
+            };
+            defaultHandlerThread.Start(disposeCancelationTokenSource.Token);
+        }
+
+        private void ClearHandlers()
+        {
+            disposeCancelationTokenSource.Cancel();
+            defaultHandlerThread.Join();
+            internalHandler = null;
+            externalHandler = null;
+
+            commandHandlers.Dispose();
+            commandHandlers = null;
+
+            disposeCancelationTokenSource.Dispose();
+        }
 
         private State? StepReceiveFiniteStateMachine(State currentState)
         {
@@ -180,7 +203,6 @@ namespace Antmicro.Renode.Network
         private void OnBytesWritten(byte[] data)
         {
             buffer.AddRange(data);
-            this.Log(LogLevel.Noisy, "Received new data: {0}", Misc.PrettyPrintCollectionHex(data));
 
             var lockedState = state;
             while(lockedState != State.Disposed && lockedState != State.NotConnected)
@@ -195,7 +217,7 @@ namespace Antmicro.Renode.Network
                     return;
                 }
 
-                lock(locker)
+                lock(socketProvider)
                 {
                     if(!nextState.HasValue || state == State.Disposed || state == State.NotConnected)
                     {
@@ -241,16 +263,14 @@ namespace Antmicro.Renode.Network
 
         private State state = State.NotConnected;
         private Message currentMessage;
+        private Thread defaultHandlerThread;
+        private CommunicationHandler externalHandler;
+        private CommunicationHandler internalHandler;
+        private CancellationTokenSource disposeCancelationTokenSource;
+        private CommandHandlerCollection commandHandlers;
 
         private readonly List<byte> buffer = new List<byte>();
-        private readonly CommandHandlerCollection commandHandlers;
-        private readonly SocketServerProvider socketServerProvider = new SocketServerProvider(telnetMode: false);
-        private readonly Thread defaultHandlerThread;
-        private readonly CommunicationHandler externalHandler;
-        private readonly CommunicationHandler internalHandler;
-        private readonly CancellationTokenSource disposeCancelationTokenSource;
-
-        private readonly object locker = new object();
+        private readonly SocketServerProvider socketProvider = new SocketServerProvider(telnetMode: false);
 
         private class CommandHandlerCollection : IDisposable
         {
