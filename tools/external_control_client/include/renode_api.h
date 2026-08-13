@@ -237,6 +237,20 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_t time);
  */
 renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current_time);
 
+/**
+ * @brief Type of the Renode time elapsed callback
+ */
+typedef void (*renode_time_elapsed_callback_t)(void *ud, renode_time_t *timestamp);
+
+/**
+ * @brief Function registering a callback, that will be called after a quantum of time elapses in Renode
+ *
+ * @param[in] renode Renode connection handle
+ * @param[in] user_data pointer to data passed to the callback when it's invoked
+ * @param[in] callback callback to be invoked when a quantum of time elapses in Renode
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *user_data, renode_time_elapsed_callback_t callback);
 /* ADC */
 
 /**

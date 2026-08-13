@@ -22,6 +22,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         ADC,
         GPIOPort,
         SystemBus,
+        TimeElapsedCallback,
     }
 
     public interface ICommand

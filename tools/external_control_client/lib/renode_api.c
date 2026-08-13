@@ -73,6 +73,7 @@ typedef enum {
     ADC,
     GPIO,
     SYSTEM_BUS,
+    TIME_ELAPSED_CALLBACK,
 } api_command_t;
 
 // Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.CommandType` in C#
@@ -184,16 +185,24 @@ static renode_error_t *register_callback(raw_callback_t callback, void *user_dat
 
 static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, api_command_t cmd, int32_t ed, const void *data, size_t size)
 {
+    assert_response(ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
     switch(cmd)
     {
     case GPIO:
-        assert_response(ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
         assert_response(size == sizeof(renode_gpio_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
         renode_gpio_event_data_t event_data;
         memcpy(&event_data, data, sizeof(event_data));
 
         callbacks[ed](callback_user_data[ed], &event_data);
+        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+    case TIME_ELAPSED_CALLBACK:
+        assert_response(size == sizeof(renode_time_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+        renode_time_t timestamp;
+        memcpy(&timestamp, data, sizeof(timestamp));
+
+        callbacks[ed](callback_user_data[ed], &timestamp);
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
     default:
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
@@ -335,6 +344,17 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current
     return renode_connection_send_request(renode->conn, generic_handler, current_time,
         REQUEST_HEADER(GET_TIME),
         {current_time, sizeof(*current_time)},
+    );
+}
+
+renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *user_data, renode_time_elapsed_callback_t callback)
+{
+    int32_t ed;
+    return_error_if_fails(register_callback((raw_callback_t)callback, user_data, &ed));
+
+    return renode_connection_send_request(renode->conn, generic_handler, NULL,
+        REQUEST_HEADER(TIME_ELAPSED_CALLBACK),
+        {&ed, sizeof(ed)},
     );
 }
 
@@ -773,6 +793,8 @@ static renode_error_t *generic_handler(renode_connection_t *conn, const void *re
         return gpio_handler(conn, data, data_size, ud);
     case SYSTEM_BUS:
         return sysbus_handler(conn, data, data_size, ud);
+    case TIME_ELAPSED_CALLBACK:
+        return NO_ERROR; // This command doesn't return any data, we only care about a successful status
     default:
         return create_fatal_error_static("Encountered a command without a response handler");
     }

@@ -133,6 +133,7 @@ namespace Antmicro.Renode.Network
         private void InitializeHandlers()
         {
             commandHandlers = new CommandHandlerCollection();
+            commandHandlers.Register(new TimeElapsedCallbackCommand(this));
             commandHandlers.Register(new RunFor(this));
             commandHandlers.Register(new GetTime(this));
             commandHandlers.Register(new ADC(this));
