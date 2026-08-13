@@ -51,6 +51,14 @@ namespace Antmicro.Renode.Network.ExternalControl
             return new MessagePayload(command, CommandType.EventRequest, BitConverter.GetBytes(eventId).Concat(payload.AsRawBytes()).ToArray());
         }
 
+        public static MessagePayload Event<T>(Command command, int eventId, T payloadHeader, byte[] data) where T : struct
+        {
+            return new MessagePayload(command, CommandType.EventRequest,
+            BitConverter.GetBytes(eventId)
+                .Concat(payloadHeader.AsRawBytes())
+                .Concat(data).ToArray());
+        }
+
         public MessagePayload(Command cmd, CommandType type, byte[] data)
         {
             Command = cmd;

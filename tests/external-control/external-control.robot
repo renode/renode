@@ -6,6 +6,7 @@ Library                             OperatingSystem
 
 *** Variables ***
 ${EXTERNAL_CONTROL_DIR}             ${CURDIR}/../../tools/external_control_client
+${CREATE_SNAPSHOT_ON_FAIL}          False
 # This will be overriden by the test setup
 ${BUILD_DIR}                        ${EXTERNAL_CONTROL_DIR}/build
 ${PORT}                             3344
@@ -335,3 +336,26 @@ Should Run Single SPI Sample With Robot Managed Time
     END
 
     Terminate Process               ${proc}
+
+Should Run CAN Sample
+    [Tags]                         exclude_windows
+    Set Test Variable              ${sender_id}    0x55
+    Set Test Variable              ${receiver_id}  0xAA
+    Set Test Variable              ${msg_hex}      C001D00D
+
+    Execute Command                mach create "machine"
+    Execute Command                machine LoadPlatformDescriptionFromString "external_client_bus: CAN.CANExternalControlBus @ sysbus"
+    Execute Command                emulation CreateCANHub "canHub"
+    Execute Command                connector Connect external_client_bus canHub
+
+    Create Can Tester              canHub
+
+    Build Sample                   can
+
+    ${proc}=                       Start Sample  can  ${PORT}  machine  external_client_bus
+    
+    Send ISOTP Message             ${sender_id}  ${receiver_id}  ${msg_hex}  
+    ${received_msg}=               Wait For Frame With Id         0x55   timeout=10000
+    ${received_hex}=               Evaluate  $received_msg.hex().upper()
+    Should Contain                 ${received_hex}  ${msg_hex}
+

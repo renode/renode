@@ -141,6 +141,7 @@ namespace Antmicro.Renode.Network
             commandHandlers.Register(new GPIOPort(this));
             commandHandlers.Register(new SystemBus(this));
             commandHandlers.Register(new CheckVersion(this));
+            commandHandlers.Register(new CANBus(this));
 
             var getMachineHandler = new GetMachine(this);
             Machines = getMachineHandler;

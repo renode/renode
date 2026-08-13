@@ -83,6 +83,13 @@ typedef struct renode_adc renode_adc_t;
 typedef struct renode_gpio renode_gpio_t;
 
 /**
+ * @brief Renode CAN bus API handle
+ *
+ * @copydetails renode_t
+ */
+typedef struct renode_can renode_can_t;
+
+/**
  * @brief Renode bus manager API handle
  *
  * @copydetails renode_t
@@ -357,6 +364,54 @@ typedef struct {
  */
 renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, int32_t id, void *user_data, void (*callback)(void *, renode_gpio_event_data_t *));
 
+
+/* CAN */
+
+#define MAX_CAN_FRAME_SIZE 64
+
+/**
+ * CAN bus event data
+ */
+typedef struct {
+    renode_time_t time;
+    int32_t packet_length;
+    uint32_t packet_id;
+    uint8_t packet[];
+} renode_can_event_data_t;
+
+/**
+ * @brief Function preparing CAN handle
+ *
+ * @note Handle's internal memory is dynamically allocated so `*can` should be freed when it's no longer used.
+ *
+ * @param[in] machine machine handle
+ * @param[in] name CANBus name
+ * @param[out] can handle associated with the requested CAN instance
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_get_can(renode_machine_t *machine, const char *name, renode_can_t **can);
+
+/**
+ * @brief Function registering callback when CAN message is received
+ *
+ * @param[in] can CAN instance handle
+ * @param[in] user_data pointer to data passed to the callback when it's invoked
+ * @param[in] callback callback to be invoked when message is received
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, void (*callback)(void *, renode_can_event_data_t *));
+
+/**
+ * @brief Function sending CAN message
+ *
+ * @param[in] can CAN instance handle
+ * @param[in] packet pointer to fixed size, 64 byte can packet array
+ * @param[in] packet_length length of send packet
+ * @param[in] packet_id packet_id
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_send_can_message(renode_can_t *can, void *packet, int packet_length, uint32_t packet_id);
+ 
 
 /* System bus */
 

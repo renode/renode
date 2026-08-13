@@ -24,6 +24,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         SystemBus,
         TimeElapsedCallback,
         SPI,
+        CANBus,
     }
 
     public interface ICommand

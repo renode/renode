@@ -4,6 +4,7 @@
 // This file is licensed under MIT License.
 // Full license text is available in 'licenses/MIT.txt' file.
 //
+#include "renode_api.h"
 #include <fcntl.h>
 #include <inttypes.h>
 #include <netdb.h>
@@ -35,6 +36,11 @@ struct renode_adc {
 };
 
 struct renode_gpio {
+    renode_machine_t *machine;
+    int32_t id;
+};
+
+struct renode_can {
     renode_machine_t *machine;
     int32_t id;
 };
@@ -144,7 +150,6 @@ renode_error_t *renode_disconnect_ex(renode_t **renode, bool blocking)
 #define MAX_CALLBACK_COUNT 1024
 
 typedef void (*raw_callback_t)(void *, void *);
-
 static raw_callback_t callbacks[MAX_CALLBACK_COUNT];
 static void *callback_user_data[MAX_CALLBACK_COUNT];
 static int32_t callbacks_count;
@@ -181,6 +186,19 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
 
         callbacks[ed](callback_user_data[ed], &event_data);
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+    case CAN_BUS:
+        assert_response(size >= sizeof(renode_can_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        assert_response(size <= sizeof(renode_can_event_data_t) + MAX_CAN_FRAME_SIZE, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+        renode_can_event_data_t *can_data;
+        can_data = xmalloc(size);
+        memcpy(can_data, data, size);
+
+        callbacks[ed](callback_user_data[ed], can_data);
+        assert_response(size == sizeof(renode_can_event_data_t) + can_data->packet_length, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        renode_error_t *result = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        free(can_data);
+        return result;
     case TIME_ELAPSED_CALLBACK:
         assert_response(size == sizeof(renode_time_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
@@ -571,6 +589,75 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
     );
 }
 
+typedef enum 
+{
+    SEND_FRAME = 0,
+    RECEIVED_FRAME = 1,
+    REGISTER_CALLBACKS = 2,
+} canbus_operation_t;
+
+typedef struct {
+    struct __attribute__((packed)) {
+        int32_t id;
+        int8_t command;
+    } header;
+    int32_t packet_length;
+    uint32_t id;
+    void * packet;
+} canbus_command_t;
+
+renode_error_t *renode_get_can(renode_machine_t *machine, const char *name, renode_can_t **can)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, CAN_BUS, name, &id));
+
+    *can = xmalloc(sizeof(renode_can_t));
+    (*can)->machine = machine;
+    (*can)->id = id;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_send_can_message(renode_can_t *can, void *packet, int packet_length, uint32_t packet_id)
+{
+    canbus_command_t cmd = {
+        .header = {
+         .id = can->id,
+         .command = SEND_FRAME,
+         },
+        .packet_length = packet_length,
+        .id = packet_id,
+    };
+
+    return_error_if_fails(renode_connection_send_request(can->machine->renode->conn, generic_response_handler, &cmd,
+        REQUEST_HEADER(CAN_BUS), 
+        {&cmd.header, sizeof(cmd.header)},
+        {&cmd.packet_length, sizeof(cmd.packet_length)},
+        {&cmd.id, sizeof(cmd.id)},
+        {packet, packet_length},
+        ));
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, void (*callback)(void *, renode_can_event_data_t *))
+{
+    int32_t ed;
+    return_error_if_fails(register_callback((raw_callback_t)callback, user_data, &ed));
+
+    canbus_command_t cmd = {
+        .header = {
+            .command = REGISTER_CALLBACKS,
+        },
+    };
+
+    return renode_connection_send_request(can->machine->renode->conn, generic_response_handler, &cmd,
+        REQUEST_HEADER(CAN_BUS),
+        {&cmd.header, sizeof(cmd.header)},
+        {&ed, sizeof(ed)},
+    );
+}
+
 renode_error_t *renode_get_bus_context(renode_machine_t *machine, const char *name, renode_bus_context_t **ctx)
 {
     int32_t id;
@@ -813,6 +900,8 @@ static renode_error_t *generic_response_handler(renode_connection_t *conn, const
     case TIME_ELAPSED_CALLBACK:
         return NO_ERROR; // This command doesn't return any data, we only care about a successful status
     case SPI:
+        return NO_ERROR; // This command doesn't return any data, we only care about a successful status
+    case CAN_BUS:
         return NO_ERROR; // This command doesn't return any data, we only care about a successful status
     default:
         return create_fatal_error_static("Encountered a command without a response handler");
