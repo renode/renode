@@ -126,7 +126,7 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
         .server_request_ud = NULL,
     }));
 
-    renode_error_t *err = renode_connection_send(conn, check_version_handler, NULL,
+    renode_error_t *err = renode_connection_send_request(conn, check_version_handler, NULL,
         REQUEST_HEADER(CHECK_VERSION),
         {&PROTOCOL_VERSION, sizeof(PROTOCOL_VERSION)},
     );
@@ -206,7 +206,7 @@ renode_error_t *renode_get_machine(renode_t *renode, const char *name, renode_ma
 {
     int32_t id;
     uint32_t name_length = strlen(name);
-    return_error_if_fails(renode_connection_send(renode->conn, generic_handler, &id,
+    return_error_if_fails(renode_connection_send_request(renode->conn, generic_handler, &id,
         REQUEST_HEADER(GET_MACHINE),
         {&name_length, sizeof(name_length)},
         {name, name_length},
@@ -292,7 +292,7 @@ static renode_error_t *renode_get_instance_descriptor(renode_machine_t *machine,
     *instance_descriptor = -1;
 
     // ASSUMPTION: Obtaining an instance cannot generate side-effects
-    return renode_connection_send(machine->renode->conn, get_instance_handler, instance_descriptor,
+    return renode_connection_send_request(machine->renode->conn, get_instance_handler, instance_descriptor,
         REQUEST_HEADER(api_command),
         {instance_descriptor, sizeof(*instance_descriptor)},
         {&machine->md, sizeof(machine->md)},
@@ -305,7 +305,7 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_t time)
 {
     assert(renode != NULL);
 
-    return renode_connection_send(renode->conn, generic_handler, NULL,
+    return renode_connection_send_request(renode->conn, generic_handler, NULL,
         REQUEST_HEADER(RUN_FOR),
         {&time, sizeof(time)},
     );
@@ -324,7 +324,7 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current
 {
     assert(renode != NULL);
 
-    return renode_connection_send(renode->conn, generic_handler, current_time,
+    return renode_connection_send_request(renode->conn, generic_handler, current_time,
         REQUEST_HEADER(GET_TIME),
         {current_time, sizeof(*current_time)},
     );
@@ -385,7 +385,7 @@ renode_error_t *renode_get_adc_channel_count(renode_adc_t *adc, int32_t *count)
         },
     };
 
-    return_error_if_fails(renode_connection_send(adc->machine->renode->conn, generic_handler, &cmd,
+    return_error_if_fails(renode_connection_send_request(adc->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(ADC),
         {&cmd, sizeof(cmd.header)},
     ));
@@ -403,7 +403,7 @@ renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel,
         },
     };
 
-    return_error_if_fails(renode_connection_send(adc->machine->renode->conn, generic_handler, &cmd,
+    return_error_if_fails(renode_connection_send_request(adc->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(ADC),
         {&cmd, sizeof(cmd.header)},
         {&channel, sizeof(channel)},
@@ -422,7 +422,7 @@ renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel,
         },
     };
 
-    return renode_connection_send(adc->machine->renode->conn, generic_handler, &cmd,
+    return renode_connection_send_request(adc->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(ADC),
         {&cmd, sizeof(cmd.header)},
         {&channel, sizeof(channel)},
@@ -487,7 +487,7 @@ renode_error_t *renode_get_gpio_state(renode_gpio_t *gpio, int32_t id, bool *sta
         },
     };
 
-    return_error_if_fails(renode_connection_send(gpio->machine->renode->conn, generic_handler, &cmd,
+    return_error_if_fails(renode_connection_send_request(gpio->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(GPIO),
         {&cmd.header, sizeof(cmd.header)},
     ));
@@ -507,7 +507,7 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
         .state = state,
     };
 
-    return renode_connection_send(gpio->machine->renode->conn, generic_handler, &cmd,
+    return renode_connection_send_request(gpio->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(GPIO),
         {&cmd.header, sizeof(cmd.header)},
         {&cmd.state, sizeof(cmd.state)},
@@ -532,7 +532,7 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
         },
     };
 
-    return renode_connection_send(gpio->machine->renode->conn, generic_handler, &cmd,
+    return renode_connection_send_request(gpio->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(GPIO),
         {&cmd.header, sizeof(cmd.header)},
         {&ed, sizeof(ed)},
@@ -619,7 +619,7 @@ renode_error_t *renode_get_bus_context_name(renode_bus_context_t *ctx, char **na
     command_data.operation = SYSBUS_GET_NAME;
 
     // ASSUMPTION: Obtaining the name cannot generate side-effects
-    return renode_connection_send(ctx->machine->renode->conn, get_bus_context_name_handler, name,
+    return renode_connection_send_request(ctx->machine->renode->conn, get_bus_context_name_handler, name,
         REQUEST_HEADER(SYSTEM_BUS),
         {&command_data, sizeof(command_data)},
     );
@@ -670,7 +670,7 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
     };
     return_error_if_fails(renode_get_byte_count(width, count, &cmd.data_size));
 
-    return renode_connection_send(ctx->machine->renode->conn, generic_handler, &cmd,
+    return renode_connection_send_request(ctx->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(SYSTEM_BUS),
         {&cmd.header, sizeof(cmd.header)},
     );
@@ -691,7 +691,7 @@ renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address,
     uint32_t data_bytes;
     return_error_if_fails(renode_get_byte_count(width, count, &data_bytes));
 
-    return renode_connection_send(ctx->machine->renode->conn, generic_handler, &cmd,
+    return renode_connection_send_request(ctx->machine->renode->conn, generic_handler, &cmd,
         REQUEST_HEADER(SYSTEM_BUS),
         {&cmd.header, sizeof(cmd.header)},
         {buffer, data_bytes},

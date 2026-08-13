@@ -153,6 +153,7 @@ struct renode_connection {
     void* default_handler_ud;
 
     pthread_mutex_t client_request_lock;
+    pthread_mutex_t send_message_lock;
     channel_t client_responses;
     uint16_t client_next_request_id;
 
@@ -306,6 +307,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
 
     renode_error_t *ret_err = NO_ERROR;
     bool have_mutex = false;
+    bool have_send_mutex = false;
     bool have_client_responses = false;
     bool have_server_requests = false;
     bool have_receiver_thread = false;
@@ -321,6 +323,13 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         goto cleanup;
     }
     have_mutex = true;
+
+    thread_error = pthread_mutex_init(&result->send_message_lock, NULL);
+    if (thread_error != 0) {
+        ret_err = create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
+        goto cleanup;
+    }
+    have_send_mutex = true;
 
     ret_err = channel_init(&result->client_responses);
     if (ret_err != NO_ERROR) {
@@ -372,6 +381,9 @@ cleanup:
     if (have_mutex) {
         pthread_mutex_destroy(&result->client_request_lock);
     }
+    if (have_send_mutex) {
+        pthread_mutex_destroy(&result->send_message_lock);
+    }
     close(result->socket_fd);
     free(result);
     return ret_err;
@@ -404,35 +416,15 @@ void renode_connection_set_fatal_error_callback(renode_connection_t *conn, renod
     conn->fatal_error_ud = ud;
 }
 
-renode_error_t *renode_connection_send_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud, const renode_connection_transfer_t *transfers, size_t count)
+renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud, const renode_connection_transfer_t *transfers, size_t count)
 {
     renode_error_t *err = NO_ERROR;
 
     pthread_mutex_lock(&conn->client_request_lock); // Only 1 thread can start a request chain
 
-    message_t envelope = {
-        .id = CLIENT_INITIATED | (conn->client_next_request_id++),
-        .data_size = 0,
-    };
-
-    for(size_t i = 0; i < count; i++) {
-        if (envelope.data_size + transfers[i].byte_count < envelope.data_size) {
-            err = create_fatal_error_static("Transfer buffer size overflow");
-            goto release_locks;
-        }
-        envelope.data_size += transfers[i].byte_count;
-    }
-
-    if ((err = write_or_fail(conn->socket_fd, &envelope, sizeof(envelope))) != NO_ERROR) {
+    err = renode_connection_send_message_impl(conn, CLIENT_INITIATED | (conn->client_next_request_id++), transfers, count);
+    if (err != NO_ERROR) {
         goto release_locks;
-    }
-
-    for(size_t i = 0; i < count; i++) {
-        // Write the request chunks
-        err = write_or_fail(conn->socket_fd, transfers[i].data, transfers[i].byte_count);
-        if (err != NO_ERROR) {
-            goto release_locks;
-        }
     }
 
     // Wait for a response from the server
@@ -447,5 +439,41 @@ renode_error_t *renode_connection_send_impl(renode_connection_t *conn, renode_co
 
 release_locks:
     pthread_mutex_unlock(&conn->client_request_lock);
+    return err;
+}
+
+renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count)
+{
+    renode_error_t *err = NO_ERROR;
+
+    message_t envelope = {
+        .id = id,
+        .data_size = 0,
+    };
+
+    for (size_t i = 0; i < count; i++) {
+        if (envelope.data_size + transfers[i].byte_count < envelope.data_size) {
+            err = create_fatal_error_static("Transfer buffer size overflow");
+            return err;
+        }
+        envelope.data_size += transfers[i].byte_count;
+    }
+
+    pthread_mutex_lock(&conn->send_message_lock);
+
+    if ((err = write_or_fail(conn->socket_fd, &envelope, sizeof(envelope))) != NO_ERROR) {
+        goto release_locks;
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        // Write the request chunks
+        err = write_or_fail(conn->socket_fd, transfers[i].data, transfers[i].byte_count);
+        if (err != NO_ERROR) {
+            goto release_locks;
+        }
+    }
+
+release_locks:
+    pthread_mutex_unlock(&conn->send_message_lock);
     return err;
 }
