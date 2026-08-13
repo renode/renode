@@ -4,6 +4,9 @@ ${RESOLUTION_BITS}                 18
 ${PLATFORM}                        SEPARATOR=${\n}
 ...  using "platforms/cpus/stm32f4.repl"  # The specific platform doesn't matter - we just need something with SPI to connect the ADC to
 ...  adc: Analog.AD4011_ADC @ spi1 { referenceVoltage: ${REFERENCE_VOLTAGE} }
+${MUX_CHANNEL_COUNT}               16
+${MUX_ADDRESS_BITS}                4
+${MUX_ADC_OUTPUT}                  5
 
 
 *** Keywords ***
@@ -36,6 +39,16 @@ Assert Voltage
 
     # Account for ADC's finite precision
     Should Be True                 abs(${volts} - (${expected} - ${REFERENCE_VOLTAGE})) < 0.00005
+
+
+Set Mux Address
+    [Arguments]                    ${mux}  ${address}  ${enabled}=True
+    Should Be True                 0 <= ${address} < ${MUX_CHANNEL_COUNT}  msg=Invalid MUX channel: ${address}
+    FOR    ${bit}    IN RANGE    0    ${MUX_ADDRESS_BITS}
+        ${bit_value}=              Evaluate  bool(${address} & (1 << ${bit}))
+        Execute Command            ${mux} OnGPIO ${bit} ${bit_value}
+    END
+    Execute Command                ${mux} OnGPIO ${MUX_ADDRESS_BITS} ${enabled}  # Set the MUX state
 
 
 *** Test Cases ***
@@ -81,3 +94,43 @@ Should Read Correct Voltage From Floating Sources
     Execute Command                spi1.adc.vin.input1 IsFloating false
     Execute Command                spi1.adc.vin.input0 IsFloating false
     Assert Voltage                 ${input0_v}
+
+Should Read Voltage From An Input Multiplexer
+    Execute Command                mach create
+    Execute Command                machine LoadPlatformDescriptionFromString """${PLATFORM}"""
+    Execute Command                machine LoadPlatformDescriptionFromString "mux: Analog.MUX36S16_Input @ adc 0"
+
+    FOR    ${i}    IN RANGE    0    ${MUX_CHANNEL_COUNT}
+        # Create a MUX channel and set its voltage
+        Execute Command            machine LoadPlatformDescriptionFromString "source${i}: Analog.ADCChannelSource @ mux ${i}"
+        ${channel_voltage}=        Evaluate  (${REFERENCE_VOLTAGE} / ${MUX_CHANNEL_COUNT}) * ${i}
+        Execute Command            spi1.adc.mux.source${i} Volts ${channel_voltage}
+
+        Set Mux Address            spi1.adc.mux  0  enabled=False
+        ${mux_floating}=           Execute Command  spi1.adc.mux IsFloating
+        Should Be True             not ${mux_floating}  msg=Disabled MUX should be floating
+        Assert Voltage             0
+
+        Set Mux Address            spi1.adc.mux  ${i}
+        Assert Voltage             ${channel_voltage}
+    END
+
+Should Read Voltage From An Output Multiplexer
+    Execute Command                mach create
+    Execute Command                machine LoadPlatformDescriptionFromString """${PLATFORM}"""
+    Execute Command                machine LoadPlatformDescriptionFromString "mux: Analog.MUX36S16_Output @ sysbus"
+    Execute Command                machine LoadPlatformDescriptionFromString "source: Analog.ADCChannelSource @ mux 0"
+    Execute Command                mux ConnectOutput ${MUX_ADC_OUTPUT} spi1.adc 0
+    Execute Command                mux.source Volts ${REFERENCE_VOLTAGE}
+
+    # MUX is not outputing to the ADC
+    Set Mux Address                mux  0
+    Assert Voltage                 0
+
+    # MUX is outputing to the ADC but is disabled
+    Set Mux Address                mux  ${MUX_ADC_OUTPUT}  enabled=False
+    Assert Voltage                 0
+
+    # MUX is outputing to the ADC and is enabled
+    Set Mux Address                mux  ${MUX_ADC_OUTPUT}
+    Assert Voltage                 ${REFERENCE_VOLTAGE}
