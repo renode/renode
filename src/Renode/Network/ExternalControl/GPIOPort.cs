@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 
 namespace Antmicro.Renode.Network.ExternalControl
@@ -101,12 +100,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             };
 
             var response = parent.SendRequest(MessagePayload.Event(Identifier, eventDescriptor, data));
-
-            if(response.Type != CommandType.Success)
-            {
-                // TODO: Handle error message text description
-                parent.Log(LogLevel.Info, "Get error response to GPIO event: {0}", response);
-            }
+            LogOnErrorResponse(response);
         }
 
         private int GetExpectedPayloadCount(GPIOPortCommand command)
