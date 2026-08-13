@@ -8,11 +8,12 @@ using System;
 using System.Collections.Generic;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
-    public class GPIOPort : BaseCommand, IHasEvents, IInstanceBasedCommand<IPeripheral>
+    public class GPIOPort : BaseCommand, IInstanceBasedCommand<IPeripheral>
     {
         public GPIOPort(ExternalControlServer parent)
             : base(parent)
@@ -74,7 +75,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                     return MessagePayload.Error(Identifier, $"This instance does not provide GPIO output #{id}");
                 }
 
-                    (pin as GPIO).AddStateChangedHook((state) => SendEvent(state, ed));
+                (pin as GPIO).AddStateChangedHook((state) => SendEvent(state, ed));
                 return MessagePayload.Success(Identifier);
 
             default:
@@ -85,8 +86,6 @@ namespace Antmicro.Renode.Network.ExternalControl
         public override Command Identifier => Command.GPIOPort;
 
         public InstanceCollection<IPeripheral> Instances { get; }
-
-        public event Action<MessagePayload> EventReported;
 
         private static bool HasGPIO(IPeripheral instance)
         {
@@ -101,7 +100,13 @@ namespace Antmicro.Renode.Network.ExternalControl
                 GpioState = gpioState,
             };
 
-            EventReported?.Invoke(MessagePayload.Event(Identifier, eventDescriptor, data));
+            var response = parent.SendRequest(MessagePayload.Event(Identifier, eventDescriptor, data));
+
+            if(response.Type != CommandType.Success)
+            {
+                // TODO: Handle error message text description
+                parent.Log(LogLevel.Info, "Get error response to GPIO event: {0}", response);
+            }
         }
 
         private int GetExpectedPayloadCount(GPIOPortCommand command)

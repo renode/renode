@@ -40,6 +40,14 @@ namespace Antmicro.Renode.Network.ExternalControl
             return true;
         }
 
+        // It overrides the MSB of the given id
+        public Message(bool isExternallyInitiated, ushort id, MessagePayload payload)
+        {
+            Id = (ushort)(isExternallyInitiated ? id | ExternallyInitiatedMask : id & ~ExternallyInitiatedMask);
+            PayloadSize = payload.GetSize();
+            Payload = payload;
+        }
+
         public Message(ushort id, MessagePayload payload)
         {
             Id = id;
@@ -65,11 +73,13 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public IEnumerable<byte> ToBytes() => BitConverter.GetBytes(Id).Concat(BitConverter.GetBytes(PayloadSize)).Concat(Payload.ToBytes());
 
-        public override string ToString()
-        {
-            var initiatorAdverb = IsExternallyInitiated ? "externally" : "internally";
+        public override string ToString() => ToCustomString();
 
-            return $"{nameof(Message)}(ID=0x{ID:X}, {initiatorAdverb} initiated, PayloadSize={PayloadSize}, Payload={Payload})";
+        public string ToCustomString(bool withData = true)
+        {
+            var initiator = IsExternallyInitiated ? "ext" : "int";
+
+            return $"{nameof(Message)}(Id=0x{Id:X}({initiator}), Size={PayloadSize}, {Payload.ToCustomString(withData)})";
         }
 
         public ushort Id { get; }

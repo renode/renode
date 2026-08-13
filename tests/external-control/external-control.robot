@@ -9,6 +9,7 @@ ${EXTERNAL_CONTROL_DIR}             ${CURDIR}/../../tools/external_control_clien
 # This will be overriden by the test setup
 ${BUILD_DIR}                        ${EXTERNAL_CONTROL_DIR}/build
 ${PORT}                             3344
+${MEMORY_ADDRESS}                   0x1000
 
 *** Keywords ***
 Custom Test Setup
@@ -165,6 +166,8 @@ Should Run GPIO Sample
 
     Execute Command                 mach create "machine"
     Execute Command                 machine LoadPlatformDescriptionFromString "gpio: GPIOPort.NPCX_GPIO @ sysbus 0x0"
+    Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV32 @ sysbus { cpuType: \\"rv32gc_Zfh\\" }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus ${MEMORY_ADDRESS} { size: 0x40000 }"
     Create Log Tester               5
 
     Build Sample                    gpio
@@ -181,13 +184,13 @@ Should Run GPIO Sample
         Should Be True                  ${register.strip()} & (1 << ${pin}) != (1 << ${pin})
     END
 
+    Execute Command                 gpio WriteByte 0x2 0xF  # Set all pins as output
+    Execute Command                 cpu AssembleBlock ${MEMORY_ADDRESS} """li x1, 0x1; sb x1, 0(x0); jal x0, 0"""  # Trigger a GPIO change
+
     ${proc}=                        Start Sample  gpio  ${PORT}  machine  gpio  0  event
     # Wait for sample to setup the callback. Do not start the emulation here as otherwise
     # the sample will not be able to issue the "run for" command.
     Wait For Log Entry              Executing RunFor  startEmulation=false
-
-    Execute Command                 gpio WriteByte 0x2 0xF  # Set all pins as output
-    Execute Command                 gpio WriteByte 0x0 0x1  # Trigger a GPIO change
 
     ${r}=                           Wait For Process  ${proc}
     Should Be Equal As Integers     ${r.rc}  0  msg=app failed: ${r.stderr}

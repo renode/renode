@@ -16,4 +16,12 @@ namespace Antmicro.Renode.Network.ExternalControl
         InvalidCommand = 0x3,
         Error = 0x4,
     }
+
+    public static class CommandTypeExtension
+    {
+        public static bool IsRequest(this CommandType type)
+        {
+            return type == CommandType.Request || type == CommandType.EventRequest;
+        }
+    }
 }

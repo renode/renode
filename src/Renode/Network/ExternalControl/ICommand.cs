@@ -4,7 +4,6 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
 using System.Collections.Generic;
 
 namespace Antmicro.Renode.Network.ExternalControl
@@ -44,10 +43,5 @@ namespace Antmicro.Renode.Network.ExternalControl
         public abstract Command Identifier { get; }
 
         protected readonly ExternalControlServer parent;
-    }
-
-    public interface IHasEvents : ICommand
-    {
-        event Action<MessagePayload> EventReported;
     }
 }

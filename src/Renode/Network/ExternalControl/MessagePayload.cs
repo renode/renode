@@ -62,7 +62,14 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public int GetSize() => HeaderSize + Data.Length;
 
-        public override string ToString() => $"{nameof(MessagePayload)}(Command={Command}, Type={Type}, Data={Misc.PrettyPrintCollectionHex(Data)})";
+        public override string ToString() => ToCustomString();
+
+        public string ToCustomString(bool withData = true)
+        {
+            var dataString = withData ? Misc.PrettyPrintCollectionHex(Data) : "[...]";
+
+            return $"{nameof(MessagePayload)}(Command={Command}, Type={Type}, {dataString})";
+        }
 
         public Command Command { get; }
 

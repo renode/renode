@@ -91,6 +91,9 @@ typedef struct __attribute__((packed)) {
 } message_payload_t;
 
 #define REQUEST_HEADER(cmd) {&(const message_payload_t){ cmd, TYPE_REQUEST }, sizeof(message_payload_t)}
+#define RESPONSE_HEADER(cmd, type) {&(const message_payload_t){ cmd, type }, sizeof(message_payload_t)}
+
+#define assert_response(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {msg, sizeof(msg)}); } } while (0)
 
 // Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.GetVersion.ProtocolVersion` in C#
 static const uint32_t PROTOCOL_VERSION = 0;
@@ -174,22 +177,22 @@ static renode_error_t *register_callback(raw_callback_t callback, void *user_dat
     return NO_ERROR;
 }
 
-static renode_error_t *invoke_callback(api_command_t cmd, int32_t ed, const void *data, size_t size)
+static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, api_command_t cmd, int32_t ed, const void *data, size_t size)
 {
     switch(cmd)
     {
     case GPIO:
-        assert_msg(ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
-        assert_msg(size == sizeof(renode_gpio_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        assert_response(ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
+        assert_response(size == sizeof(renode_gpio_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
         renode_gpio_event_data_t event_data;
         memcpy(&event_data, data, sizeof(event_data));
 
         callbacks[ed](callback_user_data[ed], &event_data);
-        return NO_ERROR;
+        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
     default:
-        assert_msg(false, "Tried to invoke callback for an invalid command");
+        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
     }
-    return create_fatal_error_static("Unreachable logic reached");
 }
 
 static renode_error_t *get_machine_handler(renode_connection_t *conn, const void *data, size_t size, void *ud)
@@ -745,7 +748,8 @@ static renode_error_t *generic_handler(renode_connection_t *conn, const void *re
         int32_t ed;
         assert_fmsg(sizeof(ed) <= data_size, "Expected at least %zu bytes of an event descriptor, but got only %zu", sizeof(ed), size);
         memcpy(&ed, data, sizeof(ed));
-        return invoke_callback(header.command, ed, data + sizeof(ed), data_size - sizeof(ed));
+        // TODO: Pass proper ID
+        return invoke_callback(conn, 0, header.command, ed, data + sizeof(ed), data_size - sizeof(ed));
     }
     else if (header.type == TYPE_REQUEST) {
         return create_fatal_error_static("Current client implementation cannot service direct requests");

@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 
         while (user_data.run) {
             renode_time_t run_for_time;
-            if ((error = renode_create_time(60, TU_SECONDS, &run_for_time)) != NO_ERROR) {
+            if ((error = renode_create_time(1, TU_SECONDS, &run_for_time)) != NO_ERROR) {
                 fprintf(stderr, "Failed to create a run for timestamp: %s\n", error->message);
                 goto fail_gpio;
             }
