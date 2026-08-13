@@ -44,6 +44,14 @@ struct renode_bus_context {
     int32_t id;
 };
 
+struct renode_spi {
+    renode_machine_t *machine;
+    int32_t id;
+    void *user_data;
+    renode_spi_transmit_callback_t on_transmit;
+    renode_spi_finish_callback_t on_finish;
+};
+
 void renode_free_error(renode_error_t *error)
 {
     if (error == NO_ERROR) {
@@ -154,6 +162,12 @@ static renode_error_t *register_callback(raw_callback_t callback, void *user_dat
     return NO_ERROR;
 }
 
+// SPI event types (server -> client, in the event payload's first byte), must match SpiEvent in SPI.cs
+typedef enum {
+    SPI_EVENT_TRANSMIT = 0,
+    SPI_EVENT_FINISH_TRANSMISSION = 1,
+} spi_event_t;
+
 static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, api_command_t cmd, int32_t ed, const void *data, size_t size)
 {
     assert_response(ed < callbacks_count, "Tried to invoke callback for an invalid event descriptor");
@@ -175,6 +189,25 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
 
         callbacks[ed](callback_user_data[ed], &timestamp);
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+    case SPI:
+        assert_response(size >= 1, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        renode_spi_t *spi = callback_user_data[ed];
+
+        switch(((uint8_t*)data)[0])
+        {
+        case SPI_EVENT_TRANSMIT:
+            assert_response(size == 2, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+            uint8_t miso = spi->on_transmit(spi->user_data, ((uint8_t*)data)[1]);
+            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&miso, sizeof(miso)});
+        case SPI_EVENT_FINISH_TRANSMISSION:
+            if (spi->on_finish) {
+                spi->on_finish(spi->user_data);
+            }
+            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        default:
+            return create_fatal_error_static("Received unknown SPI event type");
+        }
     default:
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
     }
@@ -779,7 +812,43 @@ static renode_error_t *generic_response_handler(renode_connection_t *conn, const
         return sysbus_handler(conn, data, data_size, ud);
     case TIME_ELAPSED_CALLBACK:
         return NO_ERROR; // This command doesn't return any data, we only care about a successful status
+    case SPI:
+        return NO_ERROR; // This command doesn't return any data, we only care about a successful status
     default:
         return create_fatal_error_static("Encountered a command without a response handler");
     }
+}
+
+renode_error_t *renode_get_spi(renode_machine_t *machine, const char *name, renode_spi_t **spi)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, SPI, name, &id));
+
+    *spi = xmalloc(sizeof(renode_spi_t));
+    (*spi)->machine = machine;
+    (*spi)->id = id;
+    (*spi)->user_data = NULL;
+    (*spi)->on_transmit = NULL;
+    (*spi)->on_finish = NULL;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_spi_register_callbacks(renode_spi_t *spi, void *user_data,
+    renode_spi_transmit_callback_t on_transmit, renode_spi_finish_callback_t on_finish)
+{
+    spi->user_data = user_data;
+    spi->on_transmit = on_transmit;
+    spi->on_finish = on_finish;
+
+    int32_t ed;
+    return_error_if_fails(register_callback(NULL, spi, &ed));
+
+    assert_msg(on_transmit != NULL, "spi on_transmit callback cannot be null");
+
+    return renode_connection_send_request(spi->machine->renode->conn, generic_response_handler, NULL,
+        REQUEST_HEADER(SPI),
+        {&spi->id, sizeof(spi->id)},
+        {&ed, sizeof(ed)},
+    );
 }

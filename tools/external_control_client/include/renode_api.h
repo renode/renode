@@ -95,6 +95,13 @@ typedef struct renode_bus_context renode_bus_context_t;
 typedef void (*renode_fatal_error_callback_t)(void *ud, renode_error_t *error);
 
 /**
+ * @brief Renode SPI peripheral API handle
+ *
+ * @copydetails renode_t
+ */
+typedef struct renode_spi renode_spi_t;
+
+/**
  * @brief Function initializing Renode connection
  *
  * @note The connection should be closed using renode_disconnect() before a client app exits.
@@ -439,3 +446,52 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
 renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count);
+
+/* SPI */
+
+/**
+ * @brief Function preparing SPI peripheral handle
+ *
+ * The peripheral must be a `SPI.ExternalControlSPIPeripheral`
+ *
+ * @note Handle's internal memory is dynamically allocated so `*spi` should be freed when it's no longer used.
+ *
+ * @param[in] machine machine handle
+ * @param[in] name SPI peripheral's name
+ * @param[out] spi handle associated with the requested SPI peripheral
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_get_spi(renode_machine_t *machine, const char *name, renode_spi_t **spi);
+
+/**
+ * SPI transmit callback: invoked for every byte the master sends to the slave (MOSI).
+ * Returns the byte the slave puts on the bus in exchange (MISO) for that beat.
+ *
+ * @param[in] user_data pointer passed at registration
+ * @param[in] mosi the byte received from the master
+ * @return the MISO byte to return to the master
+ */
+typedef uint8_t (*renode_spi_transmit_callback_t)(void *user_data, uint8_t mosi);
+
+/**
+ * SPI finish-transmission callback: invoked when the master ends the transfer (CS deasserted).
+ *
+ * @param[in] user_data pointer passed at registration
+ */
+typedef void (*renode_spi_finish_callback_t)(void *user_data);
+
+/**
+ * @brief Function registering live callbacks for an ExternalControlSPIPeripheral slave
+ *
+ * After registration, the callbacks fire while the emulation advances (i.e. during
+ * renode_run_for()): `on_transmit` supplies the MISO byte for each master beat, and
+ * `on_finish` is notified at the end of a transfer.
+ *
+ * @param[in] spi SPI handle
+ * @param[in] user_data pointer passed to both callbacks when invoked
+ * @param[in] on_transmit callback returning the MISO byte for each received MOSI byte
+ * @param[in] on_finish callback invoked when the transfer finishes (may be NULL)
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_spi_register_callbacks(renode_spi_t *spi, void *user_data,
+    renode_spi_transmit_callback_t on_transmit, renode_spi_finish_callback_t on_finish);
