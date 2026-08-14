@@ -1,7 +1,7 @@
 *** Variables ***
 ${sdmmc}=  SEPARATOR=
 ...  """ \n
-...  sdmmc: SD.STM32SDMMC @ sysbus \n
+...  sdmmc: SD.STM32HSDMMC @ sysbus \n
 ...  """ \n
 ${nonexistent_error}=                  REGEXP: (?s:.)*Could not find image file '/doesntexist'(?s:.)*
 ${empty_error}=                        REGEXP: (?s:.)*No image file provided(?s:.)*
@@ -13,15 +13,14 @@ Setup Machine
 
 *** Test Cases ***
 Should Be Able To Load Existing File
-    [Tags]                             skip_ci
     Setup Machine
     # The actual file contents don't matter for loading an SD card, so simply use this file
     Execute Command                    machine SdCardFromFile "${SUITE_SOURCE}" sdmmc 0x1000
+
 Should Fail At Loading Nonexistent File
-    [Tags]                             skip_ci
     Setup Machine
     Run Keyword And Expect Error       ${nonexistent_error}  Execute Command  machine SdCardFromFile "/doesntexist" sdmmc 0x1000
+
 Should Fail At Loading Empty Path
-    [Tags]                             skip_ci
     Setup Machine
     Run Keyword And Expect Error       ${empty_error}        Execute Command  machine SdCardFromFile "" sdmmc 0x1000

@@ -41,7 +41,6 @@ Should Emit FIFO Underrun Interrupt
     Should Have FIFO Underrun Interrupt  True
 
 Should Shadow Registers
-    [Tags]                  skip_ci
     Setup Machine
     ${og_line_count}=       Execute Command  ltdc ReadDoubleWord ${LINE_COUNT}
     Execute Command         ltdc WriteDoubleWord ${LINE_COUNT} 0  # Set line count to 0
@@ -49,8 +48,7 @@ Should Shadow Registers
     Sleep  1.5  # Wait for LTDC to redraw
     Should Have FIFO Underrun Interrupt  False
     Execute Command         ltdc WriteDoubleWord ${LINE_COUNT} ${og_line_count} # Restore line count
-    Wait For Update
+    Execute Command         gpioPortA.button PressAndRelease
+    # Wait For Update
     Sleep  1.5  # Wait for LTDC to redraw
     Should Have FIFO Underrun Interrupt  False
-    
-
