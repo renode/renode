@@ -190,6 +190,7 @@ namespace Antmicro.Renode.PlatformDescription
 
         private void ProcessInner(string file, string source)
         {
+            using var pausedState = machine.ObtainPausedState(true);
             try
             {
                 var usingsGraph = new UsingsGraph(this, file, source);
