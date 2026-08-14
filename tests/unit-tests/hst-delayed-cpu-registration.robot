@@ -30,14 +30,14 @@ Should Register HST For Both CPUs When Second CPU Is Added
 
     # Just in case check if store table is not allocated nor initialized at machine creation
     Should Not Be In Log            Allocating store table with size
-    Should Not Be In Log            initialize_store_table: initializing with ptr
+    Should Not Be In Log            store table is at
 
     # Add first CPU
     Add CPU 0                       ${NEW_VARIABLE_VALUE}
 
     # Check if store table is not allocated nor initialized for one CPU
     Should Not Be In Log            Allocating store table with size
-    Should Not Be In Log            initialize_store_table: initializing with ptr
+    Should Not Be In Log            store table is at
 
     # Add second CPU
     Add CPU 1                       ${VARIABLE_VALUE}
@@ -45,8 +45,8 @@ Should Register HST For Both CPUs When Second CPU Is Added
     # Now store table should be allocated
     Wait For Log Entry              Store table allocated
     # Both cores should get pointers to the store table
-    Wait For Log Entry              cpu_0: initialize_store_table: initializing with ptr
-    Wait For Log Entry              cpu_1: initialize_store_table: initializing with ptr
+    Wait For Log Entry              cpu_0: calculate_hst_mask: store table is at
+    Wait For Log Entry              cpu_1: calculate_hst_mask: store table is at
 
     # Assemble LR/SC code
     ${code}=                        catenate  SEPARATOR=${\n}
