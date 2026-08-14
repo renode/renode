@@ -83,6 +83,10 @@ Should Run RunFor Sample
     Should Contain                  ${r.stdout}  Elapsed virtual time 00:00:01.000000
     Should Contain                  ${r.stdout}  Elapsed virtual time 00:00:01.500000
 
+    Start Emulation
+    Run Keyword And Expect Error    *This action is not available when emulation is already started*
+    ...                             Execute Sample  run_for  ${PORT}  100ms  1
+
 Should Run Sysbus Sample
     [Tags]                          exclude_windows
 
