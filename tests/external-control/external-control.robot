@@ -11,6 +11,33 @@ ${BUILD_DIR}                        ${EXTERNAL_CONTROL_DIR}/build
 ${PORT}                             3344
 ${MEMORY_ADDRESS}                   0x1000
 ${SERVER_NAME}                      server
+${SPI_PLATFORM}=                    SEPARATOR=${\n}
+...                                 """
+...                                 cpu: CPU.RiscV32 @ sysbus
+...                                 ${SPACE*4}cpuType: "rv32i"
+...
+...                                 mem: Memory.MappedMemory @ sysbus 0x0
+...                                 ${SPACE*4}size: 0x1000
+...
+...                                 spi0: SPI.NRF52840_SPI @ sysbus 0x4000
+...                                 slave0: SPI.ExternalControlSPIPeripheral @ spi0
+...
+...                                 spi1: SPI.NRF52840_SPI @ sysbus 0x5000
+...                                 slave1: SPI.ExternalControlSPIPeripheral @ spi1
+...                                 """
+# Simple loop that hits 2 nops 10 times
+# The nops trigger hooks in spi0 and spi1 slaves respectively
+# This way SPI transfers rely on virtual time running
+${PROG_RISCV}                       SEPARATOR=\n
+...                                     addi t0, zero, 0      // i = 0
+...                                     addi t1, zero, 10     // run 10 times
+...                                 loop:
+...                                     nop                   // trigger SPI 0 hook
+...                                     nop                   // trigger SPI 1 hook
+...                                     addi t0, t0, 1        // i++
+...                                     bne t0, t1, loop      // while != 10
+...                                 done:
+...                                     j done                // spin forever
 
 *** Keywords ***
 Custom Test Setup
@@ -227,3 +254,84 @@ Should Run Time Elapsed Sample
     Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000000
     Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000100
     Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000200
+
+Should Run Single SPI Sample
+    [Tags]                          exclude_windows
+
+    Create Log Tester               5
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SPI_PLATFORM}
+
+    Execute Command                 cpu AssembleBlock 0x0 """${PROG_RISCV}"""
+    Execute Command                 cpu PC 0x0
+
+    Execute Command                 cpu AddHook 0x8 "self.InfoLog('MISO: ' + str(machine['sysbus.spi0.slave0'].Transmit(10)))"
+
+    Build Sample                    spi
+
+    # The client registers the SPI callback and runs the emulation.
+    ${r}=                           Execute Sample  spi  ${PORT}  machine  client  sysbus.spi0.slave0
+
+    FOR  ${expected}  IN RANGE  10  20
+        Wait For Log Entry          MISO: ${expected}  startEmulation=false
+    END
+
+Should Run Dual SPI Sample
+    [Tags]                          exclude_windows
+
+    Create Log Tester               5
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SPI_PLATFORM}
+
+    Execute Command                 cpu AssembleBlock 0x0 """${PROG_RISCV}"""
+    Execute Command                 cpu PC 0x0
+
+    # spi0 MISO = MOSI + transfer_count
+    Execute Command                 cpu AddHook 0x8 "self.InfoLog('SPI0 MISO: ' + str(machine['sysbus.spi0.slave0'].Transmit(10)))"
+
+    # spi1 MISO = 128 + transfer_count * 2
+    Execute Command                 cpu AddHook 0xc "self.InfoLog('SPI1 MISO: ' + str(machine['sysbus.spi1.slave1'].Transmit(100)))"
+
+    Build Sample                    spi
+
+    # The client registers SPI callbacks and runs the emulation.
+    Execute Sample                  spi  ${PORT}  machine  client  sysbus.spi0.slave0  sysbus.spi1.slave1
+
+    FOR  ${i}  IN RANGE  0  10
+        ${expected_spi0}=               Evaluate    10 + ${i}
+        ${expected_spi1}=               Evaluate    128 + ${i} * 2
+
+        Wait For Log Entry              SPI0 MISO: ${expected_spi0}  startEmulation=false
+        Wait For Log Entry              SPI1 MISO: ${expected_spi1}  startEmulation=false
+    END
+
+Should Run Single SPI Sample With Robot Managed Time
+    [Tags]                          exclude_windows
+
+    Create Log Tester               5
+
+    Execute Command                 logLevel 0 ${SERVER_NAME}
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SPI_PLATFORM}
+
+    Execute Command                 cpu AssembleBlock 0x0 """${PROG_RISCV}"""
+    Execute Command                 cpu PC 0x0
+
+    Execute Command                 cpu AddHook 0x8 "self.InfoLog('MISO: ' + str(machine['sysbus.spi0.slave0'].Transmit(10)))"
+
+    Build Sample                    spi
+
+    # The client registers SPI callbacks and waits.
+    # Robot drives emulation forwards, client handles SPI transfer callbacks.
+    ${proc}=                        Start Sample  spi  ${PORT}  machine  server  sysbus.spi0.slave0
+
+    Wait For Log Entry              Registered SPI callbacks  startEmulation=false
+
+    FOR  ${expected}  IN RANGE  10  20
+        Wait For Log Entry          MISO: ${expected}
+    END
+
+    Terminate Process               ${proc}
