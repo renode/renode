@@ -241,3 +241,29 @@ Should Display Output on GPIO
     Assert LED State                true
     Write Line To Uart              echo 0 > /sys/class/leds/heartbeat/brightness
     Assert LED State                false
+
+VCU Should Return Encoded Buffers Through DMA
+    Execute Command                 include @scripts/single-node/zynqmp_vcu.resc
+    ${frame_dump_directory}=        Allocate Temporary Directory  zynqmp_vcu_frames
+    Execute Command                 allegro FrameDumpDirectory "${frame_dump_directory}"
+    # Intentionally make encoder pipeline creation fail to force the model to output its own fake NALUs,
+    # so we can reproducibly hash the output file in the guest and test encoded buffer return DMA without
+    # taking a dependency on the exact host codec.
+    Execute Command                 allegro H264Encoder "nonexistent-encoder-to-force-failure"
+    Create Terminal Tester          sysbus.uart0  defaultPauseEmulation=true  timeout=50
+    Start Emulation
+
+    Wait For Prompt On Uart         zcu106-zynqmp login:
+    Write Line To Uart              root
+    Wait For Prompt On Uart         ${LINUX_PROMPT}
+    Write Line To Uart              gst-launch-1.0 videotestsrc pattern=ball num-buffers=10 ! video/x-raw,width=128,height=128,format=NV12,framerate=60/1 ! omxh264enc ! filesink location=ball.h264  waitForEcho=false
+    Wait For Prompt On Uart         ${LINUX_PROMPT}
+
+    @{frames}=                      List Files In Directory  ${frame_dump_directory}  pattern=*.nv12  absolute=${True}
+    Sort List                       ${frames}
+    Length Should Be                ${frames}  10
+    ${digest}=                      Evaluate  hashlib.sha256(b''.join(pathlib.Path(path).read_bytes() for path in $frames)).hexdigest()  modules=hashlib,pathlib
+    Should Be Equal                 ${digest}  8ec5e456420b44a606f68e8e9fc6b52805529680b7cfd085b3663893b5a08af2
+
+    Write Line To Uart              sha256sum ball.h264
+    Wait For Line On Uart           e5ba3b78a2dc5563243f19190537ecb4b5e77805e59acf2172f01d88d6d3d3c9
