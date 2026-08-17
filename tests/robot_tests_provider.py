@@ -1070,7 +1070,7 @@ class RobotTestSuite(object):
             for test_name in (t[0] for t in test_cases):
                 deps.update(self._get_dependencies(test_name))
             if not self._run_dependencies(deps, options, iteration_index, suite_retry_index):
-                return False
+                return TestResult(False, None)
 
         # Listeners are called in the exact order as in `listeners` list for both `start_test` and `end_test`.
         output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
