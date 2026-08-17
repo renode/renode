@@ -1,0 +1,38 @@
+using "platforms/cpus/silabs/efr32s2/efr32xg22.repl"
+
+led0: Miscellaneous.LED @ gpioPort 50  // PD02
+
+led1: Miscellaneous.LED @ gpioPort 51  // PD03
+
+gpioPort:
+    50 -> led0@0
+    51 -> led1@0
+
+button0: Miscellaneous.Button @ gpioPort 16  // PB00
+    -> gpioPort@16
+
+button1: Miscellaneous.Button @ gpioPort 17  // PB01
+    -> gpioPort@17
+
+sram:
+    size: 0x8000
+
+flash:
+    size: 0x7E000
+
+lockbitsdata: Miscellaneous.SiLabs.SiLabs_LockbitsData @ sysbus 0x7E000
+    size: 0x2000
+
+msc:
+    flashSize: 0x80000
+    flashPageSize: 0x2000
+
+//--------------------------------
+// Crystal frequency configuration
+//--------------------------------
+
+cmu:
+    hfxoFrequency: 38400000
+
+nvic:
+    systickFrequency: 38400000

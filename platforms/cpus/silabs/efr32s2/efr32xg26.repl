@@ -40,6 +40,13 @@ eusart1: UART.SiLabs_EUSART_2 @ {
     RxFifoLevelGpioSignal -> gpioPort@0x1203
     TxFifoLevel -> ldma@0x0101
 
+lpwBufferController: Miscellaneous.SiLabs.SiLabs_BUFC_4 @ {
+        sysbus <0xAA000000, +0x4000>; // BUFC_S
+        sysbus <0xBA000000, +0x4000>  // BUFC_NS
+    }
+    IRQ -> nvic@47
+    SequencerIRQ -> seqnvic@18
+
 radio: Wireless.SiLabs_xG24_LPW @ {
         sysbus new Bus.BusMultiRegistration { address: 0x4009C000; size: 0x4000; region: "hostmailbox" };
         sysbus new Bus.BusMultiRegistration { address: 0xA8004000; size: 0x4000; region: "frc" };
@@ -50,7 +57,6 @@ radio: Wireless.SiLabs_xG24_LPW @ {
         sysbus new Bus.BusMultiRegistration { address: 0xA801C000; size: 0x4000; region: "protimer" };
         sysbus new Bus.BusMultiRegistration { address: 0xA8020000; size: 0x4000; region: "rac" };
         sysbus new Bus.BusMultiRegistration { address: 0xA802C000; size: 0x4000; region: "rfmailbox" };
-        sysbus new Bus.BusMultiRegistration { address: 0xAA000000; size: 0x4000; region: "bufc" };
         sysbus new Bus.BusMultiRegistration { address: 0x5009C000; size: 0x4000; region: "hostmailbox_ns" };
         sysbus new Bus.BusMultiRegistration { address: 0xB8004000; size: 0x4000; region: "frc_ns" };
         sysbus new Bus.BusMultiRegistration { address: 0xB800C000; size: 0x4000; region: "agc_ns" };
@@ -59,14 +65,14 @@ radio: Wireless.SiLabs_xG24_LPW @ {
         sysbus new Bus.BusMultiRegistration { address: 0xB8018000; size: 0x4000; region: "synth_ns" };
         sysbus new Bus.BusMultiRegistration { address: 0xB801C000; size: 0x4000; region: "protimer_ns" };
         sysbus new Bus.BusMultiRegistration { address: 0xB8020000; size: 0x4000; region: "rac_ns" };
-        sysbus new Bus.BusMultiRegistration { address: 0xB802C000; size: 0x4000; region: "rfmailbox_ns" };
-        sysbus new Bus.BusMultiRegistration { address: 0xBA000000; size: 0x4000; region: "bufc_ns" }
+        sysbus new Bus.BusMultiRegistration { address: 0xB802C000; size: 0x4000; region: "rfmailbox_ns" }
     }
     ram: sram
     sequencer: seqcpu
+    bufferController: lpwBufferController
+    sysrtc: sysrtc
     // Main CPU interrupts
     AutomaticGainControlIRQ -> nvic@46
-    BufferControllerIRQ -> nvic@47
     FrameControllerPrioritizedIRQ -> nvic@48
     FrameControllerIRQ -> nvic@49
     ModulatorAndDemodulatorIRQ -> nvic@50
@@ -94,12 +100,13 @@ radio: Wireless.SiLabs_xG24_LPW @ {
     SeqFrameControllerIRQ ->seqnvic@15
     SeqFrameControllerPriorityIRQ ->seqnvic@16
     SeqModulatorAndDemodulatorIRQ ->seqnvic@17
-    SeqBufferControllerIRQ ->seqnvic@18
     SeqAutomaticGainControlIRQ ->seqnvic@19
     SeqProtocolTimerIRQ -> seqnvic@20
     //SeqRtcIRQ -> seqnvic@21
     SeqSynthesizerIRQ -> seqnvic@22
     SeqRfMailboxIRQ -> seqnvic@23
+    SeqSoftware0IRQ -> seqnvic@30
+    SeqSoftware1IRQ -> seqnvic@31
 
 msc: Miscellaneous.SiLabs.SiLabs_MSC_3 @ {
         sysbus <0x40030000, +0x4000>; // MSC_S
@@ -109,6 +116,7 @@ msc: Miscellaneous.SiLabs.SiLabs_MSC_3 @ {
     IRQ -> nvic@66
     flashSize: 0x320000
     flashPageSize: 0x2000
+    flashBaseAddress: 0x08000000
 
 gpioPort: GPIOPort.SiLabs_GPIO_3 @ {
         sysbus <0x4003C000, +0x4000>; // GPIO_S
@@ -150,11 +158,12 @@ frcram: Memory.MappedMemory @ {
     }
     size: 0x1000
 
-nvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
-        address: 0xE000E000;
-        cpu: cpu
+nvic: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cpu };
+        sysbus new Bus.BusMultiRegistration { address: 0xE002E000; size: 0x1000; region: "NonSecure"; cpu: cpu }
     }
     -> cpu@0
+    systickFrequency: 39000000
 
 seqnvic: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
         address: 0xE000E000;
@@ -173,85 +182,75 @@ seqcpu: CPU.CortexM @ sysbus
     cpuId: 1
     IsHalted: true
 
-timer0: Timers.EFR32_Timer @ {
+timer0: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40048000, +0x4000>; // TIMER0_S
         sysbus <0x50048000, +0x4000>  // TIMER0_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@4
 
-timer1: Timers.EFR32_Timer @ {
+timer1: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x4004C000, +0x4000>; // TIMER1_S
         sysbus <0x5004C000, +0x4000>  // TIMER1_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@5
 
-timer2: Timers.EFR32_Timer @ {
+timer2: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40050000, +0x4000>; // TIMER2_S
         sysbus <0x50050000, +0x4000>  // TIMER2_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@6
 
-timer3: Timers.EFR32_Timer @ {
+timer3: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40054000, +0x4000>; // TIMER3_S
         sysbus <0x50054000, +0x4000>  // TIMER3_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@7
 
-timer4: Timers.EFR32_Timer @ {
+timer4: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40058000, +0x4000>; // TIMER4_S
         sysbus <0x50058000, +0x4000>  // TIMER4_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@8
 
-timer5: Timers.EFR32_Timer @ {
+timer5: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x4005C000, +0x4000>; // TIMER5_S
         sysbus <0x5005C000, +0x4000>  // TIMER5_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@9
 
-timer6: Timers.EFR32_Timer @ {
+timer6: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40060000, +0x4000>; // TIMER6_S
         sysbus <0x50060000, +0x4000>  // TIMER6_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@10
 
-timer7: Timers.EFR32_Timer @ {
+timer7: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40064000, +0x4000>; // TIMER7_S
         sysbus <0x50064000, +0x4000>  // TIMER7_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@11
 
 
-timer8: Timers.EFR32_Timer @ {
+timer8: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40068000, +0x4000>; // TIMER8_S
         sysbus <0x50068000, +0x4000>  // TIMER8_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@12
 
-timer9: Timers.EFR32_Timer @ {
+timer9: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x4006C000, +0x4000>; // TIMER9_S
         sysbus <0x5006C000, +0x4000>  // TIMER9_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit16
+    width: 16
     -> nvic@13
 
 ldma: DMA.SiLabs_LDMA_0_3 @ {
@@ -260,22 +259,21 @@ ldma: DMA.SiLabs_LDMA_0_3 @ {
         sysbus new Bus.BusMultiRegistration { address: 0x40044000; size: 0x4000; region: "ldmaxbar" }; // LDMAXBAR_S
         sysbus new Bus.BusMultiRegistration { address: 0x50044000; size: 0x4000; region: "ldmaxbar" }  // LDMAXBAR_NS
     }
+    context: cpu
     -> nvic@35
 
-wtimer0: Timers.EFR32_Timer @ {
+wdog0: Miscellaneous.SiLabs.SiLabs_WDOG_1 @ {
         sysbus <0x4B004000, +0x4000>; // WDOG0_S
         sysbus <0x5B004000, +0x4000>  // WDOG0_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit32
+    instance: 0
     -> nvic@58
 
-wtimer1: Timers.EFR32_Timer @ {
+wdog1: Miscellaneous.SiLabs.SiLabs_WDOG_1 @ {
         sysbus <0x4B008000, +0x4000>; // WDOG1_S
         sysbus <0x5B008000, +0x4000>  // WDOG1_NS
     }
-    frequency: 0x1000000 //bogus
-    width: TimerWidth.Bit32
+    instance: 1
     -> nvic@59
 
 deviceInformation: Miscellaneous.SiLabs.SiLabs_DeviceInformation @ sysbus 0x0FE08000
@@ -290,14 +288,12 @@ DCDC_IF: Python.PythonPeripheral @ sysbus 0x50098028
     script: "request.Value = 0xffffffff"
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
-    size: 0x31E000
+    ResetByte: 0xFF
 
-cmu: Miscellaneous.SiLabs.SiLabs_CMU_3 @ {
+cmu: Miscellaneous.SiLabs.SiLabs_CMU_7 @ {
         sysbus <0x40008000, +0x4000>; // CMU_S
         sysbus <0x50008000, +0x4000>  // CMU_NS
     }
-    hfxo: hfxo
-    dpll: dpll
 
 lfxo: Miscellaneous.SiLabs.SiLabs_LFXO_1 @ {
         sysbus <0x40020000, +0x4000>; // LFXO_S
@@ -323,6 +319,8 @@ hfxo: Miscellaneous.SiLabs.SiLabs_HFXO_3 @ {
         sysbus <0x4A004000, +0x4000>; // HFXO0_S
         sysbus <0x5A004000, +0x4000>  // HFXO0_NS
     }
+    startupDelayTicks: 9   //should remain <= 20 to pass early wakeup conditions
+    IRQ -> nvic@60
 
 hfrcoem23: Miscellaneous.SiLabs.SiLabs_HFRCO_2 @ {
         sysbus <0x4A000000, +0x4000>; // HFRCOEM23_S
@@ -334,17 +332,18 @@ emu: Miscellaneous.SiLabs.SiLabs_EMU_3 @ {
         sysbus <0x50004000, +0x4000>  // EMU_NS
     }
 
-syscfg: Miscellaneous.SiLabs.SiLabs_SYSCFG_3 @ {
-        sysbus <0x4007C000, +0x4000>; // SYSCFG_S
-        sysbus <0x5007C000, +0x4000>  // SYSCFG_NS
+syscfg: Miscellaneous.SiLabs.SiLabs_SYSCFG_9 @ {
+        sysbus <0x40080000, +0x4000>; // SYSCFG_S
+        sysbus <0x50080000, +0x4000>  // SYSCFG_NS
     }
 
-sysrtc: Miscellaneous.SiLabs.EFR32xG2_SYSRTC_1 @ {
+sysrtc: Timers.SiLabs_SYSRTC_1 @ {
         sysbus <0x400AC000, +0x4000>; // SYSRTC0_S
         sysbus <0x500AC000, +0x4000>  // SYSRTC0_NS
     }   
     frequency: 32768
     IRQ -> nvic@83
+    AlternateIRQ -> seqnvic@21
 
 semailbox: Miscellaneous.SiLabs.SiLabs_SEMAILBOX_1 @ {
         sysbus <0x4C000000, +0x4000>; // SEMAILBOX_S
@@ -353,13 +352,23 @@ semailbox: Miscellaneous.SiLabs.SiLabs_SEMAILBOX_1 @ {
     RxIRQ -> nvic@81
     TxIRQ -> nvic@82
 
-radioaes: Miscellaneous.SiLabs.EFR32xG2_AES_1 @ {
+prs: Miscellaneous.SiLabs.SiLabs_PRS_6 @ {
+        sysbus <0x40038000, +0x4000>; // PRS_S
+        sysbus <0x50038000, +0x4000>  // PRS_NS
+    }
+    hfxo: hfxo
+    sysrtc: sysrtc
+    lpw: radio
+
+radioaes: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
         sysbus <0x44000000, +0x4000>; // RADIOAES_S
         sysbus <0x54000000, +0x4000>  // RADIOAES_NS
     }
     IRQ -> nvic@64
 
 flashuserdata: Miscellaneous.SiLabs.SiLabs_FlashUserData @ sysbus <0x0FE00000, +0x7F>
+
+itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
 
 sysbus:
     init add:
