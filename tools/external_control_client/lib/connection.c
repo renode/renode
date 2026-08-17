@@ -165,6 +165,7 @@ struct renode_connection {
     pthread_mutex_t send_message_lock;
     channel_t client_responses;
     uint16_t client_next_request_id;
+    uint16_t server_next_request_id;
 
     channel_t server_requests;
 };
@@ -333,6 +334,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     result->fatal_error_callback = NULL;
     result->fatal_error_ud = NULL;
     result->client_next_request_id = 0;
+    result->server_next_request_id = 0;
 
     renode_error_t *ret_err = NO_ERROR;
     bool have_mutex = false;
@@ -486,9 +488,20 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
 {
     renode_error_t *err = NO_ERROR;
 
-    pthread_mutex_lock(&conn->client_request_lock); // Only 1 thread can start a request chain
+    bool from_default_handler_thread = pthread_equal(pthread_self(), conn->default_handler_thread);
 
-    uint16_t request_message_id = CLIENT_INITIATED | (conn->client_next_request_id++);
+    if(!from_default_handler_thread) {
+        pthread_mutex_lock(&conn->client_request_lock); // Only 1 thread can start a request chain
+    }
+
+    uint16_t request_message_id;
+    if(from_default_handler_thread) {
+        request_message_id = ~CLIENT_INITIATED & conn->server_next_request_id++;
+    }
+    else {
+        request_message_id = CLIENT_INITIATED | conn->client_next_request_id++;
+    }
+
     err = renode_connection_send_message_impl(conn, request_message_id, transfers, count);
     if (err != NO_ERROR) {
         goto release_locks;
@@ -529,7 +542,9 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
     free(data);
 
 release_locks:
-    pthread_mutex_unlock(&conn->client_request_lock);
+    if(!from_default_handler_thread) {
+        pthread_mutex_unlock(&conn->client_request_lock);
+    }
     return err;
 }
 
