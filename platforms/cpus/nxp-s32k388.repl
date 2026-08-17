@@ -210,21 +210,17 @@ stm3: Timers.S32K3XX_SystemTimerModule @ sysbus 0x4047C000
     -> mscm@57
 
 pit0: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B0000
-    oscillatorFrequency: 12_000_000
     hasRealTimeInterrupt: true
     hasLifetimeTimer: true
     -> mscm@96
 
 pit1: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x400B4000
-    oscillatorFrequency: 12_000_000
     -> mscm@97
 
 pit2: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x402FC000
-    oscillatorFrequency: 12_000_000
     -> mscm@98
 
 pit3: Timers.S32K3XX_PeriodicInterruptTimer @ sysbus 0x40300000
-    oscillatorFrequency: 12_000_000
     -> mscm@99
 
 rtc: Timers.S32K3XX_RealTimeClock @ sysbus 0x40288000
@@ -458,6 +454,7 @@ emios2: GPIOPort.S32K3XX_eMIOS @ sysbus 0x40090000
 
 mc_cgm: Miscellaneous.S32K3XX_MC_CGM @ sysbus 0x402D8000
     coreClk: [emios0, emios1, emios2]
+    aipsSlowClk: [pit0, pit1, pit2, pit3]
 
 plldig: Miscellaneous.S32K3XX_PLLDIG @ sysbus 0x402E0000
     clockGenerationModule: mc_cgm
