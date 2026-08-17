@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Network.ExternalControl;
 using Antmicro.Renode.Utilities;
@@ -284,14 +283,6 @@ namespace Antmicro.Renode.Network
             }
 
             private readonly Dictionary<Command, ICommand> commandHandlers;
-        }
-
-        private class ServerDisposedException : RecoverableException
-        {
-            public ServerDisposedException()
-                : base()
-            {
-            }
         }
 
         private enum State
