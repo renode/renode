@@ -132,7 +132,7 @@ namespace Antmicro.Renode.NativeInterface
             var options = new Options
             {
                 DisableXwt = true,
-                HideAnalyzers = true,
+                HideAnalyzers = false,
                 FilePath = script,
                 Port = telnetPort,
                 HideMonitor = telnetPort < 0, // Don't try to show the GUI monitor if the telnet server is disabled
