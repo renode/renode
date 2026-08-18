@@ -146,6 +146,10 @@ struct renode_connection {
 
     int socket_fd;
 
+    pthread_mutex_t lifecycle_lock;
+    bool disposed;
+    int active_handler_count;
+
     pthread_t receiver_thread;
     pthread_t default_handler_thread;
 
@@ -192,6 +196,14 @@ static void *receiver_thread(void *ud)
         uint8_t temp;
         ssize_t received = recv(conn->socket_fd, &temp, sizeof(temp), MSG_PEEK);
         if (received < 0) {
+            pthread_mutex_lock(&conn->lifecycle_lock);
+            if (conn->disposed) {
+                // Ignore the error, since we are disposing of the connection anyway
+                verbose_print("Socket error while disposing of the connection: %s (socket_fd = %d)", strerror(errno), conn->socket_fd);
+                pthread_mutex_unlock(&conn->lifecycle_lock);
+                return NULL;
+            }
+            pthread_mutex_unlock(&conn->lifecycle_lock);
             check_and_handle_async_error(conn, create_fatal_error("Socket reception error: %s (socket_fd = %d)", strerror(errno), conn->socket_fd));
         }
 
@@ -239,7 +251,16 @@ static void *default_handler_thread(void *ud)
         // POSIX does not allow NULL but most implementations do
         pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
+        pthread_mutex_lock(&conn->lifecycle_lock);
+        conn->active_handler_count += 1;
+        pthread_mutex_unlock(&conn->lifecycle_lock);
+
         renode_error_t* error = handler(conn, data, size, ud_ptr);
+
+        pthread_mutex_lock(&conn->lifecycle_lock);
+        conn->active_handler_count -= 1;
+        pthread_mutex_unlock(&conn->lifecycle_lock);
+
         if (error != NO_ERROR) {
             fprintf(stderr, "Default handler callback failed with: %s\n", error->message);
             fflush(stderr);
@@ -301,6 +322,8 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
 
     renode_connection_t *result = xmalloc(sizeof(renode_connection_t));
     result->socket_fd = socket_fd;
+    result->disposed = false;
+    result->active_handler_count = 0;
     result->fatal_error_callback = NULL;
     result->fatal_error_ud = NULL;
     result->client_next_request_id = 0;
@@ -308,6 +331,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     renode_error_t *ret_err = NO_ERROR;
     bool have_mutex = false;
     bool have_send_mutex = false;
+    bool have_lifecycle_mutex = false;
     bool have_client_responses = false;
     bool have_server_requests = false;
     bool have_receiver_thread = false;
@@ -330,6 +354,13 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         goto cleanup;
     }
     have_send_mutex = true;
+
+    thread_error = pthread_mutex_init(&result->lifecycle_lock, NULL);
+    if (thread_error != 0) {
+        ret_err = create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
+        goto cleanup;
+    }
+    have_lifecycle_mutex = true;
 
     ret_err = channel_init(&result->client_responses);
     if (ret_err != NO_ERROR) {
@@ -384,14 +415,29 @@ cleanup:
     if (have_send_mutex) {
         pthread_mutex_destroy(&result->send_message_lock);
     }
+    if (have_lifecycle_mutex) {
+        pthread_mutex_destroy(&result->lifecycle_lock);
+    }
     close(result->socket_fd);
     free(result);
     return ret_err;
 }
 
-renode_error_t *renode_connection_close(renode_connection_t *con)
+static renode_error_t *renode_connection_close_impl(renode_connection_t *con)
 {
-    assert(con);
+    pthread_mutex_lock(&con->lifecycle_lock);
+    if (con->active_handler_count > 0) {
+        pthread_mutex_unlock(&con->lifecycle_lock);
+        return create_error_static(ERR_CONNECTION_BUSY, "Cannot close a connection while handlers are running");
+    }
+
+    if (con->disposed) {
+        pthread_mutex_unlock(&con->lifecycle_lock);
+        return create_error_static(ERR_FATAL, "This Renode connection has already been closed");
+    }
+
+    con->disposed = true;
+    pthread_mutex_unlock(&con->lifecycle_lock);
 
     // `shutdown` is called to interrupt the `recv` call in the RX thread
     shutdown(con->socket_fd, SHUT_RDWR);
@@ -407,6 +453,20 @@ renode_error_t *renode_connection_close(renode_connection_t *con)
     channel_destroy(&con->server_requests);
     free(con);
 
+    return NO_ERROR;
+}
+
+renode_error_t *renode_connection_close(renode_connection_t *con, bool blocking)
+{
+    assert(con);
+
+    renode_error_t *err;
+    while ((err = renode_connection_close_impl(con)) != NO_ERROR) {
+        if (!blocking || err->code != ERR_CONNECTION_BUSY) {
+            return err;
+        }
+        renode_free_error(err);
+    }
     return NO_ERROR;
 }
 
@@ -432,8 +492,16 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
     size_t size;
     channel_get(&conn->client_responses, &data, &size);
 
+    pthread_mutex_lock(&conn->lifecycle_lock);
+    conn->active_handler_count += 1;
+    pthread_mutex_unlock(&conn->lifecycle_lock);
+
     // Handle the response - while holding the request_lock to enable nested requests
     err = cb(conn, data, size, ud);
+
+    pthread_mutex_lock(&conn->lifecycle_lock);
+    conn->active_handler_count -= 1;
+    pthread_mutex_unlock(&conn->lifecycle_lock);
 
     free(data);
 
@@ -444,6 +512,13 @@ release_locks:
 
 renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count)
 {
+    pthread_mutex_lock(&conn->lifecycle_lock);
+    if (conn->disposed) {
+        pthread_mutex_unlock(&conn->lifecycle_lock);
+        return create_fatal_error_static("This Renode connection has been disposed of");
+    }
+    pthread_mutex_unlock(&conn->lifecycle_lock);
+
     renode_error_t *err = NO_ERROR;
 
     message_t envelope = {

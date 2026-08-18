@@ -26,6 +26,7 @@ typedef enum {
     ERR_COMMAND_FAILED, /**< command failed */
     ERR_INVALID_COMMAND, /**< invalid command */
     ERR_INVALID_ARGUMENT, /**< function called with invalid argument */
+    ERR_CONNECTION_BUSY, /**< Renode connection is busy and cannot be closed */
 } renode_error_code_t;
 
 /**
@@ -113,6 +114,19 @@ renode_error_t *renode_connect(const char *port, renode_t **renode);
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
 renode_error_t *renode_disconnect(renode_t **renode);
+
+/**
+ * @brief Extended variant of the function closing Renode connection and freeing internal handle memory
+ *
+ * @note The internal handle memory is freed so calling `free(*renode)` after calling this function is invalid.
+ *
+ * @param[in] renode Renode connection handle pointer
+ * @param[in] blocking if false the function may return an error with code `ERR_CONNECTION_BUSY` to indicate
+ * that connection cannot be closed at this momment due to the fact that command handlers are currently running.
+ * if true this function will block in case where `ERR_CONNECTION_BUSY` would be returned.
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_disconnect_ex(renode_t **renode, bool blocking);
 
 /**
  * @brief Function preparing machine handle

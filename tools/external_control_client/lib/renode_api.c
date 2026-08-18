@@ -135,7 +135,7 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
     );
 
     if (err != NO_ERROR) {
-        renode_connection_close(conn);
+        renode_connection_close(conn, /*blocking=*/true);
         return err;
     }
 
@@ -147,9 +147,14 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
 
 renode_error_t *renode_disconnect(renode_t **renode)
 {
+    return renode_disconnect_ex(renode, /*blocking=*/true);
+}
+
+renode_error_t *renode_disconnect_ex(renode_t **renode, bool blocking)
+{
     assert(renode != NULL && *renode != NULL);
 
-    return_error_if_fails(renode_connection_close((*renode)->conn));
+    return_error_if_fails(renode_connection_close((*renode)->conn, blocking));
     free(*renode);
     *renode = NULL;
 

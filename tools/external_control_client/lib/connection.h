@@ -22,7 +22,7 @@ typedef struct {
 } renode_connection_config_t;
 
 renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_connection_config_t *cfg);
-renode_error_t *renode_connection_close(renode_connection_t *con);
+renode_error_t *renode_connection_close(renode_connection_t *con, bool blocking);
 void renode_connection_set_fatal_error_callback(renode_connection_t *conn, renode_fatal_error_callback_t cb, void *ud);
 
 
