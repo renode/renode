@@ -274,6 +274,7 @@
 - tests/peripherals/AD4011.robot
 - tests/platforms/ArmExperimental/tgau-zedboard.robot
 - tests/peripherals/STM32H7_RCC.robot
+- tests/unit-tests/hst-mmio.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
