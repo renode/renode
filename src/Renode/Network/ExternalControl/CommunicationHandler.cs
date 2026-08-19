@@ -14,7 +14,7 @@ using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
-    public class CommunicationHandler : IEmulationElement
+    public class CommunicationHandler
     {
         public CommunicationHandler(bool isExternal, ExternalControlServer server)
         {
@@ -28,7 +28,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
                 if(messageQueue.Count > 0)
                 {
-                    this.Log(LogLevel.Error, "Got message: {0} while still handling {1} messages. It may indicate an error in threading in the external simulation", message, messageQueue.Count);
+                    server.Log(LogLevel.Error, "Got message: {0} while still handling {1} messages. It may indicate an error in threading in the external simulation", message, messageQueue.Count);
                 }
                 messageQueue.Enqueue(message);
             }
@@ -164,7 +164,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             if(errorMessages.Count > 0)
             {
-                this.Log(LogLevel.Error, "{0}\nCurrently handling:\n{1} {2}\nError: {3}", this, DirectionToString(direction), response, String.Join(", ", errorMessages));
+                server.Log(LogLevel.Error, "{0}\nCurrently handling:\n{1} {2}\nError: {3}", this, DirectionToString(direction), response, String.Join(", ", errorMessages));
             }
 
             requestStack.TryPop(out _);
