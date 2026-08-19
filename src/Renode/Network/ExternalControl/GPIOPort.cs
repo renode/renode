@@ -100,7 +100,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             };
 
             var response = parent.SendRequest(MessagePayload.Event(Identifier, eventDescriptor, data));
-            LogOnErrorResponse(response);
+            response.LogOnError(Identifier, parent);
         }
 
         private int GetExpectedPayloadCount(GPIOPortCommand command)

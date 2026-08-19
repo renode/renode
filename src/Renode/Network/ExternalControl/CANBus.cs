@@ -67,7 +67,7 @@ public class CANBus(ExternalControlServer parent) : BaseCommand(parent), IInstan
         var eventHeader = EventHeader.Create(EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds, message);
 
         var response = parent.SendRequest(MessagePayload.Event(Identifier, callbackIndex, eventHeader, message.Data));
-        LogOnErrorResponse(response);
+        response.LogOnError(Identifier, parent);
     }
 
     public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);

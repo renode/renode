@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl
@@ -77,6 +78,33 @@ namespace Antmicro.Renode.Network.ExternalControl
             var dataString = withData ? Misc.PrettyPrintCollectionHex(Data) : "[...]";
 
             return $"{nameof(MessagePayload)}(Command={Command}, Type={Type}, {dataString})";
+        }
+
+        public bool LogOnError(Command identifier, IEmulationElement parent)
+        {
+            switch(Type)
+            {
+            case CommandType.Success:
+                // Do nothing on success
+                return true;
+            case CommandType.Error:
+                try
+                {
+                    parent.ErrorLog("Command {0} failed with: {1}", identifier, Encoding.UTF8.GetString(Data));
+                }
+                catch(ArgumentException e)
+                {
+                    parent.ErrorLog("Cannot decode an error response for command {0} due to: {1} (raw data: {2})", identifier, e.Message, Data.ToLazyHexString());
+                }
+                break;
+            case CommandType.InvalidCommand:
+                parent.ErrorLog("Command {0} is not supported by the connected external", identifier);
+                break;
+            default:
+                parent.ErrorLog("Unexpected response type: {0} for command {1}", Type, identifier);
+                break;
+            }
+            return false;
         }
 
         public Command Command { get; }

@@ -52,7 +52,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 };
 
                 var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, data));
-                LogOnErrorResponse(response);
+                response.LogOnError(Identifier, parent);
 
                 return response.Data[0];
             };
@@ -64,7 +64,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 };
 
                 var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, data));
-                LogOnErrorResponse(response);
+                response.LogOnError(Identifier, parent);
             };
         }
 

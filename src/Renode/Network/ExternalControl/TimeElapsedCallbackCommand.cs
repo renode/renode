@@ -59,7 +59,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 foreach(var callbackIdentifier in callbacks)
                 {
                     var response = parent.SendRequest(MessagePayload.Event(Identifier, callbackIdentifier, new TimeElapsedEvent(nanoseconds)));
-                    LogOnErrorResponse(response);
+                    response.LogOnError(Identifier, parent);
                 }
 
                 RegisterCallback();
