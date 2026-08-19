@@ -61,13 +61,18 @@ Start Sample
     ${proc}=                        Start Process  ${BUILD_DIR}/${app}  @{args}
     [Return]                        ${proc}
 
+Wait For Sample Finish
+    [Arguments]                     ${proc}
+    ${r}=                           Wait For Process  ${proc}  timeout=5 minutes  on_timeout=kill
+    Log                             Sample stdout:${\n}${r.stdout}
+    Log                             Sample stderr:${\n}${r.stderr}
+    Should Be Equal As Integers     ${r.rc}  0  msg=Process failed with exit code ${r.rc}${\n}stdout:${\n}${r.stdout}${\n}stderr:${\n}${r.stderr}
+    [Return]                        ${r}
+
 Execute Sample
     [Arguments]                     ${app}  @{args}
     ${proc}=                        Start Sample  ${app}  @{args}
-
-    ${r}=                           Wait For Process  ${proc}
-    Log                             Sample stdout:${\n}${r.stdout}
-    Should Be Equal As Integers     ${r.rc}  0  msg=app '${app}' failed exitted with code ${r.rc}, stderr: ${r.stderr}
+    ${r}=                           Wait For Sample Finish  ${proc}
     [Return]                        ${r}
 
 *** Test Cases ***
@@ -146,11 +151,7 @@ Should Run ADC Sample On Potentiometer
         Should Be Equal As Integers     ${val}  ${{100 * ${voltage} / ${MAX_POTENTIOMETER}}}
     END
 
-    ${expected_error}=              Catenate  app 'adc' failed exitted with code 1, stderr:
-    ...                             Setting channel #0 value for 'adc1' failed with:
-    ...                             Invalid voltage value 3301000 not in [0; 3300000]: 1 != 0
-
-    Run Keyword And Expect Error    EQUALS:${expected_error}
+    Run Keyword And Expect Error    *Setting channel #0 value for 'adc1' failed with: Invalid voltage value 3301000*
     ...                             Execute Sample  adc  ${PORT}  ECUC  adc1  6  ${{${MAX_POTENTIOMETER} + 1}}mV
 
 Should Run ADC Sample On Named Discrete Values
@@ -171,7 +172,7 @@ Should Run ADC Sample On Named Discrete Values
         Should Be Equal                 ${currentState}  ${state}  strip_spaces=True
     END
 
-    Run Keyword And Expect Error    app 'adc' failed exitted with code 1, stderr: Setting channel #0 value for 'adc1' failed with: Invalid voltage value 1000000: 1 != 0
+    Run Keyword And Expect Error    *Setting channel #0 value for 'adc1' failed with: Invalid voltage value 1000000*
     ...                             Execute Sample  adc  ${PORT}  ECUD  adc1  9  1V
 
 Should Run GPIO Sample
@@ -205,8 +206,7 @@ Should Run GPIO Sample
     # the sample will not be able to issue the "run for" command.
     Wait For Log Entry              Executing RunFor  startEmulation=false
 
-    ${r}=                           Wait For Process  ${proc}
-    Should Be Equal As Integers     ${r.rc}  0  msg=app failed: ${r.stderr}
+    ${r}=                           Wait For Sample Finish  ${proc}
 
     Should Contain                  ${r.stdout}  machine: GPIO #0 in gpio set
 
@@ -222,8 +222,7 @@ Should Run Time Elapsed Sample
     Wait For Log Entry              ${SERVER_NAME}: Registered time elapsed callback  startEmulation=false
     Execute Command                 emulation RunFor "0.0002"
 
-    ${r}=                           Wait For Process  ${proc}
-    Should Be Equal As Integers     ${r.rc}  0  msg=app failed: ${r.stderr}
+    ${r}=                           Wait For Sample Finish  ${proc}
 
     Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000000
     Should Contain                  ${r.stdout}  Elapsed virtual time: 0.000100
