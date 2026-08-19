@@ -459,6 +459,10 @@ static renode_error_t *renode_connection_close_impl(renode_connection_t *con)
     pthread_mutex_destroy(&con->client_request_lock);
     channel_destroy(&con->client_responses);
     channel_destroy(&con->server_requests);
+
+    pthread_mutex_destroy(&con->send_message_lock);
+    pthread_mutex_destroy(&con->lifecycle_lock);
+
     free(con);
 
     return NO_ERROR;
