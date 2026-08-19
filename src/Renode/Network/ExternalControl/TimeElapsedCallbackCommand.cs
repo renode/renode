@@ -16,7 +16,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class TimeElapsedCallbackCommand : BaseCommand
     {
-        public TimeElapsedCallbackCommand(ExternalControlServer parent)
+        public TimeElapsedCallbackCommand(ExternalControlSocket parent)
             : base(parent)
         {
         }
@@ -66,7 +66,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
             catch(ServerDisposedException)
             {
-                parent.WarningLog("{0} got invoked on a disposed {1}", nameof(TimeElapsedCallbackCommand), nameof(ExternalControlServer));
+                parent.WarningLog("{0} got invoked on a disposed {1}", nameof(TimeElapsedCallbackCommand), nameof(ExternalControlSocket));
             }
         }
 

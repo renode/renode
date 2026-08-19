@@ -13,8 +13,8 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class CheckVersion : BaseCommand
     {
-        public CheckVersion(ExternalControlServer server)
-            : base(server)
+        public CheckVersion(ExternalControlSocket parent)
+            : base(parent)
         {
         }
 

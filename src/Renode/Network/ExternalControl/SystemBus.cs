@@ -16,7 +16,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class SystemBus : BaseCommand, IInstanceBasedCommand<IPeripheral>
     {
-        public SystemBus(ExternalControlServer parent) : base(parent)
+        public SystemBus(ExternalControlSocket parent) : base(parent)
         {
             Instances = new InstanceCollection<IPeripheral>();
         }

@@ -13,7 +13,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class GetMachine : BaseCommand, IMachineContainer
     {
-        public GetMachine(ExternalControlServer parent)
+        public GetMachine(ExternalControlSocket parent)
             : base(parent)
         {
             machines = new InstanceCollection<IMachine>();

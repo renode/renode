@@ -16,7 +16,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class RunFor : BaseCommand
     {
-        public RunFor(ExternalControlServer parent)
+        public RunFor(ExternalControlSocket parent)
             : base(parent)
         {
         }

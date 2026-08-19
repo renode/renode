@@ -15,7 +15,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class ADC : BaseCommand, IInstanceBasedCommand<IADC>
     {
-        public ADC(ExternalControlServer parent)
+        public ADC(ExternalControlSocket parent)
             : base(parent)
         {
             Instances = new InstanceCollection<IADC>();

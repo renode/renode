@@ -18,7 +18,7 @@ using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl;
 
-public class CANBus(ExternalControlServer parent) : BaseCommand(parent), IInstanceBasedCommand<CANExternalControlBus>, IEmulationElement
+public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstanceBasedCommand<CANExternalControlBus>, IEmulationElement
 {
     public static int MaximumCanFrameSize = 64;
 

@@ -14,7 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class GPIOPort : BaseCommand, IInstanceBasedCommand<IPeripheral>
     {
-        public GPIOPort(ExternalControlServer parent)
+        public GPIOPort(ExternalControlSocket parent)
             : base(parent)
         {
             Instances = new InstanceCollection<IPeripheral>();

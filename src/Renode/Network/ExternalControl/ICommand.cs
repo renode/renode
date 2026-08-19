@@ -38,7 +38,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
     public abstract class BaseCommand : ICommand
     {
-        public BaseCommand(ExternalControlServer parent)
+        public BaseCommand(ExternalControlSocket parent)
         {
             this.parent = parent;
         }
@@ -49,6 +49,6 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public abstract Command Identifier { get; }
 
-        protected readonly ExternalControlServer parent;
+        protected readonly ExternalControlSocket parent;
     }
 }

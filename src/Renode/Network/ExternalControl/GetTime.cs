@@ -14,7 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class GetTime : BaseCommand
     {
-        public GetTime(ExternalControlServer parent)
+        public GetTime(ExternalControlSocket parent)
             : base(parent)
         {
         }

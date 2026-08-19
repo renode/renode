@@ -15,7 +15,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class SPI : BaseCommand, IInstanceBasedCommand<ExternalControlSPIPeripheral>
     {
-        public SPI(ExternalControlServer parent)
+        public SPI(ExternalControlSocket parent)
             : base(parent)
         {
             Instances = new InstanceCollection<ExternalControlSPIPeripheral>();

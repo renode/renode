@@ -16,10 +16,10 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class CommunicationHandler
     {
-        public CommunicationHandler(bool isExternal, ExternalControlServer server)
+        public CommunicationHandler(bool isExternal, ExternalControlSocket socket)
         {
             this.isExternal = isExternal;
-            this.server = server;
+            this.socket = socket;
         }
 
         public void PutMessage(Message message)
@@ -28,7 +28,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
                 if(messageQueue.Count > 0)
                 {
-                    server.Log(LogLevel.Error, "Got message: {0} while still handling {1} messages. It may indicate an error in threading in the external simulation", message, messageQueue.Count);
+                    socket.Log(LogLevel.Error, "Got message: {0} while still handling {1} messages. It may indicate an error in threading in the external simulation", message, messageQueue.Count);
                 }
                 messageQueue.Enqueue(message);
             }
@@ -41,7 +41,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             lastRequestId++;
             var message = new Message(isExternal, lastRequestId, payload);
 
-            server.SendMessage(message);
+            socket.SendMessage(message);
             requestStack.Push((MessageDirection.Sent, message));
 
             return HandleRequestsUntilResponse(cancelationToken).Payload;
@@ -70,12 +70,12 @@ namespace Antmicro.Renode.Network.ExternalControl
 
                     MessagePayload payload;
                     var command = message.Payload.Command;
-                    var handler = server.GetCommandHandler(command);
+                    var handler = socket.GetCommandHandler(command);
 
                     if(handler == null)
                     {
                         payload = MessagePayload.InvalidCommand(command);
-                        server.Log(LogLevel.Error, "Invalid command received: {0}", command);
+                        socket.Log(LogLevel.Error, "Invalid command received: {0}", command);
                     }
                     else
                     {
@@ -86,13 +86,13 @@ namespace Antmicro.Renode.Network.ExternalControl
                         catch(RecoverableException e)
                         {
                             payload = MessagePayload.Error(command, e.Message);
-                            server.Log(LogLevel.Error, "{0} command failed: {1}", command, e.Message);
+                            socket.Log(LogLevel.Error, "{0} command failed: {1}", command, e.Message);
                         }
                     }
 
                     var response = new Message(message.Id, payload);
 
-                    server.SendMessage(response);
+                    socket.SendMessage(response);
                     PopFromStack(MessageDirection.Sent, response);
                 }
                 else
@@ -164,7 +164,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             if(errorMessages.Count > 0)
             {
-                server.Log(LogLevel.Error, "{0}\nCurrently handling:\n{1} {2}\nError: {3}", this, DirectionToString(direction), response, String.Join(", ", errorMessages));
+                socket.Log(LogLevel.Error, "{0}\nCurrently handling:\n{1} {2}\nError: {3}", this, DirectionToString(direction), response, String.Join(", ", errorMessages));
             }
 
             requestStack.TryPop(out _);
@@ -173,7 +173,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         private ushort lastRequestId = 0;
 
         private readonly bool isExternal;
-        private readonly ExternalControlServer server;
+        private readonly ExternalControlSocket socket;
 
         private readonly AutoResetEvent messageQueueNewItem = new(false);
         private readonly Queue<Message> messageQueue = new();

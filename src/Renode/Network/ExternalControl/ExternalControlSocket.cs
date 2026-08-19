@@ -21,13 +21,13 @@ namespace Antmicro.Renode.Network
     {
         public static void CreateExternalControlServer(this Emulation emulation, string name, int port)
         {
-            emulation.ExternalsManager.AddExternal(new ExternalControlServer(port), name);
+            emulation.ExternalsManager.AddExternal(new ExternalControlSocket(port), name);
         }
     }
 
-    public class ExternalControlServer : IDisposable, IExternal, IEmulationElement
+    public class ExternalControlSocket : IDisposable, IExternal, IEmulationElement
     {
-        public ExternalControlServer(int port)
+        public ExternalControlSocket(int port)
         {
             socketProvider.BufferSize = 0x10;
             socketProvider.ConnectionAccepted += delegate
@@ -64,7 +64,7 @@ namespace Antmicro.Renode.Network
             socketProvider.DataBlockReceived += OnBytesWritten;
             socketProvider.Start(port);
 
-            this.Log(LogLevel.Info, "{0}: Listening on port {1}", nameof(ExternalControlServer), port);
+            this.Log(LogLevel.Info, "{0}: Listening on port {1}", nameof(ExternalControlSocket), port);
         }
 
         public void Dispose()
