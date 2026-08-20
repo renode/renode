@@ -16,11 +16,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct RenodeMessage
     {
-        public RenodeMessage(RenodeAction actionId, byte dataLength, byte connectionIndex, ulong address, ulong payload)
+        public RenodeMessage(RenodeAction actionId, byte dataLength, byte connectionIndex, uint initiatorId, ulong address, ulong payload)
         {
             ActionId = actionId;
             DataLength = dataLength;
             ConnectionIndex = connectionIndex;
+            InitiatorId = initiatorId;
             Address = address;
             Payload = payload;
         }
@@ -66,7 +67,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public override string ToString()
         {
-            return $"RenodeMessage [{ActionId}@{ConnectionIndex}:{Address}] {Payload}";
+            return $"RenodeMessage [{ActionId}@{ConnectionIndex}@{InitiatorId}:{Address}] {Payload}";
         }
 
         public bool IsSystemBusConnection() => ConnectionIndex == MainSystemBusConnectionIndex;
@@ -91,6 +92,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public readonly RenodeAction ActionId;
         public readonly byte DataLength;
         public readonly byte ConnectionIndex;
+        public readonly uint InitiatorId;
         public readonly ulong Address;
         public readonly ulong Payload;
     }

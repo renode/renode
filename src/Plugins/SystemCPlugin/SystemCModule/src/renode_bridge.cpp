@@ -161,7 +161,7 @@ perform_transaction(renode_bridge::renode_bus_initiator_socket &socket,
 
 static uint64_t
 perform_debug_transaction(renode_bridge::renode_bus_initiator_socket &socket,
-                    tlm::tlm_generic_payload *payload) {
+                          tlm::tlm_generic_payload *payload) {
   unsigned int n_bytes = socket->transport_dbg(*payload);
 #ifdef VERBOSE
   print_transaction_status(payload);
@@ -184,149 +184,100 @@ static void connect_with_retry(CTCPClient* socket, const char* address, const ch
     std::this_thread::sleep_for(std::chrono::seconds(retry_interval_s));
     retry_s += retry_interval_s;
     if(retry_s >= max_retry_s) {
-        fprintf(stderr, "Maximum timeout reached. Failed to initialize Renode connection. Aborting.\n");
-        terminate_simulation(1);
+      fprintf(stderr, "Maximum timeout reached. Failed to initialize Renode connection. Aborting.\n");
+      terminate_simulation(1);
     }
   }
 }
 
+static void register_connection_for_bridge(void* conn_opaque_ptr, void* bridge_opaque_ptr) {
+  renode_connection *conn = (renode_connection *)conn_opaque_ptr;
+  renode_bridge *bridge = (renode_bridge *)bridge_opaque_ptr;
+  bridge->register_connection(conn);
+}
+
 static void handle_backward_response_native(void* opaque_ptr, renode_message message) {
-    renode_bridge* bridge = (renode_bridge*)opaque_ptr;
-    bridge->handle_backward_response_from_native(message);
+  renode_connection *conn = (renode_connection *)opaque_ptr;
+  conn->handle_backward_response_from_native(message);
 }
 
 static void handle_backward_response_dmi_native(void* opaque_ptr, dmi_message message) {
-  renode_bridge* bridge = (renode_bridge*)opaque_ptr;
-  bridge->handle_backward_response_dmi_from_native(message);
+  renode_connection *conn = (renode_connection *)opaque_ptr;
+  conn->handle_backward_response_dmi_from_native(message);
 }
 
 static void handle_forward_request_native(void* opaque_ptr, renode_message message) {
-  renode_bridge* bridge = (renode_bridge*)opaque_ptr;
-  bridge->handle_forward_request_from_native(message);
+  renode_connection *conn = (renode_connection *)opaque_ptr;
+  conn->handle_forward_request_from_native(message);
 }
 
 static renode_message handle_sideband_forward_request_native(void* opaque_ptr, renode_message message) {
-  renode_bridge* bridge = (renode_bridge*)opaque_ptr;
-  bridge->handle_sideband_request(message);
+  renode_connection *conn = (renode_connection *)opaque_ptr;
+  assert(!"Sideband channel is not implemented!");
   return message;
 }
 
-void renode_bridge::handle_backward_response_from_native(renode_message message)
-{
-  bw_response.add(message);
+renode_message renode_bridge::receive_backward_response() {
+  return conn->receive_backward_response();
 }
 
-void renode_bridge::handle_backward_response_dmi_from_native(dmi_message message)
-{
-  dmi_response.add(message);
-}
-
-void renode_bridge::handle_forward_request_from_native(renode_message message)
-{
-  fw_request.add(message);
-}
-
-renode_message renode_bridge::receive_backward_response()
-{
-  if(native) {
-    return bw_response.take();
-  } else {
-    renode_message message;
-    backward_connection->Receive((char *)&message, sizeof(renode_message));
-    return message;
-  }
-}
-
-dmi_message renode_bridge::receive_backward_response_dmi()
-{
-  if(native) {
-    return dmi_response.take();
-  } else {
-    dmi_message response;
-    backward_connection->Receive((char *)&response, sizeof(dmi_message));
-    return response;
-  }
-}
-
-renode_message renode_bridge::receive_forward_request(bool* closed)
-{
-  if(native) {
-    *closed = false;
-    return fw_request.take();
-  } else {
-    renode_message message;
-    int nread =
-        forward_connection->Receive((char *)&message, sizeof(renode_message));
-    *closed = nread <= 0;
-    return message;
-  }
-}
-
-renode_message renode_bridge::receive_sideband_request_socket(bool* closed)
-{
-  renode_message message;
-  int nread =
-      sideband_connection->Receive((char *)&message, sizeof(renode_message));
-  *closed = nread <= 0;
-  return message;
+dmi_message renode_bridge::receive_backward_response_dmi() {
+  return conn->receive_backward_response_dmi();
 }
 
 void renode_bridge::send_backward_request(renode_message *message) {
-  if (native) {
-#ifdef RENODE_NATIVE_INTERFACE
-    renode_systemc_send_backward_request(*message, mach.c_str(), peri.c_str());
-#endif
-  } else {
-    backward_connection->Send((char *)message, sizeof(renode_message));
-  }
+  conn->send_backward_request(message);
 }
 
 void renode_bridge::send_forward_response(renode_message *message) {
-  if (native) {
-#ifdef RENODE_NATIVE_INTERFACE
-    renode_systemc_send_forward_response(*message, mach.c_str(), peri.c_str());
-#endif
-  } else {
-    forward_connection->Send((char *)message, sizeof(renode_message));
-  }
+  conn->send_forward_response(message);
 }
 
 void renode_bridge::send_forward_response_dmi(dmi_native_message *message) {
-  if (native) {
-#ifdef RENODE_NATIVE_INTERFACE
-    renode_systemc_send_forward_response_dmi(*message, mach.c_str(), peri.c_str());
-#endif
-  } else {
-    forward_connection->Send((char *)message, sizeof(dmi_native_message));
-  }
+  conn->send_forward_response_dmi(message);
 }
 
-void renode_bridge::send_sideband_response_socket(renode_message *message) {
-  sideband_connection->Send((char *)message, sizeof(renode_message));
-}
-
-SC_HAS_PROCESS(renode_bridge);
 renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
-                             const char *port, bool native, std::string mach, std::string peri)
-    : sc_module(name),
-      initiator_socket("initiator_socket"),
-      register_initiator_socket("register_initiator_socket"),
-      native(native),
-      mach(mach),
-      peri(peri) {
-  if (native) {
+                             const char *port, bool native, std::string mach,
+                             std::string peri, uint32_t id, bool hosted, renode_connection *conn)
+    : sc_module(name), initiator_socket("initiator_socket"),
+      register_initiator_socket("register_initiator_socket"), id(id) {
+  SC_HAS_PROCESS(renode_bridge);
+  if (conn != NULL) {
+    // Connection can be managed manually.
+    // It can be instantiated and passed via pointer to a bridge.
+    register_connection(conn);
+  } else if (native || hosted) {
 #ifdef RENODE_NATIVE_INTERFACE
-    auto rc = renode_systemc_setup_renode_bridge((void*)this, (void*)handle_backward_response_native, (void*)handle_backward_response_dmi_native, (void*)handle_forward_request_native, (void*)handle_sideband_forward_request_native, mach.c_str(), peri.c_str());
-    if (rc != RENODE_SUCCESS) {
-      fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
+    // Attempt to register this bridge with an existing connection if available.
+    // It applies to both socket and native transport in hosted mode.
+    // Call to Renode is needed to obtain a pointer to renode_connection instance
+    // via register_connection_for_bridge callback.
+    auto rc = renode_systemc_register_bridge(
+        (void *)this, (void *)register_connection_for_bridge, mach.c_str(),
+        peri.c_str());
+    // Command error means there is no connection available.
+    if (rc == RENODE_COMMAND_ERROR) {
+      // Connection is not initialized.
+      // Create it now and register directly.
+      // No need to go via renode_systemc_register_bridge again.
+      this->conn = new renode_connection("renode_connection", address, port, native, mach, peri, hosted);
+      register_connection(this->conn);
+    } else if (rc != RENODE_SUCCESS) {
+      fprintf(stderr, "Failed to register bridge using native interface. Aborting.\n");
       terminate_simulation(1);
     }
 #else
     fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
     terminate_simulation(1);
 #endif
+  } else {
+    // In this case renode_connection is not shared between multiple renode_bridge instances.
+    // The default mode, when there is a single renode_bridge per SystemC simulation kernel.
+    this->conn = new renode_connection("renode_connection", address, port, native, mach, peri);
+    register_connection(this->conn);
   }
-  SC_THREAD(forward_loop);
+
   SC_METHOD(on_port_gpio);
   for (int i = 0; i < NUM_GPIO; ++i) {
     sensitive << gpio_ports_in[i];
@@ -355,222 +306,90 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
 
   payload.reset(new tlm::tlm_generic_payload());
   ext.reset(new RenodeExt());
-
-  if(native) {
-#ifdef RENODE_NATIVE_INTERFACE
-  renode_systemc_init_native_connection(mach.c_str(), peri.c_str());
-#endif
-  } else {
-    forward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
-    connect_with_retry(forward_connection.get(), address, port);
-
-    sideband_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
-    connect_with_retry(sideband_connection.get(), address, port);
-
-    backward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
-    connect_with_retry(backward_connection.get(), address, port);
-
-    // It's not SC_THREAD on purpose.
-    // Sideband channel doesn't participate in SystemC cooperative multitasking.
-    // It's used for synchronous operations which don't call wait().
-    // For example transport_dbg() is used to perform memory accesses on this path,
-    // as this API doesn't use delays for transactions.
-    // It's a detached thread to resolve deadlock in the following sequence of events:
-    // 1. Renode sends TIMESYNC request and waits for TIMESYNC response.
-    //   * Forward connection is blocked until TIMESYNC finishes (SystemC virtual time reaches a sync point).
-    // 2. SystemC asserts GPIO signal and sends it on the backward connection.
-    //   * Signal triggers actions on the Renode side, e.g. reset which attempts to read PC and SP from VTOR offset.
-    //   * Renode needs to issue read transaction to SystemC.
-    //     * It can't do it over the forward connection, as it blocks waiting for TIMESYNC response.
-    //     * It can do it over the sideband connection (it's not on CPU thread).
-    std::thread sideband
-    {
-      [this]
-      ()-> void
-      {
-        this->sideband_loop();
-      }
-    };
-    sideband.detach();
-  }
-
-  if (!initialize_connection(&max_desync_us)) {
-    fprintf(stderr, "Failed to initialize Renode connection. Aborting.\n");
-    terminate_simulation(1);
-    return;
-  }
 }
 
 renode_bridge::~renode_bridge() {
-  if (native) {
-#ifdef RENODE_NATIVE_INTERFACE
-    renode_systemc_teardown_native_connection(mach.c_str(), peri.c_str());
-#endif
-  } else {
-    forward_connection->Disconnect();
-    sideband_connection->Disconnect();
-    backward_connection->Disconnect();
-  }
 }
 
-bool renode_bridge::initialize_connection(int64_t *out_max_desync_us) {
-  // Send INIT message to Renode and use response
-  // to setup connection, e. g. set time synchronization period.
-  // This is done once per lifetime of the module during elaboration.
-  renode_message message = {};
-  message.action = renode_action::INIT;
-
-  send_backward_request(&message);
-  message = receive_backward_response();
-
-#ifdef VERBOSE
-  print_renode_message(&message);
-#endif
-
-  if (message.action != renode_action::INIT) {
-    fprintf(stderr, "Renode bridge connection error: missing INIT action.\n");
-    return false;
-  }
-  *out_max_desync_us = static_cast<int64_t>(message.payload);
-
-#ifdef VERBOSE
-  printf("Connection to Renode initialized with timesync period %" PRId64 " us.\n",
-  *out_max_desync_us);
-#endif
-  return true;
+void renode_bridge::register_connection(renode_connection *conn) {
+  this->conn = conn;
+  this->conn->register_bridge(id, this);
 }
 
-void renode_bridge::forward_loop() {
-  // Ensure GPIO signals at SystemC side are synced with Renode.
-  sync_gpio_state(true);
-
+void renode_bridge::handle_forward_request(renode_message &message) {
   // Processing of requests initiated by Renode.
-  uint8_t data[8] = {};
+  uint8_t data[8] = {0};
 
-  renode_message message;
-  bool closed;
+  // Choose the appropriate initiator socket to initiate the transaction with.
+  renode_bus_initiator_socket *initiator_socket = nullptr;
+  if (message.connection_index > NUM_DIRECT_CONNECTIONS) {
+    fprintf(stderr,
+            "Invalid connection_index %u, exceeds available number of direct "
+            "connections (%u)\n",
+            message.connection_index, NUM_DIRECT_CONNECTIONS);
+    return;
+  }
 
-  while (true) {
-    memset(data, 0, sizeof(data));
+  if (message.connection_index == 0) {
+    initiator_socket = &this->initiator_socket;
+  } else {
+    initiator_socket =
+        &this->direct_connection_initiators[message.connection_index - 1];
+  }
 
-    message = receive_forward_request(&closed);
-    if (closed) {
-#ifdef VERBOSE
-      printf("Connection to Renode closed.\n");
-#endif
-      break;
+  switch (message.action) {
+  case renode_action::WRITE_DEBUG:
+  case renode_action::READ_DEBUG: {
+    handle_sideband_access(message);
+    send_forward_response(&message);
+  } break;
+  case renode_action::WRITE: {
+    handle_write(*initiator_socket, message, data);
+  } break;
+  case renode_action::READ: {
+    handle_read(*initiator_socket, message, data);
+  } break;
+  case renode_action::WRITE_REGISTER: {
+    handle_write(register_initiator_socket, message, data);
+  } break;
+  case renode_action::READ_REGISTER: {
+    handle_read(register_initiator_socket, message, data);
+  } break;
+  case renode_action::DMIREQ: {
+    handle_get_direct_mem_ptr(*initiator_socket, message);
+  } break;
+  case renode_action::GPIOWRITE: {
+    auto number = message.address;
+    auto value = message.payload;
+    sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
+    if (iface != nullptr) {
+      gpio_ports_out[number]->write(value == 1);
     }
-
-#ifdef VERBOSE
-    print_renode_message(&message);
-#endif
-
-    // Choose the appropriate initiator socket to initiate the transaction with.
-    renode_bus_initiator_socket *initiator_socket = nullptr;
-    if (message.connection_index > NUM_DIRECT_CONNECTIONS) {
-      fprintf(stderr,
-              "Invalid connection_index %u, exceeds available number of direct "
-              "connections (%u)\n",
-              message.connection_index, NUM_DIRECT_CONNECTIONS);
-      return;
+    send_forward_response(&message);
+  } break;
+  case renode_action::RESET: {
+    sc_core::sc_interface *iface = reset.get_interface();
+    if (iface != nullptr) {
+      reset->write(true);
     }
-
-    if (message.connection_index == 0) {
-      initiator_socket = &this->initiator_socket;
-    } else {
-      initiator_socket =
-          &this->direct_connection_initiators[message.connection_index - 1];
-    }
-
-    switch (message.action) {
-    case renode_action::WRITE_DEBUG:
-    case renode_action::READ_DEBUG: {
-      handle_sideband_access(message);
-      send_forward_response(&message);
-    } break;
-    case renode_action::WRITE: {
-      handle_write(*initiator_socket, message, data);
-    } break;
-    case renode_action::READ: {
-      handle_read(*initiator_socket, message, data);
-    } break;
-    case renode_action::WRITE_REGISTER: {
-      handle_write(register_initiator_socket, message, data);
-    } break;
-    case renode_action::READ_REGISTER: {
-      handle_read(register_initiator_socket, message, data);
-    } break;
-    case renode_action::DMIREQ: {
-      handle_get_direct_mem_ptr(*initiator_socket, message);
-    } break;
-    case renode_action::TIMESYNC: {
-      // Renode drives the simulation time. This module never leaves the delta
-      // cycle loop until a TIMESYNC with future time is received. It then waits
-      // for the time difference between current virtual time and time from
-      // TIMESYNC, allowing the SystemC simulation to progress in time. This is
-      // effectively a synchronization barrier.
-      int64_t systemc_time_us = sc_time_to_us(sc_core::sc_time_stamp());
-      int64_t renode_time_us = (int64_t)message.payload;
-
-      int64_t dt = renode_time_us - systemc_time_us;
-      message.payload = systemc_time_us;
-      if (dt > max_desync_us) {
-        wait(dt, sc_core::SC_US);
-      }
-      // Reaching a timestamp only means this bridge thread was resumed by the
-      // SystemC simulation kernel. Let other processes and signal updates
-      // scheduled for the same timestamp run before reporting the timesync as
-      // complete to Renode.
-      while (sc_core::sc_pending_activity_at_current_time()) {
-        sc_core::wait(sc_core::SC_ZERO_TIME);
-      }
-      message.payload = sc_time_to_us(sc_core::sc_time_stamp());
-      send_forward_response(&message);
-    } break;
-    case renode_action::GPIOWRITE: {
-      auto number = message.address;
-      auto value = message.payload;
-      sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
-      if (iface != nullptr) {
-        gpio_ports_out[number]->write(value == 1);
-      }
-      send_forward_response(&message);
-    } break;
-    case renode_action::TEARDOWN: {
-      if (native) {
-#ifdef RENODE_NATIVE_INTERFACE
-        renode_systemc_teardown_native_connection(mach.c_str(), peri.c_str());
-#endif
-      } else {
-        forward_connection->Disconnect();
-        sideband_connection->Disconnect();
-        backward_connection->Disconnect();
-      }
-      terminate_simulation(0);
-    } break;
-    case renode_action::RESET: {
-      sc_core::sc_interface *iface = reset.get_interface();
-      if (iface != nullptr) {
-        reset->write(true);
-      }
-      send_forward_response(&message);
-    } break;
-    default:
-      fprintf(stderr, "Malformed message received from Renode - terminating simulation.\n");
-      terminate_simulation(1);
-    }
+    send_forward_response(&message);
+  } break;
+  default:
+    fprintf(stderr, "Malformed message received from Renode - terminating simulation.\n");
+    terminate_simulation(1);
   }
 }
 
 void renode_bridge::invalidate_translation_blocks(uint64_t start_address, uint64_t end_address) {
-    renode_message message = {};
-    message.action = renode_action::TBSINVALID;
-    message.address = start_address;
-    message.payload = end_address;
+  renode_message message = {};
+  message.action = renode_action::TBSINVALID;
+  message.address = start_address;
+  message.payload = end_address;
+  message.initiator_id = id;
 
-    send_backward_request(&message);
-    // Response is ignored.
-    receive_backward_response();
+  send_backward_request(&message);
+  // Response is ignored.
+  receive_backward_response();
 }
 
 void renode_bridge::invalidate_dmi_range(uint64_t start_address, uint64_t end_address) {
@@ -578,6 +397,7 @@ void renode_bridge::invalidate_dmi_range(uint64_t start_address, uint64_t end_ad
   message.action = renode_action::INVALIDATE_DMI_RANGE;
   message.address = start_address;
   message.payload = end_address;
+  message.initiator_id = id;
 
   send_backward_request(&message);
   // Response is ignored.
@@ -608,7 +428,7 @@ void renode_bridge::handle_write(renode_bus_initiator_socket &socket, renode_mes
   initialize_extension(ext.get(), &message);
 
   *((uint64_t *)data) = message.payload;
-  
+
   payload->set_extension(ext.get());
   uint64_t delay = perform_transaction(socket, payload.get());
   payload->clear_extension(ext.get());
@@ -636,7 +456,7 @@ void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socke
 
   tlm::tlm_dmi dmi_data = {};
   dmi_native_message dmi_message = {};
-  
+
   payload->set_extension(ext.get());
   // get_direct_mem_ptr returns true if it was able to provide a DMI pointer, or false otherwise
   bool success = socket->get_direct_mem_ptr(*payload, dmi_data);
@@ -652,44 +472,6 @@ void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socke
   wait(sc_core::SC_ZERO_TIME);
 }
 
-void renode_bridge::sideband_loop() {
-  renode_message message;
-  bool closed;
-
-  while (true) {
-    message = receive_sideband_request_socket(&closed);
-    if (closed) {
-#ifdef VERBOSE
-      printf("Connection to Renode closed.\n");
-#endif
-      break;
-    }
-
-    handle_sideband_request(message);
-
-    send_sideband_response_socket(&message);
-  }
-}
-
-void renode_bridge::handle_sideband_request(renode_message &message)
-{
-  switch (message.action) {
-    case WRITE:
-    case WRITE_REGISTER:
-    case WRITE_DEBUG:
-    case READ:
-    case READ_REGISTER:
-    case READ_DEBUG:
-      handle_sideband_access(message);
-      break;
-    case GPIOWRITE:
-      handle_sideband_gpio_write(message);
-      break;
-    default:
-      assert(!"Only WRITE, READ, GPIOWRITE messages should be issued over sideband request");
-    }
-}
-
 void renode_bridge::handle_sideband_access(renode_message &message)
 {
   uint8_t data[8] = {};
@@ -700,17 +482,6 @@ void renode_bridge::handle_sideband_access(renode_message &message)
   uint64_t n_bytes = perform_debug_transaction(this->initiator_socket, payload.get());
   message.payload = *((uint64_t *)data); // used for read only
   message.address = n_bytes; // address field is reused to store the number of written/read bytes
-}
-
-void renode_bridge::handle_sideband_gpio_write(renode_message &message)
-{
-  auto number = message.address;
-  auto value = message.payload;
-  sc_core::sc_interface *iface = gpio_ports_out[number].get_interface();
-  if (iface == nullptr) {
-    return;
-  }
-  gpio_ports_out[number]->write(value == 1);
 }
 
 enum gpio_state {
@@ -734,6 +505,7 @@ void renode_bridge::sync_gpio_state(bool init) {
     message.action = renode_action::GPIOWRITE;
     message.address = i;
     message.payload = current;
+    message.initiator_id = id;
 
     send_backward_request(&message);
     // Response is ignored.
@@ -751,6 +523,7 @@ void renode_bridge::service_backward_request(tlm::tlm_generic_payload &payload,
   unsigned int bytes_done = 0;
   unsigned int bytes_remaining = payload.get_data_length();
   renode_message message = {};
+  message.initiator_id = id;
   if (payload.is_read()) {
     message.action = renode_action::READ;
   } else if (payload.is_write()) {
@@ -793,6 +566,7 @@ void renode_bridge::init_vtor(renode_action action, vtor_in_port &port) {
   renode_message msg = {};
   msg.action = action;
   msg.address = port->read();
+  msg.initiator_id = id;
   send_backward_request(&msg);
   // Response is ignored.
   msg = receive_backward_response();
@@ -839,9 +613,9 @@ renode_bridge::target_fw_handler::nb_transport_bw(
 }
 
 void renode_bridge::target_fw_handler::invalidate_direct_mem_ptr(
-  sc_dt::uint64, sc_dt::uint64) {
+    sc_dt::uint64, sc_dt::uint64) {
   fprintf(stderr, "[ERROR] invalidate_direct_mem_ptr not implemented for "
-                    "target_fw_handler.\n");
+                  "target_fw_handler.\n");
 }
 
 bool renode_bridge::target_fw_handler::get_direct_mem_ptr(
@@ -863,6 +637,7 @@ bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &paylo
   message.data_length = payload.get_data_length();
   message.connection_index = 0;
   message.action = renode_action::DMIREQ;
+  message.initiator_id = id;
 
   dmi_message response;
 
@@ -876,7 +651,7 @@ bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &paylo
         response.mmf_offset,
         response.mmf_path
       );
-      dmi_allowed = false;
+    dmi_allowed = false;
   }
 
   if (dmi_allowed) {
@@ -886,7 +661,7 @@ bool renode_bridge::service_backward_request_dmi(tlm::tlm_generic_payload &paylo
     int mmf_fd = open(response.mmf_path, O_RDWR);
     if (mmf_fd != -1) {
       unsigned char* mmf_base = static_cast<unsigned char*>(mmap(
-        nullptr,
+          nullptr,
         static_cast<size_t>(dmi_data.get_end_address() - dmi_data.get_start_address() + 1),
         PROT_WRITE|PROT_READ,
         MAP_SHARED,
@@ -940,6 +715,297 @@ tlm::tlm_sync_enum renode_bridge::initiator_bw_handler::nb_transport_bw(
 void renode_bridge::initiator_bw_handler::invalidate_direct_mem_ptr(
     sc_dt::uint64 start_range, sc_dt::uint64 end_range) {
   bridge->invalidate_dmi_range(start_range, end_range);
+}
+
+// ================================================================================
+
+void renode_connection::handle_backward_response_from_native(renode_message message)
+{
+  bw_response.add(message);
+}
+
+void renode_connection::handle_backward_response_dmi_from_native(dmi_message message)
+{
+  dmi_response.add(message);
+}
+
+void renode_connection::handle_forward_request_from_native(renode_message message)
+{
+  fw_request.add(message);
+}
+
+renode_message renode_connection::receive_backward_response()
+{
+  if(native) {
+    return bw_response.take();
+  } else {
+    renode_message message;
+    backward_connection->Receive((char *)&message, sizeof(renode_message));
+    return message;
+  }
+}
+
+dmi_message renode_connection::receive_backward_response_dmi()
+{
+  if(native) {
+    return dmi_response.take();
+  } else {
+    dmi_message response;
+    backward_connection->Receive((char *)&response, sizeof(dmi_message));
+    return response;
+  }
+}
+
+renode_message renode_connection::receive_forward_request(bool* closed)
+{
+  if(native) {
+    *closed = false;
+    return fw_request.take();
+  } else {
+    renode_message message;
+    int nread =
+        forward_connection->Receive((char *)&message, sizeof(renode_message));
+    *closed = nread <= 0;
+    return message;
+  }
+}
+
+renode_message renode_connection::receive_sideband_request_socket(bool* closed)
+{
+  renode_message message;
+  int nread =
+      sideband_connection->Receive((char *)&message, sizeof(renode_message));
+  *closed = nread <= 0;
+  return message;
+}
+
+void renode_connection::send_backward_request(renode_message *message) {
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_send_backward_request(*message, mach.c_str(), peri.c_str());
+#endif
+  } else {
+    backward_connection->Send((char *)message, sizeof(renode_message));
+  }
+}
+
+void renode_connection::send_forward_response(renode_message *message) {
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_send_forward_response(*message, mach.c_str(), peri.c_str());
+#endif
+  } else {
+    forward_connection->Send((char *)message, sizeof(renode_message));
+  }
+}
+
+void renode_connection::send_forward_response_dmi(dmi_native_message *message) {
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_send_forward_response_dmi(*message, mach.c_str(), peri.c_str());
+#endif
+  } else {
+    forward_connection->Send((char *)message, sizeof(dmi_native_message));
+  }
+}
+
+void renode_connection::send_sideband_response_socket(renode_message *message) {
+  sideband_connection->Send((char *)message, sizeof(renode_message));
+}
+
+renode_connection::renode_connection(sc_core::sc_module_name name,
+                                     const char *address, const char *port,
+                                     bool native, std::string mach,
+                                     std::string peri, bool hosted)
+    : sc_module(name), native(native), mach(mach), peri(peri) {
+  SC_HAS_PROCESS(renode_connection);
+  if (native || hosted) {
+    // If (!native && hosted), passed pointer is later used to register bridges,
+    // but sockets are used for communication instead of handle_* callbacks.
+#ifdef RENODE_NATIVE_INTERFACE
+    auto rc = renode_systemc_setup_connection(
+        (void *)this, (void *)handle_backward_response_native,
+        (void *)handle_backward_response_dmi_native,
+        (void *)handle_forward_request_native,
+        (void *)handle_sideband_forward_request_native, mach.c_str(),
+        peri.c_str());
+    if (rc != RENODE_SUCCESS) {
+      fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
+      terminate_simulation(1);
+    }
+#else
+    fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
+    terminate_simulation(1);
+#endif
+  }
+  SC_THREAD(forward_loop);
+
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_init_native_connection(mach.c_str(), peri.c_str());
+#endif
+  } else {
+    forward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
+    connect_with_retry(forward_connection.get(), address, port);
+
+    sideband_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
+    connect_with_retry(sideband_connection.get(), address, port);
+
+    backward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
+    connect_with_retry(backward_connection.get(), address, port);
+
+    // It's not SC_THREAD on purpose.
+    // Sideband channel doesn't participate in SystemC cooperative multitasking.
+    // It's used for synchronous operations which don't call wait().
+    // For example transport_dbg() is used to perform memory accesses on this
+    // path, as this API doesn't use delays for transactions. It's a detached
+    // thread to resolve deadlock in the following sequence of events:
+    // 1. Renode sends TIMESYNC request and waits for TIMESYNC response.
+    //   * Forward connection is blocked until TIMESYNC finishes (SystemC
+    //   virtual time reaches a sync point).
+    // 2. SystemC asserts GPIO signal and sends it on the backward connection.
+    //   * Signal triggers actions on the Renode side, e.g. reset which attempts
+    //   to read PC and SP from VTOR offset.
+    //   * Renode needs to issue read transaction to SystemC.
+    //     * It can't do it over the forward connection, as it blocks waiting
+    //     for TIMESYNC response.
+    //     * It can do it over the sideband connection (it's not on CPU thread).
+    std::thread sideband{[this]() -> void { this->sideband_loop(); }};
+    sideband.detach();
+  }
+
+  if (!initialize_connection(&max_desync_us)) {
+    fprintf(stderr, "Failed to initialize Renode connection. Aborting.\n");
+    terminate_simulation(1);
+    return;
+  }
+}
+
+renode_connection::~renode_connection() {
+  if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+    renode_systemc_teardown_native_connection(mach.c_str(), peri.c_str());
+#endif
+  } else {
+    forward_connection->Disconnect();
+    sideband_connection->Disconnect();
+    backward_connection->Disconnect();
+  }
+}
+
+void renode_connection::register_bridge(uint32_t id, renode_bridge *bridge) {
+  bridges[id] = bridge;
+}
+
+bool renode_connection::initialize_connection(int64_t *out_max_desync_us) {
+  // Send INIT message to Renode and use response
+  // to setup connection, e. g. set time synchronization period.
+  // This is done once per lifetime of the module during elaboration.
+  renode_message message = {};
+  message.action = renode_action::INIT;
+
+  send_backward_request(&message);
+  message = receive_backward_response();
+
+#ifdef VERBOSE
+  print_renode_message(&message);
+#endif
+
+  if (message.action != renode_action::INIT) {
+    fprintf(stderr, "Renode bridge connection error: missing INIT action.\n");
+    return false;
+  }
+  *out_max_desync_us = static_cast<int64_t>(message.payload);
+
+#ifdef VERBOSE
+  printf("Connection to Renode initialized with timesync period %" PRId64
+         " us.\n",
+         *out_max_desync_us);
+#endif
+  return true;
+}
+
+void renode_connection::forward_loop() {
+  // Processing of requests initiated by Renode.
+
+  renode_message message;
+  bool closed = false;
+
+  while (true) {
+    message = receive_forward_request(&closed);
+    if (closed) {
+#ifdef VERBOSE
+      printf("Connection to Renode closed.\n");
+#endif
+      break;
+    }
+
+#ifdef VERBOSE
+    print_renode_message(&message);
+#endif
+
+    switch (message.action) {
+    case renode_action::TIMESYNC: {
+      // Renode drives the simulation time. This module never leaves the delta
+      // cycle loop until a TIMESYNC with future time is received. It then waits
+      // for the time difference between current virtual time and time from
+      // TIMESYNC, allowing the SystemC simulation to progress in time. This is
+      // effectively a synchronization barrier.
+      int64_t systemc_time_us = sc_time_to_us(sc_core::sc_time_stamp());
+      int64_t renode_time_us = (int64_t)message.payload;
+
+      int64_t dt = renode_time_us - systemc_time_us;
+      message.payload = systemc_time_us;
+      if (dt > max_desync_us) {
+        wait(dt, sc_core::SC_US);
+      }
+      // Reaching a timestamp only means this bridge thread was resumed by the
+      // SystemC simulation kernel. Let other processes and signal updates
+      // scheduled for the same timestamp run before reporting the timesync as
+      // complete to Renode.
+      while (sc_core::sc_pending_activity_at_current_time()) {
+        sc_core::wait(sc_core::SC_ZERO_TIME);
+      }
+      message.payload = sc_time_to_us(sc_core::sc_time_stamp());
+      send_forward_response(&message);
+    } break;
+    case renode_action::TEARDOWN: {
+      if (native) {
+#ifdef RENODE_NATIVE_INTERFACE
+        renode_systemc_teardown_native_connection(mach.c_str(), peri.c_str());
+#endif
+      } else {
+        forward_connection->Disconnect();
+        sideband_connection->Disconnect();
+        backward_connection->Disconnect();
+      }
+      terminate_simulation(0);
+    } break;
+    default:
+      renode_bridge* bridge = bridges[message.initiator_id];
+      bridge->handle_forward_request(message);
+      break;
+    }
+  }
+}
+
+void renode_connection::sideband_loop() {
+  renode_message message;
+  bool closed = false;
+
+  while (true) {
+    message = receive_sideband_request_socket(&closed);
+    if (closed) {
+#ifdef VERBOSE
+      printf("Connection to Renode closed.\n");
+#endif
+      break;
+    }
+
+    assert(!"Sideband channel is not implemented!");
+
+    send_sideband_response_socket(&message);
+  }
 }
 
 // ================================================================================

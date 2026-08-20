@@ -7,10 +7,12 @@
 #pragma once
 
 #include <condition_variable>
+#include <cstdint>
 #include <memory>
 
 #include <mutex>
 #include <queue>
+#include <map>
 #include <tlm>
 #include <tlm_utils/simple_initiator_socket.h>
 #include <tlm_utils/simple_target_socket.h>
@@ -22,6 +24,7 @@ struct renode_message;
 #define RENODE_BUSWIDTH 32
 #endif
 
+// NUM_GPIO must be equal to SystemCPeripheral.cs:NumberOfGPIOPins
 #define NUM_GPIO 1024
 #define NUM_DIRECT_CONNECTIONS 4
 
@@ -225,6 +228,7 @@ struct renode_message {
   renode_action action;
   uint8_t data_length;
   uint8_t connection_index;
+  uint32_t initiator_id;
   uint64_t address;
   uint64_t payload;
 };
@@ -303,6 +307,59 @@ public:
     }
 };
 
+class renode_connection;
+class renode_bridge;
+
+// ================================================================================
+// renode_connection
+//
+//   SystemC module that establishes and manages a connection with Renode.
+// ================================================================================
+
+class renode_connection : sc_core::sc_module {
+public:
+  renode_connection(sc_core::sc_module_name name, const char *address,
+                const char *port, bool native = false, std::string mach = "", std::string peri = "", bool hosted = false);
+  ~renode_connection();
+
+  void register_bridge(uint32_t id, renode_bridge *bridge);
+  void handle_backward_response_from_native(renode_message message);
+  void handle_backward_response_dmi_from_native(dmi_message message);
+  void handle_forward_request_from_native(renode_message message);
+  renode_message receive_backward_response();
+  dmi_message receive_backward_response_dmi();
+  renode_message receive_forward_request(bool *closed);
+  void send_backward_request(renode_message *message);
+  void send_forward_response(renode_message *message);
+  void send_forward_response_dmi(dmi_native_message *message);
+  void send_sideband_response_socket(renode_message *message);
+private:
+  bool initialize_connection(int64_t *out_max_desync_us);
+  void forward_loop();
+  void sideband_loop();
+  renode_message receive_sideband_request_socket(bool *closed);
+
+  // Connection from Renode -> SystemC.
+  std::unique_ptr<CTCPClient> forward_connection;
+
+  // Sideband connection from Renode -> SystemC.
+  std::unique_ptr<CTCPClient> sideband_connection;
+
+  // Connection from SystemC -> Renode
+  std::unique_ptr<CTCPClient> backward_connection;
+
+  int64_t max_desync_us;
+  bool native;
+  std::string mach;
+  std::string peri;
+
+  BlockingCollection<renode_message> bw_response;
+  BlockingCollection<dmi_message> dmi_response;
+  BlockingCollection<renode_message> fw_request;
+
+  std::map<uint32_t, renode_bridge*> bridges;
+};
+
 // ================================================================================
 // renode_bridge
 //
@@ -312,13 +369,11 @@ public:
 class renode_bridge : sc_core::sc_module {
 public:
   renode_bridge(sc_core::sc_module_name name, const char *address,
-                const char *port, bool native = false, std::string mach = "", std::string peri = "");
+                const char *port, bool native = false, std::string mach = "", std::string peri = "",
+                uint32_t id = 0, bool hosted = false, renode_connection *conn = NULL);
   ~renode_bridge();
-
-  void handle_backward_response_from_native(renode_message message);
-  void handle_backward_response_dmi_from_native(dmi_message message);
-  void handle_forward_request_from_native(renode_message message);
-  void handle_sideband_request(renode_message &message);
+  void handle_forward_request(renode_message &message);
+  void register_connection(renode_connection *conn);
 public:
   using renode_bus_target_socket =
       tlm::tlm_target_socket<RENODE_BUSWIDTH, tlm::tlm_base_protocol_types, 1,
@@ -423,20 +478,14 @@ private:
     uint8_t connection_idx;
   };
 
-  bool initialize_connection(int64_t *out_max_desync_us);
-  void forward_loop();
-  void sideband_loop();
   renode_message receive_backward_response();
   dmi_message receive_backward_response_dmi();
-  renode_message receive_forward_request(bool *closed);
-  renode_message receive_sideband_request_socket(bool *closed);
   void send_backward_request(renode_message *message);
   void send_forward_response(renode_message *message);
   void send_forward_response_dmi(dmi_native_message *message);
-  void send_sideband_response_socket(renode_message *message);
+
   void handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message);
   void handle_sideband_access(renode_message &message);
-  void handle_sideband_gpio_write(renode_message &message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void sync_gpio_state(bool init);
@@ -451,16 +500,6 @@ private:
                                 sc_core::sc_time &delay);
   bool service_backward_request_dmi(tlm::tlm_generic_payload &payload,
                                     tlm::tlm_dmi &dmi_data);
-  int64_t get_systemc_time_us();
-
-  // Connection from Renode -> SystemC.
-  std::unique_ptr<CTCPClient> forward_connection;
-
-  // Sideband connection from Renode -> SystemC.
-  std::unique_ptr<CTCPClient> sideband_connection;
-
-  // Connection from SystemC -> Renode
-  std::unique_ptr<CTCPClient> backward_connection;
 
   // Construction/destruction of tlm_generic_payload is an expensive operation,
   // so a single tlm_generic_payload object is reused, as recommended by OSCI
@@ -478,14 +517,8 @@ private:
   initiator_bw_handler dc_initiators[NUM_DIRECT_CONNECTIONS];
   target_fw_handler dc_targets[NUM_DIRECT_CONNECTIONS];
 
-  int64_t max_desync_us;
-  bool native;
-  std::string mach;
-  std::string peri;
-
-  BlockingCollection<renode_message> bw_response;
-  BlockingCollection<dmi_message> dmi_response;
-  BlockingCollection<renode_message> fw_request;
+  renode_connection *conn;
+  uint32_t id;
 };
 
 // ================================================================================

@@ -5,6 +5,8 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 using Antmicro.Renode.Core;
@@ -17,78 +19,82 @@ using Antmicro.Renode.Peripherals.Miscellaneous;
 
 namespace Antmicro.Renode.Peripherals.SystemC
 {
+    public enum SignalActiveWhen
+    {
+        Low,
+        High,
+    }
+
+    public class CortexMBundle
+    {
+        public CortexMBundle(
+            CortexM cpu,
+            NVIC nvic,
+            DWT dwt = null,
+            SignalActiveWhen powerOnResetActive = SignalActiveWhen.High,
+            SignalActiveWhen coreResetInActive = SignalActiveWhen.High
+        )
+        {
+            Cpu = cpu;
+            Nvic = nvic;
+            Dwt = dwt;
+            PowerOnResetActive = powerOnResetActive;
+            CoreResetInActive = coreResetInActive;
+        }
+
+        public CortexM Cpu { get; }
+
+        public NVIC Nvic { get; }
+
+        public DWT Dwt { get; }
+
+        public SignalActiveWhen PowerOnResetActive { get; }
+
+        public SignalActiveWhen CoreResetInActive { get; }
+
+        public bool PowerOnResetAsserted { get; set; }
+
+        public bool CoreResetInAsserted { get; set; }
+
+        public bool VtorInitialized { get; set; }
+
+        public bool VtorNonSecureInitialized { get; set; }
+    }
+
     public class SystemCCortexMSignalsUnit : SystemCPeripheral, IExecutableIO
     {
         public SystemCCortexMSignalsUnit(
                 IMachine machine,
-                CortexM cpu,
-                NVIC nvic,
+                CortexMBundle[] cortexMBundles,
                 string address = "127.0.0.1",
                 int port = 0,
                 int timeSyncPeriodUS = 1000,
-                bool disableTimeoutCheck = false,
-                DWT dwt = null,
-                SignalActiveWhen powerOnResetActive = SignalActiveWhen.High,
-                SignalActiveWhen coreResetInActive = SignalActiveWhen.High)
+                bool disableTimeoutCheck = false
+            )
              : base(machine,
                     address,
                     port,
                     timeSyncPeriodUS,
                     disableTimeoutCheck)
         {
-            this.cpu = cpu;
-            this.nvic = nvic;
-            this.dwt = dwt;
-            this.powerOnResetActive = powerOnResetActive;
-            this.coreResetInActive = coreResetInActive;
-
-            // Initialize state to the same initial value as on the CPU side.
-            // It is guaranteed that CPU constructor was already executed,
-            // because it's a dependency of this constructor.
-            Connections[(int)Signal.CpuWait].Set(cpu.CpuWaitSignal.IsSet);
-            Connections[(int)Signal.CpuWait].Connect(cpu, (int)CortexM.CpuSignal.CpuWait);
-            for(var irq = (int)Signal.NvicIrqsStart; irq <= (int)Signal.NvicIrqsEnd; irq++)
+            var cortexMBundleMap = new Dictionary<uint, CortexMBundle>();
+            var bundledConnections = new Dictionary<uint, IReadOnlyDictionary<int, IGPIO>>();
+            foreach(var cortexMBundle in cortexMBundles)
             {
-                Connections[(int)Signal.NvicIrqsStart + irq].Connect(nvic, irq);
+                var id = cortexMBundle.Cpu.MultiprocessingId;
+
+                var innerConnections = new Dictionary<int, IGPIO>();
+                for(var i = 0; i < NumberOfGPIOPins; i++)
+                {
+                    innerConnections[i] = new GPIO();
+                }
+                var connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
+                bundledConnections.Add(id, connections);
+                cortexMBundleMap.Add(id, cortexMBundle);
+                SetupCortexMBundle(cortexMBundle, connections);
             }
-
-            /*
-             * These signals are by default treated as active-HIGH,
-             * even though the source signals 'nPORESET' and 'nSYSRESET' are active-LOW.
-             */
-            Connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(Signal.PowerOnReset, state, powerOnResetActive)), 0);
-            Connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(Signal.CoreResetIn, state, coreResetInActive)), 0);
-
-            // NVIC's OnGPIO adds an offset to skip over system exceptions, so we need to subtract it.
-            Connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
-
-            nvic.SystemResetRequest.Connect(this, (int)Signal.SystemResetRequest);
-            nvic.InSleep.Connect(this, (int)Signal.Sleeping);
-            nvic.InDeepSleep.Connect(this, (int)Signal.SleepDeep);
-            nvic.Lockup.Connect(this, (int)Signal.Lockup);
-        }
-
-        public byte[] ReadBytes(long offset, int count, IPeripheral context = null)
-        {
-            var result = new byte[count];
-            for(var i = 0; i < count; i++)
-            {
-                result[i] = ReadByte(offset + i);
-            }
-            return result;
-        }
-
-        public void WriteBytes(long offset, byte[] bytes, int startingIndex, int count, IPeripheral context = null)
-        {
-            if(bytes.Length < startingIndex + count)
-            {
-                throw new RecoverableException($"Bytes array needs to have at least {startingIndex + count} elements");
-            }
-
-            for(var i = 0; i < count; i++)
-            {
-                WriteByte(offset + i, bytes[startingIndex + i]);
-            }
+            this.cortexMBundles = new ReadOnlyDictionary<uint, CortexMBundle>(cortexMBundleMap);
+            this.bundledConnections = new ReadOnlyDictionary<uint, IReadOnlyDictionary<int, IGPIO>>(bundledConnections);
         }
 
         /// <remarks>
@@ -117,7 +123,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.GetMachine()
                         .GetSystemBus(this)
                         .GetRegistrationPoints(this)
-                        .Single()
+                        .First()
                         .Range.Size;
                 }
                 catch(Exception)
@@ -127,6 +133,12 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        protected override void HandleGpioWrite(int number, bool value, uint initiatorId)
+        {
+            var connections = bundledConnections[initiatorId];
+            connections[number].Set(value);
+        }
+
         // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
         //       This may lead to deadlocks, as SystemC blocks waiting for a response from this thread.
         protected override void OnUnhandledRenodeMessage(RenodeMessage message)
@@ -134,76 +146,132 @@ namespace Antmicro.Renode.Peripherals.SystemC
             switch(message.ActionId)
             {
             case RenodeAction.InitSecureVTOR:
+            {
+                var cortexMBundle = cortexMBundles[message.InitiatorId];
                 var vectorTableOffset = (uint)message.Address;
-
-                if(!cpu.TrustZoneEnabled)
-                {
-                    this.WarningLog("The Security Extension is not enabled. Ignoring Secure Vector table offset signal");
-                    SendBackwardResponse(message);
-                    break;
-                }
-
-                // The INITSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
-                // Therefore, we need to manually set the VTOR immediately
-                // in order to allow SystemC to set the VTOR before the CPU starts.
-                if(!vtorInitialized && !cpu.IsStarted)
-                {
-                    if(!cpu.SecureState)
-                    {
-                        throw new InvalidOperationException("CPU must be in the secure state on initialization");
-                    }
-                    cpu.VectorTableOffset = vectorTableOffset;
-                }
-
-                vtorInitialized = true;
-                cpu.InitVectorTableOffset = vectorTableOffset;
+                HandleInitSecureVTOR(cortexMBundle, vectorTableOffset);
                 SendBackwardResponse(message);
                 this.NoisyLog("SystemC Vector Table Offset: 0x{0:X}", vectorTableOffset);
                 break;
+            }
             case RenodeAction.InitNonSecureVTOR:
+            {
+                var cortexMBundle = cortexMBundles[message.InitiatorId];
                 var vectorTableOffsetNonSecure = (uint)message.Address;
-
-                /*
-                 * When security extensions are not enabled, we treat the `VectorTableOffset`
-                 * property as the nonsecure vector table offset register.
-                 */
-
-                // The INITNSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
-                // Therefore, we need to manually set the VTOR immediately
-                // in order to allow SystemC to set the VTOR before the CPU starts.
-                if(!vtorNonSecureInitialized && !cpu.IsStarted)
-                {
-                    if(cpu.TrustZoneEnabled)
-                    {
-                        cpu.VectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
-                    }
-                    else
-                    {
-                        cpu.VectorTableOffset = vectorTableOffsetNonSecure;
-                    }
-                }
-
-                if(cpu.TrustZoneEnabled)
-                {
-                    cpu.InitVectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
-                }
-                else
-                {
-                    cpu.InitVectorTableOffset = vectorTableOffsetNonSecure;
-                }
-
-                vtorNonSecureInitialized = true;
+                HandleInitNonSecureVTOR(cortexMBundle, vectorTableOffsetNonSecure);
                 SendBackwardResponse(message);
                 this.NoisyLog("SystemC Non Secure Vector Table Offset: 0x{0:X}", vectorTableOffsetNonSecure);
                 break;
+            }
             default:
                 this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
                 break;
             }
         }
 
-        private void ResetCpuAndPeripherals(Signal signal, bool state, SignalActiveWhen resetOn)
+        private void HandleInitSecureVTOR(CortexMBundle cortexMBundle, uint vectorTableOffset)
         {
+            var cpu = cortexMBundle.Cpu;
+
+            if(!cpu.TrustZoneEnabled)
+            {
+                this.WarningLog("The Security Extension is not enabled. Ignoring Secure Vector table offset signal");
+                return;
+            }
+
+            // The INITSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
+            // Therefore, we need to manually set the VTOR immediately
+            // in order to allow SystemC to set the VTOR before the CPU starts.
+            if(!cortexMBundle.VtorInitialized && !cpu.IsStarted)
+            {
+                if(!cpu.SecureState)
+                {
+                    throw new InvalidOperationException("CPU must be in the secure state on initialization");
+                }
+                cpu.VectorTableOffset = vectorTableOffset;
+            }
+
+            cortexMBundle.VtorInitialized = true;
+            cpu.InitVectorTableOffset = vectorTableOffset;
+        }
+
+        private void HandleInitNonSecureVTOR(CortexMBundle cortexMBundle, uint vectorTableOffsetNonSecure)
+        {
+            var cpu = cortexMBundle.Cpu;
+
+            /*
+            * When security extensions are not enabled, we treat the `VectorTableOffset`
+            * property as the nonsecure vector table offset register.
+            */
+
+            // The INITNSVTOR is sampled at resets, but Renode doesn't treat the emulation start as a reset.
+            // Therefore, we need to manually set the VTOR immediately
+            // in order to allow SystemC to set the VTOR before the CPU starts.
+            if(!cortexMBundle.VtorNonSecureInitialized && !cpu.IsStarted)
+            {
+                if(cpu.TrustZoneEnabled)
+                {
+                    cpu.VectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
+                }
+                else
+                {
+                    cpu.VectorTableOffset = vectorTableOffsetNonSecure;
+                }
+            }
+
+            if(cpu.TrustZoneEnabled)
+            {
+                cpu.InitVectorTableOffsetNonSecure = vectorTableOffsetNonSecure;
+            }
+            else
+            {
+                cpu.InitVectorTableOffset = vectorTableOffsetNonSecure;
+            }
+
+            cortexMBundle.VtorNonSecureInitialized = true;
+        }
+
+        private void SetupCortexMBundle(CortexMBundle cortexMBundle, IReadOnlyDictionary<int, IGPIO> connections)
+        {
+            var cpu = cortexMBundle.Cpu;
+            var nvic = cortexMBundle.Nvic;
+            var dwt = cortexMBundle.Dwt;
+            var powerOnResetActive = cortexMBundle.PowerOnResetActive;
+            var coreResetInActive = cortexMBundle.CoreResetInActive;
+            var id = cpu.MultiprocessingId;
+
+            // Initialize state to the same initial value as on the CPU side.
+            // It is guaranteed that CPU constructor was already executed,
+            // because it's a dependency of this constructor.
+            connections[(int)Signal.CpuWait].Set(cpu.CpuWaitSignal.IsSet);
+            connections[(int)Signal.CpuWait].Connect(cpu, (int)CortexM.CpuSignal.CpuWait);
+            for(var irq = (int)Signal.NvicIrqsStart; irq <= (int)Signal.NvicIrqsEnd; irq++)
+            {
+                connections[(int)Signal.NvicIrqsStart + irq].Connect(nvic, irq);
+            }
+
+            /*
+             * These signals are by default treated as active-HIGH,
+             * even though the source signals 'nPORESET' and 'nSYSRESET' are active-LOW.
+             */
+            connections[(int)Signal.PowerOnReset].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(cortexMBundle, Signal.PowerOnReset, state, powerOnResetActive)), 0);
+            connections[(int)Signal.CoreResetIn].Connect(new GPIOHandler((state) => ResetCpuAndPeripherals(cortexMBundle, Signal.CoreResetIn, state, coreResetInActive)), 0);
+
+            // NVIC's OnGPIO adds an offset to skip over system exceptions, so we need to subtract it.
+            connections[(int)Signal.NonMaskableInterrupt].Connect(nvic, NmiException - SystemExceptionOffset);
+
+            nvic.SystemResetRequest.Connect(new GPIOHandler((state) => SendGpioUpdate((int)Signal.SystemResetRequest, state, id)), 0);
+            nvic.InSleep.Connect(new GPIOHandler((state) => SendGpioUpdate((int)Signal.Sleeping, state, id)), 0);
+            nvic.InDeepSleep.Connect(new GPIOHandler((state) => SendGpioUpdate((int)Signal.SleepDeep, state, id)), 0);
+            nvic.Lockup.Connect(new GPIOHandler((state) => SendGpioUpdate((int)Signal.Lockup, state, id)), 0);
+        }
+
+        private void ResetCpuAndPeripherals(CortexMBundle cortexMBundle, Signal signal, bool state, SignalActiveWhen resetOn)
+        {
+            var cpu = cortexMBundle.Cpu;
+            var nvic = cortexMBundle.Nvic;
+            var dwt = cortexMBundle.Dwt;
+
             void holdInReset()
             {
                 cpu.IsHalted = true;
@@ -223,16 +291,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
 
             var resetState = resetOn == SignalActiveWhen.High ? true : false;
-            var wasAsserted = coreResetInAsserted || powerOnResetAsserted;
+            var wasAsserted = cortexMBundle.CoreResetInAsserted || cortexMBundle.PowerOnResetAsserted;
             if(state == resetState)
             {
                 switch(signal)
                 {
                 case Signal.CoreResetIn:
-                    coreResetInAsserted = true;
+                    cortexMBundle.CoreResetInAsserted = true;
                     break;
                 case Signal.PowerOnReset:
-                    powerOnResetAsserted = true;
+                    cortexMBundle.PowerOnResetAsserted = true;
                     break;
                 default:
                     return;
@@ -243,16 +311,16 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 switch(signal)
                 {
                 case Signal.CoreResetIn:
-                    coreResetInAsserted = false;
+                    cortexMBundle.CoreResetInAsserted = false;
                     break;
                 case Signal.PowerOnReset:
-                    powerOnResetAsserted = false;
+                    cortexMBundle.PowerOnResetAsserted = false;
                     break;
                 default:
                     return;
                 }
             }
-            var isAsserted = coreResetInAsserted || powerOnResetAsserted;
+            var isAsserted = cortexMBundle.CoreResetInAsserted || cortexMBundle.PowerOnResetAsserted;
 
             if(wasAsserted == isAsserted)
             {
@@ -291,23 +359,10 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private bool powerOnResetAsserted;
-        private bool coreResetInAsserted;
-        private bool vtorInitialized = false;
-        private bool vtorNonSecureInitialized = false;
-        private readonly CortexM cpu;
-        private readonly NVIC nvic;
-        private readonly DWT dwt;
-        private readonly SignalActiveWhen powerOnResetActive;
-        private readonly SignalActiveWhen coreResetInActive;
+        private readonly IReadOnlyDictionary<uint, CortexMBundle> cortexMBundles;
+        private readonly IReadOnlyDictionary<uint, IReadOnlyDictionary<int, IGPIO>> bundledConnections;
         private const int NmiException = 2;
         private const int SystemExceptionOffset = 16;
-
-        public enum SignalActiveWhen
-        {
-            Low,
-            High,
-        }
 
         public enum Signal
         {

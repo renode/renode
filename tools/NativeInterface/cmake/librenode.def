@@ -5,6 +5,7 @@ EXPORTS
 	renode_systemc_send_backward_request
 	renode_systemc_send_forward_response
 	renode_systemc_send_forward_response_dmi
-	renode_systemc_setup_renode_bridge
+	renode_systemc_setup_connection
 	renode_systemc_init_native_connection
 	renode_systemc_teardown_native_connection
+	renode_systemc_register_bridge

@@ -65,7 +65,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             connectionActive = false;
 
-            RenodeBridgeRef = null;
+            RenodeConnectionRef = null;
             SendBackwardResponseNative = null;
             SendForwardRequestNative = null;
             SendBackwardResponseDmiNative = null;
@@ -103,7 +103,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        public void* RenodeBridgeRef { get; set; }
+        public void* RenodeConnectionRef { get; set; }
 
         public delegate* unmanaged<void*, RenodeMessage, void> SendBackwardResponseNative { get; set; }
 
@@ -117,7 +117,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             get
             {
-                return RenodeBridgeRef != null
+                return RenodeConnectionRef != null
                     && SendBackwardResponseNative != null
                     && SendBackwardResponseDmiNative != null
                     && SendForwardRequestNative != null
@@ -215,7 +215,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.ErrorLog("Trying to send backward response using unconfigured native interface");
                     return;
                 }
-                SendBackwardResponseNative(RenodeBridgeRef, message);
+                SendBackwardResponseNative(RenodeConnectionRef, message);
             }
             else
             {
@@ -241,7 +241,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.ErrorLog("Trying to send backward response DMI using unconfigured native interface");
                     return;
                 }
-                SendBackwardResponseDmiNative(RenodeBridgeRef, message);
+                SendBackwardResponseDmiNative(RenodeConnectionRef, message);
             }
             else
             {
@@ -267,7 +267,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.ErrorLog("Trying to send forward request using unconfigured native interface");
                     return;
                 }
-                SendForwardRequestNative(RenodeBridgeRef, message);
+                SendForwardRequestNative(RenodeConnectionRef, message);
             }
             else
             {
@@ -294,7 +294,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     this.ErrorLog("Trying to send sideband request using unconfigured native interface");
                     return false;
                 }
-                response = HandleSidebandForwardRequestNative(RenodeBridgeRef, request);
+                response = HandleSidebandForwardRequestNative(RenodeConnectionRef, request);
                 return true;
             }
             else
@@ -364,7 +364,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             // Teardown message sent after connection has been established signifies Renode terminated and SystemC process
             // should exit.
-            var request = new RenodeMessage(RenodeAction.Teardown, 0, 0, 0, 0);
+            var request = new RenodeMessage(RenodeAction.Teardown, 0, 0, 0, 0, 0);
             SendRequest(request, out var response);
 
             if(!systemcProcess.WaitForExit(500))
