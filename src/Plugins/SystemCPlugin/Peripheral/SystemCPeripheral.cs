@@ -729,8 +729,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
                 mappedDmiRanges.Add(range);
                 this.DebugLog("Requested mapped SystemC DMI region {0}", range);
-                MapRanges(rangesToMap, startAddress, mappedAddress, cpu);
-                this.DebugLog("Mapped SystemC DMI region {0}", range);
+                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+                {
+                    MapRanges(rangesToMap, startAddress, mappedAddress, cpu);
+                    this.DebugLog("Mapped SystemC DMI region {0}", range);
+                }, true);
             }
         }
 
@@ -778,9 +781,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var intersectingRanges = mappedDmiRanges.Select(collectionRange => collectionRange.Intersect(range)).Where(r => r.HasValue);
                 mappedDmiRanges.Remove(range);
                 this.DebugLog("Requested invalidation of SystemC DMI region <0x{0:X}, 0x{1:X}>", startAddress, endAddress);
-                UnmapRanges(intersectingRanges, initiator);
-                this.DebugLog("Invalidated SystemC DMI region <0x{0:X}, 0x{1:X}>", startAddress, endAddress);
-
+                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+                {
+                    UnmapRanges(intersectingRanges, initiator);
+                    this.DebugLog("Invalidated SystemC DMI region <0x{0:X}, 0x{1:X}>", startAddress, endAddress);
+                }, true);
             }
         }
 
