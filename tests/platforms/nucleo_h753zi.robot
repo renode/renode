@@ -24,6 +24,7 @@ ${CAN_COUNTER}                      ${PROJECT_URL}/nucleo_h753zi--zephyr-samples
 ${CUBEMX_ETH_TEST}                  ${PROJECT_URL}/cubemx--stm32h7-eth-test.elf-s_1231644-3e808bfc20a3a96ad304acbc94c7dbd6b06245e5
 ${INTERRUPT_TEST}                   ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_arm_interrupt.elf-s_1910156-ef375658d70a341eea0d85fab970d4ddac9f22d4
 ${USB}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-shell-cdc.elf-s_3030364-5067ae0e61cb460735c8e5c43f6a0000ccd17bdc
+${CRYPTO_SAMPLE}                    ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_crypto.elf-s_1094020-1521d0c46a2b582aba095eff4e90135e5e9a524e
 
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 
@@ -488,3 +489,14 @@ Should Communicate Over USB
     Wait For Prompt On Uart             uart:~$
     Write Line To Uart                  demo board
     Wait For Line On Uart               nucleo_h753zi
+
+Should Pass Zephyr Encryption Sample
+    Create Machine                      ${CRYPTO_SAMPLE}  crypto_test
+    Create Terminal Tester              ${UART}  defaultPauseEmulation=True
+
+    Wait For Line On Uart               .*: ECB mode ENCRYPT - Match  treatAsRegex=true
+    Wait For Line On Uart               .*: ECB mode DECRYPT - Match  treatAsRegex=true
+    Wait For Line On Uart               .*: CBC mode ENCRYPT - Match  treatAsRegex=true
+    Wait For Line On Uart               .*: CBC mode DECRYPT - Match  treatAsRegex=true
+    Wait For Line On Uart               .*: CTR mode ENCRYPT - Match  treatAsRegex=true
+    Wait For Line On Uart               .*: CTR mode DECRYPT - Match  treatAsRegex=true
