@@ -215,6 +215,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public bool DisableDebugAccess { get; set; }
 
+        public bool MapMemoryOnReadOrWriteOnlyDmiGrant { get; set; }
+
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
         public const int NumberOfGPIOPins = 1024;
 
@@ -674,7 +676,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var endAddress = dmiNativeMessage.EndAddress;
             var mappedAddress = checked((nint)dmiNativeMessage.Pointer);
 
-            if(dmiAccess == DmiAccess.None || mappedAddress == IntPtr.Zero || endAddress < startAddress)
+            var allowToMap = MapMemoryOnReadOrWriteOnlyDmiGrant ? dmiAccess != DmiAccess.None : dmiAccess == DmiAccess.ReadWrite;
+            if(!allowToMap || mappedAddress == IntPtr.Zero || endAddress < startAddress)
             {
                 return;
             }
