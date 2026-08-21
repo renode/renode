@@ -56,7 +56,7 @@ cpu0 AssembleBlock 0x1000 """
   str  w2, [x1];          // *info = 0x20000
   movz w0, #0xf0;         // return ROM_API_OKAY (0xF0)
   ret
-"""
+""" triple="arm64"
 
 showAnalyzer uart2
 

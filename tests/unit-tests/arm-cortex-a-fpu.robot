@@ -12,7 +12,7 @@ Create Machine
 
 Assemble Instructions
     [Arguments]                         ${instrs}  ${address}
-    Execute Command                     sysbus.cpu AssembleBlock ${address} "${instrs}"
+    Execute Command                     sysbus.cpu AssembleBlock ${address} "${instrs}" triple="arm64"
 
 Execute Instructions
     [Arguments]                         ${instrs}  ${step_count}  ${address}=${RAM_ADDR}

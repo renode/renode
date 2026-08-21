@@ -48,11 +48,11 @@ ${RISCV_PLATFORM}                   SEPARATOR=\n
 
 *** Keywords ***
 Create Platform
-    [Arguments]                     ${platform}  ${assembly}
+    [Arguments]                     ${platform}  ${assembly}  ${triple}
     Execute Command                 using sysbus
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${platform}
-    Execute Command                 cpu AssembleBlock ${ASSEMBLY_ADDRESS} "${assembly}"
+    Execute Command                 cpu AssembleBlock ${ASSEMBLY_ADDRESS} "${assembly}" triple="${triple}"
     Execute Command                 cpu PC ${ASSEMBLY_ADDRESS}
 
 Expect Instructions Count
@@ -91,7 +91,7 @@ Execute Instructions
 Should Have Correct Instructions Count On Translation Block End
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  ${EMPTY}  10  0
-    Create Platform                 ${ARM64_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM64_PLATFORM}  ${assembly}  arm64
     Execute Command                 cpu MaximumBlockSize 7
     Execute Command                 sysbus.cpu SetHookAtBlockEnd "cpu.Log(LogLevel.Info, 'BlockEnd Hook: Executed {0} Instructions', cpu.ExecutedInstructions)"
     Create Log Tester               1
@@ -100,7 +100,7 @@ Should Have Correct Instructions Count On Translation Block End
 Should Have Correct Instructions Count After Multiple Translation Blocks
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  bl -0x24;  9  0
-    Create Platform                 ${ARM64_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM64_PLATFORM}  ${assembly}  arm64
     Execute Command                 sysbus.cpu SetHookAtBlockEnd "cpu.Log(LogLevel.Info, 'BlockEnd hook at PC: {} with {} executed instructions'.format(cpu.PC, cpu.ExecutedInstructions))"
     Create Log Tester               1
     Execute Instructions            100
@@ -111,14 +111,14 @@ Should Have Correct Instructions Count After Multiple Translation Blocks
 Should Have Correct Instructions Count On Execute Instructions
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  ${EMPTY}  10  0
-    Create Platform                 ${ARM64_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM64_PLATFORM}  ${assembly}  arm64
     Execute Instructions            8
     Expect Instructions Count       8
 
 Should Have Correct Instructions Count On WFI
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  wfi;  3  0
-    Create Platform                 ${ARM64_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM64_PLATFORM}  ${assembly}  arm64
     Execute Command                 cpu AddHookAtWfiStateChange 'self.Log(LogLevel.Info, "ENTER WFI - instructions count = {}".format(self.ExecutedInstructions))'
     Create Log Tester               1
     Start Emulation
@@ -128,7 +128,7 @@ Should Have Correct Instructions Count On WFI
 Should Have Correct Instructions Count On MMU External Fault
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  lw a1, 0(a0);  4  4
-    Create Platform                 ${RISCV_PLATFORM}  ${assembly}
+    Create Platform                 ${RISCV_PLATFORM}  ${assembly}  riscv32
     Execute Command                 cpu EnableExternalWindowMmu true
     Execute Command                 cpu SetRegister ${a0} 0x100000
     Create Log Tester               1
@@ -138,7 +138,7 @@ Should Have Correct Instructions Count On MMU External Fault
 Should Have Correct Instructions Count On Read Watchpoint
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  ldrb r0, [r1];  7  4
-    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}  armv7a
     Execute Command                 sysbus.cpu SetRegister ${r1} ${WATCHPOINT_ADDRESS}
 
     Execute Command                 sysbus AddWatchpointHook ${WATCHPOINT_ADDRESS} 1 Read "cpu.Log(LogLevel.Info, 'Watchpoint hook at PC: {}'.format(cpu.PC))"
@@ -161,7 +161,7 @@ Should Have Correct Instructions Count On Read Watchpoint
 Should Have Correct Instructions Count On Uart Access
     [Tags]                          instructions_counting
     ${assembly}=                    Surround Assembly Block With Nops  strb r0, [r1];  7  4
-    Create Platform                 ${ARM_PLATFORM}  ${assembly}
+    Create Platform                 ${ARM_PLATFORM}  ${assembly}  armv7a
     Create Terminal Tester          sysbus.uart
 
     Execute Command                 sysbus.cpu SetRegister ${r0} ${X_CHAR}

@@ -27,10 +27,10 @@ Create Machine
 *** Test Cases ***
 # These should execute without crashing Renode.
 Should Not Encounter Invalid TCG Variable When Executing SRS In Thumb Mode
-    Execute Command                 cpu AssembleBlock 0x0 "${SRS_ASSEMBLY}"
+    Execute Command                 cpu AssembleBlock 0x0 "${SRS_ASSEMBLY}" triple="armv7a"
     Execute Command                 cpu Step 2  # Execute SRS instruction in Thumb mode
 
 Should Not Encounter Invalid TCG Variable When Executing RFE In Thumb Mode
     Execute Command                 cpu PC 0x0
-    Execute Command                 cpu AssembleBlock 0x0 "${RFE_ASSEMBLY}"
+    Execute Command                 cpu AssembleBlock 0x0 "${RFE_ASSEMBLY}" triple="armv7a"
     Execute Command                 cpu Step 3  # Execute RFE instruction in Thumb mode

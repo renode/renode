@@ -99,18 +99,18 @@ RoundTrip Thumb
     DisasTest Thumb                 ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}
 
 DisasTest LE
-    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0
+    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${triple}=null
 
     ${hex_addr}=                    Convert To Hex  ${hex_addr}  length=8  base=16
 
-    DisasTest Core                  ${hex_addr}  ${hex_code}  ${hex_code}  ${mnemonic}  ${operands}  ${code_size}
+    DisasTest Core                  ${hex_addr}  ${hex_code}  ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  triple=${triple}
 
 RoundTrip LE
-    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0
+    [Arguments]                     ${hex_code}  ${mnemonic}=  ${operands}=  ${code_size}=4  ${hex_addr}=0  ${triple}=null
 
     ${expected}=                    Reverse Bytes  ${{$hex_code[:int($code_size) * 2]}}
-    AsTest                          ${expected}  ${mnemonic}  ${operands}  address=0x${hex_addr}
-    DisasTest LE                    ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}
+    AsTest                          ${expected}  ${mnemonic}  ${operands}  address=0x${hex_addr}  triple=${triple}
+    DisasTest LE                    ${hex_code}  ${mnemonic}  ${operands}  ${code_size}  ${hex_addr}  triple=${triple}
 
 DisasTest Core
     [Arguments]                     ${hex_addr}  ${code_write}  ${code_disas}  ${mnemonic}  ${operands}  ${code_size}  ${triple}=null  ${alternateDialect}=False
@@ -246,16 +246,16 @@ Should Assemble And Disassemble ARM Cortex-A
     [Tags]                          basic-tests
     Create Machine                  ARMv7A  arm926ej-s
 
-    RoundTrip LE                    32855001  addlo  r5, r5, \#1  hex_addr=8000
-    RoundTrip LE                    e1b00a00  lsls  r0, r0, \#20  hex_addr=813c
-    RoundTrip LE                    1a00000a  bne  \#40
+    RoundTrip LE                    32855001  addlo  r5, r5, \#1  hex_addr=8000  triple="armv7a"
+    RoundTrip LE                    e1b00a00  lsls  r0, r0, \#20  hex_addr=813c  triple="armv7a"
+    RoundTrip LE                    1a00000a  bne  \#40  triple="armv7a"
 
 Should Assemble And Disassemble ARM Cortex-A53
     Create Machine                  ARMv8A  cortex-a53
 
-    RoundTrip LE                    5400f041  b.ne  \#7688
-    RoundTrip LE                    aa0603e1  mov  x1, x6
-    RoundTrip LE                    aa2c1c65  orn  x5, x3, x12, lsl \#7
+    RoundTrip LE                    5400f041  b.ne  \#7688  triple="arm64"
+    RoundTrip LE                    aa0603e1  mov  x1, x6  triple="arm64"
+    RoundTrip LE                    aa2c1c65  orn  x5, x3, x12, lsl \#7  triple="arm64"
 
 Should Assemble And Disassemble ARM Cortex-M
     Create Machine                  CortexM  cortex-m4
@@ -268,9 +268,9 @@ Should Assemble And Disassemble ARM Cortex-M
 Should Assemble And Disassemble ARM Cortex-R52
     Create Machine                  ARMv8R  cortex-r52
 
-    RoundTrip LE                    e320f000  nop
-    RoundTrip LE                    43855040  orrmi  r5, r5, #64
-    RoundTrip LE                    e6ff3072  uxth  r3, r2
+    RoundTrip LE                    e320f000  nop  triple="armv8r"
+    RoundTrip LE                    43855040  orrmi  r5, r5, #64  triple="armv8r"
+    RoundTrip LE                    e6ff3072  uxth  r3, r2  triple="armv8r"
     RoundTrip Thumb                 eb750903  sbcs.w  r9, r5, r3
     RoundTrip Thumb                 ebb272e1  subs.w  r2, r2, r1, asr #31
     RoundTrip Thumb                 fb821002  smull  r1, r0, r2, r2
@@ -490,3 +490,15 @@ Should Handle Assembler Directives
     Create Machine                  X86  x86
 
     AsTest                          909090909090  .rept 6; nop; .endr
+
+Should Refuse To Infer Triple For Assembly
+    Create Machine                  ARMv8A  cortex-a53
+    Run Keyword And Expect Error    *Triple must be specified*  Execute Command  cpu AssembleBlock 0x0 "nop"
+
+Should Refuse To Infer Triple For Addressed Disassembly
+    Create Machine                  ARMv8A  cortex-a53
+    Run Keyword And Expect Error    *Triple must be specified*  Execute Command  cpu DisassembleBlock 0x0
+
+Should Infer Triple For PC-Based Disassembly
+    Create Machine                  ARMv8A  cortex-a53
+    Execute Command                 cpu DisassembleBlock

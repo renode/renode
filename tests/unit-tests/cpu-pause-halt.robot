@@ -30,9 +30,9 @@ Create Machine
     # Set reset handler address. Cortex-M reset vectors include the Thumb bit.
     Execute Command                 sysbus WriteDoubleWord 0x4 ${{0x100 | int($is_cortex_m)}}
     # Create simple loop in the reset handler
-    ${check_address}=               Execute Command  cpu AssembleBlock 0x100 "nop; nop;"
+    ${check_address}=               Execute Command  cpu AssembleBlock 0x100 "nop; nop;" triple="${{"thumb" if $is_cortex_m else "armv7a"}}"
     ${check_address}=               Evaluate  ${START_ADDRESS}+${check_address}
-    Execute Command                 cpu AssembleBlock ${check_address} "nop; jump: nop; b jump;"
+    Execute Command                 cpu AssembleBlock ${check_address} "nop; jump: nop; b jump;" triple="${{"thumb" if $is_cortex_m else "armv7a"}}"
 
     Execute Command                 cpu AddHook ${check_address} "cpu.Log(LogLevel.Info, 'PC moved');"
     Create Log Tester               1

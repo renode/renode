@@ -213,7 +213,7 @@ Run Program and Trace Registers on ARM
     ...                             movs r0, #0
     ...                             cmp r0, r1
     ...                             bx lr
-    Execute Command                 cpu AssembleBlock ${start_address} """${program}"""
+    Execute Command                 cpu AssembleBlock ${start_address} """${program}""" triple="armv7a"
 
     ${trace_file}=                  Allocate Temporary File
 

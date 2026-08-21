@@ -310,6 +310,6 @@ SMMUv3 Can Translate Accesses From CPU
     ...                            mov r0, 0x1000
     ...                            ldr r1, [r0]
 
-    Execute Command                cpu AssembleBlock 0 "${prog}"
+    Execute Command                cpu AssembleBlock 0 "${prog}" triple="armv8r"
     Execute Command                cpu Step 2
     Register Should Be Equal       R1  0xfeedface

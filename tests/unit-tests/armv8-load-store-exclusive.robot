@@ -140,8 +140,8 @@ Contended Memory Value Should Increment To Correct Sum On ${platform:(a32|a64)}
     Execute Command                 cpu1_${platform} SetRegister "${step_reg}" ${increment_step_size}
 
     # Place machine code at PC for both cores.
-    ${assembly_size_0}=             Execute Command  cpu0_${platform} AssembleBlock ${CORE_0_PC} "${assembly_loop_core_0}"
-    ${assembly_size_1}=             Execute Command  cpu1_${platform} AssembleBlock ${CORE_1_PC} "${assembly_loop_core_1}"
+    ${assembly_size_0}=             Execute Command  cpu0_${platform} AssembleBlock ${CORE_0_PC} "${assembly_loop_core_0}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
+    ${assembly_size_1}=             Execute Command  cpu1_${platform} AssembleBlock ${CORE_1_PC} "${assembly_loop_core_1}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
 
     # Calculate end addresses.
     # The -4 is for the 'b .' and needs to be put at the start due to weird robot/python string conversion
@@ -185,9 +185,9 @@ Test Invalidation of Shared Memory Address On ${platform:(a32|a64)}
 
     # Assemble load/store exclusive code for core 0.
     ${core_0_code}=                 Get Load Store Exclusive Pair On ${platform} ${inst_suffix} ${register_size}
-    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${core_0_code}"
+    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${core_0_code}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
 
-    Execute Command                 cpu1_${platform} AssembleBlock ${CORE_1_PC} """${write_instructions}"""
+    Execute Command                 cpu1_${platform} AssembleBlock ${CORE_1_PC} """${write_instructions}""" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
 
     # Interleave core 1's write between load exclusive and store exclusive of core 0, which must cause invalidation.
     Execute Command                 cpu0_${platform} Step  # load_exclusive
@@ -223,7 +223,7 @@ Test Store Exclusive To The Same Reservation On ${platform:(a32|a64)}
     Execute Command                 sysbus WriteDoubleWord ${ORDINARY_ADDRESS} ${VARIABLE_VALUE}
 
     # Check for successful store exclusive
-    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}"
+    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
     Execute Command                 cpu0_${platform} Step
     Register Should Be Equal        ${load_reg}  ${VARIABLE_VALUE}  cpuName=cpu0_${platform}
     Execute Command                 cpu0_${platform} Step
@@ -259,12 +259,12 @@ Test Consecutive Load Store Exclusives On Two ${platform:(a32|a64)} Cores
     Execute Command                 cpu1_${platform} SetRegister "${address_reg}" ${ORDINARY_ADDRESS}
 
     # Check for successful store on second core
-    Execute Command                 cpu1_${platform} AssembleBlock ${CORE_1_PC} "${ASSEMBLY}"
+    Execute Command                 cpu1_${platform} AssembleBlock ${CORE_1_PC} "${ASSEMBLY}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
     Execute Command                 cpu1_${platform} Step 2
     Register Should Be Equal        ${status_reg_index}  0x0  cpuName=cpu1_${platform}
 
     # Check for successful store on first core
-    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}"
+    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
     Execute Command                 cpu0_${platform} Step 2
     Register Should Be Equal        ${status_reg_index}  0x0  cpuName=cpu0_${platform}
 
@@ -298,7 +298,7 @@ Test Single Core Looping Load Store Exclusive Pairs To Same Reservation On ${pla
     Execute Command                 cpu0_${platform} SetRegister "${iteration_reg}" ${LOOP_ITERATIONS}
 
     # The assembly increments the value in [address_reg] until enough loop iterations have run.
-    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}"
+    Execute Command                 cpu0_${platform} AssembleBlock ${CORE_0_PC} "${ASSEMBLY}" triple="${{"armv8r" if $platform == "a32" else "arm64"}}"
 
     FOR  ${i}  IN RANGE  ${start_value}  ${LOOP_ITERATIONS}
         ${next_i}=                      Set Variable  ${${i} + 1}
