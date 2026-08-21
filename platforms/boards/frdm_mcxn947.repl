@@ -1,0 +1,31 @@
+using "platforms/cpus/mcxn947.repl"
+
+gpio0:
+    10 -> led0@0
+    27 -> led1@0
+
+gpio1:
+    2 -> led2@0
+
+led0: Miscellaneous.LED @ gpio0 10
+    invert: true
+
+led1: Miscellaneous.LED @ gpio0 27
+    invert: true
+
+led2: Miscellaneous.LED @ gpio1 2
+    invert: true
+
+sw2: Miscellaneous.Button @ gpio0 23
+    invert: true
+    -> gpio0@23
+
+sw3: Miscellaneous.Button @ gpio0 6
+    invert: true
+    -> gpio0@6
+
+resetPin: Miscellaneous.ResetPin @ gpio0 31
+
+resetButton: Miscellaneous.Button @ gpio0 31
+    invert: true
+    -> resetPin@0
