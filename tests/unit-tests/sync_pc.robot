@@ -172,7 +172,7 @@ Should Report Correct PC Between Chained Blocks
     ${PLAT_ARMv8R}                  ${PROG_ARM}      "armv8r"
     ${PLAT_ARM-M}                   ${PROG_ARM}
     ${PLAT_POWERPC}                 ${PROG_POWERPC}
-    ${PLAT_X86}                     ${PROG_X86}
+    ${PLAT_X86}                     ${PROG_X86}      "i386"
     ${PLAT_SPARC}                   ${PROG_SPARC}
 
 # Separate path for Xtensa as it's currently not supported by Renode's LLVM assembly

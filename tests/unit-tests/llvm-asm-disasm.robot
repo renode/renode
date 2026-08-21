@@ -358,46 +358,78 @@ Should Assemble And Disassemble Sparc
     RoundTrip LE                    01000000  nop  hex_addr=abc
     RoundTrip LE                    10680047  ba  %xcc, 71
 
+Should Assemble And Disassemble 16-bit X86 Using Intel Syntax
+    [Tags]                          basic-tests
+    Create Machine                  X86  x86
+
+    RoundTrip BE                    67666b7b0c14  imul  edi, dword ptr [ebx + 12], 20  6  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    45  inc  bp  1  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    6645  inc  ebp  2  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    660fb7c0  movzx  eax, ax  4  cc  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    67890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    66898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    898f711a  mov  word ptr [bx + 6769], cx  4  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    0f011e5e00  lidtw  [94]  5  abd  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+
+Should Assemble And Disassemble 16-bit X86 Using GAS Syntax
+    [Tags]                          basic-tests
+    Create Machine                  X86  x86
+
+    RoundTrip BE                    67666b7b0c14  imull  $20, 12(%ebx), %edi  6  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    45  incw  %bp  1  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    6645  incl  %ebp  2  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    660fb7c0  movzwl  %ax, %eax  4  cc  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    67890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    66898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    898f711a  movw  %cx, 6769(%bx)  4  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    0f011e5e00  lidtw  94  5  abd  reverse=False  triple="i386-unknown-none-code16"
+
 Should Assemble And Disassemble X86 Using Intel Syntax
     [Tags]                          basic-tests
     Create Machine                  X86  x86
 
-    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  alternateDialect=True  reverse=False
-    RoundTrip BE                    45  inc  ebp  1  alternateDialect=True  reverse=False
-    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  alternateDialect=True  reverse=False
-    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False
-    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  alternateDialect=True  reverse=False
+    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    6645  inc  bp  2  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    45  inc  ebp  1  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    67898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    6766898f711a  mov  word ptr [bx + 6769], cx  6  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  alternateDialect=True  reverse=False  triple="i386"
 
 Should Assemble And Disassemble X86 Using GAS Syntax
     [Tags]                          basic-tests
     Create Machine                  X86  x86
 
-    RoundTrip BE                    6b7b0c14  imull  $20, 12(%ebx), %edi  reverse=False
-    RoundTrip BE                    45  incl  %ebp  1  reverse=False
-    RoundTrip BE                    0fb7c0  movzwl  %ax, %eax  3  cc  reverse=False
-    RoundTrip BE                    66890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False
-    RoundTrip BE                    0f011d5e00fc00  lidtl  16515166  7  abd  reverse=False
+    RoundTrip BE                    6b7b0c14  imull  $20, 12(%ebx), %edi  reverse=False  triple="i386"
+    RoundTrip BE                    6645  incw  %bp  2  reverse=False  triple="i386"
+    RoundTrip BE                    45  incl  %ebp  1  reverse=False  triple="i386"
+    RoundTrip BE                    0fb7c0  movzwl  %ax, %eax  3  cc  reverse=False  triple="i386"
+    RoundTrip BE                    66890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386"
+    RoundTrip BE                    67898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386"
+    RoundTrip BE                    6766898f711a  movw  %cx, 6769(%bx)  6  a  reverse=False  triple="i386"
+    RoundTrip BE                    0f011d5e00fc00  lidtl  16515166  7  abd  reverse=False  triple="i386"
 
 Should Assemble And Disassemble X86_64 Using Intel Syntax
     [Tags]                          basic-tests
     Create Machine                  X86_64  x86_64
 
-    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  alternateDialect=True  reverse=False
+    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  alternateDialect=True  reverse=False  triple="x86_64"
     # Only testing assembly here as the disassembly-testing keywords can handle at most 8 bytes of code.
-    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  alternateDialect=True
-    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  alternateDialect=True  reverse=False
-    RoundTrip BE                    48ffc0  inc  rax  3  alternateDialect=True  reverse=False
-    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  alternateDialect=True  reverse=False
+    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  alternateDialect=True  triple="x86_64"
+    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  alternateDialect=True  reverse=False  triple="x86_64"
+    RoundTrip BE                    48ffc0  inc  rax  3  alternateDialect=True  reverse=False  triple="x86_64"
+    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  alternateDialect=True  reverse=False  triple="x86_64"
 
 Should Assemble And Disassemble X86_64 Using GAS Syntax
     [Tags]                          basic-tests
     Create Machine                  X86_64  x86_64
 
-    RoundTrip BE                    676b7b0c14  imull  $20, 12(%ebx), %edi  5  reverse=False
-    AsTest                          48b8f0debc8a67452301  movabsq  $81985529234382576, %rax
-    RoundTrip BE                    48890cc516a9fd00  movq  %rcx, 16623894(,%rax,8)  8  reverse=False
-    RoundTrip BE                    48ffc0  incq  %rax  3  reverse=False
-    RoundTrip BE                    65488b06  movq  %gs:(%rsi), %rax  reverse=False
+    RoundTrip BE                    676b7b0c14  imull  $20, 12(%ebx), %edi  5  reverse=False  triple="x86_64"
+    AsTest                          48b8f0debc8a67452301  movabsq  $81985529234382576, %rax  triple="x86_64"
+    RoundTrip BE                    48890cc516a9fd00  movq  %rcx, 16623894(,%rax,8)  8  reverse=False  triple="x86_64"
+    RoundTrip BE                    48ffc0  incq  %rax  3  reverse=False  triple="x86_64"
+    RoundTrip BE                    65488b06  movq  %gs:(%rsi), %rax  reverse=False  triple="x86_64"
 
 Should Assemble And Disassemble Xtensa
     Create Machine                  Xtensa  sample_controller
@@ -462,8 +494,8 @@ Should Handle Disassembly From Invalid Address
 Should Take Base Address Into Account When Assembling
     Create Machine                  X86  x86
 
-    AsTest                          8d0534120000  a: lea  eax, [a]  address=0x1234  alternateDialect=True
-    AsTest                          8d053a120000  lea  eax, [a]; a:  address=0x1234  alternateDialect=True
+    AsTest                          8d0534120000  a: lea  eax, [a]  address=0x1234  alternateDialect=True  triple="i386"
+    AsTest                          8d053a120000  lea  eax, [a]; a:  address=0x1234  alternateDialect=True  triple="i386"
 
 Should Assemble Multiline Program
     ${prog}=                        Catenate  SEPARATOR=\n
@@ -472,7 +504,7 @@ Should Assemble Multiline Program
 
     Create Machine                  X86  x86
 
-    Execute Command                 sysbus.cpu AssembleBlock 0 "${prog}"
+    Execute Command                 sysbus.cpu AssembleBlock 0 "${prog}" triple="i386"
 
     ${ins}=                         Execute Command  sysbus ReadWord 0
 
@@ -489,7 +521,7 @@ Should Handle Illegal Instruction When Assembling
 Should Handle Assembler Directives
     Create Machine                  X86  x86
 
-    AsTest                          909090909090  .rept 6; nop; .endr
+    AsTest                          909090909090  .rept 6; nop; .endr  triple="i386"
 
 Should Refuse To Infer Triple For Assembly
     Create Machine                  ARMv8A  cortex-a53
