@@ -1,0 +1,191 @@
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    cpuId: 0
+    nvic: nvic0
+
+cpu1: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    cpuId: 1
+    nvic: nvic1
+    init:
+        IsHalted true
+
+nvic0: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu0
+    }
+    systickFrequency: 150000000
+    -> cpu0@0
+
+nvic1: IRQControllers.NVIC @ sysbus new Bus.BusPointRegistration {
+        address: 0xE000E000;
+        cpu: cpu1
+    }
+    systickFrequency: 150000000
+    -> cpu1@0
+
+flash: Memory.MappedMemory @ {
+        sysbus 0x00000000;
+        sysbus 0x10000000
+    }
+    size: 0x200000
+
+sramx: Memory.MappedMemory @ {
+        sysbus 0x04000000;
+        sysbus 0x14000000
+    }
+    size: 0x18000
+
+sram: Memory.MappedMemory @ {
+        sysbus 0x20000000;
+        sysbus 0x30000000
+    }
+    size: 0x60000
+
+sramh: Memory.MappedMemory @ {
+        sysbus 0x20060000;
+        sysbus 0x30060000
+    }
+    size: 0x8000
+
+flexcomm0: UART.NXP_FLEXCOMM @ {
+        sysbus 0x40092000;
+        sysbus 0x50092000
+    }
+    IRQ -> nvic0@35
+
+flexcomm1: UART.NXP_FLEXCOMM @ {
+        sysbus 0x40093000;
+        sysbus 0x50093000
+    }
+    IRQ -> nvic0@36
+
+flexcomm2: UART.NXP_FLEXCOMM @ {
+        sysbus 0x40094000;
+        sysbus 0x50094000
+    }
+    IRQ -> nvic0@37
+
+flexcomm3: UART.NXP_FLEXCOMM @ {
+        sysbus 0x40095000;
+        sysbus 0x50095000
+    }
+    IRQ -> nvic0@38
+
+flexcomm4: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B4000;
+        sysbus 0x500B4000
+    }
+    IRQ -> nvic0@39
+
+flexcomm5: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B5000;
+        sysbus 0x500B5000
+    }
+    IRQ -> nvic0@40
+
+flexcomm6: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B6000;
+        sysbus 0x500B6000
+    }
+    IRQ -> nvic0@41
+
+flexcomm7: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B7000;
+        sysbus 0x500B7000
+    }
+    IRQ -> nvic0@42
+
+flexcomm8: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B8000;
+        sysbus 0x500B8000
+    }
+    IRQ -> nvic0@43
+
+flexcomm9: UART.NXP_FLEXCOMM @ {
+        sysbus 0x400B9000;
+        sysbus 0x500B9000
+    }
+    IRQ -> nvic0@44
+
+gpio0: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40096000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40116000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50096000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50116000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@17
+    IRQ1 -> nvic0@18
+
+gpio1: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40098000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40117000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50098000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50117000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@19
+    IRQ1 -> nvic0@20
+
+gpio2: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x4009A000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40118000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x5009A000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50118000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@21
+    IRQ1 -> nvic0@22
+
+gpio3: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x4009C000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40119000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x5009C000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50119000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@23
+    IRQ1 -> nvic0@24
+
+gpio4: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x4009E000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x4011A000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x5009E000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x5011A000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@25
+    IRQ1 -> nvic0@26
+
+gpio5: GPIOPort.MCXN94_GPIO @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40040000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40042000; size: 0x1000; region: "port" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50040000; size: 0x1000; region: "gpio" };
+        sysbus new Bus.BusMultiRegistration { address: 0x50042000; size: 0x1000; region: "port" }
+    }
+    IRQ0 -> nvic0@27
+    IRQ1 -> nvic0@28
+
+wwdt0: Timers.MCXN94_WWDT @ {
+        sysbus 0x40016000;
+        sysbus 0x50016000
+    }
+    frequency: 1000000
+    -> nvic0@152
+
+wwdt1: Timers.MCXN94_WWDT @ {
+        sysbus 0x40017000;
+        sysbus 0x50017000
+    }
+    frequency: 1000000
+    -> nvic0@153
+
+cdog0: Timers.MCXN94_CDOG @ {
+        sysbus 0x400BB000;
+        sysbus 0x500BB000
+    }
+    frequency: 1000000
+    -> nvic0@93
+
+cdog1: Timers.MCXN94_CDOG @ {
+        sysbus 0x400BC000;
+        sysbus 0x500BC000
+    }
+    frequency: 1000000
+    -> nvic0@94
