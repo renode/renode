@@ -332,18 +332,12 @@ public:
   void send_backward_request(renode_message *message);
   void send_forward_response(renode_message *message);
   void send_forward_response_dmi(dmi_native_message *message);
-  void send_sideband_response_socket(renode_message *message);
 private:
   bool initialize_connection(int64_t *out_max_desync_us);
   void forward_loop();
-  void sideband_loop();
-  renode_message receive_sideband_request_socket(bool *closed);
 
   // Connection from Renode -> SystemC.
   std::unique_ptr<CTCPClient> forward_connection;
-
-  // Sideband connection from Renode -> SystemC.
-  std::unique_ptr<CTCPClient> sideband_connection;
 
   // Connection from SystemC -> Renode
   std::unique_ptr<CTCPClient> backward_connection;
@@ -485,7 +479,7 @@ private:
   void send_forward_response_dmi(dmi_native_message *message);
 
   void handle_get_direct_mem_ptr(renode_bus_initiator_socket &socket, renode_message &message);
-  void handle_sideband_access(renode_message &message);
+  void handle_debug_access(renode_message &message);
   void handle_read(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void handle_write(renode_bus_initiator_socket &socket, renode_message &message, uint8_t data[8]);
   void sync_gpio_state(bool init);

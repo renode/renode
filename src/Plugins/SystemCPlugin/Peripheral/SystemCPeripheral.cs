@@ -211,8 +211,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        public bool DisableSidebandChannel { get; set; }
-
         public bool DisableDebugAccess { get; set; }
 
         public bool MapMemoryOnReadOrWriteOnlyDmiGrant { get; set; }
@@ -233,13 +231,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             var payload = value ? 1UL : 0UL;
             var request = new RenodeMessage(RenodeAction.GPIOWrite, 0, 0, initiatorId, (ulong)number, payload);
-            RenodeMessage response;
-
-            if(TrySendSidebandRequest(request, out response))
-            {
-                return;
-            }
-            SendRequest(request, out response);
+            SendRequest(request, out var _);
         }
 
         protected virtual void HandleGpioWrite(int number, bool value, uint initiatorId)
@@ -294,14 +286,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 action = RenodeAction.ReadDebug;
             }
             var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, initiatorId, (ulong)offset, 0);
-            RenodeMessage response;
 
-            if(!DisableDebugAccess && TrySendSidebandRequest(request, out response))
-            {
-                return response.Payload;
-            }
-
-            if(!SendRequest(request, out response))
+            if(!SendRequest(request, out var response))
             {
                 this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Read will return 0.");
                 return 0;
@@ -352,14 +338,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 action = RenodeAction.WriteDebug;
             }
             var request = new RenodeMessage(action, dataLengthWithExtensionFields, connectionIndex, initiatorId, (ulong)offset, value);
-            RenodeMessage response;
 
-            if(!DisableDebugAccess && TrySendSidebandRequest(request, out response))
-            {
-                return;
-            }
-
-            if(!SendRequest(request, out response))
+            if(!SendRequest(request, out var response))
             {
                 this.Log(LogLevel.Error, "Request to SystemCPeripheral failed, Write will have no effect.");
                 return;
@@ -386,26 +366,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 TryToSkipTransactionTime(response.Address);
                 dmiAllowed = response.ConnectionIndex == DmiSupported;
             }
-        }
-
-        private bool TrySendSidebandRequest(RenodeMessage request, out RenodeMessage response)
-        {
-            response = new RenodeMessage();
-
-            if(DisableSidebandChannel)
-            {
-                return false;
-            }
-
-            if(!sysbus.TryGetCurrentCPU(out var cpu) || !cpu.OnPossessedThread)
-            {
-                if(SendSidebandRequest(request, out response))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private ulong GetCurrentVirtualTimeUS()

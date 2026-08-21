@@ -339,24 +339,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
-            if(DisableSidebandChannel)
+            // GPIO signal (PowerOnReset/CoreResetIn) from SystemC
+            // can trigger either bus access to SystemC (read PC and SP from VTOR offset)
+            // or assert GPIO signal from Renode -> SystemC.
+            // If forward socket is blocking on TimeSync,
+            // it causes a deadlock, so defer it and reset asynchronously.
+            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
             {
-                // Reset asynchronously, because there is no sideband channel.
-                // GPIO signal (PowerOnReset/CoreResetIn) from SystemC
-                // can trigger either bus access to SystemC (read PC and SP from VTOR offset)
-                // or assert GPIO signal from Renode -> SystemC.
-                // If forward socket is blocking on TimeSync,
-                // it causes a deadlock, so defer it.
-                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-                {
-                    updateResetState();
-                }, true);
-            }
-            else
-            {
-                // Reset synchronously. Sideband channel can handle nested requests.
                 updateResetState();
-            }
+            }, true);
         }
 
         private readonly IReadOnlyDictionary<uint, CortexMBundle> cortexMBundles;

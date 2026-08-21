@@ -211,12 +211,6 @@ static void handle_forward_request_native(void* opaque_ptr, renode_message messa
   conn->handle_forward_request_from_native(message);
 }
 
-static renode_message handle_sideband_forward_request_native(void* opaque_ptr, renode_message message) {
-  renode_connection *conn = (renode_connection *)opaque_ptr;
-  assert(!"Sideband channel is not implemented!");
-  return message;
-}
-
 renode_message renode_bridge::receive_backward_response() {
   return conn->receive_backward_response();
 }
@@ -340,7 +334,7 @@ void renode_bridge::handle_forward_request(renode_message &message) {
   switch (message.action) {
   case renode_action::WRITE_DEBUG:
   case renode_action::READ_DEBUG: {
-    handle_sideband_access(message);
+    handle_debug_access(message);
     send_forward_response(&message);
   } break;
   case renode_action::WRITE: {
@@ -472,7 +466,7 @@ void renode_bridge::handle_get_direct_mem_ptr(renode_bus_initiator_socket &socke
   wait(sc_core::SC_ZERO_TIME);
 }
 
-void renode_bridge::handle_sideband_access(renode_message &message)
+void renode_bridge::handle_debug_access(renode_message &message)
 {
   uint8_t data[8] = {};
   memset(data, 0, sizeof(data));
@@ -770,15 +764,6 @@ renode_message renode_connection::receive_forward_request(bool* closed)
   }
 }
 
-renode_message renode_connection::receive_sideband_request_socket(bool* closed)
-{
-  renode_message message;
-  int nread =
-      sideband_connection->Receive((char *)&message, sizeof(renode_message));
-  *closed = nread <= 0;
-  return message;
-}
-
 void renode_connection::send_backward_request(renode_message *message) {
   if (native) {
 #ifdef RENODE_NATIVE_INTERFACE
@@ -809,10 +794,6 @@ void renode_connection::send_forward_response_dmi(dmi_native_message *message) {
   }
 }
 
-void renode_connection::send_sideband_response_socket(renode_message *message) {
-  sideband_connection->Send((char *)message, sizeof(renode_message));
-}
-
 renode_connection::renode_connection(sc_core::sc_module_name name,
                                      const char *address, const char *port,
                                      bool native, std::string mach,
@@ -827,8 +808,7 @@ renode_connection::renode_connection(sc_core::sc_module_name name,
         (void *)this, (void *)handle_backward_response_native,
         (void *)handle_backward_response_dmi_native,
         (void *)handle_forward_request_native,
-        (void *)handle_sideband_forward_request_native, mach.c_str(),
-        peri.c_str());
+        mach.c_str(), peri.c_str());
     if (rc != RENODE_SUCCESS) {
       fprintf(stderr, "Failed to initialize native interface. Aborting.\n");
       terminate_simulation(1);
@@ -848,30 +828,8 @@ renode_connection::renode_connection(sc_core::sc_module_name name,
     forward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
     connect_with_retry(forward_connection.get(), address, port);
 
-    sideband_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
-    connect_with_retry(sideband_connection.get(), address, port);
-
     backward_connection.reset(new CTCPClient(NULL, ASocket::NO_FLAGS));
     connect_with_retry(backward_connection.get(), address, port);
-
-    // It's not SC_THREAD on purpose.
-    // Sideband channel doesn't participate in SystemC cooperative multitasking.
-    // It's used for synchronous operations which don't call wait().
-    // For example transport_dbg() is used to perform memory accesses on this
-    // path, as this API doesn't use delays for transactions. It's a detached
-    // thread to resolve deadlock in the following sequence of events:
-    // 1. Renode sends TIMESYNC request and waits for TIMESYNC response.
-    //   * Forward connection is blocked until TIMESYNC finishes (SystemC
-    //   virtual time reaches a sync point).
-    // 2. SystemC asserts GPIO signal and sends it on the backward connection.
-    //   * Signal triggers actions on the Renode side, e.g. reset which attempts
-    //   to read PC and SP from VTOR offset.
-    //   * Renode needs to issue read transaction to SystemC.
-    //     * It can't do it over the forward connection, as it blocks waiting
-    //     for TIMESYNC response.
-    //     * It can do it over the sideband connection (it's not on CPU thread).
-    std::thread sideband{[this]() -> void { this->sideband_loop(); }};
-    sideband.detach();
   }
 
   if (!initialize_connection(&max_desync_us)) {
@@ -888,7 +846,6 @@ renode_connection::~renode_connection() {
 #endif
   } else {
     forward_connection->Disconnect();
-    sideband_connection->Disconnect();
     backward_connection->Disconnect();
   }
 }
@@ -976,7 +933,6 @@ void renode_connection::forward_loop() {
 #endif
       } else {
         forward_connection->Disconnect();
-        sideband_connection->Disconnect();
         backward_connection->Disconnect();
       }
       terminate_simulation(0);
@@ -986,25 +942,6 @@ void renode_connection::forward_loop() {
       bridge->handle_forward_request(message);
       break;
     }
-  }
-}
-
-void renode_connection::sideband_loop() {
-  renode_message message;
-  bool closed = false;
-
-  while (true) {
-    message = receive_sideband_request_socket(&closed);
-    if (closed) {
-#ifdef VERBOSE
-      printf("Connection to Renode closed.\n");
-#endif
-      break;
-    }
-
-    assert(!"Sideband channel is not implemented!");
-
-    send_sideband_response_socket(&message);
   }
 }
 
