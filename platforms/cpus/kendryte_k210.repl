@@ -5,7 +5,7 @@ rom: Memory.MappedMemory @ {
     size: 0x2000000
 
 cpu1: CPU.RiscV64 @ sysbus
-    cpuType: "rv64imacfd_zicsr_zifencei"
+    cpuType: "rv64imafdc_zicsr_zifencei"
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint
     hartId: 0
