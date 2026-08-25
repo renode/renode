@@ -1,0 +1,4 @@
+using "platforms/cpus/nxp-s32k388.repl"
+
+tmp0: Sensors.TMP75C @ lpi2c0 0x48
+    Alert -> siul2@23
