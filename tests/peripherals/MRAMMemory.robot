@@ -30,10 +30,10 @@ MRAM Persists Across Reset
     ${read_back}=      Execute Command    sysbus ReadDoubleWord 0x10000000
     Should Be Equal As Numbers    ${read_back}    0xAABBCCDD
 
-MRAM Word Write Uses Erase Then Program
+MRAM Word Write Preserves Unaddressed Bytes
     Create MRAM Machine
     Execute Command    sysbus WriteQuadWord 0x10000000 0xFFEEDDCCBBAA9988
-    # Overwriting only the upper 4 bytes triggers a full word erase+program cycle.
+    # Overwriting only the upper 4 bytes performs a word read-modify-write.
     Execute Command    sysbus WriteDoubleWord 0x10000004 0x11223344
     ${word}=           Execute Command    sysbus ReadQuadWord 0x10000000
     Should Be Equal As Numbers    ${word}    0x11223344BBAA9988
@@ -82,18 +82,18 @@ MRAM FaultEverFired Is Sticky
     # Write 1: triggers fault.
     Execute Command    sysbus WriteQuadWord 0x10000000 0x1111111111111111
     ${fired}=          Execute Command    sysbus.mram FaultEverFired
-    Should Be Equal As Strings    ${fired}    True
+    Should Be Equal As Strings    ${fired}    True    strip_spaces=True
     # Write 2: subsequent write should NOT clear FaultEverFired.
     Execute Command    sysbus.mram FaultAtWordWrite 999999
     Execute Command    sysbus WriteQuadWord 0x10000008 0x2222222222222222
     ${still_fired}=    Execute Command    sysbus.mram FaultEverFired
-    Should Be Equal As Strings    ${still_fired}    True
+    Should Be Equal As Strings    ${still_fired}    True    strip_spaces=True
 
 MRAM RetainOldDataOnFault Preserves Upper Half
     Create MRAM Machine
     # Pre-fill word with known data.
     Execute Command    sysbus WriteQuadWord 0x10000000 0xDDCCBBAA44332211
-    Execute Command    sysbus.mram FaultAtWordWrite 1
+    Execute Command    sysbus.mram FaultAtWordWrite 2
     Execute Command    sysbus.mram RetainOldDataOnFault true
     # Overwrite: fault fires, first half programmed, second half retains old data.
     Execute Command    sysbus WriteQuadWord 0x10000000 0xFFFFFFFFFFFFFFFF
@@ -111,7 +111,7 @@ MRAM BitCorruption Flips Bits In Written Word
     # Bit corruption should alter the written value (exact result depends on LCG).
     Should Not Be Equal As Numbers    ${word}    0xAAAAAAAAAAAAAAAA
     ${fired}=          Execute Command    sysbus.mram FaultEverFired
-    Should Be Equal As Strings    ${fired}    True
+    Should Be Equal As Strings    ${fired}    True    strip_spaces=True
 
 MRAM WriteTrace Records Word Offsets
     Create MRAM Machine
@@ -124,7 +124,7 @@ MRAM WriteTrace Records Word Offsets
     # Clear and verify empty.
     Execute Command    sysbus.mram WriteTraceClear
     ${empty}=          Execute Command    sysbus.mram WriteTraceToString
-    Should Be Empty    ${empty}
+    Should Be Equal As Strings    ${empty}    ${EMPTY}    strip_spaces=True
 
 MRAM ReadFault Corrupts Returned Value Without Modifying NVM
     Create MRAM Machine
@@ -138,7 +138,7 @@ MRAM ReadFault Corrupts Returned Value Without Modifying NVM
     ${corrupted}=      Execute Command    sysbus ReadDoubleWord 0x10000000
     Should Not Be Equal As Numbers    ${corrupted}    0xAABBCCDD
     ${fired}=          Execute Command    sysbus.mram ReadFaultFired
-    Should Be Equal As Strings    ${fired}    True
+    Should Be Equal As Strings    ${fired}    True    strip_spaces=True
     # NVM contents are unchanged.
     Execute Command    sysbus.mram ReadFaultEnabled false
     Execute Command    sysbus.mram ReadFaultFired false
@@ -177,7 +177,7 @@ MRAM ReadFault SkipCount Delays Firing
     ${r3}=             Execute Command    sysbus ReadDoubleWord 0x10000000
     Should Not Be Equal As Numbers    ${r3}    0xDEADBEEF
     ${fired}=          Execute Command    sysbus.mram ReadFaultFired
-    Should Be Equal As Strings    ${fired}    True
+    Should Be Equal As Strings    ${fired}    True    strip_spaces=True
 
 MRAM ReadFault Ignores Non Overlapping Address
     Create MRAM Machine
@@ -191,7 +191,7 @@ MRAM ReadFault Ignores Non Overlapping Address
     ${clean}=          Execute Command    sysbus ReadDoubleWord 0x10000000
     Should Be Equal As Numbers    ${clean}    0x11111111
     ${not_fired}=      Execute Command    sysbus.mram ReadFaultFired
-    Should Be Equal As Strings    ${not_fired}    False
+    Should Be Equal As Strings    ${not_fired}    False    strip_spaces=True
     # Read at armed address: corrupted.
     ${corrupted}=      Execute Command    sysbus ReadDoubleWord 0x10000010
     Should Not Be Equal As Numbers    ${corrupted}    0x22222222
@@ -199,18 +199,26 @@ MRAM ReadFault Ignores Non Overlapping Address
 MRAM Reset Preserves Data But Clears Fault State
     Create MRAM Machine
     Execute Command    sysbus WriteDoubleWord 0x10000000 0xCAFEBABE
-    Execute Command    sysbus.mram FaultAtWordWrite 1
+    Execute Command    sysbus.mram FaultAtWordWrite 2
     Execute Command    sysbus WriteQuadWord 0x10000008 0x1111111111111111
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultEnabled true
     ${fired_before}=   Execute Command    sysbus.mram FaultEverFired
-    Should Be Equal As Strings    ${fired_before}    True
+    Should Be Equal As Strings    ${fired_before}    True    strip_spaces=True
     # Reset clears fault state but preserves NVM data.
     Execute Command    machine Reset
     ${data}=           Execute Command    sysbus ReadDoubleWord 0x10000000
     Should Be Equal As Numbers    ${data}    0xCAFEBABE
     ${fired_after}=    Execute Command    sysbus.mram FaultEverFired
-    Should Be Equal As Strings    ${fired_after}    False
+    Should Be Equal As Strings    ${fired_after}    False    strip_spaces=True
     ${writes}=         Execute Command    sysbus.mram TotalWordWrites
     Should Be Equal As Numbers    ${writes}    0
+    ${write_target}=   Execute Command    sysbus.mram FaultAtWordWrite
+    Should Be Equal As Strings    ${write_target}    0xFFFFFFFFFFFFFFFF    strip_spaces=True
+    ${read_enabled}=   Execute Command    sysbus.mram ReadFaultEnabled
+    Should Be Equal As Strings    ${read_enabled}    False    strip_spaces=True
+    ${read_address}=   Execute Command    sysbus.mram ReadFaultAddress
+    Should Be Equal As Strings    ${read_address}    0xFFFFFFFFFFFFFFFF    strip_spaces=True
 
 MRAM ReadFault On Byte Access
     Create MRAM Machine
@@ -222,12 +230,12 @@ MRAM ReadFault On Byte Access
     ${corrupted}=      Execute Command    sysbus ReadByte 0x10000000
     Should Not Be Equal As Numbers    ${corrupted}    0xAA
     ${fired}=          Execute Command    sysbus.mram ReadFaultFired
-    Should Be Equal As Strings    ${fired}    True
+    Should Be Equal As Strings    ${fired}    True    strip_spaces=True
 
 MRAM RetainOldDataOnFault False Uses EraseFill
     Create MRAM Machine
     Execute Command    sysbus WriteQuadWord 0x10000000 0xDDCCBBAA44332211
-    Execute Command    sysbus.mram FaultAtWordWrite 1
+    Execute Command    sysbus.mram FaultAtWordWrite 2
     Execute Command    sysbus.mram RetainOldDataOnFault false
     Execute Command    sysbus WriteQuadWord 0x10000000 0xFFFFFFFFFFFFFFFF
     ${word}=           Execute Command    sysbus ReadQuadWord 0x10000000
@@ -251,3 +259,41 @@ MRAM GetWordWriteCount Matches TotalWordWrites
     ${method}=         Execute Command    sysbus.mram GetWordWriteCount
     Should Be Equal As Numbers    ${prop}    3
     Should Be Equal As Numbers    ${method}    3
+
+MRAM ReadFault On QuadWord Access
+    Create MRAM Machine
+    Execute Command    sysbus WriteQuadWord 0x10000000 0x0123456789ABCDEF
+    Execute Command    sysbus.mram ReadFaultAddress 0x4
+    Execute Command    sysbus.mram ReadFaultSeed 123
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    ${corrupted}=      Execute Command    sysbus ReadQuadWord 0x10000000
+    Should Not Be Equal As Numbers    ${corrupted}    0x0123456789ABCDEF
+    ${clean}=          Execute Command    sysbus ReadQuadWord 0x10000000
+    Should Be Equal As Numbers    ${clean}    0x0123456789ABCDEF
+
+MRAM Out Of Bounds Write Is Ignored
+    Create MRAM Machine
+    Execute Command    sysbus WriteQuadWord 0x1007FFFC 0xAABBCCDDEEFF0011
+    ${tail}=           Execute Command    sysbus ReadDoubleWord 0x1007FFFC
+    Should Be Equal As Numbers    ${tail}    0
+
+MRAM Manual Faults Set Sticky Flag
+    Create MRAM Machine
+    Execute Command    sysbus.mram InjectPartialWrite 0x0
+    ${partial_fired}=  Execute Command    sysbus.mram FaultEverFired
+    Should Be Equal As Strings    ${partial_fired}    True    strip_spaces=True
+    Execute Command    sysbus.mram FaultEverFired false
+    Execute Command    sysbus.mram InjectFault 0x8 4 0xA5
+    ${fault_fired}=    Execute Command    sysbus.mram FaultEverFired
+    Should Be Equal As Strings    ${fault_fired}    True    strip_spaces=True
+
+MRAM Bulk Write Uses Word Semantics
+    Create MRAM Machine
+    Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; d=System.Array[System.Byte]([1,2,3,4,5,6,7,8]); m.WriteBytes(4,d,0,8)"
+    ${lower}=          Execute Command    sysbus ReadQuadWord 0x10000000
+    ${upper}=          Execute Command    sysbus ReadQuadWord 0x10000008
+    ${count}=          Execute Command    sysbus.mram TotalWordWrites
+    Should Be Equal As Numbers    ${lower}    0x0403020100000000
+    Should Be Equal As Numbers    ${upper}    0x0000000008070605
+    Should Be Equal As Numbers    ${count}    2
