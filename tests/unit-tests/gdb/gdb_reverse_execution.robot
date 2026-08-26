@@ -196,7 +196,7 @@ Should Log Warning When No Snapshots Taken
     Command Gdb                     stepi
     ${expected_pc}=                 Execute Command  sysbus.cpu PC
     Command Gdb                     reverse-stepi
-    Wait For Log Entry              There are no snapshots taken before this timestamp.
+    Wait For Log Entry              There are no snapshots taken before this timestamp
     ${result_pc}=                   Execute Command  sysbus.cpu PC
     Should Be Equal As Numbers      ${expected_pc}  ${result_pc}
 
