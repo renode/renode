@@ -314,3 +314,6 @@
 
 - port_3344:
   - tests/external-control/external-control.robot
+
+- port_3345:
+  - tests/external-control/renode-to-renode.robot

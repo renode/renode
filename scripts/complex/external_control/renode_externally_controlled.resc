@@ -1,0 +1,6 @@
+mach create "main-mach"
+$client_port ?= 3345
+
+emulation CreateExternalControlClient "client" $client_port
+
+client SynchronizeTimeWithExternal
