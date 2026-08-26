@@ -516,7 +516,12 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
     size_t size;
     uint16_t id;
     message_payload_t **header = (message_payload_t **)&data;
-    channel_get(&conn->client_responses, &data, &size, &id);
+    if (from_default_handler_thread) {
+        channel_get(&conn->server_requests, &data, &size, &id);
+    } else {
+        channel_get(&conn->client_responses, &data, &size, &id);
+    }
+
 
     pthread_mutex_lock(&conn->lifecycle_lock);
     conn->active_handler_count += 1;
