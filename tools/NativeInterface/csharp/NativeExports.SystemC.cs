@@ -241,36 +241,11 @@ struct dmi_native_message {
         private static bool TryGetSystemCHandle(byte* machName, byte* periName, out ISystemCNativeConnection systemC)
         {
             systemC = null;
-
-            var machineName = Marshal.PtrToStringUTF8((IntPtr)machName);
-            var peripheralName = Marshal.PtrToStringUTF8((IntPtr)periName);
-
-            if(string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(peripheralName))
+            if(!Generics.TryGetPeripheral<SystemCPeripheral>(machName, periName, out var p))
             {
                 return false;
             }
-
-            if(EmulationManager.Instance == null)
-            {
-                Console.Error.WriteLine("Emulation Manager instance is not initialized");
-                return false;
-            }
-
-            var e = EmulationManager.Instance.CurrentEmulation;
-
-            if(!e.TryGetMachineByName(machineName, out var m))
-            {
-                Console.Error.WriteLine($"No machine with name {machineName}");
-                return false;
-            }
-
-            if(!m.TryGetByName<SystemCPeripheral>(peripheralName, out var p))
-            {
-                Console.Error.WriteLine($"No peripheral with name {peripheralName}");
-                return false;
-            }
-
-            systemC = p;
+            systemC = (ISystemCNativeConnection)p;
 
             return true;
         }

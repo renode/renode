@@ -4,6 +4,7 @@ EXPORTS
 	renode_exec_command_ex
 	renode_add_logging_handler
 	renode_remove_logging_handler
+	renode_add_uart_analyzer
 	renode_systemc_send_backward_request
 	renode_systemc_send_forward_response
 	renode_systemc_send_forward_response_dmi
