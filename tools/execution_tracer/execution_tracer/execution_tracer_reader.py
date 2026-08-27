@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2010-2025 Antmicro
+# Copyright (c) 2010-2026 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -14,12 +14,15 @@ import platform
 import sys
 import os
 import gzip
+import re
 import urllib.request
 import urllib.error
 from enum import Enum
 from dataclasses import dataclass
-from typing import IO, BinaryIO, NamedTuple, Optional
-
+from typing import IO, BinaryIO, NamedTuple, Optional, Tuple, List
+from elftools.elf.elffile import ELFFile
+from elftools.common.utils import bytes2str
+from bisect import bisect_right
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
 
 # Allow directly using this as a script, without installation
@@ -128,9 +131,9 @@ def read_header(file: BinaryIO) -> Header:
         raise InvalidFileFormatException("Invalid opcodes field at file header")
 
 
-def read_file(file: BinaryIO, disassemble: bool, llvm_disas_path: Optional[str]) -> TraceData:
+def read_file(file: BinaryIO, disassemble: bool, llvm_disas_path: Optional[str], elf_path: Optional[str] = None) -> TraceData:
     header = read_header(file)
-    return TraceData(file, header, disassemble, llvm_disas_path)
+    return TraceData(file, header, disassemble, llvm_disas_path, elf_path)
 
 
 def bytes_to_hex(bytes: bytes, zero_padded=True) -> str:
@@ -157,7 +160,7 @@ class TraceData:
     instructions_left_in_block = 0
     active_triple_and_model: str = None
 
-    def __init__(self, file: IO, header: Header, disassemble: bool, llvm_disas_path: Optional[str]):
+    def __init__(self, file: IO, header: Header, disassemble: bool, llvm_disas_path: Optional[str], elf_path: Optional[str]):
         self.file = file
         self.pc_length = int(header.pc_length)
         self.has_pc = (self.pc_length != 0)
@@ -175,6 +178,7 @@ class TraceData:
                 raise RuntimeError("No architecture triple available in disassembly mode. Trace file might be corrupted")
             if not llvm_disas_path:
                 raise RuntimeError("No path to decompiler library provided")
+        self.symbol_resolver =  SymbolLookup(elf_path) if elf_path is not None else None
 
     def update_triple_and_model(self, idx: int):
         if idx >= len(self.triple_and_models):
@@ -352,6 +356,14 @@ class TraceData:
         return text + " | ".join(registers_data)
 
     def format_entry(self, entry: TraceEntry) -> str:
+        def cleanup(string: str) -> str:
+            cleaned = string.replace('\x00', '')
+            cleaned = cleaned.expandtabs(4)
+            ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+            cleaned = ansi_escape.sub('', cleaned)
+            cleaned = "".join(ch for ch in cleaned if ord(ch) >= 32 or ch == '\n')
+            return cleaned
+
         (pc, opcode, additional_data, triple_and_model) = entry
         pc_str: str = ""
         opcode_str: str = ""
@@ -362,18 +374,26 @@ class TraceData:
             opcode_str = bytes_to_thumb_hex(opcode) if is_thumb else bytes_to_hex(opcode)
         output = ""
         if self.pc_length and self.has_opcodes:
-            output = f"{pc_str}: {opcode_str}"
+            output = f"{pc_str}: {opcode_str}".ljust(23)
         elif self.pc_length:
-            output = pc_str
+            output = pc_str.ljust(15)
         elif self.has_opcodes:
-            output = opcode_str
+            output = opcode_str.ljust(15)
         else:
             output = ""
 
         if self.has_opcodes and self.disassemble:
             disas = self.get_disas(triple_and_model)
             _, instruction = disas.get_instruction(opcode)
-            output += " " + instruction.decode("utf-8")
+            output += f" {cleanup(instruction.decode())}".ljust(40)
+
+        if self.symbol_resolver is not None:
+            if (symbol := self.symbol_resolver.get_symbol(pc_str)) is not None:
+                output += symbol
+
+            if (loc := self.symbol_resolver.get_source_location(pc_str)) is not None:
+                filename, line = loc
+                output += f" @ {filename}:{line}"
 
         if len(additional_data) > 0:
             output += "\n" + "\n".join(additional_data)
@@ -383,6 +403,101 @@ class TraceData:
 
 class InvalidFileFormatException(Exception):
     pass
+
+class SymbolLookup:
+    def __init__(self, elf_path: str) -> None:
+        self.elf_path = elf_path
+
+        self._func_starts: List[int] = []
+        self._func_ends_and_names: List[Tuple[int, str]] = []
+
+        self._line_starts: List[int] = []
+        self._line_data: List[Tuple[int, str, int]] = []
+
+        self._load_elf_data()
+
+    def _load_elf_data(self) -> None:
+        functions = []
+        raw_lines = []
+
+        try:
+            with open(self.elf_path, 'rb') as f:
+                elf = ELFFile(f)
+
+
+                symtab = elf.get_section_by_name('.symtab')
+                if symtab:
+                    for symbol in symtab.iter_symbols():
+                        if symbol['st_info']['type'] == 'STT_FUNC':
+                            start = symbol['st_value']
+                            size = symbol['st_size']
+                            if size > 0:
+                                functions.append((start, start + size, symbol.name))
+
+                if elf.has_dwarf_info():
+                    dwarfinfo = elf.get_dwarf_info()
+                    for cu in dwarfinfo.iter_CUs():
+                        lp_header = dwarfinfo.line_program_for_CU(cu)
+                        if not lp_header:
+                            continue
+
+                        file_idx_offset = 1 if lp_header.header.version < 5 else 0
+                        prev_state = None
+
+                        for entry in lp_header.get_entries():
+                            if entry.state is None:
+                                continue
+
+                            if prev_state and prev_state.address < entry.state.address:
+                                file_idx = prev_state.file - file_idx_offset
+
+                                if 0 <= file_idx < len(lp_header['file_entry']):
+                                    filename = bytes2str(lp_header['file_entry'][file_idx].name)
+                                    raw_lines.append((prev_state.address, entry.state.address, filename, prev_state.line))
+
+
+                            if entry.state.end_sequence:
+                                prev_state = None
+                            else:
+                                prev_state = entry.state
+
+        except (FileNotFoundError, IOError) as e:
+            print(e)
+            return
+
+        functions.sort(key=lambda x: x[0])
+        self._func_starts = [f[0] for f in functions]
+        self._func_ends_and_names = [(f[1], f[2]) for f in functions]
+
+        raw_lines.sort(key=lambda x: x[0])
+        self._line_starts = [l[0] for l in raw_lines]
+        self._line_data = [(l[1], l[2], l[3]) for l in raw_lines]
+
+    def get_symbol(self, pc) -> Optional[str]:
+        if pc is None or not self._func_starts:
+            return None
+
+        addr = int(pc, 16) if isinstance(pc, str) else pc
+        idx = bisect_right(self._func_starts, addr) - 1
+        if idx >= 0:
+            end, name = self._func_ends_and_names[idx]
+            if addr < end:
+                return name
+        return None
+
+    def get_source_location(self, pc) -> Optional[Tuple[str, int]]:
+        if pc is None or not self._line_starts:
+            return None
+
+        addr = int(pc, 16) if isinstance(pc, str) else pc
+
+        idx = bisect_right(self._line_starts, addr) - 1
+        if idx >= 0:
+            end, filename, line = self._line_data[idx]
+            if addr < end:
+                return filename, line
+
+        return None
 
 
 class LLVMDisassembler():
@@ -507,7 +622,7 @@ def find_llvm_disas() -> str:
         os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "lib", "resources", "llvm"),
         os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "bin", "platform-lib"),
         os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir, "platform-lib"),
-        os.path.dirname(os.path.realpath(__file__)), 
+        os.path.dirname(os.path.realpath(__file__)),
         os.getcwd()
     ]
 
@@ -537,6 +652,7 @@ def main():
 
     trace_parser.add_argument("--disassemble", action="store_true", default=False)
     trace_parser.add_argument("--llvm-disas-path", default=None, help="path to libllvm-disas library")
+    trace_parser.add_argument("--resolve-symbols", default=None, help="path to elf file with debug symbols")
 
     cov_parser = subparsers.add_parser('coverage', help='Generate coverage reports')
     cov_parser.add_argument("files", nargs='+', help="binary trace files")
@@ -577,7 +693,7 @@ def main():
             if args.subcommands == 'coverage':
                 trace_data_per_file = [read_file(file, False, None) for file in files]
             else:
-                trace_data_per_file = [read_file(file, args.disassemble, args.llvm_disas_path) for file in files]
+                trace_data_per_file = [read_file(file, args.disassemble, args.llvm_disas_path, args.resolve_symbols) for file in files]
 
             if args.subcommands == 'coverage':
                 if args.export_for_coverview:
