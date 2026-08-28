@@ -36,6 +36,14 @@ Create Simple M33 Machine
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${SIMPLE_M33_REPL}\ncpu: { enableTrustZone: ${enableTrustZone} }"""
 
+Test VTOR Initialisation
+    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
+    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
+    Execute Command                 sysbus.cpu VectorTableOffset 0x10000
+    Start Emulation
+    PC Should Be Equal              0x10234
+    Register Should Be Equal        SP  0x10100
+
 *** Test Cases ***
 Should Handle Separation By State In Secure World
     Create Bus Isolation Machine
@@ -189,18 +197,8 @@ Test Conflicting Conditions
 
 Should Access VTOR in Secure State
     Create Simple M33 Machine
-    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
-    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
-    Execute Command                 sysbus.cpu VectorTableOffset 0x10000
-    Start Emulation
-    PC Should Be Equal              0x10234
-    Register Should Be Equal        SP  0x10100
+    Test VTOR Initialisation
 
 Should Access VTOR Without TrustZone Enabled
     Create Simple M33 Machine       enableTrustZone=false
-    Execute Command                 sysbus.mem WriteDoubleWord 0x0 0x10100
-    Execute Command                 sysbus.mem WriteDoubleWord 0x4 0x10235
-    Execute Command                 sysbus.cpu VectorTableOffset 0x10000
-    Start Emulation
-    PC Should Be Equal              0x10234
-    Register Should Be Equal        SP  0x10100
+    Test VTOR Initialisation
