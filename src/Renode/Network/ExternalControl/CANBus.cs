@@ -5,8 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
@@ -22,9 +20,9 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
 {
     public static int MaximumCanFrameSize = 64;
 
-    public MessagePayload Invoke(CANExternalControlBus instance, List<byte> data)
+    public MessagePayload Invoke(CANExternalControlBus instance, ReadOnlySpan<byte> data)
     {
-        if(data.Count < 1)
+        if(data.Length < 1)
         {
             return MessagePayload.Error(Identifier, $"Expected at least {1 + InstanceBasedCommandHeaderSize} bytes of payload");
         }
@@ -34,24 +32,23 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
         switch(command)
         {
         case CANBusCommands.SendFrame:
-            this.DebugLog("Received SendFrameCommand with data: {0}", data.Select(x => x.ToString("02x")).Stringify());
+            this.DebugLog("Received SendFrameCommand with data: {0}", data.ToArray().ToLazyHexString());
 
-            var data_array = data.ToArray();
-            var packet_length = Misc.ByteArrayRead(1, data_array);
-            var id = Misc.ByteArrayRead(5, data_array);
+            var packet_length = BitConverter.ToUInt32(data[1..]);
+            var id = BitConverter.ToUInt32(data[5..]);
 
-            if(data.Count != packet_length + 9)
+            if(data.Length != packet_length + 9)
             {
                 return MessagePayload.Error(Identifier, $"Incorrect number of bytes in payload. Expected {packet_length + 9}");
             }
 
-            var packet = data.Skip(9).ToArray();
+            var packet = data[9..].ToArray();
 
             instance.SendFrame(packet, id);
             break;
 
         case CANBusCommands.RegisterCallbacks:
-            var ed = (int) Misc.ByteArrayRead(1, data.ToArray());
+            var ed = BitConverter.ToInt32(data[1..]);
             Logger.DebugLog(this, "Attaching ReceivedMessage callback to instance '{0}'", instance.GetName());
             instance.ReceivedMessage += (frame) => ReceivedFrame(frame, ed);
             break;
@@ -70,7 +67,7 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
         response.LogOnError(Identifier, parent);
     }
 
-    public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
+    public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);
 
     public override Command Identifier => Command.CANBus;
 

@@ -4,8 +4,6 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System.Collections.Generic;
-
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Utilities;
 
@@ -27,9 +25,9 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        public override MessagePayload Invoke(List<byte> data)
+        public override MessagePayload Invoke(MessagePayload payload)
         {
-            if(!IInstanceBasedCommandExtensions.TryGetName(Identifier, data, 0, out var name, out var response))
+            if(!IInstanceBasedCommandExtensions.TryGetName(Identifier, payload.Data, 0, out var name, out var response))
             {
                 return response;
             }

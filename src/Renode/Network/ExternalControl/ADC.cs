@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
 
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.Sensor;
@@ -21,18 +20,18 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IADC>();
         }
 
-        public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
+        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);
 
-        public MessagePayload Invoke(IADC instance, List<byte> data)
+        public MessagePayload Invoke(IADC instance, ReadOnlySpan<byte> data)
         {
-            if(data.Count < 1)
+            if(data.Length < 1)
             {
                 return MessagePayload.Error(Identifier, $"Expected at least {1 + InstanceBasedCommandHeaderSize} bytes of payload");
             }
             var command = (ADCCommand)data[0];
 
             var expectedCount = GetExpectedPayloadCount(command);
-            if(expectedCount != data.Count)
+            if(expectedCount != data.Length)
             {
                 return MessagePayload.Error(Identifier, $"Expected {expectedCount + InstanceBasedCommandHeaderSize} bytes of payload");
             }
@@ -78,15 +77,15 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        private void DecodeChannelArgument(List<byte> data, out int channel)
+        private void DecodeChannelArgument(ReadOnlySpan<byte> data, out int channel)
         {
-            channel = BitConverter.ToInt32(data.GetRange(1, sizeof(uint)).ToArray(), 0);
+            channel = BitConverter.ToInt32(data[1..]);
         }
 
-        private void DecodeSetValueArguments(List<byte> data, out int channel, out uint value)
+        private void DecodeSetValueArguments(ReadOnlySpan<byte> data, out int channel, out uint value)
         {
             DecodeChannelArgument(data, out channel);
-            value = BitConverter.ToUInt32(data.GetRange(5, sizeof(uint)).ToArray(), 0);
+            value = BitConverter.ToUInt32(data[5..]);
         }
 
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;

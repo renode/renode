@@ -5,8 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals.SPI;
@@ -21,17 +19,17 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<ExternalControlSPIPeripheral>();
         }
 
-        public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
+        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);
 
         // The only SPI command is RegisterCallbacks
-        public MessagePayload Invoke(ExternalControlSPIPeripheral instance, List<byte> data)
+        public MessagePayload Invoke(ExternalControlSPIPeripheral instance, ReadOnlySpan<byte> data)
         {
             // [ed:4]
-            if(data.Count != sizeof(uint))
+            if(data.Length != sizeof(uint))
             {
-                return MessagePayload.Error(Identifier, $"Expected {sizeof(uint)} bytes of payload, received {data.Count}");
+                return MessagePayload.Error(Identifier, $"Expected {sizeof(uint)} bytes of payload, received {data.Length}");
             }
-            var ed = BitConverter.ToInt32(CollectionsMarshal.AsSpan(data));
+            var ed = BitConverter.ToInt32(data);
             RegisterCallbacks(instance, ed);
             parent.Log(LogLevel.Debug, "Registered SPI callbacks (ed={0})", ed);
             return MessagePayload.Success(Identifier);

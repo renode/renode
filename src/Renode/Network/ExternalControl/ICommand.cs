@@ -4,12 +4,6 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Antmicro.Renode.Logging;
-
 namespace Antmicro.Renode.Network.ExternalControl
 {
     // Needs to be in sync with `api_command_t` in C
@@ -33,7 +27,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         IMachineContainer Machines { get; }
 
-        MessagePayload Invoke(List<byte> data);
+        MessagePayload Invoke(MessagePayload payload);
     }
 
     public abstract class BaseCommand : ICommand
@@ -43,7 +37,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             this.parent = parent;
         }
 
-        public abstract MessagePayload Invoke(List<byte> data);
+        public abstract MessagePayload Invoke(MessagePayload payload);
 
         public IMachineContainer Machines => parent.Machines;
 

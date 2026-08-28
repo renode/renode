@@ -21,14 +21,14 @@ namespace Antmicro.Renode.Network.ExternalControl
         {
         }
 
-        public override MessagePayload Invoke(List<byte> data)
+        public override MessagePayload Invoke(MessagePayload payload)
         {
-            if(data.Count != sizeof(uint))
+            if(payload.Data.Length != sizeof(uint))
             {
-                return MessagePayload.Error(Identifier, $"Invalid data size, expected: {sizeof(uint)} but got: {data.Count} bytes");
+                return MessagePayload.Error(Identifier, $"Invalid data size, expected: {sizeof(uint)} but got: {payload.Data.Length} bytes");
             }
 
-            var callbackIdentifier = BitConverter.ToInt32(CollectionsMarshal.AsSpan(data));
+            var callbackIdentifier = BitConverter.ToInt32(payload.Data);
 
             lock(callbacks)
             {

@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
@@ -20,18 +19,18 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IPeripheral>();
         }
 
-        public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data, HasGPIO);
+        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload, HasGPIO);
 
-        public MessagePayload Invoke(IPeripheral instance, List<byte> data)
+        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> data)
         {
-            if(data.Count < 1)
+            if(data.Length < 1)
             {
                 return MessagePayload.Error(Identifier, $"Expected at least {1 + InstanceBasedCommandHeaderSize} bytes of payload");
             }
             var command = (GPIOPortCommand)data[0];
 
             var expectedCount = GetExpectedPayloadCount(command);
-            if(expectedCount != data.Count)
+            if(expectedCount != data.Length)
             {
                 return MessagePayload.Error(Identifier, $"Expected {expectedCount + InstanceBasedCommandHeaderSize} bytes of payload");
             }
@@ -118,21 +117,21 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        private void DecodeIdArgument(List<byte> data, out int id)
+        private void DecodeIdArgument(ReadOnlySpan<byte> data, out int id)
         {
-            id = BitConverter.ToInt32(data.GetRange(1, sizeof(uint)).ToArray(), 0);
+            id = BitConverter.ToInt32(data[1..]);
         }
 
-        private void DecodeSetValueArguments(List<byte> data, out int id, out bool value)
+        private void DecodeSetValueArguments(ReadOnlySpan<byte> data, out int id, out bool value)
         {
             DecodeIdArgument(data, out id);
-            value = BitConverter.ToBoolean(data.GetRange(5, sizeof(byte)).ToArray(), 0);
+            value = BitConverter.ToBoolean(data[5..]);
         }
 
-        private void DecodeRegisterEventArguments(List<byte> data, out int id, out int ed)
+        private void DecodeRegisterEventArguments(ReadOnlySpan<byte> data, out int id, out int ed)
         {
             DecodeIdArgument(data, out id);
-            ed = BitConverter.ToInt32(data.GetRange(5, sizeof(uint)).ToArray(), 0);
+            ed = BitConverter.ToInt32(data[5..]);
         }
 
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;

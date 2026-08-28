@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 using Antmicro.Renode.Peripherals;
@@ -21,14 +20,14 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IPeripheral>();
         }
 
-        public MessagePayload Invoke(IPeripheral instance, List<byte> commandData)
+        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> commandData)
         {
-            if(commandData.Count > 0 && (Operation)commandData[0] == Operation.GetName)
+            if(commandData.Length > 0 && (Operation)commandData[0] == Operation.GetName)
             {
                 return PerformGetName(instance);
             }
 
-            if(commandData.Count < (int)MinimumPayloadSize)
+            if(commandData.Length < (int)MinimumPayloadSize)
             {
                 return MessagePayload.Error(Identifier, $"Expected at least {MinimumPayloadSize + InstanceBasedCommandHeaderSize} bytes of payload");
             }
@@ -72,7 +71,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             case Operation.Read:
                 return MessagePayload.Success(Identifier, PerformRead(sysbus, context, address, accessWidth, dataCount));
             case Operation.Write:
-                var writeData = commandData.GetRange(MinimumPayloadSize, (int)DataCountToByteCount(accessWidth, dataCount));
+                var writeData = commandData[MinimumPayloadSize..][..(int)DataCountToByteCount(accessWidth, dataCount)];
                 PerformWrite(sysbus, context, address, accessWidth, writeData.ToArray());
                 return MessagePayload.Success(Identifier);
             default:
@@ -80,13 +79,13 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        public override MessagePayload Invoke(List<byte> data) => this.InvokeHandledWithInstance(data);
+        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);
 
         public override Command Identifier => Command.SystemBus;
 
         public InstanceCollection<IPeripheral> Instances { get; }
 
-        private bool ValidateParameters(Operation op, AccessWidth width, ulong dataSize, List<byte> commandData, out MessagePayload error)
+        private bool ValidateParameters(Operation op, AccessWidth width, ulong dataSize, ReadOnlySpan<byte> commandData, out MessagePayload error)
         {
             if(!Enum.IsDefined(typeof(Operation), op))
             {
@@ -106,7 +105,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 expectedCommandSize += (int)DataCountToByteCount(width, dataSize);
             }
 
-            if(commandData.Count != (int)expectedCommandSize)
+            if(commandData.Length != (int)expectedCommandSize)
             {
                 error = MessagePayload.Error(Identifier, $"Expected {expectedCommandSize + InstanceBasedCommandHeaderSize} bytes of payload");
                 return false;
@@ -154,29 +153,30 @@ namespace Antmicro.Renode.Network.ExternalControl
             return data;
         }
 
-        private void PerformWrite(IBusController bus, IPeripheral context, ulong address, AccessWidth width, byte[] data)
+        private void PerformWrite(IBusController bus, IPeripheral context, ulong address, AccessWidth width, ReadOnlySpan<byte> data)
         {
             if(width == AccessWidth.MultiByte)
             {
-                bus.WriteBytes(data, address, context: context);
+                bus.WriteBytes(data.ToArray(), address, context: context);
             }
             else
             {
                 for(var i = 0; i < data.Length; i += (int)width)
                 {
+                    var dataPart = data[i..];
                     switch(width)
                     {
                     case AccessWidth.Byte:
                         bus.WriteByte(address + (ulong)i, data[i], context);
                         break;
                     case AccessWidth.Word:
-                        bus.WriteWord(address + (ulong)i, BitConverter.ToUInt16(data, i), context);
+                        bus.WriteWord(address + (ulong)i, BitConverter.ToUInt16(dataPart), context);
                         break;
                     case AccessWidth.DoubleWord:
-                        bus.WriteDoubleWord(address + (ulong)i, BitConverter.ToUInt32(data, i), context);
+                        bus.WriteDoubleWord(address + (ulong)i, BitConverter.ToUInt32(dataPart), context);
                         break;
                     case AccessWidth.QuadWord:
-                        bus.WriteQuadWord(address + (ulong)i, BitConverter.ToUInt64(data, i), context);
+                        bus.WriteQuadWord(address + (ulong)i, BitConverter.ToUInt64(dataPart), context);
                         break;
                     default:
                         throw new UnreachableException();

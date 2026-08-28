@@ -5,8 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
@@ -21,14 +19,14 @@ namespace Antmicro.Renode.Network.ExternalControl
         {
         }
 
-        public override MessagePayload Invoke(List<byte> data)
+        public override MessagePayload Invoke(MessagePayload payload)
         {
-            if(data.Count != 8)
+            if(payload.Data.Length != 8)
             {
                 return MessagePayload.Error(Identifier, "Expected 8 bytes of payload");
             }
 
-            var nanoseconds = BitConverter.ToUInt64(CollectionsMarshal.AsSpan(data));
+            var nanoseconds = BitConverter.ToUInt64(payload.Data);
             var interval = TimeInterval.FromNanoseconds(nanoseconds);
 
             parent.Log(LogLevel.Info, "Executing RunFor({0}) command", interval);

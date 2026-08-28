@@ -81,7 +81,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                     {
                         try
                         {
-                            payload = handler.Invoke(new List<byte>(message.Payload.Data));
+                            payload = handler.Invoke(message.Payload);
                         }
                         catch(RecoverableException e)
                         {
