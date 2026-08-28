@@ -240,6 +240,7 @@ Should Run GPIO Sample
 
 Should Run Time Elapsed Sample
     [Tags]                          basic-tests  exclude_windows
+    [Timeout]                       1 minute
     Create Log Tester               5
 
     Build Sample                    time_elapsed_callback
