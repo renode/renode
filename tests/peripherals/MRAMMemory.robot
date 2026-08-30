@@ -40,6 +40,7 @@ MRAM Word Write Preserves Unaddressed Bytes
 
 MRAM InjectPartialWrite Corrupts Second Half Of Word
     Create MRAM Machine
+    Execute Command    sysbus.mram RetainOldDataOnFault false
     Execute Command    sysbus WriteQuadWord 0x10000000 0xA1A2A3A4B1B2B3B4
     Execute Command    sysbus.mram InjectPartialWrite 0x0
     # First 4 bytes survive, last 4 bytes are zeroed (erase fill).
@@ -117,6 +118,11 @@ MRAM BitCorruption Flips Bits In Written Word
     Should Be Equal As Integers    ${word}    0xABEAAAAAAAA8AAAA
     ${fired}=          Execute Command    sysbus.mram FaultEverFired
     Should Be Equal As Strings    ${fired}    True    strip_spaces=True
+
+MRAM Rejects Invalid WriteFaultMode
+    Create MRAM Machine
+    Run Keyword And Expect Error    *WriteFaultMode must be either 0 (power_loss) or 1 (bit_corruption)*
+    ...    Execute Command    sysbus.mram WriteFaultMode 2
 
 MRAM WriteTrace Records Word Offsets
     Create MRAM Machine
@@ -245,7 +251,7 @@ MRAM ReadFault On Direct Bulk Access
     Execute Command    sysbus.mram ReadFaultBitFlips 1
     Execute Command    sysbus.mram ReadFaultEnabled true
     ${first}=          Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; r=m.ReadBytes(0,4); print('0x%08x' % System.BitConverter.ToUInt32(r,0))"
-    Should Be Equal As Strings    ${first}    0xaabbccd5    strip_spaces=True
+    Should Be Equal As Strings    ${first}    0xa2bbccdd    strip_spaces=True
     ${fired}=          Execute Command    sysbus.mram ReadFaultFired
     Should Be Equal As Strings    ${fired}    True    strip_spaces=True
     ${second}=         Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; r=m.ReadBytes(0,4); print('0x%08x' % System.BitConverter.ToUInt32(r,0))"
@@ -338,3 +344,36 @@ MRAM Bulk Write Uses Word Semantics
     Should Be Equal As Integers    ${lower}    0x0403020100000000
     Should Be Equal As Integers    ${upper}    0x0000000008070605
     Should Be Equal As Integers    ${count}    2
+
+MRAM Large Direct Bulk Write Is Linear And Preserves Content
+    Create MRAM Machine
+    ${result}=         Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; d=System.Array[System.Byte]([0x5A] * 32768); m.WriteBytes(4,d,0,32768); r=m.ReadBytes(0,32773); print('%d,%d,%d,%d,%d' % (r[0],r[4],r[32771],r[32772],sum(r)))"
+    Should Be Equal As Strings    ${result}    0,90,90,0,2949120    strip_spaces=True
+    ${count}=           Execute Command    sysbus.mram TotalWordWrites
+    Should Be Equal As Integers    ${count}    4097
+
+MRAM Invalid Negative Bulk Read Returns Safely
+    Create MRAM Machine
+    ${result}=         Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; print(len(m.ReadBytes(0,-1)))"
+    Should Be Equal As Integers    ${result}    0
+
+MRAM ReadFault SkipCount Counts Bulk Calls
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0xAABBCCDD
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 42
+    Execute Command    sysbus.mram ReadFaultBitFlips 1
+    Execute Command    sysbus.mram ReadFaultSkipCount 1
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    ${result}=         Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; m.ReadBytes(0,4); r=m.ReadBytes(0,4); print('0x%08x' % System.BitConverter.ToUInt32(r,0))"
+    Should Be Equal As Strings    ${result}    0xa2bbccdd    strip_spaces=True
+
+MRAM Bulk ReadFault Flips More Than Eight Bits
+    Create MRAM Machine
+    Execute Command    sysbus WriteDoubleWord 0x10000000 0xAABBCCDD
+    Execute Command    sysbus.mram ReadFaultAddress 0x0
+    Execute Command    sysbus.mram ReadFaultSeed 42
+    Execute Command    sysbus.mram ReadFaultBitFlips 9
+    Execute Command    sysbus.mram ReadFaultEnabled true
+    ${flips}=          Execute Command    python "import System; m=monitor.Machine['sysbus.mram']; r=m.ReadBytes(0,4); value=System.BitConverter.ToUInt32(r,0); print(bin(0xAABBCCDD ^ value).count('1'))"
+    Should Be Equal As Integers    ${flips}    9
