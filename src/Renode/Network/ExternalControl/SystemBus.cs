@@ -6,7 +6,11 @@
 //
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
 
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Utilities;
@@ -20,25 +24,41 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IPeripheral>();
         }
 
-        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> commandData)
+        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> data)
         {
-            if(commandData.Length > 0 && (Operation)commandData[0] == Operation.GetName)
+            if(data.Length > 0 && (Operation)data[0] == Operation.GetName)
             {
                 return PerformGetName(instance);
             }
-
-            if(commandData.Length < (int)MinimumPayloadSize)
+            else if(data.Length > 0 && (Operation)data[0] == Operation.RegisterCallbacks)
             {
-                return MessagePayload.Error(Identifier, $"Expected at least {MinimumPayloadSize + InstanceBasedCommandHeaderSize} bytes of payload");
+                if(instance is ExternalControlBusPeripheral peripheral)
+                {
+
+                    var accessWidths = (AccessWidth)data[1];
+                    var accessTypes = (AccessType)data[2];
+                    var ed = BitConverter.ToInt32(data[3..]);
+                    if(!ValidateRegisterCallbackParameters(accessWidths, accessTypes, out var parameterError))
+                    {
+                        return parameterError;
+                    }
+
+                    RegisterCallbacks(peripheral, accessWidths, accessTypes, ed);
+                    parent.Log(LogLevel.Debug, "Registered sysbus callbacks (ed={0}, access_types=[{1}], access_widths=[{2}])", ed, accessTypes, accessWidths);
+                    return MessagePayload.Success(Identifier);
+                }
+                else
+                {
+                    return MessagePayload.Error(Identifier, $"Tried to register access callbacks on a peripheral that is of different type than ExternalControlBusPeripheral");
+                }
             }
 
-            var operation = (Operation)commandData[0];
-            var accessWidth = (AccessWidth)commandData[1];
-            var commandDataArray = commandData.ToArray();
-            var address = BitConverter.ToUInt64(commandDataArray, 2);
-            var dataCount = BitConverter.ToUInt32(commandDataArray, 2 + sizeof(ulong));
+            var operation = (Operation)data[0];
+            var accessWidth = (AccessWidth)data[1];
+            var address = BitConverter.ToUInt64(data[2..]);
+            var dataCount = BitConverter.ToUInt32(data[(2 + sizeof(ulong))..]);
 
-            if(!ValidateParameters(operation, accessWidth, dataCount, commandData, out var error))
+            if(!ValidateParameters(operation, accessWidth, dataCount, data, out var error))
             {
                 return error;
             }
@@ -71,8 +91,8 @@ namespace Antmicro.Renode.Network.ExternalControl
             case Operation.Read:
                 return MessagePayload.Success(Identifier, PerformRead(sysbus, context, address, accessWidth, dataCount));
             case Operation.Write:
-                var writeData = commandData[MinimumPayloadSize..][..(int)DataCountToByteCount(accessWidth, dataCount)];
-                PerformWrite(sysbus, context, address, accessWidth, writeData.ToArray());
+                var writeData = data.Slice(MinimumPayloadSize, (int)DataCountToByteCount(accessWidth, dataCount)).ToArray();
+                PerformWrite(sysbus, context, address, accessWidth, writeData);
                 return MessagePayload.Success(Identifier);
             default:
                 throw new UnreachableException();
@@ -84,6 +104,109 @@ namespace Antmicro.Renode.Network.ExternalControl
         public override Command Identifier => Command.SystemBus;
 
         public InstanceCollection<IPeripheral> Instances { get; }
+
+        private void RegisterCallbacks(ExternalControlBusPeripheral instance, AccessWidth accessWidths, AccessType accessTypes, int ed)
+        {
+            if(accessWidths.HasFlag(AccessWidth.Byte))
+            {
+                if(accessTypes.HasFlag(AccessType.Read))
+                {
+                    instance.OnReadByte = (offset) => PerformCallbackRead(ed, offset, AccessWidth.Byte)[0];
+                }
+                if(accessTypes.HasFlag(AccessType.Write))
+                {
+                    instance.OnWriteByte = (offset, value) => PerformCallbackWrite(ed, offset, AccessWidth.Byte, new[] { value });
+                }
+            }
+
+            if(accessWidths.HasFlag(AccessWidth.Word))
+            {
+                if(accessTypes.HasFlag(AccessType.Read))
+                {
+                    instance.OnReadWord = (offset) => BitConverter.ToUInt16(PerformCallbackRead(ed, offset, AccessWidth.Word), 0);
+                }
+                if(accessTypes.HasFlag(AccessType.Write))
+                {
+                    instance.OnWriteWord = (offset, value) => PerformCallbackWrite(ed, offset, AccessWidth.Word, BitConverter.GetBytes(value));
+                }
+            }
+
+            if(accessWidths.HasFlag(AccessWidth.DoubleWord))
+            {
+                if(accessTypes.HasFlag(AccessType.Read))
+                {
+                    instance.OnReadDoubleWord = (offset) => BitConverter.ToUInt32(PerformCallbackRead(ed, offset, AccessWidth.DoubleWord), 0);
+                }
+                if(accessTypes.HasFlag(AccessType.Write))
+                {
+                    instance.OnWriteDoubleWord = (offset, value) => PerformCallbackWrite(ed, offset, AccessWidth.DoubleWord, BitConverter.GetBytes(value));
+                }
+            }
+
+            if(accessWidths.HasFlag(AccessWidth.QuadWord))
+            {
+                if(accessTypes.HasFlag(AccessType.Read))
+                {
+                    instance.OnReadQuadWord = (offset) => BitConverter.ToUInt64(PerformCallbackRead(ed, offset, AccessWidth.QuadWord), 0);
+                }
+                if(accessTypes.HasFlag(AccessType.Write))
+                {
+                    instance.OnWriteQuadWord = (offset, value) => PerformCallbackWrite(ed, offset, AccessWidth.QuadWord, BitConverter.GetBytes(value));
+                }
+            }
+
+            if(accessWidths.HasFlag(AccessWidth.MultiByte))
+            {
+                if(accessTypes.HasFlag(AccessType.Read))
+                {
+                    instance.OnReadBytes = (offset, count) => PerformCallbackRead(ed, offset, AccessWidth.MultiByte, count);
+                }
+                if(accessTypes.HasFlag(AccessType.Write))
+                {
+                    instance.OnWriteBytes = (offset, value, startingIndex, count) => PerformCallbackWrite(ed, offset, AccessWidth.MultiByte, value, startingIndex, count);
+                }
+            }
+        }
+
+        private byte[] PerformCallbackRead(int ed, ulong offset, AccessWidth width, int count = 1)
+        {
+            var header = new SystemBusEventHeader
+            {
+                Timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds,
+                AccessType = AccessType.Read,
+                AccessWidth = width,
+                Address = offset,
+                DataCount = (uint)count,
+            };
+
+            var expectedByteCount = (int)DataCountToByteCount(width, (ulong)count);
+            var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, header));
+            response.LogOnError(Identifier, parent);
+            if(response.Data.Length != expectedByteCount)
+            {
+                parent.ErrorLog("Unexpected read callback response legth: {0} expected {1} bytes", response.Data.Length, expectedByteCount);
+                return new byte[expectedByteCount];
+            }
+
+            return response.Data;
+        }
+
+        private void PerformCallbackWrite(int ed, ulong offset, AccessWidth width, byte[] value, int startingIndex = 0, int count = 1)
+        {
+            var header = new SystemBusEventHeader
+            {
+                Timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds,
+                AccessType = AccessType.Write,
+                AccessWidth = width,
+                Address = offset,
+                DataCount = (uint)count,
+            };
+
+            var byteCount = DataCountToByteCount(width, (ulong)count);
+            var payload = header.AsRawBytes().Concat(value.Skip(startingIndex).Take((int)byteCount));
+            var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, payload.ToArray()));
+            response.LogOnError(Identifier, parent);
+        }
 
         private bool ValidateParameters(Operation op, AccessWidth width, ulong dataSize, ReadOnlySpan<byte> commandData, out MessagePayload error)
         {
@@ -108,6 +231,36 @@ namespace Antmicro.Renode.Network.ExternalControl
             if(commandData.Length != (int)expectedCommandSize)
             {
                 error = MessagePayload.Error(Identifier, $"Expected {expectedCommandSize + InstanceBasedCommandHeaderSize} bytes of payload");
+                return false;
+            }
+
+            error = default;
+            return true;
+        }
+
+        private bool ValidateRegisterCallbackParameters(AccessWidth accessWidths, AccessType accessTypes, out MessagePayload error)
+        {
+            if(accessWidths == default)
+            {
+                error = MessagePayload.Error(Identifier, "At least one access width must be specified.");
+                return false;
+            }
+
+            if((accessWidths & ~ValidCallbackAccessWidths) != default)
+            {
+                error = MessagePayload.Error(Identifier, $"Invalid access width flags: {accessWidths}");
+                return false;
+            }
+
+            if(accessTypes == default)
+            {
+                error = MessagePayload.Error(Identifier, "At least one access type must be specified.");
+                return false;
+            }
+
+            if((accessTypes & ~ValidCallbackAccessTypes) != default)
+            {
+                error = MessagePayload.Error(Identifier, $"Invalid access type flags: {accessTypes}");
                 return false;
             }
 
@@ -153,30 +306,29 @@ namespace Antmicro.Renode.Network.ExternalControl
             return data;
         }
 
-        private void PerformWrite(IBusController bus, IPeripheral context, ulong address, AccessWidth width, ReadOnlySpan<byte> data)
+        private void PerformWrite(IBusController bus, IPeripheral context, ulong address, AccessWidth width, byte[] data)
         {
             if(width == AccessWidth.MultiByte)
             {
-                bus.WriteBytes(data.ToArray(), address, context: context);
+                bus.WriteBytes(data, address, context: context);
             }
             else
             {
                 for(var i = 0; i < data.Length; i += (int)width)
                 {
-                    var dataPart = data[i..];
                     switch(width)
                     {
                     case AccessWidth.Byte:
                         bus.WriteByte(address + (ulong)i, data[i], context);
                         break;
                     case AccessWidth.Word:
-                        bus.WriteWord(address + (ulong)i, BitConverter.ToUInt16(dataPart), context);
+                        bus.WriteWord(address + (ulong)i, BitConverter.ToUInt16(data, i), context);
                         break;
                     case AccessWidth.DoubleWord:
-                        bus.WriteDoubleWord(address + (ulong)i, BitConverter.ToUInt32(dataPart), context);
+                        bus.WriteDoubleWord(address + (ulong)i, BitConverter.ToUInt32(data, i), context);
                         break;
                     case AccessWidth.QuadWord:
-                        bus.WriteQuadWord(address + (ulong)i, BitConverter.ToUInt64(dataPart), context);
+                        bus.WriteQuadWord(address + (ulong)i, BitConverter.ToUInt64(data, i), context);
                         break;
                     default:
                         throw new UnreachableException();
@@ -197,6 +349,15 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
+        private const AccessType ValidCallbackAccessTypes = AccessType.Read | AccessType.Write;
+
+        private const AccessWidth ValidCallbackAccessWidths =
+            AccessWidth.Byte |
+            AccessWidth.Word |
+            AccessWidth.DoubleWord |
+            AccessWidth.QuadWord |
+            AccessWidth.MultiByte;
+
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;
 
         private const int MinimumPayloadSize =
@@ -205,20 +366,40 @@ namespace Antmicro.Renode.Network.ExternalControl
             sizeof(ulong) + // Address
             sizeof(uint); // Amount of units to write
 
+        // Use Pack=1 to ensure there's no padding between fields
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct SystemBusEventHeader
+        {
+            public ulong Timestamp;
+            public AccessType AccessType;
+            public AccessWidth AccessWidth;
+            public ulong Address;
+            public uint DataCount;
+        }
+
         private enum Operation : byte
         {
             Read = 0,
             Write = 1,
             GetName = 2,
+            RegisterCallbacks = 3,
         }
 
+        [Flags]
+        private enum AccessType : byte
+        {
+            Read = 1,
+            Write = 2,
+        }
+
+        [Flags]
         private enum AccessWidth : byte
         {
-            MultiByte = 0,
             Byte = 1,
             Word = 2,
             DoubleWord = 4,
             QuadWord = 8,
+            MultiByte = 128,
         }
     }
 }

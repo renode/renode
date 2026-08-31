@@ -109,6 +109,13 @@ typedef void (*renode_fatal_error_callback_t)(void *ud, renode_error_t *error);
 typedef struct renode_spi renode_spi_t;
 
 /**
+ * @brief Renode External Bus peripheral API handle
+ *
+ * @copydetails renode_t
+ */
+typedef struct renode_bus_peripheral renode_bus_peripheral_t;
+
+/**
  * @brief Function initializing Renode connection
  *
  * @note The connection should be closed using renode_disconnect() before a client app exits.
@@ -419,12 +426,27 @@ renode_error_t *renode_send_can_message(renode_can_t *can, void *packet, int pac
  * Supported access width options
  */
 typedef enum {
-    AW_MULTI_BYTE  = 0, /**< multibyte access (number of bytes defined by `count`) */
     AW_BYTE        = 1, /**< byte access */
     AW_WORD        = 2, /**< word (2B) access */
     AW_DOUBLE_WORD = 4, /**< double word (4B) access */
     AW_QUAD_WORD   = 8, /**< quad word (8B) access */
+    AW_MULTI_BYTE  = 128, /**< multibyte access (number of bytes defined by `count`) */
+
+    /** Any access width for the purpose of callback filtering */
+    AW_CB_ANY      = (AW_BYTE | AW_WORD | AW_DOUBLE_WORD | AW_QUAD_WORD | AW_MULTI_BYTE),
 } renode_access_width_t;
+
+/**
+ * Supported accesses to Renode system bus
+ */
+typedef enum {
+    /** Read on the bus */
+    SYSBUS_CB_READ  = (1 << 0),
+    /** Write on the bus */
+    SYSBUS_CB_WRITE = (1 << 1),
+    /** Any access type for the purpose of callback filtering */
+    SYSBUS_CB_BOTH  = (SYSBUS_CB_WRITE | SYSBUS_CB_READ),
+} renode_access_type_t;
 
 /**
  * @brief Function preparing bus handle with emulation element context
@@ -501,6 +523,64 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
 renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address, renode_access_width_t width, const void *buffer, uint32_t count);
+
+/**
+ * @brief Structure storing information about an event of access to Renode system bus
+ */
+typedef struct {
+    /** Timestamp when the event occured */
+    renode_time_t timestamp;
+    /** Read or write transaction */
+    renode_access_type_t access_type;
+    /** Address of the access */
+    uint64_t address;
+    /** Access width of a transfer */
+    renode_access_width_t width;
+    /**
+      * Count of transfers of the width specified by renode_sysbus_event_data_t::width
+      *
+      * Use renode_get_byte_count() to calculate byte count
+      */
+    uint32_t transfer_count;
+    /** Flag indicating that the access was successful */
+    bool access_succeeded;
+    /** Bytes that are written or will be read, allocated and freed by the library */
+    _Alignas(uint64_t) uint8_t data[];
+} renode_sysbus_event_data_t;
+
+typedef void (*renode_sysbus_event_callback_t)(void *user_data, renode_sysbus_event_data_t *event_data);
+
+/**
+ * @brief Function preparing Bus peripheral handle
+ *
+ * The peripheral must be a `Bus.ExternalControlBusPeripheral`
+ *
+ * @note Internals of the handle are dynamically allocated so `*bus_peripheral` should be freed when it's no longer used.
+ *
+ * @param[in] machine machine handle
+ * @param[in] name Bus peripheral's name
+ * @param[out] peripheral handle associated with the requested External Bus peripheral
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ */
+renode_error_t *renode_get_bus_peripheral(renode_machine_t *machine, const char *name, renode_bus_peripheral_t **bus_peripheral);
+
+/**
+ * @brief Function registering callback when Renode system bus is accessed
+ *
+ * @param[in] bus_peripheral platform peripheral handle
+ * @param[in] access_type access types for which the callback will be invoked
+ * @param[in] width widths for which the callback will be invoked
+ * @param[in] user_data pointer to data passed to the callback when it's invoked
+ * @param[in] callback callback to be invoked when Renode system bus is accessed for the given access types and widths
+ * @return a pointer to error structure if error occurred, otherwise NULL
+ *
+ * All callbacks should set renode_sysbus_event_data_t::access_succeeded,
+ * by default it is false.
+ * If renode_sysbus_event_data_t::access_type is ::SYSBUS_READ then the callback should set renode_sysbus_event_data_t::data,
+ * by default it is all zeros and can be ommited if the access doesn't succeed.
+ */
+renode_error_t *renode_register_sysbus_access_callback(renode_bus_peripheral_t *bus_peripheral, renode_access_type_t access_type, renode_access_width_t width, void *user_data, renode_sysbus_event_callback_t callback);
+
 
 /* SPI */
 

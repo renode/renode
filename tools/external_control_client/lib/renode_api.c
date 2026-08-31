@@ -21,6 +21,14 @@
 #include "common.h"
 #include "connection.h"
 
+typedef struct __attribute__((packed)) {
+    uint64_t timestamp;
+    uint8_t operation;
+    uint8_t access_width;
+    uint64_t address;
+    uint32_t data_count;
+} sysbus_event_header_t;
+
 struct renode {
     renode_connection_t *conn;
 };
@@ -48,6 +56,13 @@ struct renode_can {
 struct renode_bus_context {
     renode_machine_t *machine;
     int32_t id;
+};
+
+struct renode_bus_peripheral {
+    renode_machine_t *machine;
+    int32_t id;
+    void *user_data;
+    renode_sysbus_event_callback_t callback;
 };
 
 struct renode_spi {
@@ -226,6 +241,48 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         default:
             return create_fatal_error_static("Received unknown SPI event type");
         }
+    case SYSTEM_BUS:
+        assert_response(size >= sizeof(sysbus_event_header_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+
+        sysbus_event_header_t* event_header = (sysbus_event_header_t*)data;
+
+        uint32_t byte_count;
+        renode_get_byte_count(event_header->access_width, event_header->data_count, &byte_count);
+
+        renode_sysbus_event_data_t *sysbus_event =
+            malloc(sizeof(renode_sysbus_event_data_t) + byte_count);
+
+        sysbus_event->access_succeeded = false;
+        sysbus_event->timestamp = event_header->timestamp;
+        sysbus_event->access_type = event_header->operation;
+        sysbus_event->address = event_header->address;
+        sysbus_event->transfer_count = event_header->data_count;
+        sysbus_event->width = event_header->access_width;
+        if(event_header->operation == SYSBUS_CB_WRITE) {
+            void *event_bytes = (void *)(data + sizeof(sysbus_event_header_t));
+            memcpy(sysbus_event->data, event_bytes, byte_count);
+        } else {
+            memset(sysbus_event->data, 0, byte_count);
+        }
+
+        renode_bus_peripheral_t *bus_peripheral = callback_user_data[ed];
+        bus_peripheral->callback(bus_peripheral->user_data, sysbus_event);
+
+        if(!sysbus_event->access_succeeded) {
+            const char error_message[] = "Access did not succeed";
+            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {error_message, sizeof(error_message)});
+        }
+
+        renode_error_t *err;
+        if(event_header->operation == SYSBUS_CB_WRITE) {
+            err = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        } else {
+            err = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&sysbus_event->data, byte_count});
+        }
+
+        free(sysbus_event);
+
+        return err;
     default:
         return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
     }
@@ -704,6 +761,7 @@ typedef enum {
     SYSBUS_READ = 0,
     SYSBUS_WRITE = 1,
     SYSBUS_GET_NAME = 2,
+    SYSBUS_REGISTER_CALLBACKS = 3,
 } sysbus_operation_t;
 
 static renode_error_t *get_bus_context_name_handler(renode_connection_t *conn, const void *response, size_t response_size, void *ud)
@@ -768,6 +826,8 @@ static renode_error_t *sysbus_handler(renode_connection_t *conn, const void *dat
         memcpy(cmd->data, data, size);
         return NO_ERROR;
     case SYSBUS_WRITE:
+        return NO_ERROR;
+    case SYSBUS_REGISTER_CALLBACKS:
         return NO_ERROR;
     default:
         // TODO: Maybe assert_exit instead? (This is most likely a programmer error)
@@ -938,6 +998,46 @@ renode_error_t *renode_spi_register_callbacks(renode_spi_t *spi, void *user_data
     return renode_connection_send_request(spi->machine->renode->conn, generic_response_handler, NULL,
         REQUEST_HEADER(SPI),
         {&spi->id, sizeof(spi->id)},
+        {&ed, sizeof(ed)},
+    );
+}
+
+renode_error_t *renode_get_bus_peripheral(renode_machine_t *machine, const char *name, renode_bus_peripheral_t **bus_peripheral)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, SYSTEM_BUS, name, &id));
+
+    *bus_peripheral = xmalloc(sizeof(renode_bus_peripheral_t));
+    (*bus_peripheral)->machine = machine;
+    (*bus_peripheral)->id = id;
+    (*bus_peripheral)->user_data = NULL;
+    (*bus_peripheral)->callback = NULL;
+
+    return NO_ERROR;
+}
+
+renode_error_t *renode_register_sysbus_access_callback(renode_bus_peripheral_t *bus_peripheral, renode_access_type_t access_type, renode_access_width_t width, void *user_data, renode_sysbus_event_callback_t callback)
+{
+    bus_peripheral->user_data = user_data;
+    bus_peripheral->callback = callback;
+
+    int32_t ed;
+    return_error_if_fails(register_callback(NULL, bus_peripheral, &ed));
+
+    assert_msg(callback != NULL, "sysbus callback cannot be null");
+
+    sysbus_command_t cmd = {
+        .header = {
+            .operation = SYSBUS_REGISTER_CALLBACKS,
+        },
+    };
+
+    return renode_connection_send_request(bus_peripheral->machine->renode->conn, generic_response_handler, &cmd,
+        REQUEST_HEADER(SYSTEM_BUS),
+        {&bus_peripheral->id, sizeof(bus_peripheral->id)},
+        {&cmd.header.operation, sizeof(cmd.header.operation)},
+        {&width, 1},
+        {&access_type, 1},
         {&ed, sizeof(ed)},
     );
 }

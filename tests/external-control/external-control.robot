@@ -26,6 +26,20 @@ ${SPI_PLATFORM}=                    SEPARATOR=${\n}
 ...                                 spi1: SPI.NRF52840_SPI @ sysbus 0x5000
 ...                                 slave1: SPI.ExternalControlSPIPeripheral @ spi1
 ...                                 """
+${SYSBUS_PLATFORM}                  SEPARATOR=${\n}
+...                                 """
+...                                 cpu: CPU.RiscV32 @ sysbus
+...                                 ${SPACE*4}cpuType: "rv32i"
+...
+...                                 mem: Memory.MappedMemory @ sysbus 0x0
+...                                 ${SPACE*4}size: 0x1000
+...
+...                                 memory_bus_peripheral: Bus.ExternalControlBusPeripheral @ sysbus 0x1000
+...                                 ${SPACE*4}size: 0x1000
+...
+...                                 counter_bus_peripheral: Bus.ExternalControlBusPeripheral @ sysbus 0x2000
+...                                 ${SPACE*4}size: 0x1
+...                                 """
 # Simple loop that hits 2 nops 10 times
 # The nops trigger hooks in spi0 and spi1 slaves respectively
 # This way SPI transfers rely on virtual time running
@@ -360,3 +374,60 @@ Should Run CAN Sample
     ${received_hex}=               Evaluate  $received_msg.hex().upper()
     Should Contain                 ${received_hex}  ${msg_hex}
 
+Should Run Bus Peripheral Sample As Executable Memory
+    [Tags]                          exclude_windows
+
+    Create Log Tester               1
+
+    Execute Command                 logLevel 0 ${SERVER_NAME}
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SYSBUS_PLATFORM}
+
+    Build Sample                    bus_peripheral
+
+    # The client registers a system bus peripheral backed by memory.
+    ${proc}=                        Start Sample  bus_peripheral  ${PORT}  machine  sysbus.memory_bus_peripheral  sysbus.counter_bus_peripheral
+
+    Wait For Log Entry              Registered sysbus callbacks  startEmulation=false
+
+    Execute Command                 cpu AssembleBlock 0x1000 """${PROG_RISCV}"""
+    Execute Command                 cpu PC 0x1000
+
+    # Run a simple loop and verify that it got executed multiple times
+    Execute Command                 cpu AddHook 0x1008 "self.InfoLog('executed memory')"
+    Wait For Log Entry              executed memory  pauseEmulation=true
+    Wait For Log Entry              executed memory  pauseEmulation=true
+
+Should Run Bus Peripheral Sample As Counter
+    [Tags]                          exclude_windows
+
+    Create Log Tester               1
+
+    Execute Command                 logLevel 0 ${SERVER_NAME}
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${SYSBUS_PLATFORM}
+
+    Build Sample                    bus_peripheral
+
+    # The client registers a system bus peripheral backed by memory.
+    ${proc}=                        Start Sample  bus_peripheral  ${PORT}  machine  sysbus.memory_bus_peripheral  sysbus.counter_bus_peripheral
+
+    # Wait for both callbacks to register
+    Wait For Log Entry              Registered sysbus callbacks  startEmulation=false
+    Wait For Log Entry              Registered sysbus callbacks  startEmulation=false
+
+    # Perform access from global context
+    Execute Command                 sysbus WriteDoubleWord 0x2000 0x5
+    ${value}=                       Execute Command  sysbus ReadDoubleWord 0x2000
+    Should Contain                  ${value}  0x00000005
+    Execute Command                 sysbus WriteDoubleWord 0x2000 0x10000000
+    ${value}=                       Execute Command  sysbus ReadDoubleWord 0x2000
+    Should Contain                  ${value}  0x10000005
+
+    # Verify correct logging on unimplemented callbacks
+    Execute Command                 sysbus WriteByte 0x2000 0x5
+    Wait For Log Entry              does not implement WriteByte callback, ignoring write  startEmulation=false
+    Execute Command                 sysbus ReadQuadWord 0x2000
+    Wait For Log Entry              does not implement ReadQuadWord callback, returning 0  startEmulation=false
