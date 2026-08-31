@@ -409,6 +409,7 @@ Should Resolve DHCP and Be Pingable
     Set Test Variable                   ${server_ip}  122.101.101.1
 
     Wait For Prompt on Uart             uart:~$  testerId=${server}
+    Wait For Prompt on Uart             uart:~$  testerId=${server}
     Write Line To Uart                  net dhcpv4 client stop 1  testerId=${server}
     Write Line To Uart                  net ipv4 del 1 192.0.2.1  testerId=${server}
     Write Line To Uart                  net ipv4 add 1 ${server_ip} 255.255.255.0  testerId=${server}
