@@ -12,7 +12,7 @@ ${BUILD_DIR}                        ${EXTERNAL_CONTROL_DIR}/build
 ${PORT}                             3344
 ${MEMORY_ADDRESS}                   0x1000
 ${SERVER_NAME}                      server
-${SPI_PLATFORM}=                    SEPARATOR=${\n}
+${SPI_PLATFORM}                     SEPARATOR=${\n}
 ...                                 """
 ...                                 cpu: CPU.RiscV32 @ sysbus
 ...                                 ${SPACE*4}cpuType: "rv32i"
@@ -44,15 +44,15 @@ ${SYSBUS_PLATFORM}                  SEPARATOR=${\n}
 # The nops trigger hooks in spi0 and spi1 slaves respectively
 # This way SPI transfers rely on virtual time running
 ${PROG_RISCV}                       SEPARATOR=\n
-...                                     addi t0, zero, 0      // i = 0
-...                                     addi t1, zero, 10     // run 10 times
+...                                 addi t0, zero, 0  // i = 0
+...                                 addi t1, zero, 10  // run 10 times
 ...                                 loop:
-...                                     nop                   // trigger SPI 0 hook
-...                                     nop                   // trigger SPI 1 hook
-...                                     addi t0, t0, 1        // i++
-...                                     bne t0, t1, loop      // while != 10
+...                                 nop  // trigger SPI 0 hook
+...                                 nop  // trigger SPI 1 hook
+...                                 addi t0, t0, 1  // i++
+...                                 bne t0, t1, loop  // while != 10
 ...                                 done:
-...                                     j done                // spin forever
+...                                 j done  // spin forever
 
 *** Keywords ***
 Custom Test Setup
@@ -290,7 +290,7 @@ Should Run Single SPI Sample
     ${r}=                           Execute Sample  spi  ${PORT}  machine  client  sysbus.spi0.slave0
 
     FOR  ${expected}  IN RANGE  10  20
-        Wait For Log Entry          MISO: ${expected}  startEmulation=false
+        Wait For Log Entry              MISO: ${expected}  startEmulation=false
     END
 
 Should Run Dual SPI Sample
@@ -316,8 +316,8 @@ Should Run Dual SPI Sample
     Execute Sample                  spi  ${PORT}  machine  client  sysbus.spi0.slave0  sysbus.spi1.slave1
 
     FOR  ${i}  IN RANGE  0  10
-        ${expected_spi0}=               Evaluate    10 + ${i}
-        ${expected_spi1}=               Evaluate    128 + ${i} * 2
+        ${expected_spi0}=               Evaluate  10 + ${i}
+        ${expected_spi1}=               Evaluate  128 + ${i} * 2
 
         Wait For Log Entry              SPI0 MISO: ${expected_spi0}  startEmulation=false
         Wait For Log Entry              SPI1 MISO: ${expected_spi1}  startEmulation=false
@@ -347,7 +347,7 @@ Should Run Single SPI Sample With Robot Managed Time
     Wait For Log Entry              Registered SPI callbacks  startEmulation=false
 
     FOR  ${expected}  IN RANGE  10  20
-        Wait For Log Entry          MISO: ${expected}
+        Wait For Log Entry              MISO: ${expected}
     END
 
     Terminate Process               ${proc}
