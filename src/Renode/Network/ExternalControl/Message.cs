@@ -7,36 +7,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-
-using Antmicro.Renode.Exceptions;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
     // Needs to be in sync with `message_t` in C
     public class Message
     {
-        public static bool TryDecodeHeader(List<byte> data, out Message message)
+        public static bool TryDecodeHeader(ReadOnlySpan<byte> data, out Message message)
         {
-            if(data.Count < HeaderSize)
+            if(data.Length < HeaderSize)
             {
                 message = default;
                 return false;
             }
 
-            var dataSpan = CollectionsMarshal.AsSpan(data);
-            var id = BitConverter.ToUInt16(dataSpan[..sizeof(ushort)]);
-            var payloadSize = BitConverter.ToInt32(dataSpan[sizeof(ushort)..][..sizeof(uint)]);
+            var id = BitConverter.ToUInt16(data);
+            var payloadSize = BitConverter.ToInt32(data[sizeof(ushort)..]);
 
             if(payloadSize < MessagePayload.HeaderSize)
             {
-                // TODO: Modify the protocol definition to make it impossible
-                throw new RecoverableException($"Invalid payload size received: {payloadSize}");
+                message = default;
+                return false;
             }
 
             message = new Message(id, payloadSize);
-            data.RemoveRange(0, HeaderSize);
-
             return true;
         }
 
@@ -55,18 +49,17 @@ namespace Antmicro.Renode.Network.ExternalControl
             Payload = payload;
         }
 
-        public bool TryDecodePayload(List<byte> data)
+        public bool TryDecodePayload(ReadOnlySpan<byte> data)
         {
-            if(data.Count < PayloadSize)
+            if(data.Length < PayloadSize)
             {
                 return false;
             }
 
-            var dataSpan = CollectionsMarshal.AsSpan(data);
-            var cmd = (Command)BitConverter.ToUInt16(dataSpan[..sizeof(ushort)]);
-            Payload = new MessagePayload(cmd, (CommandType)dataSpan[2], dataSpan[..PayloadSize][MessagePayload.HeaderSize..].ToArray());
-
-            data.RemoveRange(0, PayloadSize);
+            var cmd = (Command)BitConverter.ToUInt16(data);
+            var type = (CommandType)data[2];
+            var payload = data[..PayloadSize][MessagePayload.HeaderSize..].ToArray();
+            Payload = new MessagePayload(cmd, type, payload);
 
             return true;
         }

@@ -6,13 +6,17 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Debugging;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Network.ExternalControl;
+using Antmicro.Renode.Time;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network
@@ -29,60 +33,13 @@ namespace Antmicro.Renode.Network
     {
         public ExternalControlSocket(int port)
         {
-            socketProvider.BufferSize = 0x10;
-            socketProvider.ConnectionAccepted += delegate
-            {
-                lock(socketProvider)
-                {
-                    if(state == State.Disposed)
-                    {
-                        return;
-                    }
-                    this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.WaitingForHeader);
-                    state = State.WaitingForHeader;
-                }
-
-                InitializeHandlers();
-                this.Log(LogLevel.Debug, "Connection established");
-            };
-            socketProvider.ConnectionClosed += delegate
-            {
-                lock(socketProvider)
-                {
-                    if(state == State.Disposed)
-                    {
-                        return;
-                    }
-                    this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.NotConnected);
-                    state = State.NotConnected;
-                }
-
-                DisposeHandlers();
-                this.Log(LogLevel.Debug, "Connection closed");
-            };
-
-            socketProvider.DataBlockReceived += OnBytesWritten;
-            socketProvider.Start(port);
-
-            this.Log(LogLevel.Info, "{0}: Listening on port {1}", nameof(ExternalControlSocket), port);
+            this.port = port;
+            RestartConnection();
         }
 
         public void Dispose()
         {
-            State lastState;
-            lock(locker)
-            {
-                lastState = state;
-                this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Disposed);
-                state = State.Disposed;
-            }
-
-            socketProvider.Stop();
-
-            if(lastState != State.NotConnected && lastState != State.Disposed)
-            {
-                DisposeHandlers();
-            }
+            Disconnect(State.Disposed);
         }
 
         public ICommand GetCommandHandler(Command command)
@@ -122,8 +79,12 @@ namespace Antmicro.Renode.Network
             var bytes = message.ToBytes();
             lock(locker)
             {
-                AssertNotDisposed();
-                socketProvider.Send(bytes);
+                if(state != State.Active)
+                {
+                    throw new ServerDisposedException();
+                }
+
+                communicationSocket.Send(bytes.ToArray());
             }
             this.Log(LogLevel.Debug, "Message sent: {0}", message);
         }
@@ -134,6 +95,9 @@ namespace Antmicro.Renode.Network
         {
             lock(locker)
             {
+                this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Active);
+                state = State.Active;
+
                 commandHandlers = new CommandHandlerCollection();
                 commandHandlers.Register(new TimeElapsedCallbackCommand(this));
                 commandHandlers.Register(new RunFor(this));
@@ -178,72 +142,58 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        private State? StepReceiveFiniteStateMachine(State currentState)
+        private void RestartConnection()
         {
-            switch(currentState)
+            DebugHelper.Assert(communicationSocket == null);
+
+            communicationSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            communicationSocket.NoDelay = true;
+
+            try
             {
-            case State.WaitingForHeader:
-                if(!Message.TryDecodeHeader(buffer, out currentMessage))
-                {
-                    return null;
-                }
-
-                this.Log(LogLevel.Noisy, "Received header: {0}", currentMessage);
-
-                return State.WaitingForData;
-
-            case State.WaitingForData:
-                if(!currentMessage.TryDecodePayload(buffer))
-                {
-                    return null;
-                }
-
-                this.Log(LogLevel.Debug, "Message received: {0}", currentMessage);
-                GetHandlerForMessage(currentMessage).PutMessage(currentMessage);
-
-                return State.WaitingForHeader;
-
-            case State.NotConnected:
-            default:
-                throw new UnreachableException();
+                communicationSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+                communicationSocket.Listen(backlog: 1);
             }
+            catch(SocketException e)
+            {
+                throw new RecoverableException(e);
+            }
+
+            rxThread = new Thread(RxThreadBody)
+            {
+                Name = GetType().Name + "_RxHandler",
+                IsBackground = true
+            };
+            rxThread.Start();
         }
 
-        private void OnBytesWritten(byte[] data)
+        private void Disconnect(State newState)
         {
-            buffer.AddRange(data);
-
-            var lockedState = state;
-            while(lockedState != State.Disposed && lockedState != State.NotConnected)
+            State lastState;
+            lock(locker)
             {
-                var nextState = (State?)null;
-                try
-                {
-                    nextState = StepReceiveFiniteStateMachine(lockedState);
-                }
-                catch(ServerDisposedException)
-                {
-                    return;
-                }
-
-                lock(locker)
-                {
-                    if(!nextState.HasValue || state == State.Disposed || state == State.NotConnected)
-                    {
-                        return;
-                    }
-                    this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, nextState.Value);
-                    state = nextState.Value;
-                    lockedState = state;
-                }
+                lastState = state;
+                this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, newState);
+                state = newState;
             }
-        }
 
-        private void AssertNotDisposed()
-        {
-            if(state == State.Disposed)
+            CloseSocket(communicationSocket);
+
+            if(rxThread?.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
             {
-                throw new ServerDisposedException();
+                rxThread?.Join();
+            }
+            rxThread = null;
+            communicationSocket = null;
+
+            if(lastState == State.Active)
+            {
+                DisposeHandlers();
+            }
+
+            if(newState == State.Unconnected)
+            {
+                RestartConnection();
             }
         }
 
@@ -261,8 +211,103 @@ namespace Antmicro.Renode.Network
             }
             catch(OperationCanceledException)
             {
-                // It is expected to be thrown while disposing the server
+                this.Log(LogLevel.Debug, "Default thread handler has been canceled, it is expected while disposing {0}", nameof(ExternalControlSocket));
             }
+        }
+
+        private void RxThreadBody()
+        {
+            this.Log(LogLevel.Info, "Listening for connections on port: {0}", port);
+            Socket finalSocket;
+            try
+            {
+                finalSocket = communicationSocket.Accept();
+            }
+            catch(SocketException)
+            {
+                CloseSocket(communicationSocket);
+                return;
+            }
+
+            CloseSocket(communicationSocket);
+            communicationSocket = finalSocket;
+            communicationSocket.NoDelay = true;
+            this.Log(LogLevel.Info, "Connection accepted");
+
+            InitializeHandlers();
+
+            while(true)
+            {
+                try
+                {
+                    Span<byte> headerBuffer = stackalloc byte[Message.HeaderSize];
+                    ReceiveAll(communicationSocket, headerBuffer);
+                    if(!Message.TryDecodeHeader(headerBuffer, out var message))
+                    {
+                        this.ErrorLog("Invalid message header received: {0}", headerBuffer.ToArray().ToLazyHexString());
+                        continue;
+                    }
+                    this.NoisyLog("Received header: {0}", message);
+
+                    var payloadBuffer = new byte[message.PayloadSize];
+                    ReceiveAll(communicationSocket, payloadBuffer);
+
+                    if(!message.TryDecodePayload(payloadBuffer))
+                    {
+                        this.ErrorLog("Invalid message payload: {0}", payloadBuffer.ToLazyHexString());
+                    }
+
+                    this.DebugLog("Message received: {0}", message);
+                    GetHandlerForMessage(message).PutMessage(message);
+                }
+                catch(OperationCanceledException)
+                {
+                    // Expected when terminating the connection
+                    Disconnect(State.Unconnected);
+                    return;
+                }
+                catch(SocketException e)
+                {
+                    this.ErrorLog("Socket error: {0}, disposing of the {1}", e.Message, "server");
+                    Dispose();
+                    return;
+                }
+            }
+        }
+
+        private void ReceiveAll(Socket sock, Span<byte> buffer)
+        {
+            var total = 0;
+            while(total < buffer.Length)
+            {
+                var current = sock.Receive(buffer[total..]);
+                if(current == 0)
+                {
+                    throw new OperationCanceledException();
+                }
+                total += current;
+            }
+        }
+
+        private void CloseSocket(Socket sock)
+        {
+            if(sock == null)
+            {
+                return;
+            }
+
+            try
+            {
+                if(sock.Connected)
+                {
+                    sock.Shutdown(SocketShutdown.Both);
+                }
+            }
+            finally
+            {
+                sock.Close();
+            }
+            sock.Dispose();
         }
 
         private CommunicationHandler GetHandlerForMessage(Message message) =>
@@ -273,16 +318,16 @@ namespace Antmicro.Renode.Network
             return defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? externalHandler : internalHandler;
         }
 
-        private State state = State.NotConnected;
-        private Message currentMessage;
+        private State state = State.Unconnected;
+        private Socket communicationSocket;
+        private Thread rxThread;
         private Thread defaultHandlerThread;
         private CommunicationHandler externalHandler;
         private CommunicationHandler internalHandler;
         private CancellationTokenSource disposeCancelationTokenSource;
         private CommandHandlerCollection commandHandlers;
 
-        private readonly List<byte> buffer = new List<byte>();
-        private readonly SocketServerProvider socketProvider = new SocketServerProvider(telnetMode: false);
+        private readonly int port;
         private readonly object locker = new object();
 
         private class CommandHandlerCollection : IDisposable
@@ -320,9 +365,8 @@ namespace Antmicro.Renode.Network
 
         private enum State
         {
-            NotConnected,
-            WaitingForHeader,
-            WaitingForData,
+            Unconnected,
+            Active,
             Disposed,
         }
     }
