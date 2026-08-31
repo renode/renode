@@ -6,16 +6,17 @@
 //
 #pragma once
 
+#include <systemc>
+
 #include <condition_variable>
 #include <cstdint>
 #include <memory>
 
+#include <chrono>
 #include <mutex>
 #include <queue>
 #include <map>
 #include <tlm>
-#include <tlm_utils/simple_initiator_socket.h>
-#include <tlm_utils/simple_target_socket.h>
 
 struct CTCPClient;
 struct renode_message;
@@ -296,10 +297,19 @@ public:
       if (wake) condvar_.notify_one();
     }
 
-    T take() {
+    // do_yield == true can only be used from an SC_THREAD
+    T take(bool do_yield = false, std::chrono::milliseconds timeout_duration = std::chrono::milliseconds(20)) {
       ulock u(mutex_);
-      while (queue_.empty())
-        condvar_.wait(u);
+      while (queue_.empty()) {
+        if(do_yield) {
+          if(condvar_.wait_for(u, timeout_duration) == std::cv_status::timeout) {
+            sc_core::wait(sc_core::SC_ZERO_TIME);
+          }
+        }
+        else {
+          condvar_.wait(u);
+        }
+      }
       // queue_ is non-empty and we have the lock
       T retval = queue_.front();
       queue_.pop();

@@ -15,7 +15,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <chrono>
 #include <thread>
 #include <cinttypes>
 #include <array>
@@ -754,7 +753,7 @@ renode_message renode_connection::receive_forward_request(bool* closed)
 {
   if(native) {
     *closed = false;
-    return fw_request.take();
+    return fw_request.take(true);
   } else {
     renode_message message;
     int nread =
