@@ -135,3 +135,19 @@ The usage is:
 Usage:
   ./sysbus <PORT> <MACHINE_NAME> <PERIPHERAL_NAME> <ADDRESS>
 ```
+
+### `can` example
+
+The example application using Renode API can be found in `examples/can`.
+It can be built in the `build` directory from the Renode repository's root directory with:
+```bash
+renode$ mkdir build && cmake -DAPP_NAME=can -DAPP_SOURCES_DIR=tools/external_control_client/examples/can -S tools/external_control_client -B build && cmake --build build
+```
+
+After starting the server in Renode, the `can` application will loopback all CAN messages.
+
+The usage is:
+```
+Usage:
+  ./can <PORT> <MACHINE_NAME> <PERIPHERAL_NAME> <ADDRESS>
+```
