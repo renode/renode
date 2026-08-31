@@ -14,29 +14,51 @@ using Antmicro.Renode.Time;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
-    public class TimeElapsedCallbackCommand : BaseCommand
+    public class TimeElapsedCallbackCommand : BaseCommand, IDisposable
     {
         public TimeElapsedCallbackCommand(ExternalControlSocket parent)
             : base(parent)
         {
         }
 
+        public void Dispose()
+        {
+            lock(syncedStateCallbacks)
+            {
+                if(syncedStateActionId.HasValue)
+                {
+                    EmulationManager.Instance.CurrentEmulation.MasterTimeSource.CancelActionToExecuteInSyncedState(syncedStateActionId.Value);
+                }
+            }
+        }
+
         public override MessagePayload Invoke(MessagePayload payload)
         {
-            if(payload.Data.Length != sizeof(uint))
+            return payload.Type switch
             {
-                return MessagePayload.Error(Identifier, $"Invalid data size, expected: {sizeof(uint)} but got: {payload.Data.Length} bytes");
+                CommandType.Request => HandleRequest(payload.Data),
+                _ => MessagePayload.Error(Identifier, "Invalid command type"),
+            };
+        }
+
+        public override Command Identifier => Command.TimeElapsedCallback;
+
+        private MessagePayload HandleRequest(byte[] data)
+        {
+            if(data.Length != sizeof(int))
+            {
+                return MessagePayload.Error(Identifier, $"Invalid data size, expected: {sizeof(int)} but got: {data.Length} bytes");
             }
 
-            var callbackIdentifier = BitConverter.ToInt32(payload.Data);
+            var callbackIdentifier = BitConverter.ToInt32(data);
 
-            lock(callbacks)
+            lock(syncedStateCallbacks)
             {
-                if(callbacks.Count == 0)
+                if(!syncedStateActionId.HasValue)
                 {
-                    RegisterCallback();
+                    SendEventInNearestSyncedState();
                 }
-                callbacks.Add(callbackIdentifier);
+                syncedStateCallbacks.Add(callbackIdentifier);
             }
 
             parent.Log(LogLevel.Debug, "Registered time elapsed callback");
@@ -44,25 +66,28 @@ namespace Antmicro.Renode.Network.ExternalControl
             return MessagePayload.Success(Identifier);
         }
 
-        public override Command Identifier => Command.TimeElapsedCallback;
 
-        private void RegisterCallback()
+
+        private void SendEventInNearestSyncedState()
         {
-            EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ExecuteInNearestSyncedState(SendEvent);
+            syncedStateActionId = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ExecuteInNearestSyncedState(OnSyncedState);
         }
 
-        private void SendEvent(TimeStamp timestamp)
+        private void OnSyncedState(TimeStamp timestamp)
         {
             try
             {
                 var nanoseconds = timestamp.TimeElapsed.TotalNanoseconds;
-                foreach(var callbackIdentifier in callbacks)
+                lock(syncedStateCallbacks)
                 {
-                    var response = parent.SendRequest(MessagePayload.Event(Identifier, callbackIdentifier, new TimeElapsedEvent(nanoseconds)));
-                    response.LogOnError(Identifier, parent);
-                }
+                    foreach(var callbackIdentifier in syncedStateCallbacks)
+                    {
+                        var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, new TimeElapsedEvent(callbackIdentifier, nanoseconds)));
+                        response.LogOnError(Identifier, parent);
+                    }
 
-                RegisterCallback();
+                    SendEventInNearestSyncedState();
+                }
             }
             catch(ServerDisposedException)
             {
@@ -70,9 +95,10 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        private readonly List<int> callbacks = new List<int>();
+        private ulong? syncedStateActionId;
+        private readonly List<int> syncedStateCallbacks = new List<int>();
 
-        [StructLayout(LayoutKind.Sequential)]
-        private readonly record struct TimeElapsedEvent(ulong Nanoseconds);
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private readonly record struct TimeElapsedEvent(int CallbackIdentifier, ulong Nanoseconds);
     }
 }
