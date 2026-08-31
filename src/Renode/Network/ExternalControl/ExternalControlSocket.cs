@@ -43,6 +43,17 @@ namespace Antmicro.Renode.Network
             RestartConnection();
         }
 
+        public void SynchronizeTimeWithExternal()
+        {
+            RegisterTimeElapsedCallback((timeStamp) => EmulationManager.Instance.CurrentEmulation.RunUntil(timeStamp.TimeElapsed));
+        }
+
+        public void RegisterTimeElapsedCallback(Action<TimeStamp> callback)
+        {
+            var command = (TimeElapsedCallbackCommand)commandHandlers.GetHandler(Command.TimeElapsedCallback);
+            command.RegisterExternalCallback(callback);
+        }
+
         public void Dispose()
         {
             Disconnect(State.Disposed);
