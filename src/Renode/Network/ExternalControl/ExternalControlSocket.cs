@@ -57,7 +57,7 @@ namespace Antmicro.Renode.Network
                     state = State.NotConnected;
                 }
 
-                ClearHandlers();
+                DisposeHandlers();
                 this.Log(LogLevel.Debug, "Connection closed");
             };
 
@@ -70,7 +70,7 @@ namespace Antmicro.Renode.Network
         public void Dispose()
         {
             State lastState;
-            lock(socketProvider)
+            lock(locker)
             {
                 lastState = state;
                 this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Disposed);
@@ -81,7 +81,7 @@ namespace Antmicro.Renode.Network
 
             if(lastState != State.NotConnected && lastState != State.Disposed)
             {
-                ClearHandlers();
+                DisposeHandlers();
             }
         }
 
@@ -120,7 +120,7 @@ namespace Antmicro.Renode.Network
         public void SendMessage(Message message)
         {
             var bytes = message.ToBytes();
-            lock(socketProvider)
+            lock(locker)
             {
                 AssertNotDisposed();
                 socketProvider.Send(bytes);
@@ -132,44 +132,50 @@ namespace Antmicro.Renode.Network
 
         private void InitializeHandlers()
         {
-            commandHandlers = new CommandHandlerCollection();
-            commandHandlers.Register(new SPI(this));
-            commandHandlers.Register(new TimeElapsedCallbackCommand(this));
-            commandHandlers.Register(new RunFor(this));
-            commandHandlers.Register(new GetTime(this));
-            commandHandlers.Register(new ADC(this));
-            commandHandlers.Register(new GPIOPort(this));
-            commandHandlers.Register(new SystemBus(this));
-            commandHandlers.Register(new CheckVersion(this));
-            commandHandlers.Register(new CANBus(this));
-
-            var getMachineHandler = new GetMachine(this);
-            Machines = getMachineHandler;
-
-            commandHandlers.Register(getMachineHandler);
-            disposeCancelationTokenSource = new();
-
-            externalHandler = new CommunicationHandler(true, this);
-            internalHandler = new CommunicationHandler(false, this);
-            defaultHandlerThread = new Thread(DefaultThreadHandlerBody)
+            lock(locker)
             {
-                Name = GetType().Name + "_DefaultHandlerThread",
-                IsBackground = true
-            };
-            defaultHandlerThread.Start(disposeCancelationTokenSource.Token);
+                commandHandlers = new CommandHandlerCollection();
+                commandHandlers.Register(new TimeElapsedCallbackCommand(this));
+                commandHandlers.Register(new RunFor(this));
+                commandHandlers.Register(new GetTime(this));
+                commandHandlers.Register(new SPI(this));
+                commandHandlers.Register(new ADC(this));
+                commandHandlers.Register(new GPIOPort(this));
+                commandHandlers.Register(new SystemBus(this));
+                commandHandlers.Register(new CheckVersion(this));
+                commandHandlers.Register(new CANBus(this));
+
+                var getMachineHandler = new GetMachine(this);
+                Machines = getMachineHandler;
+
+                commandHandlers.Register(getMachineHandler);
+                disposeCancelationTokenSource = new();
+
+                externalHandler = new CommunicationHandler(isExternal: true, this);
+                internalHandler = new CommunicationHandler(isExternal: false, this);
+                defaultHandlerThread = new Thread(DefaultThreadHandlerBody)
+                {
+                    Name = GetType().Name + "_DefaultHandlerThread",
+                    IsBackground = true
+                };
+                defaultHandlerThread.Start(disposeCancelationTokenSource.Token);
+            }
         }
 
-        private void ClearHandlers()
+        private void DisposeHandlers()
         {
-            disposeCancelationTokenSource.Cancel();
-            defaultHandlerThread.Join();
-            internalHandler = null;
-            externalHandler = null;
+            lock(locker)
+            {
+                disposeCancelationTokenSource?.Cancel();
+                defaultHandlerThread?.Join();
+                internalHandler = null;
+                externalHandler = null;
 
-            commandHandlers.Dispose();
-            commandHandlers = null;
+                commandHandlers?.Dispose();
+                commandHandlers = null;
 
-            disposeCancelationTokenSource.Dispose();
+                disposeCancelationTokenSource?.Dispose();
+            }
         }
 
         private State? StepReceiveFiniteStateMachine(State currentState)
@@ -220,7 +226,7 @@ namespace Antmicro.Renode.Network
                     return;
                 }
 
-                lock(socketProvider)
+                lock(locker)
                 {
                     if(!nextState.HasValue || state == State.Disposed || state == State.NotConnected)
                     {
@@ -247,9 +253,10 @@ namespace Antmicro.Renode.Network
 
             try
             {
+                var handler = GetHandlerForCurrentThread();
                 while(true)
                 {
-                    externalHandler.HandleRequestsUntilResponse(cancelationToken);
+                    handler.HandleRequestsUntilResponse(cancelationToken);
                 }
             }
             catch(OperationCanceledException)
@@ -261,8 +268,10 @@ namespace Antmicro.Renode.Network
         private CommunicationHandler GetHandlerForMessage(Message message) =>
             message.IsExternallyInitiated ? externalHandler : internalHandler;
 
-        private CommunicationHandler GetHandlerForCurrentThread() =>
-            defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? externalHandler : internalHandler;
+        private CommunicationHandler GetHandlerForCurrentThread()
+        {
+            return defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? externalHandler : internalHandler;
+        }
 
         private State state = State.NotConnected;
         private Message currentMessage;
@@ -274,6 +283,7 @@ namespace Antmicro.Renode.Network
 
         private readonly List<byte> buffer = new List<byte>();
         private readonly SocketServerProvider socketProvider = new SocketServerProvider(telnetMode: false);
+        private readonly object locker = new object();
 
         private class CommandHandlerCollection : IDisposable
         {
