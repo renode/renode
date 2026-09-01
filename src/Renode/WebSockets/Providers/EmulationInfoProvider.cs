@@ -10,6 +10,7 @@ using System.Linq;
 using Antmicro.Renode.Analyzers;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
+using Antmicro.Renode.Peripherals.CAN;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.UserInterface;
@@ -274,6 +275,17 @@ namespace Antmicro.Renode.WebSockets.Providers
                     MachineName = machineName
                 });
             }
+            var webSocketCANAnalyzer = backendAnalyzer as WebSocketCANAnalyzer;
+            if(webSocketCANAnalyzer != null)
+            {
+                var canHub = ((CANBackend)webSocketCANAnalyzer.Backend).CANHub;
+
+                CANCreatedEvent.RaiseEvent(new CANCreatedEventDto
+                {
+                    Port = (int)webSocketCANAnalyzer.CANNumber,
+                    HubName = EmulationManager.Instance.CurrentEmulation.ExternalsManager.TryGetName(canHub, out var hubName) ? hubName : ""
+                });
+            }
         }
 
         private string ExecuteCommand(string command, CommandInteractionWrapper interaction)
@@ -327,6 +339,9 @@ namespace Antmicro.Renode.WebSockets.Providers
         [WebSocketAPIEvent("display-opened", "1.6.0")]
         private readonly WebSocketAPIEventHandler DisplayCreatedEvent;
 
+        [WebSocketAPIEvent("can-opened", "1.5.0")]
+        private readonly WebSocketAPIEventHandler CANCreatedEvent;
+
         [WebSocketAPIEvent("led-state-changed", "1.5.0")]
         private readonly WebSocketAPIEventHandler LedStateChangedEvent;
 
@@ -368,6 +383,14 @@ namespace Antmicro.Renode.WebSockets.Providers
             public string Name;
             [JsonProperty("machineName")]
             public string MachineName;
+        }
+
+        private class CANCreatedEventDto
+        {
+            [JsonProperty("port")]
+            public int Port;
+            [JsonProperty("hubName")]
+            public string HubName;
         }
 
         private class PeripheralStateChangedEventDto

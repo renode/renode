@@ -12,6 +12,9 @@ import {
   UartOpened,
   UartOpenedCallback,
   UartOpenedArgs,
+  CanOpened,
+  CanOpenedCallback,
+  CanOpenedArgs,
   RenodeQuitted,
   ClearCommand,
   LedStateChanged,
@@ -49,6 +52,8 @@ export {
   DisplayOpenedArgs,
   DisplayOpenedCallback,
 };
+
+export { CANFrameSchema, type CANFrame } from './schema';
 
 class SocketClosedEvent extends Event {
   constructor() {
@@ -483,6 +488,18 @@ export class RenodeProxySession extends EventTarget {
 
   public unregisterUartOpenedCallback(callback: EventCallback): boolean {
     return this.unregisterEventCallback(UartOpened, callback);
+  }
+
+  public registerCanOpenedCallback(callback: CanOpenedCallback): EventCallback {
+    const wrapped = (data: object) => {
+      callback(data as CanOpenedArgs);
+    };
+    this.registerEventCallback(CanOpened, wrapped);
+    return wrapped;
+  }
+
+  public unregisterCanOpenedCallback(callback: EventCallback): boolean {
+    return this.unregisterEventCallback(CanOpened, callback);
   }
 
   public registerRenodeQuittedCallback(callback: EmptyEventCallback): void {

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const UartOpened = 'uart-opened';
+export const CanOpened = 'can-opened';
 export const RenodeQuitted = 'renode-quitted';
 export const ClearCommand = 'clear-command';
 
@@ -11,6 +12,12 @@ export interface UartOpenedArgs {
   machineName: string;
 }
 export type UartOpenedCallback = (event: UartOpenedArgs) => void;
+
+export interface CanOpenedArgs {
+  port: number;
+  hubName: string;
+}
+export type CanOpenedCallback = (event: CanOpenedArgs) => void;
 
 export const LedStateChanged = 'led-state-changed';
 export interface LedStateChangedArgs {

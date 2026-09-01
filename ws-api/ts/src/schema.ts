@@ -163,3 +163,18 @@ export const FilterEventsResponse = resp({
   data: z.object({}),
 });
 export type FilterEventsResponse = z.infer<typeof FilterEventsResponse>;
+
+export const CANFrameSchema = z.object({
+  CanHub: z.string(),
+  Sender: z.string(),
+  TimeStamp: z.iso.time(),
+  Message: z.object({
+    Id: z.int(),
+    Data: z.base64(),
+    ExtendedFormat: z.boolean(),
+    RemoteFrame: z.boolean(),
+    FDFormat: z.boolean(),
+    BitRateSwitch: z.boolean(),
+  }),
+});
+export type CANFrame = z.infer<typeof CANFrameSchema>;
