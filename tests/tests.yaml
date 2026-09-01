@@ -17,6 +17,7 @@
   - tests/platforms/Renesas_RZ_G2L.robot
   - tests/platforms/SiFive-FU540.robot
 
+- tests/peripherals/INA228.robot
 - tests/peripherals/SDCard.robot
 - tests/peripherals/VEML7700.robot
 - tests/peripherals/STM32LTDC.robot
