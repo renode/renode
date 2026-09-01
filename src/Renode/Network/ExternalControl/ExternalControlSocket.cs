@@ -25,14 +25,20 @@ namespace Antmicro.Renode.Network
     {
         public static void CreateExternalControlServer(this Emulation emulation, string name, int port)
         {
-            emulation.ExternalsManager.AddExternal(new ExternalControlSocket(port), name);
+            emulation.ExternalsManager.AddExternal(new ExternalControlSocket(port, isClient: false), name);
+        }
+
+        public static void CreateExternalControlClient(this Emulation emulation, string name, int port)
+        {
+            emulation.ExternalsManager.AddExternal(new ExternalControlClient(port), name);
         }
     }
 
     public class ExternalControlSocket : IDisposable, IExternal, IEmulationElement
     {
-        public ExternalControlSocket(int port)
+        public ExternalControlSocket(int port, bool isClient)
         {
+            this.isClient = isClient;
             this.port = port;
             RestartConnection();
         }
@@ -151,8 +157,17 @@ namespace Antmicro.Renode.Network
 
             try
             {
-                communicationSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                communicationSocket.Listen(backlog: 1);
+                if(isClient)
+                {
+                    this.Log(LogLevel.Info, "Connecting to a server on port: {0}", port);
+                    communicationSocket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+                    InitializeHandlers();
+                }
+                else
+                {
+                    communicationSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+                    communicationSocket.Listen(backlog: 1);
+                }
             }
             catch(SocketException e)
             {
@@ -217,24 +232,27 @@ namespace Antmicro.Renode.Network
 
         private void RxThreadBody()
         {
-            this.Log(LogLevel.Info, "Listening for connections on port: {0}", port);
-            Socket finalSocket;
-            try
+            if(!isClient)
             {
-                finalSocket = communicationSocket.Accept();
-            }
-            catch(SocketException)
-            {
+                this.Log(LogLevel.Info, "Listening for connections on port: {0}", port);
+                Socket finalSocket;
+                try
+                {
+                    finalSocket = communicationSocket.Accept();
+                }
+                catch(SocketException)
+                {
+                    CloseSocket(communicationSocket);
+                    return;
+                }
+
                 CloseSocket(communicationSocket);
-                return;
+                communicationSocket = finalSocket;
+                communicationSocket.NoDelay = true;
+                this.Log(LogLevel.Info, "Connection accepted");
+
+                InitializeHandlers();
             }
-
-            CloseSocket(communicationSocket);
-            communicationSocket = finalSocket;
-            communicationSocket.NoDelay = true;
-            this.Log(LogLevel.Info, "Connection accepted");
-
-            InitializeHandlers();
 
             while(true)
             {
@@ -263,12 +281,12 @@ namespace Antmicro.Renode.Network
                 catch(OperationCanceledException)
                 {
                     // Expected when terminating the connection
-                    Disconnect(State.Unconnected);
+                    Disconnect(isClient ? State.Disposed : State.Unconnected);
                     return;
                 }
                 catch(SocketException e)
                 {
-                    this.ErrorLog("Socket error: {0}, disposing of the {1}", e.Message, "server");
+                    this.ErrorLog("Socket error: {0}, disposing of the {1}", e.Message, isClient ? "client" : "server");
                     Dispose();
                     return;
                 }
@@ -315,6 +333,11 @@ namespace Antmicro.Renode.Network
 
         private CommunicationHandler GetHandlerForCurrentThread()
         {
+            if(isClient)
+            {
+                // For client sockets the default thread should use the internalHandler (i.e. for messages intitated by a server)
+                return defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? internalHandler : externalHandler;
+            }
             return defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? externalHandler : internalHandler;
         }
 
@@ -327,6 +350,7 @@ namespace Antmicro.Renode.Network
         private CancellationTokenSource disposeCancelationTokenSource;
         private CommandHandlerCollection commandHandlers;
 
+        private readonly bool isClient;
         private readonly int port;
         private readonly object locker = new object();
 

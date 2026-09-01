@@ -60,6 +60,11 @@ namespace Antmicro.Renode.Network.ExternalControl
                 .Concat(data).ToArray());
         }
 
+        public static MessagePayload Request<T>(Command command, T payload) where T : struct
+        {
+            return new MessagePayload(command, CommandType.Request, payload.AsRawBytes());
+        }
+
         public MessagePayload(Command cmd, CommandType type, byte[] data)
         {
             Command = cmd;
