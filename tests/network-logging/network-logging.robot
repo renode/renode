@@ -10,7 +10,7 @@ Should Attach To Server Socket Terminal
     Execute Command                 mach create
 
     Execute Command                 logNetwork ${RENODE_LOG_PORT}
-    Telnet Connect                  ${RENODE_LOG_PORT}
+    Telnet Connect                  port=${RENODE_LOG_PORT}
 
     Execute Command                 log "${READ_END_MARKER}"
 

@@ -6,7 +6,7 @@ ENCODING = "utf-8"
 reader: TelnetReader
 writer: TelnetWriter
 
-def telnet_connect(port: int) -> None:
+def telnet_connect(host: str = "localhost", port: int = 23) -> None:
     global reader, writer
 
     # Python 3.14+ doesn't implicitly create an event loop
@@ -17,13 +17,16 @@ def telnet_connect(port: int) -> None:
         asyncio.set_event_loop(loop)
 
     # Coroutines with event loop required for robot tests
-    coro = open_connection('localhost', port)
+    coro = open_connection(host, port)
     reader, writer = loop.run_until_complete(coro)  # type: ignore
 
 def telnet_write(text: str) -> None:
     loop = asyncio.get_event_loop()
     writer.write(text)
     loop.run_until_complete(writer.drain())
+
+def telnet_write_line(text: str) -> None:
+    telnet_write(text + "\r\n")
     
 def telnet_read_until(until_string: str, timeout: int = 15) -> str:
     loop = asyncio.get_event_loop()
