@@ -20,16 +20,19 @@ $linux_elf?= @https://dl.antmicro.com/projects/renode/zynq-us_plus--vmlinux-s_26
 $rootfs?=    @https://dl.antmicro.com/projects/renode/zynq-us_plus--rootfs.ext2-s_62914560-3d4dd1f233b7be349e7ec48d64d6081cb5350d77
 $bootargs?=  "earlycon console=ttyPS1,115200n8 root=/dev/ram0 rw initrd=0x20000000,64M"
 
+# LoadELF will set initial PC to ELF's entry point.
+sysbus LoadELF    $atf_elf cpu=apu0
+
+# Populate RVBAR_EL3 and PC with the same address at reset.
+apu0 ResetVectorBaseAddress `apu0 PC`
+
 macro reset
 """
-    # Only set PC for and start the primary core - secondaries are handled by firmware during wakeup
-    apu0 PC 0x1000000
+    # Only APU0 is started at boot, secondaries are started by Linux through firmware during wakeup.
     cluster0 ForEach IsHalted true
     apu0 IsHalted false
 
     cluster1 ForEach IsHalted true
-
-    sysbus LoadELF    $atf_elf cpu=apu0
 
     sysbus LoadFdt    $dtb    0x100000   $bootargs false
     sysbus LoadBinary $uboot  0x8000000
