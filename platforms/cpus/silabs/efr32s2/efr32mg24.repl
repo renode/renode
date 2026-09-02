@@ -4,7 +4,7 @@ i2c0: I2C.EFR32_I2CController @ {
     }
     -> nvic@27
     
-usart0: UART.EFR32xG2_USART_0 @ {
+usart0: UART.SiLabs_USART_0 @ {
         sysbus <0x4005C000, +0x4000>; // USART0_S
         sysbus <0x5005C000, +0x4000>  // USART0_NS
     }
