@@ -56,7 +56,7 @@ ldma: DMA.EFR32xG22_LDMA @ {
     }
     -> nvic@21
 
-usart0: UART.EFR32xG2_USART_0 @ {
+usart0: UART.SiLabs_USART_0 @ {
         sysbus <0x4005C000, +0x4000>; // USART0_S
         sysbus <0x5005C000, +0x4000>  // USART0_NS
     }
@@ -70,7 +70,7 @@ usart0: UART.EFR32xG2_USART_0 @ {
     TxBufferLowSingleRequest -> ldma@0x1042
     TxEmptyRequest -> ldma@0x0044
 
-usart1: UART.EFR32xG2_USART_0 @ {
+usart1: UART.SiLabs_USART_0 @ {
         sysbus <0x40060000, +0x4000>; // USART1_S
         sysbus <0x50060000, +0x4000>  // USART1_NS
     }
