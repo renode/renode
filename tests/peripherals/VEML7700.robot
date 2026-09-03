@@ -2,6 +2,7 @@
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 ${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_599280-f102efd2fb21d8f68de76386291728850712f935
 ${ZEPHYR440_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_light_polling.elf-s_651864-d677ebdfc1b651141b4cb13f4328dd64bb397bce
+${SHELL_BIN}                        https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-shell_veml7700.elf-s_2785056-f485a1c4ad61b5f436643118ab2cf1f6b16aeb43
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.als
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
@@ -94,3 +95,17 @@ Should Work After Errata Driver Update
 
     Set Enviroment                  illuminance=500
     Check Enviroment                illuminance=499
+
+Should Work From Zephyr Shell
+    Create Machine                  ${SHELL_BIN}
+    Wait For Prompt On Uart         uart:~$
+
+    Set Enviroment                  illuminance=500
+
+    Write Line To Uart              sensor get veml7700@10 light
+    Wait For Line On Uart           .*\(498.9*\)  treatAsRegex=true
+
+    Set Enviroment                  illuminance=1000
+
+    Write Line To Uart              sensor get veml7700@10 light
+    Wait For Line On Uart           .*\(999.0*\)  treatAsRegex=true
