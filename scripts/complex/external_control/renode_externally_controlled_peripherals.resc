@@ -1,0 +1,36 @@
+mach create "main-mach"
+$client_port ?= 3345
+
+machine LoadPlatformDescriptionFromString """
+memory_bus_peripheral: Memory.ArrayMemory @ sysbus 0x1000
+    size: 0x1000
+
+counter_bus_peripheral: Python.PythonPeripheral @ {
+        sysbus new Bus.BusPointRegistration { address: 0x2000; cpu: fake_access_context }
+    }
+    size: 0x10
+    initable: true
+    script: '''
+if request.IsInit:
+    ctr = 0
+elif request.IsRead:
+    ctr += 1
+    request.Value = ctr
+'''
+
+fake_access_context: Python.PythonPeripheral @ sysbus 0xC00000
+    size: 0x10
+    script: '''
+pass
+'''
+"""
+
+logFile @externally_controlled_renode.log
+
+emulation CreateExternalControlClient "client" $client_port
+logLevel -1 client
+sysbus LogPeripheralAccess memory_bus_peripheral True
+
+client RegisterRemoteBusPeripheral "main-mach" "machine" "memory_bus_peripheral_remote" DoubleWord Write
+client RegisterRemoteBusPeripheral "main-mach" "machine" "memory_bus_peripheral_remote" Byte ReadWrite
+client RegisterRemoteBusPeripheral "main-mach" "machine" "counter_bus_peripheral_remote" DoubleWord Read "sysbus.fake_access_context"

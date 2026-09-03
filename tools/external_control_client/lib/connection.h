@@ -38,7 +38,7 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
  * @param[in] conn renode_connection_t instance throug which the data should be sent
  * @param[in] cb callback to execute with on the response
  * @param[in] ud userdata pointer to be passed into the callback
- * @param[in] ... buffers that should be send. It is a variadic list of structures of type renode_connection_transfer_t
+ * @param[in] ... buffers that should be sent. It is a variadic list of structures of type renode_connection_transfer_t
  *
  * Example:
  *

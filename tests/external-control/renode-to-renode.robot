@@ -3,19 +3,32 @@ Test Teardown                       Custom Test Teardown
 Test Timeout                        1 minute  # Quickly timeout even when emulation isn't started
 Library                             Process
 Library                             OperatingSystem
+Library                             Collections
+Library                             String
 
 *** Variables ***
-${PORT}                             3345
-${SERVER_NAME}                      server
-${EXTERNAL_MACHINE}                 external-mach
-${EXTERNALLY_CONTROLED_RESC}        scripts/complex/external_control/renode_externally_controlled.resc
-${EXTERNALLY_CONTROLED_RESC_GPIO}   scripts/complex/external_control/renode_externally_controlled_gpio.resc
-${GPIO_PLATFORM}                    SEPARATOR=${\n}
-...                                 """
-...                                 led1: Miscellaneous.LED @ sysbus
-...                                 led2: Miscellaneous.LED @ sysbus
-...                                 led3: Miscellaneous.LED @ sysbus
-...                                 """
+${PORT}                              3345
+${SERVER_NAME}                       server
+${EXTERNAL_MACHINE}                  external-mach
+${EXTERNALLY_CONTROLED_RESC}         scripts/complex/external_control/renode_externally_controlled.resc
+${EXTERNALLY_CONTROLED_RESC_GPIO}    scripts/complex/external_control/renode_externally_controlled_gpio.resc
+${GPIO_PLATFORM}                     SEPARATOR=${\n}
+...                                  """
+...                                  led1: Miscellaneous.LED @ sysbus
+...                                  led2: Miscellaneous.LED @ sysbus
+...                                  led3: Miscellaneous.LED @ sysbus
+...                                  """
+${EXTERNALLY_CONTROLED_RESC_PERIPH}  scripts/complex/external_control/renode_externally_controlled_peripherals.resc
+${LOCAL_PERIPHERAL_PLATFORM}         SEPARATOR=${\n}
+...                                  """
+...                                  memory_bus_peripheral_remote: Bus.ExternalControlBusPeripheral @ sysbus 0x1000
+...                                  ${SPACE*4}size: 0x1000
+...
+...                                  counter_bus_peripheral_remote: Bus.ExternalControlBusPeripheral @ sysbus 0x2000
+...                                  ${SPACE*4}size: 0x10
+...                                  """
+${STDOUT_FILE}                       None
+${STDERR_FILE}                       None
 
 *** Keywords ***
 Custom Test Teardown
@@ -32,13 +45,17 @@ Custom Test Teardown
         Log                             Process stderr:${\n}${result.stderr}
     END
 
- Create Machine And Connect Remote Renode
-    [Arguments]                     ${remote_renode_resc}
-    Create Log Tester               1
+Create Machine And Connect Remote Renode
+    [Arguments]                     ${remote_renode_resc}  ${local_platform_desc}=""
+    Create Log Tester               10
 
     Execute Command                 emulation CreateExternalControlServer "${SERVER_NAME}" ${PORT}
     Execute Command                 mach create "machine"
     Execute Command                 logLevel 0 ${SERVER_NAME}
+
+    IF  ${local_platform_desc} != ""
+        Execute Command             machine LoadPlatformDescriptionFromString ${local_platform_desc}
+    END
 
     ${remote_renode}=               Start Renode  ${PORT}  ${remote_renode_resc}
 
@@ -50,13 +67,20 @@ Start Renode
     [Arguments]                     ${port}  ${resc}
 
     # Redirect outputs to files to avoid filling up buffers
-    ${stdoutFile}=                  Allocate Temporary File
-    ${stderrFile}=                  Allocate Temporary File
+    ${stdout_file}=                 Allocate Temporary File
+    ${stderr_file}=                 Allocate Temporary File
+    Set Global Variable             ${STDOUT_FILE}  ${stdout_file}
+    Set Global Variable             ${STDERR_FILE}  ${stderr_file}
 
     @{args}=                        Split Command Line  ${COMMAND}
+    # Make sure that the logs are seen on stdout
+    ${_idx}=                        Get Index From List             ${args}  --hide-log
+    IF  ${_idx} != -1
+        Remove From List            ${args}  ${_idx}
+    END
     Append To List                  ${args}  --console  -e  $client_port=${PORT}; i "${resc}"
 
-    ${proc}=                        Start Process  @{args}  cwd=${DIRECTORY}  stdout=${stdoutFile}  stderr=${stderrFile}  stdin=PIPE
+    ${proc}=                        Start Process  @{args}  cwd=${DIRECTORY}  stdout=${STDOUT_FILE}  stderr=${STDERR_FILE}  stdin=PIPE
     [Return]                        ${proc}
 
 Execute Command In Process
@@ -64,6 +88,22 @@ Execute Command In Process
 
     Evaluate                        $proc.stdin.write(($command + "\\n").encode("utf-8"))
     Evaluate                        $proc.stdin.flush()
+
+File Should Contain
+    [Arguments]                     ${filename}  ${expected}
+
+    ${contents}=                    Get File  ${filename}
+    Should Contain                  ${contents}  ${expected}
+
+Wait For Line In File
+    [Arguments]                     ${filename}  ${expected}
+
+    Wait Until Keyword Succeeds
+    ...    30 seconds
+    ...    1 second
+    ...    File Should Contain
+    ...    ${filename}
+    ...    ${expected}
 
 Quit Renode
     [Arguments]                     ${proc}  ${timeout}=1 minute
@@ -131,3 +171,47 @@ Should Pass GPIO Between Two Renodes
     Wait For LED State Change       led3  False
 
     Quit Renode                     ${remote}
+
+Should Connect To Remote Bus Peripheral And Write
+    [Tags]                          skip_windows
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC_PERIPH}  ${LOCAL_PERIPHERAL_PLATFORM}
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=0, access_types=[Write], access_widths=[DoubleWord])  startEmulation=false
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=1, access_types=[ReadWrite], access_widths=[Byte])    startEmulation=false
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=2, access_types=[Read], access_widths=[DoubleWord])   startEmulation=false
+
+    Execute Command In Process      ${remote}  log \\"Writing data to remote memory\\"
+    Execute Command In Process      ${remote}  sysbus WriteByte 0x1020 0xEE
+
+    Wait For Line In File           ${STDOUT_FILE}   memory_bus_peripheral: WriteByte to 0x20 (unknown), value 0xEE
+
+    Execute Command                 sysbus WriteDoubleWord 0x1000 0xCD
+    Execute Command                 sysbus WriteDoubleWord 0x1008 0xEF
+    Execute Command                 sysbus WriteDoubleWord 0x1008 0xAB
+    ${val}=                         Execute Command                 sysbus ReadByte 0x1020
+
+    Execute Command In Process      ${remote}  sysbus ReadDoubleWord 0x1000
+    Execute Command In Process      ${remote}  sysbus ReadDoubleWord 0x1008
+
+    Should Be Equal As Numbers      ${val}  0xEE
+
+    ${output}=                      Quit Renode  ${remote}
+    Should Contain                  ${output}  memory_bus_peripheral: ReadUInt32 from 0x0 (unknown), returned 0xCD
+    Should Contain                  ${output}  memory_bus_peripheral: ReadUInt32 from 0x8 (unknown), returned 0xAB
+
+Should Connect To Remote Bus Peripheral And Read
+    [Tags]                          skip_windows
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC_PERIPH}  ${LOCAL_PERIPHERAL_PLATFORM}
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=0, access_types=[Write], access_widths=[DoubleWord])  startEmulation=false
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=1, access_types=[ReadWrite], access_widths=[Byte])    startEmulation=false
+    Wait For Log Entry              ${SERVER_NAME}: Registered sysbus callbacks (ed=2, access_types=[Read], access_widths=[DoubleWord])   startEmulation=false
+
+    ${op1}=                         Execute Command                 sysbus ReadDoubleWord 0x2000
+    ${op2}=                         Execute Command                 sysbus ReadDoubleWord 0x2000
+    ${op3}=                         Execute Command                 sysbus ReadDoubleWord 0x2000
+
+    ${output}=                      Quit Renode  ${remote}
+    Should Be Equal As Numbers      ${op1}    1
+    Should Be Equal As Numbers      ${op2}    2
+    Should Be Equal As Numbers      ${op3}    3

@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 using Antmicro.Renode.Core;
@@ -69,6 +71,49 @@ namespace Antmicro.Renode.Network
             var machineId = ((GetMachine)GetCommandHandler(Command.GetMachine)).GetExternalMachineId(externalMachine);
             var command = (GPIOPort)GetCommandHandler(Command.GPIOPort);
             command.RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
+        }
+
+        public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string localContextName = null)
+        {
+            try
+            {
+                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(localMachineName, out var machine))
+                {
+                    throw new RecoverableException($"No machine with name: {localMachineName} was found");
+                }
+
+                IPeripheral localContextPeripheral = null;
+                if(localContextName is not null && !machine.TryGetByName<IPeripheral>(localContextName, out localContextPeripheral))
+                {
+                    throw new RecoverableException($"No peripheral with name: {localContextName} was found");
+                }
+
+                var command = (SystemBus)commandHandlers.GetHandler(Command.SystemBus);
+
+                var response = this.SendRequest(MessagePayload.Request(Command.GetMachine, remoteMachineName));
+                response.LogOnError(command.Identifier, this);
+                if(response.Type != CommandType.Success)
+                {
+                    throw new RecoverableException($"Remote Renode doesn't have the machine named: {remoteMachineName}");
+                }
+                var remoteMachineId = BitConverter.ToInt32(response.Data);
+
+                // Sends a request to get remote peripheral id
+                response = SendRemoteRegisterRequest(remoteMachineId, remotePeripheralName);
+                if(response.Type != CommandType.Success)
+                {
+                    throw new RecoverableException($"Remote Renode doesn't have the peripheral named: {remotePeripheralName}");
+                }
+                var remotePeripheralId = BitConverter.ToInt32(response.Data);
+
+                command.RegisterRemoteCallback(remotePeripheralId, accessWidth, accessType, machine, localContextPeripheral);
+            }
+            catch(Exception e)
+            {
+                // catch any exception, log it, then forward to Monitor
+                this.ErrorLog("Failed to register remote callback: {0}", e.Message);
+                throw;
+            }
         }
 
         public void Dispose()
@@ -186,6 +231,11 @@ namespace Antmicro.Renode.Network
 
                 disposeCancelationTokenSource?.Dispose();
             }
+        }
+
+        private MessagePayload SendRemoteRegisterRequest(int remoteMachineId, string remotePeripheralName)
+        {
+            return this.SendRequest(MessagePayload.Request(Command.SystemBus, new RemoteBusRegistrationRequest(remoteMachineId, remotePeripheralName).GetRawBytes()));
         }
 
         private void RestartConnection()
@@ -420,12 +470,33 @@ namespace Antmicro.Renode.Network
             {
                 if(!commandHandlers.TryGetValue(id, out var command))
                 {
-                    return null; ;
+                    return null;
                 }
                 return command;
             }
 
             private readonly Dictionary<Command, ICommand> commandHandlers;
+        }
+
+        private struct RemoteBusRegistrationRequest
+        {
+            public RemoteBusRegistrationRequest(int remoteMachineId, string remotePeripheralName)
+            {
+                nameBytes = Encoding.UTF8.GetBytes(remotePeripheralName);
+                internals = new Internals(-1, remoteMachineId, nameBytes.Length);
+            }
+
+            public byte[] GetRawBytes()
+            {
+                return internals.AsRawBytes().Concat(nameBytes).ToArray();
+            }
+
+            [StructLayout(LayoutKind.Sequential, Pack = 1)]
+            private record struct Internals(int Id, int RemoteMachineId, int NameLength);
+
+            private readonly Internals internals;
+            // Array size cannot be inferred at runtime by Marshal.SizeOf, so it remains outside
+            private readonly byte[] nameBytes;
         }
 
         private enum State

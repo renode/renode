@@ -5,11 +5,13 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.Bus;
@@ -24,7 +26,105 @@ namespace Antmicro.Renode.Network.ExternalControl
             Instances = new InstanceCollection<IPeripheral>();
         }
 
-        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> data)
+        public void RegisterRemoteCallback(int remotePeripheralId, AccessWidth accessWidth, AccessType accessType, IMachine localMachine, IPeripheral localContext = null)
+        {
+            if(!ValidateRegisterCallbackParameters(accessWidth, accessType, out var parameterError))
+            {
+                throw new RecoverableException(parameterError);
+            }
+
+            lock(remotePeripheralCallbacks)
+            {
+                var newCallback = new RemoteCallbackType(remotePeripheralCallbacks.Count, localMachine, localContext);
+                remotePeripheralCallbacks.Add(newCallback);
+                var response = SendCallbackRegisterRequest(remotePeripheralId, accessWidth, accessType, newCallback.Id);
+
+                response.LogOnError(Identifier, parent);
+                if(response.Type != CommandType.Success)
+                {
+                    // Remove the callback only on failure - as the remote might send messages immediately otherwise
+                    remotePeripheralCallbacks.RemoveAt(remotePeripheralCallbacks.Count - 1);
+                    throw new RecoverableException("Could not register remote callback. Check logs for details");
+                }
+                parent.DebugLog("Registered remote callback with id: {0}", remotePeripheralId);
+            }
+        }
+
+        public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> data) => this.HandleInstanceBasedCommand(instance, data);
+
+        public override MessagePayload Invoke(MessagePayload payload)
+        {
+            return payload.Type switch
+            {
+                CommandType.EventRequest => HandleSysbusCallbackEventRequest(payload),
+                CommandType.Request => this.InvokeHandledWithInstance(payload),
+                _ => MessagePayload.Error(Identifier, "Invalid command type"),
+            };
+        }
+
+        public override Command Identifier => Command.SystemBus;
+
+        public InstanceCollection<IPeripheral> Instances { get; }
+
+        private MessagePayload HandleSysbusCallbackEventRequest(MessagePayload payload)
+        {
+            parent.DebugLog($"Received {nameof(SystemBus)} EventRequest");
+
+            var callbackId = BitConverter.ToInt32(payload.Data[..SizeOfCallbackId]);
+            var data = (ReadOnlySpan<byte>)payload.Data[SizeOfCallbackId..];
+#if DEBUG
+            parent.NoisyLog("... raw payload {0}", payload.ToString());
+#endif
+
+            var headerSize = Marshal.SizeOf(typeof(SystemBusEventHeader));
+            var header = data.Slice(0, headerSize).ToArray().ToStruct<SystemBusEventHeader>();
+
+#if DEBUG
+            parent.NoisyLog("... Timestamp: {0}, AccessType: {1}, AccessWidth: {2}, Address: 0x{3:X}, DataCount: {4}",
+                header.Timestamp, header.AccessType.ToString(), header.AccessWidth.ToString(), header.Address, header.DataCount);
+
+            parent.NoisyLog("... with remote peripheral callback id: {0}", callbackId);
+#endif
+
+            RemoteCallbackType registeredCallback;
+            lock(remotePeripheralCallbacks)
+            {
+                if(remotePeripheralCallbacks.Count <= callbackId)
+                {
+                    return MessagePayload.Error(Identifier, $"No remote callback with id: {callbackId} registered");
+                }
+                registeredCallback = remotePeripheralCallbacks[callbackId];
+            }
+
+            var sysbus = registeredCallback.Machine.SystemBus;
+            var context = registeredCallback.Context;
+
+            if(header.AccessType == AccessType.Read)
+            {
+                var readData = PerformRead(sysbus, context, header.Address, header.AccessWidth, header.DataCount);
+#if DEBUG
+                parent.NoisyLog("... reading data {0}", Misc.PrettyPrintCollectionHex(readData));
+#endif
+                return MessagePayload.Success(Identifier, readData);
+            }
+            else
+            {
+                var expectedByteCount = (int)DataCountToByteCount(header.AccessWidth, header.DataCount);
+                var dataPortionLen = data.Slice(headerSize).Length;
+                if(dataPortionLen != expectedByteCount)
+                {
+                    parent.WarningLog("Received different amount of data for writing: {0} than the data count indicates: {1}. Extra trailing bytes will be dropped", dataPortionLen, expectedByteCount);
+                }
+                var writeData = data.Slice(headerSize, expectedByteCount).ToArray();
+#if DEBUG
+                parent.NoisyLog("... writing data {0}", Misc.PrettyPrintCollectionHex(writeData));
+#endif
+                PerformWrite(sysbus, context, header.Address, header.AccessWidth, writeData);
+                return MessagePayload.Success(Identifier);
+            }
+        }
+
+        private MessagePayload HandleInstanceBasedCommand(IPeripheral instance, ReadOnlySpan<byte> data)
         {
             if(data.Length == 0)
             {
@@ -47,11 +147,13 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
-        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);
-
-        public override Command Identifier => Command.SystemBus;
-
-        public InstanceCollection<IPeripheral> Instances { get; }
+        private MessagePayload SendCallbackRegisterRequest(int remotePeripheralId, AccessWidth accessWidth, AccessType accessType, int remoteEventId)
+        {
+            // This command registers the callback on the remote sysbus
+            return parent.SendRequest(MessagePayload.Request(Command.SystemBus,
+                new RemoteCallbackRegisterRequest(remotePeripheralId, accessWidth, accessType, remoteEventId)
+            ));
+        }
 
         private MessagePayload PerformRegisterCallbacks(IPeripheral instance, ReadOnlySpan<byte> data)
         {
@@ -62,7 +164,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 var ed = BitConverter.ToInt32(data[3..]);
                 if(!ValidateRegisterCallbackParameters(accessWidths, accessTypes, out var parameterError))
                 {
-                    return parameterError;
+                    return MessagePayload.Error(Identifier, parameterError);
                 }
 
                 RegisterCallbacks(externalPeripheral, accessWidths, accessTypes, ed);
@@ -206,29 +308,29 @@ namespace Antmicro.Renode.Network.ExternalControl
             return true;
         }
 
-        private bool ValidateRegisterCallbackParameters(AccessWidth accessWidths, AccessType accessTypes, out MessagePayload error)
+        private bool ValidateRegisterCallbackParameters(AccessWidth accessWidths, AccessType accessTypes, out string error)
         {
             if(accessWidths == default)
             {
-                error = MessagePayload.Error(Identifier, "At least one access width must be specified.");
+                error = "At least one access width must be specified.";
                 return false;
             }
 
             if((accessWidths & ~ValidCallbackAccessWidths) != default)
             {
-                error = MessagePayload.Error(Identifier, $"Invalid access width flags: {accessWidths}");
+                error = $"Invalid access width flags: {accessWidths}";
                 return false;
             }
 
             if(accessTypes == default)
             {
-                error = MessagePayload.Error(Identifier, "At least one access type must be specified.");
+                error = "At least one access type must be specified.";
                 return false;
             }
 
             if((accessTypes & ~ValidCallbackAccessTypes) != default)
             {
-                error = MessagePayload.Error(Identifier, $"Invalid access type flags: {accessTypes}");
+                error = $"Invalid access type flags: {accessTypes}";
                 return false;
             }
 
@@ -364,6 +466,11 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
+        private record struct RemoteCallbackType(int Id, IMachine Machine, IPeripheral Context);
+
+        private readonly List<RemoteCallbackType> remotePeripheralCallbacks = new();
+        private const int SizeOfCallbackId = 4;
+
         private const AccessType ValidCallbackAccessTypes = AccessType.Read | AccessType.Write;
 
         private const AccessWidth ValidCallbackAccessWidths =
@@ -381,6 +488,33 @@ namespace Antmicro.Renode.Network.ExternalControl
             sizeof(ulong) + // Address
             sizeof(uint); // Amount of units to write
 
+        public enum Operation : byte
+        {
+            Read = 0,
+            Write = 1,
+            GetName = 2,
+            RegisterCallbacks = 3,
+        }
+
+        [Flags]
+        public enum AccessType : byte
+        {
+            Read = 1,
+            Write = 2,
+            ReadWrite = Read | Write,
+        }
+
+        [Flags]
+        public enum AccessWidth : byte
+        {
+            Byte = 1,
+            Word = 2,
+            DoubleWord = 4,
+            QuadWord = 8,
+            MultiByte = 128,
+            AnyWidth = QuadWord | DoubleWord | Word | Byte | MultiByte,
+        }
+
         // Use Pack=1 to ensure there's no padding between fields
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct SystemBusEventHeader
@@ -392,29 +526,22 @@ namespace Antmicro.Renode.Network.ExternalControl
             public uint DataCount;
         }
 
-        private enum Operation : byte
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct RemoteCallbackRegisterRequest
         {
-            Read = 0,
-            Write = 1,
-            GetName = 2,
-            RegisterCallbacks = 3,
-        }
+            public RemoteCallbackRegisterRequest(int remotePeripheralId, AccessWidth accessWidths, AccessType accessTypes, int remoteEventId)
+            {
+                RemotePeripheralId = remotePeripheralId;
+                AccessWidths = accessWidths;
+                AccessTypes = accessTypes;
+                RemoteEventId = remoteEventId;
+            }
 
-        [Flags]
-        private enum AccessType : byte
-        {
-            Read = 1,
-            Write = 2,
-        }
-
-        [Flags]
-        private enum AccessWidth : byte
-        {
-            Byte = 1,
-            Word = 2,
-            DoubleWord = 4,
-            QuadWord = 8,
-            MultiByte = 128,
+            public int RemotePeripheralId;
+            private readonly Operation operation = Operation.RegisterCallbacks;
+            public AccessWidth AccessWidths;
+            public AccessType AccessTypes;
+            public int RemoteEventId;
         }
     }
 }

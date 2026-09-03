@@ -36,6 +36,16 @@ namespace Antmicro.Renode.Network.ExternalControl
             return BitConverter.GetBytes(nameBytes.Length).Concat(nameBytes);
         }
 
+        public static int GetInstanceId(MessagePayload payload)
+        {
+            return BitConverter.ToInt32(payload.Data[InstanceIdOffset..(InstanceIdOffset + InstanceIdSize)]);
+        }
+
+        public static ReadOnlySpan<byte> GetPayloadData(MessagePayload payload)
+        {
+            return payload.Data[PayloadOffset..];
+        }
+
         public static MessagePayload InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, MessagePayload payload, Predicate<T> instanceFilter = null)
             where T : IEmulationElement
         {
@@ -43,7 +53,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
                 return MessagePayload.Error(@this.Identifier, $"Expected at least {PayloadOffset} bytes of payload");
             }
-            var id = BitConverter.ToInt32(payload.Data[InstanceIdOffset..(InstanceIdOffset + InstanceIdSize)]);
+            var id = GetInstanceId(payload);
 
             var instance = default(T);
             var instanceFound = false;
@@ -58,12 +68,12 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             if(instanceFound)
             {
-                return @this.Invoke(instance, payload.Data[PayloadOffset..]);
+                return @this.Invoke(instance, GetPayloadData(payload));
             }
 
             if(id != IInstanceBasedCommand<T>.RegisterNewInstanceSpecialId)
             {
-                return MessagePayload.Error(@this.Identifier, "Invalid instance id");
+                return MessagePayload.Error(@this.Identifier, $"Invalid instance id {id}");
             }
 
             // requested instance registration

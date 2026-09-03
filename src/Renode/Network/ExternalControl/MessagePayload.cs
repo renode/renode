@@ -71,6 +71,17 @@ namespace Antmicro.Renode.Network.ExternalControl
                 .Concat(data).ToArray());
         }
 
+        public static MessagePayload Request(Command command, byte[] payload)
+        {
+            return new MessagePayload(command, CommandType.Request, payload);
+        }
+
+        public static MessagePayload Request(Command command, string payload)
+        {
+            var payloadBytes = Encoding.UTF8.GetBytes(payload);
+            return new MessagePayload(command, CommandType.Request, payloadBytes.Length.AsRawBytes().Concat(payloadBytes).ToArray());
+        }
+
         public static MessagePayload Request<T>(Command command, T payload) where T : struct
         {
             return new MessagePayload(command, CommandType.Request, payload.AsRawBytes());
