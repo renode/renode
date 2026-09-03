@@ -17,6 +17,7 @@ ${SHARED_FILE}                  testfile
 ${SHARED_DIR}                   shareddir
 ${VIRTIOFS_TAG}                 "MySharedDir"
 ${SYSTEM}=                      Evaluate         platform.system()    modules=platform
+${DISK_ID}                      VirtIOBlkIdIdMaxSize
 
 *** Keywords ***
 Custom Suite Setup
@@ -40,7 +41,7 @@ Custom Suite Teardown
 Create Machine VirtIOBlock
     Execute Command             $fdt=@https://dl.antmicro.com/projects/renode/virtio-hifive_unleashed.dtb-s_10640-08834542504afb748827fdca52515f156e971d5f
     Execute Script              ${SCRIPT_BLK}
-    Execute Command             machine LoadPlatformDescriptionFromString 'virtioblk: Storage.VirtIOBlockDevice @ sysbus 0x100d0000 { IRQ -> plic@50 }'
+    Execute Command             machine LoadPlatformDescriptionFromString 'virtioblk: Storage.VirtIOBlockDevice @ sysbus 0x100d0000 { diskId: "${DISK_ID}WithExtra"; IRQ -> plic@50 }'
 
 Create Machine VirtIOFS
     Execute Command             $platform=@tests/peripherals/virtio-platform.repl
@@ -105,9 +106,16 @@ Read Shared Directory
 Should Boot
     Create Machine VirtIOBlock
     Create Terminal Tester      ${UART}
+
+    Create Log Tester               0
+
     Start Emulation
     
     Setup Machine VirtIOBlock
+
+    Write Line To Uart          cat /sys/block/vda/serial; echo
+    Wait For Line On Uart       ^${DISK_ID}$  treatAsRegex=true  # Only value on the whole line so it has no more bytes than expected
+
     Write Line To Uart          echo ${INPUT} > /mnt/drive/file
     Wait For Prompt On Uart     ${PROMPT}
     Write Line To Uart          cat /mnt/drive/file
@@ -115,6 +123,8 @@ Should Boot
     Wait For Prompt On Uart     ${PROMPT}
     Write Line To Uart          umount /dev/vda
     Wait For Prompt On Uart     ${PROMPT}
+
+    Should Not Be In Log        virtioblk   timeout=0    level=Error
     # We encountered data corruption when closing the emulation right after `umount`.
     # Although `umount` should wait for all write operations on the device to finish, we noticed writes even after the prompt in bash is printed.
     # Surprisingly even using `sync; sync` doesn't help here.
@@ -132,3 +142,31 @@ Should Be Persistent
     Wait For Prompt On Uart     ${PROMPT}
     Write Line To Uart          umount /dev/vda
     Wait For Prompt On Uart     ${PROMPT}
+
+Default Disk Id Should Be Peripheral Name
+    Execute Command     mach create
+    Execute Command     machine LoadPlatformDescriptionFromString "blk: Storage.VirtIOBlockDevice @ sysbus 0x1000"
+    ${diskId}=          Execute Command     blk DiskId
+    Should Be Equal     ${diskId.strip()}   machine-0.blk
+
+Disk Id Argument Should Be Disk Id
+    Execute Command     mach create
+    Execute Command     machine LoadPlatformDescriptionFromString "blk: Storage.VirtIOBlockDevice @ sysbus 0x1000 { diskId:\\"MYDISK\\"}"
+    ${diskId}=          Execute Command     blk DiskId
+    Should Be Equal     ${diskId.strip()}   MYDISK
+
+Non ASCII Default Disk Id Should Be Encoded As ASCII
+    Create Log Tester   0
+    Execute Command     mach create
+    Execute Command     machine LoadPlatformDescriptionFromString "blké: Storage.VirtIOBlockDevice @ sysbus 0x1000"
+    ${diskId}=          Execute Command     blké DiskId
+    Should Be Equal     ${diskId.strip()}   machine-0.blk?
+    Wait For Log Entry  contains non-ASCII characters, they will be replaced with '?'
+
+Non ASCII Disk Id Should Be Encoded As ASCII
+    Create Log Tester   0
+    Execute Command     mach create
+    Execute Command     machine LoadPlatformDescriptionFromString "blk: Storage.VirtIOBlockDevice @ sysbus 0x1000 { diskId:\\"MYéDISK\\"}"
+    ${diskId}=          Execute Command     blk DiskId
+    Should Be Equal     ${diskId.strip()}   MY?DISK
+    Wait For Log Entry  contains non-ASCII characters, they will be replaced with '?'
