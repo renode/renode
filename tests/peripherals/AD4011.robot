@@ -38,7 +38,7 @@ Assert Voltage
     ${volts}=                      Measurement To Volts  ${measurement}
 
     # Account for ADC's finite precision
-    Should Be True                 abs(${volts} - (${expected} - ${REFERENCE_VOLTAGE})) < 0.00005
+    Should Be True                 abs(${volts} - ${expected}) < 0.00005
 
 
 Set Mux Address
@@ -57,8 +57,8 @@ Should Read Correct Voltage
     Execute Command                machine LoadPlatformDescriptionFromString """${PLATFORM}"""
     Execute Command                machine LoadPlatformDescriptionFromString "vin: Analog.ADCChannelSource @ adc 0"
 
-    # ADC can measure voltage in range [V_ref - V_ref; V_ref + V_ref) - test the entire range in 0.5V increments
-    FOR    ${input_voltage}    IN RANGE    0  ${REFERENCE_VOLTAGE} + ${REFERENCE_VOLTAGE}  0.5
+    # ADC can measure voltage in range [-V_ref; V_ref) - test the entire positive range in 0.5V increments
+    FOR    ${input_voltage}    IN RANGE    0  ${REFERENCE_VOLTAGE}  0.5
         Execute Command                spi1.adc.vin Volts ${input_voltage}
         Assert Voltage                 ${input_voltage}
     END
@@ -70,8 +70,8 @@ Should Read Correct Voltage From Floating Sources
     Execute Command                machine LoadPlatformDescriptionFromString "input0: Analog.ADCChannelSource @ vin 0"
     Execute Command                machine LoadPlatformDescriptionFromString "input1: Analog.ADCChannelSource @ vin 1"
 
-    ${input0_v}=                   Set Variable  ${REFERENCE_VOLTAGE}
-    ${input1_v}=                   Evaluate  2 * ${REFERENCE_VOLTAGE}
+    ${input0_v}=                   Set Variable  0
+    ${input1_v}=                   Evaluate  ${REFERENCE_VOLTAGE}
 
     Execute Command                spi1.adc.vin.input0 Volts ${input0_v}
     Execute Command                spi1.adc.vin.input1 Volts ${input1_v}
