@@ -439,8 +439,10 @@ class RobotTestSuite(object):
     robot_frontend_process = None
     renode_pid = -1  # It's not always robot_frontend_process.pid, e.g., with `--run-gdb` option.
     hotspot_action = ['None', 'Pause', 'Serialize']
-    # Used to share the port between all suites when running sequentially
+    # Used to share the port, directory and command used by Renode between all suites when running sequentially
     remote_server_port = -1
+    remote_server_directory = None
+    remote_server_command = []
     retry_test_regex = re.compile(r"\[RETRY\] (PASS|FAIL) on (\d+)\. retry\.")
     retry_suite_regex = re.compile(r"|".join((
             r"\[Errno \d+\] Connection refused",
@@ -455,7 +457,6 @@ class RobotTestSuite(object):
         self.path = path
         self.known_unstable: Optional[KnownUnstableSuite] = None
         self._dependencies_met = set()
-        self.remote_server_directory = None
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
         self.suite_log_files = None
 
@@ -504,8 +505,8 @@ class RobotTestSuite(object):
 
         prepend_dotnet = options.remote_server_name.endswith('.dll')
 
-        self.remote_server_directory = options.remote_server_full_directory
-        remote_server_binary = os.path.join(self.remote_server_directory, options.remote_server_name)
+        RobotTestSuite.remote_server_directory = options.remote_server_full_directory
+        remote_server_binary = os.path.join(RobotTestSuite.remote_server_directory, options.remote_server_name)
 
         if not os.path.isfile(remote_server_binary):
             raise Exception("Robot framework remote server binary not found: '{}'! Did you forget to build?".format(remote_server_binary))
@@ -515,21 +516,25 @@ class RobotTestSuite(object):
         if remote_server_port != 0 and not is_port_available(remote_server_port, options.autokill_renode):
             raise Exception("The selected port {} is not available".format(remote_server_port))
 
-        command = [remote_server_binary, '--robot-server-port', str(remote_server_port)]
+        command = [remote_server_binary]
+
+        if prepend_dotnet:
+            command.insert(0, 'dotnet')
         if not options.show_log and not options.keep_renode_output:
             command.append('--hide-log')
         if not options.enable_xwt:
             command.append('--disable-gui')
-        if options.debug_on_error:
-            command.append('--robot-debug-on-error')
         if options.keep_temps:
             command.append('--keep-temporary-files')
         if options.renode_config:
             command.append('--config')
             command.append(options.renode_config)
 
-        if prepend_dotnet:
-            command.insert(0, 'dotnet')
+        RobotTestSuite.remote_server_command = list(command) # For the purpose of running another Renode in a test
+
+        if options.debug_on_error:
+            command.append('--robot-debug-on-error')
+        command.extend(['--robot-server-port', str(remote_server_port)])
 
         renode_command = command
         stdout_path, stderr_path = None, None
@@ -537,7 +542,7 @@ class RobotTestSuite(object):
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
             command = ['gdb', '-nx', '-ex', 'handle SIG34 nostop noprint', '--args'] + command
-            process = psutil.Popen(command, cwd=self.remote_server_directory, bufsize=1)
+            process = psutil.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1)
 
             if options.keep_renode_output:
                 print("Note: --keep-renode-output is not supported when using --run-gdb")
@@ -568,9 +573,9 @@ class RobotTestSuite(object):
             print(f"WARNING: perf stdout and stderr is being redirected to {stdout_path}")
 
             perf_stdout_stderr_file = open(stdout_path, "w")
-            process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file, creationflags=CREATE_NEW_PROCESS_GROUP)
+            process = subprocess.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1, stdout=perf_stdout_stderr_file, stderr=perf_stdout_stderr_file, creationflags=CREATE_NEW_PROCESS_GROUP)
 
-            pid_file_path = os.path.join(self.remote_server_directory, pid_filename)
+            pid_file_path = os.path.join(RobotTestSuite.remote_server_directory, pid_filename)
             perf_renode_timeout = 10
 
             if process.pid == -1:
@@ -598,13 +603,13 @@ class RobotTestSuite(object):
                 stderr_path = os.path.join(logs_dir, f"{suite_name}.renode_stderr.log")
                 fout = open(stdout_path, "wb", buffering=0)
                 ferr = open(stderr_path, "wb", buffering=0)
-                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr, creationflags=CREATE_NEW_PROCESS_GROUP)
+                process = subprocess.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr, creationflags=CREATE_NEW_PROCESS_GROUP)
                 if process.pid == -1:
                     report_dead_subprocess(process)
 
                 self.renode_pid = process.pid
             else:
-                process = subprocess.Popen(command, cwd=self.remote_server_directory, bufsize=1, creationflags=CREATE_NEW_PROCESS_GROUP)
+                process = subprocess.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1, creationflags=CREATE_NEW_PROCESS_GROUP)
                 if process.pid == -1:
                     report_dead_subprocess(process)
                 self.renode_pid = process.pid
@@ -680,7 +685,7 @@ class RobotTestSuite(object):
         print(process_summary)
 
     def __move_perf_data(self, options):
-        perf_data_path = os.path.join(self.remote_server_directory, "perf.data")
+        perf_data_path = os.path.join(RobotTestSuite.remote_server_directory, "perf.data")
 
         if not perf_data_path:
             raise RuntimeError("perf.data file was not generated succesfully")
@@ -1039,7 +1044,8 @@ class RobotTestSuite(object):
         output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
         variables = [
             'SKIP_RUNNING_SERVER:True',
-            'DIRECTORY:{}'.format(self.remote_server_directory),
+            'DIRECTORY:{}'.format(RobotTestSuite.remote_server_directory),
+            'COMMAND:{}'.format(subprocess.list2cmdline(RobotTestSuite.remote_server_command)),
             'PORT_NUMBER:{}'.format(self.remote_server_port),
             'RESULTS_DIRECTORY:{}'.format(output_dir),
             'BINARY_NAME:{}'.format(options.remote_server_name),
