@@ -72,6 +72,7 @@ function clone_if_necessary() {
     fi
 
     rm -rf "$TARGET_DIR"
+    echo "Cloning the $BRANCH branch from $REMOTE..."
     git clone --depth=1 --single-branch --branch=$BRANCH $REMOTE $(get_path "$TARGET_DIR")
 }
 
