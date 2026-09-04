@@ -802,7 +802,7 @@ class RobotTestSuite(object):
         if status.text is not None and cls.retry_suite_regex.search(status.text):
             return True
         else:
-            return any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg"))
+            return any(cls.retry_suite_regex.search(msg.text) for msg in test.iter("msg") if msg.text is not None)
 
 
     def run(self, options, iteration_index=1, suite_retry_index=0):
