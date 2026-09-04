@@ -1,0 +1,35 @@
+mach create "coralnpu-client"
+$client_port ?= 3345
+
+# Raise log level for emulation to avoid `machine paused` and `machine resumed` logs when advancing time
+logLevel 3 "coralnpu-client" false
+
+logFile @externally_controlled_renode.log
+
+machine LoadPlatformDescriptionFromString "npu: CPU.CoralNPU @ sysbus 0xE00000000"
+
+emulation CreateExternalControlClient "client" $client_port
+
+python """
+_NPU_PATH = "sysbus.CoralNPU_RVV"
+
+def mc_coralStats_reset(line=None):
+    mc_coralStats_reset.last = monitor.Machine[_NPU_PATH].ExecutedInstructions
+    print "initializing instruction counting stats"
+
+def mc_coralStats_print(line=None):
+    last = mc_coralStats_reset.last
+    if last is None:
+        print "instruction counting stats not initialized"
+        return
+    current = monitor.Machine[_NPU_PATH].ExecutedInstructions
+    print "  %-20s %d (last run)" % ("Executed NPU (CoralNPU_RVV) instructions:", current)
+
+mc_coralStats_reset.last = None
+"""
+
+emulation SetAdvanceImmediately true
+
+client SynchronizeTimeWithExternal
+client AttachCustomCommandCallbackToMonitor
+client RegisterRemoteBusPeripheral "coralnpu-client" "frdm_imx8mp" "npu" AnyWidth ReadWrite

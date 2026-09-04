@@ -133,6 +133,30 @@ Run Renodes Freely
 
     [Return]                        ${remote}
 
+Ensure NPU Device In Reset
+    # Follow initialization procedures as described in:
+    # https://github.com/google-coral/coralnpu/blob/main/doc/integration_guide.md#booting-coralnpu
+
+    # Write to physical memory
+    Write Line To Uart              devmem 0xE00030000
+    # Ensure that the device is in reset, and has gated its clock
+    Wait For Line On Uart           0x00000003
+
+Release NPU Clock Gate And Reset
+    # Release Clock Gate
+    Write Line To Uart              devmem 0xE00030000 w 0x1
+    Write Line To Uart              devmem 0xE00030000
+    Wait For Line On Uart           0x00000001
+
+    # Release Reset
+    Write Line To Uart              devmem 0xE00030000 w 0x0
+    Write Line To Uart              devmem 0xE00030000
+    Wait For Line On Uart           0x00000000
+
+Check If NPU Finished
+    Write Line To Uart              devmem 0xE00030008
+    Wait For Line On Uart           0x00000001
+
 *** Test Cases ***
 Should Connect Two Renodes
     [Tags]                          basic-tests  skip_windows
@@ -278,3 +302,52 @@ Should Quit Local Renode While Running
 
     Reset Emulation
     ${output}=                      Quit Renode  ${remote}
+
+Should Launch Sample Coral App
+    [Tags]                          skip_windows
+    [Timeout]                       NONE
+
+    Execute Command                 include @scripts/complex/coral_npu/external_control/imx8mplus_linux_coral_external_control_server.resc
+    Create Terminal Tester          sysbus.uart2  timeout=120   defaultPauseEmulation=true
+
+    Create Log Tester               1
+
+    Execute Command                 logLevel 0 ${SERVER_NAME}
+    ${remote}=                      Start Renode  ${PORT}  scripts/complex/coral_npu/external_control/imx8mplus_linux_coral_external_control_client.resc
+    Wait For Log Entry              Registered sysbus callbacks  startEmulation=false
+    Execute Command                 logLevel 1 ${SERVER_NAME}
+
+    ${response} =                   Execute Command      ${SERVER_NAME} SendCustomCommand 'coralStats_reset'
+
+    Wait For Line On Uart           ==== Hello World! Linux i.MX 8M Plus ====
+    Wait For Prompt On Uart         \#${SPACE}
+    Write Line To Uart              uname -a
+    Wait For Line On Uart           Linux
+
+    Ensure NPU Device In Reset
+
+    # Copy the binary to NPU's Instruction Memory
+    Execute Command                 sysbus LoadBinary @https://dl.antmicro.com/projects/renode/coralnpu_v2_hello_world_add_floats.bin-s_65648-0e3f5d6ae173fa2e06f6b5f91906ef721516de4c 0xE00000000
+
+    # Initialize input data in Data Memory
+    Write Line To Uart              devmem 0xE00010000 w 2
+    Write Line To Uart              devmem 0xE00010000
+    Wait For Line On Uart           0x00000002
+
+    Write Line To Uart              devmem 0xE00010020 w 5
+    Write Line To Uart              devmem 0xE00010020
+    Wait For Line On Uart           0x00000005
+
+    Release NPU Clock Gate And Reset
+
+    # Check that we finished the program
+    Wait Until Keyword Succeeds     30s  1s  Check If NPU Finished
+
+    # Check the result (this is an addition A + B)
+    Write Line To Uart              devmem 0xE00010040
+    Wait For Line On Uart           0x00000007
+
+    ${response} =                   Execute Command      ${SERVER_NAME} SendCustomCommand 'coralStats_print'
+    Should Contain                  ${response}  Executed NPU (CoralNPU_RVV) instructions: 208
+
+    Quit Renode                     ${remote}

@@ -1,0 +1,42 @@
+$name?="frdm_imx8mp"
+$uboot_elf=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
+$sd_img=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu.img-s_268435456-cdb480062eef74beaf1fe80c020637f84a5d4bc1
+
+emulation CreateExternalControlServer "server" 3345
+
+i @scripts/single-node/nxp-imx8mplus_linux.resc
+machine SdCardFromFile $sd_img usdhc2 0x10000000 False "sd-external-sd3.0-4bit"
+
+# Add the external NPU
+machine LoadPlatformDescriptionFromString "npu: Bus.ExternalControlBusPeripheral @ sysbus 0xE00000000 {size: 0x30100}"
+
+python """
+import Antmicro.Renode.Hooks.UartHooksExtensions as UartHooks
+clr.ImportExtensions(Antmicro.Renode.Hooks.UartHooksExtensions)
+
+machine = monitor.Machine
+uart = machine['sysbus.uart2']
+
+def mc_coralStats_reset(line=None):
+	print externals.server.SendCustomCommand('coralStats_reset')
+
+def mc_coralStats_print(line=None):
+	print externals.server.SendCustomCommand('coralStats_print')
+
+uart.AddLineHook(lambda line: '# run_coral' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'coral: finished, output[0] = 0x0007' in line, mc_coralStats_print)
+uart.AddLineHook(lambda line: '# arm_vector_add' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'arm_vector_add: output[0] = 0x0007' in line, mc_coralStats_print)
+"""
+
+echo ""
+echo "i.MX 8M Plus Linux with Coral NPU"
+echo ""
+echo "Available commands in the Linux shell:"
+echo "  prepare_coral   - stages rvv_add_intrinsic.bin into the NPU's ITCM"
+echo "  run_coral       - runs the payload on the NPU and reports its instruction usage statistics"
+echo "  arm_vector_add  - runs the same payload natively on the Cortex-A53 cores and reports its instruction usage statistics"
+echo ""
+
+# Increase performance in External Control setup
+emulation SetGlobalQuantum "0.001"
