@@ -1,0 +1,140 @@
+// Aspeed AST2600 EVB - Minimal platform for development
+// Dual Cortex-A7, GICv2, UART, SCU
+
+// Boot ROM alias: AST2600 maps SPI flash to 0x0 at reset
+bootrom: Memory.MappedMemory @ sysbus 0x0
+    size: 0x2000000
+
+cpu0: CPU.ARMv7A @ sysbus
+    cpuType: "cortex-a7"
+    genericInterruptController: gic
+    cpuId: 0
+
+cpu1: CPU.ARMv7A @ sysbus
+    cpuType: "cortex-a7"
+    genericInterruptController: gic
+    cpuId: 1
+    init:
+        IsHalted true
+
+gentimer0: Timers.ARM_GenericTimer @ cpu0
+    frequency: 1200000000
+    defaultCounterFrequencyRegister: 1200000000
+    EL1PhysicalTimerIRQ -> gic#0@30
+    EL1VirtualTimerIRQ -> gic#0@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#0@26
+
+gentimer1: Timers.ARM_GenericTimer @ cpu1
+    frequency: 1200000000
+    defaultCounterFrequencyRegister: 1200000000
+    EL1PhysicalTimerIRQ -> gic#1@30
+    EL1VirtualTimerIRQ -> gic#1@27
+    NonSecureEL2PhysicalTimerIRQ -> gic#1@26
+
+gic: IRQControllers.ARM_GenericInterruptController @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x40461000; size: 0x1000; region: "distributor" };
+        sysbus new Bus.BusMultiRegistration { address: 0x40462000; size: 0x2000; region: "cpuInterface" }
+    }
+    [0-1] -> cpu0@[0-1]
+    [2-3] -> cpu1@[0-1]
+    architectureVersion: IRQControllers.ARM_GenericInterruptControllerVersion.GICv2
+
+sram: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x16400
+
+dram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x40000000
+
+scu: Miscellaneous.Aspeed_SCU @ sysbus 0x1E6E2000
+
+
+// Flash backing store: registered at 0x60000000 (unused region in AST2600
+// memory map) purely for fast firmware loading via sysbus LoadBinary.
+// The FMC accesses this same MappedMemory internally through its
+// flashMemory property for the flash window at 0x20000000.
+// NOTE: 0x60000000 is safe — well below DRAM (0x80000000) and above
+// the SPI2 region (0x50000000). U-boot does not probe this range.
+flashMem: Memory.MappedMemory @ sysbus 0x60000000
+    size: 0x4000000
+
+fmc: SPI.Aspeed_FMC @ {
+        sysbus new Bus.BusMultiRegistration { address: 0x1E620000; size: 0x200; region: "registers" };
+        sysbus new Bus.BusMultiRegistration { address: 0x20000000; size: 0x4000000; region: "flash" }
+    }
+    flashMemory: flashMem
+    [0] -> gic@[39]
+
+sdmc: Miscellaneous.Aspeed_SDMC @ sysbus 0x1E6E0000
+
+sbc: Miscellaneous.Aspeed_SBC @ sysbus 0x1E6F2000
+
+gpio: GPIOPort.Aspeed_GPIO @ sysbus 0x1E780000
+    numberOfSets: 7
+    IRQ -> gic@40
+
+gpio_1_8v: GPIOPort.Aspeed_GPIO @ sysbus 0x1E780800
+    numberOfSets: 2
+    IRQ -> gic@11
+
+timer: Timers.Aspeed_Timer @ sysbus 0x1E782000
+    [0-7] -> gic@[16-23]
+
+wdt1: Timers.Aspeed_WDT @ sysbus 0x1E785000
+
+wdt2: Timers.Aspeed_WDT @ sysbus 0x1E785040
+
+wdt3: Timers.Aspeed_WDT @ sysbus 0x1E785080
+
+wdt4: Timers.Aspeed_WDT @ sysbus 0x1E7850C0
+
+uart5: UART.NS16550 @ sysbus 0x1E784000
+    wideRegisters: true
+    IRQ -> gic@8
+
+
+i2c: I2C.Aspeed_I2C @ sysbus 0x1E78A000
+    [0-15] -> gic@[110-125]
+
+pwm: Miscellaneous.Aspeed_PWM @ sysbus 0x1E610000
+    IRQ -> gic@44
+
+peci: Miscellaneous.Aspeed_PECI @ sysbus 0x1E78B000
+    IRQ -> gic@38
+
+xdma: Miscellaneous.Aspeed_XDMA @ sysbus 0x1E6E7000
+    IRQ -> gic@6
+
+rtc: Miscellaneous.Aspeed_RTC @ sysbus 0x1E781000
+    IRQ -> gic@13
+
+hace: Miscellaneous.Aspeed_HACE @ sysbus 0x1E6D0000
+    IRQ -> gic@4
+
+espi: Miscellaneous.Aspeed_eSPI @ sysbus 0x1E6EE000
+    IRQ -> gic@42
+
+adc: Miscellaneous.Aspeed_ADC @ sysbus 0x1E6E9000
+    IRQ -> gic@46
+
+lpc: Miscellaneous.Aspeed_LPC @ sysbus 0x1E789000
+    IRQ -> gic@35
+
+mdio0: Network.Aspeed_MDIO @ sysbus 0x1E650000
+
+mdio1: Network.Aspeed_MDIO @ sysbus 0x1E650008
+
+mdio2: Network.Aspeed_MDIO @ sysbus 0x1E650010
+
+mdio3: Network.Aspeed_MDIO @ sysbus 0x1E650018
+
+eth1: Network.Aspeed_FTGMAC100 @ sysbus 0x1E660000
+    IRQ -> gic@2
+
+eth2: Network.Aspeed_FTGMAC100 @ sysbus 0x1E680000
+    IRQ -> gic@3
+
+eth3: Network.Aspeed_FTGMAC100 @ sysbus 0x1E670000
+    IRQ -> gic@32
+
+eth4: Network.Aspeed_FTGMAC100 @ sysbus 0x1E690000
+    IRQ -> gic@33

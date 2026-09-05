@@ -26,3 +26,8 @@ packages
 perf.data
 perf.script
 .venv
+
+# AST2600 firmware build artifacts
+tests/peripherals/Aspeed/firmware/flash.bin
+tests/peripherals/Aspeed/firmware/u-boot-spl.bin
+tests/peripherals/Aspeed/firmware/u-boot.bin
