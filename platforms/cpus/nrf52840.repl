@@ -30,8 +30,13 @@ wdt: Timers.NRF52840_Watchdog @ sysbus 0x40010000
 
 ppi: Miscellaneous.NRF52840_PPI @ sysbus 0x4001F000
 
+nvmc: Miscellaneous.NRF52840_NVMC @ sysbus 0x4001E000
+
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x100000
+
+uicr: Memory.MappedMemory @ sysbus 0x10001000
+    size: 0x1000
 
 ram: Memory.MappedMemory @ { sysbus 0x800000; sysbus 0x20000000 }
     size: 0x40000
