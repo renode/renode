@@ -18,7 +18,7 @@ usart0: UART.EFR32xG2_USART_0 @ {
     TxBufferLowSingleRequest -> ldma@0x1042
     TxEmptyRequest -> ldma@0x0044
 
-eusart0: UART.EFR32xG2_EUSART_2 @ {
+eusart0: UART.SiLabs_EUSART_2 @ {
         sysbus <0x4B010000, +0x4000>; // EUSART0_S
         sysbus <0x5B010000, +0x4000>  // EUSART0_NS
     }
@@ -29,7 +29,7 @@ eusart0: UART.EFR32xG2_EUSART_2 @ {
     RxFifoLevelGpioSignal -> gpioPort@0x1202
     TxFifoLevel -> ldma@0x00F1
 
-eusart1: UART.EFR32xG2_EUSART_2 @ {
+eusart1: UART.SiLabs_EUSART_2 @ {
         sysbus <0x400A0000, +0x4000>; // EUSART1_S
         sysbus <0x500A0000, +0x4000>  // EUSART1_NS
     }
