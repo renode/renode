@@ -1,0 +1,20 @@
+:name: Realtek RTS5817 MAA
+:description: This script runs zephyr on RTS5817 MAA EVB
+
+$name?="Realtek RTS5817"
+
+$bin?=@https://zephyr-dashboard.renode.io/zephyr/7edd8834f66701189dfaf3f1142b2bfba0b508bd/rts5817_maa_evb/hello_world/hello_world.elf
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/realtek_rts5817.repl
+
+showAnalyzer uart0
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
