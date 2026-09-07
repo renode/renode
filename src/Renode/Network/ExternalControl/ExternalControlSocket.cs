@@ -16,6 +16,7 @@ using Antmicro.Renode.Debugging;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Network.ExternalControl;
+using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Time;
 using Antmicro.Renode.Utilities;
 
@@ -52,6 +53,22 @@ namespace Antmicro.Renode.Network
         {
             var command = (TimeElapsedCallbackCommand)commandHandlers.GetHandler(Command.TimeElapsedCallback);
             command.RegisterExternalCallback(callback);
+        }
+
+        public void ConnectExternalGPIOOutput(IGPIOReceiver gpioReceiver, int pinId, string externalMachine, string externalGPIO, int externalPinId)
+        {
+            var machine = gpioReceiver.GetMachine();
+            RegisterExternalGPIOChangeCallback(externalMachine, externalGPIO, externalPinId, (externalEventTimestamp, state) =>
+            {
+                machine.HandleTimeDomainEvent(gpioReceiver.OnGPIO, pinId, state, externalEventTimestamp);
+            });
+        }
+
+        public void RegisterExternalGPIOChangeCallback(string externalMachine, string externalGPIO, int externalPinId, Action<TimeStamp, bool> callback)
+        {
+            var machineId = ((GetMachine)GetCommandHandler(Command.GetMachine)).GetExternalMachineId(externalMachine);
+            var command = (GPIOPort)GetCommandHandler(Command.GPIOPort);
+            command.RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
         }
 
         public void Dispose()

@@ -5,9 +5,15 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Peripherals;
+using Antmicro.Renode.Time;
+using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
@@ -18,8 +24,6 @@ namespace Antmicro.Renode.Network.ExternalControl
         {
             Instances = new InstanceCollection<IPeripheral>();
         }
-
-        public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload, HasGPIO);
 
         public MessagePayload Invoke(IPeripheral instance, ReadOnlySpan<byte> data)
         {
@@ -81,6 +85,35 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
         }
 
+        public void RegisterExternalCallback(int machineId, string externalGPIO, int pinId, Action<TimeStamp, bool> callback)
+        {
+            var gpioId = ((IInstanceBasedCommand<IPeripheral>)this).GetExternalInstanceId(parent, machineId, externalGPIO);
+
+            int callbackId;
+            lock(externalCallbacks)
+            {
+                callbackId = externalCallbacks.Count;
+                externalCallbacks.Add(callback);
+            }
+            var data = BitConverter.GetBytes(gpioId)
+                .Append((byte)GPIOPortCommand.RegisterEvent)
+                .Concat(BitConverter.GetBytes(pinId))
+                .Concat(BitConverter.GetBytes(callbackId));
+            var response = parent.SendRequest(new MessagePayload(Identifier, CommandType.Request, data.ToArray()));
+            response.ThrowOnError(Identifier);
+        }
+
+        public override MessagePayload Invoke(MessagePayload payload)
+        {
+            return payload.Type switch
+            {
+                CommandType.Request => this.InvokeHandledWithInstance(payload, HasGPIO),
+                CommandType.EventRequest => HandleEventRequest(payload.Data),
+                _ => MessagePayload.Error($"Unexpected command type"),
+
+            };
+        }
+
         public override Command Identifier => Command.GPIOPort;
 
         public InstanceCollection<IPeripheral> Instances { get; }
@@ -90,15 +123,45 @@ namespace Antmicro.Renode.Network.ExternalControl
             return instance is INumberedGPIOOutput || instance is IGPIOReceiver;
         }
 
+        private MessagePayload HandleEventRequest(byte[] data)
+        {
+            EventData eventData;
+
+            try
+            {
+                eventData = data.ToStruct<EventData>();
+            }
+            catch
+            {
+                return MessagePayload.Error(Identifier, "Can't decode event request");
+            }
+            var timestamp = new TimeStamp(TimeInterval.FromNanoseconds(eventData.TimestampNanoseconds), EmulationManager.ExternalWorld);
+
+            Action<TimeStamp, bool> callback;
+            lock(externalCallbacks)
+            {
+                if(eventData.CallbackIdentifier >= externalCallbacks.Count)
+                {
+                    parent.Log(LogLevel.Warning, "Can't process event request, invalid callback ID");
+                    return MessagePayload.Error("Invalid callback ID");
+                }
+                callback = externalCallbacks[eventData.CallbackIdentifier];
+            }
+            callback.Invoke(timestamp, eventData.GpioState);
+
+            return MessagePayload.Success(Identifier);
+        }
+
         private void SendEvent(bool gpioState, int eventDescriptor)
         {
             var data = new EventData()
             {
+                CallbackIdentifier = eventDescriptor,
                 TimestampNanoseconds = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds,
                 GpioState = gpioState,
             };
 
-            var response = parent.SendRequest(MessagePayload.Event(Identifier, eventDescriptor, data));
+            var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, data));
             response.LogOnError(Identifier, parent);
         }
 
@@ -134,11 +197,16 @@ namespace Antmicro.Renode.Network.ExternalControl
             ed = BitConverter.ToInt32(data[5..]);
         }
 
+        private readonly List<Action<TimeStamp, bool>> externalCallbacks = new();
+
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;
 
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private struct EventData
         {
+            public int CallbackIdentifier;
             public ulong TimestampNanoseconds;
+            [MarshalAs(UnmanagedType.I1)] // Make the field a single byte
             public bool GpioState;
         }
 

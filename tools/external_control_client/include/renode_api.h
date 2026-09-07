@@ -353,7 +353,7 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
 /**
  * GPIO state changed event data
  */
-typedef struct {
+typedef struct __attribute__((packed)) {
     /** Virtual time at which the event occured */
     renode_time_t time;
     /** New GPIO state */
