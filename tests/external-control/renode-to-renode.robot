@@ -7,7 +7,15 @@ Library                             OperatingSystem
 *** Variables ***
 ${PORT}                             3345
 ${SERVER_NAME}                      server
+${EXTERNAL_MACHINE}                 external-mach
 ${EXTERNALLY_CONTROLED_RESC}        scripts/complex/external_control/renode_externally_controlled.resc
+${EXTERNALLY_CONTROLED_RESC_GPIO}   scripts/complex/external_control/renode_externally_controlled_gpio.resc
+${GPIO_PLATFORM}                    SEPARATOR=${\n}
+...                                 """
+...                                 led1: Miscellaneous.LED @ sysbus
+...                                 led2: Miscellaneous.LED @ sysbus
+...                                 led3: Miscellaneous.LED @ sysbus
+...                                 """
 
 *** Keywords ***
 Custom Test Teardown
@@ -69,6 +77,10 @@ Quit Renode
 
     [Return]                        ${result.stdout}
 
+Wait For LED State Change
+    [Arguments]                     ${led}  ${state}
+    Wait For Log Entry              ${led}: LED state changed to ${state}  startEmulation=false
+
 *** Test Cases ***
 Should Connect Two Renodes
     [Tags]                          basic-tests  skip_windows
@@ -89,3 +101,33 @@ Should Synchronize Time Between Two Renodes
 
     ${output}=                      Quit Renode  ${remote}
     Should Contain                  ${output}  Elapsed Virtual Time: 00:00:00.000200000
+
+Should Pass GPIO Between Two Renodes
+    [Tags]                          skip_windows
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC_GPIO}
+
+    # Synchronize GPIOs even when emulation is stopped
+    Execute Command                 emulation Mode SynchronizedTimers
+    Execute Command                 machine LoadPlatformDescriptionFromString ${GPIO_PLATFORM}
+    Execute Command                 logLevel -1 led1
+    Execute Command                 logLevel -1 led2
+    Execute Command                 logLevel -1 led3
+
+    Execute Command                 ${SERVER_NAME} ConnectExternalGPIOOutput led1 0 "${EXTERNAL_MACHINE}" "external_button1" 0
+    Execute Command                 ${SERVER_NAME} ConnectExternalGPIOOutput led2 0 "${EXTERNAL_MACHINE}" "external_button1" 0
+    Execute Command                 ${SERVER_NAME} ConnectExternalGPIOOutput led3 0 "${EXTERNAL_MACHINE}" "external_button2" 0
+
+    Execute Command In Process      ${remote}  external_button1 Press
+    Wait For LED State Change       led1  True
+    Wait For LED State Change       led2  True
+    Execute Command In Process      ${remote}  external_button1 Release
+    Wait For LED State Change       led1  False
+    Wait For LED State Change       led2  False
+
+    Execute Command In Process      ${remote}  external_button2 Press
+    Wait For LED State Change       led3  True
+    Execute Command In Process      ${remote}  external_button2 Release
+    Wait For LED State Change       led3  False
+
+    Quit Renode                     ${remote}

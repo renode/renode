@@ -1,0 +1,13 @@
+mach create "external-mach"
+$client_port ?= 3345
+
+logLevel -1
+
+emulation Mode SynchronizedTimers # Synchronize GPIOs even when emulation is stopped
+
+machine LoadPlatformDescriptionFromString """
+external_button1: Miscellaneous.Button @ sysbus
+external_button2: Miscellaneous.Button @ sysbus
+"""
+
+emulation CreateExternalControlClient "client" $client_port
