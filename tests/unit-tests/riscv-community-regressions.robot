@@ -60,7 +60,7 @@ ZBKB-Only CPU Executes A Dual-Owner Instruction
 
 ZCB Instruction Requires Its Additional Extension
     Create RISC-V Machine           rv64i_zca_zcb_zicsr
-    Assemble At PC                  c.zext.h x8
+    Execute Command                 sysbus WriteWord ${PROGRAM_COUNTER} 0x9c69
     Execute Command                 cpu Step
     Illegal Instruction Should Trap
 
@@ -68,7 +68,7 @@ Scalar M Instruction Requires M
     Create RISC-V Machine           rv64i_zicsr
     Execute Command                 cpu SetRegister "a1" 6
     Execute Command                 cpu SetRegister "a2" 7
-    Assemble At PC                  mul a0, a1, a2
+    Execute Command                 sysbus WriteDoubleWord ${PROGRAM_COUNTER} 0x025283b3
     Execute Command                 cpu Step
     Illegal Instruction Should Trap
 
