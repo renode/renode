@@ -4,7 +4,11 @@
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
 //
+using System;
+using System.Linq;
+
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl
@@ -15,6 +19,20 @@ namespace Antmicro.Renode.Network.ExternalControl
             : base(parent)
         {
             machines = new InstanceCollection<IMachine>();
+        }
+
+        public int GetExternalMachineId(string externalMachine)
+        {
+            var data = IInstanceBasedCommandExtensions.EncodeString(externalMachine);
+            var response = parent.SendRequest(new MessagePayload(Identifier, CommandType.Request, data.ToArray()));
+            response.ThrowOnError(Identifier);
+
+            if(response.Data.Length != sizeof(int))
+            {
+                throw new RecoverableException("Unexpected length of response: {response}");
+            }
+
+            return BitConverter.ToInt32(response.Data);
         }
 
         public bool TryGetMachine(int id, out IMachine machine)

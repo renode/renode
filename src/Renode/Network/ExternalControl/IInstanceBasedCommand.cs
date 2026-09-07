@@ -6,9 +6,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl
@@ -26,6 +28,12 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
 
             return TryDecodeName(command, data, offset + NameLengthSize, length, out name, out response);
+        }
+
+        public static IEnumerable<byte> EncodeString(string name)
+        {
+            var nameBytes = Encoding.UTF8.GetBytes(name);
+            return BitConverter.GetBytes(nameBytes.Length).Concat(nameBytes);
         }
 
         public static MessagePayload InvokeHandledWithInstance<T>(this IInstanceBasedCommand<T> @this, MessagePayload payload, Predicate<T> instanceFilter = null)
@@ -53,8 +61,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return @this.Invoke(instance, payload.Data[PayloadOffset..]);
             }
 
-            // id set to a magic of -1 is used to register a new instance
-            if(id != -1)
+            if(id != IInstanceBasedCommand<T>.RegisterNewInstanceSpecialId)
             {
                 return MessagePayload.Error(@this.Identifier, "Invalid instance id");
             }
@@ -181,9 +188,27 @@ namespace Antmicro.Renode.Network.ExternalControl
     public interface IInstanceBasedCommand<T> : ICommand
         where T : IEmulationElement
     {
+        public int GetExternalInstanceId(ExternalControlSocket externalControl, int machineId, string remoteInstance)
+        {
+            var data = BitConverter.GetBytes(RegisterNewInstanceSpecialId)
+                .Concat(BitConverter.GetBytes(machineId))
+                .Concat(IInstanceBasedCommandExtensions.EncodeString(remoteInstance));
+            var response = externalControl.SendRequest(new MessagePayload(Identifier, CommandType.Request, data.ToArray()));
+            response.ThrowOnError(Identifier);
+
+            if(response.Data.Length != sizeof(int))
+            {
+                throw new RecoverableException("Unexpected length of response: {response}");
+            }
+
+            return BitConverter.ToInt32(response.Data);
+        }
+
         InstanceCollection<T> Instances { get; }
 
         MessagePayload Invoke(T instance, ReadOnlySpan<Byte> payload);
+
+        public const int RegisterNewInstanceSpecialId = -1;
     }
 
     public class InstanceCollection<T>
