@@ -73,6 +73,12 @@ namespace Antmicro.Renode.Network
             command.RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
         }
 
+        public void AttachCustomCommandCallbackToMonitor()
+        {
+            var command = (CustomCommand)commandHandlers.GetHandler(Command.CustomCommand);
+            command.RegisterExternalCallback();
+        }
+
         public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string localContextName = null)
         {
             try
@@ -356,7 +362,7 @@ namespace Antmicro.Renode.Network
                         this.ErrorLog("Invalid message header received: {0}", headerBuffer.ToArray().ToLazyHexString());
                         continue;
                     }
-                    this.NoisyLog("Received header: {0}", message);
+                    this.NoisyLog("Received header: id: {0} size: {1}", message.Id, message.PayloadSize);
 
                     var payloadBuffer = new byte[message.PayloadSize];
                     ReceiveAll(communicationSocket, payloadBuffer);

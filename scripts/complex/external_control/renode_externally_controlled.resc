@@ -5,5 +5,3 @@ logFile @externally_controlled_renode.log
 
 emulation CreateExternalControlClient "client" $client_port
 logLevel 0 client
-
-client SynchronizeTimeWithExternal

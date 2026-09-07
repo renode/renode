@@ -54,7 +54,7 @@ Create Machine And Connect Remote Renode
     Execute Command                 logLevel 0 ${SERVER_NAME}
 
     IF  ${local_platform_desc} != ""
-        Execute Command             machine LoadPlatformDescriptionFromString ${local_platform_desc}
+        Execute Command                 machine LoadPlatformDescriptionFromString ${local_platform_desc}
     END
 
     ${remote_renode}=               Start Renode  ${PORT}  ${remote_renode_resc}
@@ -99,11 +99,11 @@ Wait For Line In File
     [Arguments]                     ${filename}  ${expected}
 
     Wait Until Keyword Succeeds
-    ...    30 seconds
-    ...    1 second
-    ...    File Should Contain
-    ...    ${filename}
-    ...    ${expected}
+    ...                             30 seconds
+    ...                             1 second
+    ...                             File Should Contain
+    ...                             ${filename}
+    ...                             ${expected}
 
 Quit Renode
     [Arguments]                     ${proc}  ${timeout}=1 minute
@@ -133,6 +133,7 @@ Should Synchronize Time Between Two Renodes
     [Tags]                          skip_windows
 
     ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
+    Execute Command In Process      ${remote}  client SynchronizeTimeWithExternal
 
     Wait For Log Entry              ${SERVER_NAME}: Registered time elapsed callback  startEmulation=false
 
@@ -215,3 +216,38 @@ Should Connect To Remote Bus Peripheral And Read
     Should Be Equal As Numbers      ${op1}    1
     Should Be Equal As Numbers      ${op2}    2
     Should Be Equal As Numbers      ${op3}    3
+
+Should Run Custom Command Sample
+    [Tags]                          skip_windows
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
+    Execute Command In Process      ${remote}  client AttachCustomCommandCallbackToMonitor
+
+    Wait For Log Entry              Attaching CustomCommand callback  startEmulation=False
+
+    ${response}=                    Execute Command  ${SERVER_NAME} SendCustomCommand 'echo "echo"'
+    Should Contain                  ${response}  echo
+    ${response}=                    Execute Command  ${SERVER_NAME} SendCustomCommand 'emulation RunFor "0.0002"'
+    Should Be Equal                 ${response}  \n\n
+    ${response}=                    Execute Command  ${SERVER_NAME} SendCustomCommand 'emulation GetTimeSourceInfo'
+    Should Contain                  ${response}  Elapsed Virtual Time: 00:00:00.000200000
+
+    Quit Renode                     ${remote}
+
+Should Run Quit As Custom Command
+    [Tags]                          skip_windows
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
+    Execute Command In Process      ${remote}  client AttachCustomCommandCallbackToMonitor
+
+    Wait For Log Entry              Attaching CustomCommand callback  startEmulation=False
+
+    Execute Command                 ${SERVER_NAME} SendCustomCommand 'quit'
+
+    Wait Until Keyword Succeeds
+    ...                             30 seconds
+    ...                             1 second
+    ...                             Process Should Be Stopped
+    ...                             ${remote}
+
+    Wait For Log Entry              Listening for connections  startEmulation=False
