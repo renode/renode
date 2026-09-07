@@ -54,7 +54,7 @@ Start Renode
 Execute Command In Process
     [Arguments]                     ${proc}  ${command}
 
-    Evaluate                        $proc.stdin.write("${command}\\n".encode("utf-8"))
+    Evaluate                        $proc.stdin.write(($command + "\\n").encode("utf-8"))
     Evaluate                        $proc.stdin.flush()
 
 Quit Renode
