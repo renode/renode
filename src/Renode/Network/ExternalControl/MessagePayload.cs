@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
@@ -95,31 +96,50 @@ namespace Antmicro.Renode.Network.ExternalControl
             return $"{nameof(MessagePayload)}(Command={Command}, Type={Type}, {dataString})";
         }
 
+        public void ThrowOnError(Command identifier)
+        {
+            if(TryGetErrorMessage(out var message, identifier))
+            {
+                throw new RecoverableException(message);
+            }
+        }
+
         public bool LogOnError(Command identifier, IEmulationElement parent)
+        {
+            var isError = TryGetErrorMessage(out var message, identifier);
+            if(isError)
+            {
+                parent.Log(LogLevel.Error, message);
+            }
+            return !isError;
+        }
+
+        public bool TryGetErrorMessage(out string message, Command identifier)
         {
             switch(Type)
             {
             case CommandType.Success:
                 // Do nothing on success
-                return true;
+                message = null;
+                return false;
             case CommandType.Error:
                 try
                 {
-                    parent.ErrorLog("Command {0} failed with: {1}", identifier, Encoding.UTF8.GetString(Data));
+                    message = $"Command {identifier} failed with: {Encoding.UTF8.GetString(Data)}";
                 }
                 catch(ArgumentException e)
                 {
-                    parent.ErrorLog("Cannot decode an error response for command {0} due to: {1} (raw data: {2})", identifier, e.Message, Data.ToLazyHexString());
+                    message = $"Cannot decode an error response for command {identifier} due to: {e.Message} (raw data: {Data.ToLazyHexString()})";
                 }
                 break;
             case CommandType.InvalidCommand:
-                parent.ErrorLog("Command {0} is not supported by the connected external", identifier);
+                message = $"Command {identifier} is not supported by the connected external";
                 break;
             default:
-                parent.ErrorLog("Unexpected response type: {0} for command {1}", Type, identifier);
+                message = $"Unexpected response type: {Type} for command {identifier}";
                 break;
             }
-            return false;
+            return true;
         }
 
         public Command Command { get; }
