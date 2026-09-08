@@ -30,6 +30,8 @@ import urllib.parse
 from tests_engine import TestResult, TestTag, CRITICAL_TEST
 from unstable_tests import KnownUnstableSuite, filter_unstable
 from retry_and_timeout_listener import retry_and_timeout_listener
+import robot_output_formatter
+import robot_output_formatter_verbose
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -1093,11 +1095,11 @@ class RobotTestSuite(object):
                 return TestResult(False, None)
 
         # Listeners are called in the exact order as in `listeners` list for both `start_test` and `end_test`.
-        output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
+        output_formatter = robot_output_formatter_verbose if options.verbose else robot_output_formatter
         listeners = [
             retry_and_timeout_listener(options.retry_count),
             # Has to be the last one to print final state, message etc. after all the changes made by other listeners.
-            os.path.join(this_path, output_formatter),
+            output_formatter,
         ]
         if options.listener:
             listeners += options.listener
