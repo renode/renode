@@ -10,6 +10,7 @@ using System.IO;
 using Antmicro.Migrant;
 using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
+using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.Utilities;
 
@@ -30,7 +31,7 @@ namespace Antmicro.Renode.Backends.Terminals
         }
     }
 
-    public class UartPtyTerminal : BackendTerminal, IDisposable
+    public class UartPtyTerminal : BackendTerminal, IDisposable, IHasOwnLife
     {
         public UartPtyTerminal(string linkName, bool forceCreate = false)
         {
@@ -71,14 +72,49 @@ namespace Antmicro.Renode.Backends.Terminals
             }
         }
 
+        public void Start()
+        {
+            Resume();
+        }
+
+        public void Pause()
+        {
+            lock(startedLock)
+            {
+                IsPaused = true;
+            }
+        }
+
+        public void Resume()
+        {
+            lock(startedLock)
+            {
+                IsPaused = false;
+            }
+        }
+
+        public bool IsPaused { get; private set; } = true;
+
         [Migrant.Hooks.PostDeserialization]
         private void Initialize()
         {
             ptyStream = new PtyUnixStream();
             io = new IOProvider { Backend = new StreamIOSource(ptyStream) };
-            io.ByteRead += b => CallCharReceived((byte)b);
+            io.ByteRead += b => HandleReceived((byte)b);
 
             CreateSymlink();
+        }
+
+        private void HandleReceived(byte received)
+        {
+            lock(startedLock)
+            {
+                if(IsPaused)
+                {
+                    return;
+                }
+            }
+            CallCharReceived(received);
         }
 
         private void CreateSymlink()
@@ -115,6 +151,7 @@ namespace Antmicro.Renode.Backends.Terminals
         private IOProvider io;
 
         private string symlink;
+        private readonly object startedLock = new object();
 
         private readonly bool forceCreate;
         private readonly string linkName;
