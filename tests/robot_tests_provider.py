@@ -29,6 +29,7 @@ import urllib.parse
 
 from tests_engine import TestResult, TestTag, CRITICAL_TEST
 from unstable_tests import KnownUnstableSuite, filter_unstable
+from retry_and_timeout_listener import retry_and_timeout_listener
 
 this_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -820,7 +821,7 @@ class RobotTestSuite(object):
             # shared, they're only needed to restart Renode in timeout handler.
             RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
 
-        print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}')
+        print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}', flush=True)
 
         result = None
         def get_result():
@@ -1094,7 +1095,7 @@ class RobotTestSuite(object):
         # Listeners are called in the exact order as in `listeners` list for both `start_test` and `end_test`.
         output_formatter = 'robot_output_formatter_verbose.py' if options.verbose else 'robot_output_formatter.py'
         listeners = [
-            os.path.join(this_path, f'retry_and_timeout_listener.py:{options.retry_count}'),
+            retry_and_timeout_listener(options.retry_count),
             # Has to be the last one to print final state, message etc. after all the changes made by other listeners.
             os.path.join(this_path, output_formatter),
         ]
