@@ -14,7 +14,6 @@ import platform
 import sys
 import os
 import gzip
-import re
 import urllib.request
 import urllib.error
 from enum import Enum
@@ -24,6 +23,7 @@ from elftools.elf.elffile import ELFFile
 from elftools.common.utils import bytes2str
 from bisect import bisect_right
 from ctypes import cdll, c_char_p, POINTER, c_void_p, c_ubyte, c_uint64, c_byte, c_size_t, cast
+import execution_tracer.dwarf as dwarf
 
 # Allow directly using this as a script, without installation
 try:
@@ -209,11 +209,11 @@ class TraceData:
                 raise StopIteration
 
             self.update_triple_and_model(isa_idx_raw[0])
-            
+
             block_length_raw = self.file.read(8)
             if len(block_length_raw) != 8:
                 raise InvalidFileFormatException("Unexpected end of file")
-            
+
             # The `instructions_left_in_block` counter is kept only for traces produced by cores that can switch between multiple modes.
             self.instructions_left_in_block = int.from_bytes(block_length_raw, byteorder=BYTE_ORDER, signed=False)
 
@@ -358,10 +358,8 @@ class TraceData:
     def format_entry(self, entry: TraceEntry) -> str:
         def cleanup(string: str) -> str:
             cleaned = string.replace('\x00', '')
+            cleaned = cleaned.strip(" \n\t\r")
             cleaned = cleaned.expandtabs(4)
-            ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-            cleaned = ansi_escape.sub('', cleaned)
-            cleaned = "".join(ch for ch in cleaned if ord(ch) >= 32 or ch == '\n')
             return cleaned
 
         (pc, opcode, additional_data, triple_and_model) = entry
@@ -373,27 +371,38 @@ class TraceData:
             is_thumb = triple_and_model.startswith("thumb")
             opcode_str = bytes_to_thumb_hex(opcode) if is_thumb else bytes_to_hex(opcode)
         output = ""
+        width = 0
+        max_hex_len = self.pc_length * 2 + 2 # +2 for '0x'
+        padding = 1
         if self.pc_length and self.has_opcodes:
-            output = f"{pc_str}: {opcode_str}".ljust(23)
+            output = f"{pc_str}: {opcode_str}"
+            width += 2 * max_hex_len + padding + 2 # +2 for ': '
         elif self.pc_length:
-            output = pc_str.ljust(15)
+            output = pc_str
+            width += max_hex_len + padding
         elif self.has_opcodes:
-            output = opcode_str.ljust(15)
+            output = opcode_str
+            width += max_hex_len + padding
         else:
             output = ""
 
         if self.has_opcodes and self.disassemble:
             disas = self.get_disas(triple_and_model)
             _, instruction = disas.get_instruction(opcode)
-            output += f" {cleanup(instruction.decode())}".ljust(40)
+            output = output.ljust(width)
+            output += f" {cleanup(instruction.decode('utf8'))}"
+            width += 40
 
         if self.symbol_resolver is not None:
-            if (symbol := self.symbol_resolver.get_symbol(pc_str)) is not None:
-                output += symbol
+            symbol = self.symbol_resolver.symbolize(pc_str)
+            output = output.ljust(width)
+            if symbol.function_name is not None:
+                output += symbol.function_name
 
-            if (loc := self.symbol_resolver.get_source_location(pc_str)) is not None:
-                filename, line = loc
-                output += f" @ {filename}:{line}"
+            filename = symbol.source_file or "??"
+            line = symbol.source_line or 0
+            column = symbol.source_column or 0
+            output += f" @ {filename}:{line}:{column}"
 
         if len(additional_data) > 0:
             output += "\n" + "\n".join(additional_data)
@@ -408,11 +417,9 @@ class SymbolLookup:
     def __init__(self, elf_path: str) -> None:
         self.elf_path = elf_path
 
-        self._func_starts: List[int] = []
-        self._func_ends_and_names: List[Tuple[int, str]] = []
-
-        self._line_starts: List[int] = []
-        self._line_data: List[Tuple[int, str, int]] = []
+        self._dwarf_func_data: List[dwarf.DWARFSubprogramEntry] = []
+        self._symtab_func_data: List[(int, int, str)] = []
+        self._line_data: List[dwarf.DWARFLineProgramEntry] = []
 
         self._load_elf_data()
 
@@ -420,85 +427,116 @@ class SymbolLookup:
         functions = []
         raw_lines = []
 
-        try:
-            with open(self.elf_path, 'rb') as f:
-                elf = ELFFile(f)
+        with open(self.elf_path, 'rb') as f:
+            elf = ELFFile(f)
+
+            if elf.has_dwarf_info():
+                # preload and sort the line and subprogram data into memory for fast lookup
+                self._line_data = list(dwarf.get_addresses(elf.get_dwarf_info()))
+                self._line_data = sorted(
+                                        self._line_data,
+                                        key=lambda it: it.address_low
+                                    )
+                self._dwarf_func_data = list(dwarf.get_subprograms(elf.get_dwarf_info()))
+                self._dwarf_func_data = sorted(
+                                        self._dwarf_func_data,
+                                        key=lambda it: it.address_low
+                                    )
+
+            symtab = elf.get_section_by_name('.symtab')
+            if symtab:
+                for symbol in symtab.iter_symbols():
+                    if symbol['st_info']['type'] == 'STT_FUNC':
+                        start = symbol['st_value']
+                        size = symbol['st_size']
+                        if size > 0:
+                            self._symtab_func_data.append((start, start + size, symbol.name))
+            self._symtab_func_data = sorted(
+                                    self._symtab_func_data,
+                                    key=lambda it: it[0]
+                                )
 
 
-                symtab = elf.get_section_by_name('.symtab')
-                if symtab:
-                    for symbol in symtab.iter_symbols():
-                        if symbol['st_info']['type'] == 'STT_FUNC':
-                            start = symbol['st_value']
-                            size = symbol['st_size']
-                            if size > 0:
-                                functions.append((start, start + size, symbol.name))
-
-                if elf.has_dwarf_info():
-                    dwarfinfo = elf.get_dwarf_info()
-                    for cu in dwarfinfo.iter_CUs():
-                        lp_header = dwarfinfo.line_program_for_CU(cu)
-                        if not lp_header:
-                            continue
-
-                        file_idx_offset = 1 if lp_header.header.version < 5 else 0
-                        prev_state = None
-
-                        for entry in lp_header.get_entries():
-                            if entry.state is None:
-                                continue
-
-                            if prev_state and prev_state.address < entry.state.address:
-                                file_idx = prev_state.file - file_idx_offset
-
-                                if 0 <= file_idx < len(lp_header['file_entry']):
-                                    filename = bytes2str(lp_header['file_entry'][file_idx].name)
-                                    raw_lines.append((prev_state.address, entry.state.address, filename, prev_state.line))
-
-
-                            if entry.state.end_sequence:
-                                prev_state = None
-                            else:
-                                prev_state = entry.state
-
-        except (FileNotFoundError, IOError) as e:
-            print(e)
-            return
-
-        functions.sort(key=lambda x: x[0])
-        self._func_starts = [f[0] for f in functions]
-        self._func_ends_and_names = [(f[1], f[2]) for f in functions]
-
-        raw_lines.sort(key=lambda x: x[0])
-        self._line_starts = [l[0] for l in raw_lines]
-        self._line_data = [(l[1], l[2], l[3]) for l in raw_lines]
-
-    def get_symbol(self, pc) -> Optional[str]:
-        if pc is None or not self._func_starts:
+    def _get_symbol_from_dwarf(self, pc) -> Optional[dwarf.DWARFSubprogramEntry]:
+        if pc is None or not self._dwarf_func_data:
             return None
 
         addr = int(pc, 16) if isinstance(pc, str) else pc
-        idx = bisect_right(self._func_starts, addr) - 1
+        idx = bisect_right(self._dwarf_func_data, addr, key=lambda it: it.address_low) - 1
         if idx >= 0:
-            end, name = self._func_ends_and_names[idx]
+            entry = self._dwarf_func_data[idx]
+            if addr < entry.address_high:
+                return entry
+
+        return None
+
+    def _get_symbol_from_symtab(self, pc) -> Optional[str]:
+        if pc is None or not self._symtab_func_data:
+            return None
+
+        addr = int(pc, 16) if isinstance(pc, str) else pc
+
+        idx = bisect_right(self._symtab_func_data, addr, key=lambda it: it[0]) - 1
+        if idx >= 0:
+            start, end, name = self._symtab_func_data[idx]
             if addr < end:
                 return name
         return None
 
-    def get_source_location(self, pc) -> Optional[Tuple[str, int]]:
-        if pc is None or not self._line_starts:
+    def _get_source_location(self, pc) -> Optional[dwarf.DWARFLineProgramEntry]:
+        if pc is None or not self._line_data:
             return None
 
         addr = int(pc, 16) if isinstance(pc, str) else pc
 
-        idx = bisect_right(self._line_starts, addr) - 1
+        idx = bisect_right(self._line_data, addr, key=lambda it: it.address_low) - 1
         if idx >= 0:
-            end, filename, line = self._line_data[idx]
-            if addr < end:
-                return filename, line
+            entry = self._line_data[idx]
+            if addr < entry.address_high:
+                return entry
 
         return None
 
+    class SymbolLookupResult(NamedTuple):
+        source_file: str
+        source_line: int
+        source_column: int
+
+        function_name: str
+        function_definition_file: str
+        function_definition_line: int
+
+    def symbolize(self, pc) -> SymbolLookupResult:
+        addr = int(pc, 16) if isinstance(pc, str) else pc
+
+        loc = self._get_source_location(addr)
+
+        dwarf_symbol = self._get_symbol_from_dwarf(addr)
+
+        name = None
+        decl_file = None
+        decl_line = None
+
+        if dwarf_symbol is not None:
+            name = dwarf_symbol.function_name
+            decl_file = dwarf_symbol.decl_file
+            decl_line = dwarf_symbol.decl_line
+
+        if not name:
+            name = self._get_symbol_from_symtab(addr)
+
+        src_file = loc.file_name if loc else None
+        src_line = loc.line_number if loc else None
+        src_col = loc.column_number if loc else None
+
+        return self.SymbolLookupResult(
+            source_file=src_file,
+            source_line=src_line,
+            source_column=src_col,
+            function_name=name,
+            function_definition_file=decl_file,
+            function_definition_line=decl_line
+        )
 
 class LLVMDisassembler():
     def __init__(self, triple: str, cpu: str, llvm_disas_path: str):
@@ -636,7 +674,7 @@ def find_llvm_disas() -> str:
 
     if llvm_disas_path is None:
         raise FileNotFoundError('Could not find libllvm-disas in any of the following locations: ' + ', '.join([os.path.join(path.abspath(ppath), rid) for ppath in lib_search_paths]))
-    
+
     return llvm_disas_path
 
 def main():

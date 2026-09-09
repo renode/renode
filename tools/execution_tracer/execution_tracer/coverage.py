@@ -172,7 +172,7 @@ class Coverage:
                 # later, when parsing the DWARF/PC2Line# file, some will be marked as executable
                 code_lines[code_file.name].append(CodeLine(None if not self.load_whole_code_lines else line, line_no, code_file.name, False))
         return code_lines
-    
+
     # Get list of code lines, grouped by the file where they belong
     # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
     def _get_code_lines_by_file_from_dwarf(self, dwarf_info: 'DWARFInfo') -> tuple[int, int, dict[str, list[CodeLine]]]:
@@ -181,7 +181,7 @@ class Coverage:
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
         files_high_address = 0
-        for file_name, file_path, line_number, address_low, address_high in dwarf.get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
+        for file_name, file_path, line_number, column_number, address_low, address_high in dwarf.get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
             file_full_name = os.path.join(file_path, file_name)
             file_full_name = apply_path_substitutions(file_full_name, self.substitute_paths)
             # If the files are provided by hand, patch their names
@@ -231,7 +231,7 @@ class Coverage:
             if file in code_lines:
                 if self.debug:
                     print(f'file: {file}, line {line_number}, addr 0x{address:x}')
-                # Pessimisticly assuming all instructions are 1 byte long. 
+                # Pessimisticly assuming all instructions are 1 byte long.
                 # The end address is only used for merging entries for performance reasons
                 # so having a smaller than actual value here is fine
                 code_lines[file][line_number - 1].add_address(address, address + 1)
@@ -239,7 +239,7 @@ class Coverage:
 
             if files_low_address is None:
                 files_low_address = address
-            
+
             files_low_address = min(files_low_address, address)
             files_high_address = max(files_high_address, address + 1)
 

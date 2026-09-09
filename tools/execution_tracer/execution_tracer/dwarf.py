@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010-2025 Antmicro
+# Copyright (c) 2010-2026 Antmicro
 #
 # This file is licensed under the MIT License.
 # Full license text is available in 'licenses/MIT.txt'.
@@ -12,6 +12,7 @@ import typing
 from typing import IO, TYPE_CHECKING, BinaryIO, Generator, Iterable, NamedTuple
 from elftools.common.utils import bytes2str
 from elftools.elf.elffile import ELFFile
+from elftools.dwarf.descriptions import describe_form_class
 from execution_tracer.common_utils import PathSubstitution, apply_path_substitutions
 
 if TYPE_CHECKING:
@@ -55,10 +56,15 @@ def get_addresses(dwarf_info: 'DWARFInfo', *, debug=False, noisy=False) -> Gener
     for CU in dwarf_info.iter_CUs():
         yield from get_addresses_for_CU(dwarf_info, CU, debug=debug, noisy=noisy)
 
+def get_subprograms(dwarf_info: 'DWARFInfo', *, debug=False, noisy=False) -> Generator[DWARFSubprogramEntry, None, None]:
+    for CU in dwarf_info.iter_CUs():
+        yield from get_subprograms_for_CU(dwarf_info, CU, debug=debug, noisy=noisy)
+
 class DWARFLineProgramEntry(NamedTuple):
     file_name: str
     file_path: str
     line_number: int
+    column_number: int
     address_low: int
     address_high: int
 
@@ -86,7 +92,7 @@ def get_addresses_for_CU(dwarf_info: DWARFInfo, CU: CompileUnit, *, debug=False,
             )
             if debug and noisy:
                 print('Parsing:', directory_path, filename)
-            yield DWARFLineProgramEntry(filename, directory_path, previous_state.line, previous_state.address, entry.state.address)
+            yield DWARFLineProgramEntry(filename, directory_path, previous_state.line, previous_state.column, previous_state.address, entry.state.address)
         if entry.state.end_sequence:
             # For the state with `end_sequence`, `address` means the address
             # of the first byte after the target machine instruction
@@ -97,3 +103,54 @@ def get_addresses_for_CU(dwarf_info: DWARFInfo, CU: CompileUnit, *, debug=False,
             previous_state = None
         else:
             previous_state = entry.state
+
+class DWARFSubprogramEntry(NamedTuple):
+    function_name: str
+    decl_file: str
+    decl_line: int
+    address_low: int
+    address_high: int
+
+def get_subprograms_for_CU(dwarf_info: DWARFInfo, CU: CompileUnit, *, debug=False, noisy=False) -> Generator[DWARFSubprogramEntry, None, None]:
+    # Adapted from https://github.com/eliben/pyelftools/blob/3181eedfffc8eaea874152fb67f77d0be4ca969e/examples/dwarf_decode_address.py#L43
+
+    line_program = dwarf_info.line_program_for_CU(CU)
+    delta = 1 if line_program.header.version < 5 else 0
+    if not line_program:
+        raise RuntimeError("Couldn't extract line program data. Try to recompile the binary with debugging information enabled")
+    for DIE in CU.iter_DIEs():
+        try:
+            if DIE.tag == 'DW_TAG_subprogram':
+                lowpc = DIE.attributes['DW_AT_low_pc'].value
+
+                # DWARF v4 in section 2.17 describes how to interpret the
+                # DW_AT_high_pc attribute based on the class of its form.
+                # For class 'address' it's taken as an absolute address
+                # (similarly to DW_AT_low_pc); for class 'constant', it's
+                # an offset from DW_AT_low_pc.
+                highpc_attr = DIE.attributes['DW_AT_high_pc']
+                highpc_attr_class = describe_form_class(highpc_attr.form)
+                if highpc_attr_class == 'address':
+                    highpc = highpc_attr.value
+                elif highpc_attr_class == 'constant':
+                    highpc = lowpc + highpc_attr.value
+                else:
+                    if debug and noisy:
+                        print('Error: invalid DW_AT_high_pc class:',
+                              highpc_attr_class)
+                    continue
+
+                file_idx = DIE.attributes['DW_AT_decl_file'].value
+                file = bytes2str(
+                    line_program["file_entry"][file_idx - delta].name
+                )
+                line = DIE.attributes['DW_AT_decl_line'].value
+
+                name = bytes2str(
+                    DIE.attributes['DW_AT_name'].value
+                )
+
+                yield DWARFSubprogramEntry(name, file, line, lowpc, highpc)
+
+        except KeyError:
+            continue
