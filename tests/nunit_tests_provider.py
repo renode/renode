@@ -1,5 +1,6 @@
 # pylint: disable=C0301,C0103,C0111
 from sys import platform
+from argparse import Namespace
 from platform import machine
 import os
 import signal
@@ -35,6 +36,12 @@ class NUnitTestSuite(object):
         # Unused mechanism, this exists to keep a uniform interface with
         # robot_tests_provider.py.
         return options.results_directory
+
+    def select_tests(self, options: Namespace) -> bool:
+        """Select tests and return whether the suite should remain scheduled."""
+        # NUnit applies filters when running the compiled assembly, so we cannot
+        # rule out any tests here. Keep the suite scheduled for NUnit to decide.
+        return True
 
     def prepare(self, options):
         if not options.skip_building:

@@ -131,6 +131,9 @@ class SuiteBucket:
     def makespan_info(
         self, stat: str = "p95"
     ) -> tuple[float, Optional[tuple[str, float]]]:
+        if not self.suites:
+            return 0.0, None
+
         makespan = self.makespan(stat)
         slowest_duration = self.slowest.get(stat)
         total = self.totals.get(stat)

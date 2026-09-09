@@ -273,7 +273,7 @@ def handle_options(options):
         sys.exit(1)
 
     verify_suite_files_unique(test_groups)
-    options.tests = test_groups
+    options.tests = select_test_groups(test_groups, options)
 
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
@@ -605,6 +605,16 @@ def init_worker_process(counter, active_suites):
     shared_active_suites = active_suites
 
 
+def select_test_groups(groups: dict[str, list[Any]], options: argparse.Namespace) -> dict[str, list[Any]]:
+    selected_groups: dict[str, list[Any]] = {}
+    for group, suites in groups.items():
+        selected: list[Any] = [suite for suite in suites if suite.select_tests(options)]
+        if selected:
+            selected_groups[group] = selected
+
+    return selected_groups
+
+
 def run():
     parser = prepare_parser()
     for handler in registered_handlers:
@@ -634,6 +644,10 @@ def run():
     if options.dry_run:
         print("Exiting early due to --dry-run")
         exit(0)
+
+    if not groups_segment:
+        print("No tests selected for this segment.")
+        return
 
     args = []
     for (_, group_suites) in groups_segment:

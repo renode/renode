@@ -14,6 +14,7 @@ import uuid
 import re
 import signal
 from collections import OrderedDict, defaultdict
+from copy import deepcopy
 from time import monotonic, sleep
 from typing import List, Dict, Tuple, Set, Optional, Union
 from argparse import Namespace
@@ -462,6 +463,7 @@ class RobotTestSuite(object):
 
         self.tests_with_hotspots = []
         self.tests_without_hotspots = []
+        self.selected_tests: List[Tuple[Optional[str], List[str]]] = []
 
 
     def get_output_dir(self, options, iteration_index, suite_retry_index):
@@ -483,9 +485,38 @@ class RobotTestSuite(object):
         return suite
 
 
+    def select_tests(self, options: Namespace) -> bool:
+        """Select tests and return whether the suite should remain scheduled."""
+        self.selected_tests = []
+        if self.path.endswith('renode-keywords.robot'):
+            print('Ignoring helper file: {}'.format(self.path))
+            return False
+
+        suite = self._find_tests()
+
+        # Hot-spot tests run once per selected action. Fixture matching includes
+        # the action in the suite name, so filter each variant separately.
+        variants: List[Tuple[Optional[str], List[str]]] = [(None, self.tests_without_hotspots)]
+        variants.extend((hotspot, self.tests_with_hotspots)
+                        for hotspot in self.hotspot_action
+                        if not options.hotspot or options.hotspot == hotspot)
+
+        for hotspot, test_names in variants:
+            if not test_names:
+                continue
+
+            # Robot filters and renames the model in place, so make a copy.
+            suite_copy = deepcopy(suite)
+            selected = self._get_test_suite(options, test_names, options.fixture, hotspot,
+                                            suite=suite_copy)
+            if selected.test_count:
+                self.selected_tests.append((hotspot, [test.name for test in selected.tests]))
+
+        return len(self.selected_tests) > 0
+
+
     def prepare(self, options):
         RobotTestSuite.instances_count += 1
-        self._find_tests()
 
         # In parallel runs, Renode is started for each suite.
         # The same is done in sequential runs with --keep-renode-output.
@@ -771,24 +802,7 @@ class RobotTestSuite(object):
 
 
     def run(self, options, iteration_index=1, suite_retry_index=0):
-        if self.path.endswith('renode-keywords.robot'):
-            print('Ignoring helper file: {}'.format(self.path))
-            return True
-
-        tests_len = 0
-        suites_with_hotspots = []
-        if any(self.tests_without_hotspots):
-            suite_without_hotspots = self._get_test_suite(options, self.tests_without_hotspots, options.fixture, None)
-            tests_len = len(suite_without_hotspots.tests)
-        if any(self.tests_with_hotspots):
-            for hotspot in RobotTestSuite.hotspot_action:
-                if options.hotspot and options.hotspot != hotspot:
-                    continue
-                suite_with_hotspots = self._get_test_suite(options, self.tests_with_hotspots, options.fixture, hotspot)
-                suites_with_hotspots.append((hotspot, suite_with_hotspots))
-                tests_len += len(suite_with_hotspots.tests)
-
-        if tests_len == 0:
+        if not self.selected_tests:
             return TestResult(True, [])
 
         # The list is cleared only on the first run attempt in each iteration so
@@ -814,22 +828,15 @@ class RobotTestSuite(object):
 
         start_timestamp = monotonic()
 
-        if any(self.tests_without_hotspots):
-            result = get_result().ok and self._run_inner(suite_without_hotspots,
+        for hotspot, test_names in self.selected_tests:
+            suite = self._get_test_suite(options, test_names, None, hotspot)
+            result = get_result().ok and self._run_inner(suite,
                                                          options.fixture,
-                                                         None,
-                                                         self.tests_without_hotspots,
+                                                         hotspot,
+                                                         test_names,
                                                          options,
                                                          iteration_index,
                                                          suite_retry_index)
-        for hotspot, suite in suites_with_hotspots:
-                result = get_result().ok and self._run_inner(suite,
-                                                             options.fixture,
-                                                             hotspot,
-                                                             self.tests_with_hotspots,
-                                                             options,
-                                                             iteration_index,
-                                                             suite_retry_index)
 
         end_timestamp = monotonic()
 
@@ -1019,15 +1026,17 @@ class RobotTestSuite(object):
         suite = self._get_test_suite(options, test_cases_names, None, None)
         return self._run_inner(suite, None, None, test_cases_names, options, iteration_index, suite_retry_index)
 
-    def _get_test_suite(self, options, test_cases_names, fixture, hotspot):
+    def _get_test_suite(self, options, test_cases_names, fixture, hotspot,
+                        suite: Optional[robot.running.TestSuite] = None):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
         suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
         test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
         if fixture:
             test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], '*' + fixture + '*')]
-        suite_builder = robot.running.builder.TestSuiteBuilder()
-        suite = suite_builder.build(self.path)
+        if suite is None:
+            suite = robot.running.builder.TestSuiteBuilder().build(self.path)
+
         suite.resource.imports.create(type="Resource", name=keywords_path)
 
         metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
