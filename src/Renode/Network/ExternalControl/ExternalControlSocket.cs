@@ -351,11 +351,12 @@ namespace Antmicro.Renode.Network
                 InitializeHandlers();
             }
 
+            Span<byte> headerBuffer = stackalloc byte[Message.HeaderSize];
+
             while(true)
             {
                 try
                 {
-                    Span<byte> headerBuffer = stackalloc byte[Message.HeaderSize];
                     ReceiveAll(communicationSocket, headerBuffer);
                     if(!Message.TryDecodeHeader(headerBuffer, out var message))
                     {
