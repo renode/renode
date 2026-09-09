@@ -6,6 +6,9 @@ from __future__ import print_function
 import os
 import sys
 
+# We use UTF-8 in our test output.
+sys.stdout.reconfigure(encoding='utf-8')
+
 # Look for requirements.txt
 name = "requirements.txt"
 requirements = name
