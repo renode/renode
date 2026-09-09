@@ -59,6 +59,18 @@ Should Throw Exception When No Snapshots
 
     Run Keyword And Expect Error  *There are no snapshots taken before this timestamp*    Execute Command  emulation SnapshotTracker GetLastSnapshotBeforeOrAtTimeStamp "1.0"
 
+Should Count Snapshots Created On The Same Timestamp
+    Create Machine
+
+    ${snap_path1}=                Allocate Temporary File
+    Execute Command               Save @${snap_path1}
+
+    ${snap_path2}=                Allocate Temporary File
+    Execute Command               Save @${snap_path2}
+
+    ${snapshots_count}=           Execute Command  emulation SnapshotTracker Count
+    Should Be Equal As Integers   ${snapshots_count}  2
+
 Should Count Snapshots Properly
     Create Machine
 
@@ -71,3 +83,15 @@ Should Count Snapshots Properly
 
     ${snapshots_count}=           Execute Command  emulation SnapshotTracker Count
     Should Be Equal As Integers   ${snapshots_count}  2
+
+Should Detect Snapshot Overrides
+    Create Machine
+
+    ${snap_path}=                 Allocate Temporary File
+    Execute Command               Save @${snap_path}
+
+    Execute Command               emulation RunFor "0.001"
+    Execute Command               Save @${snap_path}
+
+    ${snapshots_count}=           Execute Command  emulation SnapshotTracker Count
+    Should Be Equal As Integers   ${snapshots_count}  1
