@@ -193,6 +193,7 @@ namespace Antmicro.Renode.Network
             DebugHelper.Assert(communicationSocket == null);
 
             communicationSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            communicationSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             communicationSocket.NoDelay = true;
 
             try
