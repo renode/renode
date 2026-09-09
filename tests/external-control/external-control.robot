@@ -450,3 +450,17 @@ Should Run Custom Command Sample
     Should Contain                ${response}  demo rev trap
     ${response} =                 Run Keyword And Expect Error   *   ${SERVER_NAME} SendCustomCommand "command not defined"
     Should Contain                ${response}   command not defined
+
+Should Safely Exit
+    [Tags]                          exclude_windows
+
+    Execute Command                 mach create "machine"
+    Execute Command                 machine LoadPlatformDescriptionFromString "gpio: GPIOPort.NPCX_GPIO @ sysbus 0x0"
+    Create Log Tester               5
+
+    # It spams with RunFor if GPIO doesn't change
+    Build Sample                    gpio
+    ${proc}=                        Start Sample  gpio  ${PORT}  machine  gpio  0  event
+
+    Sleep                           2
+    # Renode should properly dispose the Emulation regardless of communication state

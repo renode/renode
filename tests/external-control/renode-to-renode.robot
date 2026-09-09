@@ -120,6 +120,19 @@ Wait For LED State Change
     [Arguments]                     ${led}  ${state}
     Wait For Log Entry              ${led}: LED state changed to ${state}  startEmulation=false
 
+Run Renodes Freely
+    [Arguments]                     ${sleep_time}
+
+    ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
+
+    Execute Command In Process      ${remote}  client SynchronizeTimeWithExternal
+    Wait For Log Entry              ${SERVER_NAME}: Registered time elapsed callback  startEmulation=false
+
+    Execute Command                 start
+    Sleep                           ${sleep_time}
+
+    [Return]                        ${remote}
+
 *** Test Cases ***
 Should Connect Two Renodes
     [Tags]                          basic-tests  skip_windows
@@ -250,3 +263,18 @@ Should Run Quit As Custom Command
     ...                             ${remote}
 
     Wait For Log Entry              Listening for connections  startEmulation=False
+
+Should Quit External Renode While Running
+    [Tags]                          basic-tests  skip_windows
+
+    ${remote}=                      Run Renodes Freely  3
+
+    ${output}=                      Quit Renode  ${remote}
+
+Should Quit Local Renode While Running
+    [Tags]                          basic-tests  skip_windows
+
+    ${remote}=                      Run Renodes Freely  3
+
+    Reset Emulation
+    ${output}=                      Quit Renode  ${remote}
