@@ -267,7 +267,13 @@ def handle_options(options):
         tests_collection = parse_tests_file(options.tests_file)
     else:
         tests_collection = []
-    options.tests = split_tests_into_groups(tests_collection, options.test_type)
+    test_groups = split_tests_into_groups(tests_collection, options.test_type)
+    if not test_groups:
+        print("No input suites")
+        sys.exit(1)
+
+    verify_suite_files_unique(test_groups)
+    options.tests = test_groups
 
     options.configuration = 'Debug' if options.debug_mode else 'Release'
 
@@ -608,16 +614,11 @@ def run():
     options = parser.parse_args()
     handle_options(options)
 
-    if not options.tests:
-        sys.exit(1)
-
     for handler in registered_handlers:
         if 'after_parsing' in handler and handler['after_parsing'] is not None:
             handler['after_parsing'](options)
 
     configure_output(options)
-
-    verify_suite_files_unique(options.tests)
 
     print("Preparing suites")
 
