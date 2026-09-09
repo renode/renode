@@ -45,6 +45,19 @@ Should Return Last Snapshot Before Deleted One
     ${result_path}=               Execute Command  emulation SnapshotTracker GetLastSnapshotBeforeOrAtTimeStamp "1.0"
     Should Be Equal As Strings    ${snap_path1.strip()}  ${result_path.strip()}
 
+Should Return More Recent Snapshot If Multiple Have The Same Timestamp
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+
+    ${snap_path1}=                Allocate Temporary File
+    Execute Command               Save @${snap_path1}
+    ${snap_path2}=                Allocate Temporary File
+    Execute Command               Save @${snap_path2}
+    
+    ${result_path}=               Execute Command  emulation SnapshotTracker GetLastSnapshotBeforeOrAtTimeStamp "0.015"
+    Should Be Equal As Strings    ${snap_path2.strip()}  ${result_path.strip()}
+
 Should Throw Exception When No Older Snapshots
     Create Machine
 
@@ -58,6 +71,74 @@ Should Throw Exception When No Snapshots
     Create Machine
 
     Run Keyword And Expect Error  *There are no snapshots taken before this timestamp*    Execute Command  emulation SnapshotTracker GetLastSnapshotBeforeOrAtTimeStamp "1.0"
+
+Should Throw Exception When No Snapshots Before Timestamp For GDB
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+
+    # create a temporary file so it can be automatically removed after Renode finishes
+    ${snap_path}=                 Allocate Temporary File
+    Execute Command               Save @${snap_path}
+
+    Run Keyword And Expect Error  *There are no snapshots taken before this timestamp*    Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "0.01"
+
+Should Return Older Snapshot For GDB
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+    ${snap_path1}=                Allocate Temporary File
+    Execute Command               Save @${snap_path1}
+
+    Execute Command               emulation RunFor "0.01"
+    ${snap_path2}=                Allocate Temporary File
+    Execute Command               Save @${snap_path2}
+
+    ${result_path}=               Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "0.015"
+    Should Be Equal As Strings    ${snap_path1.strip()}  ${result_path.strip()}
+
+Should Return Last Snapshot Before Deleted One For GDB
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+    ${snap_path1}=                Allocate Temporary File
+    Execute Command               Save @${snap_path1}
+
+    Execute Command               emulation RunFor "0.01"
+    ${snap_path2}=                Allocate Temporary File
+    Execute Command               Save @${snap_path2}
+
+    Remove File                   ${snap_path2}
+
+    ${result_path}=               Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "1.0"
+    Should Be Equal As Strings    ${snap_path1.strip()}  ${result_path.strip()}
+
+Should Return Older Snapshot For GDB If Multiple Have The Same Timestamp
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+
+    ${snap_path1}=                Allocate Temporary File
+    Execute Command               Save @${snap_path1}
+    ${snap_path2}=                Allocate Temporary File
+    Execute Command               Save @${snap_path2}
+    
+    ${result_path}=               Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "0.015"
+    Should Be Equal As Strings    ${snap_path1.strip()}  ${result_path.strip()}
+
+Should Throw Exception When No Older Snapshots For GDB
+    Create Machine
+
+    Execute Command               emulation RunFor "0.01"
+    ${snap_path}=                 Allocate Temporary File
+    Execute Command               Save @${snap_path}
+
+    Run Keyword And Expect Error  *There are no snapshots taken before this timestamp*    Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "0.005"
+
+Should Throw Exception When No Snapshots For GDB
+    Create Machine
+
+    Run Keyword And Expect Error  *There are no snapshots taken before this timestamp*    Execute Command  emulation SnapshotTracker GetSnapshotForGdbBeforeTimeStamp "1.0"
 
 Should Count Snapshots Created On The Same Timestamp
     Create Machine
@@ -84,14 +165,18 @@ Should Count Snapshots Properly
     ${snapshots_count}=           Execute Command  emulation SnapshotTracker Count
     Should Be Equal As Integers   ${snapshots_count}  2
 
-Should Detect Snapshot Overrides
+Should Move Snapshot That Would Be Overriden
     Create Machine
 
     ${snap_path}=                 Allocate Temporary File
     Execute Command               Save @${snap_path}
 
+    Create Log Tester             0
+
     Execute Command               emulation RunFor "0.001"
     Execute Command               Save @${snap_path}
 
+    Wait For Log Entry            moved to  timeout=0  
+
     ${snapshots_count}=           Execute Command  emulation SnapshotTracker Count
-    Should Be Equal As Integers   ${snapshots_count}  1
+    Should Be Equal As Integers   ${snapshots_count}  2
