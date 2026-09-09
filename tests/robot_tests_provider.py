@@ -472,9 +472,7 @@ class RobotTestSuite(object):
         )
 
 
-    def prepare(self, options):
-        RobotTestSuite.instances_count += 1
-
+    def _find_tests(self) -> robot.running.TestSuite:
         hotSpotTestFinder = TestsFinder(keyword="Handle Hot Spot")
         suiteBuilder = robot.running.builder.TestSuiteBuilder()
         suite = suiteBuilder.build(self.path)
@@ -482,6 +480,12 @@ class RobotTestSuite(object):
 
         self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
         self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
+        return suite
+
+
+    def prepare(self, options):
+        RobotTestSuite.instances_count += 1
+        self._find_tests()
 
         # In parallel runs, Renode is started for each suite.
         # The same is done in sequential runs with --keep-renode-output.
