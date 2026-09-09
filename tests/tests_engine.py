@@ -515,8 +515,8 @@ def print_rerun_trace(options):
 #
 # when running multiple test suites returns TRUE if ANY failed due to a crash.
 def failed_due_to_crash(options, groups_segment) -> bool:
-    for (group, _) in groups_segment:
-        for suite in options.tests[group]:
+    for (_, group_suites) in groups_segment:
+        for suite in group_suites:
             if suite.tests_failed_due_to_renode_crash():
                 return True
 
@@ -638,8 +638,8 @@ def run():
     for (_, group_suites) in groups_segment:
         args.append((group_suites, total_number_of_suites, options))
 
-    for (group, _) in groups_segment:
-        for suite in options.tests[group]:
+    for (_, group_suites) in groups_segment:
+        for suite in group_suites:
             res = suite.prepare(options)
             if res is not None and res != 0:
                 print("Build failure, not running tests.")
@@ -718,8 +718,8 @@ def run():
     # before the log files are cleaned up
     test_failed_due_to_crash: bool = tests_failed and failed_due_to_crash(options, groups_segment)
 
-    for (group, _) in groups_segment:
-        for suite in options.tests[group]:
+    for (_, group_suites) in groups_segment:
+        for suite in group_suites:
             type(suite).log_files = logs_per_type[type(suite)]
             suite.cleanup(options)
 
