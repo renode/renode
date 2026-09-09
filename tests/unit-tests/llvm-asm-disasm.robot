@@ -177,7 +177,9 @@ Create Machine
     ${extra}=                       Set Variable If  "${cpu}" == "RiscV32"  ; timeProvider: empty }  ${extra}
     ${extra}=                       Set Variable If  "${cpu}" == "RiscV64"  ; timeProvider: empty }  ${extra}
     ${extra}=                       Set Variable If  "${cpu}" == "X86"  ; lapic: empty }  ${extra}
+    ${extra}=                       Set Variable If  "${cpu}" == "X86KVM"  ; }  ${extra}
     ${extra}=                       Set Variable If  "${cpu}" == "X86_64"  ; lapic: empty }  ${extra}
+    ${extra}=                       Set Variable If  "${cpu}" == "X86_64KVM"  ; }  ${extra}
 
     Execute Command                 mach create
     IF  any(x in "${cpu}" for x in ("PowerPc", "Sparc"))
@@ -232,6 +234,61 @@ Assemble And Disassemble RVV
     RoundTrip LE                    00057757  vsetvli  a4, a0, e8, m1, tu, mu  # rv64v
     RoundTrip LE                    03058407  vle8ff.v  v8, (a1)  # rv64v
     RoundTrip LE                    4218a757  vfirst.m  a4, v1  # rv64v
+
+Assemble And Disassemble 16-bit X86 Using Intel Syntax
+    RoundTrip BE                    67666b7b0c14  imul  edi, dword ptr [ebx + 12], 20  6  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    45  inc  bp  1  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    6645  inc  ebp  2  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    660fb7c0  movzx  eax, ax  4  cc  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    67890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    66898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    898f711a  mov  word ptr [bx + 6769], cx  4  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    0f011e5e00  lidtw  [94]  5  abd  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
+
+Assemble And Disassemble 16-bit X86 Using GAS Syntax
+    RoundTrip BE                    67666b7b0c14  imull  $20, 12(%ebx), %edi  6  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    45  incw  %bp  1  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    6645  incl  %ebp  2  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    660fb7c0  movzwl  %ax, %eax  4  cc  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    67890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    66898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    898f711a  movw  %cx, 6769(%bx)  4  a  reverse=False  triple="i386-unknown-none-code16"
+    RoundTrip BE                    0f011e5e00  lidtw  94  5  abd  reverse=False  triple="i386-unknown-none-code16"
+
+Assemble And Disassemble X86 Using Intel Syntax
+    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    6645  inc  bp  2  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    45  inc  ebp  1  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    67898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    6766898f711a  mov  word ptr [bx + 6769], cx  6  a  alternateDialect=True  reverse=False  triple="i386"
+    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  alternateDialect=True  reverse=False  triple="i386"
+
+Assemble And Disassemble X86 Using GAS Syntax
+    RoundTrip BE                    6b7b0c14  imull  $20, 12(%ebx), %edi  reverse=False  triple="i386"
+    RoundTrip BE                    6645  incw  %bp  2  reverse=False  triple="i386"
+    RoundTrip BE                    45  incl  %ebp  1  reverse=False  triple="i386"
+    RoundTrip BE                    0fb7c0  movzwl  %ax, %eax  3  cc  reverse=False  triple="i386"
+    RoundTrip BE                    66890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386"
+    RoundTrip BE                    67898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386"
+    RoundTrip BE                    6766898f711a  movw  %cx, 6769(%bx)  6  a  reverse=False  triple="i386"
+    RoundTrip BE                    0f011d5e00fc00  lidtl  16515166  7  abd  reverse=False  triple="i386"
+
+Assemble And Disassemble X86_64 Using Intel Syntax
+    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  alternateDialect=True  reverse=False  triple="x86_64"
+    # Only testing assembly here as the disassembly-testing keywords can handle at most 8 bytes of code.
+    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  alternateDialect=True  triple="x86_64"
+    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  alternateDialect=True  reverse=False  triple="x86_64"
+    RoundTrip BE                    48ffc0  inc  rax  3  alternateDialect=True  reverse=False  triple="x86_64"
+    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  alternateDialect=True  reverse=False  triple="x86_64"
+
+Assemble And Disassemble X86_64 Using GAS Syntax
+    RoundTrip BE                    676b7b0c14  imull  $20, 12(%ebx), %edi  5  reverse=False  triple="x86_64"
+    AsTest                          48b8f0debc8a67452301  movabsq  $81985529234382576, %rax  triple="x86_64"
+    RoundTrip BE                    48890cc516a9fd00  movq  %rcx, 16623894(,%rax,8)  8  reverse=False  triple="x86_64"
+    RoundTrip BE                    48ffc0  incq  %rax  3  reverse=False  triple="x86_64"
+    RoundTrip BE                    65488b06  movq  %gs:(%rsi), %rax  reverse=False  triple="x86_64"
 
 *** Test Cases ***
 # Keywords to disassemble single instruction
@@ -358,78 +415,41 @@ Should Assemble And Disassemble Sparc
     RoundTrip LE                    01000000  nop  hex_addr=abc
     RoundTrip LE                    10680047  ba  %xcc, 71
 
-Should Assemble And Disassemble 16-bit X86 Using Intel Syntax
+Should Assemble And Disassemble 16-bit X86
     [Tags]                          basic-tests
     Create Machine                  X86  x86
+    Assemble And Disassemble 16-bit X86 Using Intel Syntax
+    Assemble And Disassemble 16-bit X86 Using GAS Syntax
 
-    RoundTrip BE                    67666b7b0c14  imul  edi, dword ptr [ebx + 12], 20  6  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    45  inc  bp  1  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    6645  inc  ebp  2  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    660fb7c0  movzx  eax, ax  4  cc  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    67890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    66898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    898f711a  mov  word ptr [bx + 6769], cx  4  a  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    0f011e5e00  lidtw  [94]  5  abd  alternateDialect=True  reverse=False  triple="i386-unknown-none-code16"
-
-Should Assemble And Disassemble 16-bit X86 Using GAS Syntax
+Should Assemble And Disassemble X86
     [Tags]                          basic-tests
     Create Machine                  X86  x86
+    Assemble And Disassemble X86 Using Intel Syntax
+    Assemble And Disassemble X86 Using GAS Syntax
 
-    RoundTrip BE                    67666b7b0c14  imull  $20, 12(%ebx), %edi  6  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    45  incw  %bp  1  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    6645  incl  %ebp  2  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    660fb7c0  movzwl  %ax, %eax  4  cc  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    67890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    66898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    898f711a  movw  %cx, 6769(%bx)  4  a  reverse=False  triple="i386-unknown-none-code16"
-    RoundTrip BE                    0f011e5e00  lidtw  94  5  abd  reverse=False  triple="i386-unknown-none-code16"
+Should Assemble And Disassemble 16-bit X86 On KVM Core
+    [Tags]                          basic-test  exclude_windows  exclude_osx  exclude_host_aarch64
+    Create Machine                  X86KVM  x86
+    Assemble And Disassemble 16-bit X86 Using Intel Syntax
+    Assemble And Disassemble 16-bit X86 Using GAS Syntax
 
-Should Assemble And Disassemble X86 Using Intel Syntax
-    [Tags]                          basic-tests
-    Create Machine                  X86  x86
+Should Assemble And Disassemble X86 On KVM Core
+    [Tags]                          basic-tests  exclude_windows  exclude_osx  exclude_host_aarch64
+    Create Machine                  X86KVM  x86
+    Assemble And Disassemble X86 Using Intel Syntax
+    Assemble And Disassemble X86 Using GAS Syntax
 
-    RoundTrip BE                    6b7b0c14  imul  edi, dword ptr [ebx + 12], 20  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    6645  inc  bp  2  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    45  inc  ebp  1  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    0fb7c0  movzx  eax, ax  3  cc  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    66890cc516a9fd00  mov  word ptr [8*eax + 16623894], cx  8  a  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    67898f711a  mov  dword ptr [bx + 6769], ecx  5  a  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    6766898f711a  mov  word ptr [bx + 6769], cx  6  a  alternateDialect=True  reverse=False  triple="i386"
-    RoundTrip BE                    0f011d5e00fc00  lidtd  [16515166]  7  abd  alternateDialect=True  reverse=False  triple="i386"
-
-Should Assemble And Disassemble X86 Using GAS Syntax
-    [Tags]                          basic-tests
-    Create Machine                  X86  x86
-
-    RoundTrip BE                    6b7b0c14  imull  $20, 12(%ebx), %edi  reverse=False  triple="i386"
-    RoundTrip BE                    6645  incw  %bp  2  reverse=False  triple="i386"
-    RoundTrip BE                    45  incl  %ebp  1  reverse=False  triple="i386"
-    RoundTrip BE                    0fb7c0  movzwl  %ax, %eax  3  cc  reverse=False  triple="i386"
-    RoundTrip BE                    66890cc516a9fd00  movw  %cx, 16623894(,%eax,8)  8  a  reverse=False  triple="i386"
-    RoundTrip BE                    67898f711a  movl  %ecx, 6769(%bx)  5  a  reverse=False  triple="i386"
-    RoundTrip BE                    6766898f711a  movw  %cx, 6769(%bx)  6  a  reverse=False  triple="i386"
-    RoundTrip BE                    0f011d5e00fc00  lidtl  16515166  7  abd  reverse=False  triple="i386"
-
-Should Assemble And Disassemble X86_64 Using Intel Syntax
+Should Assemble And Disassemble X86_64
     [Tags]                          basic-tests
     Create Machine                  X86_64  x86_64
+    Assemble And Disassemble X86_64 Using Intel Syntax
+    Assemble And Disassemble X86_64 Using GAS Syntax
 
-    RoundTrip BE                    676b7b0c14  imul  edi, dword ptr [ebx + 12], 20  5  alternateDialect=True  reverse=False  triple="x86_64"
-    # Only testing assembly here as the disassembly-testing keywords can handle at most 8 bytes of code.
-    AsTest                          48b8f0debc8a67452301  movabs  rax, 81985529234382576  alternateDialect=True  triple="x86_64"
-    RoundTrip BE                    48890cc516a9fd00  mov  qword ptr [8*rax + 16623894], rcx  8  alternateDialect=True  reverse=False  triple="x86_64"
-    RoundTrip BE                    48ffc0  inc  rax  3  alternateDialect=True  reverse=False  triple="x86_64"
-    RoundTrip BE                    65488b06  mov  rax, qword ptr gs:[rsi]  alternateDialect=True  reverse=False  triple="x86_64"
-
-Should Assemble And Disassemble X86_64 Using GAS Syntax
-    [Tags]                          basic-tests
-    Create Machine                  X86_64  x86_64
-
-    RoundTrip BE                    676b7b0c14  imull  $20, 12(%ebx), %edi  5  reverse=False  triple="x86_64"
-    AsTest                          48b8f0debc8a67452301  movabsq  $81985529234382576, %rax  triple="x86_64"
-    RoundTrip BE                    48890cc516a9fd00  movq  %rcx, 16623894(,%rax,8)  8  reverse=False  triple="x86_64"
-    RoundTrip BE                    48ffc0  incq  %rax  3  reverse=False  triple="x86_64"
-    RoundTrip BE                    65488b06  movq  %gs:(%rsi), %rax  reverse=False  triple="x86_64"
+Should Assemble And Disassemble X86_64 On KVM Core
+    [Tags]                          basic-tests  exclude_windows  exclude_osx  exclude_host_aarch64
+    Create Machine                  X86_64KVM  x86_64
+    Assemble And Disassemble X86_64 Using Intel Syntax
+    Assemble And Disassemble X86_64 Using GAS Syntax
 
 Should Assemble And Disassemble Xtensa
     Create Machine                  Xtensa  sample_controller
