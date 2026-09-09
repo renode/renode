@@ -53,11 +53,11 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         [RobotFrameworkKeyword(replayMode: Replay.Always)]
-        public int CreateCANTester(string canHub, float? defaultTimeout = null, string machine = null)
+        public int CreateCANTester(string canHub, float? defaultTimeout = null, string machine = null, bool defaultStartEmulation = true)
         {
             return CreateNewTester(hub =>
             {
-                var canTester = new CANTester(TimeInterval.FromSeconds(defaultTimeout ?? globalDefaultTimeout));
+                var canTester = new CANTester(TimeInterval.FromSeconds(defaultTimeout ?? globalDefaultTimeout), defaultStartEmulation);
                 hub.AttachTo(canTester);
                 return canTester;
             }, canHub, machine);
