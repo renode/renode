@@ -75,15 +75,15 @@ Should have Working EXTI
     Create Machine                 ${EXTI_TogglelED}
     Create LED Tester              ${BLUE_LED}  defaultTimeout=0.1
 
-    Start Emulation
+    # The firmware preloads PB4 high before enabling output, leaving the active-low LED off.
+    # Let initialization finish before pressing the button and testing the EXTI handler.
+    Assert And Hold LED State      false  timeoutAssert=0.1  timeoutHold=0.01
 
+    Execute Command                ${USER_BUTTON} PressAndRelease
     Assert LED State               true
 
     Execute Command                ${USER_BUTTON} PressAndRelease
     Assert LED State               false
-
-    Execute Command                ${USER_BUTTON} PressAndRelease
-    Assert LED State               true
 
 SPI Should Work In Polling Mode
     Run SPI Test Case               ${SPI_POLLING}
