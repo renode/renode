@@ -79,7 +79,10 @@ namespace Antmicro.Renode.Connectors
             if(connectorPin.IsConnected)
             {
                 this.Log(LogLevel.Warning, "Overwriting destination PIN connection.");
-                destinationMachine.MachineReset -= ResetDestinationPinState;
+                if(destinationMachine != null)
+                {
+                    destinationMachine.MachineReset -= ResetDestinationPinState;
+                }
             }
             GetDestinationMachineAndAttachToEvent(receiver);
             connectorPin.Connect(receiver, pinNumber);
