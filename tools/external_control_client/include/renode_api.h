@@ -406,7 +406,9 @@ renode_error_t *renode_register_custom_command_callback(renode_t *renode, void *
 
 
 /* CAN */
-
+/**
+ * Maximum size of the CAN Frame in bytes, that the client can handle.
+ */
 #define MAX_CAN_FRAME_SIZE 64
 
 /**
@@ -592,7 +594,7 @@ typedef void (*renode_sysbus_event_callback_t)(void *user_data, renode_sysbus_ev
  *
  * @param[in] machine machine handle
  * @param[in] name Bus peripheral's name
- * @param[out] peripheral handle associated with the requested External Bus peripheral
+ * @param[out] bus_peripheral handle associated with the requested External Bus peripheral
  * @return a pointer to error structure if error occurred, otherwise NULL
  */
 renode_error_t *renode_get_bus_peripheral(renode_machine_t *machine, const char *name, renode_bus_peripheral_t **bus_peripheral);
