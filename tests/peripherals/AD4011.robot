@@ -28,7 +28,7 @@ Read Sensor
     ${first}=                      Execute Command  spi1.adc Transmit 0x0
     ${second}=                     Execute Command  spi1.adc Transmit 0x0
     ${third}=                      Execute Command  spi1.adc Transmit 0x0
-    ${measurement}=                Evaluate  int(${first.strip()}) << 16 | int(${second.strip()}) << 8 | int(${third.strip()})
+    ${measurement}=                Evaluate  int(${first.strip()}) << 10 | int(${second.strip()}) << 2 | (int(${third.strip()}) & 0x3)
 
     RETURN                         ${measurement}
 
