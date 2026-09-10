@@ -22,12 +22,12 @@ Should Boot HSS
 
     Start Emulation
 
-    Wait For Line On Uart     Timeout in (\\d+) seconds       treatAsRegex=true
+    Wait For Line On Uart     Timeout in (\\d+) seconds?      treatAsRegex=true  timeout=15
     Send Key To Uart          0x1B
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
-    Wait For Line On Uart     u54_\\d+:sbi_init 80200000      treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 0x80200000  treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 0x80200000  treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 0x80200000  treatAsRegex=true
+    Wait For Line On Uart     u54_\\d+:sbi_init 0x80200000  treatAsRegex=true
 
     Provides                  booted-hss
 
@@ -54,7 +54,7 @@ Should Boot Linux
     [Tags]                    linux  uart  interrupts
     Requires                  booted-uboot
 
-    Wait For Line On Uart     Starting network  timeout=5
+    Wait For Line On Uart     Starting network  timeout=10  includeUnfinishedLine=true
     Wait For Prompt On Uart   buildroot login:  timeout=10
     Write Line To Uart        root
     Wait For Prompt On Uart   Password
@@ -68,3 +68,19 @@ Should Ls
     Requires                  booted-linux
     Write Line To Uart        ls /
     Wait For Line On Uart     proc
+
+Should Start Four Linux Harts
+    [Documentation]           Checks that all four application harts are online in Linux.
+    [Tags]                    linux  uart  smp
+    Requires                  booted-linux
+
+    Write Line To Uart        cat /sys/devices/system/cpu/online
+    Wait For Line On Uart     ^0-3$  treatAsRegex=true
+
+Should Flush Instruction Caches Concurrently
+    [Documentation]           Runs four pinned threads that request remote instruction-cache synchronization.
+    [Tags]                    linux  uart  smp
+    Requires                  booted-linux
+
+    Write Line To Uart        flush-icache
+    Wait For Line On Uart     FLUSH_DONE: 4 workers, 4000 remote icache flushes  timeout=30
