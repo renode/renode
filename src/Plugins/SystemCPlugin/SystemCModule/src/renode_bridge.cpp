@@ -754,7 +754,7 @@ bool renode_connection::handle_forward_request_from_native(renode_message messag
   // SC_THREAD.
   native_request = message;
   native_request_event.signal();
-  while(!native_response_event.wait()) {}
+  while(!native_response_event.wait(spin_wait_iterations)) {}
 
   native_response = nullptr;
   native_dmi_response = nullptr;
@@ -787,7 +787,7 @@ renode_message renode_connection::receive_forward_request(bool* closed)
 {
   if(native) {
     *closed = false;
-    while(!native_request_event.wait()) {
+    while(!native_request_event.wait(spin_wait_iterations)) {
       sc_core::wait(sc_core::SC_ZERO_TIME);
     }
     auto message = native_request;
@@ -838,7 +838,7 @@ renode_connection::renode_connection(sc_core::sc_module_name name,
                                      const char *address, const char *port,
                                      bool native, std::string mach,
                                      std::string peri, bool hosted)
-    : sc_module(name), native(native), mach(mach), peri(peri),
+    : sc_module(name), native(native), spin_wait_iterations(0), mach(mach), peri(peri),
       native_response(nullptr), native_dmi_response(nullptr) {
   SC_HAS_PROCESS(renode_connection);
   if (native || hosted) {
@@ -849,6 +849,7 @@ renode_connection::renode_connection(sc_core::sc_module_name name,
         (void *)this, (void *)handle_backward_response_native,
         (void *)handle_backward_response_dmi_native,
         (void *)handle_forward_request_native,
+        &spin_wait_iterations,
         mach.c_str(), peri.c_str());
     if (rc != RENODE_SUCCESS) {
       fprintf(stderr, "Failed to initialize native interface. Aborting.\n");

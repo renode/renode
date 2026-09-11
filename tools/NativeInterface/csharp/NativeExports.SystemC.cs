@@ -68,10 +68,16 @@ struct renode_message {
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, RenodeMessage, void> bwResponseHandler,
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, DMIMessage, void> bwResponseDmiHandler,
             [DNNE.C99Type("void*")] delegate* unmanaged<void*, RenodeMessage, RenodeMessage*, DMINativeMessage*, int> fwRequestHandler,
+            [DNNE.C99Type("uint32_t *")] uint* spinWaitIterations,
             [DNNE.C99Type("const char *")] byte* machName,
             [DNNE.C99Type("const char *")] byte* periName
         )
         {
+            if(spinWaitIterations == null)
+            {
+                return NativeStatus.CommandError;
+            }
+
             if(!TryGetSystemCHandle(machName, periName, out var systemC))
             {
                 return NativeStatus.CommandError;
@@ -87,6 +93,7 @@ struct renode_message {
             systemC.SendBackwardResponseNative = bwResponseHandler;
             systemC.SendBackwardResponseDmiNative = bwResponseDmiHandler;
             systemC.SendForwardRequestNative = fwRequestHandler;
+            *spinWaitIterations = systemC.SpinWaitIterations;
 
             return NativeStatus.Success;
         }

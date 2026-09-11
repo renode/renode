@@ -188,6 +188,25 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
+        // Maximum polling iterations before sleeping on the native mailbox.
+        // Zero disables spinning. Configure before establishing the connection.
+        public uint SpinWaitIterations
+        {
+            get => spinWaitIterations;
+            set
+            {
+                if(value == spinWaitIterations)
+                {
+                    return;
+                }
+                if(connectionActive || RenodeConnectionRef != null)
+                {
+                    throw new RecoverableException("Connection is already active");
+                }
+                spinWaitIterations = value;
+            }
+        }
+
         protected void SendBackwardResponse(RenodeMessage message)
         {
             this.Log(LogLevel.Noisy, "Sending bw response. Action: {0} | Address: {1:X} | Payload: {2:X}", message.ActionId, message.Address, message.Payload);
@@ -526,6 +545,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private string address;
         private int requestedPort;
         private bool useNative;
+        private uint spinWaitIterations = 1024;
         private bool backwardThreadStarted;
         private bool connectionActive;
 

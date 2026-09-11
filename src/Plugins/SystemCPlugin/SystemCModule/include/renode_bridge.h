@@ -7,6 +7,10 @@
 #pragma once
 
 #include <systemc>
+#include <atomic>
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
 
 #include <condition_variable>
 #include <cstdint>
@@ -318,32 +322,61 @@ public:
 };
 
 // Single producer/single consumer notification for the native mailbox.
+// Spin briefly to avoid an OS context switch on repeated transactions,
+// then block. Waiting state closes the check/sleep race with signal().
 class native_event {
 public:
   void signal() {
-    lock l(mutex_);
-    ready_ = true;
-    condvar_.notify_one();
+    if(state_.exchange(Ready) == Waiting) {
+      lock l(mutex_);
+      condvar_.notify_one();
+    }
   }
 
   // A timeout lets forward_loop yield a SystemC delta cycle while idle.
-  bool wait(std::chrono::milliseconds timeout_duration = std::chrono::milliseconds(20)) {
+  bool wait(uint32_t spin_iterations, std::chrono::milliseconds timeout_duration = std::chrono::milliseconds(20)) {
+    for(unsigned i = 0; i < spin_iterations; ++i) {
+      if(state_.load() == Ready) {
+        return true;
+      }
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+      _mm_pause();
+#elif defined(__i386__) || defined(__x86_64__)
+      __builtin_ia32_pause();
+#elif defined(__aarch64__)
+      asm volatile("yield");
+#endif
+    }
+
     ulock u(mutex_);
-    return condvar_.wait_for(u, timeout_duration, [this] {
-      return ready_;
+    auto expected = Empty;
+    if(!state_.compare_exchange_strong(expected, Waiting)) {
+      return true;
+    }
+    condvar_.wait_for(u, timeout_duration, [this] {
+      return state_.load() == Ready;
     });
+    expected = Waiting;
+    return !state_.compare_exchange_strong(expected, Empty);
   }
 
+  // Only the consumer resets a notification, after observing Ready. The
+  // rendezvous prevents the producer from publishing another time first
   void reset() {
-    lock l(mutex_);
-    ready_ = false;
+    state_.store(Empty);
   }
 
 private:
   typedef std::lock_guard<std::mutex> lock;
   typedef std::unique_lock<std::mutex> ulock;
 
-  bool ready_ = false;
+  enum State {
+    Empty,
+    Waiting,
+    Ready
+  };
+
+  std::atomic<State> state_{Empty};
   std::mutex mutex_;
   std::condition_variable condvar_;
 };
@@ -385,6 +418,7 @@ private:
 
   int64_t max_desync_us;
   bool native;
+  uint32_t spin_wait_iterations;
   std::string mach;
   std::string peri;
 
