@@ -55,10 +55,8 @@ Check Input Capture Line
 *** Test Cases ***
 Timer Should Support Input Capture
     Create Machine                  ${TIM_PWMInput}
-    Create Terminal Tester          ${UART}
+    Create Terminal Tester          ${UART}  defaultPauseEmulation=true
     Execute Command                 machine LoadPlatformDescriptionFromString "gpioPortB: { 6 -> gpioPortA@1 }"
-
-    Start Emulation
 
     Check Input Capture Line        frequency=0     duty=0   IC2=0
     Execute Command                 sysbus.gpioPortC.UserButton1 PressAndRelease
@@ -69,8 +67,6 @@ Timer Should Support Input Capture
 Should Have Working UART
     Create Machine                  ${UART_PRINTF}
     Create Terminal Tester          ${UART}
-
-    Start Emulation
 
     Wait For Line On Uart           UART Printf Example
     Wait For Line On Uart           ** Test finished successfully. **
