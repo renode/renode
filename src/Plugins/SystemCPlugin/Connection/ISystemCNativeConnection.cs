@@ -15,13 +15,9 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         delegate* unmanaged<void*, DMIMessage, void> SendBackwardResponseDmiNative { get; set; }
 
-        delegate* unmanaged<void*, RenodeMessage, void> SendForwardRequestNative { get; set; }
+        delegate* unmanaged<void*, RenodeMessage, RenodeMessage*, DMINativeMessage*, int> SendForwardRequestNative { get; set; }
 
         void HandleBackwardRequestFromNative(RenodeMessage message);
-
-        void HandleForwardResponseFromNative(RenodeMessage message);
-
-        void HandleForwardResponseDmiFromNative(DMINativeMessage message);
 
         bool TryInitNativeConnection();
 

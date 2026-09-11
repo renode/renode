@@ -317,6 +317,37 @@ public:
     }
 };
 
+// Single producer/single consumer notification for the native mailbox.
+class native_event {
+public:
+  void signal() {
+    lock l(mutex_);
+    ready_ = true;
+    condvar_.notify_one();
+  }
+
+  // A timeout lets forward_loop yield a SystemC delta cycle while idle.
+  bool wait(std::chrono::milliseconds timeout_duration = std::chrono::milliseconds(20)) {
+    ulock u(mutex_);
+    return condvar_.wait_for(u, timeout_duration, [this] {
+      return ready_;
+    });
+  }
+
+  void reset() {
+    lock l(mutex_);
+    ready_ = false;
+  }
+
+private:
+  typedef std::lock_guard<std::mutex> lock;
+  typedef std::unique_lock<std::mutex> ulock;
+
+  bool ready_ = false;
+  std::mutex mutex_;
+  std::condition_variable condvar_;
+};
+
 class renode_connection;
 class renode_bridge;
 
@@ -335,7 +366,7 @@ public:
   void register_bridge(uint32_t id, renode_bridge *bridge);
   void handle_backward_response_from_native(renode_message message);
   void handle_backward_response_dmi_from_native(dmi_message message);
-  void handle_forward_request_from_native(renode_message message);
+  bool handle_forward_request_from_native(renode_message message, renode_message *response, dmi_native_message *dmi_response);
   renode_message receive_backward_response();
   dmi_message receive_backward_response_dmi();
   renode_message receive_forward_request(bool *closed);
@@ -357,9 +388,14 @@ private:
   std::string mach;
   std::string peri;
 
+  native_event native_response_event;
+  native_event native_request_event;
+  renode_message native_request;
+  renode_message *native_response;
+  dmi_native_message *native_dmi_response;
+
   BlockingCollection<renode_message> bw_response;
   BlockingCollection<dmi_message> dmi_response;
-  BlockingCollection<renode_message> fw_request;
 
   std::map<uint32_t, renode_bridge*> bridges;
 };
