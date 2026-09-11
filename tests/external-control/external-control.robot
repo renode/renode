@@ -76,6 +76,11 @@ Custom Test Teardown
         ${test_name}=                   Get Sanitized Test Name
         ${out_dir}=                     Set Variable  ${RESULTS_DIRECTORY}/external-control/${test_name}
 
+        # This prevents potential fail on copying
+        ${already_exists}=               Run Keyword And Return Status    Directory Should Exist  ${out_dir}
+        IF  ${already_exists} == True
+            Remove Directory                 ${out_dir}  recursive=True
+        END
         Copy Directory                  ${BUILD_DIR}  ${out_dir}
         Log To Console                  !!!!! External control client build directory saved to "${out_dir}"
     ELSE
@@ -361,6 +366,7 @@ Should Run Single SPI Sample With Robot Managed Time
 
 Should Run CAN Sample
     [Tags]                         exclude_windows
+    [Timeout]                      10
     Set Test Variable              ${sender_id}    0x55
     Set Test Variable              ${receiver_id}  0xAA
     Set Test Variable              ${msg_hex}      C001D00D
@@ -370,14 +376,17 @@ Should Run CAN Sample
     Execute Command                emulation CreateCANHub "canHub"
     Execute Command                connector Connect external_client_bus canHub
 
-    Create Can Tester              canHub
+    Create Can Tester              canHub  defaultTimeout=1
+    Create Log Tester              1
+    Execute Command                logLevel -1
 
     Build Sample                   can
 
     ${proc}=                       Start Sample  can  ${PORT}  machine  external_client_bus
+    Wait For Log Entry             Attaching ReceivedMessage callback    startEmulation=false
     
-    Send ISOTP Message             ${sender_id}  ${receiver_id}  ${msg_hex}  
-    ${received_msg}=               Wait For Frame With Id         0x55   timeout=10000
+    Send ISOTP Message             ${sender_id}  ${receiver_id}  ${msg_hex}  startEmulation=false
+    ${received_msg}=               Wait For Frame With Id         0x55   startEmulation=false
     ${received_hex}=               Evaluate  $received_msg.hex().upper()
     Should Contain                 ${received_hex}  ${msg_hex}
 
@@ -441,6 +450,7 @@ Should Run Bus Peripheral Sample As Counter
 
 Should Run Custom Command Sample
     [Tags]                        exclude_windows
+    Execute Command               logLevel -1 ${SERVER_NAME}
     Create Log Tester             1
     Build Sample                  custom_command
     Execute Command               logLevel -1 ${SERVER_NAME}
