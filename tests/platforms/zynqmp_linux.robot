@@ -24,10 +24,50 @@ Create Linux 32-Bit Userspace Machine
     Execute Command                 $rootfs=${LINUX_32BIT_ROOTFS}
     Create Linux Machine
 
-*** Test Cases ***
-Should Boot And Login
-    Create Linux Machine
+Should Reboot To Linux
+    [Arguments]    ${scope}  ${ipi_registers}  ${reset_ipi_state}
 
+    ${rpu_r0}=                      Set Variable  0xDEADCAFE
+    Execute Command                 rpu0 SetRegister "R0" ${rpu_r0}
+    Execute Command                 rpu1 SetRegister "R0" ${rpu_r0}
+    Execute Command                 rpuGic DisabledSecurity True
+
+    # Except for "subsystem", which is an APU-only reset, RPUs, IPI etc. should be reset.
+    ${expected_ipi_state}=          Set Variable  ${reset_ipi_state}
+    ${expected_gic_disabled}=       Set Variable  False
+    ${expected_rpu_r0}=             Set Variable  0x0
+
+    IF    $scope == "subsystem"
+        # There should be no changes compared to before reboot.
+        &{expected_ipi_state}=      Dump Devices Registers  ${ipi_registers}
+        ${expected_gic_disabled}=   Set Variable  True
+        ${expected_rpu_r0}=         Set Variable  ${rpu_r0}
+        ${log_scope}=               Set Variable  ApuSubsystem
+    ELSE IF    $scope == "ps_only"
+        ${log_scope}=               Set Variable  ProcessingSystem
+    ELSE IF    $scope == "system"
+        ${log_scope}=               Set Variable  System
+    ELSE
+        Fail                        Invalid scope: ${scope}
+    END
+
+    Write Line To Uart              echo ${scope} > /sys/devices/platform/firmware\:zynqmp-firmware/shutdown_scope
+    Write Line To Uart              reboot
+
+    Wait For Log Entry              ipi.platformManagementUnit: System was reset due to the SystemShutdown request (type: Restart, scope: ${log_scope})
+
+    &{ipi_state}=                   Dump Devices Registers  ${ipi_registers}
+    Devices Registers Dump Should Be Equal
+    ...                             ${ipi_state}  ${expected_ipi_state}  "Reboot"  "Expected"
+    ${gic_disabled}=                Execute Command  rpuGic DisabledSecurity
+    ${gic_disabled}=                Strip String  ${gic_disabled}
+    Should Be Equal As Strings      ${gic_disabled}  ${expected_gic_disabled}
+    Register Should Be Equal        R0  ${expected_rpu_r0}  cpuName=rpu0
+    Register Should Be Equal        R0  ${expected_rpu_r0}  cpuName=rpu1
+
+    Should Boot And Login
+
+Should Boot And Login
     Boot U-Boot And Launch Linux
     Boot Linux And Login
 
@@ -35,7 +75,32 @@ Should Boot And Login
     Write Line To Uart              nproc
     Wait For Line On Uart           4
 
+*** Test Cases ***
+Should Boot And Login With All CPUs
+    Create Linux Machine
+    Should Boot And Login
+
     Provides                        linux-shell
+
+Should Reboot To Linux In System And APU-only modes
+    Create Linux Machine
+    Create Log Tester               5  defaultPauseEmulation=true
+
+    ${ipi_registers_list}=          Catenate  SEPARATOR=${SPACE}
+    ...    [(x, x+0x14) for x in range(0x0, 0x80000, 0x10000)] +
+    ...    [(x, x+0x14) for x in [0x31000, 0x32000, 0x33000]]
+    ${ipi_registers_list}=          Evaluate  ${ipi_registers_list}
+
+    # 0x18-0x1C registers are present but write-only.
+    ${ipi_registers}=               Create Dictionary  ipi=${{ $ipi_registers_list }}
+    &{reset_ipi_state}=             Dump Devices Registers  ${ipi_registers}
+
+    Should Boot And Login
+
+    # We don't check `ps_only` mode because the only difference with `system` is that it
+    # keeps ZynqMP's FPGA intact so currently in Renode those two modes work the same.
+    Should Reboot To Linux          subsystem  ${ipi_registers}  ${reset_ipi_state}
+    Should Reboot To Linux          system  ${ipi_registers}  ${reset_ipi_state}
 
 Test Dirty Addresses Reduction
     [Tags]                          exclude_host_aarch64
