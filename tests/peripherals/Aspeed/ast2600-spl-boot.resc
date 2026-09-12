@@ -1,0 +1,20 @@
+# ast2600-spl-boot.resc - Boot AST2600 with minimal SPL stub
+#
+# Usage (interactive):
+#   cd ~/renode-ast2600
+#   dotnet output/bin/Release/Renode.dll --disable-xwt --console --plain
+#   include @tests/peripherals/Aspeed/ast2600-spl-boot.resc
+#   start
+
+mach create "ast2600"
+machine LoadPlatformDescription @platforms/boards/ast2600/ast2600-evb.repl
+
+# Load SPL stub into flash window and boot ROM alias at 0x0
+sysbus LoadBinary @tests/peripherals/Aspeed/firmware/ast2600_spl_stub.bin 0x60000000
+sysbus LoadBinary @tests/peripherals/Aspeed/firmware/ast2600_spl_stub.bin 0x0
+
+# CPU starts at 0x0 (reset vector, mapped to boot ROM)
+cpu0 PC 0x0
+
+# Show UART output on console
+showAnalyzer uart5
