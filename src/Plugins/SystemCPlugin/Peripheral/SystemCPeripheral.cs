@@ -162,6 +162,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public void ValidateRegistrationPoint(BusRangeRegistration registrationPoint, IPeripheral context)
         {
+            if(context is ICPU initiatorCpu)
+            {
+                AddInitiator(initiatorCpu);
+            }
+
             if(context is not ICPUWithMMU cpuWithMmu)
             {
                 return;
@@ -218,6 +223,47 @@ namespace Antmicro.Renode.Peripherals.SystemC
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
         public const int NumberOfGPIOPins = 1024;
 
+        // Registers the CPU as an initiator. Can be called before the peripheral is registered on the bus
+        // (e.g. from a constructor), so that per-initiator state (e.g. a deferred halt) is available early.
+        // Adding the same CPU again is a no-op.
+        protected void AddInitiator(ICPU cpu)
+        {
+            var initiatorId = cpu.MultiprocessingId;
+            lock(initiators)
+            {
+                if(initiators.TryGetValue(initiatorId, out var initiator))
+                {
+                    if(initiator.Cpu != cpu)
+                    {
+                        throw new RecoverableException($"CPUs {GetCpuDescription(initiator.Cpu)} and {GetCpuDescription(cpu)} share the multiprocessing id {initiatorId}; initiators must be uniquely identifiable");
+                    }
+                    return;
+                }
+
+                initiators[initiatorId] = new Initiator(cpu);
+            }
+        }
+
+        protected void SetDeferredHalt(ICPU cpu, bool value)
+        {
+            this.NoisyLog("Initiator {0}: Setting deferred halt to {1}", GetCpuDescription(cpu), value);
+            if(cpu.IsHalted && value)
+            {
+                this.DebugLog("Reset signal asserted, but {0} is already halted", GetCpuDescription(cpu));
+                return;
+            }
+
+            var initiatorId = cpu.MultiprocessingId;
+            lock(initiators)
+            {
+                if(!initiators.ContainsKey(initiatorId))
+                {
+                    throw new RecoverableException($"Trying to set a deferred halt on an unknown initiator: {GetCpuDescription(cpu)}");
+                }
+                initiators[initiatorId].DeferredHalt = value;
+            }
+        }
+
         protected void SendGpioUpdate(int number, bool value, uint initiatorId)
         {
             // When GPIO connections are initialized, OnGPIO is called with
@@ -240,6 +286,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
         }
 
         protected readonly IMachine machine;
+
+        private static string GetCpuDescription(ICPU cpu)
+        {
+            return cpu.TryGetMachine(out var _)
+                ? cpu.GetName()
+                : $"{cpu.GetType().Name} with multiprocessing id {cpu.MultiprocessingId}";
+        }
 
         private static BusAccessError TlmStatusErrorToBusAccessError(TlmStatus tlmStatus)
         {
@@ -304,6 +357,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 }
             }
 
+            if(onCpuThread && TryApplyDeferredHalt(initiatorId))
+            {
+                // The CPU has just been halted to be held in reset, after letting this transaction finish.
+                // Faulting, charging transaction time, or mapping DMI would all outlive the reset or deadlock the halting CPU thread.
+                return response.Payload;
+            }
+
             if(onCpuThread && !semihosting)
             {
                 if(status != TlmStatus.Ok)
@@ -354,6 +414,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 {
                     this.WarningLog("Write transaction of width {0} to offset 0x{1:X} failed with status: {2}", dataLength, offset, status);
                 }
+            }
+
+            if(onCpuThread && TryApplyDeferredHalt(initiatorId))
+            {
+                // The CPU has just been halted to be held in reset, after letting this transaction finish.
+                // Faulting, charging transaction time, or mapping DMI would all outlive the reset or deadlock the halting CPU thread.
+                return;
             }
 
             if(onCpuThread && !semihosting)
@@ -614,8 +681,8 @@ namespace Antmicro.Renode.Peripherals.SystemC
             {
                 if(!initiators.TryGetValue(initiatorId, out var initiator))
                 {
-                    var registrationOffset = GetRegistrationOffsetForInitiator(cpu);
-                    initiators[initiatorId] = new Initiator(cpu, registrationOffset);
+                    this.WarningLog("Trying to map memory on an undefined initiator with id: {0}", initiatorId);
+                    return;
                 }
                 else if(initiator.MappedRanges.ContainsPoint(offset))
                 {
@@ -755,22 +822,34 @@ namespace Antmicro.Renode.Peripherals.SystemC
         private void UnmapRanges(IEnumerable<Range?> ranges, Initiator initiator)
         {
             var translationCpu = initiator.Cpu as TranslationCPU;
-            var offset = initiator.Offset;
+            var baseAddresses = sysbus.GetRegisteredPeripherals(translationCpu)
+                .Where(registered => registered.Peripheral == this)
+                .Select(registered => registered.RegistrationPoint.Range.StartAddress - registered.RegistrationPoint.Offset)
+                .ToList();
+            if(!baseAddresses.Any())
+            {
+                this.ErrorLog("Unable to unmap DMI regions of {0}: the peripheral is not registered for this CPU", GetCpuDescription(translationCpu));
+                return;
+            }
+
             foreach(var range in ranges)
             {
-                // MapMemory supports mapping segments with addresses relative to owner peripheral.
-                // UnmapMemory always assumes absolute address, so take a registration offset into account.
-                var invalidatedRange = new Range(checked(offset + range.Value.StartAddress), range.Value.Size);
-                try
+                foreach(var baseAddress in baseAddresses)
                 {
-                    sysbus.UnmapMemory(invalidatedRange, context: translationCpu);
+                    // MapMemory supports mapping segments with addresses relative to owner peripheral.
+                    // UnmapMemory always assumes absolute address, so take a registration offset into account.
+                    var invalidatedRange = new Range(checked(baseAddress + range.Value.StartAddress), range.Value.Size);
+                    try
+                    {
+                        sysbus.UnmapMemory(invalidatedRange, context: translationCpu);
+                    }
+                    catch(RecoverableException)
+                    {
+                        this.DebugLog("Invalidated memory region is already unmapped {0}", invalidatedRange);
+                    }
+                    translationCpu.OrderTranslationBlocksInvalidation(checked((nint)invalidatedRange.StartAddress), checked((nint)invalidatedRange.EndAddress));
+                    this.DebugLog("Unmapped SystemC DMI region {0}", invalidatedRange);
                 }
-                catch(RecoverableException)
-                {
-                    this.DebugLog("Invalidated memory region is already unmapped {0}", invalidatedRange);
-                }
-                translationCpu.OrderTranslationBlocksInvalidation(checked((nint)invalidatedRange.StartAddress), checked((nint)invalidatedRange.EndAddress));
-                this.DebugLog("Unmapped SystemC DMI region {0}", invalidatedRange);
             }
         }
 
@@ -785,35 +864,19 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
         }
 
-        private ulong GetRegistrationOffsetForInitiator(ICPU cpu)
+        private bool TryApplyDeferredHalt(uint initiatorId)
         {
-            ulong offset = 0;
-            var busRanges = new List<BusRangeRegistration>();
-            foreach(var context in sysbus.GetAllContextKeys())
+            lock(initiators)
             {
-                foreach(var registration in sysbus.GetRegisteredPeripherals(context))
+                if(initiators.TryGetValue(initiatorId, out var initiator) && initiator.DeferredHalt)
                 {
-                    if(registration.Peripheral != this)
-                    {
-                        continue;
-                    }
-                    var initiator = registration.RegistrationPoint.Initiator;
-                    if(initiator == null)
-                    {
-                        continue;
-                    }
-                    else if(initiator != cpu)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        offset = registration.RegistrationPoint.StartingPoint;
-                        break;
-                    }
+                    initiator.Cpu.IsHalted = true;
+                    initiator.DeferredHalt = false;
+                    this.DebugLog("CPU halted after reset signal assertion, once the pending transaction finished");
+                    return true;
                 }
+                return false;
             }
-            return offset;
         }
 
         private byte GetExtensionFields(out bool secure, out bool privileged, out bool semihosting, out uint initiatorId)
@@ -867,18 +930,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private sealed class Initiator
         {
-            public Initiator(ICPU cpu, ulong offset)
+            public Initiator(ICPU cpu)
             {
                 Cpu = cpu;
-                Offset = offset;
                 MappedRanges = new MinimalRangesCollection();
             }
 
             public ICPU Cpu { get; }
 
-            public ulong Offset { get; }
-
             public MinimalRangesCollection MappedRanges { get; }
+
+            public bool DeferredHalt { get; set; }
         }
 
         private sealed class DmiMappedSegment : IMappedSegment

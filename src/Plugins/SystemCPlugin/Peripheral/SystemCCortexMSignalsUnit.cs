@@ -91,6 +91,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
                 bundledConnections.Add(id, connections);
                 cortexMBundleMap.Add(id, cortexMBundle);
+                AddInitiator(cortexMBundle.Cpu);
                 SetupCortexMBundle(cortexMBundle, connections);
             }
             this.cortexMBundles = new ReadOnlyDictionary<uint, CortexMBundle>(cortexMBundleMap);
@@ -275,7 +276,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
             void holdInReset()
             {
                 cpu.IsHalted = true;
-                this.DebugLog("Cpu halted after reset signal assertion");
+                this.DebugLog("CPU halted after reset signal assertion");
             }
 
             void resetAndLeaveReset()
@@ -287,7 +288,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 // CPUWAIT is preserved by CortexM.Reset() and keeps the CPU halted
                 // until CPUWAIT is deasserted.
                 cpu.Resume();
-                this.DebugLog("Cpu and peripherals were reset after signal deassertion");
+                this.DebugLog("CPU and peripherals were reset after signal deassertion");
             }
 
             var resetState = resetOn == SignalActiveWhen.High ? true : false;
@@ -329,6 +330,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
             void updateResetState()
             {
+                SetDeferredHalt(cpu, false);
                 if(isAsserted)
                 {
                     holdInReset();
@@ -337,6 +339,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 {
                     resetAndLeaveReset();
                 }
+            }
+
+            if(isAsserted)
+            {
+                SetDeferredHalt(cpu, true);
             }
 
             // GPIO signal (PowerOnReset/CoreResetIn) from SystemC
