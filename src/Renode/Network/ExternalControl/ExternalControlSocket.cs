@@ -43,7 +43,7 @@ namespace Antmicro.Renode.Network
         {
             this.isClient = isClient;
             this.port = port;
-            RestartConnection();
+            StartConnection();
         }
 
         public void SynchronizeTimeWithExternal()
@@ -124,7 +124,7 @@ namespace Antmicro.Renode.Network
 
         public void Dispose()
         {
-            Disconnect(State.Disposed);
+            Disconnect();
         }
 
         public String SendCustomCommand(String command)
@@ -146,6 +146,13 @@ namespace Antmicro.Renode.Network
         public MessagePayload SendRequest(MessagePayload request)
         {
             var handler = GetHandlerForCurrentThread();
+            var cancelationToken = disposeCancelationTokenSource?.Token;
+
+            if(cancelationToken is null || handler is null)
+            {
+                throw new ConnectionDisposedException();
+            }
+
             try
             {
                 // External handler is used only by Default Thread Handler
@@ -154,12 +161,12 @@ namespace Antmicro.Renode.Network
                     Monitor.Enter(handler);
                 }
 
-                var response = handler.SendRequest(request, disposeCancelationTokenSource.Token);
+                var response = handler.SendRequest(request, cancelationToken.Value);
                 return response;
             }
             catch(OperationCanceledException)
             {
-                throw new ServerDisposedException();
+                throw new ConnectionDisposedException();
             }
             finally
             {
@@ -173,14 +180,25 @@ namespace Antmicro.Renode.Network
         public void SendMessage(Message message)
         {
             var bytes = message.ToBytes();
-            lock(locker)
+            try
             {
-                if(state != State.Active)
+                lock(socketLocker)
                 {
-                    throw new ServerDisposedException();
+                    if(communicationSocket is null)
+                    {
+                        throw new ConnectionDisposedException();
+                    }
+                    communicationSocket.Send(bytes.ToArray());
                 }
-
-                communicationSocket.Send(bytes.ToArray());
+            }
+            catch(ObjectDisposedException)
+            {
+                throw new ConnectionDisposedException();
+            }
+            catch(SocketException e)
+            {
+                Disconnect();
+                throw new ConnectionErrorException(e);
             }
             this.Log(LogLevel.Debug, "Message sent: {0}", message);
         }
@@ -189,11 +207,8 @@ namespace Antmicro.Renode.Network
 
         private void InitializeHandlers()
         {
-            lock(locker)
+            lock(handlersLocker)
             {
-                this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, State.Active);
-                state = State.Active;
-
                 commandHandlers = new CommandHandlerCollection();
                 commandHandlers.Register(new TimeElapsedCallbackCommand(this));
                 commandHandlers.Register(new RunFor(this));
@@ -225,7 +240,7 @@ namespace Antmicro.Renode.Network
 
         private void DisposeHandlers()
         {
-            lock(locker)
+            lock(handlersLocker)
             {
                 disposeCancelationTokenSource?.Cancel();
                 defaultHandlerThread?.Join();
@@ -236,6 +251,7 @@ namespace Antmicro.Renode.Network
                 commandHandlers = null;
 
                 disposeCancelationTokenSource?.Dispose();
+                disposeCancelationTokenSource = null;
             }
         }
 
@@ -244,68 +260,88 @@ namespace Antmicro.Renode.Network
             return this.SendRequest(MessagePayload.Request(Command.SystemBus, new RemoteBusRegistrationRequest(remoteMachineId, remotePeripheralName).GetRawBytes()));
         }
 
-        private void RestartConnection()
+        private void StartConnection()
         {
-            DebugHelper.Assert(communicationSocket == null);
-
-            communicationSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            communicationSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            communicationSocket.NoDelay = true;
-
-            try
+            lock(socketLocker)
             {
-                if(isClient)
+                DebugHelper.Assert(communicationSocket == null);
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                socket.NoDelay = true;
+
+                try
                 {
-                    this.Log(LogLevel.Info, "Connecting to a server on port: {0}", port);
-                    communicationSocket.Connect(new IPEndPoint(IPAddress.Loopback, port));
-                    InitializeHandlers();
+                    if(isClient)
+                    {
+                        this.Log(LogLevel.Info, "Connecting to a server on port: {0}", port);
+                        socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+
+                        communicationSocket = socket;
+                    }
+                    else
+                    {
+                        socket.Bind(new IPEndPoint(IPAddress.Any, port));
+                        socket.Listen(backlog: 1);
+
+                        listenerSocket = socket;
+                    }
                 }
-                else
+                catch(SocketException e)
                 {
-                    communicationSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                    communicationSocket.Listen(backlog: 1);
+                    throw new RecoverableException(e);
                 }
             }
-            catch(SocketException e)
-            {
-                throw new RecoverableException(e);
-            }
 
-            rxThread = new Thread(RxThreadBody)
+            InitializeHandlers();
+
+            lock(rxThreadLocker)
             {
-                Name = GetType().Name + "_RxHandler",
-                IsBackground = true
-            };
-            rxThread.Start();
+                rxThread = new Thread(RxThreadBody)
+                {
+                    Name = GetType().Name + "_RxHandler",
+                    IsBackground = true
+                };
+                rxThread.Start();
+            }
         }
 
-        private void Disconnect(State newState)
+        private void Disconnect(bool allowReconnection = false)
         {
-            State lastState;
-            lock(locker)
+            // Return early if state is already change or is disposed
+            // It prevents deadlocks on joining started threads
+            if(!TryChangeState(allowReconnection ? State.Unconnected : State.Disposed))
             {
-                lastState = state;
-                this.Log(LogLevel.Noisy, "State change: {0} -> {1}", state, newState);
-                state = newState;
+                return;
             }
 
-            CloseSocket(communicationSocket);
+            CloseSocket(listenerSocket);
+            listenerSocket = null;
 
-            if(rxThread?.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
+            lock(socketLocker)
             {
-                rxThread?.Join();
-            }
-            rxThread = null;
-            communicationSocket = null;
-
-            if(lastState == State.Active)
-            {
-                DisposeHandlers();
+                CloseSocket(communicationSocket);
             }
 
-            if(newState == State.Unconnected)
+            lock(rxThreadLocker)
             {
-                RestartConnection();
+                if(rxThread?.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
+                {
+                    rxThread?.Join();
+                }
+                rxThread = null;
+            }
+
+            lock(socketLocker)
+            {
+                communicationSocket = null;
+            }
+
+            DisposeHandlers();
+
+            if(allowReconnection)
+            {
+                StartConnection();
             }
         }
 
@@ -325,6 +361,10 @@ namespace Antmicro.Renode.Network
             {
                 this.Log(LogLevel.Debug, "Default thread handler has been canceled, it is expected while disposing {0}", nameof(ExternalControlSocket));
             }
+            catch(ConnectionDisposedException)
+            {
+                this.Log(LogLevel.Error, "Can't respond to the external because {0} is already diposed", nameof(ExternalControlSocket));
+            }
         }
 
         private void RxThreadBody()
@@ -332,23 +372,40 @@ namespace Antmicro.Renode.Network
             if(!isClient)
             {
                 this.Log(LogLevel.Info, "Listening for connections on port: {0}", port);
-                Socket finalSocket;
-                try
+                while(true)
                 {
-                    finalSocket = communicationSocket.Accept();
-                }
-                catch(SocketException)
-                {
-                    CloseSocket(communicationSocket);
-                    return;
-                }
+                    lock(socketLocker)
+                    {
+                        Socket socket;
+                        try
+                        {
+                            socket = listenerSocket?.Accept();
+                        }
+                        catch(SocketException e)
+                        {
+                            this.Log(LogLevel.Error, "Error while accepting the connection: {0}", e.Message);
+                            continue;
+                        }
+                        catch(ObjectDisposedException)
+                        {
+                            this.Log(LogLevel.Debug, "Server disposed while accepting");
+                            return;
+                        }
 
-                CloseSocket(communicationSocket);
-                communicationSocket = finalSocket;
-                communicationSocket.NoDelay = true;
-                this.Log(LogLevel.Info, "Connection accepted");
+                        if(socket is not null)
+                        {
+                            communicationSocket = socket;
+                            communicationSocket.NoDelay = true;
+                            this.Log(LogLevel.Info, "Connection accepted");
+                        }
+                        break;
+                    }
+                }
+            }
 
-                InitializeHandlers();
+            if(!TryChangeState(State.Active))
+            {
+                return;
             }
 
             Span<byte> headerBuffer = stackalloc byte[Message.HeaderSize];
@@ -379,13 +436,18 @@ namespace Antmicro.Renode.Network
                 catch(OperationCanceledException)
                 {
                     // Expected when terminating the connection
-                    Disconnect(isClient ? State.Disposed : State.Unconnected);
+                    Disconnect(allowReconnection: !isClient);
+                    return;
+                }
+                catch(ObjectDisposedException)
+                {
+                    this.Log(LogLevel.Debug, "Server disposed while receiving");
                     return;
                 }
                 catch(SocketException e)
                 {
-                    this.ErrorLog("Socket error: {0}, disposing of the {1}", e.Message, isClient ? "client" : "server");
-                    Dispose();
+                    this.ErrorLog("Socket error while receiving: {0}, disposing of the {1}", e.Message, isClient ? "client" : "server");
+                    Disconnect();
                     return;
                 }
             }
@@ -439,8 +501,27 @@ namespace Antmicro.Renode.Network
             return defaultHandlerThread.ManagedThreadId == Environment.CurrentManagedThreadId ? externalHandler : internalHandler;
         }
 
+        private bool TryChangeState(State newState)
+        {
+            lock(stateLocker)
+            {
+                if(state == State.Disposed || state == newState)
+                {
+                    this.Log(LogLevel.Debug, "Can't transit to {0} state when in {1} state", newState, state);
+                    return false;
+                }
+                else
+                {
+                    this.Log(LogLevel.Noisy, "State transition: {0} -> {1}", state, newState);
+                    state = newState;
+                    return true;
+                }
+            }
+        }
+
         private State state = State.Unconnected;
         private Socket communicationSocket;
+        private Socket listenerSocket;
         private Thread rxThread;
         private Thread defaultHandlerThread;
         private CommunicationHandler externalHandler;
@@ -450,7 +531,10 @@ namespace Antmicro.Renode.Network
 
         private readonly bool isClient;
         private readonly int port;
-        private readonly object locker = new object();
+        private readonly object socketLocker = new object();
+        private readonly object rxThreadLocker = new object();
+        private readonly object stateLocker = new object();
+        private readonly object handlersLocker = new object();
 
         private class CommandHandlerCollection : IDisposable
         {

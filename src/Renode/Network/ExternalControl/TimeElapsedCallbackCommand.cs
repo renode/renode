@@ -127,7 +127,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                     SendEventInNearestSyncedState();
                 }
             }
-            catch(ServerDisposedException)
+            catch(ConnectionDisposedException)
             {
                 parent.WarningLog("{0} got invoked on a disposed {1}", nameof(TimeElapsedCallbackCommand), nameof(ExternalControlSocket));
             }
