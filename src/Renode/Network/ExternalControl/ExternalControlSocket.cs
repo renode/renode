@@ -28,12 +28,12 @@ namespace Antmicro.Renode.Network
     {
         public static void CreateExternalControlServer(this Emulation emulation, string name, int port)
         {
-            emulation.ExternalsManager.AddExternal(new ExternalControlSocket(port, isClient: false), name);
+            emulation.ExternalsManager.AddExternal(new ExternalControlSocket(port, isClient: false), name, earlyDisposable: false);
         }
 
         public static void CreateExternalControlClient(this Emulation emulation, string name, int port)
         {
-            emulation.ExternalsManager.AddExternal(new ExternalControlClient(port), name);
+            emulation.ExternalsManager.AddExternal(new ExternalControlClient(port), name, earlyDisposable: false);
         }
     }
 
