@@ -45,7 +45,7 @@ ${ITSTATE_ASM}                          SEPARATOR=\n
 ${ITSTATE_IRQ_ASM}                      SEPARATOR=\n
 ...  """
 ...    nop
-...    mov pc, lr
+...    bx lr
 ...  """
 
 ${ITSTATE_INSIDE_ASM}                   SEPARATOR=\n
