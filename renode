@@ -75,4 +75,10 @@ else
     RENODE_DLL="$RENODE_DIR/Renode.dll"
 fi
 
-${TRACE_COMMAND} dotnet "$RENODE_DLL" "${PARAMS[@]:-}"
+DOTNET_BIN="dotnet"
+if [ -x "$HOME/.dotnet/dotnet" ]; then
+    DOTNET_BIN="$HOME/.dotnet/dotnet"
+    export DOTNET_ROOT="$HOME/.dotnet"
+fi
+
+${TRACE_COMMAND} "$DOTNET_BIN" "$RENODE_DLL" "${PARAMS[@]:-}"
