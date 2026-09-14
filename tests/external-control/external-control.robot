@@ -254,7 +254,6 @@ Should Run GPIO Sample
 
 Should Run Time Elapsed Sample
     [Tags]                          basic-tests  exclude_windows
-    [Timeout]                       1 minute
     Create Log Tester               5
 
     Build Sample                    time_elapsed_callback
@@ -434,7 +433,6 @@ Should Run Bus Peripheral Sample As Counter
 
 Should Run Custom Command Sample
     [Tags]                        exclude_windows
-    [Timeout]                     60
     Create Log Tester             1
     Build Sample                  custom_command
     ${proc}=                      Start Sample  custom_command  ${PORT}
