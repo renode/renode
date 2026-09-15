@@ -799,6 +799,7 @@ sysbus:
         Tag <0x40015000, 0x400153FF> "SPI5"
         Tag <0x40013000, 0x400133FF> "SPI1_/_I2S1"
         Tag <0x4000A800, 0x4000ABFF> "CAN_CCU"
+        Tag <0x4000A804, 0x4000A807> "CCFG" 0x4 silent=True
         Tag <0x40009400, 0x400097FF> "MDIOS"
         Tag <0x40009000, 0x400093FF> "OPAMP"
         Tag <0x40008800, 0x40008BFF> "SWPMI"
