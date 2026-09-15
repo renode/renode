@@ -183,7 +183,12 @@ Registers Should Reset On Watchdog Reset
     Execute Command         include @scripts/multi-node/ramn.resc
     &{Boot} =               Dump Devices Registers    ${Registers}
     Execute Command         emulation RunFor "3s"
+
+    # fdcan1 is disconnected from can hub before reset so that no "in-transit" messages
+    # modify its state after reset. The registers need to be exactly like at reset.
+    Execute Command         connector Disconnect sysbus.fdcan1 canHub
     Trigger Watchdog Reset
+
     &{Reset} =              Dump Devices Registers    ${Registers}
     Devices Registers Dump Should Be Equal  ${Boot}     ${Reset}    "Boot"  "Reset"
 
