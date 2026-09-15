@@ -164,6 +164,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 this.NoisyLog("SystemC Non Secure Vector Table Offset: 0x{0:X}", vectorTableOffsetNonSecure);
                 break;
             }
+            case RenodeAction.SetClockFrequency:
+            {
+                var cortexMBundle = cortexMBundles[message.InitiatorId];
+                var clockFrequency = (uint)message.Address;
+                HandleSetClockFrequency(cortexMBundle, clockFrequency);
+                SendBackwardResponse(message);
+                this.NoisyLog("Clock frequency set to {0} for initiator {1}", clockFrequency, message.InitiatorId);
+                break;
+            }
             default:
                 this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
                 break;
@@ -230,6 +239,20 @@ namespace Antmicro.Renode.Peripherals.SystemC
             }
 
             cortexMBundle.VtorNonSecureInitialized = true;
+        }
+
+        private void HandleSetClockFrequency(CortexMBundle cortexMBundle, uint clockFrequency)
+        {
+            var nvic = cortexMBundle.Nvic;
+            if(clockFrequency != 0)
+            {
+                nvic.Frequency = clockFrequency;
+            }
+            else
+            {
+                // Clock disabled, do nothing.
+                this.DebugLog("Ignoring setting clock frequency to 0");
+            }
         }
 
         private void SetupCortexMBundle(CortexMBundle cortexMBundle, IReadOnlyDictionary<int, IGPIO> connections)

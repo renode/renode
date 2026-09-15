@@ -224,7 +224,17 @@ enum renode_action : uint8_t {
   //     connection_index: ignored
   // Response:
   //      Identical to the request message.
-  TEARDOWN,
+  TEARDOWN = 15,
+
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: clock frequency
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  SET_CLOCK_FREQUENCY = 16,
 };
 
 #pragma pack(push, 1)
@@ -465,7 +475,8 @@ public:
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
   using vtor_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<uint32_t>, 1,
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
-
+  using clock_period_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<sc_core::sc_time>, 1,
+                                      sc_core::SC_ZERO_OR_MORE_BOUND>;
 
   // Socket forwarding memory transactions performed in Renode to SystemC.
   renode_bus_initiator_socket initiator_socket;
@@ -502,6 +513,9 @@ public:
   // INITSVTOR signal.
   // Vector table offset address (secure or non-secure depending on state)
   vtor_in_port init_vtor_s_in;
+  
+  // Clock's period
+  clock_period_in_port clock_period_in;
 
   // Informs Renode CPU that memory has been modified in the given range. This
   // is necessary when using DMI (get_direct_mem_ptr) to modify memory
@@ -569,6 +583,7 @@ private:
   void on_init_ns_vtor();
   void on_init_s_vtor();
   void init_vtor(renode_action action, vtor_in_port &port);
+  void on_set_clock_period();
 
   void update_backward_gpio_state(uint64_t new_gpio_state);
   void service_backward_request(tlm::tlm_generic_payload &payload,

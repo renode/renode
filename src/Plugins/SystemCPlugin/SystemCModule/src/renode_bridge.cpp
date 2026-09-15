@@ -281,6 +281,8 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   sensitive << init_vtor_ns_in;
   SC_METHOD(on_init_s_vtor);
   sensitive << init_vtor_s_in;
+  SC_METHOD(on_set_clock_period);
+  sensitive << clock_period_in;
 
   bus_target_fw_handler.initialize(this, 0);
   cpu_target_fw_handler.initialize(this, 0);
@@ -578,6 +580,23 @@ void renode_bridge::on_init_s_vtor() {
 
 void renode_bridge::on_init_ns_vtor() {
   init_vtor(INIT_NON_SECURE_VTOR, init_vtor_ns_in);
+}
+
+void renode_bridge::on_set_clock_period() {
+  if (clock_period_in.get_interface() == nullptr) {
+    return;
+  }
+
+  double period = clock_period_in->read().to_seconds();
+  uint64_t freq = (period == 0.0) ? 0 : static_cast<uint64_t>(1.0 / period);
+
+  renode_message msg = {};
+  msg.action = renode_action::SET_CLOCK_FREQUENCY;
+  msg.address = freq;
+  msg.initiator_id = id;
+  send_backward_request(&msg);
+  // Response is ignored.
+  msg = receive_backward_response();
 }
 
 // ================================================================================

@@ -24,5 +24,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
         ReadDebug = 13,
         WriteDebug = 14,
         Teardown = 15,
+        SetClockFrequency = 16,
     }
 }
