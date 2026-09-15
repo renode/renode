@@ -206,14 +206,14 @@ LED And Terminal Testers Should Cooperate
     Wait For Prompt On Uart  $  pauseEmulation=true
     Write Line To Uart       led on leds 0  waitForEcho=false
     Wait For Line On Uart    leds: turning on LED 0  pauseEmulation=true
-    Emulation Should Be Paused At Time  00:00:00.001239
+    Emulation Should Be Paused At Time  00:00:00.001276
     PC Should Be Equal       0x800b26c
     # The LED should not be turned on yet: the string is printed before actually changing the GPIO
     Assert LED State         false  0
 
     # Now wait for the LED to turn on
     Assert LED State         true  pauseEmulation=true
-    Emulation Should Be Paused At Time  00:00:00.001243
+    Emulation Should Be Paused At Time  00:00:00.001280
     PC Should Be Equal       0x800af0c
 
 LED Tester Assertion Triggered By PWM Should Not Log Errors
@@ -246,7 +246,7 @@ Log Tester Assert Should Precisely Pause Emulation
     Provides                 waiting-for-unhandled-write-log
 
     Wait For Log Entry       Unhandled write to offset 0x1C.  pauseEmulation=true
-    Emulation Should Be Paused At Time  00:00:00.001297
+    Emulation Should Be Paused At Time  00:00:00.001363
 
     Provides                 paused-at-log-assertion
 
@@ -255,16 +255,16 @@ Log Tester Should Not Be In Log Assert Should Precisely Pause Emulation
 
     Should Not Be In Log     No such random message in log  timeout=2  pauseEmulation=true
     # The time gets rounded to the sync point
-    Emulation Should Be Paused At Time  00:00:02.001300
+    Emulation Should Be Paused At Time  00:00:02.001400
 
 Log Tester Should Not Be In Log Assert Should Not Pause Emulation Later If The Matching String Actually Gets Logged
     Requires                 waiting-for-unhandled-write-log
 
     Run Keyword And Expect Error  *Unexpected line detected in the log*  Should Not Be In Log  Unhandled write to offset 0x1C.  timeout=2  pauseEmulation=true
-    Emulation Should Be Paused At Time  00:00:00.001297
+    Emulation Should Be Paused At Time  00:00:00.001363
 
     Execute Command  emulation RunFor "3"
-    Emulation Should Be Paused At Time  00:00:03.001297
+    Emulation Should Be Paused At Time  00:00:03.001363
 
 Should Finish Instructions Before Pausing
     Create Machine With Trivial Uart

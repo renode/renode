@@ -500,3 +500,14 @@ Should Pass Zephyr Encryption Sample
     Wait For Line On Uart               .*: CBC mode DECRYPT - Match  treatAsRegex=true
     Wait For Line On Uart               .*: CTR mode ENCRYPT - Match  treatAsRegex=true
     Wait For Line On Uart               .*: CTR mode DECRYPT - Match  treatAsRegex=true
+
+Should Not Run Out Of Ring Buffer Space When Writing Long Line To Uart
+    Create Machine                      ${DHCP}  overflow
+    Create Terminal Tester              ${UART}  defaultPauseEmulation=True
+    Execute Command                     showAnalyzer ${UART}
+    Register Failing Uart String        .*RX ring buffer full.*  treatAsRegex=true
+    Wait For Prompt On Uart             uart:~$
+    # Can't wait for echo because the shell will wrap this line while we're writing it
+    Write Line To Uart                  rem According to all known laws of aviation, there is no way that a bee should be able to fly. Its wings are too small to get its fat little body off the ground.  waitForEcho=false
+    Execute Command                     emulation RunFor "0.05"
+    Wait For Prompt On Uart             uart:~$
