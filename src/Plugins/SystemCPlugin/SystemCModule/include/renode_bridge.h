@@ -116,7 +116,7 @@ enum renode_action : uint8_t {
   // Socket: backward (memory mapped file), forward (native integration)
   // Request:
   //     data_length:
-  //       backward: ignored 
+  //       backward: ignored
   //       forward: 0-3 LSB: access type (read access = 0, write access = 1). 4-7 LSB: extension bits
   //     address: address in target's address space
   //     payload: ignored
@@ -181,7 +181,7 @@ enum renode_action : uint8_t {
   // Response:
   //     Identical to the request message.
   INIT_NON_SECURE_VTOR = 11,
-  
+
   // Socket: backward
   // Request:
   //     data_length: ignored
@@ -215,7 +215,7 @@ enum renode_action : uint8_t {
   WRITE_DEBUG = 14,
 
   // Socket: forward
-  // Teardown message signifies the process should exit. 
+  // Teardown message signifies the process should exit.
   // Request:
   //     data_length: ignored
   //     address: ignored
