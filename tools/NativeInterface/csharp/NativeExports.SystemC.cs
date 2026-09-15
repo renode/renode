@@ -17,9 +17,8 @@ namespace Antmicro.Renode.NativeInterface
         [UnmanagedCallersOnly(EntryPoint = "renode_systemc_send_backward_request")]
         [DNNE.C99DeclCode("""
 /*
-_RENODE_BRIDGE_H should be defined manually
-after including renode_bridge.h
-and before including librenode.h
+renode_bridge.h should be included
+before including librenode.h
 to replace the stub below with the actual type.
 See renode_bridge.cpp for an example.
 We do not guarantee type safety,

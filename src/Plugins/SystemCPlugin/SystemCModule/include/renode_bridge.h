@@ -22,6 +22,8 @@
 #include <map>
 #include <tlm>
 
+#define _RENODE_BRIDGE_H
+
 struct CTCPClient;
 struct renode_message;
 

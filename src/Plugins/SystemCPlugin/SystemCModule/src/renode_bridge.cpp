@@ -9,7 +9,6 @@
 #ifdef RENODE_NATIVE_INTERFACE
 // librenode.h should be included after renode_bridge.h
 // to have renode_message struct already defined.
-#define _RENODE_BRIDGE_H
 #include "librenode.h"
 #endif
 #include <cstdint>
