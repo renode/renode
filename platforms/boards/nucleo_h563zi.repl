@@ -1,0 +1,22 @@
+using "platforms/cpus/stm32h563.repl"
+
+rcc:
+    hseFrequency: 8000000
+
+GreenLED: Miscellaneous.LED @ gpioPortB 0
+
+YellowLED: Miscellaneous.LED @ gpioPortF 4
+
+RedLED: Miscellaneous.LED @ gpioPortG 4
+
+UserButton1: Miscellaneous.Button @ gpioPortC 13
+    -> gpioPortC@13
+
+gpioPortB:
+    0 -> GreenLED@0
+
+gpioPortF:
+    4 -> YellowLED@0
+
+gpioPortG:
+    4 -> RedLED@0
