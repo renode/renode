@@ -243,15 +243,36 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void HandleSetClockFrequency(CortexMBundle cortexMBundle, uint clockFrequency)
         {
-            var nvic = cortexMBundle.Nvic;
             if(clockFrequency != 0)
             {
-                nvic.Frequency = clockFrequency;
+                SetClockFrequency(cortexMBundle, clockFrequency);
+                SetClockedState(cortexMBundle, true);
             }
             else
             {
-                // Clock disabled, do nothing.
-                this.DebugLog("Ignoring setting clock frequency to 0");
+                SetClockedState(cortexMBundle, false);
+            }
+        }
+
+        private void SetClockFrequency(CortexMBundle cortexMBundle, ulong value)
+        {
+            var nvic = cortexMBundle.Nvic;
+            var dwt = cortexMBundle.Dwt;
+            nvic.Frequency = value;
+            if(dwt != null)
+            {
+                dwt.Frequency = value;
+            }
+        }
+
+        private void SetClockedState(CortexMBundle cortexMBundle, bool value)
+        {
+            var nvic = cortexMBundle.Nvic;
+            var dwt = cortexMBundle.Dwt;
+            nvic.Clocked = value;
+            if(dwt != null)
+            {
+                dwt.Clocked = value;
             }
         }
 
