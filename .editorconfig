@@ -31,11 +31,11 @@ csharp_new_line_between_query_expression_clauses = true
 end_of_line = lf
 
 # "var" instead of type
-dotnet_diagnostic.IDE0007.severity = suggestion
+dotnet_diagnostic.IDE0007.severity = warning
 # type instead of "var"
 dotnet_diagnostic.IDE0008.severity = none
 # Prefer "var" everywhere
-csharp_style_var_for_built_in_types = true
+csharp_style_var_for_built_in_types = false
 csharp_style_var_when_type_is_apparent = true
 csharp_style_var_elsewhere = true
 
