@@ -808,7 +808,11 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 var alignedStartAddress = range.StartAddress.AlignDownToMultipleOf(pageSize);
                 var alignedEndAddressExclusive = (range.EndAddress + 1).AlignUpToMultipleOf(pageSize);
                 range = new Range(alignedStartAddress, alignedEndAddressExclusive - alignedStartAddress);
-                var intersectingRanges = mappedDmiRanges.Select(collectionRange => collectionRange.Intersect(range)).Where(r => r.HasValue);
+
+                // Don't use lazy evaluation for `intersectingRanges`.
+                // The collection is modified right below, and the callback
+                // would otherwise see the modified state at the next sync point.
+                var intersectingRanges = mappedDmiRanges.Select(collectionRange => collectionRange.Intersect(range)).Where(r => r.HasValue).ToList();
                 mappedDmiRanges.Remove(range);
                 this.DebugLog("Requested invalidation of SystemC DMI region <0x{0:X}, 0x{1:X}>", startAddress, endAddress);
                 machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
