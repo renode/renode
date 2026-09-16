@@ -395,6 +395,7 @@ uint64_t renode_time_to_time_unit(renode_time_t time, renode_time_unit_t unit)
         return time / unit;
     }
     assert_exit(!"Invalid time unit value");
+    return 0;
 }
 
 double renode_time_to_seconds(renode_time_t time)
