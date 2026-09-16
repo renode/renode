@@ -200,7 +200,6 @@ fail_machine:
     free(machine);
 fail_renode:
     try_renode_disconnect(&renode);
-    free(renode);
 fail:
     renode_free_error(error);
     exit(EXIT_FAILURE);
