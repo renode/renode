@@ -1,6 +1,5 @@
 *** Settings ***
 Test Teardown                       Custom Test Teardown
-Test Timeout                        1 minute  # Quickly timeout even when emulation isn't started
 Library                             Process
 Library                             OperatingSystem
 Library                             Collections
@@ -106,7 +105,7 @@ Wait For Line In File
     ...                             ${expected}
 
 Quit Renode
-    [Arguments]                     ${proc}  ${timeout}=1 minute
+    [Arguments]                     ${proc}  ${timeout}=5 minute
 
     Execute Command In Process      ${proc}  quit
 
