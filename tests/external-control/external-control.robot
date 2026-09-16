@@ -100,7 +100,11 @@ Build Sample
 
 Start Sample
     [Arguments]                     ${app}  @{args}
-    ${proc}=                        Start Process  ${BUILD_DIR}/${app}  @{args}
+    # Disable usage of an alternate stack to prevent a bug in ASan described in https://github.com/google/sanitizers/issues/1171
+    # Using a more recent GCC (e.g. version 15.2.0) may also fix the issue
+    &{proc_env}=                    Create Dictionary  ASAN_OPTIONS=use_sigaltstack=0
+
+    ${proc}=                        Start Process  ${BUILD_DIR}/${app}  @{args}  env=${proc_env}
     [Return]                        ${proc}
 
 Wait For Sample Finish
