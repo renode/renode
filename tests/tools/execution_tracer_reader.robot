@@ -1,3 +1,6 @@
+*** Settings ***
+Library                             ${CURDIR}/../../tools/execution_tracer/execution_tracer_keywords.py
+
 *** Variables ***
 ${COVERAGE_TEST_BINARY_URL}         https://dl.antmicro.com/projects/renode/coverage-tests/coverage-test.elf-s_3603888-0f7cfe992528c2576a9ac6a4dcc3a41b03d1d6eb
 ${COVERAGE_TEST_CODE_URL}           https://dl.antmicro.com/projects/renode/coverage-tests/main.c
@@ -62,6 +65,13 @@ ${TRACED_CPU}                       cpu1
 ...                                 DA:43,1
 ...                                 DA:44,1
 ...                                 end_of_record
+
+${symbol_lookup_regex}              (0x[A-F0-9]+): (0x[A-F0-9]+) +(.*)
+
+&{symbol_lookup_rules}=             # symbol regex             =    (low_pc    , high_pc   )
+...                                 main @ main.c:[0-9]+:[0-9]+=${{ (0x80000cbc, 0x80000df8) }}
+...                                 funA @ main.c:[0-9]+:[0-9]+=${{ (0x80000c12, 0x80000c6c) }}
+...                                 funB @ main.c:[0-9]+:[0-9]+=${{ (0x80000bb6, 0x80000c12) }}
 
 ${LINUX_32BIT_ROOTFS}               https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 
@@ -182,6 +192,39 @@ Trace And Report Coverage
         Should Report Proper Coverage LCOV  ${coverage_report}[2:]  ${COVERAGE_REPORT_LCOV}[2:]
     END
 
+
+Trace And Inspect
+    [Arguments]                     ${compress}=False  ${disassemble}=False  ${lookup_symbols}=False
+    ${binary_file}=                 Download File  ${COVERAGE_TEST_BINARY_URL}
+    ${output_file}=                 Allocate Temporary File
+
+    Create Platform                 ${COVERAGE_TEST_BINARY_URL}
+
+    ${trace}=                       Trace Execution  ${TRACED_CPU}  PCAndOpcode  ${compress}
+    ${script_args}=                 Create List
+
+    IF  ${compress} == True
+        Append To List                  ${script_args}  --decompress
+    END
+
+    Append To List                  ${script_args}
+    ...                             inspect
+    ...                             ${trace}
+
+    IF  ${disassemble} == True
+        Append To List                  ${script_args}  --disassemble
+    END
+
+    IF  ${lookup_symbols} == True
+        Append To List                  ${script_args}  --resolve-symbols  ${binary_file}
+    END
+
+    Execute Python Script           ${EXECUTION_TRACER}  ${script_args}  ${output_file}
+
+    ${output_content}=             Get File  ${output_file}
+    ${output}=                     Split To Lines  ${output_content}
+    RETURN                         ${output}
+
 *** Test Cases ***
 Trace And Report Coverage
     Trace And Report Coverage       False
@@ -241,3 +284,24 @@ Trace Mixed A64, A32 and T32 Code
     # T32
     ${x}=                           Grep File  ${disassembly_file}  0x000000087F07E4D8:*0xBF04*itt*eq
     Should Not Be Empty             ${x}
+
+Trace And Inspect
+    ${vanilla_inspect}=             Trace And Inspect
+    ${inspect_length}=              Evaluate  len($vanilla_inspect)
+    Should Be Equal As Numbers      ${inspect_length}   1699937
+
+    ${compressed_inspect}=          Trace And Inspect  compress=True
+    Should Be Equal                 ${vanilla_inspect}  ${compressed_inspect}
+
+Trace And Inspect With Symbol Lookup
+    ${lookup_inspect}=              Trace And Inspect  lookup_symbols=True
+    ${inspect_length}=              Evaluate  len($lookup_inspect)
+    Should Be Equal As Numbers      ${inspect_length}   1699937
+
+    # From execution_tracer_keywords.py
+    Validate Symbol Lookup Slice
+    ...    trace_lines=${lookup_inspect}
+    ...    slice_start=590000
+    ...    slice_end=730000
+    ...    line_regex_pattern=${symbol_lookup_regex}
+    ...    function_rules=${symbol_lookup_rules}
