@@ -135,3 +135,70 @@ Emulation Reset Should Halt CPU When CPU Wait Signal Set
 
     ${is_halted_after}=             Run Command  cpu IsHalted
     Should Be Equal                 ${is_halted_after}  True  CPU should have been halted by the CpuWaitSignal but IsHalted=${is_halted_after}
+
+Should Stop NVIC SysTick and DWT CycleCounter When Not Clocked
+    Execute Command                 i @platforms/cpus/atsamd51g19a.repl
+    ${SOME_BINARY}=                 Set Variable  @https://dl.antmicro.com/projects/renode/adafruit_itsybitsy_m4_express-zephyr-shell_module.elf-s_1174688-96ba3690738a878b9f1d47e5ac677592a42c9040
+    Execute Command                 sysbus LoadELF @${SOME_BINARY}
+
+    Execute Command                 emulation RunFor "1"
+
+    # Read NVIC SysTickValue and DWT CycleCounter registers
+    ${SysTickValue0}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter0}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    Execute Command                 emulation RunFor "0.001"
+
+    ${SysTickValue1}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter1}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm that both SysTick and CycleCounter are enabled (running).
+    # It takes ~40 ms for SysTick counter to wrap.
+    # Time is progressed by 1 ms (less than 40ms period)
+    # so values are guaranteed to differ.
+    Should Not Be Equal             ${SysTickValue0}  ${SysTickValue1}
+    Should Not Be Equal             ${CycleCounter0}  ${CycleCounter1}
+
+    # Stop Cortex-M tightly coupled peripherals.
+    # Halting CPU is not enough, because SysTick and CycleCounter
+    # are updated when clock source is advanced and it depends only
+    # on virtual time progress. Clock source is stopped when machine
+    # is halted, but here we want to verify clocking on a more granular level,
+    # specifically for Cortex-M complex.
+    Execute Command                 nvic Clocked False
+    Execute Command                 dwt Clocked False
+
+    Execute Command                 emulation RunFor "0.001"
+
+    ${SysTickValue2}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter2}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm that both SysTick and CycleCounter were not advanced while not clocked.
+    Should Be Equal             ${SysTickValue1}  ${SysTickValue2}
+    Should Be Equal             ${CycleCounter1}  ${CycleCounter2}
+
+    # Start Cortex-M tightly coupled peripherals.
+    Execute Command                 nvic Clocked True
+    Execute Command                 dwt Clocked True
+
+    Execute Command                 emulation RunFor "0.001"
+
+    ${SysTickValue3}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter3}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm that both SysTick and CycleCounter are resumed (running).
+    Should Not Be Equal             ${SysTickValue2}  ${SysTickValue3}
+    Should Not Be Equal             ${CycleCounter2}  ${CycleCounter3}
+
+    # Disable clock only for SysTick to show that settings are independent.
+    Execute Command                 nvic Clocked False
+    Execute Command                 dwt Clocked True
+
+    Execute Command                 emulation RunFor "0.001"
+
+    ${SysTickValue4}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter4}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm that SysTick is stopped and CycleCounter is running.
+    Should Be Equal                 ${SysTickValue3}  ${SysTickValue4}
+    Should Not Be Equal             ${CycleCounter3}  ${CycleCounter4}
