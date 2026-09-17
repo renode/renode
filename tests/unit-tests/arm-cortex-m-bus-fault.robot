@@ -334,7 +334,10 @@ Run Precise BusFault Test Without Single Step
 *** Test Cases ***
 Should Enter Lockup On Invalid Reset State
     Create Bare Machine
-    Execute Command                 cpu Step 1
+    # The first step stops on the boundary of the instruction fetch that raised the INVSTATE
+    # fault, before the first instruction of the handler (the PC read from the zeroed vector
+    # table) is attempted. The lockup is entered when that fetch faults, in the second step.
+    Execute Command                 cpu Step 2
 
     Lockup Should Be Asserted
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_INVSTATE}

@@ -7,7 +7,10 @@ ${SRAM_CPU0_CODE_NS}                ${0x30023000}
 ${SRAM_CPU0_STACKTOP_NS}            ${0x30023F80}
 ${UART_BASE_S}                      ${0x40208000}
 ${UART_BASE_NS}                     ${0x50208000}
+${SAU_FAULT_ADDRESS}                ${{$SRAM_CPU0_CODE_S + 0x100}}
 ${CPU}                              sysbus.cpu0
+${SCB_SFSR}                         ${0xE000EDE4}
+${SFSR_INVTRAN}                     ${{1<<4}}
 
 ${REPL_STRING}                      SEPARATOR=\n
 ...                                 """
@@ -132,6 +135,13 @@ Create Machine
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${REPL_STRING}
 
+${width} ${io} Should Be Equal
+    [Arguments]                     ${expected}
+    ...                             ${message}=${None}
+
+    ${val}=                         Execute Command  sysbus Read${width} ${io} context=cpu0
+    Should Be Equal As Integers     ${val}  ${expected}  msg=${message}
+
 *** Test Cases ***
 Should Print Hello From Both States
     Create Machine
@@ -143,3 +153,55 @@ Should Print Hello From Both States
     Wait For Line On Uart           Hello from cpu0 secure
     Wait For Line On Uart           Hello from cpu0 nonsecure
     Wait For Line On Uart           Hello from cpu0 svc
+
+Should Stop Before Executing Handler On Instruction Fetch SecureFault
+    Create Machine
+    # The SAU attributes ${SAU_FAULT_ADDRESS} as Non-secure (an enabled region with the NSC
+    # bit cleared), so the instruction fetch at ${SAU_FAULT_ADDRESS} in Secure state raises
+    # raises an INVTRAN SecureFault, which escalates to HardFault.
+    Execute Command                 sysbus WriteDoubleWord ${{$SRAM_BASE_S + 0xC}} ${{$SRAM_CPU0_CODE_S | 1}}  # HardFault vector
+    Execute Command                 ${CPU} VectorTableOffset ${SRAM_BASE_S}
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_S} "nop; nop; nop"
+    Execute Command                 ${CPU} AssembleBlock ${SAU_FAULT_ADDRESS} "nop; nop; nop"
+    Execute Command                 ${CPU} SP ${SRAM_CPU0_STACKTOP_S}
+    Execute Command                 ${CPU} PC ${{$SAU_FAULT_ADDRESS | 1}}
+    Execute Command                 ${CPU} SAURegionNumber 0
+    Execute Command                 ${CPU} SAURegionBaseAddress ${SAU_FAULT_ADDRESS}
+    Execute Command                 ${CPU} SAURegionLimitAddress ${{$SAU_FAULT_ADDRESS | 1}}
+    Execute Command                 ${CPU} SAUControl 1
+
+    # The SecureFault is raised on the instruction fetch, before any instruction is
+    # executed. The step must stop on the boundary of the faulting fetch, so before
+    # executing the first instruction of the HardFault handler.
+    Execute Command                 ${CPU} Step 1
+    PC Should Be Equal              ${SRAM_CPU0_CODE_S}
+    DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVTRAN}
+
+Should Execute Instructions Preceding Instruction Fetch SecureFault
+    Create Machine
+    # The handler sleeps on `wfe` after two nops.
+    Execute Command                 sysbus WriteDoubleWord ${{$SRAM_BASE_S + 12}} ${{$SRAM_CPU0_CODE_S | 1}}
+    Execute Command                 ${CPU} VectorTableOffset ${SRAM_BASE_S}
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_S} "nop; nop; wfe; nop"
+    # The instructions at $SAU_FAULT_ADDRESS - 6 are outside the Non-secure region
+    # so the instruction fetch at $SAU_FAULT_ADDRESS raises an INVTRAN SecureFault
+    # in Secure state.
+    Execute Command                 ${CPU} AssembleBlock ${{$SAU_FAULT_ADDRESS - 6}} "movs r0, #1; movs r1, #2; nop; nop; nop"
+    Execute Command                 ${CPU} SP ${SRAM_CPU0_STACKTOP_S}
+    Execute Command                 ${CPU} PC ${{$SAU_FAULT_ADDRESS - 6}}
+    Execute Command                 ${CPU} SAURegionNumber 0
+    Execute Command                 ${CPU} SAURegionBaseAddress ${SAU_FAULT_ADDRESS}
+    Execute Command                 ${CPU} SAURegionLimitAddress ${{$SAU_FAULT_ADDRESS | 1}}
+    Execute Command                 ${CPU} SAUControl 1
+
+    # The fetch of the instruction at ${SAU_FAULT_ADDRESS} raises the SecureFault, but
+    # the instructions preceding it must be executed before the exception is taken, as
+    # the block containing them must not be discarded. A continuous run is required to
+    # reach the faulting fetch within the same translated block, which ends with a wfe
+    # sleep.
+    Execute Command                 emulation RunFor "0.001"
+    PC Should Be Equal              ${{$SRAM_CPU0_CODE_S + 6}}
+    Register Should Be Equal        R0  1
+    Register Should Be Equal        R1  2
+    ${executed}=                    Execute Command  ${CPU} ExecutedInstructions
+    Should Be Equal As Integers     ${executed}  7
