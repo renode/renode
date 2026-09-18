@@ -439,9 +439,10 @@ Should Run Custom Command Sample
     [Tags]                        exclude_windows
     Create Log Tester             1
     Build Sample                  custom_command
+    Execute Command               logLevel -1 ${SERVER_NAME}
+
     ${proc}=                      Start Sample  custom_command  ${PORT}
 
-    Execute Command               logLevel -1 ${SERVER_NAME}
     Wait For Log Entry            Attaching CustomCommand callback  startEmulation=False
 
     ${response} =                 Execute Command      ${SERVER_NAME} SendCustomCommand "demo ping"
