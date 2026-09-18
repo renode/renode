@@ -327,7 +327,12 @@ Should Launch Sample Coral App
     Ensure NPU Device In Reset
 
     # Copy the binary to NPU's Instruction Memory
-    Execute Command                 sysbus LoadBinary @https://dl.antmicro.com/projects/renode/coralnpu_v2_hello_world_add_floats.bin-s_65648-0e3f5d6ae173fa2e06f6b5f91906ef721516de4c 0xE00000000
+    Execute Command                 sysbus LoadBinary @https://dl.antmicro.com/projects/renode/coralnpu_v2_hello_world_add_floats.bin-s_65648-0e3f5d6ae173fa2e06f6b5f91906ef721516de4c 0x29000000
+
+    # Issue DMA transfer
+    Execute Command                 sysbus WriteQuadWord 0x29100000 0x29000000  # source address
+    Execute Command                 sysbus WriteQuadWord 0x29100008 0xE00000000  # destination address
+    Execute Command                 sysbus WriteQuadWord 0x29100010 0x400  # length
 
     # Initialize input data in Data Memory
     Write Line To Uart              devmem 0xE00010000 w 2

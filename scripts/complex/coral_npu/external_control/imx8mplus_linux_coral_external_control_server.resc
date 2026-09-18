@@ -1,14 +1,18 @@
 $name?="frdm_imx8mp"
 $uboot_elf=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
-$sd_img=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu.img-s_268435456-cdb480062eef74beaf1fe80c020637f84a5d4bc1
+$sd_img=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu_dma.img.gz-s_63656016-c9208bd2ff0af8e95981d8ef00b0e686789a6052
 
 emulation CreateExternalControlServer "server" 3345
 
 i @scripts/single-node/nxp-imx8mplus_linux.resc
-machine SdCardFromFile $sd_img usdhc2 0x10000000 False "sd-external-sd3.0-4bit"
+machine SdCardFromFile $sd_img usdhc2 0x2000000 False "sd-external-sd3.0-4bit"
 
 # Add the external NPU
 machine LoadPlatformDescriptionFromString "npu: Bus.ExternalControlBusPeripheral @ sysbus 0xE00000000 {size: 0x30100}"
+# Add the external DMA
+machine LoadPlatformDescriptionFromString "dma: Bus.ExternalControlBusPeripheral @ sysbus 0x29100000 {size: 0x20}"
+# Add DMA memory
+machine LoadPlatformDescriptionFromString "dma_memory: Memory.MappedMemory @ sysbus 0x29000000 {size: 0x1000}"
 
 python """
 import Antmicro.Renode.Hooks.UartHooksExtensions as UartHooks
@@ -40,3 +44,12 @@ echo ""
 
 # Increase performance in External Control setup
 emulation SetGlobalQuantum "0.001"
+
+echo "Waiting for client to connect..."
+server WaitForClientConnection 60
+
+# Accept Monitor commands for client
+server AttachCustomCommandCallbackToMonitor
+
+# Register callback for DMA memory
+server RegisterRemoteBusPeripheral "frdm_imx8mp" "coralnpu-client" "dma_memory" AnyWidth ReadWrite

@@ -7,6 +7,14 @@ logLevel 3 "coralnpu-client" false
 logFile @externally_controlled_renode.log
 
 machine LoadPlatformDescriptionFromString "npu: CPU.CoralNPU @ sysbus 0xE00000000"
+machine LoadPlatformDescriptionFromString "dma_memory: Bus.ExternalControlBusPeripheral @ sysbus 0x29000000 {size: 0x1000}"
+
+machine LoadPlatformDescriptionFromString """
+simple_dma: Python.PythonPeripheral @ sysbus 0x29100000
+    size: 0x20
+    initable: true
+    filename: "scripts/complex/coral_npu/external_control/simple_dma.py"
+"""
 
 emulation CreateExternalControlClient "client" $client_port
 
@@ -33,3 +41,4 @@ emulation SetAdvanceImmediately true
 client SynchronizeTimeWithExternal
 client AttachCustomCommandCallbackToMonitor
 client RegisterRemoteBusPeripheral "coralnpu-client" "frdm_imx8mp" "npu" AnyWidth ReadWrite
+client RegisterRemoteBusPeripheral "coralnpu-client" "frdm_imx8mp" "dma" AnyWidth ReadWrite
