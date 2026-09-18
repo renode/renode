@@ -415,11 +415,17 @@ renode_error_t *renode_register_custom_command_callback(renode_t *renode, void *
  * The CAN bus event data.
  */
 typedef struct {
+    /** The timestamp of when the packet was sent  */
     renode_time_t time;
+    /** The length of the CAN frame in bytes */
     int32_t packet_length;
+    /** The ID of the CAN frame */
     uint32_t packet_id;
+    /** The payload of the CAN frame */
     uint8_t packet[];
 } renode_can_event_data_t;
+
+typedef void (*renode_can_event_callback_t)(void *user_data, renode_can_event_data_t *event_data);
 
 /**
  * @brief The function preparing the CAN handle.
@@ -441,13 +447,13 @@ renode_error_t *renode_get_can(renode_machine_t *machine, const char *name, reno
  * @param[in] callback - the callback to be invoked when a message is received
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
  */
-renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, void (*callback)(void *, renode_can_event_data_t *));
+renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, renode_can_event_callback_t callback);
 
 /**
  * @brief The function sending a CAN message.
  *
  * @param[in] can - the CAN instance handle
- * @param[in] packet - the pointer to a fixed size, 64 byte can packet array
+ * @param[in] packet - the pointer to the CAN packet payload
  * @param[in] packet_length - the length of the packet to be sent
  * @param[in] packet_id - the packet ID
  * @return A pointer to the error structure if an error occurred, otherwise NULL.

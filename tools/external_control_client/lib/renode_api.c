@@ -759,7 +759,7 @@ renode_error_t *renode_send_can_message(renode_can_t *can, void *packet, int pac
     return NO_ERROR;
 }
 
-renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, void (*callback)(void *, renode_can_event_data_t *))
+renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data, renode_can_event_callback_t callback)
 {
     int32_t ed;
     return_error_if_fails(register_callback((raw_callback_t)callback, user_data, &ed));
