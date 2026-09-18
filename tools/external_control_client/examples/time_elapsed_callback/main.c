@@ -42,14 +42,14 @@ static void try_renode_disconnect(renode_t **renode)
 
 static pthread_mutex_t time_elapsed_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t time_elapsed_cond = PTHREAD_COND_INITIALIZER;
-static volatile bool time_elapsed_flag = false;
+static volatile unsigned int time_elapsed_ticks = 0;
 
 static void time_callback(void *user_data, renode_time_t *timestamp)
 {
     printf("%s: %fs\n", (const char *)user_data, renode_time_to_seconds(*timestamp));
 
     pthread_mutex_lock(&time_elapsed_lock);
-    time_elapsed_flag = true;
+    time_elapsed_ticks++;
     pthread_cond_signal(&time_elapsed_cond);
     pthread_mutex_unlock(&time_elapsed_lock);
 }
@@ -80,14 +80,11 @@ int main(int argc, char **argv)
         goto fail_renode;
     }
 
-    for(; times > 0; times--) {
-        pthread_mutex_lock(&time_elapsed_lock);
-        while (!time_elapsed_flag) {
-            pthread_cond_wait(&time_elapsed_cond, &time_elapsed_lock);
-        }
-        time_elapsed_flag = false;
-        pthread_mutex_unlock(&time_elapsed_lock);
+    pthread_mutex_lock(&time_elapsed_lock);
+    while (time_elapsed_ticks < times) {
+        pthread_cond_wait(&time_elapsed_cond, &time_elapsed_lock);
     }
+    pthread_mutex_unlock(&time_elapsed_lock);
 
     try_renode_disconnect(&renode);
     exit(EXIT_SUCCESS);
