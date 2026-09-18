@@ -202,3 +202,63 @@ Should Stop NVIC SysTick and DWT CycleCounter When Not Clocked
     # Confirm that SysTick is stopped and CycleCounter is running.
     Should Be Equal                 ${SysTickValue3}  ${SysTickValue4}
     Should Not Be Equal             ${CycleCounter3}  ${CycleCounter4}
+
+Should Persist Clocked State For Cortex-M Complex On Reset
+    Execute Command                 i @platforms/cpus/atsamd51g19a.repl
+    ${SOME_BINARY}=                 Set Variable  @https://dl.antmicro.com/projects/renode/adafruit_itsybitsy_m4_express-zephyr-shell_module.elf-s_1174688-96ba3690738a878b9f1d47e5ac677592a42c9040
+    Execute Command                 sysbus LoadELF @${SOME_BINARY}
+
+    # We are going to halt CPU later. If there is no work to do by CPU,
+    # virtual time skyrockets and goes much ahead of wall time.
+    # When CPU gets unhalted, it waits until wall time aligns to virtual time.
+    # Without AdvanceImmediately mode, it takes ages (possibly hours of wall time).
+    Execute Command                 emulation SetAdvanceImmediately True
+
+    Execute Command                 emulation RunFor "1"
+
+    Execute Command                 cpu0 Clocked False
+    Execute Command                 nvic Clocked False
+    Execute Command                 dwt Clocked False
+
+    # Disabled clock state should persist across reset.
+    Execute Command                 cpu0 Reset
+    Execute Command                 nvic Reset
+    Execute Command                 dwt Reset
+
+    # Confirm CPU was reset.
+    ${ExecutedInstructions0}=  Execute Command  cpu0 ExecutedInstructions
+    Should Contain             ${ExecutedInstructions0}  0x0000000000000000
+
+    ${SysTickValue4}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter4}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm SysTick and CycleCounter were reset.
+    Should Contain             ${SysTickValue4}  0x00FFFFFF
+    Should Contain             ${CycleCounter4}  0x00000000
+
+    Execute Command                 emulation RunFor "1"
+
+    ${SysTickValue5}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter5}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm SysTick and CycleCounter are not clocked.
+    Should Be Equal                ${SysTickValue5}  ${SysTickValue4}
+    Should Be Equal                ${CycleCounter5}  ${CycleCounter4}
+
+    # Confirm CPU was inactive while not clocked.
+    ${ExecutedInstructions1}=  Execute Command  cpu0 ExecutedInstructions
+    Should Be Equal            ${ExecutedInstructions0}  ${ExecutedInstructions1}
+
+    # Start CPU and tightly coupled peripherals.
+    Execute Command                 cpu0 Clocked True
+    Execute Command                 nvic Clocked True
+    Execute Command                 dwt Clocked True
+
+    Execute Command                 emulation RunFor "0.001"
+
+    ${SysTickValue6}=  Execute Command  nvic ReadDoubleWord 0x018
+    ${CycleCounter6}=  Execute Command  dwt ReadDoubleWord 0x004
+
+    # Confirm that both SysTick and CycleCounter are running.
+    Should Not Be Equal             ${SysTickValue6}  ${SysTickValue5}
+    Should Not Be Equal             ${CycleCounter6}  ${CycleCounter5}
