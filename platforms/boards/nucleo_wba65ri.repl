@@ -1,0 +1,10 @@
+using "platforms/cpus/stm32wba65.repl"
+
+UserButton: Miscellaneous.Button @ gpioPortC
+    invert: true
+    -> gpioPortC@13
+
+HeartbeatLed: Miscellaneous.LED @ gpioPortC
+
+gpioPortC:
+    4 -> HeartbeatLed@0

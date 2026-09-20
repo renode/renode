@@ -149,6 +149,7 @@
 - tests/platforms/ARMv8M.robot
 - tests/peripherals/NRF52840_GPIO.robot
 - tests/platforms/nucleo_wba52cg.robot
+- tests/platforms/nucleo_wba65ri.robot
 - tests/unit-tests/page-access-via-io.robot
 - tests/unit-tests/precise-pause.robot
 - tests/unit-tests/peripheral-hooks.robot
