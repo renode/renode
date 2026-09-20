@@ -200,6 +200,20 @@ rng: Miscellaneous.STM32_RNG @ sysbus 0x420C0800
 usb: USB.STM32_USB_OTG_HS @ sysbus 0x42040000
     IRQ -> nvic@76
 
+wwdg: Timers.STM32_WWDG @ sysbus 0x40002C00
+    IRQ -> nvic@0
+
+ramcfg: Miscellaneous.STM32_RAMCFG @ sysbus 0x40026000
+    IRQ -> nvic@5
+
+icache: Miscellaneous.STM32_ICACHE @ sysbus 0x40030400
+    IRQ -> nvic@64
+
+hsem: Miscellaneous.STM32_HSEM @ sysbus 0x420C1C00
+    IRQ -> nvic@68
+
+sbs: Miscellaneous.STM32_SBS @ sysbus 0x46000400
+
 systemInformation: Memory.MappedMemory @ sysbus 0x0BFA0000
     size: 0x1000
     init:
@@ -269,5 +283,3 @@ sysbus:
         Tag <0xE0001004, 0xE0001008> "DWT_CYCCNT" 100
         Tag <0xE0044000, 0xE0044004> "DBGMCU_IDCODE" 0x10006492
         Tag <0xE0044004, 0xE0044100> "DBGMCU" 0
-        Tag <0x46000400, 0x46000500> "SBS" 0
-        Tag <0x40026000, 0x40026100> "RAMCFG" 0

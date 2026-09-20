@@ -39,6 +39,11 @@ Should Initialize Peripherals Correctly
     Execute Command                 sysbus.gpioPortD
     Execute Command                 sysbus.gpioPortE
     Execute Command                 sysbus.gpioPortG
+    Execute Command                 sysbus.wwdg
+    Execute Command                 sysbus.ramcfg
+    Execute Command                 sysbus.icache
+    Execute Command                 sysbus.hsem
+    Execute Command                 sysbus.sbs
 
     # Verify DBGMCU IDCODE (STM32WBA6x = 0x492)
     ${idcode}=                      Execute Command                 sysbus ReadDoubleWord 0xE0044000
@@ -70,3 +75,40 @@ Should Test User Button and LED
 
     # Button press and release should be accepted
     Execute Command                 ${USER_BUTTON} PressAndRelease
+
+Should Handle HSEM Lock and Unlock
+    Create NUCLEO WBA65RI Machine
+
+    # Read RLR0 (1-step lock): should return 0 indicating lock acquired
+    ${lock_res}=                    Execute Command                 sysbus ReadDoubleWord 0x420C1C80
+    Should Be Equal As Integers     ${lock_res}                     0
+
+    # Read R0: should be locked (bit 31 set)
+    ${r0}=                          Execute Command                 sysbus ReadDoubleWord 0x420C1C00
+    Should Be Equal As Integers     ${r0}                           0x80000000
+
+    # Write R0 with 0: release lock
+    Execute Command                 sysbus WriteDoubleWord 0x420C1C00 0x0
+
+    # Read R0: should now be 0 (unlocked)
+    ${r0_unlocked}=                 Execute Command                 sysbus ReadDoubleWord 0x420C1C00
+    Should Be Equal As Integers     ${r0_unlocked}                  0
+
+Should Handle RAMCFG Wait States
+    Create NUCLEO WBA65RI Machine
+
+    # Configure 3 wait states in CR (bits 2:0)
+    Execute Command                 sysbus WriteDoubleWord 0x40026000 0x3
+
+    ${cr}=                          Execute Command                 sysbus ReadDoubleWord 0x40026000
+    Should Be Equal As Integers     ${cr}                           3
+
+Should Handle ICACHE Invalidate
+    Create NUCLEO WBA65RI Machine
+
+    # Enable and trigger invalidate in CR (EN = bit 0, INVALIDATE = bit 1)
+    Execute Command                 sysbus WriteDoubleWord 0x40030400 0x3
+
+    # SR bit 1 (BSYENDF) should be asserted
+    ${sr}=                          Execute Command                 sysbus ReadDoubleWord 0x40030404
+    Should Be Equal As Integers     ${sr}                           2
