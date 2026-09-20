@@ -17,6 +17,10 @@ usart2: UART.STM32F7_USART @ sysbus 0x40004400
     frequency: 200000000
     IRQ -> nvic@47
 
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 200000000
+    IRQ -> nvic@79
+
 lpuart1: UART.STM32F7_USART @ sysbus 0x46002400
     frequency: 200000000
     lowPowerMode: true
@@ -24,6 +28,9 @@ lpuart1: UART.STM32F7_USART @ sysbus 0x46002400
 
 spi1: SPI.STM32WBA_SPI @ sysbus 0x40013000
     IRQ -> nvic@45
+
+spi2: SPI.STM32WBA_SPI @ sysbus 0x40003800
+    IRQ -> nvic@75
 
 spi3: SPI.STM32WBA_SPI @ sysbus 0x46002000
     IRQ -> nvic@63
@@ -67,6 +74,18 @@ gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x42020800, +0x400>
     numberOfAFs: 16
     [0-15] -> exti#2@[0-15]
 
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x42020C00, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#3@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x42021000, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#4@[0-15]
+
+gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x42021800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#6@[0-15]
+
 gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x42021C00, +0x400>
     modeResetValue: 0x000000C0
     numberOfAFs: 16
@@ -79,9 +98,17 @@ i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
     EventInterrupt -> nvic@43
     ErrorInterrupt -> nvic@44
 
+i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
+    EventInterrupt -> nvic@73
+    ErrorInterrupt -> nvic@74
+
 i2c3: I2C.STM32F7_I2C @ sysbus 0x46002800
     EventInterrupt -> nvic@54
     ErrorInterrupt -> nvic@55
+
+i2c4: I2C.STM32F7_I2C @ sysbus 0x40008400
+    EventInterrupt -> nvic@77
+    ErrorInterrupt -> nvic@78
 
 timer1: Timers.STM32_Timer @ sysbus 0x40012C00
     initialLimit: 0xFFFF
@@ -100,6 +127,11 @@ timer3: Timers.STM32_Timer @ sysbus 0x40000400
     initialLimit: 0xFFFF
     frequency: 16000000
     -> nvic@42
+
+timer4: Timers.STM32_Timer @ sysbus 0x40000800
+    initialLimit: 0xFFFF
+    frequency: 16000000
+    -> nvic@72
 
 timer16: Timers.STM32_Timer @ sysbus 0x40014400
     initialLimit: 0xFFFF
@@ -150,7 +182,7 @@ aes: Cryptography.STM32_AES @ sysbus 0x420C0000
     IRQ -> nvic@58
 
 saes: Cryptography.STM32_AES @ sysbus 0x420C0C00
-    IRQ -> nvic@58
+    IRQ -> nvic@28
 
 hash: Cryptography.STM32_HASH @ sysbus 0x420C0400
     IRQ -> nvic@61
@@ -158,8 +190,26 @@ hash: Cryptography.STM32_HASH @ sysbus 0x420C0400
 pka: Cryptography.STM32_PKA @ sysbus 0x420C2000
     IRQ -> nvic@62
 
+crc: CRC.STM32_CRC @ sysbus 0x40023000
+    series: STM32Series.WBA
+
+rng: Miscellaneous.STM32_RNG @ sysbus 0x420C0800
+    series: STM32Series.WBA
+    IRQ -> nvic@59
+
 usb: USB.STM32_USB_OTG_HS @ sysbus 0x42040000
     IRQ -> nvic@76
+
+systemInformation: Memory.MappedMemory @ sysbus 0x0BFA0000
+    size: 0x1000
+    init:
+        WriteWord 0x0500 0x0800
+        WriteDoubleWord 0x0700 0x12345678
+        WriteDoubleWord 0x0704 0x23456789
+        WriteDoubleWord 0x0708 0x3456789A
+        WriteWord 0x0710 0x0400
+        WriteWord 0x0742 0x0540
+        WriteWord 0x07A4 0x0665
 
 timer1:
     0 -> gpioPortA#01@01 | gpioPortA#11@01 | gpioPortB#02@01 | gpioPortB#08@01
@@ -217,6 +267,7 @@ gpioPortB:
 sysbus:
     init:
         Tag <0xE0001004, 0xE0001008> "DWT_CYCCNT" 100
-        Tag <0xE0044000, 0xE0044100> "DBGMCU" 0
+        Tag <0xE0044000, 0xE0044004> "DBGMCU_IDCODE" 0x10006492
+        Tag <0xE0044004, 0xE0044100> "DBGMCU" 0
         Tag <0x46000400, 0x46000500> "SBS" 0
         Tag <0x40026000, 0x40026100> "RAMCFG" 0

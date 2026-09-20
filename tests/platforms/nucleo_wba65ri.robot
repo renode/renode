@@ -29,6 +29,27 @@ Should Initialize Peripherals Correctly
     Execute Command                 sysbus.pka
     Execute Command                 sysbus.usb
     Execute Command                 sysbus.gpdma1
+    Execute Command                 sysbus.usart3
+    Execute Command                 sysbus.spi2
+    Execute Command                 sysbus.i2c2
+    Execute Command                 sysbus.i2c4
+    Execute Command                 sysbus.timer4
+    Execute Command                 sysbus.crc
+    Execute Command                 sysbus.rng
+    Execute Command                 sysbus.gpioPortD
+    Execute Command                 sysbus.gpioPortE
+    Execute Command                 sysbus.gpioPortG
+
+    # Verify DBGMCU IDCODE (STM32WBA6x = 0x492)
+    ${idcode}=                      Execute Command                 sysbus ReadDoubleWord 0xE0044000
+    Should Be Equal As Integers     ${idcode}                       0x10006492
+
+    # Verify System Information factory calibration memory
+    ${flash_kb}=                    Execute Command                 sysbus.systemInformation ReadWord 0x500
+    Should Be Equal As Integers     ${flash_kb}                     0x0800
+
+    ${uid0}=                        Execute Command                 sysbus.systemInformation ReadDoubleWord 0x700
+    Should Be Equal As Integers     ${uid0}                         0x12345678
 
 Should Handle VREFBUF Enable
     Create NUCLEO WBA65RI Machine
