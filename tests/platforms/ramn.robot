@@ -99,6 +99,17 @@ Grant Security Access To ECU
     ${resp_hex}=             Wait For ISOTP Message Hex    ${send_id}  ${recv_id}  timeout=1
     Should Start With        ${resp_hex}  6702
 
+Prepare RAMN With Frame Buffer Tester
+    [Arguments]             ${fb_tester_name}
+
+    Execute Command         include @scripts/multi-node/ramn.resc
+    Execute Command         mach set "ECUA"
+    # As RAMN firmware is randomly choosing a theme, the seed must be set to have reproducible tests
+    Execute Command         emulation SetSeed 0
+    Execute Command         emulation CreateFrameBufferTester "${fb_tester_name}" 10
+    Execute Command         ${fb_tester_name} AttachTo sysbus.spi2.screen
+
+
 *** Test Cases ***
 Should Produce CAN Traffic
     [Documentation]          Test data path ECU{B,C,D}'s CAN controller -> CAN hub
@@ -346,3 +357,28 @@ ECUA Should Execute Shellcode Via Routine Control UDS Command
     Send ISOTP Message       ${send_id}  ${recv_id}  23142000000004
     ${mem_hex}=  Wait For ISOTP Message Hex    ${send_id}  ${recv_id}  timeout=1
     Should Be Equal          ${mem_hex}  63EFBEADDE
+
+ECUA Should Display Boot Menu
+    [Documentation]         Test on ECUA that command and data path Memory -> DMA -> SPI TX -> ST7789 are working
+
+    Prepare RAMN With Frame Buffer Tester   fb_tester
+    Execute Command         fb_tester WaitForFrame @https://dl.antmicro.com/projects/renode/ramn-boot-menu.png-s_2047-1b05b683c24ebaf1a17d05eae4c675be82ca78ea
+
+ECUA Should Display Actuators Changes
+    [Documentation]         Test that ECU{C,B,D} communicate to ECUA over CAN and that new actuator values are reflected on screen
+
+    Prepare RAMN With Frame Buffer Tester   fb_tester
+
+    # Arbitrary sequence of commands executed before saving the reference frame
+    Execute Command         mach set "ECUD"
+    Execute Command         adc1.engineKey CurrentState "middle"
+    Execute Command         mach set "ECUB"
+    Execute Command         adc1.parkingBrake CurrentState "on"
+    Execute Command         adc1.wheel Percentage 50
+    Execute Command         adc1.lightingSwitch CurrentState "pos4"
+    Execute Command         mach set "ECUC"
+    Execute Command         adc1.brake Percentage 33
+    Execute Command         adc1.accel Percentage 100
+    Execute Command         adc1.joystick CurrentState "left"
+
+    Execute Command         fb_tester WaitForFrame @https://dl.antmicro.com/projects/renode/ramn-screen-uds.png-s_2782-db02d08076711bb4f1722f5b3b9f87836e98fa0e
