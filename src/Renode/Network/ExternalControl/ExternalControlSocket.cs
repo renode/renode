@@ -46,6 +46,14 @@ namespace Antmicro.Renode.Network
             StartConnection();
         }
 
+        public void WaitForClientConnection(uint timeoutInSeconds)
+        {
+            if(!clientConnectionEvent.WaitOne((int)timeoutInSeconds * 1000))
+            {
+                throw new RecoverableException("No client connected in the selected time window!");
+            }
+        }
+
         public void SynchronizeTimeWithExternal()
         {
             RegisterTimeElapsedCallback((timeStamp) => EmulationManager.Instance.CurrentEmulation.RunUntil(timeStamp.TimeElapsed));
@@ -308,6 +316,8 @@ namespace Antmicro.Renode.Network
 
         private void Disconnect(bool allowReconnection = false)
         {
+            clientConnectionEvent.Reset();
+
             // Return early if state is already change or is disposed
             // It prevents deadlocks on joining started threads
             if(!TryChangeState(allowReconnection ? State.Unconnected : State.Disposed))
@@ -407,6 +417,7 @@ namespace Antmicro.Renode.Network
             {
                 return;
             }
+            clientConnectionEvent.Set();
 
             Span<byte> headerBuffer = stackalloc byte[Message.HeaderSize];
 
@@ -535,6 +546,7 @@ namespace Antmicro.Renode.Network
         private readonly object rxThreadLocker = new object();
         private readonly object stateLocker = new object();
         private readonly object handlersLocker = new object();
+        private readonly AutoResetEvent clientConnectionEvent = new(false);
 
         private class CommandHandlerCollection : IDisposable
         {
