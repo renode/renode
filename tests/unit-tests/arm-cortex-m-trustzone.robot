@@ -1,12 +1,12 @@
 *** Variables ***
-${SRAM_BASE_S}                      0x20020000
-${SRAM_BASE_NS}                     0x30020000
-${SRAM_CPU0_CODE_S}                 0x20021000
-${SRAM_CPU0_STACKTOP_S}             0x20021F80
-${SRAM_CPU0_CODE_NS}                0x30023000
-${SRAM_CPU0_STACKTOP_NS}            0x30023F80
-${UART_BASE_S}                      0x40208000
-${UART_BASE_NS}                     0x50208000
+${SRAM_BASE_S}                      ${0x20020000}
+${SRAM_BASE_NS}                     ${0x30020000}
+${SRAM_CPU0_CODE_S}                 ${0x20021000}
+${SRAM_CPU0_STACKTOP_S}             ${0x20021F80}
+${SRAM_CPU0_CODE_NS}                ${0x30023000}
+${SRAM_CPU0_STACKTOP_NS}            ${0x30023F80}
+${UART_BASE_S}                      ${0x40208000}
+${UART_BASE_NS}                     ${0x50208000}
 ${CPU}                              sysbus.cpu0
 
 ${REPL_STRING}                      SEPARATOR=\n
