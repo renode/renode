@@ -13,12 +13,17 @@ def mc_uart_connect(device):
         print("Peripheral %s is not an IUART." % device_name)
         return 1
 
-    print("Redirecting the input to %s, press <ESC> to quit..." % device_name)
+    print("Redirecting the input to %s, press <ESC> TWICE to quit..." % device_name)
     uart.CharReceived += __printer
+    prev_char_esc = False
     while True:
        c = sys.stdin.read(1)
        if ord(c) == 27:
-           break
+           if prev_char_esc:
+               break
+           prev_char_esc = True
+       else:
+           prev_char_esc = False
        uart.WriteChar(ord(c))
     uart.CharReceived -= __printer
     print("Disconnected from %s" % device_name)
