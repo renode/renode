@@ -1,1 +1,5 @@
-dummySpi: Mocks.DummySPISlave @ spi2
+screen: Video.ST7789 @ spi2
+    height: 240
+
+gpioPortB:
+    12 -> screen@0

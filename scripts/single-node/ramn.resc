@@ -9,6 +9,7 @@ if `str_contains $global.name "ECUA"`
 """
 $bin= @https://dl.antmicro.com/projects/renode/ECUA-watchdog.elf-s_2825544-19ce381479e1c47985ca6014e9b532386166ffb2
 include @platforms/boards/ramn/GATEWAY.repl
+showAnalyzer spi2.screen
 """
 
 if `str_contains $global.name "ECUB"`
