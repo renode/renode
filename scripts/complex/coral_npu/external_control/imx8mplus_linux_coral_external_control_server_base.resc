@@ -1,0 +1,48 @@
+$name?="frdm_imx8mp"
+$uboot_elf=@https://dl.antmicro.com/projects/renode/u-boot-s_10073016-b1b07345dc1a11114194b13057c6d2884793bbfe
+$sd_img=@https://dl.antmicro.com/projects/renode/frdm_imx8mplus_linux_bootsd_coralnpu_dma_32m.img-s_33554432-3cebd9e9cd51189d94167ffb67f5ab5384513942
+
+emulation CreateExternalControlServer "server" 3345
+
+i @scripts/single-node/nxp-imx8mplus_linux.resc
+machine SdCardFromFile $sd_img usdhc2 0x2000000 False "sd-external-sd3.0-4bit"
+
+# Add the external NPU
+machine LoadPlatformDescriptionFromString "npu: Bus.ExternalControlBusPeripheral @ sysbus 0xE00000000 {size: 0x30100}"
+# Add the external DMA
+machine LoadPlatformDescriptionFromString "dma: Bus.ExternalControlBusPeripheral @ sysbus 0x29100000 {size: 0x20}"
+# Add DMA memory
+machine LoadPlatformDescriptionFromString "dma_memory: Memory.MappedMemory @ sysbus 0x29000000 {size: 0x1000}"
+
+python """
+import Antmicro.Renode.Hooks.UartHooksExtensions as UartHooks
+clr.ImportExtensions(Antmicro.Renode.Hooks.UartHooksExtensions)
+
+machine = monitor.Machine
+uart = machine['sysbus.uart2']
+
+def mc_coralStats_reset(line=None):
+	print externals.server.SendCustomCommand('coralStats_reset')
+
+def mc_coralStats_print(line=None):
+	print externals.server.SendCustomCommand('coralStats_print')
+
+uart.AddLineHook(lambda line: '# run_coral' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'coral: finished, output[0] = 0x0007' in line, mc_coralStats_print)
+uart.AddLineHook(lambda line: '# arm_vector_add' in line, mc_coralStats_reset)
+uart.AddLineHook(lambda line: 'arm_vector_add: output[0] = 0x0007' in line, mc_coralStats_print)
+"""
+
+# Increase performance in External Control setup
+emulation SetGlobalQuantum "0.001"
+
+# Client callbacks have to be registered after the client has connected
+macro registerClientCallbacks
+"""
+	# Accept Monitor commands for client
+	server AttachCustomCommandCallbackToMonitor
+
+	# Register callback for DMA memory
+	server RegisterRemoteBusPeripheral "frdm_imx8mp" "coralnpu-client" "dma_memory" AnyWidth ReadWrite
+"""
+

@@ -307,13 +307,16 @@ Should Launch Sample Coral App
     [Tags]                          skip_windows
     [Timeout]                       NONE
 
-    Execute Command                 include @scripts/complex/coral_npu/external_control/imx8mplus_linux_coral_external_control_server.resc
+    Execute Command                 include @scripts/complex/coral_npu/external_control/imx8mplus_linux_coral_external_control_server_base.resc
     Create Terminal Tester          sysbus.uart2  timeout=120   defaultPauseEmulation=true
 
     Create Log Tester               1
 
     Execute Command                 logLevel 0 ${SERVER_NAME}
     ${remote}=                      Start Renode  ${PORT}  scripts/complex/coral_npu/external_control/imx8mplus_linux_coral_external_control_client.resc
+
+    Execute Command                 runMacro $registerClientCallbacks
+
     Wait For Log Entry              Registered sysbus callbacks  startEmulation=false
     Execute Command                 logLevel 1 ${SERVER_NAME}
 
