@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)..'))" />
+  <PropertyGroup>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+  <ItemGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(TargetFrameworks), 'net[0123456789]+\.[0123456789]+.*'))">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\tools\analyzers\Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
