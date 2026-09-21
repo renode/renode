@@ -222,7 +222,6 @@ cpu: Antmicro.Renode.UnitTests.Mocks.MockCPU @ sysbus
             Assert.AreEqual("one with escaped quote\\", mock.Placeholder);
         }
 
-
         [Test]
         public void ShouldHandleMultilineQuotedStringInOneLine()
         {
@@ -838,7 +837,6 @@ sender:
         [Test]
         public void ShouldCancelIrqConnectionsMultipleTimes()
         {
-
             var source = @"
 sender: Antmicro.Renode.UnitTests.Mocks.MockIrqSender @ sysbus <0, 1> { [Irq] -> receiver@[0] }
 receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver @ sysbus <1, 2>
@@ -1124,7 +1122,6 @@ peri:
         echo 'test 2'
         echo 'test 3'";
 
-
             ProcessSource(source);
             scriptHandlerMock.Verify(x => x.Execute(null, new[] { "echo 'test 1'", "echo 'test 2'", "echo 'test 3'" }, It.IsAny<Action<string>>()));
         }
@@ -1194,7 +1191,6 @@ peri:
         Increment 2
         Increment 3";
 
-
             ProcessSource(source);
             scriptHandlerMock.Verify(x => x.Execute(It.IsAny<IScriptable>(), new[] { "Increment 1", "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));
         }
@@ -1262,7 +1258,6 @@ peri:
     reset add:
         Increment 2
         Increment 3";
-
 
             ProcessSource(source);
             scriptHandlerMock.Verify(x => x.RegisterReset(It.IsAny<IScriptable>(), new[] { "Increment 1", "Increment 2", "Increment 3" }, It.IsAny<Action<string>>()));

@@ -104,7 +104,6 @@ using ""third.pl8"";";
             CollectionAssert.AreEquivalent(new[] { "first.pl8", "second.pl8", "third.pl8" }, usingEntries);
         }
 
-
         [Test]
         public void ShouldParseSimpleEntry()
         {
@@ -180,7 +179,6 @@ uart: @{ sysbus 0x100; }";
             var result = Grammar.Description(GetInputFromString(source));
             Assert.IsTrue(result.WasSuccessful, result.ToString());
         }
-
 
         [Test]
         public void ShouldParseEntryWithManyRegistrationPoints()
@@ -844,7 +842,6 @@ device: Something @ somewhere
             Assert.AreEqual(2, wrongValues.Length);
             Assert.AreEqual("tRue", wrongValues[0].Value);
             Assert.AreEqual("FALSE", wrongValues[1].Value);
-
         }
 
         [Test]

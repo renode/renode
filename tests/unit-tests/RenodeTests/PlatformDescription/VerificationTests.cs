@@ -145,7 +145,6 @@ external: Antmicro.Renode.UnitTests.Mocks.MockCPU
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.PropertyOrCtorNameUsedMoreThanOnce, exception.Error);
-
         }
 
         [Test]
@@ -229,7 +228,6 @@ receiver: Antmicro.Renode.UnitTests.Mocks.MockReceiver";
 
             var exception = Assert.Throws<ParsingException>(() => ProcessSource(source));
             Assert.AreEqual(ParsingError.WrongIrqArity, exception.Error);
-
         }
 
         [Test]

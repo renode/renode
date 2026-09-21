@@ -352,6 +352,7 @@ using ""A""";
             Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"..\abc\platform.repl", @"C:\tmp\includer.repl"));
             Assert.AreEqual(@"C:\abc\platform.repl", ResolvePath(@"../abc/platform.repl", @"C:\tmp\includer.repl"));
         }
+
         [Test]
         public void ShouldHandleAbsolutePathUnix()
         {
