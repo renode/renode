@@ -205,3 +205,49 @@ Should Execute Instructions Preceding Instruction Fetch SecureFault
     Register Should Be Equal        R1  2
     ${executed}=                    Execute Command  ${CPU} ExecutedInstructions
     Should Be Equal As Integers     ${executed}  7
+
+Should Fault On Second Halfword Of First Thumb-2 Instruction
+    [Timeout]                       15s
+    Create Machine
+    Execute Command                 sysbus WriteDoubleWord ${{$SRAM_BASE_S + 12}} ${{$SRAM_CPU0_CODE_S | 1}}
+    Execute Command                 ${CPU} VectorTableOffset ${SRAM_BASE_S}
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_S} "nop; nop; nop"
+    # MOVW starts in Secure memory, but its second halfword is in the Non-secure region.
+    Execute Command                 ${CPU} AssembleBlock ${{$SAU_FAULT_ADDRESS - 2}} "movw r0, #1; nop"
+    Execute Command                 ${CPU} SP ${SRAM_CPU0_STACKTOP_S}
+    Execute Command                 ${CPU} PC ${{$SAU_FAULT_ADDRESS - 2}}
+    Execute Command                 ${CPU} SAURegionNumber 0
+    Execute Command                 ${CPU} SAURegionBaseAddress ${SAU_FAULT_ADDRESS}
+    Execute Command                 ${CPU} SAURegionLimitAddress ${{$SAU_FAULT_ADDRESS | 1}}
+    Execute Command                 ${CPU} SAUControl 1
+
+    Execute Command                 ${CPU} Step 1
+    PC Should Be Equal              ${SRAM_CPU0_CODE_S}
+    Register Should Be Equal        R0  0
+    DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVTRAN}
+
+Should Execute Preceding Instructions Before Second Halfword Fetch Fault
+    [Timeout]                       15s
+    Create Machine
+    Execute Command                 sysbus WriteDoubleWord ${{$SRAM_BASE_S + 12}} ${{$SRAM_CPU0_CODE_S | 1}}
+    Execute Command                 ${CPU} VectorTableOffset ${SRAM_BASE_S}
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_S} "nop; nop; wfe; nop"
+    Execute Command                 ${CPU} AssembleBlock ${{$SAU_FAULT_ADDRESS - 6}} "movs r1, #2; nop; movw r0, #1; nop"
+    Execute Command                 ${CPU} SP ${SRAM_CPU0_STACKTOP_S}
+    Execute Command                 ${CPU} PC ${{$SAU_FAULT_ADDRESS - 6}}
+    Execute Command                 ${CPU} SAURegionNumber 0
+    Execute Command                 ${CPU} SAURegionBaseAddress ${SAU_FAULT_ADDRESS}
+    Execute Command                 ${CPU} SAURegionLimitAddress ${{$SAU_FAULT_ADDRESS | 1}}
+    Execute Command                 ${CPU} SAUControl 1
+    Execute Command                 ${CPU} InstallOpcodeCounterPattern "faulting_movw" "11110xxxxxxxxxxx"
+    Execute Command                 ${CPU} EnableOpcodesCounting true
+
+    Execute Command                 emulation RunFor "0.001"
+    PC Should Be Equal              ${{$SRAM_CPU0_CODE_S + 6}}
+    Register Should Be Equal        R0  0
+    Register Should Be Equal        R1  2
+    DoubleWord ${SCB_SFSR} Should Be Equal  ${SFSR_INVTRAN}
+    ${executed}=                    Execute Command  ${CPU} ExecutedInstructions
+    Should Be Equal As Integers     ${executed}  6
+    ${faulting_opcodes}=            Execute Command  ${CPU} GetOpcodeCounter "faulting_movw"
+    Should Be Equal As Integers     ${faulting_opcodes}  0
