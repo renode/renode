@@ -203,6 +203,7 @@ def install_cli_arguments(parser):
                         help="Port of robot framework remote server binary. Use '0' to automatically select any unused private port.")
 
     parser.add_argument("--enable-xwt",
+                        "--enable-gui",
                         dest="enable_xwt",
                         action="store_true",
                         default=False,
