@@ -40,10 +40,13 @@ Should Run TMP108
     Wait For Line On Uart       TI TMP108 Example, arm
 
     Execute Command             sysbus.smbus0.tmp108 Temperature 20
-    Wait For Line On Uart       temperature is 20.0
+    Wait For Line On Uart       temperature is 20C
 
     Execute Command             sysbus.smbus0.tmp108 Temperature 18
-    Wait For Line On Uart       temperature is 18.0
+    Wait For Line On Uart       temperature is 18C
 
     Execute Command             sysbus.smbus0.tmp108 Temperature 0
-    Wait For Line On Uart       temperature is 0.0
+    Wait For Line On Uart       temperature is 0C
+
+    Execute Command             sysbus.smbus0.tmp108 Temperature 12.5
+    Wait For Line On Uart       temperature is 12.5C
