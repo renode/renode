@@ -282,6 +282,7 @@
 - tests/peripherals/STM32_UART.robot
 - tests/peripherals/IIS2MDC.robot
 - tests/unit-tests/arm-cortex-m-exception-return.robot
+- tests/unit-tests/opcodes-execution-hooks.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
