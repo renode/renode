@@ -26,6 +26,9 @@ import {
   DisplayOpened,
   DisplayOpenedCallback,
   DisplayOpenedArgs,
+  SpiOpened,
+  SpiOpenedCallback,
+  SpiOpenedArgs,
 } from './events';
 import {
   GetSensorValue,
@@ -51,9 +54,12 @@ export {
   VideoMessage,
   DisplayOpenedArgs,
   DisplayOpenedCallback,
+  SpiOpenedCallback,
 };
 
 export { CANFrameSchema, type CANFrame } from './schema';
+
+export { SpiExchangeSchema, SpiExchangesArraySchema } from './schema';
 
 class SocketClosedEvent extends Event {
   constructor() {
@@ -274,6 +280,19 @@ export class RenodeProxySession extends EventTarget {
         },
       },
       s.EmptyExecResponse,
+    );
+  }
+
+  public getSpis(machine: string) {
+    return this.sendSessionRequestTyped(
+      {
+        action: 'exec-renode',
+        payload: {
+          command: 'spis',
+          args: { machine },
+        },
+      },
+      s.GetSpisResponse,
     );
   }
 
@@ -558,6 +577,18 @@ export class RenodeProxySession extends EventTarget {
     };
     this.registerEventCallback(DisplayOpened, wrapped);
     return wrapped;
+  }
+
+  public registerSpiOpenedCallback(callback: SpiOpenedCallback): EventCallback {
+    const wrapped = (data: object) => {
+      callback(data as SpiOpenedArgs);
+    };
+    this.registerEventCallback(SpiOpened, wrapped);
+    return wrapped;
+  }
+
+  public unregisterSpiOpenedCallback(callback: EventCallback): boolean {
+    return this.unregisterEventCallback(SpiOpened, callback);
   }
 
   public dispose() {

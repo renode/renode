@@ -52,6 +52,9 @@ export const GetButtonsResponse = resp({
 export const GetLedsResponse = resp({
   data: z.string().array(),
 });
+export const GetSpisResponse = resp({
+  data: z.string().array(),
+});
 export type GetUartsResponse = z.infer<typeof GetUartsResponse>;
 
 export const GetMachinesResponse = resp({
@@ -178,3 +181,11 @@ export const CANFrameSchema = z.object({
   }),
 });
 export type CANFrame = z.infer<typeof CANFrameSchema>;
+
+export const SpiExchangeSchema = z.object({
+  TimestampNanoseconds: z.number(),
+  PICO: z.number(),
+  POCI: z.number(),
+  PeripheralName: z.string(),
+});
+export const SpiExchangesArraySchema = z.array(SpiExchangeSchema);

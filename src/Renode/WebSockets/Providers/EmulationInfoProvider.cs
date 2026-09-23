@@ -12,6 +12,7 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Peripherals.CAN;
 using Antmicro.Renode.Peripherals.Miscellaneous;
+using Antmicro.Renode.Peripherals.SPI;
 using Antmicro.Renode.Peripherals.UART;
 using Antmicro.Renode.UserInterface;
 using Antmicro.Renode.WebSockets.Misc;
@@ -107,6 +108,10 @@ namespace Antmicro.Renode.WebSockets.Providers
             case "sensor-set":
                 return ExecRenodeArgParser(argData, false, true) ?
                     SensorsData.SetSensorData(argData.Peripheral, args.Type, args.Value) :
+                    argData.ErrorMessage;
+            case "spis":
+                return ExecRenodeArgParser(argData, true, false) ?
+                    GPIOData.GetPeripheralsNameOfType<ISPIController>(argData.Machine) :
                     argData.ErrorMessage;
             }
 
@@ -286,6 +291,21 @@ namespace Antmicro.Renode.WebSockets.Providers
                     HubName = EmulationManager.Instance.CurrentEmulation.ExternalsManager.TryGetName(canHub, out var hubName) ? hubName : ""
                 });
             }
+            var webSocketSPIAnalyzer = backendAnalyzer as WebSocketSPIAnalyzer;
+            if(webSocketSPIAnalyzer != null)
+            {
+                var spiController = webSocketSPIAnalyzer.SPIController;
+                var machine = spiController.GetMachine();
+                var machineName = EmulationManager.Instance.CurrentEmulation[machine];
+                var spiName = GPIOData.GetPeripheralFullName(spiController);
+
+                SPIOpenedEvent.RaiseEvent(new SPICreatedEventDto
+                {
+                    Name = spiName,
+                    Port = webSocketSPIAnalyzer.SPINumber,
+                    MachineName = machineName
+                });
+            }
         }
 
         private string ExecuteCommand(string command, CommandInteractionWrapper interaction)
@@ -353,6 +373,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         [WebSocketAPIEvent("clear-command", "1.5.0")]
         private readonly WebSocketAPIEventHandler ClearCommandEvent;
+
+        [WebSocketAPIEvent("spi-opened", "1.5.0")]
+        private readonly WebSocketAPIEventHandler SPIOpenedEvent;
 #pragma warning restore 649
 
         public class ExecRenodeActionArgs
@@ -415,6 +438,16 @@ namespace Antmicro.Renode.WebSockets.Providers
             public IPeripheral Peripheral;
             [JsonProperty("errorMessage")]
             public WebSocketAPIResponse ErrorMessage;
+        }
+
+        private class SPICreatedEventDto
+        {
+            [JsonProperty("port")]
+            public int Port;
+            [JsonProperty("name")]
+            public string Name;
+            [JsonProperty("machineName")]
+            public string MachineName;
         }
     }
 }
