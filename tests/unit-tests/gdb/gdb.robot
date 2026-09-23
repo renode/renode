@@ -1110,8 +1110,9 @@ Should Read Per Core Memory
     [Setup]                         Create HiFive Unleashed
     Add Per Core Memory Regions
     Check And Run Gdb               riscv64-zephyr-elf-gdb
-    # flush GDB stderr
-    Read Async Command Error
+    # flush GDB stderr. Which contains the following 2 lines:
+    # warning: No executable has been specified and target does not support
+    # determining executable automatically.  Try using the "file" command.
     Read Async Command Error
     Read Async Command Error
 
@@ -1139,8 +1140,9 @@ Should Write Per Core Memory
     [Setup]                         Create HiFive Unleashed
     Add Per Core Memory Regions
     Check And Run Gdb               riscv64-zephyr-elf-gdb
-    # flush GDB stderr
-    Read Async Command Error
+    # flush GDB stderr. Which contains the following 2 lines:
+    # warning: No executable has been specified and target does not support
+    # determining executable automatically.  Try using the "file" command.
     Read Async Command Error
     Read Async Command Error
 
