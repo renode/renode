@@ -269,11 +269,21 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             var nvic = cortexMBundle.Nvic;
             var dwt = cortexMBundle.Dwt;
+            var cpu = cortexMBundle.Cpu;
             nvic.Clocked = value;
             if(dwt != null)
             {
                 dwt.Clocked = value;
             }
+
+            // We let a clock to settle down before clock signal is propagated to a CPU itself.
+            // This inertia is needed, because emulated CPU can't be stopped immediately.
+            // The worst case is assumed here, after the current quantum is finished,
+            // when it's guaranteed there are no memory transactions in progress.
+            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+            {
+                cpu.Clocked = value;
+            }, true);
         }
 
         private void SetupCortexMBundle(CortexMBundle cortexMBundle, IReadOnlyDictionary<int, IGPIO> connections)
