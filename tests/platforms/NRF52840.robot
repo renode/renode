@@ -7,6 +7,13 @@ ${STANDARD}=  SEPARATOR=
 ...  using "platforms/cpus/nrf52840.repl"    ${\n}
 ...  """
 
+${BME_SENSOR_I2C}=  SEPARATOR=
+...  """                                     ${\n}
+...  using "platforms/cpus/nrf52840.repl"    ${\n}
+...                                          ${\n}
+...  bme280: I2C.BME280 @ twi0 0x76          ${\n}
+...  """
+
 ${NO_DMA}=  SEPARATOR=
 ...  """                                     ${\n}
 ...  using "platforms/cpus/nrf52840.repl"    ${\n}
@@ -344,3 +351,33 @@ Should Run Bluetooth Hci Uart Sample
 
     Wait For Line On Uart     [SUBSCRIBED]                              testerId=${cen_uart}
     Wait For Line On Uart     [NOTIFICATION]                            testerId=${cen_uart}
+
+Should Return The Chip Id With I2C
+    Create Machine            ${BME_SENSOR_I2C}    zephyr-nrf52840--micropython-with-i2c.elf-s_5843396-3434fb85ea0bb234b73af44dcbc4318903a5461b
+    Create Terminal Tester    ${UART}
+    Create Log Tester         1
+
+    Wait For Prompt On Uart   >>>
+    Write Line To Uart        import machine
+    Wait For Prompt On Uart   >>>
+    Write Line To Uart        i = machine.I2C("i2c0")
+    Wait For Prompt On Uart   >>>
+
+    Write Line To Uart        print("ID: 0x" + (i.readfrom_mem(0x76, 0xD0, 1).hex() or "00"))
+    Wait For Line On Uart     ID: 0x60
+    Should Not Be In Log      Trying to write without specifying address
+    Should Not Be In Log      Unhandled read from offset 0x0
+    Should Not Be In Log      Unhandled write to offset 0x1C
+
+Should Scan The I2C Bus Correctly
+    Create Machine            ${BME_SENSOR_I2C}    zephyr-nrf52840--micropython-with-i2c.elf-s_5843396-3434fb85ea0bb234b73af44dcbc4318903a5461b
+    Create Terminal Tester    ${UART}
+
+    Wait For Prompt On Uart   >>>
+    Write Line To Uart        import machine
+    Wait For Prompt On Uart   >>>
+    Write Line To Uart        i = machine.I2C("i2c0")
+    Wait For Prompt On Uart   >>>
+
+    Write Line To Uart        print("S:", i.scan())
+    Wait For Line On Uart     S: \\[118\\]    treatAsRegex=true
