@@ -168,6 +168,8 @@ if(NOT TARGET renode::renode)
 endif()
 
 if(NOT TARGET renode)
+    # The target needs to be globally visible for ALIAS in CMake older than v3.18.
+    set_target_properties(renode::renode PROPERTIES IMPORTED_GLOBAL TRUE)
     add_library(renode ALIAS renode::renode)
 endif()
 
