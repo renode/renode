@@ -619,9 +619,27 @@ if $SHARED
 then
     echo "Building DNNE package..."
     dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/third-party/DNNE/src/create_package.proj")" -c "$CONFIGURATION"
+
+    if [ $RID = linux-x64 ]; then
+      # Build a stub `libdl.so` library with `ld*` functions used in librenode using a versions map compatible with GLIBC versions older than 2.34.
+      # Otherwise, `librenode.so` built with newer GLIBC can't be used with older GLIBC because `dl*` functions are expected to be in `libc.so.6`.
+      # The trick with wrappers and explicit function versions used in tlib isn't applicable here because the functions can't be found even after
+      # forcing the linker to treat `libdl.so` as required.
+      LIBDL_STUB_SRC="$ROOT_PATH/tools/NativeInterface/csharp/libdl-linux-x64-stub"
+      LIBDL_STUB_PATH="$OUT_BIN_DIR/libdl.so.2"
+      gcc -shared -fPIC -Wl,--version-script="$LIBDL_STUB_SRC/libdl.map" -Wl,-soname,libdl.so.2 -o "$LIBDL_STUB_PATH" "$LIBDL_STUB_SRC/stub.c"
+
+      EXTRA_ARGUMENTS="-p:LibdlStubPath=$LIBDL_STUB_PATH"
+    fi
+
     echo "Building librenode..."
-    dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID"
+    dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID" ${EXTRA_ARGUMENTS:-}
     copy_native_interface_runtime_config "$OUT_BIN_DIR" "$OUT_BIN_DIR/platform-lib/$RID"
+
+    if [ $RID = linux-x64 ]; then
+      # See above why this stub was needed, it shouldn't be used at runtime.
+      rm $LIBDL_STUB_PATH
+    fi
 fi
 
 # build packages after successful compilation

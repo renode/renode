@@ -36,6 +36,9 @@
     <!-- ProcessArchitecture not OSArchitecture so Rosetta x64 processes get osx-x64, not osx-arm64 -->
     <_DnneArch>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLower())</_DnneArch>
     <DnneRuntimeIdentifier Condition="'$(_DnneOSPrefix)' != ''">$(_DnneOSPrefix)-$(_DnneArch)</DnneRuntimeIdentifier>
+
+    <!-- Use a stub libdl.so imitating the one from GLIBC older than v2.34 so before all its functions were moved to libc.so. -->
+    <DnneLinkerUserFlags Condition="'$(DnneRuntimeIdentifier)' == 'linux-x64'">$(DnneLinkerUserFlags) $(LibdlStubPath)</DnneLinkerUserFlags>
   </PropertyGroup>
 
   <Target Name="SetLinkerFlags" BeforeTargets="DnneBuildNativeExports" Condition="'$(DesignTimeBuild)' != 'true' And $([MSBuild]::IsOSPlatform('Windows'))">
