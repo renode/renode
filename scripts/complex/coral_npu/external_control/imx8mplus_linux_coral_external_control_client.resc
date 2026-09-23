@@ -23,17 +23,15 @@ _NPU_PATH = "sysbus.CoralNPU_RVV"
 
 def mc_coralStats_reset(line=None):
     mc_coralStats_reset.last = monitor.Machine[_NPU_PATH].ExecutedInstructions
-    print "initializing instruction counting stats"
 
 def mc_coralStats_print(line=None):
-    last = mc_coralStats_reset.last
-    if last is None:
-        print "instruction counting stats not initialized"
-        return
-    current = monitor.Machine[_NPU_PATH].ExecutedInstructions
+    current = monitor.Machine[_NPU_PATH].ExecutedInstructions - mc_coralStats_reset.last
     print "  %-20s %d (last run)" % ("Executed NPU (CoralNPU_RVV) instructions:", current)
 
-mc_coralStats_reset.last = None
+    # The NPU core resets on each run, which also resets instruction counting
+    mc_coralStats_reset.last = 0
+
+mc_coralStats_reset.last = 0
 """
 
 emulation SetAdvanceImmediately true

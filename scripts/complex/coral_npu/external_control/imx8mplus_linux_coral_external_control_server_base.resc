@@ -27,7 +27,6 @@ def mc_coralStats_reset(line=None):
 def mc_coralStats_print(line=None):
 	print externals.server.SendCustomCommand('coralStats_print')
 
-uart.AddLineHook(lambda line: '# run_coral' in line, mc_coralStats_reset)
 uart.AddLineHook(lambda line: 'coral: finished, output[0] = 0x0007' in line, mc_coralStats_print)
 uart.AddLineHook(lambda line: '# arm_vector_add' in line, mc_coralStats_reset)
 uart.AddLineHook(lambda line: 'arm_vector_add: output[0] = 0x0007' in line, mc_coralStats_print)
