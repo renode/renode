@@ -1,0 +1,229 @@
+<#
+//
+// Copyright (c) 2010-2026 Antmicro
+//
+// This file is licensed under the MIT License.
+// Full license text is available in 'licenses/MIT.txt'.
+//
+#>
+<#@ template language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+    (string, string)[] types = new[]
+    {
+        ("byte",   "Byte"),
+        ("ushort", "Word"),
+        ("uint",   "DoubleWord"),
+        ("ulong",  "QuadWord"),
+    };
+
+    (string, string, string)[] signedTypes = new[]
+    {
+        ("sbyte",  "byte",   "Byte"),
+        ("short",  "ushort", "Word"),
+        ("int",    "uint",   "DoubleWord"),
+        ("long",   "ulong",  "QuadWord"),
+    };
+
+    (string, string)[] compTypes = new[]
+    {
+        ("BeEqual",          "Equal"),
+        ("NotBeEqual",       "NotEqual"),
+        ("BeLessThan",       "LessThan"),
+        ("BeLessOrEqual",    "LessOrEqual"),
+        ("BeGreaterThan",    "GreaterThan"),
+        ("BeGreaterOrEqual", "GreaterOrEqual"),
+    };
+
+    string[] symbolPrefixes = new[]
+    {
+        "Symbol",
+        "AllSymbols",
+        "AnySymbol",
+    };
+
+    (string, string)[] zeroValues = new[]
+    {
+        ("BeZero",    "Equal"),
+        ("BeNonZero", "NotEqual"),
+    };
+
+#>
+/********************************************************
+*
+* Warning!
+* This file was generated automatically.
+* Please do not edit. Changes should be made in the
+* appropriate *.tt file.
+*
+*/
+
+using Antmicro.Renode.Peripherals.Bus;
+
+#nullable enable
+
+namespace Antmicro.Renode.RobotFramework
+{
+    internal partial class MemoryKeywords
+    {
+<#
+    foreach(var entry in types)
+    {
+        var (type, name) = entry;
+#>
+        [RobotFrameworkKeyword]
+        public void Store<#=name#>(ulong address, <#=type#> value, string? machine = null)
+        {
+            var machineObj = GetMachineByNameOrSingle(machine);
+            var sysbus = machineObj.SystemBus;
+            sysbus.Write<#=name#>(address, value);
+        }
+
+        [RobotFrameworkKeyword]
+        public void Store<#=name#>(string symbol, <#=type#> value, long offset = 0, int? index = null, string? machine = null)
+        {
+            StoreValueAtSymbolAddress(symbol, value, SysbusAccessWidth.<#=name#>, offset, index, machine);
+        }
+
+<#
+    }
+#>
+<#
+    foreach(var entry in signedTypes)
+    {
+        var (type, unsignedType, name) = entry;
+#>
+        [RobotFrameworkKeyword]
+        public void Store<#=name#>(ulong address, <#=type#> value, string? machine = null)
+        {
+            var machineObj = GetMachineByNameOrSingle(machine);
+            var sysbus = machineObj.SystemBus;
+            sysbus.Write<#=name#>(address, (<#=unsignedType#>)value);
+        }
+
+        [RobotFrameworkKeyword]
+        public void Store<#=name#>(string symbol, <#=type#> value, long offset = 0, int? index = null, string? machine = null, string? context = null)
+        {
+            StoreValueAtSymbolAddress(symbol, (<#=unsignedType#>)value, SysbusAccessWidth.<#=name#>, offset, index, machine, context);
+        }
+
+<#
+    }
+#>
+<#
+    foreach(var compType in compTypes)
+    {
+        var (suffix, enumValue) = compType;
+#>
+        [RobotFrameworkKeyword]
+        public void MemoryShould<#=suffix#>(ulong address, ulong value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, float? timeout = null, string? machine = null, bool pauseEmulation = false)
+        {
+            MemoryShouldBe(address, value, width, signed, timeout, machine, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+        [RobotFrameworkKeyword]
+        public void MemoryShould<#=suffix#>(ulong address, long value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, float? timeout = null, string? machine = null, bool pauseEmulation = false)
+        {
+            if(value <= 0 && !signed)
+            {
+                throw new KeywordException($"Negative value was given to {nameof(MemoryShould<#=suffix#>)} without setting `signed=true`");
+            }
+            MemoryShouldBe(address, (ulong)value, width, signed, timeout, machine, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+        [RobotFrameworkKeyword]
+        public void AllSymbolsShouldIndependently<#=suffix#>(string name, ulong value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            AllSymbolsShouldIndependentlyBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+        [RobotFrameworkKeyword]
+        public void AllSymbolsShouldIndependently<#=suffix#>(string name, long value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            if(value <= 0 && !signed)
+            {
+                throw new KeywordException($"Negative value was given to {nameof(AllSymbolsShouldIndependently<#=suffix#>)} without setting `signed=true`");
+            }
+            AllSymbolsShouldIndependentlyBe(name, (ulong)value, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+<#
+    }
+    foreach(var prefix in symbolPrefixes)
+    {
+        foreach(var compType in compTypes)
+        {
+            var (suffix, enumValue) = compType;
+#>
+        [RobotFrameworkKeyword]
+        public void <#=prefix#>Should<#=suffix#>(string name, ulong value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            <#=prefix#>ShouldBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+        [RobotFrameworkKeyword]
+        public void <#=prefix#>Should<#=suffix#>(string name, long value, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            if(value <= 0 && !signed)
+            {
+                throw new KeywordException($"Negative value was given to {nameof(<#=prefix#>Should<#=suffix#>)} without setting `signed=true`");
+            }
+            <#=prefix#>ShouldBe(name, (ulong)value, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+<#
+        }
+    }
+#>
+<#
+    foreach(var value in zeroValues)
+    {
+        var (suffix, enumValue) = value;
+#>
+        [RobotFrameworkKeyword]
+        public void MemoryShould<#=suffix#>(ulong address, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, float? timeout = null, string? machine = null, bool pauseEmulation = false)
+        {
+            MemoryShouldBe(address, 0, width, signed, timeout, machine, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+        [RobotFrameworkKeyword]
+        public void AllSymbolsShouldIndependently<#=suffix#>(string name, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            AllSymbolsShouldIndependentlyBe(name, 0, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+<#
+        foreach(var prefix in symbolPrefixes)
+        {
+#>
+        [RobotFrameworkKeyword]
+        public void <#=prefix#>Should<#=suffix#>(string name, SysbusAccessWidth width = SysbusAccessWidth.DoubleWord, bool signed = false, long offset = 0, float? timeout = null, string? machine = null, string? context = null, bool pauseEmulation = false)
+        {
+            <#=prefix#>ShouldBe(name, 0, width, signed, offset, timeout, machine, context, pauseEmulation, ComparisonType.<#=enumValue#>);
+        }
+
+<#
+        }
+    }
+#>
+        private void SymbolShouldBe(string name, ulong value, SysbusAccessWidth width, bool signed, long offset, float? timeout, string? machine, string? context, bool pauseEmulation, ComparisonType compType)
+        {
+            SymbolsShouldBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, compType, SymbolLookupMode.Single);
+        }
+
+        private void AllSymbolsShouldBe(string name, ulong value, SysbusAccessWidth width, bool signed, long offset, float? timeout, string? machine, string? context, bool pauseEmulation, ComparisonType compType)
+        {
+            SymbolsShouldBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, compType, SymbolLookupMode.All);
+        }
+
+        private void AnySymbolShouldBe(string name, ulong value, SysbusAccessWidth width, bool signed, long offset, float? timeout, string? machine, string? context, bool pauseEmulation, ComparisonType compType)
+        {
+            SymbolsShouldBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, compType, SymbolLookupMode.Any);
+        }
+
+        private void AllSymbolsShouldIndependentlyBe(string name, ulong value, SysbusAccessWidth width, bool signed, long offset, float? timeout, string? machine, string? context, bool pauseEmulation, ComparisonType compType)
+        {
+            SymbolsShouldBe(name, value, width, signed, offset, timeout, machine, context, pauseEmulation, compType, SymbolLookupMode.AllIndependently);
+        }
+    }
+}
