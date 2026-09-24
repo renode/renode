@@ -26,6 +26,10 @@ ${ZYNQ_UFS_ROOTFS}                  @https://dl.antmicro.com/projects/renode/zyn
 ${ZYNQ_UFS_DTB}                     @https://dl.antmicro.com/projects/renode/zynq--linux-ufs.dtb-s_12720-0dfc729e7c8db7b51c5eb4dfd990cee186de1442
 ${ZYNQ_UFS_TEST_DISK_IMG}           @https://dl.antmicro.com/projects/renode/test-fs-ext2.img-s_524288-67f5bc210d7be8905b4de4ae5d70a8a142459110
 ${ZYNQ_WATCHDOG_RESET_DTB}          @https://dl.antmicro.com/projects/renode/zynq--linux-watchdog-reset-on-timeout.dtb-s_12898-a3b65664ac84db801b0dad1525207f304e8a7428
+${ZYNQ_ARM_DMA_350_BIN}             @https://dl.antmicro.com/projects/renode/zynq-arm-dma-350-vmlinux.stripped-s_14939484-091697c1312512e0628e86199c321c9d189bda49
+${ZYNQ_ARM_DMA_350_ROOTFS}          @https://dl.antmicro.com/projects/renode/zynq-arm-dma-350-rootfs.ext2-s_67108864-9f4f0e1ee23a09ffe79290ff4796376f4adf030c
+${ZYNQ_ARM_DMA_350_DTB}             @https://dl.antmicro.com/projects/renode/zynq-arm-dma-350.dtb-s_12058-71c5729aa0d3c78fb44471376a00d7060f41e3b1
+${ZYNQ_ARM_DMA_350_LOGIN_PROMPT}    buildroot login:
 ${CADENCE_XSPI_PERIPHERAL}          SEPARATOR=\n
 ...                                 """
 ...                                 xspi: SPI.Cadence_xSPI @ {
@@ -120,6 +124,14 @@ ${DEFAULT_IRQ_TEST}                 SEPARATOR=\n
 ...                                 ${SPACE*4}RxFifoFullIRQ -> led52@0
 ...                                 """
 
+${ARM_DMA_350_PERIPHERAL}           SEPARATOR=\n
+...                                 """
+...                                 dma350: DMA.Arm_Dma350 @ sysbus 0x42000000
+...                                 ${SPACE*4}numberOfChannels: 2
+...                                 ${SPACE*4}0 -> gic@54
+...                                 ${SPACE*4}1 -> gic@55
+...                                 """
+
 *** Keywords ***
 Create Machine
     Execute Command                 include @scripts/single-node/zedboard.resc
@@ -128,6 +140,19 @@ Create Machine
     Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash0: SPI.Micron_MT25Q @ spi0 0 { underlyingMemory: spi0FlashMemory; extendedDeviceId: 0x44 }; spi0FlashMemory: Memory.MappedMemory { size: 0x2000000 }"
     Execute Command                 machine LoadPlatformDescriptionFromString "spiFlash1: SPI.Cypress_S25H @ spi0 1 { underlyingMemory: spi1FlashMemory }; spi1FlashMemory: Memory.MappedMemory { size: 0x4000000 }"
     ${tester}=                      Create Terminal Tester          ${UART}
+    RETURN                          ${tester}
+
+Create ARM DMA-350 Machine
+    Execute Command                 $name="ZedboardARM_DMA350"
+    Execute Command                 $bin=${ZYNQ_ARM_DMA_350_BIN}
+    Execute Command                 $rootfs=${ZYNQ_ARM_DMA_350_ROOTFS}
+    Execute Command                 $dtb=${ZYNQ_ARM_DMA_350_DTB}
+    Execute Command                 $bootargs="console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x18000000,64M"
+    Execute Command                 $initrd_address=0x18000000
+    Execute Command                 $initrd_memory_size=0x4000000
+    Execute Command                 include @scripts/single-node/zedboard.resc
+    Execute Command                 machine LoadPlatformDescriptionFromString ${ARM_DMA_350_PERIPHERAL}
+    ${tester}=                      Create Terminal Tester          sysbus.uart1
     RETURN                          ${tester}
 
 Boot And Login
@@ -361,6 +386,20 @@ Should Access SPI Flash Memory Via Additional Cadence xSPI IP With The Auto Comm
     Execute Command                 $dtb=${CADENCE_XSPI_AUTOCOMMAND_DTB}
 
     Should Access SPI Flash Memory Via Additional Cadence xSPI 
+
+Should Pass ARM DMA-350 Tests
+    Create ARM DMA-350 Machine
+    Start Emulation
+
+    Wait For Line On Uart           ${ZYNQ_ARM_DMA_350_LOGIN_PROMPT}  timeout=120
+    Write Line To Uart              root
+    Wait For Prompt On Uart         ${PROMPT}
+    Write Line To Uart              test -d /sys/bus/platform/drivers/arm-dma350/42000000.dma-controller && echo DMA350_DRIVER_BOUND  waitForEcho=false
+    Wait For Line On Uart           DMA350_DRIVER_BOUND
+    Write Line To Uart              /root/dma_test
+    Wait For Line On Uart           DMA350_DEMO: memcpy PASS       timeout=60
+    Wait For Line On Uart           DMA350_DEMO: memset PASS       timeout=60
+    Wait For Line On Uart           DMA350_DEMO: ALL TESTS PASS
 
 Should Boot And Login With UFS
     [Tags]                          basic-tests
