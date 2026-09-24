@@ -9,6 +9,11 @@ ${ZEPHYR_FPU_SHARING_ELF}         ${URI}/zephyr_tests_kernel_fpu_sharing_generic
 
 ${SEL4_ADDER_ELF}                 ${URI}/camkes_adder_elfloader_aarch64-s_3408064-4385f32dd7a3235af3905c0a473598fc90853b7a
 
+${EL0}                            EL0_UserMode
+${EL1}                            EL1_SystemMode
+${EL2}                            EL2_HypervisorMode
+${EL3}                            EL3_MonitorMode
+
 *** Keywords ***
 Create Machine
     [Arguments]    ${gic_version}=3
@@ -53,6 +58,38 @@ Verify Timer Register
 
     Execute Command               cpu GetSystemRegisterValue "${system_register_name}"
     Wait For Log Entry            Read from ${timer_register_name}
+
+Enter 64-bit Mode
+    Execute Command                    cpu SetSystemRegisterValue "scr_el3" 0x00000401   # SCR_RW | SCR_NS
+    Execute Command                    cpu SetSystemRegisterValue "hcr_el2" 0x88000000   # HCR_RW | HCR_TGE
+
+Should Trap On
+    [Arguments]    ${instruction}  ${expected_el}  ${triple}="arm64"
+
+    ${old_pc}=                         Execute Command  cpu PC
+    ${old_el}=                         Execute Command  cpu ExceptionLevel
+    ${ins_width}=                      Execute Command  cpu AssembleBlock `cpu PC` ${instruction} ${triple}
+    ${new_pc}=                         Execute Command  cpu Step
+    ${new_el}=                         Execute Command  cpu ExceptionLevel
+
+    Should Be Equal                    ${expected_el}  ${new_el.split("\n")[0]}  Cpu did not trap
+    Should Not Be Equal As Numbers     ${new_pc}  ${{int($old_pc, base=16) + int($ins_width, base=16)}}  Cpu did not trap
+
+    Execute Command                    cpu PC ${old_pc}
+    Execute Command                    cpu ExceptionLevel ${old_el}
+
+Should Not Trap On
+    # Does not work with jumps
+    [Arguments]    ${instruction}  ${triple}="arm64"
+
+    ${old_pc}=                         Execute Command  cpu PC
+    ${old_el}=                         Execute Command  cpu ExceptionLevel
+    ${ins_width}=                      Execute Command  cpu AssembleBlock `cpu PC` ${instruction} ${triple}
+    ${new_pc}=                         Execute Command  cpu Step
+    ${new_el}=                         Execute Command  cpu ExceptionLevel
+
+    Should Be Equal                    ${old_el.split("\n")[0]}  ${new_el.split("\n")[0]}  Cpu trapped
+    Should Be Equal As Numbers         ${new_pc}  ${{int($old_pc, base=16) + int($ins_width, base=16)}}  Cpu trapped
 
 *** Test Cases ***
 Should Get Correct EL and SS on CPU Creation
@@ -115,6 +152,33 @@ Test Accessing ARM Generic Timer Registers Through AArch64 System Registers
     Verify Timer Register         CNTV_CTL_EL0       EL1VirtualTimerControl
     Verify Timer Register         CNTV_CVAL_EL0      EL1VirtualTimerCompareValue
     Verify Timer Register         CNTV_TVAL_EL0      EL1VirtualTimerValue
+
+Test Kernel Control Register
+    Create Machine
+
+    Enter 64-bit Mode
+    Execute Command               cpu ExceptionLevel ${EL0}
+    Execute Command               cpu SetSystemRegisterValue "CNTKCTL_EL1" 0x0
+
+    Should Trap On                "mrs x0, CNTPCT_EL0"     ${EL2}
+    Should Trap On                "mrs x0, CNTVCT_EL0"     ${EL2}
+    Should Trap On                "mrs x0, CNTP_TVAL_EL0"  ${EL2}
+    Should Trap On                "mrs x0, CNTP_CTL_EL0"   ${EL2}
+    Should Trap On                "mrs x0, CNTP_CVAL_EL0"  ${EL2}
+    Should Trap On                "mrs x0, CNTV_TVAL_EL0"  ${EL2}
+    Should Trap On                "mrs x0, CNTV_CTL_EL0"   ${EL2}
+    Should Trap On                "mrs x0, CNTV_CVAL_EL0"  ${EL2}
+
+    Execute Command               cpu SetSystemRegisterValue "CNTKCTL_EL1" 0x303  # EL0PCTEN | EL0VCTEN | EL0VTEN | EL0PTEN 
+
+    Should Not Trap On            "mrs x0, CNTPCT_EL0"
+    Should Not Trap On            "mrs x0, CNTVCT_EL0"
+    Should Not Trap On            "mrs x0, CNTP_TVAL_EL0"
+    Should Not Trap On            "mrs x0, CNTP_CTL_EL0"
+    Should Not Trap On            "mrs x0, CNTP_CVAL_EL0"
+    Should Not Trap On            "mrs x0, CNTV_TVAL_EL0"
+    Should Not Trap On            "mrs x0, CNTV_CTL_EL0"
+    Should Not Trap On            "mrs x0, CNTV_CVAL_EL0"
 
 Test Accessing System Registers
     Create Machine
