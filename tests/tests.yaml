@@ -248,6 +248,7 @@
 - tests/platforms/X86_64KVM.robot
 - tests/unit-tests/riscv-external-pmp.robot
 - tests/unit-tests/riscv-bkb.robot
+- tests/unit-tests/memory-assertions.robot
 - tests/platforms/egis_et171-zephyr.robot
 - tests/peripherals/AndesATCPIT100.robot
 - tests/peripherals/AndesNCEPLIC100.robot
