@@ -427,6 +427,8 @@ Should Assemble And Disassemble X86
     Assemble And Disassemble X86 Using Intel Syntax
     Assemble And Disassemble X86 Using GAS Syntax
 
+    Provides                        InitializedX86Machine
+
 Should Assemble And Disassemble 16-bit X86 On KVM Core
     [Tags]                          basic-test  exclude_windows  exclude_osx  exclude_host_aarch64
     Create Machine                  X86KVM  x86
@@ -554,3 +556,8 @@ Should Refuse To Infer Triple For Addressed Disassembly
 Should Infer Triple For PC-Based Disassembly
     Create Machine                  ARMv8A  cortex-a53
     Execute Command                 cpu DisassembleBlock
+
+Should Assemble And Disassemble After Deserialization
+    Requires                        InitializedX86Machine
+    Assemble And Disassemble X86 Using Intel Syntax
+    Assemble And Disassemble X86 Using GAS Syntax
