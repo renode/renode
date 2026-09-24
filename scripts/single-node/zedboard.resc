@@ -12,6 +12,9 @@ sysbus Redirect 0xC0000000 0x0 0x10000000
 $bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_14142952-ab5cd7445f31414fcbf8c79d49d737c669034ef2
 $rootfs?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-gem0.dtb-s_11724-f0dec8ffadea47891dfe2441215401f09f7242fa
+$bootargs?="console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,16M"
+$initrd_address?=0x1a000000
+$initrd_memory_size?=0x1600000
 
 ## set timer frequency ##
 ttc0 Frequency 33333333
@@ -26,9 +29,9 @@ macro reset
 
     ## load binaries ##
     sysbus LoadELF $bin
-    sysbus LoadFdt $dtb 0x100 "console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,16M" false
-    sysbus ZeroRange 0x1a000000 0x1600000
-    sysbus LoadBinary $rootfs 0x1a000000
+    sysbus LoadFdt $dtb 0x100 $bootargs false
+    sysbus ZeroRange $initrd_address $initrd_memory_size
+    sysbus LoadBinary $rootfs $initrd_address
 """
 
 runMacro $reset
