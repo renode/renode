@@ -85,13 +85,17 @@ Custom Test Teardown
 Build Sample
     [Arguments]                     ${app}
 
+    # `cmake ... -S ${EXTERNAL_CONTROL_DIR} -B ${BUILD_DIR}` isn't used here because it
+    # doesn't work well in all CMake versions and then it fails with such an error:
+    # > The source directory "${EXECDIR} ${EXTERNAL_CONTROL_DIR}" does not exist.
+    Create Directory                ${BUILD_DIR}
     ${r}=                           Run Process  cmake
     ...                             -DAPP_NAME\=${app}
     ...                             -DAPP_SOURCES_DIR\=${EXTERNAL_CONTROL_DIR}/examples/${app}
     ...                             -DAPP_NON_INTERACTIVE\=ON
     ...                             -DRENODE_API_SANITIZERS\=%{RENODE_TESTS_SANITIZERS=ON}
-    ...                             -S ${EXTERNAL_CONTROL_DIR}
-    ...                             -B ${BUILD_DIR}
+    ...                             ${EXTERNAL_CONTROL_DIR}
+    ...                             cwd=${BUILD_DIR}
 
     Should Be Equal As Integers     ${r.rc}  0  msg=cmake failed: ${r.stderr}
 
