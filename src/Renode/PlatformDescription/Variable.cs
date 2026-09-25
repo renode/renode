@@ -35,7 +35,7 @@ namespace Antmicro.Renode.PlatformDescription
                 return null;
             }
             var entriesToMerge = associatedEntries.ToList();
-            Entry result = entriesToMerge[0];
+            var result = entriesToMerge[0];
             result = entriesToMerge.Skip(1).Aggregate(entriesToMerge[0], (x, y) => x.MergeWith(y));
             result.Variable = this;
             return result;

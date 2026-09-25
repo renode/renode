@@ -24,7 +24,7 @@ namespace Antmicro.Renode.PlatformDescription
             foreach(var currentLine in sourceLine.Select((value, index) => new { index, value }))
             {
                 var line = currentLine.value;
-                var validQuotes = CountUnescapedCharacters(line, multilineQuoteRegex, out List<int> validQuotesIndexes);
+                var validQuotes = CountUnescapedCharacters(line, multilineQuoteRegex, out var validQuotesIndexes);
                 var lastQuoteIndex = (validQuotesIndexes.Count != 0) ? validQuotesIndexes[validQuotesIndexes.Count - 1] : -1;
 
                 if(inMultilineString)

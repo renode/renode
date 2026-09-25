@@ -249,7 +249,7 @@ namespace Antmicro.Renode.Peripherals.CoSimulated
             UInt64 result = 0UL;
             result = execute(functionID, rs1Value, rs2Value, errorPointer);
 
-            CfuStatus status = (CfuStatus)Marshal.ReadInt32(errorPointer);
+            var status = (CfuStatus)Marshal.ReadInt32(errorPointer);
 
             switch(status)
             {

@@ -45,7 +45,7 @@ namespace Antmicro.Renode.RobotFramework
         public XmlRpcStruct RunKeyword(string keywordName, object[] arguments)
         {
             var result = new XmlRpcStruct();
-            KeywordManager.KeywordLookupResult lookupResult = default(KeywordManager.KeywordLookupResult);
+            var lookupResult = default(KeywordManager.KeywordLookupResult);
             try
             {
                 lookupResult = keywordManager.TryExecuteKeyword(keywordName, arguments, out var keywordResult);

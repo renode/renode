@@ -135,7 +135,7 @@ namespace Antmicro.Renode.WebSockets
             }
 
             Logger.Log(LogLevel.Debug, $"Found new API Provider: {t.Name}");
-            IWebSocketAPIProvider apiProviderInstance = (IWebSocketAPIProvider)Activator.CreateInstance(t);
+            var apiProviderInstance = (IWebSocketAPIProvider)Activator.CreateInstance(t);
             apiProviders.Add(apiProviderInstance);
 
             foreach(var methodAttr in t.GetMethodsWithAttribute<WebSocketAPIActionAttribute>())

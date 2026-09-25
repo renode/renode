@@ -38,7 +38,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 return true;
             case "i386":
                 // SystemV calling convention
-                IMachine machine = cpu.GetMachine();
+                var machine = cpu.GetMachine();
                 returnAddress = ((SystemBus)machine.SystemBus).ReadDoubleWord(cpu.GetRegister(4).RawValue);
                 return true;
             case "riscv64":
@@ -74,7 +74,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
                 return true;
             case "i386":
                 // SystemV calling convention
-                IMachine machine = cpu.GetMachine();
+                var machine = cpu.GetMachine();
                 firstParameter = ((SystemBus)machine.SystemBus).ReadDoubleWord(cpu.GetRegister(4).RawValue + 4);
                 return true;
             case "riscv64":
@@ -97,7 +97,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
 
         public static void Enable(ICPU cpu, string hookSymbol, CpuAddressHook hook)
         {
-            IMachine machine = cpu.GetMachine();
+            var machine = cpu.GetMachine();
             if(!(cpu is TranslationCPU) || !(machine.SystemBus is SystemBus))
             {
                 throw new RecoverableException("This CPU doesn't support OS Time Skip Mode");
@@ -114,7 +114,7 @@ namespace Antmicro.Renode.Peripherals.Plugins
             var key = Tuple.Create(cpu, hookSymbol);
             if(enabledSymbolChecks.TryGetValue(key, out var configureSymbolsHooksWrapper))
             {
-                IMachine machine = cpu.GetMachine();
+                var machine = cpu.GetMachine();
                 machine.SystemBus.OnSymbolsChanged -= configureSymbolsHooksWrapper;
                 enabledSymbolChecks.Remove(key);
                 ConfigureHook((ICPUWithHooks)cpu, machine, hookSymbol, null, false);

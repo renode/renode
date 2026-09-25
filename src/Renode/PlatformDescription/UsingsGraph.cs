@@ -33,7 +33,7 @@ namespace Antmicro.Renode.PlatformDescription
                 var graphNodeFinished = new Dictionary<GraphNode, bool>();
                 var fileCurrentlyProcessed = new Dictionary<string, bool>();
 
-                GraphNode rootNode = GetOrCreateGraphNode(creationDriver, rootFilePath, rootFileSource, null);
+                var rootNode = GetOrCreateGraphNode(creationDriver, rootFilePath, rootFileSource, null);
                 fileCurrentlyProcessed[rootNode.FileId] = true;
                 graphNodeFinished[rootNode] = false;
 
@@ -64,7 +64,7 @@ namespace Antmicro.Renode.PlatformDescription
                                     string.Format("Using '{0}' resolved as '{1}' does not exist.", usingEntry.Path, filePath), true);
                         }
 
-                        GraphNode node = GetOrCreateGraphNode(creationDriver, filePath, "", currentFile);
+                        var node = GetOrCreateGraphNode(creationDriver, filePath, "", currentFile);
 
                         if(!graphNodeFinished.ContainsKey(node))
                         {

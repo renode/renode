@@ -59,7 +59,7 @@ namespace Antmicro.Renode.Connectors
         public void SelectSourcePin(INumberedGPIOOutput source, int pinNumber)
         {
             VerifyPeripheralOrThrow(source);
-            if(!source.Connections.TryGetValue(pinNumber, out IGPIO tempPin))
+            if(!source.Connections.TryGetValue(pinNumber, out var tempPin))
             {
                 throw new RecoverableException("Peripheral {0} has no GPIO with number: {1}".FormatWith(source, pinNumber));
             }

@@ -137,7 +137,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
 
         public void RegisterOnGPIOReceive(Action<int, bool> callback, Range translationRange)
         {
-            foreach(GPIOEntry entry in gpioEntries)
+            foreach(var entry in gpioEntries)
             {
                 if(entry.Range.Intersects(translationRange))
                 {
@@ -353,7 +353,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
         {
             var gpioNumber = message.Address;
             bool newValue = message.Data != 0;
-            foreach(GPIOEntry entry in gpioEntries)
+            foreach(var entry in gpioEntries)
             {
                 if(entry.Range.Contains(gpioNumber))
                 {
@@ -385,7 +385,7 @@ namespace Antmicro.Renode.Plugins.CoSimulationPlugin.Connection
                 }
             }
 
-            IBusController systemBus = machine.SystemBus;
+            var systemBus = machine.SystemBus;
             var busPeripheral = peripheral as IBusPeripheral;
             if(busPeripheral != null)
             {
