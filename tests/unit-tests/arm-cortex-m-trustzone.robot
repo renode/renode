@@ -139,7 +139,7 @@ ${width} ${io} Should Be Equal
     [Arguments]                     ${expected}
     ...                             ${message}=${None}
 
-    ${val}=                         Execute Command  sysbus Read${width} ${io} context=cpu0
+    ${val}=                         Execute Command  sysbus Read${width} ${io} context=${CPU}
     Should Be Equal As Integers     ${val}  ${expected}  msg=${message}
 
 *** Test Cases ***
