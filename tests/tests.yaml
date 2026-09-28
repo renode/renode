@@ -323,3 +323,6 @@
 
 - port_3345:
   - tests/external-control/renode-to-renode.robot
+
+- port_3346:
+  - tests/unit-tests/gdb/gdb_multiprocess.robot
