@@ -16,7 +16,7 @@ ${QSPI_RW}                          ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI
 ${QSPI_MemMapped}                   ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_MemoryMapped.elf-s_2152312-faec8bb984c61aabb52ae9eec1598999ea906a1c
 ${QSPI_XIP}                         ${PROJECT_URL}/stm32cubeh7--stm32h753zi-QSPI_ExecuteInPlace.elf-s_2233412-67befe44572c483b242a95ce8e714f75f4e7dc69
 ${PTP}                              ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_net_ptp.elf-s_4678660-79097838e7a15377e3d9ce083917220bd0705312
-${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_client_server.elf-s_5285644-738a986f7b4250cd1a615e5c9767be20d89d82e0  # Zephyr netshell with DHCP client and server enabled
+${DHCP}                             ${PROJECT_URL}/nucleo_h753zi--zephyr-dhcp_client_server.elf-s_5285644-2dd96000c5757c860f650eae3c4b8f4613ec95c1  # Zephyr netshell with DHCP client and server enabled
 ${FLASH_EraseProgram}               ${PROJECT_URL}/stm32cubeh7--stm32h753zi-FLASH_EraseProgram.elf-s_2098720-fdf4d20c82c0619eee844117860017b477696298
 ${ADC_DMA_TEST}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-tests_adc_api_dma.elf-s_1463928-1eb236532e593e96e263d98cf6200a0722dfd97f
 ${FLASH_IS25WP}                     ${PROJECT_URL}/nucleo_h753zi--zephyr-samples_drivers_spi_flash.elf-s_642604-754f4c58cbd5ac817f6c77f5533ea3d9b83bb276
