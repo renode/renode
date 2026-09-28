@@ -1,3 +1,6 @@
+*** Settings ***
+Resource                            arm-cortex-m-common.robot
+
 *** Variables ***
 ${SRAM_BASE_S}                      ${0x20020000}
 ${SRAM_BASE_NS}                     ${0x30020000}
@@ -8,13 +11,19 @@ ${SRAM_CPU0_STACKTOP_NS}            ${0x30023F80}
 ${UART_BASE_S}                      ${0x40208000}
 ${UART_BASE_NS}                     ${0x50208000}
 ${SAU_FAULT_ADDRESS}                ${{$SRAM_CPU0_CODE_S + 0x100}}
+${SRAM_CPU0_SECURE_FAULT_CODE}      ${0x20021200}
+${SRAM_BASE_RESERVED}               ${0xF0000000}
+
 ${CPU}                              sysbus.cpu0
+${STACKED_PC_POSITION}              6
 
 ${REPL_STRING}                      SEPARATOR=\n
 ...                                 """
 ...                                 sram: Memory.ArrayMemory @ {
+...                                 ${SPACE*8}sysbus 0x0;
 ...                                 ${SPACE*8}sysbus ${SRAM_BASE_S};
-...                                 ${SPACE*8}sysbus ${SRAM_BASE_NS}
+...                                 ${SPACE*8}sysbus ${SRAM_BASE_NS};
+...                                 ${SPACE*8}sysbus ${SRAM_BASE_RESERVED};
 ...                                 ${SPACE*4}}
 ...                                 ${SPACE*4}size: 0x80000
 ...
@@ -128,17 +137,104 @@ ${TRUSTZONE_TEST_NS}                SEPARATOR=\n
 ...                                 2: str r3, [r5]
 ...                                 pop {r3, r7, pc}
 
+${SECURE_FAULT_HANDLER}             SEPARATOR=\n
+...                                 b .
+
 *** Keywords ***
 Create Machine
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString ${REPL_STRING}
+
+Setup SecureFault Handler
+    ${shcsr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_SHCSR} context=${CPU}
+    Execute Command                 sysbus WriteDoubleWord ${SCB_SHCSR} ${{ ${shcsr.strip()} | (1<<19) }} context=${CPU}  # Enable SecureFault exception through SHCSR.SECUREFAULTENA
+    Execute Command                 sysbus WriteDoubleWord 0x1C ${{ ${SRAM_CPU0_SECURE_FAULT_CODE} | 1 }}  # Set destination for SecureFault exception
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_SECURE_FAULT_CODE} """${SECURE_FAULT_HANDLER}"""
+
+Setup SAU/IDAU Test
+    Create Machine
+    Setup SecureFault Handler
+    Execute Command                 ${CPU} PC ${SRAM_CPU0_CODE_S}
+    Execute Command                 ${CPU} SetRegister "SP" ${SRAM_CPU0_STACKTOP_S}
+    Execute Command                 ${CPU} SetRegister "MSPNS" ${SRAM_CPU0_STACKTOP_NS}
+
+Assemble Jump to NS
+    [Arguments]                     ${address}
+    Execute Command                 ${CPU} AssembleBlock ${address} "blxns r0"
+
+Assemble Write To Memory
+    [Arguments]                     ${address}
+    Execute Command                 ${CPU} AssembleBlock ${address} "str r2, [r1]"
+
+Assemble SG and Jump to Self
+    [Arguments]                     ${address}
+    Execute Command                 ${CPU} AssembleBlock ${address} "sg; b ."
+
+Assemble Jump to Self
+    [Arguments]                     ${address}
+    Execute Command                 ${CPU} AssembleBlock ${address} "b ."
+
+Add SAU Region
+    [Arguments]                     ${id}
+    ...                             ${base}
+    ...                             ${limit}
+    ...                             ${enabled}=${True}
+    ...                             ${callable}=${False}
+
+    ${options}=                     Evaluate  (0x2 * int(${callable})) | (0x1 * int(${enabled}))
+
+    Execute Command                 ${CPU} SAURegionNumber ${id}
+    Execute Command                 ${CPU} SAURegionBaseAddress ${{ ${base} & ~0x1F }}
+    Execute Command                 ${CPU} SAURegionLimitAddress ${{ (${limit} & ~0x1F) | ${options} }}
+
+Add IDAU Region
+    [Arguments]                     ${id}
+    ...                             ${base}
+    ...                             ${limit}
+    ...                             ${enabled}=${True}
+    ...                             ${callable}=${False}
+
+    Execute Command                 ${CPU} SetIDAURegion ${id} ${{ ${base} & ~0x1F }} ${{ ${limit} | 0x1F }} ${enabled} ${callable}
 
 ${width} ${io} Should Be Equal
     [Arguments]                     ${expected}
     ...                             ${message}=${None}
 
     ${val}=                         Execute Command  sysbus Read${width} ${io} context=${CPU}
+    IF  not $message
+        ${message}=                     Set Variable  Value at ${io} doesn't match
+    END
     Should Be Equal As Integers     ${val}  ${expected}  msg=${message}
+
+Stack Element Should Be Equal
+    [Arguments]                     ${position}
+    ...                             ${expected}
+    ...                             ${sp}=SP
+    ${sp}=                          Execute Command  ${CPU} ${sp}
+    DoubleWord ${{ ${sp.strip()} + ${position} * 4 }} Should Be Equal  ${expected}  message=${position} stacked element doesn't match
+
+Assert Secure Fault
+    [Arguments]                     ${sfsr}=${None}
+    ...                             ${sfar}=${None}
+    ...                             ${fault_pc}=${SRAM_CPU0_CODE_NS}
+    ...                             ${pc}=${SRAM_CPU0_SECURE_FAULT_CODE}
+    ...                             ${sp}=MSPNS
+
+    PC Should be Equal              ${pc}
+    Stack Element Should Be Equal   ${STACKED_PC_POSITION}  ${fault_pc}  sp=${sp}
+
+    IF  $sfsr
+        DoubleWord ${SCB_SFSR} Should Be Equal  ${sfsr}
+    END
+
+    IF  $sfar
+        DoubleWord ${SCB_SFAR} Should Be Equal  ${sfar}
+        QuadWord ${sfar} Should Be Equal  0x0
+        QuadWord ${{ ${sfar} + 0x08 }} Should Be Equal  0x0
+        QuadWord ${{ ${sfar} + 0x10 }} Should Be Equal  0x0
+        QuadWord ${{ ${sfar} + 0x18 }} Should Be Equal  0x0
+        QuadWord ${{ ${sfar} + 0x20 }} Should Be Equal  0x0
+    END
 
 *** Test Cases ***
 Should Print Hello From Both States
@@ -249,3 +345,257 @@ Should Execute Preceding Instructions Before Second Halfword Fetch Fault
     Should Be Equal As Integers     ${executed}  6
     ${faulting_opcodes}=            Execute Command  ${CPU} GetOpcodeCounter "faulting_movw"
     Should Be Equal As Integers     ${faulting_opcodes}  0
+
+Non-secure Should Fault at Execution on Secure SAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+Non-secure Should Fault at Execution on Secure Non-secure Callable SAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}  callable=${True}
+    Add SAU Region                  1  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+Non-secure Should Enter Secure State on Secure Non-secure Callable SG on SAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble SG and Jump to Self    ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}  callable=${True}
+    Add SAU Region                  1  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    PC Should be Equal              ${SRAM_CPU0_CODE_NS+4}
+    ${in_secure_state}=             Execute Command  cpu0 SecureState
+    Should Be True                  ${in_secure_state}
+
+Non-secure Should Fault at Write to Secure SAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Execute Command                 ${CPU} SetRegister "R1" ${SRAM_CPU0_STACKTOP_S}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Write To Memory        ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             sfsr=${{ $SFSR_AUVIOL | $SFSR_SFARVALID }}  sfar=${SRAM_CPU0_STACKTOP_S}
+
+Non-secure Should Fault at Execution on Secure IDAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 2
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+Non-secure Should Fault at Execution on Secure Non-secure Callable IDAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 2
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}  callable=${True}
+    Add IDAU Region                 1  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+Non-secure Should Enter Secure State on Secure Non-secure Callable SG on IDAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble SG and Jump to Self    ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 2
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}  callable=${True}
+    Add IDAU Region                 1  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    PC Should be Equal              ${SRAM_CPU0_CODE_NS+4}
+    ${in_secure_state}=             Execute Command  cpu0 SecureState
+    Should Be True                  ${in_secure_state}
+
+Non-secure Should Fault at Write to Secure IDAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Execute Command                 ${CPU} SetRegister "R1" ${SRAM_CPU0_STACKTOP_S}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Write To Memory        ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 2
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             sfsr=${{ $SFSR_AUVIOL | $SFSR_SFARVALID }}  sfar=${SRAM_CPU0_STACKTOP_S}
+
+IDAU Secure Should Override SAU Non-secure Restrictions
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+    Add IDAU Region                 0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+IDAU Non-secure Should not Override SAU Secure Restrictions
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+    Add SAU Region                  0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+IDAU Secure Non-secure Callable Should Override SAU Non-secure Restrictions
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}  callable=${True}
+    Add IDAU Region                 1  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}
+
+Non-secure Should Fault at Write to Secure Non-secure Callable SAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Execute Command                 ${CPU} SetRegister "R1" ${SRAM_CPU0_STACKTOP_S}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Write To Memory        ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+    Add SAU Region                  1  ${{ ${SRAM_CPU0_STACKTOP_S} - 0x100}}  ${{ ${SRAM_CPU0_STACKTOP_S} + 0x100 }}  callable=${True}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             sfsr=${{ $SFSR_AUVIOL | $SFSR_SFARVALID }}  sfar=${SRAM_CPU0_STACKTOP_S}
+
+Non-secure Should Fault at Write to Secure Non-secure Callable IDAU Address
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Execute Command                 ${CPU} SetRegister "R1" ${SRAM_CPU0_STACKTOP_S}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Write To Memory        ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 2
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add IDAU Region                 0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+    Add IDAU Region                 1  ${{ ${SRAM_CPU0_STACKTOP_S} - 0x100}}  ${{ ${SRAM_CPU0_STACKTOP_S} + 0x100 }}  callable=${True}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             sfsr=${{ $SFSR_AUVIOL | $SFSR_SFARVALID }}  sfar=${SRAM_CPU0_STACKTOP_S}
+
+Non-secure Should Fault at Execution on Upper Address Range
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_BASE_RESERVED}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_BASE_RESERVED}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Execute Command                 ${CPU} IDAUEnabled true
+    Add SAU Region                  0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+    Add IDAU Region                 0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+    Add SAU Region                  1  ${SRAM_BASE_RESERVED}  ${{ ${SRAM_BASE_RESERVED} + 0x100 }}
+    Add IDAU Region                 1  ${SRAM_BASE_RESERVED}  ${{ ${SRAM_BASE_RESERVED} + 0x100 }}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}  fault_pc=${SRAM_BASE_RESERVED}
+
+Non-secure Should Fault at Execution on Overlapping SAU Regions
+    Setup SAU/IDAU Test
+
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_NS}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${{ ${SRAM_CPU0_STACKTOP_NS} - 0x100 }}  ${SRAM_CPU0_STACKTOP_NS}
+    Add SAU Region                  1  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}
+    Add SAU Region                  2  ${SRAM_CPU0_CODE_NS}  ${{ ${SRAM_CPU0_CODE_NS} + 0x100 }}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVEP}  fault_pc=${SRAM_CPU0_CODE_NS}
+
+Secure Should Fault at Execution on Non-secure SAU Address
+    Setup SAU/IDAU Test
+
+    Assemble Jump to Self           ${SRAM_CPU0_CODE_S}
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_S}  ${{ ${SRAM_CPU0_CODE_S} + 0x100 }}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             ${SFSR_INVTRAN}  fault_pc=${SRAM_CPU0_CODE_S}  sp=SP
