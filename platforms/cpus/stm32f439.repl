@@ -1,0 +1,14 @@
+using "./stm32f4.repl"
+
+sram:
+    size: 0x00030000
+
+ccmDataRam: Memory.MappedMemory @ sysbus 0x10000000
+    size: 0x00010000
+
+ltdc: Video.STM32LTDC @ sysbus 0x40016800
+    -> nvic@88
+
+sysbus:
+    init:
+        ApplySVD @https://raw.githubusercontent.com/modm-io/cmsis-svd-stm32/refs/heads/main/stm32f4/STM32F439.svd
