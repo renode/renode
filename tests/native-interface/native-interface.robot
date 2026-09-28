@@ -68,7 +68,17 @@ Setup And Start NativeInterface
     ...                             stdin=PIPE
     Set Suite Variable              ${NI_PROCESS}  ${process}
 
-    Wait Until Keyword Succeeds     30s  2s  NI.Connect  ${NI_ROBOT_PORT}
+    TRY
+        Wait Until Keyword Succeeds    30s  2s  NI.Connect  ${NI_ROBOT_PORT}
+    EXCEPT    Keyword * failed after retrying *    type=GLOB
+        # The process probably failed to start but we need to communicate with it anyway to have results.
+        Terminate Process           ${NI_PROCESS}  kill=true
+        ${rc}=                      Get Process Result  ${NI_PROCESS}  rc=true
+        ${stdout}=                  Get Process Result  ${NI_PROCESS}  stdout=true
+        ${stderr}=                  Get Process Result  ${NI_PROCESS}  stderr=true
+        Set Suite Variable          ${NI_PROCESS}  ${None}
+        Fail                        Process failed to start with code: ${rc}; stdout: '${stdout}'; stderr: '${stderr}'
+    END
 
 Stop NativeInterface And Teardown
     IF  $NI_PROCESS != $None
