@@ -294,15 +294,22 @@ Should Handle One Thread Connected
 
     Check And Run Gdb               riscv64-zephyr-elf-gdb
 
+    ${threads}=                     Command GDB  info threads
+    Should Contain                  ${threads}  u54_1
+    Should Not Contain              ${threads}  Thread 2
+
     Command GDB                     b *0x000000008000029c
     Async Command GDB               c
     Sleep                           5s
     Send Signal To GDB              2
-    ${x}=                           Read Async Command Output
-    # u54_1 should never hit this address. Only e51 can get there
-    ${ptrn}=                        SetVariable  0x[a-f0-9]+
-    ${addr}=                        Should Match Regexp  ${x}  ${ptrn}
-    Should Be True                  0x000000008000029c < ${addr}
+    ${output}=                      Read Async Command Output
+    Should Contain                  ${output}  Program received signal SIGINT
+    # Only e51 can reach this breakpoint.
+    Should Not Contain              ${output}  Breakpoint 1
+    ${addr}=                        Should Match Regexp  ${output}  0x[a-f0-9]+
+    ${u54_pc}=                      Execute Command  sysbus.u54_1 PC
+    Should Be Equal As Integers     ${addr}  ${u54_pc}
+    Should Be True                  ${addr} != 0x80000000
 
 Should Handle Subset Of Threads Connected
     [Tags]                          exclude_windows
