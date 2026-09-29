@@ -242,13 +242,17 @@ Should Handle CAN Messages Issued Through CAN Utils Tools
     Wait For Line On Uart           .*11 22 33 44 AA BB CC DD 11 22 33 44  treatAsRegex=true  testerId=${tester-0}
     # Send Control-C
     Send Key To Uart                0x03  testerId=${tester-0}
+    Wait For Prompt On Uart         ${PROMPT}  testerId=${tester-0}
 
     # Send random messages of different type
     Write Line To Uart              candump can0  testerId=${tester-0}
     Write Line To Uart              cangen can0 -m -v  testerId=${tester-1}
+    Wait For Line On Uart           can0\\s+[0-9A-F]{3,8}  treatAsRegex=true  testerId=${tester-0}
     # Send Control-C
     Send Key To Uart                0x03  testerId=${tester-0}
     Send Key To Uart                0x03  testerId=${tester-1}
+    Wait For Prompt On Uart         ${PROMPT}  testerId=${tester-0}
+    Wait For Prompt On Uart         ${PROMPT}  testerId=${tester-1}
 
     Write Line To Uart              canfdtest -v can0  testerId=${tester-0}
     Write Line To Uart              canfdtest -g -v can0  testerId=${tester-1}
