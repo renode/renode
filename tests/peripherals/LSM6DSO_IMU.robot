@@ -2,28 +2,38 @@
 ${PLATFORM}                         platforms/boards/nucleo_h753zi.repl
 ${ZEPHYR420_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_828372-b3da65fa9bf47012ff9f7b9206b2e73b392ca795
 ${ZEPHYR440_BIN}                    https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso.elf-s_887312-c6fc10ddb76499abe31724ac569660f9c4d5c7d6
+${ZEPHYR440_BIN_INTERRUPT}          https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_sensor_lsm6dso_interrupt_mode.elf-s_971836-20670dec78ae8f0f730d95058d1485b2b7ab67cd
 ${UART}                             sysbus.usart3
 ${SENSOR}                           sysbus.i2c1.lsm6dso
 ${CSV2RESD}                         ${RENODETOOLS}/csv2resd/csv2resd.py
 ${SAMPLES_CSV}                      ${CURDIR}/LSM6DSO-samples.csv
+${LSM6DSO_DESC}                     SEPARATOR=${\n}
+...                                 """
+...                                 lsm6dso: Sensors.LSM6DSO_IMU @ i2c1 0x6A
+...                                 ${SPACE*4}Interrupt1 -> gpioPortC@13
+...                                 """
 
 *** Keywords ***
 Create Machine
     [Arguments]                     ${bin}
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescription @${PLATFORM}
-    Execute Command                 machine LoadPlatformDescriptionFromString "lsm6dso: Sensors.LSM6DSO_IMU @ i2c1 0x6A"
+    Execute Command                 machine LoadPlatformDescriptionFromString ${LSM6DSO_DESC}
     Execute Command                 sysbus LoadELF @${bin}
     Execute Command                 cpu EnableZephyrMode
     Create Terminal Tester          ${UART}
 
-Feed Acceleration
+Set Acceleration
     [Arguments]                     ${x}  ${y}  ${z}
-    Execute Command                 ${SENSOR} FeedAccelerationSample ${x} ${y} ${z}
+    Execute Command                 ${SENSOR} DefaultAccelerationX ${x}
+    Execute Command                 ${SENSOR} DefaultAccelerationY ${y}
+    Execute Command                 ${SENSOR} DefaultAccelerationZ ${z}
 
-Feed Angular Rate
+Set Angular Rate
     [Arguments]                     ${x}  ${y}  ${z}
-    Execute Command                 ${SENSOR} FeedAngularRateSample ${x} ${y} ${z}
+    Execute Command                 ${SENSOR} DefaultAngularRateX ${x}
+    Execute Command                 ${SENSOR} DefaultAngularRateY ${y}
+    Execute Command                 ${SENSOR} DefaultAngularRateZ ${z}
 
 Wait For Acceleration Line
     [Arguments]                     ${x}=0  ${y}=0  ${z}=0
@@ -54,24 +64,24 @@ Create RESD File
     Evaluate                        subprocess.run([sys.executable, "${CSV2RESD}", ${args}])  sys,subprocess
     RETURN                          ${resd_path}
 
-*** Test Cases ***
-Should Read Acceleration and Gyroscope Via I2C
-    Create Machine                  ${ZEPHYR420_BIN}
-
+Test Basic I2C Reading
+    [Arguments]                     ${bin}
+    Create Machine                  ${bin}
     Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
 
     # Initial register values
     Wait For Acceleration Line      x=0  y=0  z=0
     Wait For Angular Rate Line      x=0  y=0  z=0
 
-    Feed Acceleration               1  -1  0
+    Set Acceleration                1  -1  0
     Wait For Acceleration Line      9.801001  -9.801001  0
 
-    Feed Angular Rate               100  200  300
+    Set Angular Rate                100  200  300
     Wait For Angular Rate Line      1.745852  3.490483  5.236335
 
-Should Read Samples From RESD
-    Create Machine                  ${ZEPHYR420_BIN}
+Test RESD Streaming
+    [Arguments]                     ${bin}
+    Create Machine                  ${bin}
     ${resd_path}=                   Create RESD File  ${SAMPLES_CSV}
 
     Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
@@ -95,9 +105,22 @@ Should Read Samples From RESD
     Wait For Acceleration Line      0  0  0
     Wait For Angular Rate Line      0  0  0
 
+*** Test Cases ***
+Should Read Acceleration and Gyroscope Via I2C (Polling)
+    Test Basic I2C Reading          ${ZEPHYR420_BIN}
+
+Should Read Samples From RESD (Polling)
+    Test RESD Streaming             ${ZEPHYR420_BIN}
+
+Should Read Acceleration and Gyroscope Via I2C (Interrupt)
+    Test Basic I2C Reading          ${ZEPHYR440_BIN_INTERRUPT}
+
+Should Read Samples From RESD (Interrupt)
+    Test RESD Streaming             ${ZEPHYR440_BIN_INTERRUPT}
+
 Should Work After Errata Driver Update
     Create Machine                  ${ZEPHYR440_BIN}
 
     Wait For Line On Uart           .* Booting Zephyr OS build .*  treatAsRegex=true
-    Feed Acceleration               1  -1  0
+    Set Acceleration                1  -1  0
     Wait For Acceleration Line      9.801001  -9.801001  0
