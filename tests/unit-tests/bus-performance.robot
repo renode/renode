@@ -10,6 +10,9 @@ ${program}=  SEPARATOR=${\n}
 ...
 ...  subs r0, r0, #4
 ...  ldr r2, [r0]
+...
+...  done:
+...  b done
 
 ${platform}=     SEPARATOR=${\n}
 ...  """
