@@ -35,5 +35,6 @@ Should Run Linux On Virtio
     Wait For Prompt On Uart   buildroot login:
     Write Line To Uart        root
     Wait For Prompt On Uart   \#
-    Write Line To Uart        cat /proc/mounts | grep "root"
+    Write Line To Uart        cat /proc/mounts | grep "root"  waitForEcho=false
     Wait For Line On Uart     /dev/root / ext2 rw,relatime 0 0
+    Wait For Prompt On Uart   \#${SPACE}
