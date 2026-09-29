@@ -194,7 +194,8 @@ Should Send Lots Of Data Via TCP Twice
     Write Line To Uart        for i in $(seq 5); do ${LOTS_OF_DATA} | \\         testerId=${tester-0}
     Write Line To Uart        nc -w 1 -c 192.168.0.2 7769 && break; sleep 1; done    testerId=${tester-0}
 
-    Wait For Line On Uart     success                                           testerId=${tester-1}  timeout=10
+    Wait For Line On Uart     ^success$                                         testerId=${tester-1}  timeout=10  treatAsRegex=true
+    Wait For Prompt On Uart   ${PROMPT}                                         testerId=${tester-1}
 
     Write Line To Uart        diff <(${LOTS_OF_DATA}) <(nc -l -p 7769) > \\     testerId=${tester-1}
     Write Line To Uart        /dev/null && echo success || echo failure         testerId=${tester-1}
@@ -202,4 +203,5 @@ Should Send Lots Of Data Via TCP Twice
     Write Line To Uart        for i in $(seq 5); do ${LOTS_OF_DATA} | \\         testerId=${tester-0}
     Write Line To Uart        nc -w 1 -c 192.168.0.2 7769 && break; sleep 1; done    testerId=${tester-0}
 
-    Wait For Line On Uart     success                                           testerId=${tester-1}  timeout=10
+    Wait For Line On Uart     ^success$                                         testerId=${tester-1}  timeout=10  treatAsRegex=true
+    Wait For Prompt On Uart   ${PROMPT}                                         testerId=${tester-1}
