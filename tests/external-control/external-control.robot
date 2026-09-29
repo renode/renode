@@ -455,7 +455,7 @@ Should Run Custom Command Sample
 
     ${proc}=                      Start Sample  custom_command  ${PORT}
 
-    Wait For Log Entry            Attaching CustomCommand callback  startEmulation=False
+    Wait For Log Entry            Attached CustomCommand callback   startEmulation=False
 
     ${response} =                 Execute Command      ${SERVER_NAME} SendCustomCommand "demo ping"
     Should Contain                ${response}  demo pong

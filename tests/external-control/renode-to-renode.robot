@@ -259,7 +259,7 @@ Should Run Custom Command Sample
     ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
     Execute Command In Process      ${remote}  client AttachCustomCommandCallbackToMonitor
 
-    Wait For Log Entry              Attaching CustomCommand callback  startEmulation=False
+    Wait For Log Entry              Attached CustomCommand callback   startEmulation=False
 
     ${response}=                    Execute Command  ${SERVER_NAME} SendCustomCommand 'echo "echo"'
     Should Contain                  ${response}  echo
@@ -276,7 +276,7 @@ Should Run Quit As Custom Command
     ${remote}=                      Create Machine And Connect Remote Renode  ${EXTERNALLY_CONTROLED_RESC}
     Execute Command In Process      ${remote}  client AttachCustomCommandCallbackToMonitor
 
-    Wait For Log Entry              Attaching CustomCommand callback  startEmulation=False
+    Wait For Log Entry              Attached CustomCommand callback   startEmulation=False
 
     Execute Command                 ${SERVER_NAME} SendCustomCommand 'quit'
 

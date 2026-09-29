@@ -130,7 +130,6 @@ public class CustomCommand : BaseCommand
         {
         case CustomCommandCommand.RegisterCallbacks:
             var ed = (int) BitConverter.ToInt32(data[1..]);
-            parent.DebugLog("Attaching CustomCommand callback");
             lock(commandLock)
             {
                 if(CustomCommandHandlerId.HasValue)
@@ -139,6 +138,7 @@ public class CustomCommand : BaseCommand
                 }
                 CustomCommandHandlerId = ed;
             }
+            parent.DebugLog("Attached CustomCommand callback");
             break;
         default:
             return MessagePayload.Error(Identifier, "Unexpected command format");
