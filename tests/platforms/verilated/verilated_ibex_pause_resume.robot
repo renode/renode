@@ -26,7 +26,7 @@ Get Virtual Time
     ${match}=  Get Regexp Matches   ${out}      Elapsed Virtual Time: 00:00:([0-9]+).([0-9]+)     1  2
     ${mc}=  Convert To Integer      ${match[0][1]}
     ${se}=  Convert To Integer      ${match[0][0]}
-    ${t}=   Evaluate                ${mc} + ${se} * 1000000
+    ${t}=   Evaluate                ${mc} + ${se} * 1000000000
     RETURN  ${t}
 
 Sleep And Measure
@@ -76,7 +76,7 @@ Should Enter Single Step Non Blocking
     ${t1}=  Get Virtual Time
     Test If Uart Is Idle        4
     ${t2}=  Get Virtual Time
-    Should Be True              ${t2} - ${t1} >= 4000000
+    Should Be True              ${t2} - ${t1} >= 4000000000
     Execute Command             cpu ExecutionMode Continuous
     Wait For Line On Uart       CPU:\\s+Ibex               treatAsRegex=true
 
