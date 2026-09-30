@@ -36,7 +36,7 @@ def parse_file(yaml_path: os.PathLike) -> dict[str, KnownUnstableSuite]:
             suite_path = Path(entry).as_posix()
             suites[suite_path] = KnownUnstableSuite()
 
-        # Suite paths may contain a sub-list defining which specific test cases are unstable.
+        # Suite configurations may define which specific test cases are unstable.
         elif isinstance(entry, dict):
             for raw_suite_path, configuration in entry.items():
                 # Ensure consistent path separators, even on Windows
@@ -46,7 +46,7 @@ def parse_file(yaml_path: os.PathLike) -> dict[str, KnownUnstableSuite]:
         else:
             raise ValueError(
                 f"Malformed YAML structure '{entry}' in '{yaml_path}'. "
-                "Only standalone suite paths and suite paths with sub-lists are accepted."
+                "Expected a suite path or a mapping to a configuration."
             )
 
     return suites
@@ -55,20 +55,30 @@ def parse_file(yaml_path: os.PathLike) -> dict[str, KnownUnstableSuite]:
 def _parse_suite(
     configuration: Any, suite_path: str, yaml_path: os.PathLike
 ) -> KnownUnstableSuite:
-    if configuration is None:
+    if isinstance(configuration, dict) and configuration.keys() <= {"reason"}:
+        return KnownUnstableSuite()
+
+    if not isinstance(configuration, list):
         raise ValueError(
-            f"Malformed YAML structure for entry '{suite_path}' in '{yaml_path}'. "
-            "Trailing colons must be followed by an indented list of test cases."
+            f"Malformed suite configuration for '{suite_path}' in '{yaml_path}'. "
+            "Expected a mapping with an optional 'reason' field or a list of test cases."
         )
 
+    # A test list limits unstable status to the specified test cases.
     if not configuration:
         print(
             f"WARNING: Empty test list for '{suite_path}' in '{yaml_path}'. "
             "This marks none of the suite's tests as unstable. "
-            "If you intended to mark the entire suite as unstable, use a standalone suite path."
+            "If you intended to mark the entire suite as unstable, use a standalone suite path or a reason mapping."
         )
 
-    unstable_tests = frozenset(str(test) for test in configuration)
+    # Test cases can be names or mappings with optional metadata.
+    unstable_tests = frozenset(
+        str(name)
+        for test in configuration
+        for name in (test if isinstance(test, dict) else [test])
+    )
+
     return KnownUnstableSuite(tests=unstable_tests)
 
 

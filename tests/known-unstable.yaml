@@ -6,3 +6,14 @@
 # You can also specify which test cases are unstable.
 - tests/example.robot:
     - Should Print Help
+
+# Optional reasons do not affect which tests are unstable.
+- tests/whole-suite.robot:
+    reason: "Intermittent networking failures"
+
+- tests/selected-tests.robot:
+    # A suite-level reason is not allowed when only some test cases are unstable.
+    - Should Boot:
+        reason: "Occasional UART timeout"
+    - Should Respond To Ping:
+        reason: "Intermittent packet loss"
