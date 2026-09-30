@@ -34,7 +34,7 @@ ${PLATFORM}                         SEPARATOR=\n
 ...                                 ${SPACE*4}-> cpu@0
 ...
 ...                                 cpu: CPU.CortexM @ sysbus
-...                                 ${SPACE*4}cpuType: "cortex-m33"
+...                                 ${SPACE*4}cpuType: "cortex-m55"
 ...                                 ${SPACE*4}nvic: nvic
 ...
 ...                                 faultingPeripheral: Mocks.BusFaultingPeripheral @ sysbus ${FAULTING_PERIPHERAL_ADDRESS}
@@ -55,7 +55,7 @@ ${TRUSTZONE_PLATFORM}               SEPARATOR=\n
 ...                                 ${SPACE*4}-> cpu@0
 ...
 ...                                 cpu: CPU.CortexM @ sysbus
-...                                 ${SPACE*4}cpuType: "cortex-m33"
+...                                 ${SPACE*4}cpuType: "cortex-m55"
 ...                                 ${SPACE*4}nvic: nvic
 ...                                 ${SPACE*4}enableTrustZone: true
 ...
@@ -255,7 +255,10 @@ ${width} ${io} Should Be Equal
     Should Be Equal As Integers     ${val}  ${expected}  msg=${message}
 
 Fault Should Be Precise
-    [Arguments]                     ${handler_address}  ${fault_address}  ${expected_hfsr}=0  ${target_sp}=${0xFE0}
+    [Arguments]                     ${handler_address}
+    ...                             ${fault_address}
+    ...                             ${expected_hfsr}=0
+    ...                             ${target_sp}=${0xFE0}
     PC Should Be Equal              ${handler_address}
 
     # Neither the faulting load nor the instruction following the failed
@@ -289,6 +292,20 @@ Run Precise BusFault Test Without Single Step
 
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_PRECISERR_BFARVALID}
     DoubleWord ${SCB_BFAR} Should Be Equal  ${FAULTING_PERIPHERAL_ADDRESS}
+
+Test Precise BusFault on FPU Instruction
+    [Arguments]                     ${instruction}
+    ...                             ${fault_address}
+
+    Reset Emulation
+    Create Machine
+    Enable BusFault
+    Enable FPU
+    Execute Command                 faultingPeripheral FaultOffset ${{ ${fault_address} - ${FAULTING_PERIPHERAL_ADDRESS} }}
+
+    Prepare Faulting Instruction    "${instruction}; b ."  ${fault_address}
+    Execute Faulting Instruction
+    Fault Should Be Precise         ${BUSFAULT_HANDLER_ADDRESS}  ${fault_address}  target_sp=0xF98
 
 *** Test Cases ***
 Should Enter Lockup On Invalid Reset State
@@ -1288,3 +1305,73 @@ Should Raise BusFault on BLXNS Instruction
     Register Should Be Equal        SP  0xfffe8
     # Bus Fault occured during stacking, BFAR is not updated
     DoubleWord ${SCB_CFSR} Should Be Equal  ${{ $CFSR_STKERR }}  SCB_CFSR
+
+Should Raise BusFault on VLD/VST Instructions
+    # Note: non 32-bit aligned access is currently unsupported for these instructions
+    ${address}=                     Set Variable  ${FAULTING_PERIPHERAL_ADDRESS}
+    FOR  ${instruction_template}  IN
+    ...  VST40.{0} {{Q0, Q1, Q2, Q3}}, [r0]
+    ...  VLD40.{0} {{Q0, Q1, Q2, Q3}}, [r0]
+    ...  VST20.{0} {{Q0, Q1}}, [r0]
+    ...  VLD20.{0} {{Q0, Q1}}, [r0]
+        FOR  ${element}  IN  0  1  2
+            ${size}=                        Evaluate  (8 << ${element})
+            ${instruction}=                 Evaluate  "${instruction_template}".format(${size})
+
+            Execute Command                 log "Testing ${instruction} with R0=${address}"
+            TRY
+                Test Precise BusFault on FPU Instruction  ${instruction}  ${address}
+            EXCEPT  AS  ${message}
+                Fail                            ${instruction}: ${message}
+            END
+        END
+    END
+
+Should Raise BusFault on VSTR/VLDR Vector Instructions
+    # The following instructions can access memory on different alignment
+    # The following test is supposed to test if the SecureFault is risen properly even when memory fetches aren't 32-bit aligned
+    ${base_address}=                Set Variable  ${FAULTING_PERIPHERAL_ADDRESS}
+    FOR  ${instruction_template}  IN
+    ...  VSTR{0}.u32 Q0, [r0]
+    ...  VLDR{0}.u32 Q0, [r0]
+    ...  VSTR{0}.u32 Q0, [r0, Q5]  # Q5 should be equal 0 so access will happen exactly at address contained in r0
+    ...  VLDR{0}.u32 Q0, [r0, Q5]
+        FOR  ${element}  IN  0  1  2
+            ${alignment}=                   Set Variable  0
+            WHILE  ${alignment} < 32
+                ${size}=                        Evaluate  (8 << ${element})
+                ${letter}=                      Evaluate  ["B", "H", "W"][${element}]
+
+                ${instruction}=                 Evaluate  "${instruction_template}".format("${letter}")
+                ${address}=                     Evaluate  ${base_address} + ${alignment} // 8
+
+                Execute Command                 log "Testing ${instruction} with R0=${address}"
+                TRY
+                    Test Precise BusFault on FPU Instruction  ${instruction}  ${address}
+                EXCEPT  AS  ${message}
+                    Fail                            ${instruction} with alignment=${alignment}: ${message}
+                END
+
+                ${alignment}=                   Evaluate  ${alignment} + ${size}
+            END
+        END
+    END
+
+Should Raise BusFault on VSTR/VLDR Instructions
+    ${base_address}=                Set Variable  ${FAULTING_PERIPHERAL_ADDRESS}
+    FOR  ${instruction}  ${address}  IN
+    ...  VSTRD.s64 Q0, [r0, Q5]  ${base_address}
+    ...  VLDRD.s64 Q0, [r0, Q5]  ${base_address}
+    ...  VSTR s0, [r0]  ${base_address}
+    ...  VSTR d0, [r0]  ${base_address}
+    ...  VLDR s0, [r0]  ${base_address}
+    ...  VLDR d0, [r0]  ${base_address}
+    ...  VSTR FPSCR, [r0]  ${base_address}
+    ...  VLDR FPSCR, [r0]  ${base_address}
+        Execute Command                 log "Testing ${instruction} with R0=${address}"
+        TRY
+            Test Precise BusFault on FPU Instruction  ${instruction}  ${address}
+        EXCEPT  AS  ${message}
+            Fail                            ${instruction} with address=${{ hex(${address}) }}: ${message}
+        END
+    END

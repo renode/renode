@@ -11,24 +11,24 @@ using Antmicro.Renode.Peripherals.Bus;
 
 namespace Antmicro.Renode.Peripherals.Mocks
 {
-    [AllowedTranslations(AllowedTranslation.ByteToDoubleWord | AllowedTranslation.WordToDoubleWord | AllowedTranslation.QuadWordToDoubleWord)]
-    public class BusFaultingPeripheral : IDoubleWordPeripheral, IKnownSize
+    [AllowedTranslations(AllowedTranslation.WordToByte | AllowedTranslation.DoubleWordToByte | AllowedTranslation.QuadWordToByte)]
+    public class BusFaultingPeripheral : IBytePeripheral, IKnownSize
     {
         public BusFaultingPeripheral()
         {
-            data = new uint[(int)(Size / sizeof(uint))];
+            data = new byte[Size];
         }
 
-        public uint ReadDoubleWord(long offset)
+        public byte ReadByte(long offset)
         {
             ThrowIfConfigured(offset, isWrite: false);
-            return data[(int)(offset / sizeof(uint))];
+            return data[offset];
         }
 
-        public void WriteDoubleWord(long offset, uint value)
+        public void WriteByte(long offset, byte value)
         {
             ThrowIfConfigured(offset, isWrite: true);
-            data[(int)(offset / sizeof(uint))] = value;
+            data[offset] = value;
         }
 
         public void Reset()
@@ -49,7 +49,7 @@ namespace Antmicro.Renode.Peripherals.Mocks
             }
         }
 
-        private readonly uint[] data;
+        private readonly byte[] data;
 
         public bool FaultOnReads { get; set; } = true;
         public bool FaultOnWrites { get; set; } = true;
