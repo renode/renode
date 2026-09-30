@@ -9,10 +9,6 @@ emulation CreateTap "tap0" "tap"
 emulation CreateSwitch "switch"
 connector Connect host.tap switch
 connector Connect ethernet switch
-# The sample has an IPv4 address of 192.0.2.55
-# After assigning an IP to the host end of the tap, ex.:
-#     ip addr add 192.0.2.1/24 dev tap0
-# you can connect to the running demo through telnet (to get access to a console) or browse the web interface at http://192.0.2.55
 
 showAnalyzer usart3
 
