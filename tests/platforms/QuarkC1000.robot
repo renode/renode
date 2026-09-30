@@ -122,10 +122,10 @@ Should Talk Over Network Using Ethernet
         ${r}=  Evaluate  random.randint(1, 50)  modules=random
         RepeatKeyword  ${r}
         ...    Wait For Next Line On Uart  testerId=${mach0_tester}
-    
+
         ${p}=  Wait For Line On Uart       build_reply_pkt: UDP IPv4 received (\\d+)    testerId=${mach0_tester}    treatAsRegex=true
         ${n}=  Wait For Next Line On Uart  testerId=${mach0_tester}
-    
+
         Should Contain  ${n.Line}  pkt_sent: Sent ${p.Groups[0]} bytes
     END
 
@@ -133,9 +133,9 @@ Should Talk Over Network Using Ethernet
         ${r}=  Evaluate  random.randint(1, 50)  modules=random
         RepeatKeyword  ${r}
         ...    Wait For Next Line On Uart  testerId=${mach1_tester}
-    
+
         ${p}=  Wait For Line On Uart       udp_sent: IPv4: sent (\\d+)  testerId=${mach1_tester}    treatAsRegex=true
         ${n}=  Wait For Next Line On Uart  testerId=${mach1_tester}
-    
+
         Should Contain  ${n.Line}  Compared ${p.Groups[0]} bytes, all ok
     END
