@@ -23,8 +23,8 @@ class KnownUnstableSuite:
     tests: frozenset[str] = field(default_factory=frozenset)
 
 
-def parse_file(path: os.PathLike) -> dict[str, KnownUnstableSuite]:
-    with open(path, "r") as f:
+def parse_file(yaml_path: os.PathLike) -> dict[str, KnownUnstableSuite]:
+    with open(yaml_path, "r") as f:
         data = yaml.safe_load(f)
 
     suites: dict[str, KnownUnstableSuite] = {}
@@ -38,26 +38,31 @@ def parse_file(path: os.PathLike) -> dict[str, KnownUnstableSuite]:
 
         # Suite paths may contain a sub-list defining which specific test cases are unstable.
         elif isinstance(entry, dict):
-            for raw_path, test_list in entry.items():
-                if test_list is None:
-                    raise ValueError(
-                        f"Malformed YAML structure for entry '{raw_path}' in '{path}'. "
-                        "Trailing colons must be followed by an indented list of test cases."
-                    )
-
+            for raw_suite_path, configuration in entry.items():
                 # Ensure consistent path separators, even on Windows
-                suite_path = Path(raw_path).as_posix()
-
-                unstable_tests = frozenset(str(test) for test in test_list)
-                suites[suite_path] = KnownUnstableSuite(tests=unstable_tests)
+                suite_path = Path(raw_suite_path).as_posix()
+                suites[suite_path] = _parse_suite(configuration, raw_suite_path, yaml_path)
 
         else:
             raise ValueError(
-                f"Malformed YAML structure '{entry}' in '{path}. "
+                f"Malformed YAML structure '{entry}' in '{yaml_path}'. "
                 "Only standalone suite paths and suite paths with sub-lists are accepted."
             )
 
     return suites
+
+
+def _parse_suite(
+    configuration: Any, suite_path: str, yaml_path: os.PathLike
+) -> KnownUnstableSuite:
+    if configuration is None:
+        raise ValueError(
+            f"Malformed YAML structure for entry '{suite_path}' in '{yaml_path}'. "
+            "Trailing colons must be followed by an indented list of test cases."
+        )
+
+    unstable_tests = frozenset(str(test) for test in configuration)
+    return KnownUnstableSuite(tests=unstable_tests)
 
 
 def annotate_tests(
