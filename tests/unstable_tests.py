@@ -1,8 +1,8 @@
 import argparse
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Protocol, TypeVar
+from typing import Any, Iterable, Iterator, Optional, Protocol, TypeVar
 
 import yaml
 
@@ -20,7 +20,7 @@ def add_args(parser: argparse.ArgumentParser):
 
 @dataclass(frozen=True)
 class KnownUnstableSuite:
-    tests: frozenset[str] = field(default_factory=frozenset)
+    tests: Optional[frozenset[str]] = None
 
 
 def parse_file(yaml_path: os.PathLike) -> dict[str, KnownUnstableSuite]:
@@ -61,6 +61,13 @@ def _parse_suite(
             "Trailing colons must be followed by an indented list of test cases."
         )
 
+    if not configuration:
+        print(
+            f"WARNING: Empty test list for '{suite_path}' in '{yaml_path}'. "
+            "This marks none of the suite's tests as unstable. "
+            "If you intended to mark the entire suite as unstable, use a standalone suite path."
+        )
+
     unstable_tests = frozenset(str(test) for test in configuration)
     return KnownUnstableSuite(tests=unstable_tests)
 
@@ -86,8 +93,8 @@ T = TypeVar("T", bound=HasName)
 def filter_unstable(
     known_unstable: KnownUnstableSuite, tests: Iterable[T]
 ) -> Iterator[T]:
-    if not known_unstable.tests:
-        # If no specific test case is defined as unstable, that means all of them are.
+    if known_unstable.tests is None:
+        # Without a test list, all test cases in the suite are unstable.
         yield from tests
     else:
         yield from (test for test in tests if test.name in known_unstable.tests)
