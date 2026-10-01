@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(librenode_example C)
+project(librenode_example C CXX)
 
 set(ni_root ${CMAKE_CURRENT_LIST_DIR}/..)
 
@@ -8,6 +8,8 @@ link_libraries(renode::renode pthread)
 
 add_executable(librenode_example monitor.c)
 add_executable(uart_example uart.c)
+add_executable(bus_handlers_host bus_handlers_host.cpp)
+target_compile_features(bus_handlers_host PRIVATE cxx_std_17)
 
 set_target_properties(librenode_example PROPERTIES
     BUILD_RPATH_USE_ORIGIN TRUE
