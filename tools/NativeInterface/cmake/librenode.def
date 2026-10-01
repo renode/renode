@@ -5,6 +5,7 @@ EXPORTS
 	renode_add_logging_handler
 	renode_remove_logging_handler
 	renode_add_uart_analyzer
+	renode_bus_set_handlers
 	renode_systemc_send_backward_request
 	renode_systemc_setup_connection
 	renode_systemc_init_native_connection
