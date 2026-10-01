@@ -17,7 +17,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RestoreAdditionalProjectSources>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', 'third-party', 'DNNE', 'src', 'dnne-pkg', 'bin', '$(Configuration)'))</RestoreAdditionalProjectSources>
-    <DnnePackageVersion>2.1.2-renode.1</DnnePackageVersion>
+    <DnnePackageVersion>2.1.2-renode.2</DnnePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true'">
