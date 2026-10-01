@@ -4,25 +4,16 @@
 # to renode-test (`--show-log` etc) will have no effect as they will only apply to an unused Renode
 # instance, not the one started here.
 #
-# Some influential variables:
-#   USER_RENODE_DIR - path to an extracted Renode package (must contain librenode.so in the bin/
-#                     subdirectory for packages or in the package root for portable packages)
-#                     Optional when running from a Renode source tree built with ./build.sh --shared
-#                     For packages: tar -C <dir> --strip-components=1 -xf renode-*.linux.tar.gz
-#                     Then pass: renode-test --variable USER_RENODE_DIR:<dir> native-interface.robot
-#   CONFIGURATION   - Renode build configuration. Normally overridden by renode-test so you don't have
-#                     to worry about it, but specified here to please the LSP.
+# See native-interface.resource for the variables that select which librenode is used.
 
 *** Settings ***
 Suite Setup                         Setup And Start NativeInterface
 Suite Teardown                      Stop NativeInterface And Teardown
 Library                             ${CURDIR}/ni_library.py  AS  NI
+Resource                            ${CURDIR}/native-interface.resource
 
 *** Variables ***
 ${RENODE_DIR}                       ${CURDIR}/../..
-${CONFIGURATION}                    Release
-${USER_RENODE_DIR}                  ${EMPTY}
-${RENODE_CFG}                       ${CONFIGURATION}
 ${NI_ROBOT_PORT}                    3343
 ${NI_PROCESS}                       ${None}
 
@@ -30,37 +21,16 @@ ${NI_PROCESS}                       ${None}
 Setup And Start NativeInterface
     Setup
 
-    IF  $USER_RENODE_DIR == ''
-        # Fall back to environment variable
-        ${USER_RENODE_DIR}=             Set Variable  %{USER_RENODE_DIR=}
-    END
-
-    IF  $USER_RENODE_DIR != ''
-        ${RENODE_DIR}=                  Set Variable  ${USER_RENODE_DIR}
+    ${user_renode_dir}=             Get User Renode Dir
+    IF  $user_renode_dir != ''
+        ${RENODE_DIR}=                  Set Variable  ${user_renode_dir}
     END
 
     ${EXAMPLE_SRC}=                 Set Variable  ${RENODE_DIR}/tools/NativeInterface/example
     ${BUILD_DIR}=                   Set Variable  ${RESULTS_DIRECTORY}/native-interface-example-build
     ${BINARY}=                      Set Variable  ${BUILD_DIR}/librenode_example
 
-    IF  $USER_RENODE_DIR != ''
-        ${r}=                           Run Process  cmake
-        ...                             -DUSER_RENODE_DIR\=${USER_RENODE_DIR}
-        ...                             -DRENODE_CFG\=${RENODE_CFG}
-        ...                             -B  ${BUILD_DIR}
-        ...                             -G  Unix Makefiles
-        ...                             -S  ${EXAMPLE_SRC}
-    ELSE
-        ${r}=                           Run Process  cmake
-        ...                             -DRENODE_CFG\=${RENODE_CFG}
-        ...                             -B  ${BUILD_DIR}
-        ...                             -G  Unix Makefiles
-        ...                             -S  ${EXAMPLE_SRC}
-    END
-    Should Be Equal As Integers     ${r.rc}  0  msg=cmake configure failed: ${r.stderr}
-
-    ${r}=                           Run Process  cmake  --build  ${BUILD_DIR}
-    Should Be Equal As Integers     ${r.rc}  0  msg=cmake build failed: ${r.stderr}
+    Build NativeInterface Project   ${EXAMPLE_SRC}  ${BUILD_DIR}
 
     # stdin=PIPE: fgets in main.c blocks; EOF would trigger quit and kill the process
     ${process}=                     Start Process  ${BINARY}
