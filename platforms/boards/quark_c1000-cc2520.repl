@@ -8,7 +8,7 @@ pwm:
 button: Miscellaneous.Button @ gpio 0x00000000
     -> gpio@7
 
-radio: Wireless.CC2520 @ spi1
+radio: Wireless.CC2520 @ spi1 1
     1 -> gpio@4
     2 -> gpio@5
     3 -> gpio@6
@@ -18,5 +18,5 @@ gpio:
     0 -> radio@0
     1 -> radio@1
 
-lm74: Sensors.TI_LM74 @ spi0
+lm74: Sensors.TI_LM74 @ spi0 1
 

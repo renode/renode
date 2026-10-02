@@ -13,11 +13,17 @@ lapic: IRQControllers.LAPIC @ sysbus 0xFEE00000
 
 ioapic: IRQControllers.IOAPIC @ sysbus 0xFEC00000
 
-spi0: SPI.Quark_SPI @ sysbus 0xB0001000
+spi0: SPI.DesignWare_SPI @ sysbus 0xB0001000
     IRQ -> ioapic@2
+    transmitDepth: 16
+    receiveDepth: 16
+    maxTransferSize: 32
 
-spi1: SPI.Quark_SPI @ sysbus 0xB0001400
+spi1: SPI.DesignWare_SPI @ sysbus 0xB0001400
     IRQ -> ioapic@3
+    transmitDepth: 16
+    receiveDepth: 16
+    maxTransferSize: 32
 
 flash2: Memory.MappedMemory @ sysbus 0x40030000
     size: 0x2F000

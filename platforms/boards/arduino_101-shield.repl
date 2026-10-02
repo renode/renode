@@ -8,8 +8,8 @@ pwm:
 button: Miscellaneous.Button @ gpio 0x00000000
     -> gpio@7
 
-ethernet: Network.ENC28J60 @ spi1
+ethernet: Network.ENC28J60 @ spi1 1
     -> gpio@19
 
-lm74: Sensors.TI_LM74 @ spi0
+lm74: Sensors.TI_LM74 @ spi0 1
 
