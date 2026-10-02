@@ -382,7 +382,7 @@ Should Run CAN Sample
     Build Sample                   can
 
     ${proc}=                       Start Sample  can  ${PORT}  machine  external_client_bus
-    Wait For Log Entry             Attaching ReceivedMessage callback    startEmulation=false
+    Wait For Log Entry             Registered CAN callback    startEmulation=false
     
     Send ISOTP Message             ${sender_id}  ${receiver_id}  ${msg_hex}
     ${received_msg}=               Wait For Frame With Id         0x55

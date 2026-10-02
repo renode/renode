@@ -49,8 +49,8 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
 
         case CANBusCommands.RegisterCallbacks:
             var ed = BitConverter.ToInt32(data[1..]);
-            Logger.DebugLog(this, "Attaching ReceivedMessage callback to instance '{0}'", instance.GetName());
             instance.ReceivedMessage += (frame) => ReceivedFrame(frame, ed);
+            parent.DebugLog("Registered CAN callback for '{0}'", instance.GetName());
             break;
 
         default:
