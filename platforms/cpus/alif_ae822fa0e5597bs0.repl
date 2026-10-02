@@ -1,0 +1,251 @@
+// This platform description models the RTSS-HE core and peripherals.
+
+itcm: Memory.MappedMemory @ sysbus 0x0
+    size: 0x40000
+
+sram0: Memory.MappedMemory @ sysbus 0x2000000
+    size: 0x400000
+
+sram1: Memory.MappedMemory @ sysbus 0x2400000
+    size: 0x400000
+
+dtcm: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x40000
+
+mram: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x580000
+
+nvic0: IRQControllers.NVIC @ {
+    sysbus new Bus.BusPointRegistration { address: 0xe000e000; cpu: cpu0 }
+}
+    -> cpu0@0
+    systickFrequency: 160000000
+
+cpu0: CPU.CortexM @ sysbus
+    cpuType: "cortex-m55"
+    nvic: nvic0
+
+gpio0: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49000000
+    0->nvic0@179
+    1->nvic0@180
+    2->nvic0@181
+    3->nvic0@182
+    4->nvic0@183
+    5->nvic0@184
+    6->nvic0@185
+    7->nvic0@186
+
+gpio1: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49001000
+    0->nvic0@187
+    1->nvic0@188
+    2->nvic0@189
+    3->nvic0@190
+    4->nvic0@191
+    5->nvic0@192
+    6->nvic0@193
+    7->nvic0@194
+
+gpio2: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49002000
+    0->nvic0@195
+    1->nvic0@196
+    2->nvic0@197
+    3->nvic0@198
+    4->nvic0@199
+    5->nvic0@200
+    6->nvic0@201
+    7->nvic0@202
+
+gpio3: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49003000
+    0->nvic0@203
+    1->nvic0@204
+    2->nvic0@205
+    3->nvic0@206
+    4->nvic0@207
+    5->nvic0@208
+    6->nvic0@209
+    7->nvic0@210
+
+gpio4: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49004000
+    0->nvic0@211
+    1->nvic0@212
+    2->nvic0@213
+    3->nvic0@214
+    4->nvic0@215
+    5->nvic0@216
+    6->nvic0@217
+    7->nvic0@218
+
+gpio5: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49005000
+    0->nvic0@219
+    1->nvic0@220
+    2->nvic0@221
+    3->nvic0@222
+    4->nvic0@223
+    5->nvic0@224
+    6->nvic0@225
+    7->nvic0@226
+
+gpio6: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49006000
+    0->nvic0@227
+    1->nvic0@228
+    2->nvic0@229
+    3->nvic0@230
+    4->nvic0@231
+    5->nvic0@232
+    6->nvic0@233
+    7->nvic0@234
+
+gpio7: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49007000
+    0->nvic0@235
+    1->nvic0@236
+    2->nvic0@237
+    3->nvic0@238
+    4->nvic0@239
+    5->nvic0@240
+    6->nvic0@241
+    7->nvic0@242
+
+gpio8: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49008000
+    0->nvic0@243
+    1->nvic0@244
+    2->nvic0@245
+    3->nvic0@246
+    4->nvic0@247
+    5->nvic0@248
+    6->nvic0@249
+    7->nvic0@250
+
+gpio9: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x49009000
+    0->nvic0@251
+    1->nvic0@252
+    2->nvic0@253
+    3->nvic0@254
+    4->nvic0@255
+    5->nvic0@256
+    6->nvic0@257
+    7->nvic0@258
+
+gpio10: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x4900a000
+    0->nvic0@259
+    1->nvic0@260
+    2->nvic0@261
+    3->nvic0@262
+    4->nvic0@263
+    5->nvic0@264
+    6->nvic0@265
+    7->nvic0@266
+
+gpio11: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x4900b000
+    0->nvic0@267
+    1->nvic0@268
+    2->nvic0@269
+    3->nvic0@270
+    4->nvic0@271
+    5->nvic0@272
+    6->nvic0@273
+    7->nvic0@274
+
+gpio12: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x4900c000
+    0->nvic0@275
+    1->nvic0@276
+    2->nvic0@277
+    3->nvic0@278
+    4->nvic0@279
+    5->nvic0@280
+    6->nvic0@281
+    7->nvic0@282
+
+gpio13: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x4900d000
+    0->nvic0@283
+    1->nvic0@284
+    2->nvic0@285
+    3->nvic0@286
+    4->nvic0@287
+    5->nvic0@288
+    6->nvic0@289
+    7->nvic0@290
+
+gpio14: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x4900e000
+    0->nvic0@291
+    1->nvic0@292
+    2->nvic0@293
+    3->nvic0@294
+    4->nvic0@295
+    5->nvic0@296
+    6->nvic0@297
+    7->nvic0@298
+
+lpgpio: GPIOPort.DesignWare_APB_GPIO @ sysbus 0x42002000
+    0->nvic0@171
+    1->nvic0@172
+    2->nvic0@173
+    3->nvic0@174
+    4->nvic0@175
+    5->nvic0@176
+    6->nvic0@177
+    7->nvic0@178
+
+i2c0: I2C.DesignWare_APB_I2C @ sysbus 0x49010000
+    -> nvic0@132
+
+i2c1: I2C.DesignWare_APB_I2C @ sysbus 0x49011000
+    -> nvic0@133
+
+i2c2: I2C.DesignWare_APB_I2C @ sysbus 0x49012000
+    -> nvic0@134
+
+i2c3: I2C.DesignWare_APB_I2C @ sysbus 0x49013000
+    -> nvic0@135
+
+uart0: UART.NS16550 @ sysbus 0x49018000
+    wideRegisters: true
+    -> nvic0@124
+
+uart1: UART.NS16550 @ sysbus 0x49019000
+    wideRegisters: true
+    -> nvic0@125
+
+uart2: UART.NS16550 @ sysbus 0x4901a000
+    wideRegisters: true
+    -> nvic0@126
+
+uart3: UART.NS16550 @ sysbus 0x4901b000
+    wideRegisters: true
+    -> nvic0@127
+
+uart4: UART.NS16550 @ sysbus 0x4901c000
+    wideRegisters: true
+    -> nvic0@128
+
+uart5: UART.NS16550 @ sysbus 0x4901d000
+    wideRegisters: true
+    -> nvic0@129
+
+uart6: UART.NS16550 @ sysbus 0x4901e000
+    wideRegisters: true
+    -> nvic0@130
+
+uart7: UART.NS16550 @ sysbus 0x4901f000
+    wideRegisters: true
+    -> nvic0@131
+
+fdcan: CAN.CAST_CANCTRL @ {
+        sysbus 0x49036000;
+        sysbus new Bus.BusMultiRegistration { address: 0x49037000; size: 0x1000; region: "counter" }
+    }
+    IRQ -> nvic0@104
+
+dwt: Miscellaneous.DWT @ sysbus 0xe0001000
+    frequency: 160000000
+
+sysbus:
+    init add:
+        Tag <0x1a603000 0x1000> "pinctrl"
+        Tag <0x42007000 0x1000> "pinctrl"
+        Tag <0x4902f000 0xbc> "clockctrl"
+        Tag <0x4903f000 0xb0> "clockctrl"
+        Tag <0x1a604000 0x48> "clockctrl"
+        Tag <0x1a602000 0x2c> "clockctrl"
+        Tag <0x43007000 0x28> "clockctrl"
+        Tag <0x1a609000 0x14> "clockctrl"
+        Tag <0x400f0000 0x14> "clockctrl"
