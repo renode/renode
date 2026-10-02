@@ -71,3 +71,26 @@ OneShot Overriding Tag Should Override Read Exactly Once
 
     ${read_word}=                   Execute Command  sysbus ReadWord ${ONESHOT_TAG_START}
     Should Be Equal As Numbers      ${MEM_VALUE_WORD}  ${read_word}
+
+Tag With ThrowException Should Throw On Read
+    Create Machine With Tags An Array Memory
+    Execute Command                 sysbus Tag <0x100 0x10> "throwingTag" throwException=True
+
+    Run Keyword And Expect Error    *Bus access failed with error: AddressError*  Execute Command  sysbus ReadByte 0x100
+
+Tag With ThrowException Should Throw On Write
+    Create Machine With Tags An Array Memory
+    Execute Command                 sysbus Tag <0x100 0x10> "throwingTag" throwException=True
+
+    Run Keyword And Expect Error    *Bus access failed with error: AddressError*  Execute Command  sysbus WriteByte 0x100 0x1
+
+ThrowExceptionIfNotTagged Should Only Throw For Untagged Addresses
+    Create Machine With Tags An Array Memory
+    Execute Command                 sysbus UnhandledAccessBehaviour ThrowExceptionIfNotTagged
+    Execute Command                 sysbus Tag <0x100 0x10> "ordinaryTag"
+
+    ${read_byte}=                   Execute Command  sysbus ReadByte 0x100
+    Should Be Equal As Numbers      ${read_byte}  0
+
+    Run Keyword And Expect Error    *Bus access failed with error: AddressError*  Execute Command  sysbus ReadByte 0x200
+    Run Keyword And Expect Error    *Bus access failed with error: AddressError*  Execute Command  sysbus WriteByte 0x200 0x1
