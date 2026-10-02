@@ -30,3 +30,11 @@ export interface ButtonStateChangedArgs {
 export type ButtonStateChangedCallback = (
   event: ButtonStateChangedArgs,
 ) => void;
+
+export const DisplayOpened = 'display-opened';
+export interface DisplayOpenedArgs {
+  port: number;
+  name: string;
+  machineName: string;
+}
+export type DisplayOpenedCallback = (event: DisplayOpenedArgs) => void;

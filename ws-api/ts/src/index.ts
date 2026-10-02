@@ -20,6 +20,9 @@ import {
   ButtonStateChanged,
   ButtonStateChangedCallback,
   ButtonStateChangedArgs,
+  DisplayOpened,
+  DisplayOpenedCallback,
+  DisplayOpenedArgs,
 } from './events';
 import {
   GetSensorValue,
@@ -28,6 +31,7 @@ import {
   SensorTypeFromString,
   SensorValue,
 } from './sensor';
+import { DisplayDecoder, VideoConfig, VideoMessage } from './video';
 
 export {
   Sensor,
@@ -39,6 +43,11 @@ export {
   EmptyEventCallback,
   UartOpenedArgs,
   UartOpenedCallback,
+  DisplayDecoder,
+  VideoConfig,
+  VideoMessage,
+  DisplayOpenedArgs,
+  DisplayOpenedCallback,
 };
 
 class SocketClosedEvent extends Event {
@@ -511,6 +520,16 @@ export class RenodeProxySession extends EventTarget {
     callback: EventCallback,
   ): boolean {
     return this.unregisterEventCallback(ButtonStateChanged, callback);
+  }
+
+  public registerDisplayOpenedCallback(
+    callback: DisplayOpenedCallback,
+  ): EventCallback {
+    const wrapped = (data: object) => {
+      callback(data as DisplayOpenedArgs);
+    };
+    this.registerEventCallback(DisplayOpened, wrapped);
+    return wrapped;
   }
 
   public dispose() {
