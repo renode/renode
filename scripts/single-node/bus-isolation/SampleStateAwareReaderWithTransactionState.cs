@@ -43,10 +43,10 @@ namespace Antmicro.Renode.Peripherals.CPU
             {
                 return false;
             }
-            state = 0u;
-            state |= (cpuStateObj.Privileged ? 1u : 0) & 1u;
-            state |= (cpuStateObj.CpuSecure ? 2u : 0) & 2u;
-            state |= (cpuStateObj.AttributionSecure ? 4u : 0) & 4u;
+            state = 0UL;
+            state |= cpuStateObj.Privileged ? 1UL : 0;
+            state |= cpuStateObj.CpuSecure ? 2UL : 0;
+            state |= cpuStateObj.AttributionSecure ? 4UL : 0;
             return true;
         }
 
@@ -59,9 +59,9 @@ namespace Antmicro.Renode.Peripherals.CPU
             }
             var cpuStateObj = new CortexM.ContextState
             {
-                Privileged = (state & 1u) == 1u,
-                CpuSecure = (state & 2u) == 2u,
-                AttributionSecure = (state & 4u) == 4u
+                Privileged = (state & 1UL) == 1UL,
+                CpuSecure = (state & 2UL) == 2UL,
+                AttributionSecure = (state & 4UL) == 4UL,
             };
             stateObj = cpuStateObj;
             return true;
