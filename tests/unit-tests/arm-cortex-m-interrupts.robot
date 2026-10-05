@@ -33,3 +33,16 @@ Should Wake Up From WFE When SEVONPEND Is Set
     Execute Command                 sysbus.nvic OnGPIO 5 true
 
     Memory Should Be Equal          ${target_address}  ${target_data}  DoubleWord  timeout=1
+
+NVIC Base Priority Mask Setting Should Not Survive Reset
+    Create Machine
+    Execute Command                  allowPrivates true
+    Execute Command                  cpu SetRegister "BasePri" 0x50
+    ${reg_value}=                    Execute Command  cpu GetRegister "BasePri"
+    # Is expected to return the Base Priority Mask with this setup
+    ${actual_value}=                 Execute Command  nvic GetPriorityBoost false
+    Should Be Equal As Integers      ${reg_value}  ${actual_value}
+
+    Execute Command                  machine Reset
+    ${post_reset_value}=             Execute Command  nvic GetPriorityBoost false
+    Should Not Be Equal As Integers  ${actual_value}  ${post_reset_value}
