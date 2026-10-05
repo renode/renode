@@ -599,6 +599,7 @@ done
 # Build and copy UI
 if $UI; then
   export WS_API_PATH="$ROOT_PATH/ws-api/ts"
+  pnpm -C "$WS_API_PATH" ci
   pnpm -C "$WS_API_PATH" compile
 
   NO_COLOR=true "$UI_PATH/scripts/build_neutralino.sh"
