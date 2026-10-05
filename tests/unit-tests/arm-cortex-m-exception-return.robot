@@ -165,3 +165,21 @@ Should Return From Insecure Mode When Using bx
 
 Should Not Return From Insecure Mode When Using blx
     Execution Of Instruction In Insecure Code Should Result In PC      blx lr  0xfefffffe
+
+Should Not Restore Reserved Bits From FncReturn Partial Retpsr
+    Create Machine                  trustZone=True
+
+    Execute Command                 cpu AssembleBlock ${RESET} "bx lr"
+    # FNC_RETURN stack frame: [SP] = return address,
+    # [SP + 4] = partial RETPSR with a reserved bit [9] set.
+    Store Double Word               0x900  0x40
+    Store Double Word               0x904  0x200
+
+    Execute Command                 cpu SetRegister "SP" 0x900
+    Execute Command                 cpu SetRegister "LR" 0xfeffffff
+    Execute Command                 cpu PC ${RESET}
+
+    Execute Command                 cpu Step 1
+    PC Should Be Equal              0x40
+    ${xpsr}=  Execute Command       cpu GetRegister "CPSR"
+    Should Be Equal                 ${{(int($xpsr.strip(), 16) & 0x200)}}  ${0}
