@@ -4,7 +4,7 @@ Library                             String
 *** Variables ***
 ${URL}                              https://dl.antmicro.com/projects/renode
 ${GPT_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gpt_rzg2l_evk_ep.elf-s_450148-fec1da811a52fa94d39db555d0dccc28e246d28e
-${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415532-a907c69248cf6f695c717ee7dd83cc29d6fff3b4
+${GTM_ELF}                          ${URL}/renesas-rzg2l_evk--fsp-gtm_rzg2l_evk_ep.elf-s_415524-b674298acfb6547da1e392f9f41a562f2bc5b74f
 ${SCIF_UART_ELF}                    ${URL}/renesas-rzg2l_evk--fsp-scif_uart_rzg2l_evk_ep.elf-s_494948-c7ab4fdc0f2f8e62b8d99f194aab234ab1a50a32
 ${RSPI_ELF}                         ${URL}/renesas-rzg2l_evk--fsp-rspi_rzg2l_evk_ep.elf-s_431540-f07dc0ce78537eda672af3a028c50dcb3f21f3a5
 ${FREERTOS_BLINKY_ELF}              ${URL}/renesas-rz_g2l--fsp-blinky_freertos.elf-s_612428-2a79e42c3efdbc19207a7c1b2b3b3824e450b2ef
@@ -86,10 +86,10 @@ Should Run GTM Sample
     Wait For Line On Uart           GTM1 is Enabled in Periodic mode
     FOR  ${i}  IN RANGE  0  3
         ${periodic_start}=              Wait For Line On Uart  Leds are: Off
-        Assert Led State                False  timeout=0.01
+        Assert Led State                False  timeout=0
 
         ${periodic_end}=                Wait For Line On Uart  Leds are: On
-        Assert Led State                True  timeout=0.01
+        Assert Led State                True  timeout=0
         Elapsed Time Equals             ${periodic_start.Timestamp}  ${periodic_end.Timestamp}  5  0.3
     END
 
