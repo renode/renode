@@ -30,6 +30,17 @@ namespace Antmicro.Renode.RobotFramework
             return keywordManager.GetRegisteredKeywords();
         }
 
+        [XmlRpcMethod("get_library_information")]
+        public XmlRpcStruct GetLibraryInformation()
+        {
+            var result = new XmlRpcStruct();
+            foreach(var keyword in keywordManager.GetRegisteredKeywords())
+            {
+                result[keyword] = new XmlRpcStruct { { "args", new[] { "*args" } } };
+            }
+            return result;
+        }
+
         [XmlRpcMethod("run_keyword")]
         public XmlRpcStruct RunKeyword(string keywordName, object[] arguments)
         {
