@@ -30,6 +30,7 @@ import urllib.parse
 from tests_engine import TestResult, TestTag, CRITICAL_TEST
 from unstable_tests import KnownUnstableSuite, filter_unstable
 from retry_and_timeout_listener import retry_and_timeout_listener
+from state_dependency_listener import StateDependencyListener
 import robot_output_formatter
 import robot_output_formatter_verbose
 
@@ -462,6 +463,7 @@ class RobotTestSuite(object):
         self.path = path
         self.known_unstable: Optional[KnownUnstableSuite] = None
         self._dependencies_met = set()
+        self.missing_state_reasons: dict[str, str] = {}
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
         self.suite_log_files = None
 
@@ -1099,6 +1101,8 @@ class RobotTestSuite(object):
         output_formatter = robot_output_formatter_verbose if options.verbose else robot_output_formatter
         listeners = [
             retry_and_timeout_listener(options.retry_count),
+            # Has to be after `retry_and_timeout_listener` to see which attempts will be retried.
+            StateDependencyListener(self.missing_state_reasons),
             # Has to be the last one to print final state, message etc. after all the changes made by other listeners.
             output_formatter,
         ]
