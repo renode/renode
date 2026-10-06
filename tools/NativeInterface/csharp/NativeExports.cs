@@ -289,12 +289,12 @@ namespace Antmicro.Renode.NativeInterface
             renodeThread.Name = "Renode";
             renodeThread.Start();
 
-            // Wait until the Monitor is registered
+            // Wait until the Monitor is registered and has its writer.
             do
             {
                 Thread.Sleep(50);
                 monitor = (Monitor)ObjectCreator.Instance.GetSurrogate(typeof(Monitor));
-            } while(monitor == null);
+            } while(monitor?.Interaction == null);
         }
 
         private static Monitor monitor;
