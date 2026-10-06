@@ -1,7 +1,15 @@
 *** Variables ***
-${MMU_LOG_PREFIX}=                  cpu: Using incorrect MMU mode for translation of address${SPACE}
-${MMU_LOG_SUFFIX}=                  , current MMU mode is 1, mapping is for MMU mode 0
-
+${MMU_LOG_PREFIX}                   cpu: Using incorrect MMU mode for translation of address${SPACE}
+${MMU_LOG_SUFFIX}                   , current MMU mode is 1, mapping is for MMU mode 0
+${NVIC_CFSR}                        0xD28
+${NVIC_MPU_CTRL}                    0xD94
+${NVIC_MPU_REG}                     0xD98
+${NVIC_MPU_RBAR}                    0xD9C
+${NVIC_MPU_RASR}                    0xDA0
+${BASE_TEST_ADDR}                   0x20001000
+${MMARVALID}                        0x80
+${DACCVIOL}                         0x2
+${LW_SNIPPET}                       "ldr r0, =0x20001000;ldr r1, [r0];"
 
 *** Keywords ***
 Create Machine
@@ -24,6 +32,33 @@ Wait For MMU Warning
 MMU Warning Should Not Appear
     [Arguments]                     ${address}
     Should Not Be In Log            ${MMU_LOG_PREFIX}${address}${MMU_LOG_SUFFIX}  treatAsRegex=true
+
+MMFSR Should Be Equal
+    [Arguments]                     ${expected_val}
+    ${CFSR}=                        Execute Command  nvic ReadDoubleWord ${NVIC_CFSR}
+    ${MMFSR}=                       Evaluate  (${CFSR.strip()} & 0xFF)
+    Should Be Equal As Integers     ${MMFSR}  ${expected_val}
+
+Machine Setup With PRIVDEFENA Set To
+    [Arguments]                     ${PRIVDEFENA}
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_REG} 0x0
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_RBAR} 0x08000010 # R0: flash 64KB, RW, exec
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_RASR} 0x0302001F
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_REG} 0x1
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_RBAR} 0x20000011 # R1: SRAM 0x20000000 2KB (stack), XN
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_RASR} 0x13020015
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_CTRL} 0x1
+    Execute Command                 cpu MPUPrivdefena ${PRIVDEFENA}
+
+Try Access Default Map Addr
+    Execute Command                 cpu PC 0x08000000
+    Execute Command                 cpu SP 0x20000400
+    Execute Command                 cpu AssembleBlock `cpu PC` ${LW_SNIPPET}
+    Execute Command                 cpu ExecutionMode SingleStep
+    Start Emulation
+    Execute Command                 cpu Step 2
 
 *** Test Cases ***
 Should Pass Zephyr mem_protect Test
@@ -59,3 +94,15 @@ Should Warn When Translating Address From Incorrect MMU Mode
     # Make sure a valid translation in the same page doesn't cause other translations to succeed (ie. translation respects oneshot page policy)
     Execute Command                 cpu TranslateAddress 0xE000EF04 Write
     Wait For MMU Warning            0xE000EF04
+
+Privileged Access Uses Background Map When PRIVDEFENA Is Set
+    Machine Setup With PRIVDEFENA Set To  True
+    Try Access Default Map Addr
+    MMFSR Should Be Equal           0x0
+
+Privileged Access Faults Without Region When PRIVDEFENA Is Not Set
+    Machine Setup With PRIVDEFENA Set To  False
+    Try Access Default Map Addr
+    ${expected_mmfsr}=             Evaluate  (${MMARVALID}|${DACCVIOL})
+    MMFSR Should Be Equal          ${expected_mmfsr}
+
