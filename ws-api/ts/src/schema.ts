@@ -179,6 +179,18 @@ export const CANFrameSchema = z.object({
     FDFormat: z.boolean(),
     BitRateSwitch: z.boolean(),
   }),
+  DecodedMessage: z.nullable(
+    z.object({
+      Name: z.string(),
+      Signals: z.array(
+        z.object({
+          Name: z.string(),
+          Value: z.number(),
+          Unit: z.string(),
+        }),
+      ),
+    }),
+  ),
 });
 export type CANFrame = z.infer<typeof CANFrameSchema>;
 

@@ -19,5 +19,7 @@ set global.name "ECUD"
 include @scripts/single-node/ramn.resc 
 connector Connect sysbus.fdcan1 canHub
 
+canHub LoadDBC @https://dl.antmicro.com/projects/renode/busmaster_ramn.dbc-s_2534-3bccf400d1ec0d7417011e6e0fefb3a47f337a3d
+
 # Syncing more freqently improves performance in this senario
 emulation SetGlobalQuantum "0.00001"
