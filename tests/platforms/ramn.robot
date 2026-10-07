@@ -46,23 +46,6 @@ Battery LED Toggling From Engine Key
     Execute Command             adc1.engineKey CurrentState "left"
     Assert And Hold Led State   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
-Trigger Watchdog Reset
-    Create Log Tester       timeout=10  defaultPauseEmulation=true
-
-    Execute Command         iwdg WriteDoubleWord 0x0 0x5555
-    Execute Command         iwdg WriteDoubleWord 0x8 0x1
-    Execute Command         iwdg WriteDoubleWord 0x0 0xCCCC
-    Wait For Log Entry      Watchdog reset triggered!
-
-    # The machine reset does not occur right after the watchdog requested it. Let's simulate it to
-    # ensure it occurred when returning from this function. Furthermore, waiting for a reset log
-    # (non existent right now) would not work because the machine would be briefly resumed between
-    # the reset and the log tester founding the string because Machine.Reset released an obtained
-    # paused state.
-    #
-    # If the caller restarts the simulation, the reset from the watchdog might happen.
-    Execute Command         machine Reset
-
 Restore Started Platform
     Requires                 post-startup
     Create CAN Tester        canHub  1
@@ -137,7 +120,7 @@ Engine Key Should Affect Battery LED After Reset
 
     # Wait 5 seconds to ensure the system is fully started before resetting it
     Execute Command         emulation RunFor "5s"
-    Trigger Watchdog Reset
+    Execute Command         machine Reset   machine=ECUD
     Battery LED Toggling From Engine Key   2    batteryWarning
 
 Brake Should Affect Brake LED
@@ -192,6 +175,17 @@ Registers Should Reset On Machines Reset
         &{Reset} =              Dump Devices Registers    ${Registers}  Machine=${ECU}
         Devices Registers Dump Should Be Equal  ${MachinesAtBoot}[${ECU}]   ${Reset}
         ...                                     "Boot ${ECU}"   "Reset ${ECU}"
+    END
+
+Should Trigger Watchdog On Firmware Blocked
+    Execute Command         include @scripts/multi-node/ramn.resc
+    Create Log Tester       timeout=${MIN_ACCEPTABLE_RUNTIME_SECONDS}
+    Execute Command         emulation RunFor "1s"
+
+    FOR  ${ECU}  IN  ECUA  ECUB  ECUC  ECUD
+        # Disable systick and systick interrupt to block the firmware
+        Execute Command         nvic WriteDoubleWord 0x10 0x4   machine=${ECU}
+        Wait For Log Entry      Watchdog reset triggered!       machine=${ECU}
     END
 
 Should Run Without Watchdog Being Triggered
