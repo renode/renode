@@ -158,7 +158,7 @@ Brake Should Affect Brake LED
     Execute Command             adc1.brake SetPercentage 50      machine=ECUC
     Assert And Hold Led State   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
-Registers Should Reset On Watchdog Reset
+Registers Should Reset On Machine Reset
     [Documentation]         Test that models Reset() properly reset registers
 
     # The list of used devices is from capturing all peripheral accesses when running RAMN firmware.
@@ -180,7 +180,7 @@ Registers Should Reset On Watchdog Reset
     # fdcan1 is disconnected from can hub before reset so that no "in-transit" messages
     # modify its state after reset. The registers need to be exactly like at reset.
     Execute Command         connector Disconnect sysbus.fdcan1 canHub
-    Trigger Watchdog Reset
+    Execute Command         machine Reset
 
     &{Reset} =              Dump Devices Registers    ${Registers}
     Devices Registers Dump Should Be Equal  ${Boot}     ${Reset}    "Boot"  "Reset"
