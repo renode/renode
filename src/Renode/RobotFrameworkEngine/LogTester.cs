@@ -99,7 +99,7 @@ namespace Antmicro.Renode.RobotFramework
         }
 
         public string WaitForEntry(string pattern, out IEnumerable<string> bufferedMessages, out bool isFailingString, float? timeout = null, bool keep = false, bool treatAsRegex = false,
-            bool pauseEmulation = false, LogLevel level = null, bool startEmulation = true)
+            bool pauseEmulation = false, LogLevel level = null, bool startEmulation = true, string machine = null)
         {
             var emulation = EmulationManager.Instance.CurrentEmulation;
             var regex = treatAsRegex ? new Regex(pattern) : null;
@@ -108,6 +108,11 @@ namespace Antmicro.Renode.RobotFramework
             {
                 var innerPredicate = predicate;
                 predicate = x => x.Type == level && innerPredicate(x);
+            }
+            if(machine != null)
+            {
+                var innerPredicate = predicate;
+                predicate = x => x.MachineName == machine && innerPredicate(x);
             }
             var effectiveTimeout = timeout ?? defaultTimeout;
 

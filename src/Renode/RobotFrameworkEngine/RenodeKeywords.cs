@@ -367,11 +367,13 @@ namespace Antmicro.Renode.RobotFramework
 
         [RobotFrameworkKeyword]
         public string WaitForLogEntry(string pattern, float? timeout = null, bool keep = false, bool treatAsRegex = false,
-            bool? pauseEmulation = null, LogLevel level = null, bool startEmulation = true)
+            bool? pauseEmulation = null, LogLevel level = null, bool startEmulation = true, string machine = null)
         {
             CheckLogTester();
 
-            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, out var isFailingString, timeout, keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level, startEmulation);
+            var result = logTester.WaitForEntry(pattern, out var bufferedMessages, out var isFailingString, timeout,
+                                                keep, treatAsRegex, pauseEmulation ?? defaultPauseEmulation, level,
+                                                startEmulation, machine);
             if(result == null)
             {
                 // We must limit the length of the resulting string to Int32.MaxValue to avoid OutOfMemoryException.
