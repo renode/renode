@@ -238,11 +238,13 @@ Dump Devices Registers
     ${Dump}=        Create Dictionary
 
     FOR     ${Device}   ${Ranges}    IN  &{DevicesAndRanges}
+        # Init to empty dictionary to simplify the dictionary merge with Create Dictionary
+        Set To Dictionary   ${Dump}     ${Device}=${{ {} }}
         FOR     ${Range}    IN  @{Ranges}
             ${RegsDump}=    Dump Registers Range    ${Device}    ${Range}[1]
             ...                                     ${Range}[0]  ${Machine}
-            Set To Dictionary   ${Dump}     ${Device}=${RegsDump}
-            Log Dictionary  ${Dump}
+            ${AllRangesDump}=   Create Dictionary   &{Dump}[${Device}]  &{RegsDump}
+            Set To Dictionary   ${Dump}     ${Device}=${AllRangesDump}
         END
     END
     RETURN  ${Dump}
