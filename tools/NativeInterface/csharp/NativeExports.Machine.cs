@@ -36,6 +36,7 @@ public static unsafe partial class NativeExports
 
     /// <summary>
     /// Frees a handle from renode_get_machine. Does nothing if <paramref name="machine"/> is NULL.
+    /// Handles to the machine's peripherals stay valid.
     /// </summary>
     [UnmanagedCallersOnly(EntryPoint = "renode_free_machine")]
     public static void FreeMachine([DNNE.C99Type("RenodeMachine *")] IntPtr machine)

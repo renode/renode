@@ -26,7 +26,7 @@ public static unsafe partial class NativeExports
     /// <item>How many bytes are accessed: 1, 2, 4 or 8 for CPU accesses, any number for bulk accesses</item>
     /// </list>
     /// Handlers run on the thread that makes the access, while the peripheral's bus lock is held.
-    /// They may block, but must not call back into Renode. Any status other than RENODE_BUS_SUCCESS is logged as an error.
+    /// They may block. Any status other than RENODE_BUS_SUCCESS is logged as an error.
     /// </summary>
     [UnmanagedCallersOnly(EntryPoint = "renode_bus_set_handlers")]
     [return: DNNE.C99Type("RenodeStatus")]

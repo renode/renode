@@ -8,6 +8,9 @@ EXPORTS
 	renode_bus_set_handlers
 	renode_get_machine
 	renode_free_machine
+	renode_get_gpio
+	renode_set_gpio_state
+	renode_free_gpio
 	renode_systemc_send_backward_request
 	renode_systemc_setup_connection
 	renode_systemc_init_native_connection
