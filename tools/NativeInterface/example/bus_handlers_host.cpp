@@ -1,28 +1,17 @@
 #include <algorithm>
-#include <cassert>
 #include <cinttypes>
 #include <condition_variable>
 #include <cstdint>
 #include <cstdio>
 #include <mutex>
-#include <string>
 #include <tuple>
 #include <vector>
 
-#include "librenode.h"
+#include "native_host.hpp"
 
-constexpr const char *machine_name = "bus-handlers";
-constexpr const char *peripheral_name = "sysbus.dut";
+using namespace native_host;
 
 constexpr uint64_t scratch_address = 0x10000000;
-constexpr uint64_t test_end_address = 0x10000004;
-constexpr uint64_t test_passed = 1;
-
-enum exit_code {
-    exit_pass = 0,
-    exit_mismatch = 1,
-    exit_setup_error = 2,
-};
 
 enum class access_type {
     read,
@@ -54,24 +43,6 @@ struct dut_state {
     uint64_t scratch = 0;
     std::vector<bus_access> accesses;
 };
-
-static uint64_t load_little_endian(const uint8_t *data, uint32_t size)
-{
-    uint64_t value = 0;
-    assert(size <= sizeof(value));
-    for(uint32_t i = 0; i < size; i++) {
-        value |= static_cast<uint64_t>(data[i]) << (8 * i);
-    }
-    return value;
-}
-
-static void store_little_endian(uint8_t *data, uint32_t size, uint64_t value)
-{
-    assert(size <= sizeof(value));
-    for(uint32_t i = 0; i < size; i++) {
-        data[i] = static_cast<uint8_t>(value >> (8 * i));
-    }
-}
 
 static void print_access(FILE *stream, const char *prefix, const bus_access &access)
 {
@@ -141,39 +112,10 @@ static bool check_accesses(const std::vector<bus_access> &accesses)
     return matched;
 }
 
-static bool execute_command(const std::string &command)
-{
-    const RenodeStatus status = renode_exec_command(command.c_str());
-    if(status != RENODE_SUCCESS) {
-        std::fprintf(stderr, "'%s' failed with status %d\n", command.c_str(), status);
-        return false;
-    }
-    return true;
-}
-
 int main(int argc, char *argv[])
 {
-    if(argc != 2) {
-        std::fprintf(stderr, "usage: %s <script.resc>\n", argv[0]);
-        return exit_setup_error;
-    }
-
-    if(renode_init(nullptr, -1, -1) != RENODE_SUCCESS) {
-        std::fprintf(stderr, "renode_init failed\n");
-        return exit_setup_error;
-    }
-
-    if(!execute_command(std::string("include @") + argv[1])) {
-        return exit_setup_error;
-    }
-
     dut_state state;
-    if(renode_bus_set_handlers(machine_name, peripheral_name, dut_read, dut_write, &state) != RENODE_SUCCESS) {
-        std::fprintf(stderr, "renode_bus_set_handlers failed\n");
-        return exit_setup_error;
-    }
-
-    if(!execute_command("start")) {
+    if(!load(argc, argv, dut_read, dut_write, &state) || !execute_command("start")) {
         return exit_setup_error;
     }
 
@@ -184,7 +126,7 @@ int main(int argc, char *argv[])
         accesses = state.accesses;
     }
 
-    renode_exec_command("quit");
+    quit();
 
     if(!check_accesses(accesses)) {
         return exit_mismatch;

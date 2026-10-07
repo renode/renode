@@ -1,6 +1,6 @@
 # Like native-interface.robot, this suite does not use the Renode instance started by
-# robot_tests_provider. It builds a native host process that hosts its own Renode instance and
-# checks the guest's bus accesses itself, reporting the result through its exit code.
+# robot_tests_provider. Each test builds a native host process that hosts its own Renode instance,
+# serves the guest's bus accesses as a device model and reports the result through its exit code.
 #
 # See native-interface.resource for the variables that select which librenode is used.
 
@@ -13,7 +13,7 @@ ${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/exampl
 
 *** Keywords ***
 Run Guest Program On Native Bus Handlers
-    [Arguments]                     ${program}
+    [Arguments]                     ${program}  ${host}
     ${build_dir}=                   Set Variable  ${RESULTS_DIRECTORY}/bus-handlers-build
     Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
 
@@ -28,7 +28,7 @@ Run Guest Program On Native Bus Handlers
     ${script_path}=                 Set Variable  ${RESULTS_DIRECTORY}/bus-handlers.resc
     Create File                     ${script_path}  ${script}
 
-    ${result}=                      Run Process  ${build_dir}/bus_handlers_host  ${script_path}
+    ${result}=                      Run Process  ${build_dir}/${host}  ${script_path}
     ...                             timeout=60s  on_timeout=kill
     Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}${\n}stdout:${\n}${result.stdout}${\n}stderr:${\n}${result.stderr}
 
@@ -46,4 +46,4 @@ Should Serve Guest Accesses Through Native Bus Handlers
     ...                             halt:
     ...                             wfi                      # for(;;) { wait_for_interrupt(); }
     ...                             b halt
-    Run Guest Program On Native Bus Handlers  ${program}
+    Run Guest Program On Native Bus Handlers  ${program}  bus_handlers_host
