@@ -158,7 +158,7 @@ Brake Should Affect Brake LED
     Execute Command             adc1.brake SetPercentage 50      machine=ECUC
     Assert And Hold Led State   true    timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
-Registers Should Reset On Machine Reset
+Registers Should Reset On Machines Reset
     [Documentation]         Test that models Reset() properly reset registers
 
     # The list of used devices is from capturing all peripheral accesses when running RAMN firmware.
@@ -172,18 +172,26 @@ Registers Should Reset On Machine Reset
     ...                                         iwdg=${{ [(0x0,0x10)] }}
     ...                                         nvic=${{ [(0x0, 0x1C), (0x100, 0x400), (0xD00, 0xFA8)] }}
     ...                                         timer1=${{ [(0x0, 0x50)] }}
+    ${MachinesAtBoot} =     Create Dictionary
 
     Execute Command         include @scripts/multi-node/ramn.resc
-    &{Boot} =               Dump Devices Registers    ${Registers}
-    Execute Command         emulation RunFor "3s"
+    FOR  ${ECU}  IN  ECUA  ECUB  ECUC  ECUD
+        &{Boot} =               Dump Devices Registers    ${Registers}  Machine=${ECU}
+        Set To Dictionary   ${MachinesAtBoot}   ${ECU}=${Boot}
+    END
 
-    # fdcan1 is disconnected from can hub before reset so that no "in-transit" messages
-    # modify its state after reset. The registers need to be exactly like at reset.
-    Execute Command         connector Disconnect sysbus.fdcan1 canHub
-    Execute Command         machine Reset
+    Execute Command         emulation RunFor "5s"
 
-    &{Reset} =              Dump Devices Registers    ${Registers}
-    Devices Registers Dump Should Be Equal  ${Boot}     ${Reset}    "Boot"  "Reset"
+    FOR  ${ECU}  IN  ECUA  ECUB  ECUC  ECUD
+        # fdcan1 is disconnected from can hub before reset so that no "in-transit" messages
+        # modify its state after reset. The registers need to be exactly like at reset.
+        Execute Command         connector Disconnect sysbus.fdcan1 canHub   machine=${ECU}
+        Execute Command         machine Reset                               machine=${ECU}
+
+        &{Reset} =              Dump Devices Registers    ${Registers}  Machine=${ECU}
+        Devices Registers Dump Should Be Equal  ${MachinesAtBoot}[${ECU}]   ${Reset}
+        ...                                     "Boot ${ECU}"   "Reset ${ECU}"
+    END
 
 Should Run Without Watchdog Being Triggered
     Execute Command         include @scripts/multi-node/ramn.resc
