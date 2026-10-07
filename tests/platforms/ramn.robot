@@ -164,7 +164,7 @@ Registers Should Reset On Machines Reset
     # The list of used devices is from capturing all peripheral accesses when running RAMN firmware.
     ${Registers} =          Create Dictionary   adc1=${{ [(0x0, 0xC4), (0x308, 0x308)] }}
     ...                                         dma2=${{ [(0x0,0xA4)] }}
-    ...                                         dmamux=${{ [(0x0,0x0), (0x80, 0x84), (0x100, 0x144)] }}
+    ...                                         dmamux=${{ [(0x0,0x3c), (0x80, 0x84), (0x100, 0x144)] }}
     ...                                         fdcan1=${{ [(0x0,0x100)] }}
     ...                                         gpioPortB=${{ [(0x0,0x28)] }}
     ...                                         rng=${{ [(0x0,0x10)] }}
