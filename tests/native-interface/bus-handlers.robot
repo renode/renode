@@ -34,6 +34,7 @@ Run Guest Program On Native Bus Handlers
 
 *** Test Cases ***
 Should Serve Guest Accesses Through Native Bus Handlers
+    [Tags]                          basic-tests
     ${program}=                     Catenate  SEPARATOR=${\n}
     ...                             mov x0, #0x10000000      # volatile uint32_t *dut = (volatile uint32_t *)0x10000000;
     ...                             ldr w1, =0xdeadbeef      # uint32_t expected = 0xdeadbeef;
