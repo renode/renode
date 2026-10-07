@@ -40,7 +40,7 @@ class retry_and_timeout_listener:
             self.retry_failed.start_suite(suite, result)
 
     def end_test(self, test: running.TestCase, result: result.TestCase):
-        timed_out = result.failed and result.timeout and result.timeout.timed_out()
+        timed_out = not result.passed and result.timeout and result.timeout.timed_out()
         timeout_expected = self.tests_provider.timeout_expected_tag in test.tags
         if timeout_expected:
             # It passed if timeout occurred within the test timeout +3s.
