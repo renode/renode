@@ -210,11 +210,11 @@ Stop Profiler
 
 Dump Registers Range
     [Tags]  robot:private
-    [Arguments]     ${Device}   ${End}  ${Start}=0
+    [Arguments]     ${Device}   ${End}  ${Start}=0  ${Machine}=
     ${Dump}=        Create Dictionary
 
     FOR     ${index}    IN RANGE    ${Start}    ${End}+1    4
-        ${RegValue}=    Execute Command     ${Device} ReadDoubleWord ${index}
+        ${RegValue}=    Execute Command     ${Device} ReadDoubleWord ${index}   ${Machine}
         ${RegValue}=    Remove String   ${RegValue}     \n   # Remove newlines to make diff output more readable
         Set To Dictionary   ${Dump}     ${index}    ${RegValue}
     END
@@ -234,12 +234,13 @@ Dump Devices Registers
     ...
     ...                 Please not the usage of inline python evaluation ``${{}}`` to keep tuples
     ...                 instead of having strings.
-    [Arguments]     ${DevicesAndRanges}
+    [Arguments]     ${DevicesAndRanges}     ${Machine}=
     ${Dump}=        Create Dictionary
 
     FOR     ${Device}   ${Ranges}    IN  &{DevicesAndRanges}
         FOR     ${Range}    IN  @{Ranges}
-            ${RegsDump}=    Dump Registers Range  ${Device}    ${Range}[1]    ${Range}[0]
+            ${RegsDump}=    Dump Registers Range    ${Device}    ${Range}[1]
+            ...                                     ${Range}[0]  ${Machine}
             Set To Dictionary   ${Dump}     ${Device}=${RegsDump}
             Log Dictionary  ${Dump}
         END
