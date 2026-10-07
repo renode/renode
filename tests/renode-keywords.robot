@@ -254,20 +254,17 @@ Devices Registers Dump Should Be Equal
     ${DevicesA}=    Get Dictionary Keys     ${DumpA}
     ${DevicesB}=    Get Dictionary Keys     ${DumpB}
 
-    TRY
-        Dictionaries Should Be Equal    ${DumpA}    ${DumpB}
-    EXCEPT
-        # On error, printing the whole device:'registers_dump' dictionary entry is hard to read. So
-        # instead, let's compare device by device to print the first
-        FOR     ${device}   IN  @{DevicesA}
-            ${DeviceDumpA}=     Get From Dictionary     dictionary=${DumpA}     key=${device}
-            ${DeviceDumpB}=     Get From Dictionary     dictionary=${DumpB}     key=${device}
-            TRY
-                Dictionaries Should Be Equal    ${DeviceDumpA}     ${DeviceDumpB}
-            EXCEPT
-                CONTINUE
-            END
-        END
-        FAIL    ${NameDumpA} and ${NameDumpB} dumps differ, see logs of previous for loop for
-        ...     more details on which entries are different.
+    # Let's compare list of devices and then device by device to have more readable error messages
+    # than the big dump when directly comparing DumpA to DumpB.
+    Lists Should Be Equal   ${DevicesA}     ${DevicesB}
+    ...                     msg=Not the same dumped devices for ${NameDumpA} and ${NameDumpB}
+
+    FOR     ${device}   IN  @{DevicesA}
+        ${DeviceDumpA}=     Get From Dictionary     dictionary=${DumpA}     key=${device}
+        ${DeviceDumpB}=     Get From Dictionary     dictionary=${DumpB}     key=${device}
+
+        # Continue on failure to dump all errors. It does not prevent the keyword to fail.
+        Run Keyword And Continue On Failure     Dictionaries Should Be Equal
+        ...                                     ${DeviceDumpA}     ${DeviceDumpB}
+        ...                                     msg=Device ${device} (${NameDumpA} vs ${NameDumpB})
     END
