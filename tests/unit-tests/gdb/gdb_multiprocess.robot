@@ -5,6 +5,8 @@ Library                             ${CURDIR}/gdb_library.py
 ${GDB_REMOTE_PORT}                  3346
 ${IMXRT700_CPU0_URL}                https://dl.antmicro.com/projects/renode/mimxrt700_evk_mimxrt798s_cm33_cpu0--philosophers.elf-s_789720-6c27fd55c15eb9f986fcf654637b4046945d42cc
 ${IMXRT700_CPU1_URL}                https://dl.antmicro.com/projects/renode/mimxrt700_evk_mimxrt798s_cm33_cpu1--philosophers.elf-s_675736-cf65e9273232e7ab87557db5b6871772db82ddff
+${ZYNQMP_PHILOSOPHERS_ELF}          https://dl.antmicro.com/projects/renode/zephyr-philosophers-xilinx_zynqmp_r5.elf-s_515508-f1bcfa0adcf29714365ae53609420644614298c9
+
 ${MULTIARCH_REPL}                   SEPARATOR=${\n}
 ...                                 """
 ...                                 cpu_arm: CPU.ARMv7R @ sysbus
@@ -12,7 +14,23 @@ ${MULTIARCH_REPL}                   SEPARATOR=${\n}
 ...                                 cpu_riscv: CPU.RiscV64 @ sysbus
 ...                                 ${SPACE*4}cpuType: "rv64g"
 ...                                 """
-${ZYNQMP_PHILOSOPHERS_ELF}          https://dl.antmicro.com/projects/renode/zephyr-philosophers-xilinx_zynqmp_r5.elf-s_515508-f1bcfa0adcf29714365ae53609420644614298c9
+
+${TEST_HALTED_REPL}                 SEPARATOR=${\n}
+...                                 """
+...                                 cpu0: CPU.ARMv7R @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-r5f"
+...                                 cpu1: CPU.ARMv7R @ sysbus
+...                                 ${SPACE*4}cpuType: "cortex-r5f"
+...                                 mem: Memory.MappedMemory @ sysbus 0x1000
+...                                 ${SPACE*4}size: 0x1000
+...                                 """
+
+${TEST_HALTED_PROGRAM}              SEPARATOR=${\n}
+...                                 """
+...                                 start:
+...                                 nop
+...                                 b start
+...                                 """
 
 *** Keywords ***
 Check And Run Gdb
@@ -314,3 +332,37 @@ Single Stepping Should Work With Multiple Processes
     # PID1 (cpu0) should not have moved while GDB was stepping PID2 (cpu1)
     ${inst}=                        Execute Command  cpu0 ExecutedInstructions
     Should Be Equal As Integers     ${inst}  100  cpu2 moved while cpu1 was stepping
+
+Halting One Processor Should Stop Other Processors
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescriptionFromString ${TEST_HALTED_REPL}
+    Execute Command                 cpu0 AssembleBlock 0x1000 ${TEST_HALTED_PROGRAM} triple="armv7r"
+    Execute Command                 cpu0 PC 0x1000
+
+    Execute Command                 cpu1 AssembleBlock 0x1100 ${TEST_HALTED_PROGRAM} triple="armv7r"
+    Execute Command                 cpu1 PC 0x1100
+
+    Execute Command                 emulation SetGlobalSerialExecution true
+
+    Execute Command                 machine StartMultiprocessGdbServer ${GDB_REMOTE_PORT} [cpu0, cpu1]
+
+    Check and Run Gdb               arm-zephyr-eabi-gdb
+
+    Command Gdb                     set schedule-multiple on
+    Command Gdb                     add-inferior
+    Command Gdb                     inferior 2
+    Command Gdb                     attach 2
+
+    Command Gdb                     inferior 1
+
+    Async Command GDB               continue
+    Sleep                           1s
+    Execute Command                 cpu0 IsHalted true
+    ${x}=                           Read Async Command Output  timeout=10
+    Should Contain                  ${x}  Thread 1.1 "machine-0.cpu0" received signal SIGINT
+
+    ${time_a}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
+    Sleep                           1s
+    ${time_b}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
+
+    Should Be Equal                 ${time_a.strip()}  ${time_b.strip()}  msg=Time should not flow
