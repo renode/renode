@@ -9,8 +9,6 @@ ${UART_BASE_S}                      ${0x40208000}
 ${UART_BASE_NS}                     ${0x50208000}
 ${SAU_FAULT_ADDRESS}                ${{$SRAM_CPU0_CODE_S + 0x100}}
 ${CPU}                              sysbus.cpu0
-${SCB_SFSR}                         ${0xE000EDE4}
-${SFSR_INVTRAN}                     ${{1<<4}}
 
 ${REPL_STRING}                      SEPARATOR=\n
 ...                                 """
