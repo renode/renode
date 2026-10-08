@@ -36,13 +36,13 @@ Should Wake Up From WFE When SEVONPEND Is Set
 
 NVIC Base Priority Mask Setting Should Not Survive Reset
     Create Machine
-    Execute Command                  allowPrivates true
-    Execute Command                  cpu SetRegister "BasePri" 0x50
-    ${reg_value}=                    Execute Command  cpu GetRegister "BasePri"
+    Execute Command                 allowPrivates true
+    Execute Command                 cpu SetRegister "BasePri" 0x50
+    ${reg_value}=                   Execute Command  cpu GetRegister "BasePri"
     # Is expected to return the Base Priority Mask with this setup
-    ${actual_value}=                 Execute Command  nvic GetPriorityBoost false
-    Should Be Equal As Integers      ${reg_value}  ${actual_value}
+    ${actual_value}=                Execute Command  nvic GetPriorityBoost false
+    Should Be Equal As Integers     ${reg_value}  ${actual_value}
 
-    Execute Command                  machine Reset
-    ${post_reset_value}=             Execute Command  nvic GetPriorityBoost false
+    Execute Command                 machine Reset
+    ${post_reset_value}=            Execute Command  nvic GetPriorityBoost false
     Should Not Be Equal As Integers  ${actual_value}  ${post_reset_value}
