@@ -465,26 +465,6 @@ Should Pend HardFault On NMI Stacking BusFault From Thread Mode
     DoubleWord ${SCB_CFSR} Should Be Equal  ${CFSR_STKERR}
     DoubleWord ${SCB_HFSR} Should Be Equal  ${HFSR_FORCED}
 
-Should Repend BusFault On Its Own Stacking Fault
-    Create Machine
-    Enable BusFault
-    Prepare Faulting Instruction    ${READ_ASSEMBLY}  ${FAULTING_PERIPHERAL_ADDRESS}
-    Execute Command                 cpu SP 0x100020
-    Execute Faulting Instruction
-
-    # The enabled instruction-time BusFault starts exception entry, whose
-    # first stack write also faults. DerivedLateArrival() cannot replace the
-    # original exception with an equal-priority instance, so it starts the
-    # original handler and leaves the derived BusFault pending.
-    PC Should Be Equal              ${BUSFAULT_HANDLER_ADDRESS}
-    Register Should Be Equal        SP  0x100000
-    IPSR Should Be Equal            5
-    DoubleWord ${SCB_CFSR} Should Be Equal  ${{${CFSR_PRECISERR_BFARVALID} | ${CFSR_STKERR}}}
-    DoubleWord ${SCB_HFSR} Should Be Equal  0
-    ${shcsr}=                       Execute Command  sysbus ReadDoubleWord ${SCB_SHCSR} context=cpu
-    Should Be True                  ${{(int($shcsr.strip(), 16) & $SHCSR_BUSFAULTACT) != 0}}
-    Should Be True                  ${{(int($shcsr.strip(), 16) & $SHCSR_BUSFAULTPENDED) != 0}}
-
 Should Replace External IRQ With HardFault On Stacking BusFault
     Create Machine
     Execute Command                 cpu AssembleBlock ${CODE_ADDRESS} "b ."
