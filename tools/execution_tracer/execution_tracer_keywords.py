@@ -7,6 +7,7 @@
 #
 
 import re
+from itertools import islice
 from typing import List
 
 from execution_tracer.execution_tracer_reader import find_llvm_disas, read_file
@@ -32,10 +33,12 @@ def parse_binary_trace(
     return entries
 
 # Used in execution_tracer_reader.robot
+# It takes the path of a trace with millions of lines. Passing the lines through Robot instead
+# would make Robot log all of them at the TRACE log level, which takes gigabytes of memory.
 # This is the hot path for checking symbol lookup
 # By keeping it on python side a 10x speedup was observed
-def validate_symbol_lookup_slice(trace_lines: list[str], slice_start: int, slice_end: int, line_regex_pattern: str, function_rules: dict[str, tuple[int, int]] ):
-    """Check the resolved symbols in `trace_lines[slice_start:slice_end]`.
+def validate_symbol_lookup_slice(trace_path: str, slice_start: int, slice_end: int, line_regex_pattern: str, function_rules: dict[str, tuple[int, int]] ):
+    """Check the resolved symbols in lines `[slice_start:slice_end]` of the trace file at `trace_path`.
 
     Each line must match `line_regex_pattern`, whose three groups capture the address, the opcode
     and the symbol. When the address is in the `[low_pc, high_pc)` range of a `function_rules`
@@ -48,23 +51,23 @@ def validate_symbol_lookup_slice(trace_lines: list[str], slice_start: int, slice
         for regex_str, (start_hex, end_hex) in function_rules.items()
     ]
 
-    target_slice = trace_lines[int(slice_start):int(slice_end)]
+    with open(trace_path) as file:
+        for line in islice(file, int(slice_start), int(slice_end)):
+            line = line.rstrip("\n")
+            match = compiled_line_regex.match(str(line))
+            if not match:
+                raise AssertionError(f"Line format error: '{line}' did not match line regex pattern.")
 
-    for line in target_slice:
-        match = compiled_line_regex.match(str(line))
-        if not match:
-            raise AssertionError(f"Line format error: '{line}' did not match line regex pattern.")
+            addr_str, opc, symbol = match.groups()
+            addr = int(addr_str, 16)
 
-        addr_str, opc, symbol = match.groups()
-        addr = int(addr_str, 16)
-
-        for pattern, start_int, end_int in compiled_rules:
-            if start_int <= addr < end_int:
-                if not pattern.match(symbol):
-                    raise AssertionError(
-                        f"Symbol verification failed!\n"
-                        f"Address: {hex(addr)}\n"
-                        f"Symbol: '{symbol}'\n"
-                        f"Expected pattern: '{pattern.pattern}'"
-                    )
-                break
+            for pattern, start_int, end_int in compiled_rules:
+                if start_int <= addr < end_int:
+                    if not pattern.match(symbol):
+                        raise AssertionError(
+                            f"Symbol verification failed!\n"
+                            f"Address: {hex(addr)}\n"
+                            f"Symbol: '{symbol}'\n"
+                            f"Expected pattern: '{pattern.pattern}'"
+                        )
+                    break

@@ -100,6 +100,12 @@ Download File And Rename
     Move File                       ${temporary_file}  ${new_path}
     RETURN                          ${new_path}
 
+Count Lines In File
+    [Arguments]                     ${path}
+    # Counting in Python keeps the content of the file out of the Robot log
+    ${count}=                       Evaluate  sum(1 for _ in open($path, "rb"))
+    RETURN                          ${count}
+
 Create Platform
     [Arguments]                     ${executable}
     Execute Command                 $bin=@${executable}
@@ -220,10 +226,7 @@ Trace And Inspect
     END
 
     Execute Python Script           ${EXECUTION_TRACER}  ${script_args}  ${output_file}
-
-    ${output_content}=             Get File  ${output_file}
-    ${output}=                     Split To Lines  ${output_content}
-    RETURN                         ${output}
+    RETURN                          ${output_file}
 
 *** Test Cases ***
 Trace And Report Coverage
@@ -287,20 +290,20 @@ Trace Mixed A64, A32 and T32 Code
 
 Trace And Inspect
     ${vanilla_inspect}=             Trace And Inspect
-    ${inspect_length}=              Evaluate  len($vanilla_inspect)
+    ${inspect_length}=              Count Lines In File  ${vanilla_inspect}
     Should Be Equal As Numbers      ${inspect_length}   1699937
 
     ${compressed_inspect}=          Trace And Inspect  compress=True
-    Should Be Equal                 ${vanilla_inspect}  ${compressed_inspect}
+    Should Be True                  filecmp.cmp($vanilla_inspect, $compressed_inspect, shallow=False)
 
 Trace And Inspect With Symbol Lookup
     ${lookup_inspect}=              Trace And Inspect  lookup_symbols=True
-    ${inspect_length}=              Evaluate  len($lookup_inspect)
+    ${inspect_length}=              Count Lines In File  ${lookup_inspect}
     Should Be Equal As Numbers      ${inspect_length}   1699937
 
     # From execution_tracer_keywords.py
     Validate Symbol Lookup Slice
-    ...    trace_lines=${lookup_inspect}
+    ...    trace_path=${lookup_inspect}
     ...    slice_start=590000
     ...    slice_end=730000
     ...    line_regex_pattern=${symbol_lookup_regex}
