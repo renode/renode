@@ -3,23 +3,6 @@
 set -u
 set -e
 
-USE_PARALLEL=false
-if command -v env_parallel &> /dev/null
-then
-    # The env_parallel command stores ignored values in this variable
-    # so it needs to be defined for the `set -u` flag to not error
-    PARALLEL_IGNORED_NAMES=""
-    # Source the env_parallel init script
-    . env_parallel.bash
-    # If the `--session` start fails it mean that the installed
-    # version of GNU parallel is too old to have the features we need
-    if env_parallel --session &> /dev/null
-    then
-        USE_PARALLEL=true
-    fi
-fi
-
-
 ROOT_PATH="$(cd "$(dirname $0)"; echo $PWD)"
 export ROOT_PATH
 OUTPUT_DIRECTORY="$ROOT_PATH/output"
@@ -505,16 +488,35 @@ build_core () {
 }
 
 # build tlib
-if $USE_PARALLEL
-then
-    echo "Starting parallel tlib build"
-    env_parallel build_core ::: "${CORES[@]}"
-    env_parallel --end-session
-else
-    for core_config in "${CORES[@]}"
+# Build one core per CPU at a time. Each core writes to its own log, printed when all cores are done, so that the
+# outputs of the cores don't interleave.
+echo "Starting parallel tlib build"
+TLIB_LOG_DIR="$NATIVE_CORES_BUILD_PATH/logs"
+mkdir -p "$TLIB_LOG_DIR"
+TLIB_PIDS=()
+for core_config in "${CORES[@]}"
+do
+    # Wait until fewer cores are building than there are CPUs.
+    while [[ $(jobs -p -r | wc -l) -ge $(nproc) ]]
     do
-        build_core $core_config
+        sleep 1
     done
+    build_core $core_config > "$TLIB_LOG_DIR/$core_config.log" 2>&1 &
+    TLIB_PIDS+=($!)
+done
+TLIB_FAILED=false
+for pid in "${TLIB_PIDS[@]}"
+do
+    wait $pid || TLIB_FAILED=true
+done
+for core_config in "${CORES[@]}"
+do
+    cat "$TLIB_LOG_DIR/$core_config.log"
+done
+if $TLIB_FAILED
+then
+    echo "tlib build failed"
+    exit 1
 fi
 
 # Remove pre-multiplatform tlib `lib` directory
