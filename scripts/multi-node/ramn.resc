@@ -6,6 +6,7 @@ emulation CreateCANHub "canHub"
 set global.name "ECUA"
 include @scripts/single-node/ramn.resc 
 connector Connect sysbus.fdcan1 canHub
+showAnalyzer spi2
 
 set global.name "ECUB"
 include @scripts/single-node/ramn.resc 
@@ -23,3 +24,5 @@ canHub LoadDBC @https://dl.antmicro.com/projects/renode/busmaster_ramn.dbc-s_253
 
 # Syncing more freqently improves performance in this senario
 emulation SetGlobalQuantum "0.00001"
+
+showAnalyzer canHub
