@@ -431,7 +431,7 @@ namespace Antmicro.Renode.PeripheralsTests
             Assert.AreEqual(true, field.Value);
         }
 
-        private void TestFieldModeToggle(IRegisterField<ulong> field, ulong offset, int low, bool negate = false)
+        private void TestFieldModeWriteOneToToggle(IRegisterField<ulong> field, ulong offset, int low, bool negate = false)
         {
             foreach(var mask in TestPatternMask((uint)field.Width))
             {
@@ -449,7 +449,7 @@ namespace Antmicro.Renode.PeripheralsTests
             }
         }
 
-        private void TestFieldModeToggle(IRegisterField<bool> field, ulong offset, int low, bool negate = false)
+        private void TestFieldModeWriteOneToToggle(IRegisterField<bool> field, ulong offset, int low, bool negate = false)
         {
             field.Value = false;
             peripheral.WriteDoubleWord((long)offset, negate ? (1U << low) : 0U);
@@ -526,11 +526,11 @@ namespace Antmicro.Renode.PeripheralsTests
             {
                 case FieldMode.Write: TestFieldModeWrite(field, offset, low); break;
                 case FieldMode.Set: TestFieldModeSet(field, offset, low); break;
-                case FieldMode.Toggle: TestFieldModeToggle(field, offset, low); break;
+                case FieldMode.WriteOneToToggle: TestFieldModeWriteOneToToggle(field, offset, low); break;
                 case FieldMode.WriteOneToClear: TestFieldModeWriteOneToClear(field, offset, low); break;
                 case FieldMode.WriteZeroToClear: TestFieldModeWriteOneToClear(field, offset, low, negate: true); break;
                 case FieldMode.WriteZeroToSet: TestFieldModeSet(field, offset, low, negate: true); break;
-                case FieldMode.WriteZeroToToggle: TestFieldModeToggle(field, offset, low, negate: true); break;
+                case FieldMode.WriteZeroToToggle: TestFieldModeWriteOneToToggle(field, offset, low, negate: true); break;
             }
         }
 
@@ -555,11 +555,11 @@ namespace Antmicro.Renode.PeripheralsTests
             {
                 case FieldMode.Write: TestFieldModeWrite(field, offset, low); break;
                 case FieldMode.Set: TestFieldModeSet(field, offset, low); break;
-                case FieldMode.Toggle: TestFieldModeToggle(field, offset, low); break;
+                case FieldMode.WriteOneToToggle: TestFieldModeWriteOneToToggle(field, offset, low); break;
                 case FieldMode.WriteOneToClear: TestFieldModeWriteOneToClear(field, offset, low); break;
                 case FieldMode.WriteZeroToClear: TestFieldModeWriteOneToClear(field, offset, low, negate: true); break;
                 case FieldMode.WriteZeroToSet: TestFieldModeSet(field, offset, low, negate: true); break;
-                case FieldMode.WriteZeroToToggle: TestFieldModeToggle(field, offset, low, negate: true); break;
+                case FieldMode.WriteZeroToToggle: TestFieldModeWriteOneToToggle(field, offset, low, negate: true); break;
             }
         }
 
