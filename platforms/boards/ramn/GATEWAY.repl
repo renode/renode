@@ -3,3 +3,5 @@ screen: Video.ST7789 @ spi2
 
 gpioPortB:
     12 -> screen@0
+
+usb_uart: USB.USB_UART @ sysbus

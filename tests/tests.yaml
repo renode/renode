@@ -286,6 +286,7 @@
 - tests/platforms/nucleo_f767zi_wallabmc.robot
 - tests/unit-tests/arm-cortex-m-interrupts.robot
 - tests/native-interface/bus-handlers.robot
+- tests/platforms/ramn-terminal.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
