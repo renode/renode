@@ -6,7 +6,12 @@
  */
 
 #include <inttypes.h>
+#include <stdalign.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /* Error handling */
@@ -602,7 +607,7 @@ typedef struct {
     /** The flag indicating that the access was successful */
     bool access_succeeded;
     /** The bytes that are written or will be read, allocated and freed by the library */
-    _Alignas(uint64_t) uint8_t data[];
+    alignas(uint64_t) uint8_t data[];
 } renode_sysbus_event_data_t;
 
 typedef void (*renode_sysbus_event_callback_t)(void *user_data, renode_sysbus_event_data_t *event_data);
@@ -687,3 +692,7 @@ typedef void (*renode_spi_finish_callback_t)(void *user_data);
  */
 renode_error_t *renode_spi_register_callbacks(renode_spi_t *spi, void *user_data,
     renode_spi_transmit_callback_t on_transmit, renode_spi_finish_callback_t on_finish);
+
+#ifdef __cplusplus
+}
+#endif
