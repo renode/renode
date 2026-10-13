@@ -101,6 +101,7 @@ void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_f
 static renode_error_t *generic_response_handler(renode_connection_t *conn, const void *response, size_t size, void *ud);
 static renode_error_t *generic_request_handler(renode_connection_t *conn, uint16_t id, const void *response, size_t size, void *ud);
 static renode_error_t *parse_response(const void *response, size_t size, message_payload_t *header, const void **data, uint32_t *data_size);
+static renode_error_t *connect_and_check_version(const renode_connection_config_t *cfg, renode_t **renode);
 
 static renode_error_t *check_version_handler(renode_connection_t *conn, const void *response, size_t size, void *ud)
 {
@@ -122,13 +123,18 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
 {
     assert(port != NULL && renode != NULL);
 
-    renode_connection_t *conn;
-    return_error_if_fails(renode_connection_open(&conn, &(renode_connection_config_t) {
+    return connect_and_check_version(&(renode_connection_config_t) {
         .address = "localhost",
         .port = port,
         .request_callback = generic_request_handler,
         .server_request_ud = NULL,
-    }));
+    }, renode);
+}
+
+static renode_error_t *connect_and_check_version(const renode_connection_config_t *cfg, renode_t **renode)
+{
+    renode_connection_t *conn;
+    return_error_if_fails(renode_connection_open(&conn, cfg));
 
     renode_error_t *err = renode_connection_send_request(conn, check_version_handler, NULL,
         REQUEST_HEADER(CHECK_VERSION),
