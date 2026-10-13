@@ -9,17 +9,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 
 namespace Antmicro.Renode.Network.ExternalControl
 {
     public class CommunicationHandler
     {
-        public CommunicationHandler(bool isExternal, ExternalControlSocket socket)
+        public CommunicationHandler(bool isExternal, ExternalControlSocket socket, ExternalControlEndpoint endpoint)
         {
             this.isExternal = isExternal;
             this.socket = socket;
+            this.endpoint = endpoint;
         }
 
         public void PutMessage(Message message)
@@ -68,28 +68,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 {
                     requestStack.Push((MessageDirection.Received, message));
 
-                    MessagePayload payload;
-                    var command = message.Payload.Command;
-                    var handler = socket.GetCommandHandler(command);
-
-                    if(handler == null)
-                    {
-                        payload = MessagePayload.InvalidCommand(command);
-                        socket.Log(LogLevel.Error, "Invalid command received: {0}", command);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            payload = handler.Invoke(message.Payload);
-                        }
-                        catch(RecoverableException e)
-                        {
-                            payload = MessagePayload.Error(command, e.Message);
-                            socket.Log(LogLevel.Error, "{0} command failed: {1}", command, e.Message);
-                        }
-                    }
-
+                    var payload = endpoint.HandleRequest(message.Payload);
                     var response = new Message(message.Id, payload);
 
                     socket.SendMessage(response);
@@ -174,6 +153,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private readonly bool isExternal;
         private readonly ExternalControlSocket socket;
+        private readonly ExternalControlEndpoint endpoint;
 
         private readonly AutoResetEvent messageQueueNewItem = new(false);
         private readonly Queue<Message> messageQueue = new();

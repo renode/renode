@@ -72,11 +72,6 @@ namespace Antmicro.Renode.Network
 
         public String SendCustomCommand(String command) => Endpoint.SendCustomCommand(command);
 
-        public ICommand GetCommandHandler(Command command)
-        {
-            return endpoint.GetCommandHandler(command);
-        }
-
         public MessagePayload SendRequest(MessagePayload request)
         {
             var handler = GetHandlerForCurrentThread();
@@ -144,8 +139,8 @@ namespace Antmicro.Renode.Network
                 endpoint = new ExternalControlEndpoint(this, SendRequest);
                 disposeCancelationTokenSource = new();
 
-                externalHandler = new CommunicationHandler(isExternal: true, this);
-                internalHandler = new CommunicationHandler(isExternal: false, this);
+                externalHandler = new CommunicationHandler(isExternal: true, this, endpoint);
+                internalHandler = new CommunicationHandler(isExternal: false, this, endpoint);
                 defaultHandlerThread = new Thread(DefaultThreadHandlerBody)
                 {
                     Name = GetType().Name + "_DefaultHandlerThread",

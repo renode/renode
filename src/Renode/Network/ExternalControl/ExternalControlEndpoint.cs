@@ -61,6 +61,31 @@ public sealed class ExternalControlEndpoint : IDisposable
         return handler;
     }
 
+    /// <summary>
+    /// Handles a request from the other end and returns the response to send back.
+    /// </summary>
+    public MessagePayload HandleRequest(MessagePayload request)
+    {
+        var command = request.Command;
+        var handler = GetCommandHandler(command);
+
+        if(handler == null)
+        {
+            Owner.Log(LogLevel.Error, "Invalid command received: {0}", command);
+            return MessagePayload.InvalidCommand(command);
+        }
+
+        try
+        {
+            return handler.Invoke(request);
+        }
+        catch(RecoverableException e)
+        {
+            Owner.Log(LogLevel.Error, "{0} command failed: {1}", command, e.Message);
+            return MessagePayload.Error(command, e.Message);
+        }
+    }
+
     public void SynchronizeTimeWithExternal()
     {
         RegisterTimeElapsedCallback((timeStamp) => EmulationManager.Instance.CurrentEmulation.RunUntil(timeStamp.TimeElapsed));
