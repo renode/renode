@@ -5,7 +5,6 @@
 // Full license text is available in 'licenses/MIT.txt'.
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -61,7 +60,7 @@ namespace Antmicro.Renode.Network
 
         public void RegisterTimeElapsedCallback(Action<TimeStamp> callback)
         {
-            var command = (TimeElapsedCallbackCommand)commandHandlers.GetHandler(Command.TimeElapsedCallback);
+            var command = (TimeElapsedCallbackCommand)endpoint.GetCommandHandler(Command.TimeElapsedCallback);
             command.RegisterExternalCallback(callback);
         }
 
@@ -83,7 +82,7 @@ namespace Antmicro.Renode.Network
 
         public void AttachCustomCommandCallbackToMonitor()
         {
-            var command = (CustomCommand)commandHandlers.GetHandler(Command.CustomCommand);
+            var command = (CustomCommand)endpoint.GetCommandHandler(Command.CustomCommand);
             command.RegisterExternalCallback();
         }
 
@@ -102,7 +101,7 @@ namespace Antmicro.Renode.Network
                     throw new RecoverableException($"No peripheral with name: {localContextName} was found");
                 }
 
-                var command = (SystemBus)commandHandlers.GetHandler(Command.SystemBus);
+                var command = (SystemBus)endpoint.GetCommandHandler(Command.SystemBus);
 
                 var response = this.SendRequest(MessagePayload.Request(Command.GetMachine, remoteMachineName));
                 response.LogOnError(command.Identifier, this);
@@ -137,14 +136,14 @@ namespace Antmicro.Renode.Network
 
         public String SendCustomCommand(String command)
         {
-            var customCommand = commandHandlers.GetHandler(Command.CustomCommand) as CustomCommand;
+            var customCommand = endpoint.GetCommandHandler(Command.CustomCommand) as CustomCommand;
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds;
             return customCommand.Send(command, timestamp);
         }
 
         public ICommand GetCommandHandler(Command command)
         {
-            return commandHandlers.GetHandler(command);
+            return endpoint.GetCommandHandler(command);
         }
 
         public MessagePayload SendRequest(MessagePayload request)
@@ -212,22 +211,6 @@ namespace Antmicro.Renode.Network
             lock(handlersLocker)
             {
                 endpoint = new ExternalControlEndpoint(this, SendRequest);
-                commandHandlers = new CommandHandlerCollection();
-                commandHandlers.Register(new TimeElapsedCallbackCommand(endpoint));
-                commandHandlers.Register(new RunFor(endpoint));
-                commandHandlers.Register(new GetTime(endpoint));
-                commandHandlers.Register(new SPI(endpoint));
-                commandHandlers.Register(new ADC(endpoint));
-                commandHandlers.Register(new GPIOPort(endpoint));
-                commandHandlers.Register(new SystemBus(endpoint));
-                commandHandlers.Register(new CheckVersion(endpoint));
-                commandHandlers.Register(new CANBus(endpoint));
-                commandHandlers.Register(new CustomCommand(endpoint));
-
-                var getMachineHandler = new GetMachine(endpoint);
-                endpoint.Machines = getMachineHandler;
-
-                commandHandlers.Register(getMachineHandler);
                 disposeCancelationTokenSource = new();
 
                 externalHandler = new CommunicationHandler(isExternal: true, this);
@@ -250,8 +233,7 @@ namespace Antmicro.Renode.Network
                 internalHandler = null;
                 externalHandler = null;
 
-                commandHandlers?.Dispose();
-                commandHandlers = null;
+                endpoint?.Dispose();
                 endpoint = null;
 
                 disposeCancelationTokenSource?.Dispose();
@@ -534,7 +516,6 @@ namespace Antmicro.Renode.Network
         private CommunicationHandler externalHandler;
         private CommunicationHandler internalHandler;
         private CancellationTokenSource disposeCancelationTokenSource;
-        private CommandHandlerCollection commandHandlers;
         private ExternalControlEndpoint endpoint;
 
         private readonly bool isClient;
@@ -544,39 +525,6 @@ namespace Antmicro.Renode.Network
         private readonly object stateLocker = new object();
         private readonly object handlersLocker = new object();
         private readonly AutoResetEvent clientConnectionEvent = new(false);
-
-        private class CommandHandlerCollection : IDisposable
-        {
-            public CommandHandlerCollection()
-            {
-                commandHandlers = new Dictionary<Command, ICommand>();
-            }
-
-            public void Dispose()
-            {
-                foreach(var command in commandHandlers.Values.OfType<IDisposable>())
-                {
-                    command.Dispose();
-                }
-                commandHandlers.Clear();
-            }
-
-            public void Register(ICommand command)
-            {
-                commandHandlers.Add(command.Identifier, command);
-            }
-
-            public ICommand GetHandler(Command id)
-            {
-                if(!commandHandlers.TryGetValue(id, out var command))
-                {
-                    return null;
-                }
-                return command;
-            }
-
-            private readonly Dictionary<Command, ICommand> commandHandlers;
-        }
 
         private struct RemoteBusRegistrationRequest
         {
