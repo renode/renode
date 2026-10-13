@@ -7,7 +7,6 @@ export const RenodeQuitted = 'renode-quitted';
 export const ClearCommand = 'clear-command';
 
 export interface UartOpenedArgs {
-  port: number;
   name: string;
   machineName: string;
 }
