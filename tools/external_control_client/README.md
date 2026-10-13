@@ -36,6 +36,10 @@ The library itself can be built with CMake using the `./lib/CMakeLists.txt`.
 renode$ mkdir build && cmake -S tools/external_control_client/lib -B build && cmake --build build
 ```
 
+By default, the library connects to the server over a socket with `renode_connect`.
+A program that runs Renode itself through librenode (see `tools/NativeInterface`) can build the library with `-DRENODE_API_TRANSPORT=in_process` instead.
+That build links librenode and provides `renode_connect_in_process` in place of `renode_connect`, which connects to the Renode instance in the same process.
+
 ### Building
 
 Besides building a library and linking a client to the library, a client can be built with CMake using `./CMakeLists.txt`.

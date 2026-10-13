@@ -15,8 +15,10 @@ typedef renode_error_t *(*renode_connection_response_t)(renode_connection_t *con
 typedef renode_error_t *(*renode_server_request_t)(renode_connection_t *conn, uint16_t id, const void *request, size_t request_size, void *ud);
 
 typedef struct {
+    // Only the socket transport uses `address` and `port`, and only the in-process transport uses `name`.
     const char *address;
     const char *port;
+    const char *name;
     renode_server_request_t request_callback;
     void *server_request_ud;
 } renode_connection_config_t;

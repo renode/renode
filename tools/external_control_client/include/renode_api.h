@@ -50,7 +50,7 @@ typedef struct {
  * @brief The API handle for the Renode connection.
  *
  * Renode handles are pointers to structs that are implemented internally, which must be prepared by calling
- * `renode_get_X` functions (renode_connect() for `renode_t`) so that they can be later used in their
+ * `renode_get_X` functions (renode_connect() or renode_connect_in_process() for `renode_t`) so that they can be later used in their
  * related functions.
  *
  * The internal structs are not a part of the API.
@@ -118,6 +118,8 @@ typedef struct renode_bus_peripheral renode_bus_peripheral_t;
 /**
  * @brief The function initializing the Renode connection.
  *
+ * It is defined only when the library is built with the socket transport, `RENODE_API_TRANSPORT=socket`, which is the default.
+ *
  * @note The connection should be closed using renode_disconnect() before the client app exits.
  *
  * @param[in] port - the TCP port
@@ -125,6 +127,22 @@ typedef struct renode_bus_peripheral renode_bus_peripheral_t;
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
  */
 renode_error_t *renode_connect(const char *port, renode_t **renode);
+
+/**
+ * @brief The function initializing a connection to the Renode instance that runs in this process through librenode.
+ *
+ * It is defined only when the library is built with `RENODE_API_TRANSPORT=in_process`, which links librenode.
+ * Requests to Renode run on the calling thread. Callbacks run on the Renode thread that raises them,
+ * and calls that a callback makes run on that thread too.
+ *
+ * @note The connection should be closed using renode_disconnect() before the client app exits.
+ *
+ * @param[in] name - the name of the connection among the externals of the emulation, which the Monitor and log
+ * messages show. It must not be taken by another external.
+ * @param[out] renode - the Renode connection handle pointer
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_connect_in_process(const char *name, renode_t **renode);
 
 /**
  * @brief The function closing the Renode connection and freeing the internal handle memory.

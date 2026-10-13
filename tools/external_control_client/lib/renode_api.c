@@ -119,6 +119,20 @@ static renode_error_t *check_version_handler(renode_connection_t *conn, const vo
     return NO_ERROR;
 }
 
+// Each build defines only the connect function of its transport, so calling the other one fails to link.
+#ifdef RENODE_API_TRANSPORT_IN_PROCESS
+renode_error_t *renode_connect_in_process(const char *name, renode_t **renode)
+{
+    assert(name != NULL);
+    assert(renode != NULL);
+
+    return connect_and_check_version(&(renode_connection_config_t) {
+        .name = name,
+        .request_callback = generic_request_handler,
+        .server_request_ud = NULL,
+    }, renode);
+}
+#else
 renode_error_t *renode_connect(const char *port, renode_t **renode)
 {
     assert(port != NULL && renode != NULL);
@@ -130,6 +144,7 @@ renode_error_t *renode_connect(const char *port, renode_t **renode)
         .server_request_ud = NULL,
     }, renode);
 }
+#endif
 
 static renode_error_t *connect_and_check_version(const renode_connection_config_t *cfg, renode_t **renode)
 {
