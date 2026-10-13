@@ -11,6 +11,10 @@ EXPORTS
 	renode_get_gpio
 	renode_set_gpio_state
 	renode_free_gpio
+	renode_external_control_open
+	renode_external_control_request
+	renode_external_control_respond
+	renode_external_control_close
 	renode_systemc_send_backward_request
 	renode_systemc_setup_connection
 	renode_systemc_init_native_connection

@@ -84,6 +84,8 @@ public class RequestStack
         return sb.ToString();
     }
 
+    public bool IsEmpty => requests.Count == 0;
+
     private static string DirectionToString(MessageDirection direction)
     {
         return direction == MessageDirection.Sent ? "->" : "<-";
