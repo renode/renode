@@ -112,7 +112,7 @@ namespace Antmicro.Renode.WebSockets
 
             SharedData.ClearEmulationEvent?.Invoke();
 
-            foreach(var endp in new List<string> { "/telnet/29169", "/telnet/29170" })
+            foreach(var endp in new List<string> { "/monitor", "/logs" })
             {
                 foreach(var conn in WebSocketsManager.Instance.GetConnections(endp))
                 {
