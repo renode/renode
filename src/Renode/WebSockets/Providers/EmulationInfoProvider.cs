@@ -254,7 +254,6 @@ namespace Antmicro.Renode.WebSockets.Providers
                 UartCreatedEvent.RaiseEvent(new UartCreatedEventDto
                 {
                     Name = uartName,
-                    Port = webSocketUartAnalyzer.GetUartNumber(),
                     MachineName = machineName
                 });
             }
@@ -355,8 +354,6 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class UartCreatedEventDto
         {
-            [JsonProperty("port")]
-            public int Port;
             [JsonProperty("name")]
             public string Name;
             [JsonProperty("machineName")]
