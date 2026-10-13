@@ -277,7 +277,7 @@ namespace Antmicro.Renode.WebSockets
             var serializedEvent = JsonConvert.SerializeObject(eventResponse);
 
             Logger.Log(LogLevel.Debug, $"Event raised: {serializedEvent.ToString()}");
-            SharedData.MainConnection?.Send(Encoding.UTF8.GetBytes(serializedEvent));
+            webSocketServerProvider.Broadcast(Encoding.UTF8.GetBytes(serializedEvent));
         }
 
         private void SendErrorMessage(string version, int id)
