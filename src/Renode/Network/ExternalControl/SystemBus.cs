@@ -21,7 +21,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class SystemBus : BaseCommand, IInstanceBasedCommand<IPeripheral>
     {
-        public SystemBus(ExternalControlSocket parent) : base(parent)
+        public SystemBus(ExternalControlEndpoint parent) : base(parent)
         {
             Instances = new InstanceCollection<IPeripheral>();
         }
@@ -39,14 +39,14 @@ namespace Antmicro.Renode.Network.ExternalControl
                 remotePeripheralCallbacks.Add(newCallback);
                 var response = SendCallbackRegisterRequest(remotePeripheralId, accessWidth, accessType, newCallback.Id);
 
-                response.LogOnError(Identifier, parent);
+                response.LogOnError(Identifier, parent.Owner);
                 if(response.Type != CommandType.Success)
                 {
                     // Remove the callback only on failure - as the remote might send messages immediately otherwise
                     remotePeripheralCallbacks.RemoveAt(remotePeripheralCallbacks.Count - 1);
                     throw new RecoverableException("Could not register remote callback. Check logs for details");
                 }
-                parent.DebugLog("Registered remote callback with id: {0}", remotePeripheralId);
+                parent.Owner.DebugLog("Registered remote callback with id: {0}", remotePeripheralId);
             }
         }
 
@@ -68,22 +68,22 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private MessagePayload HandleSysbusCallbackEventRequest(MessagePayload payload)
         {
-            parent.DebugLog($"Received {nameof(SystemBus)} EventRequest");
+            parent.Owner.DebugLog($"Received {nameof(SystemBus)} EventRequest");
 
             var callbackId = BitConverter.ToInt32(payload.Data[..SizeOfCallbackId]);
             var data = (ReadOnlySpan<byte>)payload.Data[SizeOfCallbackId..];
 #if DEBUG
-            parent.NoisyLog("... raw payload {0}", payload.ToString());
+            parent.Owner.NoisyLog("... raw payload {0}", payload.ToString());
 #endif
 
             var headerSize = Marshal.SizeOf(typeof(SystemBusEventHeader));
             var header = data.Slice(0, headerSize).ToArray().ToStruct<SystemBusEventHeader>();
 
 #if DEBUG
-            parent.NoisyLog("... Timestamp: {0}, AccessType: {1}, AccessWidth: {2}, Address: 0x{3:X}, DataCount: {4}",
+            parent.Owner.NoisyLog("... Timestamp: {0}, AccessType: {1}, AccessWidth: {2}, Address: 0x{3:X}, DataCount: {4}",
                 header.Timestamp, header.AccessType.ToString(), header.AccessWidth.ToString(), header.Address, header.DataCount);
 
-            parent.NoisyLog("... with remote peripheral callback id: {0}", callbackId);
+            parent.Owner.NoisyLog("... with remote peripheral callback id: {0}", callbackId);
 #endif
 
             RemoteCallbackType registeredCallback;
@@ -103,7 +103,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
                 var readData = PerformRead(sysbus, context, header.Address, header.AccessWidth, header.DataCount);
 #if DEBUG
-                parent.NoisyLog("... reading data {0}", Misc.PrettyPrintCollectionHex(readData));
+                parent.Owner.NoisyLog("... reading data {0}", Misc.PrettyPrintCollectionHex(readData));
 #endif
                 return MessagePayload.Success(Identifier, readData);
             }
@@ -113,11 +113,11 @@ namespace Antmicro.Renode.Network.ExternalControl
                 var dataPortionLen = data.Slice(headerSize).Length;
                 if(dataPortionLen != expectedByteCount)
                 {
-                    parent.WarningLog("Received different amount of data for writing: {0} than the data count indicates: {1}. Extra trailing bytes will be dropped", dataPortionLen, expectedByteCount);
+                    parent.Owner.WarningLog("Received different amount of data for writing: {0} than the data count indicates: {1}. Extra trailing bytes will be dropped", dataPortionLen, expectedByteCount);
                 }
                 var writeData = data.Slice(headerSize, expectedByteCount).ToArray();
 #if DEBUG
-                parent.NoisyLog("... writing data {0}", Misc.PrettyPrintCollectionHex(writeData));
+                parent.Owner.NoisyLog("... writing data {0}", Misc.PrettyPrintCollectionHex(writeData));
 #endif
                 PerformWrite(sysbus, context, header.Address, header.AccessWidth, writeData);
                 return MessagePayload.Success(Identifier);
@@ -168,7 +168,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 }
 
                 RegisterCallbacks(externalPeripheral, accessWidths, accessTypes, ed);
-                parent.Log(LogLevel.Debug, "Registered sysbus callbacks (ed={0}, access_types=[{1}], access_widths=[{2}])", ed, accessTypes, accessWidths);
+                parent.Owner.Log(LogLevel.Debug, "Registered sysbus callbacks (ed={0}, access_types=[{1}], access_widths=[{2}])", ed, accessTypes, accessWidths);
                 return MessagePayload.Success(Identifier);
             }
             return MessagePayload.Error(Identifier,
@@ -251,10 +251,10 @@ namespace Antmicro.Renode.Network.ExternalControl
 
             var expectedByteCount = (int)DataCountToByteCount(width, (ulong)count);
             var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, header));
-            response.LogOnError(Identifier, parent);
+            response.LogOnError(Identifier, parent.Owner);
             if(response.Data.Length != expectedByteCount)
             {
-                parent.ErrorLog("Unexpected read callback response legth: {0} expected {1} bytes", response.Data.Length, expectedByteCount);
+                parent.Owner.ErrorLog("Unexpected read callback response legth: {0} expected {1} bytes", response.Data.Length, expectedByteCount);
                 return new byte[expectedByteCount];
             }
 
@@ -275,7 +275,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             var byteCount = DataCountToByteCount(width, (ulong)count);
             var payload = header.AsRawBytes().Concat(value.Skip(startingIndex).Take((int)byteCount));
             var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, payload.ToArray()));
-            response.LogOnError(Identifier, parent);
+            response.LogOnError(Identifier, parent.Owner);
         }
 
         private bool ValidateParameters(Operation op, AccessWidth width, ulong dataSize, int commandDataCount, out MessagePayload error)

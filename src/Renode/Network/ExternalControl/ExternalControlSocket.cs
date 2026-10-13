@@ -207,26 +207,25 @@ namespace Antmicro.Renode.Network
             this.Log(LogLevel.Debug, "Message sent: {0}", message);
         }
 
-        public IMachineContainer Machines { get; private set; }
-
         private void InitializeHandlers()
         {
             lock(handlersLocker)
             {
+                endpoint = new ExternalControlEndpoint(this, SendRequest);
                 commandHandlers = new CommandHandlerCollection();
-                commandHandlers.Register(new TimeElapsedCallbackCommand(this));
-                commandHandlers.Register(new RunFor(this));
-                commandHandlers.Register(new GetTime(this));
-                commandHandlers.Register(new SPI(this));
-                commandHandlers.Register(new ADC(this));
-                commandHandlers.Register(new GPIOPort(this));
-                commandHandlers.Register(new SystemBus(this));
-                commandHandlers.Register(new CheckVersion(this));
-                commandHandlers.Register(new CANBus(this));
-                commandHandlers.Register(new CustomCommand(this));
+                commandHandlers.Register(new TimeElapsedCallbackCommand(endpoint));
+                commandHandlers.Register(new RunFor(endpoint));
+                commandHandlers.Register(new GetTime(endpoint));
+                commandHandlers.Register(new SPI(endpoint));
+                commandHandlers.Register(new ADC(endpoint));
+                commandHandlers.Register(new GPIOPort(endpoint));
+                commandHandlers.Register(new SystemBus(endpoint));
+                commandHandlers.Register(new CheckVersion(endpoint));
+                commandHandlers.Register(new CANBus(endpoint));
+                commandHandlers.Register(new CustomCommand(endpoint));
 
-                var getMachineHandler = new GetMachine(this);
-                Machines = getMachineHandler;
+                var getMachineHandler = new GetMachine(endpoint);
+                endpoint.Machines = getMachineHandler;
 
                 commandHandlers.Register(getMachineHandler);
                 disposeCancelationTokenSource = new();
@@ -253,6 +252,7 @@ namespace Antmicro.Renode.Network
 
                 commandHandlers?.Dispose();
                 commandHandlers = null;
+                endpoint = null;
 
                 disposeCancelationTokenSource?.Dispose();
                 disposeCancelationTokenSource = null;
@@ -535,6 +535,7 @@ namespace Antmicro.Renode.Network
         private CommunicationHandler internalHandler;
         private CancellationTokenSource disposeCancelationTokenSource;
         private CommandHandlerCollection commandHandlers;
+        private ExternalControlEndpoint endpoint;
 
         private readonly bool isClient;
         private readonly int port;

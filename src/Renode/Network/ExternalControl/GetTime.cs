@@ -12,7 +12,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class GetTime : BaseCommand
     {
-        public GetTime(ExternalControlSocket parent)
+        public GetTime(ExternalControlEndpoint parent)
             : base(parent)
         {
         }
@@ -20,7 +20,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         public override MessagePayload Invoke(MessagePayload payload)
         {
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime;
-            parent.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
+            parent.Owner.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
 
             return MessagePayload.Success(Identifier, ((ulong)timestamp.TotalNanoseconds).AsRawBytes());
         }

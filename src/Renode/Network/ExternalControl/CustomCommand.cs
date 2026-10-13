@@ -18,7 +18,7 @@ namespace Antmicro.Renode.Network.ExternalControl;
 
 public class CustomCommand : BaseCommand
 {
-    public CustomCommand(ExternalControlSocket parent) : base(parent)
+    public CustomCommand(ExternalControlEndpoint parent) : base(parent)
     {
         monitor = ObjectCreator.Instance.GetSurrogate<UserInterface.Monitor>();
     }
@@ -46,7 +46,7 @@ public class CustomCommand : BaseCommand
             response = parent.SendRequest(MessagePayload.Event(Command.CustomCommand, 0, eventHeader, Encoding.UTF8.GetBytes(command)));
         }
 
-        var commandSuccesful = response.LogOnError(Identifier, parent);
+        var commandSuccesful = response.LogOnError(Identifier, parent.Owner);
         if(!commandSuccesful)
         {
             throw new RecoverableException("Command failed");
@@ -104,7 +104,7 @@ public class CustomCommand : BaseCommand
             return MessagePayload.Error(Identifier, $"Cannot decode command due to '{e.Message}' (raw data: {commandBytes.ToArray()})");
         }
 
-        parent.DebugLog("Received custom command: {0}", command);
+        parent.Owner.DebugLog("Received custom command: {0}", command);
         if(ExecuteMonitorCommand(command, out var output))
         {
             var bytes = Encoding.UTF8.GetBytes(output);
@@ -118,13 +118,13 @@ public class CustomCommand : BaseCommand
 
     private MessagePayload HandleRequest(Span<byte> data)
     {
-        parent.DebugLog("In CustomCommand Invoke method");
+        parent.Owner.DebugLog("In CustomCommand Invoke method");
         if(data.Length != 5)
         {
             return MessagePayload.Error(Identifier, $"Expected 5 bytes payload");
         }
         var command = (CustomCommandCommand)data[0];
-        parent.DebugLog("Received {0} CustomCommand command", command);
+        parent.Owner.DebugLog("Received {0} CustomCommand command", command);
 
         switch(command)
         {
@@ -134,11 +134,11 @@ public class CustomCommand : BaseCommand
             {
                 if(CustomCommandHandlerId.HasValue)
                 {
-                    parent.WarningLog("Overwriting CustomCommand handler ID {0} with {1}", CustomCommandHandlerId, ed);
+                    parent.Owner.WarningLog("Overwriting CustomCommand handler ID {0} with {1}", CustomCommandHandlerId, ed);
                 }
                 CustomCommandHandlerId = ed;
             }
-            parent.DebugLog("Attached CustomCommand callback");
+            parent.Owner.DebugLog("Attached CustomCommand callback");
             break;
         default:
             return MessagePayload.Error(Identifier, "Unexpected command format");

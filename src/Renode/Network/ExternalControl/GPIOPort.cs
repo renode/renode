@@ -19,7 +19,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class GPIOPort : BaseCommand, IInstanceBasedCommand<IPeripheral>
     {
-        public GPIOPort(ExternalControlSocket parent)
+        public GPIOPort(ExternalControlEndpoint parent)
             : base(parent)
         {
             Instances = new InstanceCollection<IPeripheral>();
@@ -142,7 +142,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
                 if(eventData.CallbackIdentifier >= externalCallbacks.Count)
                 {
-                    parent.Log(LogLevel.Warning, "Can't process event request, invalid callback ID");
+                    parent.Owner.Log(LogLevel.Warning, "Can't process event request, invalid callback ID");
                     return MessagePayload.Error("Invalid callback ID");
                 }
                 callback = externalCallbacks[eventData.CallbackIdentifier];
@@ -162,7 +162,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             };
 
             var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, data));
-            response.LogOnError(Identifier, parent);
+            response.LogOnError(Identifier, parent.Owner);
         }
 
         private int GetExpectedPayloadCount(GPIOPortCommand command)

@@ -198,7 +198,7 @@ namespace Antmicro.Renode.Network.ExternalControl
     public interface IInstanceBasedCommand<T> : ICommand
         where T : IEmulationElement
     {
-        public int GetExternalInstanceId(ExternalControlSocket externalControl, int machineId, string remoteInstance)
+        public int GetExternalInstanceId(ExternalControlEndpoint externalControl, int machineId, string remoteInstance)
         {
             var data = BitConverter.GetBytes(RegisterNewInstanceSpecialId)
                 .Concat(BitConverter.GetBytes(machineId))

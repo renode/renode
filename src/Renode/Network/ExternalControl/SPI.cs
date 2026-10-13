@@ -13,7 +13,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class SPI : BaseCommand, IInstanceBasedCommand<ExternalControlSPIPeripheral>
     {
-        public SPI(ExternalControlSocket parent)
+        public SPI(ExternalControlEndpoint parent)
             : base(parent)
         {
             Instances = new InstanceCollection<ExternalControlSPIPeripheral>();
@@ -31,7 +31,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
             var ed = BitConverter.ToInt32(data);
             RegisterCallbacks(instance, ed);
-            parent.Log(LogLevel.Debug, "Registered SPI callbacks (ed={0})", ed);
+            parent.Owner.Log(LogLevel.Debug, "Registered SPI callbacks (ed={0})", ed);
             return MessagePayload.Success(Identifier);
         }
 
@@ -50,7 +50,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 };
 
                 var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, data));
-                response.LogOnError(Identifier, parent);
+                response.LogOnError(Identifier, parent.Owner);
 
                 return response.Data[0];
             };
@@ -62,7 +62,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 };
 
                 var response = parent.SendRequest(MessagePayload.Event(Identifier, ed, data));
-                response.LogOnError(Identifier, parent);
+                response.LogOnError(Identifier, parent.Owner);
             };
         }
 

@@ -14,7 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class RunFor : BaseCommand
     {
-        public RunFor(ExternalControlSocket parent)
+        public RunFor(ExternalControlEndpoint parent)
             : base(parent)
         {
         }
@@ -29,7 +29,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             var nanoseconds = BitConverter.ToUInt64(payload.Data);
             var interval = TimeInterval.FromNanoseconds(nanoseconds);
 
-            parent.Log(LogLevel.Info, "Executing RunFor({0}) command", interval);
+            parent.Owner.Log(LogLevel.Info, "Executing RunFor({0}) command", interval);
             EmulationManager.Instance.CurrentEmulation.RunFor(interval);
 
             return MessagePayload.Success(Identifier);

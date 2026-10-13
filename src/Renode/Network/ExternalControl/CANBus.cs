@@ -16,7 +16,7 @@ using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Network.ExternalControl;
 
-public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstanceBasedCommand<CANExternalControlBus>, IEmulationElement
+public class CANBus(ExternalControlEndpoint parent) : BaseCommand(parent), IInstanceBasedCommand<CANExternalControlBus>, IEmulationElement
 {
     public static int MaximumCanFrameSize = 64;
 
@@ -50,7 +50,7 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
         case CANBusCommands.RegisterCallbacks:
             var ed = BitConverter.ToInt32(data[1..]);
             instance.ReceivedMessage += (frame) => ReceivedFrame(frame, ed);
-            parent.DebugLog("Registered CAN callback for '{0}'", instance.GetName());
+            parent.Owner.DebugLog("Registered CAN callback for '{0}'", instance.GetName());
             break;
 
         default:
@@ -64,7 +64,7 @@ public class CANBus(ExternalControlSocket parent) : BaseCommand(parent), IInstan
         var eventHeader = EventHeader.Create(EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds, message);
 
         var response = parent.SendRequest(MessagePayload.Event(Identifier, callbackIndex, eventHeader, message.Data));
-        response.LogOnError(Identifier, parent);
+        response.LogOnError(Identifier, parent.Owner);
     }
 
     public override MessagePayload Invoke(MessagePayload payload) => this.InvokeHandledWithInstance(payload);

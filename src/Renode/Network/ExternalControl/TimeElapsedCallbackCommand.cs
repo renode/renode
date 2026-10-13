@@ -17,7 +17,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class TimeElapsedCallbackCommand : BaseCommand, IDisposable
     {
-        public TimeElapsedCallbackCommand(ExternalControlSocket parent)
+        public TimeElapsedCallbackCommand(ExternalControlEndpoint parent)
             : base(parent)
         {
         }
@@ -43,7 +43,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
 
             var response = parent.SendRequest(new MessagePayload(Command.TimeElapsedCallback, CommandType.Request, BitConverter.GetBytes(id)));
-            response.LogOnError(Identifier, parent);
+            response.LogOnError(Identifier, parent.Owner);
         }
 
         public override MessagePayload Invoke(MessagePayload payload)
@@ -76,7 +76,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 syncedStateCallbacks.Add(callbackIdentifier);
             }
 
-            parent.Log(LogLevel.Debug, "Registered time elapsed callback");
+            parent.Owner.Log(LogLevel.Debug, "Registered time elapsed callback");
 
             return MessagePayload.Success(Identifier);
         }
@@ -93,7 +93,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                 return MessagePayload.Error(Identifier, "Can't decode request");
             }
             var timestamp = new TimeStamp(TimeInterval.FromNanoseconds(timeEvent.Nanoseconds), EmulationManager.ExternalWorld);
-            parent.Log(LogLevel.Debug, "Received time elapse event, timestamp: {0}", timestamp);
+            parent.Owner.Log(LogLevel.Debug, "Received time elapse event, timestamp: {0}", timestamp);
 
             lock(externalCallbacks)
             {
@@ -121,7 +121,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                     foreach(var callbackIdentifier in syncedStateCallbacks)
                     {
                         var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, new TimeElapsedEvent(callbackIdentifier, nanoseconds)));
-                        response.LogOnError(Identifier, parent);
+                        response.LogOnError(Identifier, parent.Owner);
                     }
 
                     SendEventInNearestSyncedState();
@@ -129,7 +129,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             }
             catch(ConnectionDisposedException)
             {
-                parent.WarningLog("{0} got invoked on a disposed {1}", nameof(TimeElapsedCallbackCommand), nameof(ExternalControlSocket));
+                parent.Owner.WarningLog("{0} got invoked on a disposed {1}", nameof(TimeElapsedCallbackCommand), nameof(ExternalControlSocket));
             }
         }
 

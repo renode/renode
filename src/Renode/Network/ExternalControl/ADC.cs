@@ -14,7 +14,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 {
     public class ADC : BaseCommand, IInstanceBasedCommand<IADC>
     {
-        public ADC(ExternalControlSocket parent)
+        public ADC(ExternalControlEndpoint parent)
             : base(parent)
         {
             Instances = new InstanceCollection<IADC>();
@@ -40,18 +40,18 @@ namespace Antmicro.Renode.Network.ExternalControl
             {
             case ADCCommand.GetCount:
                 var channelCount = instance.ADCChannelCount;
-                parent.Log(LogLevel.Debug, "Executing ADC GetCount command, returned {0}", channelCount);
+                parent.Owner.Log(LogLevel.Debug, "Executing ADC GetCount command, returned {0}", channelCount);
                 return MessagePayload.Success(Identifier, channelCount.AsRawBytes());
 
             case ADCCommand.GetValue:
                 DecodeChannelArgument(data, out var channel);
                 var voltage = instance.GetVoltage(channel);
-                parent.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, voltage);
+                parent.Owner.Log(LogLevel.Debug, "Executing ADC GetValue command, channel #{0} returned {1}", channel, voltage);
                 return MessagePayload.Success(Identifier, voltage.AsRawBytes());
 
             case ADCCommand.SetValue:
                 DecodeSetValueArguments(data, out channel, out voltage);
-                parent.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, voltage);
+                parent.Owner.Log(LogLevel.Debug, "Executing ADC SetValue command, channel #{0} set to {1}", channel, voltage);
                 instance.SetVoltage(voltage, channel);
                 return MessagePayload.Success(Identifier);
 
