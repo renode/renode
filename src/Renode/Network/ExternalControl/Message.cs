@@ -51,16 +51,12 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         public bool TryDecodePayload(ReadOnlySpan<byte> data)
         {
-            if(data.Length < PayloadSize)
+            if(data.Length < PayloadSize || !MessagePayload.TryDecode(data[..PayloadSize], out var payload))
             {
                 return false;
             }
 
-            var cmd = (Command)BitConverter.ToUInt16(data);
-            var type = (CommandType)data[2];
-            var payload = data[..PayloadSize][MessagePayload.HeaderSize..].ToArray();
-            Payload = new MessagePayload(cmd, type, payload);
-
+            Payload = payload;
             return true;
         }
 

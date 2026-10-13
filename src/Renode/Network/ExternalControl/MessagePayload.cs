@@ -87,6 +87,20 @@ namespace Antmicro.Renode.Network.ExternalControl
             return new MessagePayload(command, CommandType.Request, payload.AsRawBytes());
         }
 
+        public static bool TryDecode(ReadOnlySpan<byte> data, out MessagePayload payload)
+        {
+            if(data.Length < HeaderSize)
+            {
+                payload = default;
+                return false;
+            }
+
+            var command = (Command)BitConverter.ToUInt16(data);
+            var type = (CommandType)data[sizeof(Command)];
+            payload = new MessagePayload(command, type, data[HeaderSize..].ToArray());
+            return true;
+        }
+
         public MessagePayload(Command cmd, CommandType type, byte[] data)
         {
             Command = cmd;
