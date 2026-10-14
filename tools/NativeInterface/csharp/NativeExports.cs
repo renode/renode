@@ -318,10 +318,33 @@ namespace Antmicro.Renode.NativeInterface
             public static bool TryGetPeripheral<T>(byte* machName, byte* periName, out T peripheral) where T : class, IPeripheral
             {
                 peripheral = null;
-                var machineName = Marshal.PtrToStringUTF8((IntPtr)machName);
                 var peripheralName = Marshal.PtrToStringUTF8((IntPtr)periName);
 
-                if(string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(peripheralName))
+                if(string.IsNullOrEmpty(peripheralName))
+                {
+                    return false;
+                }
+
+                if(!TryGetMachine(machName, out var m))
+                {
+                    return false;
+                }
+
+                if(!m.TryGetByName<T>(peripheralName, out var p))
+                {
+                    Console.Error.WriteLine($"No peripheral with name {peripheralName}");
+                    return false;
+                }
+                peripheral = p;
+                return true;
+            }
+
+            public static bool TryGetMachine(byte* machName, out IMachine machine)
+            {
+                machine = null;
+                var machineName = Marshal.PtrToStringUTF8((IntPtr)machName);
+
+                if(string.IsNullOrEmpty(machineName))
                 {
                     return false;
                 }
@@ -339,13 +362,7 @@ namespace Antmicro.Renode.NativeInterface
                     Console.Error.WriteLine($"No machine with name {machineName}");
                     return false;
                 }
-
-                if(!m.TryGetByName<T>(peripheralName, out var p))
-                {
-                    Console.Error.WriteLine($"No peripheral with name {peripheralName}");
-                    return false;
-                }
-                peripheral = p;
+                machine = m;
                 return true;
             }
         }
