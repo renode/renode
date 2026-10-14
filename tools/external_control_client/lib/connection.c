@@ -224,7 +224,7 @@ static void *receiver_thread(void *ud)
 
         void *buffer = malloc(envelope.data_size);
         if (buffer == NULL) {
-            check_and_handle_async_error(conn, create_fatal_error_static("Failed to allocate a buffer to hold the incomming message"));
+            check_and_handle_async_error(conn, create_fatal_error_static("Failed to allocate a buffer to hold the incoming message"));
         }
         check_and_handle_async_error(conn, read_or_fail(conn->socket_fd, buffer, envelope.data_size));
 

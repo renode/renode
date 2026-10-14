@@ -143,7 +143,7 @@ renode_error_t *renode_disconnect(renode_t **renode);
  *
  * @param[in] renode - the Renode connection handle pointer
  * @param[in] blocking - if false, the function may return an error with the code `ERR_CONNECTION_BUSY` to indicate
- * that the connection cannot be closed at this momment due to the command handlers currently running.
+ * that the connection cannot be closed at this moment due to the command handlers currently running.
  * If true, this function will block in case of `ERR_CONNECTION_BUSY` being returned.
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
  */
@@ -199,7 +199,7 @@ typedef enum {
  * @brief Renode's virtual time.
  *
  * The virtual time is represented by an unsigned integer in an unspecified time unit.
- * It is safe to perform comparision (<, >, <=, >=, !=, ==), addition (+, +=) and subtraction (-, -=) operations
+ * It is safe to perform comparison (<, >, <=, >=, !=, ==), addition (+, +=) and subtraction (-, -=) operations
  * between two instances of `renode_time_t`.
  *
  * Use renode_create_time(), renode_time_to_time_unit() or renode_time_to_seconds()
@@ -354,7 +354,7 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
  * The GPIO state-change event data.
  */
 typedef struct __attribute__((packed)) {
-    /** The virtual time at which the event occured */
+    /** The virtual time at which the event occurred */
     renode_time_t time;
     /** The new GPIO state */
     bool state;
@@ -375,7 +375,7 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
  * The custom command event data.
  */
  typedef struct {
-    /** The virtual time at which the event occured */
+    /** The virtual time at which the event occurred */
     renode_time_t time;
     /** The command string */
     char command[];
@@ -569,7 +569,7 @@ renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address,
  * @brief The structure storing information about an access event to Renode's system bus.
  */
 typedef struct {
-    /** The timestamp of when the event occured */
+    /** The timestamp of when the event occurred */
     renode_time_t timestamp;
     /** The read or write transaction */
     renode_access_type_t access_type;
@@ -618,7 +618,7 @@ renode_error_t *renode_get_bus_peripheral(renode_machine_t *machine, const char 
  * All callbacks should set renode_sysbus_event_data_t::access_succeeded to true.
  * By default, it is false.
  * If renode_sysbus_event_data_t::access_type is ::SYSBUS_READ, then the callback should set renode_sysbus_event_data_t::data to true.
- * By default, it is all zeros, and can be ommited if the access doesn't succeed.
+ * By default, it is all zeros, and can be omitted if the access doesn't succeed.
  */
 renode_error_t *renode_register_sysbus_access_callback(renode_bus_peripheral_t *bus_peripheral, renode_access_type_t access_type, renode_access_width_t width, void *user_data, renode_sysbus_event_callback_t callback);
 

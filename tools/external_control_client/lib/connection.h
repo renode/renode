@@ -11,7 +11,7 @@ typedef struct {
     size_t byte_count;
 } renode_connection_transfer_t;
 
-typedef renode_error_t *(*renode_connection_response_t)(renode_connection_t *conn, const void *response, size_t respones_size, void *ud);
+typedef renode_error_t *(*renode_connection_response_t)(renode_connection_t *conn, const void *response, size_t response_size, void *ud);
 typedef renode_error_t *(*renode_server_request_t)(renode_connection_t *conn, uint16_t id, const void *request, size_t request_size, void *ud);
 
 typedef struct {
@@ -35,8 +35,8 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
 /**
  * Send N data buffers
  *
- * @param[in] conn renode_connection_t instance throug which the data should be sent
- * @param[in] cb callback to execute with on the response
+ * @param[in] conn renode_connection_t instance through which the data should be sent
+ * @param[in] cb callback to execute on the response
  * @param[in] ud userdata pointer to be passed into the callback
  * @param[in] ... buffers that should be sent. It is a variadic list of structures of type renode_connection_transfer_t
  *

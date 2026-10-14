@@ -538,7 +538,7 @@ static renode_error_t *adc_handler(renode_connection_t *conn, const void *data, 
         memcpy(&cmd->result_value, data, sizeof(int32_t));
         return NO_ERROR;
     case SET_CHANNEL_VALUE:
-        return NO_ERROR; // Nothing to do - we only care about a successfull status
+        return NO_ERROR; // Nothing to do - we only care about a successful status
     default:
         // TODO: Maybe assert_exit instead? (This is most likely a programmer error)
         return create_fatal_error_static("Unknown ADC operation");
@@ -639,7 +639,7 @@ static renode_error_t *gpio_handler(renode_connection_t *conn, const void *data,
         return NO_ERROR;
     case SET_STATE:
     case REGISTER_EVENT:
-        return NO_ERROR; // Nothing to do here - we only care about the successfull status
+        return NO_ERROR; // Nothing to do here - we only care about the successful status
     default:
         // TODO: Maybe assert_exit instead? (This is most likely a programmer error)
         return create_fatal_error_static("Unknown GPIO operation");
@@ -947,7 +947,7 @@ static renode_error_t *parse_response(const void *response, size_t size, message
     response += sizeof(*header);
     size -= sizeof(*header);
 
-    verbose_print("Incomming command: 0x%"PRIx16", message type: 0x%"PRIx8, header->command, header->type);
+    verbose_print("Incoming command: 0x%"PRIx16", message type: 0x%"PRIx8, header->command, header->type);
 
     switch(header->type) {
     case TYPE_REQUEST:
