@@ -16,6 +16,7 @@ Custom Teardown
 
 *** Test Cases ***
 Should Quit On Sigint
+    [Tags]                          exclude_osx
     Execute Command                 mach create
 
     ${pid}=                         Execute Command  python "import os; print(os.getpid())"
