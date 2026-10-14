@@ -29,7 +29,7 @@ void renode_connection_set_fatal_error_callback(renode_connection_t *conn, renod
 // Do not call directly - go through the `renode_connection_send_message` macro instead
 renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count);
 
-// Do not call directly - go through the `renode_connection_send` macro instead
+// Do not call directly - go through the `renode_connection_send_request` macro instead
 renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud, const renode_connection_transfer_t *transfers, size_t count);
 
 /**
@@ -45,7 +45,7 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
  * @code
  * uint8_t data[8] = ...;
  * uint32_t data_size = sizeof(data);
- * renode_connection_send_request(conn, NULL, response_handler,
+ * renode_connection_send_request(conn, response_handler, NULL,
  *     {&data_size, sizeof(data_size)},
  *     {data, data_size},
  * );
