@@ -115,7 +115,8 @@ static bool check_accesses(const std::vector<bus_access> &accesses)
 int main(int argc, char *argv[])
 {
     dut_state state;
-    if(!load(argc, argv, dut_read, dut_write, &state) || !execute_command("start")) {
+    RenodeMachine *machine;
+    if(!load(argc, argv, dut_read, dut_write, &state, &machine) || !execute_command("start")) {
         return exit_setup_error;
     }
 
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
     }
 
     quit();
+    renode_free_machine(machine);
 
     if(!check_accesses(accesses)) {
         return exit_mismatch;

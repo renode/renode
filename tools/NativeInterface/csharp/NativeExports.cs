@@ -365,6 +365,25 @@ namespace Antmicro.Renode.NativeInterface
                 machine = m;
                 return true;
             }
+
+            public static bool TryGetPeripheral<T>(IntPtr machine, byte* periName, out T peripheral) where T : class, IPeripheral
+            {
+                peripheral = null;
+                var peripheralName = Marshal.PtrToStringUTF8((IntPtr)periName);
+
+                if(machine == IntPtr.Zero || string.IsNullOrEmpty(peripheralName))
+                {
+                    return false;
+                }
+
+                var machineInstance = (IMachine)GCHandle.FromIntPtr(machine).Target;
+                if(!machineInstance.TryGetByName<T>(peripheralName, out peripheral))
+                {
+                    Console.Error.WriteLine($"No peripheral with name {peripheralName}");
+                    return false;
+                }
+                return true;
+            }
         }
     }
 }

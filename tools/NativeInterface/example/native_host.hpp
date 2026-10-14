@@ -52,9 +52,11 @@ inline bool execute_command(const std::string &command)
     return true;
 }
 
-//  Loads the script named on the command line and attaches the handlers to the device. The host
-//  starts the emulation after any further setup.
-inline bool load(int argc, char *argv[], RenodeBusReadHandler read, RenodeBusWriteHandler write, void *context)
+//  Loads the script named on the command line, gets a handle to the machine and attaches the
+//  handlers to the device. The host starts the emulation after any further setup, and frees the
+//  machine handle.
+inline bool load(int argc, char *argv[], RenodeBusReadHandler read, RenodeBusWriteHandler write, void *context,
+                 RenodeMachine **machine)
 {
     if(argc != 2) {
         std::fprintf(stderr, "usage: %s <script.resc>\n", argv[0]);
@@ -70,7 +72,12 @@ inline bool load(int argc, char *argv[], RenodeBusReadHandler read, RenodeBusWri
         return false;
     }
 
-    if(renode_bus_set_handlers(machine_name, peripheral_name, read, write, context) != RENODE_SUCCESS) {
+    if(renode_get_machine(machine_name, machine) != RENODE_SUCCESS) {
+        std::fprintf(stderr, "renode_get_machine failed\n");
+        return false;
+    }
+
+    if(renode_bus_set_handlers(*machine, peripheral_name, read, write, context) != RENODE_SUCCESS) {
         std::fprintf(stderr, "renode_bus_set_handlers failed\n");
         return false;
     }

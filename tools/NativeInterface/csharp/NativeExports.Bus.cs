@@ -16,7 +16,7 @@ namespace Antmicro.Renode.NativeInterface;
 public static unsafe partial class NativeExports
 {
     /// <summary>
-    /// Sends every access to the ExternalControlBusPeripheral named by machineName and peripheralName to native handlers.
+    /// Sends to native handlers every access to the ExternalControlBusPeripheral named peripheralName on the machine that machine refers to.
     /// Calling it again for the same peripheral replaces its handlers.
     /// Each handler gets
     /// <list type="bullet">
@@ -37,7 +37,7 @@ public static unsafe partial class NativeExports
                       typedef RenodeBusStatus (*RenodeBusWriteHandler)(void *context, uint64_t address, const uint8_t *data, uint32_t size);
                       """)]
     public static NativeStatus BusSetHandlers(
-        [DNNE.C99Type("const char *")] byte* machineName,
+        [DNNE.C99Type("RenodeMachine *")] IntPtr machine,
         [DNNE.C99Type("const char *")] byte* peripheralName,
         [DNNE.C99Type("RenodeBusReadHandler")] delegate* unmanaged<void*, ulong, byte*, uint, NativeBusStatus> read,
         [DNNE.C99Type("RenodeBusWriteHandler")] delegate* unmanaged<void*, ulong, byte*, uint, NativeBusStatus> write,
@@ -50,7 +50,7 @@ public static unsafe partial class NativeExports
             return NativeStatus.CommandError;
         }
 
-        if(!Generics.TryGetPeripheral<ExternalControlBusPeripheral>(machineName, peripheralName, out var peripheral))
+        if(!Generics.TryGetPeripheral<ExternalControlBusPeripheral>(machine, peripheralName, out var peripheral))
         {
             return NativeStatus.CommandError;
         }
