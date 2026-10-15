@@ -1,6 +1,7 @@
 # Like native-interface.robot, this suite does not use the Renode instance started by
 # robot_tests_provider. Each test builds a native host process that hosts its own Renode instance,
-# serves the guest's bus accesses as a device model and reports the result through its exit code.
+# serves the guest's bus accesses as a device model through the external control API and reports
+# the result through its exit code.
 #
 # See native-interface.resource for the variables that select which librenode is used.
 

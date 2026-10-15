@@ -15,6 +15,8 @@ using namespace native_host;
 constexpr uint64_t start_address = 0x10000008;
 constexpr uint64_t clear_address = 0x1000000c;
 
+constexpr const char *machine_name = "bus-handlers";
+constexpr const char *peripheral_name = "sysbus.dut";
 constexpr const char *gpio_peripheral_name = "sysbus.gpio";
 constexpr int gpio_input = 0;
 
@@ -23,35 +25,30 @@ struct dut_state {
     std::condition_variable test_ended;
     bool ended = false;
     uint64_t result = 0;
-    RenodeGpio *gpio = nullptr;
+    handle<renode_gpio_t> gpio;
 };
 
-static bool set_gpio_input(RenodeGpio *gpio, bool state)
+static bool set_gpio_input(renode_gpio_t *gpio, bool state)
 {
-    if(renode_set_gpio_state(gpio, gpio_input, state) != RENODE_SUCCESS) {
-        std::fprintf(stderr, "renode_set_gpio_state failed\n");
-        return false;
-    }
+    return check("set the GPIO input", renode_set_gpio_state(gpio, gpio_input, state));
+}
+
+static bool dut_read(uint64_t, uint8_t *data, uint32_t size)
+{
+    store_little_endian(data, size, 0);
     return true;
 }
 
-static RenodeBusStatus dut_read(void *context, uint64_t address, uint8_t *data, uint32_t size)
+static bool dut_write(dut_state &state, uint64_t address, const uint8_t *data, uint32_t size)
 {
-    store_little_endian(data, size, 0);
-    return RENODE_BUS_SUCCESS;
-}
-
-static RenodeBusStatus dut_write(void *context, uint64_t address, const uint8_t *data, uint32_t size)
-{
-    auto &state = *static_cast<dut_state *>(context);
     const uint64_t value = load_little_endian(data, size);
     if(address == start_address) {
-        if(!set_gpio_input(state.gpio, true)) {
-            return RENODE_BUS_ERROR;
+        if(!set_gpio_input(state.gpio.get(), true)) {
+            return false;
         }
     } else if(address == clear_address) {
-        if(!set_gpio_input(state.gpio, false)) {
-            return RENODE_BUS_ERROR;
+        if(!set_gpio_input(state.gpio.get(), false)) {
+            return false;
         }
     } else if(address == test_end_address) {
         std::scoped_lock lock(state.mutex);
@@ -59,23 +56,24 @@ static RenodeBusStatus dut_write(void *context, uint64_t address, const uint8_t 
         state.ended = true;
         state.test_ended.notify_one();
     }
-    return RENODE_BUS_SUCCESS;
+    return true;
 }
 
 int main(int argc, char *argv[])
 {
     dut_state state;
-    RenodeMachine *machine;
-    if(!load(argc, argv, dut_read, dut_write, &state, &machine)) {
+    external_control control;
+    if(!load(argc, argv)) {
         return exit_setup_error;
     }
 
-    if(renode_get_gpio(machine, gpio_peripheral_name, &state.gpio) != RENODE_SUCCESS) {
-        std::fprintf(stderr, "renode_get_gpio failed\n");
+    const auto on_write = [&state](auto... access) { return dut_write(state, access...); };
+    if(!control.connect(machine_name, peripheral_name, dut_read, on_write)) {
         return exit_setup_error;
     }
 
-    if(!execute_command("start")) {
+    state.gpio = control.get_gpio(gpio_peripheral_name);
+    if(!state.gpio || !execute_command("start")) {
         return exit_setup_error;
     }
 
@@ -86,9 +84,7 @@ int main(int argc, char *argv[])
         result = state.result;
     }
 
-    quit();
-    renode_free_gpio(state.gpio);
-    renode_free_machine(machine);
+    quit(control);
 
     if(result != test_passed) {
         std::fprintf(stderr, "the guest reported result 0x%" PRIx64 "\n", result);

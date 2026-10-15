@@ -11,6 +11,9 @@
 
 using namespace native_host;
 
+constexpr const char *machine_name = "bus-handlers";
+constexpr const char *peripheral_name = "sysbus.dut";
+
 constexpr uint64_t scratch_address = 0x10000000;
 
 enum class access_type {
@@ -60,20 +63,18 @@ static void record(dut_state &state, const bus_access &entry)
     state.accesses.push_back(entry);
 }
 
-static RenodeBusStatus dut_read(void *context, uint64_t address, uint8_t *data, uint32_t size)
+static bool dut_read(dut_state &state, uint64_t address, uint8_t *data, uint32_t size)
 {
-    auto &state = *static_cast<dut_state *>(context);
     std::scoped_lock lock(state.mutex);
 
     const uint64_t value = address == scratch_address ? state.scratch : 0;
     store_little_endian(data, size, value);
     record(state, { access_type::read, address, size, value });
-    return RENODE_BUS_SUCCESS;
+    return true;
 }
 
-static RenodeBusStatus dut_write(void *context, uint64_t address, const uint8_t *data, uint32_t size)
+static bool dut_write(dut_state &state, uint64_t address, const uint8_t *data, uint32_t size)
 {
-    auto &state = *static_cast<dut_state *>(context);
     std::scoped_lock lock(state.mutex);
 
     const uint64_t value = load_little_endian(data, size);
@@ -84,7 +85,7 @@ static RenodeBusStatus dut_write(void *context, uint64_t address, const uint8_t 
         state.ended = true;
         state.test_ended.notify_one();
     }
-    return RENODE_BUS_SUCCESS;
+    return true;
 }
 
 static void print_optional_access(const char *prefix, const std::vector<bus_access> &accesses, size_t index)
@@ -115,8 +116,14 @@ static bool check_accesses(const std::vector<bus_access> &accesses)
 int main(int argc, char *argv[])
 {
     dut_state state;
-    RenodeMachine *machine;
-    if(!load(argc, argv, dut_read, dut_write, &state, &machine) || !execute_command("start")) {
+    external_control control;
+    if(!load(argc, argv)) {
+        return exit_setup_error;
+    }
+
+    const auto on_read = [&state](auto... access) { return dut_read(state, access...); };
+    const auto on_write = [&state](auto... access) { return dut_write(state, access...); };
+    if(!control.connect(machine_name, peripheral_name, on_read, on_write) || !execute_command("start")) {
         return exit_setup_error;
     }
 
@@ -127,8 +134,7 @@ int main(int argc, char *argv[])
         accesses = state.accesses;
     }
 
-    quit();
-    renode_free_machine(machine);
+    quit(control);
 
     if(!check_accesses(accesses)) {
         return exit_mismatch;

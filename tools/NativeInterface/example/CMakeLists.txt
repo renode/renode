@@ -8,10 +8,14 @@ link_libraries(renode::renode pthread)
 
 add_executable(librenode_example monitor.c)
 add_executable(uart_example uart.c)
+set(RENODE_API_TRANSPORT in_process)
+add_subdirectory(${ni_root}/../external_control_client/lib ${CMAKE_CURRENT_BINARY_DIR}/renode_api)
 add_executable(bus_handlers_host bus_handlers_host.cpp)
 target_compile_features(bus_handlers_host PRIVATE cxx_std_17)
+target_link_libraries(bus_handlers_host PRIVATE renode_api)
 add_executable(gpio_host gpio_host.cpp)
 target_compile_features(gpio_host PRIVATE cxx_std_17)
+target_link_libraries(gpio_host PRIVATE renode_api)
 
 set_target_properties(librenode_example PROPERTIES
     BUILD_RPATH_USE_ORIGIN TRUE
