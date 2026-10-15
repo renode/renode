@@ -5,12 +5,6 @@ EXPORTS
 	renode_add_logging_handler
 	renode_remove_logging_handler
 	renode_add_uart_analyzer
-	renode_bus_set_handlers
-	renode_get_machine
-	renode_free_machine
-	renode_get_gpio
-	renode_set_gpio_state
-	renode_free_gpio
 	renode_external_control_open
 	renode_external_control_request
 	renode_external_control_respond

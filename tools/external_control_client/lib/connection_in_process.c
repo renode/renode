@@ -12,14 +12,7 @@
 #include <pthread.h>
 #include <string.h>
 
-// librenode declares functions with the same names as renode_api.h but with other signatures.
-#define renode_get_machine librenode_get_machine
-#define renode_get_gpio librenode_get_gpio
-#define renode_set_gpio_state librenode_set_gpio_state
 #include "librenode.h"
-#undef renode_get_machine
-#undef renode_get_gpio
-#undef renode_set_gpio_state
 
 #include "connection.h"
 
