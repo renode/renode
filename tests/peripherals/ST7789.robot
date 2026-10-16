@@ -8,6 +8,11 @@ ${SCREEN_DEVICE}        spi2.screen
 ${FB_TESTER_NAME}       fb_tester
 ${TIMEOUT}              10
 
+# SPI commands
+${CASET}                0x2a
+${RASET}                0x2b
+@{ADDR_SET}             0xff  0x00  0xff  0xff
+
 
 *** Keywords ***
 Create Machine
@@ -21,6 +26,17 @@ Create Machine
 
     Create Log Tester   0
 
+Send Command
+    [Arguments]         ${command}     ${arguments}
+
+    Execute Command     ${SCREEN_DEVICE} OnGPIO 0 false     # DCX line moved to command mode
+    Execute Command     ${SCREEN_DEVICE} Transmit ${command}
+
+    Execute Command     ${SCREEN_DEVICE} OnGPIO 0 true      # DCX line moved to data mode
+    FOR     ${arg}   IN     @{arguments}
+        Execute Command     ${SCREEN_DEVICE} Transmit ${arg}
+    END
+
 
 *** Test Cases ***
 Scroll Area Should Move On Scroll Start Address Increment
@@ -29,3 +45,14 @@ Scroll Area Should Move On Scroll Start Address Increment
 
     Should Not Be In Log    ${SCREEN_DEVICE}    level=Error
     Should Not Be In Log    ${SCREEN_DEVICE}    level=Warning
+
+Invalid Address Set Should Be Ignored
+    Send Command    ${CASET}    ${ADDR_SET}
+    Wait For Log Entry      Invalid (XS, XE) (65280, 65535)
+
+    Send Command    ${RASET}    ${ADDR_SET}
+    Wait For Log Entry      Invalid (YS, YE) (65280, 65535)
+
+    # Let's run the firmware for ${TIMEOUT} seconds to be sure that model is working as expected
+    Should Not Be In Log    ${SCREEN_DEVICE}    level=Error     timeout=${TIMEOUT}
+    Should Not Be In Log    ${SCREEN_DEVICE}    level=Warning   timeout=0
