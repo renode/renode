@@ -54,21 +54,31 @@ Start Emulation
     Append To List                  ${FLOW}  emulation started
     Execute Command                 start
 
+# Any CPU properties we set might not immediately take effect if a quantum is
+# already being executed. `pause` blocks until the current quantum finishes, so
+# this makes sure all Time Framework state will respect what we just set
+Synchronise Time Flow
+    Execute Command                 emulation SynchroniseQuantum
+
 Pause CPU
     Append To List                  ${FLOW}  cpu paused
     Execute Command                 cpu Pause
+    Synchronise Time Flow
 
 Resume CPU
     Append To List                  ${FLOW}  cpu resumed
     Execute Command                 cpu Resume
+    Synchronise Time Flow
 
 Halt CPU
     Append To List                  ${FLOW}  cpu halted
     Execute Command                 cpu IsHalted true
+    Synchronise Time Flow
 
 Unhalt CPU
     Append To List                  ${FLOW}  cpu unhalted
     Execute Command                 cpu IsHalted false
+    Synchronise Time Flow
 
 CPU Should ${should_text:(Not Be|Be)} Paused
     ${should}=                      Set Variable If  "${should_text}"=="Be"  True  False
