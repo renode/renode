@@ -236,6 +236,79 @@ Assert Secure Fault
         QuadWord ${{ ${sfar} + 0x20 }} Should Be Equal  0x0
     END
 
+Test ${sp_type:(MSPCURR|PSPCURR|MSPS|PSPS|MSPNS|PSPNS)} Register Access
+    [Arguments]                     ${uses_psp}
+    ...                             ${is_secure}
+
+    TRY
+        Reset Emulation
+        Create Machine
+
+        IF  "${sp_type}" == "MSPCURR"
+            ${arm_name}=                    Set Variable  MSP
+        ELSE IF  "${sp_type}" == "PSPCURR"
+            ${arm_name}=                    Set Variable  PSP
+        ELSE IF  "${sp_type}" == "MSPS"
+            ${arm_name}=                    Set Variable  MSP
+        ELSE IF  "${sp_type}" == "PSPS"
+            ${arm_name}=                    Set Variable  PSP
+        ELSE IF  "${sp_type}" == "MSPNS"
+            IF  ${is_secure}
+                ${arm_name}=                    Set Variable  MSP_NS
+            ELSE
+                ${arm_name}=                    Set Variable  MSP
+            END
+        ELSE IF  "${sp_type}" == "PSPNS"
+            IF  ${is_secure}
+                ${arm_name}=                    Set Variable  PSP_NS
+            ELSE
+                ${arm_name}=                    Set Variable  PSP
+            END
+        END
+
+        ${steps}=                       Set Variable  ${0}
+
+        IF  not ${is_secure}
+            Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_S} """blxns r0"""
+            ${address}=                     Set Variable  ${SRAM_CPU0_CODE_NS}
+            ${steps}=                       Evaluate  ${steps} + 1
+        ELSE
+            ${address}=                     Set Variable  ${SRAM_CPU0_CODE_S}
+        END
+
+        IF  ${uses_psp}
+            # Set current SPSEL to use Process Stack Pointer
+            ${assembly}=                    Catenate  SEPARATOR=\n
+            ...                             mrs r0, CONTROL
+            ...                             orr r0, #0x00000002
+            ...                             msr CONTROL, r0
+            ...                             mrs r0, ${arm_name}
+            Execute Command                 ${CPU} AssembleBlock ${address} """${assembly}"""
+            ${steps}=                       Evaluate  ${steps} + 3
+        ELSE
+            Execute Command                 ${CPU} AssembleBlock ${address} """mrs r0, ${arm_name}"""
+        END
+
+        Execute Command                 ${CPU} SAUControl 1
+        Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+
+        Execute Command                 ${CPU} PC ${SRAM_CPU0_CODE_S}
+        Execute Command                 ${CPU} SetRegister "r0" ${SRAM_CPU0_CODE_NS}
+
+        ${test_value}=                  Set Variable  0xdeadbeef
+        ${trimmed_test_value}=          Evaluate  hex(${test_value} & 0xfffffffc)
+
+        Execute Command                 ${CPU} Step ${steps}  # Step until we're in state defined by uses_psp and is_secure
+        Execute Command                 ${CPU} SetRegister "${sp_type}" ${test_value}
+
+        Execute Command                 ${CPU} Step 1  # Run until read from sp register
+
+        Register Should Be Equal        ${sp_type}  ${trimmed_test_value}
+        Register Should Be Equal        R0  ${trimmed_test_value}
+    EXCEPT  AS  ${message}
+        Fail                            sp_type=${sp_type} uses_psp=${uses_psp} is_secure=${is_secure}: ${message}
+    END
+
 *** Test Cases ***
 Should Print Hello From Both States
     Create Machine
@@ -599,3 +672,21 @@ Secure Should Fault at Execution on Non-secure SAU Address
     Execute Command                 emulation RunFor "0.01"
 
     Assert Secure Fault             ${SFSR_INVTRAN}  fault_pc=${SRAM_CPU0_CODE_S}  sp=SP
+
+Should Test SP Register Secure Access
+    FOR  ${uses_psp}  IN  True  False
+        Test MSPCURR Register Access    ${uses_psp}  is_secure=True
+        Test PSPCURR Register Access    ${uses_psp}  is_secure=True
+        Test MSPS Register Access       ${uses_psp}  is_secure=True
+        Test PSPS Register Access       ${uses_psp}  is_secure=True
+        Test MSPNS Register Access      ${uses_psp}  is_secure=True
+        Test PSPNS Register Access      ${uses_psp}  is_secure=True
+    END
+
+Should Test SP Register Non-secure Access
+    FOR  ${uses_psp}  IN  True  False
+        Test MSPCURR Register Access    ${uses_psp}  is_secure=False
+        Test PSPCURR Register Access    ${uses_psp}  is_secure=False
+        Test MSPNS Register Access      ${uses_psp}  is_secure=False
+        Test PSPNS Register Access      ${uses_psp}  is_secure=False
+    END
