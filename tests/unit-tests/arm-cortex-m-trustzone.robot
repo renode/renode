@@ -34,7 +34,7 @@ ${REPL_STRING}                      SEPARATOR=\n
 ...                                 ${SPACE*4}-> cpu0@0
 ...
 ...                                 cpu0: CPU.CortexM @ sysbus
-...                                 ${SPACE*4}cpuType: "cortex-m33"
+...                                 ${SPACE*4}cpuType: "cortex-m55"
 ...                                 ${SPACE*4}nvic: nvic0
 ...                                 ${SPACE*4}cpuId: 0
 ...                                 ${SPACE*4}enableTrustZone: true
@@ -229,12 +229,28 @@ Assert Secure Fault
 
     IF  $sfar
         DoubleWord ${SCB_SFAR} Should Be Equal  ${sfar}
-        QuadWord ${sfar} Should Be Equal  0x0
-        QuadWord ${{ ${sfar} + 0x08 }} Should Be Equal  0x0
-        QuadWord ${{ ${sfar} + 0x10 }} Should Be Equal  0x0
-        QuadWord ${{ ${sfar} + 0x18 }} Should Be Equal  0x0
-        QuadWord ${{ ${sfar} + 0x20 }} Should Be Equal  0x0
     END
+
+Test SecureFault on FPU Instruction
+    [Arguments]                     ${instruction}
+    ...                             ${fault_address}
+
+    Reset Emulation
+    Setup SAU/IDAU Test
+
+    Execute Command                 sysbus WriteDoubleWord ${SCB_CPACR} ${CPACR_CP10_CP11_FULL_ACCESS} context=${CPU}
+    Execute Command                 sysbus WriteDoubleWord ${SCB_NSACR} ${NSACR_CP10_CP11_FULL_ACCESS} context=${CPU}
+    Execute Command                 ${CPU} SetRegister "R0" ${SRAM_CPU0_CODE_NS}
+    Execute Command                 ${CPU} SetRegister "R1" ${fault_address}
+    Assemble Jump to NS             ${SRAM_CPU0_CODE_S}
+    Execute Command                 ${CPU} AssembleBlock ${SRAM_CPU0_CODE_NS} "${instruction}"
+
+    Execute Command                 ${CPU} SAUControl 1
+    Add SAU Region                  0  ${SRAM_CPU0_CODE_NS}  ${SRAM_CPU0_STACKTOP_NS}
+
+    Execute Command                 emulation RunFor "0.01"
+
+    Assert Secure Fault             sfsr=${{ $SFSR_AUVIOL | $SFSR_SFARVALID }}  sfar=${fault_address}
 
 Test ${sp_type:(MSPCURR|PSPCURR|MSPS|PSPS|MSPNS|PSPNS)} Register Access
     [Arguments]                     ${uses_psp}
@@ -672,6 +688,62 @@ Secure Should Fault at Execution on Non-secure SAU Address
     Execute Command                 emulation RunFor "0.01"
 
     Assert Secure Fault             ${SFSR_INVTRAN}  fault_pc=${SRAM_CPU0_CODE_S}  sp=SP
+
+Should Raise SecureFault on Width Varied MVE Instructions
+    # The following instructions can access memory on different alignment
+    # The following test is supposed to test if the SecureFault is risen properly even when memory fetches aren't 32-bit aligned
+    ${base_address}=                Set Variable  ${{ ${SRAM_CPU0_STACKTOP_NS} + 0x20 }}
+    FOR  ${instruction_template}  IN
+    ...  VST40.{0} {{Q0, Q1, Q2, Q3}}, [r1]
+    ...  VLD40.{0} {{Q0, Q1, Q2, Q3}}, [r1]
+    ...  VST20.{0} {{Q0, Q1}}, [r1]
+    ...  VLD20.{0} {{Q0, Q1}}, [r1]
+    ...  VSTR{1}.u32 Q0, [r1]
+    ...  VLDR{1}.u32 Q0, [r1]
+    ...  VSTR{1}.u32 Q0, [r1, Q5]  # Q5 should be equal 0 so access will happen exactly at address contained in r1
+    ...  VLDR{1}.u32 Q0, [r1, Q5]
+        FOR  ${element}  IN  0  1  2
+            ${alignment}=                   Set Variable  0
+            WHILE  ${alignment} < 32
+                ${size}=                        Evaluate  (8 << ${element})
+                ${letter}=                      Evaluate  ["B", "H", "W"][${element}]
+
+                ${instruction}=                 Evaluate  "${instruction_template}".format(${size}, "${letter}")
+                ${address}=                     Evaluate  ${base_address} + ${alignment} // 8
+
+                Execute Command                 log "Testing ${instruction} with R1=${address}"
+                TRY
+                    Test SecureFault on FPU Instruction  ${instruction}  ${address}
+                EXCEPT  AS  ${message}
+                    Fail                            ${instruction} with alignment=${alignment}: ${message}
+                END
+                Reset Emulation
+
+                ${alignment}=                   Evaluate  ${alignment} + ${size}
+            END
+        END
+    END
+
+Should Raise SecureFault on VSTR/VLDR Instructions
+    ${base_address}=                Set Variable  ${{ ${SRAM_CPU0_STACKTOP_NS} + 0x20 }}
+    FOR  ${instruction}  ${address}  IN
+    ...  VSTRD.s64 Q0, [r1, Q5]  ${base_address}
+    ...  VLDRD.s64 Q0, [r1, Q5]  ${base_address}
+    ...  VSTR s0, [r1]  ${base_address}
+    ...  VSTR d0, [r1]  ${base_address}
+    ...  VSTR d0, [r1]  ${{ ${base_address} + 0x4 }}
+    ...  VLDR s0, [r1]  ${base_address}
+    ...  VLDR d0, [r1]  ${base_address}
+    ...  VSTR d0, [r1]  ${{ ${base_address} + 0x4 }}
+    ...  VSTR FPSCR, [r1]  ${base_address}
+    ...  VLDR FPSCR, [r1]  ${base_address}
+        Execute Command                 log "Testing ${instruction} with R1=${address}"
+        TRY
+            Test SecureFault on FPU Instruction  ${instruction}  ${address}
+        EXCEPT  AS  ${message}
+            Fail                            ${instruction} with address=${{ hex(${address}) }}: ${message}
+        END
+    END
 
 Should Test SP Register Secure Access
     FOR  ${uses_psp}  IN  True  False
