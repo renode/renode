@@ -111,12 +111,12 @@ namespace Antmicro.Renode.RobotFramework
                 }
                 catch(SocketException)
                 {
-                    // let's try the next port
+                    listener.Close();
                     continue;
                 }
                 catch(HttpListenerException)
                 {
-                    // let's try the next port under .NET Framework
+                    listener.Close();
                     continue;
                 }
             }
@@ -129,8 +129,15 @@ namespace Antmicro.Renode.RobotFramework
         {
             while(!quit)
             {
-                var context = listener.GetContext();
-                xmlRpcServer.ProcessRequest(context);
+                try
+                {
+                    var context = listener.GetContext();
+                    xmlRpcServer.ProcessRequest(context);
+                }
+                catch(ObjectDisposedException)
+                {
+                    break;
+                }
             }
             Logger.Log(LogLevel.Info, "Robot Framework remote servers listener thread stopped");
         }
