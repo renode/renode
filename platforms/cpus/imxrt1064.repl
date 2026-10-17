@@ -3,8 +3,12 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     IRQ -> cpu@0
 
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 72000000
+
 cpu: CPU.CortexM @ sysbus
     cpuType: "cortex-m7"
+    numberOfMPURegions: 16
     nvic: nvic
 
 itcm: Memory.MappedMemory @ sysbus 0x0
