@@ -120,9 +120,6 @@ do
         "skip-fetch")
           SKIP_FETCH=true
           ;;
-        "net")
-          echo "'--net' flag is a no-op and will be removed in the future" >&1
-          ;;
         "source-package")
           SOURCE_PACKAGE=true
           ;;
