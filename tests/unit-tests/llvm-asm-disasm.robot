@@ -413,7 +413,7 @@ Should Assemble And Disassemble Sparc
 
     RoundTrip LE                    85e8a018  restore  %g2, 24, %g2  hex_addr=abc
     RoundTrip LE                    01000000  nop  hex_addr=abc
-    RoundTrip LE                    10680047  ba  %xcc, 71
+    RoundTrip LE                    10800048  ba  .+288
 
 Should Assemble And Disassemble 16-bit X86
     [Tags]                          basic-tests
