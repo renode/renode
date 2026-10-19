@@ -16,6 +16,10 @@ def parse_binary_trace(
     path: str,
     disassemble: bool = True,
 ) -> List[str]:
+    """Return the entries of the binary trace file at `path` as formatted lines.
+
+    With `disassemble`, each line also shows the disassembled instruction.
+    """
     llvm_disas_path = None
     if disassemble:
         llvm_disas_path = find_llvm_disas()
@@ -31,6 +35,12 @@ def parse_binary_trace(
 # This is the hot path for checking symbol lookup
 # By keeping it on python side a 10x speedup was observed
 def validate_symbol_lookup_slice(trace_lines: list[str], slice_start: int, slice_end: int, line_regex_pattern: str, function_rules: dict[str, tuple[int, int]] ):
+    """Check the resolved symbols in `trace_lines[slice_start:slice_end]`.
+
+    Each line must match `line_regex_pattern`, whose three groups capture the address, the opcode
+    and the symbol. When the address is in the `[low_pc, high_pc)` range of a `function_rules`
+    entry, the symbol must match the regex of that entry.
+    """
     compiled_line_regex = re.compile(line_regex_pattern)
 
     compiled_rules = [
