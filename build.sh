@@ -737,5 +737,24 @@ then
     $ROOT_PATH/tools/packaging/make_${DETECTED_OS}_portable.sh $params
 fi
 
+PACKAGES_OUT="${OUTPUT_DIRECTORY}/packages"
+
+# Generate package checksum files
+if [[ -d $PACKAGES_OUT ]]; then
+  (
+    cd "${PACKAGES_OUT}"
+    mkdir -p sha256sums
+    for package in *; do
+      if [[ ! -f $package ]]; then
+        continue
+      fi
+
+      CHECKSUM_FILE="sha256sums/${package}.sha256sum"
+      sha256sum "${package}" > "${CHECKSUM_FILE}"
+      echo "Generated checksum file for: ${package} -> ${CHECKSUM_FILE}"
+    done
+  )
+fi
+
 TFM="$OG_TFM"
 generate_build_target
