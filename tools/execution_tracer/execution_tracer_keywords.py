@@ -34,7 +34,7 @@ def validate_symbol_lookup_slice(trace_lines: list[str], slice_start: int, slice
     compiled_line_regex = re.compile(line_regex_pattern)
 
     compiled_rules = [
-    (re.compile(regex_str), int(str(start_hex), 16), int(str(end_hex), 16))
+    (re.compile(regex_str), int(str(start_hex), 0), int(str(end_hex), 0))
         for regex_str, (start_hex, end_hex) in function_rules.items()
     ]
 
