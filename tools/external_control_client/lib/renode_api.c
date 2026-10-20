@@ -279,7 +279,16 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         sysbus_event_header_t* event_header = (sysbus_event_header_t*)data;
 
         uint32_t byte_count;
-        renode_get_byte_count(event_header->access_width, event_header->data_count, &byte_count);
+        renode_error_t *byte_count_error = renode_get_byte_count(event_header->access_width, event_header->data_count, &byte_count);
+        if(byte_count_error != NO_ERROR) {
+            renode_error_t *err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR),
+                {byte_count_error->message, strlen(byte_count_error->message) + 1});
+            renode_free_error(byte_count_error);
+            return err;
+        }
+        if(event_header->operation == SYSBUS_CB_WRITE) {
+            assert_response(size - sizeof(sysbus_event_header_t) >= byte_count, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+        }
 
         renode_sysbus_event_data_t *sysbus_event =
             malloc(sizeof(renode_sysbus_event_data_t) + byte_count);
