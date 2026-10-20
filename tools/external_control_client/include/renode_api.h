@@ -595,12 +595,10 @@ typedef struct {
     uint64_t address;
     /** The access width of a transfer */
     renode_access_width_t width;
-    /**
-      * The count of transfers of the width specified by renode_sysbus_event_data_t::width.
-      *
-      * Use renode_get_byte_count() to calculate byte count.
-      */
+    /** The count of transfers of the width specified by renode_sysbus_event_data_t::width */
     uint32_t transfer_count;
+    /** The count of bytes in renode_sysbus_event_data_t::data */
+    uint32_t byte_count;
     /** The flag indicating that the access was successful */
     bool access_succeeded;
     /** The bytes that are written or will be read, allocated and freed by the library */

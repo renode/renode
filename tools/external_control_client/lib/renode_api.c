@@ -298,6 +298,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         sysbus_event->access_type = event_header->operation;
         sysbus_event->address = event_header->address;
         sysbus_event->transfer_count = event_header->data_count;
+        sysbus_event->byte_count = byte_count;
         sysbus_event->width = event_header->access_width;
         if(event_header->operation == SYSBUS_CB_WRITE) {
             void *event_bytes = (void *)(data + sizeof(sysbus_event_header_t));

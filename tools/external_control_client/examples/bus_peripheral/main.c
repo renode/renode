@@ -23,14 +23,12 @@ static void sysbus_callback_memory(void *user_data, renode_sysbus_event_data_t* 
   }
 
   uint64_t memory_offset = event_data->address - MEMORY_ADDRESS;
-  uint32_t byte_count;
-  renode_get_byte_count(event_data->width, event_data->transfer_count, &byte_count);
   if (event_data->access_type == SYSBUS_CB_READ) {
-    for (uint32_t i = 0; i < byte_count; i++) {
+    for (uint32_t i = 0; i < event_data->byte_count; i++) {
       event_data->data[i] = *(peripheral_buffer+i+memory_offset);
     }
   } else if (event_data->access_type == SYSBUS_CB_WRITE) {
-    for (uint32_t i = 0; i < byte_count; i++) {
+    for (uint32_t i = 0; i < event_data->byte_count; i++) {
       *(peripheral_buffer+i+memory_offset) = event_data->data[i];
     }
   }
