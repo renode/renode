@@ -309,13 +309,11 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         renode_bus_peripheral_t *bus_peripheral = callback_user_data[ed];
         bus_peripheral->callback(bus_peripheral->user_data, sysbus_event);
 
+        renode_error_t *err;
         if(!sysbus_event->access_succeeded) {
             const char error_message[] = "Access did not succeed";
-            return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {error_message, sizeof(error_message)});
-        }
-
-        renode_error_t *err;
-        if(event_header->operation == SYSBUS_CB_WRITE) {
+            err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {error_message, sizeof(error_message)});
+        } else if(event_header->operation == SYSBUS_CB_WRITE) {
             err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
         } else {
             err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&sysbus_event->data, byte_count});
