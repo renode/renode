@@ -291,7 +291,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         }
 
         renode_sysbus_event_data_t *sysbus_event =
-            malloc(sizeof(renode_sysbus_event_data_t) + byte_count);
+            xmalloc(sizeof(renode_sysbus_event_data_t) + byte_count);
 
         sysbus_event->access_succeeded = false;
         sysbus_event->timestamp = event_header->timestamp;
