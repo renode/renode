@@ -529,7 +529,7 @@ class RobotTestSuite(object):
         # see: run
         if options.jobs == 1 and not options.keep_renode_output:
             if not RobotTestSuite._is_frontend_running():
-                RobotTestSuite.robot_frontend_process = self._run_remote_server(options)
+                self._run_remote_server(options)
             else:
                 # Restore port allocated by a previous suite
                 self.remote_server_port = RobotTestSuite.remote_server_port
@@ -537,7 +537,8 @@ class RobotTestSuite(object):
 
     @classmethod
     def _is_frontend_running(cls):
-        return cls.robot_frontend_process is not None and is_process_running(cls.robot_frontend_process.pid)
+        process = cls.robot_frontend_process
+        return process is not None and process.poll() is None
 
 
     def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0):
@@ -656,6 +657,8 @@ class RobotTestSuite(object):
                 self.renode_pid = process.pid
 
         assert self.renode_pid != -1, "Renode PID has to be set before trying to acces the port file"
+        RobotTestSuite.robot_frontend_process = process
+        RobotTestSuite.renode_pid = self.renode_pid
 
         if options.enable_resource_monitoring:
             initial_delay = options.memory_monitor_initial_delay_seconds
@@ -703,7 +706,6 @@ class RobotTestSuite(object):
             raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
 
         RobotTestSuite.remote_server_port = self.remote_server_port
-        return process
 
     def log_process_data(self, process, stdout_path, stderr_path):
         process.poll()
@@ -750,7 +752,9 @@ class RobotTestSuite(object):
         renode_killed = False
 
         # Let's prevent using these after the server is closed.
-        self.robot_frontend_process = None
+        if RobotTestSuite.robot_frontend_process is proc:
+            RobotTestSuite.robot_frontend_process = None
+            RobotTestSuite.renode_pid = -1
         self.renode_pid = -1
         self.remote_server_port = -1
 
@@ -824,7 +828,12 @@ class RobotTestSuite(object):
         if options.jobs != 1 or options.keep_renode_output:
             # Parallel groups run in separate processes so these aren't really
             # shared, they're only needed to restart Renode in timeout handler.
-            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
+            self._run_remote_server(options, iteration_index, suite_retry_index)
+        else:
+            # All suites are prepared before execution. A preceding suite may
+            # have restarted the shared process since this suite was prepared.
+            self.renode_pid = RobotTestSuite.renode_pid
+            self.remote_server_port = RobotTestSuite.remote_server_port
 
         print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}', flush=True)
 
@@ -896,7 +905,7 @@ class RobotTestSuite(object):
         if options.jobs == 1 and not options.keep_renode_output:
             if not self._is_frontend_running():
                 print("Renode has unexpectedly died when running sequentially! Trying to respawn before continuing...")
-                RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
+                self._run_remote_server(options, iteration_index, suite_retry_index)
 
         return get_result()
 
@@ -1187,7 +1196,7 @@ class RobotTestSuite(object):
             print(f"----- Skipped saving state due to the timeout, restarting Renode...")
 
             self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
-            RobotTestSuite.robot_frontend_process = self._run_remote_server(options, iteration_index, suite_retry_index)
+            self._run_remote_server(options, iteration_index, suite_retry_index)
 
             # Point the already-imported Renode (Remote) library at the new port.
             # The library was imported once in `Setup` (renode-keywords.robot) with
