@@ -65,6 +65,15 @@ Should Reset Peripheral
     Execute Command                 rcc WriteDoubleWord 0x98 0x1
     Wait For Log Entry              Resetting TIM1     timeout=2
 
+Should Preserve Peripheral Frequency
+    Create Simple Machine
+    ${frequency}=                   Execute Command  timer1 Frequency
+    Should Be Equal As Numbers      64000000  ${frequency}
+    # Reset TIM1
+    Execute Command                 rcc WriteDoubleWord 0x98 0x1
+    ${frequency}=                   Execute Command  timer1 Frequency
+    Should Be Equal As Numbers      64000000  ${frequency}
+
 Should Enable And Disable Peripheral
     Create Simple Machine
     ${is_enabled}=                  Execute Command  sysbus IsPeripheralEnabled timer1
