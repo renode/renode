@@ -441,6 +441,7 @@ class RobotTestSuite(object):
     ])
     instances_count = 0
     robot_frontend_process = None
+    renode_exit_message: Optional[str] = None
     renode_pid = -1  # It's not always robot_frontend_process.pid, e.g., with `--run-gdb` option.
     hotspot_action = ['None', 'Pause', 'Serialize']
     # Used to share the port, directory and command used by Renode between all suites when running sequentially
@@ -453,6 +454,8 @@ class RobotTestSuite(object):
             r"Connection to remote server broken: \[WinError \d+\]",
             r"Connecting remote server at [^ ]+ failed",
             "Getting keyword names from library 'Remote' failed",
+            "Renode launcher exited unexpectedly",
+            "Renode process exited unexpectedly",
             after_timeout_message_suffix,
     )))
     timeout_expected_tag = 'timeout_expected'
@@ -539,7 +542,39 @@ class RobotTestSuite(object):
         return process is not None and process.poll() is None
 
 
+    @classmethod
+    def check_renode_process(cls, include_clean_exit: bool = False) -> Optional[str]:
+        process = cls.robot_frontend_process
+        if process is None:
+            return None
+        returncode = process.poll()
+        if returncode is None or (returncode == 0 and not include_clean_exit):
+            return None
+        if cls.renode_exit_message is None:
+            # With GDB/perf, the Popen is the launcher.
+            is_renode = process.pid == cls.renode_pid
+            name = 'Renode process' if is_renode else 'Renode launcher'
+            state = 'exited unexpectedly' if returncode else 'exited'
+            message = f"{name} {state} (PID {process.pid}, command: {' '.join(process.args)}): "
+            if platform != 'win32' and returncode < 0:
+                number = -returncode
+                if is_renode and number == signal.SIGKILL:
+                    message += 'Killed (possibly out of memory).'
+                else:
+                    try:
+                        name = signal.Signals(number).name
+                    except ValueError:
+                        name = f'signal {number}'
+                    message += f'terminated by {name} (return code {returncode}).'
+            else:
+                message += f'return code {returncode}.'
+            cls.renode_exit_message = message
+            print(message, flush=True)
+        return cls.renode_exit_message
+
+
     def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0):
+        self.check_renode_process()
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
         self.renode_pid = -1
 
@@ -650,6 +685,7 @@ class RobotTestSuite(object):
         assert self.renode_pid != -1, "Renode PID has to be set before trying to acces the port file"
         RobotTestSuite.robot_frontend_process = process
         RobotTestSuite.renode_pid = self.renode_pid
+        RobotTestSuite.renode_exit_message = None
 
         if options.enable_resource_monitoring:
             initial_delay = options.memory_monitor_initial_delay_seconds
@@ -674,6 +710,10 @@ class RobotTestSuite(object):
         temp_dir = tempfile.gettempdir()
         renode_port_file = os.path.join(temp_dir, f'renode-{self.renode_pid}', 'robot_port')
         while countdown > 0:
+            if message := self.check_renode_process(include_clean_exit=True):
+                self.log_process_data(process, stdout_path, stderr_path)
+                self._close_remote_server(process, options)
+                raise RuntimeError(f"Renode exited before its Robot server was ready.\n{message}")
             try:
                 with open(renode_port_file, 'r') as f:
                     port_num = f.readline()
@@ -744,8 +784,11 @@ class RobotTestSuite(object):
 
         # Let's prevent using these after the server is closed.
         if RobotTestSuite.robot_frontend_process is proc:
+            self.check_renode_process()
+            # Stop observing the process before sending cleanup signals.
             RobotTestSuite.robot_frontend_process = None
             RobotTestSuite.renode_pid = -1
+            RobotTestSuite.renode_exit_message = None
         self.renode_pid = -1
         self.remote_server_port = -1
 

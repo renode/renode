@@ -1,3 +1,5 @@
+from typing import Optional
+
 from robot import result, running
 from robot.libraries.DateTime import Time
 
@@ -34,15 +36,33 @@ class retry_and_timeout_listener:
         # Grab our RobotTestSuite and restore the original parent.
         (self.tests_provider, suite.parent) = suite.parent
         self.after_timeout = False
+        self.suite_result: result.TestSuite = result
+        self.process_exits: list[str] = []
+        self.record_process_exit()
 
         # start_suite isn't currently used by RetryFailed but let's check for future versions.
         if self.retry_failed and hasattr(self.retry_failed, 'start_suite'):
             self.retry_failed.start_suite(suite, result)
 
+    def record_process_exit(self) -> Optional[str]:
+        message = self.tests_provider.check_renode_process()
+        if message and message not in self.process_exits:
+            self.process_exits.append(message)
+            self.suite_result.metadata["Renode process exits"] = '\n\n'.join(self.process_exits)
+        return message
+
+    def end_suite(self, suite: running.TestSuite, result: result.TestSuite) -> None:
+        self.record_process_exit()
+        if self.retry_failed and hasattr(self.retry_failed, 'end_suite'):
+            self.retry_failed.end_suite(suite, result)
+
     def end_test(self, test: running.TestCase, result: result.TestCase):
+        # Capture the old process before timeout recovery replaces it, and before
+        # RetryFailed changes this attempt's message/status.
+        process_exit = self.record_process_exit()
         timed_out = not result.passed and result.timeout and result.timeout.timed_out()
         timeout_expected = self.tests_provider.timeout_expected_tag in test.tags
-        if timeout_expected:
+        if timeout_expected and not process_exit:
             # It passed if timeout occurred within the test timeout +3s.
             tolerance_seconds = 3
             over_timeout = result.elapsed_time.seconds - Time(test.timeout).seconds
@@ -50,6 +70,12 @@ class retry_and_timeout_listener:
                 result.status = result.PASS
             else:
                 result.message = f"Expected timeout didn't occur in {test.timeout} (+{tolerance_seconds}s)"
+
+        # A test can deliberately pass after Renode exits (for example, a crash test)
+        # and known-unstable tests can be skipped. Keep their status and only add the
+        # exit reason to the message.
+        if process_exit and not result.passed:
+            result.message = '\n\n'.join(filter(None, (process_exit, result.message)))
 
         # Mark messages that failed after another test timed out except tests that timed out.
         # It isn't really probable that Renode restart will cause timeouts.
