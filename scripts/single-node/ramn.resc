@@ -16,7 +16,9 @@ if `str_contains $global.name "ECUA"`
 include @platforms/boards/ramn/GATEWAY.repl
 showAnalyzer spi2.screen
 usb_uart Register usb 0
-showAnalyzer usb_uart
+showAnalyzer "uartAnalyzer" usb_uart
+uartAnalyzer LineEnding CR
+uartAnalyzer SelfEcho True
 macro reset "sysbus LoadELF $bin_ECUA"
 """
 
