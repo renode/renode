@@ -612,6 +612,7 @@ if $UI; then
     fi
 
     mkdir -p "$OUT_BIN_DIR/platform-lib/$PLAT_RID"
+    cp_u "$UI_PATH/frontend/build/index.html" "$PWD"
     cp_u "$UI_PATH/neutralino/dist/renode-ui/renode-ui-$PLAT_UI_RID$BIN_EXT" "$OUT_BIN_DIR/platform-lib/$PLAT_RID/renode-ui$BIN_EXT"
   done
 fi

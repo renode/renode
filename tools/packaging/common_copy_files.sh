@@ -24,6 +24,8 @@ cp -r $BASE/tools/sel4_extensions $DIR/tools
 cp -r $BASE/tools/csv2resd $DIR/tools
 cp -r $BASE/tools/external_control_client $DIR/tools
 cp -r $BASE/tools/NativeInterface $DIR/tools
+# index.html is available only when Renode is built with --ui flag
+cp -r $BASE/index.html $DIR || true
 rm -rf $DIR/tools/NativeInterface/example/build
 # Only the C example and CMake helpers are useful in the package (they are
 # used by the native-interface robot tests and serve as user documentation

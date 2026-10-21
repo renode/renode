@@ -26,3 +26,6 @@ packages
 perf.data
 perf.script
 .venv
+
+# file generated when building with --ui flag
+/index.html
