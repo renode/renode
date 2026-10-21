@@ -630,7 +630,7 @@ class RobotTestSuite(object):
                 raise RuntimeError("Renode pid file could not be found, can't attach perf")
 
             with open(pid_file_path, 'r') as pid_file:
-                self.renode_pid = pid_file.read()
+                self.renode_pid = int(pid_file.read())
         else:
             # Start Renode
             file_name = os.path.splitext(os.path.basename(self.path))[0]
