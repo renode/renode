@@ -36,6 +36,7 @@ class GroupArgs(NamedTuple):
 
 class GroupProgress(NamedTuple):
     pid: ProcessId
+    log_files: SuiteLogFiles
 
 
 class GroupResult(NamedTuple):
@@ -404,8 +405,9 @@ def run_test_group(args: GroupArgs) -> GroupResult:
     log_files: SuiteLogFiles = set()
 
     def report_progress() -> None:
+        # The manager holds a copy, so send it the latest `log_files`.
         if shared_group_progress is not None:
-            shared_group_progress[group_index] = GroupProgress(os.getpid())
+            shared_group_progress[group_index] = GroupProgress(os.getpid(), log_files)
 
     report_progress()
 
@@ -446,6 +448,7 @@ def run_test_group(args: GroupArgs) -> GroupResult:
                                                     iteration_index=iteration_counter,
                                                     suite_retry_index=retry_suites_counter - 1)
                     log_files.update((type(suite), log_file) for log_file in suite_log_files)
+                    report_progress()
                     if ok:
                         suite_failed = False
                         should_retry_suite = False
@@ -721,7 +724,7 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
     # for all results would then block forever, so find such groups by the pid of their worker.
     assert shared_group_progress is not None, "The group progress must have been created at this point"
     results: list[ApplyResult[GroupResult]] = [pool.apply_async(run_test_group, (group_args,)) for group_args in args]
-    dead_worker_groups: set[GroupIndex] = set()
+    dead_worker_log_files: dict[GroupIndex, SuiteLogFiles] = {}
     # The processes that each worker had started at the last check, such as Renode.
     worker_children: dict[ProcessId, list[psutil.Process]] = {}
     # The groups that had not started at the last check while a worker was idle.
@@ -730,7 +733,7 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
         pending = [
             group_index
             for group_index, result in enumerate(results)
-            if group_index not in dead_worker_groups and not result.ready()
+            if group_index not in dead_worker_log_files and not result.ready()
         ]
         if not pending:
             break
@@ -750,22 +753,25 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
                 running_workers.add(progress.pid)
                 record_worker_children(progress.pid, worker_children)
             elif not results[group_index].ready():
-                dead_worker_groups.add(group_index)
+                # Keep the results of the suites that finished before the worker died.
+                dead_worker_log_files[group_index] = progress.log_files
                 fail_dead_worker_group(args[group_index], progress, worker_children.pop(progress.pid, []))
 
         previous_unstarted_groups = unstarted_groups
         unstarted_groups = find_unstarted_groups(pending, results, running_workers)
         # A group must stay unstarted for two checks, so that a worker that has just taken it can record it.
         for group_index in sorted(unstarted_groups & previous_unstarted_groups):
-            dead_worker_groups.add(group_index)
+            dead_worker_log_files[group_index] = set()
             fail_unstarted_group(args[group_index])
 
-    if dead_worker_groups:
+    if dead_worker_log_files:
         # The pool still waits for the task of the dead worker, so closing and joining it would never return.
         pool.terminate()
 
     return [
-        GroupResult(failed=True, log_files=set()) if group_index in dead_worker_groups else result.get()
+        GroupResult(failed=True, log_files=dead_worker_log_files[group_index])
+        if group_index in dead_worker_log_files
+        else result.get()
         for group_index, result in enumerate(results)
     ]
 
@@ -849,8 +855,9 @@ def run():
         shared_suite_counter_object = multiprocessing.Value('i', 0)
         # Like the counter, we need to use a multiprocessing.Manager to create
         # a shared list that keeps track of the currently running suites,
-        # a shared dictionary with the worker process of each group, and a
-        # shared list of all worker processes.
+        # a shared dictionary with the worker process of each group and the
+        # log files of its finished suites, and a shared list of all worker
+        # processes.
         manager = multiprocessing.Manager()
         shared_active_suites = manager.list()
         shared_group_progress = manager.dict()
