@@ -2,38 +2,40 @@
 :description: Runs the RAMN firmware (https://github.com/ToyotaInfoTech/RAMN). By default emulates ECUC but can be overriden by setting $name
 
 $global.name?="ECUC"
+
+$global.bin_ECUA?= @https://dl.antmicro.com/projects/renode/ECUA-watchdog.elf-s_2825544-19ce381479e1c47985ca6014e9b532386166ffb2
+$global.bin_ECUB?= @https://dl.antmicro.com/projects/renode/ECUB-watchdog.elf-s_2534752-29e15eafcfc20afdef10e087a6ab3719f62f8c6e
+$global.bin_ECUC?= @https://dl.antmicro.com/projects/renode/ECUC-watchdog.elf-s_2528228-dd64cdd4018013ecbd4337e0dacc010bbb014c2f
+$global.bin_ECUD?= @https://dl.antmicro.com/projects/renode/ECUD-watchdog.elf-s_2550124-c03afbb1fbd2e3cf618be822246412121c515a29
+
 mach create $name
 include @platforms/boards/ramn.repl
 
 if `str_contains $global.name "ECUA"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUA-watchdog.elf-s_2825544-19ce381479e1c47985ca6014e9b532386166ffb2
 include @platforms/boards/ramn/GATEWAY.repl
 showAnalyzer spi2.screen
 usb_uart Register usb 0
 showAnalyzer usb_uart
+macro reset "sysbus LoadELF $bin_ECUA"
 """
 
 if `str_contains $global.name "ECUB"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUB-watchdog.elf-s_2534752-29e15eafcfc20afdef10e087a6ab3719f62f8c6e
 include @platforms/boards/ramn/CHASSIS.repl
+macro reset "sysbus LoadELF $bin_ECUB"
 """
 
 if `str_contains $global.name "ECUC"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUC-watchdog.elf-s_2528228-dd64cdd4018013ecbd4337e0dacc010bbb014c2f
 include @platforms/boards/ramn/POWERTRAIN.repl
+macro reset "sysbus LoadELF $bin_ECUC"
 """
 
 if `str_contains $global.name "ECUD"`
 """
-$bin= @https://dl.antmicro.com/projects/renode/ECUD-watchdog.elf-s_2550124-c03afbb1fbd2e3cf618be822246412121c515a29
 include @platforms/boards/ramn/BODY.repl
+macro reset "sysbus LoadELF $bin_ECUD"
 """
 
-macro reset
-"""
-sysbus LoadELF $bin
-"""
 runMacro $reset
