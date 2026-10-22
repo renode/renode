@@ -8,6 +8,7 @@ import argparse
 import subprocess
 import yaml
 import multiprocessing
+from multiprocessing.pool import ApplyResult, Pool
 from typing import Any, MutableSequence, NamedTuple, Optional
 from pathlib import Path
 from enum import Enum
@@ -25,6 +26,11 @@ class GroupArgs(NamedTuple):
     suites: list[Any]
     total_number_of_suites: int
     options: argparse.Namespace
+
+
+class GroupResult(NamedTuple):
+    failed: bool
+    log_files: SuiteLogFiles
 
 
 shared_suite_counter = None
@@ -370,7 +376,7 @@ def configure_output(options):
             print("Failed to open output file. Falling back to STDOUT.")
 
 
-def run_test_group(args: GroupArgs):
+def run_test_group(args: GroupArgs) -> GroupResult:
 
     global shared_suite_counter
     global shared_active_suites
@@ -381,7 +387,7 @@ def run_test_group(args: GroupArgs):
     log_files: SuiteLogFiles = set()
 
     # this function will be called in a separate
-    # context (due to the pool.map_async) and
+    # context (a worker process of the pool) and
     # needs the stdout to be reconfigured
     configure_output(options)
 
@@ -452,7 +458,7 @@ def run_test_group(args: GroupArgs):
             break
 
     options.output.flush()
-    return (group_failed, log_files)
+    return GroupResult(group_failed, log_files)
 
 def print_failed_tests(options):
     for handler in registered_handlers:
@@ -624,6 +630,14 @@ def init_worker_process(counter, active_suites):
     shared_active_suites = active_suites
 
 
+def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResult]:
+    results: list[ApplyResult[GroupResult]] = [pool.apply_async(run_test_group, (group_args,)) for group_args in args]
+    # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
+    # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
+    # otherwise it would not be possible to abort tests in progress
+    return [result.get(999999) for result in results]
+
+
 def select_test_groups(groups: dict[str, list[Any]], options: argparse.Namespace) -> dict[str, list[Any]]:
     selected_groups: dict[str, list[Any]] = {}
     for group, suites in groups.items():
@@ -684,7 +698,7 @@ def run():
     print("Starting suites")
 
     # python3 cannot handle passing
-    # 'output' field via 'pool.map_async';
+    # 'output' field to the worker processes;
     # the value is restored later
     options.output = None
 
@@ -727,10 +741,7 @@ def run():
         tests_failed, logs = zip(*map(run_test_group, args))
     else:
         assert pool, "Pool must have been instantiated at this point"
-        # this get is a hack - see: https://stackoverflow.com/a/1408476/980025
-        # we use `async` + `get` in order to allow "Ctrl+C" to be handled correctly;
-        # otherwise it would not be possible to abort tests in progress
-        tests_failed, logs = zip(*pool.map_async(run_test_group, args, chunksize=1).get(999999))
+        tests_failed, logs = zip(*run_test_groups_in_pool(pool, args))
         pool.close()
         print("Waiting for all processes to exit")
         pool.join()
