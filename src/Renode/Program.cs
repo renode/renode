@@ -72,7 +72,7 @@ namespace Antmicro.Renode
                     return;
                 }
 
-                Emulator.BeforeExit += WebSockets.WebSocketsManager.Instance.Dispose;
+                Emulator.RegisterCleanUp(WebSockets.WebSocketsManager.Instance.Dispose);
             }
 
             var thread = new Thread(() =>
@@ -90,8 +90,8 @@ namespace Antmicro.Renode
                         if(options.ServerMode)
                         {
                             var wsAPI = new WebSockets.WebSocketAPI(options.ServerModeWorkDir);
-                            Emulator.BeforeExit += wsAPI.Dispose;
                             wsAPI.Start();
+                            Emulator.RegisterCleanUp(wsAPI.Dispose);
                         }
                     });
                 }
