@@ -280,8 +280,8 @@ Trace Mixed A64, A32 and T32 Code
     ${x}=                           Grep File  ${disassembly_file}  0x0000000010011FE4:*0xD69F03E0*eret
     Should Not Be Empty             ${x}
 
-    # A32
-    ${x}=                           Grep File  ${disassembly_file}  0x000000087F052D0C:*0xE92D40F0*push*{r4,*r5,*r6,*r7,*lr}
+    # A32, escape *{ as it's reserved by Robot
+    ${x}=                           Grep File  ${disassembly_file}  0x000000087F052D0C:*0xE92D40F0*push\*{r4,*r5,*r6,*r7,*lr}
     Should Not Be Empty             ${x}
 
     # T32
