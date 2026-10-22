@@ -300,8 +300,18 @@ def handle_options(options):
     os.putenv("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
 
 
-def register_handler(handler_type, extension, creator, before_parsing=None, after_parsing=None):
-    registered_handlers.append({'type': handler_type, 'extension': extension, 'creator': creator, 'before_parsing': before_parsing, 'after_parsing': after_parsing})
+def register_handler(handler_type, extensions, creator, before_parsing=None, after_parsing=None):
+    """
+    Register a test suite handler.
+
+    Parameters:
+        handler_type (str): Type of test
+        extensions (str|tuple): File extensions used to filter tests files.
+        creator: Class of the test suite object, instantiated with the test suite file path.
+        before_parsing: Function called before arguments parsing. None by default.
+        after_parsing: Function called after arguments parsing. None by default.
+    """
+    registered_handlers.append({'type': handler_type, 'extensions': extensions, 'creator': creator, 'before_parsing': before_parsing, 'after_parsing': after_parsing})
 
 
 def split_tests_into_groups(tests, test_type):
@@ -311,7 +321,7 @@ def split_tests_into_groups(tests, test_type):
             print("Path {} does not exist. Quitting ...".format(path))
             return False
         for handler in registered_handlers:
-            if (test_type == 'all' or handler['type'] == test_type) and path.endswith(handler['extension']):
+            if (test_type == 'all' or handler['type'] == test_type) and path.endswith(handler['extensions']):
                 # Ensure consistent path separators, even on Windows
                 path = Path(path).as_posix()
                 result.append(handler['creator'](path))
