@@ -1,5 +1,4 @@
 *** Settings ***
-Library                                         tap_helper.py    # used for 'Preconfigure Macos' keyword
 # Contains keywords: Boot Linux And Login, Execute Linux Command, Execute Linux Command Non Blocking
 Resource                                        zynqmp.resource
 
