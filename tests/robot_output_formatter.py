@@ -1,3 +1,4 @@
+import sys
 import time
 
 from tests_engine import TestTag
@@ -63,3 +64,28 @@ def end_test(data, result):
 
     if not result.passed:
         print(decorate(result.message))
+
+def message(msg):
+    """
+    Called when the framework itself writes a syslog message.
+    """
+    colors = {
+                "ERROR": term_color.RED,
+                "WARN": term_color.YELLOW,
+              }
+
+    if msg.level in colors:
+        # As robotframework is capturing sys.stdout and sys.stderr to log messages (as INFO level),
+        # this message is written to the real stdout to avoid recalling message which filter out
+        # INFO messages.
+        print(colors[msg.level] + msg.level + ": " + msg.message + term_color.RESET,
+              file=sys.__stdout__, flush=True)
+
+def log_message(_):
+    """
+    Called when an executed keyword writes a log message.
+    """
+    # As robotframework is logging WARN and ERROR messages to syslog too (tested on 6.1 and 7.5),
+    # message(msg) will be called. As we only want to log messages at those level, there is nothing
+    # to do here to avoid duplicated messages.
+    pass
