@@ -16,7 +16,7 @@ ${RASET}                0x2b
 
 *** Keywords ***
 Create Machine
-    Test Setup  # Renode's test setup from renode-keywords.robot
+    Renode Test Setup
     Execute Command     include @platforms/boards/ramn.repl
     Execute Command     include @platforms/boards/ramn/GATEWAY.repl
     Execute Command     sysbus LoadELF @${URL}/RAMN_screen_vscroll.elf-s_2355120-54e5fae6722d72db3ae66c77ef43be3f6331521b

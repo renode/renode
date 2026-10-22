@@ -1051,9 +1051,9 @@ class RobotTestSuite(object):
                             name=suite_name, empty_suite_ok=True)
         # Provide default values for {Suite,Test}{Setup,Teardown}
         if not suite.setup:
-            suite.setup.config(name="Setup")
+            suite.setup.config(name="Renode Suite Setup")
         if not suite.teardown:
-            suite.teardown.config(name="Teardown")
+            suite.teardown.config(name="Renode Suite Teardown")
         return suite
 
     def _run_inner(self, suite, fixture, hotspot, test_cases_names, options, iteration_index=1, suite_retry_index=0):
@@ -1119,9 +1119,9 @@ class RobotTestSuite(object):
 
         for test in suite.tests:
             if not test.setup:
-                test.setup.config(name="Test Setup")
+                test.setup.config(name="Renode Test Setup")
             if not test.teardown:
-                test.teardown.config(name="Test Teardown")
+                test.teardown.config(name="Renode Test Teardown")
 
             # Let's just fail tests which previously unexpectedly timed out.
             if test.name in self.tests_with_unexpected_timeouts:

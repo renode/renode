@@ -19,7 +19,7 @@ ${NI_PROCESS}                       ${None}
 
 *** Keywords ***
 Setup And Start NativeInterface
-    Setup
+    Renode Suite Setup
 
     ${user_renode_dir}=             Get User Renode Dir
     IF  $user_renode_dir != ''
@@ -55,7 +55,7 @@ Stop NativeInterface And Teardown
         Terminate Process               ${NI_PROCESS}  kill=true
     END
 
-    Teardown
+    Renode Suite Teardown
 
 *** Test Cases ***
 NativeInterface Can Run VexRiscv

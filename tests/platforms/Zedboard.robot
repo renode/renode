@@ -250,7 +250,7 @@ Map Index To Disk Letter
 
 Test Teardown And Kill Vmnet Helper
     Kill Vmnet Helper
-    Test Teardown
+    Renode Test Teardown
 
 *** Test Cases ***
 Should Boot And Login

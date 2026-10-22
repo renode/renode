@@ -26,7 +26,7 @@ ${CREATE_EXECUTION_METRICS}  False
 ${PROFILER_PROCESS}          None
 
 *** Keywords ***
-Setup
+Renode Suite Setup
     ${SYSTEM}=          Evaluate    platform.system()    modules=platform
 
     ${CONFIGURATION}=  Set Variable If  not ${SKIP_RUNNING_SERVER} and ${SERVER_REMOTE_DEBUG}
@@ -62,6 +62,11 @@ Setup
 
     Setup Renode
 
+Setup
+    [Documentation]     *DEPRECATED*
+    ...                 Use 'Renode Suite Setup'.
+    Renode Suite Setup
+
 Setup Renode
     Set Default Uart Timeout  ${DEFAULT_UART_TIMEOUT}
 
@@ -77,7 +82,7 @@ Setup Renode
 
     Reset Emulation
 
-Teardown
+Renode Suite Teardown
     IF  not ${SKIP_RUNNING_SERVER}
         Stop Remote Server
     END
@@ -85,6 +90,11 @@ Teardown
     IF  not ${SKIP_RUNNING_SERVER}
         Wait For Process
     END
+
+Teardown
+    [Documentation]     *DEPRECATED*
+    ...                 Use 'Renode Suite Teardown'.
+    Renode Suite Teardown
 
 Sanitize Test Name
     [Arguments]        ${test_name}
@@ -119,7 +129,7 @@ Get Test Log Path
 
     RETURN             ${logs_dir}/${test_name}.log
 
-Test Setup
+Renode Test Setup
     IF  'profiling' in @{TEST TAGS}
         Start Profiler
     END
@@ -131,6 +141,11 @@ Test Setup
 
     Reset Emulation
     Set Crash On Abort  True
+
+Test Setup
+    [Documentation]     *DEPRECATED*
+    ...                 Use 'Renode Test Setup'.
+    Renode Test Setup
 
 Print Log Saved Message
     Return From Keyword If   'skipped' in @{TEST TAGS}
@@ -146,7 +161,7 @@ Remove Log
     ${log_path}=  Get Test Log Path
     Remove File  ${log_path}
 
-Test Teardown
+Renode Test Teardown
     Stop Profiler
 
     ${failed}=  Run Keyword If Test Failed  Set Variable  True
@@ -184,6 +199,11 @@ Test Teardown
     END
 
     Reset Emulation
+
+Test Teardown
+    [Documentation]     *DEPRECATED*
+    ...                 Use 'Renode Test Teardown'.
+    Renode Test Teardown
 
 Hot Spot
     Handle Hot Spot  ${HOTSPOT_ACTION}

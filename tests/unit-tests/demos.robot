@@ -9,7 +9,7 @@ ${eq}=                        ==
 
 *** Keywords ***
 Get Test Cases
-    Setup
+    Renode Suite Setup
 
     &{conditional_blacklist}=           Create Dictionary
     ...  ${scripts_path}${/}single-node${/}x86-kvm-linux.resc           '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'

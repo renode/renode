@@ -93,7 +93,7 @@ Create RESD File
 Test Teardown And Cleanup RESD File
     [Arguments]  ${resdPath}
 
-    Test Teardown
+    Renode Test Teardown
     Remove File  ${resdPath}
 
 LIS2DW12 Should Return Data From RESD

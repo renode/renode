@@ -25,7 +25,7 @@ ${eq}=                        ==
 
 *** Keywords ***
 Get Test Cases
-    Setup
+    Renode Suite Setup
 
     &{conditional_blacklist}=          Create Dictionary
     ...  ${platforms_path}${/}cpus${/}x86-kvm.repl                   '{system}' ${eq} 'Linux' and '{arch}' ${eq} 'x64'

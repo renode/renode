@@ -11,14 +11,14 @@ Custom Suite Setup
     ${path}=                        Join Path  ${TEMPDIR}  robot-${dirname}
     Set Suite Variable              ${SUITE_TEMPDIR}  ${path}
     Create Directory                ${SUITE_TEMPDIR}
-    Setup
+    Renode Suite Setup
 
 Custom Suite Teardown
     # It seems that on Windows, locks to "logFile"s are still being held after "Clear"
     # preventing Teardown, so some tests are temporarily marked as "skip_windows" until this issue is resolved
     Execute Command                 Clear
     Remove Directory                ${SUITE_TEMPDIR}  true
-    Teardown
+    Renode Suite Teardown
 
 Create Machine
     Execute Command                 using sysbus

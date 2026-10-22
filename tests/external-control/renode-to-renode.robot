@@ -31,7 +31,7 @@ ${STDERR_FILE}                       None
 
 *** Keywords ***
 Custom Test Teardown
-    Test Teardown
+    Renode Test Teardown
 
     Return From Keyword If          'skipped' in @{TEST TAGS}
 

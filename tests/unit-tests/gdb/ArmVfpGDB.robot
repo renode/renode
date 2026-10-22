@@ -1,6 +1,4 @@
 *** Settings ***
-Suite Setup                         Setup
-Suite Teardown                      Teardown
 Library                             Process
 Resource                            ${RENODEKEYWORDS}
 Library                             ${CURDIR}/gdb_library.py

@@ -21,7 +21,7 @@ ${DISK_ID}                      VirtIOBlkIdIdMaxSize
 
 *** Keywords ***
 Custom Suite Setup
-    Setup
+    Renode Suite Setup
 
     ${TEMP_DRIVE}=              Download File    ${DRIVE}
     ${DIR}  ${FILE_NAME}=       Split Path       ${TEMP_DRIVE}
@@ -36,7 +36,7 @@ Custom Suite Setup
 Custom Suite Teardown
     Remove File                 ${DRIVE_PATH}
     Remove File                 ${FS_PATH}
-    Teardown
+    Renode Suite Teardown
 
 Create Machine VirtIOBlock
     Execute Command             $fdt=@https://dl.antmicro.com/projects/renode/virtio-hifive_unleashed.dtb-s_10640-08834542504afb748827fdca52515f156e971d5f

@@ -56,13 +56,13 @@ ${PROG_RISCV}                       SEPARATOR=\n
 
 *** Keywords ***
 Custom Test Setup
-    Test Setup
+    Renode Test Setup
     ${temp}=                        Allocate Temporary Directory  external_control
     Set Global Variable             ${BUILD_DIR}  ${temp}
     Execute Command                 emulation CreateExternalControlServer "${SERVER_NAME}" ${PORT}
 
 Custom Test Teardown
-    Test Teardown
+    Renode Test Teardown
 
     Return From Keyword If          'skipped' in @{TEST TAGS}
 
