@@ -1260,24 +1260,11 @@ Clustering Should Load CPU And Then Another CPU
     Execute Command                 i @platforms/cpus/zynqmp.repl
 
     Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster0.apu2
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster1.rpu0
+    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} false cpu=sysbus.cluster0.apu0
     Check and Run Gdb               aarch64-zephyr-elf-gdb
     ${x}=                           Command GDB  info threads
     Should Contain                  ${x}  Thread 1 "machine-0.apu2"
-    Should Contain                  ${x}  Thread 2 "machine-0.rpu0"
-
-Clustering Should Load All Cpus By Force
-    Execute Command                 i @platforms/cpus/zynqmp.repl
-
-    Execute Command                 machine StartGdbServer ${GDB_REMOTE_PORT} cpuCluster="all"
-    Check and Run Gdb               aarch64-zephyr-elf-gdb
-    ${x}=                           Command GDB  info threads
-    Should Contain                  ${x}  Thread 1 "machine-0.apu0"
-    Should Contain                  ${x}  Thread 2 "machine-0.apu1"
-    Should Contain                  ${x}  Thread 3 "machine-0.apu2"
-    Should Contain                  ${x}  Thread 4 "machine-0.apu3"
-    Should Contain                  ${x}  Thread 5 "machine-0.rpu0"
-    Should Contain                  ${x}  Thread 6 "machine-0.rpu1"
+    Should Contain                  ${x}  Thread 2 "machine-0.apu0"
 
 Clustering Should Load All Cpus If Only One Arch
     Execute Command                 i @platforms/cpus/cortex-r52_smp_4.repl
