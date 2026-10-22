@@ -2,6 +2,7 @@
 from __future__ import print_function
 from collections import defaultdict, namedtuple
 import contextlib
+from itertools import dropwhile
 from sys import platform
 import os
 import sys
@@ -42,6 +43,12 @@ class GroupProgress(NamedTuple):
 class GroupResult(NamedTuple):
     failed: bool
     log_files: SuiteLogFiles
+
+
+class PoolResult(NamedTuple):
+    group_results: list[GroupResult]
+    dead_worker_suites: list[str]
+    not_run_suites: list[str]
 
 
 shared_suite_counter = None
@@ -673,6 +680,8 @@ def fail_dead_worker_group(
     group_args: GroupArgs,
     progress: GroupProgress,
     worker_children: list[psutil.Process],
+    dead_worker_suites: list[str],
+    not_run_suites: list[str],
 ) -> None:
     assert shared_active_suites is not None, "The active suite list must have been created at this point"
     suite_paths = ", ".join(suite.path for suite in group_args.suites)
@@ -687,9 +696,13 @@ def fail_dead_worker_group(
             child.kill()
             print(f"!!!!! Killed process {child.pid} that worker process {progress.pid} started", flush=True)
 
-    for suite in group_args.suites:
-        if suite.path in shared_active_suites:
-            shared_active_suites.remove(suite.path)
+    # The suite that the worker was running and the suites after it.
+    unfinished_suites = list(dropwhile(lambda suite: suite.path not in shared_active_suites, group_args.suites))
+    if unfinished_suites:
+        dead_suite, *not_run = unfinished_suites
+        shared_active_suites.remove(dead_suite.path)
+        dead_worker_suites.append(dead_suite.path)
+        not_run_suites.extend(suite.path for suite in not_run)
 
 
 def find_unstarted_groups(
@@ -710,21 +723,24 @@ def find_unstarted_groups(
     }
 
 
-def fail_unstarted_group(group_args: GroupArgs) -> None:
+def fail_unstarted_group(group_args: GroupArgs, not_run_suites: list[str]) -> None:
     suite_paths = ", ".join(suite.path for suite in group_args.suites)
     print(
         f"!!!!! A worker process died before it started the group with {suite_paths}, counting the group as failed",
         flush=True,
     )
+    not_run_suites.extend(suite.path for suite in group_args.suites)
 
 
-def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResult]:
+def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
     # `multiprocessing.Pool` replaces a worker process that dies, for example when the OOM killer
     # stops it, but never returns a result for the group that this worker was running. Waiting
     # for all results would then block forever, so find such groups by the pid of their worker.
     assert shared_group_progress is not None, "The group progress must have been created at this point"
     results: list[ApplyResult[GroupResult]] = [pool.apply_async(run_test_group, (group_args,)) for group_args in args]
     dead_worker_log_files: dict[GroupIndex, SuiteLogFiles] = {}
+    dead_worker_suites: list[str] = []
+    not_run_suites: list[str] = []
     # The processes that each worker had started at the last check, such as Renode.
     worker_children: dict[ProcessId, list[psutil.Process]] = {}
     # The groups that had not started at the last check while a worker was idle.
@@ -755,25 +771,32 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
             elif not results[group_index].ready():
                 # Keep the results of the suites that finished before the worker died.
                 dead_worker_log_files[group_index] = progress.log_files
-                fail_dead_worker_group(args[group_index], progress, worker_children.pop(progress.pid, []))
+                fail_dead_worker_group(
+                    args[group_index],
+                    progress,
+                    worker_children.pop(progress.pid, []),
+                    dead_worker_suites,
+                    not_run_suites,
+                )
 
         previous_unstarted_groups = unstarted_groups
         unstarted_groups = find_unstarted_groups(pending, results, running_workers)
         # A group must stay unstarted for two checks, so that a worker that has just taken it can record it.
         for group_index in sorted(unstarted_groups & previous_unstarted_groups):
             dead_worker_log_files[group_index] = set()
-            fail_unstarted_group(args[group_index])
+            fail_unstarted_group(args[group_index], not_run_suites)
 
     if dead_worker_log_files:
         # The pool still waits for the task of the dead worker, so closing and joining it would never return.
         pool.terminate()
 
-    return [
+    group_results: list[GroupResult] = [
         GroupResult(failed=True, log_files=dead_worker_log_files[group_index])
         if group_index in dead_worker_log_files
         else result.get()
         for group_index, result in enumerate(results)
     ]
+    return PoolResult(group_results, dead_worker_suites, not_run_suites)
 
 
 def select_test_groups(groups: dict[str, list[Any]], options: argparse.Namespace) -> dict[str, list[Any]]:
@@ -883,11 +906,14 @@ def run():
         system_monitor = None
 
     # Run test job(s)
+    dead_worker_suites: list[str] = []
+    not_run_suites: list[str] = []
     if options.jobs == 1:
         tests_failed, logs = zip(*map(run_test_group, args))
     else:
         assert pool, "Pool must have been instantiated at this point"
-        tests_failed, logs = zip(*run_test_groups_in_pool(pool, args))
+        group_results, dead_worker_suites, not_run_suites = run_test_groups_in_pool(pool, args)
+        tests_failed, logs = zip(*group_results)
         pool.close()
         print("Waiting for all processes to exit")
         pool.join()
@@ -924,6 +950,8 @@ def run():
         print("Some tests failed :( See the list of failed tests below and logs for details!")
 
     print_failed_tests(options)
+    print_numbered_list("Worker process died while running:", dead_worker_suites)
+    print_numbered_list("Did not run because the worker process died:", not_run_suites)
 
     if tests_failed:
         print_rerun_trace(options)
