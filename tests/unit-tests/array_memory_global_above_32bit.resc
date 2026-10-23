@@ -1,0 +1,59 @@
+mach create
+machine LoadPlatformDescriptionFromString """
+cpu0: CPU.ARMv7R @ sysbus
+    cpuType: "cortex-r8"
+    numberOfMPURegions: 12
+    cpuId: 0
+
+cpu0_mem: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x0; cpu: cpu0 };
+        sysbus 0x40000000
+    }
+    size: 0x8000
+
+cpu0_arrmem: Memory.ArrayMemory @ {
+        sysbus 0x8_0000_0000 // > 32bit address
+    }
+    size: 0x8000
+"""
+
+# The code below was compiled on https://godbolt.org/
+# with ARM GCC 16.1.0 (unknown-eabi) and "-O3 -mcpu=cortex-r8" compiler flags.
+# =======================
+# #include <stdint.h>
+#
+# int main() {
+#     while(1) {
+#         for (volatile uint32_t memAddr=0x40000000ul; memAddr<0x40007000ul; memAddr+=4) {
+#             *(volatile uint32_t *)memAddr = memAddr;
+#         }
+#     }
+#     return 0;
+# }
+# =======================
+cpu0 AssembleBlock 0x40007000 """
+main:
+        mov     r2, #0x7000
+        mov     r0, #0x40000000
+        sub     sp, sp, #8
+        movt    r2, 0x4000
+.L4:
+        str     r0, [sp, #4]
+        ldr     r3, [sp, #4]
+        cmp     r3, r2
+        bcs     .L4
+.L3:
+        ldr     r3, [sp, #4]
+        ldr     r1, [sp, #4]
+        str     r1, [r3]
+        ldr     r3, [sp, #4]
+        add     r3, r3, #4
+        str     r3, [sp, #4]
+        ldr     r3, [sp, #4]
+        cmp     r3, r2
+        bcc     .L3
+        b       .L4
+""" "armv7r"
+
+cpu0 PC 0x40007000
+cpu0 SP 0x7FFF

@@ -276,3 +276,10 @@ Memory Move Should Only Affect Relevant CPU
            Execute Command               sysbus WriteWord ${MOVE_TARGET} 0x5678 sysbus.cpu1
   ${out}=  Execute Command               sysbus ReadWord ${CORE1_MEM_ALIAS}
            Should Be Equal As Numbers    ${out}  0x5678
+
+Array Memory Registration Outside Of 32 Bit Address Space Should Not Impact 32 Bit CPU
+    Create Log Tester                    0
+    Execute Script                       ${CURDIR}${/}array_memory_global_above_32bit.resc
+    Execute Command                      logLevel -1
+    Execute Command                      emulation RunFor "0.001"
+    Should Not Be In Log                 Invalidating memory fragment  timeout=0  level=Noisy
