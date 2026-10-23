@@ -1,0 +1,12 @@
+{
+  "name": "renode-dev-scripts",
+  "version": "1.0.0",
+  "description": "Renode development scripts.",
+  "license": "UNLICENSED",
+  "author": "Silicon Labs",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

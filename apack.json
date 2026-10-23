@@ -1,0 +1,27 @@
+{
+  "id": "renode",
+  "label": "Renode - Virtual Hardware Simulation Framework",
+  "path": [
+    "."
+  ],
+  "executable": {
+    "renode": {
+      "exe": "renode"
+    }
+  },
+  "function": {
+    "renode-start": {
+      "cmd": "$(renode)"
+    }
+  },
+  "ui": {
+    "launchItem": {
+      "id": "renode",
+      "category": "tools",
+      "label": "Renode",
+      "icon": "renode.png",
+      "launchUiFunction": "renode-start",
+      "toolTip": "Renode - Virtual Hardware Simulation Framework"
+    }
+  }
+}

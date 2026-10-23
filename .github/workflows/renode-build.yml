@@ -1,0 +1,126 @@
+name: Renode CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# permissions can be required here when reusable workflows that need it are called
+permissions:
+  id-token: write
+  actions: write
+  contents: read
+
+jobs:
+  build:
+    name: 🐧 Renode Build
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_INSTALL_DIR: '.dotnet-install'
+      PYRENODE_RUNTIME: 'coreclr'
+
+    steps:
+
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+
+      - name: 🪄 Init dev scripts
+        run: ./r init
+
+      - name: 🎁 Install .NET Core
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: 📓 Versions
+        run: ./r versions
+
+      - name: ⚒️ Create renode distribution package directory.
+        run: ./r dist
+
+      - name: ⚒️ Zip up the distribution package directory.
+        run: ./r dist-zip
+
+      - name: 📤 Upload dist artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist
+          path: dist.zip
+
+  create-test-matrix:
+    name: 🧪 Create test matrix
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.set-matrix.outputs.matrix-config }}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+
+      - name: 🧪 Set test matrix
+        id: set-matrix
+        run: ./r runtest --matrix >> $GITHUB_OUTPUT
+
+  test:
+    name: ⚗️ Test
+    runs-on: ubuntu-latest
+    needs: ['build', 'create-test-matrix']
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.create-test-matrix.outputs.test-matrix)}}
+    env:
+      DOTNET_INSTALL_DIR: '.dotnet-install'
+      PYRENODE_RUNTIME: 'coreclr'
+      PYRENODE_BIN: 'dist/renode'
+      RENODE_PORTABLE_LOCATION: 'dist'
+
+    steps:
+
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: 🪄 Init dev scripts
+        run: ./r init
+
+      - name: 🔨 Build host library
+        run: ./r build-host-library
+
+      - name: 📥 Download dist artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+
+      - name: 🔨 Unzip dist artifact.
+        run: ./r dist-unzip
+
+      - name: 🔨 Prepare dist artifact.
+        run: ./r dist-prep
+
+      # ubuntu-latest Python is PEP 668 externally managed, so system pip3
+      # install fails. This interpreter can create .venv; testing-set-up
+      # installs pyrenode3, pybgapi, and test_lib into that venv.
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: 🪚 Set up testing infrastructure.
+        run: ./r testing-set-up
+
+      - name: ⚗️ Run tests '${{matrix.test}}'
+        run: ./r runtest ${{ matrix.test }}
+
+      # test_lib downloads remote ELFs/host binaries to /tmp (prefixed "renode_")
+      # and removes them via an atexit handler. That handler does not run if a
+      # test is force-killed (e.g. on timeout), so on these persistent
+      # self-hosted runners stale binaries could accumulate in /tmp. Remove them
+      # defensively regardless of the test outcome.
+      - name: 🗑️ Clean up downloaded test binaries
+        if: always()
+        run: rm -f /tmp/renode_* || true
+

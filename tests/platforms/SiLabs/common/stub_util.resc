@@ -1,0 +1,54 @@
+python
+"""
+# List of functions to be stubbed out
+stub_list = []
+
+def skip_function_hook(cpu, addr, return_value):
+    # Determine the return register and return address based on CPU architecture
+    # ARM: R0 (register 0), RISC-V: a0 (register 10)
+    if hasattr(cpu, 'LR'):
+        # ARM CPU
+        return_reg = 0   # R0 register for ARM
+        return_address = cpu.LR  # LR register for ARM
+    else:
+        # RISC-V CPU
+        return_reg = 10  # a0 register for RISC-V
+        return_address = cpu.GetRegister(1).RawValue  # ra register for RISC-V
+    
+    # Set the return value using the correct RegisterValue type
+    try:
+        import clr
+        # Import the RegisterValue type from Renode
+        clr.AddReference("Renode")
+        from Antmicro.Renode.Peripherals.CPU import RegisterValue
+        
+        # Create a RegisterValue from the integer (32-bit)
+        reg_value = RegisterValue.Create(return_value, 32)
+        
+        # Use SetRegister (preferred API) instead of SetRegisterUnsafe
+        cpu.SetRegister(return_reg, reg_value)
+        
+    except Exception as e:
+        print("Warning: Could not set return register to {} for stubbed function at 0x{:x}. Error: {}".format(return_value, addr, str(e)))
+    
+    # Skip the function by setting PC to the return address
+    cpu.PC = return_address
+
+def sl_add_stub_hook(func_name, return_value=0, cpu="cpu"):
+    sysbus = self.Machine["sysbus"]
+    # Construct the cpu path as sysbus.{cpu}
+    cpu_obj = self.Machine["sysbus.{}".format(cpu)]
+    # TryGetAllSymbolAddresses returns a tuple (true/false if there are any symbols and the list of symbols)
+    addresses = sysbus.TryGetAllSymbolAddresses(func_name, cpu_obj)[1]
+    for addr in addresses:
+        # Create a lambda that captures the return_value
+        hook = lambda cpu, addr, rv=return_value: skip_function_hook(cpu, addr, rv)
+        cpu_obj.AddHook(addr, hook)
+
+def sl_add_stub(stub, return_value=0, cpu="cpu"):
+    stub_list.append((stub, return_value, cpu))
+
+def sl_add_hooks():
+    for func, ret_val, cpu in stub_list:
+        sl_add_stub_hook(func, ret_val, cpu)
+"""

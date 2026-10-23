@@ -1,0 +1,404 @@
+{
+  "core-unit-tests": {
+    "title": "Core Unit Tests",
+    "tests": [
+      "tests/example.robot",
+      "tests/unit-tests/array_memory.robot",
+      "tests/unit-tests/big-endian-watchpoint.robot",
+      "tests/unit-tests/cpu-step.robot",
+      "tests/unit-tests/emulation-environment.robot",
+      "tests/unit-tests/emulation-mode.robot",
+      "tests/unit-tests/file-paths.robot",
+      "tests/unit-tests/hex.robot",
+      "tests/unit-tests/hooks.robot",
+      "tests/unit-tests/host-uart.robot",
+      "tests/unit-tests/log-tests.robot",
+      "tests/unit-tests/memory-invalidation.robot",
+      "tests/unit-tests/monitor-tests.robot",
+      "tests/unit-tests/per-core-registration.robot",
+      "tests/unit-tests/precise-pause.robot",
+      "tests/unit-tests/python-engine.robot",
+      "tests/unit-tests/riscv-unit-tests.robot",
+      "tests/unit-tests/robot-integration.robot",
+      "tests/unit-tests/virtual-time.robot",
+      "tests/unit-tests/riscv-zcb-zcmp-zcmt-extensions.robot",
+      "tests/unit-tests/riscv-zicond-extension.robot"
+    ]
+  },
+  "unit-test-protimer": {
+    "title": "SiLabs Unit Tests: PROTIMER",
+    "tests": [
+      {
+        "test": "tests/peripherals/SiLabs/PROTIMER.robot",
+        "params": {
+          "LPW_MODEL": "xg22"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/PROTIMER.robot",
+        "params": {
+          "LPW_MODEL": "xg24"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/PROTIMER.robot",
+        "params": {
+          "LPW_MODEL": "xg301"
+        }
+      }
+    ]
+  },
+  "unit-test-ldma": {
+    "title": "SiLabs Unit Tests: LDMA",
+    "tests": [
+      {
+        "test": "tests/peripherals/SiLabs/LDMA.robot",
+        "params": {
+          "LDMA_VERSION": "0_1"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/LDMA.robot",
+        "params": {
+          "LDMA_VERSION": "0_3"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/LDMA.robot",
+        "params": {
+          "LDMA_VERSION": "3_3"
+        }
+      }
+    ]
+  },
+  "unit-test-frc": {
+    "title": "SiLabs Unit Tests: FRC",
+    "tests": [
+      {
+        "test": "tests/peripherals/SiLabs/FRC.robot",
+        "params": {
+          "LPW_MODEL": "xg22"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/FRC.robot",
+        "params": {
+          "LPW_MODEL": "xg24"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/FRC.robot",
+        "params": {
+          "LPW_MODEL": "xg301"
+        }
+      }
+    ]
+  },
+  "unit-test-timer": {
+    "title": "SiLabs Unit Tests: TIMER",
+    "tests": [
+      {
+        "test": "tests/peripherals/SiLabs/TIMER.robot",
+        "params": {
+          "IP_VERSION": "0"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/TIMER.robot",
+        "params": {
+          "IP_VERSION": "2"
+        }
+      }
+    ]
+  },
+  "unit-test-eusart": {
+    "title": "SiLabs Unit Tests: EUSART",
+    "tests": [
+      {
+        "test": "tests/peripherals/SiLabs/EUSART.robot",
+        "params": {
+          "IP_VERSION": "2"
+        }
+      },
+      {
+        "test": "tests/peripherals/SiLabs/EUSART.robot",
+        "params": {
+          "IP_VERSION": "4"
+        }
+      }
+    ]
+  },
+  "unit-test-crypto": {
+    "title": "SiLabs Unit Tests (Crypto)",
+    "tests": [
+      "tests/peripherals/SiLabs/secure_engine_commands.py",
+      "tests/peripherals/SiLabs/SYMCRYPTO_1.py"
+    ]
+  },
+  "unit-test-lpw-rx": {
+    "title": "SiLabs Unit Tests: LPW RX",
+    "tests": [
+      "tests/peripherals/SiLabs/LPW_RX.robot"
+    ]
+  },
+  "unit-test-misc": {
+    "title": "SiLabs Unit Tests (Miscellaneous)",
+    "tests": [
+      "tests/peripherals/SiLabs/SYSRTC_2.robot",
+      "tests/peripherals/SiLabs/WDOG_1.robot"
+    ]
+  },
+  "railtest-xg22": {
+    "title": "RailTest xG22",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/railtest.py",
+        "params": {
+          "BOARD": "brd4182a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg22_railtest_10_14_26.out"
+        }
+      }
+    ]
+  },
+  "railtest-xg24": {
+    "title": "RailTest xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/railtest.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_railtest_10_14_26.out"
+        }
+      }
+    ]
+  },
+  "railtest-xg26": {
+    "title": "RailTest xG26",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/railtest.py",
+        "params": {
+          "BOARD": "brd4116a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg26_railtest_10_14_26.out"
+        }
+      }
+    ]
+  },
+  "railtest-sixg301": {
+    "title": "RailTest SixG301",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/railtest.py",
+        "params": {
+          "BOARD": "brd4407a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_railtest_10_14_26.out"
+        }
+      }
+    ]
+  },
+  "connect-xg24": {
+    "title": "Connect xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/connect.robot",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_connect_soc_mac_mode_device_3_4_25.out"
+        }
+      }
+    ]
+  },
+  "zigbee-xg22": {
+    "title": "Zigbee xG22",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/zigbee.py",
+        "params": {
+          "BOARD": "brd4182a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg22_zigbee_z3_light_7_17_25.out"
+        }
+      }
+    ]
+  },
+  "zigbee-xg24": {
+    "title": "Zigbee xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/zigbee.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_zigbee_z3_light_v2025.6.2.out"
+        }
+      }
+    ]
+  },
+  "zigbee-sixg301": {
+    "title": "Zigbee SixG301",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/zigbee.py",
+        "params": {
+          "BOARD": "brd4407a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_zigbee_z3_light_8_11_26.out"
+        }
+      }
+    ]
+  },
+  "zigbee-xg24-sixg301-interop": {
+    "title": "Zigbee xG24 - SixG301 Interop",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/zigbee.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_zigbee_z3_light_v2025.6.2.out",
+          "BOARD2": "brd4407a",
+          "UART2": "eusart0",
+          "ELF2": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_zigbee_z3_light_8_11_26.out"
+        }
+      }
+    ]
+  },
+  "openthread-xg24": {
+    "title": "OpenThread xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/openthread.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "usart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_ot-cli-ftd_5_18_26.out"
+        }
+      }
+    ]
+  },
+  "openthread-sixg301": {
+    "title": "OpenThread SixG301",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/openthread.py",
+        "params": {
+          "BOARD": "brd4407a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_ot-cli-ftd_5_18_26.out"
+        }
+      }
+    ]
+  },
+  "openthread-xg24-sixg301-interop": {
+    "title": "OpenThread xG24 - SixG301 Interop",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/openthread.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "usart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_ot-cli-ftd_5_18_26.out",
+          "BOARD2": "brd4407a",
+          "UART2": "eusart0",
+          "ELF2": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_ot-cli-ftd_5_18_26.out"
+        }
+      }
+    ]
+  },
+  "ble-ncp-xg22": {
+    "title": "BLE NCP xG22",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_ncp.py",
+        "params": {
+          "BOARD": "brd4182a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg22_bt_ncp_10_15_26.out"
+        }
+      }
+    ]
+  },
+  "ble-ncp-xg24": {
+    "title": "BLE NCP xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_ncp.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_bt_ncp_freertos_10_15_26.out"
+        }
+      }
+    ]
+  },
+  "ble-ncp-xg26": {
+    "title": "BLE NCP xG26",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_ncp.py",
+        "params": {
+          "BOARD": "brd4116a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg26_bt_ncp_freertos_10_15_26.out"
+        }
+      }
+    ]
+  },
+  "ble-ncp-sixg301": {
+    "title": "BLE NCP SixG301",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_ncp.py",
+        "params": {
+          "BOARD": "brd4407a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_bt_ncp_freertos_10_15_26.out"
+        }
+      }
+    ]
+  },
+  "dmp-xg24": {
+    "title": "Dynamic Multiprotocol (Zigbee,BLE) xG24",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_zigbee_dmp.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_zigbee_ble_dynamic_multiprotocol_light_3_4_25.out"
+        }
+      }
+    ]
+  },
+  "dmp-xg26": {
+    "title": "Dynamic Multiprotocol (Zigbee,BLE) xG26",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_zigbee_dmp.py",
+        "params": {
+          "BOARD": "brd4121a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg26_zigbee_ble_dynamic_multiprotocol_light_3_4_25.out"
+        }
+      }
+    ]
+  },
+  "dmp-sixg301": {
+    "title": "Dynamic Multiprotocol (Zigbee,BLE) SixG301",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/ble_zigbee_dmp.py",
+        "params": {
+          "BOARD": "brd4407a",
+          "UART": "eusart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/sixg301_mp-zb-ble-soc-light_6_29_26.out"
+        }
+      }
+    ]
+  }
+}
