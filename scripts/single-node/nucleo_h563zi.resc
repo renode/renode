@@ -1,0 +1,18 @@
+:name: Nucleo H563ZI
+:description: This script runs firmware on the ST NUCLEO-H563ZI board (STM32H563ZIT6, Cortex-M33).
+
+using sysbus
+$name?="Nucleo H563ZI"
+$bin?=@/Users/burekn/workspace/stm_h563/basic_peripheral_test/build/Debug/basic_peripheral_test.elf
+
+mach create $name
+machine LoadPlatformDescription @platforms/boards/nucleo_h563zi.repl
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
+
+showAnalyzer usart3

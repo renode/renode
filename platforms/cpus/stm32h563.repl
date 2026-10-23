@@ -1,0 +1,198 @@
+// STM32H563 SoC platform description
+//
+// Cortex-M33 @ 250 MHz, 2 MB flash, 640 KB SRAM (256 + 64 + 320 KB)
+// Non-secure aliases only.
+//
+// Peripheral inventory:
+//
+//   MODELLED:
+//     pwr, rcc, flashController, icache, iwdg, rng,
+//     gpioPortA..gpioPortG, usart3, exti
+//     These are the peripherals the reference firmware actively polls or
+//     configures; they require behavioural models to avoid hangs.
+//
+//   TAGGED:
+//     SBS, GTZC, GPDMA1/2, I2C1–4, SPI1–3, ADC, DAC, ETH, SDMMC1/2,
+//     USB, HASH, CRC, RTC, TAMP, FDCAN1/2, CAN message RAM, timers
+//     (TIM1–TIM17), USART1/2, UART4/5, LPUART1, DBGMCU
+//     These are not touched by the reference firmware's boot-critical path
+//     or are only accessed in non-blocking ways. Tags suppress "non existing
+//     peripheral" warnings and reserve the address space for future modelling.
+//
+
+// ============================================================
+// CPU and interrupt controller
+// ============================================================
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    numberOfMPURegions: 8
+    nvic: nvic
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    -> cpu@0
+
+// ============================================================
+// Memories
+// ============================================================
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x200000
+
+flashAlias: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x200000
+
+systemFlash: Memory.MappedMemory @ sysbus 0x08FFF000
+    size: 0x1000
+
+sram1: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x40000
+
+sram2: Memory.MappedMemory @ sysbus 0x20040000
+    size: 0x10000
+
+sram3: Memory.MappedMemory @ sysbus 0x20050000
+    size: 0x50000
+
+// ============================================================
+// Modelled peripherals
+// ============================================================
+
+pwr: Miscellaneous.STM32H5_PWR @ sysbus 0x44020800
+
+rcc: Miscellaneous.STM32H5_RCC @ sysbus 0x44020C00
+    nvic: nvic
+    usart3: usart3
+
+flashController: MTD.STM32H5_FlashController @ sysbus 0x40022000
+    flash: flash
+    -> nvic@6
+
+icache: Cache.STM32H5_ICACHE @ sysbus 0x40030400
+
+iwdg: Timers.STM32_IndependentWatchdog @ sysbus 0x40003000
+    frequency: 32000
+    earlyWakeupOption: true
+
+rng: Miscellaneous.STM32_RNG @ sysbus 0x420C0800
+    series: STM32Series.H5
+    -> nvic@114
+
+usart3: UART.STM32F7_USART @ sysbus 0x40004800
+    frequency: 250000000
+    hasPrescaler: true
+    IRQ -> nvic@60
+
+lpuart1: UART.STM32F7_USART @ sysbus 0x44002400
+    frequency: 250000000
+    hasPrescaler: true
+    IRQ -> nvic@63
+
+exti: IRQControllers.STM32H5_EXTI @ sysbus 0x44022000
+    numberOfOutputLines: 59
+    [0-15] -> nvic@[11-26]
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x42020000, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#0@[0-15]
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x42020400, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#1@[0-15]
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x42020800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#2@[0-15]
+
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x42020C00, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#3@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x42021000, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#4@[0-15]
+
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x42021400, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#5@[0-15]
+
+gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x42021800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti#6@[0-15]
+
+// ============================================================
+// Tags — unmodelled peripherals
+// ============================================================
+// Each tag reserves the peripheral's register space so Renode does not emit
+// "non existing peripheral" warnings on accesses. Modelled peripherals (pwr,
+// rcc, flashController, icache, iwdg, rng, gpio, usart3, exti) are added by
+// their own increments and are NOT tagged here.
+
+sysbus:
+    init:
+        // --- System / security ---
+        Tag <0x44000400, 0x440007FF> "SBS"
+        Tag <0x40032400, 0x400327FF> "GTZC_TZSC1"
+        Tag <0x44024000, 0x440243FF> "DBGMCU"
+
+        // --- DMA ---
+        Tag <0x40020000, 0x40020FFF> "GPDMA1"
+        Tag <0x40021000, 0x40021FFF> "GPDMA2"
+
+        // --- Communication: I2C ---
+        Tag <0x40005400, 0x400057FF> "I2C1"
+        Tag <0x40005800, 0x40005BFF> "I2C2"
+        Tag <0x44002800, 0x44002BFF> "I2C3"
+        Tag <0x44002C00, 0x44002FFF> "I2C4"
+
+        // --- Communication: SPI ---
+        Tag <0x40013000, 0x400133FF> "SPI1"
+        Tag <0x40003800, 0x40003BFF> "SPI2"
+        Tag <0x40003C00, 0x40003FFF> "SPI3"
+
+        // --- Communication: UART/USART (non-modelled) ---
+        Tag <0x40013800, 0x40013BFF> "USART1"
+        Tag <0x40004400, 0x400047FF> "USART2"
+        Tag <0x40004C00, 0x40004FFF> "UART4"
+        Tag <0x40005000, 0x400053FF> "UART5"
+        // LPUART1 is modelled as a full peripheral (see lpuart1 below)
+
+        // --- Analog ---
+        Tag <0x42028000, 0x420283FF> "ADC1_ADC2"
+        Tag <0x42028400, 0x420287FF> "DAC1"
+
+        // --- Connectivity ---
+        Tag <0x40028000, 0x4002BFFF> "ETH"
+        Tag <0x46008000, 0x46008BFF> "SDMMC1"
+        Tag <0x46008C00, 0x460097FF> "SDMMC2"
+        Tag <0x40016000, 0x400163FF> "USB_DRD_FS"
+
+        // --- Crypto / integrity ---
+        Tag <0x420C0400, 0x420C07FF> "HASH"
+        Tag <0x40023000, 0x400233FF> "CRC"
+
+        // --- RTC / tamper ---
+        Tag <0x44007800, 0x44007BFF> "RTC"
+        Tag <0x44007C00, 0x44007FFF> "TAMP"
+
+        // --- CAN ---
+        Tag <0x4000A400, 0x4000A7FF> "FDCAN1"
+        Tag <0x4000A800, 0x4000ABFF> "FDCAN2"
+        Tag <0x4000AC00, 0x4000D3FF> "CAN_Message_RAM"
+
+        // --- Timers ---
+        Tag <0x40012C00, 0x40012FFF> "TIM1"
+        Tag <0x40000000, 0x400003FF> "TIM2"
+        Tag <0x40000400, 0x400007FF> "TIM3"
+        Tag <0x40000800, 0x40000BFF> "TIM4"
+        Tag <0x40000C00, 0x40000FFF> "TIM5"
+        Tag <0x40001000, 0x400013FF> "TIM6"
+        Tag <0x40001400, 0x400017FF> "TIM7"
+        Tag <0x40013400, 0x400137FF> "TIM8"
+        Tag <0x40001800, 0x40001BFF> "TIM12"
+        Tag <0x40001C00, 0x40001FFF> "TIM13"
+        Tag <0x40002000, 0x400023FF> "TIM14"
+        Tag <0x40014000, 0x400143FF> "TIM15"
+        Tag <0x40014400, 0x400147FF> "TIM16"
+        Tag <0x40014800, 0x40014BFF> "TIM17"
