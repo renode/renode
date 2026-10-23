@@ -29,12 +29,15 @@ def get_dwarf_info(elf_file_handler: BinaryIO) -> 'DWARFInfo':
         )
     return elf_file.get_dwarf_info()
 
-def find_code_files(dwarf_info: 'DWARFInfo', substitute_paths: Iterable[PathSubstitution], ignore_paths: Iterable[str], verbose=True) -> list[IO]:
+def find_code_files(dwarf_info: 'DWARFInfo', substitute_paths: Iterable[PathSubstitution], ignore_paths: Iterable[str], verbose=True, entries: Iterable[DWARFLineProgramEntry] = None) -> list[IO]:
     unique_files: set[str] = set()
     code_files: list[IO] = []
     if verbose:
         print('Attempting to resolve source files by scanning DWARF data...')
-    for entry in get_addresses(dwarf_info):
+    # `entries` lets callers reuse line program entries they already decoded
+    if entries is None:
+        entries = get_addresses(dwarf_info)
+    for entry in entries:
         absolute_path = os.path.join(entry.file_path, entry.file_name)
         if any(fnmatch.fnmatch(absolute_path, pat) for pat in ignore_paths):
             continue
