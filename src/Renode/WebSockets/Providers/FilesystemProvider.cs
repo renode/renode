@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -147,6 +147,23 @@ namespace Antmicro.Renode.WebSockets.Providers
             try
             {
                 var fullPath = ResolvePath(args[0]);
+                var data = File.ReadAllBytes(fullPath);
+                var result = Convert.ToBase64String(data);
+
+                return WebSocketAPIUtils.CreateActionResponse(result);
+            }
+            catch(Exception e)
+            {
+                return WebSocketAPIUtils.CreateEmptyActionResponse(e.Message);
+            }
+        }
+
+        [WebSocketAPIAction("fs/getui", "1.6.0")]
+        private WebSocketAPIResponse DownloadUiHtml()
+        {
+            try
+            {
+                var fullPath = Path.Join(Utilities.Misc.GetRootDirectory(), "index.html");
                 var data = File.ReadAllBytes(fullPath);
                 var result = Convert.ToBase64String(data);
 

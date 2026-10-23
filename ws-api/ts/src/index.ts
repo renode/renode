@@ -321,6 +321,17 @@ export class RenodeProxySession extends EventTarget {
     return Buffer.from(encoded, 'base64');
   }
 
+  public async downloadUiHtml(): Promise<Uint8Array> {
+    const encoded = await this.sendSessionRequestTyped(
+      {
+        action: 'fs/getui',
+        payload: {},
+      },
+      s.FsDwnlResponse,
+    );
+    return Buffer.from(encoded, 'base64');
+  }
+
   public async createDirectory(path: string): Promise<void> {
     await this.sendSessionRequestTyped(
       {
