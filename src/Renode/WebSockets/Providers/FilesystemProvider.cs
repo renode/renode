@@ -47,7 +47,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             return true;
         }
 
-        [WebSocketAPIAction("fs/list", "1.5.0")]
+        [WebSocketAPIAction("fs/list")]
         private WebSocketAPIResponse ListFilesAction(List<string> args)
         {
             try
@@ -71,7 +71,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/mkdir", "1.5.0")]
+        [WebSocketAPIAction("fs/mkdir")]
         private WebSocketAPIResponse MakeDirectoryAction(List<string> args)
         {
             try
@@ -86,7 +86,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/stat", "1.5.0")]
+        [WebSocketAPIAction("fs/stat")]
         private WebSocketAPIResponse FileInfoAction(List<string> args)
         {
             try
@@ -141,7 +141,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/dwnl", "1.5.0")]
+        [WebSocketAPIAction("fs/dwnl")]
         private WebSocketAPIResponse DownloadAction(List<string> args)
         {
             try
@@ -158,7 +158,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/getui", "1.6.0")]
+        [WebSocketAPIAction("fs/getui")]
         private WebSocketAPIResponse DownloadUiHtml()
         {
             try
@@ -175,7 +175,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/upld", "1.5.0")]
+        [WebSocketAPIAction("fs/upld")]
         private WebSocketAPIResponse UploadAction(List<string> args, string data)
         {
             try
@@ -198,7 +198,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/remove", "1.5.0")]
+        [WebSocketAPIAction("fs/remove")]
         private WebSocketAPIResponse RemoveAction(List<string> args)
         {
             try
@@ -229,7 +229,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/move", "1.5.0")]
+        [WebSocketAPIAction("fs/move")]
         private WebSocketAPIResponse MoveAction(List<string> args)
         {
             try
@@ -254,7 +254,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/copy", "1.5.0")]
+        [WebSocketAPIAction("fs/copy")]
         private WebSocketAPIResponse CopyAction(List<string> args)
         {
             try
@@ -278,7 +278,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/fetch", "1.5.0")]
+        [WebSocketAPIAction("fs/fetch")]
         private WebSocketAPIResponse FetchAction(List<string> args)
         {
             try
@@ -306,7 +306,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("fs/zip", "1.5.0")]
+        [WebSocketAPIAction("fs/zip")]
         private WebSocketAPIResponse ZipAction(List<string> args)
         {
             try
@@ -335,7 +335,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
         }
 
-        [WebSocketAPIAction("tweak/socket", "1.5.0")]
+        [WebSocketAPIAction("tweak/socket")]
         private WebSocketAPIResponse TweakSocketAction(List<string> _)
         {
             var result = new StatusActionResponseDto

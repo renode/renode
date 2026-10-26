@@ -23,6 +23,8 @@ namespace Antmicro.Renode.WebSockets
 {
     public class WebSocketAPI : IDisposable
     {
+        public static string Version = "1.9.0";
+
         public WebSocketAPI(string workingDir)
         {
             locker = new object();
@@ -31,7 +33,6 @@ namespace Antmicro.Renode.WebSockets
             workingDirName = workingDir;
             streamProxy = new WebSocketStreamProxy();
 
-            actionHandlers = new Dictionary<string, (IWebSocketAPIProvider, List<ActionHandler>)>();
             apiProviders = new List<IWebSocketAPIProvider>();
             TypeManager.Instance.AutoLoadedType += RegisterType;
 
@@ -148,29 +149,14 @@ namespace Antmicro.Renode.WebSockets
                     continue;
                 }
 
-                List<ActionHandler> handlerList = null;
-                if(actionHandlers.TryGetValue(methodAttr.Attribute.Name, out var existingHandlers))
+                if(actionHandlers.ContainsKey(methodAttr.Attribute.Name))
                 {
-                    handlerList = existingHandlers.entries;
-                }
-                else
-                {
-                    var newHandlers = new List<ActionHandler>();
-                    actionHandlers.Add(methodAttr.Attribute.Name, (apiProviderInstance, newHandlers));
-                    handlerList = newHandlers;
-                }
-
-                if(handlerList.Where(h => h.Version == methodAttr.Attribute.Version).Count() != 0)
-                {
+                    Logger.Log(LogLevel.Error, "WS-API: Multiple handlers found for '{0}' action", methodAttr.Attribute.Name);
                     continue;
                 }
 
+                actionHandlers.Add(methodAttr.Attribute.Name, (apiProviderInstance, new ActionHandler { Action = methodAttr.Method }));
                 Logger.Log(LogLevel.Debug, $"- Registered action handler: {methodAttr.Method.Name} for: {methodAttr.Attribute.Name}");
-                handlerList.Add(new ActionHandler
-                {
-                    Action = methodAttr.Method,
-                    Version = methodAttr.Attribute.Version
-                });
             }
 
             var handleEventsMethod = GetType().GetMethod(nameof(HandleEvents), BindingFlags.NonPublic | BindingFlags.Instance);
@@ -183,7 +169,7 @@ namespace Antmicro.Renode.WebSockets
                     continue;
                 }
 
-                WebSocketAPIEventHandler eventHandler = (object data) => this.HandleEvents(eventAttr.Version.ToString(), eventAttr.Name, data);
+                WebSocketAPIEventHandler eventHandler = (object data) => this.HandleEvents(eventAttr.Name, data);
 
                 delegateField.SetValue(apiProviderInstance, eventHandler);
                 Logger.Log(LogLevel.Debug, $"- Registered event handler: {delegateField.Name} for: {eventAttr.Name}");
@@ -212,67 +198,57 @@ namespace Antmicro.Renode.WebSockets
             }
             catch(Exception ex)
             {
-                SendErrorMessage(DefaultVersion, -1);
+                SendErrorMessage(-1);
                 Logger.Log(LogLevel.Error, "Failed to parse request: {0}", ex);
                 return;
             }
 
-            if(actionHandlers.TryGetValue(apiRequest.Action, out var handlers))
+            if(!actionHandlers.TryGetValue(apiRequest.Action, out var handler))
             {
-                var actionHandler = handlers.entries.Where(h => h.Version <= apiRequest.Version)?.OrderBy(h => h.Version)?.First();
-
-                if(actionHandler == null)
-                {
-                    Logger.Log(LogLevel.Warning, "WebSocketAPI ERROR: Requested too old version of action");
-                    return;
-                }
-
-                var handlerParams = actionHandler.Action.GetParameters();
-                var callArgs = new object[handlerParams.Length];
-
-                int arg = 0;
-
-                try
-                {
-                    foreach(var param in handlerParams)
-                    {
-                        callArgs[arg] = apiRequest.Payload[param.Name]?.ToObject(param.ParameterType);
-                        arg++;
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Logger.Log(LogLevel.Error, "Failed to prepare request arguments: {0}", ex);
-                    SendErrorMessage(apiRequest.Version.ToString(), apiRequest.Id);
-                    return;
-                }
-
-                var result = actionHandler.Action.Invoke(handlers.handlerInstance, callArgs);
-                var handlerResponse = (result as WebSocketAPIResponse);
-                var apiResponse = new APIResponse
-                {
-                    Version = apiRequest.Version.ToString(),
-                    Status = handlerResponse.Error == null ? "success" : "fail",
-                    Id = apiRequest.Id,
-                    Data = handlerResponse.Data,
-                    Error = handlerResponse.Error
-                };
-
-                var serializedResponse = JsonConvert.SerializeObject(apiResponse);
-                Logger.Log(LogLevel.Debug, $"Sending response: {serializedResponse.ToString()}");
-                SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
+                Logger.Log(LogLevel.Warning, "WebSocketAPI ERROR: Requested unknown action - {0}", apiRequest.Action);
+                return;
             }
-            else
+
+            var handlerParams = handler.action.Action.GetParameters();
+            var callArgs = new object[handlerParams.Length];
+
+            var arg = 0;
+            try
             {
-                Logger.Log(LogLevel.Warning, $"WebSocketAPI ERROR: Requested unknown action - {apiRequest.Action}");
+                foreach(var param in handlerParams)
+                {
+                    callArgs[arg] = apiRequest.Payload[param.Name]?.ToObject(param.ParameterType);
+                    arg++;
+                }
             }
+            catch(Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "Failed to prepare request arguments: {0}", ex);
+                SendErrorMessage(apiRequest.Id);
+                return;
+            }
+
+            var result = handler.action.Action.Invoke(handler.instance, callArgs);
+            var handlerResponse = (result as WebSocketAPIResponse);
+            var apiResponse = new APIResponse
+            {
+                Version = Version,
+                Status = handlerResponse.Error == null ? "success" : "fail",
+                Id = apiRequest.Id,
+                Data = handlerResponse.Data,
+                Error = handlerResponse.Error
+            };
+
+            var serializedResponse = JsonConvert.SerializeObject(apiResponse);
+            Logger.Log(LogLevel.Debug, "Sending response: {0}", serializedResponse);
+            SharedData.CurrentConnection.Send(Encoding.UTF8.GetBytes(serializedResponse));
         }
 
-        private void HandleEvents(string version, string eventName, object data)
+        private void HandleEvents(string eventName, object data)
         {
             var eventResponse = new APIEvent
             {
-                Version = version,
+                Version = Version,
                 EventName = eventName,
                 Data = data
             };
@@ -283,11 +259,11 @@ namespace Antmicro.Renode.WebSockets
             webSocketServerProvider.Broadcast(Encoding.UTF8.GetBytes(serializedEvent));
         }
 
-        private void SendErrorMessage(string version, int id)
+        private void SendErrorMessage(int id)
         {
             var apiResponse = new APIResponse
             {
-                Version = version,
+                Version = Version,
                 Id = id,
                 Status = "fail"
             };
@@ -302,10 +278,9 @@ namespace Antmicro.Renode.WebSockets
         private WebSocketServerProvider webSocketServerProvider;
         private readonly string workingDirName;
         private readonly object locker;
-        private readonly Dictionary<string, (IWebSocketAPIProvider handlerInstance, List<ActionHandler> entries)> actionHandlers;
+        private readonly Dictionary<string, (IWebSocketAPIProvider instance, ActionHandler action)> actionHandlers = new();
         private readonly List<IWebSocketAPIProvider> apiProviders;
         private readonly WebSocketStreamProxy streamProxy;
-        private static readonly string DefaultVersion = "1.5.0";
 
         private class APIRequest
         {
@@ -358,7 +333,6 @@ namespace Antmicro.Renode.WebSockets
         private class ActionHandler
         {
             public MethodInfo Action;
-            public Version Version;
         }
     }
 }

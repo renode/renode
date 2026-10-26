@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2025 Antmicro
+// Copyright (c) 2010-2026 Antmicro
 //
 // This file is licensed under the MIT License.
 // Full license text is available in 'licenses/MIT.txt'.
@@ -42,26 +42,26 @@ namespace Antmicro.Renode.WebSockets.Providers
             return true;
         }
 
-        [WebSocketAPIAction("kill", "1.5.0")]
+        [WebSocketAPIAction("kill")]
         private WebSocketAPIResponse KillAction(string _)
         {
             SharedData.ClearEmulationEvent?.Invoke();
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
-        [WebSocketAPIAction("status", "1.5.0")]
+        [WebSocketAPIAction("status")]
         private WebSocketAPIResponse StatusAction(string _)
         {
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
-        [WebSocketAPIAction("command", "1.5.0")]
+        [WebSocketAPIAction("command")]
         private WebSocketAPIResponse CommandAction(string _)
         {
             return WebSocketAPIUtils.CreateEmptyActionResponse();
         }
 
-        [WebSocketAPIAction("exec-renode", "1.5.0")]
+        [WebSocketAPIAction("exec-renode")]
         private WebSocketAPIResponse ExecRenodeAction(string command, ExecRenodeActionArgs args)
         {
             var argData = new ExecRenodeArgParserData()
@@ -111,7 +111,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             return WebSocketAPIUtils.CreateEmptyActionResponse("unknown action");
         }
 
-        [WebSocketAPIAction("exec-monitor", "1.5.0")]
+        [WebSocketAPIAction("exec-monitor")]
         private WebSocketAPIResponse ExecMonitorAction(List<string> commands)
         {
             var interaction = monitor.Interaction as CommandInteractionWrapper;
@@ -121,7 +121,7 @@ namespace Antmicro.Renode.WebSockets.Providers
             return WebSocketAPIUtils.CreateActionResponse(result);
         }
 
-        [WebSocketAPIAction("term-resize", "1.5.0")]
+        [WebSocketAPIAction("term-resize")]
         private WebSocketAPIResponse TerminalResize(string endpoint, int width, int height)
         {
             var conns = WebSocketsManager.Instance.GetConnections(endpoint);
@@ -343,28 +343,28 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         // 649:  Field '...' is never assigned to, and will always have its default value null
 #pragma warning disable 649
-        [WebSocketAPIEvent("uart-opened", "1.5.0")]
+        [WebSocketAPIEvent("uart-opened")]
         private readonly WebSocketAPIEventHandler UartCreatedEvent;
 
-        [WebSocketAPIEvent("display-opened", "1.6.0")]
+        [WebSocketAPIEvent("display-opened")]
         private readonly WebSocketAPIEventHandler DisplayCreatedEvent;
 
-        [WebSocketAPIEvent("can-opened", "1.7.0")]
+        [WebSocketAPIEvent("can-opened")]
         private readonly WebSocketAPIEventHandler CANCreatedEvent;
 
-        [WebSocketAPIEvent("led-state-changed", "1.5.0")]
+        [WebSocketAPIEvent("led-state-changed")]
         private readonly WebSocketAPIEventHandler LedStateChangedEvent;
 
-        [WebSocketAPIEvent("button-state-changed", "1.5.0")]
+        [WebSocketAPIEvent("button-state-changed")]
         private readonly WebSocketAPIEventHandler ButtonStateChangedEvent;
 
-        [WebSocketAPIEvent("renode-quitted", "1.5.0")]
+        [WebSocketAPIEvent("renode-quitted")]
         private readonly WebSocketAPIEventHandler RenodeQuitEvent;
 
-        [WebSocketAPIEvent("clear-command", "1.5.0")]
+        [WebSocketAPIEvent("clear-command")]
         private readonly WebSocketAPIEventHandler ClearCommandEvent;
 
-        [WebSocketAPIEvent("spi-opened", "1.7.0")]
+        [WebSocketAPIEvent("spi-opened")]
         private readonly WebSocketAPIEventHandler SPIOpenedEvent;
 #pragma warning restore 649
 

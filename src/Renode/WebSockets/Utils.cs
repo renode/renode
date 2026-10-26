@@ -12,26 +12,24 @@ namespace Antmicro.Renode.WebSockets
 {
     public class WebSocketAPIBaseAttribute : Attribute
     {
-        public WebSocketAPIBaseAttribute(string name, string version)
+        public WebSocketAPIBaseAttribute(string name)
         {
             Name = name;
-            Version = new Version(version);
         }
 
         public string Name;
-        public Version Version;
     }
 
     public class WebSocketAPIActionAttribute : WebSocketAPIBaseAttribute
     {
-        public WebSocketAPIActionAttribute(string action, string version) : base(action, version)
+        public WebSocketAPIActionAttribute(string action) : base(action)
         {
         }
     }
 
     public class WebSocketAPIEventAttribute : WebSocketAPIBaseAttribute
     {
-        public WebSocketAPIEventAttribute(string eventName, string version) : base(eventName, version)
+        public WebSocketAPIEventAttribute(string eventName) : base(eventName)
         {
         }
     }
