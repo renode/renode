@@ -376,6 +376,10 @@ def configure_output(options):
             print("Failed to open output file. Falling back to STDOUT.")
 
 
+def print_suite_progress(finished_suites: int, total_number_of_suites: int) -> None:
+    print(f"+++++ Finished suite \033[95m{finished_suites}/{total_number_of_suites}\033[0m", flush=True)
+
+
 def run_test_group(args: GroupArgs) -> GroupResult:
 
     global shared_suite_counter
@@ -450,7 +454,7 @@ def run_test_group(args: GroupArgs) -> GroupResult:
                     shared_suite_counter.value += 1
                     current_counter_value = shared_suite_counter.value
 
-            print(f"+++++ Finished suite \033[95m{current_counter_value}/{total_number_of_suites}\033[0m")
+            print_suite_progress(current_counter_value, total_number_of_suites)
 
             if suite_failed:
                 group_failed = True
