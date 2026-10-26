@@ -9,7 +9,7 @@ import subprocess
 import yaml
 import multiprocessing
 from multiprocessing.pool import ApplyResult, Pool
-from typing import Any, MutableSequence, NamedTuple, Optional
+from typing import Any, Collection, MutableSequence, NamedTuple, Optional
 from pathlib import Path
 from enum import Enum
 import segmenting
@@ -466,22 +466,20 @@ def print_failed_tests(options):
         failed = handler_obj.find_failed_tests(options.results_directory)
 
         if failed is not None:
-            def _print_helper(what):
-                for i, fail in enumerate(failed[what]):
-                    print("\t{0}. {1}".format(i + 1, fail))
-
-            if CRITICAL_TEST in failed and failed[CRITICAL_TEST]:
-                print("Failed {} critical tests:".format(handler['type']))
-                _print_helper(CRITICAL_TEST)
-
-            if TestTag.UNSTABLE in failed and failed[TestTag.UNSTABLE]:
-                print("Failed {} unstable tests:".format(handler['type']))
-                _print_helper(TestTag.UNSTABLE)
-
-            if TestTag.NON_CRITICAL in failed and failed[TestTag.NON_CRITICAL]:
-                print("Failed {} non-critical tests:".format(handler['type']))
-                _print_helper(TestTag.NON_CRITICAL)
+            print_numbered_list("Failed {} critical tests:".format(handler["type"]), failed.get(CRITICAL_TEST, ()))
+            print_numbered_list("Failed {} unstable tests:".format(handler["type"]), failed.get(TestTag.UNSTABLE, ()))
+            print_numbered_list(
+                "Failed {} non-critical tests:".format(handler["type"]), failed.get(TestTag.NON_CRITICAL, ())
+            )
             print("------")
+
+
+def print_numbered_list(title: str, items: Collection[str]) -> None:
+    if items:
+        print(title)
+        for i, item in enumerate(items):
+            print("\t{0}. {1}".format(i + 1, item))
+
 
 def print_rerun_trace(options):
     for handler in registered_handlers:
