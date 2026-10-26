@@ -37,6 +37,7 @@ class GroupArgs(NamedTuple):
 
 class GroupProgress(NamedTuple):
     pid: ProcessId
+    finished_suites: int
     log_files: SuiteLogFiles
 
 
@@ -409,12 +410,13 @@ def run_test_group(args: GroupArgs) -> GroupResult:
 
     iteration_counter = 0
     group_failed = False
+    finished_suites = 0
     log_files: SuiteLogFiles = set()
 
     def report_progress() -> None:
-        # The manager holds a copy, so send it the latest `log_files`.
+        # The manager holds a copy, so send it the latest `finished_suites` and `log_files`.
         if shared_group_progress is not None:
-            shared_group_progress[group_index] = GroupProgress(os.getpid(), log_files)
+            shared_group_progress[group_index] = GroupProgress(os.getpid(), finished_suites, log_files)
 
     report_progress()
 
@@ -484,6 +486,8 @@ def run_test_group(args: GroupArgs) -> GroupResult:
                     current_counter_value = shared_suite_counter.value
 
             print_suite_progress(current_counter_value, total_number_of_suites)
+            finished_suites += 1
+            report_progress()
 
             if suite_failed:
                 group_failed = True
@@ -669,6 +673,19 @@ def init_worker_process(
     worker_pids.append(os.getpid())
 
 
+def count_rest_of_group(group_args: GroupArgs, finished_suites: int) -> None:
+    assert shared_suite_counter is not None, "The suite counter must have been created at this point"
+    rest = len(group_args.suites) * group_args.options.iteration_count - finished_suites
+    # Nothing is left when the worker died after its last suite. With `-n 0` the group runs without
+    # end, so there is no total to reach.
+    if rest <= 0:
+        return
+    with shared_suite_counter.get_lock():
+        shared_suite_counter.value += rest
+        current_counter_value = shared_suite_counter.value
+    print_suite_progress(current_counter_value, group_args.total_number_of_suites)
+
+
 def record_worker_children(pid: ProcessId, worker_children: dict[ProcessId, list[psutil.Process]]) -> None:
     with contextlib.suppress(psutil.Error):
         # A worker that has just died lists no children any more, so keep the last ones seen.
@@ -704,6 +721,9 @@ def fail_dead_worker_group(
         dead_worker_suites.append(dead_suite.path)
         not_run_suites.extend(suite.path for suite in not_run)
 
+    # No worker will run the rest of the group now, so count its suites as finished.
+    count_rest_of_group(group_args, progress.finished_suites)
+
 
 def find_unstarted_groups(
     pending: list[GroupIndex], results: list[ApplyResult[GroupResult]], running_workers: set[ProcessId]
@@ -730,6 +750,7 @@ def fail_unstarted_group(group_args: GroupArgs, not_run_suites: list[str]) -> No
         flush=True,
     )
     not_run_suites.extend(suite.path for suite in group_args.suites)
+    count_rest_of_group(group_args, finished_suites=0)
 
 
 def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
@@ -875,19 +896,19 @@ def run():
         # To share a counter between all the worker processes, we must create a 
         # multiprocessing.Value that gets passed to each worker process through
         # its initializer function (by assigning a global variable).
-        shared_suite_counter_object = multiprocessing.Value('i', 0)
+        shared_suite_counter = multiprocessing.Value("i", 0)
         # Like the counter, we need to use a multiprocessing.Manager to create
         # a shared list that keeps track of the currently running suites,
         # a shared dictionary with the worker process of each group and the
-        # log files of its finished suites, and a shared list of all worker
-        # processes.
+        # number and log files of its finished suites, and a shared list of
+        # all worker processes.
         manager = multiprocessing.Manager()
         shared_active_suites = manager.list()
         shared_group_progress = manager.dict()
         shared_worker_pids = manager.list()
         pool = multiprocessing.Pool(
             initializer=init_worker_process, 
-            initargs=(shared_suite_counter_object, shared_active_suites, shared_group_progress, shared_worker_pids),
+            initargs=(shared_suite_counter, shared_active_suites, shared_group_progress, shared_worker_pids),
             processes=options.jobs,
         )
 
