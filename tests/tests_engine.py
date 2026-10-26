@@ -626,6 +626,8 @@ def select_test_groups(groups: dict[str, list[Any]], options: argparse.Namespace
 
 
 def run():
+    global shared_suite_counter
+    global shared_active_suites
     parser = prepare_parser()
     for handler in registered_handlers:
         if 'before_parsing' in handler and handler['before_parsing'] is not None:
@@ -679,9 +681,7 @@ def run():
 
     # Prepare job inputs
     if options.jobs == 1:
-        global shared_suite_counter
         shared_suite_counter = 0
-        global shared_active_suites
         shared_active_suites = []
         pool = None
     else:
