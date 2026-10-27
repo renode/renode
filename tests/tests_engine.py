@@ -1,6 +1,7 @@
 # pylint: disable=C0301,C0103,C0111
 from __future__ import print_function
 from collections import defaultdict, namedtuple
+import contextlib
 from sys import platform
 import os
 import sys
@@ -658,13 +659,30 @@ def init_worker_process(
     worker_pids.append(os.getpid())
 
 
-def fail_dead_worker_group(group_args: GroupArgs, progress: GroupProgress) -> None:
+def record_worker_children(pid: ProcessId, worker_children: dict[ProcessId, list[psutil.Process]]) -> None:
+    with contextlib.suppress(psutil.Error):
+        # A worker that has just died lists no children any more, so keep the last ones seen.
+        if children := psutil.Process(pid).children(recursive=True):
+            worker_children[pid] = children
+
+
+def fail_dead_worker_group(
+    group_args: GroupArgs,
+    progress: GroupProgress,
+    worker_children: list[psutil.Process],
+) -> None:
     assert shared_active_suites is not None, "The active suite list must have been created at this point"
     suite_paths = ", ".join(suite.path for suite in group_args.suites)
     print(
         f"!!!!! Worker process {progress.pid} died while running the group with {suite_paths}, counting the group as failed",
         flush=True,
     )
+
+    # Renode and the other processes that the worker started would keep running and holding memory.
+    for child in worker_children:
+        with contextlib.suppress(psutil.Error):
+            child.kill()
+            print(f"!!!!! Killed process {child.pid} that worker process {progress.pid} started", flush=True)
 
     for suite in group_args.suites:
         if suite.path in shared_active_suites:
@@ -704,6 +722,8 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
     assert shared_group_progress is not None, "The group progress must have been created at this point"
     results: list[ApplyResult[GroupResult]] = [pool.apply_async(run_test_group, (group_args,)) for group_args in args]
     dead_worker_groups: set[GroupIndex] = set()
+    # The processes that each worker had started at the last check, such as Renode.
+    worker_children: dict[ProcessId, list[psutil.Process]] = {}
     # The groups that had not started at the last check while a worker was idle.
     unstarted_groups: set[GroupIndex] = set()
     while True:
@@ -728,9 +748,10 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> list[GroupResu
             # the pool time to receive that result before we check it.
             if psutil.pid_exists(progress.pid):
                 running_workers.add(progress.pid)
+                record_worker_children(progress.pid, worker_children)
             elif not results[group_index].ready():
                 dead_worker_groups.add(group_index)
-                fail_dead_worker_group(args[group_index], progress)
+                fail_dead_worker_group(args[group_index], progress, worker_children.pop(progress.pid, []))
 
         previous_unstarted_groups = unstarted_groups
         unstarted_groups = find_unstarted_groups(pending, results, running_workers)
