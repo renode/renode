@@ -8,7 +8,7 @@ import argparse
 import subprocess
 import yaml
 import multiprocessing
-from typing import Any
+from typing import Any, MutableSequence, NamedTuple, Optional
 from pathlib import Path
 from enum import Enum
 import segmenting
@@ -18,8 +18,17 @@ import unstable_tests
 this_path = os.path.abspath(os.path.dirname(__file__))
 registered_handlers = []
 TestResult = namedtuple('TestResult', ('ok', 'log_file'))
+SuiteLogFiles = set[tuple[type, str]]
+
+
+class GroupArgs(NamedTuple):
+    suites: list[Any]
+    total_number_of_suites: int
+    options: argparse.Namespace
+
+
 shared_suite_counter = None
-shared_active_suites = None
+shared_active_suites: Optional[MutableSequence[str]] = None
 
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll' if platform != 'win32' else 'RenodeWPF.dll'
 # Not a TestTag because it's not a real tag, it's the default.
@@ -361,7 +370,7 @@ def configure_output(options):
             print("Failed to open output file. Falling back to STDOUT.")
 
 
-def run_test_group(args):
+def run_test_group(args: GroupArgs):
 
     global shared_suite_counter
     global shared_active_suites
@@ -369,7 +378,7 @@ def run_test_group(args):
 
     iteration_counter = 0
     group_failed = False
-    log_files = set()
+    log_files: SuiteLogFiles = set()
 
     # this function will be called in a separate
     # context (due to the pool.map_async) and
@@ -663,7 +672,7 @@ def run():
 
     args = []
     for (_, group_suites) in groups_segment:
-        args.append((group_suites, total_number_of_suites, options))
+        args.append(GroupArgs(group_suites, total_number_of_suites, options))
 
     for (_, group_suites) in groups_segment:
         for suite in group_suites:
