@@ -235,6 +235,16 @@ enum renode_action : uint8_t {
   // Response:
   //     Identical to the request message.
   SET_CLOCK_FREQUENCY = 16,
+
+  // Socket: backward only
+  // Request:
+  //     data_length: ignored
+  //     connection_index: ignored
+  //     address: boot address / reset vector
+  //     payload: ignored
+  // Response:
+  //     Identical to the request message.
+  SET_BOOT_ADDRESS = 17,
 };
 
 #pragma pack(push, 1)
@@ -475,6 +485,8 @@ public:
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
   using vtor_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<uint32_t>, 1,
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
+  using boot_address_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<uint64_t>, 1,
+                                      sc_core::SC_ZERO_OR_MORE_BOUND>;
   using clock_period_in_port = sc_core::sc_port<sc_core::sc_signal_in_if<sc_core::sc_time>, 1,
                                       sc_core::SC_ZERO_OR_MORE_BOUND>;
 
@@ -513,7 +525,11 @@ public:
   // INITSVTOR signal.
   // Vector table offset address (secure or non-secure depending on state)
   vtor_in_port init_vtor_s_in;
-  
+
+  // Boot address / reset vector.
+  // Sampled at reset and used as the initial PC on RISC-V.
+  boot_address_in_port boot_address_in;
+
   // Clock's period
   clock_period_in_port clock_period_in;
 
@@ -583,6 +599,7 @@ private:
   void on_init_ns_vtor();
   void on_init_s_vtor();
   void init_vtor(renode_action action, vtor_in_port &port);
+  void on_set_boot_address();
   void on_set_clock_period();
 
   void update_backward_gpio_state(uint64_t new_gpio_state);

@@ -284,6 +284,8 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
   sensitive << init_vtor_ns_in;
   SC_METHOD(on_init_s_vtor);
   sensitive << init_vtor_s_in;
+  SC_METHOD(on_set_boot_address);
+  sensitive << boot_address_in;
   SC_METHOD(on_set_clock_period);
   sensitive << clock_period_in;
 
@@ -583,6 +585,20 @@ void renode_bridge::on_init_s_vtor() {
 
 void renode_bridge::on_init_ns_vtor() {
   init_vtor(INIT_NON_SECURE_VTOR, init_vtor_ns_in);
+}
+
+void renode_bridge::on_set_boot_address() {
+  if (boot_address_in.get_interface() == nullptr) {
+    return;
+  }
+
+  renode_message msg = {};
+  msg.action = renode_action::SET_BOOT_ADDRESS;
+  msg.address = boot_address_in->read();
+  msg.initiator_id = id;
+  send_backward_request(&msg);
+  // Response is ignored.
+  msg = receive_backward_response();
 }
 
 void renode_bridge::on_set_clock_period() {
