@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
+#include <future>
 #include <memory>
 #include <string>
 #include <utility>
@@ -108,7 +109,9 @@ public:
     external_control &operator=(const external_control &) = delete;
 
     //  Connects to Renode and serves the guest's accesses to the named bus peripheral of the named
-    //  machine with the given handlers, which run on the Renode thread that makes the access.
+    //  machine with the given handlers. Each access is served on a thread of its own, the way
+    //  another simulator runs its device models on threads of its own, while the Renode thread that
+    //  makes the access waits for it.
     bool connect(const char *machine_name, const char *peripheral_name, read_handler on_read, write_handler on_write)
     {
         serve_read = std::move(on_read);
@@ -157,11 +160,15 @@ private:
     static void serve_access(void *user_data, renode_sysbus_event_data_t *event)
     {
         auto &control = *static_cast<external_control *>(user_data);
-        if(event->access_type == SYSBUS_CB_READ) {
-            event->access_succeeded = control.serve_read(event->address, event->data, event->byte_count);
-        } else {
-            event->access_succeeded = control.serve_write(event->address, event->data, event->byte_count);
-        }
+
+        const auto serve = [&control, event] {
+            if(event->access_type == SYSBUS_CB_READ) {
+                return control.serve_read(event->address, event->data, event->byte_count);
+            }
+            return control.serve_write(event->address, event->data, event->byte_count);
+        };
+
+        event->access_succeeded = std::async(std::launch::async, serve).get();
     }
 
     renode_t *renode = nullptr;
