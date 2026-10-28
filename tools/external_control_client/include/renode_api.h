@@ -638,7 +638,7 @@ renode_error_t *renode_get_bus_peripheral(renode_machine_t *machine, const char 
  *
  * All callbacks should set renode_sysbus_event_data_t::access_succeeded to true.
  * By default, it is false.
- * If renode_sysbus_event_data_t::access_type is ::SYSBUS_READ, then the callback should set renode_sysbus_event_data_t::data to true.
+ * If renode_sysbus_event_data_t::access_type is ::SYSBUS_CB_READ, then the callback should set renode_sysbus_event_data_t::data to true.
  * By default, it is all zeros, and can be omitted if the access doesn't succeed.
  */
 renode_error_t *renode_register_sysbus_access_callback(renode_bus_peripheral_t *bus_peripheral, renode_access_type_t access_type, renode_access_width_t width, void *user_data, renode_sysbus_event_callback_t callback);
