@@ -7,30 +7,23 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 using Antmicro.Renode.Core;
-using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
-using Antmicro.Renode.Peripherals.Bus;
 using Antmicro.Renode.Peripherals.CPU;
 using Antmicro.Renode.Peripherals.IRQControllers;
 using Antmicro.Renode.Peripherals.Miscellaneous;
 
+#nullable enable
+
 namespace Antmicro.Renode.Peripherals.SystemC
 {
-    public enum SignalActiveWhen
-    {
-        Low,
-        High,
-    }
-
     public class CortexMBundle
     {
         public CortexMBundle(
             CortexM cpu,
             NVIC nvic,
-            DWT dwt = null,
+            DWT? dwt = null,
             SignalActiveWhen powerOnResetActive = SignalActiveWhen.High,
             SignalActiveWhen coreResetInActive = SignalActiveWhen.High
         )
@@ -46,7 +39,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         public NVIC Nvic { get; }
 
-        public DWT Dwt { get; }
+        public DWT? Dwt { get; }
 
         public SignalActiveWhen PowerOnResetActive { get; }
 
@@ -61,7 +54,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public bool VtorNonSecureInitialized { get; set; }
     }
 
-    public class SystemCCortexMSignalsUnit : SystemCPeripheral, IExecutableIO
+    public class SystemCCortexMSignalsUnit : SystemCCPUSignalsUnit
     {
         public SystemCCortexMSignalsUnit(
                 IMachine machine,
@@ -78,66 +71,15 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     disableTimeoutCheck)
         {
             var cortexMBundleMap = new Dictionary<uint, CortexMBundle>();
-            var bundledConnections = new Dictionary<uint, IReadOnlyDictionary<int, IGPIO>>();
             foreach(var cortexMBundle in cortexMBundles)
             {
                 var id = cortexMBundle.Cpu.MultiprocessingId;
 
-                var innerConnections = new Dictionary<int, IGPIO>();
-                for(var i = 0; i < NumberOfGPIOPins; i++)
-                {
-                    innerConnections[i] = new GPIO();
-                }
-                var connections = new ReadOnlyDictionary<int, IGPIO>(innerConnections);
-                bundledConnections.Add(id, connections);
                 cortexMBundleMap.Add(id, cortexMBundle);
-                AddInitiator(cortexMBundle.Cpu);
+                var connections = RegisterCPU(cortexMBundle.Cpu);
                 SetupCortexMBundle(cortexMBundle, connections);
             }
             this.cortexMBundles = new ReadOnlyDictionary<uint, CortexMBundle>(cortexMBundleMap);
-            this.bundledConnections = new ReadOnlyDictionary<uint, IReadOnlyDictionary<int, IGPIO>>(bundledConnections);
-        }
-
-        /// <remarks>
-        /// CPU is allowed to execute code from this peripheral,
-        /// so it implements <see cref="IMemory"/> via <see cref="IExecutableIO"/>.
-        /// Nevertheless this peripheral isn't required to represent a uniform memory space at SystemC side
-        /// and it usually covers multiple peripherals on the remote side,
-        /// but the particular memory layout is transparent to this peripheral. 
-        /// So in general this peripheral shouldn't be treated as a pure memory
-        /// and extension methods like DumpBinary should be used with caution,
-        /// as all accesses are redirected to the SystemC implementation.
-        /// Anyway we try to provide a reasonable default for <see cref="IKnownSize.Size"/>
-        /// spanning the whole registered area on the system bus.
-        /// As we use the information from the registration point,
-        /// <see cref="IKnownSize.Size"/> can't be used for the registration itself,
-        /// so <see cref="BusRangeRegistration"/> must be always used instead of <see cref="BusPointRegistration"/>.
-        /// Failing to do so will report exception during construction.
-        /// </remarks>
-        public long Size
-        {
-            get
-            {
-                try
-                {
-                    return (long)
-                    this.GetMachine()
-                        .GetSystemBus(this)
-                        .GetRegistrationPoints(this)
-                        .First()
-                        .Range.Size;
-                }
-                catch(Exception)
-                {
-                    throw new RecoverableException("Unable to detect size from the registration point");
-                }
-            }
-        }
-
-        protected override void HandleGpioWrite(int number, bool value, uint initiatorId)
-        {
-            var connections = bundledConnections[initiatorId];
-            connections[number].Set(value);
         }
 
         // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
@@ -276,14 +218,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 dwt.Clocked = value;
             }
 
-            // We let a clock to settle down before clock signal is propagated to a CPU itself.
-            // This inertia is needed, because emulated CPU can't be stopped immediately.
-            // The worst case is assumed here, after the current quantum is finished,
-            // when it's guaranteed there are no memory transactions in progress.
-            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-            {
-                cpu.Clocked = value;
-            }, true);
+            SetCpuClocked(cpu, value);
         }
 
         private void SetupCortexMBundle(CortexMBundle cortexMBundle, IReadOnlyDictionary<int, IGPIO> connections)
@@ -327,24 +262,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             var nvic = cortexMBundle.Nvic;
             var dwt = cortexMBundle.Dwt;
 
-            void holdInReset()
-            {
-                cpu.IsHalted = true;
-                this.DebugLog("CPU halted after reset signal assertion");
-            }
-
-            void resetAndLeaveReset()
-            {
-                cpu.Reset();
-                nvic.Reset();
-                dwt?.Reset();
-                // Ensure cpu is resumed after implicit pause on cpu reset.
-                // CPUWAIT is preserved by CortexM.Reset() and keeps the CPU halted
-                // until CPUWAIT is deasserted.
-                cpu.Resume();
-                this.DebugLog("CPU and peripherals were reset after signal deassertion");
-            }
-
             var resetState = resetOn == SignalActiveWhen.High ? true : false;
             var wasAsserted = cortexMBundle.CoreResetInAsserted || cortexMBundle.PowerOnResetAsserted;
             if(state == resetState)
@@ -382,37 +299,17 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return;
             }
 
-            void updateResetState()
+            ScheduleReset(cpu, isAsserted, () =>
             {
-                SetDeferredHalt(cpu, false);
-                if(isAsserted)
-                {
-                    holdInReset();
-                }
-                else
-                {
-                    resetAndLeaveReset();
-                }
-            }
-
-            if(isAsserted)
-            {
-                SetDeferredHalt(cpu, true);
-            }
-
-            // GPIO signal (PowerOnReset/CoreResetIn) from SystemC
-            // can trigger either bus access to SystemC (read PC and SP from VTOR offset)
-            // or assert GPIO signal from Renode -> SystemC.
-            // If forward socket is blocking on TimeSync,
-            // it causes a deadlock, so defer it and reset asynchronously.
-            machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-            {
-                updateResetState();
-            }, true);
+                // CPUWAIT is preserved by CortexM.Reset() and keeps the CPU halted
+                // until CPUWAIT is deasserted.
+                cpu.Reset();
+                nvic.Reset();
+                dwt?.Reset();
+            });
         }
 
         private readonly IReadOnlyDictionary<uint, CortexMBundle> cortexMBundles;
-        private readonly IReadOnlyDictionary<uint, IReadOnlyDictionary<int, IGPIO>> bundledConnections;
         private const int NmiException = 2;
         private const int SystemExceptionOffset = 16;
 
@@ -428,28 +325,6 @@ namespace Antmicro.Renode.Peripherals.SystemC
             Sleeping = 1007,                       // O_sleeping
             SleepDeep = 1008,                      // O_sleep_deep
             Lockup = 1009,                         // O_lockup
-        }
-
-        private class GPIOHandler : IGPIOReceiver
-        {
-            public GPIOHandler(Action<bool> handler, bool resetValue = false)
-            {
-                this.handler = handler;
-                this.resetValue = resetValue;
-            }
-
-            public void OnGPIO(int number, bool value)
-            {
-                handler(value);
-            }
-
-            public void Reset()
-            {
-                handler(resetValue);
-            }
-
-            private readonly bool resetValue;
-            private readonly Action<bool> handler;
         }
     }
 }
