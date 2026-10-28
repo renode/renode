@@ -44,7 +44,7 @@ Run Test Case
 #
 
 *** Test Cases ***
-Should Run Arch Tests 32
+Should Run Arch Tests
     [Tags]                          basic-tests
     [Template]                      Run Test Case
 
@@ -52,9 +52,6 @@ Should Run Arch Tests 32
         ${test}                         32
     END
 
-Should Run Arch Tests 64
-    [Tags]                          basic-tests
-    [Template]                      Run Test Case
 
     FOR  ${test}  IN  @{TESTS_ARCH_64}
         ${test}                         64
