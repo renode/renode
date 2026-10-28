@@ -5,6 +5,7 @@ cpu: CPU.ARMv8A @ sysbus
 
 timer: Timers.ARM_GenericTimer @ cpu
     frequency: 62500000
+    defaultCounterFrequencyRegister: 62500000
     EL3PhysicalTimerIRQ -> gic#0@29
     EL1PhysicalTimerIRQ -> gic#0@30
     EL1VirtualTimerIRQ -> gic#0@27

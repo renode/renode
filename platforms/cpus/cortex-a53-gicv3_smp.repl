@@ -23,6 +23,7 @@ cpu3: CPU.ARMv8A @ sysbus
 
 timer1: Timers.ARM_GenericTimer @ cpu1
     frequency: 62500000
+    defaultCounterFrequencyRegister: 62500000
     EL3PhysicalTimerIRQ -> gic#1@29
     EL1PhysicalTimerIRQ -> gic#1@30
     EL1VirtualTimerIRQ -> gic#1@27
@@ -31,6 +32,7 @@ timer1: Timers.ARM_GenericTimer @ cpu1
 
 timer2: Timers.ARM_GenericTimer @ cpu2
     frequency: 62500000
+    defaultCounterFrequencyRegister: 62500000
     EL3PhysicalTimerIRQ -> gic#2@29
     EL1PhysicalTimerIRQ -> gic#2@30
     EL1VirtualTimerIRQ -> gic#2@27
@@ -39,6 +41,7 @@ timer2: Timers.ARM_GenericTimer @ cpu2
 
 timer3: Timers.ARM_GenericTimer @ cpu3
     frequency: 62500000
+    defaultCounterFrequencyRegister: 62500000
     EL3PhysicalTimerIRQ -> gic#3@29
     EL1PhysicalTimerIRQ -> gic#3@30
     EL1VirtualTimerIRQ -> gic#3@27
