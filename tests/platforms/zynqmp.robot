@@ -443,7 +443,7 @@ Should Run Web Server In Docker
     Wait For Line On Uart                   response:200
 
 Should Ping Over TAP Using An Ethernet Adapter Behind The SMMUv3
-    [Tags]                                  tap  exclude_osx
+    [Tags]                                  tap  exclude_osx  exclude_windows
     Create Linux SMMUv3 Machine
     Boot Linux And Login
 
