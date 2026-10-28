@@ -249,10 +249,8 @@ pcie1: PCI.MPFS_PCIe @ {
     }
 
 pcieRC0: PCI.PCIeRootComplex @ pcie0 0
-    parent: pcie1
 
 pcieRC1: PCI.PCIeRootComplex @ pcie1 0
-    parent: pcie1
 
 pcieMem: PCI.PCIeMemory  @ pcie1 1
     size: 0x20000
