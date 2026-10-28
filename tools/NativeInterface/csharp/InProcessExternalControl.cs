@@ -25,10 +25,9 @@ namespace Antmicro.Renode.NativeInterface;
 /// Each message holds the command, the message type and the command data.
 /// </summary>
 /// <remarks>
-/// Each side must have at most one request chain in progress at a time, as if it served requests on one handler
-/// thread like the socket transport does. One request chain of each side may be in progress at the same time.
-/// Renode needs the client side of this rule, because commands such as <see cref="RunFor"/> are not safe to run
-/// concurrently. A request chain is a request and every request sent while it is handled, at any depth.
+/// A request chain is a request and every request sent on its thread while it is handled, at any depth. The client may
+/// send requests from several threads at the same time, so several request chains may be in progress. Renode starts at
+/// most one of them, the same as the socket transport, which serves requests on one handler thread.
 /// With request serialization, Renode also starts no request chain while a client request other than
 /// <see cref="Command.RunFor"/> is in progress. A Renode request sent on the thread of a client request in progress
 /// fails, unless the request chain on that thread started with <see cref="Command.RunFor"/>.

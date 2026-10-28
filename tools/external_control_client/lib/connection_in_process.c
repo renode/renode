@@ -24,10 +24,9 @@ struct renode_connection {
     pthread_mutex_t lifecycle_lock;
     bool disposed;
     int active_handler_count;
-
-    //  Only one thread at a time starts a request chain, because Renode commands such as `RunFor` are not safe
-    //  to run concurrently.
-    pthread_mutex_t client_request_lock;
+    int active_request_count;
+    //  Signaled when `active_request_count` drops to zero.
+    pthread_cond_t requests_ended;
 };
 
 //  A request from Renode that a thread handles.
@@ -103,30 +102,27 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     result->request_user_data = cfg->server_request_ud;
     result->disposed = false;
     result->active_handler_count = 0;
+    result->active_request_count = 0;
 
-    pthread_mutexattr_t mutex_attributes;
-    pthread_mutexattr_init(&mutex_attributes);
-    pthread_mutexattr_settype(&mutex_attributes, PTHREAD_MUTEX_RECURSIVE);
-    int thread_error = pthread_mutex_init(&result->client_request_lock, &mutex_attributes);
-    pthread_mutexattr_destroy(&mutex_attributes);
+    int thread_error = pthread_mutex_init(&result->lifecycle_lock, NULL);
     if(thread_error != 0) {
         free(result);
         return create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
     }
 
-    thread_error = pthread_mutex_init(&result->lifecycle_lock, NULL);
+    thread_error = pthread_cond_init(&result->requests_ended, NULL);
     if(thread_error != 0) {
-        pthread_mutex_destroy(&result->client_request_lock);
+        pthread_mutex_destroy(&result->lifecycle_lock);
         free(result);
-        return create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
+        return create_fatal_error("Failed to create a condition variable: %s", strerror(thread_error));
     }
 
     RenodeStatus status =
         renode_external_control_open(cfg->name, on_renode_request, result, cfg->serialize_requests, &result->endpoint);
     if(status != RENODE_SUCCESS) {
         //  Renode sends no request before the open succeeds, so no handler uses `result`.
+        pthread_cond_destroy(&result->requests_ended);
         pthread_mutex_destroy(&result->lifecycle_lock);
-        pthread_mutex_destroy(&result->client_request_lock);
         free(result);
         return create_fatal_error("Failed to open an external control endpoint, librenode returned %d", status);
     }
@@ -149,14 +145,16 @@ static renode_error_t *renode_connection_close_impl(renode_connection_t *connect
     }
 
     connection->disposed = true;
+
+    //  Every request must end before the endpoint is closed, because requests from other threads may still use it.
+    while(connection->active_request_count > 0) {
+        pthread_cond_wait(&connection->requests_ended, &connection->lifecycle_lock);
+    }
     pthread_mutex_unlock(&connection->lifecycle_lock);
 
-    //  Waits for a request chain on another thread to end.
-    pthread_mutex_lock(&connection->client_request_lock);
     RenodeStatus status = renode_external_control_close(connection->endpoint);
-    pthread_mutex_unlock(&connection->client_request_lock);
 
-    pthread_mutex_destroy(&connection->client_request_lock);
+    pthread_cond_destroy(&connection->requests_ended);
     pthread_mutex_destroy(&connection->lifecycle_lock);
     free(connection);
 
@@ -196,6 +194,29 @@ typedef struct {
     renode_error_t *error;
 } pending_response_t;
 
+//  Returns false when the connection is closing, and then the request must not use the endpoint.
+static bool try_start_request(renode_connection_t *connection)
+{
+    pthread_mutex_lock(&connection->lifecycle_lock);
+    bool started = !connection->disposed;
+    if(started) {
+        connection->active_request_count += 1;
+    }
+    pthread_mutex_unlock(&connection->lifecycle_lock);
+    return started;
+}
+
+static void end_request(renode_connection_t *connection)
+{
+    pthread_mutex_lock(&connection->lifecycle_lock);
+    assert_exit(connection->active_request_count >= 1);
+    connection->active_request_count -= 1;
+    if(connection->active_request_count == 0) {
+        pthread_cond_broadcast(&connection->requests_ended);
+    }
+    pthread_mutex_unlock(&connection->lifecycle_lock);
+}
+
 //  Response handler that `renode_connection_send_request_impl` passes to `renode_external_control_request`.
 static void on_renode_response(void *context, const uint8_t *message, uint32_t size)
 {
@@ -206,21 +227,13 @@ static void on_renode_response(void *context, const uint8_t *message, uint32_t s
 renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud,
                                                     const renode_connection_transfer_t *transfers, size_t count)
 {
-    pthread_mutex_lock(&conn->lifecycle_lock);
-    bool disposed = conn->disposed;
-    pthread_mutex_unlock(&conn->lifecycle_lock);
-    if(disposed) {
-        return create_fatal_error_static("This Renode connection has been disposed of");
-    }
-
     uint8_t *message;
     uint32_t size;
     return_error_if_fails(concatenate_transfers(transfers, count, &message, &size));
 
-    //  A request made while handling a request from Renode is a part of Renode's request chain.
-    bool starts_request_chain = !is_handling_renode_request(conn);
-    if(starts_request_chain) {
-        pthread_mutex_lock(&conn->client_request_lock);
+    if(!try_start_request(conn)) {
+        free(message);
+        return create_fatal_error_static("This Renode connection has been disposed of");
     }
 
     pending_response_t response = {
@@ -230,11 +243,8 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
         .error = NO_ERROR,
     };
     RenodeStatus status = renode_external_control_request(conn->endpoint, message, size, on_renode_response, &response);
-
-    if(starts_request_chain) {
-        pthread_mutex_unlock(&conn->client_request_lock);
-    }
     free(message);
+    end_request(conn);
 
     if(status != RENODE_SUCCESS) {
         return create_fatal_error("External control request failed, librenode returned %d", status);
