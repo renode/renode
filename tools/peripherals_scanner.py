@@ -78,6 +78,7 @@ def try_get_category(platform):
         "cortex-a53": "GENERIC ARM",
         "cortex-a53-gicv2": "GENERIC ARM",
         "cortex-a53-gicv3": "GENERIC ARM",
+        "cortex-a53-gicv3_pcie": "GENERIC ARM",
         "cortex-a53-gicv3_smp": "GENERIC ARM",
         "cortex-a78": "GENERIC ARM",
         "cortex-a9": "GENERIC ARM",

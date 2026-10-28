@@ -294,6 +294,7 @@
 - tests/native-interface/bus-handlers.robot
 - tests/platforms/ramn-terminal.robot
 - tests/peripherals/ST7789.robot
+- tests/peripherals/Designware_PCIe.robot
 - tests/tools/renode-test.robot
 
 - signal_handling:

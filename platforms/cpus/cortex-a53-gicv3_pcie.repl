@@ -1,0 +1,32 @@
+using "./cortex-a53-gicv3.repl"
+
+pcieHost: PCI.DesignWare_PCIe @ {
+    sysbus new Bus.BusMultiRegistration { address: 0x10000000; size: 0x100000; region: "dbi" };
+    sysbus new Bus.BusMultiRegistration { address: 0x11000000; size: 0x200000; region: "iatu" };
+    sysbus new Bus.BusMultiRegistration { address: 0x12000000; size: 0x200000; region: "devices" }; // For Linux it's the "config" region in DTS
+    sysbus new Bus.BusMultiRegistration { address: 0x13000000; size: 0x200000; region: "devices" }; // For non-prefetchable 64 bit devices (in DTS "ranges")
+    sysbus new Bus.BusMultiRegistration { address: 0x14000000; size: 0x200000; region: "devices" }; // For prefetchable 64 bit devices (in DTS "ranges")
+}
+    // Type is presumably defined by an SoC designer
+    Type: 0x11111000
+
+pcieMem1: PCI.PCIeMemory @ pcieHost 1
+    size: 0x200
+    parent: pcieHost
+    // Vendor/Device Id need to be nonzero for the device to be discovered by the kernel
+    VendorId: 0xAAAA
+    DeviceId: 0xCCCC
+    BaseClassCode: PCIBaseClass.Storage
+    SubClassCode: PCISubClass.StorageOther
+
+sysbus:
+    init add:
+        // Mocked PL061 GPIO Controller, for the PCIe PHY driver reset component
+        Tag <0x90B0FE0 0x4> "pl061_devid_0" 0x61 silent=True
+        Tag <0x90B0FE4 0x4> "pl061_devid_1" 0x10 silent=True
+        Tag <0x90B0FE8 0x4> "pl061_devid_2" 0x04 silent=True
+        Tag <0x90B0FEC 0x4> "pl061_devid_3" 0x00 silent=True
+        Tag <0x90B0FF0 0x4> "pl061_primecell_0" 0x0D silent=True
+        Tag <0x90B0FF4 0x4> "pl061_primecell_1" 0xF0 silent=True
+        Tag <0x90B0FF8 0x4> "pl061_primecell_2" 0x05 silent=True
+        Tag <0x90B0FFC 0x4> "pl061_primecell_3" 0xB1 silent=True
