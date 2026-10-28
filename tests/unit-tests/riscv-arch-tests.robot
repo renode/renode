@@ -7,6 +7,15 @@ ${RISCV_ARCH_TESTS_PATH}            %{RISCV_ARCH_TESTS_PATH=/riscv-arch-test/wor
 *** Keywords ***
 Run Test Case
     [Arguments]                     ${test}  ${width}
+    # Fail individual unit-tests with binary name attached to failure
+    ${status}                       ${error}=  Run Keyword And Ignore Error  Run Test Case Inner  ${test}  ${width}
+    IF  $status == 'FAIL'
+        ${dirname}                      ${filename}=  Split Path  ${test}
+        Run Keyword And Continue On Failure  Fail  ${filename}
+    END
+
+Run Test Case Inner
+    [Arguments]                     ${test}  ${width}
 
     Execute Command                 Clear
     Execute Command                 include "${CURDIR}/ArrayMemoryRiscVTestWatcher.cs"
