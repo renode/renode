@@ -11,6 +11,7 @@
 // to have renode_message struct already defined.
 #include "librenode.h"
 #endif
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -590,7 +591,7 @@ void renode_bridge::on_set_clock_period() {
   }
 
   double period = clock_period_in->read().to_seconds();
-  uint64_t freq = (period == 0.0) ? 0 : static_cast<uint64_t>(1.0 / period);
+  uint64_t freq = (period == 0.0) ? 0 : static_cast<uint64_t>(std::round(1.0 / period));
 
   renode_message msg = {};
   msg.action = renode_action::SET_CLOCK_FREQUENCY;

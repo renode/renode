@@ -13,6 +13,9 @@ add_library(renode_bridge src/renode_bridge.cpp)
 target_include_directories(renode_bridge PUBLIC include)
 target_include_directories(renode_bridge PRIVATE lib)
 target_link_libraries(renode_bridge socket_cpp systemc)
+if(UNIX)
+    target_link_libraries(renode_bridge m)
+endif()
 
 add_library(renode_bridge_native OBJECT src/renode_bridge_native.cpp)
 
