@@ -2,6 +2,7 @@
 ${MMU_LOG_PREFIX}                   cpu: Using incorrect MMU mode for translation of address${SPACE}
 ${MMU_LOG_SUFFIX}                   , current MMU mode is 1, mapping is for MMU mode 0
 ${NVIC_CFSR}                        0xD28
+${NVIC_MPU_MMFAR}                   0xD34
 ${NVIC_MPU_CTRL}                    0xD94
 ${NVIC_MPU_REG}                     0xD98
 ${NVIC_MPU_RBAR}                    0xD9C
@@ -113,3 +114,33 @@ Privileged Access Faults Without Region When PRIVDEFENA Is Not Set
     Try Access Default Map Addr
     ${expected_mmfsr}=              Evaluate  (${MMARVALID}|${DACCVIOL})
     MMFSR Should Be Equal           ${expected_mmfsr}
+
+Small Region Inside A Page Covered By A Large Region Should Still Fault
+    Execute Command                 mach create
+    Execute Command                 machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
+    Configure MPU Region            0  0x00000000  WIDTH=31  AP=3
+    Configure MPU Region            1  0x20001020  WIDTH=4  AP=0
+    Execute Command                 nvic WriteDoubleWord ${NVIC_MPU_CTRL} 0x1
+
+    ${pc}=                          Set Variable  0x08000000
+
+    Execute Command                 cpu PC ${pc}
+    Execute Command                 cpu SP 0x20000400
+
+    ${asm}=                         Catenate  SEPARATOR=${\n}
+    ...                             ldr r0, =0x20001000
+    ...                             ldr r1, [r0]
+    ...                             ldr r0, =0x20001020
+    ...                             ldr r1, [r0]
+
+    Store Assembled Code            ${pc}  ${asm}
+
+    Execute Command                 cpu ExecutionMode SingleStep
+    Start Emulation
+    Execute Command                 cpu Step 2
+    MMFSR Should Be Equal           0
+    Execute Command                 cpu Step 2
+    ${expected_mmfsr}=              Evaluate  (${MMARVALID}|${DACCVIOL})
+    MMFSR Should Be Equal           ${expected_mmfsr}
+    ${MMFAR}=                       Execute Command  nvic ReadDoubleWord ${NVIC_MPU_MMFAR}
+    Should Be Equal As Integers     ${MMFAR.strip()}  0x20001020
