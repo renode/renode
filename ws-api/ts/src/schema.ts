@@ -30,11 +30,6 @@ function resp<T extends ZodRawShape>(obj: T) {
   return OkResponse.extend(obj).or(ErrorResponse);
 }
 
-export const SpawnResponse = resp({
-  data: z.object({}),
-});
-export type SpawnResponse = z.infer<typeof SpawnResponse>;
-
 export const KillResponse = resp({
   data: z.object({}),
 });

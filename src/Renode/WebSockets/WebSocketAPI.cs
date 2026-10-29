@@ -100,6 +100,7 @@ namespace Antmicro.Renode.WebSockets
                 SharedData.Cwd.Value = newPath;
             }
 
+            SharedData.MainConnection ??= sender;
             SharedData.NewClientConnection?.Invoke();
         }
 
@@ -119,6 +120,8 @@ namespace Antmicro.Renode.WebSockets
                     conn.Dispose();
                 }
             }
+
+            SharedData.MainConnection = null;
         }
 
         private void ClearEmulation()
