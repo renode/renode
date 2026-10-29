@@ -25,7 +25,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         {
             try
             {
-                var listenerSocket = CreateListenerSocket(requestedPort);
+                using var listenerSocket = CreateListenerSocket(requestedPort);
                 var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
                 this.InfoLog("SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
                 SetupConnection(listenerSocket);
@@ -123,7 +123,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
                     // Assume transport_dbg is not implemented by SystemC module. 
                     // It can be manually overriden from script or Monitor after setting this property.
                     DisableDebugAccess = true;
-                    var listenerSocket = CreateListenerSocket(requestedPort);
+                    using var listenerSocket = CreateListenerSocket(requestedPort);
                     var assignedPort = ((IPEndPoint)listenerSocket.LocalEndPoint).Port;
                     this.Log(LogLevel.Info, "SystemCPeripheral waiting for forward SystemC connection on {0}:{1}", address, assignedPort);
                     var connectionParams = $"{address} {assignedPort}";
@@ -339,17 +339,25 @@ namespace Antmicro.Renode.Peripherals.SystemC
 
         private void SetupConnection(Socket listenerSocket)
         {
-            forwardSocket = listenerSocket.Accept();
-            forwardSocket.SendTimeout = 1000;
-            // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
-            if(!disableTimeoutCheck)
+            try
             {
-                forwardSocket.ReceiveTimeout = 1000;
-            }
+                forwardSocket = AcceptConnection(listenerSocket);
+                forwardSocket.SendTimeout = 1000;
+                // No ReceiveTimeout for forwardSocket if the disableTimeoutCheck constructor argument is set - so if a debugger halts the SystemC process, Renode will wait for the process to restart
+                if(!disableTimeoutCheck)
+                {
+                    forwardSocket.ReceiveTimeout = 1000;
+                }
 
-            backwardSocket = listenerSocket.Accept();
-            backwardSocket.SendTimeout = 1000;
-            // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
+                backwardSocket = AcceptConnection(listenerSocket);
+                backwardSocket.SendTimeout = 1000;
+                // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
+            }
+            catch
+            {
+                TeardownSocketConnection();
+                throw;
+            }
 
             listenerSocket.Close();
 
@@ -357,6 +365,27 @@ namespace Antmicro.Renode.Peripherals.SystemC
             backwardThreadStarted = true;
 
             connectionActive = true;
+        }
+
+        private Socket AcceptConnection(Socket listenerSocket)
+        {
+            if(systemcProcess == null)
+            {
+                return listenerSocket.Accept();
+            }
+
+            while(true)
+            {
+                if(systemcProcess.HasExited)
+                {
+                    throw new RecoverableException($"SystemC process exited with code {systemcProcess.ExitCode} before establishing both connections.");
+                }
+                // Check for process exit every 100 ms (poll uses microseconds)
+                if(listenerSocket.Poll(100 * 1000, SelectMode.SelectRead))
+                {
+                    return listenerSocket.Accept();
+                }
+            }
         }
 
         private void TeardownSocketConnection()
