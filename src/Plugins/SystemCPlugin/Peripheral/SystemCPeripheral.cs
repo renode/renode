@@ -221,7 +221,7 @@ namespace Antmicro.Renode.Peripherals.SystemC
         public bool MapMemoryOnReadOrWriteOnlyDmiGrant { get; set; }
 
         // NumberOfGPIOPins must be equal to renode_bridge.h:NUM_GPIO
-        public const int NumberOfGPIOPins = 1024;
+        public const int NumberOfGPIOPins = 4098;
 
         // Registers the CPU as an initiator. Can be called before the peripheral is registered on the bus
         // (e.g. from a constructor), so that per-initiator state (e.g. a deferred halt) is available early.

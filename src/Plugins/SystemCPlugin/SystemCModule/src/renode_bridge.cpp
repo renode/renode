@@ -235,7 +235,9 @@ renode_bridge::renode_bridge(sc_core::sc_module_name name, const char *address,
                              const char *port, bool native, std::string mach,
                              std::string peri, uint32_t id, bool hosted, renode_connection *conn)
     : sc_module(name), initiator_socket("initiator_socket"),
-      register_initiator_socket("register_initiator_socket"), id(id) {
+      register_initiator_socket("register_initiator_socket"),
+      gpio_ports_in("gpio_ports_in", NUM_GPIO),
+      gpio_ports_out("gpio_ports_out", NUM_GPIO), id(id) {
   SC_HAS_PROCESS(renode_bridge);
   if (conn != NULL) {
     // Connection can be managed manually.

@@ -32,7 +32,7 @@ struct renode_message;
 #endif
 
 // NUM_GPIO must be equal to SystemCPeripheral.cs:NumberOfGPIOPins
-#define NUM_GPIO 1024
+#define NUM_GPIO 4098
 #define NUM_DIRECT_CONNECTIONS 4
 
 // ================================================================================
@@ -495,11 +495,11 @@ public:
 
   // Input GPIO ports - signal changes are driven by SystemC and propagated to
   // Renode.
-  gpio_in_port gpio_ports_in[NUM_GPIO];
+  sc_core::sc_vector<gpio_in_port> gpio_ports_in;
 
   // Output GPIO ports - signal changes are driven by Renode and propagated to
   // SystemC.
-  gpio_out_port gpio_ports_out[NUM_GPIO];
+  sc_core::sc_vector<gpio_out_port> gpio_ports_out;
 
   // Reset signal.
   // Raised when the peripheral is reset. Expected to be lowered by SystemC
