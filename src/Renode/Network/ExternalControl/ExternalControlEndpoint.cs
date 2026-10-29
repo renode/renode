@@ -26,32 +26,41 @@ public sealed class ExternalControlEndpoint : IDisposable
         Owner = owner;
         this.sendRequest = sendRequest;
 
-        commandHandlers = new CommandHandlerCollection();
-        commandHandlers.Register(new TimeElapsedCallbackCommand(this));
-        commandHandlers.Register(new RunFor(this));
-        commandHandlers.Register(new GetTime(this));
-        commandHandlers.Register(new SPI(this));
-        commandHandlers.Register(new ADC(this));
-        commandHandlers.Register(new GPIOPort(this));
-        commandHandlers.Register(new SystemBus(this));
-        commandHandlers.Register(new CheckVersion(this));
-        commandHandlers.Register(new CANBus(this));
-        commandHandlers.Register(new CustomCommand(this));
-
         var getMachineHandler = new GetMachine(this);
         Machines = getMachineHandler;
 
-        commandHandlers.Register(getMachineHandler);
+        commandHandlers = new ICommand[]
+        {
+            new TimeElapsedCallbackCommand(this),
+            new RunFor(this),
+            new GetTime(this),
+            new SPI(this),
+            new ADC(this),
+            new GPIOPort(this),
+            new SystemBus(this),
+            new CheckVersion(this),
+            new CANBus(this),
+            new CustomCommand(this),
+            getMachineHandler,
+        }.ToDictionary(handler => handler.Identifier);
     }
 
     public ICommand? GetCommandHandler(Command command)
     {
-        return commandHandlers.GetHandler(command);
+        if(!commandHandlers.TryGetValue(command, out var handler))
+        {
+            return null;
+        }
+        return handler;
     }
 
     public void Dispose()
     {
-        commandHandlers.Dispose();
+        foreach(var handler in commandHandlers.Values.OfType<IDisposable>())
+        {
+            handler.Dispose();
+        }
+        commandHandlers.Clear();
     }
 
     /// <summary>
@@ -69,39 +78,6 @@ public sealed class ExternalControlEndpoint : IDisposable
 
     public IMachineContainer Machines { get; }
 
-    private readonly CommandHandlerCollection commandHandlers;
+    private readonly Dictionary<Command, ICommand> commandHandlers;
     private readonly Func<MessagePayload, MessagePayload> sendRequest;
-
-    private class CommandHandlerCollection : IDisposable
-    {
-        public CommandHandlerCollection()
-        {
-            commandHandlers = new Dictionary<Command, ICommand>();
-        }
-
-        public void Dispose()
-        {
-            foreach(var command in commandHandlers.Values.OfType<IDisposable>())
-            {
-                command.Dispose();
-            }
-            commandHandlers.Clear();
-        }
-
-        public void Register(ICommand command)
-        {
-            commandHandlers.Add(command.Identifier, command);
-        }
-
-        public ICommand? GetHandler(Command id)
-        {
-            if(!commandHandlers.TryGetValue(id, out var command))
-            {
-                return null;
-            }
-            return command;
-        }
-
-        private readonly Dictionary<Command, ICommand> commandHandlers;
-    }
 }
