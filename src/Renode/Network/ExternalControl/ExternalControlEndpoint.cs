@@ -68,8 +68,7 @@ public sealed class ExternalControlEndpoint : IDisposable
 
     public void RegisterTimeElapsedCallback(Action<TimeStamp> callback)
     {
-        var command = (TimeElapsedCallbackCommand)GetCommandHandler(Command.TimeElapsedCallback)!;
-        command.RegisterExternalCallback(callback);
+        GetCommandHandler<TimeElapsedCallbackCommand>(Command.TimeElapsedCallback).RegisterExternalCallback(callback);
     }
 
     public void ConnectExternalGPIOOutput(IGPIOReceiver gpioReceiver, int pinId, string externalMachine, string externalGPIO, int externalPinId)
@@ -83,15 +82,13 @@ public sealed class ExternalControlEndpoint : IDisposable
 
     public void RegisterExternalGPIOChangeCallback(string externalMachine, string externalGPIO, int externalPinId, Action<TimeStamp, bool> callback)
     {
-        var machineId = ((GetMachine)GetCommandHandler(Command.GetMachine)!).GetExternalMachineId(externalMachine);
-        var command = (GPIOPort)GetCommandHandler(Command.GPIOPort)!;
-        command.RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
+        var machineId = GetCommandHandler<GetMachine>(Command.GetMachine).GetExternalMachineId(externalMachine);
+        GetCommandHandler<GPIOPort>(Command.GPIOPort).RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
     }
 
     public void AttachCustomCommandCallbackToMonitor()
     {
-        var command = (CustomCommand)GetCommandHandler(Command.CustomCommand)!;
-        command.RegisterExternalCallback();
+        GetCommandHandler<CustomCommand>(Command.CustomCommand).RegisterExternalCallback();
     }
 
     public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string? localContextName = null)
@@ -109,7 +106,7 @@ public sealed class ExternalControlEndpoint : IDisposable
                 throw new RecoverableException($"No peripheral with name: {localContextName} was found");
             }
 
-            var command = (SystemBus)GetCommandHandler(Command.SystemBus)!;
+            var command = GetCommandHandler<SystemBus>(Command.SystemBus);
 
             var response = this.SendRequest(MessagePayload.Request(Command.GetMachine, remoteMachineName));
             response.LogOnError(command.Identifier, Owner);
@@ -139,9 +136,9 @@ public sealed class ExternalControlEndpoint : IDisposable
 
     public String SendCustomCommand(String command)
     {
-        var customCommand = GetCommandHandler(Command.CustomCommand) as CustomCommand;
+        var customCommand = GetCommandHandler<CustomCommand>(Command.CustomCommand);
         var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds;
-        return customCommand!.Send(command, timestamp);
+        return customCommand.Send(command, timestamp);
     }
 
     public void Dispose()
@@ -167,6 +164,11 @@ public sealed class ExternalControlEndpoint : IDisposable
     public IEmulationElement Owner { get; }
 
     public IMachineContainer Machines { get; }
+
+    private T GetCommandHandler<T>(Command command) where T : ICommand
+    {
+        return (T)commandHandlers[command];
+    }
 
     private MessagePayload SendRemoteRegisterRequest(int remoteMachineId, string remotePeripheralName)
     {
