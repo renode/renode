@@ -6,7 +6,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 using Antmicro.Renode.Logging;
@@ -20,6 +19,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             this.isExternal = isExternal;
             this.socket = socket;
             this.endpoint = endpoint;
+            requestStack = new RequestStack(socket);
         }
 
         public void PutMessage(Message message)
@@ -42,7 +42,7 @@ namespace Antmicro.Renode.Network.ExternalControl
             var message = new Message(isExternal, lastRequestId, payload);
 
             socket.SendMessage(message);
-            requestStack.Push((MessageDirection.Sent, message));
+            requestStack.Push(MessageDirection.Sent, message);
 
             return HandleRequestsUntilResponse(cancelationToken).Payload;
         }
@@ -66,87 +66,20 @@ namespace Antmicro.Renode.Network.ExternalControl
 
                 if(message.Payload.Type.IsRequest())
                 {
-                    requestStack.Push((MessageDirection.Received, message));
+                    requestStack.Push(MessageDirection.Received, message);
 
                     var payload = endpoint.HandleRequest(message.Payload);
                     var response = new Message(message.Id, payload);
 
                     socket.SendMessage(response);
-                    PopFromStack(MessageDirection.Sent, response);
+                    requestStack.Pop(MessageDirection.Sent, response);
                 }
                 else
                 {
-                    PopFromStack(MessageDirection.Received, message);
+                    requestStack.Pop(MessageDirection.Received, message);
                     return message;
                 }
             }
-        }
-
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-
-            sb.Append("Request stack (<- means received):\n");
-
-            var depth = 0;
-            foreach(var (direction, message) in requestStack)
-            {
-                if(depth != 0)
-                {
-                    sb.Append('\n');
-                }
-
-                sb.AppendFormat("{0} {1}", DirectionToString(direction), message.ToCustomString(withData: false));
-                depth++;
-            }
-
-            return sb.ToString();
-        }
-
-        private static string DirectionToString(MessageDirection direction)
-        {
-            return direction == MessageDirection.Sent ? "->" : "<-";
-        }
-
-        private void PopFromStack(MessageDirection direction, Message response)
-        {
-            var errorMessages = new List<string>();
-
-            if(requestStack.Count == 0)
-            {
-                errorMessages.Add("Unexpected message received");
-            }
-            else
-            {
-                var (requestDirection, request) = requestStack.Peek();
-
-                if(response.Payload.Type.IsRequest())
-                {
-                    errorMessages.Add("Unexpected request when a response is expected");
-                }
-
-                if(request.Id != response.Id)
-                {
-                    errorMessages.Add("Different request and response IDs");
-                }
-
-                if(request.Payload.Command != response.Payload.Command)
-                {
-                    errorMessages.Add("Different request and response commands");
-                }
-
-                if(direction == requestDirection)
-                {
-                    errorMessages.Add("Unexpected message");
-                }
-            }
-
-            if(errorMessages.Count > 0)
-            {
-                socket.Log(LogLevel.Error, "{0}\nCurrently handling:\n{1} {2}\nError: {3}", this, DirectionToString(direction), response, String.Join(", ", errorMessages));
-            }
-
-            requestStack.TryPop(out _);
         }
 
         private ushort lastRequestId = 0;
@@ -157,12 +90,6 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private readonly AutoResetEvent messageQueueNewItem = new(false);
         private readonly Queue<Message> messageQueue = new();
-        private readonly Stack<(MessageDirection, Message)> requestStack = new();
-
-        private enum MessageDirection
-        {
-            Received,
-            Sent
-        }
+        private readonly RequestStack requestStack;
     }
 }
