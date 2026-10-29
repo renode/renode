@@ -50,27 +50,27 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        public void SynchronizeTimeWithExternal() => endpoint.SynchronizeTimeWithExternal();
+        public void SynchronizeTimeWithExternal() => Endpoint.SynchronizeTimeWithExternal();
 
-        public void RegisterTimeElapsedCallback(Action<TimeStamp> callback) => endpoint.RegisterTimeElapsedCallback(callback);
+        public void RegisterTimeElapsedCallback(Action<TimeStamp> callback) => Endpoint.RegisterTimeElapsedCallback(callback);
 
         public void ConnectExternalGPIOOutput(IGPIOReceiver gpioReceiver, int pinId, string externalMachine, string externalGPIO, int externalPinId) =>
-            endpoint.ConnectExternalGPIOOutput(gpioReceiver, pinId, externalMachine, externalGPIO, externalPinId);
+            Endpoint.ConnectExternalGPIOOutput(gpioReceiver, pinId, externalMachine, externalGPIO, externalPinId);
 
         public void RegisterExternalGPIOChangeCallback(string externalMachine, string externalGPIO, int externalPinId, Action<TimeStamp, bool> callback) =>
-            endpoint.RegisterExternalGPIOChangeCallback(externalMachine, externalGPIO, externalPinId, callback);
+            Endpoint.RegisterExternalGPIOChangeCallback(externalMachine, externalGPIO, externalPinId, callback);
 
-        public void AttachCustomCommandCallbackToMonitor() => endpoint.AttachCustomCommandCallbackToMonitor();
+        public void AttachCustomCommandCallbackToMonitor() => Endpoint.AttachCustomCommandCallbackToMonitor();
 
         public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string localContextName = null) =>
-            endpoint.RegisterRemoteBusPeripheral(localMachineName, remoteMachineName, remotePeripheralName, accessWidth, accessType, localContextName);
+            Endpoint.RegisterRemoteBusPeripheral(localMachineName, remoteMachineName, remotePeripheralName, accessWidth, accessType, localContextName);
 
         public void Dispose()
         {
             Disconnect();
         }
 
-        public String SendCustomCommand(String command) => endpoint.SendCustomCommand(command);
+        public String SendCustomCommand(String command) => Endpoint.SendCustomCommand(command);
 
         public ICommand GetCommandHandler(Command command)
         {
@@ -433,6 +433,8 @@ namespace Antmicro.Renode.Network
                 }
             }
         }
+
+        private ExternalControlEndpoint Endpoint => endpoint ?? throw new RecoverableException("The external control connection is closed");
 
         private State state = State.Unconnected;
         private Socket communicationSocket;
