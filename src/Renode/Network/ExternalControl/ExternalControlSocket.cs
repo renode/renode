@@ -8,8 +8,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 using Antmicro.Renode.Core;
@@ -17,7 +15,6 @@ using Antmicro.Renode.Debugging;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Network.ExternalControl;
-using Antmicro.Renode.Peripherals;
 using Antmicro.Renode.Time;
 using Antmicro.Renode.Utilities;
 
@@ -53,93 +50,27 @@ namespace Antmicro.Renode.Network
             }
         }
 
-        public void SynchronizeTimeWithExternal()
-        {
-            RegisterTimeElapsedCallback((timeStamp) => EmulationManager.Instance.CurrentEmulation.RunUntil(timeStamp.TimeElapsed));
-        }
+        public void SynchronizeTimeWithExternal() => endpoint.SynchronizeTimeWithExternal();
 
-        public void RegisterTimeElapsedCallback(Action<TimeStamp> callback)
-        {
-            var command = (TimeElapsedCallbackCommand)endpoint.GetCommandHandler(Command.TimeElapsedCallback);
-            command.RegisterExternalCallback(callback);
-        }
+        public void RegisterTimeElapsedCallback(Action<TimeStamp> callback) => endpoint.RegisterTimeElapsedCallback(callback);
 
-        public void ConnectExternalGPIOOutput(IGPIOReceiver gpioReceiver, int pinId, string externalMachine, string externalGPIO, int externalPinId)
-        {
-            var machine = gpioReceiver.GetMachine();
-            RegisterExternalGPIOChangeCallback(externalMachine, externalGPIO, externalPinId, (externalEventTimestamp, state) =>
-            {
-                machine.HandleTimeDomainEvent(gpioReceiver.OnGPIO, pinId, state, externalEventTimestamp);
-            });
-        }
+        public void ConnectExternalGPIOOutput(IGPIOReceiver gpioReceiver, int pinId, string externalMachine, string externalGPIO, int externalPinId) =>
+            endpoint.ConnectExternalGPIOOutput(gpioReceiver, pinId, externalMachine, externalGPIO, externalPinId);
 
-        public void RegisterExternalGPIOChangeCallback(string externalMachine, string externalGPIO, int externalPinId, Action<TimeStamp, bool> callback)
-        {
-            var machineId = ((GetMachine)GetCommandHandler(Command.GetMachine)).GetExternalMachineId(externalMachine);
-            var command = (GPIOPort)GetCommandHandler(Command.GPIOPort);
-            command.RegisterExternalCallback(machineId, externalGPIO, externalPinId, callback);
-        }
+        public void RegisterExternalGPIOChangeCallback(string externalMachine, string externalGPIO, int externalPinId, Action<TimeStamp, bool> callback) =>
+            endpoint.RegisterExternalGPIOChangeCallback(externalMachine, externalGPIO, externalPinId, callback);
 
-        public void AttachCustomCommandCallbackToMonitor()
-        {
-            var command = (CustomCommand)endpoint.GetCommandHandler(Command.CustomCommand);
-            command.RegisterExternalCallback();
-        }
+        public void AttachCustomCommandCallbackToMonitor() => endpoint.AttachCustomCommandCallbackToMonitor();
 
-        public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string localContextName = null)
-        {
-            try
-            {
-                if(!EmulationManager.Instance.CurrentEmulation.TryGetMachineByName(localMachineName, out var machine))
-                {
-                    throw new RecoverableException($"No machine with name: {localMachineName} was found");
-                }
-
-                IPeripheral localContextPeripheral = null;
-                if(localContextName is not null && !machine.TryGetByName<IPeripheral>(localContextName, out localContextPeripheral))
-                {
-                    throw new RecoverableException($"No peripheral with name: {localContextName} was found");
-                }
-
-                var command = (SystemBus)endpoint.GetCommandHandler(Command.SystemBus);
-
-                var response = this.SendRequest(MessagePayload.Request(Command.GetMachine, remoteMachineName));
-                response.LogOnError(command.Identifier, this);
-                if(response.Type != CommandType.Success)
-                {
-                    throw new RecoverableException($"Remote Renode doesn't have the machine named: {remoteMachineName}");
-                }
-                var remoteMachineId = BitConverter.ToInt32(response.Data);
-
-                // Sends a request to get remote peripheral id
-                response = SendRemoteRegisterRequest(remoteMachineId, remotePeripheralName);
-                if(response.Type != CommandType.Success)
-                {
-                    throw new RecoverableException($"Remote Renode doesn't have the peripheral named: {remotePeripheralName}");
-                }
-                var remotePeripheralId = BitConverter.ToInt32(response.Data);
-
-                command.RegisterRemoteCallback(remotePeripheralId, accessWidth, accessType, machine, localContextPeripheral);
-            }
-            catch(Exception e)
-            {
-                // catch any exception, log it, then forward to Monitor
-                this.ErrorLog("Failed to register remote callback: {0}", e.Message);
-                throw;
-            }
-        }
+        public void RegisterRemoteBusPeripheral(string localMachineName, string remoteMachineName, string remotePeripheralName, SystemBus.AccessWidth accessWidth, SystemBus.AccessType accessType, string localContextName = null) =>
+            endpoint.RegisterRemoteBusPeripheral(localMachineName, remoteMachineName, remotePeripheralName, accessWidth, accessType, localContextName);
 
         public void Dispose()
         {
             Disconnect();
         }
 
-        public String SendCustomCommand(String command)
-        {
-            var customCommand = endpoint.GetCommandHandler(Command.CustomCommand) as CustomCommand;
-            var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds;
-            return customCommand.Send(command, timestamp);
-        }
+        public String SendCustomCommand(String command) => endpoint.SendCustomCommand(command);
 
         public ICommand GetCommandHandler(Command command)
         {
@@ -239,11 +170,6 @@ namespace Antmicro.Renode.Network
                 disposeCancelationTokenSource?.Dispose();
                 disposeCancelationTokenSource = null;
             }
-        }
-
-        private MessagePayload SendRemoteRegisterRequest(int remoteMachineId, string remotePeripheralName)
-        {
-            return this.SendRequest(MessagePayload.Request(Command.SystemBus, new RemoteBusRegistrationRequest(remoteMachineId, remotePeripheralName).GetRawBytes()));
         }
 
         private void StartConnection()
@@ -525,27 +451,6 @@ namespace Antmicro.Renode.Network
         private readonly object stateLocker = new object();
         private readonly object handlersLocker = new object();
         private readonly AutoResetEvent clientConnectionEvent = new(false);
-
-        private struct RemoteBusRegistrationRequest
-        {
-            public RemoteBusRegistrationRequest(int remoteMachineId, string remotePeripheralName)
-            {
-                nameBytes = Encoding.UTF8.GetBytes(remotePeripheralName);
-                internals = new Internals(-1, remoteMachineId, nameBytes.Length);
-            }
-
-            public byte[] GetRawBytes()
-            {
-                return internals.AsRawBytes().Concat(nameBytes).ToArray();
-            }
-
-            [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            private record struct Internals(int Id, int RemoteMachineId, int NameLength);
-
-            private readonly Internals internals;
-            // Array size cannot be inferred at runtime by Marshal.SizeOf, so it remains outside
-            private readonly byte[] nameBytes;
-        }
 
         private enum State
         {
