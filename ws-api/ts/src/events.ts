@@ -39,7 +39,6 @@ export type ButtonStateChangedCallback = (
 
 export const DisplayOpened = 'display-opened';
 export interface DisplayOpenedArgs {
-  port: number;
   name: string;
   machineName: string;
 }

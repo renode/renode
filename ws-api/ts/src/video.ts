@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Decodes the binary stream of a display endpoint (`/display/<port>`, see DisplayOpenedArgs).
+// Decodes the binary stream of a display endpoint (`/display/<machine>/<display>`, see DisplayOpenedArgs).
 // The wire format is documented in Antmicro.Renode.Analyzers.WebSocketVideoAnalyzer.
 
 enum VideoMessageType {
