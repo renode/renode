@@ -276,7 +276,6 @@ namespace Antmicro.Renode.WebSockets.Providers
                 DisplayCreatedEvent.RaiseEvent(new DisplayCreatedEventDto
                 {
                     Name = displayName,
-                    Port = webSocketVideoAnalyzer.GetDisplayNumber(),
                     MachineName = machineName
                 });
             }
@@ -400,8 +399,6 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class DisplayCreatedEventDto
         {
-            [JsonProperty("port")]
-            public int Port;
             [JsonProperty("name")]
             public string Name;
             [JsonProperty("machineName")]
