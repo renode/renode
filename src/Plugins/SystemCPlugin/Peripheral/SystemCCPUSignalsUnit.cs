@@ -19,8 +19,84 @@ using Antmicro.Renode.Peripherals.CPU;
 
 namespace Antmicro.Renode.Peripherals.SystemC;
 
-public abstract class SystemCCPUSignalsUnit : SystemCPeripheral, IExecutableIO
+public class SystemCCPUSignalsUnit : SystemCPeripheral, IExecutableIO
 {
+    public SystemCCPUSignalsUnit(
+            IMachine machine,
+            CPUSignalsBundle[] bundles,
+            string address = "127.0.0.1",
+            int port = 0,
+            int timeSyncPeriodUS = 1000,
+            bool disableTimeoutCheck = false
+        )
+        : this(machine, address, port, timeSyncPeriodUS, disableTimeoutCheck)
+    {
+        foreach(var bundle in bundles)
+        {
+            var id = bundle.CpuInternal.MultiprocessingId;
+
+            if(!bundlesById.TryAdd(id, bundle))
+            {
+                throw new ConstructionException($"Multiple CPU signal bundles use multiprocessing ID {id}. Each CPU must have a unique ID.");
+            }
+        }
+        foreach(var bundle in bundles)
+        {
+            var connections = RegisterCPU(bundle.CpuInternal);
+            bundle.Setup(this, connections);
+        }
+    }
+
+    public void SetCpuClocked(ICPU cpu, bool value)
+    {
+        // The CPU cannot stop immediately. Wait for the current quantum to
+        // finish, when no memory transactions are in progress.
+        machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+        {
+            cpu.Clocked = value;
+        }, true);
+    }
+
+    public void ScheduleReset(ICPU cpu, bool isAsserted, Action reset)
+    {
+        if(isAsserted)
+        {
+            SetDeferredHalt(cpu, true);
+        }
+
+        // Reset may trigger bus accesses or outgoing GPIOs. Running it on
+        // the backward connection thread can deadlock if the forward socket
+        // is waiting for TimeSync, so defer it to a synchronized state.
+        machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
+        {
+            SetDeferredHalt(cpu, false);
+            if(isAsserted)
+            {
+                cpu.IsHalted = true;
+                this.DebugLog("CPU halted after reset signal assertion");
+            }
+            else
+            {
+                // The caller resets the CPU and its associated peripherals,
+                // including any architecture-specific halting conditions.
+                reset();
+                // Ensure the CPU is resumed after the implicit pause on reset.
+                cpu.Resume();
+                this.DebugLog("CPU and peripherals were reset after signal deassertion");
+            }
+        }, true);
+    }
+
+    public void SendGpioUpdateFromBundle(int number, bool value, uint initiatorId)
+    {
+        SendGpioUpdate(number, value, initiatorId);
+    }
+
+    public void ExecuteInNearestSyncedState(Action action)
+    {
+        machine.LocalTimeSource.ExecuteInNearestSyncedState(_ => action(), true);
+    }
+
     /// <remarks>
     /// CPU is allowed to execute code from this peripheral,
     /// so it implements <see cref="IMemory"/> via <see cref="IExecutableIO"/>.
@@ -61,6 +137,25 @@ public abstract class SystemCCPUSignalsUnit : SystemCPeripheral, IExecutableIO
         : base(machine, address, port, timeSyncPeriodUS, disableTimeoutCheck)
     {
         bundledConnections = new Dictionary<uint, IReadOnlyDictionary<int, IGPIO>>();
+        bundlesById = new Dictionary<uint, CPUSignalsBundle>();
+    }
+
+    // NOTE: Don't send anything via the `forwardSocket` from the background connection thread.
+    //       This may lead to deadlocks, as SystemC blocks waiting for a response from this thread.
+    protected override void OnUnhandledRenodeMessage(RenodeMessage message)
+    {
+        if(!bundlesById.TryGetValue(message.InitiatorId, out var bundle))
+        {
+            this.ErrorLog("SystemC integration error - message type {0} sent through backward connection for unknown initiator {1}.", message.ActionId, message.InitiatorId);
+        }
+        else if(!bundle.HandleMessage(this, message))
+        {
+            this.ErrorLog("SystemC integration error - invalid message type {0} sent through backward connection from the SystemC process.", message.ActionId);
+        }
+
+        // Even rejected requests must be acknowledged: the SystemC thread
+        // waits for a response before it can process any further transactions.
+        SendBackwardResponse(message);
     }
 
     protected IReadOnlyDictionary<int, IGPIO> RegisterCPU(ICPU cpu)
@@ -76,53 +171,46 @@ public abstract class SystemCCPUSignalsUnit : SystemCPeripheral, IExecutableIO
         return connections;
     }
 
-    protected void SetCpuClocked(ICPU cpu, bool value)
-    {
-        // The CPU cannot stop immediately. Wait for the current quantum to
-        // finish, when no memory transactions are in progress.
-        machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-        {
-            cpu.Clocked = value;
-        }, true);
-    }
-
-    protected void ScheduleReset(ICPU cpu, bool isAsserted, Action reset)
-    {
-        if(isAsserted)
-        {
-            SetDeferredHalt(cpu, true);
-        }
-
-        // Reset may trigger bus accesses or outgoing GPIOs. Running it on
-        // the backward connection thread can deadlock if the forward socket
-        // is waiting for TimeSync, so defer it to a synchronized state.
-        machine.LocalTimeSource.ExecuteInNearestSyncedState(_ =>
-        {
-            SetDeferredHalt(cpu, false);
-            if(isAsserted)
-            {
-                cpu.IsHalted = true;
-                this.DebugLog("CPU halted after reset signal assertion");
-            }
-            else
-            {
-                // The caller resets the CPU and its associated peripherals,
-                // including any architecture-specific halting conditions.
-                reset();
-                // Ensure the CPU is resumed after the implicit pause on reset.
-                cpu.Resume();
-                this.DebugLog("CPU and peripherals were reset after signal deassertion");
-            }
-        }, true);
-    }
-
     protected override void HandleGpioWrite(int number, bool value, uint initiatorId)
     {
-        var connections = bundledConnections[initiatorId];
-        connections[number].Set(value);
+        if(!bundledConnections.TryGetValue(initiatorId, out var connections))
+        {
+            this.ErrorLog("SystemC integration error - GPIO write for unknown initiator {0}.", initiatorId);
+            return;
+        }
+        if(!connections.TryGetValue(number, out var connection))
+        {
+            this.ErrorLog("SystemC integration error - invalid GPIO number {0} for initiator {1}.", number, initiatorId);
+            return;
+        }
+        connection.Set(value);
     }
 
     private readonly Dictionary<uint, IReadOnlyDictionary<int, IGPIO>> bundledConnections;
+    private readonly Dictionary<uint, CPUSignalsBundle> bundlesById;
+}
+
+/// <summary>
+/// Groups a CPU with the peripherals whose signals are exposed to SystemC.
+/// </summary>
+/// <remarks>
+/// A bundle is responsible for all architecture-specific signal handling.
+/// <see cref="SystemCCPUSignalsUnit"/> only routes messages and GPIO updates
+/// to the bundle identified by the initiator ID, so a single unit can contain
+/// bundles for CPUs of different architectures.
+/// </remarks>
+public abstract class CPUSignalsBundle
+{
+    public abstract void Setup(SystemCCPUSignalsUnit unit, IReadOnlyDictionary<int, IGPIO> connections);
+
+    public abstract bool HandleMessage(SystemCCPUSignalsUnit unit, RenodeMessage message);
+
+    internal ICPU CpuInternal { get; }
+
+    protected CPUSignalsBundle(ICPU cpu)
+    {
+        CpuInternal = cpu;
+    }
 
     protected class GPIOHandler : IGPIOReceiver
     {
@@ -144,5 +232,15 @@ public abstract class SystemCCPUSignalsUnit : SystemCPeripheral, IExecutableIO
 
         private readonly bool resetValue;
         private readonly Action<bool> handler;
+    }
+}
+
+public abstract class CPUSignalsBundle<C> : CPUSignalsBundle where C : ICPU
+{
+    public C Cpu { get; }
+
+    protected CPUSignalsBundle(C cpu) : base(cpu)
+    {
+        Cpu = cpu;
     }
 }
