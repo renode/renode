@@ -170,7 +170,7 @@ export type FilterEventsResponse = z.infer<typeof FilterEventsResponse>;
 export const CANFrameSchema = z.object({
   CanHub: z.string(),
   Sender: z.string(),
-  TimeStamp: z.iso.time(),
+  TimeStamp: z.string(),
   Message: z.object({
     Id: z.int(),
     Data: z.base64(),
@@ -195,7 +195,7 @@ export const CANFrameSchema = z.object({
 export type CANFrame = z.infer<typeof CANFrameSchema>;
 
 export const SpiExchangeSchema = z.object({
-  TimestampNanoseconds: z.number(),
+  TimeStamp: z.string(),
   PICO: z.number(),
   POCI: z.number(),
   PeripheralName: z.string(),
