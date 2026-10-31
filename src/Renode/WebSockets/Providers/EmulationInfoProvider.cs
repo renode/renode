@@ -359,7 +359,7 @@ namespace Antmicro.Renode.WebSockets.Providers
         [WebSocketAPIEvent("display-opened", "1.6.0")]
         private readonly WebSocketAPIEventHandler DisplayCreatedEvent;
 
-        [WebSocketAPIEvent("can-opened", "1.5.0")]
+        [WebSocketAPIEvent("can-opened", "1.7.0")]
         private readonly WebSocketAPIEventHandler CANCreatedEvent;
 
         [WebSocketAPIEvent("led-state-changed", "1.5.0")]
@@ -374,7 +374,7 @@ namespace Antmicro.Renode.WebSockets.Providers
         [WebSocketAPIEvent("clear-command", "1.5.0")]
         private readonly WebSocketAPIEventHandler ClearCommandEvent;
 
-        [WebSocketAPIEvent("spi-opened", "1.5.0")]
+        [WebSocketAPIEvent("spi-opened", "1.7.0")]
         private readonly WebSocketAPIEventHandler SPIOpenedEvent;
 #pragma warning restore 649
 
