@@ -5,16 +5,11 @@
 // Full license text is available in 'licenses/MIT.txt' file.
 //
 #include "renode_api.h"
-#include <fcntl.h>
 #include <inttypes.h>
-#include <netdb.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdarg.h>
 #include <stddef.h>
 
