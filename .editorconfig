@@ -185,6 +185,75 @@ generated_code = true
 [src/Infrastructure/src/Emulator/Peripherals/Peripherals/Timers/SiLabs_TIMER_1.Generated.cs]
 generated_code = true
 
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_CMU_7.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_PRS_6.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_SYSCFG_9.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_WDOG_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_CMU_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_DPLL_0.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_EMU_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_HFRCO_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_LFRCO_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_LFXO_0.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_PRS_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_SYSCFG_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_CMU_8.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_DEVINFO_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_EMU_9.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_HFRCO_3.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_HFXO_5.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_HYDRARAM_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_LFRCO_4.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_LFXO_2.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_PRS_9.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_SOCPLL_1.Generated.cs]
+generated_code = true
+
+[src/Infrastructure/src/Emulator/Peripherals/Peripherals/Miscellaneous/SiLabs/SiLabs_SYSCFG_10.Generated.cs]
+generated_code = true
+
 [src/Infrastructure/src/Emulator/Peripherals/Peripherals/I3C/Chipsalliance_I3C_generated.cs]
 generated_code = true
 
