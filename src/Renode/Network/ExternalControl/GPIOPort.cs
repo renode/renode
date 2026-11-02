@@ -78,7 +78,7 @@ namespace Antmicro.Renode.Network.ExternalControl
                     return MessagePayload.Error(Identifier, $"This instance does not provide GPIO output #{id}");
                 }
 
-                (pin as GPIO).AddStateChangedHook((state) => SendEvent(state, ed));
+                (pin as GPIO).AddStateChangedHook((state) => QueueEvent(state, ed));
                 return MessagePayload.Success(Identifier);
 
             default:
@@ -233,17 +233,40 @@ namespace Antmicro.Renode.Network.ExternalControl
             return MessagePayload.Success(Identifier);
         }
 
-        private void SendEvent(bool gpioState, int eventDescriptor)
+        private void QueueEvent(bool gpioState, int eventDescriptor)
         {
+            var emulation = EmulationManager.Instance.CurrentEmulation;
             var data = new EventData()
             {
                 CallbackIdentifier = eventDescriptor,
-                TimestampNanoseconds = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds,
+                TimestampNanoseconds = emulation.MasterTimeSource.ElapsedVirtualTime.TotalNanoseconds,
                 GpioState = gpioState,
             };
 
-            var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, data));
-            response.LogOnError(Identifier, parent.Owner);
+            // GPIOConnector also passes changes at once in this mode, even while the emulation is paused.
+            if(emulation.Mode == Emulation.EmulationMode.SynchronizedTimers)
+            {
+                SendEvent(data);
+                return;
+            }
+
+            // An event sent at once would be a request nested in the call that changed the state,
+            // such as a guest access that keeps the peripheral locked or a request from the client.
+            emulation.MasterTimeSource.ExecuteInNearestSyncedState(_ => SendEvent(data));
+        }
+
+        private void SendEvent(EventData data)
+        {
+            // The client can disconnect while the event waits for the nearest synced state.
+            try
+            {
+                var response = parent.SendRequest(MessagePayload.FromStruct(Identifier, CommandType.EventRequest, data));
+                response.LogOnError(Identifier, parent.Owner);
+            }
+            catch(ConnectionDisposedException)
+            {
+                parent.Owner.DebugLog("{0} command dropped a state change event, because the client disconnected", Identifier);
+            }
         }
 
         private int GetExpectedPayloadCount(GPIOPortCommand command)

@@ -412,6 +412,11 @@ typedef struct __attribute__((packed)) {
 /**
  * @brief The function registering the callback when the GPIO state changes.
  *
+ * The callback runs at the next synchronization point after the change, not during the CPU access or the request
+ * that changed the state. While the emulation is paused, the callback doesn't run until the emulation runs again. In
+ * the SynchronizedTimers emulation mode, the callback runs during the change instead, even while the emulation is
+ * paused.
+ *
  * @param[in] gpio - the GPIO controller handle
  * @param[in] id - the GPIO's index in the given GPIO controller
  * @param[in] user_data - the pointer to the data passed to the callback when invoked
