@@ -21,7 +21,7 @@ using Antmicro.Renode.Utilities;
 namespace Antmicro.Renode.NativeInterface
 {
     [Transient]
-    public unsafe class NativeExportsUartAnalyzer : BasicPeripheralBackendAnalyzer<UARTBackend>, IExternal
+    public unsafe class NativeExportsUartAnalyzer : BasicUARTBackendAnalyzer
     {
         public NativeExportsUartAnalyzer(delegate* unmanaged<void*, byte, void> readHandler = null, void* opaque = null)
         {
