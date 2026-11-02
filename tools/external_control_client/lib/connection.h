@@ -26,8 +26,8 @@ renode_error_t *renode_connection_close(renode_connection_t *con, bool blocking)
 void renode_connection_set_fatal_error_callback(renode_connection_t *conn, renode_fatal_error_callback_t cb, void *ud);
 
 
-// Do not call directly - go through the `renode_connection_send_message` macro instead
-renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count);
+// Do not call directly - go through the `renode_connection_send_response` macro instead
+renode_error_t *renode_connection_send_response_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count);
 
 // Do not call directly - go through the `renode_connection_send_request` macro instead
 renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud, const renode_connection_transfer_t *transfers, size_t count);
@@ -60,8 +60,11 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
         sizeof((const renode_connection_transfer_t []) { __VA_ARGS__ }) / sizeof(renode_connection_transfer_t) \
     )
 
-#define renode_connection_send_message(conn, id, ...) \
-    renode_connection_send_message_impl( \
+/**
+ * Send N data buffers as the response to the request from Renode with the message ID `id`
+ */
+#define renode_connection_send_response(conn, id, ...) \
+    renode_connection_send_response_impl( \
         (conn), (id), (const renode_connection_transfer_t []) { __VA_ARGS__ }, \
         sizeof((const renode_connection_transfer_t []) { __VA_ARGS__ }) / sizeof(renode_connection_transfer_t) \
     )

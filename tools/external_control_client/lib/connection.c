@@ -488,6 +488,8 @@ void renode_connection_set_fatal_error_callback(renode_connection_t *conn, renod
     conn->fatal_error_ud = ud;
 }
 
+static renode_error_t *send_message(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count);
+
 renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, renode_connection_response_t cb, void *ud, const renode_connection_transfer_t *transfers, size_t count)
 {
     renode_error_t *err = NO_ERROR;
@@ -506,7 +508,7 @@ renode_error_t *renode_connection_send_request_impl(renode_connection_t *conn, r
         request_message_id = CLIENT_INITIATED | conn->client_next_request_id++;
     }
 
-    err = renode_connection_send_message_impl(conn, request_message_id, transfers, count);
+    err = send_message(conn, request_message_id, transfers, count);
     if (err != NO_ERROR) {
         goto release_locks;
     }
@@ -557,7 +559,7 @@ release_locks:
     return err;
 }
 
-renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count)
+static renode_error_t *send_message(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count)
 {
     pthread_mutex_lock(&conn->lifecycle_lock);
     if (conn->disposed) {
@@ -598,4 +600,9 @@ renode_error_t *renode_connection_send_message_impl(renode_connection_t *conn, u
 release_locks:
     pthread_mutex_unlock(&conn->send_message_lock);
     return err;
+}
+
+renode_error_t *renode_connection_send_response_impl(renode_connection_t *conn, uint16_t id, const renode_connection_transfer_t *transfers, size_t count)
+{
+    return send_message(conn, id, transfers, count);
 }

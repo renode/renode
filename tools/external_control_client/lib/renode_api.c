@@ -96,7 +96,7 @@ void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_f
 #define REQUEST_HEADER(cmd) {&(const message_payload_t){ cmd, TYPE_REQUEST }, sizeof(message_payload_t)}
 #define RESPONSE_HEADER(cmd, type) {&(const message_payload_t){ cmd, type }, sizeof(message_payload_t)}
 
-#define assert_response(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {msg, sizeof(msg)}); } } while (0)
+#define assert_response(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {msg, sizeof(msg)}); } } while (0)
 
 static renode_error_t *generic_response_handler(renode_connection_t *conn, const void *response, size_t size, void *ud);
 static renode_error_t *generic_request_handler(renode_connection_t *conn, uint16_t id, const void *response, size_t size, void *ud);
@@ -216,7 +216,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         memcpy(&event_data, data, sizeof(event_data));
 
         callbacks[ed](callback_user_data[ed], &event_data);
-        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
     case CAN_BUS:
         assert_response(size >= sizeof(renode_can_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
         assert_response(size <= sizeof(renode_can_event_data_t) + MAX_CAN_FRAME_SIZE, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
@@ -227,7 +227,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
 
         callbacks[ed](callback_user_data[ed], can_data);
         assert_response(size == sizeof(renode_can_event_data_t) + can_data->packet_length, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
-        renode_error_t *result = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        renode_error_t *result = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
         free(can_data);
         return result;
     case TIME_ELAPSED_CALLBACK:
@@ -237,7 +237,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         memcpy(&timestamp, data, sizeof(timestamp));
 
         callbacks[ed](callback_user_data[ed], &timestamp);
-        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+        return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
     case SPI:
         assert_response(size >= 1, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
         renode_spi_t *spi = callback_user_data[ed];
@@ -248,12 +248,12 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
             assert_response(size == 2, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
             uint8_t miso = spi->on_transmit(spi->user_data, ((uint8_t*)data)[1]);
-            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&miso, sizeof(miso)});
+            return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&miso, sizeof(miso)});
         case SPI_EVENT_FINISH_TRANSMISSION:
             if (spi->on_finish) {
                 spi->on_finish(spi->user_data);
             }
-            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+            return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
         default:
             return create_fatal_error_static("Received unknown SPI event type");
         }
@@ -286,14 +286,14 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
 
         if(!sysbus_event->access_succeeded) {
             const char error_message[] = "Access did not succeed";
-            return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {error_message, sizeof(error_message)});
+            return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {error_message, sizeof(error_message)});
         }
 
         renode_error_t *err;
         if(event_header->operation == SYSBUS_CB_WRITE) {
-            err = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
+            err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS));
         } else {
-            err = renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&sysbus_event->data, byte_count});
+            err = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_SUCCESS), {&sysbus_event->data, byte_count});
         }
 
         free(sysbus_event);
@@ -313,13 +313,13 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
         char *message = (response == NULL) ? "Callback returned nullptr" : response->response_string;
         bool command_valid = (response == NULL) ? false : response->command_valid;
 
-        result = renode_connection_send_message(conn, id,
+        result = renode_connection_send_response(conn, id,
                                               RESPONSE_HEADER(cmd, command_valid ? TYPE_SUCCESS : TYPE_ERROR),
                                               {message, strlen(message)});
         free(response);
         return result;
     default:
-        return renode_connection_send_message(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
+        return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
     }
 }
 
