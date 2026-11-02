@@ -52,24 +52,13 @@ public sealed class ExternalControlEndpoint : IDisposable
         }.ToDictionary(handler => handler.Identifier);
     }
 
-    public ICommand? GetCommandHandler(Command command)
-    {
-        if(!commandHandlers.TryGetValue(command, out var handler))
-        {
-            return null;
-        }
-        return handler;
-    }
-
     /// <summary>
     /// Handles a request from the other end and returns the response to send back.
     /// </summary>
     public MessagePayload HandleRequest(MessagePayload request)
     {
         var command = request.Command;
-        var handler = GetCommandHandler(command);
-
-        if(handler == null)
+        if(!commandHandlers.TryGetValue(command, out var handler))
         {
             Owner.Log(LogLevel.Error, "Invalid command received: {0}", command);
             return MessagePayload.InvalidCommand(command);
