@@ -268,6 +268,20 @@
       }
     ]
   },
+  "zigbee-ncp-xg24": {
+    "title": "Zigbee HOST/NCP (xG24)",
+    "tests": [
+      {
+        "test": "tests/platforms/SiLabs/zigbee_ncp.py",
+        "params": {
+          "BOARD": "brd4186c",
+          "UART": "usart0",
+          "ELF": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/xg24_zigbee_ncp_uart_hw_v2025.6.1.out",
+          "ELF2": "https://github.com/SiliconLabsSoftware/renode/releases/download/firmware-dev/unix_zigbee_z3_gateway_v2025.6.1"
+        }
+      }
+    ]
+  },
   "openthread-xg24": {
     "title": "OpenThread xG24",
     "tests": [
