@@ -16,10 +16,26 @@ else()
     message(FATAL_ERROR "Unknown RENODE_API_TRANSPORT '${RENODE_API_TRANSPORT}', expected 'socket' or 'in_process'")
 endif()
 
-add_library(renode_api STATIC
+set(renode_api_sources
     ${CMAKE_CURRENT_LIST_DIR}/renode_api.c
     ${CMAKE_CURRENT_LIST_DIR}/${transport_source}
     )
+
+# Builds a shared library that overrides the time functions of a process it is preloaded into
+option(RENODE_API_TIME_OVERRIDE "Override time functions with Renode's virtual time" OFF)
+if(RENODE_API_TIME_OVERRIDE)
+    if(NOT RENODE_API_TRANSPORT STREQUAL "socket")
+        message(FATAL_ERROR "RENODE_API_TIME_OVERRIDE requires the 'socket' transport")
+    endif()
+    # A sanitized library aborts when preloaded into a program that isn't sanitized itself
+    if(RENODE_API_SANITIZERS)
+        message(FATAL_ERROR "RENODE_API_TIME_OVERRIDE can't be used with RENODE_API_SANITIZERS")
+    endif()
+    set(RENODE_API_SANITIZERS OFF)
+    add_library(renode_api SHARED ${renode_api_sources} ${CMAKE_CURRENT_LIST_DIR}/time_override.c)
+else()
+    add_library(renode_api STATIC ${renode_api_sources})
+endif()
 
 target_compile_options(renode_api
     PRIVATE

@@ -41,6 +41,22 @@ A program that runs Renode itself through librenode (see `tools/NativeInterface`
 That build links librenode and provides `renode_connect_in_process` in place of `renode_connect`, which starts Renode in the same process and connects to it.
 Closing that connection ends Renode, so such a program needs no other header than `renode_api.h`.
 
+### Virtual time override
+
+The library can make an unmodified host program follow the emulation's virtual time.
+Building it with `-DRENODE_API_TIME_OVERRIDE=ON` produces `librenode_api.so` with `./lib/time_override.c`, which overrides `clock_gettime` and `gettimeofday`:
+```bash
+renode$ mkdir build && cmake -DRENODE_API_TIME_OVERRIDE=ON -S tools/external_control_client/lib -B build && cmake --build build
+renode$ RENODE_PORT=<PORT> LD_PRELOAD=build/librenode_api.so <PROGRAM>
+```
+
+The program connects to the server on `RENODE_PORT` (1234 by default) on its first time query.
+Each server accepts a single connection, so each such program needs a server of its own.
+Requests are serialized by the library, and concurrent first queries share a single connection attempt.
+Every clock ID returns the virtual time, while other time functions, such as `sleep`, keep using the host time.
+More functions can be overridden in `./lib/time_override.c`.
+The override requires the default socket transport, as with `in_process` it would replace the time functions of the process running Renode itself.
+
 ### Building
 
 Besides building a library and linking a client to the library, a client can be built with CMake using `./CMakeLists.txt`.
