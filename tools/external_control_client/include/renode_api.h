@@ -134,6 +134,25 @@ typedef struct renode_bus_peripheral renode_bus_peripheral_t;
 renode_error_t *renode_connect(const char *port, renode_t **renode);
 
 /**
+ * @brief The options of a connection opened with renode_connect_in_process().
+ */
+typedef struct {
+    /**
+     * When true, Renode invokes no callback while a request from this client is in progress:
+     *
+     * - Another Renode thread that invokes a callback waits until no request is in progress.
+     * - A nested request is an error. Renode logs the error, and the request can fail.
+     * - renode_run_for() doesn't count as a request in progress, because Renode invokes callbacks during the run, also
+     *   on the thread that called renode_run_for(). Nested requests on that thread aren't errors during the run.
+     *
+     * With the option on, a request blocks forever if it waits for a Renode thread that is waiting to invoke a
+     * callback. A request can wait for another thread through a lock, because the system bus keeps a peripheral locked
+     * for the whole of each access to it.
+     */
+    bool serialize_requests;
+} renode_in_process_options_t;
+
+/**
  * @brief The function initializing a connection to the Renode instance that runs in this process through librenode.
  *
  * It is defined only when the library is built with `RENODE_API_TRANSPORT=in_process`, which links librenode.
@@ -144,10 +163,11 @@ renode_error_t *renode_connect(const char *port, renode_t **renode);
  *
  * @param[in] name - the name of the connection among the externals of the emulation, which the Monitor and log
  * messages show. It must not be taken by another external.
+ * @param[in] options - the connection options, or NULL for the defaults, which have every option off
  * @param[out] renode - the Renode connection handle pointer
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
  */
-renode_error_t *renode_connect_in_process(const char *name, renode_t **renode);
+renode_error_t *renode_connect_in_process(const char *name, const renode_in_process_options_t *options, renode_t **renode);
 
 /**
  * @brief The function closing the Renode connection and freeing the internal handle memory.

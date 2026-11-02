@@ -119,7 +119,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         return create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
     }
 
-    RenodeStatus status = renode_external_control_open(cfg->name, on_renode_request, result, &result->endpoint);
+    RenodeStatus status = renode_external_control_open(cfg->name, on_renode_request, result, cfg->serialize_requests, &result->endpoint);
     if (status != RENODE_SUCCESS) {
         // Renode sends no request before the open succeeds, so no handler uses `result`.
         pthread_mutex_destroy(&result->lifecycle_lock);

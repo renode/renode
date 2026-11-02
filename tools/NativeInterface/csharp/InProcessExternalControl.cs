@@ -11,8 +11,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 using Antmicro.Renode.Core;
+using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Network;
 using Antmicro.Renode.Network.ExternalControl;
+using Antmicro.Renode.Utilities;
 
 #nullable enable
 
@@ -27,15 +29,18 @@ namespace Antmicro.Renode.NativeInterface;
 /// thread like the socket transport does. One request chain of each side may be in progress at the same time.
 /// Renode needs the client side of this rule, because commands such as <see cref="RunFor"/> are not safe to run
 /// concurrently. A request chain is a request and every request sent while it is handled, at any depth.
+/// With request serialization, Renode also starts no request chain while a client request other than
+/// <see cref="Command.RunFor"/> is in progress. A Renode request sent on the thread of a client request in progress
+/// fails, unless the request chain on that thread started with <see cref="Command.RunFor"/>.
 /// </remarks>
 public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
 {
     /// <summary>
     /// Opens a connection and adds it to the externals of the current emulation under <paramref name="name"/>.
     /// </summary>
-    public static InProcessExternalControl Open(string name, ExternalControlRequestHandler requestHandler, void* context)
+    public static InProcessExternalControl Open(string name, ExternalControlRequestHandler requestHandler, void* context, bool serializeRequests)
     {
-        var connection = new InProcessExternalControl(requestHandler, context);
+        var connection = new InProcessExternalControl(requestHandler, context, serializeRequests);
         EmulationManager.Instance.CurrentEmulation.ExternalsManager.AddExternal(connection, name, earlyDisposable: false);
         connection.opened = true;
         return connection;
@@ -82,6 +87,17 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
             return ShortMessageError(requestBytes);
         }
 
+        // RunFor is excluded to avoid a deadlock, because the run can't end until the client has answered the
+        // requests that Renode sends during the run, such as bus accesses and time-elapsed events.
+        var holdsRenodeRequests = serializeRequests && request.Command != Command.RunFor;
+        if(holdsRenodeRequests)
+        {
+            lock(clientRequestsLock)
+            {
+                clientRequestsInProgress++;
+            }
+        }
+
         var requestStack = threadRequestStack.Value!;
         requestStack.Push(MessageDirection.Received, request);
         MessagePayload? response = null;
@@ -93,6 +109,17 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
         finally
         {
             requestStack.Pop(MessageDirection.Sent, response);
+            if(holdsRenodeRequests)
+            {
+                lock(clientRequestsLock)
+                {
+                    clientRequestsInProgress--;
+                    if(clientRequestsInProgress == 0)
+                    {
+                        Monitor.PulseAll(clientRequestsLock);
+                    }
+                }
+            }
         }
     }
 
@@ -106,9 +133,20 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
         }
 
         var requestStack = threadRequestStack.Value!;
+        var isNested = !requestStack.IsEmpty;
+        // Renode sends no RunFor request, so a RunFor at the bottom of the stack is the client's.
+        var isInClientRun = requestStack.BottomCommand == Command.RunFor;
+        // Holding a nested request would deadlock, because the client request it is nested in waits for it.
+        if(serializeRequests && isNested && !isInClientRun)
+        {
+            throw new RecoverableException(
+                $"With request serialization, a {request.Command} request can't be sent during a client request on its thread");
+        }
+
         // A request on this thread's stack means that this call belongs to that request's chain. Either this thread
         // holds the lock already, or the chain is the client's, and waiting for the lock would make it wait behind one
-        // that Renode started on another thread.
+        // that Renode started on another thread. For the same reason, only a call that starts a request chain waits for
+        // client requests to end.
         var startsRequestChain = requestStack.IsEmpty;
         if(startsRequestChain)
         {
@@ -119,6 +157,15 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
         MessagePayload? response = null;
         try
         {
+            if(startsRequestChain && serializeRequests)
+            {
+                lock(clientRequestsLock)
+                {
+                    clientRequestsLock.WaitWhile(() => clientRequestsInProgress > 0,
+                        $"client requests to end ({clientRequestsInProgress} in progress) before sending {request.Command} {request.Type}");
+                }
+            }
+
             if(disposed)
             {
                 throw new ConnectionDisposedException();
@@ -155,12 +202,13 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
         }
     }
 
-    private InProcessExternalControl(ExternalControlRequestHandler requestHandler, void* context)
+    private InProcessExternalControl(ExternalControlRequestHandler requestHandler, void* context, bool serializeRequests)
     {
         this.requestHandler = requestHandler;
         this.context = context;
         endpoint = new ExternalControlEndpoint(this, SendRequest);
         threadRequestStack = new ThreadLocal<RequestStack>(() => new RequestStack(this));
+        this.serializeRequests = serializeRequests;
     }
 
     private static MessagePayload ShortMessageError(ReadOnlySpan<byte> message)
@@ -170,10 +218,13 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
 
     private volatile bool opened;
     private volatile bool disposed;
+    private int clientRequestsInProgress;
 
     private readonly ExternalControlEndpoint endpoint;
     private readonly ExternalControlRequestHandler requestHandler;
     private readonly void* context;
     private readonly object requestChainLock = new object();
+    private readonly bool serializeRequests;
+    private readonly object clientRequestsLock = new object();
     private readonly ThreadLocal<RequestStack> threadRequestStack;
 }

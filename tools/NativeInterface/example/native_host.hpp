@@ -113,7 +113,9 @@ public:
         serve_read = std::move(on_read);
         serve_write = std::move(on_write);
 
-        if(!check("connect to Renode", renode_connect_in_process(connection_name, &renode))) {
+        renode_in_process_options_t options = {};
+        options.serialize_requests = true;
+        if(!check("connect to Renode", renode_connect_in_process(connection_name, &options, &renode))) {
             return false;
         }
 

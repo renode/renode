@@ -6,6 +6,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Antmicro.Renode.Logging;
@@ -85,6 +86,11 @@ public class RequestStack
     }
 
     public bool IsEmpty => requests.Count == 0;
+
+    /// <summary>
+    /// The command of the request that started the chain, or null if the stack is empty.
+    /// </summary>
+    public Command? BottomCommand => requests.Count > 0 ? requests.Last().Payload.Command : null;
 
     private static string DirectionToString(MessageDirection direction)
     {

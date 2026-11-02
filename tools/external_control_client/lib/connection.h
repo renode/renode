@@ -21,6 +21,8 @@ typedef struct {
     const char *name;
     renode_server_request_t request_callback;
     void *server_request_ud;
+    // Only the in-process transport supports the option. See renode_in_process_options_t.
+    bool serialize_requests;
 } renode_connection_config_t;
 
 renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_connection_config_t *cfg);

@@ -34,6 +34,8 @@ public static unsafe partial class NativeExports
     /// Renode calls <paramref name="requestHandler"/> with each request it sends to the client, and the client
     /// responds with `renode_external_control_respond` before the handler returns. Renode sends no request before
     /// this call succeeds.
+    /// When <paramref name="serializeRequests"/> is not zero, Renode holds the requests that start a request chain
+    /// until no client request is in progress. See <see cref="InProcessExternalControl"/>.
     /// </summary>
     [UnmanagedCallersOnly(EntryPoint = "renode_external_control_open")]
     [return: DNNE.C99Type("RenodeStatus")]
@@ -49,6 +51,7 @@ public static unsafe partial class NativeExports
         [DNNE.C99Type("const char *")] byte* name,
         [DNNE.C99Type("RenodeExternalControlRequestHandler")] ExternalControlRequestHandler requestHandler,
         [DNNE.C99Type("void *")] void* context,
+        byte serializeRequests,
         [DNNE.C99Type("RenodeExternalControl **")] void** endpoint
     )
     {
@@ -60,7 +63,7 @@ public static unsafe partial class NativeExports
 
         try
         {
-            var instance = InProcessExternalControl.Open(Marshal.PtrToStringUTF8((IntPtr)name)!, requestHandler, context);
+            var instance = InProcessExternalControl.Open(Marshal.PtrToStringUTF8((IntPtr)name)!, requestHandler, context, serializeRequests != 0);
             // The emulation drops the endpoint when it is cleared, but the client still uses it until it closes it, so
             // the handle stops the garbage collector from collecting it until `ExternalControlClose` frees the handle.
             // It also gives the client a stable pointer that the other exports turn back into a reference.
