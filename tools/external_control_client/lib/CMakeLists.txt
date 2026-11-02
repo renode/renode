@@ -6,7 +6,12 @@ file (GLOB SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_LIST_DIR}/*.c
     )
 
-add_library(renode_api STATIC ${SOURCES})
+# Allow overriding library type via command line
+if(CMAKE_BUILD_SHARED_LIBS)
+    add_library(renode_api SHARED ${SOURCES})
+else()
+    add_library(renode_api STATIC ${SOURCES})
+endif()
 
 target_compile_options(renode_api
     PRIVATE
