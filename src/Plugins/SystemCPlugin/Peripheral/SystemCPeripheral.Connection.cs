@@ -316,10 +316,13 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 return;
             }
 
-            // Teardown message sent after connection has been established signifies Renode terminated and SystemC process
-            // should exit.
-            var request = new RenodeMessage(RenodeAction.Teardown, 0, 0, 0, 0, 0);
-            SendRequest(request, out var response);
+            if(connectionActive)
+            {
+                // Teardown message sent after connection has been established signifies Renode terminated and SystemC process
+                // should exit.
+                var request = new RenodeMessage(RenodeAction.Teardown, 0, 0, 0, 0, 0);
+                SendRequest(request, out var response);
+            }
 
             if(!systemcProcess.WaitForExit(500))
             {
