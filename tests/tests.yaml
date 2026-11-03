@@ -113,6 +113,7 @@
 - tests/unit-tests/arm-cortex-m-bus-fault.robot
 - tests/unit-tests/arm-cortex-m-fpu.robot
 - tests/unit-tests/arm-cortex-m-fpv5.robot
+- tests/unit-tests/arm-ethos.robot
 - tests/unit-tests/log-tests.robot
 - tests/unit-tests/hex.robot
 - tests/unit-tests/big-endian-watchpoint.robot
