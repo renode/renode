@@ -66,6 +66,7 @@ i2c1: I2C.EFR32_I2CController @ {
         sysbus <0x40068000, +0x4000>; // I2C1_S
         sysbus <0x50068000, +0x4000>  // I2C1_NS
     }
+    -> nvic@28
 
 usart0: UART.SiLabs_USART_0 @ {
         sysbus <0x4005C000, +0x4000>; // USART0_S
