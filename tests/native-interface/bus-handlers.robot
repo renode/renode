@@ -51,20 +51,23 @@ Should Serve Guest Accesses Through Native Bus Handlers
     Run Guest Program On Native Bus Handlers  ${program}  bus_handlers_host
 
 Should Read GPIO Inputs Changed In A Native Bus Handler
-    # Each write to the DUT makes the host change the GPIO input inside the write handler, so the
-    # read right after it must see the change.
+    # Each write to the DUT makes the host change the GPIO input inside the write handler. The input
+    # changes at the next synchronization point, so the guest waits for each change, and a change that
+    # never arrives makes the host time out.
     ${program}=                     Catenate  SEPARATOR=${\n}
     ...                             mov x0, #0x10000000      # volatile uint32_t *dut = (volatile uint32_t *)0x10000000;
     ...                             ldr x1, =0x10001000      # volatile uint32_t *gpio = (volatile uint32_t *)0x10001000;
     ...                             mov w2, #1               # dut[REGISTER_START] = 1;
     ...                             str w2, [x0, #8]
-    ...                             ldr w3, [x1]             # uint32_t after_start = gpio[GPIO_DATA];
+    ...                             wait_set:                # while(gpio[GPIO_DATA] != 1) {}
+    ...                             ldr w3, [x1]
+    ...                             cmp w3, #1
+    ...                             b.ne wait_set
     ...                             str w2, [x0, #12]        # dut[REGISTER_CLEAR] = 1;
-    ...                             ldr w4, [x1]             # uint32_t after_clear = gpio[GPIO_DATA];
-    ...                             cmp w3, #1               # uint32_t passed = after_start == 1 && after_clear == 0;
-    ...                             ccmp w4, #0, #0, eq
-    ...                             cset w5, eq
-    ...                             str w5, [x0, #4]         # dut[REGISTER_TEST_END] = passed;
+    ...                             wait_clear:              # while(gpio[GPIO_DATA] != 0) {}
+    ...                             ldr w3, [x1]
+    ...                             cbnz w3, wait_clear
+    ...                             str w2, [x0, #4]         # dut[REGISTER_TEST_END] = 1;
     ...                             halt:                    # for(;;) { wait_for_interrupt(); }
     ...                             wfi
     ...                             b halt

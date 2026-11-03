@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 using Antmicro.Renode.Core;
@@ -59,7 +60,7 @@ namespace Antmicro.Renode.Network.ExternalControl
 
                 if(instance is IGPIOReceiver receiver)
                 {
-                    receiver.OnGPIO(id, value);
+                    SetInput(receiver, id, value);
                     return MessagePayload.Success(Identifier);
                 }
                 return MessagePayload.Error(Identifier, "This instance does not provide GPIO inputs");
@@ -121,6 +122,86 @@ namespace Antmicro.Renode.Network.ExternalControl
         private static bool HasGPIO(IPeripheral instance)
         {
             return instance is INumberedGPIOOutput || instance is IGPIOReceiver;
+        }
+
+        // While CPUs run, an input waits for the nearest synced state of the receiver's machine,
+        // so that it can't race with a guest access to the receiver.
+        // Every input goes through the machine's queue, so that inputs from several client threads
+        // take effect one at a time and in the order of the calls.
+        private void SetInput(IGPIOReceiver receiver, int id, bool value)
+        {
+            var machine = receiver.GetMachine();
+            var input = new QueuedInput(receiver, id, value);
+
+            var isOnSyncPhaseThread = machine.LocalTimeSource.IsOnSyncPhaseThread
+                || EmulationManager.Instance.CurrentEmulation.MasterTimeSource.IsOnSyncPhaseThread;
+            var cpusRun = !machine.IsPaused && !isOnSyncPhaseThread;
+
+            lock(queuedInputs)
+            {
+                if(queuedInputs.TryGetValue(machine, out var queue))
+                {
+                    queue.Enqueue(input);
+                    return;
+                }
+
+                queuedInputs[machine] = new Queue<QueuedInput>(new[] { input });
+            }
+
+            // Only the thread that created the queue gets here, because other threads found that queue and
+            // returned above. So each queue gets one ApplyQueuedInputs, which also applies every input that
+            // joins the queue later.
+            if(cpusRun)
+            {
+                machine.LocalTimeSource.ExecuteInNearestSyncedState(_ => ApplyQueuedInputs(machine));
+            }
+            else
+            {
+                ApplyQueuedInputs(machine);
+            }
+        }
+
+        private void ApplyQueuedInputs(IMachine machine)
+        {
+            var failures = new List<Exception>();
+            while(TryDequeueInput(machine, out var input))
+            {
+                try
+                {
+                    input.Receiver.OnGPIO(input.Id, input.Value);
+                }
+                catch(Exception e)
+                {
+                    // The queue must be emptied even when an input fails. Other threads only add to a queue
+                    // that exists, so no other thread would ever empty it, and its inputs would be lost.
+                    failures.Add(e);
+                }
+            }
+
+            if(failures is [var failure])
+            {
+                ExceptionDispatchInfo.Throw(failure);
+            }
+            else if(failures is [_, _, ..])
+            {
+                throw new AggregateException(failures);
+            }
+        }
+
+        private bool TryDequeueInput(IMachine machine, out QueuedInput input)
+        {
+            lock(queuedInputs)
+            {
+                if(queuedInputs[machine].TryDequeue(out input))
+                {
+                    return true;
+                }
+
+                // The empty queue stays until the last input's OnGPIO has returned, so that inputs set meanwhile
+                // join it instead of starting another ApplyQueuedInputs.
+                queuedInputs.Remove(machine);
+                return false;
+            }
         }
 
         private MessagePayload HandleEventRequest(byte[] data)
@@ -199,6 +280,8 @@ namespace Antmicro.Renode.Network.ExternalControl
 
         private readonly List<Action<TimeStamp, bool>> externalCallbacks = new();
 
+        private readonly Dictionary<IMachine, Queue<QueuedInput>> queuedInputs = new();
+
         private const int InstanceBasedCommandHeaderSize = IInstanceBasedCommandExtensions.HeaderSize;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -209,6 +292,8 @@ namespace Antmicro.Renode.Network.ExternalControl
             [MarshalAs(UnmanagedType.I1)] // Make the field a single byte
             public bool GpioState;
         }
+
+        private readonly record struct QueuedInput(IGPIOReceiver Receiver, int Id, bool Value);
 
         private enum GPIOPortCommand : byte
         {

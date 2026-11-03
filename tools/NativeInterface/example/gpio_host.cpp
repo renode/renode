@@ -9,8 +9,9 @@
 using namespace native_host;
 
 //  A device that sets the GPIO input when the guest writes its start register and clears it when
-//  the guest writes its clear register, both from inside the write handler. The guest reports
-//  whether it read each change right after its write.
+//  the guest writes its clear register, both from inside the write handler. Each change reaches the
+//  guest at the next synchronization point, so the guest waits for each change and reports when it
+//  has seen both.
 
 constexpr uint64_t start_address = 0x10000008;
 constexpr uint64_t clear_address = 0x1000000c;

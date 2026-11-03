@@ -389,6 +389,9 @@ renode_error_t *renode_get_gpio_state(renode_gpio_t *gpio, int32_t id, bool *sta
 /**
  * @brief The function setting the GPIO state.
  *
+ * @note While the emulation runs, the input changes at the next synchronization point, so a read of the receiving
+ * peripheral right after the call can still return the old input.
+ *
  * @param[in] gpio - the GPIO controller handle
  * @param[in] id - the GPIO's index in the given GPIO controller
  * @param[in] state - the requested GPIO state
