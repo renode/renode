@@ -22,6 +22,10 @@ ${eq}=                        ==
 ...                           ${platforms_path}${/}boards${/}ramn${/}GATEWAY.repl
 ...                           ${platforms_path}${/}boards${/}ramn${/}CHASSIS.repl
 ...                           ${platforms_path}${/}boards${/}ramn${/}POWERTRAIN.repl
+...                           ${platforms_path}${/}cpus${/}silabs${/}efr32s2${/}efr32xg22.repl
+...                           ${platforms_path}${/}cpus${/}silabs${/}efr32s2${/}efr32xg24.repl
+...                           ${platforms_path}${/}cpus${/}silabs${/}efr32s2${/}efr32xg26.repl
+...                           ${platforms_path}${/}cpus${/}silabs${/}sixg30x${/}sixg301.repl
 
 *** Keywords ***
 Get Test Cases
