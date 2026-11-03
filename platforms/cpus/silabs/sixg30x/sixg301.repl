@@ -68,6 +68,7 @@ rvconfig1: Miscellaneous.SiLabs.SiLabs_RvCfg_2 @ {
         sysbus <0xA0248000, +0x4000>; // RVCFG1_NS
         sysbus <0xB0248000, +0x4000>  // RVCFG1_S
     }
+    cpu: seqcpu
 
 rvconfig2: Miscellaneous.SiLabs.SiLabs_RvCfg_2 @ {
         sysbus <0xA024C000, +0x4000>; // RVCFG2_NS
