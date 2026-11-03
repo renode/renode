@@ -292,6 +292,7 @@
 - tests/platforms/nucleo_f767zi_wallabmc.robot
 - tests/unit-tests/arm-cortex-m-interrupts.robot
 - tests/native-interface/bus-handlers.robot
+- tests/native-interface/lockstep.robot
 - tests/platforms/ramn-terminal.robot
 - tests/peripherals/ST7789.robot
 - tests/peripherals/Designware_PCIe.robot

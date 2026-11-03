@@ -28,6 +28,7 @@ enum exit_code {
     exit_pass = 0,
     exit_mismatch = 1,
     exit_setup_error = 2,
+    exit_runtime_error = 3,
 };
 
 inline uint64_t load_little_endian(const uint8_t *data, uint32_t size)
@@ -145,6 +146,16 @@ public:
     handle<renode_bus_context_t> get_sysbus()
     {
         return get_handle<renode_bus_context_t>("get the system bus", renode_get_sysbus, machine.get());
+    }
+
+    //  Runs the emulation for `milliseconds` of virtual time and returns when the time has passed.
+    bool run_for(uint64_t milliseconds)
+    {
+        renode_time_t time;
+        if(!check("create the run time", renode_create_time(milliseconds, TU_MILLISECONDS, &time))) {
+            return false;
+        }
+        return check("run the emulation", renode_run_for(renode, time));
     }
 
     void disconnect()

@@ -1,0 +1,58 @@
+# Like bus-handlers.robot, this suite does not use the Renode instance started by
+# robot_tests_provider. Each test builds a native host process that hosts its own Renode instance,
+# runs in lockstep with it by calling renode_run_for() through the external control API and reports
+# the result through its exit code.
+#
+# See native-interface.resource for the variables that select which librenode is used.
+
+*** Settings ***
+Library                             OperatingSystem
+Resource                            ${CURDIR}/native-interface.resource
+
+*** Variables ***
+${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/example
+
+*** Keywords ***
+Run Guest Program On Lockstep Host
+    [Arguments]                     ${program}  ${host}
+    ${build_dir}=                   Set Variable  ${RESULTS_DIRECTORY}/lockstep-build
+    Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
+
+    ${script}=                      Catenate  SEPARATOR=${\n}
+    ...                             mach create "lockstep"
+    ...                             machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
+    ...                             machine LoadPlatformDescriptionFromString "dut: Bus.ExternalControlBusPeripheral @ sysbus 0x10000000 { size: 0x1000 }"
+    ...                             cpu AssembleBlock 0x40000000 """
+    ...                             ${program}
+    ...                             """ triple="arm64"
+    ...                             cpu PC 0x40000000
+    ${script_path}=                 Set Variable  ${RESULTS_DIRECTORY}/lockstep.resc
+    Create File                     ${script_path}  ${script}
+
+    # Run Process reads the host's outputs only after the host exits, so they go to files, which
+    # can't fill up the way a pipe can.
+    ${result}=                      Run Process  ${build_dir}/${host}  ${script_path}
+    ...                             stdout=${RESULTS_DIRECTORY}/${host}.stdout  stderr=${RESULTS_DIRECTORY}/${host}.stderr
+    ...                             timeout=60s  on_timeout=kill
+    Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}${\n}stdout:${\n}${result.stdout}${\n}stderr:${\n}${result.stderr}
+
+*** Test Cases ***
+Should Let The Device Call Renode Within A Lockstep Step
+    # The device calls Renode during the host's renode_run_for() call. If that call to Renode waits
+    # for renode_run_for() to end, the device and the host wait for each other, and the test fails
+    # when the host times out.
+    ${program}=                     Catenate  SEPARATOR=${\n}
+    ...                             mov x0, #0x10000000      # volatile uint32_t *dut = (volatile uint32_t *)0x10000000;
+    ...                             ldr x1, =0x40100000      # volatile uint32_t *data = (volatile uint32_t *)0x40100000;
+    # The device serves this write by writing a word into RAM.
+    ...                             mov w2, #1
+    ...                             str w2, [x0, #8]         # dut[REGISTER_START] = 1;
+    ...                             ldr w3, [x1]             # uint32_t passed = *data == 0xcafe0001;
+    ...                             ldr w4, =0xcafe0001
+    ...                             cmp w3, w4
+    ...                             cset w5, eq
+    ...                             str w5, [x0, #4]         # dut[REGISTER_TEST_END] = passed;
+    ...                             halt:                    # for(;;) { wait_for_interrupt(); }
+    ...                             wfi
+    ...                             b halt
+    Run Guest Program On Lockstep Host  ${program}  lockstep_device_host
