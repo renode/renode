@@ -387,7 +387,10 @@ void renode_bridge::handle_forward_request(renode_message &message) {
   }
 
   if(transaction_requires_delta_cycle) {
-    wait(sc_core::SC_ZERO_TIME);
+    // Finish all activity at the current time.
+    while(sc_core::sc_pending_activity_at_current_time()) {
+      wait(sc_core::SC_ZERO_TIME);
+    }
   }
 }
 
