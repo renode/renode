@@ -355,19 +355,28 @@ namespace Antmicro.Renode.Peripherals.SystemC
                 backwardSocket = AcceptConnection(listenerSocket);
                 backwardSocket.SendTimeout = 1000;
                 // No ReceiveTimeout for backwardSocket - it runs on a dedicated thread and by design blocks on Receive until a message arrives from SystemC process.
+
+                listenerSocket.Close();
+
+                backwardThread.Start();
+                backwardThreadStarted = true;
+
+                connectionActive = true;
+
+                // TIMESYNC drains pending delta cycles before replying.
+                var request = new RenodeMessage(RenodeAction.Timesync, 0, 0, 0, 0, GetCurrentVirtualTimeUS());
+                if(!SendRequest(request, out var response) || response.ActionId != RenodeAction.Timesync)
+                {
+                    throw new RecoverableException("SystemC did not acknowledge initial time synchronization.");
+                }
             }
             catch
             {
                 TeardownSocketConnection();
+                TeardownTimesync();
+                StopSystemCProcess();
                 throw;
             }
-
-            listenerSocket.Close();
-
-            backwardThread.Start();
-            backwardThreadStarted = true;
-
-            connectionActive = true;
         }
 
         private Socket AcceptConnection(Socket listenerSocket)
