@@ -50,24 +50,41 @@ Should Serve Guest Accesses Through Native Bus Handlers
     ...                             b halt
     Run Guest Program On Native Bus Handlers  ${program}  bus_handlers_host
 
-Should Read GPIO Inputs Changed In A Native Bus Handler
-    # Each write to the DUT makes the host change the GPIO input inside the write handler. The input
-    # changes at the next synchronization point, so the guest waits for each change, and a change that
-    # never arrives makes the host time out.
+Should Pass GPIO States Between The Guest And A Native Device
+    # Each change takes effect at the next synchronization point, so the guest waits for each
+    # change, and a change that never arrives makes the host time out.
     ${program}=                     Catenate  SEPARATOR=${\n}
     ...                             mov x0, #0x10000000      # volatile uint32_t *dut = (volatile uint32_t *)0x10000000;
     ...                             ldr x1, =0x10001000      # volatile uint32_t *gpio = (volatile uint32_t *)0x10001000;
-    ...                             mov w2, #1               # dut[REGISTER_START] = 1;
-    ...                             str w2, [x0, #8]
-    ...                             wait_set:                # while(gpio[GPIO_DATA] != 1) {}
-    ...                             ldr w3, [x1]
-    ...                             cmp w3, #1
-    ...                             b.ne wait_set
-    ...                             str w2, [x0, #12]        # dut[REGISTER_CLEAR] = 1;
-    ...                             wait_clear:              # while(gpio[GPIO_DATA] != 0) {}
-    ...                             ldr w3, [x1]
-    ...                             cbnz w3, wait_clear
-    ...                             str w2, [x0, #4]         # dut[REGISTER_TEST_END] = 1;
+    ...                             ldr x2, =0x40100000      # volatile uint32_t *data = (volatile uint32_t *)0x40100000;
+    # Latch rising edges of the GPIO input, so that the guest can't miss the host's pulse.
+    ...                             mov w3, #1
+    ...                             str w3, [x1, #0x28]      # gpio[GPIO_INTTYPESET] = 1;
+    ...                             str w3, [x1, #0x30]      # gpio[GPIO_INTPOLSET] = 1;
+    # The host serves this write by writing a word into RAM and pulsing the GPIO input.
+    ...                             str w3, [x0, #8]         # dut[REGISTER_START] = 1;
+    # The guest waits for the latched rising edge and then checks the word.
+    ...                             wait_edge:               # while(!(gpio[GPIO_INTSTATUS] & 1)) {}
+    ...                             ldr w4, [x1, #0x38]
+    ...                             tbz w4, #0, wait_edge
+    ...                             ldr w5, [x2]             # uint32_t passed = *data == 0xcafe0001;
+    ...                             ldr w6, =0xcafe0001
+    ...                             cmp w5, w6
+    ...                             cset w7, eq
+    # The guest pulses a GPIO output. The host's state change callback saves each new state, and
+    # the guest reads a DUT register until it returns that state.
+    ...                             mov w4, #2               # gpio[GPIO_OUTENSET] = 1 << 1;
+    ...                             str w4, [x1, #0x10]
+    ...                             str w4, [x1, #4]         # gpio[GPIO_DATAOUT] = 1 << 1;
+    ...                             wait_high:               # while(dut[REGISTER_OUTPUT_STATE] != 1) {}
+    ...                             ldr w4, [x0, #0x10]
+    ...                             cmp w4, #1
+    ...                             b.ne wait_high
+    ...                             str wzr, [x1, #4]        # gpio[GPIO_DATAOUT] = 0;
+    ...                             wait_low:                # while(dut[REGISTER_OUTPUT_STATE] != 0) {}
+    ...                             ldr w4, [x0, #0x10]
+    ...                             cbnz w4, wait_low
+    ...                             str w7, [x0, #4]         # dut[REGISTER_TEST_END] = passed;
     ...                             halt:                    # for(;;) { wait_for_interrupt(); }
     ...                             wfi
     ...                             b halt

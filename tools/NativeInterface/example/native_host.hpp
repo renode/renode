@@ -140,6 +140,11 @@ public:
         return get_handle<renode_gpio_t>("get the GPIO", renode_get_gpio, machine.get(), name);
     }
 
+    handle<renode_bus_context_t> get_sysbus()
+    {
+        return get_handle<renode_bus_context_t>("get the system bus", renode_get_sysbus, machine.get());
+    }
+
     void disconnect()
     {
         if(renode != nullptr) {
