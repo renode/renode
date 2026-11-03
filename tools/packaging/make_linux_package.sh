@@ -75,7 +75,7 @@ chmod +x $COMMAND_SCRIPT
 
 ### create debian package
 fpm -s dir -t deb\
-    -d "dotnet-runtime-8.0 >= $DOTNET_VERSION"\
+    -d "dotnet-runtime-10.0 >= $DOTNET_VERSION"\
     -d "python3 >= $PYTHONVERSION"\
     -d python3-pip\
     -d screen\
@@ -94,7 +94,7 @@ echo "Created a Debian package in $PACKAGES/$deb"
 
 ### create rpm package
 fpm -s dir -t rpm\
-     -d "dotnet-runtime-8.0 >= $DOTNET_VERSION"\
+     -d "dotnet-runtime-10.0 >= $DOTNET_VERSION"\
      -d python3-pip\
      -d gcc\
      -d gtk3\

@@ -21,7 +21,7 @@ for framework in runtime_options["frameworks"]:
 else:
     runtime_options["frameworks"].append({
         "name": "Microsoft.WindowsDesktop.App",
-        "version": "8.0.0"
+        "version": "10.0.0"
     })
 
 with open(args.out_file, "w") as file:

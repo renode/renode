@@ -39,7 +39,7 @@ EXTERNAL_LIB_ONLY=false
 TLIB_EXPORT_COMPILE_COMMANDS=false
 SHARED=false
 EXTERNAL_LIB_ARCH=""
-TFM="net8.0"
+TFM="net10.0"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
 RID="linux-x64"
@@ -671,7 +671,7 @@ then
 fi
 
 OG_TFM="$TFM"
-# `dotnet publish` is all-or-nothing in terms of TFM - we can't have mixed net8.0 for normal code and net8.0-windows10 for WPF
+# `dotnet publish` is all-or-nothing in terms of TFM - we can't have mixed net10.0 for normal code and net10.0-windows10 for WPF
 if $PACKAGES || $PORTABLE; then
   if $ON_WINDOWS && ! $HEADLESS; then
     # For Windows (since we have to actually build Xwt.WPF), we switch the whole build to a Windows-only TFM and make Renode actually require WPF

@@ -85,7 +85,7 @@ Otherwise, proceed to the 'Running Renode' section.
 
 #### dotnet
 
-Renode requires dotnet >= 6.0.
+Renode requires dotnet >= 10.0.
 
 To install dotnet, follow [the official installation guide](https://learn.microsoft.com/en-us/dotnet/core/install).
 
