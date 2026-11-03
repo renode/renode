@@ -323,14 +323,14 @@ radioaes: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
     IRQ -> nvic@47
 
 cryptoacc: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
-        sysbus <0x4C020000, +0x7FF>; // CRYPTOACC_S
-        sysbus <0x5C020000, +0x7FF>  // CRYPTOACC_NS
+        sysbus <0x4C020000, +0x800>; // CRYPTOACC_S
+        sysbus <0x5C020000, +0x800>  // CRYPTOACC_NS
     }
     IRQ -> nvic@0
 
 cryptoacc_rngctrl: Miscellaneous.SiLabs.SiLabs_RNGCTRL @ {
-        sysbus new Bus.BusMultiRegistration { address: 0x4C021000; size: 0x7FF; region: "rngctrl_s" };  // CRYPTOACC_RNGCTRL_S
-        sysbus new Bus.BusMultiRegistration { address: 0x5C021000; size: 0x7FF; region: "rngctrl_ns" }; // CRYPTOACC_RNGCTRL_NS
+        sysbus new Bus.BusMultiRegistration { address: 0x4C021000; size: 0x800; region: "rngctrl_s" };  // CRYPTOACC_RNGCTRL_S
+        sysbus new Bus.BusMultiRegistration { address: 0x5C021000; size: 0x800; region: "rngctrl_ns" }; // CRYPTOACC_RNGCTRL_NS
         sysbus new Bus.BusMultiRegistration { address: 0x4C024000; size: 0x4000; region: "rngfifo_s" }; // CRYPTOACC_RNGOUT_FIFO_S
         sysbus new Bus.BusMultiRegistration { address: 0x5C024000; size: 0x4000; region: "rngfifo_ns" } // CRYPTOACC_RNGOUT_FIFO_NS
     }
