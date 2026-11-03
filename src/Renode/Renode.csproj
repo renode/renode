@@ -47,7 +47,7 @@
     <DefineConstants>$(DefineConstants);GUI_DISABLED</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NetMQ" Version="4.0.1.12" />
+    <PackageReference Include="NetMQ" Version="4.0.4.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
     <Reference Include="Sprache">
