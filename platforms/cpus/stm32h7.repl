@@ -511,7 +511,7 @@ itcm: Memory.MappedMemory @ sysbus 0x00000000
     size: 0x10000
 
 rcc: Miscellaneous.STM32H7_RCC @ sysbus 0x58024400
-    systick: nvic
+    nvic: nvic
     dwt: dwt
 
 crc: CRC.STM32_CRC @ {
