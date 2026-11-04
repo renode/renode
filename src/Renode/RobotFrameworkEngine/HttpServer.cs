@@ -34,7 +34,10 @@ namespace Antmicro.Renode.RobotFramework
             if(Thread.CurrentThread != listenerThread)
             {
                 listener?.Close();
-                listenerThread.Join();
+                if(listenerThread.IsAlive)
+                {
+                    listenerThread.Join();
+                }
             }
         }
 
@@ -54,11 +57,13 @@ namespace Antmicro.Renode.RobotFramework
             if(!TryStartListener(out listener, out var actualPort, minPort, maxPort))
             {
                 Logger.Log(LogLevel.Error, "Could not start the HTTP server on {0}", selectAnyPort ? "any port" : $"port {port}");
+                Environment.ExitCode = 1;
                 return;
             }
 
             if(!TryCreatePortFile(actualPort))
             {
+                Environment.ExitCode = 1;
                 return;
             }
 

@@ -7,6 +7,7 @@
 using System;
 using System.Threading.Tasks;
 
+using Antmicro.Renode.Logging;
 using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.RobotFramework
@@ -30,6 +31,11 @@ namespace Antmicro.Renode.RobotFramework
                 {
                     server.Run(port);
                     server.Dispose();
+                }
+                catch(Exception e)
+                {
+                    Logger.Log(LogLevel.Error, "Robot Framework remote server failed: {0}", e);
+                    Environment.ExitCode = 1;
                 }
                 finally
                 {
