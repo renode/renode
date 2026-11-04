@@ -3,6 +3,7 @@ ${PC}                               0x80000000
 ${MEPC}                             0x80001000
 ${MTVEC}                            0x80080000
 ${DUMMY_VALUE}                      0x65657a
+${INSTRUCTION_ACCESS_FAULT}         0x1
 
 ${RV32_PRIV10}=     SEPARATOR=${\n}
 ...  """
@@ -25,6 +26,16 @@ ${RV64_PRIV10}=     SEPARATOR=${\n}
 ...  dram: Memory.MappedMemory @ sysbus 0x80000000
 ...  ${SPACE*4}size: 0x06400000
 ...  """
+${RV32_NO_PMP}=     SEPARATOR=${\n}
+...  """
+...  cpu: CPU.RiscV32 @ sysbus
+...  ${SPACE*4}cpuType: "rv32gcv"
+...  ${SPACE*4}pmpEntryCount: 0
+...  ${SPACE*4}timeProvider: empty
+...
+...  dram: Memory.MappedMemory @ sysbus 0x80000000
+...  ${SPACE*4}size: 0x06400000
+...  """
 
 *** Keywords ***
 Create RV32PRIV10 Machine
@@ -37,11 +48,33 @@ Create RV64PRIV10 Machine
     Execute Command                     mach create
     Execute Command                     machine LoadPlatformDescriptionFromString ${RV64_PRIV10}
 
+Create RV32 No PMP Machine
+    Execute Command                     using sysbus
+    Execute Command                     mach create
+    Execute Command                     machine LoadPlatformDescriptionFromString ${RV32_NO_PMP}
+
 Step Once And Ensure Not Trapped
     [Arguments]                         ${trap_adress}
 
     ${PC}=  Execute Command             cpu Step
     Should Not Be Equal As Integers     ${PC}  ${trap_adress}
+
+Enter User Mode Without PMP Configuration
+    Execute Command                     cpu MTVEC ${MTVEC}
+    Execute Command                     cpu PC ${PC}
+    Execute Command                     cpu MEPC ${MEPC}
+    ${machine_assembly}=                Catenate  SEPARATOR=\n
+    ...                                 # Set mstatus.MPP to U-mode
+    ...                                 lui t0, 0x2
+    ...                                 addi t0, t0, -2048
+    ...                                 csrc mstatus, t0
+    ...                                 mret
+    Execute Command                     cpu AssembleBlock ${PC} "${machine_assembly}"
+    Execute Command                     cpu AssembleBlock ${MEPC} "nop"
+    Execute Command                     cpu AssembleBlock ${MTVEC} "j ."
+
+    ${pc}=  Execute Command             cpu Step 4
+    Should Be Equal As Integers         ${pc}  ${MEPC}
 
 *** Test Cases ***
 Should Not Throw Exception After MRET in the NAPOT GRAIN32 Configuration
@@ -122,3 +155,21 @@ Should Trap On Out-of-Bound pmpaddr
     Create Log Tester                   5
     Execute Command                     cpu Step
     Wait For Log Entry                  Attempted illegal write to pmpaddr register beyond entry count (42, entry count is 16)
+
+Should Deny User Mode Access When All PMP Entries Are OFF
+    Create RV32PRIV10 Machine
+    Enter User Mode Without PMP Configuration
+
+    # Unmatched U-mode fetch fails when PMP entries are implemented, even if all are OFF
+    ${pc}=  Execute Command             cpu Step
+    Should Be Equal As Integers         ${pc}  ${MTVEC}
+    ${mcause}=  Execute Command         cpu MCAUSE
+    Should Be Equal As Integers         ${mcause}  ${INSTRUCTION_ACCESS_FAULT}
+    ${mepc}=  Execute Command           cpu MEPC
+    Should Be Equal As Integers         ${mepc}  ${MEPC}
+
+Should Allow User Mode Access When No PMP Entries Are Implemented
+    Create RV32 No PMP Machine
+    Enter User Mode Without PMP Configuration
+
+    Step Once And Ensure Not Trapped    ${MTVEC}
