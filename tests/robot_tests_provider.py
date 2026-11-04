@@ -463,6 +463,8 @@ class RobotTestSuite(object):
     restart_lost_state_reason: str = "Renode restarted after"
     timeout_expected_tag = 'timeout_expected'
     renode_start_attempts: int = 5
+    # How long to wait for a crashed Renode to exit. On Windows it exits about 20 s after its connections break.
+    crash_exit_timeout_s: int = 60
 
     def __init__(self, path):
         self.path = path
@@ -584,10 +586,10 @@ class RobotTestSuite(object):
         if process is None:
             return False
         # If the message shows a lost connection, wait for Renode to exit, because the connection breaks before the
-        # process ends.
-        if cls.retry_suite_regex.search(failure_message):
+        # process ends. Don't wait if the suite setup failed, because the suite runs no test on this Renode then.
+        if cls.retry_suite_regex.search(failure_message) and not failure_message.startswith("Parent suite setup failed"):
             try:
-                process.wait(timeout=2)
+                process.wait(timeout=cls.crash_exit_timeout_s)
             except (subprocess.TimeoutExpired, psutil.TimeoutExpired):
                 pass
         return process.poll() is not None
