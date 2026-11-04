@@ -845,8 +845,12 @@ class RobotTestSuite(object):
             print(f"Closing {renode}")
             try:
                 process = psutil.Process(proc.pid)
-                os.kill(proc.pid, signal.SIGINT)
-                process.wait(timeout=options.cleanup_timeout)
+                try:
+                    os.kill(proc.pid, signal.SIGINT)
+                    process.wait(timeout=options.cleanup_timeout)
+                except PermissionError:
+                    # Windows refuses to terminate a process that is already ending.
+                    process.wait(timeout=self.crash_exit_timeout_s)
 
                 if options.perf_output_path:
                     self.__move_perf_data(options)
