@@ -446,6 +446,7 @@ class RobotTestSuite(object):
     hotspot_action = ['None', 'Pause', 'Serialize']
     # Used to share the port, directory and command used by Renode between all suites when running sequentially
     remote_server_port = -1
+    remote_server_path: str = ""
     remote_server_directory = None
     remote_server_command = []
     retry_test_regex = re.compile(r"\[RETRY\] (PASS|FAIL) on (\d+)\. retry\.")
@@ -453,6 +454,7 @@ class RobotTestSuite(object):
             r"\[Errno \d+\] Connection refused",
             r"Connection to remote server broken: \[WinError \d+\]",
             r"Connecting remote server at [^ ]+ failed",
+            r"ProtocolError for [^ ]+ 404 Not Found",
             "Getting keyword names from library 'Remote' failed",
             "Renode launcher exited unexpectedly",
             "Renode process exited unexpectedly",
@@ -535,6 +537,7 @@ class RobotTestSuite(object):
             else:
                 # Restore port allocated by a previous suite
                 self.remote_server_port = RobotTestSuite.remote_server_port
+                self.remote_server_path = RobotTestSuite.remote_server_path
 
 
     @classmethod
@@ -591,7 +594,9 @@ class RobotTestSuite(object):
 
         remote_server_port = options.remote_server_port
 
-        if remote_server_port != 0 and not is_port_available(remote_server_port, options.autokill_renode):
+        if remote_server_port == 0:
+            self.remote_server_path = f"{uuid.uuid4().hex}/"
+        elif not is_port_available(remote_server_port, options.autokill_renode):
             raise Exception("The selected port {} is not available".format(remote_server_port))
 
         command = [remote_server_binary]
@@ -617,6 +622,8 @@ class RobotTestSuite(object):
         renode_command = command
         stdout_path, stderr_path = None, None
         renode_start_time: float = time()
+        # Each `Popen` below starts Renode with a copy of `os.environ`, which is how Renode gets the path.
+        os.environ["RENODE_ROBOT_SERVER_PATH"] = self.remote_server_path
 
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
@@ -686,6 +693,8 @@ class RobotTestSuite(object):
                 process = subprocess.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1, creationflags=CREATE_NEW_PROCESS_GROUP)
                 self.renode_pid = process.pid
 
+        # Remove the path so that the programs that tests start don't inherit it. A Renode among them keeps the plain URL.
+        del os.environ["RENODE_ROBOT_SERVER_PATH"]
         assert self.renode_pid != -1, "Renode PID has to be set before trying to acces the port file"
         RobotTestSuite.robot_frontend_process = process
         RobotTestSuite.renode_pid = self.renode_pid
@@ -746,6 +755,7 @@ class RobotTestSuite(object):
             raise RuntimeError(f"Renode was expected to use port {remote_server_port} but {self.remote_server_port} port is used instead!")
 
         RobotTestSuite.remote_server_port = self.remote_server_port
+        RobotTestSuite.remote_server_path = self.remote_server_path
 
     def log_process_data(self, process, stdout_path, stderr_path):
         process.poll()
@@ -877,6 +887,7 @@ class RobotTestSuite(object):
             # have restarted the shared process since this suite was prepared.
             self.renode_pid = RobotTestSuite.renode_pid
             self.remote_server_port = RobotTestSuite.remote_server_port
+            self.remote_server_path = RobotTestSuite.remote_server_path
 
         print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}', flush=True)
 
@@ -1118,6 +1129,7 @@ class RobotTestSuite(object):
             'DIRECTORY:{}'.format(RobotTestSuite.remote_server_directory),
             'COMMAND:{}'.format(subprocess.list2cmdline(RobotTestSuite.remote_server_command)),
             'PORT_NUMBER:{}'.format(self.remote_server_port),
+            'ROBOT_SERVER_PATH:{}'.format(self.remote_server_path),
             'RESULTS_DIRECTORY:{}'.format(output_dir),
             'BINARY_NAME:{}'.format(options.remote_server_name),
             'RENODE_PID:{}'.format(self.renode_pid),
@@ -1248,9 +1260,12 @@ class RobotTestSuite(object):
             # Preserve the original host (127.0.0.1 on Linux, localhost on Windows -
             # see renode-keywords.robot) by reading it off the existing URI.
             BuiltIn().set_suite_variable('$PORT_NUMBER', str(self.remote_server_port))
+            BuiltIn().set_suite_variable('$ROBOT_SERVER_PATH', self.remote_server_path)
             renode_lib = BuiltIn().get_library_instance('Renode')
             parsed = urllib.parse.urlparse(renode_lib._client.uri)
-            new_uri = parsed._replace(netloc=f'{parsed.hostname}:{self.remote_server_port}').geturl()
+            new_uri: str = parsed._replace(
+                netloc=f"{parsed.hostname}:{self.remote_server_port}", path=f"/{self.remote_server_path}"
+            ).geturl()
             renode_lib._uri = new_uri
             renode_lib._client.uri = new_uri
 

@@ -98,16 +98,18 @@ namespace Antmicro.Renode.RobotFramework
 
         private bool TryStartListener(out HttpListener listener, out int port, int minPort, int maxPort)
         {
+            // Serve under the path that `renode-test` gives each Renode, so a call meant for another Renode gets 404.
+            var path = Environment.GetEnvironmentVariable("RENODE_ROBOT_SERVER_PATH") ?? "";
             for(port = minPort; port <= maxPort; port++)
             {
                 listener = new HttpListener();
                 if(RuntimeInfo.IsWindows())
                 {
-                    listener.Prefixes.Add($"http://localhost:{port}/");
+                    listener.Prefixes.Add($"http://localhost:{port}/{path}");
                 }
                 else
                 {
-                    listener.Prefixes.Add($"http://*:{port}/");
+                    listener.Prefixes.Add($"http://*:{port}/{path}");
                 }
                 try
                 {

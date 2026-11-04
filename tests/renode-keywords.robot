@@ -12,6 +12,7 @@ ${SERVER_REMOTE_SUSPEND}     y
 ${SKIP_RUNNING_SERVER}       False
 ${CONFIGURATION}             Release
 ${PORT_NUMBER}               9999
+${ROBOT_SERVER_PATH}         ${EMPTY}
 ${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
 ${RENODETOOLS}               ${CURDIR}/../tools
 ${BINARY_NAME}               Renode.dll
@@ -52,12 +53,12 @@ Renode Suite Setup
     #The distinction between operating systems is because localhost is not universally understood on Linux and 127.0.0.1 is not always available on Windows.
     IF  not '${SYSTEM}' == 'Windows'
         Wait Until Keyword Succeeds  60s  1s
-          ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/    AS  Renode
+          ...   Import Library  Remote  http://127.0.0.1:${PORT_NUMBER}/${ROBOT_SERVER_PATH}    AS  Renode
     END
 
     IF  '${SYSTEM}' == 'Windows'
         Wait Until Keyword Succeeds  60s  1s
-          ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/    AS  Renode
+          ...   Import Library  Remote  http://localhost:${PORT_NUMBER}/${ROBOT_SERVER_PATH}    AS  Renode
     END
 
     Setup Renode
