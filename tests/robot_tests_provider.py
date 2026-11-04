@@ -1250,30 +1250,33 @@ class RobotTestSuite(object):
             BuiltIn().run_keyword("Print Log Saved Message")
             print(f"----- Skipped saving state due to the timeout, restarting Renode...")
 
-            self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
-            self._run_remote_server(options, iteration_index, suite_retry_index)
-
-            # Point the already-imported Renode (Remote) library at the new port.
-            # The library was imported once in `Setup` (renode-keywords.robot) with
-            # the URI baked into the XmlRpcRemoteClient. Each XML-RPC call builds a
-            # fresh ServerProxy from `client.uri`, so we just rewrite that attribute.
-            # Preserve the original host (127.0.0.1 on Linux, localhost on Windows -
-            # see renode-keywords.robot) by reading it off the existing URI.
-            BuiltIn().set_suite_variable('$PORT_NUMBER', str(self.remote_server_port))
-            BuiltIn().set_suite_variable('$ROBOT_SERVER_PATH', self.remote_server_path)
-            renode_lib = BuiltIn().get_library_instance('Renode')
-            parsed = urllib.parse.urlparse(renode_lib._client.uri)
-            new_uri: str = parsed._replace(
-                netloc=f"{parsed.hostname}:{self.remote_server_port}", path=f"/{self.remote_server_path}"
-            ).geturl()
-            renode_lib._uri = new_uri
-            renode_lib._client.uri = new_uri
-
-            # It's typically used in suite setup (renode-keywords.robot:Setup) but we don't need to
-            # call full setup which imports library etc. We only need to resend settings to Renode.
-            BuiltIn().run_keyword("Setup Renode")
-            print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using port {self.remote_server_port}")
+            self._restart_renode(options, iteration_index, suite_retry_index)
         return _timeout_handler
+
+    def _restart_renode(self, options: Namespace, iteration_index: int, suite_retry_index: int) -> None:
+        self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
+        self._run_remote_server(options, iteration_index, suite_retry_index)
+
+        # Point the already-imported Renode (Remote) library at the new port.
+        # The library was imported once in `Setup` (renode-keywords.robot) with
+        # the URI baked into the XmlRpcRemoteClient. Each XML-RPC call builds a
+        # fresh ServerProxy from `client.uri`, so we just rewrite that attribute.
+        # Preserve the original host (127.0.0.1 on Linux, localhost on Windows -
+        # see renode-keywords.robot) by reading it off the existing URI.
+        BuiltIn().set_suite_variable('$PORT_NUMBER', str(self.remote_server_port))
+        BuiltIn().set_suite_variable('$ROBOT_SERVER_PATH', self.remote_server_path)
+        renode_lib = BuiltIn().get_library_instance('Renode')
+        parsed = urllib.parse.urlparse(renode_lib._client.uri)
+        new_uri: str = parsed._replace(
+            netloc=f"{parsed.hostname}:{self.remote_server_port}", path=f"/{self.remote_server_path}"
+        ).geturl()
+        renode_lib._uri = new_uri
+        renode_lib._client.uri = new_uri
+
+        # It's typically used in suite setup (renode-keywords.robot:Setup) but we don't need to
+        # call full setup which imports library etc. We only need to resend settings to Renode.
+        BuiltIn().run_keyword("Setup Renode")
+        print(f"----- ...done, running remaining tests on Renode pid {self.renode_pid} using port {self.remote_server_port}")
 
     def tests_failed_due_to_renode_crash(self) -> bool:
         # Return false if the test has not yet run
