@@ -119,6 +119,9 @@ class NUnitTestSuite(object):
         # robot_tests_provider.py.
         return False
 
+    def lost_state_after_restart(self) -> bool:
+        return False
+
     def tests_failed_due_to_renode_crash(self) -> bool:
         # Unused mechanism, this exists to keep a uniform interface with
         # robot_tests_provider.py.

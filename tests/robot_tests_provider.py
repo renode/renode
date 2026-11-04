@@ -16,7 +16,7 @@ import signal
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from time import monotonic, sleep, time
-from typing import List, Dict, Tuple, Set, Optional, Union
+from typing import List, Dict, Tuple, Set, Optional, Union, BinaryIO, Callable, Sequence
 from argparse import Namespace
 from dataclasses import dataclass
 
@@ -30,7 +30,7 @@ import urllib.parse
 from tests_engine import TestResult, TestTag, CRITICAL_TEST
 from unstable_tests import KnownUnstableSuite, filter_unstable
 from retry_and_timeout_listener import retry_and_timeout_listener
-from state_dependency_listener import StateDependencyListener
+from state_dependency_listener import StateDependencyListener, keyword_states
 import robot_output_formatter
 import robot_output_formatter_verbose
 
@@ -435,9 +435,9 @@ class TestsFinder(robot.model.SuiteVisitor):
 
 
 class RobotTestSuite(object):
-    after_timeout_message_suffix = ' '.join([
-        "Failed on Renode restarted after timeout,",
-        "will be retried if `-N/--retry` option was used."
+    after_restart_message_suffix: str = ' '.join([
+        "Failed on Renode restarted after a timeout or crash,",
+        "will be retried if there are any `-N/--retry` attempts left."
     ])
     instances_count = 0
     robot_frontend_process = None
@@ -458,8 +458,9 @@ class RobotTestSuite(object):
             "Getting keyword names from library 'Remote' failed",
             "Renode launcher exited unexpectedly",
             "Renode process exited unexpectedly",
-            after_timeout_message_suffix,
+            after_restart_message_suffix,
     )))
+    restart_lost_state_reason: str = "Renode restarted after"
     timeout_expected_tag = 'timeout_expected'
     renode_start_attempts: int = 5
 
@@ -577,8 +578,28 @@ class RobotTestSuite(object):
         return cls.renode_exit_message
 
 
+    @classmethod
+    def has_renode_exited(cls, failure_message: str) -> bool:
+        process: Optional[Union[subprocess.Popen, psutil.Popen]] = cls.robot_frontend_process
+        if process is None:
+            return False
+        # If the message shows a lost connection, wait for Renode to exit, because the connection breaks before the
+        # process ends.
+        if cls.retry_suite_regex.search(failure_message):
+            try:
+                process.wait(timeout=2)
+            except (subprocess.TimeoutExpired, psutil.TimeoutExpired):
+                pass
+        return process.poll() is not None
+
+
     def _run_remote_server(
-        self, options: Namespace, iteration_index: int = 1, suite_retry_index: int = 0, start_attempt: int = 1
+        self,
+        options: Namespace,
+        iteration_index: int = 1,
+        suite_retry_index: int = 0,
+        start_attempt: int = 1,
+        append_output: bool = False,
     ) -> None:
         self.check_renode_process()
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
@@ -685,8 +706,9 @@ class RobotTestSuite(object):
                 suite_name = RobotTestSuite._create_suite_name(file_name, None)
                 stdout_path = os.path.join(logs_dir, f"{suite_name}.renode_stdout.log")
                 stderr_path = os.path.join(logs_dir, f"{suite_name}.renode_stderr.log")
-                fout = open(stdout_path, "wb", buffering=0)
-                ferr = open(stderr_path, "wb", buffering=0)
+                output_mode: str = "ab" if append_output else "wb"
+                fout: BinaryIO = open(stdout_path, output_mode, buffering=0)
+                ferr: BinaryIO = open(stderr_path, output_mode, buffering=0)
                 process = subprocess.Popen(command, cwd=RobotTestSuite.remote_server_directory, bufsize=1, stdout=fout, stderr=ferr, creationflags=CREATE_NEW_PROCESS_GROUP)
                 self.renode_pid = process.pid
             else:
@@ -728,7 +750,9 @@ class RobotTestSuite(object):
                 self._close_remote_server(process, options)
                 # Exit code 1 is a failed server start, usually because a client connected during it.
                 if process.returncode == 1 and start_attempt < self.renode_start_attempts:
-                    return self._run_remote_server(options, iteration_index, suite_retry_index, start_attempt + 1)
+                    return self._run_remote_server(
+                        options, iteration_index, suite_retry_index, start_attempt + 1, append_output
+                    )
                 raise RuntimeError(f"Renode exited before its Robot server was ready.\n{message}")
             try:
                 with open(renode_port_file, 'r') as f:
@@ -1049,7 +1073,13 @@ class RobotTestSuite(object):
                         pass
 
 
+    def lost_state_after_restart(self) -> bool:
+        return any(reason.startswith(self.restart_lost_state_reason) for reason in self.missing_state_reasons.values())
+
     def should_retry_suite(self, options, iteration_index, suite_retry_index):
+        if self.lost_state_after_restart():
+            return True
+
         tree = None
         assert self.suite_log_files is not None, "The suite has not yet been run."
         output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
@@ -1216,6 +1246,9 @@ class RobotTestSuite(object):
         # Listener grabs it on suite start and resets to original value.
         suite.parent = (self, suite.parent)
         self.timeout_handler = self._create_timeout_handler(options, iteration_index, suite_retry_index)
+        self.crash_handler: Callable[[robot.running.TestCase], None] = self._create_crash_handler(
+            options, iteration_index, suite_retry_index
+        )
 
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=[TestTag.NON_CRITICAL, TestTag.SKIPPED, TestTag.UNSTABLE])
 
@@ -1250,12 +1283,33 @@ class RobotTestSuite(object):
             BuiltIn().run_keyword("Print Log Saved Message")
             print(f"----- Skipped saving state due to the timeout, restarting Renode...")
 
-            self._restart_renode(options, iteration_index, suite_retry_index)
+            self._restart_renode(test, options, iteration_index, suite_retry_index)
         return _timeout_handler
 
-    def _restart_renode(self, options: Namespace, iteration_index: int, suite_retry_index: int) -> None:
+    def _create_crash_handler(
+        self, options: Namespace, iteration_index: int, suite_retry_index: int
+    ) -> Callable[[robot.running.TestCase], None]:
+        def _crash_handler(test: robot.running.TestCase) -> None:
+            print(f"!!!!! Renode exited during test {test.parent.name}.{test.name}, restarting Renode...")
+            self._restart_renode(test, options, iteration_index, suite_retry_index)
+        return _crash_handler
+
+    def _restart_renode(
+        self, test: robot.running.TestCase, options: Namespace, iteration_index: int, suite_retry_index: int
+    ) -> None:
+        # The new Renode doesn't have the states from `Provides`, so mark each state that a later test requires as
+        # missing. Those tests then end with SKIP, and a suite retry runs them. When a later provider test passes,
+        # `StateDependencyListener` clears the mark, because that test has created the state in the new Renode.
+        tests: Sequence[robot.running.TestCase] = test.parent.tests
+        for later_test in tests[tests.index(test) + 1 :]:
+            # `RetryFailed` puts the same test object back for each retry, so the slice can contain this test.
+            if later_test is not test:
+                for state in keyword_states(later_test, "Requires"):
+                    self.missing_state_reasons[state] = f"{self.restart_lost_state_reason} '{test.name}'"
+
         self._close_remote_server(RobotTestSuite.robot_frontend_process, options)
-        self._run_remote_server(options, iteration_index, suite_retry_index)
+        # Append the output, to keep the crash output of the Renode that ended.
+        self._run_remote_server(options, iteration_index, suite_retry_index, append_output=True)
 
         # Point the already-imported Renode (Remote) library at the new port.
         # The library was imported once in `Setup` (renode-keywords.robot) with
@@ -1387,6 +1441,11 @@ class RobotTestSuite(object):
                         # instead of wrapping in a new top-level Test Suite. A workaround is to extract
                         # the suite name from the *.robot file name.
                         suite_name = os.path.basename(suite.attrib["source"]).rsplit(".", 1)[0]
+
+                    # Keep the logs of a suite where Renode exited, even if a restart left it with no failed test.
+                    if suite.find("meta[@name='Renode process exits']") is not None:
+                        ret.add(suite_name)
+                        continue
 
                     for test in suite.iter('test'):
                         tags = [tag.text for tag in test.findall('tag') if tag.text is not None]

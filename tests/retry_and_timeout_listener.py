@@ -3,6 +3,7 @@ from typing import Optional
 from robot import result, running
 from robot.libraries.DateTime import Time
 
+from state_dependency_listener import keyword_states
 from tests_engine import TestTag
 
 # This listener wraps the RetryFailed listener to gracefully skip retrying for timed-out tests.
@@ -35,7 +36,7 @@ class retry_and_timeout_listener:
     def start_suite(self, suite: running.TestSuite, result: result.TestSuite):
         # Grab our RobotTestSuite and restore the original parent.
         (self.tests_provider, suite.parent) = suite.parent
-        self.after_timeout = False
+        self.after_restart: bool = False
         self.suite_result: result.TestSuite = result
         self.process_exits: list[str] = []
         self.record_process_exit()
@@ -57,8 +58,9 @@ class retry_and_timeout_listener:
             self.retry_failed.end_suite(suite, result)
 
     def end_test(self, test: running.TestCase, result: result.TestCase):
-        # Capture the old process before timeout recovery replaces it, and before
+        # Capture the old process before recovery replaces it, and before
         # RetryFailed changes this attempt's message/status.
+        renode_exited: bool = self.tests_provider.has_renode_exited(result.message)
         process_exit = self.record_process_exit()
         timed_out = not result.passed and result.timeout and result.timeout.timed_out()
         timeout_expected = self.tests_provider.timeout_expected_tag in test.tags
@@ -77,20 +79,31 @@ class retry_and_timeout_listener:
         if process_exit and not result.passed:
             result.message = '\n\n'.join(filter(None, (process_exit, result.message)))
 
-        # Mark messages that failed after another test timed out except tests that timed out.
+        lost_required_state: bool = renode_exited and bool(keyword_states(test, "Requires"))
+
+        # Mark messages that failed after Renode restarted except tests that timed out.
         # It isn't really probable that Renode restart will cause timeouts.
-        if result.failed and self.after_timeout and not timed_out:
-            result.message = result.message + '\n\n' + self.tests_provider.after_timeout_message_suffix
+        if result.failed and self.after_restart and not timed_out and not lost_required_state:
+            result.message = result.message + '\n\n' + self.tests_provider.after_restart_message_suffix
 
         if timed_out:
             # See `_create_timeout_handler` in `robot_tests_provider`, mostly restarts Renode.
             self.tests_provider.timeout_handler(test, result)
-            self.after_timeout = True
+            self.after_restart = True
 
             # Let's prevent retrying a test with unexpected timeout but let's still call
             # `RetryFailed.end_test` as `RetryFailed` might not properly work without it.
             if self.retry_failed and not timeout_expected:
                 self.retry_failed.max_retries = self.retry_failed.retries
+        elif renode_exited:
+            self.tests_provider.crash_handler(test)
+            self.after_restart = True
+
+            # Don't retry a test with `Requires`, because the restart lost its state, so the retry can't pass.
+            # Its SKIP or its failure to find the state would replace the crash as the result of the test.
+            if self.retry_failed and result.failed and lost_required_state:
+                self.retry_failed.max_retries = self.retry_failed.retries
+                result.message += "\n\nNot retried in this suite run, because the restart lost the state it requires."
 
         if self.retry_failed:
             original_message = result.message

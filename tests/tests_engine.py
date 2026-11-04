@@ -460,7 +460,7 @@ def run_test_group(args: GroupArgs) -> GroupResult:
                     report_progress()
                     if ok:
                         suite_failed = False
-                        should_retry_suite = False
+                        should_retry_suite = suite.lost_state_after_restart()
                     else:
                         suite_failed = True
                         should_retry_suite = suite.should_retry_suite(options, iteration_counter, retry_suites_counter - 1)
