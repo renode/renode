@@ -28,6 +28,7 @@ gpio_in: GPIOPort.LiteX_GPIO @ sysbus 0xF0007000
 
 cpu: CPU.VexRiscv @ sysbus
     cpuType: "rv32ima_zicsr_zifencei"
+    pmpEntryCount: 0
     timeProvider: clint
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10 
     builtInIrqController: false

@@ -16,7 +16,7 @@ Create Machine
     Execute Command                 mach create "risc-v"
 
     Execute Command                 machine LoadPlatformDescriptionFromString "clint: IRQControllers.CoreLevelInterruptor @ sysbus 0x44000000 { frequency: 66000000 }"
-    Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV${bitness} @ sysbus { timeProvider: clint; cpuType: \\"rv${bitness}imafd_zicsr_zifencei_c_v_zba_zbb_zbc_zbs_zfh_zacas_zcb\\" }"
+    Execute Command                 machine LoadPlatformDescriptionFromString "cpu: CPU.RiscV${bitness} @ sysbus { pmpEntryCount: 0; timeProvider: clint; cpuType: \\"rv${bitness}imafd_zicsr_zifencei_c_v_zba_zbb_zbc_zbs_zfh_zacas_zcb\\" }"
     Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.MappedMemory @ sysbus 0x1000 { size: 0x40000 }"
 
     IF  ${init_pc}

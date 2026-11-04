@@ -22,6 +22,7 @@ plic: IRQControllers.PlatformLevelInterruptController @ sysbus 0xf0c00000
 
 cpu: CPU.VexRiscv @ sysbus
     cpuType: "rv32imac_zicsr_zifencei"
+    pmpEntryCount: 0
     builtInIrqController: false
     privilegedArchitecture: PrivilegedArchitecture.Priv1_10
     timeProvider: clint

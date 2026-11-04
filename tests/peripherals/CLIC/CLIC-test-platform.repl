@@ -1,6 +1,7 @@
 cpu: CPU.RiscV32 @ sysbus
     hartId: 0
     cpuType: "rv32imc_zicsr_zifencei_zbs"
+    pmpEntryCount: 0
     privilegedArchitecture: PrivilegedArchitecture.PrivUnratified
     timeProvider: empty
 

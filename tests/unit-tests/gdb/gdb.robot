@@ -10,6 +10,14 @@ ${UNLEASHED_BIN}                    @https://dl.antmicro.com/projects/renode/hif
 ${UNLEASHED_FDT}                    @https://dl.antmicro.com/projects/renode/hifive-unleashed--devicetree.dtb-s_10532-70cd4fc9f3b4df929eba6e6f22d02e6ce4c17bd1
 ${UNLEASHED_VMINUX}                 @https://dl.antmicro.com/projects/renode/hifive-unleashed--vmlinux.elf-s_80421976-46788813c50dc7eb1a1a33c1730ca633616f75f5
 
+# The legacy VM demo enters S-mode without configuring PMP.
+${VM_DEMO_PLATFORM}=                SEPARATOR=${\n}
+...                                """
+...                                using "platforms/cpus/sifive-fe310.repl"
+...                                cpu:
+...                                ${SPACE*4}pmpEntryCount: 0
+...                                """
+
 *** Keywords ***
 Create Versatile Express
     Execute Command                 mach create
@@ -50,7 +58,7 @@ Create VM Demo
 
     Execute Command                 mach create
     Execute Command                 using sysbus
-    Execute Command                 machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
+    Execute Command                 machine LoadPlatformDescriptionFromString ${VM_DEMO_PLATFORM}
     # PAGETABLE is a raw binary representation of page table[s] (max 3), it's in RISC-V spec.
     ${macro_reset}=                 catenate  SEPARATOR=
     ...                             macro reset  ${\n}
