@@ -1,5 +1,6 @@
 *** Variables ***
 ${ORDINARY_TAG_START}               0x0
+${OVERRIDING_SILENT_TAG_START}      0x8
 ${OVERRIDING_TAG_START}             0x10
 ${ONESHOT_TAG_START}                0x18
 ${TAG_SIZE}                         0x8
@@ -25,6 +26,7 @@ Create Machine With Tags An Array Memory
 
     Execute Command                 mach create
     Execute Command                 sysbus Tag <${OVERRIDING_TAG_START} ${TAG_SIZE}> "overridingTag" ${TAG_VALUE_QWORD} overridePeripheralAccesses=True
+    Execute Command                 sysbus Tag <${OVERRIDING_SILENT_TAG_START} ${TAG_SIZE}> "overridingSilentTag" ${TAG_VALUE_QWORD} overridePeripheralAccesses=True silent=True
     Execute Command                 sysbus Tag <${ORDINARY_TAG_START} ${TAG_SIZE}> "ordinaryTag" ${TAG_VALUE_QWORD} overridePeripheralAccesses=False
     Execute Command                 sysbus Tag <${ONESHOT_TAG_START} ${TAG_SIZE}> "oneShotTag" ${TAG_VALUE_QWORD} overridePeripheralAccesses=True oneShot=True
     Execute Command                 machine LoadPlatformDescriptionFromString "mem: Memory.ArrayMemory @ sysbus ${MEM_START} { size : ${MEM_SIZE}; initialValue: ${MEM_VALUE_BYTE} }"
@@ -62,6 +64,15 @@ Write To An Overriding Tag Should Not Write To Peripheral
     Execute Command                 sysbus RemoveTag ${OVERRIDING_TAG_START}
     ${read_byte}=                   Execute Command  sysbus ReadByte ${OVERRIDING_TAG_START}
     Should Be Equal As Numbers      ${read_byte}  ${MEM_VALUE_BYTE}
+
+Access To An Overriding Silent Tag Should Not Log Warning
+    Create Machine With Tags An Array Memory
+    Create Log Tester               0
+
+    Execute Command                 sysbus ReadByte ${OVERRIDING_TAG_START}
+    Wait For Log Entry              ReadByte from overriding tag at ${OVERRIDING_TAG_START}
+    Execute Command                 sysbus ReadByte ${OVERRIDING_SILENT_TAG_START}
+    Should Not Be In Log            ReadByte from overriding tag at ${OVERRIDING_SILENT_TAG_START}
 
 OneShot Overriding Tag Should Override Read Exactly Once
     Create Machine With Tags An Array Memory
