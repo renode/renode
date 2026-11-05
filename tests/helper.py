@@ -58,3 +58,8 @@ def gzip_file(ipath, opath):
         data = f.read()
     with open(opath, 'wb') as ff:
         ff.write(gzip.compress(data))
+
+def untar_file(ipath, opath):
+    import tarfile
+    with tarfile.open(ipath) as f:
+        f.extractall(path=opath)
