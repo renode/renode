@@ -246,6 +246,7 @@ def try_get_category(platform):
         "stm32h743":    "STM",
         "stm32h753":    "STM",
         "stm32h7":    "STM",
+        "stm32h7_renode_reference_board":    "STM",
         "stm32h747":    "STM",
         "stm32h747-disco":    "STM",
         "stm32l071": "STM",
