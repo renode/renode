@@ -23,6 +23,9 @@ Should Boot Linux
     Wait For Line On Uart     Booting Linux on physical CPU 0x0
     Wait For Line On Uart     Welcome to the Renode Versatile demo!
     Wait For Prompt On Uart   master login:
+    # Make sure we wait until this log, otherwise it mangles the input echo
+    # wait for the psmouse line to avoid serial output cluttering
+    Wait For Line On Uart     psmouse serio1: Failed to enable mouse on fpga:07  includeUnfinishedLine=true
 
     Write Line To Uart        root
     Wait For Prompt On Uart   ${PROMPT}
@@ -34,8 +37,6 @@ Should Ls
     [Tags]                    linux  uart
     Requires                  booted-linux
 
-    # wait for the psmouse line to avoid serial output cluttering
-    Wait For Line On Uart     psmouse serio1: Failed to enable mouse on fpga:07
     Write Line To Uart        ls /
     Wait For Line On Uart     proc
 
