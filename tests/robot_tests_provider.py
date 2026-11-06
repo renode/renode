@@ -1393,7 +1393,7 @@ class RobotTestSuite(object):
             iteration = 1
             suite_retry = 0
             for pattern in re_path_indices_patterns:
-                match = pattern.search(path)
+                match = pattern.search(path.replace(os.path.sep, "/"))
                 if match is None:
                     continue
                 try:
