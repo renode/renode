@@ -13,6 +13,7 @@ $bin?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-vmlinux-s_14
 $rootfs?=@https://dl.antmicro.com/projects/renode/zynq--interface-tests-rootfs.ext2-s_16777216-191638e3b3832a81bebd21d555f67bf3a4d7882a
 $dtb?=@https://dl.antmicro.com/projects/renode/zynq-interface-tests-gem0.dtb-s_11724-f0dec8ffadea47891dfe2441215401f09f7242fa
 $bootargs?="console=ttyPS0,115200 root=/dev/ram0 rw initrd=0x1a000000,16M"
+$disabled_nodes?=""
 $initrd_address?=0x1a000000
 $initrd_memory_size?=0x1600000
 
@@ -29,7 +30,7 @@ macro reset
 
     ## load binaries ##
     sysbus LoadELF $bin
-    sysbus LoadFdt $dtb 0x100 $bootargs false
+    sysbus LoadFdt $dtb 0x100 $bootargs false $disabled_nodes
     sysbus ZeroRange $initrd_address $initrd_memory_size
     sysbus LoadBinary $rootfs $initrd_address
 """
