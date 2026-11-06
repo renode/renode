@@ -8,6 +8,7 @@
 - heavy_tests:
   - tests/platforms/zynqmp.robot
   - tests/platforms/zynqmp_linux.robot
+  - tests/peripherals/XilinxGPIOPS.robot
   - tests/peripherals/MCAN.robot
   - tests/platforms/Zedboard.robot
   - tests/peripherals/VirtIO.robot
