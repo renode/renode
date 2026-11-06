@@ -54,8 +54,8 @@ class CodeLine:
         else:
             self.addresses.append(AddressRange(low, high))
 
-    def count_execution(self, address, label):
-        self.address_counter[address].count_up()
+    def count_execution(self, address: int, label: str, count: int = 1) -> None:
+        self.address_counter[address].count_up(count)
         self.labels.add(label)
 
     def most_executions(self) -> int:
@@ -98,8 +98,8 @@ class ExecutionCount:
     def __init__(self):
         self.count = 0
 
-    def count_up(self) -> None:
-        self.count += 1
+    def count_up(self, count: int = 1) -> None:
+        self.count += count
 
 
 @dataclass
@@ -120,48 +120,87 @@ class Coverage:
 
     def __post_init__(self):
         assert self.elf_file_handler or self.pc2line_file_stream
+        # Decode the DWARF line programs once and reuse the entries for both source discovery and
+        # address mapping; decoding them is far more expensive than keeping the entries around
+        dwarf_entries = None
+        if self.elf_file_handler:
+            # `--gc-sections` resolves debug info for eliminated functions to address 0. Drop ranges
+            # outside executable segments so they cannot take hits. This does not separate them from
+            # real code when the image itself is linked at address 0; those discarded addresses then
+            # fall inside the executable segment.
+            dwarf_entries = self._clip_to_executable_segments(list(dwarf.get_addresses(
+                dwarf.get_dwarf_info(self.elf_file_handler), debug=self.debug, noisy=self.noisy)))
+
         if not self.code_filenames:
             print("No sources provided, will attempt to discover automatically")
             if self.elf_file_handler:
-                self._code_files = dwarf.find_code_files(dwarf.get_dwarf_info(self.elf_file_handler), self.substitute_paths, self.ignore_paths)
+                self._code_files = dwarf.find_code_files(None, self.substitute_paths, self.ignore_paths, entries=dwarf_entries)
             if self.pc2line_file_stream:
                 self._code_files = pc2line.find_code_files(self.pc2line_file_stream, self.substitute_paths)
             self.code_filenames = [apply_path_substitutions(code_filename.name, self.substitute_paths) for code_filename in self._code_files]
         else:
             self._code_files = [open(file) for file in self.code_filenames]
 
+        # Indexes for `_approx_file_match`: exact path first, then first file with a matching basename
+        self._files_by_name = set(self.code_filenames)
+        self._files_by_basename: dict[str, str] = {}
+        for file in self.code_filenames:
+            self._files_by_basename.setdefault(os.path.basename(file), file)
+
         if self.elf_file_handler:
-            dwarf_info = dwarf.get_dwarf_info(self.elf_file_handler)
-            self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file_from_dwarf(dwarf_info)
+            self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file_from_dwarf(dwarf_entries)
         if self.pc2line_file_stream:
             self.files_low_address, self.files_high_address, self.code_lines = self._get_code_lines_by_file_from_pc2line(self.pc2line_file_stream)
 
 
-    def _approx_file_match(self, file_name: str) -> Optional[str]:
-        for file in self.code_filenames:
-            if file_name == file:
-                return file_name
-        for file in self.code_filenames:
-            if os.path.basename(file) == os.path.basename(file_name):
-                return file
-        return None
+    def _clip_to_executable_segments(self, entries: list['dwarf.DWARFLineProgramEntry']) -> list['dwarf.DWARFLineProgramEntry']:
+        elf_file = ELFFile(self.elf_file_handler)
+        segments = []
+        for segment in elf_file.iter_segments():
+            header = segment.header
+            # PF_X is the low bit of p_flags. Empty segments (discarded sections) don't count.
+            if header.p_type != 'PT_LOAD' or not header.p_flags & 1 or header.p_memsz == 0:
+                continue
+            segments.append((header.p_vaddr, header.p_vaddr + header.p_memsz))
+        # Without executable segments, keep the debug info rather than dropping everything
+        if not segments:
+            return entries
 
-    def _build_addr_map(self, code_lines_with_address: list[CodeLine], pc_length: int) -> dict[bytes, CodeLine]:
+        clipped = []
+        for entry in entries:
+            for seg_low, seg_high in segments:
+                low = max(entry.address_low, seg_low)
+                high = min(entry.address_high, seg_high)
+                if low < high:
+                    clipped.append(entry._replace(address_low=low, address_high=high))
+        return clipped
+
+    def _approx_file_match(self, file_name: str) -> Optional[str]:
+        if file_name in self._files_by_name:
+            return file_name
+        return self._files_by_basename.get(os.path.basename(file_name))
+
+    def _build_addr_map(self, code_lines_with_address: list[CodeLine]) -> dict[int, CodeLine]:
         # This is a dictionary of references, that will be used to quickly update counters for each code line.
         # We can walk only once over all code lines and pre-generate mappings between PCs (addresses) and code lines.
         # This way, when we'll later parse the trace, all we do are quick look-ups into this dictionary to get relevant code line by address.
-        address_count_cache: dict[bytes, CodeLine] = {}
+        address_count_cache: dict[int, CodeLine] = {}
+        # Bytes claimed by a second source line. The first line keeps the address; there is no
+        # correct way to credit both, and printing one message per byte drowns the report.
+        conflicting_addresses = 0
 
         for line in code_lines_with_address:
             for addr in line.addresses:
                 addr_lo = addr.low
                 while addr_lo < addr.high:
                     if not addr_lo in address_count_cache:
-                        address_count_cache[addr_lo.to_bytes(pc_length, byteorder='little', signed=False)] = line
+                        address_count_cache[addr_lo] = line
                     else:
-                        print(f'Address {addr_lo} is already mapped to another line. Ignoring this time')
+                        conflicting_addresses += 1
                     # This is a naive approach. If memory usage is of greater concern, find a better way to store ranges
                     addr_lo += 1
+        if conflicting_addresses:
+            print(f"{conflicting_addresses} addresses are claimed by more than one source line; keeping the first line")
         return address_count_cache
 
     def _build_code_lines_dict(self) -> dict[str, list[CodeLine]]:
@@ -175,13 +214,13 @@ class Coverage:
 
     # Get list of code lines, grouped by the file where they belong
     # Result is a tuple: lowest address in the binary, highest address in the binary, and a dictionary of code lines
-    def _get_code_lines_by_file_from_dwarf(self, dwarf_info: 'DWARFInfo') -> tuple[int, int, dict[str, list[CodeLine]]]:
+    def _get_code_lines_by_file_from_dwarf(self, dwarf_entries: Iterable['dwarf.DWARFLineProgramEntry']) -> tuple[int, int, dict[str, list[CodeLine]]]:
         code_lines: dict[str, list[CodeLine]] = self._build_code_lines_dict()
 
         # The lowest and highest interesting (corresponding to our sources' files) addresses, respectively
         files_low_address = None
         files_high_address = 0
-        for file_name, file_path, line_number, column_number, address_low, address_high in dwarf.get_addresses(dwarf_info, debug=self.debug, noisy=self.noisy):
+        for file_name, file_path, line_number, column_number, address_low, address_high in dwarf_entries:
             file_full_name = os.path.join(file_path, file_name)
             file_full_name = apply_path_substitutions(file_full_name, self.substitute_paths)
             # If the files are provided by hand, patch their names
@@ -259,46 +298,47 @@ class Coverage:
             code_lines_with_address.extend(line for line in self.code_lines[file_name] if line.addresses)
 
         # This is also a cache to CodeLines
-        address_count_cache: dict[bytes, CodeLine] = {}
+        address_count_cache: dict[int, CodeLine] = {}
         unmatched_address: set[int] = set()
 
         if not self.lazy_line_cache:
             print('Populating address cache...')
-            address_count_cache = self._build_addr_map(code_lines_with_address, trace_data.pc_length)
+            address_count_cache = self._build_addr_map(code_lines_with_address)
+        # The pre-generated map covers every byte of every line's address ranges, so an address it
+        # doesn't contain matches no line. Only the lazy mode, which skips the map, needs the scan below.
+        cache_is_exhaustive = not self.lazy_line_cache
 
         # This step takes some time for large traces and codebases, let's advise the user to wait
         print(f'Processing trace file {trace_data.file.name}, please wait...')
-        for address_bytes, _, _, _ in trace_data:
-            if address_bytes in address_count_cache:
-                address_count_cache[address_bytes].count_execution(address_bytes, trace_data.filename)
+        # Count the PCs first, so that the (comparatively slow) line lookup below runs once
+        # per unique address rather than once per executed instruction
+        pc_counts = trace_data.count_pcs()
+        for address, count in pc_counts.items():
+            line = address_count_cache.get(address)
+            if line is not None:
+                line.count_execution(address, trace_data.filename, count)
+                continue
+            # Optimization: cut-off addresses from trace that for sure don't matter to us
+            if cache_is_exhaustive or not (self.files_low_address <= address < self.files_high_address):
+                unmatched_address.add(address)
+                continue
+            if self.debug and self.noisy:
+                print(f'parsing new addr in trace: {address:x}')
+            # Find a line, for which one of the addresses matches with the address present in the trace
+            # If we pre-generated the mappings earlier (in `_build_addr_map`), this function will only serve as a back-up to find not matched addresses
+            # Walking each time is slow, so it's generally better to pre-generate mappings, if we aren't running out of memory
+            for line in code_lines_with_address:
+                if any(
+                    # Check for all address ranges
+                    address_range.low <= address < address_range.high
+                    for address_range in line.addresses
+                ):
+                    # One line is likely to exist at several addresses
+                    line.count_execution(address, trace_data.filename, count)
+                    address_count_cache[address] = line
+                    break
             else:
-                address = int.from_bytes(address_bytes, byteorder="little", signed=False)
-                if address in unmatched_address:
-                    # Is marked as unmatched, short cut!
-                    # For unmatched address, a walk over all lines is very slow, since we need to check the entire map each time
-                    # So make sure that we mark the address as "unmatched" on the first try, and don't care about it later on
-                    continue
-                # Optimization: cut-off addresses from trace that for sure don't matter to us
-                if not (self.files_low_address <= address < self.files_high_address):
-                    unmatched_address.add(address)
-                    continue
-                if self.debug and self.noisy:
-                    print(f'parsing new addr in trace: {address:x}')
-                # Find a line, for which one of the addresses matches with the address bytes present in the trace
-                # If we pre-generated the mappings earlier (in `_build_addr_map`), this function will only serve as a back-up to find not matched addresses
-                # Walking each time is slow, so it's generally better to pre-generate mappings, if we aren't running out of memory
-                for line in code_lines_with_address:
-                    if any(
-                        # Check for all address ranges
-                        address_range.low <= address < address_range.high
-                        for address_range in line.addresses
-                    ):
-                        # One line is likely to exist at several addresses
-                        line.count_execution(address_bytes, trace_data.filename)
-                        address_count_cache[address_bytes] = line
-                        break
-                if address_bytes not in address_count_cache:
-                    unmatched_address.add(address)
+                unmatched_address.add(address)
 
         if self.print_unmatched_address:
             print(f'Found {len(unmatched_address)} unmatched unique addresses')
