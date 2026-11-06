@@ -459,6 +459,7 @@ class RobotTestSuite(object):
             after_timeout_message_suffix,
     )))
     timeout_expected_tag = 'timeout_expected'
+    renode_start_attempts: int = 5
 
     def __init__(self, path):
         self.path = path
@@ -573,7 +574,9 @@ class RobotTestSuite(object):
         return cls.renode_exit_message
 
 
-    def _run_remote_server(self, options, iteration_index=1, suite_retry_index=0):
+    def _run_remote_server(
+        self, options: Namespace, iteration_index: int = 1, suite_retry_index: int = 0, start_attempt: int = 1
+    ) -> None:
         self.check_renode_process()
         # Let's reset PID and check it's set before returning to prevent keeping old PID.
         self.renode_pid = -1
@@ -714,6 +717,9 @@ class RobotTestSuite(object):
             if message := self.check_renode_process(include_clean_exit=True):
                 self.log_process_data(process, stdout_path, stderr_path)
                 self._close_remote_server(process, options)
+                # Exit code 1 is a failed server start, usually because a client connected during it.
+                if process.returncode == 1 and start_attempt < self.renode_start_attempts:
+                    return self._run_remote_server(options, iteration_index, suite_retry_index, start_attempt + 1)
                 raise RuntimeError(f"Renode exited before its Robot server was ready.\n{message}")
             try:
                 with open(renode_port_file, 'r') as f:
