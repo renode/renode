@@ -15,7 +15,7 @@ import re
 import signal
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
-from time import monotonic, sleep
+from time import monotonic, sleep, time
 from typing import List, Dict, Tuple, Set, Optional, Union
 from argparse import Namespace
 from dataclasses import dataclass
@@ -613,6 +613,7 @@ class RobotTestSuite(object):
 
         renode_command = command
         stdout_path, stderr_path = None, None
+        renode_start_time: float = time()
 
         # if we started GDB, wait for the user to start Renode as a child process
         if options.run_gdb:
@@ -717,7 +718,9 @@ class RobotTestSuite(object):
             try:
                 with open(renode_port_file, 'r') as f:
                     port_num = f.readline()
-                    if port_num:
+                    # Skip the port file of an older Renode. On Windows, a new Renode can get the PID of a killed or
+                    # crashed Renode whose port file is still there.
+                    if port_num and os.fstat(f.fileno()).st_mtime >= renode_start_time:
                         self.remote_server_port = int(port_num)
                         break
             except (FileNotFoundError, PermissionError):
