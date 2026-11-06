@@ -1,0 +1,4 @@
+$bin ?= $CWD/build/zephyr/zephyr.elf
+include @scripts/single-node/nrf52840.resc
+
+machine StartGdbServer 3333
