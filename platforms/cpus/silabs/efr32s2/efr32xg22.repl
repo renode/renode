@@ -344,6 +344,9 @@ prs: Miscellaneous.SiLabs.SiLabs_PRS_1 @ {
 
 itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
 
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 38400000
+
 flashuserdata: Miscellaneous.SiLabs.SiLabs_FlashUserData @ sysbus <0x0FE00000, +0x7F>
 
 DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094024

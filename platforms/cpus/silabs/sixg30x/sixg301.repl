@@ -152,28 +152,35 @@ seqacc: Miscellaneous.SiLabs.SiLabs_SEQACC_1 @ {
 
 itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
 
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 38400000
+
 timer0: Timers.SiLabs_TIMER_2 @ {
         sysbus <0x40848000, +0x4000>; // TIMER0_NS
         sysbus <0x50848000, +0x4000>  // TIMER0_S
     }
+    gateOnHostClocks: true
     -> nvic@10
 
 timer1: Timers.SiLabs_TIMER_2 @ {
         sysbus <0x4084C000, +0x4000>; // TIMER1_NS
         sysbus <0x5084C000, +0x4000>  // TIMER1_S
     }
+    gateOnHostClocks: true
     -> nvic@11
 
 timer2: Timers.SiLabs_TIMER_2 @ {
         sysbus <0x40850000, +0x4000>; // TIMER2_NS
         sysbus <0x50850000, +0x4000>  // TIMER2_S
     }
+    gateOnHostClocks: true
     -> nvic@12
 
 timer3: Timers.SiLabs_TIMER_2 @ {
         sysbus <0x40854000, +0x4000>; // TIMER3_NS
         sysbus <0x50854000, +0x4000>  // TIMER3_S
     }
+    gateOnHostClocks: true
     -> nvic@13
 
 cmu: Miscellaneous.SiLabs.SiLabs_CMU_8 @ {
@@ -283,6 +290,7 @@ ldma: DMA.SiLabs_LDMA_3_3 @ {
         sysbus new Bus.BusMultiRegistration { address: 0x50844000; size: 0x4000; region: "ldmaxbar_s" }
     }
     context: cpu
+    gateOnHostClocks: true
     Channel0IRQ -> nvic@31
     Channel1IRQ -> nvic@32
     Channel2IRQ -> nvic@33
@@ -296,6 +304,7 @@ eusart0: UART.SiLabs_EUSART_4 @ {
         sysbus <0x40208000, +0x4000>; // EUSART0_NS
         sysbus <0x50208000, +0x4000>  // EUSART0_S
     }
+    em2Capable: true
     ReceiveIRQ -> nvic@17
     TransmitIRQ -> nvic@18
     RxFifoLevelRequest -> ldma@0x0090

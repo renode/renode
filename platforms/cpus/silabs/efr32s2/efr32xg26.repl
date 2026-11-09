@@ -23,6 +23,7 @@ eusart0: UART.SiLabs_EUSART_2 @ {
         sysbus <0x5B010000, +0x4000>  // EUSART0_NS
     }
     clockFrequency: 39000000
+    em2Capable: true
     ReceiveIRQ -> nvic@20
     TransmitIRQ -> nvic@21
     RxFifoLevel -> ldma@0x00F0
@@ -186,14 +187,14 @@ timer0: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40048000, +0x4000>; // TIMER0_S
         sysbus <0x50048000, +0x4000>  // TIMER0_NS
     }
-    width: 16
+    width: 32
     -> nvic@4
 
 timer1: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x4004C000, +0x4000>; // TIMER1_S
         sysbus <0x5004C000, +0x4000>  // TIMER1_NS
     }
-    width: 16
+    width: 32
     -> nvic@5
 
 timer2: Timers.SiLabs_TIMER_1 @ {
@@ -243,14 +244,14 @@ timer8: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x40068000, +0x4000>; // TIMER8_S
         sysbus <0x50068000, +0x4000>  // TIMER8_NS
     }
-    width: 16
+    width: 32
     -> nvic@12
 
 timer9: Timers.SiLabs_TIMER_1 @ {
         sysbus <0x4006C000, +0x4000>; // TIMER9_S
         sysbus <0x5006C000, +0x4000>  // TIMER9_NS
     }
-    width: 16
+    width: 32
     -> nvic@13
 
 ldma: DMA.SiLabs_LDMA_0_3 @ {
@@ -260,6 +261,7 @@ ldma: DMA.SiLabs_LDMA_0_3 @ {
         sysbus new Bus.BusMultiRegistration { address: 0x50044000; size: 0x4000; region: "ldmaxbar" }  // LDMAXBAR_NS
     }
     context: cpu
+    gateOnHostClocks: true
     -> nvic@35
 
 wdog0: Miscellaneous.SiLabs.SiLabs_WDOG_1 @ {
@@ -369,6 +371,9 @@ radioaes: Miscellaneous.SiLabs.SiLabs_SYMCRYPTO_1 @ {
 flashuserdata: Miscellaneous.SiLabs.SiLabs_FlashUserData @ sysbus <0x0FE00000, +0x7F>
 
 itm : Miscellaneous.SiLabs.SiLabs_ITM @ sysbus 0xE0000000
+
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 39000000
 
 sysbus:
     init add:
