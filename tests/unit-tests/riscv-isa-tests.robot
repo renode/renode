@@ -45,17 +45,13 @@ Run Test Case
 #
 
 *** Test Cases ***
-Should Run Tests 32
+Should Run Tests
     [Tags]                          basic-tests
     [Template]                      Run Test Case
 
     FOR  ${test}  IN  @{TESTS_32}
         ${test}                         32
     END
-
-Should Run Tests 64
-    [Tags]                          basic-tests
-    [Template]                      Run Test Case
 
     FOR  ${test}  IN  @{TESTS_64}
         ${test}                         64
