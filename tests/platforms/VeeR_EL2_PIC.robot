@@ -12,6 +12,8 @@ ${PIC_INT2_HANDLER_ADDRESS}                0x23200
 ${PIC_INT5_HANDLER_ADDRESS}                0x23500
 ${INIT_PC}                                 0x28000
 ${PIC_BASE_ADDRESS}                        0xE0000000
+${PIC_DEFAULT_THRESHOLD_STANDARD_ORDER}          5
+${PIC_DEFAULT_THRESHOLD_REVERSED_ORDER}          10
 
 ${PLATFORM}                         SEPARATOR=\n
 ...    cpu: CPU.VeeR_EL2 @ sysbus
@@ -274,16 +276,18 @@ External IRQ With Insufficient Priority Should Not Be Handled
     END
 
 
-External IRQ With Priority Equal To Threshold Should Be Handled
+External IRQ With Priority Equal To Threshold Should Not Be Handled
     [Arguments]                     ${loop_pc}  ${threshold}
 
     Set Source 2 Priority To ${threshold}
     Enable Source 2
     Set External Source 2 Interrupt Request
-    PIC IRQ Should Be Set
+    PIC IRQ Should Be Unset
 
-    Single External IRQ Should Be Handled
-    ...    source_id=2  handler_address=${PIC_INT2_HANDLER_ADDRESS}  loop_pc=${loop_pc}
+    FOR    ${counter}    IN RANGE    0    2
+        Execute Command             cpu Step 1
+        Pc Should Be Equal          ${loop_pc}
+    END
 
 
 PIC Should Have Interrupt Source ${id} Pending
@@ -352,7 +356,7 @@ External IRQ Should Be Handled With Standard Priority Order
     [Arguments]                     ${source_active_low}=False  ${source_edge_triggered}=False
 
     Create Machine                  ${source_edge_triggered}
-    ${loop_pc}=  Add Init Program   destination=${INIT_PC}  priord=0  threshold=5  source_id=5  priority=10
+    ${loop_pc}=  Add Init Program   destination=${INIT_PC}  priord=0  threshold=${PIC_DEFAULT_THRESHOLD_STANDARD_ORDER}  source_id=5  priority=10
     ...    source_active_low=${source_active_low}  source_edge_triggered=${source_edge_triggered}
 
     # Make source inactive before PIC is configured so that we don't have IRQ set right away.
@@ -455,17 +459,18 @@ External IRQ With Priority Lower Than Threshold Should Not Be Handled
     ...    ${loop_pc}    reversed=False
 
 
-External IRQ With Priority Equal To Threshold Should Be Handled Standard
+External IRQ With Priority Equal To Threshold Should Not Be Handled Standard
     Requires                        standard_priord_looped_after_handling_interrupt
     ${loop_pc}=  Execute Command    cpu Step
 
-    External IRQ With Priority Equal To Threshold Should Be Handled
-    ...    ${loop_pc}    threshold=5
+    External IRQ With Priority Equal To Threshold Should Not Be Handled
+    ...    ${loop_pc}    threshold=${PIC_DEFAULT_THRESHOLD_STANDARD_ORDER}
 
 
 External IRQ Should Be Handled With Reversed Priority Order
     Create Machine
-    ${loop_pc}=  Add Init Program   destination=${INIT_PC}  priord=1  threshold=10  source_id=5  priority=5
+    ${loop_pc}=  Add Init Program   destination=${INIT_PC}  priord=1  
+    ...    threshold=${PIC_DEFAULT_THRESHOLD_REVERSED_ORDER}  source_id=5  priority=5
 
     Execute Command                 emulation RunFor "0.000001"
     Pc Should Be Equal              ${loop_pc}
@@ -487,12 +492,12 @@ External IRQ With Reversed Priority Higher Than Threshold Should Not Be Handled
     ...    ${loop_pc}    reversed=True
 
 
-External IRQ With Priority Equal To Threshold Should Be Handled Reversed
+External IRQ With Priority Equal To Threshold Should Not Be Handled Reversed
     Requires                        reversed_priord_looped_after_handling_interrupt
     ${loop_pc}=  Execute Command    cpu Step
 
-    External IRQ With Priority Equal To Threshold Should Be Handled
-    ...    ${loop_pc}    threshold=10
+    External IRQ With Priority Equal To Threshold Should Not Be Handled
+    ...    ${loop_pc}    threshold=${PIC_DEFAULT_THRESHOLD_REVERSED_ORDER}
 
 
 Threshold Change Should Trigger IRQ
@@ -503,7 +508,7 @@ Threshold Change Should Trigger IRQ
     Pc Should Be Equal              ${loop_pc}
     PIC IRQ Should Be Unset
 
-    Set Source 2 Priority To 15
+    Set Source 2 Priority To 10
     Enable Source 2
     Set External Source 2 Interrupt Request
     PIC IRQ Should Be Unset
