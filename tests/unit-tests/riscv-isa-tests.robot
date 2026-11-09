@@ -9,7 +9,7 @@ Run Test Case
     [Arguments]                     ${test}  ${width}
     # Fail individual unit-tests with binary name attached to failure
     ${status}                       ${error}=  Run Keyword And Ignore Error  Run Test Case Inner  ${test}  ${width}
-    IF  '${status}' == 'FAIL'
+    IF  $status == 'FAIL'
         ${dirname}                      ${filename}=  Split Path  ${test}
         Run Keyword And Continue On Failure  Fail  ${filename}
     END
@@ -26,6 +26,8 @@ Run Test Case Inner
     Execute Command                 mach create
     Execute Command                 machine LoadPlatformDescriptionFromString """cpu: CPU.RiscV${width} @ sysbus { cpuType: "rv${width}gcv_zba_zbb_zbc_zbs_zfh_zacas_smepmp" }"""
     Execute Command                 machine LoadPlatformDescriptionFromString """mem: Memory.MappedMemory @ sysbus 0x80000000 { size: 0x100000 }"""
+    Execute Command                 machine LoadPlatformDescriptionFromString """trapmem: Memory.ArrayMemory @ sysbus 0x1000 { size: 0x100000 }"""
+    Execute Command                 cpu AssembleBlock 0x1010 "j ."
     Execute Command                 sysbus LoadELF $bin
     ${tohost}=                      Execute Command  sysbus GetSymbolAddress "tohost"
     # tohost section is aligned to 0x1000 https://github.com/riscv/riscv-test-env/blob/6de71edb142be36319e380ce782c3d1830c65d68/p/link.ld#L8-L9
