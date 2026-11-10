@@ -18,7 +18,10 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RestoreAdditionalProjectSources>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', 'third-party', 'DNNE', 'src', 'dnne-pkg', 'bin', '$(Configuration)'))</RestoreAdditionalProjectSources>
     <DnnePackageVersion>2.1.2-renode.2</DnnePackageVersion>
+    <!-- DNNE copies the XML documentation comments into librenode.h. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Don't require a doc comment on every public member. The other Renode projects don't, and many of these members never reach librenode.h. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DesignTimeBuild)' != 'true'">
