@@ -13,8 +13,8 @@
 #include "librenode.h"
 #include "renode_api.h"
 
-//  Parts shared by the hosts of tests/native-interface/bus-handlers.robot. Each host is one device
-//  model that serves the guest's accesses to sysbus.dut through the external control API.
+//  Parts shared by the native hosts of the tests in tests/native-interface. Most hosts are one
+//  device model that serves the guest's accesses to sysbus.dut through the external control API.
 namespace native_host {
 
 //  The guest ends each test by writing its result to this register of the device.
@@ -109,6 +109,19 @@ public:
     external_control(const external_control &) = delete;
     external_control &operator=(const external_control &) = delete;
 
+    //  Connects to Renode and gets the named machine.
+    bool connect(const char *machine_name)
+    {
+        renode_in_process_options_t options = {};
+        options.serialize_requests = true;
+        if(!check("connect to Renode", renode_connect_in_process(connection_name, &options, &renode))) {
+            return false;
+        }
+
+        machine = get_handle<renode_machine_t>("get the machine", renode_get_machine, renode, machine_name);
+        return machine != nullptr;
+    }
+
     //  Connects to Renode and serves the guest's accesses to the named bus peripheral of the named
     //  machine with the given handlers. Each access is served on a thread of its own, the way
     //  another simulator runs its device models on threads of its own, while the Renode thread that
@@ -117,15 +130,7 @@ public:
     {
         serve_read = std::move(on_read);
         serve_write = std::move(on_write);
-
-        renode_in_process_options_t options = {};
-        options.serialize_requests = true;
-        if(!check("connect to Renode", renode_connect_in_process(connection_name, &options, &renode))) {
-            return false;
-        }
-
-        machine = get_handle<renode_machine_t>("get the machine", renode_get_machine, renode, machine_name);
-        if(!machine) {
+        if(!connect(machine_name)) {
             return false;
         }
 
