@@ -14,7 +14,6 @@ export interface UartOpenedArgs {
 export type UartOpenedCallback = (event: UartOpenedArgs) => void;
 
 export interface CanOpenedArgs {
-  port: number;
   hubName: string;
 }
 export type CanOpenedCallback = (event: CanOpenedArgs) => void;

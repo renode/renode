@@ -279,7 +279,6 @@ namespace Antmicro.Renode.WebSockets.Providers
 
                 CANCreatedEvent.RaiseEvent(new CANCreatedEventDto
                 {
-                    Port = (int)webSocketCANAnalyzer.CANNumber,
                     HubName = EmulationManager.Instance.CurrentEmulation.ExternalsManager.TryGetName(canHub, out var hubName) ? hubName : ""
                 });
             }
@@ -399,8 +398,6 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class CANCreatedEventDto
         {
-            [JsonProperty("port")]
-            public int Port;
             [JsonProperty("hubName")]
             public string HubName;
         }
