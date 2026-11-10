@@ -46,7 +46,6 @@ export type DisplayOpenedCallback = (event: DisplayOpenedArgs) => void;
 
 export const SpiOpened = 'spi-opened';
 export interface SpiOpenedArgs {
-  port: number;
   name: string;
   machineName: string;
 }

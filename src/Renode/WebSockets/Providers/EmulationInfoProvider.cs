@@ -289,12 +289,11 @@ namespace Antmicro.Renode.WebSockets.Providers
                 var spiController = webSocketSPIAnalyzer.SPIController;
                 var machine = spiController.GetMachine();
                 var machineName = EmulationManager.Instance.CurrentEmulation[machine];
-                var spiName = GPIOData.GetPeripheralFullName(spiController);
+                var spiName = machine.GetAnyNameOrTypeName(spiController);
 
                 SPIOpenedEvent.RaiseEvent(new SPICreatedEventDto
                 {
                     Name = spiName,
-                    Port = webSocketSPIAnalyzer.SPINumber,
                     MachineName = machineName
                 });
             }
@@ -432,8 +431,6 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         private class SPICreatedEventDto
         {
-            [JsonProperty("port")]
-            public int Port;
             [JsonProperty("name")]
             public string Name;
             [JsonProperty("machineName")]
