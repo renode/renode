@@ -22,6 +22,7 @@ Run Guest Program On Lockstep Host
     ...                             mach create "lockstep"
     ...                             machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
     ...                             machine LoadPlatformDescriptionFromString "dut: Bus.ExternalControlBusPeripheral @ sysbus 0x10000000 { size: 0x1000 }"
+    ...                             machine LoadPlatformDescriptionFromString "gpio: GPIOPort.ARM_AHB_GPIO @ sysbus 0x10001000"
     ...                             cpu AssembleBlock 0x40000000 """
     ...                             ${program}
     ...                             """ triple="arm64"
@@ -56,3 +57,19 @@ Should Let The Device Call Renode Within A Lockstep Step
     ...                             wfi
     ...                             b halt
     Run Guest Program On Lockstep Host  ${program}  lockstep_device_host
+
+Should Pass GPIO States Within Each Lockstep Step
+    # The host sets the GPIO input between steps, and after each step it checks the state of the
+    # GPIO output that its state change callback reported.
+    ${program}=                     Catenate  SEPARATOR=${\n}
+    ...                             ldr x1, =0x10001000      # volatile uint32_t *gpio = (volatile uint32_t *)0x10001000;
+    ...                             mov w2, #2               # gpio[GPIO_OUTENSET] = 1 << 1;
+    ...                             str w2, [x1, #0x10]
+    # The guest keeps setting the GPIO output to the state of the GPIO input.
+    ...                             copy:                    # for(;;) { gpio[GPIO_DATAOUT] = (gpio[GPIO_DATA] & 1) << 1; }
+    ...                             ldr w3, [x1]
+    ...                             and w3, w3, #1
+    ...                             lsl w3, w3, #1
+    ...                             str w3, [x1, #4]
+    ...                             b copy
+    Run Guest Program On Lockstep Host  ${program}  lockstep_gpio_host

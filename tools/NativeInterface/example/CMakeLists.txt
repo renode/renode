@@ -25,6 +25,9 @@ target_link_libraries(gpio_host PRIVATE renode_api)
 add_executable(lockstep_device_host lockstep_device_host.cpp)
 target_compile_features(lockstep_device_host PRIVATE cxx_std_17)
 target_link_libraries(lockstep_device_host PRIVATE renode_api)
+add_executable(lockstep_gpio_host lockstep_gpio_host.cpp)
+target_compile_features(lockstep_gpio_host PRIVATE cxx_std_17)
+target_link_libraries(lockstep_gpio_host PRIVATE renode_api)
 
 set_target_properties(librenode_example PROPERTIES
     BUILD_RPATH_USE_ORIGIN TRUE
