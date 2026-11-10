@@ -352,6 +352,9 @@ renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel,
 /**
  * @brief The function setting an ADC channel's value.
  *
+ * @note The new value takes effect before the function returns. An ADC conversion during the call reads either the
+ * old value or the new value.
+ *
  * @param[in] adc - the ADC handle
  * @param[in] channel - the ADC channel index
  * @param[in] value - the requested ADC channel value
@@ -495,6 +498,10 @@ renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data,
 /**
  * @brief The function sending a CAN message.
  *
+ * @note The other controllers on the CAN bus get the frame either:
+ * (1) at the next synchronization point, in the default SynchronizedIO emulation mode, or
+ * (2) before the function returns, in the SynchronizedTimers emulation mode.
+ *
  * @param[in] can - the CAN instance handle
  * @param[in] packet - the pointer to the CAN packet payload
  * @param[in] packet_length - the length of the packet to be sent
@@ -598,6 +605,9 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
 
 /**
  * @brief The function writing data to the system bus.
+ *
+ * @note The write takes effect before the function returns, so a later renode_sysbus_read() from any thread of this
+ * client sees the result.
  *
  * @param[in] ctx - the bus handle
  * @param[in] address - the absolute address of the access
