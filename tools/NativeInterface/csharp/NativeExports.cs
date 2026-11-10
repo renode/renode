@@ -24,7 +24,7 @@ namespace Antmicro.Renode.NativeInterface
     public static unsafe partial class NativeExports
     {
         [UnmanagedCallersOnly(EntryPoint = "renode_init")]
-        /// Keep in sync with <see cref="NativeStatus" /> below.
+        // Keep in sync with `NativeStatus` below.
         [DNNE.C99DeclCode("typedef enum RenodeStatus { RENODE_SUCCESS = 0, RENODE_COMMAND_ERROR = 1, RENODE_QUIT_REQUESTED = 2, RENODE_EXCEPTION = -1 } RenodeStatus;")]
         [return: DNNE.C99Type("RenodeStatus")]
         public static NativeStatus Init([DNNE.C99Type("const char *")] byte* scriptPath, int telnetPort, int robotPort)
