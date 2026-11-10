@@ -39,18 +39,22 @@ module renode_ahb_manager #(int RenodeToCosimIndex = 0) (
 
   task static write_transaction();
     renode_pkg::valid_bits_e valid_bits;
+    renode_pkg::address_t address;
+    transfer_size_t transfer_size;
     data_t data;
     bit is_invalid;
 
+    address = runtime.controllers[RenodeToCosimIndex].write_transaction_address;
     valid_bits = runtime.controllers[RenodeToCosimIndex].write_transaction_data_bits;
-    data = data_t'(runtime.controllers[RenodeToCosimIndex].write_transaction_data & valid_bits);
-    configure_transfer(runtime.controllers[RenodeToCosimIndex].write_transaction_address, valid_bits, Write, is_invalid);
+    transfer_size = bus.valid_bits_to_transfer_size(valid_bits);
+    data = data_t'(bus.encode_byte_lane(runtime.controllers[RenodeToCosimIndex].write_transaction_data & valid_bits, address, transfer_size));
+    configure_transfer(address, valid_bits, Write, is_invalid);
     if (is_invalid) begin
         runtime.controllers[RenodeToCosimIndex].write_respond(is_invalid);
         return;
     end
-
-    bus.hwstrb = bus.transfer_size_to_strobe(bus.valid_bits_to_transfer_size(valid_bits));
+    
+    bus.hwstrb = bus.transfer_size_to_strobe(address, transfer_size);
     bus.hwdata = data;
     bus.htrans <= Idle;
 
@@ -60,6 +64,7 @@ module renode_ahb_manager #(int RenodeToCosimIndex = 0) (
 
   task static read_transaction();
     renode_pkg::valid_bits_e valid_bits;
+    renode_pkg::data_t renode_bus_data;
     data_t data;
     bit is_invalid;
     bit is_error;
@@ -76,7 +81,12 @@ module renode_ahb_manager #(int RenodeToCosimIndex = 0) (
     do @(posedge clk); while (!bus.hready);
     data = bus.hrdata;
     is_error = is_response_error(bus.hresp);
-    runtime.controllers[RenodeToCosimIndex].read_respond(renode_pkg::data_t'(data) & valid_bits, is_error);
+
+    renode_bus_data = bus.decode_byte_lane(
+      renode_pkg::data_t'(data),
+      runtime.controllers[RenodeToCosimIndex].read_transaction_address,
+      bus.valid_bits_to_transfer_size(valid_bits));
+    runtime.controllers[RenodeToCosimIndex].read_respond(renode_bus_data & valid_bits, is_error);
   endtask
 
   task static configure_transfer(renode_pkg::address_t address, renode_pkg::valid_bits_e valid_bits, transfer_direction_e direction, output logic is_invalid);

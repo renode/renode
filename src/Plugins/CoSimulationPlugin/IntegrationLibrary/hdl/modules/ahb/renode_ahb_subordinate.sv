@@ -43,6 +43,7 @@ module renode_ahb_subordinate #(int CosimToRenodeIndex = 0) (
     bit is_error;
     bit is_invalid;
     transfer_direction_e direction;
+    transfer_size_t transfer_size;
 
     wait_for_transfer(address, valid_bits, direction, is_invalid);
 
@@ -53,12 +54,23 @@ module renode_ahb_subordinate #(int CosimToRenodeIndex = 0) (
     @(posedge clk);
 
     if (!is_invalid) begin
+      transfer_size = bus.valid_bits_to_transfer_size(valid_bits);
       if (direction == Read) begin
         runtime.peripherals[CosimToRenodeIndex].read(address, valid_bits, data, is_error);
-        bus.hrdata = data_t'(data & valid_bits);
+        bus.hrdata = data_t'(bus.encode_byte_lane(
+            data & valid_bits,
+            address,
+            transfer_size));
         if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to read data from Renode at address 'h%h", address));
       end else begin
-        runtime.peripherals[CosimToRenodeIndex].write(address, valid_bits, renode_pkg::data_t'(bus.hwdata) & valid_bits, is_error);
+        runtime.peripherals[CosimToRenodeIndex].write(
+          address,
+          valid_bits,
+          valid_bits & bus.decode_byte_lane(
+            renode_pkg::data_t'(bus.hwdata),
+            address,
+            transfer_size),
+          is_error);
         if (is_error) runtime.connection.log(LogWarning, $sformatf("Unable to write data to Renode at address 'h%h", address));
       end
     end

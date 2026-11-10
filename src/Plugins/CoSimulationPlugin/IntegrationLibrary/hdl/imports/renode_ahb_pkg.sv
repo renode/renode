@@ -47,4 +47,11 @@ package renode_ahb_pkg;
     Word32bit = 3'b010,
     Doubleword64bit = 3'b011
   } transfer_size_e;
+
+  typedef enum int {
+    LittleEndian = 0,
+    ByteInvariantLittleEndian = 1,
+    WordInvariantBigEndian = 2
+  } bus_endianness_e;
+
 endpackage

@@ -8,7 +8,8 @@
 
 interface renode_ahb_if #(
     int unsigned AddressWidth = 32,
-    int unsigned DataWidth = 32
+    int unsigned DataWidth = 32,
+    renode_ahb_pkg::bus_endianness_e BusEndianness = renode_ahb_pkg::LittleEndian
 ) (
     input logic hclk
 );
@@ -65,8 +66,62 @@ interface renode_ahb_if #(
     endcase
   endfunction
 
-  function automatic strobe_t transfer_size_to_strobe(transfer_size_t size);
+  function automatic strobe_t transfer_size_to_strobe(renode_pkg::address_t address, transfer_size_t size);
     int unsigned bytes_count = 2 ** size;
-    return strobe_t'((1 << bytes_count) - 1);
+    int unsigned offset = int'(byte_lane_offset(address, size));
+    return strobe_t'(((1 << bytes_count) - 1) << offset);
+  endfunction
+
+  function static int transfer_size_to_bytes(transfer_size_t size);
+    case (size)
+      Byte8bit: return 1;
+      Halfword16bit: return 2;
+      Word32bit: return 4;
+      Doubleword64bit: return 8;
+      default: return 'X;
+    endcase
+  endfunction
+
+  function automatic longint le_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+    // NOTE: following section 6.2.1 AMBA AHB spec
+    longint data_bus_bytes = (longint'(DataWidth) + 7) / 8;
+    longint byte_lane = address - (address / data_bus_bytes) * data_bus_bytes;
+    return byte_lane;
+  endfunction
+
+  function static longint be8_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+    // NOTE: following section 6.2.2 AMBA AHB spec
+    return le_byte_lane_offset(address, size);
+  endfunction
+
+  function automatic longint be32_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+    // NOTE: following section 6.2.3 AMBA AHB spec
+    longint data_bus_bytes = (longint'(DataWidth) + 7) / 8;
+    longint address_offset = address - (address / data_bus_bytes) * data_bus_bytes;
+    longint word_offset = (address_offset / 4) * 4;
+    longint byte_offset = address_offset - word_offset;
+    return word_offset + 3 - byte_offset;
+  endfunction
+
+
+  function static longint byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+    case (BusEndianness)
+      LittleEndian: return le_byte_lane_offset(address, size);
+      ByteInvariantLittleEndian: return be8_byte_lane_offset(address, size);
+      WordInvariantBigEndian: return be32_byte_lane_offset(address, size);
+    endcase
+  endfunction
+
+  function automatic renode_pkg::data_t encode_byte_lane(
+    renode_pkg::data_t data,
+    renode_pkg::address_t address,
+    transfer_size_t size);
+    longint offset = byte_lane_offset(address, size);
+    return data << (offset * 8);
+  endfunction
+
+  function automatic renode_pkg::data_t decode_byte_lane(renode_pkg::data_t data, renode_pkg::address_t address, transfer_size_t size);
+    longint offset = byte_lane_offset(address, size);
+    return data >> (offset * 8);
   endfunction
 endinterface
