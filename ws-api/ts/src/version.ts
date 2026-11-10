@@ -4,7 +4,7 @@
 
 import * as semver from 'semver';
 
-export const version: string = '1.8.0';
+export const version: string = '1.9.0';
 export const clientVersion: semver.SemVer = semver.parse(version)!;
 
 export const isOutdatedClientVersion = (val: string): boolean => {
