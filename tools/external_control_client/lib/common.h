@@ -72,6 +72,7 @@ typedef enum {
     CAN_BUS,
     CUSTOM_COMMAND_CALLBACK,
     EMULATION,
+    CPU,
 } api_command_t;
 
 //  Needs to be in sync with `Antmicro.Renode.Network.ExternalControl.CommandType` in C#

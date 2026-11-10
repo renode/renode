@@ -48,6 +48,11 @@ struct renode_can {
     int32_t id;
 };
 
+struct renode_cpu {
+    renode_machine_t *machine;
+    int32_t id;
+};
+
 struct renode_bus_context {
     renode_machine_t *machine;
     int32_t id;
@@ -797,6 +802,75 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
                                           { &cmd.header, sizeof(cmd.header) }, { &ed, sizeof(ed) });
 }
 
+renode_error_t *renode_get_cpu(renode_machine_t *machine, const char *name, renode_cpu_t **cpu)
+{
+    int32_t id;
+    return_error_if_fails(renode_get_instance_descriptor(machine, CPU, name, &id));
+
+    *cpu = xmalloc(sizeof(renode_cpu_t));
+    (*cpu)->machine = machine;
+    (*cpu)->id = id;
+
+    return NO_ERROR;
+}
+
+typedef enum {
+    CPU_GET_PC = 0,
+    CPU_SET_PC,
+    CPU_IS_HALTED,
+    CPU_SET_HALTED,
+} cpu_operation_t;
+
+//  Where the response handler stores the response data of a CPU request.
+typedef struct {
+    void *data;
+    size_t size;
+} cpu_result_t;
+
+static renode_error_t *cpu_handler(renode_connection_t *conn, const void *data, size_t size, void *user_data)
+{
+    (void)conn;
+
+    cpu_result_t *result = user_data;
+    assert_fmsg(size == result->size, "Expected %zu bytes, but received: %zu", result->size, size);
+    if(size > 0) {
+        memcpy(result->data, data, size);
+    }
+    return NO_ERROR;
+}
+
+static renode_error_t *cpu_request(renode_cpu_t *cpu, const uint8_t *request, size_t request_size, void *result,
+                                   size_t result_size)
+{
+    cpu_result_t expected = { result, result_size };
+    return renode_connection_send_request(cpu->machine->renode->conn, generic_response_handler, &expected, REQUEST_HEADER(CPU),
+                                          { &cpu->id, sizeof(cpu->id) }, { request, request_size });
+}
+
+renode_error_t *renode_get_cpu_pc(renode_cpu_t *cpu, uint64_t *pc)
+{
+    return cpu_request(cpu, (uint8_t[]) { CPU_GET_PC }, 1, pc, sizeof(*pc));
+}
+
+renode_error_t *renode_set_cpu_pc(renode_cpu_t *cpu, uint64_t pc)
+{
+    struct __attribute__((packed)) {
+        uint8_t operation;
+        uint64_t pc;
+    } request = { CPU_SET_PC, pc };
+    return cpu_request(cpu, (const uint8_t *)&request, sizeof(request), NULL, 0);
+}
+
+renode_error_t *renode_is_cpu_halted(renode_cpu_t *cpu, bool *halted)
+{
+    return cpu_request(cpu, (uint8_t[]) { CPU_IS_HALTED }, 1, halted, sizeof(*halted));
+}
+
+renode_error_t *renode_set_cpu_halted(renode_cpu_t *cpu, bool halted)
+{
+    return cpu_request(cpu, (uint8_t[]) { CPU_SET_HALTED, halted }, 2, NULL, 0);
+}
+
 typedef enum {
     SEND_FRAME = 0,
     RECEIVED_FRAME = 1,
@@ -1112,6 +1186,8 @@ static renode_error_t *generic_response_handler(renode_connection_t *conn, const
             return NO_ERROR;  //  This command doesn't return any data, we only care about a successful status
         case EMULATION:
             return NO_ERROR;  //  This command doesn't return any data, we only care about a successful status
+        case CPU:
+            return cpu_handler(conn, data, data_size, ud);
         default:
             return create_fatal_error_static("Encountered a command without a response handler");
     }

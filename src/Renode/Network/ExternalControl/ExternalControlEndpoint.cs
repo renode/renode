@@ -49,6 +49,7 @@ public sealed class ExternalControlEndpoint : IDisposable
             new CANBus(this),
             new CustomCommand(this),
             new EmulationCommand(this),
+            new CPUCommand(this),
             getMachineHandler,
         }.ToDictionary(handler => handler.Identifier);
     }

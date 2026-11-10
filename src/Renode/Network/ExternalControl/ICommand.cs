@@ -28,6 +28,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         CANBus,
         CustomCommand,
         Emulation,
+        CPU,
     }
 
     public interface ICommand

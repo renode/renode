@@ -81,6 +81,13 @@ typedef struct renode_machine renode_machine_t;
 typedef struct renode_adc renode_adc_t;
 
 /**
+ * @brief The API handle for a Renode CPU.
+ *
+ * @copydetails renode_t
+ */
+typedef struct renode_cpu renode_cpu_t;
+
+/**
  * @brief The API handle for a Renode GPIO controller.
  *
  * @copydetails renode_t
@@ -430,6 +437,64 @@ renode_error_t *renode_get_adc_channel_value(renode_adc_t *adc, int32_t channel,
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
  */
 renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel, uint32_t value);
+
+/* CPU */
+
+/**
+ * @brief The function preparing the CPU handle.
+ *
+ * @note The handle's internal memory is dynamically allocated, so `*cpu` should be freed when it's no longer used.
+ *
+ * @param[in] machine - the machine handle
+ * @param[in] name - the name of the CPU, such as "sysbus.cpu"
+ * @param[out] cpu - the handle associated with the requested CPU
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_get_cpu(renode_machine_t *machine, const char *name, renode_cpu_t **cpu);
+
+/**
+ * @brief The function fetching the program counter of the CPU.
+ *
+ * On a running machine, the CPU may have moved on by the time the function returns.
+ *
+ * @param[in] cpu - the CPU handle
+ * @param[out] pc - the current program counter
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_get_cpu_pc(renode_cpu_t *cpu, uint64_t *pc);
+
+/**
+ * @brief The function setting the program counter of the CPU.
+ *
+ * On a paused machine, the PC is set before the function returns.
+ * On a running machine, it is set at the next synchronization point.
+ *
+ * @param[in] cpu - the CPU handle
+ * @param[in] pc - the new program counter, which must fit in the CPU's PC
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_set_cpu_pc(renode_cpu_t *cpu, uint64_t pc);
+
+/**
+ * @brief The function fetching whether the CPU is halted.
+ *
+ * A halted CPU executes no instructions while virtual time passes.
+ * A CPU is halted by `renode_set_cpu_halted`, its software or the platform script.
+ *
+ * @param[in] cpu - the CPU handle
+ * @param[out] halted - true if the CPU is halted
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_is_cpu_halted(renode_cpu_t *cpu, bool *halted);
+
+/**
+ * @brief The function halting the CPU or letting it run again.
+ *
+ * @param[in] cpu - the CPU handle
+ * @param[in] halted - true to halt the CPU, false to let it run
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_set_cpu_halted(renode_cpu_t *cpu, bool halted);
 
 /* GPIO */
 
