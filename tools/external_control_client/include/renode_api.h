@@ -286,6 +286,11 @@ double renode_time_to_seconds(renode_time_t time);
 /**
  * @brief The function specifying that the emulation should run for a given amount of time.
  *
+ * @note The run ends at a synchronization point, so when the function returns, every callback invoked for a change
+ * during the run, such as a GPIO state change made by a CPU, has finished. A change made at that synchronization point
+ * itself, such as a peripheral passing on an input that took effect there, invokes its callbacks at the next
+ * synchronization point, during the next run.
+ *
  * @param[in] renode - the Renode connection handle
  * @param[in] time - the duration of virtual time that the emulation should execute for
  * @return A pointer to the error structure if an error occurred, otherwise NULL.
