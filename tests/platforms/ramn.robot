@@ -46,8 +46,21 @@ Battery LED Toggling From Engine Key
     Execute Command             adc1.engineKey CurrentState "left"
     Assert And Hold Led State   false   timeoutAssert=1     timeoutHold=${LEDHoldingTimeout}
 
+Provide Started Platform
+    [Documentation]         Boot the 4-ECU platform and snapshot it.
+
+    Execute Command         include @scripts/multi-node/ramn.resc
+    Execute Command         emulation RunFor "5s"
+    Provides                post-startup
+
 Restore Started Platform
-    Requires                 post-startup
+    TRY
+        Requires                    post-startup
+        Log                         post-startup state found                    level=DEBUG
+    EXCEPT  KeywordException: Required state post-startup not found.*           type=glob
+        Log                         Restart platform to get post-startup state  level=DEBUG
+        Provide Started Platform
+    END
     Create CAN Tester        canHub  1
 
 Send UDS Command To ECU
@@ -193,13 +206,6 @@ Should Run Without Watchdog Being Triggered
 
     Create Log Tester       timeout=${MIN_ACCEPTABLE_RUNTIME_SECONDS}
     Should Not Be In Log    Watchdog reset triggered!
-
-Should Provide Started Platform
-    [Documentation]         Boot the 4-ECU platform and snapshot it for the UDS test cases below
-
-    Execute Command         include @scripts/multi-node/ramn.resc
-    Execute Command         emulation RunFor "5s"
-    Provides                post-startup
 
 ECUs Should Respond To Tester Present UDS Command
     # 0x3E Tester Present: keep-alive used to stop a diagnostic session from timing out
