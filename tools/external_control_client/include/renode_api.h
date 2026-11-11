@@ -298,6 +298,40 @@ double renode_time_to_seconds(renode_time_t time);
 renode_error_t *renode_run_for(renode_t *renode, renode_time_t time);
 
 /**
+ * @brief The function starting the emulation, which then runs freely until renode_pause().
+ *
+ * It does nothing if the emulation already runs. While the emulation runs freely, renode_run_for() fails.
+ * It is equivalent to the Monitor command `start`.
+ *
+ * @param[in] renode - the Renode connection handle
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_start(renode_t *renode);
+
+/**
+ * @brief The function pausing the emulation that renode_start() started.
+ *
+ * The emulation is paused when the function returns. It is equivalent to the Monitor command `pause`.
+ *
+ * @param[in] renode - the Renode connection handle
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_pause(renode_t *renode);
+
+/**
+ * @brief The function setting the quantum, which is the virtual time between the synchronization points of the emulation.
+ *
+ * A smaller quantum keeps the CPUs and machines of the emulation closer in virtual time, and a larger one lets the
+ * emulation run faster. renode_run_for() ends at a synchronization point whatever the quantum is.
+ * It is equivalent to the Monitor command `emulation SetGlobalQuantum`.
+ *
+ * @param[in] renode - the Renode connection handle
+ * @param[in] quantum - the new quantum
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_set_quantum(renode_t *renode, renode_time_t quantum);
+
+/**
  * @brief The function fetching the current virtual time of the emulation.
  *
  * @param[in] renode - the Renode connection handle

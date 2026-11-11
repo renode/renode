@@ -20,6 +20,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         SPI,
         CANBus,
         CustomCommand,
+        Emulation,
     }
 
     public interface ICommand

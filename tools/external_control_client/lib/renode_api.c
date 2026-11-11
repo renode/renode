@@ -495,6 +495,39 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current
                                           { current_time, sizeof(*current_time) });
 }
 
+typedef enum {
+    EMULATION_START = 0,
+    EMULATION_PAUSE,
+    EMULATION_SET_QUANTUM,
+} emulation_operation_t;
+
+renode_error_t *renode_start(renode_t *renode)
+{
+    assert(renode != NULL);
+
+    uint8_t operation = EMULATION_START;
+    return renode_connection_send_request(renode->conn, generic_response_handler, NULL, REQUEST_HEADER(EMULATION),
+                                          { &operation, sizeof(operation) });
+}
+
+renode_error_t *renode_pause(renode_t *renode)
+{
+    assert(renode != NULL);
+
+    uint8_t operation = EMULATION_PAUSE;
+    return renode_connection_send_request(renode->conn, generic_response_handler, NULL, REQUEST_HEADER(EMULATION),
+                                          { &operation, sizeof(operation) });
+}
+
+renode_error_t *renode_set_quantum(renode_t *renode, renode_time_t quantum)
+{
+    assert(renode != NULL);
+
+    uint8_t operation = EMULATION_SET_QUANTUM;
+    return renode_connection_send_request(renode->conn, generic_response_handler, NULL, REQUEST_HEADER(EMULATION),
+                                          { &operation, sizeof(operation) }, { &quantum, sizeof(quantum) });
+}
+
 renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *user_data, renode_time_elapsed_callback_t callback)
 {
     int32_t ed;
@@ -1034,6 +1067,8 @@ static renode_error_t *generic_response_handler(renode_connection_t *conn, const
         case CAN_BUS:
             return NO_ERROR;  //  This command doesn't return any data, we only care about a successful status
         case CUSTOM_COMMAND_CALLBACK:
+            return NO_ERROR;  //  This command doesn't return any data, we only care about a successful status
+        case EMULATION:
             return NO_ERROR;  //  This command doesn't return any data, we only care about a successful status
         default:
             return create_fatal_error_static("Encountered a command without a response handler");
