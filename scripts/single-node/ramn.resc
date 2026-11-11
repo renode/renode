@@ -40,4 +40,18 @@ include @platforms/boards/ramn/BODY.repl
 macro reset "sysbus LoadELF $bin_ECUD"
 """
 
+# Opt-in to the realistic overrun behavior and transmission delays on the USARTs, nessesary for LIN to work
+usart1 EnableUnlimitedFifo false
+usart1 DisableTransmissionCompleteDelay false
+usart2 EnableUnlimitedFifo false
+usart2 DisableTransmissionCompleteDelay false
+usart3 EnableUnlimitedFifo false
+usart3 DisableTransmissionCompleteDelay false
+uart4 EnableUnlimitedFifo false
+uart4 DisableTransmissionCompleteDelay false
+uart5 EnableUnlimitedFifo false
+uart5 DisableTransmissionCompleteDelay false
+lpuart1 EnableUnlimitedFifo false
+lpuart1 DisableTransmissionCompleteDelay false
+
 runMacro $reset
