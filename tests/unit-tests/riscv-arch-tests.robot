@@ -1,8 +1,18 @@
-*** Settings ***
-Variables                           riscv-arch-tests.py  ${RISCV_ARCH_TESTS_PATH}
-
 *** Variables ***
-${RISCV_ARCH_TESTS_PATH}            %{RISCV_ARCH_TESTS_PATH=/riscv-arch-test/work/}
+@{IGNORED_TESTS}
+...                                 F-fmax.s-00.elf
+...                                 F-fmin.s-00.elf
+...                                 Zca-c.add-00.elf
+...                                 D-fmax.d-00.elf
+...                                 D-fmin.d-00.elf
+...                                 D-fsgnj.s-00.elf
+...                                 D-fsgnjx.s-00.elf
+...                                 D-fsgnjn.s-00.elf
+...                                 D-fclass.s-00.elf
+...                                 D-fclass.d-00.elf
+
+# https://github.com/riscv-non-isa/riscv-arch-test/commit/1dfa48c2adecaa16fae9fca14d34c591ea99321c
+${TEST_ARCHIVE}                     https://dl.antmicro.com/projects/renode/riscv-arch-test-binaries.tar.gz-s_26356335-46cad8232d1192a5019d3cd8cc33de3ded5353e0
 
 *** Keywords ***
 Run Test Case
@@ -24,7 +34,7 @@ Run Test Case Inner
     Create Log Tester               1
     Execute Command                 $bin=@${test}
     Execute Command                 mach create
-    Execute Command                 machine LoadPlatformDescriptionFromString """cpu: CPU.RiscV${width} @ sysbus { cpuType: "rv${width}gcv_zba_zbb_zbc_zbs_zfh_zacas_smepmp" }"""
+    Execute Command                 machine LoadPlatformDescriptionFromString """cpu: CPU.RiscV${width} @ sysbus { cpuType: "rv${width}gcv_zba_zbb_zbc_zbs_zfh_zacas_smepmp_zicsr" }"""
     Execute Command                 machine LoadPlatformDescriptionFromString """uart: UART.NS16550 @ sysbus 0x10000000"""
     Execute Command                 machine LoadPlatformDescriptionFromString """mem: Memory.MappedMemory @ sysbus 0x80000000 { size: 0x100000 }"""
     Execute Command                 machine LoadPlatformDescriptionFromString """trapmem: Memory.ArrayMemory @ sysbus 0x1000 { size: 0x100000 }"""
@@ -34,33 +44,31 @@ Run Test Case Inner
     ${tohost}=                      Execute Command  sysbus GetSymbolAddress "tohost"
     # tohost section is aligned to 0x1000 https://github.com/riscv/riscv-test-env/blob/6de71edb142be36319e380ce782c3d1830c65d68/p/link.ld#L8-L9
     Execute Command                 machine LoadPlatformDescriptionFromString """tohost: Memory.ArrayMemoryRiscVTestWatcher @ sysbus new Bus.BusPointRegistration { address: ${tohost}; cpu: cpu } { size: 0x1000 }"""
-
     Should Not Be In Log            CPU abort  timeout=0.001
-    Wait For Log Entry              TEST FINISHED  timeout=0
+    Wait For Log Entry              FINISHED  timeout=0
     ${res}=                         Execute Command  tohost ExitCode
     Should Contain                  ${res}  0x0000000000000000
 
-*** Comments ***
-#
-# This test suite is used to run arch tests from https://github.com/riscv-non-isa/riscv-arch-test.
-# At the time of writing, it was used with https://github.com/riscv-non-isa/riscv-arch-test/commit/1dfa48c2adecaa16fae9fca14d34c591ea99321c.
-# The path to the directory with compiled tests can be passed from the command line
-# or specified via an RISCV_ARCH_TESTS_PATH environment variable (it defaults to /riscv-arch-test/work/).
-# Both invocations below are supported:
-#  renode-test riscv-arch-tests.robot --variable RISCV_ARCH_TESTS_PATH:<absolute path to a directory with compiled arch tests>
-#  RISCV_ARCH_TESTS_PATH=<absolute path to a directory with compiled arch tests> renode-test riscv-arch-tests.robot
-# Build tests based on https://github.com/riscv-non-isa/riscv-arch-test/commit/1dfa48c2adecaa16fae9fca14d34c591ea99321c.
-# The available tests will be detected automatically by riscv-arch-tests.py.
-# If no tests are detected (i.e. directory doesn't exist), there are no failures and test suite passes.
-#
-
 *** Test Cases ***
 Should Run Arch Tests
-    FOR  ${test}  IN  @{TESTS_ARCH_32}
-        Run Test Case                   ${test}  32
-    END
+    [Tags]                          exclude_osx
 
+    ${archive}=                     Download File  ${TEST_ARCHIVE}
+    ${binariesDirectory}=           AllocateTemporaryDirectory  elfs
+    Untar File                      ${archive}  ${binariesDirectory}
+    ${binaries}=                    List Files In Directory Recursively  ${binariesDirectory}  *.elf
 
-    FOR  ${test}  IN  @{TESTS_ARCH_64}
-        Run Test Case                   ${test}  64
+    FOR  ${test}  IN  @{binaries}
+        ${dirname}                      ${filename}=  Split Path  ${test}
+
+        Continue For Loop If            $filename in $IGNORED_TESTS
+        Continue For Loop If            ".sig" in $filename
+
+        IF  "spike-rv32-max" in $test
+            Run Test Case                   ${test}  32
+        ELSE IF  "spike-rv64-max" in $test
+            Run Test Case                   ${test}  64
+        ELSE
+            Fail                            "${test} not categorized"
+        END
     END
