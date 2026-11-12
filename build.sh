@@ -160,6 +160,7 @@ do
         "werror" | "Werror")
           CMAKE_COMMON+=" -DFAIL_ON_WARNINGS=ON"
           PARAMS+=(p:TreatWarningsAsErrors=true)
+          LIBRENODE_PARAMS+=(p:TreatWarningsAsErrors=true)
           ;;
         *)
           print_help
