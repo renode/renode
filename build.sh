@@ -25,6 +25,7 @@ EXTERNAL_LIB_ARCH=""
 TFM="net10.0"
 GENERATE_DOTNET_BUILD_TARGET=true
 PARAMS=()
+LIBRENODE_PARAMS=()
 RID="linux-x64"
 MULTIPLATFORM=false
 HOST_ARCH=
@@ -637,11 +638,12 @@ then
       LIBDL_STUB_PATH="$OUT_BIN_DIR/libdl.so.2"
       gcc -shared -fPIC -Wl,--version-script="$LIBDL_STUB_SRC/libdl.map" -Wl,-soname,libdl.so.2 -o "$LIBDL_STUB_PATH" "$LIBDL_STUB_SRC/stub.c"
 
-      EXTRA_ARGUMENTS="-p:LibdlStubPath=$LIBDL_STUB_PATH"
+      LIBRENODE_PARAMS+=(p:LibdlStubPath="$LIBDL_STUB_PATH")
     fi
 
     echo "Building librenode..."
-    dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" -p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID" ${EXTRA_ARGUMENTS:-}
+    LIBRENODE_PARAMS+=(p:PlatformOutputDir="$OUT_BIN_DIR/platform-lib/$RID")
+    dotnet build "$(get_path "$ROOT_PATH/tools/NativeInterface/csharp/NativeInterface.csproj")" -c "$CONFIGURATION" -f "$TFM" "${LIBRENODE_PARAMS[@]/#/-}"
     copy_native_interface_runtime_config "$OUT_BIN_DIR" "$OUT_BIN_DIR/platform-lib/$RID"
 
     if [ $RID = linux-x64 ]; then
