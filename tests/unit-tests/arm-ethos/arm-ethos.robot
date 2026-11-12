@@ -1,3 +1,7 @@
+*** Settings ***
+Library                             ${CURDIR}/u55_commands.py  AS  U55
+Library                             ${CURDIR}/u85_commands.py  AS  U85
+
 *** Variables ***
 ${NPU_BASE}                         0x40000000
 ${ID}                               ${{ ${NPU_BASE} + 0x00 }}
@@ -43,6 +47,21 @@ Write Stream
         Execute Command                 sysbus WriteDoubleWord ${{ ${STREAM} + 4 * ${index} }} ${word}
     END
 
+Build Stream
+    [Arguments]                     ${npu}  @{commands}
+    IF  '${npu}' == 'U55'
+        ${words}=                   U55.Build NPU Commands  @{commands}
+    ELSE
+        ${words}=                   U85.Build NPU Commands  @{commands}
+    END
+    RETURN                          ${words}
+
+Write Command Stream
+    [Arguments]                     ${npu}  @{commands}
+    ${words}=                       Build Stream  ${npu}  @{commands}
+    Write Stream                    @{words}
+    RETURN                          ${words}
+
 Start Command Stream
     [Arguments]                     ${size}  ${base}=${STREAM}
     Execute Command                 sysbus WriteDoubleWord ${QBASE} ${base}
@@ -68,34 +87,34 @@ NPU Should Identify Itself
 Stop-Only Stream Should Complete
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0xFFFF0000  # NPU_OP_STOP, mask 0xFFFF
-    Start Command Stream            4
+    ${words}=                       Write Command Stream  ${npu}  stop()
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  ${NPU_STATUS_DONE}
 
 IRQ Command Should Not Stop The Stream
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00040001  0x00010000  # OP_IRQ mask 0x4, STOP mask 0x1
-    Start Command Stream            8
+    ${words}=                       Write Command Stream  ${npu}  cmd0(Cmd0.OP_IRQ, 0x4)  stop(0x1)
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  0x00050022  # both masks, STOP was the last command
 
 Misaligned QBASE Should Be A Parse Error
     [Arguments]                     ${npu}
     ${cfg}=                         Create NPU Machine  ${npu}
-    Write Stream                    0x00010000
-    Start Command Stream            4  base=0x1002
+    ${words}=                       Write Command Stream  ${npu}  stop(0x1)
+    Start Command Stream            ${{ 4 * len($words) }}  base=0x1002
     Register Should Be              ${STATUS}  ${cfg}[status_parse_error]
 
 Parse Error Should Block Submissions Until Reset
     [Arguments]                     ${npu}
     ${cfg}=                         Create NPU Machine  ${npu}
-    Write Stream                    0x00010000
-    Start Command Stream            4  base=0x1002
-    Start Command Stream            4  # aligned now, but still ignored
+    ${words}=                       Write Command Stream  ${npu}  stop(0x1)
+    Start Command Stream            ${{ 4 * len($words) }}  base=0x1002
+    Start Command Stream            ${{ 4 * len($words) }}  # aligned now, but still ignored
     Register Should Be              ${STATUS}  ${cfg}[status_parse_error]
     Execute Command                 sysbus WriteDoubleWord ${RESET} 0
     Register Should Be              ${STATUS}  0
-    Start Command Stream            4
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  0x00010022
 
 Invalid Command Encoding Should Be A Parse Error
@@ -132,16 +151,16 @@ Empty Stream Should End Immediately
 Stop In The Middle Should Not Reach The End
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00010000  0x00020000  # STOP mask 0x1, STOP mask 0x2
-    Start Command Stream            8
+    ${words}=                       Write Command Stream  ${npu}  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  0x00010002  # history 0x1, IRQ, end not reached
     Register Should Be              ${QREAD}  4  # points after the first STOP
 
 Run After Stop Should Resume At QREAD
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00010000  0x00020000
-    Start Command Stream            8
+    ${words}=                       Write Command Stream  ${npu}  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Execute Command                 sysbus WriteDoubleWord ${CMD} ${CMD_CLEAR_IRQ}
     Execute Command                 sysbus WriteDoubleWord ${CMD} ${CMD_RUN}
     Register Should Be              ${STATUS}  0x00030022  # second STOP ran and was the last command
@@ -150,10 +169,10 @@ Run After Stop Should Resume At QREAD
 Writing QSIZE Should Restart From QBASE
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00010000  0x00020000
-    Start Command Stream            8
+    ${words}=                       Write Command Stream  ${npu}  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Execute Command                 sysbus WriteDoubleWord ${CMD} ${CMD_CLEAR_IRQ}
-    Execute Command                 sysbus WriteDoubleWord ${QSIZE} 8
+    Execute Command                 sysbus WriteDoubleWord ${QSIZE} ${{ 4 * len($words) }}
     Execute Command                 sysbus WriteDoubleWord ${CMD} ${CMD_RUN}
     Register Should Be              ${STATUS}  0x00010002  # the first STOP ran again
     Register Should Be              ${QREAD}  4
@@ -163,8 +182,8 @@ Writing QSIZE Should Restart From QBASE
 Unconditional Branch Should Be Taken
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00004100  0x0000000C  0x00010000  0x00020000  # BRANCH always to 0xC, STOP 0x1, STOP 0x2
-    Start Command Stream            16
+    ${words}=                       Write Command Stream  ${npu}  cmd1(Cmd1.OP_BRANCH, 0x0C)  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  0x00020022  # skipped the first STOP
     Register Should Be              ${QREAD}  16
 
@@ -172,16 +191,16 @@ Conditional Branch Should Fall Through While Result Flag Is Clear
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
     Register Should Be              ${COND_STATUS}  0  # result_flag resets to 0
-    Write Stream                    0x00014100  0x0000000C  0x00010000  0x00020000  # BRANCH if result_flag to 0xC
-    Start Command Stream            16
+    ${words}=                       Write Command Stream  ${npu}  cmd1(Cmd1.OP_BRANCH, 0x0C, 1)  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  0x00010002  # fell through to the first STOP
     Register Should Be              ${QREAD}  12
 
 Branch Outside QSIZE Should Be A Branch Fault
     [Arguments]                     ${npu}
     Create NPU Machine              ${npu}
-    Write Stream                    0x00004100  0x00000020  0x00010000  0x00020000  # target 0x20 is not below QSIZE
-    Start Command Stream            16
+    ${words}=                       Write Command Stream  ${npu}  cmd1(Cmd1.OP_BRANCH, 0x20)  stop(0x1)  stop(0x2)
+    Start Command Stream            ${{ 4 * len($words) }}
     Register Should Be              ${STATUS}  ${STATUS_BRANCH_FAULT}
 
 *** Test Cases ***
