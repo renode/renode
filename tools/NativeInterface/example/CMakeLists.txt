@@ -6,6 +6,12 @@ set(ni_root ${CMAKE_CURRENT_LIST_DIR}/..)
 include(${ni_root}/cmake/renode.cmake)
 link_libraries(renode::renode pthread)
 
+if(MINGW)
+    # Windows loads an example host's C++ runtime DLLs from the first directory on PATH that has
+    # them, and that copy can come from another toolchain and lack symbols the example host imports.
+    string(APPEND CMAKE_EXE_LINKER_FLAGS " -static")
+endif()
+
 add_executable(librenode_example monitor.c)
 add_executable(uart_example uart.c)
 set(RENODE_API_TRANSPORT in_process)
