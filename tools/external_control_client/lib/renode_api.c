@@ -88,8 +88,10 @@ void renode_set_fatal_error_callback(renode_t *renode, void *user_data, renode_f
 #define ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE "Received unexpected number of bytes"
 #define ERRMSG_COMMAND_MISMATCH "Received mismatched command"
 
+// clang-format off
 #define REQUEST_HEADER(cmd) {&(const message_payload_t){ cmd, TYPE_REQUEST }, sizeof(message_payload_t)}
 #define RESPONSE_HEADER(cmd, type) {&(const message_payload_t){ cmd, type }, sizeof(message_payload_t)}
+// clang-format on
 
 #define assert_response(x, msg) do { if (unlikely(!(x))) { fprintf(stderr, "Assert not met in %s:%d: %s\n", __FILE__, __LINE__, #x); return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_ERROR), {msg, sizeof(msg)}); } } while (0)
 
@@ -149,7 +151,7 @@ static renode_error_t *connect_and_check_version(const renode_connection_config_
 
     renode_error_t *err = renode_connection_send_request(conn, check_version_handler, NULL,
         REQUEST_HEADER(CHECK_VERSION),
-        {&PROTOCOL_VERSION, sizeof(PROTOCOL_VERSION)},
+        {&PROTOCOL_VERSION, sizeof(PROTOCOL_VERSION)}
     );
 
     if (err != NO_ERROR) {
@@ -454,7 +456,7 @@ static renode_error_t *renode_get_instance_descriptor(renode_machine_t *machine,
         {instance_descriptor, sizeof(*instance_descriptor)},
         {&machine->md, sizeof(machine->md)},
         {&name_length, sizeof(name_length)},
-        {name, name_length},
+        {name, name_length}
     );
 }
 
@@ -464,7 +466,7 @@ renode_error_t *renode_run_for(renode_t *renode, renode_time_t time)
 
     return renode_connection_send_request(renode->conn, generic_response_handler, NULL,
         REQUEST_HEADER(RUN_FOR),
-        {&time, sizeof(time)},
+        {&time, sizeof(time)}
     );
 }
 
@@ -483,7 +485,7 @@ renode_error_t *renode_get_current_time(renode_t *renode, renode_time_t *current
 
     return renode_connection_send_request(renode->conn, generic_response_handler, current_time,
         REQUEST_HEADER(GET_TIME),
-        {current_time, sizeof(*current_time)},
+        {current_time, sizeof(*current_time)}
     );
 }
 
@@ -494,7 +496,7 @@ renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *us
 
     return renode_connection_send_request(renode->conn, generic_response_handler, NULL,
         REQUEST_HEADER(TIME_ELAPSED_CALLBACK),
-        {&ed, sizeof(ed)},
+        {&ed, sizeof(ed)}
     );
 }
 
@@ -620,7 +622,7 @@ renode_error_t *renode_set_adc_channel_value(renode_adc_t *adc, int32_t channel,
         REQUEST_HEADER(ADC),
         {&cmd, sizeof(cmd.header)},
         {&channel, sizeof(channel)},
-        {&value, sizeof(value)},
+        {&value, sizeof(value)}
     );
 }
 
@@ -704,7 +706,7 @@ renode_error_t *renode_set_gpio_state(renode_gpio_t *gpio, int32_t id, bool stat
     return renode_connection_send_request(gpio->machine->renode->conn, generic_response_handler, &cmd,
         REQUEST_HEADER(GPIO),
         {&cmd.header, sizeof(cmd.header)},
-        {&cmd.state, sizeof(cmd.state)},
+        {&cmd.state, sizeof(cmd.state)}
     );
 }
 
@@ -729,7 +731,7 @@ renode_error_t *renode_register_gpio_state_change_callback(renode_gpio_t *gpio, 
     return renode_connection_send_request(gpio->machine->renode->conn, generic_response_handler, &cmd,
         REQUEST_HEADER(GPIO),
         {&cmd.header, sizeof(cmd.header)},
-        {&ed, sizeof(ed)},
+        {&ed, sizeof(ed)}
     );
 }
 
@@ -798,7 +800,7 @@ renode_error_t *renode_register_can_callback(renode_can_t *can, void *user_data,
     return renode_connection_send_request(can->machine->renode->conn, generic_response_handler, &cmd,
         REQUEST_HEADER(CAN_BUS),
         {&cmd.header, sizeof(cmd.header)},
-        {&ed, sizeof(ed)},
+        {&ed, sizeof(ed)}
     );
 }
 
@@ -885,7 +887,7 @@ renode_error_t *renode_get_bus_context_name(renode_bus_context_t *ctx, char **na
     // ASSUMPTION: Obtaining the name cannot generate side-effects
     return renode_connection_send_request(ctx->machine->renode->conn, get_bus_context_name_handler, name,
         REQUEST_HEADER(SYSTEM_BUS),
-        {&command_data, sizeof(command_data)},
+        {&command_data, sizeof(command_data)}
     );
 }
 
@@ -938,7 +940,7 @@ renode_error_t *renode_sysbus_read(renode_bus_context_t *ctx, uint64_t address, 
 
     return renode_connection_send_request(ctx->machine->renode->conn, generic_response_handler, &cmd,
         REQUEST_HEADER(SYSTEM_BUS),
-        {&cmd.header, sizeof(cmd.header)},
+        {&cmd.header, sizeof(cmd.header)}
     );
 }
 
@@ -960,7 +962,7 @@ renode_error_t *renode_sysbus_write(renode_bus_context_t *ctx, uint64_t address,
     return renode_connection_send_request(ctx->machine->renode->conn, generic_response_handler, &cmd,
         REQUEST_HEADER(SYSTEM_BUS),
         {&cmd.header, sizeof(cmd.header)},
-        {buffer, data_bytes},
+        {buffer, data_bytes}
     );
 }
 
@@ -1087,7 +1089,7 @@ renode_error_t *renode_spi_register_callbacks(renode_spi_t *spi, void *user_data
     return renode_connection_send_request(spi->machine->renode->conn, generic_response_handler, NULL,
         REQUEST_HEADER(SPI),
         {&spi->id, sizeof(spi->id)},
-        {&ed, sizeof(ed)},
+        {&ed, sizeof(ed)}
     );
 }
 
@@ -1127,6 +1129,6 @@ renode_error_t *renode_register_sysbus_access_callback(renode_bus_peripheral_t *
         {&cmd.header.operation, sizeof(cmd.header.operation)},
         {&width, 1},
         {&access_type, 1},
-        {&ed, sizeof(ed)},
+        {&ed, sizeof(ed)}
     );
 }
