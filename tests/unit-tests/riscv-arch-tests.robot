@@ -57,13 +57,11 @@ Run Test Case Inner
 *** Test Cases ***
 Should Run Arch Tests
     [Tags]                          basic-tests
-    [Template]                      Run Test Case
-
     FOR  ${test}  IN  @{TESTS_ARCH_32}
-        ${test}                         32
+        Run Test Case                   ${test}  32
     END
 
 
     FOR  ${test}  IN  @{TESTS_ARCH_64}
-        ${test}                         64
+        Run Test Case                   ${test}  64
     END
