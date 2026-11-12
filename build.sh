@@ -300,6 +300,10 @@ if $ON_OSX; then
   sed_inplace() {
     sed -i '' "$@"
   }
+  # macOS has `nproc` only with GNU coreutils installed.
+  nproc() {
+    sysctl -n hw.ncpu
+  }
 else
   cp_u() {
     cp -u $@
