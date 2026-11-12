@@ -4,3 +4,5 @@
 4ab6f235f1e8af7b520cfa1e053c778e89cbfb38
 # Enforce var usage
 8add3a86f48fbc00b5ecbec281470f22bae322e0
+# Format the C API and its examples like tlib
+dec92d08a85aa30c09c57b8239087a9e99d2f354
