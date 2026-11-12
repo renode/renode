@@ -33,33 +33,33 @@ static int usage(int err, const char *progname)
     return err;
 }
 
-static void log_read(void* data, RenodeLogLevel log_level, long long time, char* object, char* message)
+static void log_read(void *data, RenodeLogLevel log_level, long long time, char *object, char *message)
 {
-    const char* name = data;
-    const char* level;
-    switch(log_level){
+    const char *name = data;
+    const char *level;
+    switch(log_level) {
         case RENODE_LOG_LEVEL_NOISY:
             level = "NOISY";
-        break;
+            break;
         case RENODE_LOG_LEVEL_DEBUG:
             level = "DEBUG";
-        break;
+            break;
         case RENODE_LOG_LEVEL_INFO:
             level = "INFO";
-        break;
+            break;
         case RENODE_LOG_LEVEL_WARNING:
             level = "WARNING";
-        break;
+            break;
         case RENODE_LOG_LEVEL_ERROR:
             level = "ERROR";
-        break;
+            break;
         default:
             level = "UNKNOWN";
-        break;
+            break;
     }
-    if(object != NULL){
+    if(object != NULL) {
         fprintf(stderr, "[%s %s] %s: %s\n", name, level, object, message);
-    }else{
+    } else {
         fprintf(stderr, "[%s %s] %s\n", name, level, message);
     }
 }
@@ -116,11 +116,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    char* log_data="RENODE";
-    if(use_log_handler){
+    char *log_data = "RENODE";
+    if(use_log_handler) {
         renode_add_logging_handler(log_read, log_data, NULL);
-        // Disables logging to console completely
-        renode_exec_command("python 'from Antmicro.Renode.Logging import Logger, ConsoleBackend; Logger.RemoveBackend(ConsoleBackend.Instance)'");
+        //  Disables logging to console completely
+        renode_exec_command(
+            "python 'from Antmicro.Renode.Logging import Logger, ConsoleBackend; Logger.RemoveBackend(ConsoleBackend.Instance)'");
     }
 
     char command[1024];

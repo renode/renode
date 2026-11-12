@@ -68,16 +68,18 @@ inline bool check(const char *operation, renode_error_t *error)
 }
 
 struct free_handle {
-    void operator()(void *handle) const { std::free(handle); }
+    void operator()(void *handle) const
+    {
+        std::free(handle);
+    }
 };
 
 //  A handle that the external control library allocates with malloc.
-template<typename T>
-using handle = std::unique_ptr<T, free_handle>;
+template <typename T> using handle = std::unique_ptr<T, free_handle>;
 
 //  Calls an external control function that returns a new handle through its last parameter. The
 //  handle is empty on failure.
-template<typename T, typename Function, typename... Arguments>
+template <typename T, typename Function, typename... Arguments>
 handle<T> get_handle(const char *operation, Function function, Arguments... arguments)
 {
     T *result = nullptr;
@@ -107,8 +109,7 @@ public:
 
     //  Connects to Renode and serves the guest's accesses to the named bus peripheral of the named
     //  machine with the given handlers, which run on the Renode thread that makes the access.
-    bool connect(const char *machine_name, const char *peripheral_name, read_handler on_read,
-                 write_handler on_write)
+    bool connect(const char *machine_name, const char *peripheral_name, read_handler on_read, write_handler on_write)
     {
         serve_read = std::move(on_read);
         serve_write = std::move(on_write);
@@ -124,15 +125,13 @@ public:
             return false;
         }
 
-        proxy = get_handle<renode_bus_peripheral_t>("get the proxy", renode_get_bus_peripheral,
-                                                    machine.get(), peripheral_name);
+        proxy = get_handle<renode_bus_peripheral_t>("get the proxy", renode_get_bus_peripheral, machine.get(), peripheral_name);
         if(!proxy) {
             return false;
         }
 
         return check("register the access callback",
-                     renode_register_sysbus_access_callback(proxy.get(), SYSBUS_CB_BOTH, AW_CB_ANY,
-                                                            this, serve_access));
+                     renode_register_sysbus_access_callback(proxy.get(), SYSBUS_CB_BOTH, AW_CB_ANY, this, serve_access));
     }
 
     handle<renode_gpio_t> get_gpio(const char *name)
@@ -195,4 +194,4 @@ inline void quit(external_control &control)
     renode_exec_command("quit");
 }
 
-} // namespace native_host
+}  //  namespace native_host

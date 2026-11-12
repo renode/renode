@@ -1,8 +1,8 @@
 //
-// Copyright (c) 2010-2026 Antmicro
+//  Copyright (c) 2010-2026 Antmicro
 //
-// This file is licensed under MIT License.
-// Full license text is available in 'licenses/MIT.txt' file.
+//  This file is licensed under MIT License.
+//  Full license text is available in 'licenses/MIT.txt' file.
 //
 #include <errno.h>
 #include <stdbool.h>
@@ -16,15 +16,15 @@
 static void exit_with_usage_info(const char *argv0)
 {
     fprintf(stderr,
-        "Usage:\n"
-        "  %s <PORT> <TIME_EVENTS_COUNT>\n",
-        argv0);
+            "Usage:\n"
+            "  %s <PORT> <TIME_EVENTS_COUNT>\n",
+            argv0);
     exit(EXIT_FAILURE);
 }
 
 static char *get_error_message(renode_error_t *error)
 {
-    if (error->message == NULL) {
+    if(error->message == NULL) {
         return "<no message>";
     }
     return error->message;
@@ -33,7 +33,7 @@ static char *get_error_message(renode_error_t *error)
 static void try_renode_disconnect(renode_t **renode)
 {
     renode_error_t *error = renode_disconnect(renode);
-    if (error != NO_ERROR) {
+    if(error != NO_ERROR) {
         fprintf(stderr, "Failed to disconnect from Renode: %s\n", get_error_message(error));
         renode_free_error(error);
         exit(EXIT_FAILURE);
@@ -56,32 +56,32 @@ static void time_callback(void *user_data, renode_time_t *timestamp)
 
 int main(int argc, char **argv)
 {
-    if (argc != 3) {
+    if(argc != 3) {
         exit_with_usage_info(argv[0]);
     }
 
     uint64_t times = 1;
     times = strtoull(argv[2], NULL, /* base: */ 0);
-    if (errno != 0) {
+    if(errno != 0) {
         perror("conversion to uint64_t value");
         exit(EXIT_FAILURE);
     }
 
     renode_error_t *error;
     renode_t *renode;
-    if ((error = renode_connect(argv[1], &renode)) != NO_ERROR) {
+    if((error = renode_connect(argv[1], &renode)) != NO_ERROR) {
         fprintf(stderr, "Connecting to Renode failed with: %s\n", get_error_message(error));
         goto fail;
     }
 
     const char *user_data = "Elapsed virtual time";
-    if ((error = renode_register_time_elapsed_callback(renode, (void *)user_data, time_callback)) != NO_ERROR) {
+    if((error = renode_register_time_elapsed_callback(renode, (void *)user_data, time_callback)) != NO_ERROR) {
         fprintf(stderr, "Registering callback failed with: %s\n", get_error_message(error));
         goto fail_renode;
     }
 
     pthread_mutex_lock(&time_elapsed_lock);
-    while (time_elapsed_ticks < times) {
+    while(time_elapsed_ticks < times) {
         pthread_cond_wait(&time_elapsed_cond, &time_elapsed_lock);
     }
     pthread_mutex_unlock(&time_elapsed_lock);

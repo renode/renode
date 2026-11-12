@@ -1,8 +1,8 @@
 //
-// Copyright (c) 2010-2026 Antmicro
+//  Copyright (c) 2010-2026 Antmicro
 //
-// This file is licensed under MIT License.
-// Full license text is available in 'licenses/MIT.txt' file.
+//  This file is licensed under MIT License.
+//  Full license text is available in 'licenses/MIT.txt' file.
 //
 #include <stdbool.h>
 #include <stdio.h>
@@ -23,16 +23,15 @@ pthread_mutex_t next_packet_lock;
 static void exit_with_usage_info(const char *argv0)
 {
     fprintf(stderr,
-        "Usage:\n"
-        "  %s <PORT> <MACHINE_NAME> <CAN_NAME>\n",
-        argv0);
+            "Usage:\n"
+            "  %s <PORT> <MACHINE_NAME> <CAN_NAME>\n",
+            argv0);
     exit(EXIT_FAILURE);
 }
 
 static char *get_error_message(renode_error_t *error)
 {
-    if (error->message == NULL)
-    {
+    if(error->message == NULL) {
         return "<no message>";
     }
     return error->message;
@@ -41,7 +40,7 @@ static char *get_error_message(renode_error_t *error)
 static int try_renode_disconnect(renode_t **renode)
 {
     renode_error_t *error;
-    if ((error = renode_disconnect(renode)) != NO_ERROR) {
+    if((error = renode_disconnect(renode)) != NO_ERROR) {
         fprintf(stderr, "Disconnecting from Renode failed with: %s\n", get_error_message(error));
         return -1;
     }
@@ -55,13 +54,12 @@ typedef struct {
 
 void can_callback(void *user_data, renode_can_event_data_t *event_data)
 {
-    
+
     can_event_user_data *udata = (can_event_user_data *)user_data;
     printf("%s:%s can packet with length %d received:\n\t", udata->machine_name, udata->can_name, event_data->packet_length);
 
-
     printf("0x");
-    for (int current_position = 0; current_position < event_data->packet_length; current_position++) {
+    for(int current_position = 0; current_position < event_data->packet_length; current_position++) {
         printf("%02x", event_data->packet[current_position]);
     }
     printf("\n");
@@ -76,7 +74,7 @@ void can_callback(void *user_data, renode_can_event_data_t *event_data)
 
 int main(int argc, char **argv)
 {
-    if (argc < 4) {
+    if(argc < 4) {
         exit_with_usage_info(argv[0]);
     }
     char *port_number_string = argv[1];
@@ -85,41 +83,40 @@ int main(int argc, char **argv)
 
     pthread_mutex_init(&next_packet_lock, NULL);
 
-    // get Renode, machine and can instances
+    //  get Renode, machine and can instances
     renode_error_t *error;
     renode_t *renode;
-    if ((error = renode_connect(port_number_string, &renode)) != NO_ERROR) {
+    if((error = renode_connect(port_number_string, &renode)) != NO_ERROR) {
         fprintf(stderr, "Connecting to Renode failed with: %s\n", get_error_message(error));
         goto fail;
     }
 
     renode_machine_t *machine;
-    if ((error = renode_get_machine(renode, machine_name, &machine)) != NO_ERROR) {
+    if((error = renode_get_machine(renode, machine_name, &machine)) != NO_ERROR) {
         fprintf(stderr, "Getting '%s' machine object failed with: %s\n", machine_name, get_error_message(error));
         goto fail_renode;
     }
 
     renode_can_t *can;
-    if ((error = renode_get_can(machine, can_name, &can)) != NO_ERROR) {
+    if((error = renode_get_can(machine, can_name, &can)) != NO_ERROR) {
         fprintf(stderr, "Getting '%s' CAN object failed with: %s\n", can_name, get_error_message(error));
         goto fail_machine;
     }
 
-    can_event_user_data user_data = (can_event_user_data){
-            .machine_name = machine_name,
-            .can_name = can_name,
-            };
+    can_event_user_data user_data = (can_event_user_data) {
+        .machine_name = machine_name,
+        .can_name = can_name,
+    };
 
-    if ((error = renode_register_can_callback(can, &user_data, can_callback)) != NO_ERROR) {
+    if((error = renode_register_can_callback(can, &user_data, can_callback)) != NO_ERROR) {
         fprintf(stderr, "Registering CAN event for peripheral '%s' failed with: '%s'\n", can_name, get_error_message(error));
         goto fail_can;
     }
 
-    while(true){
+    while(true) {
 
         pthread_mutex_lock(&next_packet_lock);
-        if (next_packet_length > 0)
-        {
+        if(next_packet_length > 0) {
 
             printf("About to send can message");
             fflush(stdout);
@@ -131,11 +128,11 @@ int main(int argc, char **argv)
         }
         pthread_mutex_unlock(&next_packet_lock);
     }
-    // clean up
+    //  clean up
 
     free(can);
     free(machine);
-    if (try_renode_disconnect(&renode)) {
+    if(try_renode_disconnect(&renode)) {
         exit(EXIT_FAILURE);
     }
 

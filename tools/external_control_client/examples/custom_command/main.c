@@ -51,14 +51,14 @@ static void strrev(char *start, char *end)
     }
 }
 
-renode_custom_command_response_data_t * custom_command_callback(void *user_data, renode_custom_command_event_data_t *event_data)
+renode_custom_command_response_data_t *custom_command_callback(void *user_data, renode_custom_command_event_data_t *event_data)
 {
     (void)user_data;
-    renode_custom_command_response_data_t * ret = malloc(sizeof(renode_custom_command_response_data_t) + strlen(event_data->command) + 1);
+    renode_custom_command_response_data_t *ret =
+        malloc(sizeof(renode_custom_command_response_data_t) + strlen(event_data->command) + 1);
 
     uint64_t microseconds = renode_time_to_time_unit(event_data->time, TU_MICROSECONDS);
     printf("Received custom command '%s' at %" PRIu64 " us\n", event_data->command, microseconds);
-
 
     if(strstr(event_data->command, "demo ping") == event_data->command) {
         ret->command_valid = true;
@@ -85,7 +85,6 @@ int main(int argc, char **argv)
         exit_with_usage_info(argv[0]);
     }
     char *port = argv[1];
-
 
     renode_error_t *error;
     renode_t *renode;

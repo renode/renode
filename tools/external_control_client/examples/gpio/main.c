@@ -1,8 +1,8 @@
 //
-// Copyright (c) 2010-2026 Antmicro
+//  Copyright (c) 2010-2026 Antmicro
 //
-// This file is licensed under MIT License.
-// Full license text is available in 'licenses/MIT.txt' file.
+//  This file is licensed under MIT License.
+//  Full license text is available in 'licenses/MIT.txt' file.
 //
 #include <errno.h>
 #include <stdbool.h>
@@ -16,16 +16,15 @@
 void exit_with_usage_info(const char *argv0)
 {
     fprintf(stderr,
-        "Usage:\n"
-        "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]\n",
-        argv0);
+            "Usage:\n"
+            "  %s <PORT> <MACHINE_NAME> <GPIO_NAME> <NUMBER> [true|false|event]\n",
+            argv0);
     exit(EXIT_FAILURE);
 }
 
 char *get_error_message(renode_error_t *error)
 {
-    if (error->message == NULL)
-    {
+    if(error->message == NULL) {
         return "<no message>";
     }
     return error->message;
@@ -34,7 +33,7 @@ char *get_error_message(renode_error_t *error)
 int try_renode_disconnect(renode_t **renode)
 {
     renode_error_t *error;
-    if ((error = renode_disconnect(renode)) != NO_ERROR) {
+    if((error = renode_disconnect(renode)) != NO_ERROR) {
         fprintf(stderr, "Disconnecting from Renode failed with: %s\n", get_error_message(error));
         return -1;
     }
@@ -54,13 +53,13 @@ void gpio_callback(void *user_data, renode_gpio_event_data_t *event_data)
     printf("%s: GPIO #%d in %s %sset", udata->machine_name, udata->pin_no, udata->gpio_name, event_data->state ? "" : "un");
 
     uint64_t microseconds = renode_time_to_time_unit(event_data->time, TU_MICROSECONDS);
-    printf(" at %"PRIu64" us\n", microseconds);
+    printf(" at %" PRIu64 " us\n", microseconds);
     udata->run = false;
 }
 
 int main(int argc, char **argv)
 {
-    if (argc < 5 || 6 < argc) {
+    if(argc < 5 || 6 < argc) {
         exit_with_usage_info(argv[0]);
     }
     char *machine_name = argv[2];
@@ -70,95 +69,93 @@ int main(int argc, char **argv)
     bool wait_for_event = false;
 
     char *endptr;
-    // base=0 tries to figure out the number's base automatically.
+    //  base=0 tries to figure out the number's base automatically.
     int32_t number = strtol(argv[4], &endptr, /* base: */ 0);
-    if (errno != 0) {
+    if(errno != 0) {
         perror("conversion to uint32_t value");
         exit(EXIT_FAILURE);
     }
 
-    if (endptr == argv[4] || *endptr != '\0') {
+    if(endptr == argv[4] || *endptr != '\0') {
         exit_with_usage_info(argv[0]);
     }
 
-    if (set)
-    {
-        if (strcmp(argv[5], "true") != 0 && strcmp(argv[5], "false") != 0 && strcmp(argv[5], "event")) {
+    if(set) {
+        if(strcmp(argv[5], "true") != 0 && strcmp(argv[5], "false") != 0 && strcmp(argv[5], "event")) {
             exit_with_usage_info(argv[0]);
         }
         state = argv[5][0] == 't';
         wait_for_event = argv[5][0] == 'e';
     }
 
-    // get Renode, machine and GPIO instances
+    //  get Renode, machine and GPIO instances
 
     renode_error_t *error;
     renode_t *renode;
-    if ((error = renode_connect(argv[1], &renode)) != NO_ERROR) {
+    if((error = renode_connect(argv[1], &renode)) != NO_ERROR) {
         fprintf(stderr, "Connecting to Renode failed with: %s\n", get_error_message(error));
         goto fail;
     }
 
     renode_machine_t *machine;
-    if ((error = renode_get_machine(renode, machine_name, &machine)) != NO_ERROR) {
+    if((error = renode_get_machine(renode, machine_name, &machine)) != NO_ERROR) {
         fprintf(stderr, "Getting '%s' machine object failed with: %s\n", machine_name, get_error_message(error));
         goto fail_renode;
     }
 
     renode_gpio_t *gpio;
-    if ((error = renode_get_gpio(machine, gpio_name, &gpio)) != NO_ERROR) {
+    if((error = renode_get_gpio(machine, gpio_name, &gpio)) != NO_ERROR) {
         fprintf(stderr, "Getting '%s' ADC object failed with: %s\n", gpio_name, get_error_message(error));
         goto fail_machine;
     }
 
-    // perform get/set
+    //  perform get/set
 
-    if (wait_for_event) {
-        gpio_event_user_data user_data = (gpio_event_user_data){
-            .machine_name = machine_name,
-            .gpio_name = gpio_name,
-            .pin_no = number,
-            .run = true
-        };
+    if(wait_for_event) {
+        gpio_event_user_data user_data =
+            (gpio_event_user_data) { .machine_name = machine_name, .gpio_name = gpio_name, .pin_no = number, .run = true };
 
-        if ((error = renode_register_gpio_state_change_callback(gpio, number, &user_data, gpio_callback)) != NO_ERROR) {
-            fprintf(stderr, "Registering event on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+        if((error = renode_register_gpio_state_change_callback(gpio, number, &user_data, gpio_callback)) != NO_ERROR) {
+            fprintf(stderr, "Registering event on pin #%" PRId32 " for '%s' failed with: %s\n", number, gpio_name,
+                    get_error_message(error));
             goto fail_gpio;
         }
 
-        while (user_data.run) {
+        while(user_data.run) {
             renode_time_t run_for_time;
-            if ((error = renode_create_time(1, TU_SECONDS, &run_for_time)) != NO_ERROR) {
+            if((error = renode_create_time(1, TU_SECONDS, &run_for_time)) != NO_ERROR) {
                 fprintf(stderr, "Failed to create a run for timestamp: %s\n", error->message);
                 goto fail_gpio;
             }
 
-            if ((error = renode_run_for(renode, run_for_time)) != NO_ERROR) {
+            if((error = renode_run_for(renode, run_for_time)) != NO_ERROR) {
                 fprintf(stderr, "Run for failed with: %s\n", get_error_message(error));
                 goto fail_gpio;
             }
         }
-    } else if (set) {
-        if ((error = renode_set_gpio_state(gpio, number, state)) != NO_ERROR) {
-            fprintf(stderr, "Setting state on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+    } else if(set) {
+        if((error = renode_set_gpio_state(gpio, number, state)) != NO_ERROR) {
+            fprintf(stderr, "Setting state on pin #%" PRId32 " for '%s' failed with: %s\n", number, gpio_name,
+                    get_error_message(error));
             goto fail_gpio;
         }
 
         printf("GPIO set to: %s\n", state ? "true" : "false");
     } else {
-        if ((error = renode_get_gpio_state(gpio, number, &state)) != NO_ERROR) {
-            fprintf(stderr, "Getting state on pin #%"PRId32" for '%s' failed with: %s\n", number, gpio_name, get_error_message(error));
+        if((error = renode_get_gpio_state(gpio, number, &state)) != NO_ERROR) {
+            fprintf(stderr, "Getting state on pin #%" PRId32 " for '%s' failed with: %s\n", number, gpio_name,
+                    get_error_message(error));
             goto fail_gpio;
         }
 
         printf("GPIO state: %s\n", state ? "true" : "false");
     }
 
-    // clean up
+    //  clean up
 
     free(gpio);
     free(machine);
-    if (try_renode_disconnect(&renode)) {
+    if(try_renode_disconnect(&renode)) {
         exit(EXIT_FAILURE);
     }
 
