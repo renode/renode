@@ -11,11 +11,13 @@ import argparse
 import contextlib
 import itertools
 import platform
+import struct
 import sys
 import os
 import gzip
 import urllib.request
 import urllib.error
+from collections import Counter
 from enum import Enum
 from dataclasses import dataclass
 from typing import IO, BinaryIO, NamedTuple, Optional, Tuple, List
@@ -39,6 +41,10 @@ HEADER_LENGTH = 10
 MEMORY_ACCESS_LENGTH = 25
 RISCV_VECTOR_CONFIGURATION_LENGTH = 16
 BYTE_ORDER = "little"
+# Tunables of the bulk PC counting path (see `TraceData.count_pcs`)
+PC_COUNT_CHUNK_ENTRIES = 8 * 1024 * 1024  # trace entries read and processed at once
+PC_COUNT_GROUP_LENGTH = 64  # bytes of (widened) PCs hashed as a single key
+PC_COUNT_MAX_GROUPS = 1 << 20  # distinct group keys kept before folding them into per-PC counts
 
 
 class AdditionalDataType(Enum):
@@ -257,6 +263,99 @@ class TraceData:
             except IndexError:
                 break
         return TraceEntry(pc, opcode, additional_data, self.active_triple_and_model)
+
+    def count_pcs(self) -> Counter[int]:
+        """Return a mapping from PC (as an integer) to the number of times it appears in the trace.
+
+        Only PCs are extracted; opcodes and additional data are skipped. Traces that contain
+        PCs only (no opcodes, a single instruction set) and carry no additional data consist of
+        fixed-size entries, so they are counted in bulk with C-speed slicing instead of being
+        parsed entry by entry. Anything else falls back to the generic per-entry parser.
+        """
+        if not self.has_pc:
+            raise ValueError("The trace data doesn't contain PCs.")
+
+        counts: Counter[int] = Counter()
+        iter(self)  # Rewind to the first entry
+
+        fixed_layout = (
+            not self.has_opcodes
+            and not self.multiple_triple_and_models
+            and 1 <= self.pc_length <= 8
+        )
+        if fixed_layout:
+            self._count_fixed_size_entries(counts)
+
+        # Handles the whole trace when the fast path isn't applicable, or its remainder
+        # when the fast path stopped early. Don't use `for entry in self` - it would rewind.
+        while True:
+            try:
+                entry = next(self)
+            except StopIteration:
+                break
+            counts[int.from_bytes(entry.pc, byteorder=BYTE_ORDER, signed=False)] += 1
+        return counts
+
+    def _count_fixed_size_entries(self, counts: Counter[int]) -> None:
+        """Bulk-count PCs while every entry is `pc_length` PC bytes followed by a single
+        `AdditionalDataType.Empty` marker. Stops at the first chunk that breaks this layout
+        (additional data present or a truncated trailing entry) and leaves the file positioned
+        at the start of that chunk, so the generic parser can take over from there."""
+        entry_length = self.pc_length + 1
+        chunk_length = entry_length * PC_COUNT_CHUNK_ENTRIES
+
+        # PCs are widened to 4 or 8 bytes and then hashed in groups of PC_COUNT_GROUP_LENGTH
+        # bytes rather than one at a time. Every PC lands in exactly one group, so counting groups
+        # and splitting them afterwards gives exact per-PC counts. Execution traces are highly
+        # repetitive (loops), so the number of distinct groups stays small while the number of
+        # Python objects that have to be hashed shrinks by the group size.
+        padded_length = 4 if self.pc_length <= 4 else 8
+        pcs_per_group = PC_COUNT_GROUP_LENGTH // padded_length
+        pc_format = "I" if padded_length == 4 else "Q"
+        group_struct = struct.Struct(f"<{pcs_per_group}{pc_format}")
+        single_struct = struct.Struct(f"<{pc_format}")
+        group_key_format = f"{group_struct.size}s"
+
+        # Keys are the 1-tuples yielded by `struct.iter_unpack`, each holding one group's raw bytes
+        group_counts: Counter[tuple[bytes]] = Counter()
+
+        def fold_group_counts() -> None:
+            for (group,), count in group_counts.items():
+                for pc in group_struct.unpack(group):
+                    counts[pc] += count
+            group_counts.clear()
+
+        while True:
+            chunk_start = self.file.tell()
+            chunk = self.file.read(chunk_length)
+            if not chunk:
+                break
+
+            entries = len(chunk) // entry_length
+            if (
+                entries * entry_length != len(chunk)
+                or chunk[self.pc_length::entry_length].count(0) != entries
+            ):
+                # Not every entry fits the fixed layout - let the generic parser handle the rest
+                self.file.seek(chunk_start)
+                break
+
+            padded = bytearray(entries * padded_length)
+            for i in range(self.pc_length):
+                padded[i::padded_length] = chunk[i::entry_length]
+
+            view = memoryview(padded)
+            aligned = (entries // pcs_per_group) * group_struct.size
+            group_counts.update(struct.iter_unpack(group_key_format, view[:aligned]))
+            if aligned != len(padded):
+                # Trailing PCs that don't fill a whole group
+                counts.update(pc for (pc,) in struct.iter_unpack(single_struct.format, view[aligned:]))
+
+            if len(group_counts) > PC_COUNT_MAX_GROUPS:
+                # Bound memory usage for traces that aren't repetitive enough for grouping to pay off
+                fold_group_counts()
+
+        fold_group_counts()
 
     def parse_memory_access_data(self) -> str:
         data = self.file.read(MEMORY_ACCESS_LENGTH)
