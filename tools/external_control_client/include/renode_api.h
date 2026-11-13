@@ -211,6 +211,19 @@ renode_error_t *renode_disconnect_ex(renode_t **renode, bool blocking);
 renode_error_t *renode_run_script(renode_t *renode, const char *path);
 
 /**
+ * @brief The function running a Monitor command in Renode.
+ *
+ * Use it for a feature that has no function of its own in this API. The function returns after the command has run.
+ *
+ * @param[in] renode - the Renode connection handle
+ * @param[in] command - the Monitor command
+ * @param[out] output - the output of the command, which the caller frees, or NULL to ignore the output.
+ * If an error occurred, `*output` is unchanged, even if the command wrote some output before the error.
+ * @return A pointer to the error structure, which holds the Monitor's error, if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_run_monitor_command(renode_t *renode, const char *command, char **output);
+
+/**
  * @brief The function preparing the machine handle.
  *
  * @note The handle's internal memory is dynamically allocated, so `*machine` should be freed when it's no longer used.

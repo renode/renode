@@ -550,6 +550,7 @@ renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *us
 
 typedef enum {
     CUSTOM_COMMAND_REGISTER,
+    CUSTOM_COMMAND_RUN,
 } custom_command_operation_t;
 
 typedef struct {
@@ -571,6 +572,36 @@ renode_error_t *renode_register_custom_command_callback(renode_t *renode, void *
     return_error_if_fails(register_command((raw_command_t)callback, user_data, &ed));
     return renode_connection_send_request(renode->conn, generic_response_handler, &cmd, REQUEST_HEADER(CUSTOM_COMMAND_CALLBACK),
                                           { &cmd.header, sizeof(cmd.header) }, { &ed, sizeof(ed) }, );
+}
+
+static renode_error_t *monitor_command_output_handler(renode_connection_t *conn, const void *response, size_t size,
+                                                      void *user_data)
+{
+    (void)conn;
+
+    message_payload_t header;
+    const void *data;
+    uint32_t data_size;
+
+    return_error_if_fails(parse_response(response, size, &header, &data, &data_size));
+
+    char **output = user_data;
+    if(output != NULL) {
+        *output = xmalloc(data_size + 1);
+        memcpy(*output, data, data_size);
+        (*output)[data_size] = '\0';
+    }
+    return NO_ERROR;
+}
+
+renode_error_t *renode_run_monitor_command(renode_t *renode, const char *command, char **output)
+{
+    assert(renode != NULL && command != NULL);
+
+    uint8_t operation = CUSTOM_COMMAND_RUN;
+    return renode_connection_send_request(renode->conn, monitor_command_output_handler, output,
+                                          REQUEST_HEADER(CUSTOM_COMMAND_CALLBACK), { &operation, sizeof(operation) },
+                                          { command, strlen(command) });
 }
 
 renode_error_t *renode_get_adc(renode_machine_t *machine, const char *name, renode_adc_t **adc)

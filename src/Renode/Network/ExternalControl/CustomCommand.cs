@@ -106,16 +106,21 @@ public class CustomCommand : BaseCommand
     private MessagePayload HandleRequest(Span<byte> data)
     {
         parent.Owner.DebugLog("In CustomCommand Invoke method");
-        if(data.Length != 5)
+        if(data.Length == 0)
         {
-            return MessagePayload.Error(Identifier, $"Expected 5 bytes payload");
+            return MessagePayload.Error(Identifier, "Unexpected command format");
         }
+
         var command = (CustomCommandCommand)data[0];
         parent.Owner.DebugLog("Received {0} CustomCommand command", command);
 
         switch(command)
         {
         case CustomCommandCommand.RegisterCallbacks:
+            if(data.Length != 5)
+            {
+                return MessagePayload.Error(Identifier, $"Expected 5 bytes payload");
+            }
             var ed = (int) BitConverter.ToInt32(data[1..]);
             lock(commandLock)
             {
@@ -127,6 +132,8 @@ public class CustomCommand : BaseCommand
             }
             parent.Owner.DebugLog("Attached CustomCommand callback");
             break;
+        case CustomCommandCommand.Run:
+            return RunMonitorCommand(data[1..]);
         default:
             return MessagePayload.Error(Identifier, "Unexpected command format");
         }
@@ -144,5 +151,6 @@ public class CustomCommand : BaseCommand
     public enum CustomCommandCommand : byte
     {
         RegisterCallbacks = 0,
+        Run,
     }
 }
