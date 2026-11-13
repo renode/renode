@@ -193,6 +193,19 @@ renode_error_t *renode_disconnect(renode_t **renode);
 renode_error_t *renode_disconnect_ex(renode_t **renode, bool blocking);
 
 /**
+ * @brief The function running a Renode script, such as a `.resc` file, which can create machines.
+ *
+ * The function returns after the script has run. A relative path is looked up in the working directory of Renode
+ * first, then in the Monitor's `path`. Unlike in the Monitor command `include`, the path needs no escaping.
+ * The function runs only Monitor scripts, not Python, C# or platform description files.
+ *
+ * @param[in] renode - the Renode connection handle
+ * @param[in] path - the path of the script
+ * @return A pointer to the error structure if an error occurred, otherwise NULL.
+ */
+renode_error_t *renode_run_script(renode_t *renode, const char *path);
+
+/**
  * @brief The function preparing the machine handle.
  *
  * @note The handle's internal memory is dynamically allocated, so `*machine` should be freed when it's no longer used.

@@ -499,6 +499,7 @@ typedef enum {
     EMULATION_START = 0,
     EMULATION_PAUSE,
     EMULATION_SET_QUANTUM,
+    EMULATION_RUN_SCRIPT,
 } emulation_operation_t;
 
 renode_error_t *renode_start(renode_t *renode)
@@ -526,6 +527,15 @@ renode_error_t *renode_set_quantum(renode_t *renode, renode_time_t quantum)
     uint8_t operation = EMULATION_SET_QUANTUM;
     return renode_connection_send_request(renode->conn, generic_response_handler, NULL, REQUEST_HEADER(EMULATION),
                                           { &operation, sizeof(operation) }, { &quantum, sizeof(quantum) });
+}
+
+renode_error_t *renode_run_script(renode_t *renode, const char *path)
+{
+    assert(renode != NULL && path != NULL);
+
+    uint8_t operation = EMULATION_RUN_SCRIPT;
+    return renode_connection_send_request(renode->conn, generic_response_handler, NULL, REQUEST_HEADER(EMULATION),
+                                          { &operation, sizeof(operation) }, { path, strlen(path) });
 }
 
 renode_error_t *renode_register_time_elapsed_callback(renode_t *renode, void *user_data, renode_time_elapsed_callback_t callback)
