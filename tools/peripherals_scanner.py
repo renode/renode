@@ -181,6 +181,7 @@ def try_get_category(platform):
         "nxp-k6xf":    "NXP KINETIS",
         "nxp-s32k388": "NXP S32K",
         "nxp-s32k388evb": "NXP S32K",
+        "nxp-s32k389": "NXP S32K",
         "opentitan-earlgrey":  "OTHER RISC-V",
         "opentitan-earlgrey-cw310":  "OTHER RISC-V",
         "picosoc": "OTHER RISC-V",

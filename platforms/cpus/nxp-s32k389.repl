@@ -1,0 +1,28 @@
+using "platforms/cpus/nxp-s32k388.repl"
+
+
+program_flash:
+    size: 0xC00000
+
+data_flash:
+    size: 0x40000
+
+sram0:
+    size: 0x80000
+
+sram1: @ { sysbus 0x20480000; xrdc [1, 1] }
+    size: 0x80000
+
+sram2: @ { sysbus 0x20500000; xrdc [3, 8] }
+    size: 0x80000
+
+sram3: Memory.MappedMemory @ { sysbus 0x60000; xrdc [3, 9] }
+    size: 0x60000
+
+can8: CAN.NXP_FlexCAN @ { sysbus 0x40570000; xrdc [1, 348] }
+
+can9: CAN.NXP_FlexCAN @ { sysbus 0x40574000; xrdc [1, 349] }
+
+can10: CAN.NXP_FlexCAN @ { sysbus 0x40578000; xrdc [1, 350] }
+
+can11: CAN.NXP_FlexCAN @ { sysbus 0x4057C000; xrdc [1, 351] }
