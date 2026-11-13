@@ -1,0 +1,71 @@
+ilm: Memory.MappedMemory @ {
+        sysbus 0x0;
+        sysbus <0xa0000000, +0x80000>;
+    }
+    size: 0x80000
+
+dlm: Memory.MappedMemory @ {
+        sysbus 0x200000;
+        sysbus <0xa0200000, +0x80000>;
+    }
+    size: 0x80000
+
+// DDR outside the ILM/DLM windows remains accessible while local memory is enabled.
+dram: Memory.MappedMemory @ {
+        sysbus new Bus.BusRangeRegistration { address: 0x80000; size: 0x180000; offset: 0x80000 };
+        sysbus new Bus.BusRangeRegistration { address: 0x280000; size: 0x3fd80000; offset: 0x280000 };
+    }
+    size: 0x40000000
+    segmentSize: 0x80000
+
+spiflash: Memory.MappedMemory @ sysbus 0x80000000
+    size: 0x100000
+
+cpu0: CPU.RiscV32 @ sysbus
+    cpuType: "rv32imafdc_zicsr_zifencei_zba_zbb_zbc_zbs_xandes"
+    timeProvider: mtimer
+    hartId: 0
+    privilegedArchitecture: PrivilegedArchitecture.Priv1_11
+    privilegeLevels: PrivilegeLevels.MachineUser
+
+localmem: MemoryControllers.AndesLocalMemory @ sysbus
+    instructionMemory: ilm
+    dataMemory: dlm
+    systemMemory: dram
+    instructionAddress: 0x0
+    dataAddress: 0x200000
+    cpu: cpu0
+
+plic: IRQControllers.AndesNCEPLIC100 @ sysbus <0xe4000000, +0x2000000>
+    numberOfSources: 1023
+    numberOfContexts: 1
+    prioritiesEnabled: true
+    0->cpu0@11
+
+plic_sw: IRQControllers.AndesNCEPLIC100 @ sysbus <0xe6400000, +0x400000>
+    numberOfSources: 1023
+    numberOfContexts: 1
+    prioritiesEnabled: true
+    0->cpu0@3
+
+gpio0: GPIOPort.AndesATCGPIO100 @ sysbus 0xf0700000
+    ->plic@7
+
+mtimer: Timers.RiscVMachineTimer @ sysbus 0xe6000000
+    frequency: 60000000
+    ->cpu0@7
+
+uart1: UART.NS16550 @ sysbus 0xf0300020
+    wideRegisters: true
+    ->plic@9
+
+pit0: Timers.AndesATCPIT100 @ sysbus 0xf0400000
+    clockFrequency: 60000000
+    ->plic@3
+
+wdt: Timers.AndesATCWDT200_Watchdog @ sysbus 0xf0500000
+    clockFrequency: 32768
+    ->plic@20
+
+rtc0: Timers.AndesATCRTC100 @ sysbus 0xf0600000
+    ->plic@1

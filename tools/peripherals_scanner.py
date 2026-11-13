@@ -48,6 +48,7 @@ def try_get_category(platform):
         "acrn_x86_64": "X86-64",
         "alif_ae822fa0e5597bs0": "ALIF",
         "ambiq-apollo4": "AMBIQ",
+        "andes_ae350_d25f": "ANDES",
         "andes_ae350_n25": "ANDES",
         "arduino_101-shield":  "NRF",
         "arduino_nano_33_ble": "NRF",
