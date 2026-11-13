@@ -12,6 +12,17 @@ Create MSP430F2619 Machine
     Run Keyword If                  "${ELF}" != "${EMPTY}"
     ...                             Execute Command  sysbus LoadELF ${ELF}
 
+Rotate Should Give
+    [Arguments]                     ${instruction}  ${value}  ${statusIn}  ${result}  ${statusOut}
+
+    Execute Command                 sysbus WriteWord 0x2100 ${instruction}
+    Execute Command                 cpu R14 ${value}
+    Execute Command                 cpu SR ${statusIn}
+    Execute Command                 cpu PC 0x2100
+    Execute Command                 cpu Step
+    Register Should Be Equal        14  ${result}
+    Register Should Be Equal        2  ${statusOut}
+
 *** Test Cases ***
 Should Change Internal Memory Every Second
     Create MSP430F2619 Machine      ${MSP430F2619_HELLO_WORLD_ELF}
@@ -84,3 +95,22 @@ Should Correctly Assemble And Disassemble
     FOR  ${index}  IN RANGE  ${NUM_INSTR}
         Should Contain                  ${GEN_LINES}[${index}]  ${ORIG_LINES}[${index}]
     END
+
+Should Correctly Handle Multi-Bit Rotates
+    Create MSP430F2619 Machine
+
+    # NOTE: Expected values follow the RRCM/RRAM/RLAM/RRUM descriptions in TI SLAU367;
+    #       status in/out is C=1, Z=2, N=4
+    #                               instruction  value    SR in  result   SR out
+    Rotate Should Give              0x005E       0x0001   0      0x0000   3    # RRCM.W #1, R14
+    Rotate Should Give              0x005E       0x0000   1      0x8000   4    # RRCM.W #1, R14
+    Rotate Should Give              0x045E       0x0001   0      0x8000   4    # RRCM.W #2, R14
+    Rotate Should Give              0x004E       0x00000  1      0x80000  4    # RRCM.A #1, R14
+    Rotate Should Give              0x055E       0x8004   0      0xE001   4    # RRAM.W #2, R14
+    Rotate Should Give              0x014E       0x80000  0      0xC0000  4    # RRAM.A #1, R14
+    Rotate Should Give              0x025E       0x8000   0      0x0000   3    # RLAM.W #1, R14
+    Rotate Should Give              0x0E5E       0x1234   0      0x2340   1    # RLAM.W #4, R14
+    Rotate Should Give              0x024E       0x48000  0      0x90000  4    # RLAM.A #1, R14
+    Rotate Should Give              0x025E       0x10001  0      0x0002   0    # RLAM.W #1, R14
+    Rotate Should Give              0x035E       0x8001   1      0x4000   1    # RRUM.W #1, R14
+    Rotate Should Give              0x034E       0x80001  0      0x40000  1    # RRUM.A #1, R14
