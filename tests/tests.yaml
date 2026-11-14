@@ -298,6 +298,27 @@
 - tests/peripherals/ST7789.robot
 - tests/peripherals/Designware_PCIe.robot
 - tests/tools/renode-test.robot
+- tests/peripherals/SiLabs/EM1P_SiXG301.robot
+- tests/peripherals/SiLabs/EM1P_xG22.robot
+- tests/peripherals/SiLabs/EM1P_xG24.robot
+- tests/peripherals/SiLabs/EUSART.robot
+- tests/peripherals/SiLabs/FRC.robot
+- tests/peripherals/SiLabs/GPIO_8.robot
+- tests/peripherals/SiLabs/LDMA.robot
+- tests/peripherals/SiLabs/LPW_RX.robot
+- tests/peripherals/SiLabs/PROTIMER.robot
+- tests/peripherals/SiLabs/RTCC_1.robot
+- tests/peripherals/SiLabs/SYMCRYPTO_1.robot
+- tests/peripherals/SiLabs/SYSRTC_2.robot
+- tests/peripherals/SiLabs/SecureElement.robot
+- tests/peripherals/SiLabs/TIMER.robot
+- tests/peripherals/SiLabs/WDOG_1.robot
+- tests/platforms/SiLabs/ble_zigbee_dmp.robot
+- tests/platforms/SiLabs/connect.robot
+- tests/platforms/SiLabs/openthread.robot
+- tests/platforms/SiLabs/railtest.robot
+- tests/platforms/SiLabs/zigbee.robot
+- tests/platforms/SiLabs/zigbee_ncp.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
@@ -339,3 +360,6 @@
 
 - port_3346:
   - tests/unit-tests/gdb/gdb_multiprocess.robot
+
+- ports_3451_3452:
+  - tests/platforms/SiLabs/ble_ncp.robot
