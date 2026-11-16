@@ -92,8 +92,11 @@ public class CustomCommand : BaseCommand
             return MessagePayload.Error(Identifier, $"Invalid data size, expected at least: {eventHeaderSize + 1} but got: {data.Length} bytes");
         }
         var eventId = BitConverter.ToInt32(data[..sizeof(int)]);
-        var commandBytes = data[eventHeaderSize..];
+        return RunMonitorCommand(data[eventHeaderSize..]);
+    }
 
+    private MessagePayload RunMonitorCommand(Span<byte> commandBytes)
+    {
         string command;
         try
         {
