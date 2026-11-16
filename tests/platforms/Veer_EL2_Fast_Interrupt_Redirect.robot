@@ -6,6 +6,7 @@ ${PIC_IRQ_SOURCE_COUNT}                         63
 ${MACHINE_EXTERNAL_IRQ_VECTOR_TABLE_ADDRESS}    0x22000
 ${INIT_ADDRESS}                                 0x28000
 ${PIC_BASE_ADDRESS}                             0xE0000000
+${PIC_IRQ_SRC_PRIORITY_BASE}                    ${PIC_BASE_ADDRESS}+0x0
 ${PIC_IRQ_SRC_ENABLE_BASE}                      ${PIC_BASE_ADDRESS}+0x2000
 ${meihap}                                       0xFC8
 ${meivt}                                        0xBC8
@@ -52,6 +53,11 @@ Create Machine
     # Fill MEIVT Entries
     FOR  ${meivt_entry}  IN RANGE  ${MACHINE_EXTERNAL_IRQ_VECTOR_TABLE_ADDRESS}  ${MACHINE_EXTERNAL_IRQ_VECTOR_TABLE_ADDRESS} + ${PIC_IRQ_SOURCE_COUNT}*4  4
         Execute Command                 sysbus WriteDoubleWord ${meivt_entry} ${EXTERNAL_ISR_ADDRESS}
+    END
+
+    # Set PIC IRQ priorities above the configured threshold
+    FOR  ${interrupt_source_priority}  IN RANGE  ${PIC_IRQ_SRC_PRIORITY_BASE}  ${PIC_IRQ_SRC_PRIORITY_BASE} + ${PIC_IRQ_SOURCE_COUNT}*4  4
+        Execute Command                 sysbus WriteDoubleWord ${interrupt_source_priority} 1
     END
 
     # Enable PIC IRQs
