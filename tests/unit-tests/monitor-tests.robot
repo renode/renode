@@ -72,6 +72,31 @@ Should Not Call Conditional Set
     ${res}=                   Execute Command  echo $\var1
     Should Be Equal           ${res.strip()}  1234
 
+Should Serialize Monitor State
+    Execute Command           \$number=1234
+    Execute Command           \$string="hello world"
+    Execute Command           \$uri=\@https://dl.antmicro.com/projects/renode/nucleo_h753zi--zephyr-samples_uart_passthrough.elf-s_530608-cca49317c5a6abd6a18131c4f723b1197efc160f
+    Execute Command           \$local_file=\@/dev/null
+    Execute Command           macro test "echo $string"
+    Execute Command           alias run test
+
+    Provides                  Serialized Monitor
+
+Should Deserialize Monitor State
+    Requires                  Serialized Monitor
+
+    ${env}=                   Execute Command  printenv
+
+    Should Contain            ${env}  DecimalIntegerToken global.number = 1234 (1234)
+    Should Contain            ${env}  StringToken global.string = hello world ("hello world")
+    Should Contain            ${env}  PathToken global.local_file = /dev/null (@/dev/null)
+
+    ${uri_line}=    Get Lines Matching Regexp
+    ...    ${env}
+    ...    \\s+PathToken global\\.uri = .* \\(@https://dl\\.antmicro\\.com/projects/renode/nucleo_h753zi--zephyr-samples_uart_passthrough\\.elf-s_530608-cca49317c5a6abd6a18131c4f723b1197efc160f\\)
+
+    Should Not Be Empty    ${uri_line}
+
 Should Call Conditional Set
     Execute Command           \$var1?=5678
 
