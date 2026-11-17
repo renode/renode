@@ -8,6 +8,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "renode_api.h"
@@ -177,6 +178,19 @@ public:
     {
         return check("register the custom command callback",
                      renode_register_custom_command_callback(renode, user_data, callback));
+    }
+
+    //  Runs a Monitor command through the connection and stores its output.
+    bool run_monitor_command(const char *command, std::string &output)
+    {
+        char *result = nullptr;
+        if(!check("run a Monitor command", renode_run_monitor_command(renode, command, &result))) {
+            return false;
+        }
+
+        output = result;
+        std::free(result);
+        return true;
     }
 
     //  Disconnects from Renode, which ends it.

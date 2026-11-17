@@ -10,3 +10,6 @@ Resource                            ${CURDIR}/native-interface.resource
 *** Test Cases ***
 Should Send Custom Commands From The Monitor To A Native Host
     Run Guest Program With Native Host  wfi  custom_command_host
+
+Should Return Each Client Thread The Output Of Its Own Monitor Commands
+    Run Guest Program With Native Host  wfi  monitor_commands_host
