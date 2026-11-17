@@ -563,3 +563,19 @@ Should Not Leave References To A Peripheral That Obtained The System Bus In Its 
 
     ${x}=                          Allocate Temporary File
     Execute Command                Save @${x}
+
+Should Unregister Only The Requested Range
+    # Exercise both the page dictionary and the binary search array.
+    FOR  ${size}  IN  0x800  0x4000
+        ${last_address}=           Evaluate  int($size, 0) * 2
+        Execute Command            mach create
+        Execute Command            machine LoadPlatformDescriptionFromString "memory: Memory.ArrayMemory @ { sysbus 0; sysbus ${size}; sysbus ${last_address} } { size: ${size} }"
+        Execute Command            sysbus WriteDoubleWord 0 0x12345678
+        Execute Command            sysbus UnregisterFromAddress ${size}
+        ${value}=                  Execute Command  sysbus ReadDoubleWord 0
+        Should Be Equal As Integers  ${value}  0x12345678
+        ${value}=                  Execute Command  sysbus ReadDoubleWord ${last_address}
+        Should Be Equal As Integers  ${value}  0x12345678
+        ${value}=                  Execute Command  sysbus ReadDoubleWord ${size}
+        Should Be Equal As Integers  ${value}  0
+    END
