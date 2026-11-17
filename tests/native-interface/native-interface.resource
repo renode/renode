@@ -7,10 +7,14 @@
 #   CONFIGURATION   - Renode build configuration. Normally overridden by renode-test so you don't have
 #                     to worry about it, but specified here to please the LSP.
 
+*** Settings ***
+Library                             OperatingSystem
+
 *** Variables ***
 ${CONFIGURATION}                    Release
 ${USER_RENODE_DIR}                  ${EMPTY}
 ${RENODE_CFG}                       ${CONFIGURATION}
+${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/example
 
 *** Keywords ***
 Get User Renode Dir
@@ -56,3 +60,24 @@ Run Native Host
     ${result}=                      Run Process  ${host}  @{args}  stdout=${log_path}  stderr=STDOUT
     ...                             timeout=60s  on_timeout=kill
     Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}
+
+Run Guest Program With Native Host
+    [Arguments]                     ${program}  ${host}
+    ${build_dir}=                   Allocate Temporary Directory  native-host-build
+    Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
+
+    # The machine is named after the suite file, and each host hardcodes that name.
+    ${suite}=                       Evaluate  os.path.splitext(os.path.basename($SUITE_SOURCE))[0]  modules=os.path
+    ${script}=                      Catenate  SEPARATOR=${\n}
+    ...                             mach create "${suite}"
+    ...                             machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
+    ...                             machine LoadPlatformDescriptionFromString "dut: Bus.ExternalControlBusPeripheral @ sysbus 0x10000000 { size: 0x1000 }"
+    ...                             machine LoadPlatformDescriptionFromString "gpio: GPIOPort.ARM_AHB_GPIO @ sysbus 0x10001000"
+    ...                             cpu AssembleBlock 0x40000000 """
+    ...                             ${program}
+    ...                             """ triple="arm64"
+    ...                             cpu PC 0x40000000
+    ${script_path}=                 Set Variable  ${build_dir}/${suite}.resc
+    Create File                     ${script_path}  ${script}
+
+    Run Native Host                 ${build_dir}/${host}  ${script_path}

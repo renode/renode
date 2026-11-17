@@ -6,31 +6,7 @@
 # See native-interface.resource for the variables that select which librenode is used.
 
 *** Settings ***
-Library                             OperatingSystem
 Resource                            ${CURDIR}/native-interface.resource
-
-*** Variables ***
-${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/example
-
-*** Keywords ***
-Run Guest Program On Lockstep Host
-    [Arguments]                     ${program}  ${host}
-    ${build_dir}=                   Allocate Temporary Directory  lockstep-build
-    Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
-
-    ${script}=                      Catenate  SEPARATOR=${\n}
-    ...                             mach create "lockstep"
-    ...                             machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
-    ...                             machine LoadPlatformDescriptionFromString "dut: Bus.ExternalControlBusPeripheral @ sysbus 0x10000000 { size: 0x1000 }"
-    ...                             machine LoadPlatformDescriptionFromString "gpio: GPIOPort.ARM_AHB_GPIO @ sysbus 0x10001000"
-    ...                             cpu AssembleBlock 0x40000000 """
-    ...                             ${program}
-    ...                             """ triple="arm64"
-    ...                             cpu PC 0x40000000
-    ${script_path}=                 Set Variable  ${build_dir}/lockstep.resc
-    Create File                     ${script_path}  ${script}
-
-    Run Native Host                 ${build_dir}/${host}  ${script_path}
 
 *** Test Cases ***
 Should Let The Device Call Renode Within A Lockstep Step
@@ -51,7 +27,7 @@ Should Let The Device Call Renode Within A Lockstep Step
     ...                             halt:                    # for(;;) { wait_for_interrupt(); }
     ...                             wfi
     ...                             b halt
-    Run Guest Program On Lockstep Host  ${program}  lockstep_device_host
+    Run Guest Program With Native Host  ${program}  lockstep_device_host
 
 Should Pass GPIO States Within Each Lockstep Step
     # The host sets the GPIO input between steps, and after each step it checks the state of the
@@ -67,4 +43,4 @@ Should Pass GPIO States Within Each Lockstep Step
     ...                             lsl w3, w3, #1
     ...                             str w3, [x1, #4]
     ...                             b copy
-    Run Guest Program On Lockstep Host  ${program}  lockstep_gpio_host
+    Run Guest Program With Native Host  ${program}  lockstep_gpio_host

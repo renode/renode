@@ -6,31 +6,7 @@
 # See native-interface.resource for the variables that select which librenode is used.
 
 *** Settings ***
-Library                             OperatingSystem
 Resource                            ${CURDIR}/native-interface.resource
-
-*** Variables ***
-${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/example
-
-*** Keywords ***
-Run Guest Program On Native Bus Handlers
-    [Arguments]                     ${program}  ${host}
-    ${build_dir}=                   Allocate Temporary Directory  bus-handlers-build
-    Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
-
-    ${script}=                      Catenate  SEPARATOR=${\n}
-    ...                             mach create "bus-handlers"
-    ...                             machine LoadPlatformDescription @platforms/cpus/cortex-a78.repl
-    ...                             machine LoadPlatformDescriptionFromString "dut: Bus.ExternalControlBusPeripheral @ sysbus 0x10000000 { size: 0x1000 }"
-    ...                             machine LoadPlatformDescriptionFromString "gpio: GPIOPort.ARM_AHB_GPIO @ sysbus 0x10001000"
-    ...                             cpu AssembleBlock 0x40000000 """
-    ...                             ${program}
-    ...                             """ triple="arm64"
-    ...                             cpu PC 0x40000000
-    ${script_path}=                 Set Variable  ${build_dir}/bus-handlers.resc
-    Create File                     ${script_path}  ${script}
-
-    Run Native Host                 ${build_dir}/${host}  ${script_path}
 
 *** Test Cases ***
 Should Serve Guest Accesses Through Native Bus Handlers
@@ -46,7 +22,7 @@ Should Serve Guest Accesses Through Native Bus Handlers
     ...                             halt:
     ...                             wfi                      # for(;;) { wait_for_interrupt(); }
     ...                             b halt
-    Run Guest Program On Native Bus Handlers  ${program}  bus_handlers_host
+    Run Guest Program With Native Host  ${program}  bus_handlers_host
 
 Should Pass GPIO States Between The Guest And A Native Device
     # Each change takes effect at the next synchronization point, so the guest waits for each
@@ -86,4 +62,4 @@ Should Pass GPIO States Between The Guest And A Native Device
     ...                             halt:                    # for(;;) { wait_for_interrupt(); }
     ...                             wfi
     ...                             b halt
-    Run Guest Program On Native Bus Handlers  ${program}  gpio_host
+    Run Guest Program With Native Host  ${program}  gpio_host
