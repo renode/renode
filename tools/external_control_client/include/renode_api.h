@@ -505,7 +505,7 @@ typedef renode_custom_command_response_data_t *(*renode_custom_command_callback_
 
 /**
  * @brief The function registering callback on custom command. The callback function returns a pointer to the
- * `renode_custom_command_callback_t` struct which it allocates. This pointer is freed in the `invoke_callback` function.
+ * `renode_custom_command_response_data_t` struct which it allocates. This pointer is freed in the `invoke_callback` function.
  *
  * @param[in] renode - the Renode handle
  * @param[in] user_data - the pointer to the data passed to the callback when invoked

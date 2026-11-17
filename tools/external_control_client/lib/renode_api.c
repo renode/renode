@@ -341,7 +341,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
 
             return err;
         case CUSTOM_COMMAND_CALLBACK:
-            assert_response(size >= 1, ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
+            assert_response(size >= sizeof(renode_custom_command_event_data_t), ERRMSG_UNEXPECTED_RESPONSE_PAYLOAD_SIZE);
 
             //  We need to insert null byte at the end of the string to make it valid in C
             renode_custom_command_event_data_t *command_data = xmalloc(size + 1);
@@ -350,7 +350,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
             command_data->command[last_string_index] = '\0';
 
             renode_custom_command_response_data_t *response =
-                (renode_custom_command_response_data_t *)commands[ed](NULL, command_data);
+                (renode_custom_command_response_data_t *)commands[ed](callback_user_data[ed], command_data);
 
             char *message = (response == NULL) ? "Callback returned nullptr" : response->response_string;
             bool command_valid = (response == NULL) ? false : response->command_valid;
@@ -358,6 +358,7 @@ static renode_error_t *invoke_callback(renode_connection_t *conn, uint16_t id, a
             result = renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, command_valid ? TYPE_SUCCESS : TYPE_ERROR),
                                                      { message, strlen(message) });
             free(response);
+            free(command_data);
             return result;
         default:
             return renode_connection_send_response(conn, id, RESPONSE_HEADER(cmd, TYPE_INVALID_COMMAND));
