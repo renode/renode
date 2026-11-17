@@ -18,7 +18,7 @@
     <ApplicationIcon Condition=" $(GUI_DISABLED) != 'true' ">..\..\lib\resources\images\windows_setup\renode.ico</ApplicationIcon>
     <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\..\..\tools\version').Trim())</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <LangVersion>12.0</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <UseWPF Condition=" $(RequireWPF) == 'true' ">true</UseWPF>
   </PropertyGroup>
   <PropertyGroup Condition=" $(PORTABLE) == 'true' ">
