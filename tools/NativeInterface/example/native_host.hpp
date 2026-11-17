@@ -173,6 +173,12 @@ public:
         return check("run the emulation", renode_run_for(renode, time));
     }
 
+    bool register_custom_command_callback(void *user_data, renode_custom_command_callback_t callback)
+    {
+        return check("register the custom command callback",
+                     renode_register_custom_command_callback(renode, user_data, callback));
+    }
+
     //  Disconnects from Renode, which ends it.
     void disconnect()
     {
