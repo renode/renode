@@ -56,6 +56,11 @@ public sealed unsafe class InProcessExternalControl : IDisposable, IExternal
         responseBox.Value = MessagePayload.TryDecode(responseBytes, out var response) ? response : ShortMessageError(responseBytes);
     }
 
+    /// <summary>
+    /// Sends <paramref name="command"/> to the client's custom command callback and returns the callback's response.
+    /// </summary>
+    public string SendCustomCommand(string command) => endpoint.SendCustomCommand(command);
+
     public void Dispose()
     {
         // The emulation removes its externals before it disposes them, so only a close by the client finds the
