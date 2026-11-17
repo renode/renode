@@ -461,8 +461,8 @@ Should Run Custom Command Sample
     Should Contain                ${response}  demo pong
     ${response} =                 Execute Command      ${SERVER_NAME} SendCustomCommand "demo rev part"
     Should Contain                ${response}  demo rev trap
-    ${response} =                 Run Keyword And Expect Error   *   ${SERVER_NAME} SendCustomCommand "command not defined"
-    Should Contain                ${response}   command not defined
+    ${response} =                 Run Keyword And Expect Error   *   Execute Command  ${SERVER_NAME} SendCustomCommand "command not defined"
+    Should Contain                ${response}   Command failed
 
 Should Safely Exit
     [Tags]                          exclude_windows
