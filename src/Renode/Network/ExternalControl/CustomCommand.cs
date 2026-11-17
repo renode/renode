@@ -43,7 +43,7 @@ public class CustomCommand : BaseCommand
                 throw new RecoverableException("Command callback is not registered");
             }
             var eventHeader = new EventHeader { TimestampNanoseconds = timestamp};
-            response = parent.SendRequest(MessagePayload.Event(Command.CustomCommand, 0, eventHeader, Encoding.UTF8.GetBytes(command)));
+            response = parent.SendRequest(MessagePayload.Event(Command.CustomCommand, CustomCommandHandlerId.Value, eventHeader, Encoding.UTF8.GetBytes(command)));
         }
 
         var commandSuccesful = response.LogOnError(Identifier, parent.Owner);
