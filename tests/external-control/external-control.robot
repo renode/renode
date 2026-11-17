@@ -124,6 +124,11 @@ Wait For Sample Finish
     Should Be Equal As Integers     ${r.rc}  0  msg=Process failed with exit code ${r.rc}${\n}stdout:${\n}${r.stdout}${\n}stderr:${\n}${r.stderr}
     [Return]                        ${r}
 
+Terminate Sample
+    [Arguments]                     ${proc}
+    ${r}=                           Terminate Process  ${proc}
+    Should Be Equal As Integers     ${r.rc}  0  msg=Process failed with exit code ${r.rc}${\n}stdout:${\n}${r.stdout}${\n}stderr:${\n}${r.stderr}
+
 Execute Sample
     [Arguments]                     ${app}  @{args}
     ${proc}=                        Start Sample  ${app}  @{args}
@@ -463,6 +468,7 @@ Should Run Custom Command Sample
     Should Contain                ${response}  demo rev trap
     ${response} =                 Run Keyword And Expect Error   *   Execute Command  ${SERVER_NAME} SendCustomCommand "command not defined"
     Should Contain                ${response}   Command failed
+    Terminate Sample              ${proc}
 
 Should Safely Exit
     [Tags]                          exclude_windows

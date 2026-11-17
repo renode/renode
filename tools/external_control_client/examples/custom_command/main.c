@@ -9,8 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <signal.h>
 
 #include "renode_api.h"
+
+static volatile sig_atomic_t stop_requested = 0;
+
+static void request_stop(int signal_number)
+{
+    (void)signal_number;
+    stop_requested = 1;
+}
 
 static void exit_with_usage_info(const char *argv0)
 {
@@ -86,6 +95,10 @@ int main(int argc, char **argv)
     }
     char *port = argv[1];
 
+    //  Stop signals end the loop below, so that the cleanup runs
+    signal(SIGTERM, request_stop);
+    signal(SIGINT, request_stop);
+
     renode_error_t *error;
     renode_t *renode;
     if((error = renode_connect(port, &renode)) != NO_ERROR) {
@@ -97,7 +110,7 @@ int main(int argc, char **argv)
         goto fail_renode;
     }
 
-    while(true) { }
+    while(!stop_requested) { }
 
     //  Exit cleanup
     if(try_renode_disconnect(&renode)) {
