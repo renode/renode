@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     const auto on_read = [&state](auto... access) { return dut_read(state, access...); };
     const auto on_write = [&state](auto... access) { return dut_write(state, access...); };
-    if(!control.connect(machine_name, peripheral_name, on_read, on_write)) {
+    if(!control.connect(argv[1], machine_name, peripheral_name, on_read, on_write)) {
         return exit_setup_error;
     }
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
         return exit_setup_error;
     }
 
-    if(!execute_command("start")) {
+    if(!control.start()) {
         return exit_setup_error;
     }
 

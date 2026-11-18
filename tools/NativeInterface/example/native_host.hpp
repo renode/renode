@@ -1,13 +1,13 @@
 #pragma once
 
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
 #include <future>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "librenode.h"
@@ -47,16 +47,6 @@ inline void store_little_endian(uint8_t *data, uint32_t size, uint64_t value)
     for(uint32_t i = 0; i < size; i++) {
         data[i] = static_cast<uint8_t>(value >> (8 * i));
     }
-}
-
-inline bool execute_command(const std::string &command)
-{
-    const RenodeStatus status = renode_exec_command(command.c_str());
-    if(status != RENODE_SUCCESS) {
-        std::fprintf(stderr, "'%s' failed with status %d\n", command.c_str(), status);
-        return false;
-    }
-    return true;
 }
 
 inline bool check(const char *operation, renode_error_t *error)
@@ -109,12 +99,15 @@ public:
     external_control(const external_control &) = delete;
     external_control &operator=(const external_control &) = delete;
 
-    //  Connects to Renode and gets the named machine.
-    bool connect(const char *machine_name)
+    //  Connects to Renode, runs the script, which creates the machines, and gets the named machine.
+    bool connect(const char *script_path, const char *machine_name)
     {
         renode_in_process_options_t options = {};
         options.serialize_requests = true;
         if(!check("connect to Renode", renode_connect_in_process(connection_name, &options, &renode))) {
+            return false;
+        }
+        if(!check("run the script", renode_run_script(renode, script_path))) {
             return false;
         }
 
@@ -126,11 +119,12 @@ public:
     //  machine with the given handlers. Each access is served on a thread of its own, the way
     //  another simulator runs its device models on threads of its own, while the Renode thread that
     //  makes the access waits for it.
-    bool connect(const char *machine_name, const char *peripheral_name, read_handler on_read, write_handler on_write)
+    bool connect(const char *script_path, const char *machine_name, const char *peripheral_name, read_handler on_read,
+                 write_handler on_write)
     {
         serve_read = std::move(on_read);
         serve_write = std::move(on_write);
-        if(!connect(machine_name)) {
+        if(!connect(script_path, machine_name)) {
             return false;
         }
 
@@ -151,6 +145,22 @@ public:
     handle<renode_bus_context_t> get_sysbus()
     {
         return get_handle<renode_bus_context_t>("get the system bus", renode_get_sysbus, machine.get());
+    }
+
+    //  Starts the emulation, which then runs freely until the host quits.
+    bool start()
+    {
+        return check("start the emulation", renode_start(renode));
+    }
+
+    //  Sets the virtual time between the synchronization points of the emulation.
+    bool set_quantum(std::chrono::nanoseconds quantum)
+    {
+        renode_time_t time;
+        if(!check("create the quantum", renode_create_time(quantum.count(), TU_NANOSECONDS, &time))) {
+            return false;
+        }
+        return check("set the quantum", renode_set_quantum(renode, time));
     }
 
     //  Runs the emulation for `milliseconds` of virtual time and returns when the time has passed.
@@ -194,8 +204,8 @@ private:
     write_handler serve_write;
 };
 
-//  Starts Renode in this process and loads the script named on the command line. The host then
-//  connects and starts the emulation after any further setup.
+//  Checks that the command line names the script and starts Renode in this process. The host then
+//  connects, which runs the script, and starts the emulation after any further setup.
 inline bool load(int argc, char *argv[])
 {
     if(argc != 2) {
@@ -207,8 +217,7 @@ inline bool load(int argc, char *argv[])
         std::fprintf(stderr, "failed to start Renode\n");
         return false;
     }
-
-    return execute_command(std::string("include @") + argv[1]);
+    return true;
 }
 
 inline void quit(external_control &control)

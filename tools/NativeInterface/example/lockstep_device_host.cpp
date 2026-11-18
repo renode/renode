@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     }
 
     const auto on_write = [&state](auto... access) { return dut_write(state, access...); };
-    if(!control.connect(machine_name, peripheral_name, dut_read, on_write)) {
+    if(!control.connect(argv[1], machine_name, peripheral_name, dut_read, on_write)) {
         return exit_setup_error;
     }
 

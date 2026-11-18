@@ -26,7 +26,6 @@ constexpr int gpio_output = 1;
 constexpr int step_count = 100;
 
 //  Each step is one quantum, so that the end of the step is the only synchronization point in it.
-constexpr const char *quantum_command = "emulation SetGlobalQuantum \"0.001\"";
 constexpr uint64_t step_milliseconds = 1;
 
 static void on_gpio_output_change(void *user_data, renode_gpio_event_data_t *event)
@@ -42,11 +41,7 @@ int main(int argc, char *argv[])
     if(!load(argc, argv)) {
         return exit_setup_error;
     }
-    if(!execute_command(quantum_command)) {
-        return exit_setup_error;
-    }
-
-    if(!control.connect(machine_name)) {
+    if(!control.connect(argv[1], machine_name) || !control.set_quantum(std::chrono::milliseconds(step_milliseconds))) {
         return exit_setup_error;
     }
 
