@@ -330,6 +330,25 @@ Should Set MEPC on Illegal Instruction
     ${mepc}=                        Execute Command     cpu MEPC
     Should Be Equal As Numbers      ${mepc}    0x4004
 
+Should Clear MTVAL On EBREAK And ECALL
+    Create Machine 32
+    Execute Command                 cpu MTVEC ${mtvec}
+    Execute Command                 cpu AssembleBlock ${mtvec} "j ."
+    Execute Command                 cpu AssembleBlock ${starting_pc} "ebreak"
+    Execute Command                 cpu AssembleBlock ${next_instruction} "ecall"
+
+    FOR    ${address}    ${expected_cause}    IN    ${starting_pc}    3    ${next_instruction}    11
+        Execute Command                 cpu PC ${address}
+        Execute Command                 cpu MTVAL 0x1234
+        Execute Command                 cpu Step
+
+        PC Should Be Equal              ${mtvec}
+        ${mcause}=                      Execute Command     cpu MCAUSE
+        Should Be Equal As Numbers      ${mcause}    ${expected_cause}
+        ${mtval}=                       Execute Command     cpu MTVAL
+        Should Be Equal As Numbers      ${mtval}    0
+    END
+
 Should Set MEPC on Illegal CSR access
     Create Machine 32
     Execute Command   cpu CSRValidation Full
