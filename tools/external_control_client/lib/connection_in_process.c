@@ -8,6 +8,7 @@
 //  Carries the external control protocol to the Renode instance that runs in this process through librenode.
 //  A request from the client runs on the calling thread. A request from Renode runs on the Renode thread that
 //  sends it, and the client responds before that thread continues.
+//  Opening the connection starts Renode and closing it quits Renode, so a program makes only one connection.
 
 #include <pthread.h>
 #include <string.h>
@@ -93,9 +94,23 @@ static void on_renode_request(void *context, const uint8_t *message, uint32_t si
     }
 }
 
+static renode_error_t *quit_renode(void)
+{
+    RenodeStatus status = renode_exec_command("quit");
+    if(status != RENODE_QUIT_REQUESTED) {
+        return create_fatal_error("Failed to quit Renode, librenode returned %d", status);
+    }
+    return NO_ERROR;
+}
+
 renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_connection_config_t *cfg)
 {
     assert(cfg);
+
+    RenodeStatus init_status = renode_init(NULL, -1, -1);
+    if(init_status != RENODE_SUCCESS) {
+        return create_fatal_error("Failed to start Renode, librenode returned %d", init_status);
+    }
 
     renode_connection_t *result = xmalloc(sizeof(renode_connection_t));
     result->request_callback = cfg->request_callback;
@@ -107,6 +122,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     int thread_error = pthread_mutex_init(&result->lifecycle_lock, NULL);
     if(thread_error != 0) {
         free(result);
+        renode_free_error(quit_renode());
         return create_fatal_error("Failed to create a mutex: %s", strerror(thread_error));
     }
 
@@ -114,6 +130,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
     if(thread_error != 0) {
         pthread_mutex_destroy(&result->lifecycle_lock);
         free(result);
+        renode_free_error(quit_renode());
         return create_fatal_error("Failed to create a condition variable: %s", strerror(thread_error));
     }
 
@@ -124,6 +141,7 @@ renode_error_t *renode_connection_open(renode_connection_t **conn, const renode_
         pthread_cond_destroy(&result->requests_ended);
         pthread_mutex_destroy(&result->lifecycle_lock);
         free(result);
+        renode_free_error(quit_renode());
         return create_fatal_error("Failed to open an external control endpoint, librenode returned %d", status);
     }
 
@@ -158,10 +176,12 @@ static renode_error_t *renode_connection_close_impl(renode_connection_t *connect
     pthread_mutex_destroy(&connection->lifecycle_lock);
     free(connection);
 
+    renode_error_t *quit_error = quit_renode();
     if(status != RENODE_SUCCESS) {
+        renode_free_error(quit_error);
         return create_fatal_error("Failed to close the external control endpoint, librenode returned %d", status);
     }
-    return NO_ERROR;
+    return quit_error;
 }
 
 renode_error_t *renode_connection_close(renode_connection_t *conn, bool blocking)

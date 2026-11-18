@@ -38,7 +38,8 @@ renode$ mkdir build && cmake -S tools/external_control_client/lib -B build && cm
 
 By default, the library connects to the server over a socket with `renode_connect`.
 A program that runs Renode itself through librenode (see `tools/NativeInterface`) can build the library with `-DRENODE_API_TRANSPORT=in_process` instead.
-That build links librenode and provides `renode_connect_in_process` in place of `renode_connect`, which connects to the Renode instance in the same process.
+That build links librenode and provides `renode_connect_in_process` in place of `renode_connect`, which starts Renode in the same process and connects to it.
+Closing that connection ends Renode, so such a program needs no other header than `renode_api.h`.
 
 ### Building
 

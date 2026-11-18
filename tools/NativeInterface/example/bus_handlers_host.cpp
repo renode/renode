@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 {
     dut_state state;
     external_control control;
-    if(!load(argc, argv)) {
+    if(!check_usage(argc, argv)) {
         return exit_setup_error;
     }
 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
         accesses = state.accesses;
     }
 
-    quit(control);
+    control.disconnect();
 
     if(!check_accesses(accesses)) {
         return exit_mismatch;

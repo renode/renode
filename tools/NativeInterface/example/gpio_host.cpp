@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     dut_state state;
     external_control control;
 
-    if(!load(argc, argv)) {
+    if(!check_usage(argc, argv)) {
         return exit_setup_error;
     }
 
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
         result = state.result;
     }
 
-    quit(control);
+    control.disconnect();
 
     if(result != test_passed) {
         std::fprintf(stderr, "the guest reported result 0x%" PRIx64 "\n", result);

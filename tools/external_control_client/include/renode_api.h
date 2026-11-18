@@ -154,6 +154,9 @@ typedef struct {
  * @brief The function initializing a connection to the Renode instance that runs in this process through librenode.
  *
  * It is defined only when the library is built with `RENODE_API_TRANSPORT=in_process`, which links librenode.
+ * It starts Renode with an empty emulation, which a script that renode_run_script() runs can then fill.
+ * The emulation stays paused until renode_start() or renode_run_for(). renode_disconnect() ends Renode, so a program
+ * makes only one such connection and must not start Renode with librenode itself.
  * Requests to Renode run on the calling thread, and several threads may send requests at the same time.
  * Only one thread at a time may run the emulation with renode_run_for(),
  * because a second call during a run blocks forever.

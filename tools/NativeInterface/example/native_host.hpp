@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "librenode.h"
 #include "renode_api.h"
 
 //  Parts shared by the native hosts of the tests in tests/native-interface. Most hosts are one
@@ -99,7 +98,8 @@ public:
     external_control(const external_control &) = delete;
     external_control &operator=(const external_control &) = delete;
 
-    //  Connects to Renode, runs the script, which creates the machines, and gets the named machine.
+    //  Starts Renode in this process, connects to it, runs the script, which creates the machines, and gets the
+    //  named machine.
     bool connect(const char *script_path, const char *machine_name)
     {
         renode_in_process_options_t options = {};
@@ -173,6 +173,7 @@ public:
         return check("run the emulation", renode_run_for(renode, time));
     }
 
+    //  Disconnects from Renode, which ends it.
     void disconnect()
     {
         if(renode != nullptr) {
@@ -204,26 +205,14 @@ private:
     write_handler serve_write;
 };
 
-//  Checks that the command line names the script and starts Renode in this process. The host then
-//  connects, which runs the script, and starts the emulation after any further setup.
-inline bool load(int argc, char *argv[])
+//  Checks that the command line names the script, which the host passes to `external_control::connect`.
+inline bool check_usage(int argc, char *argv[])
 {
     if(argc != 2) {
         std::fprintf(stderr, "usage: %s <script.resc>\n", argv[0]);
         return false;
     }
-
-    if(renode_init(nullptr, -1, -1) != RENODE_SUCCESS) {
-        std::fprintf(stderr, "failed to start Renode\n");
-        return false;
-    }
     return true;
-}
-
-inline void quit(external_control &control)
-{
-    control.disconnect();
-    renode_exec_command("quit");
 }
 
 }  //  namespace native_host

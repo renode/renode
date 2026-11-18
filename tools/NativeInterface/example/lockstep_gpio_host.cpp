@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     std::atomic<bool> output_state = false;
     external_control control;
 
-    if(!load(argc, argv)) {
+    if(!check_usage(argc, argv)) {
         return exit_setup_error;
     }
     if(!control.connect(argv[1], machine_name) || !control.set_quantum(std::chrono::milliseconds(step_milliseconds))) {
@@ -72,11 +72,11 @@ int main(int argc, char *argv[])
         if(reported_output_state != input_state) {
             std::fprintf(stderr, "after step %d, the GPIO output is %d, but the input is %d\n", step, reported_output_state,
                          input_state);
-            quit(control);
+            control.disconnect();
             return exit_mismatch;
         }
     }
 
-    quit(control);
+    control.disconnect();
     return exit_pass;
 }
