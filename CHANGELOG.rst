@@ -3,6 +3,342 @@ Renode changelog
 
 This document describes notable changes to the Renode framework.
 
+1.17.1 - 2026.11.23
+-------------------
+
+Added and improved architecture support:
+
+* Arm Ethos:
+
+  * added support for the Ethos-U55 NPU, executing command streams with convolution, depthwise convolution, pooling and elementwise operations, per-channel scaling and hardware-matching saturation and padding behavior, with cached weight stream decoding for better performance
+  * added support for the Ethos-U85 NPU, covering the register interface and command stream execution, with convolution, depthwise convolution, pooling, elementwise and resize operations, DMA transfers (`NPU_OP_DMA_START`) and command stream branching (`NPU_OP_BRANCH`)
+
+* Arm:
+
+  * added tail-chaining of pending exceptions on Armv7-M and Armv8-M
+  * instruction fetches from unmapped memory now raise a BusFault on Cortex-M instead of permanently halting the CPU
+  * division-by-zero exceptions are now enabled by default on Cortex-M
+  * added the proper `CPUID` value for Cortex-M0+
+  * added support for `SP` as the source register of the `MOV.W` Thumb-2 instruction
+  * updated `SFAR` handling for SecureFault exceptions
+  * updated fault handling for the `VLSTM`, `VLLDM` and `BLXNS` instructions
+  * added additional checks when accessing TrustZone stack pointer registers
+  * an enabled IDAU now makes the whole memory Secure by default
+  * exposed the Secure and Non-secure stack pointer registers on Armv8-M
+  * the TrustZone extension is no longer advertised to GDB for CPUs that have it disabled
+  * added support for inspecting VFP registers in GDB on Armv7-A and Armv7-R
+  * improved MPU performance on Cortex-M and Armv7-R thanks to better TLB caching
+  * `EXC_RETURN` and `FNC_RETURN` are now only handled if an allowed instruction is used on Cortex-M, and `EXC_RETURN` only in Handler mode
+  * fixed the default memory map on Armv8-M
+  * fixed Armv7-M and Armv8-M MPU regions not being respected in some corner cases
+  * fixed the `PrivDefEna` MPU control bit not being respected on Cortex-M
+  * fixed the NVIC allowing synchronous exceptions to be both pending and active
+  * fixed `ICSR.RETTOBASE` not taking external interrupts into account
+  * fixed `SEVONPEND` not being respected
+  * fixed `FNC_RETURN` being handled even if TrustZone is disabled on Cortex-M
+  * fixed incorrect exception number restoration on Cortex-M exception return
+  * fixed instruction fetch faults resulting in previous instructions in the block not being executed
+  * fixed `cpu Step 1` on an instruction that generates an instruction fetch fault also executing the first instruction of the handler
+  * fixed segfaults when execution tracing was used during exception return on Cortex-M
+  * fixed CPUWAIT de-assertion not releasing a Cortex-M CPU that was reset while the machine was running
+  * fixed opcode hooks and counters matching only on the first halfword of Thumb-2 instructions
+  * fixed magic values in Arm GDB feature definitions
+
+* RISC-V:
+
+  * significantly extended the AndeStar V5 extension, adding branch on bit test and on immediate comparison, bit field operations, load effective address, find-first-byte and byte mismatch instructions, BF16 conversions, packed FP16 arithmetic, packed INT4 loads, small-integer vector operations, vector dot products and quad-widening vector multiply-accumulate, as well as RV64 support for performance arithmetic and stubs of the CCTL CSRs
+  * added the VeeR EL2 fast interrupt redirect mode
+  * VeeR EL2 can now use an interrupt controller other than the internal PIC
+  * added support for remapping memory through CSR writes, used by the Andes local memory controller
+  * added stubs of the Andes StackSafe CSRs
+  * fixed the FP dirty flag being set unnecessarily in the `fcvt.lu.d`, `fcvt.w.h`, `fcvt.wu.h`, `fcvt.l.h` and `fcvt.lu.h` instructions
+  * fixed the FP dirty flag not being set in the `fcvt.s.d` instruction
+  * fixed S/U-mode accesses being allowed when PMP is implemented but all its entries are disabled
+  * fixed resetting the `mtval` register on interrupts and exceptions which do not use it
+  * fixed internal core interrupt raising logic causing races in multicore setups
+  * fixed the 64-bit `bclri`, `bseti` and `binvi` instructions producing wrong results in tlib compiled with MinGW-w64
+  * fixed a failing assert in debug builds on certain vector instructions
+
+* Xtensa:
+
+  * added Xtensa LX7 instruction decoding tables, laying the groundwork for ESP32-S2 and ESP32-S3 support alongside a range of ESP32 peripherals
+
+* x86:
+
+  * added an LLVM assembly/disassembly triple for 16-bit x86
+
+Added and improved platform descriptions:
+
+* extensive support for the `STM32H7 Renode Reference Platform <https://designer.verks.ai/library/devices/stm32h7_renode_reference_board>`_, a new open-source platform designed to showcase Renode features
+* Silicon Labs SiXG301, combining a Cortex-M33 application core with a CV32E40P-based RISC-V sequencer core controlling the radio, with models of the radio, Sequencer Accelerator, Key Storage Unit, Semaphore, SYMCRYPTO, Secure Element mailbox and the clock, timer, DMA and GPIO peripherals, DWT and EM1P energy mode settings, available on the BRD4407A and BRD1019A boards
+* Silicon Labs EFR32xG22, EFR32xG24 and EFR32xG26, reworked on top of a new, unified set of Silicon Labs models following the `SiLabs_IPNAME_IPVERSION` naming convention, adding an EFR32xG22 radio model, a radio buffer controller (BUFC) for all families, a Packet Trace Interface debug adapter for capturing radio traffic, DWT and EM1P energy mode settings, and the new BRD4182A (EFR32xG22) and BRD4187C (EFR32xG24) boards
+* Alif Ensemble E8 AE822FA0E5597BS0 (RTSS-HE core)
+* Andes AE350 with the D25F core
+* Cortex-A53 with GICv3 and DesignWare PCIe
+* NXP S32K389
+* PolarFire SoC with Icicle Kit, with improved stability
+* RAMN with the ST7789 screen
+* STM32H7 with DWT frequency synchronized with the RCC core clock
+* STM32L552 with the RNG IRQ connected to the NVIC
+* STM32W108 with a minimal calibration ADC
+* Zynq-7000, with the GPIO interrupt connected
+* ZynqMP, with memory accessible to the GDMA and ADMA controllers
+* ZynqMP ZCU106 with the LogiCORE Video Codec Unit
+
+Added demos and tests:
+
+* Google Coral NPU running in a second Renode instance connected over the External Control API, with a separate client DMA for copying the payload
+* Silicon Labs platform tests running BLE NCP, BLE and Zigbee DMP, Connect, OpenThread, RAILtest, Zigbee and Zigbee NCP applications
+* Silicon Labs peripheral tests for EUSART, FRC, GPIO, LDMA, radio reception, PROTIMER, RTCC, SYMCRYPTO, SYSRTC, Secure Element, TIMER, WDOG and EM1P energy mode on EFR32xG22, EFR32xG24 and SiXG301
+* STM32H7 Renode Reference Platform single- and multi-node demos
+* WallaBMC demo on Nucleo F767ZI
+* Andes AE350 D25F Zephyr shell demo using local memory
+* Linux on Cortex-A53 with DesignWare PCIe demo
+* ZynqMP Video Codec Unit demo and Allegro E310 video encoder test
+* ZynqMP reboot test
+* Xilinx GPIOPS test
+* Arm Ethos-U55 and Ethos-U85 unit tests
+* NXP K64F TCP test using a modern Zephyr version
+* RAMN USB CDC serial tests
+* RISC-V AndeStar V5 instruction tests for RV32 and RV64
+* basic VeeR EL2 fast interrupt redirect test
+* `SEVONPEND` test
+* SysTick setup tests
+* unit tests for BusFaults and SecureFaults during FPU memory accesses
+* STM32H7 RCC peripheral frequency after reset test
+* Native Interface examples and tests of native hosts serving a Cortex-A78 guest's register accesses and setting GPIO inputs, including lockstep co-simulation
+* snapshot-tracking unit tests for GDB snapshot loading and snapshot counting
+* a test of adding a machine after pausing the emulation
+
+Added features:
+
+* Robot keywords for storing values and assembled code to memory, adding symbols to the symbol table, and checking memory contents behind addresses and symbols
+* a machine filter for the `Wait For Log Entry` Robot keyword
+* a `UartKeywords` keyword for writing char codes
+* support for `.robot.rst` test files
+* support for the `get_library_information` method in the Robot Framework remote library server, which lets Robot import the Renode keyword library with a single request
+* rerunning the previously executed Monitor command when Enter is pressed, with a Monitor command and a config option to control this behavior
+* the `printenv` Monitor command
+* serialization of the Monitor context with the emulation state
+* support for the multiprocess extension in the GDB stub
+* support for LLVM assembler and disassembler on KVM cores
+* a `--resolve-symbols` flag in the execution tracer reader
+* `RawStdoutAnalyzer` for direct UART output on the host stdout
+* configurable line endings and self-echo for UART analyzers
+* a mechanism in UARTHub allowing for immediate loopback
+* an option to buffer frames in SocketCANBridge while the machine is paused
+* a `throwException` option on sysbus tags, which allows throwing exceptions only on accesses to unmapped, untagged addresses
+* one-shot tags that only apply once
+* marking CPUs and clock entries as not clocked by any clock signal
+* general BusFault infrastructure
+* `emulation SynchroniseQuantum`, blocking until the current Time Framework quantum finishes
+* optional suite and test case reasons in YAML files passed to `renode-test --unstable`
+* CAN and SPI analyzer panels in the UI, presenting CAN frames and SPI transfers with virtual time timestamps; CAN frames can be decoded into named signals using a DBC file
+* a Displays panel in the UI showing the live contents of emulated displays
+* keybindings support in the UI
+* maximizing and minimizing of UI panels
+* support for multiple Renode connections in the UI
+* the Trace Event guest profiler
+
+Changed:
+
+* Renode now targets .NET 10 by default and requires the .NET 10 runtime; Debian and Fedora packages now depend on `dotnet-runtime-10.0`
+* upgraded NetMQ, available to user scripts, to 4.0.4.5
+* Server Garbage Collection mode is now used instead of Workstation mode for improved GC performance, especially with large platforms
+* updated the LLVM version used for assembly and disassembly to 23.1.3
+* assembly and disassembly now require specifying a triple on multi-triple architectures, except when disassembling at PC
+* failed downloads of remote files are now retried with exponential backoff
+* saving an emulation snapshot now preserves the old version if the file already exists
+* host integrations are now paused with the emulation
+* hubs (`CANHub`, `Switch`, `UARTHub` and `LINHub`) no longer pause with the emulation and keep forwarding traffic while it is paused, instead of dropping it
+* UARTHub no longer delays loopback messages to the next sync state
+* GPIO connections in separate blocks in repl files now compose instead of replacing each other
+* the `peripherals` Monitor command output is now sorted with numeric ordering
+* the RESD timestamp resolution is now nanoseconds, and a positive sample offset now delays sample delivery
+* renamed the `Test Setup` and `Setup` Robot keywords to `Renode Test Setup` and `Renode Suite Setup`
+* the `Dump Devices Registers` Robot keyword can now be applied to any machine
+* improved error reporting in the `Registers Dump Should Be Equal` Robot keyword
+* tests that require a state from a failed or skipped test are now skipped by renode-test instead of failing
+* empty test lists in YAML files passed to `renode-test --unstable` no longer mark the whole suite as unstable
+* added transfer delays to `IUSBDevice`
+* removed support for JSON platform descriptions
+* removed the `overrideSampleOffsetTime` RESDStream parameter
+* the UI is now bundled in a self-contained `index.html` file that can be opened in a web browser without a server and connected to one or more running Renode instances
+* the UI `index.html` can now be downloaded by a WebSocket client, e.g. to keep the VS Code extension webview in sync with the server
+* the Monitor, logs, UARTs, displays, CAN hubs and SPI controllers are now served at named WebSocket endpoints in server mode, e.g. `/display/<machine>/<display>`, `/can/<hub>` and `/spi/<machine>/<spi>`
+* multiple clients can now connect to the same WebSocket endpoint in server mode
+
+* External Control API:
+
+  * added an in-process transport for the client library, which lets a program that runs Renode in its own process use the same External Control API with `renode_connect_in_process` instead of a socket, starting Renode when the connection opens and ending it when it closes, with no header other than `renode_api.h`; this makes it possible to build native co-simulation hosts that serve bus accesses and drive GPIOs of an emulated machine directly from C or C++, with an optional `serialize_requests` mode holding callbacks while a request is in progress
+  * added Custom Commands, executing Monitor commands from the External Control API, also available in the client library
+  * added the `renode_start`, `renode_pause`, `renode_set_quantum` and `renode_run_script` client library functions
+  * added an opt-in override of host time functions in the client library, so that host programs, such as protocol gateways, observe the emulation's virtual time
+  * added support for connecting multiple Renode instances: GPIOs can be connected between instances, and the `RegisterRemoteBusPeripheral` command binds a bus peripheral to an externally controlled peripheral running in a remote Renode instance, e.g. to offload a Google Coral NPU to a separate Renode process
+  * added a `byte_count` field in the bus access event of the client library, so callbacks no longer compute the size of the data from the access width and transfer count
+  * the client header `renode_api.h` can now be included from C++ programs
+  * GPIO inputs set while the emulation runs now take effect at the next synchronization point
+  * GPIO state change callbacks now run at the next synchronization point after the change, except in the `SynchronizedTimers` emulation mode
+  * fixed lost GPIO interrupts when a client sets a GPIO input while a CPU accesses the receiving peripheral
+  * fixed a memory leak in the client library for each bus access that a callback reports as failed
+  * fixed a crash on Monitor calls after the connection closes
+  * fixed a stack overflow in the receive thread
+  * fixed a hang when closing Renode while an External Control client is communicating
+  * fixed `Address already in use` errors when reusing the socket
+
+* SystemC:
+
+  * added SystemC integration support for RISC-V platforms
+  * SystemCCPUSignalsUnit now supports multiple cores with different architectures over a single connection
+  * the clock frequency set by SystemC is now passed to the NVIC SysTick
+  * improved performance of the SystemC integration with `UseNative`
+  * SystemC reset signal assertions now halt the CPU at the next transaction instead of the next sync state
+  * fixed DMI invalidation never unmapping memory in SystemCPeripheral
+
+* Guest profiling:
+
+  * extended stack pointer tracking and reset handling to all guest profilers
+  * profilers now use the instruction count instead of time on reset
+  * added integration of TrustZone on Armv8-M with guest profiling
+  * fixed the guest profiler noting an improper exception raise at semihosting calls on Arm CPUs
+  * fixed the Perfetto profiler crashing after machine reset
+
+Fixed:
+
+* race conditions and logic errors in the Time Framework
+* a race condition in the logging backend leading to an unhandled exception
+* numeric log output changing with the host locale
+* a `MappedMemory` segment initialization race
+* executing from executable IO regions after a DMI mapping over them is removed
+* unregistering bus ranges sometimes affecting adjacent registrations
+* mapping memory segments before the requested registration offset
+* a performance drop on 32-bit platforms caused by registering executable IO access flags outside of the CPU's address space
+* Arm MPU logs silently affecting performance on platforms for which misaligned MPU regions are not an issue
+* a few lookups and redundant allocations in hot paths affecting performance
+* the order of byte accesses when splitting unaligned accesses, which now go from the lowest to the highest address
+* bus isolation initiator states wider than 32 bits not being supported
+* translation faults in Arm SMMUv3 when its stream table or context descriptors are in memory that only some initiators can access
+* a stop message being sent to GDB while some processors were still executing instructions
+* loading the latest snapshot when virtual time has not progressed
+* passing a single `-` in arguments crashing Renode
+* the `silent` property not being applied to tags with the `overridePeripheralAccesses` property
+* `uart_connect` behavior with control characters and ESC
+* an Xwt freeze on early exit
+* emulation teardown occasionally failing with `ObjectDisposedException` when a WebSocket client was connected in server mode
+* a deadlock when closing the UI
+* the UI relaunching on Renode exit
+* incorrect UI terminal font behavior on Windows with CJK locales
+* Monitor scripts failing with a parameter count mismatch when a native host includes them right after `renode_init`
+* compatibility with CMake versions older than 3.18 and glibc versions older than 2.29
+* tlib compilation on musl libc
+* dts2repl crash on startup with Python 3.15
+* a deadlock in CANHub while the emulation is being paused
+* a deadlock in CANTester
+* a crash when a USB device was slow to enable
+* a crash in NRF52840 GPIO when used for input
+* NVIC `BasePriorityMask` reset value
+* NVIC tick interrupt not being reset
+* wrong NVIC priority mask configuration on STM32L5
+* the `Dump Devices Registers` Robot keyword not working on peripherals with multiple ranges
+* renode-test not displaying Robot and keyword logs on the console
+* Renode exiting with code 0 when the Robot Framework server fails to start
+* Renode not being restarted by renode-test after a test listed with `--unstable` timed out, which made the next test time out too
+* test runs in renode-test waiting forever when a test worker process dies, e.g. when the system stops it for running out of memory
+* running the remaining tests of a suite with renode-test on a Renode process that crashed
+* tests reaching the Renode process of another suite in parallel renode-test runs
+* Unicode encoding errors in renode-test output with non-UTF-8 system encodings
+* missing test progress, delayed suite-start messages and failed retries in renode-test on Windows
+* results of all suite retries landing in `retry0` with renode-test on Windows, so it listed the failed tests of an arbitrary retry
+* test runs stopping when renode-test closes a crashing Renode on Windows
+
+Added peripheral models:
+
+* Andes AE350 Local Memory Controller
+* Arm DMA-250
+* Arm DMA-350
+* Caliptra peripherals, extending the Caliptra Root of Trust support:
+
+  * Adams Bridge, the post-quantum ML-DSA-87 accelerator, supporting key generation, signing and verification
+  * ECC, with ECDSA P-384 key generation, signing and verification, and ECDH
+  * HMAC
+  * SHA512
+  * Key Vault, with per-slot access permissions, used by the cryptographic models to exchange keys without exposing them to the firmware
+  * AXI DMA
+  * Mailbox
+  * I3C Target
+  * MCU Semihost UART
+
+* CAST CAN-CTRL
+* DesignWare PCIe
+* ESP32 RTC
+* ESP32 SPI Controller
+* ESP32 Timer Group
+* ESP32 USB Serial JTAG
+* ESP32-S3 External Memory
+* ITE Tech IT ETWD
+* ITE Tech IT INTC
+* NEORV32 GPIO
+* PWM LED
+* Silicon Labs models for the SiXG301 and reworked EFR32xG22, EFR32xG24 and EFR32xG26 platforms:
+
+  * SiXG301 Radio, Sequencer Accelerator, Key Storage Unit, Semaphore, GPIO, LDMA, EUSART, SYSRTC, TIMER, HFXO, SOCPLL, DEVINFO, HYDRARAM, RVCFG and Secure Element mailbox
+  * EFR32xG22 Radio, DPLL, RTCC, TIMER and EUART
+  * new IP versions of CMU, SYSCFG and PRS for EFR32xG22, EFR32xG26 and SiXG301, and of EMU, HFRCO, LFRCO and LFXO for EFR32xG22 and SiXG301
+  * BUFC, SYMCRYPTO and WDOG for EFR32xG22, EFR32xG24, EFR32xG26 and SiXG301
+  * Packet Trace Debug Adapter
+
+* ST7789
+* STM32 USB, a new model distinct from the one renamed to DesignWare USB OTG
+* ZynqMP DMA
+
+Improvements in peripherals:
+
+* AD4011 Analog to Digital Converter
+* ADXL372
+* ArmSysCtl
+* BMA180
+* BMC050
+* DesignWare SPI
+* Egis ET171 crypto
+* FocalTech FT9001 TRNG
+* Google Coral NPU
+* IIS2MDC
+* LPS25HB
+* LSM6DSO IMU, with gyroscope and accelerometer interrupt support
+* MAX32655 UART
+* NRF52840 GPIO Tasks/Events
+* NRF52840 I2C
+* NRF54H20 GRTC
+* NVIC
+* NXP FlexCAN
+* NXP LPUART
+* RISC-V Machine Timer
+* removed Quark SPI in favor of DesignWare SPI
+* renamed STM_USB to DesignWare USB OTG
+* S32K3XX eMIOS
+* S32K3XX PLLDIG
+* S32K3XX System Integration Unit Lite 2
+* SAM TC
+* SHT21
+* SHT45
+* Silicon Labs models already used by EFR32xG22, EFR32xG24 and EFR32xG26: EFR32xG24 Radio, USART, EUSART, LDMA, GPIO, CMU, ITM, MSC, SMU, RNGCTRL, SYSRTC, TIMER, PRS, DPLL, HFXO, EMU, FlashUserData, DeviceInformation and Secure Element
+* Silicon Labs models were renamed to the `SiLabs_IPNAME_IPVERSION` convention, and the `efr32mg24`/`efr32mg26` platforms to `efr32xg24`/`efr32xg26`
+* STM32 GPIOPort
+* STM32 Timer
+* STM32F1 AFIO
+* STM32F1 I2C
+* STM32F7 I2C
+* STM32F7 USART, with LIN mode support, optional transmission delays and optional realistic overrun behavior
+* STM32H7 CRYPTO
+* STM32H7 RCC, now returning the software reset cause
+* SynopsysEthernetMAC, with CRC stripping in received frames
+* TMP103
+* TMP108
+* VEML7700
+* VeeR EL2 PIC
+* Xilinx GPIOPS, with input GPIO support
+* ZynqMP Platform Management Unit
+
 1.17.0 - 2026.09.06
 -------------------
 
