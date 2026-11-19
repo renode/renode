@@ -62,7 +62,7 @@ Run Native Host
     Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}
 
 Run Guest Program With Native Host
-    [Arguments]                     ${program}  ${host}
+    [Arguments]                     ${program}  ${host}  @{args}
     ${build_dir}=                   Allocate Temporary Directory  native-host-build
     Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
 
@@ -80,4 +80,4 @@ Run Guest Program With Native Host
     ${script_path}=                 Set Variable  ${build_dir}/${suite}.resc
     Create File                     ${script_path}  ${script}
 
-    Run Native Host                 ${build_dir}/${host}  ${script_path}
+    Run Native Host                 ${build_dir}/${host}  ${script_path}  @{args}

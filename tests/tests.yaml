@@ -294,6 +294,7 @@
 - tests/native-interface/bus-handlers.robot
 - tests/native-interface/lockstep.robot
 - tests/native-interface/custom-commands.robot
+- tests/native-interface/cpu-control.robot
 - tests/platforms/ramn-terminal.robot
 - tests/peripherals/ST7789.robot
 - tests/peripherals/Designware_PCIe.robot
