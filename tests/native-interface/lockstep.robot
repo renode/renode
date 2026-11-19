@@ -30,12 +30,7 @@ Run Guest Program On Lockstep Host
     ${script_path}=                 Set Variable  ${build_dir}/lockstep.resc
     Create File                     ${script_path}  ${script}
 
-    # Run Process reads the host's outputs only after the host exits, so they go to files, which
-    # can't fill up the way a pipe can.
-    ${result}=                      Run Process  ${build_dir}/${host}  ${script_path}
-    ...                             stdout=${RESULTS_DIRECTORY}/${host}.stdout  stderr=${RESULTS_DIRECTORY}/${host}.stderr
-    ...                             timeout=60s  on_timeout=kill
-    Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}${\n}stdout:${\n}${result.stdout}${\n}stderr:${\n}${result.stderr}
+    Run Native Host                 ${build_dir}/${host}  ${script_path}
 
 *** Test Cases ***
 Should Let The Device Call Renode Within A Lockstep Step

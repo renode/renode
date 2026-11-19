@@ -30,9 +30,7 @@ Run Guest Program On Native Bus Handlers
     ${script_path}=                 Set Variable  ${build_dir}/bus-handlers.resc
     Create File                     ${script_path}  ${script}
 
-    ${result}=                      Run Process  ${build_dir}/${host}  ${script_path}
-    ...                             timeout=60s  on_timeout=kill
-    Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}${\n}stdout:${\n}${result.stdout}${\n}stderr:${\n}${result.stderr}
+    Run Native Host                 ${build_dir}/${host}  ${script_path}
 
 *** Test Cases ***
 Should Serve Guest Accesses Through Native Bus Handlers

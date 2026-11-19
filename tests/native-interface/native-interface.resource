@@ -42,3 +42,17 @@ Build NativeInterface Project
 
     ${r}=                           Run Process  cmake  --build  ${build_dir}
     Should Be Equal As Integers     ${r.rc}  0  msg=cmake build failed: ${r.stderr}
+
+Run Native Host
+    [Arguments]                     ${host}  @{args}
+    # The host's own Renode runs the test, so the host's output replaces the test log of the unused
+    # Renode, and Renode Test Teardown keeps that log only when the test fails.
+    ${log_path}=                    Get Test Log Path
+    # Closes the unused Renode's handle on the log before the host opens it. The call returns only
+    # after the handle is closed, so the two never write to the file at the same time.
+    Close Log File
+    # Writes the outputs to a file, because Run Process reads a pipe only after the host exits, and
+    # a host with much output would block on a full pipe.
+    ${result}=                      Run Process  ${host}  @{args}  stdout=${log_path}  stderr=STDOUT
+    ...                             timeout=60s  on_timeout=kill
+    Should Be Equal As Integers     ${result.rc}  0  msg=Host exited with code ${result.rc}
