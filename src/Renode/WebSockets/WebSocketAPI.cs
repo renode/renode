@@ -233,7 +233,7 @@ namespace Antmicro.Renode.WebSockets
             var apiResponse = new APIResponse
             {
                 Version = Version,
-                Status = handlerResponse.Error == null ? "success" : "fail",
+                Status = handlerResponse.Error == null ? "success" : "failure",
                 Id = apiRequest.Id,
                 Data = handlerResponse.Data,
                 Error = handlerResponse.Error
