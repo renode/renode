@@ -143,6 +143,8 @@ namespace Antmicro.Renode.WebSockets.Providers
             monitor = ObjectCreator.Instance.GetSurrogate(typeof(Antmicro.Renode.UserInterface.Monitor)) as Antmicro.Renode.UserInterface.Monitor;
             monitor.Quitted += SignalRenodeQuitEvent;
             monitor.MachineChanged += MonitorMachineChangedEventHandler;
+            monitor.RegisterUICommandHandler((action, arguments) => SignalUIActionEvent(action, arguments));
+
             if(!(monitor.Interaction is CommandInteractionWrapper))
             {
                 monitor.Interaction = new CommandInteractionWrapper(monitor.Interaction);
@@ -162,6 +164,15 @@ namespace Antmicro.Renode.WebSockets.Providers
         private void SignalClearCommand()
         {
             ClearCommandEvent.RaiseEventWithoutBody();
+        }
+
+        private void SignalUIActionEvent(string action, IDictionary<string, object> arguments)
+        {
+            UICommandEvent.RaiseEvent(new UIActionEventDto
+            {
+                Action = action,
+                Arguments = arguments,
+            });
         }
 
         private void ClearEmulationEventHandler()
@@ -366,6 +377,9 @@ namespace Antmicro.Renode.WebSockets.Providers
 
         [WebSocketAPIEvent("spi-opened")]
         private readonly WebSocketAPIEventHandler SPIOpenedEvent;
+
+        [WebSocketAPIEvent("ui-command")]
+        private readonly WebSocketAPIEventHandler UICommandEvent;
 #pragma warning restore 649
 
         public class ExecRenodeActionArgs
@@ -410,6 +424,14 @@ namespace Antmicro.Renode.WebSockets.Providers
             public string Name;
             [JsonProperty("value")]
             public bool Value;
+        }
+
+        private class UIActionEventDto
+        {
+            [JsonProperty("action")]
+            public string Action;
+            [JsonProperty("arguments")]
+            public IDictionary<string, object> Arguments;
         }
 
         private class ExecRenodeArgParserData

@@ -49,3 +49,11 @@ export interface SpiOpenedArgs {
   machineName: string;
 }
 export type SpiOpenedCallback = (event: SpiOpenedArgs) => void;
+
+export const UICommand = 'ui-command';
+export interface UICommandArgs {
+  action: string;
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  arguments: Record<string, any>;
+}
+export type UICommandCallback = (event: UICommandArgs) => void;

@@ -26,6 +26,9 @@ import {
   UartOpened,
   UartOpenedArgs,
   UartOpenedCallback,
+  UICommand,
+  UICommandCallback,
+  UICommandArgs,
 } from './events';
 import * as s from './schema';
 import {
@@ -51,6 +54,8 @@ export {
   SensorTypeFromString,
   SensorValue,
   SpiOpenedCallback,
+  UICommandArgs,
+  UICommandCallback,
   UartOpenedArgs,
   UartOpenedCallback,
   VideoConfig,
@@ -574,6 +579,18 @@ export class RenodeProxySession extends EventTarget {
 
   public unregisterSpiOpenedCallback(callback: EventCallback): boolean {
     return this.unregisterEventCallback(SpiOpened, callback);
+  }
+
+  public registerUICommandCallback(callback: UICommandCallback): EventCallback {
+    const wrapped = (data: object) => {
+      callback(data as UICommandArgs);
+    };
+    this.registerEventCallback(UICommand, wrapped);
+    return wrapped;
+  }
+
+  public unregisterUICommandCallback(callback: EventCallback): boolean {
+    return this.unregisterEventCallback(UICommand, callback);
   }
 
   public dispose() {
