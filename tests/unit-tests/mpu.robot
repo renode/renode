@@ -80,8 +80,8 @@ Should Warn When Translating Address From Incorrect MMU Mode
     Execute Command                 emulation RunFor "0.1"
 
     # Set USERSETMPEND, this makes a simple sub-page mapping at 0xE00EF00 for 4 bytes
-    ${CCR_VALUE}=  Execute Command  nvic ReadDoubleWord 0xD14
-    ${CCR_VALUE}=  Evaluate         (${CCR_VALUE} | 0b10)
+    ${CCR_VALUE}=                   Execute Command  nvic ReadDoubleWord 0xD14
+    ${CCR_VALUE}=                   Evaluate  (${CCR_VALUE} | 0b10)
     Execute Command                 nvic WriteDoubleWord 0xD14 ${CCR_VALUE}
 
     Create Log Tester               1
@@ -103,6 +103,5 @@ Privileged Access Uses Background Map When PRIVDEFENA Is Set
 Privileged Access Faults Without Region When PRIVDEFENA Is Not Set
     Machine Setup With PRIVDEFENA Set To  False
     Try Access Default Map Addr
-    ${expected_mmfsr}=             Evaluate  (${MMARVALID}|${DACCVIOL})
-    MMFSR Should Be Equal          ${expected_mmfsr}
-
+    ${expected_mmfsr}=              Evaluate  (${MMARVALID}|${DACCVIOL})
+    MMFSR Should Be Equal           ${expected_mmfsr}
