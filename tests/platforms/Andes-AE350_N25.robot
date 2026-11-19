@@ -1,5 +1,5 @@
 *** Variables ***
-${SCRIPT}                     ${CURDIR}/../../scripts/single-node/andes_ae350_zephyr.resc
+${SCRIPT}                     ${CURDIR}/../../scripts/single-node/andes_ae350_n25_zephyr.resc
 ${UART}                       sysbus.uart1
 ${PROMPT}                     uart:~$
 
