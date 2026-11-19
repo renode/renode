@@ -33,6 +33,7 @@ import {
 import * as s from './schema';
 import {
   GetSensorValue,
+  GetSensorSourceValue,
   Sensor,
   SensorType,
   SensorTypeFromString,
@@ -49,6 +50,7 @@ export {
   EmptyEventCallback,
   EventCallback,
   GetSensorValue,
+  GetSensorSourceValue,
   Sensor,
   SensorType,
   SensorTypeFromString,
@@ -209,17 +211,12 @@ export class RenodeProxySession extends EventTarget {
     );
   }
 
-  public async getSensors(
-    machine: string,
-    type?: SensorType,
-  ): Promise<Sensor[]> {
-    const sensorType = type === undefined ? {} : { type };
+  public async getSensors(machine: string): Promise<Sensor[]> {
     const result = await this.sendSessionRequestTyped(
       {
-        action: 'exec-renode',
+        action: 'sensor-list',
         payload: {
-          command: 'sensors',
-          args: { machine, ...sensorType },
+          machine,
         },
       },
       s.GetSensorsResponse,
@@ -229,44 +226,72 @@ export class RenodeProxySession extends EventTarget {
         new Sensor(
           machine,
           entry.name,
-          entry.types.map(type => SensorTypeFromString(type)!),
+          Object.fromEntries(
+            Object.entries(entry.measurands).map(([key, value]) => [
+              SensorTypeFromString(key)!,
+              value,
+            ]),
+          ),
         ),
     );
   }
 
-  public async getSensorValue(
+  public async getSensorSourceValue(
     sensor: Sensor,
-    type: SensorType,
+    measurand: SensorType,
+    type: 'raw' | 'percent' | 'discrete',
   ): Promise<SensorValue> {
     const result = await this.sendSessionRequestTyped(
       {
-        action: 'exec-renode',
+        action: 'sensor-source-read',
         payload: {
-          command: 'sensor-get',
-          args: { machine: sensor.machine, peripheral: sensor.name, type },
+          machine: sensor.machine,
+          peripheral: sensor.name,
+          measurand,
+          type,
         },
       },
-      s.GetSensorResponse,
+      s.GetSensorSourceResponse,
     );
-    return GetSensorValue(type, result);
+    return GetSensorSourceValue(measurand, result);
   }
 
-  public async setSensorValue(
+  public async setSensorSourceValue(
     sensor: Sensor,
-    type: SensorType,
-    value: SensorValue,
+    measurand: SensorType,
+    type: 'raw' | 'percent' | 'discrete',
+    data: SensorValue,
   ): Promise<void> {
     await this.sendSessionRequestTyped(
       {
-        action: 'exec-renode',
+        action: 'sensor-source-set',
         payload: {
-          command: 'sensor-set',
-          args: {
-            machine: sensor.machine,
-            peripheral: sensor.name,
-            type,
-            value: value.sample,
-          },
+          machine: sensor.machine,
+          peripheral: sensor.name,
+          measurand,
+          type,
+          data: data.sample,
+        },
+      },
+      s.EmptyExecResponse,
+    );
+  }
+
+  public async setSensorSourceRelativeValue(
+    sensor: Sensor,
+    measurand: SensorType,
+    type: 'raw' | 'percent',
+    data: SensorValue,
+  ): Promise<void> {
+    await this.sendSessionRequestTyped(
+      {
+        action: 'sensor-source-set-relative',
+        payload: {
+          machine: sensor.machine,
+          peripheral: sensor.name,
+          measurand,
+          type,
+          data: data.sample,
         },
       },
       s.EmptyExecResponse,

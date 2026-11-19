@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { Peripheral } from './peripheral';
+import { GetSensorSourceResponseBody } from './schema';
 
 export enum SensorType {
   Temperature = 'temperature',
@@ -15,6 +16,12 @@ export enum SensorType {
   Pressure = 'pressure',
   MagneticFluxDensity = 'magnetic-flux-density',
   Illuminance = 'illuminance',
+}
+
+export enum SensorValueRepresentation {
+  Raw = 'raw',
+  Percent = 'percent',
+  Discrete = 'discrete',
 }
 
 export function SensorTypeFromString(value: string): SensorType | undefined {
@@ -50,13 +57,34 @@ export function GetSensorValue(
   return sensorConstructorForType(type)(value, pretty);
 }
 
+export function GetSensorSourceValue(
+  measurand: SensorType,
+  response: GetSensorSourceResponseBody,
+  pretty: boolean = false,
+): SensorValue {
+  switch (response.type) {
+    case 'raw':
+      return sensorConstructorForType(measurand)(response.value, pretty);
+    case 'percent':
+      return PercentageScalar.fromValueChecked(response.value, pretty);
+    case 'discrete':
+      return DiscreteValue.fromValueChecked(response.value, pretty);
+  }
+}
+
 export class Sensor extends Peripheral {
   public constructor(
     machine: string,
     name: string,
-    public readonly types: SensorType[],
+    public readonly measurands: Partial<
+      Record<SensorType, SensorValueRepresentation[]>
+    >,
   ) {
     super(machine, name);
+  }
+
+  get types(): SensorType[] {
+    return Object.keys(this.measurands) as SensorType[];
   }
 }
 
@@ -93,6 +121,9 @@ function vec3Map(
     z: fun(v.z),
   };
 }
+
+const DiscreteSampleValue = z.string();
+export type DiscreteSampleValue = z.infer<typeof DiscreteSampleValue>;
 
 class ScalarSensorValue extends SensorValue<ScalarSampleValue> {
   protected constructor(
@@ -177,7 +208,7 @@ export class AngularRateValue extends Vec3SensorValue {
   public static fromValue(
     sample: Vec3SampleValue,
     pretty: boolean,
-  ): AccelerationValue {
+  ): AngularRateValue {
     if (pretty) sample = vec3Map(sample, val => Math.round(val * 1e5));
     return new this(sample, 'rad/s');
   }
@@ -188,14 +219,14 @@ export class VoltageValue extends ScalarSensorValue {
     return this.sample / 1e6;
   }
 
-  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+  public static fromValue(sample: number, pretty: boolean): VoltageValue {
     if (pretty) sample = Math.round(sample * 1e6);
     return new this(sample, 'V');
   }
 }
 
 export class ECGValue extends ScalarSensorValue {
-  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+  public static fromValue(sample: number, pretty: boolean): ECGValue {
     if (pretty) sample = Math.round(sample);
     return new this(sample, 'nV');
   }
@@ -206,7 +237,7 @@ export class HumidityValue extends ScalarSensorValue {
     return this.sample / 1e3;
   }
 
-  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+  public static fromValue(sample: number, pretty: boolean): HumidityValue {
     if (pretty) sample = Math.round(sample * 1e3);
     return new this(sample, '%RH');
   }
@@ -217,7 +248,7 @@ export class PressureValue extends ScalarSensorValue {
     return this.sample / 1e3;
   }
 
-  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+  public static fromValue(sample: number, pretty: boolean): PressureValue {
     if (pretty) sample = Math.round(sample * 1e3);
     return new this(sample, 'Pa');
   }
@@ -227,7 +258,7 @@ export class MagneticFluxDensityValue extends Vec3SensorValue {
   public static fromValue(
     sample: Vec3SampleValue,
     pretty: boolean,
-  ): AccelerationValue {
+  ): MagneticFluxDensityValue {
     if (pretty) sample = vec3Map(sample, val => Math.round(val));
     return new this(sample, 'nT');
   }
@@ -238,8 +269,58 @@ export class IlluminanceValue extends ScalarSensorValue {
     return this.sample / 1e3;
   }
 
-  public static fromValue(sample: number, pretty: boolean): TemperatureValue {
+  public static fromValue(sample: number, pretty: boolean): IlluminanceValue {
     if (pretty) sample = Math.round(sample * 1e3);
     return new this(sample, 'lx');
+  }
+}
+
+export class PercentageScalar extends ScalarSensorValue {
+  get value() {
+    return this.sample / 1e3;
+  }
+
+  public static fromValue(sample: number, pretty: boolean): PercentageScalar {
+    if (pretty) sample = Math.round(sample * 1e3);
+    return new this(sample, '%');
+  }
+}
+
+export class PercentageVector extends Vec3SensorValue {
+  override get value() {
+    return vec3Map(this.sample, v => v / 1e3);
+  }
+
+  public static fromValue(
+    sample: Vec3SampleValue,
+    pretty: boolean,
+  ): PercentageVector {
+    if (pretty) sample = vec3Map(sample, val => Math.round(val * 1e3));
+    return new this(sample, '%');
+  }
+}
+
+export class DiscreteValue extends SensorValue<DiscreteSampleValue> {
+  protected constructor(
+    readonly sample: DiscreteSampleValue,
+    readonly unit: string,
+  ) {
+    super();
+  }
+
+  override get value() {
+    return this.sample;
+  }
+
+  public static fromValueChecked(
+    sample: unknown,
+    pretty: boolean,
+  ): DiscreteValue {
+    const sampleChecked = DiscreteSampleValue.parse(sample);
+    return this.fromValue(sampleChecked, pretty);
+  }
+
+  public static fromValue(sample: string, _pretty: boolean): DiscreteValue {
+    return new this(sample, '');
   }
 }

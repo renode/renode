@@ -61,7 +61,7 @@ export const GetSensorsResponse = resp({
   data: z
     .object({
       name: z.string(),
-      types: z.string().array(),
+      measurands: z.record(z.string(), z.string().array()),
     })
     .array(),
 });
@@ -71,6 +71,21 @@ export const GetSensorResponse = resp({
   data: z.unknown(),
 });
 export type GetSensorResponse = z.infer<typeof GetSensorResponse>;
+
+export const GetSensorSourceResponseBody = z.object({
+  type: z.literal(['raw', 'percent', 'discrete']),
+  value: z.unknown(),
+});
+
+export type GetSensorSourceResponseBody = z.infer<
+  typeof GetSensorSourceResponseBody
+>;
+
+export const GetSensorSourceResponse = resp({
+  data: GetSensorSourceResponseBody,
+});
+
+export type GetSensorSourceResponse = z.infer<typeof GetSensorSourceResponse>;
 
 export const EmptyExecResponse = resp({
   data: z.literal('ok'),

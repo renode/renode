@@ -90,18 +90,6 @@ namespace Antmicro.Renode.WebSockets.Providers
                 return ExecRenodeArgParser(argData, true, true) ?
                     GPIOData.ButtonSet(argData.Machine, argData.Peripheral, args.Value.ToObject<bool>()) :
                     argData.ErrorMessage;
-            case "sensors":
-                return ExecRenodeArgParser(argData, true, false) ?
-                    SensorsData.GetSensors(argData.Machine) :
-                    argData.ErrorMessage;
-            case "sensor-get":
-                return ExecRenodeArgParser(argData, false, true) ?
-                    SensorsData.GetSensorData(argData.Peripheral, args.Type) :
-                    argData.ErrorMessage;
-            case "sensor-set":
-                return ExecRenodeArgParser(argData, false, true) ?
-                    SensorsData.SetSensorData(argData.Peripheral, args.Type, args.Value) :
-                    argData.ErrorMessage;
             case "spis":
                 return ExecRenodeArgParser(argData, true, false) ?
                     GPIOData.GetPeripheralsNameOfType<ISPIController>(argData.Machine) :
@@ -109,6 +97,73 @@ namespace Antmicro.Renode.WebSockets.Providers
             }
 
             return WebSocketAPIUtils.CreateEmptyActionResponse("unknown action");
+        }
+
+        [WebSocketAPIAction("sensor-list")]
+        private WebSocketAPIResponse SensorList(string machine)
+        {
+            var argData = new ExecRenodeArgParserData()
+            {
+                MachineName = machine,
+            };
+
+            if(!ExecRenodeArgParser(argData, true, false))
+            {
+                return argData.ErrorMessage;
+            }
+
+            return SensorsData.GetSensors(argData.Machine);
+        }
+
+        [WebSocketAPIAction("sensor-source-read")]
+        private WebSocketAPIResponse SensorSourceRead(string machine, string peripheral, string measurand, string type)
+        {
+            var argData = new ExecRenodeArgParserData()
+            {
+                MachineName = machine,
+                PeripheralName = peripheral,
+            };
+
+            if(!ExecRenodeArgParser(argData, false, true))
+            {
+                return argData.ErrorMessage;
+            }
+
+            return SensorsData.GetSensorData(argData.Peripheral, measurand, type);
+        }
+
+        [WebSocketAPIAction("sensor-source-set")]
+        private WebSocketAPIResponse SensorSourceSet(string machine, string peripheral, string measurand, string type, JToken data)
+        {
+            var argData = new ExecRenodeArgParserData()
+            {
+                MachineName = machine,
+                PeripheralName = peripheral,
+            };
+
+            if(!ExecRenodeArgParser(argData, false, true))
+            {
+                return argData.ErrorMessage;
+            }
+
+            return SensorsData.SetSensorData(argData.Peripheral, measurand, type, data);
+        }
+
+        [WebSocketAPIAction("sensor-source-set-relative")]
+        private WebSocketAPIResponse SensorSourceSetRelative(string machine, string peripheral, string measurand, string type, JToken data)
+        {
+            var argData = new ExecRenodeArgParserData()
+            {
+                MachineName = machine,
+                PeripheralName = peripheral,
+            };
+
+            if(!ExecRenodeArgParser(argData, false, true))
+            {
+                return argData.ErrorMessage;
+            }
+
+            return SensorsData.SetSensorDataRelative(argData.Peripheral, measurand, type, data);
         }
 
         [WebSocketAPIAction("exec-monitor")]
