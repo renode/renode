@@ -15,7 +15,7 @@ ${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/exampl
 *** Keywords ***
 Run Guest Program On Native Bus Handlers
     [Arguments]                     ${program}  ${host}
-    ${build_dir}=                   Set Variable  ${RESULTS_DIRECTORY}/bus-handlers-build
+    ${build_dir}=                   Allocate Temporary Directory  bus-handlers-build
     Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
 
     ${script}=                      Catenate  SEPARATOR=${\n}
@@ -27,7 +27,7 @@ Run Guest Program On Native Bus Handlers
     ...                             ${program}
     ...                             """ triple="arm64"
     ...                             cpu PC 0x40000000
-    ${script_path}=                 Set Variable  ${RESULTS_DIRECTORY}/bus-handlers.resc
+    ${script_path}=                 Set Variable  ${build_dir}/bus-handlers.resc
     Create File                     ${script_path}  ${script}
 
     ${result}=                      Run Process  ${build_dir}/${host}  ${script_path}

@@ -27,7 +27,7 @@ Setup And Start NativeInterface
     END
 
     ${EXAMPLE_SRC}=                 Set Variable  ${RENODE_DIR}/tools/NativeInterface/example
-    ${BUILD_DIR}=                   Set Variable  ${RESULTS_DIRECTORY}/native-interface-example-build
+    ${BUILD_DIR}=                   Allocate Temporary Directory  native-interface-example-build
     ${BINARY}=                      Set Variable  ${BUILD_DIR}/librenode_example
 
     Build NativeInterface Project   ${EXAMPLE_SRC}  ${BUILD_DIR}

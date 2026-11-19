@@ -15,7 +15,7 @@ ${EXAMPLE_DIR}                      ${CURDIR}/../../tools/NativeInterface/exampl
 *** Keywords ***
 Run Guest Program On Lockstep Host
     [Arguments]                     ${program}  ${host}
-    ${build_dir}=                   Set Variable  ${RESULTS_DIRECTORY}/lockstep-build
+    ${build_dir}=                   Allocate Temporary Directory  lockstep-build
     Build NativeInterface Project   ${EXAMPLE_DIR}  ${build_dir}
 
     ${script}=                      Catenate  SEPARATOR=${\n}
@@ -27,7 +27,7 @@ Run Guest Program On Lockstep Host
     ...                             ${program}
     ...                             """ triple="arm64"
     ...                             cpu PC 0x40000000
-    ${script_path}=                 Set Variable  ${RESULTS_DIRECTORY}/lockstep.resc
+    ${script_path}=                 Set Variable  ${build_dir}/lockstep.resc
     Create File                     ${script_path}  ${script}
 
     # Run Process reads the host's outputs only after the host exits, so they go to files, which
