@@ -348,7 +348,7 @@ EOF
 generate_build_target
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-TARGET="`get_path \"$PWD/Renode.sln\"`"
+TARGET="`get_path \"$PWD/Renode.slnx\"`"
 
 if $ON_LINUX; then
   PARAMS+=(p:WPFPath=$ROOT_PATH/lib/resources/libraries/WPF/$RID)

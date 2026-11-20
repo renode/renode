@@ -1,0 +1,122 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="DebugHeadless" />
+    <BuildType Name="Release" />
+    <BuildType Name="ReleaseHeadless" />
+  </Configurations>
+  <Folder Name="/Libraries/">
+    <Project Path="lib/AntShell/AntShell/AntShell.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/bc-csharp/crypto/crypto.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/BigGustave/src/BigGustave/BigGustave.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/CxxDemangler/CxxDemangler/CxxDemangler.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/ELFSharp/ELFSharp/ELFSharp.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/FdtSharp/FdtSharp/FdtSharp.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/InpliTftpServer/libtftp/libtftp_alt.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/Migrant/Migrant/Migrant.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/options-parser/OptionsParser.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/Packet.Net/PacketDotNet/PacketDotNet.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/termsharp/TermSharp.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/termsharp/xwt/Xwt.Gtk/Xwt.Gtk3.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="lib/termsharp/xwt/Xwt/Xwt.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+  </Folder>
+  <Folder Name="/Plugins/">
+    <Project Path="src/Infrastructure/src/Plugins/SampleCommandPlugin/SampleCommandPlugin.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Infrastructure/src/Plugins/TracePlugin/TracePlugin.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Plugins/CoSimulationPlugin/CoSimulationPlugin.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Plugins/SystemCPlugin/SystemCPlugin.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Plugins/WiresharkPlugin/WiresharkPlugin.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Infrastructure/" />
+  <Folder Name="/src/Infrastructure/src/" />
+  <Folder Name="/src/Infrastructure/src/Emulator/" />
+  <Folder Name="/Tests/">
+    <Project Path="lib/options-parser/OptionsParserTests.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Infrastructure/src/Emulator/Extensions/MonitorTests/MonitorTests.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Infrastructure/src/Emulator/Main/Tests/UnitTests/UnitTests.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="src/Infrastructure/src/Emulator/Peripherals/Test/PeripheralsTests/PeripheralsTests.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+    <Project Path="tests/unit-tests/RenodeTests/RenodeTests.csproj">
+      <BuildType Solution="DebugHeadless|*" Project="Debug" />
+      <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+    </Project>
+  </Folder>
+  <Project Path="lib/termsharp/xwt/Xwt.WPF/Xwt.WPF.csproj">
+    <BuildType Solution="DebugHeadless|*" Project="Debug" />
+    <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+  </Project>
+  <Project Path="src/Infrastructure/src/Infrastructure.csproj">
+    <BuildType Solution="DebugHeadless|*" Project="Debug" />
+    <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+  </Project>
+  <Project Path="src/Renode/Renode.csproj">
+    <BuildType Solution="DebugHeadless|*" Project="Debug" />
+    <BuildType Solution="ReleaseHeadless|*" Project="Release" />
+  </Project>
+</Solution>

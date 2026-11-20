@@ -8,8 +8,8 @@ cd "${0%/*}"
 . common_make_packages.sh
 
 DIR=renode_${VERSION}_source
-OUTPUT=output/packages 
-OUTPUT_DIR=$BASE/$OUTPUT 
+OUTPUT=output/packages
+OUTPUT_DIR=$BASE/$OUTPUT
 PACKAGE_NAME=$DIR.tar.xz
 TMP=$(mktemp -d)
 
@@ -19,7 +19,7 @@ mv $TMP $DIR
 rm -rf $TMP
 
 # Force dotnet to save all NuGet dependencies, so we can bundle them with the package
-dotnet restore "${DIR}/Renode.sln" --force --packages "${DIR}/nuget"
+dotnet restore "${DIR}/Renode.slnx" --force --packages "${DIR}/nuget"
 
 # Add a local nuget package source
 cat > "${DIR}/NuGet.Config" <<EOF
