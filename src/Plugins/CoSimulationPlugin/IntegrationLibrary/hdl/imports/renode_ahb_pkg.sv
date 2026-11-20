@@ -48,10 +48,11 @@ package renode_ahb_pkg;
     Doubleword64bit = 3'b011
   } transfer_size_e;
 
+  // Protocol supports three named bus-endianness
   typedef enum int {
-    LittleEndian = 0,
-    ByteInvariantLittleEndian = 1,
-    WordInvariantBigEndian = 2
+    LittleEndian,             // LE
+    ByteInvariantBigEndian,   // BE8
+    WordInvariantBigEndian    // BE32
   } bus_endianness_e;
 
 endpackage

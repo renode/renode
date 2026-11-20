@@ -16,6 +16,7 @@ interface renode_ahb_if #(
   import renode_ahb_pkg::*;
 
   localparam int unsigned StrobeWidth = (DataWidth / 8);
+  localparam longint data_bus_bytes = (longint'(DataWidth) + 7) / 8;
 
   typedef logic [AddressWidth-1:0] address_t;
   typedef logic [DataWidth-1:0] data_t;
@@ -36,7 +37,7 @@ interface renode_ahb_if #(
   logic                hgrant;
   logic                hreadyout;
 
-  function static bit are_valid_bits_supported(renode_pkg::valid_bits_e valid_bits);
+  function automatic bit are_valid_bits_supported(renode_pkg::valid_bits_e valid_bits);
     case (valid_bits)
       renode_pkg::Byte: return DataWidth >= 8;
       renode_pkg::Word: return DataWidth >= 16;
@@ -46,7 +47,7 @@ interface renode_ahb_if #(
     endcase
   endfunction
 
-  function static transfer_size_e valid_bits_to_transfer_size(renode_pkg::valid_bits_e valid_bits);
+  function automatic transfer_size_e valid_bits_to_transfer_size(renode_pkg::valid_bits_e valid_bits);
     case (valid_bits)
       renode_pkg::Byte: return Byte8bit;
       renode_pkg::Word: return Halfword16bit;
@@ -56,7 +57,7 @@ interface renode_ahb_if #(
     endcase
   endfunction
 
-  function static renode_pkg::valid_bits_e transfer_size_to_valid_bits(transfer_size_t transfer_size);
+  function automatic renode_pkg::valid_bits_e transfer_size_to_valid_bits(transfer_size_t transfer_size);
     case (transfer_size)
       Byte8bit: return renode_pkg::Byte;
       Halfword16bit: return renode_pkg::Word;
@@ -72,7 +73,7 @@ interface renode_ahb_if #(
     return strobe_t'(((1 << bytes_count) - 1) << offset);
   endfunction
 
-  function static int transfer_size_to_bytes(transfer_size_t size);
+  function automatic int transfer_size_to_bytes(transfer_size_t size);
     case (size)
       Byte8bit: return 1;
       Halfword16bit: return 2;
@@ -84,12 +85,11 @@ interface renode_ahb_if #(
 
   function automatic longint le_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
     // NOTE: following section 6.2.1 AMBA AHB spec
-    longint data_bus_bytes = (longint'(DataWidth) + 7) / 8;
     longint byte_lane = address - (address / data_bus_bytes) * data_bus_bytes;
     return byte_lane;
   endfunction
 
-  function static longint be8_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+  function automatic longint be8_byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
     // NOTE: following section 6.2.2 AMBA AHB spec
     return le_byte_lane_offset(address, size);
   endfunction
@@ -104,24 +104,21 @@ interface renode_ahb_if #(
   endfunction
 
 
-  function static longint byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
+  function automatic longint byte_lane_offset(renode_pkg::address_t address, transfer_size_t size);
     case (BusEndianness)
       LittleEndian: return le_byte_lane_offset(address, size);
-      ByteInvariantLittleEndian: return be8_byte_lane_offset(address, size);
+      ByteInvariantBigEndian: return be8_byte_lane_offset(address, size);
       WordInvariantBigEndian: return be32_byte_lane_offset(address, size);
     endcase
   endfunction
 
-  function automatic renode_pkg::data_t encode_byte_lane(
-    renode_pkg::data_t data,
-    renode_pkg::address_t address,
-    transfer_size_t size);
+  function automatic data_t encode_byte_lane(renode_pkg::data_t data, renode_pkg::address_t address, transfer_size_t size);
     longint offset = byte_lane_offset(address, size);
-    return data << (offset * 8);
+    return data_t'(data) << (offset * 8);
   endfunction
 
-  function automatic renode_pkg::data_t decode_byte_lane(renode_pkg::data_t data, renode_pkg::address_t address, transfer_size_t size);
+  function automatic renode_pkg::data_t decode_byte_lane(data_t data, renode_pkg::address_t address, transfer_size_t size);
     longint offset = byte_lane_offset(address, size);
-    return data >> (offset * 8);
+    return renode_pkg::data_t'(data >> (offset * 8));
   endfunction
 endinterface

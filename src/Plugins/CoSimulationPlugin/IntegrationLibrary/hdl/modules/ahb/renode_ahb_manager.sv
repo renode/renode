@@ -47,7 +47,7 @@ module renode_ahb_manager #(int RenodeToCosimIndex = 0) (
     address = runtime.controllers[RenodeToCosimIndex].write_transaction_address;
     valid_bits = runtime.controllers[RenodeToCosimIndex].write_transaction_data_bits;
     transfer_size = bus.valid_bits_to_transfer_size(valid_bits);
-    data = data_t'(bus.encode_byte_lane(runtime.controllers[RenodeToCosimIndex].write_transaction_data & valid_bits, address, transfer_size));
+    data = bus.encode_byte_lane(runtime.controllers[RenodeToCosimIndex].write_transaction_data & valid_bits, address, transfer_size);
     configure_transfer(address, valid_bits, Write, is_invalid);
     if (is_invalid) begin
         runtime.controllers[RenodeToCosimIndex].write_respond(is_invalid);
@@ -83,7 +83,7 @@ module renode_ahb_manager #(int RenodeToCosimIndex = 0) (
     is_error = is_response_error(bus.hresp);
 
     renode_bus_data = bus.decode_byte_lane(
-      renode_pkg::data_t'(data),
+      data,
       runtime.controllers[RenodeToCosimIndex].read_transaction_address,
       bus.valid_bits_to_transfer_size(valid_bits));
     runtime.controllers[RenodeToCosimIndex].read_respond(renode_bus_data & valid_bits, is_error);
