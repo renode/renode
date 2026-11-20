@@ -1,0 +1,12 @@
+[mcp_servers.renode]
+command = "/usr/bin/python3"
+args = ["/ABSOLUTE/PATH/TO/renode/tools/renode_mcp_server/server.py", "--renode", "/ABSOLUTE/PATH/TO/renode/renode"]
+cwd = "/ABSOLUTE/PATH/TO/renode"
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+enabled_tools = ["project_create", "project_build", "project_artifacts", "renode_start", "renode_load_elf", "renode_verify_project", "renode_run_project", "renode_system_info", "renode_open_uart_analyzer", "renode_command", "renode_stop"]
+
+[mcp_servers.renode.env]
+DOTNET_ROOT = "/ABSOLUTE/PATH/TO/dotnet"
+PATH = "/ABSOLUTE/PATH/TO/dotnet:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
