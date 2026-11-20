@@ -9,10 +9,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using Antmicro.Renode.Core;
 using Antmicro.Renode.Exceptions;
 using Antmicro.Renode.Logging;
-using Antmicro.Renode.UserInterface;
 
 namespace Antmicro.Renode.Network.ExternalControl;
 
@@ -20,7 +18,6 @@ public class CustomCommand : BaseCommand
 {
     public CustomCommand(ExternalControlEndpoint parent) : base(parent)
     {
-        monitor = ObjectCreator.Instance.GetSurrogate<UserInterface.Monitor>();
     }
 
     public override MessagePayload Invoke(MessagePayload payload)
@@ -67,11 +64,6 @@ public class CustomCommand : BaseCommand
 
     public void RegisterExternalCallback()
     {
-        if(monitor.Interaction is not CommandInteractionWrapper)
-        {
-            monitor.Interaction = new CommandInteractionWrapper(monitor.Interaction);
-        }
-
         // A Renode client can only register one event callback for CustomCommand
         const int eventId = 0;
         byte[] payload = { (byte)CustomCommandCommand.RegisterCallbacks };
@@ -108,15 +100,7 @@ public class CustomCommand : BaseCommand
         }
 
         parent.Owner.DebugLog("Received custom command: {0}", command);
-        if(ExecuteMonitorCommand(command, out var output))
-        {
-            var bytes = Encoding.UTF8.GetBytes(output);
-            return MessagePayload.Success(Identifier, bytes);
-        }
-        else
-        {
-            return MessagePayload.Error(Identifier, output);
-        }
+        return InteractWithMonitor((monitor, interaction) => monitor.Parse(command, interaction));
     }
 
     private MessagePayload HandleRequest(Span<byte> data)
@@ -149,30 +133,7 @@ public class CustomCommand : BaseCommand
         return MessagePayload.Success(Identifier);
     }
 
-    private bool ExecuteMonitorCommand(string command, out string output)
-    {
-        var interaction = monitor.Interaction as CommandInteractionWrapper;
-        interaction.Clear();
-
-        if(!monitor.Parse(command))
-        {
-            output = $"Could not execute command '{command}': {interaction.GetError()}";
-            return false;
-        }
-
-        var error = interaction.GetError();
-        if(!string.IsNullOrEmpty(error))
-        {
-            output = $"There was an error when executing command '{command}': {error}";
-            return false;
-        }
-
-        output = interaction.GetContents();
-        return true;
-    }
-
     private readonly Object commandLock = new Object();
-    private readonly Monitor monitor;
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct EventHeader
