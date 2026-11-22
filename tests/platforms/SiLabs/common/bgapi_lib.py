@@ -89,8 +89,14 @@ def open_host_connection(port):
     return index
 
 def close_all_host_connections():
-    for i in terminal_testers:
-        terminal_testers[i].close()
+    try:
+        for connection in terminal_testers.values():
+            try:
+                connection.close()
+            except Exception as e:
+                logger.warn(f"Failed to close host connection: {e}")
+    finally:
+        terminal_testers.clear()
 
 ########################################################################
 # Internals
