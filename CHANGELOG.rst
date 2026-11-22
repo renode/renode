@@ -614,7 +614,7 @@ Added demos and tests:
 Added features:
 
 * Renode server mode for WebSocket communication, along with a TypeScript API library
-* support for multiple *.cs files provided for ad-hoc compilation
+* support for multiple `*.cs` files provided for ad-hoc compilation
 * support for unsafe code during ad-hoc compilation
 * optional TCG ops backtrace in debug mode on Linux
 * optional `overridePeripheralAccesses` parameter for sysbus tags
@@ -2265,7 +2265,7 @@ Added features:
 Organizational improvements:
 
 * added GitHub issue and PR templates, along with an `issue reproduction repository <https://github.com/renode/renode-issue-reproduction-template>`_
-updated contributing instructions
+* updated contributing instructions
 
 Changed:
 
@@ -2840,7 +2840,7 @@ Fixed:
 * invalid disposal of the SD card model, possibly leading to filesystem sharing violations
 * some cursor manipulation commands in TermSharp
 * performance issues when hitting breakpoints with GDB
-* on the fly compilation of "*.cs" files in the portable Renode package
+* on the fly compilation of `*.cs` files in the portable Renode package
 * Mono Framework version detection
 * upgrading Renode version on Windows when installed using the ``msi`` package
 * error message when quitting Renode on Windows
