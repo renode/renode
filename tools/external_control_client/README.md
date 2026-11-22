@@ -57,6 +57,13 @@ Every clock ID returns the virtual time, while other time functions, such as `sl
 More functions can be overridden in `./lib/time_override.c`.
 The override requires the default socket transport, as with `in_process` it would replace the time functions of the process running Renode itself.
 
+The connection belongs to the process that made it, so child processes can't use it:
+* After `fork`, the child must not query the time or call `exit` (`_exit` is fine) before `exec`.
+  Otherwise it hangs or closes the parent's connection.
+* After `exec`, the child inherits `LD_PRELOAD` and tries to connect to the same server.
+  The server is already taken, so the child hangs on its first time query.
+  Clear `LD_PRELOAD` for such children where possible.
+
 ### Building
 
 Besides building a library and linking a client to the library, a client can be built with CMake using `./CMakeLists.txt`.
