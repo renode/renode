@@ -15,6 +15,14 @@ ${EXTERNAL_CONTROL_LIB}       ${CURDIR}/../../../tools/external_control_client/l
 ${CREATE_SNAPSHOT_ON_FAIL}     False
 
 *** Keywords ***
+Download Host Binary
+    [Documentation]           Downloads the gateway through the Renode file cache and makes an executable copy of it.
+    ${cached}=                Download File  ${HOST_BINARY}
+    ${dir}=                   Allocate Temporary Directory  zigbee_gateway
+    ${r}=                     Run Process  install  -m  755  ${cached}  ${dir}/zigbee_z3_gateway
+    Should Be Equal As Integers  ${r.rc}  0  msg=install failed: ${r.stderr}
+    Set Test Variable         ${HOST_PATH}  ${dir}/zigbee_z3_gateway
+
 Build Time Override Library
     [Documentation]           Builds librenode_api.so with the virtual time override. Preloaded into a gateway,
     ...                       it makes the gateway's clock follow the emulation's virtual time, so the gateway's
@@ -37,7 +45,7 @@ Create NCP With Host
     Execute Command           emulation CreateUartPtyTerminal "pty_${name}" "${pty}" true
     Execute Command           connector Connect sysbus.usart0 pty_${name}
     Execute Command           emulation CreateExternalControlServer "time_${name}" ${control_port}
-    Launch Host Process       host_${name}  ${HOST_BINARY}  -p  ${pty}
+    Launch Host Process       host_${name}  ${HOST_PATH}  -p  ${pty}
     ...                       renode_port=${control_port}  preload=${TIME_OVERRIDE_LIB}
     Wait For Host Line        host_${name}  ${PROMPT}
 
@@ -72,6 +80,7 @@ On Off Read Should Be Received
 
 *** Test Cases ***
 Should Form Network And Exchange Messages Through NCPs On xG24
+    Download Host Binary
     Build Time Override Library
     Create Emulation
     Create NCP With Host      ncp1  3347

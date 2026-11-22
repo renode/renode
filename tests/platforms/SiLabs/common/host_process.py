@@ -3,11 +3,8 @@ import os
 import pty
 import queue
 import re
-import stat
 import subprocess
-import tempfile
 import threading
-import urllib.request
 
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
@@ -21,13 +18,6 @@ _processes = {}
 
 
 def launch_host_process(name, binary, *args, renode_port=None, preload=None):
-    downloaded = None
-    if binary.startswith(("http://", "https://")):
-        fd, downloaded = tempfile.mkstemp(prefix=f"renode_{name}_")
-        os.close(fd)
-        urllib.request.urlretrieve(binary, downloaded)
-        os.chmod(downloaded, os.stat(downloaded).st_mode | stat.S_IEXEC)
-        binary = downloaded
     env = None
     if renode_port is not None or preload is not None:
         env = os.environ.copy()
@@ -40,7 +30,7 @@ def launch_host_process(name, binary, *args, renode_port=None, preload=None):
     os.close(slave)
     lines = queue.Queue()
     threading.Thread(target=_read_lines, args=(master, lines), daemon=True).start()
-    _processes[name] = (process, master, lines, downloaded)
+    _processes[name] = (process, master, lines)
 
 
 def write_line_to_host(name, line):
@@ -50,7 +40,7 @@ def write_line_to_host(name, line):
 
 
 def wait_for_host_line(name, pattern, timeout=10):
-    process, _, lines, _ = _processes[name]
+    process, _, lines = _processes[name]
     regex = re.compile(pattern)
     start = _virtual_time()
     next_flush = start + FLUSH_PERIOD
@@ -85,12 +75,10 @@ def _virtual_time():
 
 
 def terminate_host_processes():
-    for process, master, _, downloaded in _processes.values():
+    for process, master, _ in _processes.values():
         process.kill()
         process.wait()
         os.close(master)
-        if downloaded:
-            os.remove(downloaded)
     _processes.clear()
 
 
