@@ -142,16 +142,23 @@ def _wait_for_event(event, tester_id):
     return _wait_for_one_of([event], tester_id)
 
 def _wait_for_one_of(events, tester_id):
-    max_attempts = DEFAULT_TIMEOUT / DEFAULT_INTERVAL
-    for _ in range(int(max_attempts)):
+    steps = int(DEFAULT_TIMEOUT / DEFAULT_INTERVAL)
+    while True:
         evt = _get_pending_event(tester_id)
         logger.debug(f"Waiting for one of: {events}, Current event: {evt}")
         if evt == None:
+            if steps == 0:
+                break
+            steps -= 1
             _monitor(f'emulation RunFor "{DEFAULT_INTERVAL}"')
         else:
             for event in events:
                 if evt == event:
                     return evt
-            _fail(f"Event mismatch: {evt} not in {events}")
+            # The stack reports more events than the tests check, in an order that differs
+            # between versions. Skip them, but don't wait through a dropped connection.
+            if evt == "bt_evt_connection_closed":
+                _fail(f"Connection closed while waiting for one of: {events}")
+            logger.debug(f"Skipping event: {evt}")
     _fail(f"Timeout waiting for one of: {events}")
     return None
