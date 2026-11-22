@@ -20,7 +20,7 @@ namespace Antmicro.Renode.Network.ExternalControl
         public override MessagePayload Invoke(MessagePayload payload)
         {
             var timestamp = EmulationManager.Instance.CurrentEmulation.MasterTimeSource.ElapsedVirtualTime;
-            parent.Owner.Log(LogLevel.Info, "Executing GetTime command: {0}", timestamp);
+            parent.Owner.Log(LogLevel.Debug, "Executing GetTime command: {0}", timestamp);
 
             return MessagePayload.Success(Identifier, ((ulong)timestamp.TotalNanoseconds).AsRawBytes());
         }
