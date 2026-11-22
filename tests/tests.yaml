@@ -318,7 +318,6 @@
 - tests/platforms/SiLabs/openthread.robot
 - tests/platforms/SiLabs/railtest.robot
 - tests/platforms/SiLabs/zigbee.robot
-- tests/platforms/SiLabs/zigbee_ncp.robot
 
 - signal_handling:
   - tests/unit-tests/signal_handling.robot
@@ -360,6 +359,9 @@
 
 - port_3346:
   - tests/unit-tests/gdb/gdb_multiprocess.robot
+
+- ports_3347_3348:
+  - tests/platforms/SiLabs/zigbee_ncp.robot
 
 - ports_3451_3452:
   - tests/platforms/SiLabs/ble_ncp.robot

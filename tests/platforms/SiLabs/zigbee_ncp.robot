@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation                 The Zigbee host gateway is an x86-64 Linux binary talking to the NCP over a PTY.
 Resource                      common/zigbee.resource
+Library                       Process
 Library                       common/host_process.py
 Test Tags                     exclude_windows  exclude_osx  exclude_host_aarch64
 Test Teardown                 Run Keywords  Terminate Host Processes  AND  Renode Test Teardown
@@ -9,17 +10,35 @@ Test Teardown                 Run Keywords  Terminate Host Processes  AND  Renod
 ${PROMPT}                     zigbee_z3_gateway>
 ${NCP_ELF}                    ${FIRMWARE_URL}/xg24_zigbee_ncp_uart_hw_v2025.6.1.out-s_5274788-d5111cb67c2fd30fbb5651ddfd5c8138bdca3044
 ${HOST_BINARY}                ${FIRMWARE_URL}/unix_zigbee_z3_gateway_v2025.6.1-s_866688-2bb69c08c2e7197b340096ab1eed67684cc4fe80
+${EXTERNAL_CONTROL_LIB}       ${CURDIR}/../../../tools/external_control_client/lib
+# The external control servers the gateways read their time from cannot be saved in a snapshot
+${CREATE_SNAPSHOT_ON_FAIL}     False
 
 *** Keywords ***
+Build Time Override Library
+    [Documentation]           Builds librenode_api.so with the virtual time override. Preloaded into a gateway,
+    ...                       it makes the gateway's clock follow the emulation's virtual time, so the gateway's
+    ...                       timeouts match the NCP. Sanitizers would stop it from being preloaded.
+    ${build}=                 Allocate Temporary Directory  time_override
+    ${r}=                     Run Process  cmake  -DRENODE_API_TIME_OVERRIDE\=ON  -DRENODE_API_SANITIZERS\=OFF
+    ...                       ${EXTERNAL_CONTROL_LIB}  cwd=${build}
+    Should Be Equal As Integers  ${r.rc}  0  msg=cmake failed: ${r.stderr}
+    ${r}=                     Run Process  cmake  --build  ${build}
+    Should Be Equal As Integers  ${r.rc}  0  msg=cmake failed: ${r.stderr}
+    Set Test Variable         ${TIME_OVERRIDE_LIB}  ${build}/librenode_api.so
+
 Create NCP With Host
     [Documentation]           Creates an NCP board and starts a host gateway connected to its UART over a PTY.
-    [Arguments]               ${name}
+    ...                       The gateway reads its clock from an external control server on ${control_port}.
+    [Arguments]               ${name}  ${control_port}
     Create Node               ${name}  brd4186c  ${NCP_ELF}  usart0
     # The gateway rejects long serial port names
     ${pty}=                   Set Variable  /tmp/sim_${name}
     Execute Command           emulation CreateUartPtyTerminal "pty_${name}" "${pty}" true
     Execute Command           connector Connect sysbus.usart0 pty_${name}
+    Execute Command           emulation CreateExternalControlServer "time_${name}" ${control_port}
     Launch Host Process       host_${name}  ${HOST_BINARY}  -p  ${pty}
+    ...                       renode_port=${control_port}  preload=${TIME_OVERRIDE_LIB}
     Wait For Host Line        host_${name}  ${PROMPT}
 
 Host Should Form Network
@@ -53,9 +72,10 @@ On Off Read Should Be Received
 
 *** Test Cases ***
 Should Form Network And Exchange Messages Through NCPs On xG24
+    Build Time Override Library
     Create Emulation
-    Create NCP With Host      ncp1
-    Create NCP With Host      ncp2
+    Create NCP With Host      ncp1  3347
+    Create NCP With Host      ncp2  3348
 
     ${host1_id}=              Host Should Form Network  host_ncp1
     Host Should Open Network  host_ncp1
