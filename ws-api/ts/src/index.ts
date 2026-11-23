@@ -178,6 +178,19 @@ export class RenodeProxySession extends EventTarget {
     );
   }
 
+  public async getPeripherals(machine: string) {
+    return await this.sendSessionRequestTyped(
+      {
+        action: 'exec-renode',
+        payload: {
+          command: 'peripherals',
+          args: { machine },
+        },
+      },
+      s.GetPeripheralsResponse,
+    );
+  }
+
   public async setButtonValue(
     machine: string,
     peripheral: string,

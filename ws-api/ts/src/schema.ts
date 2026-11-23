@@ -47,6 +47,23 @@ export const GetButtonsResponse = resp({
 export const GetLedsResponse = resp({
   data: z.string().array(),
 });
+export const InterestingPeripheralTypeSchema = z.literal([
+  'sensor',
+  'uart',
+  'spi',
+  'can',
+  'video',
+  'led',
+  'button',
+]);
+export const GetPeripheralsResponse = resp({
+  data: z
+    .object({
+      name: z.string(),
+      types: InterestingPeripheralTypeSchema.array(),
+    })
+    .array(),
+});
 export const GetSpisResponse = resp({
   data: z.string().array(),
 });

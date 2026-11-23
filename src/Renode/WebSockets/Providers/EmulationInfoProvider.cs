@@ -20,7 +20,9 @@ using Antmicro.Renode.WebSockets.Misc;
 using AntShell.Commands;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Antmicro.Renode.WebSockets.Providers
 {
@@ -74,6 +76,10 @@ namespace Antmicro.Renode.WebSockets.Providers
             {
             case "machines":
                 return this.GetMachines();
+            case "peripherals":
+                return ExecRenodeArgParser(argData, true, false) ?
+                    Utils.GetPeripheralsWithTypes(argData.Machine) :
+                    argData.ErrorMessage;
             case "uarts":
                 return ExecRenodeArgParser(argData, true, false) ?
                     Utils.GetPeripheralsNameOfType<IUART>(argData.Machine) :
@@ -447,6 +453,18 @@ namespace Antmicro.Renode.WebSockets.Providers
             public string Type;
             [JsonProperty("value", Required = Required.Default)]
             public JToken Value;
+        }
+
+        [JsonConverter(typeof(StringEnumConverter), typeof(CamelCaseNamingStrategy))]
+        public enum InterestingPeripheralType
+        {
+            Sensor,
+            UART,
+            SPI,
+            CAN,
+            Video,
+            LED,
+            Button,
         }
 
         private class UartCreatedEventDto
