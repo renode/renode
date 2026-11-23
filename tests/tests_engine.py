@@ -55,7 +55,6 @@ class PoolResult(NamedTuple):
 shared_suite_counter = None
 shared_active_suites: Optional[MutableSequence[str]] = None
 shared_group_progress: Optional[MutableMapping[GroupIndex, GroupProgress]] = None
-shared_worker_pids: Optional[MutableSequence[ProcessId]] = None
 
 DEAD_WORKER_CHECK_INTERVAL_SECONDS = 5
 DEFAULT_RENODE_BINARY_NAME = 'Renode.dll' if platform != 'win32' else 'RenodeWPF.dll'
@@ -662,7 +661,6 @@ def init_worker_process(
     counter: Synchronized,
     active_suites: MutableSequence[str],
     group_progress: MutableMapping[GroupIndex, GroupProgress],
-    worker_pids: MutableSequence[ProcessId],
 ) -> None:
     global shared_suite_counter
     shared_suite_counter = counter 
@@ -670,7 +668,6 @@ def init_worker_process(
     shared_active_suites = active_suites
     global shared_group_progress
     shared_group_progress = group_progress
-    worker_pids.append(os.getpid())
 
 
 def count_rest_of_group(group_args: GroupArgs, finished_suites: int) -> None:
@@ -725,38 +722,12 @@ def fail_dead_worker_group(
     count_rest_of_group(group_args, progress.finished_suites)
 
 
-def find_unstarted_groups(
-    pending: list[GroupIndex], results: list[ApplyResult[GroupResult]], running_workers: set[ProcessId]
-) -> set[GroupIndex]:
-    assert shared_group_progress is not None and shared_worker_pids is not None, (
-        "The shared state must have been created at this point"
-    )
-    # If a worker dies right after it picks up a group, the group never gets a progress entry and nobody
-    # runs it. A group still waiting in the queue has no entry either. But if some worker is idle, the queue
-    # must be empty, since that worker would have picked the group up. So then a group with no entry is lost.
-    if not any(pid not in running_workers and psutil.pid_exists(pid) for pid in shared_worker_pids):
-        return set()
-    return {
-        group_index
-        for group_index in pending
-        if group_index not in shared_group_progress and not results[group_index].ready()
-    }
-
-
-def fail_unstarted_group(group_args: GroupArgs, not_run_suites: list[str]) -> None:
-    suite_paths = ", ".join(suite.path for suite in group_args.suites)
-    print(
-        f"!!!!! A worker process died before it started the group with {suite_paths}, counting the group as failed",
-        flush=True,
-    )
-    not_run_suites.extend(suite.path for suite in group_args.suites)
-    count_rest_of_group(group_args, finished_suites=0)
-
-
 def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
     # `multiprocessing.Pool` replaces a worker process that dies, for example when the OOM killer
     # stops it, but never returns a result for the group that this worker was running. Waiting
     # for all results would then block forever, so find such groups by the pid of their worker.
+    # The pool does not tell which worker takes a group. A worker that dies before its first progress
+    # report (milliseconds after it takes a group) therefore still leaves the run waiting forever.
     assert shared_group_progress is not None, "The group progress must have been created at this point"
     results: list[ApplyResult[GroupResult]] = [pool.apply_async(run_test_group, (group_args,)) for group_args in args]
     dead_worker_log_files: dict[GroupIndex, SuiteLogFiles] = {}
@@ -764,8 +735,6 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
     not_run_suites: list[str] = []
     # The processes that each worker had started at the last check, such as Renode.
     worker_children: dict[ProcessId, list[psutil.Process]] = {}
-    # The groups that had not started at the last check while a worker was idle.
-    unstarted_groups: set[GroupIndex] = set()
     while True:
         pending = [
             group_index
@@ -779,7 +748,6 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
         # lets the run end as soon as the last group finishes.
         results[pending[0]].wait(DEAD_WORKER_CHECK_INTERVAL_SECONDS)
 
-        running_workers: set[ProcessId] = set()
         for group_index in pending:
             progress: Optional[GroupProgress] = shared_group_progress.get(group_index)
             if progress is None:
@@ -787,7 +755,6 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
             # A worker can die right after it sends the result of this group. Checking the pid first gives
             # the pool time to receive that result before we check it.
             if psutil.pid_exists(progress.pid):
-                running_workers.add(progress.pid)
                 record_worker_children(progress.pid, worker_children)
             elif not results[group_index].ready():
                 # Keep the results of the suites that finished before the worker died.
@@ -799,13 +766,6 @@ def run_test_groups_in_pool(pool: Pool, args: list[GroupArgs]) -> PoolResult:
                     dead_worker_suites,
                     not_run_suites,
                 )
-
-        previous_unstarted_groups = unstarted_groups
-        unstarted_groups = find_unstarted_groups(pending, results, running_workers)
-        # A group must stay unstarted for two checks, so that a worker that has just taken it can record it.
-        for group_index in sorted(unstarted_groups & previous_unstarted_groups):
-            dead_worker_log_files[group_index] = set()
-            fail_unstarted_group(args[group_index], not_run_suites)
 
     if dead_worker_log_files:
         # The pool still waits for the task of the dead worker, so closing and joining it would never return.
@@ -834,7 +794,6 @@ def run():
     global shared_suite_counter
     global shared_active_suites
     global shared_group_progress
-    global shared_worker_pids
     parser = prepare_parser()
     for handler in registered_handlers:
         if 'before_parsing' in handler and handler['before_parsing'] is not None:
@@ -899,16 +858,14 @@ def run():
         shared_suite_counter = multiprocessing.Value("i", 0)
         # Like the counter, we need to use a multiprocessing.Manager to create
         # a shared list that keeps track of the currently running suites,
-        # a shared dictionary with the worker process of each group and the
-        # number and log files of its finished suites, and a shared list of
-        # all worker processes.
+        # and a shared dictionary with the worker process of each group and
+        # the number and log files of its finished suites.
         manager = multiprocessing.Manager()
         shared_active_suites = manager.list()
         shared_group_progress = manager.dict()
-        shared_worker_pids = manager.list()
         pool = multiprocessing.Pool(
             initializer=init_worker_process, 
-            initargs=(shared_suite_counter, shared_active_suites, shared_group_progress, shared_worker_pids),
+            initargs=(shared_suite_counter, shared_active_suites, shared_group_progress),
             processes=options.jobs,
         )
 
