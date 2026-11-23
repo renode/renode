@@ -8,10 +8,10 @@ import { version as packageVersion } from '../package.json';
 export const version: string = packageVersion;
 export const clientVersion: semver.SemVer = semver.parse(version)!;
 
-export const isOutdatedClientVersion = (val: string): boolean => {
-  const apiVersion = semver.parse(val);
+export const isServerCompatible = (val: string): boolean => {
+  const serverVersion = semver.parse(val);
   return (
-    apiVersion?.major != clientVersion.major ||
-    apiVersion.minor > clientVersion.minor
+    serverVersion?.major == clientVersion.major &&
+    serverVersion.minor >= clientVersion.minor
   );
 };

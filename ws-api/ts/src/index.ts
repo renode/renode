@@ -2,34 +2,32 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { version, isOutdatedClientVersion } from './version';
-import { z } from 'zod';
-import * as s from './schema';
-import WebSocket from 'isomorphic-ws';
 import { Buffer } from 'buffer';
-import { tryConnectWs } from './utils';
+import WebSocket from 'isomorphic-ws';
+import { z } from 'zod';
 import {
-  UartOpened,
-  UartOpenedCallback,
-  UartOpenedArgs,
-  CanOpened,
-  CanOpenedCallback,
-  CanOpenedArgs,
-  RenodeQuitted,
-  ClearCommand,
-  LedStateChanged,
-  LedStateChangedCallback,
-  LedStateChangedArgs,
   ButtonStateChanged,
-  ButtonStateChangedCallback,
   ButtonStateChangedArgs,
+  ButtonStateChangedCallback,
+  CanOpened,
+  CanOpenedArgs,
+  CanOpenedCallback,
+  ClearCommand,
   DisplayOpened,
-  DisplayOpenedCallback,
   DisplayOpenedArgs,
+  DisplayOpenedCallback,
+  LedStateChanged,
+  LedStateChangedArgs,
+  LedStateChangedCallback,
+  RenodeQuitted,
   SpiOpened,
-  SpiOpenedCallback,
   SpiOpenedArgs,
+  SpiOpenedCallback,
+  UartOpened,
+  UartOpenedArgs,
+  UartOpenedCallback,
 } from './events';
+import * as s from './schema';
 import {
   GetSensorValue,
   Sensor,
@@ -37,29 +35,31 @@ import {
   SensorTypeFromString,
   SensorValue,
 } from './sensor';
+import { tryConnectWs } from './utils';
+import { isServerCompatible, version } from './version';
 import { DisplayDecoder, VideoConfig, VideoMessage } from './video';
 
 export {
+  DisplayDecoder,
+  DisplayOpenedArgs,
+  DisplayOpenedCallback,
+  EmptyEventCallback,
+  EventCallback,
+  GetSensorValue,
   Sensor,
   SensorType,
   SensorTypeFromString,
-  GetSensorValue,
   SensorValue,
-  EventCallback,
-  EmptyEventCallback,
+  SpiOpenedCallback,
   UartOpenedArgs,
   UartOpenedCallback,
-  DisplayDecoder,
   VideoConfig,
   VideoMessage,
-  DisplayOpenedArgs,
-  DisplayOpenedCallback,
-  SpiOpenedCallback,
 };
 
 export { CANFrameSchema, type CANFrame } from './schema';
 
-export { SpiExchangeSchema, SpiExchangesArraySchema } from './schema';
+export { SpiExchangesArraySchema, SpiExchangeSchema } from './schema';
 
 class SocketClosedEvent extends Event {
   constructor() {
@@ -659,7 +659,7 @@ export class RenodeProxySession extends EventTarget {
       throw new Error(obj.error);
     }
 
-    if (isOutdatedClientVersion(obj.version)) {
+    if (!isServerCompatible(obj.version)) {
       throw new Error(
         `Protocol version (${obj.version}) is incompatible with the JS client (${version})`,
       );
