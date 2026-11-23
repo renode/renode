@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as semver from 'semver';
+import { version as packageVersion } from '../package.json';
 
-export const version: string = '1.9.0';
+export const version: string = packageVersion;
 export const clientVersion: semver.SemVer = semver.parse(version)!;
 
 export const isOutdatedClientVersion = (val: string): boolean => {
