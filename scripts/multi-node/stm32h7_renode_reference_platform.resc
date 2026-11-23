@@ -1,11 +1,11 @@
-:name STM32 Renode Reference Board multinode
-:description Creates an emulation with two STM32 Renode Reference Boards with
+:name STM32 Renode Reference Platform multinode
+:description Creates an emulation with two STM32 Renode Reference Platforms with
 :CAN and Ethernet connections
 
 $name="node1"
-i @scripts/single-node/stm32h7_renode_reference_board.resc
+i @scripts/single-node/stm32h7_renode_reference_platform.resc
 $name="node2"
-i @scripts/single-node/stm32h7_renode_reference_board.resc
+i @scripts/single-node/stm32h7_renode_reference_platform.resc
 
 emulation CreateSwitch "switch"
 emulation CreateCANHub "canHub"
