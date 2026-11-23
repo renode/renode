@@ -1,20 +1,15 @@
-Renode changelog
-================
+# Renode changelog
 
 This document describes notable changes to the Renode framework.
 
-1.17.1 - 2026.11.23
--------------------
+## 1.17.1 - 2026.11.23
 
 Added and improved architecture support:
 
 * Arm Ethos:
-
   * added support for the Ethos-U55 NPU, executing command streams with convolution, depthwise convolution, pooling and elementwise operations, per-channel scaling and hardware-matching saturation and padding behavior, with cached weight stream decoding for better performance
   * added support for the Ethos-U85 NPU, covering the register interface and command stream execution, with convolution, depthwise convolution, pooling, elementwise and resize operations, DMA transfers (`NPU_OP_DMA_START`) and command stream branching (`NPU_OP_BRANCH`)
-
 * Arm:
-
   * added tail-chaining of pending exceptions on Armv7-M and Armv8-M
   * instruction fetches from unmapped memory now raise a BusFault on Cortex-M instead of permanently halting the CPU
   * division-by-zero exceptions are now enabled by default on Cortex-M
@@ -43,9 +38,7 @@ Added and improved architecture support:
   * fixed CPUWAIT de-assertion not releasing a Cortex-M CPU that was reset while the machine was running
   * fixed opcode hooks and counters matching only on the first halfword of Thumb-2 instructions
   * fixed magic values in Arm GDB feature definitions
-
 * RISC-V:
-
   * significantly extended the AndeStar V5 extension, adding branch on bit test and on immediate comparison, bit field operations, load effective address, find-first-byte and byte mismatch instructions, BF16 conversions, packed FP16 arithmetic, packed INT4 loads, small-integer vector operations, vector dot products and quad-widening vector multiply-accumulate, as well as RV64 support for performance arithmetic and stubs of the CCTL CSRs
   * added the VeeR EL2 fast interrupt redirect mode
   * VeeR EL2 can now use an interrupt controller other than the internal PIC
@@ -58,18 +51,14 @@ Added and improved architecture support:
   * fixed internal core interrupt raising logic causing races in multicore setups
   * fixed the 64-bit `bclri`, `bseti` and `binvi` instructions producing wrong results in tlib compiled with MinGW-w64
   * fixed a failing assert in debug builds on certain vector instructions
-
 * Xtensa:
-
   * added Xtensa LX7 instruction decoding tables, laying the groundwork for ESP32-S2 and ESP32-S3 support alongside a range of ESP32 peripherals
-
 * x86:
-
   * added an LLVM assembly/disassembly triple for 16-bit x86
 
 Added and improved platform descriptions:
 
-* extensive support for the `STM32H7 Renode Reference Platform <https://designer.verks.ai/library/devices/stm32h7_renode_reference_board>`_, a new open-source platform designed to showcase Renode features
+* extensive support for the [STM32H7 Renode Reference Platform](https://designer.verks.ai/library/devices/stm32h7_renode_reference_board), a new open-source platform designed to showcase Renode features
 * Silicon Labs SiXG301, combining a Cortex-M33 application core with a CV32E40P-based RISC-V sequencer core controlling the radio, with models of the radio, Sequencer Accelerator, Key Storage Unit, Semaphore, SYMCRYPTO, Secure Element mailbox and the clock, timer, DMA and GPIO peripherals, DWT and EM1P energy mode settings, available on the BRD4407A and BRD1019A boards
 * Silicon Labs EFR32xG22, EFR32xG24 and EFR32xG26, reworked on top of a new, unified set of Silicon Labs models following the `SiLabs_IPNAME_IPVERSION` naming convention, adding an EFR32xG22 radio model, a radio buffer controller (BUFC) for all families, a Packet Trace Interface debug adapter for capturing radio traffic, DWT and EM1P energy mode settings, and the new BRD4182A (EFR32xG22) and BRD4187C (EFR32xG24) boards
 * Alif Ensemble E8 AE822FA0E5597BS0 (RTSS-HE core)
@@ -167,9 +156,7 @@ Changed:
 * the UI `index.html` can now be downloaded by a WebSocket client, e.g. to keep the VS Code extension webview in sync with the server
 * the Monitor, logs, UARTs, displays, CAN hubs and SPI controllers are now served at named WebSocket endpoints in server mode, e.g. `/display/<machine>/<display>`, `/can/<hub>` and `/spi/<machine>/<spi>`
 * multiple clients can now connect to the same WebSocket endpoint in server mode
-
 * External Control API:
-
   * added an in-process transport for the client library, which lets a program that runs Renode in its own process use the same External Control API with `renode_connect_in_process` instead of a socket, starting Renode when the connection opens and ending it when it closes, with no header other than `renode_api.h`; this makes it possible to build native co-simulation hosts that serve bus accesses and drive GPIOs of an emulated machine directly from C or C++, with an optional `serialize_requests` mode holding callbacks while a request is in progress
   * added Custom Commands, executing Monitor commands from the External Control API, also available in the client library
   * added the `renode_start`, `renode_pause`, `renode_set_quantum` and `renode_run_script` client library functions
@@ -185,18 +172,14 @@ Changed:
   * fixed a stack overflow in the receive thread
   * fixed a hang when closing Renode while an External Control client is communicating
   * fixed `Address already in use` errors when reusing the socket
-
 * SystemC:
-
   * added SystemC integration support for RISC-V platforms
   * SystemCCPUSignalsUnit now supports multiple cores with different architectures over a single connection
   * the clock frequency set by SystemC is now passed to the NVIC SysTick
   * improved performance of the SystemC integration with `UseNative`
   * SystemC reset signal assertions now halt the CPU at the next transaction instead of the next sync state
   * fixed DMI invalidation never unmapping memory in SystemCPeripheral
-
 * Guest profiling:
-
   * extended stack pointer tracking and reset handling to all guest profilers
   * profilers now use the instruction count instead of time on reset
   * added integration of TrustZone on Armv8-M with guest profiling
@@ -257,7 +240,6 @@ Added peripheral models:
 * Arm DMA-250
 * Arm DMA-350
 * Caliptra peripherals, extending the Caliptra Root of Trust support:
-
   * Adams Bridge, the post-quantum ML-DSA-87 accelerator, supporting key generation, signing and verification
   * ECC, with ECDSA P-384 key generation, signing and verification, and ECDH
   * HMAC
@@ -267,7 +249,6 @@ Added peripheral models:
   * Mailbox
   * I3C Target
   * MCU Semihost UART
-
 * CAST CAN-CTRL
 * DesignWare PCIe
 * ESP32 RTC
@@ -280,13 +261,11 @@ Added peripheral models:
 * NEORV32 GPIO
 * PWM LED
 * Silicon Labs models for the SiXG301 and reworked EFR32xG22, EFR32xG24 and EFR32xG26 platforms:
-
   * SiXG301 Radio, Sequencer Accelerator, Key Storage Unit, Semaphore, GPIO, LDMA, EUSART, SYSRTC, TIMER, HFXO, SOCPLL, DEVINFO, HYDRARAM, RVCFG and Secure Element mailbox
   * EFR32xG22 Radio, DPLL, RTCC, TIMER and EUART
   * new IP versions of CMU, SYSCFG and PRS for EFR32xG22, EFR32xG26 and SiXG301, and of EMU, HFRCO, LFRCO and LFXO for EFR32xG22 and SiXG301
   * BUFC, SYMCRYPTO and WDOG for EFR32xG22, EFR32xG24, EFR32xG26 and SiXG301
   * Packet Trace Debug Adapter
-
 * ST7789
 * STM32 USB, a new model distinct from the one renamed to DesignWare USB OTG
 * ZynqMP DMA
@@ -339,13 +318,11 @@ Improvements in peripherals:
 * Xilinx GPIOPS, with input GPIO support
 * ZynqMP Platform Management Unit
 
-1.17.0 - 2026.09.06
--------------------
+## 1.17.0 - 2026.09.06
 
 Added and improved architecture support:
 
 * Arm:
-
   * added support for Arm Cortex-M52 and Cortex-A7 CPU types
   * added early, experimental emulation of Armv7 using the newer tlib backend
   * added and improved support for numerous Arm Helium MVE instructions and opcodes: `VQADD`, `V(R)MULH`, `VABD`, `VADDLV(A)`, `VADDV(A)`, `VAND`, `VBIC`, `VEOR`, `VORN`, `VORR`, `VCADD`, `VCMLA`, `VCMP`, `VMAX`/`VMIN`, `VMLA`/`VMLAS`, `VMLADAV`/`VMLSDAV`, `VMLALDAV`/`VMLSLDAV`, `VMOVL`/`VMOVN`/`VSHLL`, `VMULL` (integer/polynomial), `VMVN`, `VPNOT`, `VQMOVN`/`VQMOVUN`, `SQRSHR`/`UQRSHL`, `SQSHL`/`UQSHL`, `SRSHR`/`URSHR`, `VABAV`, `VADC(I)`/`VSBC(I)`, `VBRSR`, `VHCADD`, `VFMA`/`VFMS`, `VLD2`, `VLDR`/`VSTR`, `VMOV` (GP/vector lane), `VPT`, `VQ(R)DMLA(S)H`, `VQ(R)DMLADH(X)`/`VQ(R)DMLSDH(X)`, `VQ(R)DMULH` (incl. T3/T4), `VQABS`/`VQNEG`, `VQDMULL`, `VQRSHR(U)N`, `VQSHRN`/`VQSHRUN`, `VQSUB`, `VRHADD`, `VRMLALDAV(AX)`/`VRMLSLDAV(AX)`, `VSLI`/`VSRI`, `VST2`/`VST4`, `WLSTP`/`DLSTP`/`LETP`/`LCTP`, `VRINT`/`VCVT`, `VRSHRN`, `VSHLC`, `VSHRN`, plus supporting features: long shifts by immediate, `BF`/`BFX`/`BFL`/`BFLX`/`BFCSEL` as NOPs, a coprocessor access check (`NOCP`), `ASRL`/`LSLL`/`SQRSHRL`/`UQRSHLL` shifts, `VPR` register access from the Monitor and GDB, and lazy state preservation for MVE and FPU state
@@ -396,9 +373,7 @@ Added and improved architecture support:
   * fixed the AArch64 `system_registers` list
   * fixed a tlib abort when executing long chains of `NOP` instructions on arm64
   * fixed float to int and int to float conversion with scale on arm64
-
 * RISC-V:
-
   * added support for Google Coral NPU, a RISC-V-based NPU implementation
   * added support for the Zbkb extension
   * added the Zcmb, Zcmp and Zcmt RISC-V extensions
@@ -416,9 +391,7 @@ Added and improved architecture support:
   * split RISC-V "G" into its constituents while constructing the CPU
   * fixed `sfence.vma` executed in U-Mode not raising an illegal instruction exception
   * fixed `sc.w` traps on misaligned writes on RISC-V
-
 * x86/x86-64:
-
   * added complete CPU register and flag definitions for GDB on X86_64
 
 Added and improved platform descriptions:
@@ -436,7 +409,6 @@ Added and improved platform descriptions:
 * STM32F7
 * STM32L5
 * Added Input Capture support to STM32 Timer in:
-
   * STM32F0
   * STM32F103
   * STM32F4
@@ -567,17 +539,13 @@ Changed:
 * updated the ReTrace format to include quadruples for all execution modes
 * in Robot tests, the Renode library is now named "Renode"
 * improved region access logging
-
 * REPL grammar:
-
   * added support for dictionaries
   * allowed a semicolon after the last statement in brackets
   * allowed semicolons after `using` statements
   * literals can now include a colon
   * removed the prefixing feature
-
 * SystemC:
-
   * added SystemCPeripheralNative for native SystemC API calls, with support for DMI, bus access methods, translation block invalidation, GPIO and non-blocking transactions
   * added support for connecting to a SystemC bridge in Renode from an externally launched simulation
   * added support for SystemC integration with Renode used as a library
@@ -605,9 +573,7 @@ Changed:
   * fixed importing and exporting API symbols in `SystemCModule` for MSVC
   * fixed a SystemCPlugin structure mismatch between C and C#
   * fixed a SystemCPeripheral race condition during Dispose
-
 * External Control API:
-
   * added support for using Renode as an External Control client
   * added support for synchronizing time between two Renode instances
   * added a bus peripheral interface
@@ -825,17 +791,15 @@ Improvements in peripherals:
 * Xilinx GPIOPS
 * Xilinx XADC
 
-1.16.1 - 2026.02.16
--------------------
+## 1.16.1 - 2026.02.16
 
 Added and improved architecture support:
 
 * ARM:
-
   * added initial support for ARM Helium M-Profile Vector Extension (MVE) along with exposing the registers to GDB
   * added support for FPv5 in ARMv8-M along with exposing registers to GDB
   * added support for Cortex-M55
-  * added support for the RNDR system register, which can be enabled on cores that don\'t support it in hardware using ``cpu EnableRNDR true``
+  * added support for the RNDR system register, which can be enabled on cores that don't support it in hardware using `cpu EnableRNDR true`
     * this may be helpful for Linux RNG initialization, for example
   * added initial Cortex-R52 system register support for Trace32 and GDB
   * extended Cortex-R52 system register support with 64-bit CP14/15 registers
@@ -856,9 +820,7 @@ Added and improved architecture support:
   * fixed ARM `vcvtp` decoding
   * fixed wrong exception being raised when FPU is disabled on Cortex-M
   * fixed `VCVTB`/`VCVTT` issues on 32-bit ARM
-
 * RISC-V:
-
   * added a stub of `Sscofpmf` extension
   * added tracing of `Zaamo` operand contents
   * added `clmul`, `clmulh` and `clmulr` RISC-V instructions
@@ -878,13 +840,9 @@ Added and improved architecture support:
   * fixed various vector instructions
   * fixed RISC-V PMP not being properly set after machine reset
   * fixed overly aggressive cached translation block matching
-
 * x86/x86-64:
-
   * added initial x86-64 KVM-based CPU support with enabled GDB debugging
-
 * Xtensa:
-
   * added experimental assembler and disassembler for Xtensa
 
 Added and improved platform descriptions:
@@ -898,7 +856,6 @@ Added and improved platform descriptions:
 * Tock VeeR EL2 Sim platform
 * Nuvoton NPCX9 OTPI ROM function mocks
 * Added alternative timer function handling in:
-
   * STM32F0
   * STM32F4
   * STM32F103
@@ -908,9 +865,7 @@ Added and improved platform descriptions:
   * STM32L151
   * STM32L552
   * STM32WBA52
-
 * Added individual interrupt signals in:
-
   * STM32F0
   * STM32F103
   * STM32F4
@@ -967,7 +922,6 @@ Added features:
 * handling of Trace32's batched register requests
 * creating unlimited number of external MMU regions at runtime
 * ability to place the external MMU before or after the CPU's internal MMU
-
 * shadow reload and shadow registers API
 * mechanism for loading SFDP data for SPI flash
 * common mechanism of encoding and decoding SFDP via Packets
@@ -979,7 +933,6 @@ Added features:
 * support for delaying UART transmissions
 * API to disconnect co-simulated blocks
 * `exitTimeout` option for co-simulation connection termination
-
 * support for passing arrays to property and field setters in the Monitor
 * support for providing peripheral references to field and property setters
 * `export` sub-command to the `peripherals` command
@@ -1002,7 +955,6 @@ Changed:
 * optimized memory accesses
 * optimized HST based atomics for single core machines
 * renamed several x86 and x86-64 demos:
-
   * acrn_x86_64_zephyr demo to acrn_x86_64-zephyr
   * i386-kvm platform to x86-kvm
   * i386-kvm-bios demo to x86-kvm-bios
@@ -1011,7 +963,6 @@ Changed:
   * i386_64-kvm-bios demo to x86_64-kvm-bios
   * i386_64-kvm-linux demo to x86_64-kvm-linux
   * i386_zephyr demo to x86-zephyr
-
 * set dotnet as default target in VS Code tasks
 * renamed `EnableRiscvOpcodesCounting` to `EnableRiscvOpcodesCountingByExtension`
 * local interrupt targets now accept hexadecimal values (syntax- `->peripheral@0x1@1`)
@@ -1044,7 +995,7 @@ Fixed:
 * PeakRDL-renode generating incorrect register reset values
 * conversion related warnings generated by PeakRDL-renode
 * initial state for APB3 Requester, now the state is initialized only in reset
-* crash when loading \`.gz\` snapshots
+* crash when loading `.gz` snapshots
 * WebSocket exec-renode action
 * deadlock when trying to register peripheral in an unregistered parent
 * exception message for registration conflict
@@ -1163,14 +1114,12 @@ Improvements in peripherals:
 * VeeR EL2 RISC-V core
 * ZynqMP GQSPI
 
-1.16.0 - 2025.08.02
--------------------
+## 1.16.0 - 2025.08.02
 
 Added and improved architecture support:
 
 * added support for MSP430/MSP430X architecture, as the first interpreted ISA in Renode
 * ARM
-
   * added automatic connection of all ARM-A/R CPUs to GIC
   * added new registers for Cortex-A55
   * added definitions of Cortex-R5 specific CP15 registers
@@ -1204,9 +1153,7 @@ Added and improved architecture support:
   * improved `SMC` calls emulation
   * added non-secure aliases for v8 MPU (TrustZone)
   * reduced the verbosity of sysreg-related logs
-
 * RISC-V
-
   * improved handling of the `MSTATUS.FS` flag
   * improved parsing of ISA strings to support more granular extension descriptions and custom extensions
   * fixed setting of the `mtval` register with the opcode that caused an exception
@@ -1219,7 +1166,6 @@ Added and improved architecture support:
   * added mirroring of the `MCAUSE` fields `MPP` and `MPIE` to `MSTATUS` in CLIC mode
   * added support for the `Zacas` extension for performing atomic Compare-and-Swap (CAS) operations
   * added support for `Zve*` and `Zvfh` vector extensions
-
 * added support for single vector trapping in selected SPARC cores
 * added mechanism for dynamic ACPI table generation in X86
 * added initial SMP support for x86
@@ -1539,7 +1485,6 @@ Added peripheral models:
 * SAMD21 RTC
 * SAMD21 Timer
 * Silicon Labs Series 2 peripherals, e.g.:
-
   * EFR32xG24 Radio
   * AES
   * CMU
@@ -1564,7 +1509,6 @@ Added peripheral models:
   * SYSRTC
   * TIMER
   * USART
-
 * STM32F3 ADC
 * TCA6416 I/O Expander
 * USBHost
@@ -1625,8 +1569,7 @@ Improvements in peripherals:
 * RCAR UART
 * USBHost
 
-1.15.3 - 2024.09.17
--------------------
+## 1.15.3 - 2024.09.17
 
 Added and improved architecture support:
 
@@ -1683,7 +1626,7 @@ Fixed:
 * SystemC integration crashing when initializing GPIO connections
 * USB Speed value reported in USB/IP device descriptor
 * USB endpoints with the same number but opposite direction not being distinguished
-* a potential crash due to ``OverflowException`` when stopping the emulation
+* a potential crash due to `OverflowException` when stopping the emulation
 * checking address range when mapping memory ranges in TranslationCPU
 * configuration descriptor parsing in USBIPServer
 * fatal TCG errors in some cases of invalid RISC-V instructions
@@ -1718,8 +1661,7 @@ Improvements in peripherals:
 * ZynqMP IPI
 * ZynqMP Platform Management Unit
 
-1.15.2 - 2024.08.18
--------------------
+## 1.15.2 - 2024.08.18
 
 Added and improved architecture support:
 
@@ -1728,7 +1670,7 @@ Added and improved architecture support:
 * RISC-V custom instructions now have to follow length encoding patterns, as specified in the ISA manual (section 1.2 Instruction Length Encoding)
 * fixed fetching RISC-V instruction with PMP boundary set exactly after the instruction
 * fixed setting MPP after mret on RISC-V platforms without user privilege level
-* fixed RISC-V PMPCFG CSR operations not respecting the ``write any, read legal`` semantics
+* fixed RISC-V PMPCFG CSR operations not respecting the `write any, read legal` semantics
 * fixed RISC-V fcvt.wu.s, fcvt.lu.s and vmulh.vv instructions implementation
 
 Added and improved platform descriptions:
@@ -1784,7 +1726,7 @@ Changed:
 * ExecutionTracer tracks values written to/read from memory if TrackMemoryAccesses parameter is used
 * added the ability to override build properties
 * added the ability to track memory accesses when address translation is active
-* External Control client \`run_for\` example can now progress time multiple times without reconnecting
+* External Control client `run_for` example can now progress time multiple times without reconnecting
 * machine by default disallows spawning a GdbServer with CPUs belonging to different architectures.
 * made user-configured $CC the default value for Compiler and LinkerPath and $AR for ArPath
 * paths encapsulated in quotes can handle names with whitespaces
@@ -1796,10 +1738,10 @@ Changed:
 * improved Renode pausing responsiveness when using TAP interface on Linux
 * improved performance of External Control API renode_run_for function
 * simplified per-core registration API in REPL files
-* renamed \`\`PrivilegeArchitecture\`\` to \`\`PrivilegedArchitecture\`\` on RISC-V
+* renamed `PrivilegeArchitecture` to `PrivilegedArchitecture` on RISC-V
 * unified STM32 CRC peripherals so they use a single class configured with the STM32Series enum
 * co-simulated peripherals protocol on writes directed to system bus
-* MacOS now uses \`\`mono\`\` instead of \`\`mono64\`\` as a runner, which is equivalent since Mono 5.2
+* MacOS now uses `mono` instead of `mono64` as a runner, which is equivalent since Mono 5.2
 * time updates are now deferred when possible to improve performance
 * virtual time precision is now 1 nanosecond instead of 1 microsecond
 * limited unnecessary invalidations of memory for multicore platforms
@@ -1826,13 +1768,13 @@ Fixed:
 * invalid undefined instruction faults for Armv8 CPUs
 * GDB getting confused when receiving Ctrl-C on multicore platforms
 * LSM303 peripheral test
-* CS7034 \"specified version string does not conform to recommended format\" warning appearing when building
+* CS7034 "specified version string does not conform to recommended format" warning appearing when building
 * Vegaboard-RI5CY demo failing to boot
 * exception thrown on an empty message in log when failing a Robot test
 * linking and imports in the External Control library
 * nonstandard configuration byte when disabling Telnet line mode
 * printing skipped test status
-* version information not appearing correctly after running \`renode --help\`
+* version information not appearing correctly after running `renode --help`
 
 Improvements in peripherals:
 
@@ -1874,8 +1816,7 @@ Improvements in peripherals:
 * VirtIO
 * Zynq7000 System Level Control Registers
 
-1.15.1 - 2024.06.14
--------------------
+## 1.15.1 - 2024.06.14
 
 Added and improved architecture support:
 
@@ -1903,7 +1844,6 @@ Added and improved platform descriptions:
 * added Arm signal unit support for Cortex-R8 and multicore Cortex-R8 platforms
 * merged Zynq Ultrascale+ into a single platform with both Cortex-A and Cortex-R CPUs
 * updated peripherals registration for STM32F0, STM32F4, STM32F746, STM32G0, STM32H743, STM32L071, STM32L151, STM32L552, STM32WBA52 SoCs
-
 * Renesas CK-RA6M5 board
 * Beagle-V Fire, with Microchip's PolarFire SoC
 
@@ -2083,8 +2023,7 @@ Improvements in peripherals:
 * SHT45 sensor
 
 
-1.15.0 - 2024.03.18
--------------------
+## 1.15.0 - 2024.03.18
 
 Added architecture support:
 
@@ -2194,8 +2133,7 @@ Added peripheral models:
 * Zynq 7000 System Level Control Registers
 
 
-1.14.0 - 2023.08.08
--------------------
+## 1.14.0 - 2023.08.08
 
 Added architecture support:
 
@@ -2245,45 +2183,45 @@ Added demos and tests:
 
 * Cortex-A53 and Cortex-A78 running Coreboot, ATF and Linux
 * Zephyr running echo_client demo on STM32F7-disco with Quectel BG96
-* basic Cortex-A53 Zephyr ``hello-world`` test and sample
-* additional Zephyr tests for Cortex-A53: ``synchronization``, ``philosophers``, kernel FPU sharing
+* basic Cortex-A53 Zephyr `hello-world` test and sample
+* additional Zephyr tests for Cortex-A53: `synchronization`, `philosophers`, kernel FPU sharing
 * seL4 Adder Sample test for Cortex-A53
 * range of Zephyr tests for Cortex-R52, along with custom-made, synthetic tests
 * precise pausing tests for LED and terminal tester
 
 Added features:
 
-* renode-test allows to run tests with a specified tag via the ``--include`` switch
+* renode-test allows to run tests with a specified tag via the `--include` switch
 * DPI interface for external HDL simulators, supporting AXI4 interface
 * portable package creation on dotnet
 * option to have Robot test pause execution deterministically after a match in various testers: UART, LED, log
 * duty cycle detection in LED tester
 * option to load files (e.g. raw binaries, hex files) to different localizations, like memories
-* support for relative paths in REPL file ``using`` directive
+* support for relative paths in REPL file `using` directive
 * MPU support for Cortex-M
-* ``FAULTMASK`` register in Cortex-M
+* `FAULTMASK` register in Cortex-M
 * support for Trace Based Model performance simulator by Google
 * read and write hooks for peripherals
 * DPI interface support for co-simulating with RTL, with initial support for AXI4 bus
-* build.sh ``--profile-build`` switch to enable easier profiling of translation libraries
+* build.sh `--profile-build` switch to enable easier profiling of translation libraries
 * mechanism for progressing virtual time without executing instructions
 * support for subregions in Cortex-M MPU
 * support for FPU exceptions for Cortex-M
 * quad word (64-bit) peripherals API
-* ``CSV2RESD`` tool, for easy generation of RESD files
+* `CSV2RESD` tool, for easy generation of RESD files
 * automatic selection of port used to communicate between Renode and Robot
 * option to pause emulation of Robot keywords
 * support for NMI interrupts in RISC-V
 * option to save Renode logs for all tests
-* ``Execute Python`` keyword in Robot tests
+* `Execute Python` keyword in Robot tests
 
 Changed:
 
 * GDB interacts with Renode much faster
 * Renode now uses Robot Framework 6.0.2 for testing (with an option to use other versions at your own risk)
-* RESD format now accepts negative ``sampleOffsetTime``
+* RESD format now accepts negative `sampleOffsetTime`
 * HEX files loader now supports extended segment address and start segment address sections
-* GDB ``autostart`` parameter now starts the simulation as soon as the debugger is connected
+* GDB `autostart` parameter now starts the simulation as soon as the debugger is connected
 * VerilatorIntegrationLibrary is now part of Renode packages
 * improved performance of the virtual time handling loop
 * improved parsing of RESD files
@@ -2304,9 +2242,9 @@ Fixed:
 * registration is no longer taken into account when looking for dependency cycles in REPL files
 * exception when issuing a DMA transaction during register access
 * reported PC on exception when executing vector instructions in RISC-V
-* several RISC-V vector instructions handling, e.g. ``vfredosum``, ``vsetivli`` and ``vector_fpu``
+* several RISC-V vector instructions handling, e.g. `vfredosum`, `vsetivli` and `vector_fpu`
 * invalid instruction block exiting on RISC-V
-* handling of ``c.ebreak`` instruction in RISC-V, allowing for software breakpoints
+* handling of `c.ebreak` instruction in RISC-V, allowing for software breakpoints
 * building fixes on dotnet
 * removing of IO access flag from memory pages
 * invalidation of dirty translation blocks
@@ -2381,8 +2319,7 @@ Improvements in peripherals:
 * STM32 Timer
 * STM32F7 USART
 
-1.13.3 - 2023.02.22
--------------------
+## 1.13.3 - 2023.02.22
 
 Added and improved platform descriptions:
 
@@ -2390,7 +2327,7 @@ Added and improved platform descriptions:
 * various STM32 platforms with improved EXTI connections, IWDG configuration, and new CRC, Flash, PWR, RCC, and LPTimer models added to selected platforms
 * MAX32650 with a new I2C model
 * Zynq 7000 with new I2C, SPI, UART and TTC models
-* Apollo 4 with a new Timer model and a ``program_main2`` bootrom function mock
+* Apollo 4 with a new Timer model and a `program_main2` bootrom function mock
 * OpenTitan Earlgrey with new OTBN accelerator, AON Timer, System Reset controller, Entropy source, and SRAM controller models
 * nRF52840 with a new EGU model
 * EFR32MG1x with a new LDMA model and improved USART interrupt connections
@@ -2462,13 +2399,13 @@ Changed:
 * removed internal signal mappings from STM32 EXTI, making the interrupt routing more explicit in REPL files
 * console mode will be started instead of telnet when the UI fails to start
 * reset can now be executed on a not started machine
-* expanded the Execution Tracer with ``TrackMemoryAccesses`` and ``TrackVectorConfiguration`` options, along with disassembler-generated info
+* expanded the Execution Tracer with `TrackMemoryAccesses` and `TrackVectorConfiguration` options, along with disassembler-generated info
 * OnMemoryAccess hooks now receive the current PC as a parameter
 * changed the CRCEngine API and improved implementation
 * ELF symbol lookup will now skip several types of unimportant symbols
 * tags can now have zero width to ease the creation of variable width registers
 * added option to invert reset logic in AXI4Lite
-* added handling of the ``WSTRB`` signal in AXI4Lite
+* added handling of the `WSTRB` signal in AXI4Lite
 * added support for various address lines connections in Wishbone
 * added various access lengths support for verilated peripherals
 * timeout value for Verilator connections can now be defined in compile time
@@ -2480,8 +2417,8 @@ Changed:
 
 Fixed:
 
-* flushing of the log when using the ``lastLog`` command
-* deadlock when using the ``--console`` mode on dotnet with collapsed log entries enabled
+* flushing of the log when using the `lastLog` command
+* deadlock when using the `--console` mode on dotnet with collapsed log entries enabled
 * Wireshark handling on macOS
 * TAP support on macOS
 * Asciinema usage in multi-machine setups
@@ -2551,8 +2488,7 @@ Improvements in peripherals:
 * STM32L0 RCC
 * STM32G0 DMA
 
-1.13.2 - 2022.10.03
--------------------
+## 1.13.2 - 2022.10.03
 
 Added platforms:
 
@@ -2600,7 +2536,7 @@ Added features:
 
 Organizational improvements:
 
-* added GitHub issue and PR templates, along with an `issue reproduction repository <https://github.com/renode/renode-issue-reproduction-template>`_
+* added GitHub issue and PR templates, along with an [issue reproduction repository](https://github.com/renode/renode-issue-reproduction-template)
 * updated contributing instructions
 
 Changed:
@@ -2650,8 +2586,7 @@ Improvements in peripherals:
 * i.MX RT GPIO
 
 
-1.13.1 - 2022.07.23
--------------------
+## 1.13.1 - 2022.07.23
 
 Added platforms:
 
@@ -2739,8 +2674,7 @@ Improvements in peripherals:
 * ResetPin
 * HPSHostController
 
-1.13.0 - 2022.04.29
--------------------
+## 1.13.0 - 2022.04.29
 
 Added platforms:
 
@@ -2766,7 +2700,6 @@ Added models:
 * new models for Polarfire SoC: system services, user crypto features (RNG and RSA), Mustein GPU and various fixes to platform description
 * new model for Zynq 7000: XADC
 * new generic models:
-
   * generic SPISensor
   * HostCamera device
   * TrivialUart
@@ -2779,7 +2712,7 @@ Added demos:
 * Murax SoC with verilated UART with simple echo demo
 * LiteX with verilated CFU running CFU Playground demo
 * Zynq with verilated FastVDMA running Linux
-* NRF52840 BLE demo running Zephyr ``central_hr`` and ``peripheral_hr`` samples
+* NRF52840 BLE demo running Zephyr `central_hr` and `peripheral_hr` samples
 * Leon3 running Zephyr shell
 * GR716 running Zephyr shell
 * Xtensa sample controller running Zephyr "Hello World" sample
@@ -2825,7 +2758,7 @@ Added features:
 
 Changed:
 
-* bumped Robot Framework version to ``4.0.1``
+* bumped Robot Framework version to `4.0.1`
 * RobotFramework: log entries keywords now accept regex patterns
 * STM: renamed some UART ports to USART
 * ZynqEthernet: removed and replaced with CadenceGEM
@@ -2852,7 +2785,7 @@ Changed:
 * improved multicore debugging support in GDB
 * allowed to reuse testers in Robot tests
 * added option to safely include the same C# file multiple times during one Renode run
-* added ``tests.yaml``, containing all Robot tests, to all packages
+* added `tests.yaml`, containing all Robot tests, to all packages
 * add debug mode for all architectures disabling interrupts when stepping over guest code
 * simplified fixture selection when running tests
 * allowed unaligned memory access by default in IbexRiscV32
@@ -2873,7 +2806,7 @@ Changed:
 * added support for the flow control in UART
 * added support for bright colors to TermSharp
 * added basic VSCode launch configurations for Renode on Mono
-* unified ``renode`` and ``renode-test`` scripts names across all packages
+* unified `renode` and `renode-test` scripts names across all packages
 * added support for per-core peripheral registration
 * added option to the build script to export the build directory
 * improved performance of ELF reloading
@@ -2978,8 +2911,7 @@ Improvements in peripherals:
 * MPFS_DDRMock
 * Gaisler_GPTimer
 
-1.12.0 - 2021.04.02
--------------------
+## 1.12.0 - 2021.04.02
 
 Added:
 
@@ -2997,11 +2929,8 @@ Added:
 * integration with Arduino IDE and Arduino CLI
 * Python Standard Library, to be used with Python hooks and scripts in Renode
 * support for images in the Monitor, along with possibility to take framebuffer screenshots. This also works with certain terminal emulators, like iTerm2, when in headless mode
-
   * option to connect UART to the running console, improving headless capabilities
-
-    * option to run Renode Monitor directly in console, overlapped with logs, using the ``--console`` command line switch
-
+    * option to run Renode Monitor directly in console, overlapped with logs, using the `--console` command line switch
 * support for virtual addressing in GDB
 * option to combine multiple interrupt or GPIO signals into one, using logical OR, directly in REPL files
 * multi-bus support and AXI4 support (both as an initiator and a receiver) in co-simulation with Verilator
@@ -3011,7 +2940,7 @@ Added:
 * support for camera interfaces for nRF52840 and other platforms, along with a basic HM01B camera model
 * support for sound data via PDM and I2S interfaces in nRF52840 and EOS S3
 * 32-bit CSR versions of various LiteX peripherals
-* ``window-height`` and ``window-width`` Renode config file options
+* `window-height` and `window-width` Renode config file options
 
 Changed:
 
@@ -3050,18 +2979,17 @@ Fixed:
 * crash in TermsharpProvider when running on Windows
 * invalid default frequency for STM32L1
 
-1.11.0 - 2020.10.22
--------------------
+## 1.11.0 - 2020.10.22
 
 Added:
 
 * support for generating execution metrics, covering information like executed instructions count, memory and peripheral accesses, and interrupt handling
 * infrastructure for reporting supported CPU features to GDB
 * tests for Icicle Kit with PolarFire SoC
-* ``--debug-on-error`` option for ``renode-test`` allowing interactive debugging of failed Robot tests
-* ``lastLog`` Monitor command displaying ``n`` last log messages
-* ``currentTime`` monitor command with information about elapsed host and virtual time
-* ``WriteLine`` UART helper method to feed strings from the Monitor or scripts
+* `--debug-on-error` option for `renode-test` allowing interactive debugging of failed Robot tests
+* `lastLog` Monitor command displaying `n` last log messages
+* `currentTime` monitor command with information about elapsed host and virtual time
+* `WriteLine` UART helper method to feed strings from the Monitor or scripts
 * support for non-base RISC-V instruction sets disassembly
 * support for custom Robot test results listeners
 * support for Python-based implementation of (stateful) custom CSRs and custom instructions in RISC-V
@@ -3081,7 +3009,7 @@ Changed:
 * all testers (for UART, LED, network, sysbus accesses and log messages) now rely on virtual time instead of host time and accept floating point timeouts
 * portable package now includes requirements.txt file
 * skipped tests do not generate save files anymore
-* ``Clear`` Monitor command does not remove current working directory from searched paths
+* `Clear` Monitor command does not remove current working directory from searched paths
 * WFI handling in RISC-V is simplified, improving performance on sleepy systems
 * translation block fetch logger messages are now logged with Info instead of Debug level
 * Cortex-M CPUs now reports their registers to GDB
@@ -3103,8 +3031,7 @@ Fixed:
 * handling of images with unaligned size in USB pen drive
 * invalid LED connections in STM32F4
 
-1.10.1 - 2020.07.30
--------------------
+## 1.10.1 - 2020.07.30
 
 This is a hotfix release overriding 1.10.0.
 
@@ -3113,8 +3040,7 @@ Fixed:
 * crash on Windows when accessing high memory addresses
 * installation instructions in README
 
-1.10.0 - 2020.07.28
--------------------
+## 1.10.0 - 2020.07.28
 
 Added:
 
@@ -3134,65 +3060,64 @@ Added:
 * PCM encoder/decoder infrastructure for providing audio data to I2S devices
 * modular network server allowing to easily add server components to the emulation without a host-to-guest connection
 * built-in TFTP server module
-* file backend for UARTs, allowing to send output directly to a file (``uart CreateFileBackend``)
-* ``alias`` Monitor command
-* ``console_log`` Monitor command to simply print to the log window without level filtering
-* ``--no-gui`` build option to build without graphical dependencies
+* file backend for UARTs, allowing to send output directly to a file (`uart CreateFileBackend`)
+* `alias` Monitor command
+* `console_log` Monitor command to simply print to the log window without level filtering
+* `--no-gui` build option to build without graphical dependencies
 * option to define an average cycles count per instruction, to be used by CPU counters
 * code formatting rules for translation libraries, to be used with Uncrustify
 
 Changed:
 
-* Renode is now able to be compiled with ``mcs``. This means that you can use your distribution's Mono package instead of the one provided by mono-project.com, as long as it satisfies the minimum version requirement (currently Mono 5.2)
-* the default log level is now set to ``INFO`` instead of ``DEBUG``
+* Renode is now able to be compiled with `mcs`. This means that you can use your distribution's Mono package instead of the one provided by mono-project.com, as long as it satisfies the minimum version requirement (currently Mono 5.2)
+* the default log level is now set to `INFO` instead of `DEBUG`
 * all PolarFire SoC peripherals are now renamed from PSE_* to MPFS_*, to follow Microchip's naming pattern
 * major rework of the SD card model, along with the added SPI interface
 * RI5CY core can now be created with or without FPU support
-* STM32 and SAM E70 platforms now have verified ``priorityMask`` in NVIC
+* STM32 and SAM E70 platforms now have verified `priorityMask` in NVIC
 * Cortex-M based platforms can now be reset by writing to NVIC
 * easy way to update timer values between synchronization phases, significantly improving the performance of polling on timers
-* tests are now able to run in parallel, using the ``-j`` switch in the testing script execution
+* tests are now able to run in parallel, using the `-j` switch in the testing script execution
 * the pattern for download links in scripts for binaries hosted by Antmicro has been changed
 * portable package now includes testing infrastructure and sample tests
 * the LLVM-based disassembly library is now rebuilt, using less space and being able to support more architectures on all host OSes
-* the C++ symbol demangling now relies on a `CxxDemangler <https://github.com/southpolenator/CxxDemangler>`_ library, instead of libstdc++
+* the C++ symbol demangling now relies on a [CxxDemangler](https://github.com/southpolenator/CxxDemangler) library, instead of libstdc++
 * failed Robot tests will now produce snapshots allowing users to debug more easily
 * SVD-based log messages on reads and writes are now more verbose
 * Terminal Tester API has changed slightly, allowing for easier prompt detection, timeout control etc.
 
 Fixed:
 
-* crash when running tests with empty ``tests.yaml`` file
+* crash when running tests with empty `tests.yaml` file
 * crash when Renode is unable to find the root directory
-* crash when loading broken or incompatible state snapshot with ``Load``
+* crash when loading broken or incompatible state snapshot with `Load`
 * several issues in the PPC architecture
-* ``mstatus`` CSR behaviour when accessing FP registers in RISC-V
+* `mstatus` CSR behaviour when accessing FP registers in RISC-V
 * PMP napot decoding in RISC-V
 * evaluation of the IT-state related status codes in ARM CPUs
 * invalid setting of CPUID fields in x86 guests
 * PolarFire SoC platform description and various models: CAN, SPI, SD controller, etc.
-* ``ODR`` register behavior in STM32F1 GPIO port
-* ``State changed`` event handling in LED model
+* `ODR` register behavior in STM32F1 GPIO port
+* `State changed` event handling in LED model
 * invalid disposal of the SD card model, possibly leading to filesystem sharing violations
 * some cursor manipulation commands in TermSharp
 * performance issues when hitting breakpoints with GDB
 * on the fly compilation of `*.cs` files in the portable Renode package
 * Mono Framework version detection
-* upgrading Renode version on Windows when installed using the ``msi`` package
+* upgrading Renode version on Windows when installed using the `msi` package
 * error message when quitting Renode on Windows
 * running tests from binary packages
 * support for testing in Conda Renode package
 * other various fixes in Conda package building
 
-1.9.0 - 2020.03.10
-------------------
+## 1.9.0 - 2020.03.10
 
 Breaking changes:
 
 * the Renode configuration directory was moved to another location.
 
-  The directory is moved from ``~/.renode`` on Unix-like systems and ``Documents`` on Windows to
-  ``~/.config/renode`` and ``AppData\Roaming\renode`` respectively. To use your previous settings
+  The directory is moved from `~/.renode` on Unix-like systems and `Documents` on Windows to
+  `~/.config/renode` and `AppData\Roaming\renode` respectively. To use your previous settings
   and Monitor history, please start Renode 1.9 and copy your old config folder over the new one.
 
 Added:
@@ -3208,9 +3133,9 @@ Added:
 * CC1200 radio model
 * MAX3421E USB controller model
 * LiteX SoC controller model
-* support for Wishbone bus in verilated peripherals, exemplified with the ``riscv_verilated_liteuart.resc`` sample
+* support for Wishbone bus in verilated peripherals, exemplified with the `riscv_verilated_liteuart.resc` sample
 * one-shot mode in AutoRepaintingVideo allowing display models to control when they are refreshed
-* ``GetItState`` for ARM Cortex-M cores allowing to verify the current status of the IT block
+* `GetItState` for ARM Cortex-M cores allowing to verify the current status of the IT block
 * scripts to create Conda packages for Linux, Windows and macOS
 * requirements.txt with Python dependencies to simplify the compilation process
 * configuration option to collapse repeated lines in the log - turn it to false if you observe strange behavior of the log output
@@ -3225,8 +3150,8 @@ Changed:
 * VerilatedUART now supports interrupts
 * tests file format was changed to yaml, thus changing tests.txt to tests.yaml
 * test.sh can now run NUnit tests in parallel
-* ``./build.sh -p`` will no longer build the portable Linux package as it requires a very specific Mono version
-* path to ``ar`` can now be specified in the properties file before building
+* `./build.sh -p` will no longer build the portable Linux package as it requires a very specific Mono version
+* path to `ar` can now be specified in the properties file before building
 * MinGW libraries are now compiled in statically, significantly reducing the Windows package size
 
 Fixed:
@@ -3253,15 +3178,14 @@ Fixed:
 * several fixes in HiFive SPI model
 * page latch alignment in PolarFire SoC
 
-1.8.2 - 2019.11.12
-------------------
+## 1.8.2 - 2019.11.12
 
 Added:
 
 * a sample running HiFive Unleashed with Fomu running Foboot, connected via USB
 * a sample running MicroPython on LiteX with VexRiscv
 * vectored interrupts support in RISC-V
-* ``pythonEngine`` variable is now availalbe in Python scripting
+* `pythonEngine` variable is now availalbe in Python scripting
 
 Changed:
 
@@ -3274,8 +3198,7 @@ Fixed:
 
 * problem with halting cores in GDB support layer when hitting a breakpoint - GDB works in a proper all-stop mode now
 
-1.8.1 - 2019.10.09
-------------------
+## 1.8.1 - 2019.10.09
 
 Added:
 
@@ -3290,8 +3213,8 @@ Added:
 
 Changed:
 
-* ``-e`` parameter for commands executed at startup can be provided multiple times
-* ``polarfire`` platform is now renamed to ``polarfire-soc``
+* `-e` parameter for commands executed at startup can be provided multiple times
+* `polarfire` platform is now renamed to `polarfire-soc`
 * style of Robot Framework result files
 * MT25Q flash backend has changed from file to memory, allowing software to execute directly from it
 * improved LiteX on Fomu platform
@@ -3299,10 +3222,9 @@ Changed:
 
 Fixed:
 
-* ``Bad IL`` exceptions when running on Mono 6.4
+* `Bad IL` exceptions when running on Mono 6.4
 
-1.8.0 - 2019.09.02
-------------------
+## 1.8.0 - 2019.09.02
 
 Added:
 
@@ -3322,8 +3244,8 @@ Added:
 
 Changed:
 
-* GDB server is now started from the ``machine`` level instead of ``cpu`` and is able to handle multiple cores at once
-* renamed ``SetLossRangeWirelessFunction`` to ``SetRangeLossWirelessFunction``
+* GDB server is now started from the `machine` level instead of `cpu` and is able to handle multiple cores at once
+* renamed `SetLossRangeWirelessFunction` to `SetRangeLossWirelessFunction`
 * LiteX Ethernet now supports the MDIO interface
 * updated memory map for several EFR32 platforms
 * changed the interrupt handling of EFR32_USART
@@ -3335,19 +3257,19 @@ Changed:
 * REPL files now accept multiline strings delimited with triple apostrophe
 * UART analyzers are writing to the Renode log when running from Robot
 * simplified command line switches for running Robot tests
-* some Robot keywords (e.g. ``LogToFile``) are not saved between related tests
+* some Robot keywords (e.g. `LogToFile`) are not saved between related tests
 
 Fixed:
 
 * compilation of verilated peripheral classes in Windows (backported to 1.7.1 package)
 * determinism of SAM E70 tests
-* crash when using ``logLevel`` command with ``--hide-log`` switch
+* crash when using `logLevel` command with `--hide-log` switch
 * ad-hoc compiler behavior in Windows
 * crash on too short Ethernet packets
 * byte read behavior in NS16550
 * auto update behavior of PSE_Timer
 * connection mode when running the Monitor via telnet
-* deserialization of ``SerializableStreamView``
+* deserialization of `SerializableStreamView`
 * crash when completing interrupts in PLIC when no interrupt is pending
 * Renode startup position on Windows with desktop scaling enabled
 * fence.* operation decoding in RISC-V
@@ -3356,8 +3278,7 @@ Fixed:
 * compilation issues on GCC 9
 
 
-1.7.1 - 2019.05.15
-------------------
+## 1.7.1 - 2019.05.15
 
 Added:
 
@@ -3375,8 +3296,7 @@ Fixed:
 
 * sharing violation when trying to run downloaded files
 
-1.7.0 - 2019.05.02
-------------------
+## 1.7.0 - 2019.05.02
 
 Added:
 
@@ -3391,7 +3311,7 @@ Added:
 * PTP support in Cadence GEM ethernet model, along with several fixes
 * option to execute CPUs in serial instead of parallel
 * support for custom instructions in RISC-V
-* ``empty`` keyword in REPL
+* `empty` keyword in REPL
 * graphical display analyzer support on Windows
 * multi-target GPIO support, along with the new REPL syntax
 * local interrupts in PolarFire SoC platform
@@ -3404,14 +3324,14 @@ Changed:
 
 * Micron MT25Q is now able to use file as a backend and does not need to have a separate memory provided in REPL
 * Micron MT25Q now has selectable endianess
-* ``logFile`` command will now create a copy of the previous log before overwriting it
-* ``sysbus LogPeripheralAccess`` will now add the active CPU name and current PC to log messages
-* single-stepping of a CPU is now easier, it requires only a single call to ``cpu Step`` on a paused CPU
+* `logFile` command will now create a copy of the previous log before overwriting it
+* `sysbus LogPeripheralAccess` will now add the active CPU name and current PC to log messages
+* single-stepping of a CPU is now easier, it requires only a single call to `cpu Step` on a paused CPU
 * NVIC reload value is now 24-bit
 * reimplemented the STM32_UART model
 * updated the PolarFire SoC memory map
 * updated the SiFive FU540 memory map
-* ``GetClockSourceInfo`` will now display the name of the timer
+* `GetClockSourceInfo` will now display the name of the timer
 * Termsharp will no longer print the NULL character
 * RISC-V cores will now abort when trying to run a disabled F/D instruction
 
@@ -3436,8 +3356,7 @@ Fixed:
 * several fixes in various LiteX peripherals
 * several fixes in PSE QSPI and Micron MT25Q model
 
-1.6.2 - 2019.01.10
-------------------
+## 1.6.2 - 2019.01.10
 
 Added:
 
@@ -3454,11 +3373,10 @@ Changed:
 Fixed:
 
 * formatting of symbol logging
-* error reporting in Robot tests using the ``Requires`` keyword
+* error reporting in Robot tests using the `Requires` keyword
 * Microsemi's Mi-V CPU description
 
-1.6.1 - 2019.01.02
-------------------
+## 1.6.1 - 2019.01.02
 
 Added:
 
@@ -3479,8 +3397,7 @@ Fixed:
 * memory map and CPU definition for SiFive FE310
 * out of bounds access when using Ctrl+R with wrapped lines in the Monitor
 
-1.6.0 - 2018.11.21
-------------------
+## 1.6.0 - 2018.11.21
 
 Added:
 
@@ -3492,7 +3409,7 @@ Added:
 * block-finished event infrastructure - verified on RISC-V and ARM cores
 * more PSE peripherals: RTC, PCIe controller, USB controller, QSPI, CAN, etc
 * Micron MT25Q flash model
-* ``watch`` command to run Monitor commands periodically
+* `watch` command to run Monitor commands periodically
 * a message on the Monitor when quitting Renode
 * qXfer support for GDB, allowing the client to autodetect the architecture
 * log tester for Robot Framework
@@ -3533,8 +3450,7 @@ Fixed:
 * CPU abort will now stop the failing CPU
 
 
-1.5.0 - 2018.10.03
-------------------
+## 1.5.0 - 2018.10.03
 
 Added:
 
@@ -3571,8 +3487,7 @@ Fixed:
 * compilation of translation libraries on Windows is no longer forced on every Renode recompilation
 
 
-1.4.2 - 2018.07.27
-------------------
+## 1.4.2 - 2018.07.27
 
 Added:
 
@@ -3600,8 +3515,7 @@ Fixed:
 * some fixes in EFR32_USART
 
 
-1.4.1 - 2018.06.28
-------------------
+## 1.4.1 - 2018.06.28
 
 Added:
 
@@ -3616,8 +3530,7 @@ Fixed:
 * an error in handling of generated code on Windows, causing the emulated application to misbehave
 * font loading and default font size on Windows
 
-1.4.0 - 2018.06.22
-------------------
+## 1.4.0 - 2018.06.22
 
 Added:
 
@@ -3654,8 +3567,7 @@ Fixed:
 * symbol names caching when loading new symbol files
 * several minor fixes in different platform files
 
-1.3.0 - 2018.01.26
-------------------
+## 1.3.0 - 2018.01.26
 
 Added:
 
@@ -3683,8 +3595,7 @@ Fixed:
 * improper timer initialization in RISC-V's CoreLevelInterruptor
 * text highlighting in wrapped lines in terminal windows
 
-1.2.0 - 2017.11.15
-------------------
+## 1.2.0 - 2017.11.15
 
 Added:
 
@@ -3695,16 +3606,15 @@ Added:
 Changed:
 
 * timers can now hold values up to 64 bits
-* ``Button`` peripheral can now have inverted logic
+* `Button` peripheral can now have inverted logic
 * GDB server can be configured to autostart after the first "monitor halt" received
 
 Fixed:
 
 * translation cache invalidation on manual writes to memory
-* reset of ``LimitTimer`` peripheral, which is the base for most of the supported timers
+* reset of `LimitTimer` peripheral, which is the base for most of the supported timers
 
-1.1.0 - 2017.11.14
-------------------
+## 1.1.0 - 2017.11.14
 
 Added:
 
@@ -3712,7 +3622,7 @@ Added:
 * support for running Renode on Windows
 * EFR32MG cpu support. For the list of peripherals, see efr32mg.repl
 * more robust support for SVD files
-* support for '\n -> \r\n' patching in Termsharp console windows
+* support for `\n` -> `\r\n` patching in Termsharp console windows
 * support for font configuration in Termsharp
 * support for CRC in Ethernet
 * packaging scripts
@@ -3728,10 +3638,9 @@ Fixed:
 * several minor fixes in platform description format (.repl)
 * bug where Renode hanged after issuing the "help" command in the Monitor
 
-1.0.0 - 2017.06.13
-------------------
+## 1.0.0 - 2017.06.13
 
 This is the initial release of Renode.
 Renode is a virtual development and testing tool for multinode embedded networks.
-For more information please visit `<https://www.renode.io>`_.
+For more information please visit <https://www.renode.io>.
 
