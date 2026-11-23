@@ -76,15 +76,15 @@ namespace Antmicro.Renode.WebSockets.Providers
                 return this.GetMachines();
             case "uarts":
                 return ExecRenodeArgParser(argData, true, false) ?
-                    GPIOData.GetPeripheralsNameOfType<IUART>(argData.Machine) :
+                    Utils.GetPeripheralsNameOfType<IUART>(argData.Machine) :
                     argData.ErrorMessage;
             case "buttons":
                 return ExecRenodeArgParser(argData, true, false) ?
-                    GPIOData.GetPeripheralsNameOfType<Button>(argData.Machine) :
+                    Utils.GetPeripheralsNameOfType<Button>(argData.Machine) :
                     argData.ErrorMessage;
             case "leds":
                 return ExecRenodeArgParser(argData, true, false) ?
-                    GPIOData.GetPeripheralsNameOfType<ILed>(argData.Machine) :
+                    Utils.GetPeripheralsNameOfType<ILed>(argData.Machine) :
                     argData.ErrorMessage;
             case "button-set":
                 return ExecRenodeArgParser(argData, true, true) ?
@@ -92,7 +92,7 @@ namespace Antmicro.Renode.WebSockets.Providers
                     argData.ErrorMessage;
             case "spis":
                 return ExecRenodeArgParser(argData, true, false) ?
-                    GPIOData.GetPeripheralsNameOfType<ISPIController>(argData.Machine) :
+                    Utils.GetPeripheralsNameOfType<ISPIController>(argData.Machine) :
                     argData.ErrorMessage;
             }
 
@@ -288,7 +288,7 @@ namespace Antmicro.Renode.WebSockets.Providers
                     ledPeripheral.StateChanged += (led, val) => LedStateChangedEvent.RaiseEvent(new PeripheralStateChangedEventDto
                     {
                         MachineName = machineName,
-                        Name = GPIOData.GetPeripheralFullName(ledPeripheral),
+                        Name = Utils.GetPeripheralFullName(ledPeripheral),
                         Value = val
                     });
                 }
@@ -298,7 +298,7 @@ namespace Antmicro.Renode.WebSockets.Providers
                     buttonPeripheral.StateChanged += (val) => ButtonStateChangedEvent.RaiseEvent(new PeripheralStateChangedEventDto
                     {
                         MachineName = machineName,
-                        Name = GPIOData.GetPeripheralFullName(buttonPeripheral),
+                        Name = Utils.GetPeripheralFullName(buttonPeripheral),
                         Value = val
                     });
                 }
@@ -314,7 +314,7 @@ namespace Antmicro.Renode.WebSockets.Providers
                 var machine = uart.GetMachine();
 
                 var machineName = EmulationManager.Instance.CurrentEmulation[machine];
-                string uartName = GPIOData.GetPeripheralFullName(uart);
+                string uartName = Utils.GetPeripheralFullName(uart);
 
                 UartCreatedEvent.RaiseEvent(new UartCreatedEventDto
                 {

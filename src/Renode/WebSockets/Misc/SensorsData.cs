@@ -29,7 +29,7 @@ namespace Antmicro.Renode.WebSockets.Misc
                 .Where(entry => entry.Measurands.Count > 0)
                 .Select(entry => new SensorInfo
                 {
-                    Name = GPIOData.GetPeripheralFullName(entry.Peripheral, machine),
+                    Name = Utils.GetPeripheralFullName(entry.Peripheral, machine),
                     Measurands = entry.Measurands
                 })
                 .ToArray();
