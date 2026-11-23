@@ -11,9 +11,6 @@ machine LoadPlatformDescription @platforms/cpus/cortex-a53-gicv3_pcie.repl
 
 showAnalyzer uart0
 
-# Prevent creating unnecessary logs, because of an unimplemented register
-logLevel 3 cpu.timer
-
 macro reset
 """
     # Preconfigure UART to see Coreboot and ATF boot logs.
