@@ -14,7 +14,6 @@ import uuid
 import re
 import signal
 from collections import OrderedDict, defaultdict
-from copy import deepcopy
 from time import monotonic, sleep, time
 from typing import List, Dict, Tuple, Set, Optional, Union, BinaryIO, Callable, Sequence
 from argparse import Namespace
@@ -233,12 +232,6 @@ def install_cli_arguments(parser):
                         default=False,
                         help="Print verbose info from Robot Framework.")
 
-    parser.add_argument("--hot-spot",
-                        dest="hotspot",
-                        action="store",
-                        default=None,
-                        help="Test given hot spot action.")
-
     parser.add_argument("--variable",
                         dest="variables",
                         action="append",
@@ -396,44 +389,6 @@ def report_dead_subprocess(process):
     )
 
 
-class KeywordsFinder(robot.model.SuiteVisitor):
-    def __init__(self, keyword):
-        self.keyword = keyword
-        self.occurences = 0
-        self.arguments = []
-
-
-    def visit_keyword(self, keyword):
-        if keyword.name == self.keyword:
-            self.occurences += 1
-            arguments = keyword.args
-            self.arguments.append(arguments)
-
-
-    def got_results(self):
-        return self.occurences > 0
-
-
-class TestsFinder(robot.model.SuiteVisitor):
-    def __init__(self, keyword):
-        self.keyword = keyword
-        self.tests_matching = []
-        self.tests_not_matching = []
-
-
-    def isMatching(self, test):
-        finder = KeywordsFinder(self.keyword)
-        test.visit(finder)
-        return finder.got_results()
-
-
-    def visit_test(self, test):
-        if self.isMatching(test):
-            self.tests_matching.append(test)
-        else:
-            self.tests_not_matching.append(test)
-
-
 class RobotTestSuite(object):
     after_restart_message_suffix: str = ' '.join([
         "Failed on Renode restarted after a timeout or crash,",
@@ -443,7 +398,6 @@ class RobotTestSuite(object):
     robot_frontend_process = None
     renode_exit_message: Optional[str] = None
     renode_pid = -1  # It's not always robot_frontend_process.pid, e.g., with `--run-gdb` option.
-    hotspot_action = ['None', 'Pause', 'Serialize']
     # Used to share the port, directory and command used by Renode between all suites when running sequentially
     remote_server_port = -1
     remote_server_path: str = ""
@@ -474,9 +428,7 @@ class RobotTestSuite(object):
         # Subset of RobotTestSuite.log_files which are "owned" by the running instance
         self.suite_log_files = None
 
-        self.tests_with_hotspots = []
-        self.tests_without_hotspots = []
-        self.selected_tests: List[Tuple[Optional[str], List[str]]] = []
+        self.selected_tests: List[str] = []
 
 
     def get_output_dir(self, options, iteration_index, suite_retry_index):
@@ -487,17 +439,6 @@ class RobotTestSuite(object):
         )
 
 
-    def _find_tests(self) -> robot.running.TestSuite:
-        hotSpotTestFinder = TestsFinder(keyword="Handle Hot Spot")
-        suiteBuilder = robot.running.builder.TestSuiteBuilder()
-        suite = suiteBuilder.build(self.path)
-        suite.visit(hotSpotTestFinder)
-
-        self.tests_with_hotspots = [test.name for test in hotSpotTestFinder.tests_matching]
-        self.tests_without_hotspots = [test.name for test in hotSpotTestFinder.tests_not_matching]
-        return suite
-
-
     def select_tests(self, options: Namespace) -> bool:
         """Select tests and return whether the suite should remain scheduled."""
         self.selected_tests = []
@@ -505,25 +446,11 @@ class RobotTestSuite(object):
             print('Ignoring helper file: {}'.format(self.path))
             return False
 
-        suite = self._find_tests()
-
-        # Hot-spot tests run once per selected action. Fixture matching includes
-        # the action in the suite name, so filter each variant separately.
-        variants: List[Tuple[Optional[str], List[str]]] = [(None, self.tests_without_hotspots)]
-        variants.extend((hotspot, self.tests_with_hotspots)
-                        for hotspot in self.hotspot_action
-                        if not options.hotspot or options.hotspot == hotspot)
-
-        for hotspot, test_names in variants:
-            if not test_names:
-                continue
-
-            # Robot filters and renames the model in place, so make a copy.
-            suite_copy = deepcopy(suite)
-            selected = self._get_test_suite(options, test_names, options.fixture, hotspot,
-                                            suite=suite_copy)
-            if selected.test_count:
-                self.selected_tests.append((hotspot, [test.name for test in selected.tests]))
+        suite = robot.running.builder.TestSuiteBuilder().build(self.path)
+        selected = self._get_test_suite(options, [test.name for test in suite.tests], options.fixture,
+                                        suite=suite)
+        if selected.test_count:
+            self.selected_tests = [test.name for test in selected.tests]
 
         return len(self.selected_tests) > 0
 
@@ -705,9 +632,8 @@ class RobotTestSuite(object):
                 output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
                 logs_dir = os.path.join(output_dir, 'logs')
                 os.makedirs(logs_dir, exist_ok=True)
-                suite_name = RobotTestSuite._create_suite_name(file_name, None)
-                stdout_path = os.path.join(logs_dir, f"{suite_name}.renode_stdout.log")
-                stderr_path = os.path.join(logs_dir, f"{suite_name}.renode_stderr.log")
+                stdout_path = os.path.join(logs_dir, f"{file_name}.renode_stdout.log")
+                stderr_path = os.path.join(logs_dir, f"{file_name}.renode_stderr.log")
                 output_mode: str = "ab" if append_output else "wb"
                 fout: BinaryIO = open(stdout_path, output_mode, buffering=0)
                 ferr: BinaryIO = open(stderr_path, output_mode, buffering=0)
@@ -921,30 +847,21 @@ class RobotTestSuite(object):
 
         print(f'Running suite on Renode pid {self.renode_pid} using port {self.remote_server_port}: {self.path}', flush=True)
 
-        result = None
-        def get_result():
-            return result if result is not None else TestResult(True, None)
-
         start_timestamp = monotonic()
 
-        for hotspot, test_names in self.selected_tests:
-            suite = self._get_test_suite(options, test_names, None, hotspot)
-            result = get_result().ok and self._run_inner(suite,
-                                                         options.fixture,
-                                                         hotspot,
-                                                         test_names,
-                                                         options,
-                                                         iteration_index,
-                                                         suite_retry_index)
+        suite = self._get_test_suite(options, self.selected_tests, None)
+        result = self._run_inner(suite,
+                                 options.fixture,
+                                 self.selected_tests,
+                                 options,
+                                 iteration_index,
+                                 suite_retry_index)
 
         end_timestamp = monotonic()
 
-        if result is None:
-            print(f'No tests executed for suite {self.path}', flush=True)
-        else:
-            status = 'finished successfully' if result.ok else 'failed'
-            exec_time = round(end_timestamp - start_timestamp, 2)
-            print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
+        status = 'finished successfully' if result.ok else 'failed'
+        exec_time = round(end_timestamp - start_timestamp, 2)
+        print(f'Suite {self.path} {status} in {exec_time} seconds.', flush=True)
 
         renode_memory_stats = {}
         renode_process_stats = {}
@@ -966,7 +883,7 @@ class RobotTestSuite(object):
                 except psutil.NoSuchProcess as err:
                     print(f"error: Failed to collect process statistics for PID `{renode_pid}`: {err}")
 
-        logs = get_result()[1]
+        logs = result[1]
         for log in logs: 
             try: 
                 robot_results = robot.api.ExecutionResult(log)
@@ -991,7 +908,7 @@ class RobotTestSuite(object):
                 print("Renode has unexpectedly died when running sequentially! Trying to respawn before continuing...")
                 self._run_remote_server(options, iteration_index, suite_retry_index)
 
-        return get_result()
+        return result
 
 
     def _get_dependencies(self, test_case):
@@ -1118,25 +1035,19 @@ class RobotTestSuite(object):
 
         return False
 
-
-    @staticmethod
-    def _create_suite_name(test_name, hotspot):
-        return test_name + (' [HotSpot action: {0}]'.format(hotspot) if hotspot else '')
-
     def _run_dependencies(self, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         test_cases_names.difference_update(self._dependencies_met)
         if not any(test_cases_names):
             return True
         self._dependencies_met.update(test_cases_names)
-        suite = self._get_test_suite(options, test_cases_names, None, None)
-        return self._run_inner(suite, None, None, test_cases_names, options, iteration_index, suite_retry_index)
+        suite = self._get_test_suite(options, test_cases_names, None)
+        return self._run_inner(suite, None, test_cases_names, options, iteration_index, suite_retry_index)
 
-    def _get_test_suite(self, options, test_cases_names, fixture, hotspot,
+    def _get_test_suite(self, options, test_cases_names, fixture,
                         suite: Optional[robot.running.TestSuite] = None):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
-        suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
-        test_cases = [(test_name, '{0}.{1}'.format(suite_name, test_name)) for test_name in test_cases_names]
+        test_cases = [(test_name, '{0}.{1}'.format(file_name, test_name)) for test_name in test_cases_names]
         if fixture:
             test_cases = [x for x in test_cases if fnmatch.fnmatch(x[1], '*' + fixture + '*')]
         if suite is None:
@@ -1144,10 +1055,9 @@ class RobotTestSuite(object):
 
         suite.resource.imports.create(type="Resource", name=keywords_path)
 
-        metadata = {"HotSpot_Action": hotspot if hotspot else '-'}
         suite.configure(include_tags=options.include, exclude_tags=options.exclude,
-                            include_tests=[t[1] for t in test_cases], metadata=metadata,
-                            name=suite_name, empty_suite_ok=True)
+                            include_tests=[t[1] for t in test_cases],
+                            name=file_name, empty_suite_ok=True)
         # Provide default values for {Suite,Test}{Setup,Teardown}
         if not suite.setup:
             suite.setup.config(name="Renode Suite Setup")
@@ -1155,9 +1065,8 @@ class RobotTestSuite(object):
             suite.teardown.config(name="Renode Suite Teardown")
         return suite
 
-    def _run_inner(self, suite, fixture, hotspot, test_cases_names, options, iteration_index=1, suite_retry_index=0):
+    def _run_inner(self, suite, fixture, test_cases_names, options, iteration_index=1, suite_retry_index=0):
         file_name = os.path.splitext(os.path.basename(self.path))[0]
-        suite_name = RobotTestSuite._create_suite_name(file_name, hotspot)
 
         output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
         variables = [
@@ -1170,8 +1079,6 @@ class RobotTestSuite(object):
             'BINARY_NAME:{}'.format(options.remote_server_name),
             'RENODE_PID:{}'.format(self.renode_pid),
         ]
-        if hotspot:
-            variables.append('HOTSPOT_ACTION:' + hotspot)
         if options.debug_mode:
             variables.append('CONFIGURATION:Debug')
         if options.debug_on_error:
@@ -1189,7 +1096,7 @@ class RobotTestSuite(object):
             for unstable_test in filter_unstable(self.known_unstable, suite.tests):
                 unstable_test.tags.add(TestTag.UNSTABLE)
 
-        test_cases = [(test.name, '{0}.{1}'.format(suite_name, test.name)) for test in suite.tests]
+        test_cases = [(test.name, '{0}.{1}'.format(file_name, test.name)) for test in suite.tests]
         if fixture:
             deps = set()
             for test_name in (t[0] for t in test_cases):
@@ -1209,7 +1116,7 @@ class RobotTestSuite(object):
         if options.listener:
             listeners += options.listener
 
-        log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
+        log_file = os.path.join(output_dir, 'results-{0}.robot.xml'.format(file_name))
 
         # This variable is provided for compatibility with Robot files that use Resource ${RENODEKEYWORDS}
         variables.append('RENODEKEYWORDS:{}'.format(keywords_path))
@@ -1259,19 +1166,8 @@ class RobotTestSuite(object):
         result = suite.run(console='none', listener=listeners, exitonfailure=options.stop_on_error, output=log_file, log=None, loglevel='TRACE', report=None, variable=variables, skiponfailure=[TestTag.NON_CRITICAL, TestTag.SKIPPED, TestTag.UNSTABLE])
 
         self.suite_log_files = []
-        file_name = os.path.splitext(os.path.basename(self.path))[0]
-        output_dir = self.get_output_dir(options, iteration_index, suite_retry_index)
-        if any(self.tests_without_hotspots):
-            log_file = os.path.join(output_dir, 'results-{0}.robot.xml'.format(file_name))
-            if os.path.isfile(log_file):
-                self.suite_log_files.append(log_file)
-        if any(self.tests_with_hotspots):
-            for hotspot in RobotTestSuite.hotspot_action:
-                if options.hotspot and options.hotspot != hotspot:
-                    continue
-                log_file = os.path.join(output_dir, 'results-{0}{1}.robot.xml'.format(file_name, '_' + hotspot if hotspot else ''))
-                if os.path.isfile(log_file):
-                    self.suite_log_files.append(log_file)
+        if os.path.isfile(log_file):
+            self.suite_log_files.append(log_file)
 
         return TestResult(result.return_code == 0, self.suite_log_files)
 

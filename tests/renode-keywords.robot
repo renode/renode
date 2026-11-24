@@ -16,7 +16,6 @@ ${ROBOT_SERVER_PATH}         ${EMPTY}
 ${DIRECTORY}                 ${CURDIR}/../output/bin/${CONFIGURATION}
 ${RENODETOOLS}               ${CURDIR}/../tools
 ${BINARY_NAME}               Renode.dll
-${HOTSPOT_ACTION}            None
 ${DISABLE_GUI}               False
 ${DEFAULT_UART_TIMEOUT}      8
 ${CREATE_SNAPSHOT_ON_FAIL}   True
@@ -205,9 +204,6 @@ Test Teardown
     [Documentation]     *DEPRECATED*
     ...                 Use 'Renode Test Teardown'.
     Renode Test Teardown
-
-Hot Spot
-    Handle Hot Spot  ${HOTSPOT_ACTION}
 
 Start Profiler
     ${test_name}=               Get Sanitized Test Name

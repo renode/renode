@@ -263,7 +263,6 @@ Should Serialize And Set Temperature On Single Sensor
     Create Machine With Dummy Sensor            dummySensor1
     Execute Command                             emulation CreateEnvironment "env1"
     Execute Command                             machine SetEnvironment env1
-    Handle Hot Spot                             Serialize
     Execute Command                             mach set 0
     Execute Command                             env1 Temperature 55.5
     ${temperature}=     Execute Command         sysbus.dummySensor1 Temperature
