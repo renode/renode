@@ -1,8 +1,11 @@
+#include <atomic>
+#include <cinttypes>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
-#include "librenode.h"
 #include "native_host.hpp"
 
 using namespace native_host;
@@ -24,30 +27,54 @@ static renode_custom_command_response_data_t *answer(void *user_data, renode_cus
     return response;
 }
 
+//  Adds a hook that sends a custom command when the guest starts
+//  and writes to the test end register whether the reply is "pong".
+constexpr const char *add_hook = R"(sysbus.cpu AddHook 0x40000000 """
+_, host = emulationManager.CurrentEmulation.TryGetEmulationElementByName('nativeHost', None)
+self.Bus.WriteDoubleWord(0x10000004, int(host.SendCustomCommand('ping') == 'pong'))
+""")";
+
 //  `connect` registers a bus access callback first, so the custom command callback gets another
-//  event descriptor. The host then sends a custom command from the Monitor and checks the reply.
+//  event descriptor. Renode then sends a custom command while it runs the guest.
 int main(int argc, char *argv[])
 {
     char reply[] = "pong";
+    std::atomic<uint64_t> result = 0;
     external_control control;
-    const auto no_access = [](auto...) { return false; };
+    const auto on_read = [](auto...) { return false; };
+    const auto on_write = [&result](uint64_t address, const uint8_t *data, uint32_t size) {
+        if(address != test_end_address) {
+            return false;
+        }
+
+        result = load_little_endian(data, size);
+        return true;
+    };
+
     if(!check_usage(argc, argv)) {
         return exit_setup_error;
     }
-    if(!control.connect(argv[1], machine_name, peripheral_name, no_access, no_access)) {
+    if(!control.connect(argv[1], machine_name, peripheral_name, on_read, on_write)) {
         return exit_setup_error;
     }
     if(!control.register_custom_command_callback(reply, answer)) {
         return exit_setup_error;
     }
 
-    char output[256] = "";
-    char error[256] = "";
-    renode_exec_command_ex("nativeHost SendCustomCommand \"ping\"", output, sizeof(output), error, sizeof(error));
+    std::string output;
+    if(!control.run_monitor_command(add_hook, output)) {
+        return exit_setup_error;
+    }
+
+    if(!control.run_for(1)) {
+        return exit_runtime_error;
+    }
+
     control.disconnect();
 
-    if(std::strstr(output, reply) == nullptr) {
-        std::fprintf(stderr, "expected '%s', got output '%s' and error '%s'\n", reply, output, error);
+    if(result != test_passed) {
+        std::fprintf(stderr, "the hook should have reported result 0x%" PRIx64 ", but it reported 0x%" PRIx64 "\n", test_passed,
+                     result.load());
         return exit_mismatch;
     }
     return exit_pass;
