@@ -1,12 +1,19 @@
 :name: RAMN
 :description: Runs the RAMN firmware (https://github.com/ToyotaInfoTech/RAMN) on 4 ECUs connected over CAN
 
+$ramn_show_spi_analyzer?=True
+$ramn_show_can_analyzer?=True
+
 emulation CreateCANHub "canHub"
 
 set global.name "ECUA"
 include @scripts/single-node/ramn.resc
 connector Connect sysbus.fdcan1 canHub
+
+if `print $ramn_show_spi_analyzer`
+"""
 showAnalyzer spi2
+"""
 
 set global.name "ECUB"
 include @scripts/single-node/ramn.resc
@@ -25,4 +32,7 @@ canHub LoadDBC @https://dl.antmicro.com/projects/renode/busmaster_ramn.dbc-s_253
 # Syncing more freqently improves performance in this senario
 emulation SetGlobalQuantum "0.00001"
 
+if `print $ramn_show_can_analyzer`
+"""
 showAnalyzer canHub
+"""
