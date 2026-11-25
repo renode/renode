@@ -27,7 +27,9 @@
 - tests/unit-tests/arm-semihosting.robot
 - tests/unit-tests/riscv-zcb-zcmp-zcmt-extensions.robot
 - tests/unit-tests/hst-delayed-cpu-registration.robot
-- tests/unit-tests/riscv-isa-tests.robot
+- tests/unit-tests/riscv-isa-tests/riscv-isa-tests-1.robot
+- tests/unit-tests/riscv-isa-tests/riscv-isa-tests-2.robot
+- tests/unit-tests/riscv-isa-tests/riscv-isa-tests-3.robot
 - tests/unit-tests/riscv-vector-csr.robot
 - tests/unit-tests/riscv-arch-tests/riscv-arch-tests-1.robot
 - tests/unit-tests/riscv-arch-tests/riscv-arch-tests-2.robot

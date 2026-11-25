@@ -1,4 +1,5 @@
 *** Variables ***
+${TOTAL_SUBSETS}                    3
 @{IGNORED_TESTS}
 # Aborting machine
 ...                                 rv64uzbb-v-maxu
@@ -153,7 +154,7 @@ Run Test Case Inner
     [Arguments]                     ${test}  ${width}
 
     Execute Command                 Clear
-    Execute Command                 include "${CURDIR}/ArrayMemoryRiscVTestWatcher.cs"
+    Execute Command                 include "${CURDIR}/../ArrayMemoryRiscVTestWatcher.cs"
 
     Execute Command                 log "${test}" 1
     Create Log Tester               1
@@ -173,20 +174,36 @@ Run Test Case Inner
     ${res}=                         Execute Command  tohost ExitCode
     Should Contain                  ${res}  0x0000000000000000
 
-*** Test Cases ***
-Should Run Tests
-    [Tags]                          exclude_osx
+Run Tests Subset
+    [Arguments]                     ${subset}
 
     ${archive}=                     Download File  ${TEST_ARCHIVE}
     ${binariesDirectory}=           AllocateTemporaryDirectory  elfs
     Untar File                      ${archive}  ${binariesDirectory}
-    ${binaries}=                    List Files In Directory Recursively  ${binariesDirectory}  rv*
+    ${files}=                       List Files In Directory Recursively  ${binariesDirectory}  rv*
+    ${binaries}=                    Create List
+
+    FOR  ${file}  IN  @{files}
+        ${dirname}                      ${filename}=  Split Path  ${file}
+
+        Continue For Loop If            $filename in $IGNORED_TESTS
+        Append To List                  ${binaries}  ${file}
+    END
+
+    ${total_count}=                 Get Length  ${binaries}
+    ${binaries}=                    Evaluate  [b for i, b in enumerate($binaries) if i % ${TOTAL_SUBSETS} == ${subset} - 1]
+    ${binaries_count}=              Get Length  ${binaries}
+    Log To Console                  Total unit-test count: ${total_count}, will run ${binaries_count} tests from subset ${subset}/${TOTAL_SUBSETS}
+
+    Should Not Be Empty             ${binaries}
+
+    ${remainder}=                   Evaluate  ${total_count} % ${TOTAL_SUBSETS}
+    IF  ${remainder} != 0
+        Fail                            Incorrect subset divider ${remainder}
+    END
 
     FOR  ${test}  IN  @{binaries}
         ${dirname}                      ${filename}=  Split Path  ${test}
-
-        Continue For Loop If            $filename in $IGNORED_TESTS
-
         IF  "rv32" in $filename
             Run Test Case                   ${test}  32
         ELSE IF  "rv64" in $filename
