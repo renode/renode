@@ -29,7 +29,12 @@
 - tests/unit-tests/hst-delayed-cpu-registration.robot
 - tests/unit-tests/riscv-isa-tests.robot
 - tests/unit-tests/riscv-vector-csr.robot
-- tests/unit-tests/riscv-arch-tests.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-1.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-2.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-3.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-4.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-5.robot
+- tests/unit-tests/riscv-arch-tests/riscv-arch-tests-6.robot
 - tests/example.robot
 - tests/platforms/CC2538/cc2538_cryptoprocessor.robot
 - tests/platforms/QuarkC1000.robot
