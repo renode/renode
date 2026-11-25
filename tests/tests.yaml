@@ -46,7 +46,6 @@
 - tests/platforms/PicoSoC.robot
 - tests/platforms/MiV/MiV.robot
 - tests/platforms/STM32F103.robot
-- tests/unit-tests/demos.robot
 - tests/unit-tests/robot-integration.robot
 - tests/unit-tests/riscv-unit-tests.robot
 - tests/unit-tests/riscv-andestar-v5.robot
@@ -364,5 +363,8 @@
 - ports_3347_3348:
   - tests/platforms/SiLabs/zigbee_ncp.robot
 
-- ports_3451_3452:
+- ports_3349_3350:
   - tests/platforms/SiLabs/ble_ncp.robot
+
+- ports_3451_3452:
+  - tests/unit-tests/demos.robot

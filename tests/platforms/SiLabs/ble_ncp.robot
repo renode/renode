@@ -27,8 +27,8 @@ Connection Should Stay Open
 BLE NCP Nodes Should Connect
     [Arguments]               ${board}  ${elf}  ${increase_security}=${True}
     Create Emulation
-    ${host1}=                 Create NCP Node  ncp1  ${board}  ${elf}  3451
-    ${host2}=                 Create NCP Node  ncp2  ${board}  ${elf}  3452
+    ${host1}=                 Create NCP Node  ncp1  ${board}  ${elf}  3349
+    ${host2}=                 Create NCP Node  ncp2  ${board}  ${elf}  3350
     Wait For Boot Event       ${host1}
     Wait For Boot Event       ${host2}
     Cmd Hello                 ${host1}
