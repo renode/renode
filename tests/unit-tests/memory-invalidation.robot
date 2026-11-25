@@ -13,6 +13,21 @@ ${PROG_DIRTY_ADDRESS}               SEPARATOR=\n
 ...                                 jal loop
 ...                                 store_target:
 
+${WRITER_ENTRY_PC}                              0x1000
+${READER_ENTRY_PC}                              0x1100
+# Set x1 to 1, then spin.
+${READER_PROGRAM}                   SEPARATOR=\n
+...                                 c.li x1, 1
+...                                 loop: j loop
+# Copy the assembled c.li x1, 2 over the reader's first instruction, then spin.
+${WRITER_PROGRAM}                   SEPARATOR=\n
+...                                 la t0, replacement
+...                                 lhu t0, 0(t0)
+...                                 li t1, ${READER_ENTRY_PC}
+...                                 sh t0, 0(t1)
+...                                 loop: j loop
+...                                 replacement: c.li x1, 2
+
 *** Keywords ***
 Create Machine                                  
     Execute Command                             using sysbus
@@ -161,3 +176,36 @@ Should Reduce Dirty Address List With Halted Cores
     Execute Command                             emulation RunFor "0.01"
 
     Should Not Be In Log                        Attempted reduction of riscv dirty addresses list failed, .* CPUs that didn't fetch any:.*halted_cpu  treatAsRegex=true
+
+Should Execute Modified Instruction After Unhalt
+    [Documentation]  CPU core must execute code written by a second core while it was halted.
+    Create Machine
+
+    Execute Command                             machine LoadPlatformDescriptionFromString "reader: CPU.RiscV32 @ sysbus { cpuType: \\"rv32imac\\"; timeProvider: empty; allowUnalignedAccesses: true }"
+
+    Execute Command                             reader AssembleBlock ${READER_ENTRY_PC} "${READER_PROGRAM}"
+    Execute Command                             cpu AssembleBlock ${WRITER_ENTRY_PC} "${WRITER_PROGRAM}"
+
+    # Run only the reader to populate translation cache.
+    Execute Command                             cpu IsHalted true
+    Execute Command                             reader PC ${READER_ENTRY_PC}
+    Execute Command                             emulation RunFor "0.001"
+    Register Should Be Equal                    ${X1}  1  cpuName=reader
+
+    # Rewind the halted reader PC.
+    Execute Command                             reader IsHalted true
+    Execute Command                             reader PC ${READER_ENTRY_PC}
+
+    # Overwrite the reader's instruction from the writer's thread.
+    Execute Command                             cpu PC ${WRITER_ENTRY_PC}
+    Execute Command                             cpu IsHalted false
+    Execute Command                             emulation RunFor "0.001"
+
+    # Start emulation and unhalt the reader while simulation is running.
+    Execute Command                             start
+    Execute Command                             reader IsHalted false
+    Execute Command                             pause
+
+    # Make sure the reader executes enough instructions to read the register.
+    Execute Command                             emulation RunFor "0.001"
+    Register Should Be Equal                    ${X1}  2  cpuName=reader
