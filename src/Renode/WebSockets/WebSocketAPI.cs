@@ -23,7 +23,7 @@ namespace Antmicro.Renode.WebSockets
 {
     public class WebSocketAPI : IDisposable
     {
-        public static string Version = "1.9.0";
+        public static string Version = "1.10.0";
 
         public WebSocketAPI(string workingDir)
         {

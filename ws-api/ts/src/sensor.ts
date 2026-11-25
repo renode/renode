@@ -4,7 +4,6 @@
 
 import { z } from 'zod';
 import { Peripheral } from './peripheral';
-import { GetSensorSourceResponseBody } from './schema';
 
 export enum SensorType {
   Temperature = 'temperature',
@@ -50,25 +49,26 @@ function sensorConstructorForType(
 }
 
 export function GetSensorValue(
-  type: SensorType,
+  measurand: SensorType,
   value: unknown,
   pretty: boolean = false,
 ): SensorValue {
-  return sensorConstructorForType(type)(value, pretty);
+  return sensorConstructorForType(measurand)(value, pretty);
 }
 
 export function GetSensorSourceValue(
   measurand: SensorType,
-  response: GetSensorSourceResponseBody,
+  type: 'raw' | 'percent' | 'discrete',
+  value: unknown,
   pretty: boolean = false,
 ): SensorValue {
-  switch (response.type) {
+  switch (type) {
     case 'raw':
-      return sensorConstructorForType(measurand)(response.value, pretty);
+      return sensorConstructorForType(measurand)(value, pretty);
     case 'percent':
-      return PercentageScalar.fromValueChecked(response.value, pretty);
+      return PercentageScalar.fromValueChecked(value, pretty);
     case 'discrete':
-      return DiscreteValue.fromValueChecked(response.value, pretty);
+      return DiscreteValue.fromValueChecked(value, pretty);
   }
 }
 

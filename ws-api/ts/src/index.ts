@@ -253,7 +253,7 @@ export class RenodeProxySession extends EventTarget {
       },
       s.GetSensorSourceResponse,
     );
-    return GetSensorSourceValue(measurand, result);
+    return GetSensorSourceValue(measurand, result.type, result.value);
   }
 
   public async setSensorSourceValue(
