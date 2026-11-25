@@ -3,6 +3,8 @@
 /**
  * @file
  * @brief Declares Renode API
+ *
+ * All strings in this API are encoded in UTF-8.
  */
 
 #include <inttypes.h>
