@@ -61,6 +61,15 @@ Create IMXRT700
     Execute Command                 runMacro $reset
     Execute Command                 machine StartMultiprocessGdbServer ${GDB_REMOTE_PORT} [cpu0, cpu1]
 
+Time Should Not Flow
+    Execute Command                 emulation SynchroniseQuantum  # Current quantum must be finished to not break comparison
+    ${time_a}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
+    Sleep                           1s
+    ${time_b}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
+
+    Should Be Equal                 ${time_a.strip()}  ${time_b.strip()}  msg=Time should not flow
+
+
 *** Test Cases ***
 Should Start Gdb Server With Multiple Processes
     Execute Command                 i @platforms/cpus/zynqmp.repl
@@ -361,8 +370,4 @@ Halting One Processor Should Stop Other Processors
     ${x}=                           Read Async Command Output  timeout=10
     Should Contain                  ${x}  Thread 1.1 "machine-0.cpu0" received signal SIGINT
 
-    ${time_a}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
-    Sleep                           1s
-    ${time_b}=                      Execute Command  python "print(self.Machine.LocalTimeSource.ElapsedVirtualTime)"
-
-    Should Be Equal                 ${time_a.strip()}  ${time_b.strip()}  msg=Time should not flow
+    Time Should Not Flow
