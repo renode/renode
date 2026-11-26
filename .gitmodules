@@ -47,3 +47,6 @@
 [submodule "tools/NativeInterface/third-party/DNNE"]
 	path = tools/NativeInterface/third-party/DNNE
 	url = https://github.com/antmicro/DNNE
+[submodule "ws-api/ts"]
+	path = ws-api/ts
+	url = https://github.com/antmicro/renode-ws-api.git
