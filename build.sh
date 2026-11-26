@@ -340,8 +340,11 @@ function generate_build_target() {
 </Project>
 EOF
 
-  cp_u "$BUILD_TARGETS_FILE" "$BUILD_PROPS_PATH_WPF"
-  cp_u "$BUILD_TARGETS_FILE" "$BUILD_TARGETS_PATH"
+  for destination in "$BUILD_PROPS_PATH_WPF" "$BUILD_TARGETS_PATH"; do
+    if ! cmp -s "$BUILD_TARGETS_FILE" "$destination"; then
+      cp "$BUILD_TARGETS_FILE" "$destination"
+    fi
+  done
   rm "$BUILD_TARGETS_FILE"
 }
 
