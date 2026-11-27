@@ -1,4 +1,4 @@
-i2c0: I2C.EFR32_I2CController @ {
+i2c0: I2C.EFR32xG2_I2CController @ {
         sysbus <0x4B000000, +0x4000>; // I2C0_S
         sysbus <0x5B000000, +0x4000>  // I2C0_NS
     }
@@ -226,10 +226,16 @@ deviceInformation: Miscellaneous.SiLabs.SiLabs_DeviceInformation @ sysbus 0x0FE0
     flashDevice: flash
     sramDevice: sram
 
-DCDC_IF: Python.PythonPeripheral @ sysbus 0x50094028
-    size: 0x4
-    initable: true
-    script: "request.Value = 0xffffffff"
+dcdc: Miscellaneous.SiLabs.SiLabs_DCDC_2 @ {
+        sysbus <0x40094000, +0x4000>; // DCDC_S
+        sysbus <0x50094000, +0x4000>  // DCDC_NS
+    }
+
+buram: Memory.ArrayMemory @ {
+        sysbus 0x40080000; // BURAM_S
+        sysbus 0x50080000  // BURAM_NS
+    }
+    size: 0x80
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     ResetByte: 0xFF
@@ -344,9 +350,7 @@ sysbus:
         Tag <0x40068000, 0x4006BFFF> "I2C1_S"
         Tag <0x40078000, 0x4007BFFF> "SYSCFG_S_CFGNS"
         Tag <0x4007C000, 0x4007FFFF> "SYSCFG_S"
-        Tag <0x40080000, 0x40083FFF> "BURAM_S"
         Tag <0x40088000, 0x4008BFFF> "GPCRC_S"
-        Tag <0x40094000, 0x40097FFF> "DCDC_S"
         Tag <0x40098000, 0x4009BFFF> "HOSTMAILBOX_S"
         Tag <0x400A0000, 0x400A3FFF> "EUSART1_S"
         Tag <0x400A8000, 0x400ABFFF> "SYSRTC0_S"
@@ -395,9 +399,7 @@ sysbus:
         Tag <0x50068000, 0x5006BFFF> "I2C1_NS"
         Tag <0x50078000, 0x5007BFFF> "SYSCFG_NS_CFGNS"
         Tag <0x5007C000, 0x5007FFFF> "SYSCFG_NS"
-        Tag <0x50080000, 0x50083FFF> "BURAM_NS"
         Tag <0x50088000, 0x5008BFFF> "GPCRC_NS"
-        Tag <0x50094000, 0x50097FFF> "DCDC_NS"
         Tag <0x50098000, 0x5009BFFF> "HOSTMAILBOX_NS"
         Tag <0x500A0000, 0x500A3FFF> "EUSART1_NS"
         Tag <0x500A8000, 0x500ABFFF> "SYSRTC0_NS"
