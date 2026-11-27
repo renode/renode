@@ -953,7 +953,8 @@ class RobotTestSuite(object):
                         name='Test Suite',
                         loglevel="TRACE:INFO",
                         outputdir=output_dir,
-                        output='robot_output.xml'
+                        output='robot_output.xml',
+                        removekeywords=[] if options.verbose else 'passed',
                     )
                     for file in set(log_files):
                         os.remove(file)
