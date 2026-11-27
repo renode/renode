@@ -56,7 +56,6 @@ Run Test Case Inner
 
 *** Test Cases ***
 Should Run Arch Tests
-    [Tags]                          basic-tests
     FOR  ${test}  IN  @{TESTS_ARCH_32}
         Run Test Case                   ${test}  32
     END
