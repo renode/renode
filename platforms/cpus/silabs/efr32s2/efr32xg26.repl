@@ -196,6 +196,7 @@ cpu: CPU.CortexM @ sysbus
     nvic: nvic
     cpuType: "cortex-m33"
     cpuId: 0
+    InitVectorTableOffset: 0x08000000
 
 seqcpu: CPU.CortexM @ sysbus
     nvic: seqnvic
@@ -314,6 +315,14 @@ buram: Memory.ArrayMemory @ {
         sysbus 0x50084000  // BURAM_NS
     }
     size: 0x80
+
+iadc0: Analog.SiLabs_IADC_1 @ {
+        sysbus <0x49004000, +0x4000>; // IADC0_S
+        sysbus <0x59004000, +0x4000>  // IADC0_NS
+    }
+    IRQ -> nvic@65
+    ScanDmaRequest -> ldma@0x00A0
+    SingleDmaRequest -> ldma@0x00A1
 
 flash: Memory.MappedMemory @ sysbus 0x08000000
     ResetByte: 0xFF
@@ -451,7 +460,6 @@ sysbus:
         Tag <0x44008000, 0x4400BFFF> "SMU_S"
         Tag <0x4400C000, 0x4400FFFF> "SMU_S_CFGNS"
         Tag <0x49000000, 0x49003FFF> "LETIMER0_S"
-        Tag <0x49004000, 0x49007FFF> "IADC0_S"
         Tag <0x49008000, 0x4900BFFF> "ACMP0_S"
         Tag <0x4900C000, 0x4900FFFF> "ACMP1_S"
         Tag <0x49020000, 0x49023FFF> "AMUXCP0_S"
@@ -526,7 +534,6 @@ sysbus:
         Tag <0x54008000, 0x5400BFFF> "SMU_NS"
         Tag <0x5400C000, 0x5400FFFF> "SMU_NS_CFGNS"
         Tag <0x59000000, 0x59003FFF> "LETIMER_NS"
-        Tag <0x59004000, 0x59007FFF> "IADC0_NS"
         Tag <0x59008000, 0x5900BFFF> "ACMP0_NS"
         Tag <0x5900C000, 0x5900FFFF> "ACMP1_NS"
         Tag <0x59020000, 0x59023FFF> "AMUXCP0_NS"
